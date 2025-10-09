@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.amichne.konditional.flags.FlagsTests" tests="7" skipped="0" failures="3" errors="0" timestamp="2025-10-09T07:49:59.024Z" hostname="Austins-MacBook-Pro.local" time="0.538">
+  <properties/>
+  <testcase name="specificity_priority_and_fallthrough()" classname="io.amichne.konditional.flags.FlagsTests" time="0.027"/>
+  <testcase name="bucket_uniformity_is_reasonable()" classname="io.amichne.konditional.flags.FlagsTests" time="0.461">
+    <failure message="org.opentest4j.AssertionFailedError: Observed 1.0" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: Observed 1.0
+	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:38)
+	at app//org.junit.jupiter.api.Assertions.fail(Assertions.java:138)
+	at app//kotlin.test.junit5.JUnit5Asserter.fail(JUnitSupport.kt:56)
+	at app//kotlin.test.Asserter$DefaultImpls.assertTrue(Assertions.kt:652)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertTrue(JUnitSupport.kt:30)
+	at app//kotlin.test.Asserter$DefaultImpls.assertTrue(Assertions.kt:662)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertTrue(JUnitSupport.kt:30)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertTrue(Assertions.kt:44)
+	at app//kotlin.test.AssertionsKt.assertTrue(Unknown Source)
+	at app//io.amichne.konditional.flags.FlagsTests.bucket_uniformity_is_reasonable(FlagsTests.kt:125)
+	at java.base@17.0.1/java.lang.reflect.Method.invoke(Method.java:568)
+	at java.base@17.0.1/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.1/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <testcase name="version_bounds_inclusive()" classname="io.amichne.konditional.flags.FlagsTests" time="0.003">
+    <failure message="org.opentest4j.AssertionFailedError: Expected value to be false." type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: Expected value to be false.
+	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:38)
+	at app//org.junit.jupiter.api.Assertions.fail(Assertions.java:138)
+	at app//kotlin.test.junit5.JUnit5Asserter.fail(JUnitSupport.kt:56)
+	at app//kotlin.test.Asserter$DefaultImpls.assertTrue(Assertions.kt:652)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertTrue(JUnitSupport.kt:30)
+	at app//kotlin.test.Asserter$DefaultImpls.assertTrue(Assertions.kt:662)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertTrue(JUnitSupport.kt:30)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertFalse(Assertions.kt:58)
+	at app//kotlin.test.AssertionsKt.assertFalse(Unknown Source)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertFalse$default(Assertions.kt:56)
+	at app//kotlin.test.AssertionsKt.assertFalse$default(Unknown Source)
+	at app//io.amichne.konditional.flags.FlagsTests.version_bounds_inclusive(FlagsTests.kt:84)
+	at java.base@17.0.1/java.lang.reflect.Method.invoke(Method.java:568)
+	at java.base@17.0.1/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.1/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <testcase name="default_coverage_behaviour()" classname="io.amichne.konditional.flags.FlagsTests" time="0.025">
+    <failure message="org.opentest4j.AssertionFailedError: Observed 0.7016" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: Observed 0.7016
+	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:38)
+	at app//org.junit.jupiter.api.Assertions.fail(Assertions.java:138)
+	at app//kotlin.test.junit5.JUnit5Asserter.fail(JUnitSupport.kt:56)
+	at app//kotlin.test.Asserter$DefaultImpls.assertTrue(Assertions.kt:652)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertTrue(JUnitSupport.kt:30)
+	at app//kotlin.test.Asserter$DefaultImpls.assertTrue(Assertions.kt:662)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertTrue(JUnitSupport.kt:30)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertTrue(Assertions.kt:44)
+	at app//kotlin.test.AssertionsKt.assertTrue(Unknown Source)
+	at app//io.amichne.konditional.flags.FlagsTests.default_coverage_behaviour(FlagsTests.kt:105)
+	at java.base@17.0.1/java.lang.reflect.Method.invoke(Method.java:568)
+	at java.base@17.0.1/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.1/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <testcase name="determinism_same_id_same_result()" classname="io.amichne.konditional.flags.FlagsTests" time="0.001"/>
+  <testcase name="independence_across_flags()" classname="io.amichne.konditional.flags.FlagsTests" time="0.001"/>
+  <testcase name="thread_safe_registry_swap()" classname="io.amichne.konditional.flags.FlagsTests" time="0.016"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
