@@ -1,5 +1,7 @@
 package io.amichne.konditional.core
 
+import io.amichne.konditional.builders.FlagBuilder
+
 enum class SampleFeatureEnum(override val key: String) : FeatureFlag<SampleFeatureEnum> {
     ENABLE_COMPACT_CARDS("enable_compact_cards"),
     USE_LIGHTWEIGHT_HOME("use_lightweight_home"),

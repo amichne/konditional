@@ -1,9 +1,12 @@
-package io.amichne.konditional.core
+package io.amichne.konditional.builders
 
-import io.amichne.konditional.core.rules.Rule
+import io.amichne.konditional.core.FeatureFlag
+import io.amichne.konditional.core.FeatureFlagDsl
+import io.amichne.konditional.core.Flag
+import io.amichne.konditional.rules.Rule
 
 @FeatureFlagDsl
-class FlagBuilder(private val key: FeatureFlag) {
+class FlagBuilder(private val key: FeatureFlag<*>) {
     private val rules = mutableListOf<Rule>()
     private var defaultValue: Boolean = false
     private var defaultCoverage: Double? = null

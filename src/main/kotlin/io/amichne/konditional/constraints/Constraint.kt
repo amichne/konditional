@@ -1,6 +1,6 @@
 package io.amichne.konditional.constraints
 
-import io.amichne.konditional.core.rules.Rule
+import io.amichne.konditional.rules.Rule
 
 interface Constraint {
     fun matches(

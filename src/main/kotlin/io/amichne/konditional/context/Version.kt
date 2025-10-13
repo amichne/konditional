@@ -1,4 +1,4 @@
-package io.amichne.konditional.core.context
+package io.amichne.konditional.context
 
 // ---------- Semantic Version ----------
 data class Version(

@@ -1,10 +1,10 @@
-package io.amichne.konditional.core
+package io.amichne.konditional.builders
 
-import io.amichne.konditional.core.context.AppLocale
-import io.amichne.konditional.core.context.Platform
-import io.amichne.konditional.core.context.Version
-import io.amichne.konditional.core.rules.Rule
-import io.amichne.konditional.core.rules.versions.VersionRange
+import io.amichne.konditional.core.FeatureFlagDsl
+import io.amichne.konditional.context.AppLocale
+import io.amichne.konditional.context.Platform
+import io.amichne.konditional.rules.Rule
+import io.amichne.konditional.rules.versions.VersionRange
 
 @FeatureFlagDsl
 class RuleBuilder {
@@ -31,11 +31,8 @@ class RuleBuilder {
         platforms += ps
     }
 
-    fun versions(
-        min: String? = null,
-        max: String? = null
-    ) {
-        range = VersionRange(min?.let(Version::parse), max?.let(Version::parse))
+    fun versions(build: VersionBuilder.() -> Unit) {
+        range = VersionBuilder().apply(build).build()
     }
 
     fun note(text: String) {

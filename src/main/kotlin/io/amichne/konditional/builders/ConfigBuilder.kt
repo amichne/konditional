@@ -1,4 +1,9 @@
-package io.amichne.konditional.core
+package io.amichne.konditional.builders
+
+import io.amichne.konditional.core.FeatureFlag
+import io.amichne.konditional.core.FeatureFlagDsl
+import io.amichne.konditional.core.Flag
+import io.amichne.konditional.core.Flags
 
 @FeatureFlagDsl
 class ConfigBuilder private constructor(){

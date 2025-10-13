@@ -1,6 +1,6 @@
-package io.amichne.konditional.core.rules.versions
+package io.amichne.konditional.rules.versions
 
-import io.amichne.konditional.core.context.Version
+import io.amichne.konditional.context.Version
 
 data class RightBound(
     override val max: Version,

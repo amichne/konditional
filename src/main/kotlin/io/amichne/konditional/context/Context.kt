@@ -1,7 +1,6 @@
-package io.amichne.konditional.core.context
+package io.amichne.konditional.context
 
 import io.amichne.konditional.core.StableId
-import io.amichne.konditional.core.context.Version
 
 data class Context(
     val locale: AppLocale,

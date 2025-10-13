@@ -1,6 +1,6 @@
 package io.amichne.konditional.core
 
-import io.amichne.konditional.core.context.Context
+import io.amichne.konditional.context.Context
 import java.util.concurrent.atomic.AtomicReference
 
 object Flags {

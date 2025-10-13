@@ -1,16 +1,20 @@
 package io.amichne.konditional.core
 
-import io.amichne.konditional.core.context.AppLocale
-import io.amichne.konditional.core.context.Context
-import io.amichne.konditional.core.context.Platform
-import io.amichne.konditional.core.context.Version
-import io.amichne.konditional.core.ConfigBuilder.Companion.config
+import io.amichne.konditional.builders.ConfigBuilder.Companion.config
 import io.amichne.konditional.core.Flags.evaluate
+import io.amichne.konditional.context.AppLocale
+import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Platform
+import io.amichne.konditional.context.Version
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
-import kotlin.test.*
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class FlagsTests {
 
@@ -28,14 +32,19 @@ class FlagsTests {
                 default(false)
                 rule {
                     platforms(Platform.IOS)
-                    versions(min = "7.10.0")
+                    versions {
+                        atLeast(7, 10, 0)
+                    }
                     value(true, coveragePct = 50.0)
                 }
             }
             SampleFeatureEnum.DEFAULT_TRUE_EXCEPT_ANDROID_LEGACY withRules {
                 default(true)
                 rule {
-                    platforms(Platform.ANDROID); versions(max = "6.4.99")
+                    platforms(Platform.ANDROID)
+                    versions {
+                        atMost(6, 4, 99)
+                    }
                     value(false, coveragePct = 100.0)
                 }
             }
@@ -88,13 +97,235 @@ class FlagsTests {
         config {
             SampleFeatureEnum.VERSIONED withRules {
                 default(false)
-                rule { versions(min = "7.10.0", max = "7.12.3"); value(true, coveragePct = 100.0) }
+                rule {
+                    versions {
+                        atLeast(7, 10, 0)
+                        atMost(7, 12, 3)
+                    }
+                    value(true, coveragePct = 100.0)
+                }
             }
         }
 
         assertTrue(ctx("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", version = "7.10.0").evaluate(SampleFeatureEnum.VERSIONED))
         assertTrue(ctx("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", version = "7.12.3").evaluate(SampleFeatureEnum.VERSIONED))
         assertFalse(ctx("cccccccccccccccccccccccccccccccc", version = "7.12.4").evaluate(SampleFeatureEnum.VERSIONED))
+    }
+
+    @Test
+    fun version_range_atLeast_major_only() {
+        config {
+            SampleFeatureEnum.VERSIONED withRules {
+                default(false)
+                rule {
+                    versions {
+                        atLeast(7)  // >= 7.0.0
+                    }
+                    value(true, coveragePct = 100.0)
+                }
+            }
+        }
+
+        // Below minimum
+        assertFalse(ctx("10000000000000000000000000000001", version = "6.99.99").evaluate(SampleFeatureEnum.VERSIONED))
+        // Exactly at minimum
+        assertTrue(ctx("10000000000000000000000000000002", version = "7.0.0").evaluate(SampleFeatureEnum.VERSIONED))
+        // Above minimum
+        assertTrue(ctx("10000000000000000000000000000003", version = "7.0.1").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("10000000000000000000000000000004", version = "7.1.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("10000000000000000000000000000005", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED))
+    }
+
+    @Test
+    fun version_range_atLeast_major_minor() {
+        config {
+            SampleFeatureEnum.VERSIONED withRules {
+                default(false)
+                rule {
+                    versions {
+                        atLeast(7, 10)  // >= 7.10.0
+                    }
+                    value(true, coveragePct = 100.0)
+                }
+            }
+        }
+
+        // Below minimum
+        assertFalse(ctx("20000000000000000000000000000001", version = "7.9.99").evaluate(SampleFeatureEnum.VERSIONED))
+        // Exactly at minimum
+        assertTrue(ctx("20000000000000000000000000000002", version = "7.10.0").evaluate(SampleFeatureEnum.VERSIONED))
+        // Above minimum
+        assertTrue(ctx("20000000000000000000000000000003", version = "7.10.1").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("20000000000000000000000000000004", version = "7.11.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("20000000000000000000000000000005", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED))
+    }
+
+    @Test
+    fun version_range_atLeast_major_minor_patch() {
+        config {
+            SampleFeatureEnum.VERSIONED withRules {
+                default(false)
+                rule {
+                    versions {
+                        atLeast(7, 10, 5)  // >= 7.10.5
+                    }
+                    value(true, coveragePct = 100.0)
+                }
+            }
+        }
+
+        // Below minimum
+        assertFalse(ctx("30000000000000000000000000000001", version = "7.10.4").evaluate(SampleFeatureEnum.VERSIONED))
+        // Exactly at minimum
+        assertTrue(ctx("30000000000000000000000000000002", version = "7.10.5").evaluate(SampleFeatureEnum.VERSIONED))
+        // Above minimum
+        assertTrue(ctx("30000000000000000000000000000003", version = "7.10.6").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("30000000000000000000000000000004", version = "7.11.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("30000000000000000000000000000005", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED))
+    }
+
+    @Test
+    fun version_range_atMost_major_only() {
+        config {
+            SampleFeatureEnum.VERSIONED withRules {
+                default(false)
+                rule {
+                    versions {
+                        atMost(7)  // <= 7.0.0
+                    }
+                    value(true, coveragePct = 100.0)
+                }
+            }
+        }
+
+        // Below maximum
+        assertTrue(ctx("40000000000000000000000000000001", version = "6.99.99").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("40000000000000000000000000000002", version = "6.0.0").evaluate(SampleFeatureEnum.VERSIONED))
+        // Exactly at maximum
+        assertTrue(ctx("40000000000000000000000000000003", version = "7.0.0").evaluate(SampleFeatureEnum.VERSIONED))
+        // Above maximum
+        assertFalse(ctx("40000000000000000000000000000004", version = "7.0.1").evaluate(SampleFeatureEnum.VERSIONED))
+        assertFalse(ctx("40000000000000000000000000000005", version = "7.1.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertFalse(ctx("40000000000000000000000000000006", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED))
+    }
+
+    @Test
+    fun version_range_atMost_major_minor() {
+        config {
+            SampleFeatureEnum.VERSIONED withRules {
+                default(false)
+                rule {
+                    versions {
+                        atMost(7, 10)  // <= 7.10.0
+                    }
+                    value(true, coveragePct = 100.0)
+                }
+            }
+        }
+
+        // Below maximum
+        assertTrue(ctx("50000000000000000000000000000001", version = "7.9.99").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("50000000000000000000000000000002", version = "6.0.0").evaluate(SampleFeatureEnum.VERSIONED))
+        // Exactly at maximum
+        assertTrue(ctx("50000000000000000000000000000003", version = "7.10.0").evaluate(SampleFeatureEnum.VERSIONED))
+        // Above maximum
+        assertFalse(ctx("50000000000000000000000000000004", version = "7.10.1").evaluate(SampleFeatureEnum.VERSIONED))
+        assertFalse(ctx("50000000000000000000000000000005", version = "7.11.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertFalse(ctx("50000000000000000000000000000006", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED))
+    }
+
+    @Test
+    fun version_range_atMost_major_minor_patch() {
+        config {
+            SampleFeatureEnum.VERSIONED withRules {
+                default(false)
+                rule {
+                    versions {
+                        atMost(7, 10, 5)  // <= 7.10.5
+                    }
+                    value(true, coveragePct = 100.0)
+                }
+            }
+        }
+
+        // Below maximum
+        assertTrue(ctx("60000000000000000000000000000001", version = "7.10.4").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("60000000000000000000000000000002", version = "6.0.0").evaluate(SampleFeatureEnum.VERSIONED))
+        // Exactly at maximum
+        assertTrue(ctx("60000000000000000000000000000003", version = "7.10.5").evaluate(SampleFeatureEnum.VERSIONED))
+        // Above maximum
+        assertFalse(ctx("60000000000000000000000000000004", version = "7.10.6").evaluate(SampleFeatureEnum.VERSIONED))
+        assertFalse(ctx("60000000000000000000000000000005", version = "7.11.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertFalse(ctx("60000000000000000000000000000006", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED))
+    }
+
+    @Test
+    fun version_range_combined_different_granularities() {
+        config {
+            SampleFeatureEnum.VERSIONED withRules {
+                default(false)
+                rule {
+                    versions {
+                        atLeast(5)          // >= 5.0.0
+                        atMost(7, 10, 5)    // <= 7.10.5
+                    }
+                    value(true, coveragePct = 100.0)
+                }
+            }
+        }
+
+        // Below range
+        assertFalse(ctx("70000000000000000000000000000001", version = "4.99.99").evaluate(SampleFeatureEnum.VERSIONED))
+        // At lower bound
+        assertTrue(ctx("70000000000000000000000000000002", version = "5.0.0").evaluate(SampleFeatureEnum.VERSIONED))
+        // Within range
+        assertTrue(ctx("70000000000000000000000000000003", version = "6.0.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("70000000000000000000000000000004", version = "7.10.0").evaluate(SampleFeatureEnum.VERSIONED))
+        // At upper bound
+        assertTrue(ctx("70000000000000000000000000000005", version = "7.10.5").evaluate(SampleFeatureEnum.VERSIONED))
+        // Above range
+        assertFalse(ctx("70000000000000000000000000000006", version = "7.10.6").evaluate(SampleFeatureEnum.VERSIONED))
+        assertFalse(ctx("70000000000000000000000000000007", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED))
+    }
+
+    @Test
+    fun version_range_open_ended_minimum() {
+        config {
+            SampleFeatureEnum.VERSIONED withRules {
+                default(false)
+                rule {
+                    versions {
+                        atLeast(7, 10)  // >= 7.10.0, no maximum
+                    }
+                    value(true, coveragePct = 100.0)
+                }
+            }
+        }
+
+        assertFalse(ctx("80000000000000000000000000000001", version = "7.9.99").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("80000000000000000000000000000002", version = "7.10.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("80000000000000000000000000000003", version = "10.0.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("80000000000000000000000000000004", version = "100.0.0").evaluate(SampleFeatureEnum.VERSIONED))
+    }
+
+    @Test
+    fun version_range_open_ended_maximum() {
+        config {
+            SampleFeatureEnum.VERSIONED withRules {
+                default(false)
+                rule {
+                    versions {
+                        atMost(7, 10)  // <= 7.10.0, no minimum
+                    }
+                    value(true, coveragePct = 100.0)
+                }
+            }
+        }
+
+        assertTrue(ctx("90000000000000000000000000000001", version = "1.0.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("90000000000000000000000000000002", version = "7.10.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertFalse(ctx("90000000000000000000000000000003", version = "7.10.1").evaluate(SampleFeatureEnum.VERSIONED))
+        assertFalse(ctx("90000000000000000000000000000004", version = "10.0.0").evaluate(SampleFeatureEnum.VERSIONED))
     }
 
     @Test
@@ -158,7 +389,10 @@ class FlagsTests {
                 config {
                     SampleFeatureEnum.FIFTY_TRUE_US_IOS withRules {
                         default(false)
-                        rule { platforms(Platform.IOS); value(true, coveragePct = 50.0) }
+                        rule {
+                            platforms(Platform.IOS)
+                            value(true, coveragePct = 50.0)
+                        }
                     }
                 }
             }

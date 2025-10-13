@@ -11,7 +11,6 @@ package io.amichne.konditional.core
  * @constructor Create empty Stable id
  */
 sealed interface StableId {
-    val hexId: HexId
     val id: String
 
     companion object {
@@ -19,7 +18,7 @@ sealed interface StableId {
     }
 
     private object Factory {
-        data class Instance(override val hexId: HexId) : StableId {
+        data class Instance(val hexId: HexId) : StableId {
             override val id: String
                 get() = hexId.id
         }

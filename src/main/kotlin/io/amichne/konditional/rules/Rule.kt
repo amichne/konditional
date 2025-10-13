@@ -1,10 +1,10 @@
-package io.amichne.konditional.core.rules
+package io.amichne.konditional.rules
 
-import io.amichne.konditional.core.context.AppLocale
-import io.amichne.konditional.core.context.Context
-import io.amichne.konditional.core.context.Platform
-import io.amichne.konditional.core.rules.versions.Unbounded
-import io.amichne.konditional.core.rules.versions.VersionRange
+import io.amichne.konditional.context.AppLocale
+import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Platform
+import io.amichne.konditional.rules.versions.Unbounded
+import io.amichne.konditional.rules.versions.VersionRange
 
 // ---------- Rule / Flag model ----------
 data class Rule(
