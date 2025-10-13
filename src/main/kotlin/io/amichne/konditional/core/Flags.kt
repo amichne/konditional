@@ -6,18 +6,23 @@ import java.util.concurrent.atomic.AtomicReference
 object Flags {
     private val snapshot = AtomicReference(Registry(emptyMap()))
 
-    data class Registry(val flags: Map<FeatureFlagPlaceholder, Flag>)
+    data class Registry(val flags: Map<FeatureFlag<*>, Flag>)
 
     fun load(config: Registry) {
         snapshot.set(config)
     }
 
-    fun eval(
-        key: FeatureFlagPlaceholder,
-        ctx: Context
-    ): Boolean =
-        snapshot.get().flags[key]?.evaluate(ctx) ?: false
+    fun update(
+        flag: Flag
+    ) {
+        snapshot.get().flags.toMutableMap().let {
+            it.set(flag.key, flag)
+            snapshot.set(Registry(it))
+        }
+    }
 
-    fun evalAll(ctx: Context): Map<FeatureFlagPlaceholder, Boolean> =
-        snapshot.get().flags.mapValues { (_, f) -> f.evaluate(ctx) }
+    fun Context.evaluate(key: FeatureFlag<*>): Boolean = snapshot.get().flags[key]?.evaluate(this) ?: false
+
+    fun Context.evaluate(): Map<FeatureFlag<*>, Boolean> =
+        snapshot.get().flags.mapValues { (_, f) -> f.evaluate(this) }
 }

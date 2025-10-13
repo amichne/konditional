@@ -6,7 +6,7 @@ import java.security.MessageDigest
 import kotlin.math.roundToInt
 
 data class Flag(
-    val key: FeatureFlagPlaceholder, val rules: List<Rule>, val defaultValue: Boolean = false,
+    val key: FeatureFlag, val rules: List<Rule>, val defaultValue: Boolean = false,
     /**
      * Percentage of users that should receive `true` when no rules match.
      * Defaults to 100 when `defaultValue` is true, otherwise 0.

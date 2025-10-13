@@ -1,6 +1,6 @@
 package io.amichne.konditional.core
 
-enum class FeatureFlagPlaceholder(val key: String) {
+enum class SampleFeatureEnum(override val key: String) : FeatureFlag<SampleFeatureEnum> {
     ENABLE_COMPACT_CARDS("enable_compact_cards"),
     USE_LIGHTWEIGHT_HOME("use_lightweight_home"),
     FIFTY_TRUE_US_IOS("fifty_true_us_ios"),
@@ -9,4 +9,7 @@ enum class FeatureFlagPlaceholder(val key: String) {
     VERSIONED("versioned"),
     DEFAULT_FALSE_WITH_30_TRUE("default_false_with_30_true"),
     UNIFORM50("uniform50");
+
+    override fun withRules(fn: FlagBuilder.() -> Unit) =
+        update(FlagBuilder(key = this).apply(block = fn).build())
 }

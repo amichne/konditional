@@ -3,12 +3,12 @@ package io.amichne.konditional.example
 import io.amichne.konditional.core.context.AppLocale
 import io.amichne.konditional.core.context.Platform
 import io.amichne.konditional.core.ConfigBuilder.Companion.config
-import io.amichne.konditional.core.FeatureFlagPlaceholder
+import io.amichne.konditional.core.SampleFeatureEnum
 
 object ExampleFlags {
     init {
         config {
-            FeatureFlagPlaceholder.ENABLE_COMPACT_CARDS withRules {
+            SampleFeatureEnum.ENABLE_COMPACT_CARDS withRules {
                 default(value = false)
                 rule {
                     platforms(Platform.IOS)
@@ -22,7 +22,7 @@ object ExampleFlags {
                     note("IN Hindi full")
                 }
             }
-            FeatureFlagPlaceholder.USE_LIGHTWEIGHT_HOME withRules {
+            SampleFeatureEnum.USE_LIGHTWEIGHT_HOME withRules {
                 default(value = true, coverage = 100.0)
                 rule {
                     platforms(Platform.ANDROID)

@@ -2,18 +2,18 @@ package io.amichne.konditional.core
 
 @FeatureFlagDsl
 class ConfigBuilder private constructor(){
-    private val flags = LinkedHashMap<FeatureFlagPlaceholder, Flag>()
+    private val flags = LinkedHashMap<FeatureFlag<*>, Flag>()
 
     /**
      * Define a flag using infix syntax:
      * ```
-     * FeatureFlagPlaceholder.ENABLE_COMPACT_CARDS withRules {
+     * FeatureFlag.ENABLE_COMPACT_CARDS withRules {
      *     default(value = false)
      *     rule { ... }
      * }
      * ```
      */
-    infix fun FeatureFlagPlaceholder.withRules(build: FlagBuilder.() -> Unit) {
+    infix fun FeatureFlag<*>.withRules(build: FlagBuilder.() -> Unit) {
         require(this !in flags) { "Duplicate flag $this" }
         flags[this] = FlagBuilder(this).apply(build).build()
     }
@@ -22,8 +22,8 @@ class ConfigBuilder private constructor(){
 
     @FeatureFlagDsl
     companion object {
-        fun config(block: ConfigBuilder.() -> Unit): Unit =
-            ConfigBuilder().apply(block).build().let {
+        fun config(fn: ConfigBuilder.() -> Unit): Unit =
+            ConfigBuilder().apply(fn).build().let {
                 Flags.load(it)
             }
     }
