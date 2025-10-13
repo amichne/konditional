@@ -12,13 +12,14 @@ package io.amichne.konditional.core
  */
 sealed interface StableId {
     val id: String
+    val hexId: HexId
 
     companion object {
         fun of(id: String): StableId = Factory.Instance(HexId(id))
     }
 
     private object Factory {
-        data class Instance(val hexId: HexId) : StableId {
+        data class Instance(override val hexId: HexId) : StableId {
             override val id: String
                 get() = hexId.id
         }

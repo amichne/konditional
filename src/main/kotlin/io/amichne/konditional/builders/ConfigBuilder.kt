@@ -3,22 +3,23 @@ package io.amichne.konditional.builders
 import io.amichne.konditional.core.FeatureFlag
 import io.amichne.konditional.core.FeatureFlagDsl
 import io.amichne.konditional.core.Flag
+import io.amichne.konditional.core.Flaggable
 import io.amichne.konditional.core.Flags
 
 @FeatureFlagDsl
 class ConfigBuilder private constructor(){
-    private val flags = LinkedHashMap<FeatureFlag<*>, Flag>()
+    private val flags = LinkedHashMap<FeatureFlag<*>, Flag<*>>()
 
     /**
      * Define a flag using infix syntax:
      * ```
      * FeatureFlag.ENABLE_COMPACT_CARDS withRules {
-     *     default(value = false)
+     *     default(value = BooleanFlaggable.TRUE)
      *     rule { ... }
      * }
      * ```
      */
-    infix fun FeatureFlag<*>.withRules(build: FlagBuilder.() -> Unit) {
+    infix fun <T : Flaggable<T>> FeatureFlag<T>.withRules(build: FlagBuilder<T>.() -> Unit) {
         require(this !in flags) { "Duplicate flag $this" }
         flags[this] = FlagBuilder(this).apply(build).build()
     }

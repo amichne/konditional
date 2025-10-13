@@ -5,13 +5,20 @@ import io.amichne.konditional.rules.Rule
 import java.security.MessageDigest
 import kotlin.math.roundToInt
 
-data class Flag(
-    val key: FeatureFlag<*>, val rules: List<Rule>, val defaultValue: Boolean = false,
+data class Flag<T : Flaggable<T>>(
+    val key: FeatureFlag<T>,
+    val rules: List<Rule<T>>,
+    val defaultValue: T,
     /**
-     * Percentage of users that should receive `true` when no rules match.
-     * Defaults to 100 when `defaultValue` is true, otherwise 0.
+     * Value to return when user is not in the eligible segment for the default.
      */
-    val defaultEligibleSegment: Double = if (defaultValue) 100.0 else 0.0, val salt: String = "v1"
+    val fallbackValue: T,
+    /**
+     * Percentage of users that should receive the default value when no rules match.
+     * Defaults to 100.0.
+     */
+    val defaultEligibleSegment: Double = 100.0,
+    val salt: String = "v1"
 ) {
     init {
         require(defaultEligibleSegment in 0.0..100.0)
@@ -21,20 +28,20 @@ data class Flag(
         val shaDigestSpi: MessageDigest = requireNotNull(MessageDigest.getInstance("SHA-256"))
     }
 
-    private val orderedRules: List<Rule> =
-        rules.sortedWith(compareByDescending<Rule> { it.specificity() }.thenBy { it.note ?: "" })
+    private val orderedRules: List<Rule<T>> =
+        rules.sortedWith(compareByDescending<Rule<T>> { it.specificity() }.thenBy { it.note ?: "" })
 
-    fun evaluate(context: Context): Boolean {
+    fun evaluate(context: Context): T {
         for (rule in orderedRules) {
             when {
                 !rule.matches(context) -> continue
                 isInEligibleSegment(key.key, context.stableId.hexId, salt, rule.coveragePct) -> return rule.value
             }
         }
-        return when {
-            defaultEligibleSegment <= 0.0 -> false
-            defaultEligibleSegment >= 100.0 -> true
-            else -> isInEligibleSegment("${key.key}#default", context.stableId.hexId, salt, defaultEligibleSegment)
+        return if (isInEligibleSegment("${key.key}#default", context.stableId.hexId, salt, defaultEligibleSegment)) {
+            defaultValue
+        } else {
+            fallbackValue
         }
     }
 

@@ -3,13 +3,14 @@ package io.amichne.konditional.rules
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
+import io.amichne.konditional.core.Flaggable
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
 // ---------- Rule / Flag model ----------
-data class Rule(
-    val value: Boolean,
-    val coveragePct: Double = if (value) 100.0 else 0.0, // [0,100]
+data class Rule<T : Flaggable<T>>(
+    val value: T,
+    val coveragePct: Double = 100.0, // [0,100]
     val locales: Set<AppLocale> = emptySet(),
     val platforms: Set<Platform> = emptySet(),
     val versionRange: VersionRange = Unbounded,

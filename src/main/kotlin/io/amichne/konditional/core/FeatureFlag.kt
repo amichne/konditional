@@ -2,10 +2,10 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.builders.FlagBuilder
 
-interface FeatureFlag<E : Enum<E>> {
+interface FeatureFlag<T : Flaggable<T>> {
     val key: String
 
-    fun withRules(build: FlagBuilder.() -> Unit)
+    fun withRules(build: FlagBuilder<T>.() -> Unit)
 
-    fun update(flag: Flag) = Flags.update(flag)
+    fun update(flag: Flag<T>) = Flags.update(flag)
 }
