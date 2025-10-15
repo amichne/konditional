@@ -8,9 +8,28 @@ import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
 // ---------- Rule / Flag model ----------
-data class Rule<T : Flaggable<T>>(
+
+/**
+ * Rule
+ *
+ * @param T
+ * @param S
+ * @property value
+ * @property coveragePct
+ * @property locales
+ * @property platforms
+ * @property versionRange
+ * @property note
+ * @constructor Create empty Rule
+ *
+ * TODO - Update to S, can bubble up through builder, ultimately we resolve this to <S> in Flag
+ *
+ * @see io.amichne.konditional.core.Flags
+ */
+data class Rule<T : Flaggable<S>, S : Any>(
     val value: T,
-    val coveragePct: Double = 100.0, // [0,100]
+    // see io/amichne/konditional/core/Flags.kt:26
+    val coveragePct: Double = 100.0,
     val locales: Set<AppLocale> = emptySet(),
     val platforms: Set<Platform> = emptySet(),
     val versionRange: VersionRange = Unbounded,

@@ -5,9 +5,9 @@ import io.amichne.konditional.rules.Rule
 import java.security.MessageDigest
 import kotlin.math.roundToInt
 
-data class Flag<T : Flaggable<T>>(
-    val key: FeatureFlag<T>,
-    val rules: List<Rule<T>>,
+data class Flag<T : Flaggable<S>, S : Any>(
+    val key: FeatureFlag<T, S>,
+    val rules: List<Rule<T, S>>,
     val defaultValue: T,
     /**
      * Value to return when user is not in the eligible segment for the default.
@@ -28,8 +28,8 @@ data class Flag<T : Flaggable<T>>(
         val shaDigestSpi: MessageDigest = requireNotNull(MessageDigest.getInstance("SHA-256"))
     }
 
-    private val orderedRules: List<Rule<T>> =
-        rules.sortedWith(compareByDescending<Rule<T>> { it.specificity() }.thenBy { it.note ?: "" })
+    private val orderedRules: List<Rule<T, S>> =
+        rules.sortedWith(compareByDescending<Rule<T, S>> { it.specificity() }.thenBy { it.note ?: "" })
 
     fun evaluate(context: Context): T {
         for (rule in orderedRules) {

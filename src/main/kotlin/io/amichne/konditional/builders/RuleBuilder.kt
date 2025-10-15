@@ -8,9 +8,9 @@ import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.VersionRange
 
 @FeatureFlagDsl
-class RuleBuilder<T : Flaggable<T>> {
-    private var value: T? = null
-    private var coverage: Double? = null
+class RuleBuilder<T : Flaggable<S>, S : Any> {
+    var value: T? = null
+    var rampUp: Double? = null
     private val locales = linkedSetOf<AppLocale>()
     private val platforms = linkedSetOf<Platform>()
     private var range: VersionRange = VersionRange()
@@ -21,7 +21,12 @@ class RuleBuilder<T : Flaggable<T>> {
         coveragePct: Double? = null
     ) {
         this@RuleBuilder.value = value
-        coverage = coveragePct
+        rampUp = coveragePct
+    }
+
+    fun rampup(function: () -> Double) = function().also {
+        require(it in 0.0..100.0) { "Ramp Up out of range: $it" }
+        this@RuleBuilder.rampUp = it
     }
 
     fun locales(vararg appLocales: AppLocale) {
@@ -40,11 +45,11 @@ class RuleBuilder<T : Flaggable<T>> {
         note = text
     }
 
-    fun build(): Rule<T> {
+    fun build(): Rule<T, S> {
         requireNotNull(value) { "Rule value must be set" }
         return Rule(
             value = value!!,
-            coveragePct = coverage ?: 100.0,
+            coveragePct = rampUp ?: 100.0,
             locales = locales,
             platforms = platforms,
             versionRange = range,
