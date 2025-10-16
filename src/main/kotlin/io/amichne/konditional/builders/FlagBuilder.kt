@@ -7,8 +7,8 @@ import io.amichne.konditional.core.Flaggable
 import io.amichne.konditional.rules.Rule
 
 @FeatureFlagDsl
-class FlagBuilder<T : Flaggable<T>>(private val key: FeatureFlag<T>) {
-    private val rules = mutableListOf<Rule<T>>()
+class FlagBuilder<S : Any, T : Flaggable<S>>(private val key: FeatureFlag<T, S>) {
+    private val rules = mutableListOf<Rule<T, S>>()
     private var defaultValue: T? = null
     private var fallbackValue: T? = null
     private var defaultCoverage: Double? = null
@@ -28,11 +28,11 @@ class FlagBuilder<T : Flaggable<T>>(private val key: FeatureFlag<T>) {
         salt = value
     }
 
-    fun rule(build: RuleBuilder<T>.() -> Unit) {
-        rules += RuleBuilder<T>().apply(build).build()
+    fun rule(build: RuleBuilder<T, S>.() -> Unit) {
+        rules += RuleBuilder<T, S>().apply(build).build()
     }
 
-    fun build(): Flag<T> {
+    fun build(): Flag<T, S> {
         requireNotNull(defaultValue) { "Default value must be set" }
         return Flag(
             key = key,

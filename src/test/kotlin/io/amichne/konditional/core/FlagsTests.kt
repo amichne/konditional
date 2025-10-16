@@ -1,11 +1,11 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.builders.ConfigBuilder.Companion.config
-import io.amichne.konditional.core.Flags.evaluate
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.core.Flags.evaluate
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -14,14 +14,9 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class FlagsTests {
-
-    // Helper extension to get boolean value from BooleanFlaggable result
-    private fun BooleanFlaggable?.asBoolean() = this?.value ?: false
-
     private fun ctx(
         idHex: String,
         locale: AppLocale = AppLocale.EN_US,
@@ -93,7 +88,7 @@ class FlagsTests {
         }
         val id = "0123456789abcdef0123456789abcdef"
         val result = ctx(id).evaluate(SampleFeatureEnum.PRIORITY_CHECK)
-        assertTrue(result.asBoolean()) // specific 100% rule should win
+        assertTrue(result) // specific 100% rule should win
     }
 
     @Test
@@ -111,9 +106,9 @@ class FlagsTests {
             }
         }
 
-        assertTrue(ctx("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", version = "7.10.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertTrue(ctx("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", version = "7.12.3").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertFalse(ctx("cccccccccccccccccccccccccccccccc", version = "7.12.4").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertTrue(ctx("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", version = "7.10.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", version = "7.12.3").evaluate(SampleFeatureEnum.VERSIONED))
+        assertFalse(ctx("cccccccccccccccccccccccccccccccc", version = "7.12.4").evaluate(SampleFeatureEnum.VERSIONED))
     }
 
     @Test
@@ -131,13 +126,13 @@ class FlagsTests {
         }
 
         // Below minimum
-        assertFalse(ctx("10000000000000000000000000000001", version = "6.99.99").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertFalse(ctx("10000000000000000000000000000001", version = "6.99.99").evaluate(SampleFeatureEnum.VERSIONED))
         // Exactly at minimum
-        assertTrue(ctx("10000000000000000000000000000002", version = "7.0.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertTrue(ctx("10000000000000000000000000000002", version = "7.0.0").evaluate(SampleFeatureEnum.VERSIONED))
         // Above minimum
-        assertTrue(ctx("10000000000000000000000000000003", version = "7.0.1").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertTrue(ctx("10000000000000000000000000000004", version = "7.1.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertTrue(ctx("10000000000000000000000000000005", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertTrue(ctx("10000000000000000000000000000003", version = "7.0.1").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("10000000000000000000000000000004", version = "7.1.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("10000000000000000000000000000005", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED))
     }
 
     @Test
@@ -155,13 +150,13 @@ class FlagsTests {
         }
 
         // Below minimum
-        assertFalse(ctx("20000000000000000000000000000001", version = "7.9.99").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertFalse(ctx("20000000000000000000000000000001", version = "7.9.99").evaluate(SampleFeatureEnum.VERSIONED))
         // Exactly at minimum
-        assertTrue(ctx("20000000000000000000000000000002", version = "7.10.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertTrue(ctx("20000000000000000000000000000002", version = "7.10.0").evaluate(SampleFeatureEnum.VERSIONED))
         // Above minimum
-        assertTrue(ctx("20000000000000000000000000000003", version = "7.10.1").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertTrue(ctx("20000000000000000000000000000004", version = "7.11.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertTrue(ctx("20000000000000000000000000000005", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertTrue(ctx("20000000000000000000000000000003", version = "7.10.1").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("20000000000000000000000000000004", version = "7.11.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("20000000000000000000000000000005", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED))
     }
 
     @Test
@@ -179,13 +174,13 @@ class FlagsTests {
         }
 
         // Below minimum
-        assertFalse(ctx("30000000000000000000000000000001", version = "7.10.4").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertFalse(ctx("30000000000000000000000000000001", version = "7.10.4").evaluate(SampleFeatureEnum.VERSIONED))
         // Exactly at minimum
-        assertTrue(ctx("30000000000000000000000000000002", version = "7.10.5").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertTrue(ctx("30000000000000000000000000000002", version = "7.10.5").evaluate(SampleFeatureEnum.VERSIONED))
         // Above minimum
-        assertTrue(ctx("30000000000000000000000000000003", version = "7.10.6").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertTrue(ctx("30000000000000000000000000000004", version = "7.11.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertTrue(ctx("30000000000000000000000000000005", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertTrue(ctx("30000000000000000000000000000003", version = "7.10.6").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("30000000000000000000000000000004", version = "7.11.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("30000000000000000000000000000005", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED))
     }
 
     @Test
@@ -203,14 +198,14 @@ class FlagsTests {
         }
 
         // Below maximum
-        assertTrue(ctx("40000000000000000000000000000001", version = "6.99.99").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertTrue(ctx("40000000000000000000000000000002", version = "6.0.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertTrue(ctx("40000000000000000000000000000001", version = "6.99.99").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("40000000000000000000000000000002", version = "6.0.0").evaluate(SampleFeatureEnum.VERSIONED))
         // Exactly at maximum
-        assertTrue(ctx("40000000000000000000000000000003", version = "7.0.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertTrue(ctx("40000000000000000000000000000003", version = "7.0.0").evaluate(SampleFeatureEnum.VERSIONED))
         // Above maximum
-        assertFalse(ctx("40000000000000000000000000000004", version = "7.0.1").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertFalse(ctx("40000000000000000000000000000005", version = "7.1.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertFalse(ctx("40000000000000000000000000000006", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertFalse(ctx("40000000000000000000000000000004", version = "7.0.1").evaluate(SampleFeatureEnum.VERSIONED))
+        assertFalse(ctx("40000000000000000000000000000005", version = "7.1.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertFalse(ctx("40000000000000000000000000000006", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED))
     }
 
     @Test
@@ -228,14 +223,14 @@ class FlagsTests {
         }
 
         // Below maximum
-        assertTrue(ctx("50000000000000000000000000000001", version = "7.9.99").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertTrue(ctx("50000000000000000000000000000002", version = "6.0.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertTrue(ctx("50000000000000000000000000000001", version = "7.9.99").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("50000000000000000000000000000002", version = "6.0.0").evaluate(SampleFeatureEnum.VERSIONED))
         // Exactly at maximum
-        assertTrue(ctx("50000000000000000000000000000003", version = "7.10.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertTrue(ctx("50000000000000000000000000000003", version = "7.10.0").evaluate(SampleFeatureEnum.VERSIONED))
         // Above maximum
-        assertFalse(ctx("50000000000000000000000000000004", version = "7.10.1").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertFalse(ctx("50000000000000000000000000000005", version = "7.11.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertFalse(ctx("50000000000000000000000000000006", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertFalse(ctx("50000000000000000000000000000004", version = "7.10.1").evaluate(SampleFeatureEnum.VERSIONED))
+        assertFalse(ctx("50000000000000000000000000000005", version = "7.11.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertFalse(ctx("50000000000000000000000000000006", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED))
     }
 
     @Test
@@ -253,14 +248,14 @@ class FlagsTests {
         }
 
         // Below maximum
-        assertTrue(ctx("60000000000000000000000000000001", version = "7.10.4").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertTrue(ctx("60000000000000000000000000000002", version = "6.0.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertTrue(ctx("60000000000000000000000000000001", version = "7.10.4").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("60000000000000000000000000000002", version = "6.0.0").evaluate(SampleFeatureEnum.VERSIONED))
         // Exactly at maximum
-        assertTrue(ctx("60000000000000000000000000000003", version = "7.10.5").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertTrue(ctx("60000000000000000000000000000003", version = "7.10.5").evaluate(SampleFeatureEnum.VERSIONED))
         // Above maximum
-        assertFalse(ctx("60000000000000000000000000000004", version = "7.10.6").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertFalse(ctx("60000000000000000000000000000005", version = "7.11.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertFalse(ctx("60000000000000000000000000000006", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertFalse(ctx("60000000000000000000000000000004", version = "7.10.6").evaluate(SampleFeatureEnum.VERSIONED))
+        assertFalse(ctx("60000000000000000000000000000005", version = "7.11.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertFalse(ctx("60000000000000000000000000000006", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED))
     }
 
     @Test
@@ -279,17 +274,17 @@ class FlagsTests {
         }
 
         // Below range
-        assertFalse(ctx("70000000000000000000000000000001", version = "4.99.99").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertFalse(ctx("70000000000000000000000000000001", version = "4.99.99").evaluate(SampleFeatureEnum.VERSIONED))
         // At lower bound
-        assertTrue(ctx("70000000000000000000000000000002", version = "5.0.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertTrue(ctx("70000000000000000000000000000002", version = "5.0.0").evaluate(SampleFeatureEnum.VERSIONED))
         // Within range
-        assertTrue(ctx("70000000000000000000000000000003", version = "6.0.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertTrue(ctx("70000000000000000000000000000004", version = "7.10.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertTrue(ctx("70000000000000000000000000000003", version = "6.0.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("70000000000000000000000000000004", version = "7.10.0").evaluate(SampleFeatureEnum.VERSIONED))
         // At upper bound
-        assertTrue(ctx("70000000000000000000000000000005", version = "7.10.5").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertTrue(ctx("70000000000000000000000000000005", version = "7.10.5").evaluate(SampleFeatureEnum.VERSIONED))
         // Above range
-        assertFalse(ctx("70000000000000000000000000000006", version = "7.10.6").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertFalse(ctx("70000000000000000000000000000007", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertFalse(ctx("70000000000000000000000000000006", version = "7.10.6").evaluate(SampleFeatureEnum.VERSIONED))
+        assertFalse(ctx("70000000000000000000000000000007", version = "8.0.0").evaluate(SampleFeatureEnum.VERSIONED))
     }
 
     @Test
@@ -306,10 +301,10 @@ class FlagsTests {
             }
         }
 
-        assertFalse(ctx("80000000000000000000000000000001", version = "7.9.99").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertTrue(ctx("80000000000000000000000000000002", version = "7.10.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertTrue(ctx("80000000000000000000000000000003", version = "10.0.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertTrue(ctx("80000000000000000000000000000004", version = "100.0.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertFalse(ctx("80000000000000000000000000000001", version = "7.9.99").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("80000000000000000000000000000002", version = "7.10.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("80000000000000000000000000000003", version = "10.0.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("80000000000000000000000000000004", version = "100.0.0").evaluate(SampleFeatureEnum.VERSIONED))
     }
 
     @Test
@@ -326,10 +321,10 @@ class FlagsTests {
             }
         }
 
-        assertTrue(ctx("90000000000000000000000000000001", version = "1.0.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertTrue(ctx("90000000000000000000000000000002", version = "7.10.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertFalse(ctx("90000000000000000000000000000003", version = "7.10.1").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
-        assertFalse(ctx("90000000000000000000000000000004", version = "10.0.0").evaluate(SampleFeatureEnum.VERSIONED).asBoolean())
+        assertTrue(ctx("90000000000000000000000000000001", version = "1.0.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertTrue(ctx("90000000000000000000000000000002", version = "7.10.0").evaluate(SampleFeatureEnum.VERSIONED))
+        assertFalse(ctx("90000000000000000000000000000003", version = "7.10.1").evaluate(SampleFeatureEnum.VERSIONED))
+        assertFalse(ctx("90000000000000000000000000000004", version = "10.0.0").evaluate(SampleFeatureEnum.VERSIONED))
     }
 
     @Test
@@ -347,7 +342,7 @@ class FlagsTests {
             val id = "%032x".format(i)
             if (ctx(id, version = "1.0.0").evaluate(
                     SampleFeatureEnum.DEFAULT_FALSE_WITH_30_TRUE
-                ).asBoolean()
+                )
             ) trues++
         }
         val pct = trues.toDouble() / N
@@ -367,7 +362,7 @@ class FlagsTests {
         var trues = 0
         for (i in 0 until N) {
             val id = Random.nextBytes(16).joinToString("") { "%02x".format(it) }
-            if (ctx(id).evaluate(SampleFeatureEnum.UNIFORM50).asBoolean()) trues++
+            if (ctx(id).evaluate(SampleFeatureEnum.UNIFORM50)) trues++
         }
         val pct = trues.toDouble() / N
         assertTrue(pct in 0.47..0.53, "Observed $pct")
@@ -429,8 +424,8 @@ class FlagsTests {
         val result1 = ctx(id).evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
         val result2 = ctx(id).evaluate(SampleFeatureEnum.USE_LIGHTWEIGHT_HOME)
 
-        assertTrue(result1.asBoolean()) // Should be true for US iOS at 100% coverage
-        assertTrue(result2.asBoolean()) // Should be true (default true)
+        assertTrue(result1) // Should be true for US iOS at 100% coverage
+        assertTrue(result2) // Should be true (default true)
 
         // Verify evaluate returns a map withRules FeatureFlag keys
         val allResults = ctx(id).evaluate()

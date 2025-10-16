@@ -8,7 +8,7 @@ import io.amichne.konditional.core.Flags
 
 @FeatureFlagDsl
 class ConfigBuilder private constructor(){
-    private val flags = LinkedHashMap<FeatureFlag<*>, Flag<*>>()
+    private val flags = LinkedHashMap<FeatureFlag<*, *>, Flag<*, *>>()
 
     /**
      * Define a flag using infix syntax:
@@ -19,7 +19,7 @@ class ConfigBuilder private constructor(){
      * }
      * ```
      */
-    infix fun <T : Flaggable<T>> FeatureFlag<T>.withRules(build: FlagBuilder<T>.() -> Unit) {
+    infix fun <T : Flaggable<S>, S : Any> FeatureFlag<T, S>.withRules(build: FlagBuilder<S, T>.() -> Unit) {
         require(this !in flags) { "Duplicate flag $this" }
         flags[this] = FlagBuilder(this).apply(build).build()
     }
