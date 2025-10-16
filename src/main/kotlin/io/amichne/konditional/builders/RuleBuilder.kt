@@ -1,30 +1,27 @@
 package io.amichne.konditional.builders
 
+import io.amichne.konditional.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.core.FeatureFlagDsl
-import io.amichne.konditional.core.Flaggable
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.VersionRange
 
 @FeatureFlagDsl
-class RuleBuilder<T : Flaggable<S>, S : Any> {
-    var value: T? = null
+/**
+ * A builder class for constructing rules with a specific state type.
+ *
+ * @param S The type of the state that the rules will operate on. It must be a non-nullable type.
+ */
+class RuleBuilder {
     var rampUp: Double? = null
     private val locales = linkedSetOf<AppLocale>()
     private val platforms = linkedSetOf<Platform>()
     private var range: VersionRange = VersionRange()
     private var note: String? = null
 
-    fun value(
-        value: T,
-        coveragePct: Double? = null
-    ) {
-        this@RuleBuilder.value = value
-        rampUp = coveragePct
-    }
-
-    fun rampup(function: () -> Double) = function().also {
+    @Deprecated("This method is deprecated and will be removed in future versions.")
+    fun rampUp(function: () -> Double) = function().also {
         require(it in 0.0..100.0) { "Ramp Up out of range: $it" }
         this@RuleBuilder.rampUp = it
     }
@@ -37,18 +34,16 @@ class RuleBuilder<T : Flaggable<S>, S : Any> {
         platforms += ps
     }
 
-    fun versions(build: VersionBuilder.() -> Unit) {
-        range = VersionBuilder().apply(build).build()
+    fun version(build: VersionRangeBuilder.() -> Unit) {
+        range = VersionRangeBuilder().apply(build).build()
     }
 
     fun note(text: String) {
         note = text
     }
 
-    fun build(): Rule<T, S> {
-        requireNotNull(value) { "Rule value must be set" }
+    fun build(): Rule {
         return Rule(
-            value = value!!,
             coveragePct = rampUp ?: 100.0,
             locales = locales,
             platforms = platforms,

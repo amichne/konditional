@@ -20,5 +20,7 @@ data class Version(
             val c = p.getOrNull(2)?.toIntOrNull() ?: 0
             return Version(m, n, c)
         }
+
+        val default = Version(-1, -1, -1)
     }
 }

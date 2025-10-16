@@ -15,6 +15,14 @@ sealed interface StableId {
     val hexId: HexId
 
     companion object {
+        /**
+         * The sole creator for [StableId]. Requires a valid string identifier.
+         *
+         * @param id The string representation of the stable identifier.
+         * @return A [StableId] instance with the provided identifier.
+         *
+         * @throws IllegalArgumentException if the provided id is not a valid hexadecimal string.
+         */
         fun of(id: String): StableId = Factory.Instance(HexId(id))
     }
 

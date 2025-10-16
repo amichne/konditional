@@ -3,7 +3,6 @@ package io.amichne.konditional.rules
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.core.Flaggable
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
@@ -26,14 +25,13 @@ import io.amichne.konditional.rules.versions.VersionRange
  *
  * @see io.amichne.konditional.core.Flags
  */
-data class Rule<T : Flaggable<S>, S : Any>(
-    val value: T,
+data class Rule(
     // see io/amichne/konditional/core/Flags.kt:26
     val coveragePct: Double = 100.0,
     val locales: Set<AppLocale> = emptySet(),
     val platforms: Set<Platform> = emptySet(),
     val versionRange: VersionRange = Unbounded,
-    val note: String? = null
+    val note: String? = null,
 ) {
     init {
         require(coveragePct in 0.0..100.0) { "coveragePct out of range" }
