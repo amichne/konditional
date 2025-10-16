@@ -9,6 +9,11 @@ class VersionBuilder {
     private var minVersion: Version? = null
     private var maxVersion: Version? = null
 
+    var major: Int = 0
+    var minor: Int = 0
+    var patch: Int = 0
+
+
     /**
      * Sets the minimum version constraint to at least the specified major version.
      * e.g., atLeast(2) means >= 2.0.0

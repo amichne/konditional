@@ -6,6 +6,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Flags.evaluate
+import io.amichne.konditional.example.SampleFeatureEnum
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -28,30 +29,28 @@ class FlagsTests {
     fun loadSample() {
         config {
             SampleFeatureEnum.FIFTY_TRUE_US_IOS withRules {
-                default(BooleanFlaggable.FALSE)
+                default(false)
                 rule {
                     platforms(Platform.IOS)
-                    versions {
-                        atLeast(7, 10, 0)
+                    version {
+                        leftBound(7, 10, 0)
                     }
-                    value(BooleanFlaggable.TRUE, coveragePct = 50.0)
-                }
+                } gives true
             }
             SampleFeatureEnum.DEFAULT_TRUE_EXCEPT_ANDROID_LEGACY withRules {
-                default(BooleanFlaggable.TRUE)
+                default(true)
                 rule {
                     platforms(Platform.ANDROID)
-                    versions {
-                        atMost(6, 4, 99)
+                    version {
+                        rightBound(6, 4, 99)
                     }
-                    value(BooleanFlaggable.FALSE, coveragePct = 100.0)
-                }
+                } gives false
             }
         }
     }
 
     @Test
-    fun determinism_same_id_same_result() {
+    fun `Given same Id, When evaluating flag, Then result is deterministic`() {
         val id = "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"
         val a = ctx(id).evaluate(SampleFeatureEnum.FIFTY_TRUE_US_IOS)
         repeat(100) {
@@ -60,49 +59,42 @@ class FlagsTests {
     }
 
     @Test
-    fun independence_across_flags() {
+    fun `Given same Id, When evaluating different flags, Then results are independent`() {
         val id = "ffffffffffffffffffffffffffffffff"
-        // Different keys imply independent buckets; results can differ
         val a = ctx(id).evaluate(SampleFeatureEnum.FIFTY_TRUE_US_IOS)
         val b = ctx(id).evaluate(SampleFeatureEnum.DEFAULT_TRUE_EXCEPT_ANDROID_LEGACY)
-        // Not asserting equality; asserting both calls succeed deterministically
         assertEquals(a, ctx(id).evaluate(SampleFeatureEnum.FIFTY_TRUE_US_IOS))
         assertEquals(b, ctx(id).evaluate(SampleFeatureEnum.DEFAULT_TRUE_EXCEPT_ANDROID_LEGACY))
     }
 
     @Test
-    fun specificity_priority_and_fallthrough() {
+    fun `Given multiple rules, When specificity differs, Then most specific rule wins`() {
         config {
             SampleFeatureEnum.PRIORITY_CHECK withRules {
-                default(BooleanFlaggable.FALSE)
-                // Broad rule: US any platform true 10%
+                default(false)
                 rule {
-                    value(BooleanFlaggable.TRUE, coveragePct = 10.0)
-                }
-                // More specific: US + iOS true 100%
+                } gives true
                 rule {
                     platforms(Platform.IOS)
-                    value(BooleanFlaggable.TRUE, coveragePct = 100.0)
-                }
+                } gives true
             }
         }
         val id = "0123456789abcdef0123456789abcdef"
         val result = ctx(id).evaluate(SampleFeatureEnum.PRIORITY_CHECK)
-        assertTrue(result) // specific 100% rule should win
+        assertTrue(result)
     }
 
     @Test
-    fun version_bounds_inclusive() {
+    fun `Given version bounds, When inclusive, Then correctly matches edges`() {
         config {
             SampleFeatureEnum.VERSIONED withRules {
-                default(BooleanFlaggable.FALSE)
+                default(false)
                 rule {
-                    versions {
-                        atLeast(7, 10, 0)
-                        atMost(7, 12, 3)
+                    version {
+                        leftBound(7, 10, 0)
+                        rightBound(7, 12, 3)
                     }
-                    value(BooleanFlaggable.TRUE, coveragePct = 100.0)
-                }
+                } gives true
             }
         }
 
@@ -112,16 +104,15 @@ class FlagsTests {
     }
 
     @Test
-    fun version_range_atLeast_major_only() {
+    fun `Given at least major version, When evaluating, Then correctly matches range`() {
         config {
             SampleFeatureEnum.VERSIONED withRules {
-                default(BooleanFlaggable.FALSE)
+                default(false)
                 rule {
-                    versions {
-                        atLeast(7)  // >= 7.0.0
+                    version {
+                        leftBound(7)  // >= 7.0.0
                     }
-                    value(BooleanFlaggable.TRUE, coveragePct = 100.0)
-                }
+                } gives true
             }
         }
 
@@ -136,16 +127,15 @@ class FlagsTests {
     }
 
     @Test
-    fun version_range_atLeast_major_minor() {
+    fun `Given at least major minor version, When evaluating, Then correctly matches range`() {
         config {
             SampleFeatureEnum.VERSIONED withRules {
-                default(BooleanFlaggable.FALSE)
+                default(false)
                 rule {
-                    versions {
-                        atLeast(7, 10)  // >= 7.10.0
+                    version {
+                        leftBound(7, 10)  // >= 7.10.0
                     }
-                    value(BooleanFlaggable.TRUE, coveragePct = 100.0)
-                }
+                } gives true
             }
         }
 
@@ -160,16 +150,15 @@ class FlagsTests {
     }
 
     @Test
-    fun version_range_atLeast_major_minor_patch() {
+    fun `Given at least major minor patch version, When evaluating, Then correctly matches range`() {
         config {
             SampleFeatureEnum.VERSIONED withRules {
-                default(BooleanFlaggable.FALSE)
+                default(false)
                 rule {
-                    versions {
-                        atLeast(7, 10, 5)  // >= 7.10.5
+                    version {
+                        leftBound(7, 10, 5)  // >= 7.10.5
                     }
-                    value(BooleanFlaggable.TRUE, coveragePct = 100.0)
-                }
+                } gives true
             }
         }
 
@@ -184,16 +173,15 @@ class FlagsTests {
     }
 
     @Test
-    fun version_range_atMost_major_only() {
+    fun `Given at most major version, When evaluating, Then correctly matches range`() {
         config {
             SampleFeatureEnum.VERSIONED withRules {
-                default(BooleanFlaggable.FALSE)
+                default(false)
                 rule {
-                    versions {
-                        atMost(7)  // <= 7.0.0
+                    version {
+                        rightBound(7)  // <= 7.0.0
                     }
-                    value(BooleanFlaggable.TRUE, coveragePct = 100.0)
-                }
+                } gives true
             }
         }
 
@@ -209,16 +197,15 @@ class FlagsTests {
     }
 
     @Test
-    fun version_range_atMost_major_minor() {
+    fun `Given at most major minor version, When evaluating, Then correctly matches range`() {
         config {
             SampleFeatureEnum.VERSIONED withRules {
-                default(BooleanFlaggable.FALSE)
+                default(false)
                 rule {
-                    versions {
-                        atMost(7, 10)  // <= 7.10.0
+                    version {
+                        rightBound(7, 10)  // <= 7.10.0
                     }
-                    value(BooleanFlaggable.TRUE, coveragePct = 100.0)
-                }
+                } gives true
             }
         }
 
@@ -234,16 +221,15 @@ class FlagsTests {
     }
 
     @Test
-    fun version_range_atMost_major_minor_patch() {
+    fun `Given at most major minor patch version, When evaluating, Then correctly matches range`() {
         config {
             SampleFeatureEnum.VERSIONED withRules {
-                default(BooleanFlaggable.FALSE)
+                default(false)
                 rule {
-                    versions {
-                        atMost(7, 10, 5)  // <= 7.10.5
+                    version {
+                        rightBound(7, 10, 5)  // <= 7.10.5
                     }
-                    value(BooleanFlaggable.TRUE, coveragePct = 100.0)
-                }
+                } gives true
             }
         }
 
@@ -259,17 +245,16 @@ class FlagsTests {
     }
 
     @Test
-    fun version_range_combined_different_granularities() {
+    fun `Given combined version granularities, When evaluating, Then correctly matches range`() {
         config {
             SampleFeatureEnum.VERSIONED withRules {
-                default(BooleanFlaggable.FALSE)
+                default(false)
                 rule {
-                    versions {
-                        atLeast(5)          // >= 5.0.0
-                        atMost(7, 10, 5)    // <= 7.10.5
+                    version {
+                        leftBound(5)          // >= 5.0.0
+                        rightBound(7, 10, 5)    // <= 7.10.5
                     }
-                    value(BooleanFlaggable.TRUE, coveragePct = 100.0)
-                }
+                } gives true
             }
         }
 
@@ -288,16 +273,15 @@ class FlagsTests {
     }
 
     @Test
-    fun version_range_open_ended_minimum() {
+    fun `Given open ended minimum version, When evaluating, Then correctly matches range`() {
         config {
             SampleFeatureEnum.VERSIONED withRules {
-                default(BooleanFlaggable.FALSE)
+                default(false)
                 rule {
-                    versions {
-                        atLeast(7, 10)  // >= 7.10.0, no maximum
+                    version {
+                        leftBound(7, 10)  // >= 7.10.0, no maximum
                     }
-                    value(BooleanFlaggable.TRUE, coveragePct = 100.0)
-                }
+                } gives true
             }
         }
 
@@ -308,16 +292,15 @@ class FlagsTests {
     }
 
     @Test
-    fun version_range_open_ended_maximum() {
+    fun `Given open ended maximum version, When evaluating, Then correctly matches range`() {
         config {
             SampleFeatureEnum.VERSIONED withRules {
-                default(BooleanFlaggable.FALSE)
+                default(false)
                 rule {
-                    versions {
-                        atMost(7, 10)  // <= 7.10.0, no minimum
+                    version {
+                        rightBound(7, 10)  // <= 7.10.0, no minimum
                     }
-                    value(BooleanFlaggable.TRUE, coveragePct = 100.0)
-                }
+                } gives true
             }
         }
 
@@ -328,10 +311,10 @@ class FlagsTests {
     }
 
     @Test
-    fun default_coverage_behaviour() {
+    fun `Given default coverage, When evaluating, Then distribution is correct`() {
         config {
             SampleFeatureEnum.DEFAULT_FALSE_WITH_30_TRUE withRules {
-                default(BooleanFlaggable.TRUE, fallback = BooleanFlaggable.FALSE, coverage = 30.0)
+                default(true, fallback = false, coverage = 30.0)
             }
         }
 
@@ -350,11 +333,13 @@ class FlagsTests {
     }
 
     @Test
-    fun bucket_uniformity_is_reasonable() {
+    fun `Given uniform bucket distribution, When evaluating, Then distribution is reasonable`() {
         config {
             SampleFeatureEnum.UNIFORM50 withRules {
-                default(BooleanFlaggable.FALSE)
-                rule { value(BooleanFlaggable.TRUE, coveragePct = 50.0) }
+                default(false)
+                rule {
+                    rampUp = 50.0
+                } gives true
             }
         }
 
@@ -369,7 +354,7 @@ class FlagsTests {
     }
 
     @Test
-    fun thread_safe_registry_swap() {
+    fun `Given concurrent registry swap, When evaluating, Then thread safety is maintained`() {
         val pool = Executors.newFixedThreadPool(8)
         val latch = CountDownLatch(1)
 
@@ -387,11 +372,10 @@ class FlagsTests {
             repeat(50) {
                 config {
                     SampleFeatureEnum.FIFTY_TRUE_US_IOS withRules {
-                        default(BooleanFlaggable.FALSE)
+                        default(false)
                         rule {
                             platforms(Platform.IOS)
-                            value(BooleanFlaggable.TRUE, coveragePct = 50.0)
-                        }
+                        } gives true
                     }
                 }
             }
@@ -403,19 +387,18 @@ class FlagsTests {
     }
 
     @Test
-    fun enum_based_keys_provide_type_safety() {
+    fun `Given enum based keys, When evaluating, Then type safety is enforced`() {
         // This test validates that using enum-based keys provides compile-time type safety
         // and prevents typos or undefined flag keys
         config {
             SampleFeatureEnum.ENABLE_COMPACT_CARDS withRules {
-                default(BooleanFlaggable.FALSE)
+                default(false)
                 rule {
                     platforms(Platform.IOS)
-                    value(BooleanFlaggable.TRUE, coveragePct = 100.0)
-                }
+                } gives true
             }
             SampleFeatureEnum.USE_LIGHTWEIGHT_HOME withRules {
-                default(BooleanFlaggable.TRUE)
+                default(true)
             }
         }
 

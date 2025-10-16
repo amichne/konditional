@@ -14,12 +14,12 @@ import kotlin.test.assertTrue
 class StringFlagsTest {
 
     // Define a simple enum for string-valued flags
-    enum class StringFeatureFlags(override val key: String) : FeatureFlag<StringFlaggable, String> {
+    enum class StringFeatureFlags(override val key: String) : FeatureFlag<String> {
         API_ENDPOINT("api_endpoint"),
         THEME("theme"),
         WELCOME_MESSAGE("welcome_message");
 
-        override fun withRules(fn: FlagBuilder<String, StringFlaggable>.() -> Unit) =
+        override fun withRules(fn: FlagBuilder<String>.() -> Unit) =
             update(FlagBuilder(this).apply(fn).build())
     }
 
@@ -31,18 +31,16 @@ class StringFlagsTest {
     ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
 
     @Test
-    fun string_flag_with_platform_targeting() {
+    fun `Given platform targeting, When evaluating string flag, Then correct theme is returned`() {
         config {
             StringFeatureFlags.THEME withRules {
-                default(StringFlaggable("light"))
+                default("light")
                 rule {
                     platforms(Platform.ANDROID)
-                    value(StringFlaggable("material"))
-                }
+                } gives "material"
                 rule {
                     platforms(Platform.IOS)
-                    value(StringFlaggable("cupertino"))
-                }
+                } gives "cupertino"
             }
         }
 
@@ -62,22 +60,19 @@ class StringFlagsTest {
     }
 
     @Test
-    fun string_flag_with_locale_targeting() {
+    fun `Given locale targeting, When evaluating string flag, Then correct message is returned`() {
         config {
             StringFeatureFlags.WELCOME_MESSAGE withRules {
-                default(StringFlaggable("Welcome!"))
+                default("Welcome!")
                 rule {
                     locales(AppLocale.ES_US)
-                    value(StringFlaggable("¡Bienvenido!"))
-                }
+                } gives "¡Bienvenido!"
                 rule {
                     locales(AppLocale.EN_CA)
-                    value(StringFlaggable("Welcome, eh!"))
-                }
+                } gives "Welcome, eh!"
                 rule {
                     locales(AppLocale.HI_IN)
-                    value(StringFlaggable("स्वागत है!"))
-                }
+                } gives "स्वागत है!"
             }
         }
 
@@ -88,23 +83,21 @@ class StringFlagsTest {
     }
 
     @Test
-    fun string_flag_with_version_targeting() {
+    fun `Given version targeting, When evaluating string flag, Then correct endpoint is returned`() {
         config {
             StringFeatureFlags.API_ENDPOINT withRules {
-                default(StringFlaggable("https://api.example.com/v1"))
+                default("https://api.example.com/v1")
                 rule {
-                    versions {
-                        atLeast(8, 0)
-                        atMost(8, 99, 99)
+                    version {
+                        leftBound(8, 0)
+                        rightBound(8, 99, 99)
                     }
-                    value(StringFlaggable("https://api.example.com/v2"))
-                }
+                } gives "https://api.example.com/v2"
                 rule {
-                    versions {
-                        atLeast(9, 0)
+                    version {
+                        leftBound(9, 0)
                     }
-                    value(StringFlaggable("https://api.example.com/v3"))
-                }
+                } gives "https://api.example.com/v3"
             }
         }
 
@@ -128,15 +121,14 @@ class StringFlagsTest {
     }
 
     @Test
-    fun string_flag_with_coverage_rollout() {
+    fun `Given coverage rollout, When evaluating string flag, Then distribution is correct`() {
         config {
             StringFeatureFlags.API_ENDPOINT withRules {
-                default(StringFlaggable("https://api-old.example.com"))
+                default("https://api-old.example.com")
                 rule {
                     // 30% of users get the new endpoint
-                    value = StringFlaggable("https://api-new.example.com")
-                    rampup { 30.0 }
-                }
+                    rampUp = 30.0
+                } gives "https://api-new.example.com"
             }
         }
 
@@ -163,13 +155,13 @@ class StringFlagsTest {
     }
 
     @Test
-    fun string_flag_with_fallback_coverage() {
+    fun `Given fallback coverage, When evaluating string flag, Then split is correct`() {
         config {
             StringFeatureFlags.THEME withRules {
                 // 50% get "blue" theme, 50% get "green" fallback
                 default(
-                    value = StringFlaggable("blue"),
-                    fallback = StringFlaggable("green"),
+                    value = "blue",
+                    fallback = "green",
                     coverage = 50.0
                 )
             }
@@ -197,28 +189,27 @@ class StringFlagsTest {
     }
 
     @Test
-    fun string_flag_with_complex_targeting() {
+    fun `Given complex targeting, When evaluating string flag, Then correct distribution is returned`() {
         config {
             StringFeatureFlags.API_ENDPOINT withRules {
-                default(StringFlaggable("https://api.example.com/stable"))
+                default("https://api.example.com/stable")
 
                 // Beta API for iOS 9.0+ users at 25% rollout
                 rule {
                     platforms(Platform.IOS)
-                    versions {
-                        atLeast(9, 0)
+                    version {
+                        leftBound(9, 0)
                     }
-                    value(StringFlaggable("https://api.example.com/beta"), coveragePct = 25.0)
-                }
+                    rampUp = 25.0
+                } gives "https://api.example.com/beta"
 
                 // Canary API for all Android 10.0+ users
                 rule {
                     platforms(Platform.ANDROID)
-                    versions {
-                        atLeast(10, 0)
+                    version {
+                        leftBound(10, 0)
                     }
-                    value(StringFlaggable("https://api.example.com/canary"), coveragePct = 100.0)
-                }
+                } gives "https://api.example.com/canary"
             }
         }
 
@@ -255,13 +246,12 @@ class StringFlagsTest {
     }
 
     @Test
-    fun string_flag_determinism_across_evaluations() {
+    fun `Given same Id, When evaluating string flag multiple times, Then result is deterministic`() {
         config {
             StringFeatureFlags.THEME withRules {
-                default(StringFlaggable("light"))
+                default("light")
                 rule {
-                    value(StringFlaggable("dark"), coveragePct = 50.0)
-                }
+                } gives "dark"
             }
         }
 
@@ -276,19 +266,17 @@ class StringFlagsTest {
     }
 
     @Test
-    fun string_flag_independence_across_different_flags() {
+    fun `Given same Id, When evaluating different string flags, Then results are independent and deterministic`() {
         config {
             StringFeatureFlags.THEME withRules {
-                default(StringFlaggable("light"))
+                default("light")
                 rule {
-                    value(StringFlaggable("dark"), coveragePct = 50.0)
-                }
+                } gives "dark"
             }
             StringFeatureFlags.API_ENDPOINT withRules {
-                default(StringFlaggable("https://api.example.com/v1"))
+                default("https://api.example.com/v1")
                 rule {
-                    value(StringFlaggable("https://api.example.com/v2"), coveragePct = 50.0)
-                }
+                } gives "https://api.example.com/v2"
             }
         }
 
