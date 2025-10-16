@@ -2,7 +2,7 @@
 
 Generic, deterministic feature evaluation for any non-null type.  
 Flags are fully type-safe and extensible.  
-Evaluation depends on a **malleable context**, abstracted behind a **facade interface** for clean integration.  
+Evaluation depends on a **flexible context** to drive precise, strongly-typed rules
 Thread-safe, dependency-free, and deterministic.
 
 ---
@@ -13,11 +13,12 @@ Thread-safe, dependency-free, and deterministic.
 A `Flag<T : Any>` may return any non-null value type (`Boolean`, `Enum`, `String`, numeric, or domain-specific).  
 All rule matching and deterministic bucketing operate generically, with no special casing by type.
 
-### Malleable context  
-`Context` is not fixed.  
-A `ContextFacade` defines what information the system can read (e.g. `locale`, `platform`, `version`, `stableId`, or any domain data).  
-Evaluation of rules depends only on this interface, not on a concrete implementation.  
-Consumers can substitute their own context sources (API request, device info, session attributes).
+### Context-based evaluation
+A `Contextual` implementation (or the provided `Context`)defines what information the system can read
+(e.g. `locale`, `platform`, `version`, `stableId`, or any domain data). Evaluation of rules are 
+dynamic along unconstrained axis of this interface, while retaining bucketing sematics via
+the `StableId` and `HexId`, which federate guarantable creation.
+Consumers can implement their own context sources (API request, device info, session attributes) to fulfill dynamic needs.
 
 ### Deterministic bucketing  
 Each evaluation uses `SHA-256("$salt:$flagKey:$stableId")` to derive a stable bucket `[0, 9999]`.  
@@ -36,11 +37,13 @@ If none match, eligibility is rechecked for the default value; otherwise fallbac
 
 1. Read the current snapshot from `Flags`.  
 2. Locate the `Flag<T>` by key or type.  
-3. Evaluate the `ContextFacade`.  
+3. Evaluate the list of `Rule`'s using the current `Context`.
 4. Resolve the most specific matching rule, checking coverage and eligibility.  
-5. Return the resolved value of type `T`.
+5. Return the resolved value of type `T` the selected `Rule` maps onto (via `Surjection`).
 
 All reads are lock-free. Updates atomically replace the snapshot.
+
+> Scoped, short-lived test scaffolding coming soon!
 
 ---
 
@@ -59,6 +62,10 @@ Each rule defines:
 - `value`: what to return when matched  
 
 Default and fallback values apply when no rules match or eligibility fails.
+
+🚧  **Coming soon!**  🚧
+
+> This will be overhauled in the immedaite future, with aspirations of generifying, and allowing extension by users seamlessly. Rules will likely have a generic bound, which will specify the supported `Contextual` types. This means `Surjection` will also be bound by this type, though API surface shouldn't functionally be different.
 
 ---
 
@@ -85,17 +92,19 @@ Semantic version ranges use precise bounds:
 
 ```kotlin
 // Define a typed flag
-val showNewUI = Flag("show_new_ui", defaultValue = false)
-
-// Evaluate with context
-val ctx = ContextFacade {
-    locale = "en_US"
-    platform = "ios"
-    version = "7.12.3"
-    stableId = "a1b2c3..."
+enum class CustomFlags : FeatureFlag<Boolean> {
+    SHOW_NEW_UI
 }
 
-val result: Boolean = showNewUI.evaluate(ctx)
+// Evaluate with context
+val context = Context(
+    locale = AppLocale.EN_US,
+    platform = Platform.IOS,
+    appVersion = Version(7, 10, 1),
+    stableId = StableId.of("00000000000000000000000000000000")
+)
+context.evaluate() // -> Map<FeatureFlag<*>, Any?>
+context.evaluate(CustomFlags.SHOW_NEW_UI) // -> Boolean
 ```
 
 ---
@@ -103,14 +112,37 @@ val result: Boolean = showNewUI.evaluate(ctx)
 ## DSL example
 
 ```kotlin
-FeatureFlags.boolean("enable_search") {
-  default(false)
-  rule {
-    locale("en_US")
-    versionRange { atLeast("7.0.0") }
-    coverage(50.0)
-    returns(true)
-  }
+enum class DomainProvidedEnum : FeatureFlag<Boolean> {
+    CUSTOM_CASE,
+    USE_LIGHTWEIGHT_HOME
+}
+
+config {
+    DomainProvidedEnum.CUSTOM_CASE withRules {
+        default(value = false)
+        rule {
+            platforms(Platform.IOS)
+            version {
+                leftBound(7, 10, 0)
+            }
+            note("US iOS staged rollout")
+            rampUp = 50.0
+        } gives true
+        rule {
+            locales(AppLocale.HI_IN)
+            note("IN Hindi full")
+        } gives true
+    }
+    DomainProvidedEnum.USE_LIGHTWEIGHT_HOME withRules {
+        default(value = true, coverage = 100.0)
+        rule {
+            platforms(Platform.ANDROID)
+            version {
+                rightBound(6, 4, 99)
+            }
+            note("Android legacy off")
+        } gives false
+    }
 }
 ```
 
@@ -149,7 +181,8 @@ All current tests pass, confirming deterministic evaluation for arbitrary non-nu
 - `Surjection<T>` — rule/value pair  
 - `Rule` — match logic and coverage  
 - `VersionRange` — semantic version constraints  
-- `ContextFacade` — extension point for environment data  
+- `Context` — extension point for environment data
+    - _Changes incoming!_
 - `tests/` — deterministic behavior validation  
 
 ---
