@@ -2,11 +2,12 @@ package io.amichne.konditional.rules
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
-// ---------- Rule / Flag model ----------
+// ---------- Rule / Condition model ----------
 
 /**
  * Rule
@@ -14,27 +15,26 @@ import io.amichne.konditional.rules.versions.VersionRange
  * @param T
  * @param S
  * @property value
- * @property coveragePct
+ * @property rampUp
  * @property locales
  * @property platforms
  * @property versionRange
  * @property note
  * @constructor Create empty Rule
  *
- * TODO - Update to S, can bubble up through builder, ultimately we resolve this to <S> in Flag
+ * TODO - Update to S, can bubble up through builder, ultimately we resolve this to <S> in Condition
  *
  * @see io.amichne.konditional.core.Flags
  */
 data class Rule(
-    // see io/amichne/konditional/core/Flags.kt:26
-    val coveragePct: Double = 100.0,
+    val rampUp: RampUp,
     val locales: Set<AppLocale> = emptySet(),
     val platforms: Set<Platform> = emptySet(),
     val versionRange: VersionRange = Unbounded,
     val note: String? = null,
 ) {
     init {
-        require(coveragePct in 0.0..100.0) { "coveragePct out of range" }
+        require(rampUp.value in 0.0..100.0) { "coveragePct out of range" }
     }
 
     fun matches(context: Context): Boolean =

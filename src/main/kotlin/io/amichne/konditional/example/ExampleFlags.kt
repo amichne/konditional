@@ -3,35 +3,35 @@ package io.amichne.konditional.example
 import io.amichne.konditional.builders.ConfigBuilder.Companion.config
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.example.SampleFeatureEnum
+import io.amichne.konditional.context.RampUp
 
 object ExampleFlags {
     init {
         config {
-            SampleFeatureEnum.ENABLE_COMPACT_CARDS withRules {
+            SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
                 default(value = false)
-                rule {
+                boundary {
                     platforms(Platform.IOS)
-                    version {
-                        leftBound(7, 10, 0)
+                    versions {
+                        min(7, 10, 0)
                     }
                     note("US iOS staged rollout")
-                    rampUp = 50.0
-                } gives true
-                rule {
+                    rampUp = RampUp.of(50.0)
+                } implies true
+                boundary {
                     locales(AppLocale.HI_IN)
                     note("IN Hindi full")
-                } gives true
+                } implies true
             }
-            SampleFeatureEnum.USE_LIGHTWEIGHT_HOME withRules {
+            SampleFeatureEnum.USE_LIGHTWEIGHT_HOME with {
                 default(value = true, coverage = 100.0)
-                rule {
+                boundary {
                     platforms(Platform.ANDROID)
-                    version {
-                        rightBound(6, 4, 99)
+                    versions {
+                        max(6, 4, 99)
                     }
                     note("Android legacy off")
-                } gives false
+                } implies false
             }
         }
     }

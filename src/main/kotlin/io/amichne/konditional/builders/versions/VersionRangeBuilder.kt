@@ -11,7 +11,7 @@ class VersionRangeBuilder {
     private var leftBound: Version = Version.default
     private var rightBound: Version = Version.default
 
-    fun leftBound(
+    fun min(
         major: Int,
         minor: Int = 0,
         patch: Int = 0,
@@ -19,7 +19,7 @@ class VersionRangeBuilder {
         leftBound = Version(major, minor, patch)
     }
 
-    fun rightBound(
+    fun max(
         major: Int,
         minor: Int = 0,
         patch: Int = 0,
@@ -27,10 +27,11 @@ class VersionRangeBuilder {
         rightBound = Version(major, minor, patch)
     }
 
-    fun build(): VersionRange = when {
-        leftBound != Version.default && rightBound != Version.default -> FullyBound(leftBound, rightBound)
-        leftBound == Version.default -> RightBound(rightBound)
-        rightBound == Version.default  -> LeftBound(leftBound)
-        else -> Unbounded
-    }
+    fun build(): VersionRange =
+        when {
+            leftBound != Version.default && rightBound != Version.default -> FullyBound(leftBound, rightBound)
+            leftBound == Version.default -> RightBound(rightBound)
+            rightBound == Version.default -> LeftBound(leftBound)
+            else -> Unbounded
+        }
 }

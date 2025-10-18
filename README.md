@@ -22,11 +22,11 @@ Consumers can implement their own context sources (API request, device info, ses
 
 ### Deterministic bucketing  
 Each evaluation uses `SHA-256("$salt:$flagKey:$stableId")` to derive a stable bucket `[0, 9999]`.  
-This ensures repeatable behavior across sessions for the same stable ID and flag.  
-Flag independence is guaranteed because the flag key contributes to the hash input.
+This ensures repeatable behavior across sessions for the same stable ID and condition.  
+Flag independence is guaranteed because the condition key contributes to the hash input.
 
 ### Rule-based resolution  
-Each flag defines an ordered list of `Surjection<T>` entries.  
+Each condition defines an ordered list of `Surjection<T>` entries.  
 Each `Surjection` links a `Rule` and an output value.  
 The first matching rule that includes the user (via its coverage) determines the value.  
 If none match, eligibility is rechecked for the default value; otherwise fallback applies.
@@ -84,14 +84,14 @@ Semantic version ranges use precise bounds:
 - `Flag<T>` preserves type identity through evaluation.  
 - Bucketing and rule matching are pure and deterministic.  
 - Context variability is isolated behind the `ContextFacade`.  
-- Tests guarantee no collisions or cross-flag interference.
+- Tests guarantee no collisions or cross-condition interference.
 
 ---
 
 ## Usage
 
 ```kotlin
-// Define a typed flag
+// Define a typed condition
 enum class CustomFlags : FeatureFlag<Boolean> {
     SHOW_NEW_UI
 }
@@ -153,7 +153,7 @@ config {
 All tests validate:
 
 - Deterministic hashing and bucket assignment  
-- Generic type safety across flag types  
+- Generic type safety across condition types  
 - Rule ordering and specificity  
 - Coverage boundary correctness  
 - Version range comparison logic  
@@ -176,7 +176,7 @@ All current tests pass, confirming deterministic evaluation for arbitrary non-nu
 
 ## Implementation map
 
-- `Flag<T>` — core generic flag logic  
+- `Flag<T>` — core generic condition logic  
 - `Flags` — snapshot registry and entrypoint  
 - `Surjection<T>` — rule/value pair  
 - `Rule` — match logic and coverage  

@@ -4,4 +4,4 @@ import io.amichne.konditional.context.Version
 
 data class LeftBound(
     override val min: Version,
-) : VersionRange(min, upper, Type.LEFT_BOUND)
+) : VersionRange(Type.LEFT_BOUND, min, MAX_VERSION)

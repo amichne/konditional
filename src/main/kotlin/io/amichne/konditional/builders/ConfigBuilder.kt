@@ -7,9 +7,9 @@
  * Example usage:
  * ```
  * ConfigBuilder.config {
- *     FeatureFlag.ENABLE_COMPACT_CARDS withRules {
+ *     Conditional.ENABLE_COMPACT_CARDS with {
  *         default(value = BooleanConditional.TRUE)
- *         rule { ... }
+ *         boundary { ... }
  *     }
  * }
  * ```
@@ -18,25 +18,25 @@
  */
 package io.amichne.konditional.builders
 
-import io.amichne.konditional.core.FeatureFlag
+import io.amichne.konditional.core.Condition
+import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.core.FeatureFlagDsl
-import io.amichne.konditional.core.Flag
 import io.amichne.konditional.core.Flags
 
 @FeatureFlagDsl
-class ConfigBuilder private constructor(){
-    private val flags = LinkedHashMap<FeatureFlag<*>, Flag<*>>()
+class ConfigBuilder private constructor() {
+    private val flags = LinkedHashMap<Conditional<*>, Condition<*>>()
 
     /**
      * Define a flag using infix syntax:
      * ```
-     * FeatureFlag.ENABLE_COMPACT_CARDS withRules {
+     * Conditional.ENABLE_COMPACT_CARDS with {
      *     default(value = BooleanConditional.TRUE)
-     *     rule { ... }
+     *     boundary { ... }
      * }
      * ```
      */
-    infix fun <S : Any> FeatureFlag<S>.withRules(build: FlagBuilder<S>.() -> Unit) {
+    infix fun <S : Any> Conditional<S>.with(build: FlagBuilder<S>.() -> Unit) {
         require(this !in flags) { "Duplicate flag $this" }
         flags[this] = FlagBuilder(this).apply(build).build()
     }

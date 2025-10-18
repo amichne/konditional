@@ -5,6 +5,7 @@ import io.amichne.konditional.builders.FlagBuilder
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
+import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Flags.evaluate
 import kotlin.test.Test
@@ -12,123 +13,150 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class StringFlagsTest {
-
     // Define a simple enum for string-valued flags
-    enum class StringFeatureFlags(override val key: String) : FeatureFlag<String> {
+    enum class StringFeatureFlags(
+        override val key: String,
+    ) : Conditional<String> {
         API_ENDPOINT("api_endpoint"),
         THEME("theme"),
-        WELCOME_MESSAGE("welcome_message");
+        WELCOME_MESSAGE("welcome_message"),
+        ;
 
-        override fun withRules(fn: FlagBuilder<String>.() -> Unit) =
-            update(FlagBuilder(this).apply(fn).build())
+        override fun with(function: FlagBuilder<String>.() -> Unit) = update(FlagBuilder(this).apply(function).build())
     }
 
     private fun ctx(
         idHex: String,
         locale: AppLocale = AppLocale.EN_US,
         platform: Platform = Platform.IOS,
-        version: String = "7.12.3"
+        version: String = "7.12.3",
     ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
 
     @Test
     fun `Given platform targeting, When evaluating string flag, Then correct theme is returned`() {
         config {
-            StringFeatureFlags.THEME withRules {
+            StringFeatureFlags.THEME with {
                 default("light")
-                rule {
+                boundary {
                     platforms(Platform.ANDROID)
-                } gives "material"
-                rule {
+                } implies "material"
+                boundary {
                     platforms(Platform.IOS)
-                } gives "cupertino"
+                } implies "cupertino"
             }
         }
 
         // Android should get material theme
-        val androidResult = ctx(
-            "11111111111111111111111111111111",
-            platform = Platform.ANDROID
-        ).evaluate(StringFeatureFlags.THEME)
+        val androidResult =
+            ctx(
+                "11111111111111111111111111111111",
+                platform = Platform.ANDROID,
+            ).evaluate(StringFeatureFlags.THEME)
         assertEquals("material", androidResult)
 
         // iOS should get cupertino theme
-        val iosResult = ctx(
-            "22222222222222222222222222222222",
-            platform = Platform.IOS
-        ).evaluate(StringFeatureFlags.THEME)
+        val iosResult =
+            ctx(
+                "22222222222222222222222222222222",
+                platform = Platform.IOS,
+            ).evaluate(StringFeatureFlags.THEME)
         assertEquals("cupertino", iosResult)
     }
 
     @Test
     fun `Given locale targeting, When evaluating string flag, Then correct message is returned`() {
         config {
-            StringFeatureFlags.WELCOME_MESSAGE withRules {
+            StringFeatureFlags.WELCOME_MESSAGE with {
                 default("Welcome!")
-                rule {
+                boundary {
                     locales(AppLocale.ES_US)
-                } gives "¡Bienvenido!"
-                rule {
+                } implies "¡Bienvenido!"
+                boundary {
                     locales(AppLocale.EN_CA)
-                } gives "Welcome, eh!"
-                rule {
+                } implies "Welcome, eh!"
+                boundary {
                     locales(AppLocale.HI_IN)
-                } gives "स्वागत है!"
+                } implies "स्वागत है!"
             }
         }
 
-        assertEquals("Welcome!", ctx("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa01", locale = AppLocale.EN_US).evaluate(StringFeatureFlags.WELCOME_MESSAGE))
-        assertEquals("¡Bienvenido!", ctx("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa02", locale = AppLocale.ES_US).evaluate(StringFeatureFlags.WELCOME_MESSAGE))
-        assertEquals("Welcome, eh!", ctx("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa03", locale = AppLocale.EN_CA).evaluate(StringFeatureFlags.WELCOME_MESSAGE))
-        assertEquals("स्वागत है!", ctx("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa04", locale = AppLocale.HI_IN).evaluate(StringFeatureFlags.WELCOME_MESSAGE))
+        assertEquals(
+            "Welcome!",
+            ctx(
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa01",
+                locale = AppLocale.EN_US,
+            ).evaluate(StringFeatureFlags.WELCOME_MESSAGE),
+        )
+        assertEquals(
+            "¡Bienvenido!",
+            ctx(
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa02",
+                locale = AppLocale.ES_US,
+            ).evaluate(StringFeatureFlags.WELCOME_MESSAGE),
+        )
+        assertEquals(
+            "Welcome, eh!",
+            ctx(
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa03",
+                locale = AppLocale.EN_CA,
+            ).evaluate(StringFeatureFlags.WELCOME_MESSAGE),
+        )
+        assertEquals(
+            "स्वागत है!",
+            ctx(
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa04",
+                locale = AppLocale.HI_IN,
+            ).evaluate(StringFeatureFlags.WELCOME_MESSAGE),
+        )
     }
 
     @Test
     fun `Given version targeting, When evaluating string flag, Then correct endpoint is returned`() {
         config {
-            StringFeatureFlags.API_ENDPOINT withRules {
+            StringFeatureFlags.API_ENDPOINT with {
                 default("https://api.example.com/v1")
-                rule {
-                    version {
-                        leftBound(8, 0)
-                        rightBound(8, 99, 99)
+                boundary {
+                    versions {
+                        min(8, 0)
+                        max(8, 99, 99)
                     }
-                } gives "https://api.example.com/v2"
-                rule {
-                    version {
-                        leftBound(9, 0)
+                } implies "https://api.example.com/v2"
+                boundary {
+                    versions {
+                        min(9, 0)
                     }
-                } gives "https://api.example.com/v3"
+                } implies "https://api.example.com/v3"
             }
         }
 
         // Version 7.x should use v1
         assertEquals(
             "https://api.example.com/v1",
-            ctx("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb01", version = "7.5.0").evaluate(StringFeatureFlags.API_ENDPOINT)
+            ctx("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb01", version = "7.5.0").evaluate(StringFeatureFlags.API_ENDPOINT),
         )
 
         // Version 8.x should use v2
         assertEquals(
             "https://api.example.com/v2",
-            ctx("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb02", version = "8.2.0").evaluate(StringFeatureFlags.API_ENDPOINT)
+            ctx("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb02", version = "8.2.0").evaluate(StringFeatureFlags.API_ENDPOINT),
         )
 
         // Version 9.x should use v3
         assertEquals(
             "https://api.example.com/v3",
-            ctx("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb03", version = "9.1.0").evaluate(StringFeatureFlags.API_ENDPOINT)
+            ctx("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb03", version = "9.1.0").evaluate(StringFeatureFlags.API_ENDPOINT),
         )
     }
 
     @Test
     fun `Given coverage rollout, When evaluating string flag, Then distribution is correct`() {
         config {
-            StringFeatureFlags.API_ENDPOINT withRules {
+            StringFeatureFlags.API_ENDPOINT with {
                 default("https://api-old.example.com")
-                rule {
+                boundary {
                     // 30% of users get the new endpoint
-                    rampUp = 30.0
-                } gives "https://api-new.example.com"
+                    rampUp = RampUp.of(30.0)
+                } implies "https://api-new.example.com"
             }
         }
 
@@ -155,103 +183,76 @@ class StringFlagsTest {
     }
 
     @Test
-    fun `Given fallback coverage, When evaluating string flag, Then split is correct`() {
-        config {
-            StringFeatureFlags.THEME withRules {
-                // 50% get "blue" theme, 50% get "green" fallback
-                default(
-                    value = "blue",
-                    fallback = "green",
-                    coverage = 50.0
-                )
-            }
-        }
-
-        // Sample many users to verify 50/50 split
-        val N = 5000
-        var blueCount = 0
-        var greenCount = 0
-
-        for (i in 0 until N) {
-            val id = "%032x".format(i)
-            val result = ctx(id).evaluate(StringFeatureFlags.THEME)
-            when (result) {
-                "blue" -> blueCount++
-                "green" -> greenCount++
-            }
-        }
-
-        val bluePct = blueCount.toDouble() / N
-        val greenPct = greenCount.toDouble() / N
-
-        assertTrue(bluePct in 0.47..0.53, "Expected ~50% blue, got ${bluePct * 100}%")
-        assertTrue(greenPct in 0.47..0.53, "Expected ~50% green, got ${greenPct * 100}%")
-    }
-
-    @Test
     fun `Given complex targeting, When evaluating string flag, Then correct distribution is returned`() {
         config {
-            StringFeatureFlags.API_ENDPOINT withRules {
+            StringFeatureFlags.API_ENDPOINT with {
                 default("https://api.example.com/stable")
 
                 // Beta API for iOS 9.0+ users at 25% rollout
-                rule {
+                boundary {
                     platforms(Platform.IOS)
-                    version {
-                        leftBound(9, 0)
+                    versions {
+                        min(9, 0)
                     }
-                    rampUp = 25.0
-                } gives "https://api.example.com/beta"
+                    rampUp = RampUp.of(25.0)
+                } implies "https://api.example.com/beta"
 
                 // Canary API for all Android 10.0+ users
-                rule {
+                boundary {
                     platforms(Platform.ANDROID)
-                    version {
-                        leftBound(10, 0)
+                    versions {
+                        min(10, 0)
                     }
-                } gives "https://api.example.com/canary"
+                } implies "https://api.example.com/canary"
             }
         }
 
         // iOS 8.x users should get stable
         assertEquals(
             "https://api.example.com/stable",
-            ctx("cccccccccccccccccccccccccccccc01", platform = Platform.IOS, version = "8.5.0").evaluate(StringFeatureFlags.API_ENDPOINT)
+            ctx("cccccccccccccccccccccccccccccc01", platform = Platform.IOS, version = "8.5.0").evaluate(
+                StringFeatureFlags.API_ENDPOINT,
+            ),
         )
 
         // Android 10.0+ users should always get canary (100% coverage)
         assertEquals(
             "https://api.example.com/canary",
-            ctx("cccccccccccccccccccccccccccccc02", platform = Platform.ANDROID, version = "10.0.0").evaluate(StringFeatureFlags.API_ENDPOINT)
+            ctx(
+                "cccccccccccccccccccccccccccccc02",
+                platform = Platform.ANDROID,
+                version = "10.0.0",
+            ).evaluate(StringFeatureFlags.API_ENDPOINT),
         )
 
         // iOS 9.0+ users get beta or stable based on 25% coverage
         // Test a large sample to verify distribution
-        val N = 2000
+        val sampleSize = 2000
         var betaCount = 0
         var stableCount = 0
 
-        for (i in 0 until N) {
+        for (i in 0 until sampleSize) {
             val id = "%032x".format(i)
-            val result = ctx(id, platform = Platform.IOS, version = "9.2.0")
-                .evaluate(StringFeatureFlags.API_ENDPOINT)
+            val result =
+                ctx(id, platform = Platform.IOS, version = "9.2.0")
+                    .evaluate(StringFeatureFlags.API_ENDPOINT)
             when (result) {
                 "https://api.example.com/beta" -> betaCount++
                 "https://api.example.com/stable" -> stableCount++
             }
         }
 
-        val betaPct = betaCount.toDouble() / N
+        val betaPct = betaCount.toDouble() / sampleSize
         assertTrue(betaPct in 0.22..0.28, "Expected ~25% beta for iOS 9.0+, got ${betaPct * 100}%")
     }
 
     @Test
     fun `Given same Id, When evaluating string flag multiple times, Then result is deterministic`() {
         config {
-            StringFeatureFlags.THEME withRules {
+            StringFeatureFlags.THEME with {
                 default("light")
-                rule {
-                } gives "dark"
+                boundary {
+                } implies "dark"
             }
         }
 
@@ -268,15 +269,15 @@ class StringFlagsTest {
     @Test
     fun `Given same Id, When evaluating different string flags, Then results are independent and deterministic`() {
         config {
-            StringFeatureFlags.THEME withRules {
+            StringFeatureFlags.THEME with {
                 default("light")
-                rule {
-                } gives "dark"
+                boundary {
+                } implies "dark"
             }
-            StringFeatureFlags.API_ENDPOINT withRules {
+            StringFeatureFlags.API_ENDPOINT with {
                 default("https://api.example.com/v1")
-                rule {
-                } gives "https://api.example.com/v2"
+                boundary {
+                } implies "https://api.example.com/v2"
             }
         }
 

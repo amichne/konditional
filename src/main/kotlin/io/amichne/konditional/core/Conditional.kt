@@ -8,10 +8,10 @@ import io.amichne.konditional.builders.FlagBuilder
  *
  * @param S The type of the state or context that the feature flag depends on.
  */
-interface FeatureFlag<S : Any> {
+interface Conditional<S : Any> {
     val key: String
 
-    fun withRules(build: FlagBuilder<S>.() -> Unit)
+    fun with(build: FlagBuilder<S>.() -> Unit)
 
-    fun update(flag: Flag<S>) = Flags.update(flag)
+    fun update(condition: Condition<S>) = Flags.update(condition)
 }
