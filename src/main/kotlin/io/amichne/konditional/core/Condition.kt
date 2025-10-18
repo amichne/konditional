@@ -10,10 +10,11 @@ import kotlin.math.roundToInt
  * Represents a flag with a specific state type.
  *
  * @param S The type of the state associated with this flag. It must be a non-nullable type.
+ * @param C The type of the context that this flag evaluates against.
  */
-data class Condition<S : Any>(
-    val key: Conditional<S>,
-    val bounds: List<Surjection<S>>,
+data class Condition<S : Any, C : Context>(
+    val key: Conditional<S, C>,
+    val bounds: List<Surjection<S, C>>,
     val defaultValue: S,
     val fallbackValue: S,
     val salt: String = "v1",
@@ -22,8 +23,8 @@ data class Condition<S : Any>(
         val shaDigestSpi: MessageDigest = requireNotNull(MessageDigest.getInstance("SHA-256"))
     }
 
-    private val surjections: List<Surjection<S>> =
-        bounds.sortedWith(compareByDescending<Surjection<S>> { it.rule.specificity() }.thenBy { it.rule.note ?: "" })
+    private val surjections: List<Surjection<S, C>> =
+        bounds.sortedWith(compareByDescending<Surjection<S, C>> { it.rule.specificity() }.thenBy { it.rule.note ?: "" })
 
     /**
      * Evaluates the current flag based on the provided context and returns a result of type `S`.
@@ -31,7 +32,7 @@ data class Condition<S : Any>(
      * @param context The context in which the flag evaluation is performed.
      * @return The result of the evaluation, of type `S`.
      */
-    fun evaluate(context: Context): S = surjections.firstOrNull {
+    fun evaluate(context: C): S = surjections.firstOrNull {
         it.rule.matches(context) &&
             isInEligibleSegment(flagKey = key.key, id = context.stableId.hexId, salt = salt, rampUp = it.rule.rampUp)
     }?.value ?: defaultValue

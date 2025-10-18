@@ -1,11 +1,12 @@
 package io.amichne.konditional.example
 
 import io.amichne.konditional.builders.FlagBuilder
+import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Conditional
 
 enum class SampleFeatureEnum(
     override val key: String,
-) : Conditional<Boolean> {
+) : Conditional<Boolean, Context> {
     ENABLE_COMPACT_CARDS("enable_compact_cards"),
     USE_LIGHTWEIGHT_HOME("use_lightweight_home"),
     FIFTY_TRUE_US_IOS("fifty_true_us_ios"),
@@ -16,5 +17,5 @@ enum class SampleFeatureEnum(
     UNIFORM50("uniform50"),
     ;
 
-    override fun with(build: FlagBuilder<Boolean>.() -> Unit) = update(FlagBuilder(key = this).apply(block = build).build())
+    override fun with(build: FlagBuilder<Boolean, Context>.() -> Unit) = update(FlagBuilder(key = this).apply(block = build).build())
 }

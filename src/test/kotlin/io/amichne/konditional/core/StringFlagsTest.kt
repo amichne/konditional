@@ -16,13 +16,13 @@ class StringFlagsTest {
     // Define a simple enum for string-valued flags
     enum class StringFeatureFlags(
         override val key: String,
-    ) : Conditional<String> {
+    ) : Conditional<String, Context> {
         API_ENDPOINT("api_endpoint"),
         THEME("theme"),
         WELCOME_MESSAGE("welcome_message"),
         ;
 
-        override fun with(function: FlagBuilder<String>.() -> Unit) = update(FlagBuilder(this).apply(function).build())
+        override fun with(function: FlagBuilder<String, Context>.() -> Unit) = update(FlagBuilder(this).apply(function).build())
     }
 
     private fun ctx(

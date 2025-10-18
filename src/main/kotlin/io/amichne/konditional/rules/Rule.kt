@@ -12,9 +12,7 @@ import io.amichne.konditional.rules.versions.VersionRange
 /**
  * Rule
  *
- * @param T
- * @param S
- * @property value
+ * @param C The context type that this rule evaluates against
  * @property rampUp
  * @property locales
  * @property platforms
@@ -22,11 +20,9 @@ import io.amichne.konditional.rules.versions.VersionRange
  * @property note
  * @constructor Create empty Rule
  *
- * TODO - Update to S, can bubble up through builder, ultimately we resolve this to <S> in Condition
- *
  * @see io.amichne.konditional.core.Flags
  */
-data class Rule(
+data class Rule<C : Context>(
     val rampUp: RampUp,
     val locales: Set<AppLocale> = emptySet(),
     val platforms: Set<Platform> = emptySet(),
@@ -37,7 +33,7 @@ data class Rule(
         require(rampUp.value in 0.0..100.0) { "coveragePct out of range" }
     }
 
-    fun matches(context: Context): Boolean =
+    fun matches(context: C): Boolean =
         (locales.isEmpty() || context.locale in locales) &&
             (platforms.isEmpty() || context.platform in platforms) &&
             (!versionRange.hasBounds() || versionRange.contains(context.appVersion))

@@ -12,7 +12,7 @@ object Flags {
 
     @ConsistentCopyVisibility
     data class Snapshot internal constructor(
-        val flags: Map<Conditional<*>, Condition<*>>,
+        val flags: Map<Conditional<*, *>, Condition<*, *>>,
     )
 
     /**
@@ -25,12 +25,13 @@ object Flags {
     }
 
     /**
-     * Updates the current state of type [S].
+     * Updates the current state of type [S] with context type [C].
      *
      * @param S the type of the state to be updated.
+     * @param C the type of the context.
      * @return the updated state.
      */
-    fun <S : Any> update(condition: Condition<S>) {
+    fun <S : Any, C : Context> update(condition: Condition<S, C>) {
         current.get().flags.toMutableMap().let {
             it[condition.key] = condition
             current.set(Snapshot(it))
@@ -44,7 +45,7 @@ object Flags {
      * @return The evaluated value of type [S] associated with the feature flag.
      */
     @Suppress("UNCHECKED_CAST")
-    fun <S : Any> Context.evaluate(key: Conditional<S>): S = (current.get().flags[key] as? Condition<S>)?.evaluate(this)!!
+    fun <S : Any, C : Context> C.evaluate(key: Conditional<S, C>): S = (current.get().flags[key] as? Condition<S, C>)?.evaluate(this)!!
 
     /**
      * Evaluates all feature flags boundary the given [Context] and returns a map of each [Conditional] to its evaluated value.
@@ -52,5 +53,5 @@ object Flags {
      * @receiver The [Context] containing the feature flags to be evaluated.
      * @return A map where each key is a [Conditional] and the value is the result of its evaluation (maybe `null`).
      */
-    fun Context.evaluate(): Map<Conditional<*>, Any?> = current.get().flags.mapValues { (_, f) -> f.evaluate(this) }
+    fun <C : Context> C.evaluate(): Map<Conditional<*, *>, Any?> = current.get().flags.mapValues { (_, f) -> (f as Condition<*, C>).evaluate(this) }
 }

@@ -2,6 +2,7 @@ package io.amichne.konditional.builders
 
 import io.amichne.konditional.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.context.AppLocale
+import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.core.FeatureFlagDsl
@@ -10,12 +11,12 @@ import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
 /**
- * A builder class for constructing rules with a specific state type.
+ * A builder class for constructing rules with a specific context type.
  *
- * @param S The type of the state that the rules will operate on. It must be a non-nullable type.
+ * @param C The type of the context that the rules will evaluate against.
  */
 @FeatureFlagDsl
-class RuleBuilder {
+class RuleBuilder<C : Context> {
     var rampUp: RampUp? = null
     private val locales = linkedSetOf<AppLocale>()
     private val platforms = linkedSetOf<Platform>()
@@ -39,7 +40,7 @@ class RuleBuilder {
         note = text
     }
 
-    fun build(): Rule =
+    fun build(): Rule<C> =
         Rule(
             rampUp = rampUp ?: RampUp.default,
             locales = locales,
