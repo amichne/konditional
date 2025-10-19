@@ -7,5 +7,6 @@ package io.amichne.konditional.context
  */
 enum class Platform {
     IOS,
-    ANDROID;
+    ANDROID,
+    WEB;
 }
