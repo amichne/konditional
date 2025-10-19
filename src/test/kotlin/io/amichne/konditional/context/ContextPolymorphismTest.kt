@@ -5,6 +5,7 @@ import io.amichne.konditional.builders.FlagBuilder
 import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.core.Flags.evaluate
 import io.amichne.konditional.core.StableId
+import io.amichne.konditional.rules.BaseRule
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.rules.versions.Unbounded
@@ -281,7 +282,7 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given EnterpriseContext subclass, When matching rules, Then base Context properties work correctly`() {
-        val rule = Rule<EnterpriseContext>(
+        val rule = BaseRule<EnterpriseContext>(
             rampUp = RampUp.MAX,
             locales = setOf(AppLocale.EN_US, AppLocale.EN_CA),
             platforms = setOf(Platform.WEB),
@@ -315,7 +316,7 @@ class ContextPolymorphismTest {
     @Test
     fun `Given custom EnterpriseRule, When matching with business logic, Then custom properties are enforced`() {
         val enterpriseOnlyRule = EnterpriseRule(
-            baseRule = Rule(
+            baseRule = BaseRule(
                 rampUp = RampUp.MAX,
                 locales = emptySet(),
                 platforms = setOf(Platform.WEB),

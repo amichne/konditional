@@ -28,7 +28,7 @@ class RuleMatchingTest {
 
     @Test
     fun `Given rule with no constraints, When matching, Then all contexts match`() {
-        val rule = Rule<Context>(
+        val rule = BaseRule<Context>(
             rampUp = RampUp.MAX,
             locales = emptySet(),
             platforms = emptySet(),
@@ -43,7 +43,7 @@ class RuleMatchingTest {
 
     @Test
     fun `Given rule with single platform, When matching, Then only that platform matches`() {
-        val rule = Rule<Context>(
+        val rule = BaseRule<Context>(
             rampUp = RampUp.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
@@ -57,7 +57,7 @@ class RuleMatchingTest {
 
     @Test
     fun `Given rule with multiple platforms, When matching, Then any of those platforms match`() {
-        val rule = Rule<Context>(
+        val rule = BaseRule<Context>(
             rampUp = RampUp.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS, Platform.ANDROID),
@@ -71,7 +71,7 @@ class RuleMatchingTest {
 
     @Test
     fun `Given rule with single locale, When matching, Then only that locale matches`() {
-        val rule = Rule<Context>(
+        val rule = BaseRule<Context>(
             rampUp = RampUp.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = emptySet(),
@@ -85,7 +85,7 @@ class RuleMatchingTest {
 
     @Test
     fun `Given rule with multiple locales, When matching, Then any of those locales match`() {
-        val rule = Rule<Context>(
+        val rule = BaseRule<Context>(
             rampUp = RampUp.MAX,
             locales = setOf(AppLocale.EN_US, AppLocale.EN_CA),
             platforms = emptySet(),
@@ -99,7 +99,7 @@ class RuleMatchingTest {
 
     @Test
     fun `Given rule with version range, When matching, Then only versions in range match`() {
-        val rule = Rule<Context>(
+        val rule = BaseRule<Context>(
             rampUp = RampUp.MAX,
             locales = emptySet(),
             platforms = emptySet(),
@@ -118,7 +118,7 @@ class RuleMatchingTest {
 
     @Test
     fun `Given rule with combined constraints, When matching, Then all constraints must match`() {
-        val rule = Rule<Context>(
+        val rule = BaseRule<Context>(
             rampUp = RampUp.MAX,
             locales = setOf(AppLocale.EN_US, AppLocale.EN_CA),
             platforms = setOf(Platform.IOS),
@@ -143,42 +143,42 @@ class RuleMatchingTest {
 
     @Test
     fun `Given rules with different specificity, When calculating specificity, Then more specific rules have higher scores`() {
-        val ruleEmpty = Rule<Context>(
+        val ruleEmpty = BaseRule<Context>(
             rampUp = RampUp.MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded,
         )
 
-        val rulePlatform = Rule<Context>(
+        val rulePlatform = BaseRule<Context>(
             rampUp = RampUp.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded,
         )
 
-        val ruleLocale = Rule<Context>(
+        val ruleLocale = BaseRule<Context>(
             rampUp = RampUp.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = emptySet(),
             versionRange = Unbounded,
         )
 
-        val ruleVersion = Rule<Context>(
+        val ruleVersion = BaseRule<Context>(
             rampUp = RampUp.MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = FullyBound(Version(1, 0, 0), Version(2, 0, 0)),
         )
 
-        val rulePlatformAndLocale = Rule<Context>(
+        val rulePlatformAndLocale =BaseRule<Context>(
             rampUp = RampUp.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded,
         )
 
-        val ruleAll = Rule<Context>(
+        val ruleAll =BaseRule<Context>(
             rampUp = RampUp.MAX,
             locales = setOf(AppLocale.EN_US, AppLocale.EN_CA),
             platforms = setOf(Platform.IOS, Platform.ANDROID),
@@ -205,28 +205,28 @@ class RuleMatchingTest {
 
     @Test
     fun `Given multiple locales or platforms, When calculating specificity, Then specificity counts presence not quantity`() {
-        val ruleOnePlatform = Rule<Context>(
+        val ruleOnePlatform =BaseRule<Context>(
             rampUp = RampUp.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded,
         )
 
-        val ruleTwoPlatforms = Rule<Context>(
+        val ruleTwoPlatforms =BaseRule<Context>(
             rampUp = RampUp.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS, Platform.ANDROID),
             versionRange = Unbounded,
         )
 
-        val ruleOneLocale = Rule<Context>(
+        val ruleOneLocale =BaseRule<Context>(
             rampUp = RampUp.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = emptySet(),
             versionRange = Unbounded,
         )
 
-        val ruleTwoLocales = Rule<Context>(
+        val ruleTwoLocales =BaseRule<Context>(
             rampUp = RampUp.MAX,
             locales = setOf(AppLocale.EN_US, AppLocale.EN_CA),
             platforms = emptySet(),
@@ -243,7 +243,7 @@ class RuleMatchingTest {
 
     @Test
     fun `Given rules with notes, When comparing specificity, Then notes serve as tiebreaker`() {
-        val ruleA = Rule<Context>(
+        val ruleA =BaseRule<Context>(
             rampUp = RampUp.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
@@ -251,7 +251,7 @@ class RuleMatchingTest {
             note = "Rule A",
         )
 
-        val ruleB = Rule<Context>(
+        val ruleB =BaseRule<Context>(
             rampUp = RampUp.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
