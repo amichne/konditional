@@ -15,7 +15,7 @@ import kotlin.test.assertTrue
 
 /**
  * Tests for Condition evaluation logic.
- * Validates surjection sorting, rule matching, bucketing, and fallback behavior.
+ * Validates surjection sorting, rule matching, bucketing, and default value behavior.
  */
 class ConditionEvaluationTest {
 
@@ -40,7 +40,6 @@ class ConditionEvaluationTest {
             key = TestFlags.TEST_FLAG,
             bounds = emptyList(),
             defaultValue = "default",
-            fallbackValue = "fallback",
         )
 
         val result = condition.evaluate(ctx("11111111111111111111111111111111"))
@@ -60,7 +59,6 @@ class ConditionEvaluationTest {
             key = TestFlags.TEST_FLAG,
             bounds = listOf(rule.boundedBy("en-us-value")),
             defaultValue = "default",
-            fallbackValue = "fallback",
         )
 
         val matchingResult = condition.evaluate(ctx("22222222222222222222222222222222", locale = AppLocale.EN_US))
@@ -101,7 +99,6 @@ class ConditionEvaluationTest {
                 platformAndLocaleRule.boundedBy("ios-en-us"),
             ),
             defaultValue = "default",
-            fallbackValue = "fallback",
         )
 
         // Most specific rule should match
@@ -151,7 +148,6 @@ class ConditionEvaluationTest {
                 ruleA.boundedBy("value-a"),
             ),
             defaultValue = "default",
-            fallbackValue = "fallback",
         )
 
         // Rule A should win because of alphabetical ordering of notes
@@ -178,7 +174,6 @@ class ConditionEvaluationTest {
             key = TestFlags.TEST_FLAG,
             bounds = listOf(rule.boundedBy("enabled")),
             defaultValue = "disabled",
-            fallbackValue = "fallback",
         )
 
         // Test many IDs - none should get the enabled value
@@ -202,7 +197,6 @@ class ConditionEvaluationTest {
             key = TestFlags.TEST_FLAG,
             bounds = listOf(rule.boundedBy("enabled")),
             defaultValue = "disabled",
-            fallbackValue = "fallback",
         )
 
         // Test many IDs - all should get the enabled value
@@ -226,7 +220,6 @@ class ConditionEvaluationTest {
             key = TestFlags.TEST_FLAG,
             bounds = listOf(rule.boundedBy("enabled")),
             defaultValue = "disabled",
-            fallbackValue = "fallback",
         )
 
         val sampleSize = 5000
@@ -255,7 +248,6 @@ class ConditionEvaluationTest {
             key = TestFlags.TEST_FLAG,
             bounds = listOf(rule.boundedBy("enabled")),
             defaultValue = "disabled",
-            fallbackValue = "fallback",
         )
 
         val id = "88888888888888888888888888888888"
@@ -280,7 +272,6 @@ class ConditionEvaluationTest {
             key = TestFlags.TEST_FLAG,
             bounds = listOf(rule.boundedBy("enabled")),
             defaultValue = "disabled",
-            fallbackValue = "fallback",
             salt = "v1",
         )
 
@@ -288,7 +279,6 @@ class ConditionEvaluationTest {
             key = TestFlags.TEST_FLAG,
             bounds = listOf(rule.boundedBy("enabled")),
             defaultValue = "disabled",
-            fallbackValue = "fallback",
             salt = "v2",
         )
 
@@ -332,7 +322,6 @@ class ConditionEvaluationTest {
                 androidOnlyRule.boundedBy("android-value"),
             ),
             defaultValue = "default",
-            fallbackValue = "fallback",
         )
 
         val iosResult = condition.evaluate(ctx("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", platform = Platform.IOS))
@@ -368,7 +357,6 @@ class ConditionEvaluationTest {
                 lowSpecificityHighRampup.boundedBy("fallback"),
             ),
             defaultValue = "default",
-            fallbackValue = "fallback",
         )
 
         // Test many users - most should fall through to the less specific rule
@@ -420,7 +408,6 @@ class ConditionEvaluationTest {
                 specific.boundedBy("specific-value"),
             ),
             defaultValue = "default",
-            fallbackValue = "fallback",
         )
 
         // Condition should internally sort by internalSpecificity

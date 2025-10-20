@@ -16,7 +16,6 @@ data class Condition<S : Any, C : Context>(
     val key: Conditional<S, C>,
     val bounds: List<Surjection<S, C>>,
     val defaultValue: S,
-    val fallbackValue: S,
     val salt: String = "v1",
 ) {
     private companion object {

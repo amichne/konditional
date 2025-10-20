@@ -67,7 +67,6 @@ class FlagEntryTypeSafetyTest {
             key = BoolFlags.FEATURE_A,
             bounds = listOf(rule.boundedBy(true)),
             defaultValue = false,
-            fallbackValue = false,
         )
 
         val entry = Flags.FlagEntry(condition)
@@ -89,7 +88,6 @@ class FlagEntryTypeSafetyTest {
             key = BoolFlags.FEATURE_A,
             bounds = listOf(rule.boundedBy(true)),
             defaultValue = false,
-            fallbackValue = false,
         )
 
         val boolEntry = Flags.FlagEntry(boolCondition)
@@ -126,21 +124,18 @@ class FlagEntryTypeSafetyTest {
             key = BoolFlags.FEATURE_A,
             bounds = listOf(boolRule.boundedBy(true)),
             defaultValue = false,
-            fallbackValue = false,
         )
 
         val stringCondition = Condition(
             key = StringFlags.CONFIG_A,
             bounds = listOf(stringRule.boundedBy("value")),
             defaultValue = "default",
-            fallbackValue = "fallback",
         )
 
         val intCondition = Condition(
             key = IntFlags.TIMEOUT,
             bounds = listOf(intRule.boundedBy(30)),
             defaultValue = 10,
-            fallbackValue = 5,
         )
 
         val context = ctx("22222222222222222222222222222222")
@@ -182,14 +177,12 @@ class FlagEntryTypeSafetyTest {
             key = BoolFlags.FEATURE_A,
             bounds = listOf(boolRule.boundedBy(true)),
             defaultValue = false,
-            fallbackValue = false,
         )
 
         val stringCondition = Condition(
             key = StringFlags.CONFIG_A,
             bounds = listOf(stringRule.boundedBy("test")),
             defaultValue = "default",
-            fallbackValue = "fallback",
         )
 
         val snapshot = Flags.Snapshot(
@@ -318,7 +311,6 @@ class FlagEntryTypeSafetyTest {
             key = customIntFlag,
             bounds = listOf(rule.boundedBy(42)),
             defaultValue = 0,
-            fallbackValue = -1,
         )
 
         val entry = Flags.FlagEntry(condition)

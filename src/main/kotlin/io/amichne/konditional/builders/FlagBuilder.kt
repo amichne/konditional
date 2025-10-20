@@ -22,7 +22,6 @@ class FlagBuilder<S : Any, C : Context>(
 ) {
     private val surjections = mutableListOf<Surjection<S, C>>()
     private var defaultValue: S? = null
-    private var fallbackValue: S? = null
     private var defaultCoverage: Double? = null
     private var salt: String = "v1"
 
@@ -34,15 +33,13 @@ class FlagBuilder<S : Any, C : Context>(
      * flag has a meaningful state even when not explicitly set.
      *
      * @param value The default value to assign to the flag.
-     * @return The builder instance for chaining further configurations.
+     * @param coverage The coverage percentage for the default value.
      */
     fun default(
         value: S,
-        fallback: S? = null,
         coverage: Double? = null,
     ) {
         defaultValue = value
-        fallbackValue = fallback
         defaultCoverage = coverage
     }
 
@@ -80,7 +77,6 @@ class FlagBuilder<S : Any, C : Context>(
             key = key,
             bounds = surjections.toList(),
             defaultValue = defaultValue!!,
-            fallbackValue = fallbackValue ?: defaultValue!!,
             salt = salt,
         )
     }
