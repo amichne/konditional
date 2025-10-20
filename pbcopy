@@ -1,0 +1,391 @@
+diff --git a/src/main/kotlin/io/amichne/konditional/builders/FlagBuilder.kt b/src/main/kotlin/io/amichne/konditional/builders/FlagBuilder.kt
+index 80f0c05..7bc6484 100644
+--- a/src/main/kotlin/io/amichne/konditional/builders/FlagBuilder.kt
++++ b/src/main/kotlin/io/amichne/konditional/builders/FlagBuilder.kt
+@@ -6,6 +6,7 @@ import io.amichne.konditional.core.Conditional
+ import io.amichne.konditional.core.FeatureFlagDsl
+ import io.amichne.konditional.rules.Rule
+ import io.amichne.konditional.rules.Surjection
++import io.amichne.konditional.rules.Surjection.Companion.boundedBy
+ 
+ /**
+  * A builder class for constructing and configuring a feature flag.
+@@ -19,7 +20,6 @@ import io.amichne.konditional.rules.Surjection
+ class FlagBuilder<S : Any, C : Context>(
+     private val key: Conditional<S, C>,
+ ) {
+-    private val rules = mutableListOf<Rule<C>>()
+     private val surjections = mutableListOf<Surjection<S, C>>()
+     private var defaultValue: S? = null
+     private var fallbackValue: S? = null
+@@ -66,7 +66,7 @@ class FlagBuilder<S : Any, C : Context>(
+ 
+     @FeatureFlagDsl
+     infix fun Rule<C>.implies(value: S) {
+-        surjections += Surjection(this, value)
++        surjections += boundedBy(value)
+     }
+ 
+     /**
+diff --git a/src/main/kotlin/io/amichne/konditional/rules/Surjection.kt b/src/main/kotlin/io/amichne/konditional/rules/Surjection.kt
+index 1b51e04..c742e20 100644
+--- a/src/main/kotlin/io/amichne/konditional/rules/Surjection.kt
++++ b/src/main/kotlin/io/amichne/konditional/rules/Surjection.kt
+@@ -2,4 +2,9 @@ package io.amichne.konditional.rules
+ 
+ import io.amichne.konditional.context.Context
+ 
+-data class Surjection<S : Any, C : Context>(val rule: Rule<C>, val value: S)
++@ConsistentCopyVisibility
++data class Surjection<S : Any, C : Context> private constructor(val rule: Rule<C>, val value: S) {
++    companion object {
++        internal fun <S : Any, C : Context> Rule<C>.boundedBy(value: S): Surjection<S, C> = Surjection(this, value)
++    }
++}
+diff --git a/src/test/kotlin/io/amichne/konditional/context/ContextPolymorphismTest.kt b/src/test/kotlin/io/amichne/konditional/context/ContextPolymorphismTest.kt
+index 4b7b232..111564b 100644
+--- a/src/test/kotlin/io/amichne/konditional/context/ContextPolymorphismTest.kt
++++ b/src/test/kotlin/io/amichne/konditional/context/ContextPolymorphismTest.kt
+@@ -9,7 +9,6 @@ import io.amichne.konditional.rules.BaseRule
+ import io.amichne.konditional.rules.Rule
+ import io.amichne.konditional.rules.versions.FullyBound
+ import io.amichne.konditional.rules.versions.Unbounded
+-import io.amichne.konditional.rules.versions.VersionRange
+ import kotlin.test.Test
+ import kotlin.test.assertEquals
+ import kotlin.test.assertFalse
+@@ -155,6 +154,7 @@ class ContextPolymorphismTest {
+         assertEquals("variant-b", webCtx.evaluate(ExperimentFlags.HOMEPAGE_VARIANT))
+     }
+ 
++    @Suppress("USELESS_IS_CHECK")
+     @Test
+     fun `Given multiple custom contexts, When using different flags, Then contexts are independent`() {
+         config {
+diff --git a/src/test/kotlin/io/amichne/konditional/core/ConditionEvaluationTest.kt b/src/test/kotlin/io/amichne/konditional/core/ConditionEvaluationTest.kt
+index 788c384..65e6cb9 100644
+--- a/src/test/kotlin/io/amichne/konditional/core/ConditionEvaluationTest.kt
++++ b/src/test/kotlin/io/amichne/konditional/core/ConditionEvaluationTest.kt
+@@ -7,12 +7,10 @@ import io.amichne.konditional.context.Platform
+ import io.amichne.konditional.context.RampUp
+ import io.amichne.konditional.context.Version
+ import io.amichne.konditional.rules.BaseRule
+-import io.amichne.konditional.rules.Surjection
++import io.amichne.konditional.rules.Surjection.Companion.boundedBy
+ import io.amichne.konditional.rules.versions.Unbounded
+-import io.amichne.konditional.rules.versions.FullyBound
+ import kotlin.test.Test
+ import kotlin.test.assertEquals
+-import kotlin.test.assertFalse
+ import kotlin.test.assertTrue
+ 
+ /**
+@@ -60,7 +58,7 @@ class ConditionEvaluationTest {
+ 
+         val condition = Condition(
+             key = TestFlags.TEST_FLAG,
+-            bounds = listOf(Surjection(rule, "en-us-value")),
++            bounds = listOf(rule.boundedBy("en-us-value")),
+             defaultValue = "default",
+             fallbackValue = "fallback",
+         )
+@@ -98,9 +96,9 @@ class ConditionEvaluationTest {
+         val condition = Condition(
+             key = TestFlags.TEST_FLAG,
+             bounds = listOf(
+-                Surjection(generalRule, "general"),
+-                Surjection(platformRule, "ios"),
+-                Surjection(platformAndLocaleRule, "ios-en-us"),
++                generalRule.boundedBy("general"),
++                platformRule.boundedBy("ios"),
++                platformAndLocaleRule.boundedBy("ios-en-us"),
+             ),
+             defaultValue = "default",
+             fallbackValue = "fallback",
+@@ -149,15 +147,21 @@ class ConditionEvaluationTest {
+         val condition = Condition(
+             key = TestFlags.TEST_FLAG,
+             bounds = listOf(
+-                Surjection(ruleB, "value-b"),
+-                Surjection(ruleA, "value-a"),
++                ruleB.boundedBy("value-b"),
++                ruleA.boundedBy("value-a"),
+             ),
+             defaultValue = "default",
+             fallbackValue = "fallback",
+         )
+ 
+         // Rule A should win because of alphabetical ordering of notes
+-        val result = condition.evaluate(ctx("77777777777777777777777777777777", locale = AppLocale.EN_US, platform = Platform.IOS))
++        val result = condition.evaluate(
++            ctx(
++                "77777777777777777777777777777777",
++                locale = AppLocale.EN_US,
++                platform = Platform.IOS
++            )
++        )
+         assertEquals("value-a", result)
+     }
+ 
+@@ -172,7 +176,7 @@ class ConditionEvaluationTest {
+ 
+         val condition = Condition(
+             key = TestFlags.TEST_FLAG,
+-            bounds = listOf(Surjection(rule, "enabled")),
++            bounds = listOf(rule.boundedBy("enabled")),
+             defaultValue = "disabled",
+             fallbackValue = "fallback",
+         )
+@@ -196,7 +200,7 @@ class ConditionEvaluationTest {
+ 
+         val condition = Condition(
+             key = TestFlags.TEST_FLAG,
+-            bounds = listOf(Surjection(rule, "enabled")),
++            bounds = listOf(rule.boundedBy("enabled")),
+             defaultValue = "disabled",
+             fallbackValue = "fallback",
+         )
+@@ -220,7 +224,7 @@ class ConditionEvaluationTest {
+ 
+         val condition = Condition(
+             key = TestFlags.TEST_FLAG,
+-            bounds = listOf(Surjection(rule, "enabled")),
++            bounds = listOf(rule.boundedBy("enabled")),
+             defaultValue = "disabled",
+             fallbackValue = "fallback",
+         )
+@@ -249,7 +253,7 @@ class ConditionEvaluationTest {
+ 
+         val condition = Condition(
+             key = TestFlags.TEST_FLAG,
+-            bounds = listOf(Surjection(rule, "enabled")),
++            bounds = listOf(rule.boundedBy("enabled")),
+             defaultValue = "disabled",
+             fallbackValue = "fallback",
+         )
+@@ -274,7 +278,7 @@ class ConditionEvaluationTest {
+ 
+         val conditionV1 = Condition(
+             key = TestFlags.TEST_FLAG,
+-            bounds = listOf(Surjection(rule, "enabled")),
++            bounds = listOf(rule.boundedBy("enabled")),
+             defaultValue = "disabled",
+             fallbackValue = "fallback",
+             salt = "v1",
+@@ -282,7 +286,7 @@ class ConditionEvaluationTest {
+ 
+         val conditionV2 = Condition(
+             key = TestFlags.TEST_FLAG,
+-            bounds = listOf(Surjection(rule, "enabled")),
++            bounds = listOf(rule.boundedBy("enabled")),
+             defaultValue = "disabled",
+             fallbackValue = "fallback",
+             salt = "v2",
+@@ -324,8 +328,8 @@ class ConditionEvaluationTest {
+         val condition = Condition(
+             key = TestFlags.TEST_FLAG,
+             bounds = listOf(
+-                Surjection(iosOnlyRule, "ios-value"),
+-                Surjection(androidOnlyRule, "android-value"),
++                iosOnlyRule.boundedBy("ios-value"),
++                androidOnlyRule.boundedBy("android-value"),
+             ),
+             defaultValue = "default",
+             fallbackValue = "fallback",
+@@ -360,8 +364,8 @@ class ConditionEvaluationTest {
+         val condition = Condition(
+             key = TestFlags.TEST_FLAG,
+             bounds = listOf(
+-                Surjection(highSpecificityLowRampup, "specific"),
+-                Surjection(lowSpecificityHighRampup, "fallback"),
++                highSpecificityLowRampup.boundedBy("specific"),
++                lowSpecificityHighRampup.boundedBy("fallback"),
+             ),
+             defaultValue = "default",
+             fallbackValue = "fallback",
+@@ -412,8 +416,8 @@ class ConditionEvaluationTest {
+         val condition = Condition(
+             key = TestFlags.TEST_FLAG,
+             bounds = listOf(
+-                Surjection(general, "general-value"),
+-                Surjection(specific, "specific-value"),
++                general.boundedBy("general-value"),
++                specific.boundedBy("specific-value"),
+             ),
+             defaultValue = "default",
+             fallbackValue = "fallback",
+@@ -421,7 +425,13 @@ class ConditionEvaluationTest {
+ 
+         // Condition should internally sort by specificity
+         // More specific rule should match first
+-        val result = condition.evaluate(ctx("dddddddddddddddddddddddddddddddd", locale = AppLocale.EN_US, platform = Platform.IOS))
++        val result = condition.evaluate(
++            ctx(
++                "dddddddddddddddddddddddddddddddd",
++                locale = AppLocale.EN_US,
++                platform = Platform.IOS
++            )
++        )
+         assertEquals("specific-value", result)
+     }
+ }
+diff --git a/src/test/kotlin/io/amichne/konditional/core/FlagEntryTypeSafetyTest.kt b/src/test/kotlin/io/amichne/konditional/core/FlagEntryTypeSafetyTest.kt
+index cbdcc8d..b11df5f 100644
+--- a/src/test/kotlin/io/amichne/konditional/core/FlagEntryTypeSafetyTest.kt
++++ b/src/test/kotlin/io/amichne/konditional/core/FlagEntryTypeSafetyTest.kt
+@@ -8,7 +8,7 @@ import io.amichne.konditional.context.Platform
+ import io.amichne.konditional.context.Version
+ import io.amichne.konditional.core.Flags.evaluate
+ import io.amichne.konditional.rules.BaseRule
+-import io.amichne.konditional.rules.Surjection
++import io.amichne.konditional.rules.Surjection.Companion.boundedBy
+ import io.amichne.konditional.rules.versions.Unbounded
+ import kotlin.test.Test
+ import kotlin.test.assertEquals
+@@ -65,7 +65,7 @@ class FlagEntryTypeSafetyTest {
+ 
+         val condition = Condition(
+             key = BoolFlags.FEATURE_A,
+-            bounds = listOf(Surjection(rule, true)),
++            bounds = listOf(rule.boundedBy(true)),
+             defaultValue = false,
+             fallbackValue = false,
+         )
+@@ -87,7 +87,7 @@ class FlagEntryTypeSafetyTest {
+ 
+         val boolCondition = Condition(
+             key = BoolFlags.FEATURE_A,
+-            bounds = listOf(Surjection(rule, true)),
++            bounds = listOf(rule.boundedBy(true)),
+             defaultValue = false,
+             fallbackValue = false,
+         )
+@@ -124,21 +124,21 @@ class FlagEntryTypeSafetyTest {
+ 
+         val boolCondition = Condition(
+             key = BoolFlags.FEATURE_A,
+-            bounds = listOf(Surjection(boolRule, true)),
++            bounds = listOf(boolRule.boundedBy(true)),
+             defaultValue = false,
+             fallbackValue = false,
+         )
+ 
+         val stringCondition = Condition(
+             key = StringFlags.CONFIG_A,
+-            bounds = listOf(Surjection(stringRule, "value")),
++            bounds = listOf(stringRule.boundedBy("value")),
+             defaultValue = "default",
+             fallbackValue = "fallback",
+         )
+ 
+         val intCondition = Condition(
+             key = IntFlags.TIMEOUT,
+-            bounds = listOf(Surjection(intRule, 30)),
++            bounds = listOf(intRule.boundedBy(30)),
+             defaultValue = 10,
+             fallbackValue = 5,
+         )
+@@ -171,16 +171,23 @@ class FlagEntryTypeSafetyTest {
+             versionRange = Unbounded,
+         )
+ 
++        val stringRule = BaseRule<Context>(
++            rampUp = io.amichne.konditional.context.RampUp.MAX,
++            locales = emptySet(),
++            platforms = emptySet(),
++            versionRange = Unbounded,
++        )
++
+         val boolCondition = Condition(
+             key = BoolFlags.FEATURE_A,
+-            bounds = listOf(Surjection(boolRule, true)),
++            bounds = listOf(boolRule.boundedBy(true)),
+             defaultValue = false,
+             fallbackValue = false,
+         )
+ 
+         val stringCondition = Condition(
+             key = StringFlags.CONFIG_A,
+-            bounds = listOf(Surjection(boolRule, "test")),
++            bounds = listOf(stringRule.boundedBy("test")),
+             defaultValue = "default",
+             fallbackValue = "fallback",
+         )
+@@ -309,7 +316,7 @@ class FlagEntryTypeSafetyTest {
+ 
+         val condition = Condition(
+             key = customIntFlag,
+-            bounds = listOf(Surjection(rule, 42)),
++            bounds = listOf(rule.boundedBy(42)),
+             defaultValue = 0,
+             fallbackValue = -1,
+         )
+diff --git a/src/test/kotlin/io/amichne/konditional/core/FlagsTests.kt b/src/test/kotlin/io/amichne/konditional/core/FlagsTests.kt
+index ccc1356..135d6d7 100644
+--- a/src/test/kotlin/io/amichne/konditional/core/FlagsTests.kt
++++ b/src/test/kotlin/io/amichne/konditional/core/FlagsTests.kt
+@@ -8,7 +8,6 @@ import io.amichne.konditional.context.RampUp
+ import io.amichne.konditional.context.Version
+ import io.amichne.konditional.core.Flags.evaluate
+ import io.amichne.konditional.example.SampleFeatureEnum
+-import org.junit.jupiter.api.Disabled
+ import java.util.concurrent.CountDownLatch
+ import java.util.concurrent.Executors
+ import java.util.concurrent.TimeUnit
+@@ -324,13 +323,13 @@ class FlagsTests {
+             }
+         }
+ 
+-        val N = 10000
++        val times = 10000
+         var trues = 0
+-        for (i in 0 until N) {
++        repeat(times) {
+             val id = Random.nextBytes(16).joinToString("") { "%02x".format(it) }
+             if (ctx(id).evaluate(SampleFeatureEnum.UNIFORM50)) trues++
+         }
+-        val pct = trues.toDouble() / N
++        val pct = trues.toDouble() / times
+         assertTrue(pct in 0.47..0.53, "Observed $pct")
+     }
+ 
+diff --git a/src/test/kotlin/io/amichne/konditional/core/StringFlagsTest.kt b/src/test/kotlin/io/amichne/konditional/core/StringFlagsTest.kt
+index 2a67135..7f82d1b 100644
+--- a/src/test/kotlin/io/amichne/konditional/core/StringFlagsTest.kt
++++ b/src/test/kotlin/io/amichne/konditional/core/StringFlagsTest.kt
+@@ -22,7 +22,7 @@ class StringFlagsTest {
+         WELCOME_MESSAGE("welcome_message"),
+         ;
+ 
+-        override fun with(function: FlagBuilder<String, Context>.() -> Unit) = update(FlagBuilder(this).apply(function).build())
++        override fun with(build: FlagBuilder<String, Context>.() -> Unit) = update(FlagBuilder(this).apply(build).build())
+     }
+ 
+     private fun ctx(
+@@ -161,11 +161,11 @@ class StringFlagsTest {
+         }
+ 
+         // Sample many users to verify coverage distribution
+-        val N = 5000
++        val samples = 5000
+         var newEndpointCount = 0
+         var oldEndpointCount = 0
+ 
+-        for (i in 0 until N) {
++        for (i in 0 until samples) {
+             val id = "%032x".format(i)
+             val result = ctx(id).evaluate(StringFeatureFlags.API_ENDPOINT)
+             when (result) {
+@@ -175,10 +175,10 @@ class StringFlagsTest {
+         }
+ 
+         // Should have roughly 30% new, 70% old (with some tolerance)
+-        val newPct = newEndpointCount.toDouble() / N
++        val newPct = newEndpointCount.toDouble() / samples
+         assertTrue(newPct in 0.27..0.33, "Expected ~30% new endpoint, got ${newPct * 100}%")
+ 
+-        val oldPct = oldEndpointCount.toDouble() / N
++        val oldPct = oldEndpointCount.toDouble() / samples
+         assertTrue(oldPct in 0.67..0.73, "Expected ~70% old endpoint, got ${oldPct * 100}%")
+     }
+ 

@@ -7,12 +7,10 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.rules.BaseRule
-import io.amichne.konditional.rules.Surjection
+import io.amichne.konditional.rules.Surjection.Companion.boundedBy
 import io.amichne.konditional.rules.versions.Unbounded
-import io.amichne.konditional.rules.versions.FullyBound
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
@@ -60,7 +58,7 @@ class ConditionEvaluationTest {
 
         val condition = Condition(
             key = TestFlags.TEST_FLAG,
-            bounds = listOf(Surjection(rule, "en-us-value")),
+            bounds = listOf(rule.boundedBy("en-us-value")),
             defaultValue = "default",
             fallbackValue = "fallback",
         )
@@ -98,9 +96,9 @@ class ConditionEvaluationTest {
         val condition = Condition(
             key = TestFlags.TEST_FLAG,
             bounds = listOf(
-                Surjection(generalRule, "general"),
-                Surjection(platformRule, "ios"),
-                Surjection(platformAndLocaleRule, "ios-en-us"),
+                generalRule.boundedBy("general"),
+                platformRule.boundedBy("ios"),
+                platformAndLocaleRule.boundedBy("ios-en-us"),
             ),
             defaultValue = "default",
             fallbackValue = "fallback",
@@ -149,15 +147,21 @@ class ConditionEvaluationTest {
         val condition = Condition(
             key = TestFlags.TEST_FLAG,
             bounds = listOf(
-                Surjection(ruleB, "value-b"),
-                Surjection(ruleA, "value-a"),
+                ruleB.boundedBy("value-b"),
+                ruleA.boundedBy("value-a"),
             ),
             defaultValue = "default",
             fallbackValue = "fallback",
         )
 
         // Rule A should win because of alphabetical ordering of notes
-        val result = condition.evaluate(ctx("77777777777777777777777777777777", locale = AppLocale.EN_US, platform = Platform.IOS))
+        val result = condition.evaluate(
+            ctx(
+                "77777777777777777777777777777777",
+                locale = AppLocale.EN_US,
+                platform = Platform.IOS
+            )
+        )
         assertEquals("value-a", result)
     }
 
@@ -172,7 +176,7 @@ class ConditionEvaluationTest {
 
         val condition = Condition(
             key = TestFlags.TEST_FLAG,
-            bounds = listOf(Surjection(rule, "enabled")),
+            bounds = listOf(rule.boundedBy("enabled")),
             defaultValue = "disabled",
             fallbackValue = "fallback",
         )
@@ -196,7 +200,7 @@ class ConditionEvaluationTest {
 
         val condition = Condition(
             key = TestFlags.TEST_FLAG,
-            bounds = listOf(Surjection(rule, "enabled")),
+            bounds = listOf(rule.boundedBy("enabled")),
             defaultValue = "disabled",
             fallbackValue = "fallback",
         )
@@ -220,7 +224,7 @@ class ConditionEvaluationTest {
 
         val condition = Condition(
             key = TestFlags.TEST_FLAG,
-            bounds = listOf(Surjection(rule, "enabled")),
+            bounds = listOf(rule.boundedBy("enabled")),
             defaultValue = "disabled",
             fallbackValue = "fallback",
         )
@@ -249,7 +253,7 @@ class ConditionEvaluationTest {
 
         val condition = Condition(
             key = TestFlags.TEST_FLAG,
-            bounds = listOf(Surjection(rule, "enabled")),
+            bounds = listOf(rule.boundedBy("enabled")),
             defaultValue = "disabled",
             fallbackValue = "fallback",
         )
@@ -274,7 +278,7 @@ class ConditionEvaluationTest {
 
         val conditionV1 = Condition(
             key = TestFlags.TEST_FLAG,
-            bounds = listOf(Surjection(rule, "enabled")),
+            bounds = listOf(rule.boundedBy("enabled")),
             defaultValue = "disabled",
             fallbackValue = "fallback",
             salt = "v1",
@@ -282,7 +286,7 @@ class ConditionEvaluationTest {
 
         val conditionV2 = Condition(
             key = TestFlags.TEST_FLAG,
-            bounds = listOf(Surjection(rule, "enabled")),
+            bounds = listOf(rule.boundedBy("enabled")),
             defaultValue = "disabled",
             fallbackValue = "fallback",
             salt = "v2",
@@ -324,8 +328,8 @@ class ConditionEvaluationTest {
         val condition = Condition(
             key = TestFlags.TEST_FLAG,
             bounds = listOf(
-                Surjection(iosOnlyRule, "ios-value"),
-                Surjection(androidOnlyRule, "android-value"),
+                iosOnlyRule.boundedBy("ios-value"),
+                androidOnlyRule.boundedBy("android-value"),
             ),
             defaultValue = "default",
             fallbackValue = "fallback",
@@ -360,8 +364,8 @@ class ConditionEvaluationTest {
         val condition = Condition(
             key = TestFlags.TEST_FLAG,
             bounds = listOf(
-                Surjection(highSpecificityLowRampup, "specific"),
-                Surjection(lowSpecificityHighRampup, "fallback"),
+                highSpecificityLowRampup.boundedBy("specific"),
+                lowSpecificityHighRampup.boundedBy("fallback"),
             ),
             defaultValue = "default",
             fallbackValue = "fallback",
@@ -412,8 +416,8 @@ class ConditionEvaluationTest {
         val condition = Condition(
             key = TestFlags.TEST_FLAG,
             bounds = listOf(
-                Surjection(general, "general-value"),
-                Surjection(specific, "specific-value"),
+                general.boundedBy("general-value"),
+                specific.boundedBy("specific-value"),
             ),
             defaultValue = "default",
             fallbackValue = "fallback",
@@ -421,7 +425,13 @@ class ConditionEvaluationTest {
 
         // Condition should internally sort by specificity
         // More specific rule should match first
-        val result = condition.evaluate(ctx("dddddddddddddddddddddddddddddddd", locale = AppLocale.EN_US, platform = Platform.IOS))
+        val result = condition.evaluate(
+            ctx(
+                "dddddddddddddddddddddddddddddddd",
+                locale = AppLocale.EN_US,
+                platform = Platform.IOS
+            )
+        )
         assertEquals("specific-value", result)
     }
 }

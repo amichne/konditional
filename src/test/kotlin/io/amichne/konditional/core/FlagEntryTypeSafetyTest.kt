@@ -8,7 +8,7 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Flags.evaluate
 import io.amichne.konditional.rules.BaseRule
-import io.amichne.konditional.rules.Surjection
+import io.amichne.konditional.rules.Surjection.Companion.boundedBy
 import io.amichne.konditional.rules.versions.Unbounded
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -65,7 +65,7 @@ class FlagEntryTypeSafetyTest {
 
         val condition = Condition(
             key = BoolFlags.FEATURE_A,
-            bounds = listOf(Surjection(rule, true)),
+            bounds = listOf(rule.boundedBy(true)),
             defaultValue = false,
             fallbackValue = false,
         )
@@ -87,7 +87,7 @@ class FlagEntryTypeSafetyTest {
 
         val boolCondition = Condition(
             key = BoolFlags.FEATURE_A,
-            bounds = listOf(Surjection(rule, true)),
+            bounds = listOf(rule.boundedBy(true)),
             defaultValue = false,
             fallbackValue = false,
         )
@@ -124,21 +124,21 @@ class FlagEntryTypeSafetyTest {
 
         val boolCondition = Condition(
             key = BoolFlags.FEATURE_A,
-            bounds = listOf(Surjection(boolRule, true)),
+            bounds = listOf(boolRule.boundedBy(true)),
             defaultValue = false,
             fallbackValue = false,
         )
 
         val stringCondition = Condition(
             key = StringFlags.CONFIG_A,
-            bounds = listOf(Surjection(stringRule, "value")),
+            bounds = listOf(stringRule.boundedBy("value")),
             defaultValue = "default",
             fallbackValue = "fallback",
         )
 
         val intCondition = Condition(
             key = IntFlags.TIMEOUT,
-            bounds = listOf(Surjection(intRule, 30)),
+            bounds = listOf(intRule.boundedBy(30)),
             defaultValue = 10,
             fallbackValue = 5,
         )
@@ -171,16 +171,23 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded,
         )
 
+        val stringRule = BaseRule<Context>(
+            rampUp = io.amichne.konditional.context.RampUp.MAX,
+            locales = emptySet(),
+            platforms = emptySet(),
+            versionRange = Unbounded,
+        )
+
         val boolCondition = Condition(
             key = BoolFlags.FEATURE_A,
-            bounds = listOf(Surjection(boolRule, true)),
+            bounds = listOf(boolRule.boundedBy(true)),
             defaultValue = false,
             fallbackValue = false,
         )
 
         val stringCondition = Condition(
             key = StringFlags.CONFIG_A,
-            bounds = listOf(Surjection(boolRule, "test")),
+            bounds = listOf(stringRule.boundedBy("test")),
             defaultValue = "default",
             fallbackValue = "fallback",
         )
@@ -309,7 +316,7 @@ class FlagEntryTypeSafetyTest {
 
         val condition = Condition(
             key = customIntFlag,
-            bounds = listOf(Surjection(rule, 42)),
+            bounds = listOf(rule.boundedBy(42)),
             defaultValue = 0,
             fallbackValue = -1,
         )

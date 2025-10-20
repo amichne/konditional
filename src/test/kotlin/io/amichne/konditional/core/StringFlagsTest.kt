@@ -22,7 +22,7 @@ class StringFlagsTest {
         WELCOME_MESSAGE("welcome_message"),
         ;
 
-        override fun with(function: FlagBuilder<String, Context>.() -> Unit) = update(FlagBuilder(this).apply(function).build())
+        override fun with(build: FlagBuilder<String, Context>.() -> Unit) = update(FlagBuilder(this).apply(build).build())
     }
 
     private fun ctx(
@@ -161,11 +161,11 @@ class StringFlagsTest {
         }
 
         // Sample many users to verify coverage distribution
-        val N = 5000
+        val samples = 5000
         var newEndpointCount = 0
         var oldEndpointCount = 0
 
-        for (i in 0 until N) {
+        for (i in 0 until samples) {
             val id = "%032x".format(i)
             val result = ctx(id).evaluate(StringFeatureFlags.API_ENDPOINT)
             when (result) {
@@ -175,10 +175,10 @@ class StringFlagsTest {
         }
 
         // Should have roughly 30% new, 70% old (with some tolerance)
-        val newPct = newEndpointCount.toDouble() / N
+        val newPct = newEndpointCount.toDouble() / samples
         assertTrue(newPct in 0.27..0.33, "Expected ~30% new endpoint, got ${newPct * 100}%")
 
-        val oldPct = oldEndpointCount.toDouble() / N
+        val oldPct = oldEndpointCount.toDouble() / samples
         assertTrue(oldPct in 0.67..0.73, "Expected ~70% old endpoint, got ${oldPct * 100}%")
     }
 

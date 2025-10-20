@@ -9,7 +9,6 @@ import io.amichne.konditional.rules.BaseRule
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.rules.versions.Unbounded
-import io.amichne.konditional.rules.versions.VersionRange
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -155,6 +154,7 @@ class ContextPolymorphismTest {
         assertEquals("variant-b", webCtx.evaluate(ExperimentFlags.HOMEPAGE_VARIANT))
     }
 
+    @Suppress("USELESS_IS_CHECK")
     @Test
     fun `Given multiple custom contexts, When using different flags, Then contexts are independent`() {
         config {

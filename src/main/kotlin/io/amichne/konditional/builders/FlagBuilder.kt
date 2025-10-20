@@ -6,6 +6,7 @@ import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.core.FeatureFlagDsl
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.Surjection
+import io.amichne.konditional.rules.Surjection.Companion.boundedBy
 
 /**
  * A builder class for constructing and configuring a feature flag.
@@ -19,7 +20,6 @@ import io.amichne.konditional.rules.Surjection
 class FlagBuilder<S : Any, C : Context>(
     private val key: Conditional<S, C>,
 ) {
-    private val rules = mutableListOf<Rule<C>>()
     private val surjections = mutableListOf<Surjection<S, C>>()
     private var defaultValue: S? = null
     private var fallbackValue: S? = null
@@ -66,7 +66,7 @@ class FlagBuilder<S : Any, C : Context>(
 
     @FeatureFlagDsl
     infix fun Rule<C>.implies(value: S) {
-        surjections += Surjection(this, value)
+        surjections += boundedBy(value)
     }
 
     /**
