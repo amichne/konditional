@@ -1,190 +1,225 @@
 # Konditional
 
-Generic, deterministic feature evaluation for any non-null type.  
-Flags are fully type-safe and extensible.  
-Evaluation depends on a **flexible context** to drive precise, strongly-typed rules
-Thread-safe, dependency-free, and deterministic.
+**Type-safe, deterministic feature flags for Kotlin**
 
----
+Konditional is a lightweight feature flag framework that puts type safety and developer experience first. Unlike traditional feature flag systems that force you into boolean flags and string-based configuration, Konditional works with your domain types and provides compile-time guarantees.
 
-## Core concepts
+## Why Konditional?
 
-### Generic flags  
-A `Flag<T : Any>` may return any non-null value type (`Boolean`, `Enum`, `String`, numeric, or domain-specific).  
-All rule matching and deterministic bucketing operate generically, with no special casing by type.
+### Type Safety at Every Level
+- **Any value type**: Return `Boolean`, `String`, `Int`, enums, data classes, or any custom type
+- **Compile-time safety**: No runtime type errors or string-based lookups
+- **Generic contexts**: Define custom evaluation contexts with your own business logic
+- **Zero unchecked casts**: Type safety is maintained throughout the entire evaluation chain
 
-### Context-based evaluation
-A `Contextual` implementation (or the provided `Context`)defines what information the system can read
-(e.g. `locale`, `platform`, `version`, `stableId`, or any domain data). Evaluation of rules are 
-dynamic along unconstrained axis of this interface, while retaining bucketing sematics via
-the `StableId` and `HexId`, which federate guarantable creation.
-Consumers can implement their own context sources (API request, device info, session attributes) to fulfill dynamic needs.
+### Deterministic & Reliable
+- **Stable bucketing**: Users get consistent experiences across sessions using SHA-256 based hashing
+- **Independent flags**: Each flag has its own bucketing space - no cross-contamination
+- **Predictable rollouts**: Gradual rollouts (0-100%) with deterministic user assignment
+- **Thread-safe**: Lock-free reads with atomic snapshot updates
 
-### Deterministic bucketing  
-Each evaluation uses `SHA-256("$salt:$flagKey:$stableId")` to derive a stable bucket `[0, 9999]`.  
-This ensures repeatable behavior across sessions for the same stable ID and condition.  
-Flag independence is guaranteed because the condition key contributes to the hash input.
+### Flexible & Extensible
+- **Custom contexts**: Define your own context with organization IDs, user roles, experiments, or any domain data
+- **Rule-based targeting**: Target by platform, locale, version, or extend with custom rules
+- **Specificity ordering**: More specific rules automatically take precedence
+- **DSL configuration**: Clean, type-safe Kotlin DSL for defining flags
 
-### Rule-based resolution  
-Each condition defines an ordered list of `Surjection<T>` entries.  
-Each `Surjection` links a `Rule` and an output value.  
-The first matching rule that includes the user (via its coverage) determines the value.  
-If none match, eligibility is rechecked for the default value; otherwise fallback applies.
+### Zero Dependencies
+- Pure Kotlin with no external dependencies
+- No reflection or runtime code generation
+- No dependency injection framework required
+- Easy to integrate into any project
 
----
-
-## Evaluation flow
-
-1. Read the current snapshot from `Flags`.  
-2. Locate the `Flag<T>` by key or type.  
-3. Evaluate the list of `Rule`'s using the current `Context`.
-4. Resolve the most specific matching rule, checking coverage and eligibility.  
-5. Return the resolved value of type `T` the selected `Rule` maps onto (via `Surjection`).
-
-All reads are lock-free. Updates atomically replace the snapshot.
-
-> Scoped, short-lived test scaffolding coming soon!
-
----
-
-## Rule system
-
-Rules combine optional constraints:
-
-- `Locale`
-- `Platform`
-- `VersionRange`
-- Arbitrary domain predicates via custom rule types
-
-Each rule defines:
-
-- `coveragePct`: what fraction of stable buckets are included  
-- `value`: what to return when matched  
-
-Default and fallback values apply when no rules match or eligibility fails.
-
-🚧  **Coming soon!**  🚧
-
-> This will be overhauled in the immedaite future, with aspirations of generifying, and allowing extension by users seamlessly. Rules will likely have a generic bound, which will specify the supported `Contextual` types. This means `Surjection` will also be bound by this type, though API surface shouldn't functionally be different.
-
----
-
-## Version handling
-
-Semantic version ranges use precise bounds:
-
-- Unbounded, left-bounded, right-bounded, or fully bounded  
-- Inclusive/exclusive endpoints validated by tests  
-- Comparison logic based on parsed `major.minor.patch` semantics
-
----
-
-## Type safety and determinism
-
-- `Flag<T>` preserves type identity through evaluation.  
-- Bucketing and rule matching are pure and deterministic.  
-- Context variability is isolated behind the `ContextFacade`.  
-- Tests guarantee no collisions or cross-condition interference.
-
----
-
-## Usage
+## Quick Example
 
 ```kotlin
-// Define a typed condition
-enum class CustomFlags : FeatureFlag<Boolean> {
-    SHOW_NEW_UI
+// Define your flags with an enum
+enum class Features(override val key: String) : Conditional<Boolean, Context> {
+    NEW_CHECKOUT("new_checkout"),
+    DARK_MODE("dark_mode"),
+    ;
+
+    override fun with(build: FlagBuilder<Boolean, Context>.() -> Unit) =
+        update(FlagBuilder(this).apply(build).build())
+}
+
+// Configure with a type-safe DSL
+config {
+    Features.NEW_CHECKOUT with {
+        default(false)
+
+        // 25% rollout for iOS users on version 2.0+
+        boundary {
+            platforms(Platform.IOS)
+            versions {
+                min(2, 0)
+            }
+            rampUp = RampUp.of(25.0)
+        } implies true
+    }
+
+    Features.DARK_MODE with {
+        default(false)
+
+        // Full rollout for all platforms
+        boundary {
+            rampUp = RampUp.MAX
+        } implies true
+    }
 }
 
 // Evaluate with context
 val context = Context(
     locale = AppLocale.EN_US,
     platform = Platform.IOS,
-    appVersion = Version(7, 10, 1),
-    stableId = StableId.of("00000000000000000000000000000000")
+    appVersion = Version(2, 5, 0),
+    stableId = StableId.of("user-unique-id")
 )
-context.evaluate() // -> Map<FeatureFlag<*>, Any?>
-context.evaluate(CustomFlags.SHOW_NEW_UI) // -> Boolean
+
+val showNewCheckout = context.evaluate(Features.NEW_CHECKOUT) // Boolean
 ```
 
----
+## Beyond Boolean Flags
 
-## DSL example
+Use any type that makes sense for your domain:
 
 ```kotlin
-enum class DomainProvidedEnum : FeatureFlag<Boolean> {
-    CUSTOM_CASE,
-    USE_LIGHTWEIGHT_HOME
+// String configuration
+enum class ApiConfig(override val key: String) : Conditional<String, Context> {
+    ENDPOINT("api_endpoint"),
+    ;
+
+    override fun with(build: FlagBuilder<String, Context>.() -> Unit) =
+        update(FlagBuilder(this).apply(build).build())
 }
 
 config {
-    DomainProvidedEnum.CUSTOM_CASE withRules {
-        default(value = false)
-        rule {
-            platforms(Platform.IOS)
-            version {
-                leftBound(7, 10, 0)
-            }
-            note("US iOS staged rollout")
-            rampUp = 50.0
-        } gives true
-        rule {
-            locales(AppLocale.HI_IN)
-            note("IN Hindi full")
-        } gives true
+    ApiConfig.ENDPOINT with {
+        default("https://api.prod.example.com")
+        boundary {
+            platforms(Platform.WEB)
+        } implies "https://api.staging.example.com"
     }
-    DomainProvidedEnum.USE_LIGHTWEIGHT_HOME withRules {
-        default(value = true, coverage = 100.0)
-        rule {
-            platforms(Platform.ANDROID)
-            version {
-                rightBound(6, 4, 99)
-            }
-            note("Android legacy off")
-        } gives false
+}
+
+// Data class configuration
+data class ThemeConfig(
+    val primaryColor: String,
+    val darkModeEnabled: Boolean,
+    val fontSize: Int
+)
+
+enum class AppTheme(override val key: String) : Conditional<ThemeConfig, Context> {
+    THEME("app_theme"),
+    ;
+
+    override fun with(build: FlagBuilder<ThemeConfig, Context>.() -> Unit) =
+        update(FlagBuilder(this).apply(build).build())
+}
+
+config {
+    AppTheme.THEME with {
+        default(ThemeConfig("#FFFFFF", false, 14))
+        boundary {
+            locales(AppLocale.EN_US)
+        } implies ThemeConfig("#1E1E1E", true, 16)
     }
 }
 ```
 
----
+## Custom Contexts for Your Domain
 
-## Test coverage
+Extend the base `Context` interface to add your own business logic:
 
-All tests validate:
+```kotlin
+data class EnterpriseContext(
+    override val locale: AppLocale,
+    override val platform: Platform,
+    override val appVersion: Version,
+    override val stableId: StableId,
+    // Your custom fields
+    val organizationId: String,
+    val subscriptionTier: SubscriptionTier,
+    val userRole: UserRole,
+) : Context
 
-- Deterministic hashing and bucket assignment  
-- Generic type safety across condition types  
-- Rule ordering and specificity  
-- Coverage boundary correctness  
-- Version range comparison logic  
-- Default and fallback eligibility behavior  
-- Independence between flags
+// Use with enterprise-specific flags
+enum class EnterpriseFeatures(
+    override val key: String
+) : Conditional<Boolean, EnterpriseContext> {
+    ADVANCED_ANALYTICS("advanced_analytics"),
+    BULK_EXPORT("bulk_export"),
+    ;
 
-All current tests pass, confirming deterministic evaluation for arbitrary non-null types.
+    override fun with(build: FlagBuilder<Boolean, EnterpriseContext>.() -> Unit) =
+        update(FlagBuilder(this).apply(build).build())
+}
+```
 
----
+## Use Cases
 
-## Design principles
+Konditional is perfect for:
 
-- **Generic by default** — Any non-null return type supported.  
-- **Context-agnostic** — Context is provided via an interface, not fixed structure.  
-- **Deterministic and pure** — Same inputs always yield the same output.  
-- **Zero dependencies** — No DI framework or reflection.  
-- **Safe concurrency** — Atomic snapshot updates.  
+- **Feature Rollouts**: Gradually roll out new features to a percentage of users
+- **A/B Testing**: Test different variants with deterministic user assignment
+- **Configuration Management**: Type-safe configuration that varies by environment, platform, or user
+- **Canary Deployments**: Test risky changes with a small subset of users first
+- **Kill Switches**: Quickly disable features in production without redeploying
+- **Multi-tenancy**: Different feature sets for different organizations or subscription tiers
+- **Regional Customization**: Different experiences for different locales or regions
+- **Platform-Specific Features**: Enable features only on specific platforms (iOS, Android, Web)
 
----
+## Key Benefits
 
-## Implementation map
+### For Developers
+- **Compile-time errors** instead of runtime surprises
+- **IDE auto-completion** for all flag names and configuration
+- **Refactoring support**: Rename flags safely with IDE refactoring tools
+- **Type-safe DSL**: Configuration errors caught at compile time
 
-- `Flag<T>` — core generic condition logic  
-- `Flags` — snapshot registry and entrypoint  
-- `Surjection<T>` — rule/value pair  
-- `Rule` — match logic and coverage  
-- `VersionRange` — semantic version constraints  
-- `Context` — extension point for environment data
-    - _Changes incoming!_
-- `tests/` — deterministic behavior validation  
+### For Teams
+- **Decouple deployment from release**: Ship code dark, enable features later
+- **Reduce risk**: Roll out features gradually and monitor impact
+- **Fast rollback**: Disable problematic features instantly without redeploying
+- **Better testing**: Test multiple configurations without code changes
 
----
+### For Operations
+- **Deterministic behavior**: Same user always gets same experience
+- **Thread-safe**: No locks on read path, atomic updates
+- **Low overhead**: Pure computation, no network calls or database queries
+- **Observable**: Easily log which flags are evaluated and their values
 
-All tests confirm correctness of this generic, context-flexible feature evaluation engine.
+## Documentation
+
+- **[Architecture Overview](docs/architecture.md)**: High-level design and core concepts
+- **[Context Polymorphism](docs/context-polymorphism.md)**: Creating custom contexts for your domain
+- **[Conditional Types](docs/conditional-types.md)**: Using custom value types beyond Boolean
+- **[Rule Evaluation](docs/rule-evaluation.md)**: How rules are matched and evaluated
+- **[Examples](docs/examples.md)**: Comprehensive usage examples
+- **[Testing Guide](docs/testing.md)**: Testing strategies for your flags
+
+## Getting Started
+
+1. **Add Konditional to your project** (coming soon: Maven Central)
+2. **Define your flags** using enums or data classes
+3. **Configure rules** with the type-safe DSL
+4. **Evaluate in context** wherever you need the values
+
+See [Examples](docs/examples.md) for complete working examples.
+
+## Design Principles
+
+- **Type safety first**: No stringly-typed APIs or runtime type errors
+- **Deterministic by default**: Same inputs always produce same outputs
+- **Context agnostic**: You define what information matters for your rules
+- **Zero dependencies**: Pure Kotlin, easy to integrate anywhere
+- **Thread-safe**: Safe to use from multiple threads concurrently
+- **Extensible**: Add your own context types, value types, and rule logic
+
+## License
+
+[License information]
+
+## Contributing
+
+[Contributing guidelines]

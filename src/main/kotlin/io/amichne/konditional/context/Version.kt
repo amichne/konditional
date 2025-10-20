@@ -6,7 +6,8 @@ data class Version(
     val minor: Int,
     val patch: Int,
 ) : Comparable<Version> {
-    override fun compareTo(other: Version): Int = compareValuesBy(this, other, Version::major, Version::minor, Version::patch)
+    override fun compareTo(other: Version): Int =
+        compareValuesBy(this, other, Version::major, Version::minor, Version::patch)
 
     companion object {
         fun of(

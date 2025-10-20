@@ -8,7 +8,6 @@ import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Flags.evaluate
 import io.amichne.konditional.example.SampleFeatureEnum
-import org.junit.jupiter.api.Disabled
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -312,7 +311,6 @@ class FlagsTests {
         assertFalse(ctx("90000000000000000000000000000004", version = "10.0.0").evaluate(SampleFeatureEnum.VERSIONED))
     }
 
-
     @Test
     fun `Given uniform bucket distribution, When evaluating, Then distribution is reasonable`() {
         config {
@@ -324,13 +322,13 @@ class FlagsTests {
             }
         }
 
-        val N = 10000
+        val times = 10000
         var trues = 0
-        for (i in 0 until N) {
+        repeat(times) {
             val id = Random.nextBytes(16).joinToString("") { "%02x".format(it) }
             if (ctx(id).evaluate(SampleFeatureEnum.UNIFORM50)) trues++
         }
-        val pct = trues.toDouble() / N
+        val pct = trues.toDouble() / times
         assertTrue(pct in 0.47..0.53, "Observed $pct")
     }
 

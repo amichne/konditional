@@ -10,9 +10,24 @@ import io.amichne.konditional.core.StableId
  *
  * @property ... (Add property descriptions as needed)
  */
-data class Context(
-    val locale: AppLocale,
-    val platform: Platform,
-    val appVersion: Version,
-    val stableId: StableId,
-)
+
+interface Context {
+    val locale: AppLocale
+    val platform: Platform
+    val appVersion: Version
+    val stableId: StableId
+
+    companion object {
+        operator fun invoke(
+            locale: AppLocale,
+            platform: Platform,
+            appVersion: Version,
+            stableId: StableId,
+        ): Context = object : Context {
+            override val locale: AppLocale = locale
+            override val platform: Platform = platform
+            override val appVersion: Version = appVersion
+            override val stableId: StableId = stableId
+        }
+    }
+}
