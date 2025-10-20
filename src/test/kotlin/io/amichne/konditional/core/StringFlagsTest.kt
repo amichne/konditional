@@ -22,7 +22,8 @@ class StringFlagsTest {
         WELCOME_MESSAGE("welcome_message"),
         ;
 
-        override fun with(build: FlagBuilder<String, Context>.() -> Unit) = update(FlagBuilder(this).apply(build).build())
+        override fun with(build: FlagBuilder<String, Context>.() -> Unit) =
+            update(FlagBuilder(this).apply(build).build())
     }
 
     private fun ctx(

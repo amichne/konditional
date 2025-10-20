@@ -6,7 +6,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.rules.BaseRule
+import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.Surjection.Companion.boundedBy
 import io.amichne.konditional.rules.versions.Unbounded
 import kotlin.test.Test
@@ -49,7 +49,7 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given condition with one matching rule, When evaluating, Then returns rule value`() {
-        val rule = BaseRule<Context>(
+        val rule = Rule<Context>(
             rampUp = RampUp.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = emptySet(),
@@ -72,21 +72,21 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given multiple rules, When evaluating, Then most specific rule wins`() {
-        val generalRule = BaseRule<Context>(
+        val generalRule = Rule<Context>(
             rampUp = RampUp.MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded,
         )
 
-        val platformRule = BaseRule<Context>(
+        val platformRule = Rule<Context>(
             rampUp = RampUp.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded,
         )
 
-        val platformAndLocaleRule = BaseRule<Context>(
+        val platformAndLocaleRule = Rule<Context>(
             rampUp = RampUp.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
@@ -125,7 +125,7 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given rules with same specificity, When evaluating, Then note is used as tiebreaker`() {
-        val ruleA = BaseRule<Context>(
+        val ruleA = Rule<Context>(
             rampUp = RampUp.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
@@ -133,7 +133,7 @@ class ConditionEvaluationTest {
             note = "rule-a",
         )
 
-        val ruleB = BaseRule<Context>(
+        val ruleB = Rule<Context>(
             rampUp = RampUp.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
@@ -141,8 +141,8 @@ class ConditionEvaluationTest {
             note = "rule-b",
         )
 
-        // Both rules have same specificity but different notes
-        assertEquals(ruleA.specificity(), ruleB.specificity())
+        // Both rules have same internalSpecificity but different notes
+        assertEquals(ruleA.internalSpecificity(), ruleB.internalSpecificity())
 
         val condition = Condition(
             key = TestFlags.TEST_FLAG,
@@ -167,7 +167,7 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given rule with 0 percent ramp-up, When evaluating, Then never matches`() {
-        val rule = BaseRule<Context>(
+        val rule = Rule<Context>(
             rampUp = RampUp.of(0.0),
             locales = emptySet(),
             platforms = emptySet(),
@@ -191,7 +191,7 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given rule with 100 percent ramp-up, When evaluating, Then always matches`() {
-        val rule = BaseRule<Context>(
+        val rule = Rule<Context>(
             rampUp = RampUp.of(100.0),
             locales = emptySet(),
             platforms = emptySet(),
@@ -215,7 +215,7 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given rule with 50 percent ramp-up, When evaluating many users, Then approximately half match`() {
-        val rule = BaseRule<Context>(
+        val rule = Rule<Context>(
             rampUp = RampUp.of(50.0),
             locales = emptySet(),
             platforms = emptySet(),
@@ -244,7 +244,7 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given same user ID, When evaluating same condition, Then result is deterministic`() {
-        val rule = BaseRule<Context>(
+        val rule = Rule<Context>(
             rampUp = RampUp.of(50.0),
             locales = emptySet(),
             platforms = emptySet(),
@@ -269,7 +269,7 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given different salts, When evaluating same user, Then bucketing is independent`() {
-        val rule = BaseRule<Context>(
+        val rule = Rule<Context>(
             rampUp = RampUp.of(50.0),
             locales = emptySet(),
             platforms = emptySet(),
@@ -311,14 +311,14 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given rule not matching context constraints, When evaluating, Then skips to next rule regardless of ramp-up`() {
-        val iosOnlyRule = BaseRule<Context>(
+        val iosOnlyRule = Rule<Context>(
             rampUp = RampUp.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded,
         )
 
-        val androidOnlyRule = BaseRule<Context>(
+        val androidOnlyRule = Rule<Context>(
             rampUp = RampUp.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.ANDROID),
@@ -347,14 +347,14 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given rule matching but user not in bucket, When evaluating, Then continues to next rule`() {
-        val highSpecificityLowRampup = BaseRule<Context>(
+        val highSpecificityLowRampup = Rule<Context>(
             rampUp = RampUp.of(1.0), // Very low ramp-up
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded,
         )
 
-        val lowSpecificityHighRampup = BaseRule<Context>(
+        val lowSpecificityHighRampup = Rule<Context>(
             rampUp = RampUp.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
@@ -396,7 +396,7 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given sorted surjections by specificity, When initializing condition, Then surjections are properly ordered`() {
-        val general = BaseRule<Context>(
+        val general = Rule<Context>(
             rampUp = RampUp.MAX,
             locales = emptySet(),
             platforms = emptySet(),
@@ -404,7 +404,7 @@ class ConditionEvaluationTest {
             note = "general",
         )
 
-        val specific = BaseRule<Context>(
+        val specific = Rule<Context>(
             rampUp = RampUp.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
@@ -423,7 +423,7 @@ class ConditionEvaluationTest {
             fallbackValue = "fallback",
         )
 
-        // Condition should internally sort by specificity
+        // Condition should internally sort by internalSpecificity
         // More specific rule should match first
         val result = condition.evaluate(
             ctx(

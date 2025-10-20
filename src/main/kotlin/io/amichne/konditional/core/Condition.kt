@@ -24,7 +24,9 @@ data class Condition<S : Any, C : Context>(
     }
 
     private val surjections: List<Surjection<S, C>> =
-        bounds.sortedWith(compareByDescending<Surjection<S, C>> { it.rule.specificity() }.thenBy { it.rule.note ?: "" })
+        bounds.sortedWith(compareByDescending<Surjection<S, C>> { it.rule.internalSpecificity() }.thenBy {
+            it.rule.note ?: ""
+        })
 
     /**
      * Evaluates the current flag based on the provided context and returns a result of type `S`.
@@ -33,7 +35,7 @@ data class Condition<S : Any, C : Context>(
      * @return The result of the evaluation, of type `S`.
      */
     fun evaluate(context: C): S = surjections.firstOrNull {
-        it.rule.matches(context) &&
+        it.rule.internalMatches(context) &&
             isInEligibleSegment(flagKey = key.key, id = context.stableId.hexId, salt = salt, rampUp = it.rule.rampUp)
     }?.value ?: defaultValue
 

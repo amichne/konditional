@@ -150,14 +150,14 @@ While the base `Rule<C>` works with any context type, you can create custom rule
 
 ```kotlin
 data class EnterpriseRule(
-    val baseRule: Rule<EnterpriseContext>,
+    val Rule: Rule<EnterpriseContext>,
     val minSubscriptionTier: SubscriptionTier? = null,
     val requiredRole: UserRole? = null,
     val requiredFeatures: Set<String> = emptySet(),
 ) {
     fun matches(context: EnterpriseContext): Boolean {
         // First check base rule (platform, locale, version)
-        if (!baseRule.matches(context)) return false
+        if (!Rule.matches(context)) return false
 
         // Then check enterprise-specific requirements
         if (minSubscriptionTier != null && context.subscriptionTier.ordinal < minSubscriptionTier.ordinal) {
@@ -181,7 +181,7 @@ Usage:
 
 ```kotlin
 val enterpriseOnlyRule = EnterpriseRule(
-    baseRule = Rule(
+    Rule = Rule(
         rampUp = RampUp.MAX,
         locales = emptySet(),
         platforms = setOf(Platform.WEB),

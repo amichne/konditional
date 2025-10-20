@@ -17,5 +17,6 @@ enum class SampleFeatureEnum(
     UNIFORM50("uniform50"),
     ;
 
-    override fun with(build: FlagBuilder<Boolean, Context>.() -> Unit) = update(FlagBuilder(key = this).apply(block = build).build())
+    override fun with(build: FlagBuilder<Boolean, Context>.() -> Unit) =
+        update(FlagBuilder(key = this).apply(block = build).build())
 }

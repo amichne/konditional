@@ -3,10 +3,9 @@ package io.amichne.konditional.builders
 import io.amichne.konditional.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.context.Platform
+import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.core.FeatureFlagDsl
-import io.amichne.konditional.rules.BaseRule
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
@@ -25,7 +24,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  *     var requiredRole: UserRole? = null
  *
  *     override fun build(): Rule<C> = EnterpriseRule(
- *         baseRule = super.build() as BaseRule<C>,
+ *         Rule = super.build() as Rule<C>,
  *         requiredTier = requiredTier,
  *         requiredRole = requiredRole
  *     )
@@ -63,10 +62,10 @@ open class RuleBuilder<C : Context> {
      * Builds a Rule instance. Override this method in custom builders to create
      * custom rule implementations.
      *
-     * @return A Rule instance (BaseRule by default)
+     * @return A Rule instance (Rule by default)
      */
     open fun build(): Rule<C> =
-        BaseRule(
+        Rule(
             rampUp = rampUp ?: RampUp.default,
             locales = locales,
             platforms = platforms,

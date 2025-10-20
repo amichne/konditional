@@ -21,5 +21,12 @@ sealed class VersionRange protected constructor(
 
     open fun contains(v: Version): Boolean = (min?.let { v >= it } ?: true) && (max?.let { v <= it } ?: true)
 
-    fun hasBounds(): Boolean = (min != null) || (max != null)
+    /**
+     * Returns true if this version range has any bounds (min or max).
+     *
+     * This method is open to allow subclasses (like Unbounded) to override
+     * the default behavior based on their semantic meaning rather than
+     * implementation details.
+     */
+    open fun hasBounds(): Boolean = (min != null) || (max != null)
 }

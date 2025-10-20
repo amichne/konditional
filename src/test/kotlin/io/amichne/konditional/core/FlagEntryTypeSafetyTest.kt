@@ -7,7 +7,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Flags.evaluate
-import io.amichne.konditional.rules.BaseRule
+import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.Surjection.Companion.boundedBy
 import io.amichne.konditional.rules.versions.Unbounded
 import kotlin.test.Test
@@ -56,7 +56,7 @@ class FlagEntryTypeSafetyTest {
 
     @Test
     fun `Given FlagEntry, When created, Then wraps condition correctly`() {
-        val rule = BaseRule<Context>(
+        val rule = Rule<Context>(
             rampUp = io.amichne.konditional.context.RampUp.MAX,
             locales = emptySet(),
             platforms = emptySet(),
@@ -78,7 +78,7 @@ class FlagEntryTypeSafetyTest {
 
     @Test
     fun `Given FlagEntry, When evaluating, Then returns correct value type`() {
-        val rule = BaseRule<Context>(
+        val rule = Rule<Context>(
             rampUp = io.amichne.konditional.context.RampUp.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = emptySet(),
@@ -101,21 +101,21 @@ class FlagEntryTypeSafetyTest {
 
     @Test
     fun `Given FlagEntry with different value types, When evaluating, Then each returns correct type`() {
-        val boolRule = BaseRule<Context>(
+        val boolRule = Rule<Context>(
             rampUp = io.amichne.konditional.context.RampUp.MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded,
         )
 
-        val stringRule = BaseRule<Context>(
+        val stringRule = Rule<Context>(
             rampUp = io.amichne.konditional.context.RampUp.MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded,
         )
 
-        val intRule = BaseRule<Context>(
+        val intRule = Rule<Context>(
             rampUp = io.amichne.konditional.context.RampUp.MAX,
             locales = emptySet(),
             platforms = emptySet(),
@@ -164,14 +164,14 @@ class FlagEntryTypeSafetyTest {
 
     @Test
     fun `Given Snapshot with FlagEntry instances, When loading, Then all entries are accessible`() {
-        val boolRule = BaseRule<Context>(
+        val boolRule = Rule<Context>(
             rampUp = io.amichne.konditional.context.RampUp.MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded,
         )
 
-        val stringRule = BaseRule<Context>(
+        val stringRule = Rule<Context>(
             rampUp = io.amichne.konditional.context.RampUp.MAX,
             locales = emptySet(),
             platforms = emptySet(),
@@ -307,7 +307,7 @@ class FlagEntryTypeSafetyTest {
 
         val customIntFlag = CustomIntFlag()
 
-        val rule = BaseRule<CustomContext>(
+        val rule = Rule<CustomContext>(
             rampUp = io.amichne.konditional.context.RampUp.MAX,
             locales = emptySet(),
             platforms = emptySet(),

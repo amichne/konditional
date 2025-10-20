@@ -264,12 +264,12 @@ Example custom rule:
 
 ```kotlin
 data class EnterpriseRule<C : EnterpriseContext>(
-    val baseRule: Rule<C>,
+    val Rule: Rule<C>,
     val requiredTier: SubscriptionTier?,
     val requiredRole: UserRole?
 ) {
     fun matches(context: C): Boolean {
-        if (!baseRule.matches(context)) return false
+        if (!Rule.matches(context)) return false
         if (requiredTier != null && context.subscriptionTier < requiredTier) return false
         if (requiredRole != null && context.userRole < requiredRole) return false
         return true

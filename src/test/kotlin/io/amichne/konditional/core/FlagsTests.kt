@@ -311,7 +311,6 @@ class FlagsTests {
         assertFalse(ctx("90000000000000000000000000000004", version = "10.0.0").evaluate(SampleFeatureEnum.VERSIONED))
     }
 
-
     @Test
     fun `Given uniform bucket distribution, When evaluating, Then distribution is reasonable`() {
         config {

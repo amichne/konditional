@@ -5,7 +5,6 @@ import io.amichne.konditional.builders.FlagBuilder
 import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.core.Flags.evaluate
 import io.amichne.konditional.core.StableId
-import io.amichne.konditional.rules.BaseRule
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.rules.versions.Unbounded
@@ -78,12 +77,12 @@ class ContextPolymorphismTest {
 
     // Custom rule that extends Rule for EnterpriseContext
     data class EnterpriseRule(
-        val baseRule: Rule<EnterpriseContext>,
+        val Rule: Rule<EnterpriseContext>,
         val requiredTier: SubscriptionTier? = null,
         val requiredRole: UserRole? = null,
     ) {
         fun matches(context: EnterpriseContext): Boolean {
-            if (!baseRule.matches(context)) return false
+            if (!Rule.internalMatches(context)) return false
             if (requiredTier != null && context.subscriptionTier.ordinal < requiredTier.ordinal) return false
             if (requiredRole != null && context.userRole.ordinal < requiredRole.ordinal) return false
             return true
@@ -282,7 +281,7 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given EnterpriseContext subclass, When matching rules, Then base Context properties work correctly`() {
-        val rule = BaseRule<EnterpriseContext>(
+        val rule = Rule<EnterpriseContext>(
             rampUp = RampUp.MAX,
             locales = setOf(AppLocale.EN_US, AppLocale.EN_CA),
             platforms = setOf(Platform.WEB),
@@ -309,14 +308,14 @@ class ContextPolymorphismTest {
             userRole = UserRole.OWNER,
         )
 
-        assertTrue(rule.matches(matchingCtx))
-        assertFalse(rule.matches(nonMatchingCtx))
+        assertTrue(rule.internalMatches(matchingCtx))
+        assertFalse(rule.internalMatches(nonMatchingCtx))
     }
 
     @Test
     fun `Given custom EnterpriseRule, When matching with business logic, Then custom properties are enforced`() {
         val enterpriseOnlyRule = EnterpriseRule(
-            baseRule = BaseRule(
+            Rule = Rule(
                 rampUp = RampUp.MAX,
                 locales = emptySet(),
                 platforms = setOf(Platform.WEB),
