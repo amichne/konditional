@@ -70,13 +70,20 @@ The serialization system uses the following JSON structure:
   "flags": [
     {
       "key": "enable_compact_cards",
-      "valueType": "BOOLEAN",
+      "type": "BOOLEAN",
       "defaultValue": false,
       "salt": "v1",
       "isActive": true,
+      "default": {
+        "value": false,
+        "type": "BOOLEAN"
+      },
       "rules": [
         {
-          "value": true,
+          "value": {
+            "value": true,
+            "type": "BOOLEAN"
+          },
           "rampUp": 50.0,
           "note": "US iOS 50% rollout",
           "locales": ["EN_US"],
@@ -100,14 +107,17 @@ The serialization system uses the following JSON structure:
 
 #### Flag Level
 - **key**: Unique identifier for the flag (matches `Conditional.key`)
-- **valueType**: Type of the flag value (`BOOLEAN`, `STRING`, `INT`, `LONG`, `DOUBLE`)
-- **defaultValue**: Default value when no rules match
+- **type**: Type of the flag value (`BOOLEAN`, `STRING`, `INT`, `LONG`, `DOUBLE`)
+- **defaultValue**: Default value when no rules match (primitive representation)
+- **default**: Typed wrapper containing both the value and its type (ensures type safety)
 - **salt**: Salt value for stable bucketing (default: `"v1"`)
 - **isActive**: Whether the flag is active (default: `true`)
 - **rules**: Array of rule configurations
 
 #### Rule Level
-- **value**: The value to return if this rule matches
+- **value**: Typed wrapper object containing:
+  - **value**: The actual value to return if this rule matches
+  - **type**: The type of the value (ensures type safety during deserialization)
 - **rampUp**: Percentage of users to include (0-100, default: 100)
 - **note**: Optional description of the rule
 - **locales**: Set of matching locales (empty = all)
@@ -129,7 +139,7 @@ val patch = SerializablePatch(
     flags = listOf(
         SerializableFlag(
             key = "enable_compact_cards",
-            valueType = ValueType.BOOLEAN,
+            type = ValueType.BOOLEAN,
             defaultValue = true,
             rules = emptyList()
         )
@@ -148,10 +158,14 @@ val patchJson = """
   "flags": [
     {
       "key": "enable_compact_cards",
-      "valueType": "BOOLEAN",
+      "type": "BOOLEAN",
       "defaultValue": true,
       "salt": "v2",
       "isActive": true,
+      "default": {
+        "value": true,
+        "type": "BOOLEAN"
+      },
       "rules": []
     }
   ],
@@ -309,7 +323,7 @@ object SnapshotJsonParser {
 
 The serialization system consists of several components:
 
-- **SerializableModels.kt**: DTOs for JSON serialization
+- **SerializablePatch.kt**: DTOs for JSON serialization
 - **ConversionUtils.kt**: Bidirectional conversion between runtime types and DTOs
 - **SnapshotSerializer.kt**: Main serialization API
 - **ConditionalRegistry.kt**: Runtime registry for flag lookups

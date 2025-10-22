@@ -1,7 +1,6 @@
 package io.amichne.konditional.serialization
 
 import io.amichne.konditional.builders.ConfigBuilder
-import io.amichne.konditional.builders.FlagBuilder
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
@@ -15,6 +14,10 @@ import io.amichne.konditional.example.SampleFeatureEnum
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.Surjection.Companion.boundedBy
 import io.amichne.konditional.rules.versions.LeftBound
+import io.amichne.konditional.serialization.models.SerializableFlag
+import io.amichne.konditional.serialization.models.SerializablePatch
+import io.amichne.konditional.serialization.models.SerializableRule
+import io.amichne.konditional.core.ValueType
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -250,11 +253,11 @@ class SnapshotSerializerTest {
             flags = listOf(
                 SerializableFlag(
                     key = "use_lightweight_home",
-                    valueType = ValueType.BOOLEAN,
+                    type = ValueType.BOOLEAN,
                     defaultValue = false,
                     rules = listOf(
                         SerializableRule(
-                            value = true,
+                            value = SerializableRule.SerializableValue(true, ValueType.BOOLEAN),
                             locales = setOf("EN_US"),
                             platforms = setOf("IOS")
                         )
@@ -298,7 +301,7 @@ class SnapshotSerializerTest {
             flags = listOf(
                 SerializableFlag(
                     key = "enable_compact_cards",
-                    valueType = ValueType.BOOLEAN,
+                    type = ValueType.BOOLEAN,
                     defaultValue = true  // Changed from false to true
                 )
             )
@@ -376,11 +379,15 @@ class SnapshotSerializerTest {
               "flags": [
                 {
                   "key": "enable_compact_cards",
-                  "valueType": "BOOLEAN",
+                  "type": "BOOLEAN",
                   "defaultValue": true,
                   "salt": "v2",
                   "isActive": true,
-                  "rules": []
+                  "rules": [],
+                  "default": {
+                    "value": true,
+                    "type": "BOOLEAN"
+                  }
                 }
               ],
               "removeKeys": []

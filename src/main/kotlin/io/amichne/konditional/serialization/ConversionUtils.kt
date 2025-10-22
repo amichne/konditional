@@ -16,6 +16,13 @@ import io.amichne.konditional.rules.versions.LeftBound
 import io.amichne.konditional.rules.versions.RightBound
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
+import io.amichne.konditional.serialization.models.SerializableFlag
+import io.amichne.konditional.serialization.models.SerializableRule
+import io.amichne.konditional.serialization.models.SerializableSnapshot
+import io.amichne.konditional.serialization.models.SerializableVersion
+import io.amichne.konditional.serialization.models.SerializableVersionRange
+import io.amichne.konditional.core.ValueType
+import io.amichne.konditional.serialization.models.VersionRangeType
 
 /**
  * Registry for mapping flag keys to their Conditional instances.
@@ -77,7 +84,7 @@ fun Flags.Snapshot.toSerializable(): SerializableSnapshot {
 private fun <S : Any, C : Context> Condition<S, C>.toSerializable(flagKey: String): SerializableFlag {
     return SerializableFlag(
         key = flagKey,
-        valueType = defaultValue.toValueType(),
+        type = defaultValue.toValueType(),
         defaultValue = defaultValue,
         salt = salt,
         isActive = isActive,
@@ -90,7 +97,10 @@ private fun <S : Any, C : Context> Condition<S, C>.toSerializable(flagKey: Strin
  */
 private fun <S : Any, C : Context> Surjection<S, C>.toSerializable(): SerializableRule {
     return SerializableRule(
-        value = value,
+        value = SerializableRule.SerializableValue(
+            value = value,
+            type = value.toValueType()
+        ),
         rampUp = rule.rampUp.value,
         note = rule.note,
         locales = rule.locales.map { it.name }.toSet(),
@@ -171,8 +181,8 @@ private fun SerializableFlag.toFlagEntry(): Pair<Conditional<*, *>, Flags.FlagEn
 private fun <S : Any, C : Context> SerializableFlag.toCondition(
     conditional: Conditional<S, C>
 ): Condition<S, C> {
-    val typedDefaultValue = defaultValue.castToType(valueType) as S
-    val typedBounds = rules.map { it.toSurjection<S, C>(valueType) }
+    val typedDefaultValue = defaultValue.castToType(type) as S
+    val typedBounds = rules.map { it.toSurjection<S, C>() }
 
     return Condition(
         key = conditional,
@@ -185,10 +195,11 @@ private fun <S : Any, C : Context> SerializableFlag.toCondition(
 
 /**
  * Converts a SerializableRule to a Surjection.
+ * The value type is now contained within the SerializableValue wrapper.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : Any, C : Context> SerializableRule.toSurjection(valueType: ValueType): Surjection<S, C> {
-    val typedValue = value.castToType(valueType) as S
+private fun <S : Any, C : Context> SerializableRule.toSurjection(): Surjection<S, C> {
+    val typedValue = value.value.castToType(value.type) as S
     val rule = toRule<C>()
     return rule.boundedBy(typedValue)
 }

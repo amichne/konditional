@@ -1,6 +1,7 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.serialization.SnapshotSerializer
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -30,7 +31,15 @@ object Flags {
     @ConsistentCopyVisibility
     data class Snapshot internal constructor(
         val flags: Map<Conditional<*, *>, FlagEntry<*, *>>,
-    )
+    ) {
+        companion object {
+            fun Snapshot.toJson(serializer: SnapshotSerializer = SnapshotSerializer.default): String =
+                serializer.serialize(this)
+
+            fun fromJson(json: String, serializer: SnapshotSerializer = SnapshotSerializer.default): Snapshot =
+                serializer.deserialize(json)
+        }
+    }
 
     /**
      * Loads the flag values from the provided [config] snapshot.
@@ -76,4 +85,6 @@ object Flags {
     fun <C : Context> C.evaluate(): Map<Conditional<*, *>, Any?> = current.get().flags.mapValues { (_, entry) ->
         (entry as? FlagEntry<*, C>)?.evaluate(this)
     }
+
+
 }
