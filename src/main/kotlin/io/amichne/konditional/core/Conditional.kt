@@ -1,7 +1,6 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.builders.FlagBuilder
-
 import io.amichne.konditional.context.Context
 
 /**
@@ -17,4 +16,9 @@ interface Conditional<S : Any, C : Context> {
     fun with(build: FlagBuilder<S, C>.() -> Unit)
 
     fun update(condition: Condition<S, C>) = Flags.update(condition)
+
+    companion object {
+        internal inline fun <reified T, S : Any, C : Context> parse(key: String): T where T : Conditional<S, C>, T : Enum<T> =
+            enumValues<T>().first { it.key == key }
+    }
 }
