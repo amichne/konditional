@@ -111,11 +111,15 @@ class SerializationExampleTest {
               "flags": [
                 {
                   "key": "enable_compact_cards",
-                  "valueType": "BOOLEAN",
+                  "type": "BOOLEAN",
                   "defaultValue": true,
                   "salt": "v2",
                   "isActive": true,
-                  "rules": []
+                  "rules": [],
+                  "default": {
+                    "value": true,
+                    "type": "BOOLEAN"
+                  }
                 }
               ],
               "removeKeys": ["use_lightweight_home"]

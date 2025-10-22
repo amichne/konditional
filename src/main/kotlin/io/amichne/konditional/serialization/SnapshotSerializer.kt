@@ -3,13 +3,15 @@ package io.amichne.konditional.serialization
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.amichne.konditional.core.Flags
+import io.amichne.konditional.serialization.models.SerializablePatch
+import io.amichne.konditional.serialization.models.SerializableSnapshot
 
 /**
  * Main serialization interface for Flags.Snapshot configurations.
  * Provides methods to serialize/deserialize snapshots to/from JSON, and apply patch updates.
  */
 class SnapshotSerializer(
-    private val moshi: Moshi = defaultMoshi()
+    moshi: Moshi = defaultMoshi()
 ) {
     private val snapshotAdapter = moshi.adapter(SerializableSnapshot::class.java).indent("  ")
     private val patchAdapter = moshi.adapter(SerializablePatch::class.java).indent("  ")
@@ -114,21 +116,5 @@ class SnapshotSerializer(
          * Default singleton instance for convenience.
          */
         val default = SnapshotSerializer()
-    }
-}
-
-/**
- * Extension function to serialize a Flags.Snapshot directly.
- */
-fun Flags.Snapshot.toJson(serializer: SnapshotSerializer = SnapshotSerializer.default): String {
-    return serializer.serialize(this)
-}
-
-/**
- * Companion object extension to deserialize JSON to a Flags.Snapshot.
- */
-object SnapshotJsonParser {
-    fun fromJson(json: String, serializer: SnapshotSerializer = SnapshotSerializer.default): Flags.Snapshot {
-        return serializer.deserialize(json)
     }
 }
