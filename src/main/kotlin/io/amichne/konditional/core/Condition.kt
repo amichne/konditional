@@ -17,6 +17,7 @@ data class Condition<S : Any, C : Context>(
     val bounds: List<Surjection<S, C>>,
     val defaultValue: S,
     val salt: String = "v1",
+    val isActive: Boolean = true,
 ) {
     private companion object {
         val shaDigestSpi: MessageDigest = requireNotNull(MessageDigest.getInstance("SHA-256"))
@@ -31,12 +32,16 @@ data class Condition<S : Any, C : Context>(
      * Evaluates the current flag based on the provided context and returns a result of type `S`.
      *
      * @param context The context in which the flag evaluation is performed.
-     * @return The result of the evaluation, of type `S`.
+     * @return The result of the evaluation, of type `S`. If the flag is not active, returns the defaultValue.
      */
-    fun evaluate(context: C): S = surjections.firstOrNull {
-        it.rule.internalMatches(context) &&
-            isInEligibleSegment(flagKey = key.key, id = context.stableId.hexId, salt = salt, rampUp = it.rule.rampUp)
-    }?.value ?: defaultValue
+    fun evaluate(context: C): S {
+        if (!isActive) return defaultValue
+
+        return surjections.firstOrNull {
+            it.rule.internalMatches(context) &&
+                isInEligibleSegment(flagKey = key.key, id = context.stableId.hexId, salt = salt, rampUp = it.rule.rampUp)
+        }?.value ?: defaultValue
+    }
 
     /*
      * Determines if the current context belongs to an ineligible segment.
