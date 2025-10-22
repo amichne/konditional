@@ -49,5 +49,12 @@ class ConfigBuilder private constructor() {
             ConfigBuilder().apply(fn).build().let {
                 Flags.load(it)
             }
+
+        /**
+         * Builds a Snapshot without loading it into Flags.
+         * Useful for testing and external snapshot management.
+         */
+        fun buildSnapshot(fn: ConfigBuilder.() -> Unit): Flags.Snapshot =
+            ConfigBuilder().apply(fn).build()
     }
 }
