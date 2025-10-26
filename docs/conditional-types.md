@@ -28,7 +28,7 @@ enum class Features(override val key: String) : Conditional<Boolean, Context> {
 config {
     Features.DARK_MODE with {
         default(false)
-        boundary {
+        rule {
             platforms(Platform.IOS, Platform.ANDROID)
         } implies true
     }
@@ -60,17 +60,17 @@ enum class Config(override val key: String) : Conditional<String, Context> {
 config {
     Config.API_ENDPOINT with {
         default("https://api.prod.example.com")
-        boundary {
+        rule {
             platforms(Platform.WEB)
         } implies "https://api.staging.example.com"
     }
 
     Config.THEME_NAME with {
         default("light")
-        boundary {
+        rule {
             locales(AppLocale.EN_US)
         } implies "dark"
-        boundary {
+        rule {
             locales(AppLocale.HI_IN)
         } implies "vibrant"
     }
@@ -104,10 +104,10 @@ enum class Limits(override val key: String) : Conditional<Int, Context> {
 config {
     Limits.MAX_CONNECTIONS with {
         default(10)
-        boundary {
+        rule {
             platforms(Platform.WEB)
         } implies 50
-        boundary {
+        rule {
             platforms(Platform.WEB)
             versions {
                 min(3, 0)
@@ -117,7 +117,7 @@ config {
 
     Limits.TIMEOUT_SECONDS with {
         default(30)
-        boundary {
+        rule {
             platforms(Platform.ANDROID)
             versions {
                 max(5, 0, 0)  // Legacy devices
@@ -158,10 +158,10 @@ enum class LogConfig(override val key: String) : Conditional<LogLevel, Context> 
 config {
     LogConfig.APP_LOG_LEVEL with {
         default(LogLevel.INFO)
-        boundary {
+        rule {
             platforms(Platform.WEB)
         } implies LogLevel.DEBUG
-        boundary {
+        rule {
             versions {
                 max(1, 0)  // Old versions
             }
@@ -208,7 +208,7 @@ config {
             retries = 3,
             useHttps = true,
         ))
-        boundary {
+        rule {
             platforms(Platform.WEB)
         } implies ApiConfig(
             baseUrl = "http://api.dev.example.com",
@@ -250,7 +250,7 @@ enum class ModuleConfig(override val key: String) : Conditional<List<String>, Co
 config {
     ModuleConfig.ENABLED_FEATURES with {
         default(listOf("core", "basic"))
-        boundary {
+        rule {
             versions {
                 min(2, 0)
             }
@@ -289,7 +289,7 @@ config {
             "feature1" to "off",
             "feature2" to "off",
         ))
-        boundary {
+        rule {
             locales(AppLocale.EN_US, AppLocale.EN_CA)
         } implies mapOf(
             "feature1" to "on",
@@ -340,7 +340,7 @@ config {
             ),
             enabledFeatures = listOf("animations"),
         ))
-        boundary {
+        rule {
             locales(AppLocale.EN_US)
         } implies ThemeConfig(
             primaryColor = "#1E1E1E",
@@ -377,7 +377,7 @@ enum class PaymentConfig(override val key: String) : Conditional<PaymentMethod, 
 config {
     PaymentConfig.DEFAULT_METHOD with {
         default(PaymentMethod.CreditCard("****"))
-        boundary {
+        rule {
             locales(AppLocale.EN_US)
         } implies PaymentMethod.PayPal("default@example.com")
     }
@@ -407,7 +407,7 @@ enum class Features(override val key: String) : Conditional<Boolean, Context> {
 config {
     Features.FEATURE_A with {
         default(false)
-        boundary {
+        rule {
         } implies true  // ✓ Type matches (Boolean)
         // } implies "invalid"  // ✗ Compile error: type mismatch
     }

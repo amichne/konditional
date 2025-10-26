@@ -4,7 +4,7 @@ import io.amichne.konditional.builders.ConfigBuilder
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Condition
 import io.amichne.konditional.core.Conditional
@@ -85,7 +85,7 @@ class SnapshotSerializerTest {
             key = SampleFeatureEnum.FIFTY_TRUE_US_IOS,
             bounds = listOf(
                 Rule<Context>(
-                    rampUp = RampUp.of(50.0),
+                    rollout = Rollout.of(50.0),
                     locales = setOf(AppLocale.EN_US),
                     platforms = setOf(Platform.IOS)
                 ).boundedBy(true)
@@ -140,7 +140,7 @@ class SnapshotSerializerTest {
             key = SampleFeatureEnum.VERSIONED,
             bounds = listOf(
                 Rule<Context>(
-                    rampUp = RampUp.of(100.0),
+                    rollout = Rollout.of(100.0),
                     versionRange = LeftBound(Version(7, 10, 0))
                 ).boundedBy(true)
             ),
@@ -154,7 +154,7 @@ class SnapshotSerializerTest {
         // Serialize
         val json = serializer.serialize(snapshot)
         assertNotNull(json)
-        assertTrue(json.contains("LEFT_BOUND"))
+        assertTrue(json.contains("MIN_BOUND"))
         assertTrue(json.contains("\"major\": 7") || json.contains("\"major\":7"))
         assertTrue(json.contains("\"minor\": 10") || json.contains("\"minor\":10"))
 

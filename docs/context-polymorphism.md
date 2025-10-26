@@ -102,7 +102,7 @@ config {
         default(false)
 
         // Base properties work fine
-        boundary {
+        rule {
             platforms(Platform.WEB)
             versions {
                 min(2, 0)
@@ -114,7 +114,7 @@ config {
         default(false)
 
         // Full rollout for web users on v2.0+
-        boundary {
+        rule {
             platforms(Platform.WEB)
             versions {
                 min(2, 0)
@@ -182,7 +182,7 @@ Usage:
 ```kotlin
 val enterpriseOnlyRule = EnterpriseRule(
     Rule = Rule(
-        rampUp = RampUp.MAX,
+        rollout = Rollout.MAX,
         locales = emptySet(),
         platforms = setOf(Platform.WEB),
         versionRange = Unbounded,
@@ -425,7 +425,7 @@ fun `enterprise features evaluate correctly with EnterpriseContext`() {
     config {
         EnterpriseFeatures.ADVANCED_ANALYTICS with {
             default(false)
-            boundary {
+            rule {
                 platforms(Platform.WEB)
             } implies true
         }

@@ -4,7 +4,7 @@ import io.amichne.konditional.builders.ConfigBuilder.Companion.config
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Flags.evaluate
 import io.amichne.konditional.example.SampleFeatureEnum
@@ -31,7 +31,7 @@ class FlagsTests {
         config {
             SampleFeatureEnum.FIFTY_TRUE_US_IOS with {
                 default(false)
-                boundary {
+                rule {
                     platforms(Platform.IOS)
                     versions {
                         min(7, 10, 0)
@@ -40,7 +40,7 @@ class FlagsTests {
             }
             SampleFeatureEnum.DEFAULT_TRUE_EXCEPT_ANDROID_LEGACY with {
                 default(true)
-                boundary {
+                rule {
                     platforms(Platform.ANDROID)
                     versions {
                         max(6, 4, 99)
@@ -73,9 +73,9 @@ class FlagsTests {
         config {
             SampleFeatureEnum.PRIORITY_CHECK with {
                 default(false)
-                boundary {
+                rule {
                 } implies true
-                boundary {
+                rule {
                     platforms(Platform.IOS)
                 } implies true
             }
@@ -90,7 +90,7 @@ class FlagsTests {
         config {
             SampleFeatureEnum.VERSIONED with {
                 default(false)
-                boundary {
+                rule {
                     versions {
                         min(7, 10, 0)
                         max(7, 12, 3)
@@ -109,7 +109,7 @@ class FlagsTests {
         config {
             SampleFeatureEnum.VERSIONED with {
                 default(false)
-                boundary {
+                rule {
                     versions {
                         min(7) // >= 7.0.0
                     }
@@ -132,7 +132,7 @@ class FlagsTests {
         config {
             SampleFeatureEnum.VERSIONED with {
                 default(false)
-                boundary {
+                rule {
                     versions {
                         min(7, 10) // >= 7.10.0
                     }
@@ -155,7 +155,7 @@ class FlagsTests {
         config {
             SampleFeatureEnum.VERSIONED with {
                 default(false)
-                boundary {
+                rule {
                     versions {
                         min(7, 10, 5) // >= 7.10.5
                     }
@@ -178,7 +178,7 @@ class FlagsTests {
         config {
             SampleFeatureEnum.VERSIONED with {
                 default(false)
-                boundary {
+                rule {
                     versions {
                         max(7) // <= 7.0.0
                     }
@@ -202,7 +202,7 @@ class FlagsTests {
         config {
             SampleFeatureEnum.VERSIONED with {
                 default(false)
-                boundary {
+                rule {
                     versions {
                         max(7, 10) // <= 7.10.0
                     }
@@ -226,7 +226,7 @@ class FlagsTests {
         config {
             SampleFeatureEnum.VERSIONED with {
                 default(false)
-                boundary {
+                rule {
                     versions {
                         max(7, 10, 5) // <= 7.10.5
                     }
@@ -250,7 +250,7 @@ class FlagsTests {
         config {
             SampleFeatureEnum.VERSIONED with {
                 default(false)
-                boundary {
+                rule {
                     versions {
                         min(5) // >= 5.0.0
                         max(7, 10, 5) // <= 7.10.5
@@ -278,7 +278,7 @@ class FlagsTests {
         config {
             SampleFeatureEnum.VERSIONED with {
                 default(false)
-                boundary {
+                rule {
                     versions {
                         min(7, 10) // >= 7.10.0, no maximum
                     }
@@ -297,7 +297,7 @@ class FlagsTests {
         config {
             SampleFeatureEnum.VERSIONED with {
                 default(false)
-                boundary {
+                rule {
                     versions {
                         max(7, 10) // <= 7.10.0, no minimum
                     }
@@ -316,8 +316,8 @@ class FlagsTests {
         config {
             SampleFeatureEnum.UNIFORM50 with {
                 default(false)
-                boundary {
-                    rampUp = RampUp.of(50.0)
+                rule {
+                    rollout = Rollout.of(50.0)
                 } implies true
             }
         }
@@ -354,7 +354,7 @@ class FlagsTests {
                     config {
                         SampleFeatureEnum.FIFTY_TRUE_US_IOS with {
                             default(false)
-                            boundary {
+                            rule {
                                 platforms(Platform.IOS)
                             } implies true
                         }
@@ -374,7 +374,7 @@ class FlagsTests {
         config {
             SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
                 default(false)
-                boundary {
+                rule {
                     platforms(Platform.IOS)
                 } implies true
             }

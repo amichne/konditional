@@ -15,7 +15,7 @@ interface Conditional<S : Any, C : Context> {
 
     fun with(build: FlagBuilder<S, C>.() -> Unit)
 
-    fun update(condition: Condition<S, C>) = Flags.update(condition)
+    fun update(definition: FlagDefinition<S, C>) = Flags.update(definition)
 
     companion object {
         internal inline fun <reified T, S : Any, C : Context> parse(key: String): T where T : Conditional<S, C>, T : Enum<T> =

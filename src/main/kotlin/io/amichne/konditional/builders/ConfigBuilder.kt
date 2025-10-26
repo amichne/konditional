@@ -41,7 +41,7 @@ class ConfigBuilder private constructor() {
         flags[this] = Flags.FlagEntry(FlagBuilder(this).apply<FlagBuilder<S, C>>(build).build())
     }
 
-    fun build(): Flags.Snapshot = Flags.Snapshot(flags.toMap())
+    internal fun build(): Flags.Snapshot = Flags.Snapshot(flags.toMap())
 
     @FeatureFlagDsl
     companion object {

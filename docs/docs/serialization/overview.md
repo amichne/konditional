@@ -153,12 +153,12 @@ original.evaluate(context) == restored.evaluate(context) // true
             "value": true,
             "type": "BOOLEAN"
           },
-          "rampUp": 50.0,
+          "rollout": 50.0,
           "note": "US iOS 50% rollout",
           "locales": ["EN_US"],
           "platforms": ["IOS"],
           "versionRange": {
-            "type": "LEFT_BOUND",
+            "type": "MIN_BOUND",
             "min": {
               "major": 7,
               "minor": 10,
@@ -191,7 +191,7 @@ original.evaluate(context) == restored.evaluate(context) // true
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `value` | SerializableValue | Yes | Typed value to return if rule matches |
-| `rampUp` | Number | No | Percentage 0-100 (default: 100) |
+| `rollout` | Number | No | Percentage 0-100 (default: 100) |
 | `note` | String | No | Description of the rule |
 | `locales` | Array | No | Set of locales (empty = all) |
 | `platforms` | Array | No | Set of platforms (empty = all) |
@@ -200,9 +200,9 @@ original.evaluate(context) == restored.evaluate(context) // true
 #### Version Range Types
 
 - **UNBOUNDED** - No version constraints
-- **LEFT_BOUND** - `version >= min`
-- **RIGHT_BOUND** - `version <= max`
-- **FULLY_BOUND** - `min <= version <= max`
+- **MIN_BOUND** - `version >= min`
+- **MAX_BOUND** - `version <= max`
+- **MIN_AND_MAX_BOUND** - `min <= version <= max`
 
 ## Use Cases
 
@@ -229,7 +229,7 @@ Server API → Patch JSON → Client downloads → Apply patch → Updated flags
 ### 4. A/B Testing
 
 ```
-JSON config → Multiple rules with rampUp → Stable bucketing → Consistent experience
+JSON config → Multiple rules with rollout → Stable bucketing → Consistent experience
 ```
 
 ## Next Steps

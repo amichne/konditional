@@ -3,14 +3,14 @@ package io.amichne.konditional.serialization
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Condition
+import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.core.Flags
 import io.amichne.konditional.rules.Rule
-import io.amichne.konditional.rules.Surjection
-import io.amichne.konditional.rules.Surjection.Companion.boundedBy
+import io.amichne.konditional.rules.TargetedValue
+import io.amichne.konditional.rules.TargetedValue.Companion.targetedBy
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.rules.versions.LeftBound
 import io.amichne.konditional.rules.versions.RightBound
@@ -73,15 +73,15 @@ object ConditionalRegistry {
  */
 fun Flags.Snapshot.toSerializable(): SerializableSnapshot {
     val serializableFlags = flags.map { (conditional, flagEntry) ->
-        flagEntry.condition.toSerializable(conditional.key)
+        flagEntry.definition.toSerializable(conditional.key)
     }
     return SerializableSnapshot(serializableFlags)
 }
 
 /**
- * Converts a Condition to a SerializableFlag.
+ * Converts a FlagDefinition to a SerializableFlag.
  */
-private fun <S : Any, C : Context> Condition<S, C>.toSerializable(flagKey: String): SerializableFlag {
+private fun <S : Any, C : Context> FlagDefinition<S, C>.toSerializable(flagKey: String): SerializableFlag {
     return SerializableFlag(
         key = flagKey,
         type = defaultValue.toValueType(),
@@ -93,15 +93,15 @@ private fun <S : Any, C : Context> Condition<S, C>.toSerializable(flagKey: Strin
 }
 
 /**
- * Converts a Surjection to a SerializableRule.
+ * Converts a TargetedValue to a SerializableRule.
  */
-private fun <S : Any, C : Context> Surjection<S, C>.toSerializable(): SerializableRule {
+private fun <S : Any, C : Context> TargetedValue<S, C>.toSerializable(): SerializableRule {
     return SerializableRule(
         value = SerializableRule.SerializableValue(
             value = value,
             type = value.toValueType()
         ),
-        rampUp = rule.rampUp.value,
+        rampUp = rule.rollout.value,
         note = rule.note,
         locales = rule.locales.map { it.name }.toSet(),
         platforms = rule.platforms.map { it.name }.toSet(),
@@ -116,15 +116,15 @@ private fun VersionRange.toSerializableVersionRange(): SerializableVersionRange?
     return when (this) {
         is Unbounded -> SerializableVersionRange(VersionRangeType.UNBOUNDED)
         is LeftBound -> SerializableVersionRange(
-            type = VersionRangeType.LEFT_BOUND,
+            type = VersionRangeType.MIN_BOUND,
             min = min.toSerializableVersion()
         )
         is RightBound -> SerializableVersionRange(
-            type = VersionRangeType.RIGHT_BOUND,
+            type = VersionRangeType.MAX_BOUND,
             max = max.toSerializableVersion()
         )
         is FullyBound -> SerializableVersionRange(
-            type = VersionRangeType.FULLY_BOUND,
+            type = VersionRangeType.MIN_AND_MAX_BOUND,
             min = min.toSerializableVersion(),
             max = max.toSerializableVersion()
         )
@@ -169,22 +169,22 @@ fun SerializableSnapshot.toSnapshot(): Flags.Snapshot {
 @Suppress("UNCHECKED_CAST")
 private fun SerializableFlag.toFlagEntry(): Pair<Conditional<*, *>, Flags.FlagEntry<*, *>> {
     val conditional = ConditionalRegistry.get<Any, Context>(key)
-    val condition = toCondition(conditional as Conditional<Any, Context>)
-    val flagEntry = Flags.FlagEntry(condition)
+    val definition = toFlagDefinition(conditional as Conditional<Any, Context>)
+    val flagEntry = Flags.FlagEntry(definition)
     return conditional to flagEntry
 }
 
 /**
- * Converts a SerializableFlag to a Condition.
+ * Converts a SerializableFlag to a FlagDefinition.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : Any, C : Context> SerializableFlag.toCondition(
+private fun <S : Any, C : Context> SerializableFlag.toFlagDefinition(
     conditional: Conditional<S, C>
-): Condition<S, C> {
+): FlagDefinition<S, C> {
     val typedDefaultValue = defaultValue.castToType(type) as S
-    val typedBounds = rules.map { it.toSurjection<S, C>() }
+    val typedBounds = rules.map { it.toTargetedValue<S, C>() }
 
-    return Condition(
+    return FlagDefinition(
         key = conditional,
         bounds = typedBounds,
         defaultValue = typedDefaultValue,
@@ -194,14 +194,14 @@ private fun <S : Any, C : Context> SerializableFlag.toCondition(
 }
 
 /**
- * Converts a SerializableRule to a Surjection.
+ * Converts a SerializableRule to a TargetedValue.
  * The value type is now contained within the SerializableValue wrapper.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : Any, C : Context> SerializableRule.toSurjection(): Surjection<S, C> {
+private fun <S : Any, C : Context> SerializableRule.toTargetedValue(): TargetedValue<S, C> {
     val typedValue = value.value.castToType(value.type) as S
     val rule = toRule<C>()
-    return rule.boundedBy(typedValue)
+    return rule.targetedBy(typedValue)
 }
 
 /**
@@ -209,7 +209,7 @@ private fun <S : Any, C : Context> SerializableRule.toSurjection(): Surjection<S
  */
 private fun <C : Context> SerializableRule.toRule(): Rule<C> {
     return Rule(
-        rampUp = RampUp.of(rampUp),
+        rollout = Rollout.of(rampUp),
         note = note,
         locales = locales.map { AppLocale.valueOf(it) }.toSet(),
         platforms = platforms.map { Platform.valueOf(it) }.toSet(),
@@ -223,15 +223,15 @@ private fun <C : Context> SerializableRule.toRule(): Rule<C> {
 private fun SerializableVersionRange.toVersionRange(): VersionRange {
     return when (type) {
         VersionRangeType.UNBOUNDED -> Unbounded
-        VersionRangeType.LEFT_BOUND -> LeftBound(
-            min = min?.toVersion() ?: throw IllegalArgumentException("LEFT_BOUND requires min version")
+        VersionRangeType.MIN_BOUND -> LeftBound(
+            min = min?.toVersion() ?: throw IllegalArgumentException("MIN_BOUND requires min version")
         )
-        VersionRangeType.RIGHT_BOUND -> RightBound(
-            max = max?.toVersion() ?: throw IllegalArgumentException("RIGHT_BOUND requires max version")
+        VersionRangeType.MAX_BOUND -> RightBound(
+            max = max?.toVersion() ?: throw IllegalArgumentException("MAX_BOUND requires max version")
         )
-        VersionRangeType.FULLY_BOUND -> FullyBound(
-            min = min?.toVersion() ?: throw IllegalArgumentException("FULLY_BOUND requires min version"),
-            max = max?.toVersion() ?: throw IllegalArgumentException("FULLY_BOUND requires max version")
+        VersionRangeType.MIN_AND_MAX_BOUND -> FullyBound(
+            min = min?.toVersion() ?: throw IllegalArgumentException("MIN_AND_MAX_BOUND requires min version"),
+            max = max?.toVersion() ?: throw IllegalArgumentException("MIN_AND_MAX_BOUND requires max version")
         )
     }
 }

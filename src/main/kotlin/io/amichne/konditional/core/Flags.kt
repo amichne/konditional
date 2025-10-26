@@ -6,24 +6,24 @@ import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Singleton object that holds flag-related functionality for the Konditional core module.
- * Use this object to manage and access global flags boundary the application.
+ * Use this object to manage and access global flags in the application.
  */
 object Flags {
     /**
-     * Type-safe wrapper that maintains the relationship between a Conditional and its Condition.
+     * Type-safe wrapper that maintains the relationship between a Conditional and its FlagDefinition.
      * This wrapper ensures type safety by keeping the value type S and context type C paired together.
      *
      * The wrapper guarantees the invariant: a Conditional<S, C> is always stored with its
-     * matching Condition<S, C>, eliminating inconsistencies that could arise from separate storage.
+     * matching FlagDefinition<S, C>, eliminating inconsistencies that could arise from separate storage.
      */
     class FlagEntry<S : Any, C : Context>(
-        val condition: Condition<S, C>,
+        val definition: FlagDefinition<S, C>,
     ) {
         /**
          * Evaluates this flag entry with the given context.
          * Type safety is guaranteed by the wrapper's construction invariant.
          */
-        fun evaluate(context: C): S = condition.evaluate(context)
+        fun evaluate(context: C): S = definition.evaluate(context)
     }
 
     private val current = AtomicReference(Snapshot(emptyMap()))
@@ -57,15 +57,15 @@ object Flags {
      * @param C the type of the context.
      * @return the updated state.
      */
-    fun <S : Any, C : Context> update(condition: Condition<S, C>) {
+    fun <S : Any, C : Context> update(definition: FlagDefinition<S, C>) {
         current.get().flags.toMutableMap().let {
-            it[condition.key] = FlagEntry(condition)
+            it[definition.key] = FlagEntry(definition)
             current.set(Snapshot(it))
         }
     }
 
     /**
-     * Evaluates the value of the specified [Conditional] boundary this [Context].
+     * Evaluates the value of the specified [Conditional] in this [Context].
      *
      * @param key The feature flag to evaluate.
      * @return The evaluated value of type [S] associated with the feature flag.
@@ -76,7 +76,7 @@ object Flags {
             ?: throw IllegalStateException("Flag not found: ${key.key}")
 
     /**
-     * Evaluates all feature flags boundary the given [Context] and returns a map of each [Conditional] to its evaluated value.
+     * Evaluates all feature flags in the given [Context] and returns a map of each [Conditional] to its evaluated value.
      *
      * @receiver The [Context] containing the feature flags to be evaluated.
      * @return A map where each key is a [Conditional] and the value is the result of its evaluation (maybe `null`).

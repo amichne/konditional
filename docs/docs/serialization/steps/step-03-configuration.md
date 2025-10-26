@@ -70,7 +70,7 @@ val snapshot = ConfigBuilder.buildSnapshot {
     FeatureFlags.DARK_MODE with {
         default(false)
 
-        boundary {
+        rule {
             platforms(Platform.IOS)
         }.implies(true)
     }
@@ -88,7 +88,7 @@ val snapshot = ConfigBuilder.buildSnapshot {
     FeatureFlags.NEW_ONBOARDING with {
         default(false)
 
-        boundary {
+        rule {
             locales(AppLocale.EN_US, AppLocale.ES_US)
         }.implies(true)
     }
@@ -97,17 +97,17 @@ val snapshot = ConfigBuilder.buildSnapshot {
 
 ### Example 3: Gradual Rollout
 
-Roll out to 25% of users using rampUp:
+Roll out to 25% of users using rollout:
 
 ```kotlin
-import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.Rollout
 
 val snapshot = ConfigBuilder.buildSnapshot {
     FeatureFlags.COMPACT_CARDS with {
         default(false)
 
-        boundary {
-            rampUp = RampUp.of(25.0) // 25% of users
+        rule {
+            rollout = Rollout.of(25.0) // 25% of users
         }.implies(true)
     }
 }
@@ -122,7 +122,7 @@ val snapshot = ConfigBuilder.buildSnapshot {
     FeatureFlags.DARK_MODE with {
         default(false)
 
-        boundary {
+        rule {
             versions {
                 min(2, 0, 0)
             }
@@ -141,8 +141,8 @@ val snapshot = ConfigBuilder.buildSnapshot {
         default(false)
 
         // Rule 1: 50% rollout for US iOS users on v2.0+
-        boundary {
-            rampUp = RampUp.of(50.0)
+        rule {
+            rollout = Rollout.of(50.0)
             locales(AppLocale.EN_US)
             platforms(Platform.IOS)
             versions {
@@ -151,7 +151,7 @@ val snapshot = ConfigBuilder.buildSnapshot {
         }.implies(true)
 
         // Rule 2: 100% for all Android users on v2.1+
-        boundary {
+        rule {
             platforms(Platform.ANDROID)
             versions {
                 min(2, 1, 0)
@@ -173,7 +173,7 @@ Here's a complete example for a production app:
 import io.amichne.konditional.builders.ConfigBuilder
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.Rollout
 
 fun createProductionConfig(): Flags.Snapshot {
     return ConfigBuilder.buildSnapshot {
@@ -187,14 +187,14 @@ fun createProductionConfig(): Flags.Snapshot {
             default(false)
 
             // 10% rollout for US users
-            boundary {
-                rampUp = RampUp.of(10.0)
+            rule {
+                rollout = Rollout.of(10.0)
                 locales(AppLocale.EN_US)
             }.implies(true)
 
             // 5% rollout for other English locales
-            boundary {
-                rampUp = RampUp.of(5.0)
+            rule {
+                rollout = Rollout.of(5.0)
                 locales(AppLocale.EN_CA)
             }.implies(true)
         }
@@ -204,12 +204,12 @@ fun createProductionConfig(): Flags.Snapshot {
             default(false)
 
             // Enable for all mobile platforms
-            boundary {
+            rule {
                 platforms(Platform.IOS, Platform.ANDROID)
             }.implies(true)
 
             // But disable for old versions
-            boundary {
+            rule {
                 versions {
                     max(1, 9, 9)
                 }
@@ -220,7 +220,7 @@ fun createProductionConfig(): Flags.Snapshot {
         FeatureFlags.PREMIUM_FEATURE with {
             default(false)
 
-            boundary {
+            rule {
                 platforms(Platform.IOS)
                 versions {
                     min(2, 0, 0)
@@ -264,8 +264,8 @@ Create different configs for different environments:
 
         FeatureFlags.NEW_ONBOARDING with {
             default(false)
-            boundary {
-                rampUp = RampUp.of(50.0) // Higher rollout for testing
+            rule {
+                rollout = Rollout.of(50.0) // Higher rollout for testing
             }.implies(true)
         }
 
@@ -285,8 +285,8 @@ Create different configs for different environments:
 
         FeatureFlags.NEW_ONBOARDING with {
             default(false)
-            boundary {
-                rampUp = RampUp.of(10.0) // Careful rollout
+            rule {
+                rollout = Rollout.of(10.0) // Careful rollout
                 locales(AppLocale.EN_US)
             }.implies(true)
         }
@@ -305,8 +305,8 @@ Create different configs for different environments:
 Use the `note` field to explain why a rule exists:
 
 ```kotlin
-boundary {
-    rampUp = RampUp.of(50.0)
+rule {
+    rollout = Rollout.of(50.0)
     locales(AppLocale.EN_US)
     platforms(Platform.IOS)
     note = "JIRA-123: Gradual rollout for US iOS users to test performance"
@@ -322,8 +322,8 @@ FeatureFlags.NEW_EXPERIMENT with {
     default(false)
     salt = "v2" // Changed from "v1" to rebucket users
 
-    boundary {
-        rampUp = RampUp.of(50.0)
+    rule {
+        rollout = Rollout.of(50.0)
     }.implies(true)
 }
 ```

@@ -360,7 +360,7 @@ Serializable targeting rule.
 @JsonClass(generateAdapter = true)
 data class SerializableRule(
     val value: SerializableValue,
-    val rampUp: Double = 100.0,
+    val rollout: Double = 100.0,
     val note: String? = null,
     val locales: Set<String> = emptySet(),
     val platforms: Set<String> = emptySet(),
@@ -373,7 +373,7 @@ data class SerializableRule(
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
 | `value` | `SerializableValue` | Yes | - | Typed value wrapper |
-| `rampUp` | `Double` | No | `100.0` | Percentage 0-100 |
+| `rollout` | `Double` | No | `100.0` | Percentage 0-100 |
 | `note` | `String?` | No | `null` | Description |
 | `locales` | `Set<String>` | No | `[]` | Locale set (empty = all) |
 | `platforms` | `Set<String>` | No | `[]` | Platform set (empty = all) |
@@ -412,8 +412,8 @@ data class SerializableVersionRange(
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `type` | `VersionRangeType` | Yes | Range type |
-| `min` | `SerializableVersion?` | Conditional | Min version (required for LEFT_BOUND, FULLY_BOUND) |
-| `max` | `SerializableVersion?` | Conditional | Max version (required for RIGHT_BOUND, FULLY_BOUND) |
+| `min` | `SerializableVersion?` | Conditional | Min version (required for MIN_BOUND, MIN_AND_MAX_BOUND) |
+| `max` | `SerializableVersion?` | Conditional | Max version (required for MAX_BOUND, MIN_AND_MAX_BOUND) |
 
 ---
 
@@ -488,9 +488,9 @@ Version range types.
 ```kotlin
 enum class VersionRangeType {
     UNBOUNDED,
-    LEFT_BOUND,
-    RIGHT_BOUND,
-    FULLY_BOUND
+    MIN_BOUND,
+    MAX_BOUND,
+    MIN_AND_MAX_BOUND
 }
 ```
 

@@ -15,7 +15,7 @@ This document describes the high-level architecture of Konditional and how its c
 interface Conditional<S : Any, C : Context> {
     val key: String
     fun with(build: FlagBuilder<S, C>.() -> Unit)
-    fun update(condition: Condition<S, C>)
+    fun update(condition: FlagDefinition<S, C>)
 }
 ```
 
@@ -54,20 +54,20 @@ data class EnterpriseContext(
 ) : Context
 ```
 
-### 3. Condition<S, C>
+### 3. FlagDefinition<S, C>
 
-`Condition<S : Any, C : Context>` contains the evaluation logic for a conditional:
+`FlagDefinition<S : Any, C : Context>` contains the evaluation logic for a conditional:
 
 - **key**: Reference to the `Conditional<S, C>` this condition evaluates
-- **bounds**: List of `Surjection<S, C>` (rule → value mappings)
+- **bounds**: List of `TargetedValue<S, C>` (rule → value mappings)
 - **defaultValue**: Value returned when no rules match
 - **fallbackValue**: Reserved for future use
 - **salt**: String used in hash function for bucketing independence
 
 ```kotlin
-data class Condition<S : Any, C : Context>(
+data class FlagDefinition<S : Any, C : Context>(
     val key: Conditional<S, C>,
-    val bounds: List<Surjection<S, C>>,
+    val bounds: List<TargetedValue<S, C>>,
     val defaultValue: S,
     val fallbackValue: S,
     val salt: String = "v1",
@@ -86,7 +86,7 @@ data class Condition<S : Any, C : Context>(
 
 ```kotlin
 data class Rule<C : Context>(
-    val rampUp: RampUp,
+    val rollout: Rollout,
     val locales: Set<AppLocale> = emptySet(),
     val platforms: Set<Platform> = emptySet(),
     val versionRange: VersionRange = Unbounded,
@@ -108,12 +108,12 @@ data class Rule<C : Context>(
 
 Ranges from 0 (no constraints) to 3 (all constraints specified).
 
-### 5. Surjection<S, C>
+### 5. TargetedValue<S, C>
 
-`Surjection<S : Any, C : Context>` maps a rule to its output value:
+`TargetedValue<S : Any, C : Context>` maps a rule to its output value:
 
 ```kotlin
-data class Surjection<S : Any, C : Context>(
+data class TargetedValue<S : Any, C : Context>(
     val rule: Rule<C>,
     val value: S
 )
@@ -122,9 +122,9 @@ data class Surjection<S : Any, C : Context>(
 Created using the `implies` infix operator in the DSL:
 
 ```kotlin
-boundary {
+rule {
     platforms(Platform.IOS)
-    rampUp = RampUp.of(50.0)
+    rollout = Rollout.of(50.0)
 } implies true
 ```
 
@@ -135,7 +135,7 @@ boundary {
 ```kotlin
 object Flags {
     class FlagEntry<S : Any, C : Context>(
-        val condition: Condition<S, C>
+        val condition: FlagDefinition<S, C>
     )
 
     data class Snapshot internal constructor(
@@ -143,7 +143,7 @@ object Flags {
     )
 
     fun load(config: Snapshot)
-    fun <S : Any, C : Context> update(condition: Condition<S, C>)
+    fun <S : Any, C : Context> update(condition: FlagDefinition<S, C>)
     fun <S : Any, C : Context> C.evaluate(key: Conditional<S, C>): S
     fun <C : Context> C.evaluate(): Map<Conditional<*, *>, Any?>
 }
@@ -152,7 +152,7 @@ object Flags {
 **Key features**:
 - **Atomic updates**: `Snapshot` is replaced atomically using `AtomicReference`
 - **Lock-free reads**: Evaluation reads from a stable snapshot
-- **FlagEntry wrapper**: Maintains type safety between `Conditional<S, C>` and `Condition<S, C>`
+- **FlagEntry wrapper**: Maintains type safety between `Conditional<S, C>` and `FlagDefinition<S, C>`
 
 ## Evaluation Flow
 
@@ -175,10 +175,10 @@ object Flags {
 
 ## Deterministic Bucketing
 
-Each surjection has a `rampUp` percentage (0-100%). To determine if a user is eligible:
+Each surjection has a `rollout` percentage (0-100%). To determine if a user is eligible:
 
 1. Compute `bucket = SHA-256("$salt:$flagKey:$stableId") mod 10000`
-2. User is eligible if `bucket < (rampUp * 100)`
+2. User is eligible if `bucket < (rollout * 100)`
 
 **Properties**:
 - **Deterministic**: Same `stableId` + `flagKey` + `salt` always produces same bucket
@@ -192,13 +192,13 @@ The generic type parameters `<S : Any, C : Context>` flow through the entire sys
 ```
 Conditional<S, C>
     ↓
-Condition<S, C>
+FlagDefinition<S, C>
     ↓
-Surjection<S, C>
+TargetedValue<S, C>
     ↓
 Rule<C>
 
-FlagEntry<S, C> wraps Condition<S, C>
+FlagEntry<S, C> wraps FlagDefinition<S, C>
     ↓
 Map<Conditional<*, *>, FlagEntry<*, *>> stores all flags
     ↓
@@ -235,11 +235,11 @@ RuleBuilder<C>
 Rule<C>
 
 FlagBuilder combines:
-- Surjection<S, C> instances (from boundary { } implies value)
+- TargetedValue<S, C> instances (from rule { } implies value)
 - Default value
 - Fallback value
     ↓ builds
-Condition<S, C>
+FlagDefinition<S, C>
     ↓ wrapped in
 FlagEntry<S, C>
     ↓ added to

@@ -3,7 +3,7 @@ package io.amichne.konditional.rules
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.StableId
 import io.amichne.konditional.rules.versions.LeftBound
@@ -25,18 +25,18 @@ import kotlin.test.assertTrue
  *
  * ```kotlin
  * class SubscriptionRule<C : CustomContext>(
- *     rampUp: RampUp,
+ *     rollout: Rollout,
  *     locales: Set<AppLocale> = emptySet(),
  *     platforms: Set<Platform> = emptySet(),
  *     val requiredTier: String? = null,
- * ) : Rule<C>(rampUp, locales, platforms) {
+ * ) : Rule<C>(rollout, locales, platforms) {
  *
  *     // Override to add custom matching logic
  *     override fun matches(context: C): Boolean {
  *         return requiredTier == null || context.subscriptionTier == requiredTier
  *     }
  *
- *     // Override to add custom internalSpecificity
+ *     // Override to add custom specificity
  *     override fun specificity(): Int {
  *         return if (requiredTier != null) 1 else 0
  *     }
@@ -44,7 +44,7 @@ import kotlin.test.assertTrue
  * ```
  *
  * The base matching logic (locales, platforms, versions) is GUARANTEED to be
- * applied because the `internalMatches()` method is final. Your custom matching logic
+ * applied because the `matches()` method is final. Your custom matching logic
  * in `matches()` is only called after base attributes have matched.
  */
 class RuleGuaranteesTest {
@@ -76,11 +76,11 @@ class RuleGuaranteesTest {
      * Custom rule that adds subscription tier matching.
      */
     class SubscriptionRule<C : CustomContext>(
-        rampUp: RampUp,
+        rollout: Rollout,
         locales: Set<AppLocale> = emptySet(),
         platforms: Set<Platform> = emptySet(),
         val requiredTier: String? = null,
-    ) : Rule<C>(rampUp, locales = locales, platforms = platforms) {
+    ) : Rule<C>(rollout, locales = locales, platforms = platforms) {
 
         override fun matches(context: C): Boolean {
             return requiredTier == null || context.subscriptionTier == requiredTier
@@ -94,81 +94,81 @@ class RuleGuaranteesTest {
     @Test
     fun `base rule with no restrictions matches any context`() {
         val rule = Rule<Context>(
-            rampUp = RampUp.of(100.0)
+            rollout = Rollout.of(100.0)
         )
 
-        assertTrue(rule.internalMatches(defaultContext))
+        assertTrue(rule.matches(defaultContext))
     }
 
     @Test
     fun `base rule locale restriction is always enforced`() {
         val rule = Rule<Context>(
-            rampUp = RampUp.of(100.0),
+            rollout = Rollout.of(100.0),
             locales = setOf(AppLocale.ES_US)
         )
 
         // Context has EN_US locale, rule requires ES_US
-        assertFalse(rule.internalMatches(defaultContext))
+        assertFalse(rule.matches(defaultContext))
     }
 
     @Test
     fun `base rule platform restriction is always enforced`() {
         val rule = Rule<Context>(
-            rampUp = RampUp.of(100.0),
+            rollout = Rollout.of(100.0),
             platforms = setOf(Platform.IOS)
         )
 
         // Context has ANDROID platform, rule requires IOS
-        assertFalse(rule.internalMatches(defaultContext))
+        assertFalse(rule.matches(defaultContext))
     }
 
     @Test
     fun `base rule version restriction is always enforced`() {
         val rule = Rule<Context>(
-            rampUp = RampUp.of(100.0),
+            rollout = Rollout.of(100.0),
             versionRange = LeftBound(Version(2, 0, 0))
         )
 
         // Context has version 1.0.0, rule requires 2.0.0+
-        assertFalse(rule.internalMatches(defaultContext))
+        assertFalse(rule.matches(defaultContext))
     }
 
     @Test
     fun `custom rule cannot bypass base locale restriction`() {
-        // Even though the custom rule internalMatches the subscription tier,
+        // Even though the custom rule matches the subscription tier,
         // the base locale restriction prevents a match
         val rule = SubscriptionRule<CustomContext>(
-            rampUp = RampUp.of(100.0),
+            rollout = Rollout.of(100.0),
             locales = setOf(AppLocale.ES_US),
             requiredTier = "premium"
         )
 
         // Context has premium tier (custom match) but EN_US locale (base mismatch)
-        assertFalse(rule.internalMatches(customContext))
+        assertFalse(rule.matches(customContext))
     }
 
     @Test
     fun `custom rule cannot bypass base platform restriction`() {
         val rule = SubscriptionRule<CustomContext>(
-            rampUp = RampUp.of(100.0),
+            rollout = Rollout.of(100.0),
             platforms = setOf(Platform.IOS),
             requiredTier = "premium"
         )
 
         // Context has premium tier (custom match) but ANDROID platform (base mismatch)
-        assertFalse(rule.internalMatches(customContext))
+        assertFalse(rule.matches(customContext))
     }
 
     @Test
     fun `custom rule requires both base and additional criteria to match`() {
         val rule = SubscriptionRule<CustomContext>(
-            rampUp = RampUp.of(100.0),
+            rollout = Rollout.of(100.0),
             locales = setOf(AppLocale.EN_US),
             requiredTier = "premium"
         )
 
         // All criteria match
-        assertTrue(rule.internalMatches(customContext))
+        assertTrue(rule.matches(customContext))
 
         // Create context with wrong tier
         val basicContext = object : CustomContext {
@@ -180,44 +180,44 @@ class RuleGuaranteesTest {
             override val userRole = "user"
         }
 
-        // Base internalMatches but additional criteria doesn't
-        assertFalse(rule.internalMatches(basicContext))
+        // Base matches but additional criteria doesn't
+        assertFalse(rule.matches(basicContext))
     }
 
     @Test
     fun `custom rule specificity includes both base and additional specificity`() {
         val ruleWithLocaleAndTier = SubscriptionRule<CustomContext>(
-            rampUp = RampUp.of(100.0),
+            rollout = Rollout.of(100.0),
             locales = setOf(AppLocale.EN_US),
             requiredTier = "premium"
         )
 
-        // Base internalSpecificity: 1 (locale)
-        // Additional internalSpecificity: 1 (tier)
+        // Base specificity: 1 (locale)
+        // Additional specificity: 1 (tier)
         // Total: 2
-        assertEquals(2, ruleWithLocaleAndTier.internalSpecificity())
+        assertEquals(2, ruleWithLocaleAndTier.specificity())
 
         val ruleWithAllAttributes = SubscriptionRule<CustomContext>(
-            rampUp = RampUp.of(100.0),
+            rollout = Rollout.of(100.0),
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.ANDROID),
             requiredTier = "premium"
         )
 
-        // Base internalSpecificity: 2 (locale + platform)
-        // Additional internalSpecificity: 1 (tier)
+        // Base specificity: 2 (locale + platform)
+        // Additional specificity: 1 (tier)
         // Total: 3
-        assertEquals(3, ruleWithAllAttributes.internalSpecificity())
+        assertEquals(3, ruleWithAllAttributes.specificity())
     }
 
     @Test
     fun `custom rule with no restrictions on base attributes still enforces custom criteria`() {
         val rule = SubscriptionRule<CustomContext>(
-            rampUp = RampUp.of(100.0),
+            rollout = Rollout.of(100.0),
             requiredTier = "enterprise"
         )
 
         // Base attributes all pass (no restrictions), but custom tier doesn't match
-        assertFalse(rule.internalMatches(customContext)) // has "premium", needs "enterprise"
+        assertFalse(rule.matches(customContext)) // has "premium", needs "enterprise"
     }
 }

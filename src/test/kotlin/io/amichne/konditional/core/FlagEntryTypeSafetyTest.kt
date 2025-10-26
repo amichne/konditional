@@ -57,7 +57,7 @@ class FlagEntryTypeSafetyTest {
     @Test
     fun `Given FlagEntry, When created, Then wraps condition correctly`() {
         val rule = Rule<Context>(
-            rampUp = io.amichne.konditional.context.RampUp.MAX,
+            rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded,
@@ -78,7 +78,7 @@ class FlagEntryTypeSafetyTest {
     @Test
     fun `Given FlagEntry, When evaluating, Then returns correct value type`() {
         val rule = Rule<Context>(
-            rampUp = io.amichne.konditional.context.RampUp.MAX,
+            rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = emptySet(),
             versionRange = Unbounded,
@@ -100,21 +100,21 @@ class FlagEntryTypeSafetyTest {
     @Test
     fun `Given FlagEntry with different value types, When evaluating, Then each returns correct type`() {
         val boolRule = Rule<Context>(
-            rampUp = io.amichne.konditional.context.RampUp.MAX,
+            rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded,
         )
 
         val stringRule = Rule<Context>(
-            rampUp = io.amichne.konditional.context.RampUp.MAX,
+            rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded,
         )
 
         val intRule = Rule<Context>(
-            rampUp = io.amichne.konditional.context.RampUp.MAX,
+            rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded,
@@ -160,14 +160,14 @@ class FlagEntryTypeSafetyTest {
     @Test
     fun `Given Snapshot with FlagEntry instances, When loading, Then all entries are accessible`() {
         val boolRule = Rule<Context>(
-            rampUp = io.amichne.konditional.context.RampUp.MAX,
+            rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded,
         )
 
         val stringRule = Rule<Context>(
-            rampUp = io.amichne.konditional.context.RampUp.MAX,
+            rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded,
@@ -209,7 +209,7 @@ class FlagEntryTypeSafetyTest {
         config {
             BoolFlags.FEATURE_A with {
                 default(false)
-                boundary {
+                rule {
                     platforms(Platform.IOS)
                 } implies true
             }
@@ -218,19 +218,19 @@ class FlagEntryTypeSafetyTest {
             }
             StringFlags.CONFIG_A with {
                 default("default")
-                boundary {
+                rule {
                     platforms(Platform.ANDROID)
                 } implies "android-value"
             }
             StringFlags.CONFIG_B with {
                 default("config-b-default")
-                boundary {
+                rule {
                     locales(AppLocale.EN_US)
                 } implies "en-us-value"
             }
             IntFlags.TIMEOUT with {
                 default(10)
-                boundary {
+                rule {
                     versions {
                         min(2, 0)
                     }
@@ -261,12 +261,12 @@ class FlagEntryTypeSafetyTest {
         config {
             BoolFlags.FEATURE_A with {
                 default(false)
-                boundary {
+                rule {
                 } implies true
             }
             StringFlags.CONFIG_A with {
                 default("default")
-                boundary {
+                rule {
                 } implies "enabled"
             }
         }
@@ -301,7 +301,7 @@ class FlagEntryTypeSafetyTest {
         val customIntFlag = CustomIntFlag()
 
         val rule = Rule<CustomContext>(
-            rampUp = io.amichne.konditional.context.RampUp.MAX,
+            rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded,
@@ -337,7 +337,7 @@ class FlagEntryTypeSafetyTest {
         config {
             BoolFlags.FEATURE_A with {
                 default(false)
-                boundary {
+                rule {
                     platforms(Platform.IOS)
                 } implies true
             }

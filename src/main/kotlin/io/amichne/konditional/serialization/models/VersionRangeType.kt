@@ -5,7 +5,7 @@ package io.amichne.konditional.serialization.models
  */
 enum class VersionRangeType {
     UNBOUNDED,
-    LEFT_BOUND,
-    RIGHT_BOUND,
-    FULLY_BOUND,
+    MIN_BOUND,
+    MAX_BOUND,
+    MIN_AND_MAX_BOUND,
 }

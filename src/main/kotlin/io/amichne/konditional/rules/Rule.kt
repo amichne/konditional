@@ -3,7 +3,7 @@ package io.amichne.konditional.rules
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
@@ -20,7 +20,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * matching logic, override [matches] which is called after base matching succeeds.
  *
  * @param C The context type that this rule evaluates against
- * @property rampUp The percentage of users (0-100) that should match this rule
+ * @property rollout The percentage of users (0-100) that should match this rule
  * @property locales Set of locales this rule applies to (empty = all locales)
  * @property platforms Set of platforms this rule applies to (empty = all platforms)
  * @property versionRange Version range this rule applies to
@@ -29,7 +29,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * @see io.amichne.konditional.core.Flags
  */
 abstract class Rule<C : Context> protected constructor(
-    val rampUp: RampUp,
+    val rollout: Rollout,
     val note: String? = null,
     val locales: Set<AppLocale> = emptySet(),
     val platforms: Set<Platform> = emptySet(),
@@ -37,27 +37,27 @@ abstract class Rule<C : Context> protected constructor(
 ) {
 
     /**
-     * Determines if this rule internalMatches the given context.
+     * Determines if this rule matches the given context.
      *
      * This method is final and internal to guarantee that base matching logic (locales, platforms, versions)
      * is always applied. Override [matches] to add custom matching criteria.
      *
      * @param context The context to evaluate against
-     * @return true if the context internalMatches base criteria AND any additional criteria
+     * @return true if the context matches base criteria AND any additional criteria
      */
-    internal fun internalMatches(context: C): Boolean =
-        matchesBaseAttributes(context) && matches(context)
+    internal fun matches(context: C): Boolean =
+        matchesBaseAttributes(context) && matchesCustom(context)
 
     /**
-     * Calculates the internalSpecificity of this rule.
+     * Calculates the specificity of this rule.
      *
-     * Override this method in subclasses to add additional internalSpecificity for custom attributes.
-     * Make sure to include the base internalSpecificity by calling super.internalSpecificity().
+     * Specificity determines rule precedence - higher values are evaluated first.
+     * This is calculated from both base attributes and custom criteria.
      *
-     * @return The internalSpecificity value (higher is more specific)
+     * @return The specificity value (higher is more specific)
      */
-    internal fun internalSpecificity(): Int =
-        computeInternalSpecificity() + specificity()
+    internal fun specificity(): Int =
+        computeBaseSpecificity() + customSpecificity()
 
     /**
      * Checks if the context internalMatches the base attributes (locales, platforms, versions).
@@ -73,11 +73,11 @@ abstract class Rule<C : Context> protected constructor(
             (!versionRange.hasBounds() || versionRange.contains(context.appVersion))
 
     /**
-     * Calculates internalSpecificity from base attributes only.
+     * Calculates specificity from base attributes only.
      *
-     * @return Base internalSpecificity value
+     * @return Base specificity value
      */
-    private fun computeInternalSpecificity(): Int =
+    private fun computeBaseSpecificity(): Int =
         (if (locales.isNotEmpty()) 1 else 0) +
             (if (platforms.isNotEmpty()) 1 else 0) +
             (if (versionRange.hasBounds()) 1 else 0)
@@ -91,22 +91,22 @@ abstract class Rule<C : Context> protected constructor(
      * @param context The context to evaluate against
      * @return true if additional criteria match (default: true)
      */
-    protected open fun matches(context: C): Boolean = true
+    protected open fun matchesCustom(context: C): Boolean = true
 
     /**
-     * Additional internalSpecificity for custom rules.
+     * Additional specificity for custom rules.
      *
-     * Override this method to add internalSpecificity values for custom attributes.
+     * Override this method to add specificity values for custom attributes.
      *
-     * @return Additional internalSpecificity value (default: 0)
+     * @return Additional specificity value (default: 0)
      */
-    protected open fun specificity(): Int = 0
+    protected open fun customSpecificity(): Int = 0
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Rule<*>) return false
 
-        if (rampUp != other.rampUp) return false
+        if (rollout != other.rollout) return false
         if (locales != other.locales) return false
         if (platforms != other.platforms) return false
         if (versionRange != other.versionRange) return false
@@ -116,7 +116,7 @@ abstract class Rule<C : Context> protected constructor(
     }
 
     override fun hashCode(): Int {
-        var result = rampUp.hashCode()
+        var result = rollout.hashCode()
         result = 31 * result + locales.hashCode()
         result = 31 * result + platforms.hashCode()
         result = 31 * result + versionRange.hashCode()
@@ -125,17 +125,17 @@ abstract class Rule<C : Context> protected constructor(
     }
 
     override fun toString(): String =
-        "Rule(rampUp=$rampUp, locales=$locales, platforms=$platforms, versionRange=$versionRange, note=$note)"
+        "Rule(rollout=$rollout, locales=$locales, platforms=$platforms, versionRange=$versionRange, note=$note)"
 
     companion object {
         operator fun <C : Context> invoke(
-            rampUp: RampUp,
+            rollout: Rollout,
             locales: Set<AppLocale> = emptySet(),
             platforms: Set<Platform> = emptySet(),
             versionRange: VersionRange = Unbounded,
             note: String? = null,
         ): Rule<C> = object : Rule<C>(
-            rampUp,
+            rollout,
             note,
             locales,
             platforms,

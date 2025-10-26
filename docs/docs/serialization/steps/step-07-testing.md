@@ -118,8 +118,8 @@ class RoundTripTest : BaseSerializationTest() {
         val original = ConfigBuilder.buildSnapshot {
             FeatureFlags.NEW_ONBOARDING with {
                 default(false)
-                boundary {
-                    rampUp = RampUp.of(50.0)
+                rule {
+                    rollout = Rollout.of(50.0)
                     locales(AppLocale.EN_US, AppLocale.EN_CA)
                     platforms(Platform.IOS)
                     note = "50% rollout for US/CA iOS"
@@ -242,7 +242,7 @@ class LoadingWorkflowTest : BaseSerializationTest() {
         val snapshot = ConfigBuilder.buildSnapshot {
             FeatureFlags.DARK_MODE with {
                 default(false)
-                boundary {
+                rule {
                     platforms(Platform.IOS)
                 }.implies(true)
             }
@@ -381,8 +381,8 @@ class PropertyBasedTest : BaseSerializationTest() {
         val snapshot = ConfigBuilder.buildSnapshot {
             FeatureFlags.NEW_ONBOARDING with {
                 default(false)
-                boundary {
-                    rampUp = RampUp.of(50.0)
+                rule {
+                    rollout = Rollout.of(50.0)
                 }.implies(true)
             }
         }
@@ -470,7 +470,7 @@ companion object {
         FlagScenario("simple default", { FeatureFlags.DARK_MODE with { default(true) } }),
         FlagScenario("with rules", { FeatureFlags.DARK_MODE with {
             default(false)
-            boundary { platforms(Platform.IOS) }.implies(true)
+            rule { platforms(Platform.IOS) }.implies(true)
         }}),
         // More scenarios...
     )

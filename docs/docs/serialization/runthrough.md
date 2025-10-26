@@ -121,7 +121,7 @@ package com.yourapp.flags
 import io.amichne.konditional.builders.ConfigBuilder
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.core.Flags
 
 object FlagConfigurations {
@@ -151,8 +151,8 @@ object FlagConfigurations {
 
         FeatureFlags.NEW_ONBOARDING with {
             default(false)
-            boundary {
-                rampUp = RampUp.of(50.0)
+            rule {
+                rollout = Rollout.of(50.0)
                 locales(AppLocale.EN_US)
             }.implies(true)
         }
@@ -163,7 +163,7 @@ object FlagConfigurations {
 
         FeatureFlags.PREMIUM_FEATURE with {
             default(false)
-            boundary {
+            rule {
                 platforms(Platform.IOS, Platform.ANDROID)
             }.implies(true)
         }
@@ -176,8 +176,8 @@ object FlagConfigurations {
 
         FeatureFlags.NEW_ONBOARDING with {
             default(false)
-            boundary {
-                rampUp = RampUp.of(10.0)
+            rule {
+                rollout = Rollout.of(10.0)
                 locales(AppLocale.EN_US)
                 note = "JIRA-456: Gradual rollout for US users"
             }.implies(true)
@@ -185,7 +185,7 @@ object FlagConfigurations {
 
         FeatureFlags.COMPACT_CARDS with {
             default(false)
-            boundary {
+            rule {
                 platforms(Platform.IOS, Platform.ANDROID)
                 versions {
                     min(2, 0, 0)
@@ -195,7 +195,7 @@ object FlagConfigurations {
 
         FeatureFlags.PREMIUM_FEATURE with {
             default(false)
-            boundary {
+            rule {
                 platforms(Platform.IOS)
                 versions {
                     min(2, 1, 0)
