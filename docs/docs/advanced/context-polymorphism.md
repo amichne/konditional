@@ -1,3 +1,8 @@
+---
+title: Context Polymorphism
+description: Create custom context types tailored to your domain while maintaining type safety
+---
+
 # Context Polymorphism
 
 One of Konditional's most powerful features is context polymorphism - the ability to define custom context types tailored to your domain, while maintaining full type safety throughout the system.

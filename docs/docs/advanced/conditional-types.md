@@ -1,3 +1,8 @@
+---
+title: Conditional Value Types
+description: Explore the different value types you can use in Konditional feature flags
+---
+
 # Conditional Value Types
 
 Konditional supports any non-nullable type as a flag value. This document explores the different types you can use and when each is appropriate.
