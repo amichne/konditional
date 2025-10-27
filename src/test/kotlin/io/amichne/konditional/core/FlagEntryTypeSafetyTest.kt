@@ -8,7 +8,7 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Flags.evaluate
 import io.amichne.konditional.rules.Rule
-import io.amichne.konditional.rules.Surjection.Companion.boundedBy
+import io.amichne.konditional.rules.TargetedValue.Companion.targetedBy
 import io.amichne.konditional.rules.versions.Unbounded
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -55,7 +55,7 @@ class FlagEntryTypeSafetyTest {
     }
 
     @Test
-    fun `Given FlagEntry, When created, Then wraps condition correctly`() {
+    fun `Given FlagDefinition, When created, Then maintains type information correctly`() {
         val rule = Rule<Context>(
             rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
@@ -63,20 +63,19 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded,
         )
 
-        val condition = Condition(
-            key = BoolFlags.FEATURE_A,
-            bounds = listOf(rule.boundedBy(true)),
+        val flag = FlagDefinition(
+            conditional = BoolFlags.FEATURE_A,
+            bounds = listOf(rule.targetedBy(true)),
             defaultValue = false,
         )
 
-        val entry = Flags.FlagEntry(condition)
-
-        assertNotNull(entry)
-        assertEquals(condition, entry.condition)
+        assertNotNull(flag)
+        assertEquals(BoolFlags.FEATURE_A.key, flag.key)
+        assertEquals(false, flag.defaultValue)
     }
 
     @Test
-    fun `Given FlagEntry, When evaluating, Then returns correct value type`() {
+    fun `Given ContextualFeatureFlag, When evaluating, Then returns correct value type`() {
         val rule = Rule<Context>(
             rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
@@ -84,21 +83,20 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded,
         )
 
-        val boolCondition = Condition(
-            key = BoolFlags.FEATURE_A,
-            bounds = listOf(rule.boundedBy(true)),
+        val boolFlag: ContextualFeatureFlag<Boolean, Context> = FlagDefinition(
+            conditional = BoolFlags.FEATURE_A,
+            bounds = listOf(rule.targetedBy(true)),
             defaultValue = false,
         )
 
-        val boolEntry = Flags.FlagEntry(boolCondition)
-        val boolResult = boolEntry.evaluate(ctx("11111111111111111111111111111111", locale = AppLocale.EN_US))
+        val boolResult = boolFlag.evaluate(ctx("11111111111111111111111111111111", locale = AppLocale.EN_US))
 
         assertTrue(boolResult is Boolean)
         assertEquals(true, boolResult)
     }
 
     @Test
-    fun `Given FlagEntry with different value types, When evaluating, Then each returns correct type`() {
+    fun `Given ContextualFeatureFlag with different value types, When evaluating, Then each returns correct type`() {
         val boolRule = Rule<Context>(
             rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
@@ -120,33 +118,29 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded,
         )
 
-        val boolCondition = Condition(
-            key = BoolFlags.FEATURE_A,
-            bounds = listOf(boolRule.boundedBy(true)),
+        val boolFlag: ContextualFeatureFlag<Boolean, Context> = FlagDefinition(
+            conditional = BoolFlags.FEATURE_A,
+            bounds = listOf(boolRule.targetedBy(true)),
             defaultValue = false,
         )
 
-        val stringCondition = Condition(
-            key = StringFlags.CONFIG_A,
-            bounds = listOf(stringRule.boundedBy("value")),
+        val stringFlag: ContextualFeatureFlag<String, Context> = FlagDefinition(
+            conditional = StringFlags.CONFIG_A,
+            bounds = listOf(stringRule.targetedBy("value")),
             defaultValue = "default",
         )
 
-        val intCondition = Condition(
-            key = IntFlags.TIMEOUT,
-            bounds = listOf(intRule.boundedBy(30)),
+        val intFlag: ContextualFeatureFlag<Int, Context> = FlagDefinition(
+            conditional = IntFlags.TIMEOUT,
+            bounds = listOf(intRule.targetedBy(30)),
             defaultValue = 10,
         )
 
         val context = ctx("22222222222222222222222222222222")
 
-        val boolEntry = Flags.FlagEntry(boolCondition)
-        val stringEntry = Flags.FlagEntry(stringCondition)
-        val intEntry = Flags.FlagEntry(intCondition)
-
-        val boolResult = boolEntry.evaluate(context)
-        val stringResult = stringEntry.evaluate(context)
-        val intResult = intEntry.evaluate(context)
+        val boolResult = boolFlag.evaluate(context)
+        val stringResult = stringFlag.evaluate(context)
+        val intResult = intFlag.evaluate(context)
 
         assertTrue(boolResult is Boolean)
         assertTrue(stringResult is String)
@@ -158,7 +152,7 @@ class FlagEntryTypeSafetyTest {
     }
 
     @Test
-    fun `Given Snapshot with FlagEntry instances, When loading, Then all entries are accessible`() {
+    fun `Given Snapshot with ContextualFeatureFlag instances, When loading, Then all flags are accessible`() {
         val boolRule = Rule<Context>(
             rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
@@ -173,22 +167,22 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded,
         )
 
-        val boolCondition = Condition(
-            key = BoolFlags.FEATURE_A,
-            bounds = listOf(boolRule.boundedBy(true)),
+        val boolFlag = FlagDefinition(
+            conditional = BoolFlags.FEATURE_A,
+            bounds = listOf(boolRule.targetedBy(true)),
             defaultValue = false,
         )
 
-        val stringCondition = Condition(
-            key = StringFlags.CONFIG_A,
-            bounds = listOf(stringRule.boundedBy("test")),
+        val stringFlag = FlagDefinition(
+            conditional = StringFlags.CONFIG_A,
+            bounds = listOf(stringRule.targetedBy("test")),
             defaultValue = "default",
         )
 
         val snapshot = Flags.Snapshot(
             mapOf(
-                BoolFlags.FEATURE_A to Flags.FlagEntry(boolCondition),
-                StringFlags.CONFIG_A to Flags.FlagEntry(stringCondition),
+                BoolFlags.FEATURE_A to boolFlag,
+                StringFlags.CONFIG_A to stringFlag,
             )
         )
 
@@ -205,7 +199,7 @@ class FlagEntryTypeSafetyTest {
     }
 
     @Test
-    fun `Given config with multiple flag types, When loaded, Then FlagEntry maintains type safety`() {
+    fun `Given config with multiple flag types, When loaded, Then ContextualFeatureFlag maintains type safety`() {
         config {
             BoolFlags.FEATURE_A with {
                 default(false)
@@ -257,7 +251,7 @@ class FlagEntryTypeSafetyTest {
     }
 
     @Test
-    fun `Given FlagEntry in map, When retrieving by key, Then type information is preserved through wrapper`() {
+    fun `Given ContextualFeatureFlag in map, When retrieving by key, Then type information is preserved`() {
         config {
             BoolFlags.FEATURE_A with {
                 default(false)
@@ -273,8 +267,8 @@ class FlagEntryTypeSafetyTest {
 
         val context = ctx("77777777777777777777777777777777")
 
-        // The evaluate() method internally retrieves FlagEntry from the map
-        // and casts it, but the wrapper ensures type safety
+        // The evaluate() method internally retrieves ContextualFeatureFlag from the map
+        // and casts it, maintaining type safety
         val boolResult = context.evaluate(BoolFlags.FEATURE_A)
         val stringResult = context.evaluate(StringFlags.CONFIG_A)
 
@@ -284,7 +278,7 @@ class FlagEntryTypeSafetyTest {
     }
 
     @Test
-    fun `Given mixed context and value types, When using FlagEntry, Then maintains both type parameters`() {
+    fun `Given mixed context and value types, When using ContextualFeatureFlag, Then maintains both type parameters`() {
         data class CustomContext(
             override val locale: AppLocale,
             override val platform: Platform,
@@ -307,13 +301,11 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded,
         )
 
-        val condition = Condition(
-            key = customIntFlag,
-            bounds = listOf(rule.boundedBy(42)),
+        val flag: ContextualFeatureFlag<Int, CustomContext> = FlagDefinition(
+            conditional = customIntFlag,
+            bounds = listOf(rule.targetedBy(42)),
             defaultValue = 0,
         )
-
-        val entry = Flags.FlagEntry(condition)
 
         val customCtx = CustomContext(
             locale = AppLocale.EN_US,
@@ -323,7 +315,7 @@ class FlagEntryTypeSafetyTest {
             customField = "test",
         )
 
-        val result = entry.evaluate(customCtx)
+        val result = flag.evaluate(customCtx)
 
         assertTrue(result is Int)
         assertEquals(42, result)

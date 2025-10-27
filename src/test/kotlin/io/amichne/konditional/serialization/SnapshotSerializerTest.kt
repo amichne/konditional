@@ -6,18 +6,19 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Condition
 import io.amichne.konditional.core.Conditional
+import io.amichne.konditional.core.ContextualFeatureFlag
+import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Flags
 import io.amichne.konditional.core.StableId
 import io.amichne.konditional.example.SampleFeatureEnum
 import io.amichne.konditional.rules.Rule
-import io.amichne.konditional.rules.Surjection.Companion.boundedBy
 import io.amichne.konditional.rules.versions.LeftBound
 import io.amichne.konditional.serialization.models.SerializableFlag
 import io.amichne.konditional.serialization.models.SerializablePatch
 import io.amichne.konditional.serialization.models.SerializableRule
 import io.amichne.konditional.core.ValueType
+import io.amichne.konditional.rules.TargetedValue.Companion.targetedBy
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -81,20 +82,20 @@ class SnapshotSerializerTest {
     @Test
     fun `test flag with rules serialization and deserialization`() {
         // Create a snapshot with complex rules using direct Condition construction
-        val condition = Condition(
-            key = SampleFeatureEnum.FIFTY_TRUE_US_IOS,
+        val condition = FlagDefinition(
+            conditional = SampleFeatureEnum.FIFTY_TRUE_US_IOS,
             bounds = listOf(
                 Rule<Context>(
                     rollout = Rollout.of(50.0),
                     locales = setOf(AppLocale.EN_US),
                     platforms = setOf(Platform.IOS)
-                ).boundedBy(true)
+                ).targetedBy(true)
             ),
             defaultValue = false
         )
 
         val snapshot = Flags.Snapshot(
-            mapOf(SampleFeatureEnum.FIFTY_TRUE_US_IOS to Flags.FlagEntry(condition))
+            mapOf(SampleFeatureEnum.FIFTY_TRUE_US_IOS to (condition))
         )
 
         // Serialize
@@ -136,19 +137,19 @@ class SnapshotSerializerTest {
 
     @Test
     fun `test flag with version ranges serialization`() {
-        val condition = Condition(
-            key = SampleFeatureEnum.VERSIONED,
+        val condition = ContextualFeatureFlag(
+            conditional = SampleFeatureEnum.VERSIONED,
             bounds = listOf(
                 Rule<Context>(
                     rollout = Rollout.of(100.0),
                     versionRange = LeftBound(Version(7, 10, 0))
-                ).boundedBy(true)
+                ).targetedBy(true)
             ),
             defaultValue = false
         )
 
         val snapshot = Flags.Snapshot(
-            mapOf(SampleFeatureEnum.VERSIONED to Flags.FlagEntry(condition))
+            mapOf(SampleFeatureEnum.VERSIONED to condition)
         )
 
         // Serialize

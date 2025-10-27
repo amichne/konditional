@@ -25,7 +25,7 @@ import io.amichne.konditional.core.Flags
 
 @FeatureFlagDsl
 class ConfigBuilder private constructor() {
-    private val flags = LinkedHashMap<Conditional<*, *>, Flags.FlagEntry<*, *>>()
+    private val flags = LinkedHashMap<Conditional<*, *>, io.amichne.konditional.core.ContextualFeatureFlag<*, *>>()
 
     /**
      * Define a flag using infix syntax:
@@ -38,7 +38,7 @@ class ConfigBuilder private constructor() {
      */
     infix fun <S : Any, C : Context> Conditional<S, C>.with(build: FlagBuilder<S, C>.() -> Unit) {
         require(this !in flags) { "Duplicate flag $this" }
-        flags[this] = Flags.FlagEntry(FlagBuilder(this).apply<FlagBuilder<S, C>>(build).build())
+        flags[this] = FlagBuilder(this).apply<FlagBuilder<S, C>>(build).build()
     }
 
     internal fun build(): Flags.Snapshot = Flags.Snapshot(flags.toMap())

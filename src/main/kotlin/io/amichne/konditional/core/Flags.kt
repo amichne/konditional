@@ -9,28 +9,11 @@ import java.util.concurrent.atomic.AtomicReference
  * Use this object to manage and access global flags in the application.
  */
 object Flags {
-    /**
-     * Type-safe wrapper that maintains the relationship between a Conditional and its FlagDefinition.
-     * This wrapper ensures type safety by keeping the value type S and context type C paired together.
-     *
-     * The wrapper guarantees the invariant: a Conditional<S, C> is always stored with its
-     * matching FlagDefinition<S, C>, eliminating inconsistencies that could arise from separate storage.
-     */
-    class FlagEntry<S : Any, C : Context>(
-        val definition: FlagDefinition<S, C>,
-    ) {
-        /**
-         * Evaluates this flag entry with the given context.
-         * Type safety is guaranteed by the wrapper's construction invariant.
-         */
-        fun evaluate(context: C): S = definition.evaluate(context)
-    }
-
     private val current = AtomicReference(Snapshot(emptyMap()))
 
     @ConsistentCopyVisibility
     data class Snapshot internal constructor(
-        val flags: Map<Conditional<*, *>, FlagEntry<*, *>>,
+        val flags: Map<Conditional<*, *>, ContextualFeatureFlag<*, *>>,
     ) {
         companion object {
             fun Snapshot.toJson(serializer: SnapshotSerializer = SnapshotSerializer.default): String =
@@ -59,7 +42,7 @@ object Flags {
      */
     fun <S : Any, C : Context> update(definition: FlagDefinition<S, C>) {
         current.get().flags.toMutableMap().let {
-            it[definition.key] = FlagEntry(definition)
+            it[definition.conditional] = definition
             current.set(Snapshot(it))
         }
     }
@@ -72,7 +55,7 @@ object Flags {
      */
     @Suppress("UNCHECKED_CAST")
     fun <S : Any, C : Context> C.evaluate(key: Conditional<S, C>): S =
-        (current.get().flags[key] as? FlagEntry<S, C>)?.evaluate(this)
+        (current.get().flags[key] as? ContextualFeatureFlag<S, C>)?.evaluate(this)
             ?: throw IllegalStateException("Flag not found: ${key.key}")
 
     /**
@@ -82,8 +65,8 @@ object Flags {
      * @return A map where each key is a [Conditional] and the value is the result of its evaluation (maybe `null`).
      */
     @Suppress("UNCHECKED_CAST")
-    fun <C : Context> C.evaluate(): Map<Conditional<*, *>, Any?> = current.get().flags.mapValues { (_, entry) ->
-        (entry as? FlagEntry<*, C>)?.evaluate(this)
+    fun <C : Context> C.evaluate(): Map<Conditional<*, *>, Any?> = current.get().flags.mapValues { (_, flag) ->
+        (flag as? ContextualFeatureFlag<*, C>)?.evaluate(this)
     }
 
 

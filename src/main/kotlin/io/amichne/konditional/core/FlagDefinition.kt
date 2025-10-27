@@ -13,12 +13,14 @@ import kotlin.math.roundToInt
  * @param C The type of the context that this flag evaluates against.
  */
 data class FlagDefinition<S : Any, C : Context>(
-    val key: Conditional<S, C>,
+    val conditional: Conditional<S, C>,
     val bounds: List<TargetedValue<S, C>>,
-    val defaultValue: S,
+    override val defaultValue: S,
     val salt: String = "v1",
-    val isActive: Boolean = true,
-) {
+    override val isActive: Boolean = true,
+) : ContextualFeatureFlag<S, C> {
+    override val key: String
+        get() = conditional.key
     private companion object {
         val shaDigestSpi: MessageDigest = requireNotNull(MessageDigest.getInstance("SHA-256"))
     }
@@ -34,12 +36,12 @@ data class FlagDefinition<S : Any, C : Context>(
      * @param context The context in which the flag evaluation is performed.
      * @return The result of the evaluation, of type `S`. If the flag is not active, returns the defaultValue.
      */
-    fun evaluate(context: C): S {
+    override fun evaluate(context: C): S {
         if (!isActive) return defaultValue
 
         return targetedValues.firstOrNull {
             it.rule.matches(context) &&
-                isInEligibleSegment(flagKey = key.key, id = context.stableId.hexId, salt = salt, rollout = it.rule.rollout)
+                isInEligibleSegment(flagKey = conditional.key, id = context.stableId.hexId, salt = salt, rollout = it.rule.rollout)
         }?.value ?: defaultValue
     }
 

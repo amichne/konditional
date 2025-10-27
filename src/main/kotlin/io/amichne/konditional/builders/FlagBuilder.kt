@@ -75,7 +75,7 @@ class FlagBuilder<S : Any, C : Context>(
     internal fun build(): FlagDefinition<S, C> {
         requireNotNull(defaultValue) { "Default value must be set" }
         return FlagDefinition(
-            key = key,
+            conditional = key,
             bounds = targetedValues.toList(),
             defaultValue = defaultValue!!,
             salt = salt,
