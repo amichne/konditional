@@ -68,10 +68,10 @@ nav:
       - 'Step 6: Load into Runtime': serialization/steps/step-06-load.md
       - 'Step 7: Testing': serialization/steps/step-07-testing.md
       - 'Step 8: Production Setup': serialization/steps/step-08-production.md
-  - Advanced:
-      - Patch Updates: advanced/patch-updates.md
-      - Custom Types: advanced/custom-types.md
-      - Migration: advanced/migration.md
+  - Core Concepts:
+      - Architecture: advanced/architecture.md
+      - Conditional Value Types: advanced/conditional-types.md
+      - Context Polymorphism: advanced/context-polymorphism.md
 
 plugins:
   - search

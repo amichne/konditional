@@ -1,3 +1,8 @@
+---
+title: Architecture
+description: High-level architecture of Konditional and how its core components work together
+---
+
 # Architecture Overview
 
 This document describes the high-level architecture of Konditional and how its core components work together to provide type-safe, deterministic feature flag evaluation.
