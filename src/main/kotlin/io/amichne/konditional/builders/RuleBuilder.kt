@@ -4,7 +4,7 @@ import io.amichne.konditional.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.core.FeatureFlagDsl
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
@@ -35,7 +35,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  */
 @FeatureFlagDsl
 open class RuleBuilder<C : Context> {
-    var rampUp: RampUp? = null
+    var rollout: Rollout? = null
     protected val locales = linkedSetOf<AppLocale>()
     protected val platforms = linkedSetOf<Platform>()
     protected var range: VersionRange = Unbounded
@@ -60,13 +60,13 @@ open class RuleBuilder<C : Context> {
 
     /**
      * Builds a Rule instance. Override this method in custom builders to create
-     * custom rule implementations.
+     * custom rule implementations. Internal method - not intended for direct use.
      *
      * @return A Rule instance (Rule by default)
      */
-    open fun build(): Rule<C> =
+    internal open fun build(): Rule<C> =
         Rule(
-            rampUp = rampUp ?: RampUp.default,
+            rollout = rollout ?: Rollout.default,
             locales = locales,
             platforms = platforms,
             versionRange = range,

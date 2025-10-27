@@ -49,12 +49,12 @@ config {
         default(false)
 
         // 25% rollout for iOS users on version 2.0+
-        boundary {
+        rule {
             platforms(Platform.IOS)
             versions {
                 min(2, 0)
             }
-            rampUp = RampUp.of(25.0)
+            rollout = Rollout.of(25.0)
         } implies true
     }
 
@@ -62,8 +62,8 @@ config {
         default(false)
 
         // Full rollout for all platforms
-        boundary {
-            rampUp = RampUp.MAX
+        rule {
+            rollout = Rollout.MAX
         } implies true
     }
 }
@@ -96,7 +96,7 @@ enum class ApiConfig(override val key: String) : Conditional<String, Context> {
 config {
     ApiConfig.ENDPOINT with {
         default("https://api.prod.example.com")
-        boundary {
+        rule {
             platforms(Platform.WEB)
         } implies "https://api.staging.example.com"
     }
@@ -120,7 +120,7 @@ enum class AppTheme(override val key: String) : Conditional<ThemeConfig, Context
 config {
     AppTheme.THEME with {
         default(ThemeConfig("#FFFFFF", false, 14))
-        boundary {
+        rule {
             locales(AppLocale.EN_US)
         } implies ThemeConfig("#1E1E1E", true, 16)
     }

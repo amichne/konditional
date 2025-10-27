@@ -82,7 +82,7 @@ class ContextPolymorphismTest {
         val requiredRole: UserRole? = null,
     ) {
         fun matches(context: EnterpriseContext): Boolean {
-            if (!Rule.internalMatches(context)) return false
+            if (!Rule.matches(context)) return false
             if (requiredTier != null && context.subscriptionTier.ordinal < requiredTier.ordinal) return false
             if (requiredRole != null && context.userRole.ordinal < requiredRole.ordinal) return false
             return true
@@ -95,7 +95,7 @@ class ContextPolymorphismTest {
             EnterpriseFlags.ADVANCED_ANALYTICS with {
                 default(false)
                 // This demonstrates that the rule can access base Context properties
-                boundary {
+                rule {
                     platforms(Platform.WEB)
                     versions {
                         min(2, 0)
@@ -122,10 +122,10 @@ class ContextPolymorphismTest {
         config {
             ExperimentFlags.HOMEPAGE_VARIANT with {
                 default("control")
-                boundary {
+                rule {
                     platforms(Platform.IOS, Platform.ANDROID)
                 } implies "variant-a"
-                boundary {
+                rule {
                     platforms(Platform.WEB)
                 } implies "variant-b"
             }
@@ -159,12 +159,12 @@ class ContextPolymorphismTest {
         config {
             EnterpriseFlags.API_ACCESS with {
                 default(false)
-                boundary {
+                rule {
                 } implies true
             }
             ExperimentFlags.ONBOARDING_STYLE with {
                 default("classic")
-                boundary {
+                rule {
                 } implies "modern"
             }
         }
@@ -207,7 +207,7 @@ class ContextPolymorphismTest {
             }
             EnterpriseFlags.CUSTOM_BRANDING with {
                 default(false)
-                boundary {
+                rule {
                     platforms(Platform.WEB)
                 } implies true
             }
@@ -244,13 +244,13 @@ class ContextPolymorphismTest {
         config {
             standardFlagA with {
                 default(false)
-                boundary {
+                rule {
                     platforms(Platform.IOS)
                 } implies true
             }
             EnterpriseFlags.CUSTOM_BRANDING with {
                 default(false)
-                boundary {
+                rule {
                     platforms(Platform.WEB)
                 } implies true
             }
@@ -282,7 +282,7 @@ class ContextPolymorphismTest {
     @Test
     fun `Given EnterpriseContext subclass, When matching rules, Then base Context properties work correctly`() {
         val rule = Rule<EnterpriseContext>(
-            rampUp = RampUp.MAX,
+            rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US, AppLocale.EN_CA),
             platforms = setOf(Platform.WEB),
             versionRange = FullyBound(Version(2, 0, 0), Version(3, 0, 0)),
@@ -308,15 +308,15 @@ class ContextPolymorphismTest {
             userRole = UserRole.OWNER,
         )
 
-        assertTrue(rule.internalMatches(matchingCtx))
-        assertFalse(rule.internalMatches(nonMatchingCtx))
+        assertTrue(rule.matches(matchingCtx))
+        assertFalse(rule.matches(nonMatchingCtx))
     }
 
     @Test
     fun `Given custom EnterpriseRule, When matching with business logic, Then custom properties are enforced`() {
         val enterpriseOnlyRule = EnterpriseRule(
             Rule = Rule(
-                rampUp = RampUp.MAX,
+                rollout = Rollout.MAX,
                 locales = emptySet(),
                 platforms = setOf(Platform.WEB),
                 versionRange = Unbounded,

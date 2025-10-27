@@ -31,8 +31,8 @@ ConditionalRegistry.register(MyFlags.SOME_FLAG)
 val snapshot = ConfigBuilder.buildSnapshot {
     SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
         default(false)
-        boundary {
-            rampUp = RampUp.of(50.0)
+        rule {
+            rollout = Rollout.of(50.0)
             locales(AppLocale.EN_US)
             platforms(Platform.IOS)
         }.implies(true)
@@ -84,12 +84,12 @@ The serialization system uses the following JSON structure:
             "value": true,
             "type": "BOOLEAN"
           },
-          "rampUp": 50.0,
+          "rollout": 50.0,
           "note": "US iOS 50% rollout",
           "locales": ["EN_US"],
           "platforms": ["IOS"],
           "versionRange": {
-            "type": "LEFT_BOUND",
+            "type": "MIN_BOUND",
             "min": {
               "major": 7,
               "minor": 10,
@@ -118,7 +118,7 @@ The serialization system uses the following JSON structure:
 - **value**: Typed wrapper object containing:
   - **value**: The actual value to return if this rule matches
   - **type**: The type of the value (ensures type safety during deserialization)
-- **rampUp**: Percentage of users to include (0-100, default: 100)
+- **rollout**: Percentage of users to include (0-100, default: 100)
 - **note**: Optional description of the rule
 - **locales**: Set of matching locales (empty = all)
 - **platforms**: Set of matching platforms (empty = all)
@@ -126,9 +126,9 @@ The serialization system uses the following JSON structure:
 
 #### Version Range Types
 - **UNBOUNDED**: No version constraints
-- **LEFT_BOUND**: `version >= min`
-- **RIGHT_BOUND**: `version <= max`
-- **FULLY_BOUND**: `min <= version <= max`
+- **MIN_BOUND**: `version >= min`
+- **MAX_BOUND**: `version <= max`
+- **MIN_AND_MAX_BOUND**: `min <= version <= max`
 
 ## Patch Updates
 
@@ -191,7 +191,7 @@ The serialization system supports the following value types:
 The serialization system includes comprehensive tests that verify:
 
 1. **Simple flag serialization** - Basic flag with default value
-2. **Flags with rules** - Complex targeting rules with rampUp
+2. **Flags with rules** - Complex targeting rules with rollout
 3. **Version ranges** - All version range types
 4. **Multiple flags** - Configurations with many flags
 5. **Patch updates** - Adding, updating, and removing flags
@@ -213,8 +213,8 @@ ConditionalRegistry.registerEnum<SampleFeatureEnum>()
 val snapshot = ConfigBuilder.buildSnapshot {
     SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
         default(false)
-        boundary {
-            rampUp = RampUp.of(50.0)
+        rule {
+            rollout = Rollout.of(50.0)
             locales(AppLocale.EN_US)
             platforms(Platform.IOS)
         }.implies(true)

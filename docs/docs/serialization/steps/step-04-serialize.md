@@ -148,7 +148,7 @@ The resulting JSON will look like:
             "value": true,
             "type": "BOOLEAN"
           },
-          "rampUp": 10.0,
+          "rollout": 10.0,
           "note": null,
           "locales": ["EN_US"],
           "platforms": [],

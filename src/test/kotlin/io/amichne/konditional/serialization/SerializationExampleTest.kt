@@ -4,7 +4,7 @@ import io.amichne.konditional.builders.ConfigBuilder
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Flags
 import io.amichne.konditional.core.StableId
@@ -49,8 +49,8 @@ class SerializationExampleTest {
         val snapshot = ConfigBuilder.buildSnapshot {
             SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
                 default(false)
-                boundary {
-                    rampUp = RampUp.of(50.0)
+                rule {
+                    rollout = Rollout.of(50.0)
                     locales(AppLocale.EN_US)
                     platforms(Platform.IOS)
                 }.implies(true)
@@ -58,7 +58,7 @@ class SerializationExampleTest {
 
             SampleFeatureEnum.USE_LIGHTWEIGHT_HOME with {
                 default(false)
-                boundary {
+                rule {
                     platforms(Platform.WEB)
                 }.implies(true)
             }

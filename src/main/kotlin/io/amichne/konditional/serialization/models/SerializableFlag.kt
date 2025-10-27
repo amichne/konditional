@@ -5,7 +5,7 @@ import io.amichne.konditional.core.ValueType
 
 /**
  * Serializable representation of a single flag configuration.
- * Contains all the data needed to reconstruct a FlagEntry with its Condition.
+ * Contains all the data needed to reconstruct a FlagDefinition with its Conditional.
  */
 @JsonClass(generateAdapter = true)
 data class SerializableFlag(

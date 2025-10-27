@@ -130,7 +130,7 @@ class ConditionalExtensibilityTest {
         config {
             ApiConfigFlags.PRIMARY_API with {
                 default(prodConfig)
-                boundary {
+                rule {
                     platforms(Platform.WEB)
                 } implies devConfig
             }
@@ -164,7 +164,7 @@ class ConditionalExtensibilityTest {
         config {
             ThemeFlags.APP_THEME with {
                 default(lightTheme)
-                boundary {
+                rule {
                     locales(AppLocale.EN_US)
                 } implies darkTheme
             }
@@ -186,7 +186,7 @@ class ConditionalExtensibilityTest {
         config {
             ListFlags.ENABLED_FEATURES with {
                 default(defaultFeatures)
-                boundary {
+                rule {
                     versions {
                         min(2, 0)
                     }
@@ -210,13 +210,13 @@ class ConditionalExtensibilityTest {
         config {
             IntFlags.MAX_CONNECTIONS with {
                 default(10)
-                boundary {
+                rule {
                     platforms(Platform.WEB)
                     versions {
                         min(3, 0)
                     }
                 } implies 100
-                boundary {
+                rule {
                     platforms(Platform.WEB)
                 } implies 50
             }
@@ -240,10 +240,10 @@ class ConditionalExtensibilityTest {
         config {
             LogConfigFlags.APP_LOG_LEVEL with {
                 default(LogLevel.INFO)
-                boundary {
+                rule {
                     platforms(Platform.WEB)
                 } implies LogLevel.DEBUG
-                boundary {
+                rule {
                     versions {
                         max(1, 0)
                     }
@@ -280,7 +280,7 @@ class ConditionalExtensibilityTest {
         config {
             MapFlags.FEATURE_TOGGLES with {
                 default(defaultToggles)
-                boundary {
+                rule {
                     locales(AppLocale.EN_US, AppLocale.EN_CA)
                 } implies betaToggles
             }

@@ -1,12 +1,12 @@
 package io.amichne.konditional.builders
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.Condition
+import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.core.FeatureFlagDsl
 import io.amichne.konditional.rules.Rule
-import io.amichne.konditional.rules.Surjection
-import io.amichne.konditional.rules.Surjection.Companion.boundedBy
+import io.amichne.konditional.rules.TargetedValue
+import io.amichne.konditional.rules.TargetedValue.Companion.targetedBy
 
 /**
  * A builder class for constructing and configuring a feature flag.
@@ -20,7 +20,7 @@ import io.amichne.konditional.rules.Surjection.Companion.boundedBy
 class FlagBuilder<S : Any, C : Context>(
     private val key: Conditional<S, C>,
 ) {
-    private val surjections = mutableListOf<Surjection<S, C>>()
+    private val targetedValues = mutableListOf<TargetedValue<S, C>>()
     private var defaultValue: S? = null
     private var defaultCoverage: Double? = null
     private var salt: String = "v1"
@@ -53,29 +53,30 @@ class FlagBuilder<S : Any, C : Context>(
     }
 
     /**
-     * Defines a boundary boundary the current context using the provided [build] lambda.
+     * Defines a targeting rule for this flag using the provided [build] lambda.
      * The [build] lambda is an extension function on [RuleBuilder] that allows
-     * you to configure the boundary's behavior and properties.
+     * you to configure the rule's behavior and properties.
      *
-     * @param build A lambda with receiver of type [RuleBuilder<C>] used to build the boundary.
+     * @param build A lambda with receiver of type [RuleBuilder<C>] used to build the rule.
      */
-    fun boundary(build: RuleBuilder<C>.() -> Unit): Rule<C> = RuleBuilder<C>().apply(build).build()
+    fun rule(build: RuleBuilder<C>.() -> Unit): Rule<C> = RuleBuilder<C>().apply(build).build()
 
     @FeatureFlagDsl
     infix fun Rule<C>.implies(value: S) {
-        surjections += boundedBy(value)
+        targetedValues += targetedBy(value)
     }
 
     /**
-     * Builds and returns a `Condition` instance of type `S` with context type `C`.
+     * Builds and returns a `FlagDefinition` instance of type `S` with context type `C`.
+     * Internal method - not intended for direct use.
      *
-     * @return A `Condition` instance constructed based on the current configuration.
+     * @return A `FlagDefinition` instance constructed based on the current configuration.
      */
-    fun build(): Condition<S, C> {
+    internal fun build(): FlagDefinition<S, C> {
         requireNotNull(defaultValue) { "Default value must be set" }
-        return Condition(
-            key = key,
-            bounds = surjections.toList(),
+        return FlagDefinition(
+            conditional = key,
+            bounds = targetedValues.toList(),
             defaultValue = defaultValue!!,
             salt = salt,
         )

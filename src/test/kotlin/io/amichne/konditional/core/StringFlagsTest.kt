@@ -5,7 +5,7 @@ import io.amichne.konditional.builders.FlagBuilder
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Flags.evaluate
 import kotlin.test.Test
@@ -38,10 +38,10 @@ class StringFlagsTest {
         config {
             StringFeatureFlags.THEME with {
                 default("light")
-                boundary {
+                rule {
                     platforms(Platform.ANDROID)
                 } implies "material"
-                boundary {
+                rule {
                     platforms(Platform.IOS)
                 } implies "cupertino"
             }
@@ -69,13 +69,13 @@ class StringFlagsTest {
         config {
             StringFeatureFlags.WELCOME_MESSAGE with {
                 default("Welcome!")
-                boundary {
+                rule {
                     locales(AppLocale.ES_US)
                 } implies "¡Bienvenido!"
-                boundary {
+                rule {
                     locales(AppLocale.EN_CA)
                 } implies "Welcome, eh!"
-                boundary {
+                rule {
                     locales(AppLocale.HI_IN)
                 } implies "स्वागत है!"
             }
@@ -116,13 +116,13 @@ class StringFlagsTest {
         config {
             StringFeatureFlags.API_ENDPOINT with {
                 default("https://api.example.com/v1")
-                boundary {
+                rule {
                     versions {
                         min(8, 0)
                         max(8, 99, 99)
                     }
                 } implies "https://api.example.com/v2"
-                boundary {
+                rule {
                     versions {
                         min(9, 0)
                     }
@@ -154,9 +154,9 @@ class StringFlagsTest {
         config {
             StringFeatureFlags.API_ENDPOINT with {
                 default("https://api-old.example.com")
-                boundary {
+                rule {
                     // 30% of users get the new endpoint
-                    rampUp = RampUp.of(30.0)
+                    rollout = Rollout.of(30.0)
                 } implies "https://api-new.example.com"
             }
         }
@@ -190,16 +190,16 @@ class StringFlagsTest {
                 default("https://api.example.com/stable")
 
                 // Beta API for iOS 9.0+ users at 25% rollout
-                boundary {
+                rule {
                     platforms(Platform.IOS)
                     versions {
                         min(9, 0)
                     }
-                    rampUp = RampUp.of(25.0)
+                    rollout = Rollout.of(25.0)
                 } implies "https://api.example.com/beta"
 
                 // Canary API for all Android 10.0+ users
-                boundary {
+                rule {
                     platforms(Platform.ANDROID)
                     versions {
                         min(10, 0)
@@ -252,7 +252,7 @@ class StringFlagsTest {
         config {
             StringFeatureFlags.THEME with {
                 default("light")
-                boundary {
+                rule {
                 } implies "dark"
             }
         }
@@ -272,12 +272,12 @@ class StringFlagsTest {
         config {
             StringFeatureFlags.THEME with {
                 default("light")
-                boundary {
+                rule {
                 } implies "dark"
             }
             StringFeatureFlags.API_ENDPOINT with {
                 default("https://api.example.com/v1")
-                boundary {
+                rule {
                 } implies "https://api.example.com/v2"
             }
         }

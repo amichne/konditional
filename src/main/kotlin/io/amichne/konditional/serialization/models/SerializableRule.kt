@@ -4,7 +4,7 @@ import com.squareup.moshi.JsonClass
 import io.amichne.konditional.core.ValueType
 
 /**
- * Serializable representation of a Surjection (rule + value pair).
+ * Serializable representation of a TargetedValue (rule + value pair).
  */
 @JsonClass(generateAdapter = true)
 data class SerializableRule(

@@ -4,10 +4,10 @@ import io.amichne.konditional.builders.FlagBuilder
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.rules.Rule
-import io.amichne.konditional.rules.Surjection.Companion.boundedBy
+import io.amichne.konditional.rules.TargetedValue.Companion.targetedBy
 import io.amichne.konditional.rules.versions.Unbounded
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -36,8 +36,8 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given condition with no matching rules, When evaluating, Then returns default value`() {
-        val condition = Condition(
-            key = TestFlags.TEST_FLAG,
+        val condition = FlagDefinition(
+            conditional = TestFlags.TEST_FLAG,
             bounds = emptyList(),
             defaultValue = "default",
         )
@@ -49,15 +49,15 @@ class ConditionEvaluationTest {
     @Test
     fun `Given condition with one matching rule, When evaluating, Then returns rule value`() {
         val rule = Rule<Context>(
-            rampUp = RampUp.MAX,
+            rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = emptySet(),
             versionRange = Unbounded,
         )
 
-        val condition = Condition(
-            key = TestFlags.TEST_FLAG,
-            bounds = listOf(rule.boundedBy("en-us-value")),
+        val condition = FlagDefinition(
+            conditional = TestFlags.TEST_FLAG,
+            bounds = listOf(rule.targetedBy("en-us-value")),
             defaultValue = "default",
         )
 
@@ -71,32 +71,32 @@ class ConditionEvaluationTest {
     @Test
     fun `Given multiple rules, When evaluating, Then most specific rule wins`() {
         val generalRule = Rule<Context>(
-            rampUp = RampUp.MAX,
+            rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded,
         )
 
         val platformRule = Rule<Context>(
-            rampUp = RampUp.MAX,
+            rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded,
         )
 
         val platformAndLocaleRule = Rule<Context>(
-            rampUp = RampUp.MAX,
+            rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded,
         )
 
-        val condition = Condition(
-            key = TestFlags.TEST_FLAG,
+        val condition = FlagDefinition(
+            conditional = TestFlags.TEST_FLAG,
             bounds = listOf(
-                generalRule.boundedBy("general"),
-                platformRule.boundedBy("ios"),
-                platformAndLocaleRule.boundedBy("ios-en-us"),
+                generalRule.targetedBy("general"),
+                platformRule.targetedBy("ios"),
+                platformAndLocaleRule.targetedBy("ios-en-us"),
             ),
             defaultValue = "default",
         )
@@ -123,7 +123,7 @@ class ConditionEvaluationTest {
     @Test
     fun `Given rules with same specificity, When evaluating, Then note is used as tiebreaker`() {
         val ruleA = Rule<Context>(
-            rampUp = RampUp.MAX,
+            rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded,
@@ -131,21 +131,21 @@ class ConditionEvaluationTest {
         )
 
         val ruleB = Rule<Context>(
-            rampUp = RampUp.MAX,
+            rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded,
             note = "rule-b",
         )
 
-        // Both rules have same internalSpecificity but different notes
-        assertEquals(ruleA.internalSpecificity(), ruleB.internalSpecificity())
+        // Both rules have same specificity but different notes
+        assertEquals(ruleA.specificity(), ruleB.specificity())
 
-        val condition = Condition(
-            key = TestFlags.TEST_FLAG,
+        val condition = FlagDefinition(
+            conditional = TestFlags.TEST_FLAG,
             bounds = listOf(
-                ruleB.boundedBy("value-b"),
-                ruleA.boundedBy("value-a"),
+                ruleB.targetedBy("value-b"),
+                ruleA.targetedBy("value-a"),
             ),
             defaultValue = "default",
         )
@@ -164,15 +164,15 @@ class ConditionEvaluationTest {
     @Test
     fun `Given rule with 0 percent ramp-up, When evaluating, Then never matches`() {
         val rule = Rule<Context>(
-            rampUp = RampUp.of(0.0),
+            rollout = Rollout.of(0.0),
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded,
         )
 
-        val condition = Condition(
-            key = TestFlags.TEST_FLAG,
-            bounds = listOf(rule.boundedBy("enabled")),
+        val condition = FlagDefinition(
+            conditional = TestFlags.TEST_FLAG,
+            bounds = listOf(rule.targetedBy("enabled")),
             defaultValue = "disabled",
         )
 
@@ -187,15 +187,15 @@ class ConditionEvaluationTest {
     @Test
     fun `Given rule with 100 percent ramp-up, When evaluating, Then always matches`() {
         val rule = Rule<Context>(
-            rampUp = RampUp.of(100.0),
+            rollout = Rollout.of(100.0),
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded,
         )
 
-        val condition = Condition(
-            key = TestFlags.TEST_FLAG,
-            bounds = listOf(rule.boundedBy("enabled")),
+        val condition = FlagDefinition(
+            conditional = TestFlags.TEST_FLAG,
+            bounds = listOf(rule.targetedBy("enabled")),
             defaultValue = "disabled",
         )
 
@@ -210,15 +210,15 @@ class ConditionEvaluationTest {
     @Test
     fun `Given rule with 50 percent ramp-up, When evaluating many users, Then approximately half match`() {
         val rule = Rule<Context>(
-            rampUp = RampUp.of(50.0),
+            rollout = Rollout.of(50.0),
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded,
         )
 
-        val condition = Condition(
-            key = TestFlags.TEST_FLAG,
-            bounds = listOf(rule.boundedBy("enabled")),
+        val condition = FlagDefinition(
+            conditional = TestFlags.TEST_FLAG,
+            bounds = listOf(rule.targetedBy("enabled")),
             defaultValue = "disabled",
         )
 
@@ -238,15 +238,15 @@ class ConditionEvaluationTest {
     @Test
     fun `Given same user ID, When evaluating same condition, Then result is deterministic`() {
         val rule = Rule<Context>(
-            rampUp = RampUp.of(50.0),
+            rollout = Rollout.of(50.0),
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded,
         )
 
-        val condition = Condition(
-            key = TestFlags.TEST_FLAG,
-            bounds = listOf(rule.boundedBy("enabled")),
+        val condition = FlagDefinition(
+            conditional = TestFlags.TEST_FLAG,
+            bounds = listOf(rule.targetedBy("enabled")),
             defaultValue = "disabled",
         )
 
@@ -262,22 +262,22 @@ class ConditionEvaluationTest {
     @Test
     fun `Given different salts, When evaluating same user, Then bucketing is independent`() {
         val rule = Rule<Context>(
-            rampUp = RampUp.of(50.0),
+            rollout = Rollout.of(50.0),
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded,
         )
 
-        val conditionV1 = Condition(
-            key = TestFlags.TEST_FLAG,
-            bounds = listOf(rule.boundedBy("enabled")),
+        val conditionV1 = FlagDefinition(
+            conditional = TestFlags.TEST_FLAG,
+            bounds = listOf(rule.targetedBy("enabled")),
             defaultValue = "disabled",
             salt = "v1",
         )
 
-        val conditionV2 = Condition(
-            key = TestFlags.TEST_FLAG,
-            bounds = listOf(rule.boundedBy("enabled")),
+        val conditionV2 = FlagDefinition(
+            conditional = TestFlags.TEST_FLAG,
+            bounds = listOf(rule.targetedBy("enabled")),
             defaultValue = "disabled",
             salt = "v2",
         )
@@ -302,24 +302,24 @@ class ConditionEvaluationTest {
     @Test
     fun `Given rule not matching context constraints, When evaluating, Then skips to next rule regardless of ramp-up`() {
         val iosOnlyRule = Rule<Context>(
-            rampUp = RampUp.MAX,
+            rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded,
         )
 
         val androidOnlyRule = Rule<Context>(
-            rampUp = RampUp.MAX,
+            rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.ANDROID),
             versionRange = Unbounded,
         )
 
-        val condition = Condition(
-            key = TestFlags.TEST_FLAG,
+        val condition = FlagDefinition(
+            conditional = TestFlags.TEST_FLAG,
             bounds = listOf(
-                iosOnlyRule.boundedBy("ios-value"),
-                androidOnlyRule.boundedBy("android-value"),
+                iosOnlyRule.targetedBy("ios-value"),
+                androidOnlyRule.targetedBy("android-value"),
             ),
             defaultValue = "default",
         )
@@ -337,24 +337,24 @@ class ConditionEvaluationTest {
     @Test
     fun `Given rule matching but user not in bucket, When evaluating, Then continues to next rule`() {
         val highSpecificityLowRampup = Rule<Context>(
-            rampUp = RampUp.of(1.0), // Very low ramp-up
+            rollout = Rollout.of(1.0), // Very low ramp-up
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded,
         )
 
         val lowSpecificityHighRampup = Rule<Context>(
-            rampUp = RampUp.MAX,
+            rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded,
         )
 
-        val condition = Condition(
-            key = TestFlags.TEST_FLAG,
+        val condition = FlagDefinition(
+            conditional = TestFlags.TEST_FLAG,
             bounds = listOf(
-                highSpecificityLowRampup.boundedBy("specific"),
-                lowSpecificityHighRampup.boundedBy("fallback"),
+                highSpecificityLowRampup.targetedBy("specific"),
+                lowSpecificityHighRampup.targetedBy("fallback"),
             ),
             defaultValue = "default",
         )
@@ -385,7 +385,7 @@ class ConditionEvaluationTest {
     @Test
     fun `Given sorted surjections by specificity, When initializing condition, Then surjections are properly ordered`() {
         val general = Rule<Context>(
-            rampUp = RampUp.MAX,
+            rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded,
@@ -393,7 +393,7 @@ class ConditionEvaluationTest {
         )
 
         val specific = Rule<Context>(
-            rampUp = RampUp.MAX,
+            rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded,
@@ -401,16 +401,16 @@ class ConditionEvaluationTest {
         )
 
         // Provide in wrong order
-        val condition = Condition(
-            key = TestFlags.TEST_FLAG,
+        val condition = FlagDefinition(
+            conditional = TestFlags.TEST_FLAG,
             bounds = listOf(
-                general.boundedBy("general-value"),
-                specific.boundedBy("specific-value"),
+                general.targetedBy("general-value"),
+                specific.targetedBy("specific-value"),
             ),
             defaultValue = "default",
         )
 
-        // Condition should internally sort by internalSpecificity
+        // Condition should internally sort by specificity
         // More specific rule should match first
         val result = condition.evaluate(
             ctx(

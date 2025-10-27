@@ -8,9 +8,9 @@ sealed class VersionRange protected constructor(
     open val max: Version? = null,
 ) {
     enum class Type {
-        LEFT_BOUND,
-        RIGHT_BOUND,
-        FULLY_BOUND,
+        MIN_BOUND,
+        MAX_BOUND,
+        MIN_AND_MAX_BOUND,
         UNBOUNDED,
     }
 

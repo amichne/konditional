@@ -3,152 +3,125 @@ package io.amichne.konditional.rules
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.Rollout
+import io.amichne.konditional.rules.evaluable.Evaluable
+import io.amichne.konditional.rules.evaluable.UserClientEvaluator
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
 // ---------- Rule / Condition model ----------
 
 /**
- * Base implementation of Rule that provides standard locale, platform, and version matching.
+ * Composable rule implementation that combines standard client targeting with extensible evaluation logic.
  *
- * This class guarantees that base matching logic (locales, platforms, versions) is always
- * applied for all subclasses. Custom rules can extend this class to add additional
- * matching criteria by overriding [matches].
+ * Rule is built on the [Evaluable] abstraction and composes two evaluation strategies:
+ * - **Base matching** ([userClientEvaluator]): Standard locale, platform, and version targeting
+ * - **Extension matching** ([extension]): Custom evaluation logic for domain-specific rules
  *
- * The [internalMatches] method is final to ensure base logic is always applied. To add custom
- * matching logic, override [matches] which is called after base matching succeeds.
+ * Both evaluators must match for the rule to match overall, and their specificity values
+ * are summed to determine rule precedence.
+ *
+ * ## Composition Architecture
+ *
+ * This design enables flexible composition:
+ * ```
+ * Rule.matches(context) = userClientEvaluator.matches(context) && extension.matches(context)
+ * Rule.specificity() = userClientEvaluator.specificity() + extension.specificity()
+ * ```
+ *
+ * ## Usage Examples
+ *
+ * Basic rule with standard targeting:
+ * ```kotlin
+ * Rule(
+ *     rollout = Rollout.of(50.0),
+ *     locales = setOf(AppLocale.EN_US),
+ *     platforms = setOf(Platform.IOS),
+ *     versionRange = LeftBound(Version(2, 0, 0))
+ * )
+ * ```
+ *
+ * Rule with custom extension logic:
+ * ```kotlin
+ * Rule(
+ *     rollout = Rollout.of(100.0),
+ *     extension = object : Evaluable<MyContext>() {
+ *         override fun matches(context: MyContext) = context.isPremiumUser
+ *         override fun specificity() = 1
+ *     }
+ * )
+ * ```
  *
  * @param C The context type that this rule evaluates against
- * @property rampUp The percentage of users (0-100) that should match this rule
- * @property locales Set of locales this rule applies to (empty = all locales)
- * @property platforms Set of platforms this rule applies to (empty = all platforms)
- * @property versionRange Version range this rule applies to
+ * @property rollout The percentage of users (0-100) that should match this rule after all criteria are met
  * @property note Optional note or description for this rule
+ * @property userClientEvaluator Evaluator for standard client targeting (locale, platform, version)
+ * @property extension Additional evaluation logic that extends base matching
  *
+ * @see Evaluable
+ * @see io.amichne.konditional.rules.evaluable.UserClientEvaluator
  * @see io.amichne.konditional.core.Flags
  */
-abstract class Rule<C : Context> protected constructor(
-    val rampUp: RampUp,
+data class Rule<C : Context>(
+    val rollout: Rollout = Rollout.of(100.0),
     val note: String? = null,
-    val locales: Set<AppLocale> = emptySet(),
-    val platforms: Set<Platform> = emptySet(),
-    val versionRange: VersionRange = Unbounded,
-) {
+    val userClientEvaluator: UserClientEvaluator<C> = UserClientEvaluator(),
+    val extension: Evaluable<C> = object : Evaluable<C>() {},
+) : Evaluable<C>() {
+    constructor(
+        rollout: Rollout = Rollout.of(100.0),
+        note: String? = null,
+        locales: Set<AppLocale> = emptySet(),
+        platforms: Set<Platform> = emptySet(),
+        versionRange: VersionRange = Unbounded,
+        extension: Evaluable<C> = object : Evaluable<C>() {},
+    ) : this(rollout, note, UserClientEvaluator(locales, platforms, versionRange), extension)
 
     /**
-     * Determines if this rule internalMatches the given context.
+     * Determines if this rule matches the given context by evaluating both composed evaluators.
      *
-     * This method is final and internal to guarantee that base matching logic (locales, platforms, versions)
-     * is always applied. Override [matches] to add custom matching criteria.
+     * Matching requires BOTH evaluators to match:
+     * - Base matching: locale, platform, and version constraints from [userClientEvaluator]
+     * - Extension matching: any custom logic from [extension]
+     *
+     * Note: This does not check rollout eligibility - that is handled separately during flag evaluation.
      *
      * @param context The context to evaluate against
-     * @return true if the context internalMatches base criteria AND any additional criteria
+     * @return true if both [userClientEvaluator] and [extension] match the context
      */
-    internal fun internalMatches(context: C): Boolean =
-        matchesBaseAttributes(context) && matches(context)
+    override fun matches(context: C): Boolean =
+        userClientEvaluator.matches(context) && extension.matches(context)
 
     /**
-     * Calculates the internalSpecificity of this rule.
+     * Calculates the total specificity of this rule by summing composed evaluators.
      *
-     * Override this method in subclasses to add additional internalSpecificity for custom attributes.
-     * Make sure to include the base internalSpecificity by calling super.internalSpecificity().
+     * Specificity determines rule precedence - higher values are evaluated first.
+     * The total specificity is the sum of:
+     * - [userClientEvaluator] specificity (0-3 based on locale/platform/version constraints)
+     * - [extension] specificity (custom value from extension logic)
      *
-     * @return The internalSpecificity value (higher is more specific)
+     * @return The total specificity value (higher is more specific)
      */
-    internal fun internalSpecificity(): Int =
-        computeInternalSpecificity() + specificity()
-
-    /**
-     * Checks if the context internalMatches the base attributes (locales, platforms, versions).
-     *
-     * This method is private to ensure it cannot be overridden or bypassed.
-     *
-     * @param context The context to evaluate
-     * @return true if base attributes match
-     */
-    private fun matchesBaseAttributes(context: C): Boolean =
-        (locales.isEmpty() || context.locale in locales) &&
-            (platforms.isEmpty() || context.platform in platforms) &&
-            (!versionRange.hasBounds() || versionRange.contains(context.appVersion))
-
-    /**
-     * Calculates internalSpecificity from base attributes only.
-     *
-     * @return Base internalSpecificity value
-     */
-    private fun computeInternalSpecificity(): Int =
-        (if (locales.isNotEmpty()) 1 else 0) +
-            (if (platforms.isNotEmpty()) 1 else 0) +
-            (if (versionRange.hasBounds()) 1 else 0)
-
-    /**
-     * Additional matching logic for custom rules.
-     *
-     * Override this method to add custom matching criteria beyond the base attributes.
-     * This method is only called after base attributes have matched.
-     *
-     * @param context The context to evaluate against
-     * @return true if additional criteria match (default: true)
-     */
-    protected open fun matches(context: C): Boolean = true
-
-    /**
-     * Additional internalSpecificity for custom rules.
-     *
-     * Override this method to add internalSpecificity values for custom attributes.
-     *
-     * @return Additional internalSpecificity value (default: 0)
-     */
-    protected open fun specificity(): Int = 0
+    override fun specificity(): Int =
+        userClientEvaluator.specificity() + extension.specificity()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Rule<*>) return false
 
-        if (rampUp != other.rampUp) return false
-        if (locales != other.locales) return false
-        if (platforms != other.platforms) return false
-        if (versionRange != other.versionRange) return false
+        if (rollout != other.rollout) return false
         if (note != other.note) return false
+        if (userClientEvaluator != other.userClientEvaluator) return false
+        if (extension != other.extension) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = rampUp.hashCode()
-        result = 31 * result + locales.hashCode()
-        result = 31 * result + platforms.hashCode()
-        result = 31 * result + versionRange.hashCode()
+        var result = rollout.hashCode()
         result = 31 * result + (note?.hashCode() ?: 0)
+        result = 31 * result + userClientEvaluator.hashCode()
+        result = 31 * result + extension.hashCode()
         return result
     }
-
-    override fun toString(): String =
-        "Rule(rampUp=$rampUp, locales=$locales, platforms=$platforms, versionRange=$versionRange, note=$note)"
-
-    companion object {
-        operator fun <C : Context> invoke(
-            rampUp: RampUp,
-            locales: Set<AppLocale> = emptySet(),
-            platforms: Set<Platform> = emptySet(),
-            versionRange: VersionRange = Unbounded,
-            note: String? = null,
-        ): Rule<C> = object : Rule<C>(
-            rampUp,
-            note,
-            locales,
-            platforms,
-            versionRange,
-        ) {}
-    }
 }
-
-//open class Rule<C : Context>(
-//    override val rampUp: RampUp,
-//    override val locales: Set<AppLocale> = emptySet(),
-//    override val platforms: Set<Platform> = emptySet(),
-//    override val versionRange: VersionRange = Unbounded,
-//    override val note: String? = null,
-//) : Rule<C>() {
-//}

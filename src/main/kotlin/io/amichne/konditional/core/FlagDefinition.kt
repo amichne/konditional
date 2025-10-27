@@ -1,30 +1,32 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.RampUp
-import io.amichne.konditional.rules.Surjection
+import io.amichne.konditional.context.Rollout
+import io.amichne.konditional.rules.TargetedValue
 import java.security.MessageDigest
 import kotlin.math.roundToInt
 
 /**
- * Represents a flag with a specific state type.
+ * Represents a complete flag definition with its evaluation rules and default value.
  *
- * @param S The type of the state associated with this flag. It must be a non-nullable type.
+ * @param S The type of the value this flag produces. It must be a non-nullable type.
  * @param C The type of the context that this flag evaluates against.
  */
-data class Condition<S : Any, C : Context>(
-    val key: Conditional<S, C>,
-    val bounds: List<Surjection<S, C>>,
-    val defaultValue: S,
+data class FlagDefinition<S : Any, C : Context>(
+    val conditional: Conditional<S, C>,
+    val bounds: List<TargetedValue<S, C>>,
+    override val defaultValue: S,
     val salt: String = "v1",
-    val isActive: Boolean = true,
-) {
+    override val isActive: Boolean = true,
+) : ContextualFeatureFlag<S, C> {
+    override val key: String
+        get() = conditional.key
     private companion object {
         val shaDigestSpi: MessageDigest = requireNotNull(MessageDigest.getInstance("SHA-256"))
     }
 
-    private val surjections: List<Surjection<S, C>> =
-        bounds.sortedWith(compareByDescending<Surjection<S, C>> { it.rule.internalSpecificity() }.thenBy {
+    private val targetedValues: List<TargetedValue<S, C>> =
+        bounds.sortedWith(compareByDescending<TargetedValue<S, C>> { it.rule.specificity() }.thenBy {
             it.rule.note ?: ""
         })
 
@@ -34,12 +36,12 @@ data class Condition<S : Any, C : Context>(
      * @param context The context in which the flag evaluation is performed.
      * @return The result of the evaluation, of type `S`. If the flag is not active, returns the defaultValue.
      */
-    fun evaluate(context: C): S {
+    override fun evaluate(context: C): S {
         if (!isActive) return defaultValue
 
-        return surjections.firstOrNull {
-            it.rule.internalMatches(context) &&
-                isInEligibleSegment(flagKey = key.key, id = context.stableId.hexId, salt = salt, rampUp = it.rule.rampUp)
+        return targetedValues.firstOrNull {
+            it.rule.matches(context) &&
+                isInEligibleSegment(flagKey = conditional.key, id = context.stableId.hexId, salt = salt, rollout = it.rule.rollout)
         }?.value ?: defaultValue
     }
 
@@ -56,12 +58,12 @@ data class Condition<S : Any, C : Context>(
         flagKey: String,
         id: HexId,
         salt: String,
-        rampUp: RampUp,
+        rollout: Rollout,
     ): Boolean =
         when {
-            rampUp <= 0.0 -> false
-            rampUp >= 100.0 -> true
-            else -> stableBucket(flagKey, id, salt) < (rampUp.value * 100).roundToInt()
+            rollout <= 0.0 -> false
+            rollout >= 100.0 -> true
+            else -> stableBucket(flagKey, id, salt) < (rollout.value * 100).roundToInt()
         }
 
     private fun stableBucket(

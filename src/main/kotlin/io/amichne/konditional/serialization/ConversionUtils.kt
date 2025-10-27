@@ -3,14 +3,15 @@ package io.amichne.konditional.serialization
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Condition
+import io.amichne.konditional.core.ContextualFeatureFlag
+import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.core.Flags
 import io.amichne.konditional.rules.Rule
-import io.amichne.konditional.rules.Surjection
-import io.amichne.konditional.rules.Surjection.Companion.boundedBy
+import io.amichne.konditional.rules.TargetedValue
+import io.amichne.konditional.rules.TargetedValue.Companion.targetedBy
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.rules.versions.LeftBound
 import io.amichne.konditional.rules.versions.RightBound
@@ -26,13 +27,39 @@ import io.amichne.konditional.serialization.models.VersionRangeType
 
 /**
  * Registry for mapping flag keys to their Conditional instances.
- * This is required for deserialization since we need to reconstruct the proper Conditional references.
+ *
+ * This registry is required for deserialization since we need to reconstruct the proper
+ * Conditional references when loading flag configurations from JSON. The registry maintains
+ * a bidirectional mapping between string keys and Conditional instances.
+ *
+ * ## Registration
+ *
+ * Before deserializing flags, you must register all Conditional instances that might appear
+ * in the serialized configuration:
+ *
+ * ```kotlin
+ * // Register individual conditionals
+ * ConditionalRegistry.register(Features.DARK_MODE)
+ *
+ * // Or register entire enum at once
+ * ConditionalRegistry.registerEnum<Features>()
+ * ```
+ *
+ * ## Thread Safety
+ *
+ * This registry is NOT thread-safe. Registration should happen during application initialization
+ * before any concurrent access.
+ *
+ * @see io.amichne.konditional.serialization.SnapshotSerializer
  */
 object ConditionalRegistry {
     private val registry = mutableMapOf<String, Conditional<*, *>>()
 
     /**
      * Registers a Conditional instance with its key.
+     *
+     * @param conditional The conditional to register
+     * @throws IllegalStateException if a different conditional is already registered with the same key
      */
     fun <S : Any, C : Context> register(conditional: Conditional<S, C>) {
         registry[conditional.key] = conditional
@@ -40,6 +67,16 @@ object ConditionalRegistry {
 
     /**
      * Registers all Conditionals from an enum class.
+     *
+     * This is a convenience method for registering entire enum classes that implement Conditional.
+     *
+     * Example:
+     * ```kotlin
+     * enum class Features : Conditional<Boolean, Context> { ... }
+     * ConditionalRegistry.registerEnum<Features>()
+     * ```
+     *
+     * @param T The enum type that implements Conditional
      */
     inline fun <reified T> registerEnum() where T : Enum<T>, T : Conditional<*, *> {
         enumValues<T>().forEach { register(it) }
@@ -47,6 +84,9 @@ object ConditionalRegistry {
 
     /**
      * Retrieves a Conditional by its key.
+     *
+     * @param key The string key of the conditional
+     * @return The registered Conditional instance
      * @throws IllegalArgumentException if the key is not registered
      */
     @Suppress("UNCHECKED_CAST")
@@ -57,11 +97,17 @@ object ConditionalRegistry {
 
     /**
      * Checks if a key is registered.
+     *
+     * @param key The string key to check
+     * @return true if the key is registered, false otherwise
      */
     fun contains(key: String): Boolean = registry.containsKey(key)
 
     /**
-     * Clears all registrations (useful for testing).
+     * Clears all registrations.
+     *
+     * This is primarily useful for testing to ensure a clean state between tests.
+     * Should not be called in production code.
      */
     fun clear() {
         registry.clear()
@@ -72,16 +118,16 @@ object ConditionalRegistry {
  * Converts a Flags.Snapshot to a SerializableSnapshot.
  */
 fun Flags.Snapshot.toSerializable(): SerializableSnapshot {
-    val serializableFlags = flags.map { (conditional, flagEntry) ->
-        flagEntry.condition.toSerializable(conditional.key)
+    val serializableFlags = flags.map { (conditional, flag) ->
+        (flag as FlagDefinition<*, *>).toSerializable(conditional.key)
     }
     return SerializableSnapshot(serializableFlags)
 }
 
 /**
- * Converts a Condition to a SerializableFlag.
+ * Converts a FlagDefinition to a SerializableFlag.
  */
-private fun <S : Any, C : Context> Condition<S, C>.toSerializable(flagKey: String): SerializableFlag {
+private fun <S : Any, C : Context> FlagDefinition<S, C>.toSerializable(flagKey: String): SerializableFlag {
     return SerializableFlag(
         key = flagKey,
         type = defaultValue.toValueType(),
@@ -93,19 +139,19 @@ private fun <S : Any, C : Context> Condition<S, C>.toSerializable(flagKey: Strin
 }
 
 /**
- * Converts a Surjection to a SerializableRule.
+ * Converts a TargetedValue to a SerializableRule.
  */
-private fun <S : Any, C : Context> Surjection<S, C>.toSerializable(): SerializableRule {
+private fun <S : Any, C : Context> TargetedValue<S, C>.toSerializable(): SerializableRule {
     return SerializableRule(
         value = SerializableRule.SerializableValue(
             value = value,
             type = value.toValueType()
         ),
-        rampUp = rule.rampUp.value,
+        rampUp = rule.rollout.value,
         note = rule.note,
-        locales = rule.locales.map { it.name }.toSet(),
-        platforms = rule.platforms.map { it.name }.toSet(),
-        versionRange = rule.versionRange.toSerializableVersionRange()
+        locales = rule.userClientEvaluator.locales.map { it.name }.toSet(),
+        platforms = rule.userClientEvaluator.platforms.map { it.name }.toSet(),
+        versionRange = rule.userClientEvaluator.versionRange.toSerializableVersionRange()
     )
 }
 
@@ -116,15 +162,15 @@ private fun VersionRange.toSerializableVersionRange(): SerializableVersionRange?
     return when (this) {
         is Unbounded -> SerializableVersionRange(VersionRangeType.UNBOUNDED)
         is LeftBound -> SerializableVersionRange(
-            type = VersionRangeType.LEFT_BOUND,
+            type = VersionRangeType.MIN_BOUND,
             min = min.toSerializableVersion()
         )
         is RightBound -> SerializableVersionRange(
-            type = VersionRangeType.RIGHT_BOUND,
+            type = VersionRangeType.MAX_BOUND,
             max = max.toSerializableVersion()
         )
         is FullyBound -> SerializableVersionRange(
-            type = VersionRangeType.FULLY_BOUND,
+            type = VersionRangeType.MIN_AND_MAX_BOUND,
             min = min.toSerializableVersion(),
             max = max.toSerializableVersion()
         )
@@ -158,34 +204,33 @@ private fun Any.toValueType(): ValueType {
  */
 fun SerializableSnapshot.toSnapshot(): Flags.Snapshot {
     val flagMap = flags.associate { serializableFlag ->
-        serializableFlag.toFlagEntry()
+        serializableFlag.toFlagPair()
     }
     return Flags.Snapshot(flagMap)
 }
 
 /**
- * Converts a SerializableFlag to a Map.Entry of Conditional to FlagEntry.
+ * Converts a SerializableFlag to a Map.Entry of Conditional to ContextualFeatureFlag.
  */
 @Suppress("UNCHECKED_CAST")
-private fun SerializableFlag.toFlagEntry(): Pair<Conditional<*, *>, Flags.FlagEntry<*, *>> {
+private fun SerializableFlag.toFlagPair(): Pair<Conditional<*, *>, ContextualFeatureFlag<*, *>> {
     val conditional = ConditionalRegistry.get<Any, Context>(key)
-    val condition = toCondition(conditional as Conditional<Any, Context>)
-    val flagEntry = Flags.FlagEntry(condition)
-    return conditional to flagEntry
+    val definition = toFlagDefinition(conditional)
+    return conditional to definition
 }
 
 /**
- * Converts a SerializableFlag to a Condition.
+ * Converts a SerializableFlag to a FlagDefinition.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : Any, C : Context> SerializableFlag.toCondition(
+private fun <S : Any, C : Context> SerializableFlag.toFlagDefinition(
     conditional: Conditional<S, C>
-): Condition<S, C> {
+): FlagDefinition<S, C> {
     val typedDefaultValue = defaultValue.castToType(type) as S
-    val typedBounds = rules.map { it.toSurjection<S, C>() }
+    val typedBounds = rules.map { it.toTargetedValue<S, C>() }
 
-    return Condition(
-        key = conditional,
+    return FlagDefinition(
+        conditional = conditional,
         bounds = typedBounds,
         defaultValue = typedDefaultValue,
         salt = salt,
@@ -194,14 +239,14 @@ private fun <S : Any, C : Context> SerializableFlag.toCondition(
 }
 
 /**
- * Converts a SerializableRule to a Surjection.
+ * Converts a SerializableRule to a TargetedValue.
  * The value type is now contained within the SerializableValue wrapper.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : Any, C : Context> SerializableRule.toSurjection(): Surjection<S, C> {
+private fun <S : Any, C : Context> SerializableRule.toTargetedValue(): TargetedValue<S, C> {
     val typedValue = value.value.castToType(value.type) as S
     val rule = toRule<C>()
-    return rule.boundedBy(typedValue)
+    return rule.targetedBy(typedValue)
 }
 
 /**
@@ -209,7 +254,7 @@ private fun <S : Any, C : Context> SerializableRule.toSurjection(): Surjection<S
  */
 private fun <C : Context> SerializableRule.toRule(): Rule<C> {
     return Rule(
-        rampUp = RampUp.of(rampUp),
+        rollout = Rollout.of(rampUp),
         note = note,
         locales = locales.map { AppLocale.valueOf(it) }.toSet(),
         platforms = platforms.map { Platform.valueOf(it) }.toSet(),
@@ -223,15 +268,15 @@ private fun <C : Context> SerializableRule.toRule(): Rule<C> {
 private fun SerializableVersionRange.toVersionRange(): VersionRange {
     return when (type) {
         VersionRangeType.UNBOUNDED -> Unbounded
-        VersionRangeType.LEFT_BOUND -> LeftBound(
-            min = min?.toVersion() ?: throw IllegalArgumentException("LEFT_BOUND requires min version")
+        VersionRangeType.MIN_BOUND -> LeftBound(
+            min = min?.toVersion() ?: throw IllegalArgumentException("MIN_BOUND requires min version")
         )
-        VersionRangeType.RIGHT_BOUND -> RightBound(
-            max = max?.toVersion() ?: throw IllegalArgumentException("RIGHT_BOUND requires max version")
+        VersionRangeType.MAX_BOUND -> RightBound(
+            max = max?.toVersion() ?: throw IllegalArgumentException("MAX_BOUND requires max version")
         )
-        VersionRangeType.FULLY_BOUND -> FullyBound(
-            min = min?.toVersion() ?: throw IllegalArgumentException("FULLY_BOUND requires min version"),
-            max = max?.toVersion() ?: throw IllegalArgumentException("FULLY_BOUND requires max version")
+        VersionRangeType.MIN_AND_MAX_BOUND -> FullyBound(
+            min = min?.toVersion() ?: throw IllegalArgumentException("MIN_AND_MAX_BOUND requires min version"),
+            max = max?.toVersion() ?: throw IllegalArgumentException("MIN_AND_MAX_BOUND requires max version")
         )
     }
 }
