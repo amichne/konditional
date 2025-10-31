@@ -2,74 +2,86 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://konditional.docs/</loc>
-         <lastmod>2025-10-22</lastmod>
+         <lastmod>2025-10-31</lastmod>
+    </url>
+    <url>
+         <loc>https://konditional.docs/advanced/architecture/</loc>
+         <lastmod>2025-10-31</lastmod>
+    </url>
+    <url>
+         <loc>https://konditional.docs/advanced/conditional-types/</loc>
+         <lastmod>2025-10-31</lastmod>
+    </url>
+    <url>
+         <loc>https://konditional.docs/advanced/context-polymorphism/</loc>
+         <lastmod>2025-10-31</lastmod>
     </url>
     <url>
          <loc>https://konditional.docs/advanced/custom-types/</loc>
-         <lastmod>2025-10-22</lastmod>
+         <lastmod>2025-10-31</lastmod>
     </url>
     <url>
          <loc>https://konditional.docs/advanced/migration/</loc>
-         <lastmod>2025-10-22</lastmod>
+         <lastmod>2025-10-31</lastmod>
     </url>
     <url>
          <loc>https://konditional.docs/advanced/patch-updates/</loc>
-         <lastmod>2025-10-22</lastmod>
+         <lastmod>2025-10-31</lastmod>
     </url>
     <url>
          <loc>https://konditional.docs/getting-started/introduction/</loc>
-         <lastmod>2025-10-22</lastmod>
+         <lastmod>2025-10-31</lastmod>
     </url>
     <url>
          <loc>https://konditional.docs/getting-started/quick-start/</loc>
-         <lastmod>2025-10-22</lastmod>
+         <lastmod>2025-10-31</lastmod>
     </url>
     <url>
          <loc>https://konditional.docs/serialization/api/</loc>
-         <lastmod>2025-10-22</lastmod>
+         <lastmod>2025-10-31</lastmod>
     </url>
     <url>
          <loc>https://konditional.docs/serialization/integration/</loc>
-         <lastmod>2025-10-22</lastmod>
+         <lastmod>2025-10-31</lastmod>
     </url>
     <url>
          <loc>https://konditional.docs/serialization/overview/</loc>
-         <lastmod>2025-10-22</lastmod>
+         <lastmod>2025-10-31</lastmod>
     </url>
     <url>
          <loc>https://konditional.docs/serialization/runthrough/</loc>
-         <lastmod>2025-10-22</lastmod>
+         <lastmod>2025-10-31</lastmod>
     </url>
     <url>
          <loc>https://konditional.docs/serialization/steps/step-01-dependencies/</loc>
-         <lastmod>2025-10-22</lastmod>
+         <lastmod>2025-10-31</lastmod>
     </url>
     <url>
          <loc>https://konditional.docs/serialization/steps/step-02-register/</loc>
-         <lastmod>2025-10-22</lastmod>
+         <lastmod>2025-10-31</lastmod>
     </url>
     <url>
          <loc>https://konditional.docs/serialization/steps/step-03-configuration/</loc>
-         <lastmod>2025-10-22</lastmod>
+         <lastmod>2025-10-31</lastmod>
     </url>
     <url>
          <loc>https://konditional.docs/serialization/steps/step-04-serialize/</loc>
-         <lastmod>2025-10-22</lastmod>
+         <lastmod>2025-10-31</lastmod>
     </url>
     <url>
          <loc>https://konditional.docs/serialization/steps/step-05-deserialize/</loc>
-         <lastmod>2025-10-22</lastmod>
+         <lastmod>2025-10-31</lastmod>
     </url>
     <url>
          <loc>https://konditional.docs/serialization/steps/step-06-load/</loc>
-         <lastmod>2025-10-22</lastmod>
+         <lastmod>2025-10-31</lastmod>
     </url>
     <url>
          <loc>https://konditional.docs/serialization/steps/step-07-testing/</loc>
-         <lastmod>2025-10-22</lastmod>
+         <lastmod>2025-10-31</lastmod>
     </url>
     <url>
          <loc>https://konditional.docs/serialization/steps/step-08-production/</loc>
-         <lastmod>2025-10-22</lastmod>
+         <lastmod>2025-10-31</lastmod>
     </url>
 </urlset>

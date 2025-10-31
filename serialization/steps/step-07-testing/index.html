@@ -306,11 +306,11 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../advanced/patch-updates/" class="md-tabs__link">
+        <a href="../../../advanced/architecture/" class="md-tabs__link">
           
   
   
-  Advanced
+  Core Concepts
 
         </a>
       </li>
@@ -1078,7 +1078,7 @@
   
   
   <span class="md-ellipsis">
-    Advanced
+    Core Concepts
     
   </span>
   
@@ -1089,7 +1089,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
-            Advanced
+            Core Concepts
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -1100,12 +1100,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../advanced/patch-updates/" class="md-nav__link">
+      <a href="../../../advanced/architecture/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Patch Updates
+    Architecture
     
   </span>
   
@@ -1123,12 +1123,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../advanced/custom-types/" class="md-nav__link">
+      <a href="../../../advanced/conditional-types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Custom Types
+    Conditional Value Types
     
   </span>
   
@@ -1146,12 +1146,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../advanced/migration/" class="md-nav__link">
+      <a href="../../../advanced/context-polymorphism/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Migration
+    Context Polymorphism
     
   </span>
   
@@ -1458,8 +1458,8 @@
 <a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">original</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildSnapshot</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">            </span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">NEW_ONBOARDING</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">                </span><span class="n">default</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
-<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">                </span><span class="n">boundary</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="w">                    </span><span class="n">rampUp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RampUp</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="m">50.0</span><span class="p">)</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">                </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="w">                    </span><span class="n">rollout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Rollout</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="m">50.0</span><span class="p">)</span>
 <a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="w">                    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">,</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_CA</span><span class="p">)</span>
 <a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="w">                    </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
 <a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="w">                    </span><span class="n">note</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;50% rollout for US/CA iOS&quot;</span>
@@ -1575,7 +1575,7 @@
 <a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildSnapshot</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">            </span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">                </span><span class="n">default</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">                </span><span class="n">boundary</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">                </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">                    </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
 <a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">                </span><span class="p">}.</span><span class="na">implies</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span>
 <a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">            </span><span class="p">}</span>
@@ -1707,8 +1707,8 @@
 <a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildSnapshot</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="w">            </span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">NEW_ONBOARDING</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="w">                </span><span class="n">default</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
-<a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a><span class="w">                </span><span class="n">boundary</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a><span class="w">                    </span><span class="n">rampUp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RampUp</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="m">50.0</span><span class="p">)</span>
+<a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a><span class="w">                </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a><span class="w">                    </span><span class="n">rollout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Rollout</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="m">50.0</span><span class="p">)</span>
 <a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a><span class="w">                </span><span class="p">}.</span><span class="na">implies</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span>
 <a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a><span class="w">            </span><span class="p">}</span>
 <a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a><span class="w">        </span><span class="p">}</span>
@@ -1787,7 +1787,7 @@
 <a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="w">        </span><span class="n">FlagScenario</span><span class="p">(</span><span class="s">&quot;simple default&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">default</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}),</span>
 <a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="w">        </span><span class="n">FlagScenario</span><span class="p">(</span><span class="s">&quot;with rules&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="w">            </span><span class="n">default</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
-<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="w">            </span><span class="n">boundary</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span><span class="w"> </span><span class="p">}.</span><span class="na">implies</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span>
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="w">            </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span><span class="w"> </span><span class="p">}.</span><span class="na">implies</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span>
 <a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="w">        </span><span class="p">}}),</span>
 <a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="w">        </span><span class="c1">// More scenarios...</span>
 <a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a><span class="w">    </span><span class="p">)</span>
