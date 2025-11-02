@@ -13,6 +13,10 @@
         <link rel="canonical" href="https://konditional.docs/advanced/custom-types/">
       
       
+        <link rel="prev" href="../patch-updates/">
+      
+      
+        <link rel="next" href="../migration/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -296,15 +300,17 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../architecture/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../patch-updates/" class="md-tabs__link">
           
   
   
-  Core Concepts
+  Advanced
 
         </a>
       </li>
@@ -861,33 +867,36 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
             
   
   
   <span class="md-ellipsis">
-    Core Concepts
+    Advanced
     
   </span>
   
@@ -895,10 +904,10 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
-            Core Concepts
+            Advanced
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -909,12 +918,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/" class="md-nav__link">
+      <a href="../patch-updates/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Architecture
+    Patch Updates
     
   </span>
   
@@ -929,20 +938,263 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../conditional-types/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Custom Types
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
   <span class="md-ellipsis">
-    Conditional Value Types
+    Custom Types
     
   </span>
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#defining-custom-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Defining Custom Types
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Defining Custom Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#simple-custom-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      Simple Custom Type
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-the-flag" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using the Flag
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#serialization-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      Serialization Support
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Serialization Support">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-define-your-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: Define Your Type
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-create-a-valuetype" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: Create a ValueType
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-register-the-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3: Register the Type
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-use-with-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 4: Use with Flags
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#enum-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enum Types
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Enum Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enum-serialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enum Serialization
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sealed-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sealed Classes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sealed Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sealed-class-serialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sealed Class Serialization
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#collections" class="md-nav__link">
+    <span class="md-ellipsis">
+      Collections
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Best Practices
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#keep-types-simple" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keep Types Simple
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-immutable-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Use Immutable Types
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#document-type-contracts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Document Type Contracts
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-your-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Version Your Types
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next Steps
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -955,12 +1207,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../context-polymorphism/" class="md-nav__link">
+      <a href="../migration/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Context Polymorphism
+    Migration
     
   </span>
   

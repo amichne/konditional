@@ -1,0 +1,82 @@
+site_name: Konditional
+site_description: Type-safe, deterministic feature flags for Kotlin
+site_url: https://konditional.docs
+repo_url: https://github.com/amichne/konditional
+repo_name: amichne/konditional
+
+theme:
+  name: material
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Introduction: getting-started/introduction.md
+      - Quick Start: getting-started/quick-start.md
+  - Serialization:
+      - Overview: serialization/overview.md
+      - Integration Guide: serialization/integration.md
+      - Full Runthrough: serialization/runthrough.md
+      - API Reference: serialization/api.md
+  - Step-by-Step Guide:
+      - 'Step 1: Dependencies': serialization/steps/step-01-dependencies.md
+      - 'Step 2: Register Flags': serialization/steps/step-02-register.md
+      - 'Step 3: Create Configuration': serialization/steps/step-03-configuration.md
+      - 'Step 4: Serialize': serialization/steps/step-04-serialize.md
+      - 'Step 5: Deserialize': serialization/steps/step-05-deserialize.md
+      - 'Step 6: Load into Runtime': serialization/steps/step-06-load.md
+      - 'Step 7: Testing': serialization/steps/step-07-testing.md
+      - 'Step 8: Production Setup': serialization/steps/step-08-production.md
+  - Core Concepts:
+      - Architecture: advanced/architecture.md
+      - Conditional Value Types: advanced/conditional-types.md
+      - Context Polymorphism: advanced/context-polymorphism.md
+
+plugins:
+  - search
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/amichne/konditional

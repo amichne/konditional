@@ -13,6 +13,8 @@
         <link rel="canonical" href="https://konditional.docs/advanced/migration/">
       
       
+        <link rel="prev" href="../custom-types/">
+      
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -296,15 +298,17 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../architecture/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../patch-updates/" class="md-tabs__link">
           
   
   
-  Core Concepts
+  Advanced
 
         </a>
       </li>
@@ -861,33 +865,36 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
             
   
   
   <span class="md-ellipsis">
-    Core Concepts
+    Advanced
     
   </span>
   
@@ -895,10 +902,10 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
-            Core Concepts
+            Advanced
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -909,12 +916,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/" class="md-nav__link">
+      <a href="../patch-updates/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Architecture
+    Patch Updates
     
   </span>
   
@@ -932,12 +939,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../conditional-types/" class="md-nav__link">
+      <a href="../custom-types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Conditional Value Types
+    Custom Types
     
   </span>
   
@@ -952,20 +959,338 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../context-polymorphism/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Migration
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
   <span class="md-ellipsis">
-    Context Polymorphism
+    Migration
     
   </span>
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#schema-evolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schema Evolution
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Schema Evolution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adding-new-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding New Flags
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removing-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      Removing Flags
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renaming-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      Renaming Flags
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type Migrations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Type Migrations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changing-value-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Changing Value Types
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#complex-type-evolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Complex Type Evolution
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#version-based-migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Version-Based Migrations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Version-Based Migrations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#migration-manager" class="md-nav__link">
+    <span class="md-ellipsis">
+      Migration Manager
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backward-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      Backward Compatibility
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Backward Compatibility">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#maintain-old-flag-ids" class="md-nav__link">
+    <span class="md-ellipsis">
+      Maintain Old Flag IDs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graceful-degradation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graceful Degradation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rolling-migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rolling Migrations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Rolling Migrations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-dual-write" class="md-nav__link">
+    <span class="md-ellipsis">
+      Phase 1: Dual Write
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-dual-read" class="md-nav__link">
+    <span class="md-ellipsis">
+      Phase 2: Dual Read
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-deprecate-old" class="md-nav__link">
+    <span class="md-ellipsis">
+      Phase 3: Deprecate Old
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-remove-old" class="md-nav__link">
+    <span class="md-ellipsis">
+      Phase 4: Remove Old
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing Migrations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing Migrations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#unit-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      Unit Tests
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integration Tests
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Best Practices
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#document-migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Document Migrations
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-everything" class="md-nav__link">
+    <span class="md-ellipsis">
+      Version Everything
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-migrations-thoroughly" class="md-nav__link">
+    <span class="md-ellipsis">
+      Test Migrations Thoroughly
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#provide-migration-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      Provide Migration Tools
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next Steps
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 

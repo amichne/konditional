@@ -306,11 +306,11 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../advanced/architecture/" class="md-tabs__link">
+        <a href="../../advanced/patch-updates/" class="md-tabs__link">
           
   
   
-  Core Concepts
+  Advanced
 
         </a>
       </li>
@@ -1525,7 +1525,7 @@
   
   
   <span class="md-ellipsis">
-    Core Concepts
+    Advanced
     
   </span>
   
@@ -1536,7 +1536,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
-            Core Concepts
+            Advanced
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -1547,12 +1547,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced/architecture/" class="md-nav__link">
+      <a href="../../advanced/patch-updates/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Architecture
+    Patch Updates
     
   </span>
   
@@ -1570,12 +1570,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced/conditional-types/" class="md-nav__link">
+      <a href="../../advanced/custom-types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Conditional Value Types
+    Custom Types
     
   </span>
   
@@ -1593,12 +1593,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced/context-polymorphism/" class="md-nav__link">
+      <a href="../../advanced/migration/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Context Polymorphism
+    Migration
     
   </span>
   
@@ -2530,7 +2530,7 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="nd">@JsonClass</span><span class="p">(</span><span class="n">generateAdapter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
 <a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">SerializableRule</span><span class="p">(</span>
 <a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">value</span><span class="p">:</span><span class="w"> </span><span class="n">SerializableValue</span><span class="p">,</span>
-<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">rollout</span><span class="p">:</span><span class="w"> </span><span class="kt">Double</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">100.0</span><span class="p">,</span>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">rampUp</span><span class="p">:</span><span class="w"> </span><span class="kt">Double</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">100.0</span><span class="p">,</span>
 <a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">note</span><span class="p">:</span><span class="w"> </span><span class="kt">String?</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
 <a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">locales</span><span class="p">:</span><span class="w"> </span><span class="n">Set</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">emptySet</span><span class="p">(),</span>
 <a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">platforms</span><span class="p">:</span><span class="w"> </span><span class="n">Set</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">emptySet</span><span class="p">(),</span>
@@ -2557,7 +2557,7 @@
 <td>Typed value wrapper</td>
 </tr>
 <tr>
-<td><code>rollout</code></td>
+<td><code>rampUp</code></td>
 <td><code>Double</code></td>
 <td>No</td>
 <td><code>100.0</code></td>
@@ -2632,13 +2632,13 @@
 <td><code>min</code></td>
 <td><code>SerializableVersion?</code></td>
 <td>Conditional</td>
-<td>Min version (required for MIN_BOUND, MIN_AND_MAX_BOUND)</td>
+<td>Min version (required for LEFT_BOUND, FULLY_BOUND)</td>
 </tr>
 <tr>
 <td><code>max</code></td>
 <td><code>SerializableVersion?</code></td>
 <td>Conditional</td>
-<td>Max version (required for MAX_BOUND, MIN_AND_MAX_BOUND)</td>
+<td>Max version (required for RIGHT_BOUND, FULLY_BOUND)</td>
 </tr>
 </tbody>
 </table>
@@ -2731,9 +2731,9 @@
 <p>Version range types.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="kd">enum</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">VersionRangeType</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="w">    </span><span class="n">UNBOUNDED</span><span class="p">,</span>
-<a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="w">    </span><span class="n">MIN_BOUND</span><span class="p">,</span>
-<a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a><span class="w">    </span><span class="n">MAX_BOUND</span><span class="p">,</span>
-<a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a><span class="w">    </span><span class="n">MIN_AND_MAX_BOUND</span>
+<a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="w">    </span><span class="n">LEFT_BOUND</span><span class="p">,</span>
+<a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a><span class="w">    </span><span class="n">RIGHT_BOUND</span><span class="p">,</span>
+<a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a><span class="w">    </span><span class="n">FULLY_BOUND</span>
 <a id="__codelineno-34-6" name="__codelineno-34-6" href="#__codelineno-34-6"></a><span class="p">}</span>
 </code></pre></div>
 <hr />

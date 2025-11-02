@@ -1,0 +1,14 @@
+# MkDocs
+site/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# Old Astro files (can be removed after migration verified)
+.astro/
+dist/
+node_modules/
