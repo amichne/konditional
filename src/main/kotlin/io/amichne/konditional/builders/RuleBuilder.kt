@@ -7,39 +7,23 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.core.FeatureFlagDsl
 import io.amichne.konditional.rules.Rule
+import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
 /**
  * A builder class for constructing rules with a specific context type.
  *
- * This class is open to allow custom rule builders that can add additional
- * properties and build custom Rule implementations. Override [build] to
- * create your custom rule type.
- *
- * Example:
- * ```kotlin
- * class EnterpriseRuleBuilder<C : EnterpriseContext> : RuleBuilder<C>() {
- *     var requiredTier: SubscriptionTier? = null
- *     var requiredRole: UserRole? = null
- *
- *     override fun build(): Rule<C> = EnterpriseRule(
- *         Rule = super.build() as Rule<C>,
- *         requiredTier = requiredTier,
- *         requiredRole = requiredRole
- *     )
- * }
- * ```
- *
  * @param C The type of the context that the rules will evaluate against.
  */
 @FeatureFlagDsl
-open class RuleBuilder<C : Context> {
+class RuleBuilder<C : Context> {
     var rollout: Rollout? = null
-    protected val locales = linkedSetOf<AppLocale>()
-    protected val platforms = linkedSetOf<Platform>()
-    protected var range: VersionRange = Unbounded
-    protected var note: String? = null
+    private val locales = linkedSetOf<AppLocale>()
+    private val platforms = linkedSetOf<Platform>()
+    private var range: VersionRange = Unbounded
+    private var note: String? = null
+    private var extension: Evaluable<C> = object : Evaluable<C>() {}
 
     fun locales(vararg appLocales: AppLocale) {
         locales += appLocales
@@ -54,6 +38,10 @@ open class RuleBuilder<C : Context> {
         range = VersionRangeBuilder().apply(build).build()
     }
 
+    fun extension(function: () -> Evaluable<C>) {
+        extension = function()
+    }
+
     fun note(text: String) {
         note = text
     }
@@ -64,12 +52,13 @@ open class RuleBuilder<C : Context> {
      *
      * @return A Rule instance (Rule by default)
      */
-    internal open fun build(): Rule<C> =
+    internal fun build(): Rule<C> =
         Rule(
             rollout = rollout ?: Rollout.default,
             locales = locales,
             platforms = platforms,
             versionRange = range,
             note = note,
+            extension = extension,
         )
 }

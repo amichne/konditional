@@ -1,13 +1,15 @@
 package io.amichne.konditional.context
 
+import io.amichne.konditional.builders.ConfigBuilder.Companion.buildSnapshot
 import io.amichne.konditional.builders.ConfigBuilder.Companion.config
 import io.amichne.konditional.builders.FlagBuilder
 import io.amichne.konditional.core.Conditional
+import io.amichne.konditional.core.FlagRegistry
 import io.amichne.konditional.core.StableId
-import io.amichne.konditional.core.evaluate
+import io.amichne.konditional.fakes.FakeRegistry
 import io.amichne.konditional.rules.Rule
+import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.versions.FullyBound
-import io.amichne.konditional.rules.versions.Unbounded
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -76,16 +78,12 @@ class ContextPolymorphismTest {
 
     // Custom rule that extends Rule for EnterpriseContext
     data class EnterpriseRule(
-        val rule: Rule<EnterpriseContext>,
         val requiredTier: SubscriptionTier? = null,
         val requiredRole: UserRole? = null,
-    ) {
-        fun matches(context: EnterpriseContext): Boolean {
-            if (!rule.matches(context)) return false
-            if (requiredTier != null && context.subscriptionTier.ordinal < requiredTier.ordinal) return false
-            if (requiredRole != null && context.userRole.ordinal < requiredRole.ordinal) return false
-            return true
-        }
+    ) : Evaluable<EnterpriseContext>() {
+        override fun matches(context: EnterpriseContext): Boolean =
+            (requiredTier == null || context.subscriptionTier >= requiredTier) &&
+                (requiredRole == null || context.userRole >= requiredRole)
     }
 
     @Test
@@ -313,16 +311,18 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given custom EnterpriseRule, When matching with business logic, Then custom properties are enforced`() {
-        val enterpriseOnlyRule = EnterpriseRule(
-            rule = Rule(
-                rollout = Rollout.MAX,
-                locales = emptySet(),
-                platforms = setOf(Platform.WEB),
-                versionRange = Unbounded,
-            ),
-            requiredTier = SubscriptionTier.ENTERPRISE,
-            requiredRole = UserRole.ADMIN,
-        )
+        val registry: FlagRegistry = buildSnapshot {
+            EnterpriseFlags.API_ACCESS with {
+                default(false)
+                rule {
+                    platforms(Platform.WEB)
+                    rollout = Rollout.MAX
+                    extension {
+                        EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN)
+                    }
+                } implies true
+            }
+        }.let { snapshot -> FakeRegistry().also { it.load(snapshot) } }
 
         val enterpriseAdmin = EnterpriseContext(
             locale = AppLocale.EN_US,
@@ -344,7 +344,7 @@ class ContextPolymorphismTest {
             userRole = UserRole.EDITOR,
         )
 
-        assertTrue(enterpriseOnlyRule.matches(enterpriseAdmin))
-        assertFalse(enterpriseOnlyRule.matches(premiumEditor))
+        assertFalse(premiumEditor.evaluate(EnterpriseFlags.API_ACCESS, registry = registry))
+        assertTrue(enterpriseAdmin.evaluate(EnterpriseFlags.API_ACCESS, registry = registry))
     }
 }

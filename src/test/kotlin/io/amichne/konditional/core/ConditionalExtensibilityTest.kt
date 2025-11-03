@@ -6,6 +6,7 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.context.evaluate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

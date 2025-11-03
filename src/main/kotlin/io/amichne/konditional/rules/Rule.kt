@@ -62,13 +62,14 @@ import io.amichne.konditional.rules.versions.VersionRange
  * @see io.amichne.konditional.rules.evaluable.UserClientEvaluator
  * @see io.amichne.konditional.core.SingletonFlagRegistry
  */
-data class Rule<C : Context>(
+@ConsistentCopyVisibility
+data class Rule<C : Context> internal constructor(
     val rollout: Rollout = Rollout.of(100.0),
     val note: String? = null,
     val userClientEvaluator: UserClientEvaluator<C> = UserClientEvaluator(),
     val extension: Evaluable<C> = object : Evaluable<C>() {},
 ) : Evaluable<C>() {
-    constructor(
+    internal constructor(
         rollout: Rollout = Rollout.of(100.0),
         note: String? = null,
         locales: Set<AppLocale> = emptySet(),

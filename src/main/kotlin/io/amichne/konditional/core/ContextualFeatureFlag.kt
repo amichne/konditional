@@ -12,7 +12,7 @@ import io.amichne.konditional.rules.TargetedValue
  * @param S The type of value this flag produces. Must be a non-nullable type.
  * @param C The type of context used for evaluation.
  */
-interface ContextualFeatureFlag<S : Any, C : Context> {
+sealed interface ContextualFeatureFlag<S : Any, C : Context> {
     /**
      * The unique identifier for this feature flag.
      */

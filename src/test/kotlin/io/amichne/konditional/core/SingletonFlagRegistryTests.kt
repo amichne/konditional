@@ -6,6 +6,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.context.evaluate
 import io.amichne.konditional.example.SampleFeatureEnum
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors

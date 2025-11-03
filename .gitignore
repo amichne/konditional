@@ -2,6 +2,8 @@ req.md
 Prompt.md
 .claude
 *.jar
+CLAUDE.md
+ai/
 
 
 ### Intellij template
@@ -15,6 +17,7 @@ Prompt.md
 .idea/**/dictionaries
 .idea/**/shelf
 .idea/copilot.**
+.idea/modules/
 
 # AWS User-specific
 .idea/**/aws.xml

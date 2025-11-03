@@ -10,7 +10,7 @@ import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.core.ContextualFeatureFlag
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.SingletonFlagRegistry
-import io.amichne.konditional.core.evaluate
+import io.amichne.konditional.context.evaluate
 import io.amichne.konditional.core.snapshot.Snapshot
 import io.amichne.konditional.core.StableId
 import io.amichne.konditional.example.SampleFeatureEnum

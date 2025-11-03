@@ -29,7 +29,7 @@ abstract class Evaluable<C : Context> {
      * @param context The context to evaluate against
      * @return true if the context matches this evaluable's criteria, false otherwise
      */
-    internal open fun matches(context: C): Boolean = true
+    open fun matches(context: C): Boolean = true
 
     /**
      * Calculates the specificity of this evaluable.
@@ -42,5 +42,5 @@ abstract class Evaluable<C : Context> {
      *
      * @return The specificity value (higher is more specific)
      */
-    internal open fun specificity(): Int = 0
+    open fun specificity(): Int = 0
 }

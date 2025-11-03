@@ -7,7 +7,7 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.SingletonFlagRegistry
-import io.amichne.konditional.core.evaluate
+import io.amichne.konditional.context.evaluate
 import io.amichne.konditional.core.StableId
 import io.amichne.konditional.example.SampleFeatureEnum
 import org.junit.jupiter.api.AfterEach

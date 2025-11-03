@@ -45,7 +45,7 @@ data class FlagDefinition<S : Any, C : Context>(
         }?.value ?: defaultValue
     }
 
-    /*
+    /**
      * Determines if the current context belongs to an ineligible segment.
      *
      * This function evaluates specific conditions to check whether the
