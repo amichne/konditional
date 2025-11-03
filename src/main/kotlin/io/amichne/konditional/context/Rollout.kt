@@ -23,9 +23,8 @@ value class Rollout private constructor(
 
         fun of(value: Rollout): Rollout = value
 
-        private val MIN_DOUBLE = 0.0
-        val MIN: Rollout = Rollout(MIN_DOUBLE)
-        private val MAX_DOUBLE = 100.0
+        private const val MIN_DOUBLE = 0.0
+        private const val MAX_DOUBLE = 100.0
         val MAX: Rollout = Rollout(MAX_DOUBLE)
         val default: Rollout = MAX
     }

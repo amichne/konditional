@@ -13,7 +13,6 @@ enum class SampleFeatureEnum(
     DEFAULT_TRUE_EXCEPT_ANDROID_LEGACY("default_true_except_android_legacy"),
     PRIORITY_CHECK("priority_check"),
     VERSIONED("versioned"),
-    DEFAULT_FALSE_WITH_30_TRUE("default_false_with_30_true"),
     UNIFORM50("uniform50"),
     ;
 

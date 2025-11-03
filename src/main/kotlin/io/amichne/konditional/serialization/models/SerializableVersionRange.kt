@@ -11,6 +11,4 @@ data class SerializableVersionRange(
     val type: VersionRangeType,
     val min: SerializableVersion? = null,
     val max: SerializableVersion? = null,
-) {
-
-}
+)

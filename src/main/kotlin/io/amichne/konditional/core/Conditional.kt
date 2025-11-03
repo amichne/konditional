@@ -12,10 +12,12 @@ import io.amichne.konditional.context.Context
  */
 interface Conditional<S : Any, C : Context> {
     val key: String
+    val flags: Map<Conditional<*, *>, ContextualFeatureFlag<*, *>>
+        get() = SingletonFlagRegistry.getCurrentSnapshot().flags
 
     fun with(build: FlagBuilder<S, C>.() -> Unit)
 
-    fun update(definition: FlagDefinition<S, C>) = Flags.update(definition)
+    fun update(definition: FlagDefinition<S, C>) = SingletonFlagRegistry.update(definition)
 
     companion object {
         internal inline fun <reified T, S : Any, C : Context> parse(key: String): T where T : Conditional<S, C>, T : Enum<T> =

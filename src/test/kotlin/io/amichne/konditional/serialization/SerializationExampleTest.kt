@@ -6,7 +6,8 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Flags
+import io.amichne.konditional.core.SingletonFlagRegistry
+import io.amichne.konditional.core.evaluate
 import io.amichne.konditional.core.StableId
 import io.amichne.konditional.example.SampleFeatureEnum
 import org.junit.jupiter.api.AfterEach
@@ -86,23 +87,21 @@ class SerializationExampleTest {
             stableId = StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
 
-        with(Flags) {
-            Flags.load(snapshot)
-            val originalCompactCards = testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
-            val originalLightweightHome = testContext.evaluate(SampleFeatureEnum.USE_LIGHTWEIGHT_HOME)
+        SingletonFlagRegistry.load(snapshot)
+        val originalCompactCards = testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
+        val originalLightweightHome = testContext.evaluate(SampleFeatureEnum.USE_LIGHTWEIGHT_HOME)
 
-            Flags.load(deserialized)
-            val deserializedCompactCards = testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
-            val deserializedLightweightHome = testContext.evaluate(SampleFeatureEnum.USE_LIGHTWEIGHT_HOME)
+        SingletonFlagRegistry.load(deserialized)
+        val deserializedCompactCards = testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
+        val deserializedLightweightHome = testContext.evaluate(SampleFeatureEnum.USE_LIGHTWEIGHT_HOME)
 
-            assertEquals(originalCompactCards, deserializedCompactCards)
-            assertEquals(originalLightweightHome, deserializedLightweightHome)
+        assertEquals(originalCompactCards, deserializedCompactCards)
+        assertEquals(originalLightweightHome, deserializedLightweightHome)
 
-            println("✓ Original and deserialized configs produce identical results:")
-            println("  - ENABLE_COMPACT_CARDS: $originalCompactCards")
-            println("  - USE_LIGHTWEIGHT_HOME: $originalLightweightHome")
-            println()
-        }
+        println("✓ Original and deserialized configs produce identical results:")
+        println("  - ENABLE_COMPACT_CARDS: $originalCompactCards")
+        println("  - USE_LIGHTWEIGHT_HOME: $originalLightweightHome")
+        println()
 
         // Step 5: Apply a patch update
         println("Step 5: Applying patch update...")
@@ -131,16 +130,14 @@ class SerializationExampleTest {
 
         // Step 6: Verify patch results
         println("Step 6: Verifying patched configuration...")
-        with(Flags) {
-            Flags.load(patched)
-            val values = testContext.evaluate()
+        SingletonFlagRegistry.load(patched)
+        val values = testContext.evaluate()
 
-            println("✓ Patched configuration has ${values.size} flag(s):")
-            assertTrue(values.containsKey(SampleFeatureEnum.ENABLE_COMPACT_CARDS))
-            println("  - ENABLE_COMPACT_CARDS: ${testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)}")
+        println("✓ Patched configuration has ${values.size} flag(s):")
+        assertTrue(values.containsKey(SampleFeatureEnum.ENABLE_COMPACT_CARDS))
+        println("  - ENABLE_COMPACT_CARDS: ${testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)}")
 
-            assertEquals(true, testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS))
-        }
+        assertEquals(true, testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS))
 
         println("\n=== Example Complete ===")
     }
@@ -169,25 +166,23 @@ class SerializationExampleTest {
         println("To load from file, you would:")
         println("  val json = File(\"config.json\").readText()")
         println("  val snapshot = SnapshotSerializer.default.deserialize(json)")
-        println("  Flags.load(snapshot)")
+        println("  SingletonFlagRegistry.load(snapshot)")
         println()
 
         // Simulate loading from file
         val loadedSnapshot = serializer.deserialize(json)
 
         // Verify it works
-        with(Flags) {
-            Flags.load(loadedSnapshot)
-            val context = Context(
-                AppLocale.EN_US,
-                Platform.IOS,
-                Version.of(1, 0, 0),
-                StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
-            )
-            val value = context.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
-            assertEquals(true, value)
-            println("✓ Configuration loaded and evaluated successfully: $value")
-        }
+        SingletonFlagRegistry.load(loadedSnapshot)
+        val context = Context(
+            AppLocale.EN_US,
+            Platform.IOS,
+            Version.of(1, 0, 0),
+            StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
+        )
+        val value = context.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
+        assertEquals(true, value)
+        println("✓ Configuration loaded and evaluated successfully: $value")
 
         println("\n=== Example Complete ===")
     }

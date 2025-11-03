@@ -2,12 +2,13 @@ package io.amichne.konditional.serialization
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import io.amichne.konditional.core.Flags
+import io.amichne.konditional.core.snapshot.Snapshot
+import io.amichne.konditional.core.snapshot.SnapshotPatch
 import io.amichne.konditional.serialization.models.SerializablePatch
 import io.amichne.konditional.serialization.models.SerializableSnapshot
 
 /**
- * Main serialization interface for Flags.Snapshot configurations.
+ * Main serialization interface for SingletonFlagRegistry.Snapshot configurations.
  * Provides methods to serialize/deserialize snapshots to/from JSON, and apply patch updates.
  */
 class SnapshotSerializer(
@@ -17,37 +18,27 @@ class SnapshotSerializer(
     private val patchAdapter = moshi.adapter(SerializablePatch::class.java).indent("  ")
 
     /**
-     * Serializes a Flags.Snapshot to a JSON string.
+     * Serializes a SingletonFlagRegistry.Snapshot to a JSON string.
      *
      * @param snapshot The snapshot to serialize
      * @return JSON string representation
      */
-    fun serialize(snapshot: Flags.Snapshot): String {
+    fun serialize(snapshot: Snapshot): String {
         val serializable = snapshot.toSerializable()
         return snapshotAdapter.toJson(serializable)
     }
 
     /**
-     * Deserializes a JSON string to a Flags.Snapshot.
+     * Deserializes a JSON string to a SingletonFlagRegistry.Snapshot.
      *
      * @param json The JSON string to deserialize
-     * @return The deserialized Flags.Snapshot
+     * @return The deserialized SingletonFlagRegistry.Snapshot
      * @throws IllegalArgumentException if JSON is invalid or references unregistered flags
      */
-    fun deserialize(json: String): Flags.Snapshot {
+    fun deserialize(json: String): Snapshot {
         val serializable = snapshotAdapter.fromJson(json)
             ?: throw IllegalArgumentException("Failed to parse JSON: null result")
         return serializable.toSnapshot()
-    }
-
-    /**
-     * Serializes a patch update to a JSON string.
-     *
-     * @param patch The patch to serialize
-     * @return JSON string representation
-     */
-    fun serializePatch(patch: SerializablePatch): String {
-        return patchAdapter.toJson(patch)
     }
 
     /**
@@ -66,9 +57,9 @@ class SnapshotSerializer(
      *
      * @param currentSnapshot The current snapshot to patch
      * @param patch The patch to apply
-     * @return A new Flags.Snapshot with the patch applied
+     * @return A new SingletonFlagRegistry.Snapshot with the patch applied
      */
-    fun applyPatch(currentSnapshot: Flags.Snapshot, patch: SerializablePatch): Flags.Snapshot {
+    fun applyPatch(currentSnapshot: Snapshot, patch: SerializablePatch): Snapshot {
         // Convert current snapshot to serializable form
         val currentSerializable = currentSnapshot.toSerializable()
 
@@ -95,11 +86,34 @@ class SnapshotSerializer(
      *
      * @param currentSnapshot The current snapshot to patch
      * @param patchJson The JSON string containing the patch
-     * @return A new Flags.Snapshot with the patch applied
+     * @return A new SingletonFlagRegistry.Snapshot with the patch applied
      */
-    fun applyPatchJson(currentSnapshot: Flags.Snapshot, patchJson: String): Flags.Snapshot {
+    fun applyPatchJson(currentSnapshot: Snapshot, patchJson: String): Snapshot {
         val patch = deserializePatch(patchJson)
         return applyPatch(currentSnapshot, patch)
+    }
+
+    /**
+     * Serializes a core SnapshotPatch to a JSON string.
+     *
+     * @param patch The SnapshotPatch to serialize
+     * @return JSON string representation of the patch
+     */
+    fun serializePatch(patch: SnapshotPatch): String {
+        val serializable = patch.toSerializable()
+        return patchAdapter.toJson(serializable)
+    }
+
+    /**
+     * Deserializes a JSON string to a core SnapshotPatch.
+     *
+     * @param json The JSON string to deserialize
+     * @return The deserialized SnapshotPatch
+     * @throws IllegalArgumentException if JSON is invalid or references unregistered flags
+     */
+    fun deserializePatchToCore(json: String): SnapshotPatch {
+        val serializable = deserializePatch(json)
+        return serializable.toPatch()
     }
 
     companion object {

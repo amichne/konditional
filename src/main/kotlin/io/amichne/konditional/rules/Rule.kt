@@ -60,7 +60,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  *
  * @see Evaluable
  * @see io.amichne.konditional.rules.evaluable.UserClientEvaluator
- * @see io.amichne.konditional.core.Flags
+ * @see io.amichne.konditional.core.SingletonFlagRegistry
  */
 data class Rule<C : Context>(
     val rollout: Rollout = Rollout.of(100.0),

@@ -9,7 +9,9 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.core.ContextualFeatureFlag
 import io.amichne.konditional.core.FlagDefinition
-import io.amichne.konditional.core.Flags
+import io.amichne.konditional.core.SingletonFlagRegistry
+import io.amichne.konditional.core.evaluate
+import io.amichne.konditional.core.snapshot.Snapshot
 import io.amichne.konditional.core.StableId
 import io.amichne.konditional.example.SampleFeatureEnum
 import io.amichne.konditional.rules.Rule
@@ -68,15 +70,13 @@ class SnapshotSerializerTest {
             stableId = StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
 
-        with(Flags) {
-            Flags.load(snapshot)
-            val originalValue = testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
+        SingletonFlagRegistry.load(snapshot)
+        val originalValue = testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
 
-            Flags.load(deserialized)
-            val deserializedValue = testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
+        SingletonFlagRegistry.load(deserialized)
+        val deserializedValue = testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
 
-            assertEquals(originalValue, deserializedValue)
-        }
+        assertEquals(originalValue, deserializedValue)
     }
 
     @Test
@@ -94,7 +94,7 @@ class SnapshotSerializerTest {
             defaultValue = false
         )
 
-        val snapshot = Flags.Snapshot(
+        val snapshot = Snapshot(
             mapOf(SampleFeatureEnum.FIFTY_TRUE_US_IOS to (condition))
         )
 
@@ -118,20 +118,18 @@ class SnapshotSerializerTest {
             Context(AppLocale.ES_US, Platform.IOS, Version.of(1, 0, 0), StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d4"))
         )
 
-        with(Flags) {
-            contexts.forEach { context ->
-                Flags.load(snapshot)
-                val originalValue = context.evaluate(SampleFeatureEnum.FIFTY_TRUE_US_IOS)
+        contexts.forEach { context ->
+            SingletonFlagRegistry.load(snapshot)
+            val originalValue = context.evaluate(SampleFeatureEnum.FIFTY_TRUE_US_IOS)
 
-                Flags.load(deserialized)
-                val deserializedValue = context.evaluate(SampleFeatureEnum.FIFTY_TRUE_US_IOS)
+            SingletonFlagRegistry.load(deserialized)
+            val deserializedValue = context.evaluate(SampleFeatureEnum.FIFTY_TRUE_US_IOS)
 
-                assertEquals(
-                    originalValue,
-                    deserializedValue,
-                    "Values should match for context: $context"
-                )
-            }
+            assertEquals(
+                originalValue,
+                deserializedValue,
+                "Values should match for context: $context"
+            )
         }
     }
 
@@ -148,7 +146,7 @@ class SnapshotSerializerTest {
             defaultValue = false
         )
 
-        val snapshot = Flags.Snapshot(
+        val snapshot = Snapshot(
             mapOf(SampleFeatureEnum.VERSIONED to condition)
         )
 
@@ -170,24 +168,22 @@ class SnapshotSerializerTest {
             Version.of(8, 0, 0) to true,   // Higher version
         )
 
-        with(Flags) {
-            testCases.forEach { (version, expected) ->
-                val context = Context(
-                    AppLocale.EN_US,
-                    Platform.IOS,
-                    version,
-                    StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
-                )
+        testCases.forEach { (version, expected) ->
+            val context = Context(
+                AppLocale.EN_US,
+                Platform.IOS,
+                version,
+                StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
+            )
 
-                Flags.load(snapshot)
-                val originalValue = context.evaluate(SampleFeatureEnum.VERSIONED)
+            SingletonFlagRegistry.load(snapshot)
+            val originalValue = context.evaluate(SampleFeatureEnum.VERSIONED)
 
-                Flags.load(deserialized)
-                val deserializedValue = context.evaluate(SampleFeatureEnum.VERSIONED)
+            SingletonFlagRegistry.load(deserialized)
+            val deserializedValue = context.evaluate(SampleFeatureEnum.VERSIONED)
 
-                assertEquals(originalValue, deserializedValue)
-                assertEquals(expected, deserializedValue, "Version $version should evaluate to $expected")
-            }
+            assertEquals(originalValue, deserializedValue)
+            assertEquals(expected, deserializedValue, "Version $version should evaluate to $expected")
         }
     }
 
@@ -223,20 +219,18 @@ class SnapshotSerializerTest {
             StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
 
-        with(Flags) {
-            Flags.load(snapshot)
-            val originalValues = context.evaluate()
+        SingletonFlagRegistry.load(snapshot)
+        val originalValues = context.evaluate()
 
-            Flags.load(deserialized)
-            val deserializedValues = context.evaluate()
+        SingletonFlagRegistry.load(deserialized)
+        val deserializedValues = context.evaluate()
 
-            assertEquals(3, originalValues.size)
-            assertEquals(3, deserializedValues.size)
+        assertEquals(3, originalValues.size)
+        assertEquals(3, deserializedValues.size)
 
-            // Compare each flag
-            originalValues.forEach { (key, value) ->
-                assertEquals(value, deserializedValues[key], "Flag ${(key as Conditional<*, *>).key} should match")
-            }
+        // Compare each flag
+        originalValues.forEach { (key, value) ->
+            assertEquals(value, deserializedValues[key], "Flag ${(key as Conditional<*, *>).key} should match")
         }
     }
 
@@ -278,14 +272,12 @@ class SnapshotSerializerTest {
             StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
 
-        with(Flags) {
-            Flags.load(patchedSnapshot)
-            val values = context.evaluate()
+        SingletonFlagRegistry.load(patchedSnapshot)
+        val values = context.evaluate()
 
-            assertEquals(2, values.size, "Should have 2 flags after patch")
-            assertTrue(values.containsKey(SampleFeatureEnum.ENABLE_COMPACT_CARDS))
-            assertTrue(values.containsKey(SampleFeatureEnum.USE_LIGHTWEIGHT_HOME))
-        }
+        assertEquals(2, values.size, "Should have 2 flags after patch")
+        assertTrue(values.containsKey(SampleFeatureEnum.ENABLE_COMPACT_CARDS))
+        assertTrue(values.containsKey(SampleFeatureEnum.USE_LIGHTWEIGHT_HOME))
     }
 
     @Test
@@ -319,12 +311,10 @@ class SnapshotSerializerTest {
             StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
 
-        with(Flags) {
-            Flags.load(patchedSnapshot)
-            val value = context.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
+        SingletonFlagRegistry.load(patchedSnapshot)
+        val value = context.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
 
-            assertEquals(true, value, "Flag should now default to true")
-        }
+        assertEquals(true, value, "Flag should now default to true")
     }
 
     @Test
@@ -356,13 +346,11 @@ class SnapshotSerializerTest {
             StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
 
-        with(Flags) {
-            Flags.load(patchedSnapshot)
-            val values = context.evaluate()
+        SingletonFlagRegistry.load(patchedSnapshot)
+        val values = context.evaluate()
 
-            assertEquals(1, values.size, "Should have 1 flag after removal")
-            assertTrue(values.containsKey(SampleFeatureEnum.ENABLE_COMPACT_CARDS))
-        }
+        assertEquals(1, values.size, "Should have 1 flag after removal")
+        assertTrue(values.containsKey(SampleFeatureEnum.ENABLE_COMPACT_CARDS))
     }
 
     @Test
@@ -406,12 +394,10 @@ class SnapshotSerializerTest {
             StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
 
-        with(Flags) {
-            Flags.load(patchedSnapshot)
-            val value = context.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
+        SingletonFlagRegistry.load(patchedSnapshot)
+        val value = context.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
 
-            assertEquals(true, value, "Flag should be updated to true")
-        }
+        assertEquals(true, value, "Flag should be updated to true")
     }
 
     @Test
@@ -441,27 +427,25 @@ class SnapshotSerializerTest {
             Context(AppLocale.HI_IN, Platform.WEB, Version.of(6, 0, 0), StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d4"))
         )
 
-        with(Flags) {
-            contexts.forEach { context ->
-                Flags.load(snapshot)
-                val originalValues = context.evaluate()
+        contexts.forEach { context ->
+            SingletonFlagRegistry.load(snapshot)
+            val originalValues = context.evaluate()
 
-                Flags.load(deserialized)
-                val deserializedValues = context.evaluate()
+            SingletonFlagRegistry.load(deserialized)
+            val deserializedValues = context.evaluate()
 
+            assertEquals(
+                originalValues.size,
+                deserializedValues.size,
+                "Number of flags should match for context: $context"
+            )
+
+            originalValues.forEach { (key, value) ->
                 assertEquals(
-                    originalValues.size,
-                    deserializedValues.size,
-                    "Number of flags should match for context: $context"
+                    value,
+                    deserializedValues[key],
+                    "Flag ${(key as Conditional<*, *>).key} should match for context: $context"
                 )
-
-                originalValues.forEach { (key, value) ->
-                    assertEquals(
-                        value,
-                        deserializedValues[key],
-                        "Flag ${(key as Conditional<*, *>).key} should match for context: $context"
-                    )
-                }
             }
         }
     }

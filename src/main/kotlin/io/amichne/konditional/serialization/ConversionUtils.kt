@@ -8,7 +8,8 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.ContextualFeatureFlag
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Conditional
-import io.amichne.konditional.core.Flags
+import io.amichne.konditional.core.snapshot.Snapshot
+import io.amichne.konditional.core.snapshot.SnapshotPatch
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.TargetedValue
 import io.amichne.konditional.rules.TargetedValue.Companion.targetedBy
@@ -18,6 +19,7 @@ import io.amichne.konditional.rules.versions.RightBound
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 import io.amichne.konditional.serialization.models.SerializableFlag
+import io.amichne.konditional.serialization.models.SerializablePatch
 import io.amichne.konditional.serialization.models.SerializableRule
 import io.amichne.konditional.serialization.models.SerializableSnapshot
 import io.amichne.konditional.serialization.models.SerializableVersion
@@ -115,9 +117,9 @@ object ConditionalRegistry {
 }
 
 /**
- * Converts a Flags.Snapshot to a SerializableSnapshot.
+ * Converts a SingletonFlagRegistry.Snapshot to a SerializableSnapshot.
  */
-fun Flags.Snapshot.toSerializable(): SerializableSnapshot {
+fun Snapshot.toSerializable(): SerializableSnapshot {
     val serializableFlags = flags.map { (conditional, flag) ->
         (flag as FlagDefinition<*, *>).toSerializable(conditional.key)
     }
@@ -199,14 +201,14 @@ private fun Any.toValueType(): ValueType {
 }
 
 /**
- * Converts a SerializableSnapshot to a Flags.Snapshot.
+ * Converts a SerializableSnapshot to a SingletonFlagRegistry.Snapshot.
  * @throws IllegalArgumentException if any flag keys are not registered in ConditionalRegistry
  */
-fun SerializableSnapshot.toSnapshot(): Flags.Snapshot {
+fun SerializableSnapshot.toSnapshot(): Snapshot {
     val flagMap = flags.associate { serializableFlag ->
         serializableFlag.toFlagPair()
     }
-    return Flags.Snapshot(flagMap)
+    return Snapshot(flagMap)
 }
 
 /**
@@ -321,4 +323,35 @@ private fun Any.castToType(valueType: ValueType): Any {
             else -> throw IllegalArgumentException("Cannot cast $this to Double")
         }
     }
+}
+
+/**
+ * Converts a SnapshotPatch to a SerializablePatch.
+ */
+fun SnapshotPatch.toSerializable(): SerializablePatch {
+    val serializableFlags = flags.map { (conditional, flag) ->
+        (flag as FlagDefinition<*, *>).toSerializable(conditional.key)
+    }
+    val removeKeyStrings = removeKeys.map { it.key }
+    return SerializablePatch(serializableFlags, removeKeyStrings)
+}
+
+/**
+ * Converts a SerializablePatch to a SnapshotPatch.
+ * @throws IllegalArgumentException if any flag keys are not registered in ConditionalRegistry
+ */
+fun SerializablePatch.toPatch(): SnapshotPatch {
+    val flagMap = flags.associate { serializableFlag ->
+        serializableFlag.toFlagPair()
+    }
+    val removeConditionals = removeKeys.mapNotNull { key ->
+        if (ConditionalRegistry.contains(key)) {
+            ConditionalRegistry.get<Any, Context>(key)
+        } else {
+            // Skip keys that aren't registered - they may have been removed
+            null
+        }
+    }.toSet()
+
+    return SnapshotPatch(flagMap, removeConditionals)
 }

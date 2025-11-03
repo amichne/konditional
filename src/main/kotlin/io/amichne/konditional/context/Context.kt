@@ -26,7 +26,7 @@ import io.amichne.konditional.core.StableId
  * @property appVersion The semantic version of the application
  * @property stableId A stable, unique identifier used for deterministic bucketing in rollouts
  *
- * @see io.amichne.konditional.core.Flags
+ * @see io.amichne.konditional.core.SingletonFlagRegistry
  * @see io.amichne.konditional.rules.Rule
  */
 interface Context {

@@ -3,8 +3,8 @@ package io.amichne.konditional.context
 import io.amichne.konditional.builders.ConfigBuilder.Companion.config
 import io.amichne.konditional.builders.FlagBuilder
 import io.amichne.konditional.core.Conditional
-import io.amichne.konditional.core.Flags.evaluate
 import io.amichne.konditional.core.StableId
+import io.amichne.konditional.core.evaluate
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.rules.versions.Unbounded
@@ -31,11 +31,11 @@ class ContextPolymorphismTest {
     ) : Context
 
     enum class SubscriptionTier {
-        FREE, BASIC, PREMIUM, ENTERPRISE
+        BASIC, PREMIUM, ENTERPRISE
     }
 
     enum class UserRole {
-        VIEWER, EDITOR, ADMIN, OWNER
+        EDITOR, ADMIN, OWNER
     }
 
     // Custom context for A/B testing
@@ -48,7 +48,7 @@ class ContextPolymorphismTest {
         val sessionId: String,
     ) : Context
 
-    // Flags using EnterpriseContext
+    // SingletonFlagRegistry using EnterpriseContext
     enum class EnterpriseFlags(
         override val key: String,
     ) : Conditional<Boolean, EnterpriseContext> {
@@ -62,12 +62,11 @@ class ContextPolymorphismTest {
             update(FlagBuilder(this).apply(build).build())
     }
 
-    // Flags using ExperimentContext
+    // SingletonFlagRegistry using ExperimentContext
     enum class ExperimentFlags(
         override val key: String,
     ) : Conditional<String, ExperimentContext> {
         HOMEPAGE_VARIANT("homepage_variant"),
-        CHECKOUT_FLOW("checkout_flow"),
         ONBOARDING_STYLE("onboarding_style"),
         ;
 
@@ -77,12 +76,12 @@ class ContextPolymorphismTest {
 
     // Custom rule that extends Rule for EnterpriseContext
     data class EnterpriseRule(
-        val Rule: Rule<EnterpriseContext>,
+        val rule: Rule<EnterpriseContext>,
         val requiredTier: SubscriptionTier? = null,
         val requiredRole: UserRole? = null,
     ) {
         fun matches(context: EnterpriseContext): Boolean {
-            if (!Rule.matches(context)) return false
+            if (!rule.matches(context)) return false
             if (requiredTier != null && context.subscriptionTier.ordinal < requiredTier.ordinal) return false
             if (requiredRole != null && context.userRole.ordinal < requiredRole.ordinal) return false
             return true
@@ -315,7 +314,7 @@ class ContextPolymorphismTest {
     @Test
     fun `Given custom EnterpriseRule, When matching with business logic, Then custom properties are enforced`() {
         val enterpriseOnlyRule = EnterpriseRule(
-            Rule = Rule(
+            rule = Rule(
                 rollout = Rollout.MAX,
                 locales = emptySet(),
                 platforms = setOf(Platform.WEB),

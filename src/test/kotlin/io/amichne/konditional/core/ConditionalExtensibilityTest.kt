@@ -6,7 +6,6 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Flags.evaluate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -35,9 +34,7 @@ class ConditionalExtensibilityTest {
     enum class ApiConfigFlags(
         override val key: String,
     ) : Conditional<ApiConfig, Context> {
-        PRIMARY_API("primary_api"),
-        BACKUP_API("backup_api"),
-        ;
+        PRIMARY_API("primary_api");
 
         override fun with(build: FlagBuilder<ApiConfig, Context>.() -> Unit) =
             update(FlagBuilder(this).apply(build).build())
@@ -65,9 +62,7 @@ class ConditionalExtensibilityTest {
     enum class ListFlags(
         override val key: String,
     ) : Conditional<List<String>, Context> {
-        ENABLED_FEATURES("enabled_features"),
-        BETA_MODULES("beta_modules"),
-        ;
+        ENABLED_FEATURES("enabled_features");
 
         override fun with(build: FlagBuilder<List<String>, Context>.() -> Unit) =
             update(FlagBuilder(this).apply(build).build())
@@ -77,9 +72,7 @@ class ConditionalExtensibilityTest {
     enum class IntFlags(
         override val key: String,
     ) : Conditional<Int, Context> {
-        MAX_CONNECTIONS("max_connections"),
-        CACHE_SIZE_MB("cache_size_mb"),
-        ;
+        MAX_CONNECTIONS("max_connections");
 
         override fun with(build: FlagBuilder<Int, Context>.() -> Unit) =
             update(FlagBuilder(this).apply(build).build())
@@ -87,7 +80,7 @@ class ConditionalExtensibilityTest {
 
     // Custom value type: Enum
     enum class LogLevel {
-        DEBUG, INFO, WARN, ERROR
+        DEBUG, INFO, ERROR
     }
 
     enum class LogConfigFlags(

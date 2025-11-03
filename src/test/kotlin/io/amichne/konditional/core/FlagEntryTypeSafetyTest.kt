@@ -6,7 +6,7 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Flags.evaluate
+import io.amichne.konditional.core.snapshot.Snapshot
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.TargetedValue.Companion.targetedBy
 import io.amichne.konditional.rules.versions.Unbounded
@@ -179,14 +179,14 @@ class FlagEntryTypeSafetyTest {
             defaultValue = "default",
         )
 
-        val snapshot = Flags.Snapshot(
+        val snapshot = Snapshot(
             mapOf(
                 BoolFlags.FEATURE_A to boolFlag,
                 StringFlags.CONFIG_A to stringFlag,
             )
         )
 
-        Flags.load(snapshot)
+        SingletonFlagRegistry.load(snapshot)
 
         val context = ctx("33333333333333333333333333333333")
         val boolResult = context.evaluate(BoolFlags.FEATURE_A)
