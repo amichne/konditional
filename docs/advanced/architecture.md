@@ -32,8 +32,6 @@ enum class Features(override val key: String) : Conditional<Boolean, Context> {
     NEW_UI("new_ui"),
     ;
 
-    override fun with(build: FlagBuilder<Boolean, Context>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 ```
 

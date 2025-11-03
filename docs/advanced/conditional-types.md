@@ -26,8 +26,6 @@ enum class Features(override val key: String) : Conditional<Boolean, Context> {
     ANALYTICS_ENABLED("analytics_enabled"),
     ;
 
-    override fun with(build: FlagBuilder<Boolean, Context>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 
 config {
@@ -58,8 +56,6 @@ enum class Config(override val key: String) : Conditional<String, Context> {
     LOG_LEVEL("log_level"),
     ;
 
-    override fun with(build: FlagBuilder<String, Context>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 
 config {
@@ -102,8 +98,6 @@ enum class Limits(override val key: String) : Conditional<Int, Context> {
     CACHE_SIZE_MB("cache_size_mb"),
     ;
 
-    override fun with(build: FlagBuilder<Int, Context>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 
 config {
@@ -156,8 +150,6 @@ enum class LogConfig(override val key: String) : Conditional<LogLevel, Context> 
     NETWORK_LOG_LEVEL("network_log_level"),
     ;
 
-    override fun with(build: FlagBuilder<LogLevel, Context>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 
 config {
@@ -201,8 +193,6 @@ enum class NetworkConfig(override val key: String) : Conditional<ApiConfig, Cont
     BACKUP_API("backup_api"),
     ;
 
-    override fun with(build: FlagBuilder<ApiConfig, Context>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 
 config {
@@ -248,8 +238,6 @@ enum class ModuleConfig(override val key: String) : Conditional<List<String>, Co
     BETA_MODULES("beta_modules"),
     ;
 
-    override fun with(build: FlagBuilder<List<String>, Context>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 
 config {
@@ -284,8 +272,6 @@ enum class FeatureToggles(override val key: String) : Conditional<Map<String, St
     TOGGLES("feature_toggles"),
     ;
 
-    override fun with(build: FlagBuilder<Map<String, String>, Context>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 
 config {
@@ -330,8 +316,6 @@ enum class AppConfig(override val key: String) : Conditional<ThemeConfig, Contex
     THEME("app_theme"),
     ;
 
-    override fun with(build: FlagBuilder<ThemeConfig, Context>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 
 config {
@@ -375,8 +359,6 @@ enum class PaymentConfig(override val key: String) : Conditional<PaymentMethod, 
     DEFAULT_METHOD("default_payment_method"),
     ;
 
-    override fun with(build: FlagBuilder<PaymentMethod, Context>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 
 config {
@@ -405,8 +387,6 @@ enum class Features(override val key: String) : Conditional<Boolean, Context> {
     FEATURE_A("feature_a"),
     ;
 
-    override fun with(build: FlagBuilder<Boolean, Context>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 
 config {

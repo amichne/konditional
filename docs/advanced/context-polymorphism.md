@@ -92,8 +92,6 @@ enum class EnterpriseFeatures(
     CUSTOM_BRANDING("custom_branding"),
     ;
 
-    override fun with(build: FlagBuilder<Boolean, EnterpriseContext>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 ```
 
@@ -214,8 +212,6 @@ enum class StandardFeatures(
     NEW_UI("new_ui"),
     ;
 
-    override fun with(build: FlagBuilder<Boolean, Context>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 
 // Enterprise features use EnterpriseContext
@@ -225,8 +221,6 @@ enum class EnterpriseFeatures(
     ADVANCED_ANALYTICS("advanced_analytics"),
     ;
 
-    override fun with(build: FlagBuilder<Boolean, EnterpriseContext>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 
 // Experiment features use ExperimentContext
@@ -236,8 +230,6 @@ enum class ExperimentFeatures(
     HOMEPAGE_VARIANT("homepage_variant"),
     ;
 
-    override fun with(build: FlagBuilder<String, ExperimentContext>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 ```
 

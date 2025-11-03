@@ -20,10 +20,6 @@ class StringSingletonFlagRegistryTest {
         API_ENDPOINT("api_endpoint"),
         THEME("theme"),
         WELCOME_MESSAGE("welcome_message"),
-        ;
-
-        override fun with(build: FlagBuilder<String, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
     private fun ctx(

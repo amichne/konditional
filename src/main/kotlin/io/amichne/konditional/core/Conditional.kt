@@ -15,8 +15,6 @@ interface Conditional<S : Any, C : Context> {
     val flags: Map<Conditional<*, *>, ContextualFeatureFlag<*, *>>
         get() = SingletonFlagRegistry.getCurrentSnapshot().flags
 
-    fun with(build: FlagBuilder<S, C>.() -> Unit)
-
     fun update(definition: FlagDefinition<S, C>) = SingletonFlagRegistry.update(definition)
 
     companion object {

@@ -21,10 +21,6 @@ class ConditionEvaluationTest {
 
     enum class TestFlags(override val key: String) : Conditional<String, Context> {
         TEST_FLAG("test_flag"),
-        ;
-
-        override fun with(build: FlagBuilder<String, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
     private fun ctx(

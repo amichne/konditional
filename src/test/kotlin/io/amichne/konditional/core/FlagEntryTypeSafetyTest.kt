@@ -32,27 +32,15 @@ class FlagEntryTypeSafetyTest {
     enum class BoolFlags(override val key: String) : Conditional<Boolean, Context> {
         FEATURE_A("feature_a"),
         FEATURE_B("feature_b"),
-        ;
-
-        override fun with(build: FlagBuilder<Boolean, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
     enum class StringFlags(override val key: String) : Conditional<String, Context> {
         CONFIG_A("config_a"),
         CONFIG_B("config_b"),
-        ;
-
-        override fun with(build: FlagBuilder<String, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
     enum class IntFlags(override val key: String) : Conditional<Int, Context> {
         TIMEOUT("timeout"),
-        ;
-
-        override fun with(build: FlagBuilder<Int, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
     @Test
@@ -288,10 +276,7 @@ class FlagEntryTypeSafetyTest {
             val customField: String,
         ) : Context
 
-        data class CustomIntFlag(override val key: String = "custom_int") : Conditional<Int, CustomContext> {
-            override fun with(build: FlagBuilder<Int, CustomContext>.() -> Unit) =
-                update(FlagBuilder(this).apply(build).build())
-        }
+        data class CustomIntFlag(override val key: String = "custom_int") : Conditional<Int, CustomContext>
 
         val customIntFlag = CustomIntFlag()
 

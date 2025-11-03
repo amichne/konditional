@@ -1,6 +1,5 @@
 package io.amichne.konditional.example
 
-import io.amichne.konditional.builders.FlagBuilder
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Conditional
 
@@ -14,8 +13,4 @@ enum class SampleFeatureEnum(
     PRIORITY_CHECK("priority_check"),
     VERSIONED("versioned"),
     UNIFORM50("uniform50"),
-    ;
-
-    override fun with(build: FlagBuilder<Boolean, Context>.() -> Unit) =
-        update(FlagBuilder(key = this).apply(block = build).build())
 }

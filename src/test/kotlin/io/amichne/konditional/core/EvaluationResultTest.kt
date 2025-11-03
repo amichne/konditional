@@ -46,10 +46,6 @@ class EvaluationResultTest {
     enum class TestFlags(override val key: String) : Conditional<String, Context> {
         REGISTERED_FLAG("registered_flag"),
         UNREGISTERED_FLAG("unregistered_flag"),
-        ;
-
-        override fun with(build: FlagBuilder<String, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
     // Mock Outcome type for testing adaptation
@@ -76,10 +72,12 @@ class EvaluationResultTest {
             versionRange = Unbounded,
         )
 
-        TestFlags.REGISTERED_FLAG.with {
-            rule implies "test-value"
-            default("default-value")
-        }
+        TestFlags.REGISTERED_FLAG.update(
+            FlagBuilder(TestFlags.REGISTERED_FLAG).apply {
+                rule implies "test-value"
+                default("default-value")
+            }.build()
+        )
     }
 
     @Test

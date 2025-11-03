@@ -36,9 +36,6 @@ class ConditionalExtensibilityTest {
         override val key: String,
     ) : Conditional<ApiConfig, Context> {
         PRIMARY_API("primary_api");
-
-        override fun with(build: FlagBuilder<ApiConfig, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
     // Custom value type: Theme configuration
@@ -53,10 +50,6 @@ class ConditionalExtensibilityTest {
         override val key: String,
     ) : Conditional<ThemeConfig, Context> {
         APP_THEME("app_theme"),
-        ;
-
-        override fun with(build: FlagBuilder<ThemeConfig, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
     // Custom value type: List of strings
@@ -64,9 +57,6 @@ class ConditionalExtensibilityTest {
         override val key: String,
     ) : Conditional<List<String>, Context> {
         ENABLED_FEATURES("enabled_features");
-
-        override fun with(build: FlagBuilder<List<String>, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
     // Custom value type: Integer
@@ -74,9 +64,6 @@ class ConditionalExtensibilityTest {
         override val key: String,
     ) : Conditional<Int, Context> {
         MAX_CONNECTIONS("max_connections");
-
-        override fun with(build: FlagBuilder<Int, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
     // Custom value type: Enum
@@ -88,10 +75,6 @@ class ConditionalExtensibilityTest {
         override val key: String,
     ) : Conditional<LogLevel, Context> {
         APP_LOG_LEVEL("app_log_level"),
-        ;
-
-        override fun with(build: FlagBuilder<LogLevel, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
     // Custom value type: Map
@@ -99,10 +82,6 @@ class ConditionalExtensibilityTest {
         override val key: String,
     ) : Conditional<Map<String, String>, Context> {
         FEATURE_TOGGLES("feature_toggles"),
-        ;
-
-        override fun with(build: FlagBuilder<Map<String, String>, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
     @Test
@@ -345,10 +324,7 @@ class ConditionalExtensibilityTest {
             val level3: ApiConfig,
         )
 
-        data class DeepFlag(override val key: String = "nested_config") : Conditional<DeepConfig, Context> {
-            override fun with(build: FlagBuilder<DeepConfig, Context>.() -> Unit) =
-                update(FlagBuilder(this).apply(build).build())
-        }
+        data class DeepFlag(override val key: String = "nested_config") : Conditional<DeepConfig, Context>
 
         val nestedConfigFlag = DeepFlag()
 

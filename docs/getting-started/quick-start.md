@@ -54,8 +54,6 @@ enum class Features(override val key: String) : Conditional<Boolean, Context> {
     ANALYTICS("analytics"),
     ;
 
-    override fun with(build: FlagBuilder<Boolean, Context>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 ```
 
@@ -128,8 +126,6 @@ enum class Config(override val key: String) : Conditional<String, Context> {
     THEME_NAME("theme_name"),
     ;
 
-    override fun with(build: FlagBuilder<String, Context>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 
 config {
@@ -155,8 +151,6 @@ enum class Limits(override val key: String) : Conditional<Int, Context> {
     TIMEOUT_SECONDS("timeout_seconds"),
     ;
 
-    override fun with(build: FlagBuilder<Int, Context>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 
 config {

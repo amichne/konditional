@@ -58,10 +58,6 @@ class ContextPolymorphismTest {
         BULK_EXPORT("bulk_export"),
         CUSTOM_BRANDING("custom_branding"),
         API_ACCESS("api_access"),
-        ;
-
-        override fun with(build: FlagBuilder<Boolean, EnterpriseContext>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
     // SingletonFlagRegistry using ExperimentContext
@@ -70,10 +66,6 @@ class ContextPolymorphismTest {
     ) : Conditional<String, ExperimentContext> {
         HOMEPAGE_VARIANT("homepage_variant"),
         ONBOARDING_STYLE("onboarding_style"),
-        ;
-
-        override fun with(build: FlagBuilder<String, ExperimentContext>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
     // Custom rule that extends Rule for EnterpriseContext
@@ -231,10 +223,7 @@ class ContextPolymorphismTest {
     @Test
     fun `Given base Context and custom Context, When both used, Then type safety is maintained`() {
         // Define flag in scope
-        data class StandardFlagA(override val key: String = "feature_a") : Conditional<Boolean, Context> {
-            override fun with(build: FlagBuilder<Boolean, Context>.() -> Unit) =
-                update(FlagBuilder(this).apply(build).build())
-        }
+        data class StandardFlagA(override val key: String = "feature_a") : Conditional<Boolean, Context>
 
         val standardFlagA = StandardFlagA()
 

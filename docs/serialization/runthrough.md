@@ -106,8 +106,6 @@ enum class FeatureFlags(override val key: String) : Conditional<Boolean, Context
     COMPACT_CARDS("compact_cards"),
     PREMIUM_FEATURE("premium_feature");
 
-    override fun with(build: FlagBuilder<Boolean, Context>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 ```
 
