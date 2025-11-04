@@ -1,6 +1,9 @@
 package io.amichne.konditional.context
 
+import com.squareup.moshi.JsonClass
+
 // ---------- Semantic Version ----------
+@JsonClass(generateAdapter = true)
 data class Version(
     val major: Int,
     val minor: Int,

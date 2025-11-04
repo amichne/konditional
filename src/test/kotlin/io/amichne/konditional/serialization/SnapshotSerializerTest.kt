@@ -19,8 +19,9 @@ import io.amichne.konditional.rules.versions.LeftBound
 import io.amichne.konditional.serialization.models.SerializableFlag
 import io.amichne.konditional.serialization.models.SerializablePatch
 import io.amichne.konditional.serialization.models.SerializableRule
-import io.amichne.konditional.core.ValueType
+import io.amichne.konditional.serialization.models.FlagValue
 import io.amichne.konditional.rules.TargetedValue.Companion.targetedBy
+import io.amichne.konditional.core.result.getOrThrow
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -59,7 +60,7 @@ class SnapshotSerializerTest {
         assertTrue(json.contains("BOOLEAN"))
 
         // Deserialize
-        val deserialized = serializer.deserialize(json)
+        val deserialized = serializer.deserialize(json).getOrThrow()
         assertNotNull(deserialized)
 
         // Verify equality by evaluating both
@@ -107,7 +108,7 @@ class SnapshotSerializerTest {
         assertTrue(json.contains("50.0"))
 
         // Deserialize
-        val deserialized = serializer.deserialize(json)
+        val deserialized = serializer.deserialize(json).getOrThrow()
         assertNotNull(deserialized)
 
         // Verify by comparing evaluation results with different contexts
@@ -158,7 +159,7 @@ class SnapshotSerializerTest {
         assertTrue(json.contains("\"minor\": 10") || json.contains("\"minor\":10"))
 
         // Deserialize
-        val deserialized = serializer.deserialize(json)
+        val deserialized = serializer.deserialize(json).getOrThrow()
 
         // Test with various versions
         val testCases = listOf(
@@ -209,7 +210,7 @@ class SnapshotSerializerTest {
         assertTrue(json.contains("uniform50"))
 
         // Deserialize
-        val deserialized = serializer.deserialize(json)
+        val deserialized = serializer.deserialize(json).getOrThrow()
 
         // Verify all flags evaluate correctly
         val context = Context(
@@ -248,11 +249,10 @@ class SnapshotSerializerTest {
             flags = listOf(
                 SerializableFlag(
                     key = "use_lightweight_home",
-                    type = ValueType.BOOLEAN,
-                    defaultValue = false,
+                    defaultValue = FlagValue.from(false),
                     rules = listOf(
                         SerializableRule(
-                            value = SerializableRule.SerializableValue(true, ValueType.BOOLEAN),
+                            value = FlagValue.from(true),
                             locales = setOf("EN_US"),
                             platforms = setOf("IOS")
                         )
@@ -262,7 +262,7 @@ class SnapshotSerializerTest {
         )
 
         // Apply patch
-        val patchedSnapshot = serializer.applyPatch(initialSnapshot, patch)
+        val patchedSnapshot = serializer.applyPatch(initialSnapshot, patch).getOrThrow()
 
         // Verify the patch was applied
         val context = Context(
@@ -294,14 +294,13 @@ class SnapshotSerializerTest {
             flags = listOf(
                 SerializableFlag(
                     key = "enable_compact_cards",
-                    type = ValueType.BOOLEAN,
-                    defaultValue = true  // Changed from false to true
+                    defaultValue = FlagValue.from(true)  // Changed from false to true
                 )
             )
         )
 
         // Apply patch
-        val patchedSnapshot = serializer.applyPatch(initialSnapshot, patch)
+        val patchedSnapshot = serializer.applyPatch(initialSnapshot, patch).getOrThrow()
 
         // Verify the update
         val context = Context(
@@ -336,7 +335,7 @@ class SnapshotSerializerTest {
         )
 
         // Apply patch
-        val patchedSnapshot = serializer.applyPatch(initialSnapshot, patch)
+        val patchedSnapshot = serializer.applyPatch(initialSnapshot, patch).getOrThrow()
 
         // Verify the flag was removed
         val context = Context(
@@ -368,15 +367,13 @@ class SnapshotSerializerTest {
               "flags": [
                 {
                   "key": "enable_compact_cards",
-                  "type": "BOOLEAN",
-                  "defaultValue": true,
+                  "defaultValue": {
+                    "type": "BOOLEAN",
+                    "value": true
+                  },
                   "salt": "v2",
                   "isActive": true,
-                  "rules": [],
-                  "default": {
-                    "value": true,
-                    "type": "BOOLEAN"
-                  }
+                  "rules": []
                 }
               ],
               "removeKeys": []
@@ -384,7 +381,7 @@ class SnapshotSerializerTest {
         """.trimIndent()
 
         // Apply patch from JSON
-        val patchedSnapshot = serializer.applyPatchJson(initialSnapshot, patchJson)
+        val patchedSnapshot = serializer.applyPatchJson(initialSnapshot, patchJson).getOrThrow()
 
         // Verify the patch was applied
         val context = Context(
@@ -417,7 +414,7 @@ class SnapshotSerializerTest {
 
         // Perform round-trip: serialize then deserialize
         val json = serializer.serialize(snapshot)
-        val deserialized = serializer.deserialize(json)
+        val deserialized = serializer.deserialize(json).getOrThrow()
 
         // Test with multiple contexts to ensure behavior is identical
         val contexts = listOf(

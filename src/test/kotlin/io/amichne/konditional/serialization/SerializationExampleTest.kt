@@ -10,6 +10,7 @@ import io.amichne.konditional.core.SingletonFlagRegistry
 import io.amichne.konditional.context.evaluate
 import io.amichne.konditional.core.StableId
 import io.amichne.konditional.example.SampleFeatureEnum
+import io.amichne.konditional.core.result.getOrThrow
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -75,7 +76,7 @@ class SerializationExampleTest {
 
         // Step 3: Deserialize from JSON
         println("Step 3: Deserializing from JSON...")
-        val deserialized = serializer.deserialize(json)
+        val deserialized = serializer.deserialize(json).getOrThrow()
         println("✓ Successfully deserialized\n")
 
         // Step 4: Verify the configurations behave identically
@@ -110,22 +111,20 @@ class SerializationExampleTest {
               "flags": [
                 {
                   "key": "enable_compact_cards",
-                  "type": "BOOLEAN",
-                  "defaultValue": true,
+                  "defaultValue": {
+                    "type": "BOOLEAN",
+                    "value": true
+                  },
                   "salt": "v2",
                   "isActive": true,
-                  "rules": [],
-                  "default": {
-                    "value": true,
-                    "type": "BOOLEAN"
-                  }
+                  "rules": []
                 }
               ],
               "removeKeys": ["use_lightweight_home"]
             }
         """.trimIndent()
 
-        val patched = serializer.applyPatchJson(deserialized, patchJson)
+        val patched = serializer.applyPatchJson(deserialized, patchJson).getOrThrow()
         println("✓ Patch applied (updated ENABLE_COMPACT_CARDS, removed USE_LIGHTWEIGHT_HOME)\n")
 
         // Step 6: Verify patch results
@@ -170,7 +169,7 @@ class SerializationExampleTest {
         println()
 
         // Simulate loading from file
-        val loadedSnapshot = serializer.deserialize(json)
+        val loadedSnapshot = serializer.deserialize(json).getOrThrow()
 
         // Verify it works
         SingletonFlagRegistry.load(loadedSnapshot)

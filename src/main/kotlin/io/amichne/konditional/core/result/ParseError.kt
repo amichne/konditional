@@ -45,4 +45,25 @@ sealed interface ParseError {
      * Invalid salt value for bucketing.
      */
     data class InvalidSalt(val input: String, override val message: String) : ParseError
+
+    /**
+     * Failed to deserialize JSON into a snapshot.
+     */
+    data class InvalidSnapshot(val reason: String) : ParseError {
+        override val message: String get() = "Invalid snapshot: $reason"
+    }
+
+    /**
+     * Type mismatch during deserialization.
+     */
+    data class TypeMismatch(val expected: String, val actual: String, val context: String) : ParseError {
+        override val message: String get() = "Type mismatch in $context: expected $expected but got $actual"
+    }
+
+    /**
+     * Invalid JSON data that cannot be parsed.
+     */
+    data class InvalidJson(val reason: String) : ParseError {
+        override val message: String get() = "Invalid JSON: $reason"
+    }
 }

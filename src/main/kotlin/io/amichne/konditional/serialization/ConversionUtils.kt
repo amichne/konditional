@@ -4,28 +4,21 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
-import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.ContextualFeatureFlag
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Conditional
+import io.amichne.konditional.core.result.ParseError
+import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.snapshot.Snapshot
 import io.amichne.konditional.core.snapshot.SnapshotPatch
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.TargetedValue
 import io.amichne.konditional.rules.TargetedValue.Companion.targetedBy
-import io.amichne.konditional.rules.versions.FullyBound
-import io.amichne.konditional.rules.versions.LeftBound
-import io.amichne.konditional.rules.versions.RightBound
-import io.amichne.konditional.rules.versions.Unbounded
-import io.amichne.konditional.rules.versions.VersionRange
+import io.amichne.konditional.serialization.models.FlagValue
 import io.amichne.konditional.serialization.models.SerializableFlag
 import io.amichne.konditional.serialization.models.SerializablePatch
 import io.amichne.konditional.serialization.models.SerializableRule
 import io.amichne.konditional.serialization.models.SerializableSnapshot
-import io.amichne.konditional.serialization.models.SerializableVersion
-import io.amichne.konditional.serialization.models.SerializableVersionRange
-import io.amichne.konditional.core.ValueType
-import io.amichne.konditional.serialization.models.VersionRangeType
 
 /**
  * Registry for mapping flag keys to their Conditional instances.
@@ -85,16 +78,14 @@ object ConditionalRegistry {
     }
 
     /**
-     * Retrieves a Conditional by its key.
+     * Retrieves a Conditional by its key, returning ParseResult for type-safe error handling.
      *
      * @param key The string key of the conditional
-     * @return The registered Conditional instance
-     * @throws IllegalArgumentException if the key is not registered
+     * @return ParseResult with the registered Conditional or an error
      */
-    @Suppress("UNCHECKED_CAST")
-    fun <S : Any, C : Context> get(key: String): Conditional<S, C> {
-        return registry[key] as? Conditional<S, C>
-            ?: throw IllegalArgumentException("Conditional with key '$key' not found in registry. Did you forget to register it?")
+    fun get(key: String): ParseResult<Conditional<*, *>> {
+        return registry[key]?.let { ParseResult.Success(it) }
+            ?: ParseResult.Failure(ParseError.ConditionalNotFound(key))
     }
 
     /**
@@ -117,7 +108,7 @@ object ConditionalRegistry {
 }
 
 /**
- * Converts a SingletonFlagRegistry.Snapshot to a SerializableSnapshot.
+ * Converts a Snapshot to a SerializableSnapshot.
  */
 fun Snapshot.toSerializable(): SerializableSnapshot {
     val serializableFlags = flags.map { (conditional, flag) ->
@@ -132,8 +123,7 @@ fun Snapshot.toSerializable(): SerializableSnapshot {
 private fun <S : Any, C : Context> FlagDefinition<S, C>.toSerializable(flagKey: String): SerializableFlag {
     return SerializableFlag(
         key = flagKey,
-        type = defaultValue.toValueType(),
-        defaultValue = defaultValue,
+        defaultValue = FlagValue.from(defaultValue),
         salt = salt,
         isActive = isActive,
         rules = bounds.map { it.toSerializable() }
@@ -145,90 +135,65 @@ private fun <S : Any, C : Context> FlagDefinition<S, C>.toSerializable(flagKey: 
  */
 private fun <S : Any, C : Context> TargetedValue<S, C>.toSerializable(): SerializableRule {
     return SerializableRule(
-        value = SerializableRule.SerializableValue(
-            value = value,
-            type = value.toValueType()
-        ),
+        value = FlagValue.from(value),
         rampUp = rule.rollout.value,
         note = rule.note,
         locales = rule.userClientEvaluator.locales.map { it.name }.toSet(),
         platforms = rule.userClientEvaluator.platforms.map { it.name }.toSet(),
-        versionRange = rule.userClientEvaluator.versionRange.toSerializableVersionRange()
+        versionRange = rule.userClientEvaluator.versionRange
     )
 }
 
 /**
- * Converts a VersionRange to a SerializableVersionRange.
+ * Converts a SerializableSnapshot to a Snapshot.
+ * Returns ParseResult for type-safe error handling.
  */
-private fun VersionRange.toSerializableVersionRange(): SerializableVersionRange? {
-    return when (this) {
-        is Unbounded -> SerializableVersionRange(VersionRangeType.UNBOUNDED)
-        is LeftBound -> SerializableVersionRange(
-            type = VersionRangeType.MIN_BOUND,
-            min = min.toSerializableVersion()
-        )
-        is RightBound -> SerializableVersionRange(
-            type = VersionRangeType.MAX_BOUND,
-            max = max.toSerializableVersion()
-        )
-        is FullyBound -> SerializableVersionRange(
-            type = VersionRangeType.MIN_AND_MAX_BOUND,
-            min = min.toSerializableVersion(),
-            max = max.toSerializableVersion()
-        )
-    }
-}
+fun SerializableSnapshot.toSnapshot(): ParseResult<Snapshot> {
+    return try {
+        val flagResults = flags.map { it.toFlagPair() }
 
-/**
- * Converts a Version to a SerializableVersion.
- */
-private fun Version.toSerializableVersion(): SerializableVersion {
-    return SerializableVersion(major, minor, patch)
-}
+        // Check for any failures
+        val failures = flagResults.filterIsInstance<ParseResult.Failure>()
+        if (failures.isNotEmpty()) {
+            return ParseResult.Failure(failures.first().error)
+        }
 
-/**
- * Infers the ValueType from an Any value.
- */
-private fun Any.toValueType(): ValueType {
-    return when (this) {
-        is Boolean -> ValueType.BOOLEAN
-        is String -> ValueType.STRING
-        is Int -> ValueType.INT
-        is Long -> ValueType.LONG
-        is Double -> ValueType.DOUBLE
-        else -> throw IllegalArgumentException("Unsupported value type: ${this::class.simpleName}")
-    }
-}
+        // Extract successful values
+        val flagMap = flagResults
+            .filterIsInstance<ParseResult.Success<Pair<Conditional<*, *>, ContextualFeatureFlag<*, *>>>>()
+            .associate { it.value }
 
-/**
- * Converts a SerializableSnapshot to a SingletonFlagRegistry.Snapshot.
- * @throws IllegalArgumentException if any flag keys are not registered in ConditionalRegistry
- */
-fun SerializableSnapshot.toSnapshot(): Snapshot {
-    val flagMap = flags.associate { serializableFlag ->
-        serializableFlag.toFlagPair()
+        ParseResult.Success(Snapshot(flagMap))
+    } catch (e: Exception) {
+        ParseResult.Failure(ParseError.InvalidSnapshot(e.message ?: "Unknown error"))
     }
-    return Snapshot(flagMap)
 }
 
 /**
  * Converts a SerializableFlag to a Map.Entry of Conditional to ContextualFeatureFlag.
+ * Returns ParseResult for type-safe error handling.
  */
-@Suppress("UNCHECKED_CAST")
-private fun SerializableFlag.toFlagPair(): Pair<Conditional<*, *>, ContextualFeatureFlag<*, *>> {
-    val conditional = ConditionalRegistry.get<Any, Context>(key)
-    val definition = toFlagDefinition(conditional)
-    return conditional to definition
+private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Conditional<*, *>, ContextualFeatureFlag<*, *>>> {
+    return when (val conditionalResult = ConditionalRegistry.get(key)) {
+        is ParseResult.Success -> {
+            val conditional = conditionalResult.value
+            val definition = toFlagDefinition(conditional)
+            ParseResult.Success(conditional to definition)
+        }
+        is ParseResult.Failure -> ParseResult.Failure(conditionalResult.error)
+    }
 }
 
 /**
  * Converts a SerializableFlag to a FlagDefinition.
+ * Type-safe: no casting required thanks to FlagValue sealed class.
  */
 @Suppress("UNCHECKED_CAST")
 private fun <S : Any, C : Context> SerializableFlag.toFlagDefinition(
     conditional: Conditional<S, C>
 ): FlagDefinition<S, C> {
-    val typedDefaultValue = defaultValue.castToType(type) as S
+    // Extract typed value from FlagValue (type-safe extraction)
+    val typedDefaultValue = defaultValue.extractValue<S>()
     val typedBounds = rules.map { it.toTargetedValue<S, C>() }
 
     return FlagDefinition(
@@ -241,18 +206,25 @@ private fun <S : Any, C : Context> SerializableFlag.toFlagDefinition(
 }
 
 /**
+ * Extracts the value from a FlagValue with type safety.
+ * The unchecked cast is safe because FlagValue guarantees type correspondence.
+ */
+@Suppress("UNCHECKED_CAST")
+private fun <T : Any> FlagValue<*>.extractValue(): T = this.value as T
+
+/**
  * Converts a SerializableRule to a TargetedValue.
- * The value type is now contained within the SerializableValue wrapper.
  */
 @Suppress("UNCHECKED_CAST")
 private fun <S : Any, C : Context> SerializableRule.toTargetedValue(): TargetedValue<S, C> {
-    val typedValue = value.value.castToType(value.type) as S
+    val typedValue = value.extractValue<S>()
     val rule = toRule<C>()
     return rule.targetedBy(typedValue)
 }
 
 /**
  * Converts a SerializableRule to a Rule.
+ * Simplified: VersionRange is already the domain type.
  */
 private fun <C : Context> SerializableRule.toRule(): Rule<C> {
     return Rule(
@@ -260,69 +232,8 @@ private fun <C : Context> SerializableRule.toRule(): Rule<C> {
         note = note,
         locales = locales.map { AppLocale.valueOf(it) }.toSet(),
         platforms = platforms.map { Platform.valueOf(it) }.toSet(),
-        versionRange = versionRange?.toVersionRange() ?: Unbounded
+        versionRange = versionRange ?: io.amichne.konditional.rules.versions.Unbounded
     )
-}
-
-/**
- * Converts a SerializableVersionRange to a VersionRange.
- */
-private fun SerializableVersionRange.toVersionRange(): VersionRange {
-    return when (type) {
-        VersionRangeType.UNBOUNDED -> Unbounded
-        VersionRangeType.MIN_BOUND -> LeftBound(
-            min = min?.toVersion() ?: throw IllegalArgumentException("MIN_BOUND requires min version")
-        )
-        VersionRangeType.MAX_BOUND -> RightBound(
-            max = max?.toVersion() ?: throw IllegalArgumentException("MAX_BOUND requires max version")
-        )
-        VersionRangeType.MIN_AND_MAX_BOUND -> FullyBound(
-            min = min?.toVersion() ?: throw IllegalArgumentException("MIN_AND_MAX_BOUND requires min version"),
-            max = max?.toVersion() ?: throw IllegalArgumentException("MIN_AND_MAX_BOUND requires max version")
-        )
-    }
-}
-
-/**
- * Converts a SerializableVersion to a Version.
- */
-private fun SerializableVersion.toVersion(): Version {
-    return Version(major, minor, patch)
-}
-
-/**
- * Casts an Any value to the specified ValueType.
- * Handles numeric conversions between compatible types.
- */
-private fun Any.castToType(valueType: ValueType): Any {
-    return when (valueType) {
-        ValueType.BOOLEAN -> when (this) {
-            is Boolean -> this
-            else -> throw IllegalArgumentException("Cannot cast $this to Boolean")
-        }
-        ValueType.STRING -> when (this) {
-            is String -> this
-            else -> toString()
-        }
-        ValueType.INT -> when (this) {
-            is Int -> this
-            is Number -> this.toInt()
-            is String -> this.toInt()
-            else -> throw IllegalArgumentException("Cannot cast $this to Int")
-        }
-        ValueType.LONG -> when (this) {
-            is Long -> this
-            is Number -> this.toLong()
-            is String -> this.toLong()
-            else -> throw IllegalArgumentException("Cannot cast $this to Long")
-        }
-        ValueType.DOUBLE -> when (this) {
-            is Double -> this
-            is Number -> this.toDouble()
-            is String -> this.toDouble()
-            else -> throw IllegalArgumentException("Cannot cast $this to Double")
-        }
-    }
 }
 
 /**
@@ -338,20 +249,33 @@ fun SnapshotPatch.toSerializable(): SerializablePatch {
 
 /**
  * Converts a SerializablePatch to a SnapshotPatch.
- * @throws IllegalArgumentException if any flag keys are not registered in ConditionalRegistry
+ * Returns ParseResult for type-safe error handling.
  */
-fun SerializablePatch.toPatch(): SnapshotPatch {
-    val flagMap = flags.associate { serializableFlag ->
-        serializableFlag.toFlagPair()
-    }
-    val removeConditionals = removeKeys.mapNotNull { key ->
-        if (ConditionalRegistry.contains(key)) {
-            ConditionalRegistry.get<Any, Context>(key)
-        } else {
-            // Skip keys that aren't registered - they may have been removed
-            null
-        }
-    }.toSet()
+fun SerializablePatch.toPatch(): ParseResult<SnapshotPatch> {
+    return try {
+        val flagResults = flags.map { it.toFlagPair() }
 
-    return SnapshotPatch(flagMap, removeConditionals)
+        // Check for any failures
+        val failures = flagResults.filterIsInstance<ParseResult.Failure>()
+        if (failures.isNotEmpty()) {
+            return ParseResult.Failure(failures.first().error)
+        }
+
+        // Extract successful values
+        val flagMap = flagResults
+            .filterIsInstance<ParseResult.Success<Pair<Conditional<*, *>, ContextualFeatureFlag<*, *>>>>()
+            .associate { it.value }
+
+        // For removeKeys, skip keys that aren't registered (they may have been removed)
+        val removeConditionals = removeKeys.mapNotNull { key ->
+            when (val result = ConditionalRegistry.get(key)) {
+                is ParseResult.Success -> result.value
+                is ParseResult.Failure -> null  // Skip unregistered keys
+            }
+        }.toSet()
+
+        ParseResult.Success(SnapshotPatch(flagMap, removeConditionals))
+    } catch (e: Exception) {
+        ParseResult.Failure(ParseError.InvalidSnapshot(e.message ?: "Unknown error"))
+    }
 }
