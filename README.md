@@ -16,7 +16,7 @@ Konditional is a lightweight feature flag framework that puts type safety and de
 - **Stable bucketing**: Users get consistent experiences across sessions using SHA-256 based hashing
 - **Independent flags**: Each flag has its own bucketing space - no cross-contamination
 - **Predictable rollouts**: Gradual rollouts (0-100%) with deterministic user assignment
-- **Thread-safe**: Lock-free reads with atomic snapshot updates
+- **Thread-safe**: Lock-free reads with atomic konfig updates
 
 ### Flexible & Extensible
 - **Custom contexts**: Define your own context with organization IDs, user roles, experiments, or any domain data
@@ -37,10 +37,6 @@ Konditional is a lightweight feature flag framework that puts type safety and de
 enum class Features(override val key: String) : Conditional<Boolean, Context> {
     NEW_CHECKOUT("new_checkout"),
     DARK_MODE("dark_mode"),
-    ;
-
-    override fun with(build: FlagBuilder<Boolean, Context>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 
 // Configure with a type-safe DSL
@@ -87,10 +83,6 @@ Use any type that makes sense for your domain:
 // String configuration
 enum class ApiConfig(override val key: String) : Conditional<String, Context> {
     ENDPOINT("api_endpoint"),
-    ;
-
-    override fun with(build: FlagBuilder<String, Context>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 
 config {
@@ -111,10 +103,6 @@ data class ThemeConfig(
 
 enum class AppTheme(override val key: String) : Conditional<ThemeConfig, Context> {
     THEME("app_theme"),
-    ;
-
-    override fun with(build: FlagBuilder<ThemeConfig, Context>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 
 config {
@@ -149,10 +137,6 @@ enum class EnterpriseFeatures(
 ) : Conditional<Boolean, EnterpriseContext> {
     ADVANCED_ANALYTICS("advanced_analytics"),
     BULK_EXPORT("bulk_export"),
-    ;
-
-    override fun with(build: FlagBuilder<Boolean, EnterpriseContext>.() -> Unit) =
-        update(FlagBuilder(this).apply(build).build())
 }
 ```
 
@@ -212,14 +196,6 @@ See [Examples](docs/examples.md) for complete working examples.
 - **Type safety first**: No stringly-typed APIs or runtime type errors
 - **Deterministic by default**: Same inputs always produce same outputs
 - **Context agnostic**: You define what information matters for your rules
-- **Zero dependencies**: Pure Kotlin, easy to integrate anywhere
+- **Minimal dependencies**: (nearly) Pure Kotlin, easy to integrate anywhere
 - **Thread-safe**: Safe to use from multiple threads concurrently
 - **Extensible**: Add your own context types, value types, and rule logic
-
-## License
-
-[License information]
-
-## Contributing
-
-[Contributing guidelines]

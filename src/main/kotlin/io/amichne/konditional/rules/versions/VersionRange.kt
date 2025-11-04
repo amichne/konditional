@@ -2,7 +2,7 @@ package io.amichne.konditional.rules.versions
 
 import io.amichne.konditional.context.Version
 
-sealed class VersionRange protected constructor(
+sealed class VersionRange(
     val type: Type,
     open val min: Version? = null,
     open val max: Version? = null,

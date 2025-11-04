@@ -1,14 +1,16 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.builders.ConfigBuilder.Companion.config
-import io.amichne.konditional.builders.FlagBuilder
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Flags.evaluate
+import io.amichne.konditional.context.evaluate
+import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.instance.Konfig
+import io.amichne.konditional.core.internal.SingletonFlagRegistry
 import io.amichne.konditional.rules.Rule
-import io.amichne.konditional.rules.TargetedValue.Companion.targetedBy
+import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.versions.Unbounded
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -28,30 +30,18 @@ class FlagEntryTypeSafetyTest {
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
 
-    enum class BoolFlags(override val key: String) : Conditional<Boolean, Context> {
+    enum class BoolFlags(override val key: String) : Conditional<Boolean, Context> by Conditional(key) {
         FEATURE_A("feature_a"),
         FEATURE_B("feature_b"),
-        ;
-
-        override fun with(build: FlagBuilder<Boolean, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
-    enum class StringFlags(override val key: String) : Conditional<String, Context> {
+    enum class StringFlags(override val key: String) : Conditional<String, Context> by Conditional(key) {
         CONFIG_A("config_a"),
         CONFIG_B("config_b"),
-        ;
-
-        override fun with(build: FlagBuilder<String, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
-    enum class IntFlags(override val key: String) : Conditional<Int, Context> {
+    enum class IntFlags(override val key: String) : Conditional<Int, Context> by Conditional(key) {
         TIMEOUT("timeout"),
-        ;
-
-        override fun with(build: FlagBuilder<Int, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
     @Test
@@ -65,7 +55,7 @@ class FlagEntryTypeSafetyTest {
 
         val flag = FlagDefinition(
             conditional = BoolFlags.FEATURE_A,
-            bounds = listOf(rule.targetedBy(true)),
+            values = listOf(rule.targetedBy(true)),
             defaultValue = false,
         )
 
@@ -83,9 +73,9 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded,
         )
 
-        val boolFlag: ContextualFeatureFlag<Boolean, Context> = FlagDefinition(
+        val boolFlag: FeatureFlag<Boolean, Context> = FlagDefinition(
             conditional = BoolFlags.FEATURE_A,
-            bounds = listOf(rule.targetedBy(true)),
+            values = listOf(rule.targetedBy(true)),
             defaultValue = false,
         )
 
@@ -118,21 +108,21 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded,
         )
 
-        val boolFlag: ContextualFeatureFlag<Boolean, Context> = FlagDefinition(
+        val boolFlag: FeatureFlag<Boolean, Context> = FlagDefinition(
             conditional = BoolFlags.FEATURE_A,
-            bounds = listOf(boolRule.targetedBy(true)),
+            values = listOf(boolRule.targetedBy(true)),
             defaultValue = false,
         )
 
-        val stringFlag: ContextualFeatureFlag<String, Context> = FlagDefinition(
+        val stringFlag: FeatureFlag<String, Context> = FlagDefinition(
             conditional = StringFlags.CONFIG_A,
-            bounds = listOf(stringRule.targetedBy("value")),
+            values = listOf(stringRule.targetedBy("value")),
             defaultValue = "default",
         )
 
-        val intFlag: ContextualFeatureFlag<Int, Context> = FlagDefinition(
+        val intFlag: FeatureFlag<Int, Context> = FlagDefinition(
             conditional = IntFlags.TIMEOUT,
-            bounds = listOf(intRule.targetedBy(30)),
+            values = listOf(intRule.targetedBy(30)),
             defaultValue = 10,
         )
 
@@ -169,24 +159,24 @@ class FlagEntryTypeSafetyTest {
 
         val boolFlag = FlagDefinition(
             conditional = BoolFlags.FEATURE_A,
-            bounds = listOf(boolRule.targetedBy(true)),
+            values = listOf(boolRule.targetedBy(true)),
             defaultValue = false,
         )
 
         val stringFlag = FlagDefinition(
             conditional = StringFlags.CONFIG_A,
-            bounds = listOf(stringRule.targetedBy("test")),
+            values = listOf(stringRule.targetedBy("test")),
             defaultValue = "default",
         )
 
-        val snapshot = Flags.Snapshot(
+        val konfig = Konfig(
             mapOf(
                 BoolFlags.FEATURE_A to boolFlag,
                 StringFlags.CONFIG_A to stringFlag,
             )
         )
 
-        Flags.load(snapshot)
+        SingletonFlagRegistry.load(konfig)
 
         val context = ctx("33333333333333333333333333333333")
         val boolResult = context.evaluate(BoolFlags.FEATURE_A)
@@ -267,7 +257,7 @@ class FlagEntryTypeSafetyTest {
 
         val context = ctx("77777777777777777777777777777777")
 
-        // The evaluate() method internally retrieves ContextualFeatureFlag from the map
+        // The evaluate() method internally retrieves FeatureFlag from the map
         // and casts it, maintaining type safety
         val boolResult = context.evaluate(BoolFlags.FEATURE_A)
         val stringResult = context.evaluate(StringFlags.CONFIG_A)
@@ -287,10 +277,7 @@ class FlagEntryTypeSafetyTest {
             val customField: String,
         ) : Context
 
-        data class CustomIntFlag(override val key: String = "custom_int") : Conditional<Int, CustomContext> {
-            override fun with(build: FlagBuilder<Int, CustomContext>.() -> Unit) =
-                update(FlagBuilder(this).apply(build).build())
-        }
+        data class CustomIntFlag(override val key: String = "custom_int") : Conditional<Int, CustomContext> by Conditional(key)
 
         val customIntFlag = CustomIntFlag()
 
@@ -301,9 +288,9 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded,
         )
 
-        val flag: ContextualFeatureFlag<Int, CustomContext> = FlagDefinition(
+        val flag: FeatureFlag<Int, CustomContext> = FlagDefinition(
             conditional = customIntFlag,
-            bounds = listOf(rule.targetedBy(42)),
+            values = listOf(rule.targetedBy(42)),
             defaultValue = 0,
         )
 

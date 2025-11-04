@@ -1,29 +1,20 @@
 package io.amichne.konditional.serialization.models
 
 import com.squareup.moshi.JsonClass
-import io.amichne.konditional.core.ValueType
+import io.amichne.konditional.rules.versions.VersionRange
 
 /**
- * Serializable representation of a TargetedValue (rule + value pair).
+ * Serializable representation of a ConditionalValue (rule + value pair).
+ *
+ * Now uses type-safe FlagValue instead of type-erased SerializableValue,
+ * and uses VersionRange directly (serialized via custom Moshi adapter).
  */
 @JsonClass(generateAdapter = true)
 data class SerializableRule(
-    val value: SerializableValue,
+    val value: FlagValue<*>,
     val rampUp: Double = 100.0,
     val note: String? = null,
     val locales: Set<String> = emptySet(),
     val platforms: Set<String> = emptySet(),
-    val versionRange: SerializableVersionRange? = null,
-) {
-    /**
-     * Serializable value containter, long term plan to use something like polymorphic enumerator/enumerated to solve
-     *
-     * @property value
-     * @property type
-     * @constructor Create empty Serializable value
-     */
-    data class SerializableValue(
-        val value: Any,
-        val type: ValueType,
-    )
-}
+    val versionRange: VersionRange? = null,
+)

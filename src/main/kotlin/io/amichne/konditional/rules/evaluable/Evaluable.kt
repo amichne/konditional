@@ -10,14 +10,14 @@ import io.amichne.konditional.context.Context
  * can be composed together to create complex rule systems.
  *
  * The design enables composition through:
- * - Multiple Evaluable instances can be combined (e.g., [io.amichne.konditional.rules.Rule] composes [UserClientEvaluator] with extension logic)
+ * - Multiple Evaluable instances can be combined (e.g., [io.amichne.konditional.rules.Rule] composes [BaseEvaluable] with extension logic)
  * - Specificity values can be summed to determine rule precedence
  * - Matching logic can be chained (all must match for composition to match)
  *
  * @param C The context type that this evaluable evaluates against
  *
  * @see io.amichne.konditional.rules.Rule
- * @see UserClientEvaluator
+ * @see BaseEvaluable
  */
 abstract class Evaluable<C : Context> {
     /**
@@ -29,7 +29,7 @@ abstract class Evaluable<C : Context> {
      * @param context The context to evaluate against
      * @return true if the context matches this evaluable's criteria, false otherwise
      */
-    internal open fun matches(context: C): Boolean = true
+    open fun matches(context: C): Boolean = true
 
     /**
      * Calculates the specificity of this evaluable.
@@ -42,5 +42,5 @@ abstract class Evaluable<C : Context> {
      *
      * @return The specificity value (higher is more specific)
      */
-    internal open fun specificity(): Int = 0
+    open fun specificity(): Int = 0
 }

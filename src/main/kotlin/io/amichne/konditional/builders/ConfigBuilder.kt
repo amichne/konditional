@@ -20,12 +20,14 @@ package io.amichne.konditional.builders
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Conditional
+import io.amichne.konditional.core.FeatureFlag
 import io.amichne.konditional.core.FeatureFlagDsl
-import io.amichne.konditional.core.Flags
+import io.amichne.konditional.core.FlagRegistry
+import io.amichne.konditional.core.instance.Konfig
 
 @FeatureFlagDsl
 class ConfigBuilder private constructor() {
-    private val flags = LinkedHashMap<Conditional<*, *>, io.amichne.konditional.core.ContextualFeatureFlag<*, *>>()
+    private val flags = LinkedHashMap<Conditional<*, *>, FeatureFlag<*, *>>()
 
     /**
      * Define a flag using infix syntax:
@@ -37,24 +39,22 @@ class ConfigBuilder private constructor() {
      * ```
      */
     infix fun <S : Any, C : Context> Conditional<S, C>.with(build: FlagBuilder<S, C>.() -> Unit) {
-        require(this !in flags) { "Duplicate flag $this" }
-        flags[this] = FlagBuilder(this).apply<FlagBuilder<S, C>>(build).build()
+        require(this !in this@ConfigBuilder.flags) { "Duplicate flag $this" }
+        this@ConfigBuilder.flags[this] = FlagBuilder(this).apply<FlagBuilder<S, C>>(build).build()
     }
 
-    internal fun build(): Flags.Snapshot = Flags.Snapshot(flags.toMap())
+    fun build(): Konfig = Konfig(flags.toMap())
 
     @FeatureFlagDsl
     companion object {
-        fun config(fn: ConfigBuilder.() -> Unit): Unit =
-            ConfigBuilder().apply(fn).build().let {
-                Flags.load(it)
-            }
+        fun config(registry: FlagRegistry = FlagRegistry, fn: ConfigBuilder.() -> Unit): Unit =
+            ConfigBuilder().apply(fn).build().let { registry.load(it) }
 
         /**
-         * Builds a Snapshot without loading it into Flags.
+         * Builds a Konfig without loading it into SingletonFlagRegistry.
          * Useful for testing and external snapshot management.
          */
-        fun buildSnapshot(fn: ConfigBuilder.() -> Unit): Flags.Snapshot =
+        fun buildSnapshot(fn: ConfigBuilder.() -> Unit): Konfig =
             ConfigBuilder().apply(fn).build()
     }
 }

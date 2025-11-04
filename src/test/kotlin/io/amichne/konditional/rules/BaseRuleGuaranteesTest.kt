@@ -5,7 +5,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.StableId
+import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.versions.LeftBound
 import kotlin.test.Test
@@ -193,7 +193,7 @@ class RuleGuaranteesTest {
         assertEquals(2, ruleWithLocaleAndTier.specificity())
 
         val ruleWithAllAttributes = ruleWithLocaleAndTier.copy(
-            userClientEvaluator = ruleWithLocaleAndTier.userClientEvaluator.copy(
+            baseEvaluable = ruleWithLocaleAndTier.baseEvaluable.copy(
                 locales = setOf(AppLocale.EN_US),
                 platforms = setOf(Platform.ANDROID),
             )

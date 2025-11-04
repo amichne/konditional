@@ -1,13 +1,12 @@
 package io.amichne.konditional.context
 
 import io.amichne.konditional.builders.ConfigBuilder.Companion.config
-import io.amichne.konditional.builders.FlagBuilder
 import io.amichne.konditional.core.Conditional
-import io.amichne.konditional.core.Flags.evaluate
-import io.amichne.konditional.core.StableId
+import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.fakes.FakeRegistry
 import io.amichne.konditional.rules.Rule
+import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.versions.FullyBound
-import io.amichne.konditional.rules.versions.Unbounded
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -31,11 +30,11 @@ class ContextPolymorphismTest {
     ) : Context
 
     enum class SubscriptionTier {
-        FREE, BASIC, PREMIUM, ENTERPRISE
+        BASIC, PREMIUM, ENTERPRISE
     }
 
     enum class UserRole {
-        VIEWER, EDITOR, ADMIN, OWNER
+        EDITOR, ADMIN, OWNER
     }
 
     // Custom context for A/B testing
@@ -48,45 +47,32 @@ class ContextPolymorphismTest {
         val sessionId: String,
     ) : Context
 
-    // Flags using EnterpriseContext
+    // SingletonFlagRegistry using EnterpriseContext
     enum class EnterpriseFlags(
         override val key: String,
-    ) : Conditional<Boolean, EnterpriseContext> {
+    ) : Conditional<Boolean, EnterpriseContext> by Conditional(key) {
         ADVANCED_ANALYTICS("advanced_analytics"),
         BULK_EXPORT("bulk_export"),
         CUSTOM_BRANDING("custom_branding"),
         API_ACCESS("api_access"),
-        ;
-
-        override fun with(build: FlagBuilder<Boolean, EnterpriseContext>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
-    // Flags using ExperimentContext
+    // SingletonFlagRegistry using ExperimentContext
     enum class ExperimentFlags(
         override val key: String,
-    ) : Conditional<String, ExperimentContext> {
+    ) : Conditional<String, ExperimentContext> by Conditional(key) {
         HOMEPAGE_VARIANT("homepage_variant"),
-        CHECKOUT_FLOW("checkout_flow"),
         ONBOARDING_STYLE("onboarding_style"),
-        ;
-
-        override fun with(build: FlagBuilder<String, ExperimentContext>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
     // Custom rule that extends Rule for EnterpriseContext
     data class EnterpriseRule(
-        val Rule: Rule<EnterpriseContext>,
         val requiredTier: SubscriptionTier? = null,
         val requiredRole: UserRole? = null,
-    ) {
-        fun matches(context: EnterpriseContext): Boolean {
-            if (!Rule.matches(context)) return false
-            if (requiredTier != null && context.subscriptionTier.ordinal < requiredTier.ordinal) return false
-            if (requiredRole != null && context.userRole.ordinal < requiredRole.ordinal) return false
-            return true
-        }
+    ) : Evaluable<EnterpriseContext>() {
+        override fun matches(context: EnterpriseContext): Boolean =
+            (requiredTier == null || context.subscriptionTier >= requiredTier) &&
+                (requiredRole == null || context.userRole >= requiredRole)
     }
 
     @Test
@@ -197,47 +183,10 @@ class ContextPolymorphismTest {
     }
 
     @Test
-    fun `Given custom context, When evaluating all flags, Then returns all flags for that context`() {
-        config {
-            EnterpriseFlags.ADVANCED_ANALYTICS with {
-                default(false)
-            }
-            EnterpriseFlags.BULK_EXPORT with {
-                default(true)
-            }
-            EnterpriseFlags.CUSTOM_BRANDING with {
-                default(false)
-                rule {
-                    platforms(Platform.WEB)
-                } implies true
-            }
-        }
-
-        val ctx = EnterpriseContext(
-            locale = AppLocale.EN_US,
-            platform = Platform.WEB,
-            appVersion = Version(1, 0, 0),
-            stableId = StableId.of("66666666666666666666666666666666"),
-            organizationId = "org-789",
-            subscriptionTier = SubscriptionTier.PREMIUM,
-            userRole = UserRole.ADMIN,
-        )
-
-        val allFlags = ctx.evaluate()
-
-        assertEquals(3, allFlags.size)
-        assertTrue(allFlags.containsKey(EnterpriseFlags.ADVANCED_ANALYTICS))
-        assertTrue(allFlags.containsKey(EnterpriseFlags.BULK_EXPORT))
-        assertTrue(allFlags.containsKey(EnterpriseFlags.CUSTOM_BRANDING))
-    }
-
-    @Test
     fun `Given base Context and custom Context, When both used, Then type safety is maintained`() {
         // Define flag in scope
-        data class StandardFlagA(override val key: String = "feature_a") : Conditional<Boolean, Context> {
-            override fun with(build: FlagBuilder<Boolean, Context>.() -> Unit) =
-                update(FlagBuilder(this).apply(build).build())
-        }
+        data class StandardFlagA(override val key: String = "feature_a") :
+            Conditional<Boolean, Context> by Conditional(key)
 
         val standardFlagA = StandardFlagA()
 
@@ -314,16 +263,20 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given custom EnterpriseRule, When matching with business logic, Then custom properties are enforced`() {
-        val enterpriseOnlyRule = EnterpriseRule(
-            Rule = Rule(
-                rollout = Rollout.MAX,
-                locales = emptySet(),
-                platforms = setOf(Platform.WEB),
-                versionRange = Unbounded,
-            ),
-            requiredTier = SubscriptionTier.ENTERPRISE,
-            requiredRole = UserRole.ADMIN,
-        )
+        val registry = FakeRegistry()
+        config(registry) {
+            EnterpriseFlags.API_ACCESS with {
+                default(false)
+                rule {
+                    platforms(Platform.WEB)
+                    rollout = Rollout.MAX
+
+                    extension {
+                        EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN)
+                    }
+                } implies true
+            }
+        }
 
         val enterpriseAdmin = EnterpriseContext(
             locale = AppLocale.EN_US,
@@ -345,7 +298,7 @@ class ContextPolymorphismTest {
             userRole = UserRole.EDITOR,
         )
 
-        assertTrue(enterpriseOnlyRule.matches(enterpriseAdmin))
-        assertFalse(enterpriseOnlyRule.matches(premiumEditor))
+        assertFalse(premiumEditor.evaluate(EnterpriseFlags.API_ACCESS, registry = registry))
+        assertTrue(enterpriseAdmin.evaluate(EnterpriseFlags.API_ACCESS, registry = registry))
     }
 }

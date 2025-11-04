@@ -28,7 +28,7 @@ ConditionalRegistry.register(MyFlags.SOME_FLAG)
 ### 2. Create a Configuration
 
 ```kotlin
-val snapshot = ConfigBuilder.buildSnapshot {
+val konfig = ConfigBuilder.buildSnapshot {
     SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
         default(false)
         rule {
@@ -44,7 +44,7 @@ val snapshot = ConfigBuilder.buildSnapshot {
 
 ```kotlin
 val serializer = SnapshotSerializer.default
-val json = serializer.serialize(snapshot)
+val json = serializer.serialize(konfig)
 
 // Save to file
 File("config.json").writeText(json)
@@ -55,10 +55,10 @@ File("config.json").writeText(json)
 ```kotlin
 // Load from file
 val json = File("config.json").readText()
-val snapshot = serializer.deserialize(json)
+val konfig = serializer.deserialize(json)
 
 // Load into Flags
-Flags.load(snapshot)
+Flags.load(konfig)
 ```
 
 ## JSON Schema
@@ -147,7 +147,7 @@ val patch = SerializablePatch(
     removeKeys = listOf("old_flag_to_remove")
 )
 
-val updatedSnapshot = serializer.applyPatch(currentSnapshot, patch)
+val updatedSnapshot = serializer.applyPatch(currentKonfig, patch)
 ```
 
 Or from JSON:
@@ -173,7 +173,7 @@ val patchJson = """
 }
 """
 
-val updatedSnapshot = serializer.applyPatchJson(currentSnapshot, patchJson)
+val updatedSnapshot = serializer.applyPatchJson(currentKonfig, patchJson)
 ```
 
 ## Supported Value Types
@@ -210,7 +210,7 @@ Run the tests:
 ConditionalRegistry.registerEnum<SampleFeatureEnum>()
 
 // 2. Create configuration
-val snapshot = ConfigBuilder.buildSnapshot {
+val konfig = ConfigBuilder.buildSnapshot {
     SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
         default(false)
         rule {
@@ -223,7 +223,7 @@ val snapshot = ConfigBuilder.buildSnapshot {
 
 // 3. Serialize to JSON
 val serializer = SnapshotSerializer.default
-val json = serializer.serialize(snapshot)
+val json = serializer.serialize(konfig)
 File("config.json").writeText(json)
 
 // 4. Load from JSON (e.g., in another part of the app)
@@ -255,10 +255,10 @@ class SnapshotSerializer {
         val default: SnapshotSerializer
     }
 
-    // Serialize a snapshot to JSON
-    fun serialize(snapshot: Flags.Snapshot): String
+    // Serialize a konfig to JSON
+    fun serialize(konfig: Flags.Snapshot): String
 
-    // Deserialize JSON to a snapshot
+    // Deserialize JSON to a konfig
     fun deserialize(json: String): Flags.Snapshot
 
     // Serialize a patch to JSON
@@ -267,11 +267,11 @@ class SnapshotSerializer {
     // Deserialize JSON to a patch
     fun deserializePatch(json: String): SerializablePatch
 
-    // Apply a patch to a snapshot
-    fun applyPatch(currentSnapshot: Flags.Snapshot, patch: SerializablePatch): Flags.Snapshot
+    // Apply a patch to a konfig
+    fun applyPatch(currentKonfig: Flags.Snapshot, patch: SerializablePatch): Flags.Snapshot
 
     // Apply a patch from JSON
-    fun applyPatchJson(currentSnapshot: Flags.Snapshot, patchJson: String): Flags.Snapshot
+    fun applyPatchJson(currentKonfig: Flags.Snapshot, patchJson: String): Flags.Snapshot
 }
 ```
 
@@ -296,10 +296,10 @@ object ConditionalRegistry {
 ### Extension Functions
 
 ```kotlin
-// Serialize a snapshot directly
+// Serialize a konfig directly
 fun Flags.Snapshot.toJson(serializer: SnapshotSerializer = SnapshotSerializer.default): String
 
-// Parse JSON to a snapshot
+// Parse JSON to a konfig
 object SnapshotJsonParser {
     fun fromJson(json: String, serializer: SnapshotSerializer = SnapshotSerializer.default): Flags.Snapshot
 }

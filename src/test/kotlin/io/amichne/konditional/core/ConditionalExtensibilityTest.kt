@@ -1,12 +1,12 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.builders.ConfigBuilder.Companion.config
-import io.amichne.konditional.builders.FlagBuilder
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Flags.evaluate
+import io.amichne.konditional.context.evaluate
+import io.amichne.konditional.core.id.StableId
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -34,13 +34,8 @@ class ConditionalExtensibilityTest {
 
     enum class ApiConfigFlags(
         override val key: String,
-    ) : Conditional<ApiConfig, Context> {
-        PRIMARY_API("primary_api"),
-        BACKUP_API("backup_api"),
-        ;
-
-        override fun with(build: FlagBuilder<ApiConfig, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
+    ) : Conditional<ApiConfig, Context> by Conditional(key) {
+        PRIMARY_API("primary_api");
     }
 
     // Custom value type: Theme configuration
@@ -53,62 +48,40 @@ class ConditionalExtensibilityTest {
 
     enum class ThemeFlags(
         override val key: String,
-    ) : Conditional<ThemeConfig, Context> {
+    ) : Conditional<ThemeConfig, Context> by Conditional(key) {
         APP_THEME("app_theme"),
-        ;
-
-        override fun with(build: FlagBuilder<ThemeConfig, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
     // Custom value type: List of strings
     enum class ListFlags(
         override val key: String,
-    ) : Conditional<List<String>, Context> {
-        ENABLED_FEATURES("enabled_features"),
-        BETA_MODULES("beta_modules"),
-        ;
-
-        override fun with(build: FlagBuilder<List<String>, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
+    ) : Conditional<List<String>, Context> by Conditional(key) {
+        ENABLED_FEATURES("enabled_features");
     }
 
     // Custom value type: Integer
     enum class IntFlags(
         override val key: String,
-    ) : Conditional<Int, Context> {
-        MAX_CONNECTIONS("max_connections"),
-        CACHE_SIZE_MB("cache_size_mb"),
-        ;
-
-        override fun with(build: FlagBuilder<Int, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
+    ) : Conditional<Int, Context> by Conditional(key) {
+        MAX_CONNECTIONS("max_connections");
     }
 
     // Custom value type: Enum
     enum class LogLevel {
-        DEBUG, INFO, WARN, ERROR
+        DEBUG, INFO, ERROR
     }
 
     enum class LogConfigFlags(
         override val key: String,
-    ) : Conditional<LogLevel, Context> {
+    ) : Conditional<LogLevel, Context> by Conditional(key) {
         APP_LOG_LEVEL("app_log_level"),
-        ;
-
-        override fun with(build: FlagBuilder<LogLevel, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
     // Custom value type: Map
     enum class MapFlags(
         override val key: String,
-    ) : Conditional<Map<String, String>, Context> {
+    ) : Conditional<Map<String, String>, Context> by Conditional(key) {
         FEATURE_TOGGLES("feature_toggles"),
-        ;
-
-        override fun with(build: FlagBuilder<Map<String, String>, Context>.() -> Unit) =
-            update(FlagBuilder(this).apply(build).build())
     }
 
     @Test
@@ -351,10 +324,7 @@ class ConditionalExtensibilityTest {
             val level3: ApiConfig,
         )
 
-        data class DeepFlag(override val key: String = "nested_config") : Conditional<DeepConfig, Context> {
-            override fun with(build: FlagBuilder<DeepConfig, Context>.() -> Unit) =
-                update(FlagBuilder(this).apply(build).build())
-        }
+        data class DeepFlag(override val key: String = "nested_config") : Conditional<DeepConfig, Context> by Conditional(key)
 
         val nestedConfigFlag = DeepFlag()
 
