@@ -6,17 +6,13 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Learn how to update feature flag configurations dynamically using patches">
+        <meta name="description" content="Learn how to update feature flag configurations efficiently using SnapshotPatch">
       
       
       
-        <link rel="canonical" href="https://konditional.docs/advanced/patch-updates/">
+        <link rel="canonical" href="https://amichne.github.io/konditional/advanced/patch-updates/">
       
       
-        <link rel="prev" href="../../serialization/steps/step-08-production/">
-      
-      
-        <link rel="next" href="../custom-types/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -300,17 +296,15 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../architecture/" class="md-tabs__link">
           
   
   
-  Advanced
+  Core Concepts
 
         </a>
       </li>
@@ -867,36 +861,33 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
-    Advanced
+    Core Concepts
     
   </span>
   
@@ -904,10 +895,10 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
-            Advanced
+            Core Concepts
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -915,275 +906,15 @@
                 
   
   
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Patch Updates
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    Patch Updates
-    
-  </span>
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#what-is-a-patch" class="md-nav__link">
-    <span class="md-ellipsis">
-      What is a Patch?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#types-of-changes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Types of Changes
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Types of Changes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#update-flag-value" class="md-nav__link">
-    <span class="md-ellipsis">
-      Update Flag Value
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#add-rule" class="md-nav__link">
-    <span class="md-ellipsis">
-      Add Rule
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#remove-rule" class="md-nav__link">
-    <span class="md-ellipsis">
-      Remove Rule
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#toggle-flag" class="md-nav__link">
-    <span class="md-ellipsis">
-      Toggle Flag
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#applying-patches" class="md-nav__link">
-    <span class="md-ellipsis">
-      Applying Patches
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Applying Patches">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#using-snapshotserializer" class="md-nav__link">
-    <span class="md-ellipsis">
-      Using SnapshotSerializer
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#patch-validation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Patch Validation
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#best-practices" class="md-nav__link">
-    <span class="md-ellipsis">
-      Best Practices
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Best Practices">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#version-your-patches" class="md-nav__link">
-    <span class="md-ellipsis">
-      Version Your Patches
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#test-patches-locally" class="md-nav__link">
-    <span class="md-ellipsis">
-      Test Patches Locally
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#atomic-application" class="md-nav__link">
-    <span class="md-ellipsis">
-      Atomic Application
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#keep-patch-history" class="md-nav__link">
-    <span class="md-ellipsis">
-      Keep Patch History
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#example-remote-configuration-updates" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example: Remote Configuration Updates
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#common-use-cases" class="md-nav__link">
-    <span class="md-ellipsis">
-      Common Use Cases
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Common Use Cases">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#ab-test-updates" class="md-nav__link">
-    <span class="md-ellipsis">
-      A/B Test Updates
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#emergency-disable" class="md-nav__link">
-    <span class="md-ellipsis">
-      Emergency Disable
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      Next Steps
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
   
   
     <li class="md-nav__item">
-      <a href="../custom-types/" class="md-nav__link">
+      <a href="../architecture/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Custom Types
+    Architecture
     
   </span>
   
@@ -1201,12 +932,35 @@
   
   
     <li class="md-nav__item">
-      <a href="../migration/" class="md-nav__link">
+      <a href="../conditional-types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Migration
+    Conditional Value Types
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../context-polymorphism/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Context Polymorphism
     
   </span>
   
@@ -1251,55 +1005,37 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what-is-a-patch" class="md-nav__link">
+  <a href="#what-is-a-snapshotpatch" class="md-nav__link">
     <span class="md-ellipsis">
-      What is a Patch?
+      What is a SnapshotPatch?
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#types-of-changes" class="md-nav__link">
+  <a href="#creating-patches" class="md-nav__link">
     <span class="md-ellipsis">
-      Types of Changes
+      Creating Patches
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Types of Changes">
+    <nav class="md-nav" aria-label="Creating Patches">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#update-flag-value" class="md-nav__link">
+  <a href="#using-the-builder-dsl" class="md-nav__link">
     <span class="md-ellipsis">
-      Update Flag Value
+      Using the Builder DSL
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#add-rule" class="md-nav__link">
+  <a href="#empty-patch" class="md-nav__link">
     <span class="md-ellipsis">
-      Add Rule
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#remove-rule" class="md-nav__link">
-    <span class="md-ellipsis">
-      Remove Rule
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#toggle-flag" class="md-nav__link">
-    <span class="md-ellipsis">
-      Toggle Flag
+      Empty Patch
     </span>
   </a>
   
@@ -1321,18 +1057,69 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#using-snapshotserializer" class="md-nav__link">
+  <a href="#to-singletonflagregistry" class="md-nav__link">
     <span class="md-ellipsis">
-      Using SnapshotSerializer
+      To SingletonFlagRegistry
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#patch-validation" class="md-nav__link">
+  <a href="#to-custom-registry" class="md-nav__link">
     <span class="md-ellipsis">
-      Patch Validation
+      To Custom Registry
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#to-a-snapshot" class="md-nav__link">
+    <span class="md-ellipsis">
+      To a Snapshot
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#patch-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Patch Structure
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#serialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Serialization
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Serialization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#serialize-a-patch" class="md-nav__link">
+    <span class="md-ellipsis">
+      Serialize a Patch
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deserialize-a-patch" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deserialize a Patch
     </span>
   </a>
   
@@ -1354,36 +1141,36 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#version-your-patches" class="md-nav__link">
+  <a href="#1-atomic-updates" class="md-nav__link">
     <span class="md-ellipsis">
-      Version Your Patches
+      1. Atomic Updates
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#test-patches-locally" class="md-nav__link">
+  <a href="#2-version-control" class="md-nav__link">
     <span class="md-ellipsis">
-      Test Patches Locally
+      2. Version Control
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#atomic-application" class="md-nav__link">
+  <a href="#3-test-patches-before-production" class="md-nav__link">
     <span class="md-ellipsis">
-      Atomic Application
+      3. Test Patches Before Production
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#keep-patch-history" class="md-nav__link">
+  <a href="#4-keep-patches-small" class="md-nav__link">
     <span class="md-ellipsis">
-      Keep Patch History
+      4. Keep Patches Small
     </span>
   </a>
   
@@ -1391,15 +1178,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#example-remote-configuration-updates" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example: Remote Configuration Updates
-    </span>
-  </a>
   
 </li>
       
@@ -1414,18 +1192,36 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#ab-test-updates" class="md-nav__link">
+  <a href="#gradual-rollout-adjustment" class="md-nav__link">
     <span class="md-ellipsis">
-      A/B Test Updates
+      Gradual Rollout Adjustment
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#emergency-disable" class="md-nav__link">
+  <a href="#emergency-kill-switch" class="md-nav__link">
     <span class="md-ellipsis">
-      Emergency Disable
+      Emergency Kill Switch
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remote-configuration-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Remote Configuration Updates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ab-test-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      A/B Test Lifecycle
     </span>
   </a>
   
@@ -1433,6 +1229,24 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integration-with-serialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integration with Serialization
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#thread-safety" class="md-nav__link">
+    <span class="md-ellipsis">
+      Thread Safety
+    </span>
+  </a>
   
 </li>
       
@@ -1465,196 +1279,320 @@
 
 
 <h1 id="patch-updates">Patch Updates<a class="headerlink" href="#patch-updates" title="Permanent link">&para;</a></h1>
-<p>Patch updates allow you to modify feature flag configurations dynamically without replacing the entire configuration. This is useful for:</p>
+<p>Patch updates allow you to modify feature flag configurations incrementally without replacing the entire konfig. This is useful for:</p>
 <ul>
 <li><strong>Incremental updates</strong>: Apply small changes without re-deploying entire configurations</li>
 <li><strong>Real-time adjustments</strong>: Update specific flags in production</li>
 <li><strong>Efficient syncing</strong>: Minimize bandwidth by sending only changes</li>
 <li><strong>Version control</strong>: Track configuration changes over time</li>
 </ul>
-<h2 id="what-is-a-patch">What is a Patch?<a class="headerlink" href="#what-is-a-patch" title="Permanent link">&para;</a></h2>
-<p>A patch is a set of targeted changes to your flag configuration. Instead of sending a complete snapshot, you send only the differences:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.serialization.models.*</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">patch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SerializablePatch</span><span class="p">(</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SerializableVersion</span><span class="p">(</span><span class="s">&quot;1.2.0&quot;</span><span class="p">),</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="n">changes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">        </span><span class="n">FlagChange</span><span class="p">.</span><span class="na">Update</span><span class="p">(</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">            </span><span class="n">flagId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;my-feature&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">            </span><span class="n">newValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">        </span><span class="p">),</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">        </span><span class="n">FlagChange</span><span class="p">.</span><span class="na">AddRule</span><span class="p">(</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">            </span><span class="n">flagId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;beta-feature&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">            </span><span class="n">rule</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SerializableRule</span><span class="p">(</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">                </span><span class="n">condition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="cm">/* ... */</span><span class="p">,</span>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">                </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">            </span><span class="p">)</span>
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">        </span><span class="p">)</span>
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">    </span><span class="p">)</span>
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="p">)</span>
+<h2 id="what-is-a-snapshotpatch">What is a SnapshotPatch?<a class="headerlink" href="#what-is-a-snapshotpatch" title="Permanent link">&para;</a></h2>
+<p>A <code>SnapshotPatch</code> represents a set of incremental changes to apply to a <code>Snapshot</code>. Instead of sending a complete konfig, you send only the differences:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.core.instance.KonfigPatch</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.core.instance.Konfig//</span><span class="w"> </span><span class="n">Create</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">patch</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">current</span><span class="w"> </span><span class="n">konfig</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">patch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">KonfigPatch</span><span class="p">.</span><span class="na">from</span><span class="p">(</span><span class="n">currentKonfig</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="c1">// Add or update flags</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="n">add</span><span class="p">(</span><span class="n">MY_FLAG</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">newFlagDefinition</span><span class="p">)</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="n">add</span><span class="p">(</span><span class="n">OTHER_FLAG</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">anotherDefinition</span><span class="p">)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="c1">// Remove flags</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="n">remove</span><span class="p">(</span><span class="n">OLD_FLAG</span><span class="p">)</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span><span class="n">remove</span><span class="p">(</span><span class="n">DEPRECATED_FLAG</span><span class="p">)</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="p">}</span>
 </code></pre></div>
-<h2 id="types-of-changes">Types of Changes<a class="headerlink" href="#types-of-changes" title="Permanent link">&para;</a></h2>
-<h3 id="update-flag-value">Update Flag Value<a class="headerlink" href="#update-flag-value" title="Permanent link">&para;</a></h3>
-<p>Change a flag's default value:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">FlagChange</span><span class="p">.</span><span class="na">Update</span><span class="p">(</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="n">flagId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;max-items&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="n">newValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">20</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">)</span>
+<h2 id="creating-patches">Creating Patches<a class="headerlink" href="#creating-patches" title="Permanent link">&para;</a></h2>
+<h3 id="using-the-builder-dsl">Using the Builder DSL<a class="headerlink" href="#using-the-builder-dsl" title="Permanent link">&para;</a></h3>
+<p>The recommended way to create patches is using the builder DSL:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.builders.ConfigBuilder</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.core.SingletonFlagRegistry</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1">// Get current konfig</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">current</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SingletonFlagRegistry</span><span class="p">.</span><span class="na">getCurrentSnapshot</span><span class="p">()</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1">// Build patch with DSL</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="kd">val</span><span class="w"> </span><span class="nv">patch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotPatch</span><span class="p">.</span><span class="na">from</span><span class="p">(</span><span class="n">current</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">    </span><span class="c1">// Update a flag&#39;s definition</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">    </span><span class="n">add</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildDefinition</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">        </span><span class="n">default</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">            </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="n">implies</span><span class="w"> </span><span class="kc">false</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">    </span><span class="p">})</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">    </span><span class="c1">// Remove old flag</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">    </span><span class="n">remove</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">OLD_FEATURE</span><span class="p">)</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="p">}</span>
 </code></pre></div>
-<h3 id="add-rule">Add Rule<a class="headerlink" href="#add-rule" title="Permanent link">&para;</a></h3>
-<p>Add a new rule to a flag:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">FlagChange</span><span class="p">.</span><span class="na">AddRule</span><span class="p">(</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="n">flagId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;premium-feature&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SerializableRule</span><span class="p">(</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">        </span><span class="n">condition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VersionCondition</span><span class="p">(</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">            </span><span class="n">range</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VersionRange</span><span class="p">.</span><span class="na">from</span><span class="p">(</span><span class="s">&quot;2.0.0&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span><span class="p">),</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="p">)</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="p">)</span>
-</code></pre></div>
-<h3 id="remove-rule">Remove Rule<a class="headerlink" href="#remove-rule" title="Permanent link">&para;</a></h3>
-<p>Remove a specific rule:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">FlagChange</span><span class="p">.</span><span class="na">RemoveRule</span><span class="p">(</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="n">flagId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;old-feature&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="n">ruleIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="p">)</span>
-</code></pre></div>
-<h3 id="toggle-flag">Toggle Flag<a class="headerlink" href="#toggle-flag" title="Permanent link">&para;</a></h3>
-<p>Enable or disable a flag:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">FlagChange</span><span class="p">.</span><span class="na">Toggle</span><span class="p">(</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="n">flagId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;maintenance-mode&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="p">)</span>
+<h3 id="empty-patch">Empty Patch<a class="headerlink" href="#empty-patch" title="Permanent link">&para;</a></h3>
+<p>Create an empty patch with no changes:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">emptyPatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotPatch</span><span class="p">.</span><span class="na">empty</span><span class="p">()</span>
 </code></pre></div>
 <h2 id="applying-patches">Applying Patches<a class="headerlink" href="#applying-patches" title="Permanent link">&para;</a></h2>
-<h3 id="using-snapshotserializer">Using SnapshotSerializer<a class="headerlink" href="#using-snapshotserializer" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.serialization.SnapshotSerializer</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">serializer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">()</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="c1">// Get current snapshot</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="kd">val</span><span class="w"> </span><span class="nv">currentSnapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serializer</span><span class="p">.</span><span class="na">serialize</span><span class="p">()</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="c1">// Apply patch</span>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="kd">val</span><span class="w"> </span><span class="nv">updatedSnapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serializer</span><span class="p">.</span><span class="na">applyPatch</span><span class="p">(</span><span class="n">currentSnapshot</span><span class="p">,</span><span class="w"> </span><span class="n">patch</span><span class="p">)</span>
-<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>
-<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="c1">// Load back into runtime</span>
-<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="n">serializer</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">updatedSnapshot</span><span class="p">)</span>
+<h3 id="to-singletonflagregistry">To SingletonFlagRegistry<a class="headerlink" href="#to-singletonflagregistry" title="Permanent link">&para;</a></h3>
+<p>Apply a patch to the singleton registry:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.core.SingletonFlagRegistry</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1">// Apply patch atomically</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">SingletonFlagRegistry</span><span class="p">.</span><span class="na">applyPatch</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="c1">// Flags are immediately updated</span>
 </code></pre></div>
-<h3 id="patch-validation">Patch Validation<a class="headerlink" href="#patch-validation" title="Permanent link">&para;</a></h3>
-<p>Patches are validated before being applied:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">try</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="n">serializer</span><span class="p">.</span><span class="na">applyPatch</span><span class="p">(</span><span class="n">snapshot</span><span class="p">,</span><span class="w"> </span><span class="n">patch</span><span class="p">)</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">e</span><span class="p">:</span><span class="w"> </span><span class="n">PatchValidationException</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="n">println</span><span class="p">(</span><span class="s">&quot;Invalid patch: </span><span class="si">${</span><span class="n">e</span><span class="p">.</span><span class="na">message</span><span class="si">}</span><span class="s">&quot;</span><span class="p">)</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="c1">// Handle validation error</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="p">}</span>
+<h3 id="to-custom-registry">To Custom Registry<a class="headerlink" href="#to-custom-registry" title="Permanent link">&para;</a></h3>
+<p>Apply a patch to any FlagRegistry implementation:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.core.FlagRegistry</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">customRegistry</span><span class="p">:</span><span class="w"> </span><span class="n">FlagRegistry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MyCustomRegistry</span><span class="p">()</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">customRegistry</span><span class="p">.</span><span class="na">applyPatch</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="to-a-snapshot">To a Snapshot<a class="headerlink" href="#to-a-snapshot" title="Permanent link">&para;</a></h3>
+<p>Apply a patch to create a new konfig without loading it:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">currentKonfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SingletonFlagRegistry</span><span class="p">.</span><span class="na">getCurrentSnapshot</span><span class="p">()</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">updatedSnapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">patch</span><span class="p">.</span><span class="na">applyTo</span><span class="p">(</span><span class="n">currentKonfig</span><span class="p">)</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1">// Save to file, send over network, etc.</span>
+</code></pre></div>
+<h2 id="patch-structure">Patch Structure<a class="headerlink" href="#patch-structure" title="Permanent link">&para;</a></h2>
+<p>A <code>SnapshotPatch</code> contains:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">SnapshotPatch</span><span class="p">(</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">flags</span><span class="p">:</span><span class="w"> </span><span class="n">Map</span><span class="o">&lt;</span><span class="n">Conditional</span><span class="o">&lt;*</span><span class="p">,</span><span class="w"> </span><span class="o">*&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">ContextualFeatureFlag</span><span class="o">&lt;*</span><span class="p">,</span><span class="w"> </span><span class="o">*&gt;&gt;</span><span class="p">,</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">removeKeys</span><span class="p">:</span><span class="w"> </span><span class="n">Set</span><span class="o">&lt;</span><span class="n">Conditional</span><span class="o">&lt;*</span><span class="p">,</span><span class="w"> </span><span class="o">*&gt;&gt;</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li><strong>flags</strong>: Map of flags to add or update</li>
+<li><strong>removeKeys</strong>: Set of flag keys to remove</li>
+</ul>
+<p>The patch application logic:
+1. Removes all flags specified in <code>removeKeys</code>
+2. Adds/updates all flags in the <code>flags</code> map
+3. Leaves other flags unchanged</p>
+<h2 id="serialization">Serialization<a class="headerlink" href="#serialization" title="Permanent link">&para;</a></h2>
+<h3 id="serialize-a-patch">Serialize a Patch<a class="headerlink" href="#serialize-a-patch" title="Permanent link">&para;</a></h3>
+<p>Convert a patch to JSON for storage or transmission:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.core.konfig.SnapshotPatch.Companion.toJson</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.serialization.SnapshotSerializer</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="kd">val</span><span class="w"> </span><span class="nv">serializer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">patchJson</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">patch</span><span class="p">.</span><span class="na">toJson</span><span class="p">(</span><span class="n">serializer</span><span class="p">)</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1">// Save to file</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="n">File</span><span class="p">(</span><span class="s">&quot;patch.json&quot;</span><span class="p">).</span><span class="na">writeText</span><span class="p">(</span><span class="n">patchJson</span><span class="p">)</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="c1">// Send over network</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="n">httpClient</span><span class="p">.</span><span class="na">post</span><span class="p">(</span><span class="s">&quot;/patches&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">patchJson</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="deserialize-a-patch">Deserialize a Patch<a class="headerlink" href="#deserialize-a-patch" title="Permanent link">&para;</a></h3>
+<p>Load a patch from JSON:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.core.konfig.SnapshotPatch.Companion.fromJson</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">patchJson</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">File</span><span class="p">(</span><span class="s">&quot;patch.json&quot;</span><span class="p">).</span><span class="na">readText</span><span class="p">()</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="kd">val</span><span class="w"> </span><span class="nv">patch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotPatch</span><span class="p">.</span><span class="na">fromJson</span><span class="p">(</span><span class="n">patchJson</span><span class="p">,</span><span class="w"> </span><span class="n">serializer</span><span class="p">)</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="c1">// Apply to registry</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="n">SingletonFlagRegistry</span><span class="p">.</span><span class="na">applyPatch</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
-<h3 id="version-your-patches">Version Your Patches<a class="headerlink" href="#version-your-patches" title="Permanent link">&para;</a></h3>
-<p>Always include version information:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">patch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SerializablePatch</span><span class="p">(</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SerializableVersion</span><span class="p">(</span><span class="s">&quot;1.3.0&quot;</span><span class="p">),</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="n">previousVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SerializableVersion</span><span class="p">(</span><span class="s">&quot;1.2.0&quot;</span><span class="p">),</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="n">changes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">changes</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="p">)</span>
+<h3 id="1-atomic-updates">1. Atomic Updates<a class="headerlink" href="#1-atomic-updates" title="Permanent link">&para;</a></h3>
+<p>The <code>applyPatch</code> method uses atomic operations internally:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1">// ✅ Thread-safe - uses atomic compare-and-swap</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">SingletonFlagRegistry</span><span class="p">.</span><span class="na">applyPatch</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1">// This is safe even with concurrent evaluations</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">MY_FLAG</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="test-patches-locally">Test Patches Locally<a class="headerlink" href="#test-patches-locally" title="Permanent link">&para;</a></h3>
-<p>Before applying patches in production, test them locally:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1">// Clone current configuration</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">testSnapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">currentSnapshot</span><span class="p">.</span><span class="na">copy</span><span class="p">()</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1">// Apply patch to test snapshot</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serializer</span><span class="p">.</span><span class="na">applyPatch</span><span class="p">(</span><span class="n">testSnapshot</span><span class="p">,</span><span class="w"> </span><span class="n">patch</span><span class="p">)</span>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="c1">// Validate result</span>
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="n">assert</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="na">isValid</span><span class="p">())</span>
+<h3 id="2-version-control">2. Version Control<a class="headerlink" href="#2-version-control" title="Permanent link">&para;</a></h3>
+<p>Track patch history for auditing and rollback:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">PatchRecord</span><span class="p">(</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">patch</span><span class="p">:</span><span class="w"> </span><span class="n">SnapshotPatch</span><span class="p">,</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">timestamp</span><span class="p">:</span><span class="w"> </span><span class="n">Instant</span><span class="p">,</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">author</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">description</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="p">)</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="kd">object</span><span class="w"> </span><span class="nc">PatchHistory</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">history</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mutableListOf</span><span class="o">&lt;</span><span class="n">PatchRecord</span><span class="o">&gt;</span><span class="p">()</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="w">    </span><span class="kd">fun</span><span class="w"> </span><span class="nf">applyAndRecord</span><span class="p">(</span><span class="n">patch</span><span class="p">:</span><span class="w"> </span><span class="n">SnapshotPatch</span><span class="p">,</span><span class="w"> </span><span class="n">author</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="n">description</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="w">        </span><span class="c1">// Save konfig before applying</span>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">before</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SingletonFlagRegistry</span><span class="p">.</span><span class="na">getCurrentSnapshot</span><span class="p">()</span>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="w">        </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="w">            </span><span class="n">SingletonFlagRegistry</span><span class="p">.</span><span class="na">applyPatch</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="w">            </span><span class="n">history</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">PatchRecord</span><span class="p">(</span><span class="n">patch</span><span class="p">,</span><span class="w"> </span><span class="n">Instant</span><span class="p">.</span><span class="na">now</span><span class="p">(),</span><span class="w"> </span><span class="n">author</span><span class="p">,</span><span class="w"> </span><span class="n">description</span><span class="p">))</span>
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">e</span><span class="p">:</span><span class="w"> </span><span class="n">Exception</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="w">            </span><span class="c1">// Rollback on error</span>
+<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a><span class="w">            </span><span class="n">SingletonFlagRegistry</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">before</span><span class="p">)</span>
+<a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a><span class="w">            </span><span class="k">throw</span><span class="w"> </span><span class="n">e</span>
+<a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a><span class="w">        </span><span class="p">}</span>
+<a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a><span class="p">}</span>
 </code></pre></div>
-<h3 id="atomic-application">Atomic Application<a class="headerlink" href="#atomic-application" title="Permanent link">&para;</a></h3>
-<p>Apply patches atomically to avoid partial states:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1">// Use transactions or locks</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">synchronized</span><span class="p">(</span><span class="n">configLock</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">newSnapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serializer</span><span class="p">.</span><span class="na">applyPatch</span><span class="p">(</span><span class="n">currentSnapshot</span><span class="p">,</span><span class="w"> </span><span class="n">patch</span><span class="p">)</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="n">updateConfiguration</span><span class="p">(</span><span class="n">newSnapshot</span><span class="p">)</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="p">}</span>
+<h3 id="3-test-patches-before-production">3. Test Patches Before Production<a class="headerlink" href="#3-test-patches-before-production" title="Permanent link">&para;</a></h3>
+<p>Always test patches in a non-production environment:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1">// Create test konfig</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">testSnapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">productionSnapshot</span><span class="p">.</span><span class="na">copy</span><span class="p">()</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1">// Apply patch to test</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">patch</span><span class="p">.</span><span class="na">applyTo</span><span class="p">(</span><span class="n">testSnapshot</span><span class="p">)</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="c1">// Verify the result</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="kd">val</span><span class="w"> </span><span class="nv">testContext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">createTestContext</span><span class="p">()</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="n">result</span><span class="p">.</span><span class="na">flags</span><span class="p">.</span><span class="na">forEach</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">flag</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flag</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">testContext</span><span class="p">)</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">    </span><span class="n">println</span><span class="p">(</span><span class="s">&quot;</span><span class="si">$</span><span class="n">key</span><span class="s"> -&gt; </span><span class="si">$</span><span class="n">value</span><span class="s">&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="p">}</span>
 </code></pre></div>
-<h3 id="keep-patch-history">Keep Patch History<a class="headerlink" href="#keep-patch-history" title="Permanent link">&para;</a></h3>
-<p>Maintain a history of patches for rollback and auditing:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">PatchHistory</span><span class="p">(</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">patches</span><span class="p">:</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">SerializablePatch</span><span class="o">&gt;</span><span class="p">,</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">timestamps</span><span class="p">:</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Instant</span><span class="o">&gt;</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="p">)</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">applyWithHistory</span><span class="p">(</span><span class="n">patch</span><span class="p">:</span><span class="w"> </span><span class="n">SerializablePatch</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">    </span><span class="n">history</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">patch</span><span class="p">,</span><span class="w"> </span><span class="n">Instant</span><span class="p">.</span><span class="na">now</span><span class="p">())</span>
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="w">    </span><span class="n">serializer</span><span class="p">.</span><span class="na">applyPatch</span><span class="p">(</span><span class="n">currentSnapshot</span><span class="p">,</span><span class="w"> </span><span class="n">patch</span><span class="p">)</span>
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="p">}</span>
-</code></pre></div>
-<h2 id="example-remote-configuration-updates">Example: Remote Configuration Updates<a class="headerlink" href="#example-remote-configuration-updates" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kd">class</span><span class="w"> </span><span class="nc">RemoteConfigManager</span><span class="p">(</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">serializer</span><span class="p">:</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">,</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">httpClient</span><span class="p">:</span><span class="w"> </span><span class="n">HttpClient</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="kd">suspend</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">checkForUpdates</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">currentVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getCurrentVersion</span><span class="p">()</span>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">patch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">httpClient</span><span class="p">.</span><span class="na">fetchPatch</span><span class="p">(</span><span class="n">currentVersion</span><span class="p">)</span>
-<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>
-<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">patch</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">            </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">                </span><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serializer</span><span class="p">.</span><span class="na">getCurrentSnapshot</span><span class="p">()</span>
-<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">                </span><span class="kd">val</span><span class="w"> </span><span class="nv">updated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serializer</span><span class="p">.</span><span class="na">applyPatch</span><span class="p">(</span><span class="n">snapshot</span><span class="p">,</span><span class="w"> </span><span class="n">patch</span><span class="p">)</span>
-<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">                </span><span class="n">serializer</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">updated</span><span class="p">)</span>
-<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>
-<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="w">                </span><span class="n">println</span><span class="p">(</span><span class="s">&quot;Applied patch: </span><span class="si">${</span><span class="n">patch</span><span class="p">.</span><span class="na">version</span><span class="si">}</span><span class="s">&quot;</span><span class="p">)</span>
-<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">e</span><span class="p">:</span><span class="w"> </span><span class="n">Exception</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="w">                </span><span class="n">println</span><span class="p">(</span><span class="s">&quot;Failed to apply patch: </span><span class="si">${</span><span class="n">e</span><span class="p">.</span><span class="na">message</span><span class="si">}</span><span class="s">&quot;</span><span class="p">)</span>
-<a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a><span class="w">            </span><span class="p">}</span>
-<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="w">        </span><span class="p">}</span>
-<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a><span class="p">}</span>
+<h3 id="4-keep-patches-small">4. Keep Patches Small<a class="headerlink" href="#4-keep-patches-small" title="Permanent link">&para;</a></h3>
+<p>Prefer multiple small patches over large ones:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1">// ✅ Good: Small, focused patches</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">patch1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotPatch</span><span class="p">.</span><span class="na">from</span><span class="p">(</span><span class="n">current</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="n">add</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">NEW_UI</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">definition</span><span class="p">)</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="p">}</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="kd">val</span><span class="w"> </span><span class="nv">patch2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotPatch</span><span class="p">.</span><span class="na">from</span><span class="p">(</span><span class="n">current</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">    </span><span class="n">remove</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">OLD_UI</span><span class="p">)</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="p">}</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="n">SingletonFlagRegistry</span><span class="p">.</span><span class="na">applyPatch</span><span class="p">(</span><span class="n">patch1</span><span class="p">)</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="n">SingletonFlagRegistry</span><span class="p">.</span><span class="na">applyPatch</span><span class="p">(</span><span class="n">patch2</span><span class="p">)</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="c1">// ❌ Bad: Large, unfocused patch with many changes</span>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="kd">val</span><span class="w"> </span><span class="nv">megaPatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotPatch</span><span class="p">.</span><span class="na">from</span><span class="p">(</span><span class="n">current</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="w">    </span><span class="c1">// 50+ changes...</span>
+<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a><span class="p">}</span>
 </code></pre></div>
 <h2 id="common-use-cases">Common Use Cases<a class="headerlink" href="#common-use-cases" title="Permanent link">&para;</a></h2>
-<h3 id="ab-test-updates">A/B Test Updates<a class="headerlink" href="#ab-test-updates" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1">// Start A/B test</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">startPatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SerializablePatch</span><span class="p">(</span>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="n">changes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">        </span><span class="n">FlagChange</span><span class="p">.</span><span class="na">AddRule</span><span class="p">(</span>
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">            </span><span class="n">flagId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;experiment-feature&quot;</span><span class="p">,</span>
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">            </span><span class="n">rule</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SerializableRule</span><span class="p">(</span>
-<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">                </span><span class="n">condition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">UserBucketCondition</span><span class="p">(</span><span class="n">bucket</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;A&quot;</span><span class="p">),</span>
-<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">                </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;variant-a&quot;</span>
-<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="w">            </span><span class="p">)</span>
-<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="w">        </span><span class="p">)</span>
-<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="w">    </span><span class="p">)</span>
-<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="p">)</span>
-<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>
-<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="c1">// Adjust test based on results</span>
-<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="kd">val</span><span class="w"> </span><span class="nv">adjustPatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SerializablePatch</span><span class="p">(</span>
-<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a><span class="w">    </span><span class="n">changes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span>
-<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a><span class="w">        </span><span class="n">FlagChange</span><span class="p">.</span><span class="na">Update</span><span class="p">(</span>
-<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a><span class="w">            </span><span class="n">flagId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;experiment-feature&quot;</span><span class="p">,</span>
-<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a><span class="w">            </span><span class="n">newValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;variant-b&quot;</span>
-<a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a><span class="w">        </span><span class="p">)</span>
-<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a><span class="w">    </span><span class="p">)</span>
-<a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a><span class="p">)</span>
+<h3 id="gradual-rollout-adjustment">Gradual Rollout Adjustment<a class="headerlink" href="#gradual-rollout-adjustment" title="Permanent link">&para;</a></h3>
+<p>Adjust rollout percentages dynamically:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1">// Start with 10% rollout</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="n">config</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">    </span><span class="n">Features</span><span class="p">.</span><span class="na">NEW_CHECKOUT</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">        </span><span class="n">default</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">            </span><span class="n">rollout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Rollout</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="m">10.0</span><span class="p">)</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="n">implies</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="p">}</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="c1">// Later, increase to 50%</span>
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="kd">val</span><span class="w"> </span><span class="nv">patch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotPatch</span><span class="p">.</span><span class="na">from</span><span class="p">(</span><span class="n">SingletonFlagRegistry</span><span class="p">.</span><span class="na">getCurrentSnapshot</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="w">    </span><span class="n">add</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">NEW_CHECKOUT</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildDefinition</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">NEW_CHECKOUT</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="w">        </span><span class="n">default</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="w">            </span><span class="n">rollout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Rollout</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="m">50.0</span><span class="p">)</span>
+<a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="n">implies</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a><span class="w">    </span><span class="p">})</span>
+<a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a><span class="p">}</span>
+<a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a><span class="n">SingletonFlagRegistry</span><span class="p">.</span><span class="na">applyPatch</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="emergency-disable">Emergency Disable<a class="headerlink" href="#emergency-disable" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">emergencyPatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SerializablePatch</span><span class="p">(</span>
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">    </span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SerializableVersion</span><span class="p">(</span><span class="s">&quot;hotfix-1&quot;</span><span class="p">),</span>
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">    </span><span class="n">changes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span>
-<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">        </span><span class="n">FlagChange</span><span class="p">.</span><span class="na">Toggle</span><span class="p">(</span>
-<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">            </span><span class="n">flagId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;problematic-feature&quot;</span><span class="p">,</span>
-<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">            </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
-<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w">        </span><span class="p">)</span>
-<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w">    </span><span class="p">)</span>
-<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="p">)</span>
+<h3 id="emergency-kill-switch">Emergency Kill Switch<a class="headerlink" href="#emergency-kill-switch" title="Permanent link">&para;</a></h3>
+<p>Quickly disable a problematic feature:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">emergencyPatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotPatch</span><span class="p">.</span><span class="na">from</span><span class="p">(</span><span class="n">SingletonFlagRegistry</span><span class="p">.</span><span class="na">getCurrentSnapshot</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">    </span><span class="n">add</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">PROBLEMATIC_FEATURE</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildDefinition</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">PROBLEMATIC_FEATURE</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">        </span><span class="n">default</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span><span class="w">  </span><span class="c1">// Force disable</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">    </span><span class="p">})</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="p">}</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="n">SingletonFlagRegistry</span><span class="p">.</span><span class="na">applyPatch</span><span class="p">(</span><span class="n">emergencyPatch</span><span class="p">)</span>
 </code></pre></div>
+<h3 id="remote-configuration-updates">Remote Configuration Updates<a class="headerlink" href="#remote-configuration-updates" title="Permanent link">&para;</a></h3>
+<p>Poll for updates from a remote server:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kd">class</span><span class="w"> </span><span class="nc">RemoteConfigSync</span><span class="p">(</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">apiClient</span><span class="p">:</span><span class="w"> </span><span class="n">ApiClient</span><span class="p">,</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">serializer</span><span class="p">:</span><span class="w"> </span><span class="n">SnapshotSerializer</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">    </span><span class="kd">suspend</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">sync</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">        </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">            </span><span class="c1">// Fetch latest patch from server</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">            </span><span class="kd">val</span><span class="w"> </span><span class="nv">patchJson</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">apiClient</span><span class="p">.</span><span class="na">fetchLatestPatch</span><span class="p">()</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="w">            </span><span class="c1">// Deserialize and apply</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="w">            </span><span class="kd">val</span><span class="w"> </span><span class="nv">patch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotPatch</span><span class="p">.</span><span class="na">fromJson</span><span class="p">(</span><span class="n">patchJson</span><span class="p">,</span><span class="w"> </span><span class="n">serializer</span><span class="p">)</span>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="w">            </span><span class="n">SingletonFlagRegistry</span><span class="p">.</span><span class="na">applyPatch</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="w">            </span><span class="n">logger</span><span class="p">.</span><span class="na">info</span><span class="p">(</span><span class="s">&quot;Successfully applied remote patch&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">e</span><span class="p">:</span><span class="w"> </span><span class="n">Exception</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a><span class="w">            </span><span class="n">logger</span><span class="p">.</span><span class="na">error</span><span class="p">(</span><span class="s">&quot;Failed to sync remote config&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">)</span>
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a><span class="w">        </span><span class="p">}</span>
+<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a><span class="p">}</span>
+<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a>
+<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a><span class="c1">// Schedule periodic sync</span>
+<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a><span class="n">scheduler</span><span class="p">.</span><span class="na">scheduleAtFixedRate</span><span class="p">(</span>
+<a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a><span class="w">    </span><span class="n">initialDelay</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">,</span>
+<a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a><span class="w">    </span><span class="n">period</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">5</span><span class="p">,</span>
+<a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a><span class="w">    </span><span class="n">unit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TimeUnit</span><span class="p">.</span><span class="na">MINUTES</span>
+<a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-15-27" name="__codelineno-15-27" href="#__codelineno-15-27"></a><span class="w">    </span><span class="n">remoteConfigSync</span><span class="p">.</span><span class="na">sync</span><span class="p">()</span>
+<a id="__codelineno-15-28" name="__codelineno-15-28" href="#__codelineno-15-28"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="ab-test-lifecycle">A/B Test Lifecycle<a class="headerlink" href="#ab-test-lifecycle" title="Permanent link">&para;</a></h3>
+<p>Manage A/B tests through their lifecycle:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1">// Phase 1: Start test at 50/50</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">startPatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotPatch</span><span class="p">.</span><span class="na">from</span><span class="p">(</span><span class="n">current</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">    </span><span class="n">add</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">EXPERIMENT</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildDefinition</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">EXPERIMENT</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">        </span><span class="n">default</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">            </span><span class="n">rollout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Rollout</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="m">50.0</span><span class="p">)</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="n">implies</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="w">    </span><span class="p">})</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="p">}</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="c1">// Phase 2: Winning variant found, roll out to 100%</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="kd">val</span><span class="w"> </span><span class="nv">expandPatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotPatch</span><span class="p">.</span><span class="na">from</span><span class="p">(</span><span class="n">current</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="w">    </span><span class="n">add</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">EXPERIMENT</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildDefinition</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">EXPERIMENT</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="w">        </span><span class="n">default</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span><span class="w">  </span><span class="c1">// Winner becomes default</span>
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="w">    </span><span class="p">})</span>
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a><span class="p">}</span>
+<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>
+<a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a><span class="c1">// Phase 3: Remove experiment, make it permanent</span>
+<a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a><span class="kd">val</span><span class="w"> </span><span class="nv">finalizePatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotPatch</span><span class="p">.</span><span class="na">from</span><span class="p">(</span><span class="n">current</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a><span class="w">    </span><span class="n">remove</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">EXPERIMENT</span><span class="p">)</span>
+<a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a><span class="w">    </span><span class="n">add</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">NEW_FEATURE</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildDefinition</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">NEW_FEATURE</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-16-22" name="__codelineno-16-22" href="#__codelineno-16-22"></a><span class="w">        </span><span class="n">default</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span>
+<a id="__codelineno-16-23" name="__codelineno-16-23" href="#__codelineno-16-23"></a><span class="w">    </span><span class="p">})</span>
+<a id="__codelineno-16-24" name="__codelineno-16-24" href="#__codelineno-16-24"></a><span class="p">}</span>
+</code></pre></div>
+<h2 id="integration-with-serialization">Integration with Serialization<a class="headerlink" href="#integration-with-serialization" title="Permanent link">&para;</a></h2>
+<p>Patches integrate seamlessly with the serialization module:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.serialization.SnapshotSerializer</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.core.konfig.SnapshotPatch.Companion.toJson</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.core.konfig.SnapshotPatch.Companion.fromJson</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">serializer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="c1">// Serialize</span>
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="kd">val</span><span class="w"> </span><span class="nv">json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">patch</span><span class="p">.</span><span class="na">toJson</span><span class="p">(</span><span class="n">serializer</span><span class="p">)</span>
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>
+<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="c1">// Deserialize</span>
+<a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a><span class="kd">val</span><span class="w"> </span><span class="nv">loaded</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotPatch</span><span class="p">.</span><span class="na">fromJson</span><span class="p">(</span><span class="n">json</span><span class="p">,</span><span class="w"> </span><span class="n">serializer</span><span class="p">)</span>
+<a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>
+<a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a><span class="c1">// Apply</span>
+<a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a><span class="n">SingletonFlagRegistry</span><span class="p">.</span><span class="na">applyPatch</span><span class="p">(</span><span class="n">loaded</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="thread-safety">Thread Safety<a class="headerlink" href="#thread-safety" title="Permanent link">&para;</a></h2>
+<p>All patch operations are thread-safe:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1">// Thread 1: Apply patch</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="n">CoroutineScope</span><span class="p">(</span><span class="n">Dispatchers</span><span class="p">.</span><span class="na">IO</span><span class="p">).</span><span class="na">launch</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">    </span><span class="n">SingletonFlagRegistry</span><span class="p">.</span><span class="na">applyPatch</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="p">}</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="c1">// Thread 2: Evaluate flag (safe during patch application)</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="n">CoroutineScope</span><span class="p">(</span><span class="n">Dispatchers</span><span class="p">.</span><span class="na">Main</span><span class="p">).</span><span class="na">launch</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">MY_FLAG</span><span class="p">)</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="w">    </span><span class="n">updateUI</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="p">}</span>
+</code></pre></div>
+<p>The <code>SingletonFlagRegistry</code> uses atomic operations (<code>AtomicReference.updateAndGet</code>) to ensure:
+- Patches are applied atomically
+- Readers never see partial updates
+- Multiple concurrent patches are handled safely</p>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Learn about <a href="/advanced/custom-types/">Custom Types</a> for advanced flag values</li>
-<li>Explore <a href="/advanced/migration/">Migration</a> strategies for evolving configurations</li>
-<li>Review the <a href="/serialization/api/">Serialization API</a> for complete details</li>
+<li>Learn about <a href="../custom-types/">Custom Types</a> for advanced flag values</li>
+<li>Explore <a href="../context-polymorphism/">Context Polymorphism</a> for custom contexts</li>
+<li>Review the <a href="../../serialization/api/">Serialization API</a> for complete details</li>
+<li>See <a href="../architecture/">Architecture</a> for implementation details</li>
 </ul>
 
 

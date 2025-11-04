@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://konditional.docs/serialization/integration/">
+        <link rel="canonical" href="https://amichne.github.io/konditional/serialization/integration/">
       
       
         <link rel="prev" href="../overview/">
@@ -306,11 +306,11 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../advanced/patch-updates/" class="md-tabs__link">
+        <a href="../../advanced/architecture/" class="md-tabs__link">
           
   
   
-  Advanced
+  Core Concepts
 
         </a>
       </li>
@@ -1270,7 +1270,7 @@
   
   
   <span class="md-ellipsis">
-    Advanced
+    Core Concepts
     
   </span>
   
@@ -1281,7 +1281,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
-            Advanced
+            Core Concepts
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -1292,12 +1292,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced/patch-updates/" class="md-nav__link">
+      <a href="../../advanced/architecture/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Patch Updates
+    Architecture
     
   </span>
   
@@ -1315,12 +1315,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced/custom-types/" class="md-nav__link">
+      <a href="../../advanced/conditional-types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Custom Types
+    Conditional Value Types
     
   </span>
   
@@ -1338,12 +1338,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced/migration/" class="md-nav__link">
+      <a href="../../advanced/context-polymorphism/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Migration
+    Context Polymorphism
     
   </span>
   
@@ -1745,7 +1745,7 @@
 <h2 id="integration-overview">Integration Overview<a class="headerlink" href="#integration-overview" title="Permanent link">&para;</a></h2>
 <p>This guide walks you through integrating the Konditional serialization system into an existing application. We'll cover both <strong>greenfield</strong> (starting fresh) and <strong>brownfield</strong> (existing codebase) scenarios.</p>
 <p>::: note
-This guide assumes you already have Konditional set up and are using <code>Conditional</code> instances for feature flags. If not, see the <a href="/getting-started/quick-start/">Quick Start</a> guide first.
+This guide assumes you already have Konditional set up and are using <code>Conditional</code> instances for feature flags. If not, see the <a href="../../getting-started/quick-start/">Quick Start</a> guide first.
 :::</p>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <p>Before integrating serialization, ensure you have:</p>
@@ -1858,8 +1858,8 @@ This guide assumes you already have Konditional set up and are using <code>Condi
 <a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>
 <a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">loadFeatureFlags</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loadFlagsJson</span><span class="p">()</span><span class="w"> </span><span class="c1">// From wherever you store them</span>
-<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
-<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">        </span><span class="n">Flags</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">        </span><span class="n">Flags</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">konfig</span><span class="p">)</span>
 <a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="p">}</span>
 </code></pre></div>
@@ -1919,13 +1919,13 @@ This guide assumes you already have Konditional set up and are using <code>Condi
 <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1">// ✅ Good: Register first</span>
 <a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">initializeFlags</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="n">ConditionalRegistry</span><span class="p">.</span><span class="na">registerEnum</span><span class="o">&lt;</span><span class="n">FeatureFlags</span><span class="o">&gt;</span><span class="p">()</span>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span><span class="n">Flags</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span><span class="n">Flags</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">konfig</span><span class="p">)</span>
 <a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="p">}</span>
 <a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>
 <a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="c1">// ❌ Bad: Deserialize before registering</span>
 <a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">initializeFlags</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="c1">// Error!</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="c1">// Error!</span>
 <a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="w">    </span><span class="n">ConditionalRegistry</span><span class="p">.</span><span class="na">registerEnum</span><span class="o">&lt;</span><span class="n">FeatureFlags</span><span class="o">&gt;</span><span class="p">()</span>
 <a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="p">}</span>
 </code></pre></div>
@@ -1956,9 +1956,9 @@ This guide assumes you already have Konditional set up and are using <code>Condi
 <div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">updateFlags</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">patchJson</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">downloadPatch</span><span class="p">()</span>
-<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">currentSnapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getCurrentSnapshot</span><span class="p">()</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">currentKonfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getCurrentSnapshot</span><span class="p">()</span>
 <a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">updated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span><span class="p">.</span><span class="na">applyPatchJson</span><span class="p">(</span>
-<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">            </span><span class="n">currentSnapshot</span><span class="p">,</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">            </span><span class="n">currentKonfig</span><span class="p">,</span>
 <a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">            </span><span class="n">patchJson</span>
 <a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="w">        </span><span class="p">)</span>
 <a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="w">        </span><span class="n">Flags</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">updated</span><span class="p">)</span>
@@ -1973,28 +1973,28 @@ This guide assumes you already have Konditional set up and are using <code>Condi
 <div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">loadFlags</span><span class="p">(</span><span class="n">json</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">):</span><span class="w"> </span><span class="n">Result</span><span class="o">&lt;</span><span class="n">Flags</span><span class="p">.</span><span class="na">Snapshot</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">        </span><span class="c1">// Deserialize</span>
-<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
 <a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>
 <a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">        </span><span class="c1">// Validate before loading</span>
-<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">        </span><span class="n">validateSnapshot</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">        </span><span class="n">validateSnapshot</span><span class="p">(</span><span class="n">konfig</span><span class="p">)</span>
 <a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>
 <a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="w">        </span><span class="c1">// Load if valid</span>
-<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="w">        </span><span class="n">Flags</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
-<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="w">        </span><span class="n">Result</span><span class="p">.</span><span class="na">success</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="w">        </span><span class="n">Flags</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">konfig</span><span class="p">)</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="w">        </span><span class="n">Result</span><span class="p">.</span><span class="na">success</span><span class="p">(</span><span class="n">konfig</span><span class="p">)</span>
 <a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">e</span><span class="p">:</span><span class="w"> </span><span class="n">Exception</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="w">        </span><span class="n">logger</span><span class="p">.</span><span class="na">error</span><span class="p">(</span><span class="s">&quot;Flag loading failed&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">)</span>
 <a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="w">        </span><span class="n">Result</span><span class="p">.</span><span class="na">failure</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
 <a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a><span class="p">}</span>
 <a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a>
-<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a><span class="kd">private</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">validateSnapshot</span><span class="p">(</span><span class="n">snapshot</span><span class="p">:</span><span class="w"> </span><span class="n">Flags</span><span class="p">.</span><span class="na">Snapshot</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a><span class="w">    </span><span class="n">require</span><span class="p">(</span><span class="n">snapshot</span><span class="p">.</span><span class="na">flags</span><span class="p">.</span><span class="na">isNotEmpty</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a><span class="kd">private</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">validateSnapshot</span><span class="p">(</span><span class="n">konfig</span><span class="p">:</span><span class="w"> </span><span class="n">Flags</span><span class="p">.</span><span class="na">Snapshot</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a><span class="w">    </span><span class="n">require</span><span class="p">(</span><span class="n">konfig</span><span class="p">.</span><span class="na">flags</span><span class="p">.</span><span class="na">isNotEmpty</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a><span class="w">        </span><span class="s">&quot;Snapshot cannot be empty&quot;</span>
 <a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a>
 <a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a><span class="w">    </span><span class="c1">// Validate against schema</span>
 <a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">requiredFlags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">setOf</span><span class="p">(</span><span class="s">&quot;feature_x&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;feature_y&quot;</span><span class="p">)</span>
-<a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">actualFlags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">snapshot</span><span class="p">.</span><span class="na">flags</span><span class="p">.</span><span class="na">keys</span><span class="p">.</span><span class="na">map</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">key</span><span class="w"> </span><span class="p">}.</span><span class="na">toSet</span><span class="p">()</span>
+<a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">actualFlags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">konfig</span><span class="p">.</span><span class="na">flags</span><span class="p">.</span><span class="na">keys</span><span class="p">.</span><span class="na">map</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">key</span><span class="w"> </span><span class="p">}.</span><span class="na">toSet</span><span class="p">()</span>
 <a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a>
 <a id="__codelineno-15-27" name="__codelineno-15-27" href="#__codelineno-15-27"></a><span class="w">    </span><span class="n">require</span><span class="p">(</span><span class="n">requiredFlags</span><span class="p">.</span><span class="na">all</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">actualFlags</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-15-28" name="__codelineno-15-28" href="#__codelineno-15-28"></a><span class="w">        </span><span class="s">&quot;Missing required flags: </span><span class="si">${</span><span class="n">requiredFlags</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">actualFlags</span><span class="si">}</span><span class="s">&quot;</span>
@@ -2073,21 +2073,21 @@ This guide assumes you already have Konditional set up and are using <code>Condi
 <h3 id="deserialization-performance">Deserialization Performance<a class="headerlink" href="#deserialization-performance" title="Permanent link">&para;</a></h3>
 <p>For large configurations (100+ flags):</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1">// ✅ Good: Deserialize once, reuse</span>
-<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
-<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="n">Flags</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="n">Flags</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">konfig</span><span class="p">)</span>
 <a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>
 <a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="c1">// ❌ Bad: Deserialize repeatedly</span>
 <a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="n">repeat</span><span class="p">(</span><span class="m">100</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
 <a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="w">    </span><span class="c1">// This is very slow!</span>
 <a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="p">}</span>
 </code></pre></div>
 <h3 id="memory-usage">Memory Usage<a class="headerlink" href="#memory-usage" title="Permanent link">&para;</a></h3>
 <p>Snapshots are immutable and can be shared:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1">// ✅ Good: Share snapshot across components</span>
-<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loadSnapshot</span><span class="p">()</span>
-<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="n">componentA</span><span class="p">.</span><span class="na">useSnapshot</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
-<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="n">componentB</span><span class="p">.</span><span class="na">useSnapshot</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1">// ✅ Good: Share konfig across components</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loadSnapshot</span><span class="p">()</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="n">componentA</span><span class="p">.</span><span class="na">useSnapshot</span><span class="p">(</span><span class="n">konfig</span><span class="p">)</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="n">componentB</span><span class="p">.</span><span class="na">useSnapshot</span><span class="p">(</span><span class="n">konfig</span><span class="p">)</span>
 <a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>
 <a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="c1">// ⚠️ Consider: Snapshot size in memory</span>
 <a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="c1">// For apps with 1000+ flags, monitor memory usage</span>
@@ -2118,12 +2118,12 @@ This guide assumes you already have Konditional set up and are using <code>Condi
 <h2 id="common-pitfalls">Common Pitfalls<a class="headerlink" href="#common-pitfalls" title="Permanent link">&para;</a></h2>
 <h3 id="pitfall-1-forgetting-to-register">Pitfall 1: Forgetting to Register<a class="headerlink" href="#pitfall-1-forgetting-to-register" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1">// ❌ This will crash at runtime</span>
-<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
 <a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="c1">// IllegalArgumentException: Conditional with key &#39;my_flag&#39; not found</span>
 <a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>
 <a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="c1">// ✅ Always register first</span>
 <a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="n">ConditionalRegistry</span><span class="p">.</span><span class="na">registerEnum</span><span class="o">&lt;</span><span class="n">FeatureFlags</span><span class="o">&gt;</span><span class="p">()</span>
-<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
+<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="pitfall-2-type-mismatches">Pitfall 2: Type Mismatches<a class="headerlink" href="#pitfall-2-type-mismatches" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1">// JSON says INT but code expects BOOLEAN</span>
@@ -2157,9 +2157,9 @@ This guide assumes you already have Konditional set up and are using <code>Condi
 </code></pre></div>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <p>Now that you understand the integration concepts, proceed to the step-by-step guide:</p>
-<p><a href="/serialization/steps/step-01-dependencies/">Step 1: Dependencies →</a></p>
+<p><a href="../steps/step-01-dependencies/">Step 1: Dependencies →</a></p>
 <p>Or jump straight to a complete example:</p>
-<p><a href="/serialization/runthrough/">Full Runthrough →</a></p>
+<p><a href="../runthrough/">Full Runthrough →</a></p>
 
 
 

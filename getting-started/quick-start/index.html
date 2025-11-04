@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://konditional.docs/getting-started/quick-start/">
+        <link rel="canonical" href="https://amichne.github.io/konditional/getting-started/quick-start/">
       
       
         <link rel="prev" href="../introduction/">
@@ -306,11 +306,11 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../advanced/patch-updates/" class="md-tabs__link">
+        <a href="../../advanced/architecture/" class="md-tabs__link">
           
   
   
-  Advanced
+  Core Concepts
 
         </a>
       </li>
@@ -565,27 +565,27 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-define-a-flag" class="md-nav__link">
+  <a href="#1-define-your-feature-flags" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Define a Flag
+      1. Define Your Feature Flags
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-evaluate-the-flag" class="md-nav__link">
+  <a href="#2-configure-your-flags" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Evaluate the Flag
+      2. Configure Your Flags
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-add-conditions" class="md-nav__link">
+  <a href="#3-create-a-context-and-evaluate" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Add Conditions
+      3. Create a Context and Evaluate
     </span>
   </a>
   
@@ -625,9 +625,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#complex-rules" class="md-nav__link">
+  <a href="#gradual-rollouts" class="md-nav__link">
     <span class="md-ellipsis">
-      Complex Rules
+      Gradual Rollouts
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#complex-targeting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Complex Targeting
     </span>
   </a>
   
@@ -1082,7 +1091,7 @@
   
   
   <span class="md-ellipsis">
-    Advanced
+    Core Concepts
     
   </span>
   
@@ -1093,7 +1102,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
-            Advanced
+            Core Concepts
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -1104,12 +1113,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced/patch-updates/" class="md-nav__link">
+      <a href="../../advanced/architecture/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Patch Updates
+    Architecture
     
   </span>
   
@@ -1127,12 +1136,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced/custom-types/" class="md-nav__link">
+      <a href="../../advanced/conditional-types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Custom Types
+    Conditional Value Types
     
   </span>
   
@@ -1150,12 +1159,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced/migration/" class="md-nav__link">
+      <a href="../../advanced/context-polymorphism/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Migration
+    Context Polymorphism
     
   </span>
   
@@ -1252,27 +1261,27 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-define-a-flag" class="md-nav__link">
+  <a href="#1-define-your-feature-flags" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Define a Flag
+      1. Define Your Feature Flags
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-evaluate-the-flag" class="md-nav__link">
+  <a href="#2-configure-your-flags" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Evaluate the Flag
+      2. Configure Your Flags
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-add-conditions" class="md-nav__link">
+  <a href="#3-create-a-context-and-evaluate" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Add Conditions
+      3. Create a Context and Evaluate
     </span>
   </a>
   
@@ -1312,9 +1321,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#complex-rules" class="md-nav__link">
+  <a href="#gradual-rollouts" class="md-nav__link">
     <span class="md-ellipsis">
-      Complex Rules
+      Gradual Rollouts
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#complex-targeting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Complex Targeting
     </span>
   </a>
   
@@ -1384,82 +1402,157 @@
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="nt">&lt;/dependency&gt;</span>
 </code></pre></div>
 <h2 id="basic-usage">Basic Usage<a class="headerlink" href="#basic-usage" title="Permanent link">&para;</a></h2>
-<h3 id="1-define-a-flag">1. Define a Flag<a class="headerlink" href="#1-define-a-flag" title="Permanent link">&para;</a></h3>
-<p>Create a simple boolean feature flag:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.core.Flag</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">myFeatureFlag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Flag</span><span class="p">(</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;my-feature&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="n">defaultValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="p">)</span>
+<h3 id="1-define-your-feature-flags">1. Define Your Feature Flags<a class="headerlink" href="#1-define-your-feature-flags" title="Permanent link">&para;</a></h3>
+<p>Create an enum implementing <code>Conditional&lt;S, C&gt;</code> where <code>S</code> is the value type and <code>C</code> is the context type:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.core.Conditional</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.core.instance.FlagRegistry</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.context.Context</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="kd">enum</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">Features</span><span class="p">(</span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">key</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Conditional</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="p">,</span><span class="w"> </span><span class="n">Context</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="n">DARK_MODE</span><span class="p">(</span><span class="s">&quot;dark_mode&quot;</span><span class="p">),</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="n">NEW_CHECKOUT</span><span class="p">(</span><span class="s">&quot;new_checkout&quot;</span><span class="p">),</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="n">ANALYTICS</span><span class="p">(</span><span class="s">&quot;analytics&quot;</span><span class="p">);</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">registry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FlagRegistry</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="p">}</span>
 </code></pre></div>
-<h3 id="2-evaluate-the-flag">2. Evaluate the Flag<a class="headerlink" href="#2-evaluate-the-flag" title="Permanent link">&para;</a></h3>
-<p>Use the flag in your code:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">myFeatureFlag</span><span class="p">.</span><span class="na">evaluate</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="c1">// New feature code</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="n">println</span><span class="p">(</span><span class="s">&quot;Feature enabled!&quot;</span><span class="p">)</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="c1">// Legacy code</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="n">println</span><span class="p">(</span><span class="s">&quot;Feature disabled&quot;</span><span class="p">)</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="p">}</span>
+<p><strong>Note</strong>: Each flag must specify which registry it uses. <code>FlagRegistry</code> is the singleton default registry.</p>
+<h3 id="2-configure-your-flags">2. Configure Your Flags<a class="headerlink" href="#2-configure-your-flags" title="Permanent link">&para;</a></h3>
+<p>Use the DSL to configure flag behavior:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.builders.ConfigBuilder.Companion.config</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.context.Platform</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">config</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="n">Features</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">        </span><span class="n">default</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span><span class="w">  </span><span class="c1">// Default value when no rules match</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">        </span><span class="c1">// Enable for iOS users</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">            </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="n">implies</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">    </span><span class="n">Features</span><span class="p">.</span><span class="na">NEW_CHECKOUT</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">        </span><span class="n">default</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">        </span><span class="c1">// Enable for version 2.0+</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">            </span><span class="n">versions</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="w">                </span><span class="n">min</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="w">            </span><span class="p">}</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="n">implies</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="p">}</span>
 </code></pre></div>
-<h3 id="3-add-conditions">3. Add Conditions<a class="headerlink" href="#3-add-conditions" title="Permanent link">&para;</a></h3>
-<p>Make flags conditional based on context:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.core.*</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">betaFeatureFlag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Flag</span><span class="p">(</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;beta-feature&quot;</span><span class="p">,</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="n">defaultValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="n">rules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">        </span><span class="n">Rule</span><span class="p">(</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">            </span><span class="n">condition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VersionCondition</span><span class="p">(</span>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">                </span><span class="n">range</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VersionRange</span><span class="p">.</span><span class="na">from</span><span class="p">(</span><span class="s">&quot;2.0.0&quot;</span><span class="p">)</span>
-<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">            </span><span class="p">),</span>
-<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">            </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">        </span><span class="p">)</span>
-<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">    </span><span class="p">)</span>
-<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="p">)</span>
-<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>
-<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="c1">// Evaluate with context</span>
-<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">EvaluationContext</span><span class="p">(</span><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">(</span><span class="s">&quot;2.1.0&quot;</span><span class="p">))</span>
-<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="kd">val</span><span class="w"> </span><span class="nv">isEnabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">betaFeatureFlag</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+<h3 id="3-create-a-context-and-evaluate">3. Create a Context and Evaluate<a class="headerlink" href="#3-create-a-context-and-evaluate" title="Permanent link">&para;</a></h3>
+<p>Create an evaluation context and check flag values:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.core.evaluate</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.context.*</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.rules.versions.Version</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="c1">// Create a context with user/app information</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">,</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">),</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">HexId</span><span class="p">.</span><span class="na">from</span><span class="p">(</span><span class="s">&quot;user-123&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="p">)</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="c1">// Evaluate flags - returns typed values</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="kd">val</span><span class="w"> </span><span class="nv">isDarkModeEnabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="p">)</span><span class="w">  </span><span class="c1">// Boolean: true (iOS)</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="kd">val</span><span class="w"> </span><span class="nv">isNewCheckout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">NEW_CHECKOUT</span><span class="p">)</span><span class="w">   </span><span class="c1">// Boolean: true (v2.0+)</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isDarkModeEnabled</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">    </span><span class="n">applyDarkTheme</span><span class="p">()</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="p">}</span>
 </code></pre></div>
+<p><strong>StableId Types</strong>: Use <code>HexId.from(string)</code> to create a stable identifier for deterministic bucketing.</p>
 <h2 id="common-patterns">Common Patterns<a class="headerlink" href="#common-patterns" title="Permanent link">&para;</a></h2>
 <h3 id="string-based-flags">String-Based Flags<a class="headerlink" href="#string-based-flags" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">themeFlag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Flag</span><span class="p">(</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;app-theme&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="n">defaultValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;light&quot;</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="p">)</span>
+<p>For configuration values like API endpoints or theme names:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kd">enum</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">Config</span><span class="p">(</span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">key</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Conditional</span><span class="o">&lt;</span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="n">Context</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="n">API_ENDPOINT</span><span class="p">(</span><span class="s">&quot;api_endpoint&quot;</span><span class="p">),</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="n">THEME_NAME</span><span class="p">(</span><span class="s">&quot;theme_name&quot;</span><span class="p">);</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">registry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FlagRegistry</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="p">}</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="n">config</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">    </span><span class="n">Config</span><span class="p">.</span><span class="na">API_ENDPOINT</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">        </span><span class="n">default</span><span class="p">(</span><span class="s">&quot;https://api.prod.example.com&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">            </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">WEB</span><span class="p">)</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="n">implies</span><span class="w"> </span><span class="s">&quot;https://api.staging.example.com&quot;</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="p">}</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="kd">val</span><span class="w"> </span><span class="nv">endpoint</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">Config</span><span class="p">.</span><span class="na">API_ENDPOINT</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="integer-based-flags">Integer-Based Flags<a class="headerlink" href="#integer-based-flags" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">maxItemsFlag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Flag</span><span class="p">(</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;max-items&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="n">defaultValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="p">)</span>
+<p>For numeric limits and thresholds:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kd">enum</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">Limits</span><span class="p">(</span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">key</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Conditional</span><span class="o">&lt;</span><span class="kt">Int</span><span class="p">,</span><span class="w"> </span><span class="n">Context</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="n">MAX_CONNECTIONS</span><span class="p">(</span><span class="s">&quot;max_connections&quot;</span><span class="p">),</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="n">TIMEOUT_SECONDS</span><span class="p">(</span><span class="s">&quot;timeout_seconds&quot;</span><span class="p">);</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">registry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FlagRegistry</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">}</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="n">config</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">    </span><span class="n">Limits</span><span class="p">.</span><span class="na">MAX_CONNECTIONS</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">        </span><span class="n">default</span><span class="p">(</span><span class="m">10</span><span class="p">)</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">            </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">WEB</span><span class="p">)</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="n">implies</span><span class="w"> </span><span class="m">50</span>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="p">}</span>
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="kd">val</span><span class="w"> </span><span class="nv">maxConnections</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">Limits</span><span class="p">.</span><span class="na">MAX_CONNECTIONS</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="complex-rules">Complex Rules<a class="headerlink" href="#complex-rules" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">premiumFeatureFlag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Flag</span><span class="p">(</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;premium-feature&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="n">defaultValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="n">rules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">        </span><span class="n">Rule</span><span class="p">(</span>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">            </span><span class="n">condition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AndCondition</span><span class="p">(</span>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">                </span><span class="n">VersionCondition</span><span class="p">(</span><span class="n">range</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VersionRange</span><span class="p">.</span><span class="na">from</span><span class="p">(</span><span class="s">&quot;1.5.0&quot;</span><span class="p">)),</span>
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">                </span><span class="n">UserAttributeCondition</span><span class="p">(</span><span class="n">attribute</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;subscription&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;premium&quot;</span><span class="p">)</span>
-<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">            </span><span class="p">),</span>
-<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="w">            </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">        </span><span class="p">)</span>
-<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">    </span><span class="p">)</span>
-<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="p">)</span>
+<h3 id="gradual-rollouts">Gradual Rollouts<a class="headerlink" href="#gradual-rollouts" title="Permanent link">&para;</a></h3>
+<p>Use rollout percentages for gradual feature releases:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.context.Rollout</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">config</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="n">Features</span><span class="p">.</span><span class="na">NEW_CHECKOUT</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">        </span><span class="n">default</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">        </span><span class="c1">// 25% rollout to iOS users</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">            </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="w">            </span><span class="n">rollout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Rollout</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="m">25.0</span><span class="p">)</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="n">implies</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="complex-targeting">Complex Targeting<a class="headerlink" href="#complex-targeting" title="Permanent link">&para;</a></h3>
+<p>Combine multiple criteria:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">config</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="n">Features</span><span class="p">.</span><span class="na">ANALYTICS</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">        </span><span class="n">default</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">        </span><span class="c1">// Enable for US iOS users on v2.0+ with 50% rollout</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">            </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">)</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">            </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">            </span><span class="n">versions</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">                </span><span class="n">min</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">            </span><span class="p">}</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="w">            </span><span class="n">rollout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Rollout</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="m">50.0</span><span class="p">)</span>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="n">implies</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="p">}</span>
 </code></pre></div>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Learn about <a href="/serialization/overview/">Serialization</a> to manage flags remotely</li>
-<li>Explore <a href="/advanced/patch-updates/">Advanced Topics</a> for complex use cases</li>
-<li>Check out the complete <a href="/serialization/api/">API Reference</a></li>
+<li>Learn about <a href="../../advanced/architecture/">Architecture</a> to understand how Konditional works</li>
+<li>Explore <a href="../../advanced/conditional-types/">Conditional Types</a> for using different value types</li>
+<li>Read about <a href="../../advanced/context-polymorphism/">Context Polymorphism</a> to create custom contexts</li>
+<li>Learn about <a href="../../serialization/overview/">Serialization</a> to manage flags remotely</li>
 </ul>
 <h2 id="example-project">Example Project<a class="headerlink" href="#example-project" title="Permanent link">&para;</a></h2>
-<p>For a complete working example, check out the <a href="https://github.com/amichne/konditional/tree/main/examples">examples directory</a> in the GitHub repository.</p>
+<p>For complete working examples, check out the test suite in the <a href="https://github.com/amichne/konditional">GitHub repository</a>.</p>
 
 
 

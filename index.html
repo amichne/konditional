@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://konditional.docs/">
+        <link rel="canonical" href="https://amichne.github.io/konditional/">
       
       
       
@@ -304,11 +304,11 @@
     
     
       <li class="md-tabs__item">
-        <a href="advanced/patch-updates/" class="md-tabs__link">
+        <a href="advanced/architecture/" class="md-tabs__link">
           
   
   
-  Advanced
+  Core Concepts
 
         </a>
       </li>
@@ -942,7 +942,7 @@
   
   
   <span class="md-ellipsis">
-    Advanced
+    Core Concepts
     
   </span>
   
@@ -953,7 +953,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
-            Advanced
+            Core Concepts
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -964,12 +964,12 @@
   
   
     <li class="md-nav__item">
-      <a href="advanced/patch-updates/" class="md-nav__link">
+      <a href="advanced/architecture/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Patch Updates
+    Architecture
     
   </span>
   
@@ -987,12 +987,12 @@
   
   
     <li class="md-nav__item">
-      <a href="advanced/custom-types/" class="md-nav__link">
+      <a href="advanced/conditional-types/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Custom Types
+    Conditional Value Types
     
   </span>
   
@@ -1010,12 +1010,12 @@
   
   
     <li class="md-nav__item">
-      <a href="advanced/migration/" class="md-nav__link">
+      <a href="advanced/context-polymorphism/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Migration
+    Context Polymorphism
     
   </span>
   
@@ -1092,10 +1092,12 @@
 <p><a class="md-button md-button--primary" href="getting-started/introduction/">Get Started</a>
 <a class="md-button" href="https://github.com/amichne/konditional">View on GitHub</a></p>
 <h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h2>
-<p><strong>Type-Safe</strong>: Leverage Kotlin's type system for compile-time safety</p>
-<p><strong>Deterministic</strong>: Predictable flag evaluation based on clear rules</p>
-<p><strong>Serializable</strong>: Export and import flag configurations with built-in serialization support</p>
-<p><strong>Flexible</strong>: Support for version ranges, custom types, and complex conditions</p>
+<p><strong>Type-Safe</strong>: Leverage Kotlin's type system for compile-time safety. No string-based lookups, no runtime casting.</p>
+<p><strong>Deterministic</strong>: SHA-256 based bucketing ensures consistent user experiences across sessions.</p>
+<p><strong>Parse, Don't Validate</strong>: Structured error handling with <code>ParseResult&lt;T&gt;</code> instead of exceptions.</p>
+<p><strong>Composable</strong>: Extensible evaluation logic through <code>Evaluable&lt;C&gt;</code> abstraction.</p>
+<p><strong>Serializable</strong>: Export and import flag configurations with type-safe JSON serialization.</p>
+<p><strong>Flexible</strong>: Support for version ranges, custom types, custom contexts, and complex targeting rules.</p>
 
 
 
