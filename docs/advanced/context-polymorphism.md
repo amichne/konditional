@@ -38,14 +38,14 @@ classDiagram
         +features: Set~String~
     }
 
-    class GamingContext {
-        +playerLevel: Int
-        +guildId: String?
-        +isPremium: Boolean
+    class EducationContext {
+        +studentId: Int
+        +schoolId: String?
+        +isOnTrack: Boolean
         +achievements: List~String~
     }
 
-    class ECommerceContext {
+    class CommerceContext {
         +cartValue: Double
         +orderCount: Int
         +loyaltyPoints: Int
@@ -53,13 +53,13 @@ classDiagram
     }
 
     Context <|-- EnterpriseContext
-    Context <|-- GamingContext
-    Context <|-- ECommerceContext
+    Context <|-- EducationContext
+    Context <|-- CommerceContext
 
     note for Context "Base interface\nminimal requirements"
     note for EnterpriseContext "B2B SaaS use case"
-    note for GamingContext "Gaming app use case"
-    note for ECommerceContext "Shopping app use case"
+    note for EducationContext "Gaming app use case"
+    note for CommerceContext "Shopping app use case"
 ```
 
 **Key Benefits:**

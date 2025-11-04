@@ -17,9 +17,9 @@ Patch updates allow you to modify feature flag configurations incrementally with
 A `SnapshotPatch` represents a set of incremental changes to apply to a `Snapshot`. Instead of sending a complete konfig, you send only the differences:
 
 ```kotlin
-import io.amichne.konditional.core.konfig.SnapshotPatch
+import io.amichne.konditional.core.instance.KonfigPatch
 import io.amichne.konditional.core.instance.Konfig// Create a patch from current konfig
-val patch = SnapshotPatch.from(currentKonfig) {
+val patch = KonfigPatch.from(currentKonfig) {
     // Add or update flags
     add(MY_FLAG to newFlagDefinition)
     add(OTHER_FLAG to anotherDefinition)

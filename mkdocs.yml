@@ -49,6 +49,13 @@ markdown_extensions:
   - toc:
       permalink: true
 
+  - pymdownx.superfences:
+      # make exceptions to highlighting of code:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence_mermaid_custom
+
 nav:
   - Home: index.md
   - Getting Started:
@@ -75,6 +82,7 @@ nav:
 
 plugins:
   - search
+  - mermaid2
 
 extra:
   social:
