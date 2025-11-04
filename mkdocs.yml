@@ -1,6 +1,6 @@
 site_name: Konditional
 site_description: Type-safe, deterministic feature flags for Kotlin
-site_url: https://konditional.docs
+site_url: https://amichne.github.io/konditional/
 repo_url: https://github.com/amichne/konditional
 repo_name: amichne/konditional
 
