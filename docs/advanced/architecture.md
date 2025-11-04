@@ -7,6 +7,92 @@ description: High-level architecture of Konditional and how its core components 
 
 This document describes the high-level architecture of Konditional and how its core components work together to provide type-safe, deterministic feature flag evaluation.
 
+## Type Hierarchy
+
+```mermaid
+classDiagram
+    class Conditional~S,C~ {
+        <<interface>>
+        +key: String
+        +registry: FlagRegistry
+    }
+
+    class Context {
+        <<interface>>
+        +locale: AppLocale
+        +platform: Platform
+        +appVersion: Version
+        +stableId: StableId
+    }
+
+    class FlagRegistry {
+        <<interface>>
+        +load(config: Konfig)
+        +update(patch: KonfigPatch)
+        +featureFlag(key): FeatureFlag?
+        +allFlags(): Map
+    }
+
+    class FeatureFlag~S,C~ {
+        <<sealed>>
+        +defaultValue: S
+        +isActive: Boolean
+        +conditional: Conditional
+        +values: List~ConditionalValue~
+        +salt: String
+    }
+
+    class Rule~C~ {
+        +rollout: Rollout
+        +note: String?
+        +baseEvaluable: BaseEvaluable
+        +extension: Evaluable
+        +matches(context): Boolean
+        +specificity(): Int
+    }
+
+    class Evaluable~C~ {
+        <<abstract>>
+        +matches(context): Boolean
+        +specificity(): Int
+    }
+
+    class ConditionalValue~S,C~ {
+        +rule: Rule
+        +value: S
+    }
+
+    class BaseEvaluable~C~ {
+        +locales: Set~AppLocale~
+        +platforms: Set~Platform~
+        +versionRange: VersionRange
+    }
+
+    Conditional --> FlagRegistry : uses
+    FlagRegistry --> FeatureFlag : stores
+    FeatureFlag --> ConditionalValue : contains
+    ConditionalValue --> Rule : has
+    Rule --> Evaluable : extends
+    Evaluable <|-- Rule
+    Evaluable <|-- BaseEvaluable
+    Rule --> BaseEvaluable : has
+
+    class ParseResult~T~ {
+        <<sealed>>
+    }
+
+    class Success~T~ {
+        +value: T
+    }
+
+    class Failure {
+        +error: ParseError
+    }
+
+    ParseResult <|-- Success
+    ParseResult <|-- Failure
+```
+
 ## Core Concepts
 
 ### 1. Conditional<S, C>
@@ -19,8 +105,7 @@ This document describes the high-level architecture of Konditional and how its c
 ```kotlin
 interface Conditional<S : Any, C : Context> {
     val key: String
-    fun with(build: FlagBuilder<S, C>.() -> Unit)
-    fun update(condition: FlagDefinition<S, C>)
+    val registry: FlagRegistry
 }
 ```
 
@@ -29,11 +114,13 @@ Typically implemented as an enum for convenience:
 ```kotlin
 enum class Features(override val key: String) : Conditional<Boolean, Context> {
     DARK_MODE("dark_mode"),
-    NEW_UI("new_ui"),
-    ;
+    NEW_UI("new_ui");
 
+    override val registry = FlagRegistry
 }
 ```
+
+**Note**: The `with` method was removed in recent versions. Use the `ConfigBuilder` DSL instead for flag configuration.
 
 ### 2. Context
 
@@ -57,31 +144,34 @@ data class EnterpriseContext(
 ) : Context
 ```
 
-### 3. FlagDefinition<S, C>
+### 3. FeatureFlag<S, C>
 
-`FlagDefinition<S : Any, C : Context>` contains the evaluation logic for a conditional:
+`FeatureFlag<S : Any, C : Context>` (sealed class) contains the evaluation logic for a conditional:
 
-- **key**: Reference to the `Conditional<S, C>` this condition evaluates
-- **bounds**: List of `TargetedValue<S, C>` (rule → value mappings)
+- **conditional**: Reference to the `Conditional<S, C>` this flag evaluates
+- **values**: List of `ConditionalValue<S, C>` (rule → value mappings)
 - **defaultValue**: Value returned when no rules match
-- **fallbackValue**: Reserved for future use
+- **isActive**: Whether the flag is enabled (if false, always returns default)
 - **salt**: String used in hash function for bucketing independence
 
 ```kotlin
-data class FlagDefinition<S : Any, C : Context>(
-    val key: Conditional<S, C>,
-    val bounds: List<TargetedValue<S, C>>,
+sealed class FeatureFlag<S : Any, C : Context>(
     val defaultValue: S,
-    val fallbackValue: S,
-    val salt: String = "v1",
+    val isActive: Boolean,
+    val conditional: Conditional<S, C>,
+    val values: List<ConditionalValue<S, C>>,
+    val salt: String = "v1"
 )
 ```
 
 **Evaluation Logic**:
-1. Sort surjections by rule specificity (descending)
-2. Find first rule that matches the context
-3. Check if user is in the eligible bucket for that rule's ramp-up percentage
-4. Return the associated value, or default if no match
+1. If `isActive` is false, return `defaultValue`
+2. Sort `values` by rule specificity (descending)
+3. Find first rule that matches the context
+4. Check if user is in the eligible bucket for that rule's rollout percentage
+5. Return the associated value, or default if no match
+
+**Implementation**: The concrete implementation is `FlagDefinition<S, C>` (internal/package-private).
 
 ### 4. Evaluable<C> (Base Abstraction)
 
@@ -101,12 +191,12 @@ abstract class Evaluable<C : Context> {
 - **Default behavior**: Returns true (matches all) with 0 specificity
 - **Extension point**: Subclasses override to add custom matching logic
 
-### 5. UserClientEvaluator<C>
+### 5. BaseEvaluable<C>
 
-`UserClientEvaluator<C : Context>` encapsulates standard client targeting logic:
+`BaseEvaluable<C : Context>` encapsulates standard client targeting logic:
 
 ```kotlin
-data class UserClientEvaluator<C : Context>(
+data class BaseEvaluable<C : Context>(
     val locales: Set<AppLocale> = emptySet(),
     val platforms: Set<Platform> = emptySet(),
     val versionRange: VersionRange = Unbounded,
@@ -122,7 +212,7 @@ data class UserClientEvaluator<C : Context>(
 ```kotlin
 (if (locales.isNotEmpty()) 1 else 0) +
 (if (platforms.isNotEmpty()) 1 else 0) +
-(if (versionRange.hasBounds()) 1 else 0)
+(if (versionRange != Unbounded) 1 else 0)
 ```
 
 Ranges from 0 (no constraints) to 3 (all constraints specified).
@@ -135,35 +225,36 @@ Ranges from 0 (no constraints) to 3 (all constraints specified).
 data class Rule<C : Context>(
     val rollout: Rollout = Rollout.of(100.0),
     val note: String? = null,
-    val userClientEvaluator: UserClientEvaluator<C> = UserClientEvaluator(),
+    val baseEvaluable: BaseEvaluable<C> = BaseEvaluable(),
     val extension: Evaluable<C> = object : Evaluable<C>() {},
 ) : Evaluable<C>()
 ```
 
 **Composition Architecture**:
-- **userClientEvaluator**: Handles standard locale, platform, and version targeting
+- **baseEvaluable**: Handles standard locale, platform, and version targeting
 - **extension**: Allows custom domain-specific evaluation logic
-- Both must match for the rule to match: `userClientEvaluator.matches(context) && extension.matches(context)`
-- Total specificity is the sum: `userClientEvaluator.specificity() + extension.specificity()`
+- Both must match for the rule to match: `baseEvaluable.matches(context) && extension.matches(context)`
+- Total specificity is the sum: `baseEvaluable.specificity() + extension.specificity()`
 
-**Convenience Constructor**: For backward compatibility, there's a secondary constructor that accepts individual parameters:
+**DSL Constructor**: The `RuleBuilder` DSL provides a more convenient way to create rules:
 ```kotlin
-Rule(
-    rollout = Rollout.of(50.0),
-    locales = setOf(AppLocale.EN_US),
-    platforms = setOf(Platform.IOS),
-    versionRange = LeftBound(Version(2, 0, 0))
-)
+rule {
+    locales(AppLocale.EN_US)
+    platforms(Platform.IOS)
+    versions { min(2, 0) }
+    rollout = Rollout.of(50.0)
+    note("iOS US users on v2.0+")
+} implies true
 ```
 
-This creates a `UserClientEvaluator` internally with the specified constraints.
+This creates a `BaseEvaluable` internally with the specified constraints.
 
-### 7. TargetedValue<S, C>
+### 7. ConditionalValue<S, C>
 
-`TargetedValue<S : Any, C : Context>` maps a rule to its output value:
+`ConditionalValue<S : Any, C : Context>` maps a rule to its output value:
 
 ```kotlin
-data class TargetedValue<S : Any, C : Context>(
+data class ConditionalValue<S : Any, C : Context>(
     val rule: Rule<C>,
     val value: S
 )
@@ -178,23 +269,22 @@ rule {
 } implies true
 ```
 
-### 8. FlagRegistry Interface and SingletonFlagRegistry
+### 8. FlagRegistry Interface
 
-`FlagRegistry` is the abstraction for managing feature flag configurations, with `SingletonFlagRegistry` as the default implementation:
+`FlagRegistry` is the abstraction for managing feature flag configurations:
 
 ```kotlin
 interface FlagRegistry {
-    fun load(config: Snapshot)
-    fun applyPatch(patch: SnapshotPatch)
-    fun <S : Any, C : Context> update(definition: FlagDefinition<S, C>)
-    fun getCurrentSnapshot(): Snapshot
-    fun <S : Any, C : Context> getFlag(key: Conditional<S, C>): ContextualFeatureFlag<S, C>?
-    fun getAllFlags(): Map<Conditional<*, *>, ContextualFeatureFlag<*, *>>
+    fun load(config: Konfig)
+    fun update(patch: KonfigPatch)
+    fun <S, C> update(definition: FeatureFlag<S, C>)
+    fun konfig(): Konfig
+    fun <S, C> featureFlag(key: Conditional<S, C>): FeatureFlag<S, C>?
+    fun allFlags(): Map<Conditional<*, *>, FeatureFlag<*, *>>
 }
 
-object SingletonFlagRegistry : FlagRegistry {
-    // Thread-safe singleton implementation using AtomicReference
-}
+// Default singleton registry
+companion object FlagRegistry : FlagRegistry by SingletonFlagRegistry
 
 // Extension functions for evaluation
 fun <S : Any, C : Context> C.evaluate(
@@ -209,43 +299,184 @@ fun <C : Context> C.evaluate(
 
 **Key features**:
 - **Abstraction**: `FlagRegistry` interface allows custom implementations
-- **Atomic updates**: `Snapshot` is replaced atomically using `AtomicReference`
-- **Lock-free reads**: Evaluation reads from a stable konfig
-- **Incremental updates**: Support for `SnapshotPatch` for efficient partial updates
-- **Type safety**: Maintains type safety between `Conditional<S, C>` and `FlagDefinition<S, C>`
+- **Atomic updates**: `Konfig` is replaced atomically using `AtomicReference` in default implementation
+- **Lock-free reads**: Evaluation reads from a stable snapshot
+- **Incremental updates**: Support for `KonfigPatch` for efficient partial updates
+- **Type safety**: Maintains type safety between `Conditional<S, C>` and `FeatureFlag<S, C>`
+
+**Default Implementation**: `SingletonFlagRegistry` (object) provides thread-safe singleton behavior.
+
+## System Architecture
+
+```mermaid
+graph TB
+    subgraph "Client Application"
+        APP[Application Code]
+        CTX[Context Instance]
+    end
+
+    subgraph "Konditional Core"
+        COND[Conditional Keys<br/>Type-Safe Enums]
+        REG[FlagRegistry<br/>Thread-Safe Store]
+        EVAL[Evaluation Engine]
+    end
+
+    subgraph "Configuration"
+        DSL[ConfigBuilder DSL]
+        KONFIG[Konfig<br/>Immutable Snapshot]
+        PATCH[KonfigPatch<br/>Incremental Updates]
+    end
+
+    APP -->|evaluate| CTX
+    CTX -->|evaluate flag| COND
+    COND -->|query| REG
+    REG -->|retrieve definition| EVAL
+    EVAL -->|match rules| CTX
+
+    DSL -->|builds| KONFIG
+    KONFIG -->|loads into| REG
+    PATCH -->|applies to| KONFIG
+
+    style APP fill:#e1f5ff
+    style CTX fill:#e1f5ff
+    style EVAL fill:#fff4e1
+    style REG fill:#fff4e1
+    style KONFIG fill:#f0e1ff
+```
 
 ## Evaluation Flow
 
+```mermaid
+flowchart TD
+    START([Context.evaluate]) --> FETCH[Fetch FeatureFlag from Registry]
+    FETCH --> ACTIVE{Is Flag Active?}
+
+    ACTIVE -->|No| DEFAULT[Return Default Value]
+    ACTIVE -->|Yes| SORT[Sort Rules by Specificity<br/>Highest First]
+
+    SORT --> ITERATE[Iterate Rules]
+    ITERATE --> MATCH{Rule Matches<br/>Context?}
+
+    MATCH -->|No| NEXT{More Rules?}
+    MATCH -->|Yes| BUCKET[Calculate Bucket<br/>SHA-256 Hash]
+
+    BUCKET --> ELIGIBLE{In Eligible<br/>Segment?}
+    ELIGIBLE -->|No| NEXT
+    ELIGIBLE -->|Yes| RETURN[Return Rule Value]
+
+    NEXT -->|Yes| ITERATE
+    NEXT -->|No| DEFAULT
+
+    DEFAULT --> END([Return Value])
+    RETURN --> END
+
+    style START fill:#e1f5ff
+    style END fill:#e1f5ff
+    style MATCH fill:#fff4e1
+    style ACTIVE fill:#fff4e1
+    style ELIGIBLE fill:#fff4e1
+    style RETURN fill:#d4edda
+    style DEFAULT fill:#f8d7da
 ```
-1. Application calls: context.evaluate(Features.DARK_MODE)
-                                    ↓
-2. Extension function uses SingletonFlagRegistry by default
-                                    ↓
-3. Registry retrieves flag definition for Features.DARK_MODE from current konfig
-                                    ↓
-4. Flag definition.evaluate(context) is called
-                                    ↓
-5. Definition sorts targeted values by rule specificity (most specific first)
-                                    ↓
-6. For each targeted value (in order):
-   a. Check if rule.matches(context)
-   b. If matches, check if user is in eligible bucket
-   c. If eligible, return the value
-                                    ↓
-7. If no rule matches, return defaultValue
-```
+
+**Detailed Steps**:
+
+1. Application calls: `context.evaluate(Features.DARK_MODE)`
+2. Extension function uses `FlagRegistry` (singleton) by default
+3. Registry retrieves `FeatureFlag<S, C>` for `Features.DARK_MODE` from current `Konfig`
+4. Check if flag `isActive` (if false, return `defaultValue`)
+5. Sort `values` (ConditionalValue list) by rule specificity (most specific first)
+6. For each `ConditionalValue` (in order):
+   - Check if `rule.matches(context)`
+   - If matches, check if user is in eligible bucket via SHA-256
+   - If eligible, return the `value`
+7. If no rule matches, return `defaultValue`
 
 ## Deterministic Bucketing
 
-Each surjection has a `rollout` percentage (0-100%). To determine if a user is eligible:
+Each rule has a `rollout` percentage (0-100%). To determine if a user is eligible:
 
-1. Compute `bucket = SHA-256("$salt:$flagKey:$stableId") mod 10000`
-2. User is eligible if `bucket < (rollout * 100)`
+1. Compute `bucket = SHA-256("$flagKey:$stableId:$salt") mod 1000`
+2. User is eligible if `bucket < (rollout * 10)`
 
 **Properties**:
 - **Deterministic**: Same `stableId` + `flagKey` + `salt` always produces same bucket
 - **Independent**: Different `flagKey` values produce independent buckets (no correlation)
-- **Granular**: 10,000 buckets allows 0.01% precision in ramp-up percentages
+- **Granular**: 1,000 buckets allows 0.1% precision in rollout percentages
+
+```mermaid
+flowchart LR
+    subgraph "Input"
+        KEY[Flag Key]
+        STABLE[StableId]
+        SALT[Salt String]
+    end
+
+    subgraph "Hashing"
+        CONCAT[Concatenate:<br/>key + stableId + salt]
+        HASH[SHA-256 Hash]
+        BUCKET[bucket = hash % 1000]
+    end
+
+    subgraph "Decision"
+        ROLLOUT[Rollout Percentage<br/>e.g., 50.0%]
+        THRESHOLD[threshold = rollout * 10]
+        COMPARE{bucket <<br/>threshold?}
+    end
+
+    KEY --> CONCAT
+    STABLE --> CONCAT
+    SALT --> CONCAT
+
+    CONCAT --> HASH
+    HASH --> BUCKET
+
+    BUCKET --> COMPARE
+    ROLLOUT --> THRESHOLD
+    THRESHOLD --> COMPARE
+
+    COMPARE -->|Yes| INCLUDE[Include in Rollout]
+    COMPARE -->|No| EXCLUDE[Exclude from Rollout]
+
+    style INCLUDE fill:#d4edda
+    style EXCLUDE fill:#f8d7da
+```
+
+## Rule Specificity & Prioritization
+
+```mermaid
+graph TD
+    subgraph "Specificity Calculation"
+        RULE[Rule Specificity]
+        BASE[BaseEvaluable Specificity]
+        EXT[Extension Evaluable Specificity]
+
+        RULE -->|sum| BASE
+        RULE -->|sum| EXT
+
+        BASE -->|+1 if set| LOCALE[Locale Constraint]
+        BASE -->|+1 if set| PLATFORM[Platform Constraint]
+        BASE -->|+1 if set| VERSION[Version Constraint]
+
+        EXT -->|custom| CUSTOM[Custom Logic Specificity]
+    end
+
+    subgraph "Evaluation Order"
+        S3[Specificity 3<br/>All constraints] -->|evaluated first| S2[Specificity 2<br/>Two constraints]
+        S2 --> S1[Specificity 1<br/>One constraint]
+        S1 --> S0[Specificity 0<br/>No constraints]
+        S0 -->|evaluated last| DEFAULT[Default Value]
+    end
+
+    style S3 fill:#d4edda
+    style DEFAULT fill:#f8d7da
+```
+
+**Specificity Rules:**
+- Higher specificity = evaluated first
+- Tie-breaking: lexicographic by rule note
+- First matching rule wins (after rollout check)
+- If no rules match, return default value
 
 ## Composable Architecture
 
@@ -262,14 +493,14 @@ The `Rule<C>` class demonstrates composition by combining two Evaluables:
 
 ```kotlin
 data class Rule<C : Context>(
-    val userClientEvaluator: UserClientEvaluator<C>,
+    val baseEvaluable: BaseEvaluable<C>,
     val extension: Evaluable<C>
 ) : Evaluable<C>() {
     override fun matches(context: C): Boolean =
-        userClientEvaluator.matches(context) && extension.matches(context)
+        baseEvaluable.matches(context) && extension.matches(context)
 
     override fun specificity(): Int =
-        userClientEvaluator.specificity() + extension.specificity()
+        baseEvaluable.specificity() + extension.specificity()
 }
 ```
 
@@ -314,15 +545,40 @@ The `FlagEntry` wrapper is crucial: it ensures that when we retrieve a flag by k
 
 ## Thread Safety
 
+```mermaid
+sequenceDiagram
+    participant T1 as Thread 1
+    participant T2 as Thread 2
+    participant Reg as FlagRegistry<br/>(AtomicReference)
+    participant Snap as Konfig<br/>(Immutable)
+
+    T1->>Reg: evaluate(FLAG_A)
+    Reg->>Snap: Read snapshot
+
+    Note over T2: Concurrent update
+    T2->>Reg: load(newKonfig)
+    Reg->>Reg: AtomicReference.set()
+
+    Snap->>T1: Return value from old snapshot
+
+    T1->>Reg: evaluate(FLAG_B)
+    Reg->>Snap: Read NEW snapshot
+    Snap->>T1: Return value from new snapshot
+
+    Note over Reg: Lock-free reads<br/>Atomic writes<br/>No torn reads
+```
+
 **Reads** (evaluation):
-- Lock-free: read from `AtomicReference<Snapshot>`
-- Snapshot is immutable once created
+- Lock-free: read from `AtomicReference<Konfig>`
+- Konfig is immutable once created
 - Multiple threads can evaluate concurrently
+- No contention between readers
 
 **Writes** (configuration updates):
-- `AtomicReference.set()` provides atomic konfig replacement
+- `AtomicReference.set()` provides atomic snapshot replacement
 - Writers never block readers
 - Later writes win if concurrent
+- Eventually consistent: new evaluations see new config
 
 ## DSL Architecture
 

@@ -9,7 +9,7 @@ description: How to integrate Konditional serialization into your existing codeb
 This guide walks you through integrating the Konditional serialization system into an existing application. We'll cover both **greenfield** (starting fresh) and **brownfield** (existing codebase) scenarios.
 
 ::: note
-This guide assumes you already have Konditional set up and are using `Conditional` instances for feature flags. If not, see the [Quick Start](/getting-started/quick-start/) guide first.
+This guide assumes you already have Konditional set up and are using `Conditional` instances for feature flags. If not, see the [Quick Start](../getting-started/quick-start.md) guide first.
 :::
 
 ## Prerequisites
@@ -530,8 +530,8 @@ enum class FeatureFlags(override val key: String) : Conditional<Boolean, Context
 
 Now that you understand the integration concepts, proceed to the step-by-step guide:
 
-[Step 1: Dependencies →](/serialization/steps/step-01-dependencies/)
+[Step 1: Dependencies →](steps/step-01-dependencies.md)
 
 Or jump straight to a complete example:
 
-[Full Runthrough →](/serialization/runthrough/)
+[Full Runthrough →](runthrough.md)

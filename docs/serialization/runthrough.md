@@ -697,9 +697,9 @@ You now have a complete, production-ready serialization integration! Your applic
 
 ## Next Steps
 
-- **Explore advanced features:** [Patch Updates](/advanced/patch-updates/)
-- **API reference:** [Complete API Documentation](/serialization/api/)
-- **Migration guide:** [Migrating Existing Systems](/advanced/migration/)
+- **Explore advanced features:** [Patch Updates](../advanced/patch-updates.md)
+- **API reference:** [Complete API Documentation](api.md)
+- **Migration guide:** [Migrating Existing Systems](../advanced/migration.md)
 
 ::: tip
 For questions or issues, check the [GitHub repository](https://github.com/amichne/konditional) or file an issue.

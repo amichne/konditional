@@ -397,7 +397,7 @@ The `SingletonFlagRegistry` uses atomic operations (`AtomicReference.updateAndGe
 
 ## Next Steps
 
-- Learn about [Custom Types](/advanced/custom-types/) for advanced flag values
-- Explore [Context Polymorphism](/advanced/context-polymorphism/) for custom contexts
-- Review the [Serialization API](/serialization/api/) for complete details
-- See [Architecture](/advanced/architecture/) for implementation details
+- Learn about [Custom Types](custom-types.md) for advanced flag values
+- Explore [Context Polymorphism](context-polymorphism.md) for custom contexts
+- Review the [Serialization API](../serialization/api.md) for complete details
+- See [Architecture](architecture.md) for implementation details

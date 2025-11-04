@@ -7,10 +7,14 @@ Type-safe, deterministic feature flags for Kotlin
 
 ## Features
 
-**Type-Safe**: Leverage Kotlin's type system for compile-time safety
+**Type-Safe**: Leverage Kotlin's type system for compile-time safety. No string-based lookups, no runtime casting.
 
-**Deterministic**: Predictable flag evaluation based on clear rules
+**Deterministic**: SHA-256 based bucketing ensures consistent user experiences across sessions.
 
-**Serializable**: Export and import flag configurations with built-in serialization support
+**Parse, Don't Validate**: Structured error handling with `ParseResult<T>` instead of exceptions.
 
-**Flexible**: Support for version ranges, custom types, and complex conditions
+**Composable**: Extensible evaluation logic through `Evaluable<C>` abstraction.
+
+**Serializable**: Export and import flag configurations with type-safe JSON serialization.
+
+**Flexible**: Support for version ranges, custom types, custom contexts, and complex targeting rules.

@@ -19,6 +19,55 @@ The base `Context` interface provides common properties like `locale`, `platform
 - **Session attributes** for personalization
 - **Any domain-specific data** your application needs
 
+## Context Extension Hierarchy
+
+```mermaid
+classDiagram
+    class Context {
+        <<interface>>
+        +locale: AppLocale
+        +platform: Platform
+        +appVersion: Version
+        +stableId: StableId
+    }
+
+    class EnterpriseContext {
+        +organizationId: String
+        +subscriptionTier: Tier
+        +teamSize: Int
+        +features: Set~String~
+    }
+
+    class GamingContext {
+        +playerLevel: Int
+        +guildId: String?
+        +isPremium: Boolean
+        +achievements: List~String~
+    }
+
+    class ECommerceContext {
+        +cartValue: Double
+        +orderCount: Int
+        +loyaltyPoints: Int
+        +segmentId: String
+    }
+
+    Context <|-- EnterpriseContext
+    Context <|-- GamingContext
+    Context <|-- ECommerceContext
+
+    note for Context "Base interface\nminimal requirements"
+    note for EnterpriseContext "B2B SaaS use case"
+    note for GamingContext "Gaming app use case"
+    note for ECommerceContext "Shopping app use case"
+```
+
+**Key Benefits:**
+- Extend `Context` with domain-specific fields
+- Type safety: Generic parameter `C` flows through the system
+- Custom evaluators can access extended properties
+- Base targeting still works with any context type
+
 ## The Context Interface
 
 ```kotlin
