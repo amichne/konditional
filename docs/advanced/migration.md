@@ -76,18 +76,18 @@ Create a migration function to rename flags in stored configurations:
 
 ```kotlin
 fun migrateRenamedFlag(
-    snapshot: SerializableSnapshot,
+    konfig: SerializableSnapshot,
     oldName: String,
     newName: String
 ): SerializableSnapshot {
-    val updatedFlags = snapshot.flags.map { flag ->
+    val updatedFlags = konfig.flags.map { flag ->
         if (flag.id == oldName) {
             flag.copy(id = newName)
         } else {
             flag
         }
     }
-    return snapshot.copy(flags = updatedFlags)
+    return konfig.copy(flags = updatedFlags)
 }
 
 // Usage
@@ -113,8 +113,8 @@ val oldFlag = Flag("max-connections", defaultValue = false)
 // New: Int flag
 val newFlag = Flag("max-connections", defaultValue = 10)
 
-fun migrateBooleanToInt(snapshot: SerializableSnapshot): SerializableSnapshot {
-    val updatedFlags = snapshot.flags.map { flag ->
+fun migrateBooleanToInt(konfig: SerializableSnapshot): SerializableSnapshot {
+    val updatedFlags = konfig.flags.map { flag ->
         if (flag.id == "max-connections" && flag.type == "Boolean") {
             flag.copy(
                 type = "Int",
@@ -124,7 +124,7 @@ fun migrateBooleanToInt(snapshot: SerializableSnapshot): SerializableSnapshot {
             flag
         }
     }
-    return snapshot.copy(flags = updatedFlags)
+    return konfig.copy(flags = updatedFlags)
 }
 ```
 
@@ -190,9 +190,9 @@ class MigrationManager {
         migrations[version] = migration
     }
 
-    fun migrate(snapshot: SerializableSnapshot, targetVersion: String): SerializableSnapshot {
-        var current = snapshot
-        val currentVersion = parseVersion(snapshot.version.value)
+    fun migrate(konfig: SerializableSnapshot, targetVersion: String): SerializableSnapshot {
+        var current = konfig
+        val currentVersion = parseVersion(konfig.version.value)
         val target = parseVersion(targetVersion)
 
         migrations
@@ -216,14 +216,14 @@ class MigrationManager {
 // Usage
 val migrationManager = MigrationManager()
 
-migrationManager.register("1.1.0") { snapshot ->
+migrationManager.register("1.1.0") { konfig ->
     // Migration for 1.1.0
-    migrateRenamedFlag(snapshot, "old-name", "new-name")
+    migrateRenamedFlag(konfig, "old-name", "new-name")
 }
 
-migrationManager.register("1.2.0") { snapshot ->
+migrationManager.register("1.2.0") { konfig ->
     // Migration for 1.2.0
-    migrateBooleanToInt(snapshot)
+    migrateBooleanToInt(konfig)
 }
 
 // Apply migrations
@@ -399,7 +399,7 @@ fun `test full migration pipeline`() {
  *
  * Backward compatibility: Maintains aliases for old flag names
  */
-fun migrateToV1_6_0(snapshot: SerializableSnapshot): SerializableSnapshot {
+fun migrateToV1_6_0(konfig: SerializableSnapshot): SerializableSnapshot {
     // Migration implementation
 }
 ```
@@ -434,11 +434,11 @@ fun main(args: Array<String>) {
     val outputFile = args[1]
     val targetVersion = args[2]
 
-    val snapshot = loadSnapshot(inputFile)
-    val migrated = migrationManager.migrate(snapshot, targetVersion)
+    val konfig = loadSnapshot(inputFile)
+    val migrated = migrationManager.migrate(konfig, targetVersion)
     saveSnapshot(outputFile, migrated)
 
-    println("Migrated from ${snapshot.version} to $targetVersion")
+    println("Migrated from ${konfig.version} to $targetVersion")
 }
 ```
 

@@ -27,9 +27,9 @@ ConditionalRegistry.registerEnum<FeatureFlags>()
 val json = File("config/production-flags.json").readText()
 
 // 3. Deserialize
-val snapshot = SnapshotSerializer.default.deserialize(json)
+val konfig = SnapshotSerializer.default.deserialize(json)
 
-println("Loaded ${snapshot.flags.size} flags")
+println("Loaded ${konfig.flags.size} flags")
 ```
 
 ::: caution
@@ -86,8 +86,8 @@ suspend fun loadRemoteConfiguration(url: String): Flags.Snapshot {
 
 // Usage
 lifecycleScope.launch {
-    val snapshot = loadRemoteConfiguration("https://cdn.example.com/flags.json")
-    Flags.load(snapshot)
+    val konfig = loadRemoteConfiguration("https://cdn.example.com/flags.json")
+    Flags.load(konfig)
 }
 ```
 
@@ -152,7 +152,7 @@ fun createDefaultSnapshot(): Flags.Snapshot {
 
 ```kotlin
 sealed class ConfigLoadResult {
-    data class Success(val snapshot: Flags.Snapshot) : ConfigLoadResult()
+    data class Success(val konfig: Flags.Snapshot) : ConfigLoadResult()
     data class Error(val error: Exception, val fallback: Flags.Snapshot) : ConfigLoadResult()
 }
 
@@ -160,8 +160,8 @@ fun loadConfiguration(json: String): ConfigLoadResult {
     ConditionalRegistry.registerEnum<FeatureFlags>()
 
     return try {
-        val snapshot = SnapshotSerializer.default.deserialize(json)
-        ConfigLoadResult.Success(snapshot)
+        val konfig = SnapshotSerializer.default.deserialize(json)
+        ConfigLoadResult.Success(konfig)
     } catch (e: Exception) {
         logger.error("Deserialization failed", e)
         val fallback = createDefaultSnapshot()
@@ -172,7 +172,7 @@ fun loadConfiguration(json: String): ConfigLoadResult {
 // Usage
 when (val result = loadConfiguration(json)) {
     is ConfigLoadResult.Success -> {
-        Flags.load(result.snapshot)
+        Flags.load(result.konfig)
         showToast("Configuration loaded")
     }
     is ConfigLoadResult.Error -> {
@@ -185,22 +185,22 @@ when (val result = loadConfiguration(json)) {
 
 ## Validation After Deserialization
 
-Validate the deserialized snapshot before using it:
+Validate the deserialized konfig before using it:
 
 ```kotlin
 fun loadAndValidate(json: String): Flags.Snapshot {
     ConditionalRegistry.registerEnum<FeatureFlags>()
 
-    val snapshot = SnapshotSerializer.default.deserialize(json)
+    val konfig = SnapshotSerializer.default.deserialize(json)
 
     // Validate
-    require(snapshot.flags.isNotEmpty()) {
+    require(konfig.flags.isNotEmpty()) {
         "Snapshot must contain at least one flag"
     }
 
     // Check required flags exist
     val requiredFlags = setOf("dark_mode", "new_onboarding")
-    val actualFlags = snapshot.flags.keys.map { it.key }.toSet()
+    val actualFlags = konfig.flags.keys.map { it.key }.toSet()
 
     require(requiredFlags.all { it in actualFlags }) {
         "Missing required flags: ${requiredFlags - actualFlags}"
@@ -208,14 +208,14 @@ fun loadAndValidate(json: String): Flags.Snapshot {
 
     // Test evaluation works
     val testContext = createTestContext()
-    Flags.load(snapshot)
+    Flags.load(konfig)
 
     with(Flags) {
         testContext.evaluate(FeatureFlags.DARK_MODE)
         testContext.evaluate(FeatureFlags.NEW_ONBOARDING)
     }
 
-    return snapshot
+    return konfig
 }
 ```
 
@@ -236,11 +236,11 @@ object FlagCache {
         }
 
         // Load fresh
-        val snapshot = loadConfiguration()
-        cached = snapshot
+        val konfig = loadConfiguration()
+        cached = konfig
         lastLoadTime = System.currentTimeMillis()
 
-        return snapshot
+        return konfig
     }
 
     fun clear() {
@@ -346,9 +346,9 @@ class DeserializationTest {
             }
         """.trimIndent()
 
-        val snapshot = SnapshotSerializer.default.deserialize(json)
+        val konfig = SnapshotSerializer.default.deserialize(json)
 
-        assertEquals(1, snapshot.flags.size)
+        assertEquals(1, konfig.flags.size)
     }
 
     @Test
@@ -387,7 +387,7 @@ class DeserializationTest {
 
 ## What's Next?
 
-With deserialization working, you'll learn how to load the snapshot into the runtime.
+With deserialization working, you'll learn how to load the konfig into the runtime.
 
 <div style="display: flex; justify-content: space-between; margin-top: 2rem;">
   <a href="/serialization/steps/step-04-serialize/" style="text-decoration: none;">

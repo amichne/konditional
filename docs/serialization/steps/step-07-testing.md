@@ -55,13 +55,13 @@ class BasicSerializationTest : BaseSerializationTest() {
 
     @Test
     fun `serialize simple flag configuration`() {
-        val snapshot = ConfigBuilder.buildSnapshot {
+        val konfig = ConfigBuilder.buildSnapshot {
             FeatureFlags.DARK_MODE with {
                 default(true)
             }
         }
 
-        val json = SnapshotSerializer.default.serialize(snapshot)
+        val json = SnapshotSerializer.default.serialize(konfig)
 
         assertNotNull(json)
         assertTrue(json.contains("dark_mode"))
@@ -87,10 +87,10 @@ class BasicSerializationTest : BaseSerializationTest() {
             }
         """.trimIndent()
 
-        val snapshot = SnapshotSerializer.default.deserialize(json)
+        val konfig = SnapshotSerializer.default.deserialize(json)
 
-        assertEquals(1, snapshot.flags.size)
-        assertTrue(snapshot.flags.containsKey(FeatureFlags.DARK_MODE))
+        assertEquals(1, konfig.flags.size)
+        assertTrue(konfig.flags.containsKey(FeatureFlags.DARK_MODE))
     }
 }
 ```
@@ -218,8 +218,8 @@ class ErrorHandlingTest : BaseSerializationTest() {
 
         // This should fail because FeatureFlags.DARK_MODE expects Boolean
         assertThrows<ClassCastException> {
-            val snapshot = SnapshotSerializer.default.deserialize(json)
-            Flags.load(snapshot)
+            val konfig = SnapshotSerializer.default.deserialize(json)
+            Flags.load(konfig)
 
             with(Flags) {
                 createTestContext().evaluate(FeatureFlags.DARK_MODE)
@@ -239,7 +239,7 @@ class LoadingWorkflowTest : BaseSerializationTest() {
     @Test
     fun `full workflow from config to evaluation`() {
         // 1. Create configuration
-        val snapshot = ConfigBuilder.buildSnapshot {
+        val konfig = ConfigBuilder.buildSnapshot {
             FeatureFlags.DARK_MODE with {
                 default(false)
                 rule {
@@ -249,7 +249,7 @@ class LoadingWorkflowTest : BaseSerializationTest() {
         }
 
         // 2. Serialize
-        val json = SnapshotSerializer.default.serialize(snapshot)
+        val json = SnapshotSerializer.default.serialize(konfig)
         assertNotNull(json)
 
         // 3. Deserialize
@@ -365,20 +365,20 @@ class PropertyBasedTest : BaseSerializationTest() {
 
     @Test
     fun `serialization is deterministic`() {
-        val snapshot = ConfigBuilder.buildSnapshot {
+        val konfig = ConfigBuilder.buildSnapshot {
             FeatureFlags.DARK_MODE with { default(true) }
             FeatureFlags.NEW_ONBOARDING with { default(false) }
         }
 
-        val json1 = SnapshotSerializer.default.serialize(snapshot)
-        val json2 = SnapshotSerializer.default.serialize(snapshot)
+        val json1 = SnapshotSerializer.default.serialize(konfig)
+        val json2 = SnapshotSerializer.default.serialize(konfig)
 
         assertEquals(json1, json2, "Serialization should be deterministic")
     }
 
     @Test
     fun `evaluation is consistent across reload`() {
-        val snapshot = ConfigBuilder.buildSnapshot {
+        val konfig = ConfigBuilder.buildSnapshot {
             FeatureFlags.NEW_ONBOARDING with {
                 default(false)
                 rule {
@@ -390,13 +390,13 @@ class PropertyBasedTest : BaseSerializationTest() {
         val context = createTestContext()
 
         // Evaluate before reload
-        Flags.load(snapshot)
+        Flags.load(konfig)
         val valueBefore = with(Flags) {
             context.evaluate(FeatureFlags.NEW_ONBOARDING)
         }
 
         // Reload same configuration
-        Flags.load(snapshot)
+        Flags.load(konfig)
         val valueAfter = with(Flags) {
             context.evaluate(FeatureFlags.NEW_ONBOARDING)
         }
@@ -407,14 +407,14 @@ class PropertyBasedTest : BaseSerializationTest() {
     @Test
     fun `all registered flags can be serialized and deserialized`() {
         // Create config with all flags
-        val snapshot = ConfigBuilder.buildSnapshot {
+        val konfig = ConfigBuilder.buildSnapshot {
             FeatureFlags.values().forEach { flag ->
                 flag with { default(false) }
             }
         }
 
         // Serialize
-        val json = SnapshotSerializer.default.serialize(snapshot)
+        val json = SnapshotSerializer.default.serialize(konfig)
 
         // Deserialize
         val restored = SnapshotSerializer.default.deserialize(json)
@@ -442,10 +442,10 @@ Keep real JSON samples for regression testing:
 @Test
 fun `deserialize production JSON sample`() {
     val json = File("src/test/resources/production-flags.json").readText()
-    val snapshot = SnapshotSerializer.default.deserialize(json)
+    val konfig = SnapshotSerializer.default.deserialize(json)
 
-    assertNotNull(snapshot)
-    assertTrue(snapshot.flags.isNotEmpty())
+    assertNotNull(konfig)
+    assertTrue(konfig.flags.isNotEmpty())
 }
 ```
 
@@ -457,11 +457,11 @@ Test multiple scenarios with one test:
 @ParameterizedTest
 @MethodSource("flagScenarios")
 fun `test various flag configurations`(scenario: FlagScenario) {
-    val snapshot = scenario.createSnapshot()
-    val json = SnapshotSerializer.default.serialize(snapshot)
+    val konfig = scenario.createSnapshot()
+    val json = SnapshotSerializer.default.serialize(konfig)
     val restored = SnapshotSerializer.default.deserialize(json)
 
-    assertSnapshotsEqual(snapshot, restored)
+    assertSnapshotsEqual(konfig, restored)
 }
 
 companion object {

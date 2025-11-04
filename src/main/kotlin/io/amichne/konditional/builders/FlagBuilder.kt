@@ -1,29 +1,36 @@
 package io.amichne.konditional.builders
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Conditional
+import io.amichne.konditional.core.FeatureFlag
 import io.amichne.konditional.core.FeatureFlagDsl
+import io.amichne.konditional.rules.ConditionalValue
+import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
-import io.amichne.konditional.rules.TargetedValue
-import io.amichne.konditional.rules.TargetedValue.Companion.targetedBy
 
 /**
  * A builder class for constructing and configuring a feature flag.
  *
  * @param S The type of the state associated with the feature flag.
  * @param C The type of the context that the feature flag evaluates against.
- * @property key The feature flag key used to uniquely identify the flag.
+ * @property conditional The feature flag key used to uniquely identify the flag.
  * @constructor Creates a new instance of the FlagBuilder with the specified feature flag key.
  */
+@ConsistentCopyVisibility
 @FeatureFlagDsl
-class FlagBuilder<S : Any, C : Context>(
-    private val key: Conditional<S, C>,
+data class FlagBuilder<S : Any, C : Context> internal constructor(
+    private val conditional: Conditional<S, C>,
 ) {
-    private val targetedValues = mutableListOf<TargetedValue<S, C>>()
+    private val conditionalValues = mutableListOf<ConditionalValue<S, C>>()
     private var defaultValue: S? = null
     private var defaultCoverage: Double? = null
     private var salt: String = "v1"
+
+    companion object {
+        fun <S : Any, C : Context> Conditional<S, C>.flag(
+            flagBuilder: FlagBuilder<S, C>.() -> Unit = {},
+        ): FeatureFlag<S, C> = FlagBuilder(this).apply(flagBuilder).build()
+    }
 
     /**
      * Sets the default value for the flag being built.
@@ -63,7 +70,7 @@ class FlagBuilder<S : Any, C : Context>(
 
     @FeatureFlagDsl
     infix fun Rule<C>.implies(value: S) {
-        targetedValues += targetedBy(value)
+        conditionalValues += targetedBy(value)
     }
 
     /**
@@ -72,11 +79,11 @@ class FlagBuilder<S : Any, C : Context>(
      *
      * @return A `FlagDefinition` instance constructed based on the current configuration.
      */
-    internal fun build(): FlagDefinition<S, C> {
+    internal fun build(): FeatureFlag<S, C> {
         requireNotNull(defaultValue) { "Default value must be set" }
-        return FlagDefinition(
-            conditional = key,
-            bounds = targetedValues.toList(),
+        return FeatureFlag(
+            conditional = conditional,
+            bounds = conditionalValues.toList(),
             defaultValue = defaultValue!!,
             salt = salt,
         )

@@ -1,10 +1,11 @@
-package io.amichne.konditional.core.snapshot
+package io.amichne.konditional.core.instance
 
+import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Conditional
-import io.amichne.konditional.core.ContextualFeatureFlag
+import io.amichne.konditional.core.FeatureFlag
 
 /**
- * Represents an incremental update to a [Snapshot].
+ * Represents an incremental update to a [Konfig].
  *
  * A patch contains:
  * - SingletonFlagRegistry to add or update
@@ -17,28 +18,28 @@ import io.amichne.konditional.core.ContextualFeatureFlag
  * @property removeKeys Set of flag keys to remove
  */
 @ConsistentCopyVisibility
-data class SnapshotPatch internal constructor(
-    val flags: Map<Conditional<*, *>, ContextualFeatureFlag<*, *>>,
+data class KonfigPatch internal constructor(
+    val flags: Map<Conditional<*, *>, FeatureFlag<*, *>>,
     val removeKeys: Set<Conditional<*, *>> = emptySet(),
 ) {
     /**
-     * Applies a patch to a snapshot, creating a new snapshot with the changes.
+     * Applies a patch to a konfig, creating a new konfig with the changes.
      *
-     * @param snapshot The snapshot to apply the patch to
-     * @return A new Snapshot with the patch applied
+     * @param konfig The konfig to apply the patch to
+     * @return A new Konfig with the patch applied
      */
-    fun applyTo(snapshot: Snapshot): Snapshot = snapshot.flags.toMutableMap().let { map ->
+    fun applyTo(konfig: Konfig): Konfig = konfig.flags.toMutableMap().let { map ->
         removeKeys.forEach { map.remove(it) }
-        Snapshot(map.also { it.putAll(flags) })
+        Konfig(map.also { it.putAll(flags) })
     }
 
     companion object {
         /**
-         * Creates a new [SnapshotPatch] from a current snapshot by building new flag definitions.
+         * Creates a new [KonfigPatch] from a current snapshot by building new flag definitions.
          *
          * Example:
          * ```
-         * val patch = SnapshotPatch.from(currentSnapshot) {
+         * val patch = KonfigPatch.from(currentSnapshot) {
          *     add(MY_FLAG to myFlagDefinition)
          *     remove(OLD_FLAG)
          * }
@@ -46,22 +47,26 @@ data class SnapshotPatch internal constructor(
          *
          * @param current The current snapshot to base the patch on
          * @param builder A builder function to configure the patch
-         * @return A new SnapshotPatch
+         * @return A new KonfigPatch
          */
-        fun from(current: Snapshot, builder: PatchBuilder.() -> Unit): SnapshotPatch =
+        fun from(current: Konfig, builder: PatchBuilder.() -> Unit): KonfigPatch =
             PatchBuilder().apply(builder).build()
 
         /**
          * Creates an empty patch with no changes.
          */
-        fun empty(): SnapshotPatch = SnapshotPatch(emptyMap(), emptySet())
+        fun empty(): KonfigPatch = KonfigPatch(emptyMap(), emptySet())
+
+        fun patch(
+            builder: PatchBuilder.() -> Unit
+        ): KonfigPatch = PatchBuilder().apply(builder).build()
     }
 
     /**
      * Builder for creating patches with a DSL-style API.
      */
     class PatchBuilder internal constructor() {
-        private val flags = mutableMapOf<Conditional<*, *>, ContextualFeatureFlag<*, *>>()
+        private val flags = mutableMapOf<Conditional<*, *>, FeatureFlag<*, *>>()
         private val removeKeys = mutableSetOf<Conditional<*, *>>()
 
         /**
@@ -69,12 +74,12 @@ data class SnapshotPatch internal constructor(
          *
          * @param entry Pair of Conditional key and its flag definition
          */
-        fun <S : Any, C : io.amichne.konditional.context.Context> add(
-            entry: Pair<Conditional<S, C>, ContextualFeatureFlag<S, C>>
+        fun <S : Any, C : Context> add(
+            entry: FeatureFlag<S, C>
         ) {
-            flags[entry.first] = entry.second
+            flags[entry.conditional] = entry
             // If we're adding a flag, ensure it's not also in removeKeys
-            removeKeys.remove(entry.first)
+            removeKeys.remove(entry.conditional)
         }
 
         /**
@@ -88,6 +93,6 @@ data class SnapshotPatch internal constructor(
             flags.remove(key)
         }
 
-        internal fun build(): SnapshotPatch = SnapshotPatch(flags.toMap(), removeKeys.toSet())
+        internal fun build(): KonfigPatch = KonfigPatch(flags.toMap(), removeKeys.toSet())
     }
 }

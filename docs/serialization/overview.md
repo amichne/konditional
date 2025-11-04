@@ -77,7 +77,7 @@ Main interface for serialization operations:
 val serializer = SnapshotSerializer.default
 
 // Serialize
-val json = serializer.serialize(snapshot)
+val json = serializer.serialize(konfig)
 
 // Deserialize
 val loaded = serializer.deserialize(json)

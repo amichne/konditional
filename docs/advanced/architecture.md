@@ -199,18 +199,18 @@ object SingletonFlagRegistry : FlagRegistry {
 // Extension functions for evaluation
 fun <S : Any, C : Context> C.evaluate(
     key: Conditional<S, C>,
-    registry: FlagRegistry = SingletonFlagRegistry
+    registry: FlagRegistry = FlagRegistry
 ): S
 
 fun <C : Context> C.evaluate(
-    registry: FlagRegistry = SingletonFlagRegistry
+    registry: FlagRegistry = FlagRegistry
 ): Map<Conditional<*, *>, Any?>
 ```
 
 **Key features**:
 - **Abstraction**: `FlagRegistry` interface allows custom implementations
 - **Atomic updates**: `Snapshot` is replaced atomically using `AtomicReference`
-- **Lock-free reads**: Evaluation reads from a stable snapshot
+- **Lock-free reads**: Evaluation reads from a stable konfig
 - **Incremental updates**: Support for `SnapshotPatch` for efficient partial updates
 - **Type safety**: Maintains type safety between `Conditional<S, C>` and `FlagDefinition<S, C>`
 
@@ -221,7 +221,7 @@ fun <C : Context> C.evaluate(
                                     ↓
 2. Extension function uses SingletonFlagRegistry by default
                                     ↓
-3. Registry retrieves flag definition for Features.DARK_MODE from current snapshot
+3. Registry retrieves flag definition for Features.DARK_MODE from current konfig
                                     ↓
 4. Flag definition.evaluate(context) is called
                                     ↓
@@ -320,7 +320,7 @@ The `FlagEntry` wrapper is crucial: it ensures that when we retrieve a flag by k
 - Multiple threads can evaluate concurrently
 
 **Writes** (configuration updates):
-- `AtomicReference.set()` provides atomic snapshot replacement
+- `AtomicReference.set()` provides atomic konfig replacement
 - Writers never block readers
 - Later writes win if concurrent
 

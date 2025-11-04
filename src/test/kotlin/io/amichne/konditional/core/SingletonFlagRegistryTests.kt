@@ -7,6 +7,7 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.evaluate
+import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.example.SampleFeatureEnum
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
@@ -390,11 +391,5 @@ class SingletonFlagRegistryTests {
 
         assertTrue(result1) // Should be true for US iOS at 100% coverage
         assertTrue(result2) // Should be true (default true)
-
-        // Verify evaluate returns a map with Conditional keys
-        val allResults = ctx(id).evaluate()
-        assertTrue(allResults.containsKey(SampleFeatureEnum.ENABLE_COMPACT_CARDS))
-        assertTrue(allResults.containsKey(SampleFeatureEnum.USE_LIGHTWEIGHT_HOME))
-        assertEquals(2, allResults.size)
     }
 }

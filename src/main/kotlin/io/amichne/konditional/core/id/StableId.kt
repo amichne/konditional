@@ -1,4 +1,4 @@
-package io.amichne.konditional.core
+package io.amichne.konditional.core.id
 
 /**
  * StableId represents a stable identifier for a user or device.

@@ -124,10 +124,10 @@ val featureFlag = Flag(
 serializer.register(featureFlag)
 
 // Serialize
-val snapshot = serializer.serialize()
+val konfig = serializer.serialize()
 
 // Deserialize
-val loaded = serializer.deserialize(snapshot)
+val loaded = serializer.deserialize(konfig)
 ```
 
 ## Enum Types

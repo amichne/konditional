@@ -1,10 +1,7 @@
 package io.amichne.konditional.fakes
 
-import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.FlagRegistry
-import io.amichne.konditional.core.snapshot.Snapshot
-import io.amichne.konditional.core.snapshot.SnapshotPatch
+import io.amichne.konditional.core.internal.SingletonFlagRegistry
 
 /**
  * A test fake implementation of [FlagRegistry] for unit testing.
@@ -37,14 +34,14 @@ import io.amichne.konditional.core.snapshot.SnapshotPatch
  *     val registry = FakeRegistry()
  *     registry.load(initialSnapshot)
  *
- *     val patch = SnapshotPatch.from(registry.getCurrentSnapshot()) {
+ *     val patch = KonfigPatch.from(registry.konfig()) {
  *         add(NEW_FLAG to newDefinition)
  *         remove(OLD_FLAG)
  *     }
- *     registry.applyPatch(patch)
+ *     registry.update(patch)
  *
- *     assertNotNull(registry.getFlag(NEW_FLAG))
- *     assertNull(registry.getFlag(OLD_FLAG))
+ *     assertNotNull(registry.featureFlag(NEW_FLAG))
+ *     assertNull(registry.featureFlag(OLD_FLAG))
  * }
  * ```
  *
@@ -55,8 +52,8 @@ import io.amichne.konditional.core.snapshot.SnapshotPatch
  *     val registry = FakeRegistry()
  *     registry.update(myFlagDefinition)
  *
- *     assertEquals(1, registry.getCurrentSnapshot().flags.size)
- *     assertEquals(myFlagDefinition, registry.getFlag(MY_FLAG))
+ *     assertEquals(1, registry.konfig().flags.size)
+ *     assertEquals(myFlagDefinition, registry.featureFlag(MY_FLAG))
  * }
  * ```
  *
@@ -68,53 +65,9 @@ import io.amichne.konditional.core.snapshot.SnapshotPatch
  * - Simpler implementation makes test failures easier to diagnose
  * - No performance overhead from synchronization primitives
  * - Follows the "parse, don't validate" principle by delegating validation
- *   to the Snapshot type itself
+ *   to the Konfig type itself
  *
  * @see FlagRegistry
- * @see io.amichne.konditional.core.SingletonFlagRegistry
+ * @see io.amichne.konditional.core.internal.SingletonFlagRegistry
  */
-class FakeRegistry : FlagRegistry {
-    private var currentSnapshot: Snapshot = Snapshot(emptyMap())
-
-    /**
-     * Loads a complete flag configuration from the provided snapshot.
-     *
-     * Replaces the entire current configuration atomically.
-     *
-     * @param config The [Snapshot] containing the flag configuration to load
-     */
-    override fun load(config: Snapshot) {
-        currentSnapshot = config
-    }
-
-    /**
-     * Applies an incremental patch to the current configuration.
-     *
-     * Updates only the flags specified in the patch, leaving others unchanged.
-     *
-     * @param patch The [SnapshotPatch] to apply
-     */
-    override fun applyPatch(patch: SnapshotPatch) {
-        currentSnapshot = patch.applyTo(currentSnapshot)
-    }
-
-    /**
-     * Updates a single flag definition in the current configuration.
-     *
-     * @param definition The [FlagDefinition] to update
-     * @param S The type of the flag's value
-     * @param C The type of the context used for evaluation
-     */
-    override fun <S : Any, C : Context> update(definition: FlagDefinition<S, C>) {
-        val mutableFlags = currentSnapshot.flags.toMutableMap()
-        mutableFlags[definition.conditional] = definition
-        currentSnapshot = Snapshot(mutableFlags)
-    }
-
-    /**
-     * Retrieves the current snapshot of all flag configurations.
-     *
-     * @return The current [Snapshot]
-     */
-    override fun getCurrentSnapshot(): Snapshot = currentSnapshot
-}
+class FakeRegistry : FlagRegistry by SingletonFlagRegistry

@@ -1,8 +1,9 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.snapshot.Snapshot
-import io.amichne.konditional.core.snapshot.SnapshotPatch
+import io.amichne.konditional.core.instance.Konfig
+import io.amichne.konditional.core.instance.KonfigPatch
+import io.amichne.konditional.core.internal.SingletonFlagRegistry
 
 /**
  * Abstraction for managing feature flag configurations and evaluations.
@@ -13,26 +14,27 @@ import io.amichne.konditional.core.snapshot.SnapshotPatch
  * - Update individual flag definitions
  * - Retrieve current state
  *
- * Implementations of this interface can provide different backing stores
- * (in-memory, persistent, distributed, etc.) while maintaining the same API.
+ * Implementations of this interface can provide different backing stores,
+ * particularly useful when writing tests.
+ *
+ * By default, [io.amichne.konditional.core.internal.SingletonFlagRegistry] is provided as a thread-safe, in-memory implementation.
+ *
+ * It is accessible via the [io.amichne.konditional.core.FlagRegistry.Companion] object.
  *
  * ## Core Operations
  *
  * ### Loading Configuration
  * ```kotlin
- * val snapshot = ConfigBuilder.buildSnapshot {
- *     MY_FLAG with { default(true) }
- * }
- * registry.load(snapshot)
+ * registry.load(konfig)
  * ```
  *
  * ### Applying Patches
  * ```kotlin
- * val patch = SnapshotPatch.from(registry.getCurrentSnapshot()) {
+ * val patch = KonfigPatch.from(registry.konfig()) {
  *     add(MY_FLAG to newDefinition)
  *     remove(OLD_FLAG)
  * }
- * registry.applyPatch(patch)
+ * registry.update(patch)
  * ```
  *
  * ### Updating Individual SingletonFlagRegistry
@@ -43,18 +45,18 @@ import io.amichne.konditional.core.snapshot.SnapshotPatch
  * ### Evaluating SingletonFlagRegistry
  * Use the extension functions on [Context] for evaluation:
  * ```kotlin
- * val value = context.evaluate(MY_FLAG, registry)
- * val allValues = context.evaluate(registry)
+ * val value = MY_FLAG.evaluate(context, registry)
+ * val allValues =
  * ```
  *
  * ## Implementations
  *
- * The primary implementation is [SingletonFlagRegistry], which provides a thread-safe,
+ * The primary implementation is [io.amichne.konditional.core.internal.SingletonFlagRegistry], which provides a thread-safe,
  * singleton registry backed by [java.util.concurrent.atomic.AtomicReference].
  *
- * @see SingletonFlagRegistry
- * @see Snapshot
- * @see SnapshotPatch
+ * @see io.amichne.konditional.core.internal.SingletonFlagRegistry
+ * @see Konfig
+ * @see KonfigPatch
  */
 interface FlagRegistry {
     /**
@@ -62,9 +64,9 @@ interface FlagRegistry {
      *
      * This operation replaces the entire current configuration atomically.
      *
-     * @param config The [Snapshot] containing the flag configuration to load
+     * @param config The [Konfig] containing the flag configuration to load
      */
-    fun load(config: Snapshot)
+    fun load(config: Konfig)
 
     /**
      * Applies an incremental patch to the current configuration.
@@ -73,9 +75,9 @@ interface FlagRegistry {
      * leaving other flags unchanged. This is more efficient than loading a
      * complete snapshot when only a few flags need to be updated.
      *
-     * @param patch The [SnapshotPatch] to apply
+     * @param patch The [KonfigPatch] to apply
      */
-    fun applyPatch(patch: SnapshotPatch)
+    fun update(patch: KonfigPatch)
 
     /**
      * Updates a single flag definition in the current configuration.
@@ -83,11 +85,11 @@ interface FlagRegistry {
      * This is a convenience method for updating individual flags without
      * creating a full patch or snapshot.
      *
-     * @param definition The [FlagDefinition] to update
+     * @param definition The [io.amichne.konditional.core.internal.FlagDefinition] to update
      * @param S The type of the flag's value
      * @param C The type of the context used for evaluation
      */
-    fun <S : Any, C : Context> update(definition: FlagDefinition<S, C>)
+    fun <S : Any, C : Context> update(definition: FeatureFlag<S, C>)
 
     /**
      * Retrieves the current snapshot of all flag configurations.
@@ -95,27 +97,29 @@ interface FlagRegistry {
      * This provides a consistent view of all flags at a point in time.
      * The returned snapshot is immutable and can be safely shared.
      *
-     * @return The current [Snapshot]
+     * @return The current [Konfig]
      */
-    fun getCurrentSnapshot(): Snapshot
+    fun konfig(): Konfig
 
     /**
      * Retrieves a specific flag definition from the registry.
      *
      * @param key The [Conditional] key for the flag
-     * @return The [ContextualFeatureFlag] if found, null otherwise
+     * @return The [FeatureFlag] if found, null otherwise
      * @param S The type of the flag's value
      * @param C The type of the context used for evaluation
      */
     @Suppress("UNCHECKED_CAST")
-    fun <S : Any, C : Context> getFlag(key: Conditional<S, C>): ContextualFeatureFlag<S, C>? =
-        getCurrentSnapshot().flags[key] as? ContextualFeatureFlag<S, C>
+    fun <S : Any, C : Context> featureFlag(key: Conditional<S, C>): FeatureFlag<S, C>? =
+        konfig().flags[key] as? FeatureFlag<S, C>
 
     /**
      * Retrieves all flags from the registry.
      *
-     * @return Map of all [Conditional] keys to their [ContextualFeatureFlag] definitions
+     * @return Map of all [Conditional] keys to their [FeatureFlag] definitions
      */
-    fun getAllFlags(): Map<Conditional<*, *>, ContextualFeatureFlag<*, *>> =
-        getCurrentSnapshot().flags
+    fun allFlags(): Map<Conditional<*, *>, FeatureFlag<*, *>> =
+        konfig().flags
+
+    companion object : FlagRegistry by SingletonFlagRegistry
 }

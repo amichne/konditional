@@ -7,9 +7,11 @@ import io.amichne.konditional.rules.versions.RightBound
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
-class VersionRangeBuilder {
-    private var leftBound: Version = Version.default
+@ConsistentCopyVisibility
+data class VersionRangeBuilder internal constructor(
+    private var leftBound: Version = Version.default,
     private var rightBound: Version = Version.default
+) {
 
     fun min(
         major: Int,

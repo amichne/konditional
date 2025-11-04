@@ -4,15 +4,15 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.core.snapshot.Snapshot
-import io.amichne.konditional.core.snapshot.SnapshotPatch
+import io.amichne.konditional.core.instance.Konfig
+import io.amichne.konditional.core.instance.KonfigPatch
 import io.amichne.konditional.serialization.adapters.FlagValueAdapter
 import io.amichne.konditional.serialization.adapters.VersionRangeAdapter
 import io.amichne.konditional.serialization.models.SerializablePatch
 import io.amichne.konditional.serialization.models.SerializableSnapshot
 
 /**
- * Main serialization interface for Snapshot configurations.
+ * Main serialization interface for Konfig configurations.
  * Provides methods to serialize/deserialize snapshots to/from JSON, and apply patch updates.
  *
  * Now returns ParseResult for all deserialization operations, following parse-don't-validate principles.
@@ -24,25 +24,25 @@ class SnapshotSerializer(
     private val patchAdapter = moshi.adapter(SerializablePatch::class.java).indent("  ")
 
     /**
-     * Serializes a SingletonFlagRegistry.Snapshot to a JSON string.
+     * Serializes a SingletonFlagRegistry.Konfig to a JSON string.
      *
-     * @param snapshot The snapshot to serialize
+     * @param konfig The konfig to serialize
      * @return JSON string representation
      */
-    fun serialize(snapshot: Snapshot): String {
-        val serializable = snapshot.toSerializable()
+    fun serialize(konfig: Konfig): String {
+        val serializable = konfig.toSerializable()
         return snapshotAdapter.toJson(serializable)
     }
 
     /**
-     * Deserializes a JSON string to a Snapshot.
+     * Deserializes a JSON string to a Konfig.
      *
      * Returns ParseResult for type-safe error handling following parse-don't-validate principles.
      *
      * @param json The JSON string to deserialize
-     * @return ParseResult containing either the deserialized Snapshot or a structured error
+     * @return ParseResult containing either the deserialized Konfig or a structured error
      */
-    fun deserialize(json: String): ParseResult<Snapshot> {
+    fun deserialize(json: String): ParseResult<Konfig> {
         return try {
             val serializable = snapshotAdapter.fromJson(json)
                 ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parse JSON: null result"))
@@ -71,14 +71,14 @@ class SnapshotSerializer(
     /**
      * Applies a patch to an existing snapshot, creating a new snapshot with the updates.
      *
-     * @param currentSnapshot The current snapshot to patch
+     * @param currentKonfig The current snapshot to patch
      * @param patch The patch to apply
-     * @return ParseResult containing either the new Snapshot with the patch applied or an error
+     * @return ParseResult containing either the new Konfig with the patch applied or an error
      */
-    fun applyPatch(currentSnapshot: Snapshot, patch: SerializablePatch): ParseResult<Snapshot> {
+    fun applyPatch(currentKonfig: Konfig, patch: SerializablePatch): ParseResult<Konfig> {
         return try {
             // Convert current snapshot to serializable form
-            val currentSerializable = currentSnapshot.toSerializable()
+            val currentSerializable = currentKonfig.toSerializable()
 
             // Create a mutable map of flags by key
             val flagMap = currentSerializable.flags.associateBy { it.key }.toMutableMap()
@@ -104,35 +104,35 @@ class SnapshotSerializer(
     /**
      * Applies a patch from a JSON string to an existing snapshot.
      *
-     * @param currentSnapshot The current snapshot to patch
+     * @param currentKonfig The current snapshot to patch
      * @param patchJson The JSON string containing the patch
-     * @return ParseResult containing either the new Snapshot with the patch applied or an error
+     * @return ParseResult containing either the new Konfig with the patch applied or an error
      */
-    fun applyPatchJson(currentSnapshot: Snapshot, patchJson: String): ParseResult<Snapshot> {
+    fun applyPatchJson(currentKonfig: Konfig, patchJson: String): ParseResult<Konfig> {
         return when (val patchResult = deserializePatch(patchJson)) {
-            is ParseResult.Success -> applyPatch(currentSnapshot, patchResult.value)
+            is ParseResult.Success -> applyPatch(currentKonfig, patchResult.value)
             is ParseResult.Failure -> ParseResult.Failure(patchResult.error)
         }
     }
 
     /**
-     * Serializes a core SnapshotPatch to a JSON string.
+     * Serializes a core KonfigPatch to a JSON string.
      *
-     * @param patch The SnapshotPatch to serialize
+     * @param patch The KonfigPatch to serialize
      * @return JSON string representation of the patch
      */
-    fun serializePatch(patch: SnapshotPatch): String {
+    fun serializePatch(patch: KonfigPatch): String {
         val serializable = patch.toSerializable()
         return patchAdapter.toJson(serializable)
     }
 
     /**
-     * Deserializes a JSON string to a core SnapshotPatch.
+     * Deserializes a JSON string to a core KonfigPatch.
      *
      * @param json The JSON string to deserialize
-     * @return ParseResult containing either the deserialized SnapshotPatch or an error
+     * @return ParseResult containing either the deserialized KonfigPatch or an error
      */
-    fun deserializePatchToCore(json: String): ParseResult<SnapshotPatch> {
+    fun deserializePatchToCore(json: String): ParseResult<KonfigPatch> {
         return when (val serializableResult = deserializePatch(json)) {
             is ParseResult.Success -> serializableResult.value.toPatch()
             is ParseResult.Failure -> ParseResult.Failure(serializableResult.error)

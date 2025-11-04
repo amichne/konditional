@@ -1656,12 +1656,12 @@
 </code></pre></div>
 <p><strong>Key features</strong>:
 - <strong>Atomic updates</strong>: <code>Snapshot</code> is replaced atomically using <code>AtomicReference</code>
-- <strong>Lock-free reads</strong>: Evaluation reads from a stable snapshot
+- <strong>Lock-free reads</strong>: Evaluation reads from a stable konfig
 - <strong>FlagEntry wrapper</strong>: Maintains type safety between <code>Conditional&lt;S, C&gt;</code> and <code>FlagDefinition&lt;S, C&gt;</code></p>
 <h2 id="evaluation-flow">Evaluation Flow<a class="headerlink" href="#evaluation-flow" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>1. Application calls: context.evaluate(Features.DARK_MODE)
 <a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>                                    ↓
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>2. Flags retrieves FlagEntry for Features.DARK_MODE from current snapshot
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>2. Flags retrieves FlagEntry for Features.DARK_MODE from current konfig
 <a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>                                    ↓
 <a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>3. FlagEntry.condition.evaluate(context) is called
 <a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>                                    ↓
@@ -1743,7 +1743,7 @@
 - Snapshot is immutable once created
 - Multiple threads can evaluate concurrently</p>
 <p><strong>Writes</strong> (configuration updates):
-- <code>AtomicReference.set()</code> provides atomic snapshot replacement
+- <code>AtomicReference.set()</code> provides atomic konfig replacement
 - Writers never block readers
 - Later writes win if concurrent</p>
 <h2 id="dsl-architecture">DSL Architecture<a class="headerlink" href="#dsl-architecture" title="Permanent link">&para;</a></h2>

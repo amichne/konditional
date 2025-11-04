@@ -15,55 +15,65 @@ sealed interface ParseError {
     /**
      * Failed to parse a hexadecimal identifier.
      */
-    data class InvalidHexId(val input: String, override val message: String) : ParseError
+    @ConsistentCopyVisibility
+    data class InvalidHexId internal constructor(val input: String, override val message: String) : ParseError
 
     /**
      * Invalid rollout percentage (must be 0.0-100.0).
      */
-    data class InvalidRollout(val value: Double, override val message: String) : ParseError
+    @ConsistentCopyVisibility
+    data class InvalidRollout internal constructor(val value: Double, override val message: String) : ParseError
 
     /**
      * Failed to parse a semantic version string.
      */
-    data class InvalidVersion(val input: String, override val message: String) : ParseError
+    @ConsistentCopyVisibility
+    data class InvalidVersion internal constructor(val input: String, override val message: String) : ParseError
 
     /**
      * Conditional key not found in registry.
      */
-    data class ConditionalNotFound(val key: String) : ParseError {
+    @ConsistentCopyVisibility
+    data class ConditionalNotFound internal constructor(val key: String) : ParseError {
         override val message: String get() = "Conditional not found: $key"
     }
 
     /**
      * Feature flag not found in registry.
      */
-    data class FlagNotFound(val key: String) : ParseError {
+    @ConsistentCopyVisibility
+    data class FlagNotFound internal constructor(val key: String) : ParseError {
         override val message: String get() = "Flag not found: $key"
     }
 
     /**
      * Invalid salt value for bucketing.
      */
-    data class InvalidSalt(val input: String, override val message: String) : ParseError
+    @ConsistentCopyVisibility
+    data class InvalidSalt internal constructor(val input: String, override val message: String) : ParseError
 
     /**
      * Failed to deserialize JSON into a snapshot.
      */
-    data class InvalidSnapshot(val reason: String) : ParseError {
+    @ConsistentCopyVisibility
+    data class InvalidSnapshot internal constructor(val reason: String) : ParseError {
         override val message: String get() = "Invalid snapshot: $reason"
     }
 
     /**
      * Type mismatch during deserialization.
      */
-    data class TypeMismatch(val expected: String, val actual: String, val context: String) : ParseError {
+    @ConsistentCopyVisibility
+    data class TypeMismatch internal constructor(val expected: String, val actual: String, val context: String) :
+        ParseError {
         override val message: String get() = "Type mismatch in $context: expected $expected but got $actual"
     }
 
     /**
      * Invalid JSON data that cannot be parsed.
      */
-    data class InvalidJson(val reason: String) : ParseError {
+    @ConsistentCopyVisibility
+    data class InvalidJson internal constructor(val reason: String) : ParseError {
         override val message: String get() = "Invalid JSON: $reason"
     }
 }

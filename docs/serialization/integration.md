@@ -164,8 +164,8 @@ class MyApplication : Application() {
 
     private fun loadFeatureFlags() {
         val json = loadFlagsJson() // From wherever you store them
-        val snapshot = SnapshotSerializer.default.deserialize(json)
-        Flags.load(snapshot)
+        val konfig = SnapshotSerializer.default.deserialize(json)
+        Flags.load(konfig)
     }
 }
 ```
@@ -246,13 +246,13 @@ ConditionalRegistry.register(ExperimentFlags.NEW_ONBOARDING)
 // ✅ Good: Register first
 fun initializeFlags() {
     ConditionalRegistry.registerEnum<FeatureFlags>()
-    val snapshot = SnapshotSerializer.default.deserialize(json)
-    Flags.load(snapshot)
+    val konfig = SnapshotSerializer.default.deserialize(json)
+    Flags.load(konfig)
 }
 
 // ❌ Bad: Deserialize before registering
 fun initializeFlags() {
-    val snapshot = SnapshotSerializer.default.deserialize(json) // Error!
+    val konfig = SnapshotSerializer.default.deserialize(json) // Error!
     ConditionalRegistry.registerEnum<FeatureFlags>()
 }
 ```
@@ -291,9 +291,9 @@ private fun loadDefaultSnapshot(): Flags.Snapshot {
 fun updateFlags() {
     try {
         val patchJson = downloadPatch()
-        val currentSnapshot = getCurrentSnapshot()
+        val currentKonfig = getCurrentSnapshot()
         val updated = SnapshotSerializer.default.applyPatchJson(
-            currentSnapshot,
+            currentKonfig,
             patchJson
         )
         Flags.load(updated)
@@ -311,28 +311,28 @@ fun updateFlags() {
 fun loadFlags(json: String): Result<Flags.Snapshot> {
     return try {
         // Deserialize
-        val snapshot = SnapshotSerializer.default.deserialize(json)
+        val konfig = SnapshotSerializer.default.deserialize(json)
 
         // Validate before loading
-        validateSnapshot(snapshot)
+        validateSnapshot(konfig)
 
         // Load if valid
-        Flags.load(snapshot)
-        Result.success(snapshot)
+        Flags.load(konfig)
+        Result.success(konfig)
     } catch (e: Exception) {
         logger.error("Flag loading failed", e)
         Result.failure(e)
     }
 }
 
-private fun validateSnapshot(snapshot: Flags.Snapshot) {
-    require(snapshot.flags.isNotEmpty()) {
+private fun validateSnapshot(konfig: Flags.Snapshot) {
+    require(konfig.flags.isNotEmpty()) {
         "Snapshot cannot be empty"
     }
 
     // Validate against schema
     val requiredFlags = setOf("feature_x", "feature_y")
-    val actualFlags = snapshot.flags.keys.map { it.key }.toSet()
+    val actualFlags = konfig.flags.keys.map { it.key }.toSet()
 
     require(requiredFlags.all { it in actualFlags }) {
         "Missing required flags: ${requiredFlags - actualFlags}"
@@ -425,12 +425,12 @@ For large configurations (100+ flags):
 
 ```kotlin
 // ✅ Good: Deserialize once, reuse
-val snapshot = SnapshotSerializer.default.deserialize(json)
-Flags.load(snapshot)
+val konfig = SnapshotSerializer.default.deserialize(json)
+Flags.load(konfig)
 
 // ❌ Bad: Deserialize repeatedly
 repeat(100) {
-    val snapshot = SnapshotSerializer.default.deserialize(json)
+    val konfig = SnapshotSerializer.default.deserialize(json)
     // This is very slow!
 }
 ```
@@ -440,10 +440,10 @@ repeat(100) {
 Snapshots are immutable and can be shared:
 
 ```kotlin
-// ✅ Good: Share snapshot across components
-val snapshot = loadSnapshot()
-componentA.useSnapshot(snapshot)
-componentB.useSnapshot(snapshot)
+// ✅ Good: Share konfig across components
+val konfig = loadSnapshot()
+componentA.useSnapshot(konfig)
+componentB.useSnapshot(konfig)
 
 // ⚠️ Consider: Snapshot size in memory
 // For apps with 1000+ flags, monitor memory usage
@@ -482,12 +482,12 @@ class FlagCache(private val cacheDir: File) {
 
 ```kotlin
 // ❌ This will crash at runtime
-val snapshot = SnapshotSerializer.default.deserialize(json)
+val konfig = SnapshotSerializer.default.deserialize(json)
 // IllegalArgumentException: Conditional with key 'my_flag' not found
 
 // ✅ Always register first
 ConditionalRegistry.registerEnum<FeatureFlags>()
-val snapshot = SnapshotSerializer.default.deserialize(json)
+val konfig = SnapshotSerializer.default.deserialize(json)
 ```
 
 ### Pitfall 2: Type Mismatches

@@ -309,8 +309,8 @@ class FlagLoader(
                 .bufferedReader()
                 .use { it.readText() }
 
-            val snapshot = serializer.deserialize(json)
-            Flags.load(snapshot)
+            val konfig = serializer.deserialize(json)
+            Flags.load(konfig)
 
             logger.info("Loaded embedded flags")
         } catch (e: Exception) {
@@ -327,8 +327,8 @@ class FlagLoader(
             // Cache for offline use
             cacheJson(json)
 
-            val snapshot = serializer.deserialize(json)
-            Flags.load(snapshot)
+            val konfig = serializer.deserialize(json)
+            Flags.load(konfig)
 
             logger.info("Updated from remote configuration")
         } catch (e: Exception) {
@@ -528,8 +528,8 @@ class FlagSerializationTest {
             "production" to FlagConfigurations.createProductionConfig()
         )
 
-        configs.forEach { (env, snapshot) ->
-            val json = serializer.serialize(snapshot)
+        configs.forEach { (env, konfig) ->
+            val json = serializer.serialize(konfig)
             val restored = serializer.deserialize(json)
 
             assertNotNull(restored, "$env config should be valid")

@@ -1,8 +1,11 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Rollout
-import io.amichne.konditional.rules.TargetedValue
+import io.amichne.konditional.core.id.HexId
+import io.amichne.konditional.rules.ConditionalValue
 import java.security.MessageDigest
 import kotlin.math.roundToInt
 
@@ -12,21 +15,22 @@ import kotlin.math.roundToInt
  * @param S The type of the value this flag produces. It must be a non-nullable type.
  * @param C The type of the context that this flag evaluates against.
  */
-data class FlagDefinition<S : Any, C : Context>(
-    val conditional: Conditional<S, C>,
-    val bounds: List<TargetedValue<S, C>>,
-    override val defaultValue: S,
-    val salt: String = "v1",
-    override val isActive: Boolean = true,
-) : ContextualFeatureFlag<S, C> {
-    override val key: String
+internal class FlagDefinition<S : Any, C : Context>(
+    conditional: Conditional<S, C>,
+    values: List<ConditionalValue<S, C>>,
+    defaultValue: S,
+    salt: String = "v1",
+    isActive: Boolean = true,
+) : FeatureFlag<S, C>(defaultValue, isActive, conditional, values, salt) {
+    val key: String
         get() = conditional.key
+
     private companion object {
         val shaDigestSpi: MessageDigest = requireNotNull(MessageDigest.getInstance("SHA-256"))
     }
 
-    private val targetedValues: List<TargetedValue<S, C>> =
-        bounds.sortedWith(compareByDescending<TargetedValue<S, C>> { it.rule.specificity() }.thenBy {
+    private val conditionalValues: List<ConditionalValue<S, C>> =
+        values.sortedWith(compareByDescending<ConditionalValue<S, C>> { it.rule.specificity() }.thenBy {
             it.rule.note ?: ""
         })
 
@@ -39,9 +43,14 @@ data class FlagDefinition<S : Any, C : Context>(
     override fun evaluate(context: C): S {
         if (!isActive) return defaultValue
 
-        return targetedValues.firstOrNull {
+        return conditionalValues.firstOrNull {
             it.rule.matches(context) &&
-                isInEligibleSegment(flagKey = conditional.key, id = context.stableId.hexId, salt = salt, rollout = it.rule.rollout)
+                isInEligibleSegment(
+                    flagKey = conditional.key,
+                    id = context.stableId.hexId,
+                    salt = salt,
+                    rollout = it.rule.rollout
+                )
         }?.value ?: defaultValue
     }
 

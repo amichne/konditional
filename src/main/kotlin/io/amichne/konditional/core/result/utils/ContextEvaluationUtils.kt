@@ -3,7 +3,6 @@ package io.amichne.konditional.core.result.utils
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.core.FlagRegistry
-import io.amichne.konditional.core.SingletonFlagRegistry
 import io.amichne.konditional.core.result.EvaluationResult
 import io.amichne.konditional.core.result.FlagEvaluationException
 import io.amichne.konditional.core.result.FlagNotFoundException
@@ -40,9 +39,9 @@ import io.amichne.konditional.core.result.FlagNotFoundException
  */
 fun <S : Any, C : Context> C.evaluateSafe(
     key: Conditional<S, C>,
-    registry: FlagRegistry = SingletonFlagRegistry
+    registry: FlagRegistry = FlagRegistry
 ): EvaluationResult<S> =
-    registry.getFlag(key)?.let { flag ->
+    registry.featureFlag(key)?.let { flag ->
         runCatching { flag.evaluate(this) }
             .fold(
                 onSuccess = { EvaluationResult.Success(it) },
@@ -69,7 +68,7 @@ fun <S : Any, C : Context> C.evaluateSafe(
  */
 fun <S : Any, C : Context> C.evaluateOrNull(
     key: Conditional<S, C>,
-    registry: FlagRegistry = SingletonFlagRegistry
+    registry: FlagRegistry = FlagRegistry
 ): S? = evaluateSafe(key, registry).getOrNull()
 
 /**
@@ -89,7 +88,7 @@ fun <S : Any, C : Context> C.evaluateOrNull(
 fun <S : Any, C : Context> C.evaluateOrDefault(
     key: Conditional<S, C>,
     default: S,
-    registry: FlagRegistry = SingletonFlagRegistry
+    registry: FlagRegistry = FlagRegistry
 ): S = evaluateSafe(key, registry).getOrDefault(default)
 
 /**
@@ -111,7 +110,7 @@ fun <S : Any, C : Context> C.evaluateOrDefault(
  */
 fun <S : Any, C : Context> C.evaluateOrThrow(
     key: Conditional<S, C>,
-    registry: FlagRegistry = SingletonFlagRegistry
+    registry: FlagRegistry = FlagRegistry
 ): S = evaluateSafe(key, registry).fold(
     onSuccess = { it },
     onFlagNotFound = { throw FlagNotFoundException(it) },

@@ -254,8 +254,8 @@ class FlagSerializationTest {
     @Test
     fun `test flag serialization`() {
         // Test code here - flags are registered
-        val snapshot = createTestSnapshot()
-        val json = SnapshotSerializer.default.serialize(snapshot)
+        val konfig = createTestSnapshot()
+        val json = SnapshotSerializer.default.serialize(konfig)
 
         // This will work because flags are registered
         val deserialized = SnapshotSerializer.default.deserialize(json)
@@ -293,7 +293,7 @@ fun verifyRegistration() {
 
 ```kotlin
 // This will crash!
-val snapshot = SnapshotSerializer.default.deserialize(json)
+val konfig = SnapshotSerializer.default.deserialize(json)
 ConditionalRegistry.registerEnum<FeatureFlags>()
 // IllegalArgumentException: Conditional with key 'dark_mode' not found
 ```
@@ -304,7 +304,7 @@ ConditionalRegistry.registerEnum<FeatureFlags>()
 // Register first
 ConditionalRegistry.registerEnum<FeatureFlags>()
 // Then deserialize
-val snapshot = SnapshotSerializer.default.deserialize(json)
+val konfig = SnapshotSerializer.default.deserialize(json)
 ```
 
 ### ❌ Forgetting Some Flags
@@ -315,7 +315,7 @@ ConditionalRegistry.registerEnum<FeatureFlags>()
 
 // JSON contains ExperimentFlags - will crash!
 val json = """{"flags": [{"key": "experiment_new_ui", ...}]}"""
-val snapshot = SnapshotSerializer.default.deserialize(json)
+val konfig = SnapshotSerializer.default.deserialize(json)
 ```
 
 ### ✅ Register All Used Flags
@@ -326,7 +326,7 @@ ConditionalRegistry.registerEnum<FeatureFlags>()
 ConditionalRegistry.registerEnum<ExperimentFlags>()
 
 // Now both types can be deserialized
-val snapshot = SnapshotSerializer.default.deserialize(json)
+val konfig = SnapshotSerializer.default.deserialize(json)
 ```
 
 ## What's Next?

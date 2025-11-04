@@ -1,11 +1,15 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.builders.FlagBuilder
+import io.amichne.konditional.builders.FlagBuilder.Companion.flag
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.instance.KonfigPatch
+import io.amichne.konditional.core.internal.SingletonFlagRegistry
 import io.amichne.konditional.core.result.EvaluationResult
 import io.amichne.konditional.core.result.FlagEvaluationException
 import io.amichne.konditional.core.result.FlagNotFoundException
@@ -43,7 +47,7 @@ import kotlin.test.assertTrue
  */
 class EvaluationResultTest {
 
-    enum class TestFlags(override val key: String) : Conditional<String, Context> {
+    enum class TestFlags(override val key: String) : Conditional<String, Context> by Conditional(key) {
         REGISTERED_FLAG("registered_flag"),
         UNREGISTERED_FLAG("unregistered_flag"),
     }
@@ -63,6 +67,8 @@ class EvaluationResultTest {
         StableId.of("11111111111111111111111111111111")
     )
 
+    private val testRegistry = object : FlagRegistry by SingletonFlagRegistry {}
+
     init {
         // Register a normal flag
         val rule = Rule<Context>(
@@ -71,6 +77,13 @@ class EvaluationResultTest {
             platforms = emptySet(),
             versionRange = Unbounded,
         )
+        testRegistry.update(KonfigPatch(
+            flags = mapOf(TestFlags.REGISTERED_FLAG to TestFlags.REGISTERED_FLAG.flag {
+                rule implies "test-value"
+                default("default-value")
+            }),
+        ))
+
 
         TestFlags.REGISTERED_FLAG.update(
             FlagBuilder(TestFlags.REGISTERED_FLAG).apply {

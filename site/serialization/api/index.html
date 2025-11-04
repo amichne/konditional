@@ -2265,14 +2265,14 @@
 <h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
 <h4 id="serialize">serialize()<a class="headerlink" href="#serialize" title="Permanent link">&para;</a></h4>
 <p>Serializes a <code>Flags.Snapshot</code> to JSON string.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">serialize</span><span class="p">(</span><span class="n">snapshot</span><span class="p">:</span><span class="w"> </span><span class="n">Flags</span><span class="p">.</span><span class="na">Snapshot</span><span class="p">):</span><span class="w"> </span><span class="kt">String</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">serialize</span><span class="p">(</span><span class="n">konfig</span><span class="p">:</span><span class="w"> </span><span class="n">Flags</span><span class="p">.</span><span class="na">Snapshot</span><span class="p">):</span><span class="w"> </span><span class="kt">String</span>
 </code></pre></div>
 <p><strong>Parameters:</strong>
-- <code>snapshot</code> - The snapshot to serialize</p>
+- <code>konfig</code> - The konfig to serialize</p>
 <p><strong>Returns:</strong> Pretty-printed JSON string</p>
 <p><strong>Example:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">serializer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serializer</span><span class="p">.</span><span class="na">serialize</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serializer</span><span class="p">.</span><span class="na">serialize</span><span class="p">(</span><span class="n">konfig</span><span class="p">)</span>
 </code></pre></div></p>
 <hr />
 <h4 id="deserialize">deserialize()<a class="headerlink" href="#deserialize" title="Permanent link">&para;</a></h4>
@@ -2286,7 +2286,7 @@
 - <code>JsonDataException</code> - If JSON is malformed
 - <code>IllegalArgumentException</code> - If flag keys are not registered</p>
 <p><strong>Example:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serializer</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serializer</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
 </code></pre></div></p>
 <hr />
 <h4 id="serializepatch">serializePatch()<a class="headerlink" href="#serializepatch" title="Permanent link">&para;</a></h4>
@@ -2315,31 +2315,31 @@
 </code></pre></div></p>
 <hr />
 <h4 id="applypatch">applyPatch()<a class="headerlink" href="#applypatch" title="Permanent link">&para;</a></h4>
-<p>Applies a patch to an existing snapshot.</p>
+<p>Applies a patch to an existing konfig.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">applyPatch</span><span class="p">(</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="n">currentSnapshot</span><span class="p">:</span><span class="w"> </span><span class="n">Flags</span><span class="p">.</span><span class="na">Snapshot</span><span class="p">,</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="n">currentKonfig</span><span class="p">:</span><span class="w"> </span><span class="n">Flags</span><span class="p">.</span><span class="na">Snapshot</span><span class="p">,</span>
 <a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="n">patch</span><span class="p">:</span><span class="w"> </span><span class="n">SerializablePatch</span>
 <a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="p">):</span><span class="w"> </span><span class="n">Flags</span><span class="p">.</span><span class="na">Snapshot</span>
 </code></pre></div>
 <p><strong>Parameters:</strong>
-- <code>currentSnapshot</code> - Snapshot to patch
+- <code>currentKonfig</code> - Snapshot to patch
 - <code>patch</code> - Patch to apply</p>
-<p><strong>Returns:</strong> New snapshot with patch applied</p>
+<p><strong>Returns:</strong> New konfig with patch applied</p>
 <p><strong>Example:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">updated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serializer</span><span class="p">.</span><span class="na">applyPatch</span><span class="p">(</span><span class="n">current</span><span class="p">,</span><span class="w"> </span><span class="n">patch</span><span class="p">)</span>
 </code></pre></div></p>
 <hr />
 <h4 id="applypatchjson">applyPatchJson()<a class="headerlink" href="#applypatchjson" title="Permanent link">&para;</a></h4>
-<p>Applies a patch from JSON to a snapshot.</p>
+<p>Applies a patch from JSON to a konfig.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">applyPatchJson</span><span class="p">(</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="n">currentSnapshot</span><span class="p">:</span><span class="w"> </span><span class="n">Flags</span><span class="p">.</span><span class="na">Snapshot</span><span class="p">,</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="n">currentKonfig</span><span class="p">:</span><span class="w"> </span><span class="n">Flags</span><span class="p">.</span><span class="na">Snapshot</span><span class="p">,</span>
 <a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="n">patchJson</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span>
 <a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="p">):</span><span class="w"> </span><span class="n">Flags</span><span class="p">.</span><span class="na">Snapshot</span>
 </code></pre></div>
 <p><strong>Parameters:</strong>
-- <code>currentSnapshot</code> - Snapshot to patch
+- <code>currentKonfig</code> - Snapshot to patch
 - <code>patchJson</code> - JSON string containing patch</p>
-<p><strong>Returns:</strong> New snapshot with patch applied</p>
+<p><strong>Returns:</strong> New konfig with patch applied</p>
 <p><strong>Example:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">updated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serializer</span><span class="p">.</span><span class="na">applyPatchJson</span><span class="p">(</span><span class="n">current</span><span class="p">,</span><span class="w"> </span><span class="n">patchJson</span><span class="p">)</span>
 </code></pre></div></p>
@@ -2745,7 +2745,7 @@
 <a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a><span class="p">):</span><span class="w"> </span><span class="kt">String</span>
 </code></pre></div>
 <p><strong>Example:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">snapshot</span><span class="p">.</span><span class="na">toJson</span><span class="p">()</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">konfig</span><span class="p">.</span><span class="na">toJson</span><span class="p">()</span>
 </code></pre></div></p>
 <hr />
 <h3 id="snapshotjsonparserfromjson">SnapshotJsonParser.fromJson()<a class="headerlink" href="#snapshotjsonparserfromjson" title="Permanent link">&para;</a></h3>
@@ -2758,18 +2758,18 @@
 <a id="__codelineno-37-6" name="__codelineno-37-6" href="#__codelineno-37-6"></a><span class="p">}</span>
 </code></pre></div>
 <p><strong>Example:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotJsonParser</span><span class="p">.</span><span class="na">fromJson</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotJsonParser</span><span class="p">.</span><span class="na">fromJson</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
 </code></pre></div></p>
 <hr />
 <h2 id="conversion-utilities">Conversion Utilities<a class="headerlink" href="#conversion-utilities" title="Permanent link">&para;</a></h2>
 <h3 id="flagssnapshottoserializable">Flags.Snapshot.toSerializable()<a class="headerlink" href="#flagssnapshottoserializable" title="Permanent link">&para;</a></h3>
-<p>Converts snapshot to serializable form.</p>
+<p>Converts konfig to serializable form.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="kd">fun</span><span class="w"> </span><span class="n">Flags</span><span class="p">.</span><span class="nf">Snapshot</span><span class="p">.</span><span class="na">toSerializable</span><span class="p">():</span><span class="w"> </span><span class="n">SerializableSnapshot</span>
 </code></pre></div>
 <p><strong>Internal use</strong> - Called by <code>SnapshotSerializer.serialize()</code></p>
 <hr />
 <h3 id="serializablesnapshottosnapshot">SerializableSnapshot.toSnapshot()<a class="headerlink" href="#serializablesnapshottosnapshot" title="Permanent link">&para;</a></h3>
-<p>Converts serializable form to snapshot.</p>
+<p>Converts serializable form to konfig.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a><span class="kd">fun</span><span class="w"> </span><span class="n">SerializableSnapshot</span><span class="p">.</span><span class="nf">toSnapshot</span><span class="p">():</span><span class="w"> </span><span class="n">Flags</span><span class="p">.</span><span class="na">Snapshot</span>
 </code></pre></div>
 <p><strong>Internal use</strong> - Called by <code>SnapshotSerializer.deserialize()</code></p>
@@ -2782,13 +2782,13 @@
 <a id="__codelineno-41-4" name="__codelineno-41-4" href="#__codelineno-41-4"></a><span class="n">ConditionalRegistry</span><span class="p">.</span><span class="na">registerEnum</span><span class="o">&lt;</span><span class="n">FeatureFlags</span><span class="o">&gt;</span><span class="p">()</span>
 <a id="__codelineno-41-5" name="__codelineno-41-5" href="#__codelineno-41-5"></a>
 <a id="__codelineno-41-6" name="__codelineno-41-6" href="#__codelineno-41-6"></a><span class="c1">// Create config</span>
-<a id="__codelineno-41-7" name="__codelineno-41-7" href="#__codelineno-41-7"></a><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildSnapshot</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-41-7" name="__codelineno-41-7" href="#__codelineno-41-7"></a><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildSnapshot</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-41-8" name="__codelineno-41-8" href="#__codelineno-41-8"></a><span class="w">    </span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">default</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
 <a id="__codelineno-41-9" name="__codelineno-41-9" href="#__codelineno-41-9"></a><span class="p">}</span>
 <a id="__codelineno-41-10" name="__codelineno-41-10" href="#__codelineno-41-10"></a>
 <a id="__codelineno-41-11" name="__codelineno-41-11" href="#__codelineno-41-11"></a><span class="c1">// Serialize</span>
 <a id="__codelineno-41-12" name="__codelineno-41-12" href="#__codelineno-41-12"></a><span class="kd">val</span><span class="w"> </span><span class="nv">serializer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">default</span>
-<a id="__codelineno-41-13" name="__codelineno-41-13" href="#__codelineno-41-13"></a><span class="kd">val</span><span class="w"> </span><span class="nv">json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serializer</span><span class="p">.</span><span class="na">serialize</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+<a id="__codelineno-41-13" name="__codelineno-41-13" href="#__codelineno-41-13"></a><span class="kd">val</span><span class="w"> </span><span class="nv">json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serializer</span><span class="p">.</span><span class="na">serialize</span><span class="p">(</span><span class="n">konfig</span><span class="p">)</span>
 <a id="__codelineno-41-14" name="__codelineno-41-14" href="#__codelineno-41-14"></a>
 <a id="__codelineno-41-15" name="__codelineno-41-15" href="#__codelineno-41-15"></a><span class="c1">// Save to file</span>
 <a id="__codelineno-41-16" name="__codelineno-41-16" href="#__codelineno-41-16"></a><span class="n">File</span><span class="p">(</span><span class="s">&quot;flags.json&quot;</span><span class="p">).</span><span class="na">writeText</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
@@ -2813,10 +2813,10 @@
 <h3 id="1-always-register-before-deserializing">1. Always Register Before Deserializing<a class="headerlink" href="#1-always-register-before-deserializing" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a><span class="c1">// ✅ Correct</span>
 <a id="__codelineno-42-2" name="__codelineno-42-2" href="#__codelineno-42-2"></a><span class="n">ConditionalRegistry</span><span class="p">.</span><span class="na">registerEnum</span><span class="o">&lt;</span><span class="n">FeatureFlags</span><span class="o">&gt;</span><span class="p">()</span>
-<a id="__codelineno-42-3" name="__codelineno-42-3" href="#__codelineno-42-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serializer</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
+<a id="__codelineno-42-3" name="__codelineno-42-3" href="#__codelineno-42-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serializer</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
 <a id="__codelineno-42-4" name="__codelineno-42-4" href="#__codelineno-42-4"></a>
 <a id="__codelineno-42-5" name="__codelineno-42-5" href="#__codelineno-42-5"></a><span class="c1">// ❌ Wrong</span>
-<a id="__codelineno-42-6" name="__codelineno-42-6" href="#__codelineno-42-6"></a><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serializer</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
+<a id="__codelineno-42-6" name="__codelineno-42-6" href="#__codelineno-42-6"></a><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serializer</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
 <a id="__codelineno-42-7" name="__codelineno-42-7" href="#__codelineno-42-7"></a><span class="n">ConditionalRegistry</span><span class="p">.</span><span class="na">registerEnum</span><span class="o">&lt;</span><span class="n">FeatureFlags</span><span class="o">&gt;</span><span class="p">()</span><span class="w"> </span><span class="c1">// Too late!</span>
 </code></pre></div>
 <h3 id="2-use-default-serializer">2. Use Default Serializer<a class="headerlink" href="#2-use-default-serializer" title="Permanent link">&para;</a></h3>
@@ -2829,8 +2829,8 @@
 </code></pre></div>
 <h3 id="3-handle-errors">3. Handle Errors<a class="headerlink" href="#3-handle-errors" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a><span class="k">try</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-44-2" name="__codelineno-44-2" href="#__codelineno-44-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serializer</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
-<a id="__codelineno-44-3" name="__codelineno-44-3" href="#__codelineno-44-3"></a><span class="w">    </span><span class="n">Flags</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+<a id="__codelineno-44-2" name="__codelineno-44-2" href="#__codelineno-44-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serializer</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
+<a id="__codelineno-44-3" name="__codelineno-44-3" href="#__codelineno-44-3"></a><span class="w">    </span><span class="n">Flags</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">konfig</span><span class="p">)</span>
 <a id="__codelineno-44-4" name="__codelineno-44-4" href="#__codelineno-44-4"></a><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">e</span><span class="p">:</span><span class="w"> </span><span class="n">JsonDataException</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-44-5" name="__codelineno-44-5" href="#__codelineno-44-5"></a><span class="w">    </span><span class="n">logger</span><span class="p">.</span><span class="na">error</span><span class="p">(</span><span class="s">&quot;Invalid JSON&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">)</span>
 <a id="__codelineno-44-6" name="__codelineno-44-6" href="#__codelineno-44-6"></a><span class="w">    </span><span class="c1">// Load fallback</span>

@@ -16,14 +16,16 @@ import io.amichne.konditional.rules.versions.VersionRange
  *
  * @param C The type of the context that the rules will evaluate against.
  */
+@ConsistentCopyVisibility
 @FeatureFlagDsl
-class RuleBuilder<C : Context> {
-    var rollout: Rollout? = null
-    private val locales = linkedSetOf<AppLocale>()
-    private val platforms = linkedSetOf<Platform>()
-    private var range: VersionRange = Unbounded
-    private var note: String? = null
-    private var extension: Evaluable<C> = object : Evaluable<C>() {}
+data class RuleBuilder<C : Context> internal constructor(
+    private var extension: Evaluable<C> = object : Evaluable<C>() {},
+    private var note: String? = null,
+    private var range: VersionRange = Unbounded,
+    private val platforms: LinkedHashSet<Platform> = linkedSetOf(),
+    var rollout: Rollout? = null,
+    private val locales: LinkedHashSet<AppLocale> = linkedSetOf()
+) {
 
     fun locales(vararg appLocales: AppLocale) {
         locales += appLocales

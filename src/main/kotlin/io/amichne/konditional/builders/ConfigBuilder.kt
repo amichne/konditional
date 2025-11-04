@@ -20,14 +20,14 @@ package io.amichne.konditional.builders
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Conditional
-import io.amichne.konditional.core.ContextualFeatureFlag
+import io.amichne.konditional.core.FeatureFlag
 import io.amichne.konditional.core.FeatureFlagDsl
-import io.amichne.konditional.core.SingletonFlagRegistry
-import io.amichne.konditional.core.snapshot.Snapshot
+import io.amichne.konditional.core.FlagRegistry
+import io.amichne.konditional.core.instance.Konfig
 
 @FeatureFlagDsl
 class ConfigBuilder private constructor() {
-    private val flags = LinkedHashMap<Conditional<*, *>, ContextualFeatureFlag<*, *>>()
+    private val flags = LinkedHashMap<Conditional<*, *>, FeatureFlag<*, *>>()
 
     /**
      * Define a flag using infix syntax:
@@ -43,20 +43,18 @@ class ConfigBuilder private constructor() {
         this@ConfigBuilder.flags[this] = FlagBuilder(this).apply<FlagBuilder<S, C>>(build).build()
     }
 
-    internal fun build(): Snapshot = Snapshot(flags.toMap())
+    fun build(): Konfig = Konfig(flags.toMap())
 
     @FeatureFlagDsl
     companion object {
-        fun config(fn: ConfigBuilder.() -> Unit): Unit =
-            ConfigBuilder().apply(fn).build().let {
-                SingletonFlagRegistry.load(it)
-            }
+        fun config(registry: FlagRegistry = FlagRegistry, fn: ConfigBuilder.() -> Unit): Unit =
+            ConfigBuilder().apply(fn).build().let { registry.load(it) }
 
         /**
-         * Builds a Snapshot without loading it into SingletonFlagRegistry.
+         * Builds a Konfig without loading it into SingletonFlagRegistry.
          * Useful for testing and external snapshot management.
          */
-        fun buildSnapshot(fn: ConfigBuilder.() -> Unit): Snapshot =
+        fun buildSnapshot(fn: ConfigBuilder.() -> Unit): Konfig =
             ConfigBuilder().apply(fn).build()
     }
 }

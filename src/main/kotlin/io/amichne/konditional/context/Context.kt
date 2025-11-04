@@ -1,6 +1,6 @@
 package io.amichne.konditional.context
 
-import io.amichne.konditional.core.StableId
+import io.amichne.konditional.core.id.StableId
 
 /**
  * Represents the execution context for feature flag evaluation.
@@ -26,7 +26,7 @@ import io.amichne.konditional.core.StableId
  * @property appVersion The semantic version of the application
  * @property stableId A stable, unique identifier used for deterministic bucketing in rollouts
  *
- * @see io.amichne.konditional.core.SingletonFlagRegistry
+ * @see io.amichne.konditional.core.internal.SingletonFlagRegistry
  * @see io.amichne.konditional.rules.Rule
  */
 interface Context {

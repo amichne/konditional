@@ -1,11 +1,8 @@
 package io.amichne.konditional.context
 
-import io.amichne.konditional.builders.ConfigBuilder.Companion.buildSnapshot
 import io.amichne.konditional.builders.ConfigBuilder.Companion.config
-import io.amichne.konditional.builders.FlagBuilder
 import io.amichne.konditional.core.Conditional
-import io.amichne.konditional.core.FlagRegistry
-import io.amichne.konditional.core.StableId
+import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fakes.FakeRegistry
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.evaluable.Evaluable
@@ -53,7 +50,7 @@ class ContextPolymorphismTest {
     // SingletonFlagRegistry using EnterpriseContext
     enum class EnterpriseFlags(
         override val key: String,
-    ) : Conditional<Boolean, EnterpriseContext> {
+    ) : Conditional<Boolean, EnterpriseContext> by Conditional(key) {
         ADVANCED_ANALYTICS("advanced_analytics"),
         BULK_EXPORT("bulk_export"),
         CUSTOM_BRANDING("custom_branding"),
@@ -63,7 +60,7 @@ class ContextPolymorphismTest {
     // SingletonFlagRegistry using ExperimentContext
     enum class ExperimentFlags(
         override val key: String,
-    ) : Conditional<String, ExperimentContext> {
+    ) : Conditional<String, ExperimentContext> by Conditional(key) {
         HOMEPAGE_VARIANT("homepage_variant"),
         ONBOARDING_STYLE("onboarding_style"),
     }
@@ -186,44 +183,10 @@ class ContextPolymorphismTest {
     }
 
     @Test
-    fun `Given custom context, When evaluating all flags, Then returns all flags for that context`() {
-        config {
-            EnterpriseFlags.ADVANCED_ANALYTICS with {
-                default(false)
-            }
-            EnterpriseFlags.BULK_EXPORT with {
-                default(true)
-            }
-            EnterpriseFlags.CUSTOM_BRANDING with {
-                default(false)
-                rule {
-                    platforms(Platform.WEB)
-                } implies true
-            }
-        }
-
-        val ctx = EnterpriseContext(
-            locale = AppLocale.EN_US,
-            platform = Platform.WEB,
-            appVersion = Version(1, 0, 0),
-            stableId = StableId.of("66666666666666666666666666666666"),
-            organizationId = "org-789",
-            subscriptionTier = SubscriptionTier.PREMIUM,
-            userRole = UserRole.ADMIN,
-        )
-
-        val allFlags = ctx.evaluate()
-
-        assertEquals(3, allFlags.size)
-        assertTrue(allFlags.containsKey(EnterpriseFlags.ADVANCED_ANALYTICS))
-        assertTrue(allFlags.containsKey(EnterpriseFlags.BULK_EXPORT))
-        assertTrue(allFlags.containsKey(EnterpriseFlags.CUSTOM_BRANDING))
-    }
-
-    @Test
     fun `Given base Context and custom Context, When both used, Then type safety is maintained`() {
         // Define flag in scope
-        data class StandardFlagA(override val key: String = "feature_a") : Conditional<Boolean, Context>
+        data class StandardFlagA(override val key: String = "feature_a") :
+            Conditional<Boolean, Context> by Conditional(key)
 
         val standardFlagA = StandardFlagA()
 
@@ -300,18 +263,20 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given custom EnterpriseRule, When matching with business logic, Then custom properties are enforced`() {
-        val registry: FlagRegistry = buildSnapshot {
+        val registry = FakeRegistry()
+        config(registry) {
             EnterpriseFlags.API_ACCESS with {
                 default(false)
                 rule {
                     platforms(Platform.WEB)
                     rollout = Rollout.MAX
+
                     extension {
                         EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN)
                     }
                 } implies true
             }
-        }.let { snapshot -> FakeRegistry().also { it.load(snapshot) } }
+        }
 
         val enterpriseAdmin = EnterpriseContext(
             locale = AppLocale.EN_US,

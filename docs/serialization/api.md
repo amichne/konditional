@@ -29,18 +29,18 @@ class SnapshotSerializer(
 Serializes a `Snapshot` to JSON string.
 
 ```kotlin
-fun serialize(snapshot: Snapshot): String
+fun serialize(konfig: Snapshot): String
 ```
 
 **Parameters:**
-- `snapshot` - The snapshot to serialize
+- `konfig` - The konfig to serialize
 
 **Returns:** Pretty-printed JSON string
 
 **Example:**
 ```kotlin
 val serializer = SnapshotSerializer.default
-val json = serializer.serialize(snapshot)
+val json = serializer.serialize(konfig)
 ```
 
 ---
@@ -64,7 +64,7 @@ fun deserialize(json: String): Snapshot
 
 **Example:**
 ```kotlin
-val snapshot = serializer.deserialize(json)
+val konfig = serializer.deserialize(json)
 ```
 
 ---
@@ -84,7 +84,7 @@ fun serializePatch(patch: SnapshotPatch): String
 
 **Example:**
 ```kotlin
-val patch = SnapshotPatch.from(snapshot) {
+val patch = SnapshotPatch.from(konfig) {
     add(MY_FLAG to flagDefinition)
 }
 val json = serializer.serializePatch(patch)
@@ -141,20 +141,20 @@ val patch = serializer.deserializePatchToCore(patchJson)
 
 #### applyPatch()
 
-Applies a serializable patch to an existing snapshot.
+Applies a serializable patch to an existing konfig.
 
 ```kotlin
 fun applyPatch(
-    currentSnapshot: Snapshot,
+    currentKonfig: Snapshot,
     patch: SerializablePatch
 ): Snapshot
 ```
 
 **Parameters:**
-- `currentSnapshot` - Snapshot to patch
+- `currentKonfig` - Snapshot to patch
 - `patch` - Patch to apply
 
-**Returns:** New snapshot with patch applied
+**Returns:** New konfig with patch applied
 
 **Example:**
 ```kotlin
@@ -165,20 +165,20 @@ val updated = serializer.applyPatch(current, patch)
 
 #### applyPatchJson()
 
-Applies a patch from JSON to a snapshot.
+Applies a patch from JSON to a konfig.
 
 ```kotlin
 fun applyPatchJson(
-    currentSnapshot: Snapshot,
+    currentKonfig: Snapshot,
     patchJson: String
 ): Snapshot
 ```
 
 **Parameters:**
-- `currentSnapshot` - Snapshot to patch
+- `currentKonfig` - Snapshot to patch
 - `patchJson` - JSON string containing patch
 
-**Returns:** New snapshot with patch applied
+**Returns:** New konfig with patch applied
 
 **Example:**
 ```kotlin
@@ -237,7 +237,7 @@ interface FlagRegistry {
 
 #### load()
 
-Loads a complete flag configuration from the provided snapshot.
+Loads a complete flag configuration from the provided konfig.
 
 ```kotlin
 fun load(config: Snapshot)
@@ -248,10 +248,10 @@ fun load(config: Snapshot)
 
 **Example:**
 ```kotlin
-val snapshot = ConfigBuilder.buildSnapshot {
+val konfig = ConfigBuilder.buildSnapshot {
     MY_FLAG with { default(true) }
 }
-SingletonFlagRegistry.load(snapshot)
+SingletonFlagRegistry.load(konfig)
 ```
 
 ---
@@ -298,7 +298,7 @@ SingletonFlagRegistry.update(flagDefinition)
 
 #### getCurrentSnapshot()
 
-Retrieves the current snapshot of all flag configurations.
+Retrieves the current konfig of all flag configurations.
 
 ```kotlin
 fun getCurrentSnapshot(): Snapshot
@@ -308,7 +308,7 @@ fun getCurrentSnapshot(): Snapshot
 
 **Example:**
 ```kotlin
-val snapshot = SingletonFlagRegistry.getCurrentSnapshot()
+val konfig = SingletonFlagRegistry.getCurrentSnapshot()
 ```
 
 ---
@@ -367,7 +367,7 @@ Thread-safe, in-memory registry for managing feature flags. Uses `AtomicReferenc
 **Example:**
 ```kotlin
 // Load configuration
-SingletonFlagRegistry.load(snapshot)
+SingletonFlagRegistry.load(konfig)
 
 // Evaluate flags (uses SingletonFlagRegistry by default)
 val value = context.evaluate(MY_FLAG)
@@ -702,20 +702,20 @@ data class SnapshotPatch(
 
 #### applyTo()
 
-Applies the patch to a snapshot, creating a new snapshot with the changes.
+Applies the patch to a konfig, creating a new konfig with the changes.
 
 ```kotlin
-fun applyTo(snapshot: Snapshot): Snapshot
+fun applyTo(konfig: Snapshot): Snapshot
 ```
 
 **Parameters:**
-- `snapshot` - The snapshot to apply the patch to
+- `konfig` - The konfig to apply the patch to
 
 **Returns:** A new Snapshot with the patch applied
 
 **Example:**
 ```kotlin
-val updatedSnapshot = patch.applyTo(currentSnapshot)
+val updatedSnapshot = patch.applyTo(currentKonfig)
 ```
 
 ---
@@ -731,14 +731,14 @@ fun from(current: Snapshot, builder: PatchBuilder.() -> Unit): SnapshotPatch
 ```
 
 **Parameters:**
-- `current` - The current snapshot to base the patch on
+- `current` - The current konfig to base the patch on
 - `builder` - A builder function to configure the patch
 
 **Returns:** A new SnapshotPatch
 
 **Example:**
 ```kotlin
-val patch = SnapshotPatch.from(currentSnapshot) {
+val patch = SnapshotPatch.from(currentKonfig) {
     add(MY_FLAG to myFlagDefinition)
     remove(OLD_FLAG)
 }
@@ -826,7 +826,7 @@ fun <S : Any, C : Context> add(entry: Pair<Conditional<S, C>, ContextualFeatureF
 
 **Example:**
 ```kotlin
-SnapshotPatch.from(snapshot) {
+SnapshotPatch.from(konfig) {
     add(MY_FLAG to flagDefinition)
 }
 ```
@@ -846,7 +846,7 @@ fun remove(key: Conditional<*, *>)
 
 **Example:**
 ```kotlin
-SnapshotPatch.from(snapshot) {
+SnapshotPatch.from(konfig) {
     remove(OLD_FLAG)
 }
 ```
@@ -857,7 +857,7 @@ SnapshotPatch.from(snapshot) {
 
 ### Snapshot.toJson()
 
-Convenience method to serialize a snapshot directly.
+Convenience method to serialize a konfig directly.
 
 ```kotlin
 fun Snapshot.toJson(
@@ -867,14 +867,14 @@ fun Snapshot.toJson(
 
 **Example:**
 ```kotlin
-val json = snapshot.toJson()
+val json = konfig.toJson()
 ```
 
 ---
 
 ### Snapshot.fromJson()
 
-Convenience method to deserialize a snapshot.
+Convenience method to deserialize a konfig.
 
 ```kotlin
 fun Snapshot.Companion.fromJson(
@@ -885,7 +885,7 @@ fun Snapshot.Companion.fromJson(
 
 **Example:**
 ```kotlin
-val snapshot = Snapshot.fromJson(json)
+val konfig = Snapshot.fromJson(json)
 ```
 
 ---
@@ -897,7 +897,7 @@ Evaluates a specific feature flag in the context.
 ```kotlin
 fun <S : Any, C : Context> C.evaluate(
     key: Conditional<S, C>,
-    registry: FlagRegistry = SingletonFlagRegistry
+    registry: FlagRegistry = FlagRegistry
 ): S
 ```
 
@@ -927,7 +927,7 @@ Evaluates all feature flags in the context.
 
 ```kotlin
 fun <C : Context> C.evaluate(
-    registry: FlagRegistry = SingletonFlagRegistry
+    registry: FlagRegistry = FlagRegistry
 ): Map<Conditional<*, *>, Any?>
 ```
 
@@ -947,7 +947,7 @@ val allValues = context.evaluate()
 
 ### Snapshot.toSerializable()
 
-Converts snapshot to serializable form.
+Converts konfig to serializable form.
 
 ```kotlin
 fun Snapshot.toSerializable(): SerializableSnapshot
@@ -959,7 +959,7 @@ fun Snapshot.toSerializable(): SerializableSnapshot
 
 ### SerializableSnapshot.toSnapshot()
 
-Converts serializable form to snapshot.
+Converts serializable form to konfig.
 
 ```kotlin
 fun SerializableSnapshot.toSnapshot(): Snapshot
@@ -1000,20 +1000,19 @@ fun SerializablePatch.toPatch(): SnapshotPatch
 ```kotlin
 import io.amichne.konditional.serialization.*
 import io.amichne.konditional.core.SingletonFlagRegistry
-import io.amichne.konditional.core.snapshot.Snapshot
-import io.amichne.konditional.core.snapshot.SnapshotPatch
+import io.amichne.konditional.core.instance.Konfigmport io.amichne.konditional.core.konfig.SnapshotPatch
 
 // Register flags
 ConditionalRegistry.registerEnum<FeatureFlags>()
 
 // Create config
-val snapshot = ConfigBuilder.buildSnapshot {
+val konfig = ConfigBuilder.buildSnapshot {
     FeatureFlags.DARK_MODE with { default(true) }
 }
 
 // Serialize
 val serializer = SnapshotSerializer.default
-val json = serializer.serialize(snapshot)
+val json = serializer.serialize(konfig)
 
 // Save to file
 File("flags.json").writeText(json)
@@ -1037,7 +1036,7 @@ val darkMode = context.evaluate(FeatureFlags.DARK_MODE)
 ### Patch Update Example
 
 ```kotlin
-// Get current snapshot
+// Get current konfig
 val current = SingletonFlagRegistry.getCurrentSnapshot()
 
 // Create a patch
@@ -1056,7 +1055,7 @@ File("update.json").writeText(patchJson)
 val loadedPatch = SnapshotPatch.fromJson(File("update.json").readText())
 SingletonFlagRegistry.applyPatch(loadedPatch)
 
-// Or apply directly to a snapshot
+// Or apply directly to a konfig
 val updatedSnapshot = loadedPatch.applyTo(current)
 SingletonFlagRegistry.load(updatedSnapshot)
 ```
@@ -1070,10 +1069,10 @@ SingletonFlagRegistry.load(updatedSnapshot)
 ```kotlin
 // ✅ Correct
 ConditionalRegistry.registerEnum<FeatureFlags>()
-val snapshot = serializer.deserialize(json)
+val konfig = serializer.deserialize(json)
 
 // ❌ Wrong
-val snapshot = serializer.deserialize(json)
+val konfig = serializer.deserialize(json)
 ConditionalRegistry.registerEnum<FeatureFlags>() // Too late!
 ```
 
@@ -1092,8 +1091,8 @@ val serializer = SnapshotSerializer(customMoshi)
 
 ```kotlin
 try {
-    val snapshot = serializer.deserialize(json)
-    SingletonFlagRegistry.load(snapshot)
+    val konfig = serializer.deserialize(json)
+    SingletonFlagRegistry.load(konfig)
 } catch (e: JsonDataException) {
     logger.error("Invalid JSON", e)
     // Load fallback
@@ -1112,7 +1111,7 @@ val patch = SnapshotPatch.from(SingletonFlagRegistry.getCurrentSnapshot()) {
 }
 SingletonFlagRegistry.applyPatch(patch)
 
-// ⚠️ Less efficient - replaces entire snapshot
+// ⚠️ Less efficient - replaces entire konfig
 val newSnapshot = ConfigBuilder.buildSnapshot { /* ... */ }
 SingletonFlagRegistry.load(newSnapshot)
 ```

@@ -31,7 +31,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * @see Evaluable
  * @see io.amichne.konditional.rules.Rule
  */
-data class UserClientEvaluator<C : Context>(
+data class BaseEvaluable<C : Context>(
     val locales: Set<AppLocale> = emptySet(),
     val platforms: Set<Platform> = emptySet(),
     val versionRange: VersionRange = Unbounded,

@@ -5,7 +5,7 @@ import io.amichne.konditional.core.Conditional
 
 enum class SampleFeatureEnum(
     override val key: String,
-) : Conditional<Boolean, Context> {
+) : Conditional<Boolean, Context> by Conditional(key) {
     ENABLE_COMPACT_CARDS("enable_compact_cards"),
     USE_LIGHTWEIGHT_HOME("use_lightweight_home"),
     FIFTY_TRUE_US_IOS("fifty_true_us_ios"),

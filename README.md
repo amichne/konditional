@@ -16,7 +16,7 @@ Konditional is a lightweight feature flag framework that puts type safety and de
 - **Stable bucketing**: Users get consistent experiences across sessions using SHA-256 based hashing
 - **Independent flags**: Each flag has its own bucketing space - no cross-contamination
 - **Predictable rollouts**: Gradual rollouts (0-100%) with deterministic user assignment
-- **Thread-safe**: Lock-free reads with atomic snapshot updates
+- **Thread-safe**: Lock-free reads with atomic konfig updates
 
 ### Flexible & Extensible
 - **Custom contexts**: Define your own context with organization IDs, user roles, experiments, or any domain data

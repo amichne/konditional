@@ -1430,7 +1430,7 @@
 <p>Start with a basic configuration using default values only:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.builders.ConfigBuilder</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildSnapshot</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildSnapshot</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="n">default</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="p">}</span>
@@ -1444,7 +1444,7 @@
 <a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="p">}</span>
 </code></pre></div>
-<p>This creates a snapshot where:
+<p>This creates a konfig where:
 - <code>DARK_MODE</code> defaults to <code>false</code>
 - <code>NEW_ONBOARDING</code> defaults to <code>false</code>
 - <code>COMPACT_CARDS</code> defaults to <code>true</code></p>
@@ -1455,7 +1455,7 @@
 <p>Enable dark mode only on iOS:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.context.Platform</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildSnapshot</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildSnapshot</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">        </span><span class="n">default</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
@@ -1469,7 +1469,7 @@
 <p>Enable new onboarding for US users:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.context.AppLocale</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildSnapshot</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildSnapshot</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">NEW_ONBOARDING</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">        </span><span class="n">default</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
 <a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
@@ -1483,7 +1483,7 @@
 <p>Roll out to 25% of users using rollout:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.context.Rollout</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildSnapshot</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildSnapshot</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">COMPACT_CARDS</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">        </span><span class="n">default</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
 <a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
@@ -1495,7 +1495,7 @@
 </code></pre></div>
 <h3 id="example-4-version-based-targeting">Example 4: Version-Based Targeting<a class="headerlink" href="#example-4-version-based-targeting" title="Permanent link">&para;</a></h3>
 <p>Enable for users on version 2.0.0 or higher:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildSnapshot</span><span class="w"> </span><span class="p">{</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildSnapshot</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">        </span><span class="n">default</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
 <a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
@@ -1509,7 +1509,7 @@
 </code></pre></div>
 <h2 id="combining-criteria">Combining Criteria<a class="headerlink" href="#combining-criteria" title="Permanent link">&para;</a></h2>
 <p>Rules can combine multiple targeting criteria:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildSnapshot</span><span class="w"> </span><span class="p">{</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigBuilder</span><span class="p">.</span><span class="na">buildSnapshot</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">NEW_ONBOARDING</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">        </span><span class="n">default</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
 <a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
@@ -1682,8 +1682,8 @@ Rules are evaluated in order of <strong>specificity</strong> (most specific firs
 <h3 id="4-test-your-configuration">4. Test Your Configuration<a class="headerlink" href="#4-test-your-configuration" title="Permanent link">&para;</a></h3>
 <p>Before serializing, test that it behaves as expected:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">testConfiguration</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">createProductionConfig</span><span class="p">()</span>
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span><span class="n">Flags</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">konfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">createProductionConfig</span><span class="p">()</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span><span class="n">Flags</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">konfig</span><span class="p">)</span>
 <a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>
 <a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">    </span><span class="c1">// Test various contexts</span>
 <a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">usIosContext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>

@@ -1,7 +1,7 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.rules.TargetedValue
+import io.amichne.konditional.rules.ConditionalValue
 
 /**
  * Represents a feature flag that can be evaluated within a specific context.
@@ -11,23 +11,25 @@ import io.amichne.konditional.rules.TargetedValue
  *
  * @param S The type of value this flag produces. Must be a non-nullable type.
  * @param C The type of context used for evaluation.
+ *
+ * @property defaultValue The default value returned when no targeting rules match or the flag is inactive.
+ * @property conditional The conditional that defines the flag's key and evaluation rules. *
+ * @property isActive Indicates whether this flag is currently active. Inactive flags always return the default value.
+ * @property values List of conditional values that define the flag's behavior.
+ * @property salt Optional salt string used for hashing and bucketing.
+ *
  */
-sealed interface ContextualFeatureFlag<S : Any, C : Context> {
-    /**
-     * The unique identifier for this feature flag.
-     */
-    val key: String
 
+sealed class FeatureFlag<S : Any, C : Context>(
     /**
      * The default value returned when no targeting rules match or the flag is inactive.
      */
-    val defaultValue: S
-
-    /**
-     * Indicates whether this flag is currently active.
-     * Inactive flags always return the default value.
-     */
-    val isActive: Boolean
+    val defaultValue: S,
+    val isActive: Boolean,
+    val conditional: Conditional<S, C>,
+    val values: List<ConditionalValue<S, C>>,
+    val salt: String = "v1"
+) {
 
     /**
      * Evaluates this feature flag within the given context.
@@ -35,16 +37,16 @@ sealed interface ContextualFeatureFlag<S : Any, C : Context> {
      * @param context The evaluation context containing user/environment information.
      * @return The evaluated value of type S based on targeting rules, or the default value.
      */
-    fun evaluate(context: C): S
+    internal abstract fun evaluate(context: C): S
 
-    companion object {
+    internal companion object {
         operator fun <S : Any, C : Context> invoke(
             conditional: Conditional<S, C>,
-            bounds: List<TargetedValue<S, C>>,
+            bounds: List<ConditionalValue<S, C>>,
             defaultValue: S,
             salt: String = "v1",
             isActive: Boolean = true,
-        ): ContextualFeatureFlag<S, C> = FlagDefinition(
+        ): FeatureFlag<S, C> = FlagDefinition(
             conditional,
             bounds,
             defaultValue,

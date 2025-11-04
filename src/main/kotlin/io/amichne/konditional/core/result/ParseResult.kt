@@ -16,12 +16,14 @@ sealed interface ParseResult<out T> {
     /**
      * Successful parse result containing the parsed value.
      */
-    data class Success<T>(val value: T) : ParseResult<T>
+    @ConsistentCopyVisibility
+    data class Success<T> @PublishedApi internal constructor(val value: T) : ParseResult<T>
 
     /**
      * Failed parse result containing structured error information.
      */
-    data class Failure(val error: ParseError) : ParseResult<Nothing>
+    @ConsistentCopyVisibility
+    data class Failure @PublishedApi internal constructor(val error: ParseError) : ParseResult<Nothing>
 }
 
 /**

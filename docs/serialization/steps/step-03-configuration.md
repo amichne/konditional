@@ -33,7 +33,7 @@ Start with a basic configuration using default values only:
 ```kotlin
 import io.amichne.konditional.builders.ConfigBuilder
 
-val snapshot = ConfigBuilder.buildSnapshot {
+val konfig = ConfigBuilder.buildSnapshot {
     FeatureFlags.DARK_MODE with {
         default(false)
     }
@@ -48,7 +48,7 @@ val snapshot = ConfigBuilder.buildSnapshot {
 }
 ```
 
-This creates a snapshot where:
+This creates a konfig where:
 - `DARK_MODE` defaults to `false`
 - `NEW_ONBOARDING` defaults to `false`
 - `COMPACT_CARDS` defaults to `true`
@@ -66,7 +66,7 @@ Enable dark mode only on iOS:
 ```kotlin
 import io.amichne.konditional.context.Platform
 
-val snapshot = ConfigBuilder.buildSnapshot {
+val konfig = ConfigBuilder.buildSnapshot {
     FeatureFlags.DARK_MODE with {
         default(false)
 
@@ -84,7 +84,7 @@ Enable new onboarding for US users:
 ```kotlin
 import io.amichne.konditional.context.AppLocale
 
-val snapshot = ConfigBuilder.buildSnapshot {
+val konfig = ConfigBuilder.buildSnapshot {
     FeatureFlags.NEW_ONBOARDING with {
         default(false)
 
@@ -102,7 +102,7 @@ Roll out to 25% of users using rollout:
 ```kotlin
 import io.amichne.konditional.context.Rollout
 
-val snapshot = ConfigBuilder.buildSnapshot {
+val konfig = ConfigBuilder.buildSnapshot {
     FeatureFlags.COMPACT_CARDS with {
         default(false)
 
@@ -118,7 +118,7 @@ val snapshot = ConfigBuilder.buildSnapshot {
 Enable for users on version 2.0.0 or higher:
 
 ```kotlin
-val snapshot = ConfigBuilder.buildSnapshot {
+val konfig = ConfigBuilder.buildSnapshot {
     FeatureFlags.DARK_MODE with {
         default(false)
 
@@ -136,7 +136,7 @@ val snapshot = ConfigBuilder.buildSnapshot {
 Rules can combine multiple targeting criteria:
 
 ```kotlin
-val snapshot = ConfigBuilder.buildSnapshot {
+val konfig = ConfigBuilder.buildSnapshot {
     FeatureFlags.NEW_ONBOARDING with {
         default(false)
 
@@ -345,8 +345,8 @@ Before serializing, test that it behaves as expected:
 
 ```kotlin
 fun testConfiguration() {
-    val snapshot = createProductionConfig()
-    Flags.load(snapshot)
+    val konfig = createProductionConfig()
+    Flags.load(konfig)
 
     // Test various contexts
     val usIosContext = Context(

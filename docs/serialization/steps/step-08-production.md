@@ -40,8 +40,8 @@ class MyApplication : Application() {
             ?.use { it.readText() }
             ?: throw IllegalStateException("flags.json not found")
 
-        val snapshot = SnapshotSerializer.default.deserialize(json)
-        Flags.load(snapshot)
+        val konfig = SnapshotSerializer.default.deserialize(json)
+        Flags.load(konfig)
     }
 }
 ```
@@ -87,8 +87,8 @@ class FlagLoader(
         return SnapshotSerializer.default.deserialize(json)
     }
 
-    private fun cacheSnapshot(snapshot: Flags.Snapshot) {
-        val json = SnapshotSerializer.default.serialize(snapshot)
+    private fun cacheSnapshot(konfig: Flags.Snapshot) {
+        val json = SnapshotSerializer.default.serialize(konfig)
         File(cacheDir, "flags.json").writeText(json)
     }
 
@@ -139,8 +139,8 @@ class ProductionFlagLoader(
 
         ConditionalRegistry.registerEnum<FeatureFlags>()
 
-        val snapshot = SnapshotSerializer.default.deserialize(json)
-        Flags.load(snapshot)
+        val konfig = SnapshotSerializer.default.deserialize(json)
+        Flags.load(konfig)
 
         logger.info("Embedded flags loaded")
     }
@@ -149,12 +149,12 @@ class ProductionFlagLoader(
         try {
             val json = downloadWithRetry(remoteUrl, maxRetries = 3)
 
-            val snapshot = SnapshotSerializer.default.deserialize(json)
+            val konfig = SnapshotSerializer.default.deserialize(json)
 
             // Validate before loading
-            validateSnapshot(snapshot)
+            validateSnapshot(konfig)
 
-            Flags.load(snapshot)
+            Flags.load(konfig)
 
             // Cache for next launch
             cacheJson(json)
@@ -166,14 +166,14 @@ class ProductionFlagLoader(
         }
     }
 
-    private fun validateSnapshot(snapshot: Flags.Snapshot) {
-        require(snapshot.flags.isNotEmpty()) {
+    private fun validateSnapshot(konfig: Flags.Snapshot) {
+        require(konfig.flags.isNotEmpty()) {
             "Snapshot must contain flags"
         }
 
         // Add custom validation
         val requiredFlags = setOf("dark_mode", "critical_feature")
-        val actualFlags = snapshot.flags.keys.map { it.key }.toSet()
+        val actualFlags = konfig.flags.keys.map { it.key }.toSet()
 
         require(requiredFlags.all { it in actualFlags }) {
             "Missing required flags"
@@ -236,13 +236,13 @@ class FlagValidationTest {
         ConditionalRegistry.registerEnum<FeatureFlags>()
 
         // Should deserialize without errors
-        val snapshot = SnapshotSerializer.default.deserialize(json)
+        val konfig = SnapshotSerializer.default.deserialize(json)
 
         // Validate structure
-        assertTrue(snapshot.flags.isNotEmpty())
+        assertTrue(konfig.flags.isNotEmpty())
 
         // Test evaluation doesn't crash
-        testEvaluation(snapshot)
+        testEvaluation(konfig)
     }
 
     @Test
@@ -254,23 +254,23 @@ class FlagValidationTest {
 
             ConditionalRegistry.registerEnum<FeatureFlags>()
 
-            val snapshot = SnapshotSerializer.default.deserialize(json)
+            val konfig = SnapshotSerializer.default.deserialize(json)
 
-            assertNotNull(snapshot, "$env configuration should be valid")
+            assertNotNull(konfig, "$env configuration should be valid")
 
             // Environment-specific assertions
             when (env) {
-                "production" -> assertProductionSafe(snapshot)
-                "development" -> assertDevelopmentComplete(snapshot)
+                "production" -> assertProductionSafe(konfig)
+                "development" -> assertDevelopmentComplete(konfig)
             }
 
             ConditionalRegistry.clear()
         }
     }
 
-    private fun assertProductionSafe(snapshot: Flags.Snapshot) {
+    private fun assertProductionSafe(konfig: Flags.Snapshot) {
         // No debug flags enabled
-        Flags.load(snapshot)
+        Flags.load(konfig)
         val context = createTestContext()
 
         with(Flags) {
@@ -349,15 +349,15 @@ class InstrumentedFlagLoader(
 class FlagLogger {
     private val logger = LoggerFactory.getLogger(FlagLogger::class.java)
 
-    fun logLoad(snapshot: Flags.Snapshot, source: String) {
+    fun logLoad(konfig: Flags.Snapshot, source: String) {
         logger.info(
             "Loaded {} flags from {}",
-            snapshot.flags.size,
+            konfig.flags.size,
             source
         )
 
         if (logger.isDebugEnabled) {
-            snapshot.flags.keys.forEach { flag ->
+            konfig.flags.keys.forEach { flag ->
                 logger.debug("Flag loaded: {}", (flag as Conditional<*, *>).key)
             }
         }
@@ -397,17 +397,17 @@ class FlagLogger {
 data class VersionedConfiguration(
     val version: String,
     val timestamp: Long,
-    val snapshot: Flags.Snapshot
+    val konfig: Flags.Snapshot
 )
 
 class ConfigurationVersionManager(private val cacheDir: File) {
 
-    fun save(snapshot: Flags.Snapshot) {
+    fun save(konfig: Flags.Snapshot) {
         val version = generateVersion()
         val versioned = VersionedConfiguration(
             version = version,
             timestamp = System.currentTimeMillis(),
-            snapshot = snapshot
+            konfig = konfig
         )
 
         // Save current version
@@ -422,9 +422,9 @@ class ConfigurationVersionManager(private val cacheDir: File) {
 
     fun rollback(toVersion: String? = null): Flags.Snapshot {
         return if (toVersion != null) {
-            loadVersion(toVersion).snapshot
+            loadVersion(toVersion).konfig
         } else {
-            loadPreviousVersion().snapshot
+            loadPreviousVersion().konfig
         }
     }
 
@@ -434,7 +434,7 @@ class ConfigurationVersionManager(private val cacheDir: File) {
     }
 
     private fun saveVersion(config: VersionedConfiguration, name: String) {
-        val json = SnapshotSerializer.default.serialize(config.snapshot)
+        val json = SnapshotSerializer.default.serialize(config.konfig)
         val metadata = """
             {
               "version": "${config.version}",
@@ -513,21 +513,21 @@ fun loadFlagsSecurely(url: String) {
     verifySignature(json)
 
     // Load
-    val snapshot = SnapshotSerializer.default.deserialize(json)
-    Flags.load(snapshot)
+    val konfig = SnapshotSerializer.default.deserialize(json)
+    Flags.load(konfig)
 }
 ```
 
 ### Prevent Injection
 
 ```kotlin
-fun sanitizeConfiguration(snapshot: Flags.Snapshot): Flags.Snapshot {
+fun sanitizeConfiguration(konfig: Flags.Snapshot): Flags.Snapshot {
     // Ensure no malicious values
-    snapshot.flags.forEach { (key, entry) ->
+    konfig.flags.forEach { (key, entry) ->
         validateFlagEntry(key, entry)
     }
 
-    return snapshot
+    return konfig
 }
 
 private fun validateFlagEntry(key: Conditional<*, *>, entry: Flags.FlagEntry<*, *>) {

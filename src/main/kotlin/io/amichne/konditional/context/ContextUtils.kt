@@ -1,9 +1,9 @@
 package io.amichne.konditional.context
 
 import io.amichne.konditional.core.Conditional
-import io.amichne.konditional.core.ContextualFeatureFlag
+import io.amichne.konditional.core.FeatureFlag
 import io.amichne.konditional.core.FlagRegistry
-import io.amichne.konditional.core.SingletonFlagRegistry
+import io.amichne.konditional.core.internal.SingletonFlagRegistry
 
 /**
  * Evaluates a specific feature flag in the context of this [Context].
@@ -12,7 +12,7 @@ import io.amichne.konditional.core.SingletonFlagRegistry
  * for any [io.amichne.konditional.core.FlagRegistry] implementation.
  *
  * @param key The feature flag to evaluate
- * @param registry The [io.amichne.konditional.core.FlagRegistry] to use (defaults to [io.amichne.konditional.core.SingletonFlagRegistry])
+ * @param registry The [io.amichne.konditional.core.FlagRegistry] to use (defaults to [SingletonFlagRegistry])
  * @return The evaluated value of type [S]
  * @throws IllegalStateException if the flag is not found in the registry
  * @param S The type of the flag's value
@@ -21,9 +21,9 @@ import io.amichne.konditional.core.SingletonFlagRegistry
 @Suppress("UNCHECKED_CAST")
 fun <S : Any, C : Context> C.evaluate(
     key: Conditional<S, C>,
-    registry: FlagRegistry = SingletonFlagRegistry
+    registry: FlagRegistry = FlagRegistry
 ): S {
-    val flag = registry.getFlag(key)
+    val flag = registry.featureFlag(key)
         ?: throw IllegalStateException("Flag not found: ${key.key}")
     return flag.evaluate(this)
 }
@@ -41,7 +41,7 @@ fun <S : Any, C : Context> C.evaluate(
  * @param C The type of the context
  */
 @Suppress("UNCHECKED_CAST")
-fun <C : Context> C.evaluate(registry: FlagRegistry = SingletonFlagRegistry): Map<Conditional<*, *>, Any?> =
-    registry.getAllFlags().mapValues { (_, flag) ->
-        (flag as? ContextualFeatureFlag<*, C>)?.evaluate(this)
+fun <C : Context> C.evaluate(registry: FlagRegistry = FlagRegistry): Map<Conditional<*, *>, Any?> =
+    registry.allFlags().mapValues { (_, flag) ->
+        (flag as? FeatureFlag<*, C>)?.evaluate(this)
     }

@@ -5,7 +5,7 @@ description: Learn how to update feature flag configurations efficiently using S
 
 # Patch Updates
 
-Patch updates allow you to modify feature flag configurations incrementally without replacing the entire snapshot. This is useful for:
+Patch updates allow you to modify feature flag configurations incrementally without replacing the entire konfig. This is useful for:
 
 - **Incremental updates**: Apply small changes without re-deploying entire configurations
 - **Real-time adjustments**: Update specific flags in production
@@ -14,14 +14,12 @@ Patch updates allow you to modify feature flag configurations incrementally with
 
 ## What is a SnapshotPatch?
 
-A `SnapshotPatch` represents a set of incremental changes to apply to a `Snapshot`. Instead of sending a complete snapshot, you send only the differences:
+A `SnapshotPatch` represents a set of incremental changes to apply to a `Snapshot`. Instead of sending a complete konfig, you send only the differences:
 
 ```kotlin
-import io.amichne.konditional.core.snapshot.SnapshotPatch
-import io.amichne.konditional.core.snapshot.Snapshot
-
-// Create a patch from current snapshot
-val patch = SnapshotPatch.from(currentSnapshot) {
+import io.amichne.konditional.core.konfig.SnapshotPatch
+import io.amichne.konditional.core.instance.Konfig// Create a patch from current konfig
+val patch = SnapshotPatch.from(currentKonfig) {
     // Add or update flags
     add(MY_FLAG to newFlagDefinition)
     add(OTHER_FLAG to anotherDefinition)
@@ -42,7 +40,7 @@ The recommended way to create patches is using the builder DSL:
 import io.amichne.konditional.builders.ConfigBuilder
 import io.amichne.konditional.core.SingletonFlagRegistry
 
-// Get current snapshot
+// Get current konfig
 val current = SingletonFlagRegistry.getCurrentSnapshot()
 
 // Build patch with DSL
@@ -96,11 +94,11 @@ customRegistry.applyPatch(patch)
 
 ### To a Snapshot
 
-Apply a patch to create a new snapshot without loading it:
+Apply a patch to create a new konfig without loading it:
 
 ```kotlin
-val currentSnapshot = SingletonFlagRegistry.getCurrentSnapshot()
-val updatedSnapshot = patch.applyTo(currentSnapshot)
+val currentKonfig = SingletonFlagRegistry.getCurrentSnapshot()
+val updatedSnapshot = patch.applyTo(currentKonfig)
 
 // Save to file, send over network, etc.
 ```
@@ -131,7 +129,7 @@ The patch application logic:
 Convert a patch to JSON for storage or transmission:
 
 ```kotlin
-import io.amichne.konditional.core.snapshot.SnapshotPatch.Companion.toJson
+import io.amichne.konditional.core.konfig.SnapshotPatch.Companion.toJson
 import io.amichne.konditional.serialization.SnapshotSerializer
 
 val serializer = SnapshotSerializer.default
@@ -149,7 +147,7 @@ httpClient.post("/patches", patchJson)
 Load a patch from JSON:
 
 ```kotlin
-import io.amichne.konditional.core.snapshot.SnapshotPatch.Companion.fromJson
+import io.amichne.konditional.core.konfig.SnapshotPatch.Companion.fromJson
 
 val patchJson = File("patch.json").readText()
 val patch = SnapshotPatch.fromJson(patchJson, serializer)
@@ -188,7 +186,7 @@ object PatchHistory {
     private val history = mutableListOf<PatchRecord>()
 
     fun applyAndRecord(patch: SnapshotPatch, author: String, description: String) {
-        // Save snapshot before applying
+        // Save konfig before applying
         val before = SingletonFlagRegistry.getCurrentSnapshot()
 
         try {
@@ -208,7 +206,7 @@ object PatchHistory {
 Always test patches in a non-production environment:
 
 ```kotlin
-// Create test snapshot
+// Create test konfig
 val testSnapshot = productionSnapshot.copy()
 
 // Apply patch to test
@@ -360,8 +358,8 @@ Patches integrate seamlessly with the serialization module:
 
 ```kotlin
 import io.amichne.konditional.serialization.SnapshotSerializer
-import io.amichne.konditional.core.snapshot.SnapshotPatch.Companion.toJson
-import io.amichne.konditional.core.snapshot.SnapshotPatch.Companion.fromJson
+import io.amichne.konditional.core.konfig.SnapshotPatch.Companion.toJson
+import io.amichne.konditional.core.konfig.SnapshotPatch.Companion.fromJson
 
 val serializer = SnapshotSerializer.default
 

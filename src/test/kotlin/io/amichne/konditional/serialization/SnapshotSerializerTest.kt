@@ -6,22 +6,22 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Conditional
-import io.amichne.konditional.core.ContextualFeatureFlag
-import io.amichne.konditional.core.FlagDefinition
-import io.amichne.konditional.core.SingletonFlagRegistry
 import io.amichne.konditional.context.evaluate
-import io.amichne.konditional.core.snapshot.Snapshot
-import io.amichne.konditional.core.StableId
+import io.amichne.konditional.core.Conditional
+import io.amichne.konditional.core.FeatureFlag
+import io.amichne.konditional.core.FlagDefinition
+import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.instance.Konfig
+import io.amichne.konditional.core.internal.SingletonFlagRegistry
+import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.example.SampleFeatureEnum
+import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.LeftBound
+import io.amichne.konditional.serialization.models.FlagValue
 import io.amichne.konditional.serialization.models.SerializableFlag
 import io.amichne.konditional.serialization.models.SerializablePatch
 import io.amichne.konditional.serialization.models.SerializableRule
-import io.amichne.konditional.serialization.models.FlagValue
-import io.amichne.konditional.rules.TargetedValue.Companion.targetedBy
-import io.amichne.konditional.core.result.getOrThrow
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -85,7 +85,7 @@ class SnapshotSerializerTest {
         // Create a snapshot with complex rules using direct Condition construction
         val condition = FlagDefinition(
             conditional = SampleFeatureEnum.FIFTY_TRUE_US_IOS,
-            bounds = listOf(
+            values = listOf(
                 Rule<Context>(
                     rollout = Rollout.of(50.0),
                     locales = setOf(AppLocale.EN_US),
@@ -95,12 +95,12 @@ class SnapshotSerializerTest {
             defaultValue = false
         )
 
-        val snapshot = Snapshot(
+        val konfig = Konfig(
             mapOf(SampleFeatureEnum.FIFTY_TRUE_US_IOS to (condition))
         )
 
         // Serialize
-        val json = serializer.serialize(snapshot)
+        val json = serializer.serialize(konfig)
         assertNotNull(json)
         assertTrue(json.contains("fifty_true_us_ios"))
         assertTrue(json.contains("EN_US"))
@@ -120,7 +120,7 @@ class SnapshotSerializerTest {
         )
 
         contexts.forEach { context ->
-            SingletonFlagRegistry.load(snapshot)
+            SingletonFlagRegistry.load(konfig)
             val originalValue = context.evaluate(SampleFeatureEnum.FIFTY_TRUE_US_IOS)
 
             SingletonFlagRegistry.load(deserialized)
@@ -136,7 +136,7 @@ class SnapshotSerializerTest {
 
     @Test
     fun `test flag with version ranges serialization`() {
-        val condition = ContextualFeatureFlag(
+        val condition = FeatureFlag(
             conditional = SampleFeatureEnum.VERSIONED,
             bounds = listOf(
                 Rule<Context>(
@@ -147,12 +147,12 @@ class SnapshotSerializerTest {
             defaultValue = false
         )
 
-        val snapshot = Snapshot(
+        val konfig = Konfig(
             mapOf(SampleFeatureEnum.VERSIONED to condition)
         )
 
         // Serialize
-        val json = serializer.serialize(snapshot)
+        val json = serializer.serialize(konfig)
         assertNotNull(json)
         assertTrue(json.contains("MIN_BOUND"))
         assertTrue(json.contains("\"major\": 7") || json.contains("\"major\":7"))
@@ -177,7 +177,7 @@ class SnapshotSerializerTest {
                 StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
             )
 
-            SingletonFlagRegistry.load(snapshot)
+            SingletonFlagRegistry.load(konfig)
             val originalValue = context.evaluate(SampleFeatureEnum.VERSIONED)
 
             SingletonFlagRegistry.load(deserialized)

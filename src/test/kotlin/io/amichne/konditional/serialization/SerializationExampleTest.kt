@@ -6,16 +6,15 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.SingletonFlagRegistry
 import io.amichne.konditional.context.evaluate
-import io.amichne.konditional.core.StableId
-import io.amichne.konditional.example.SampleFeatureEnum
+import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.internal.SingletonFlagRegistry
 import io.amichne.konditional.core.result.getOrThrow
+import io.amichne.konditional.example.SampleFeatureEnum
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 /**
  * Example demonstrating how to use the serialization system.
@@ -23,7 +22,7 @@ import kotlin.test.assertTrue
  * This example shows:
  * 1. Creating a configuration with the ConfigBuilder
  * 2. Serializing the configuration to JSON
- * 3. Deserializing JSON back to a Snapshot
+ * 3. Deserializing JSON back to a Konfig
  * 4. Applying patch updates
  * 5. Verifying round-trip equality
  */
@@ -130,10 +129,7 @@ class SerializationExampleTest {
         // Step 6: Verify patch results
         println("Step 6: Verifying patched configuration...")
         SingletonFlagRegistry.load(patched)
-        val values = testContext.evaluate()
 
-        println("✓ Patched configuration has ${values.size} flag(s):")
-        assertTrue(values.containsKey(SampleFeatureEnum.ENABLE_COMPACT_CARDS))
         println("  - ENABLE_COMPACT_CARDS: ${testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)}")
 
         assertEquals(true, testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS))

@@ -22,7 +22,7 @@ The `SnapshotSerializer` provides a simple API for serialization:
 import io.amichne.konditional.serialization.SnapshotSerializer
 
 // Create your configuration
-val snapshot = ConfigBuilder.buildSnapshot {
+val konfig = ConfigBuilder.buildSnapshot {
     FeatureFlags.DARK_MODE with {
         default(true)
     }
@@ -30,7 +30,7 @@ val snapshot = ConfigBuilder.buildSnapshot {
 
 // Serialize to JSON
 val serializer = SnapshotSerializer.default
-val json = serializer.serialize(snapshot)
+val json = serializer.serialize(konfig)
 
 println(json)
 ```
@@ -63,15 +63,15 @@ Write the JSON to a file:
 ```kotlin
 import java.io.File
 
-fun saveConfiguration(snapshot: Flags.Snapshot, outputPath: String) {
-    val json = SnapshotSerializer.default.serialize(snapshot)
+fun saveConfiguration(konfig: Flags.Snapshot, outputPath: String) {
+    val json = SnapshotSerializer.default.serialize(konfig)
     File(outputPath).writeText(json)
     println("Configuration saved to $outputPath")
 }
 
 // Usage
-val snapshot = createProductionConfig()
-saveConfiguration(snapshot, "config/production-flags.json")
+val konfig = createProductionConfig()
+saveConfiguration(konfig, "config/production-flags.json")
 ```
 
 ## Pretty Printing
@@ -79,7 +79,7 @@ saveConfiguration(snapshot, "config/production-flags.json")
 The serializer automatically formats JSON with indentation for readability:
 
 ```kotlin
-val json = SnapshotSerializer.default.serialize(snapshot)
+val json = SnapshotSerializer.default.serialize(konfig)
 // Already pretty-printed with 2-space indentation!
 ```
 
@@ -97,8 +97,8 @@ val customMoshi = Moshi.Builder()
 val customSerializer = SnapshotSerializer(customMoshi)
 val adapter = customMoshi.adapter(SerializableSnapshot::class.java).indent("    ")
 
-val snapshot = createConfig()
-val serializableSnapshot = snapshot.toSerializable()
+val konfig = createConfig()
+val serializableSnapshot = konfig.toSerializable()
 val json = adapter.toJson(serializableSnapshot)
 ```
 
@@ -108,8 +108,8 @@ For the production config from Step 3:
 
 ```kotlin
 fun serializeProductionConfig() {
-    val snapshot = createProductionConfig()
-    val json = SnapshotSerializer.default.serialize(snapshot)
+    val konfig = createProductionConfig()
+    val json = SnapshotSerializer.default.serialize(konfig)
 
     File("config/production-flags.json").writeText(json)
 }
@@ -222,11 +222,11 @@ fun main() {
         "production" to createProductionConfig()
     )
 
-    environments.forEach { (env, snapshot) ->
+    environments.forEach { (env, konfig) ->
         val outputFile = File("config/$env-flags.json")
         outputFile.parentFile.mkdirs()
 
-        val json = SnapshotSerializer.default.serialize(snapshot)
+        val json = SnapshotSerializer.default.serialize(konfig)
         outputFile.writeText(json)
 
         println("✓ Generated $env configuration (${outputFile.absolutePath})")
@@ -253,15 +253,15 @@ fun validateSerializedConfig(jsonPath: String): Boolean {
 
         // Attempt to deserialize
         ConditionalRegistry.registerEnum<FeatureFlags>()
-        val snapshot = SnapshotSerializer.default.deserialize(json)
+        val konfig = SnapshotSerializer.default.deserialize(json)
 
         // Check basic properties
-        require(snapshot.flags.isNotEmpty()) {
+        require(konfig.flags.isNotEmpty()) {
             "Configuration must contain at least one flag"
         }
 
         // Optionally: test some evaluations
-        testConfiguration(snapshot)
+        testConfiguration(konfig)
 
         println("✓ Configuration is valid")
         true
@@ -272,8 +272,8 @@ fun validateSerializedConfig(jsonPath: String): Boolean {
     }
 }
 
-fun testConfiguration(snapshot: Flags.Snapshot) {
-    Flags.load(snapshot)
+fun testConfiguration(konfig: Flags.Snapshot) {
+    Flags.load(konfig)
 
     val testContext = Context(
         AppLocale.EN_US,

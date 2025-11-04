@@ -1,6 +1,6 @@
 ---
 title: 'Step 6: Load into Runtime'
-description: Load your snapshot into the Flags singleton for evaluation
+description: Load your konfig into the Flags singleton for evaluation
 ---
 
 
@@ -16,17 +16,17 @@ After deserializing JSON into a `Snapshot`, you need to load it into the `Single
 
 ## Loading the Snapshot
 
-The `SingletonFlagRegistry.load()` method loads a snapshot into the singleton registry:
+The `SingletonFlagRegistry.load()` method loads a konfig into the singleton registry:
 
 ```kotlin
 import io.amichne.konditional.core.SingletonFlagRegistry
 import io.amichne.konditional.serialization.SnapshotSerializer
 
 // After deserializing
-val snapshot = SnapshotSerializer.default.deserialize(json)
+val konfig = SnapshotSerializer.default.deserialize(json)
 
 // Load into runtime
-SingletonFlagRegistry.load(snapshot)
+SingletonFlagRegistry.load(konfig)
 
 // Now flags are ready to use!
 ```
@@ -55,10 +55,10 @@ class MyApplication : Application() {
 
     private fun loadFeatureFlags() {
         val json = loadConfigJson() // From assets, network, etc.
-        val snapshot = SnapshotSerializer.default.deserialize(json)
-        SingletonFlagRegistry.load(snapshot)
+        val konfig = SnapshotSerializer.default.deserialize(json)
+        SingletonFlagRegistry.load(konfig)
 
-        logger.info("Feature flags loaded: ${snapshot.flags.size} flags")
+        logger.info("Feature flags loaded: ${konfig.flags.size} flags")
     }
 }
 ```
@@ -83,8 +83,8 @@ object FlagManager {
                 .bufferedReader()
                 .use { it.readText() }
 
-            val snapshot = SnapshotSerializer.default.deserialize(json)
-            SingletonFlagRegistry.load(snapshot)
+            val konfig = SnapshotSerializer.default.deserialize(json)
+            SingletonFlagRegistry.load(konfig)
 
             initialized = true
         }
@@ -138,10 +138,10 @@ fun reloadFlags() {
     val json = downloadLatestConfig()
 
     // Deserialize
-    val snapshot = SnapshotSerializer.default.deserialize(json)
+    val konfig = SnapshotSerializer.default.deserialize(json)
 
     // Reload (replaces current configuration)
-    SingletonFlagRegistry.load(snapshot)
+    SingletonFlagRegistry.load(konfig)
 
     logger.info("Flags reloaded successfully")
 
@@ -161,8 +161,8 @@ The `SingletonFlagRegistry` is thread-safe and can be accessed from multiple thr
 ```kotlin
 // Thread 1: Loading
 CoroutineScope(Dispatchers.IO).launch {
-    val snapshot = loadRemoteConfiguration()
-    SingletonFlagRegistry.load(snapshot)
+    val konfig = loadRemoteConfiguration()
+    SingletonFlagRegistry.load(konfig)
 }
 
 // Thread 2: Evaluating (safe even during reload)
@@ -250,8 +250,8 @@ object FlagObserver {
 
 // When reloading flags
 fun reloadFlags() {
-    val snapshot = loadNewConfiguration()
-    SingletonFlagRegistry.load(snapshot)
+    val konfig = loadNewConfiguration()
+    SingletonFlagRegistry.load(konfig)
 
     // Notify observers
     FlagObserver.notifyChange()
