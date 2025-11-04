@@ -11,6 +11,48 @@ While Konditional provides built-in support for common types (Boolean, String, I
 - **Type safety**: Leverage Kotlin's type system for your custom types
 - **Serialization**: Integrate custom types with Konditional's serialization system
 
+## Extension Point Hierarchy
+
+```mermaid
+graph TB
+    subgraph "Core Framework"
+        COND[Conditional~S,C~]
+        CTX[Context]
+        EVAL[Evaluable~C~]
+        REG[FlagRegistry]
+    end
+
+    subgraph "User Extensions"
+        CUSTOM_COND[Custom Flag Keys<br/>enum class MyFlags]
+        CUSTOM_CTX[Custom Context<br/>+ domain fields]
+        CUSTOM_EVAL[Custom Evaluators<br/>+ business logic]
+        CUSTOM_REG[Custom Registry<br/>+ persistence]
+        CUSTOM_VALUES[Custom Value Types<br/>ThemeConfig, etc.]
+    end
+
+    COND -.implements.-> CUSTOM_COND
+    CTX -.implements.-> CUSTOM_CTX
+    EVAL -.extends.-> CUSTOM_EVAL
+    REG -.implements.-> CUSTOM_REG
+
+    CUSTOM_COND -->|works with| CUSTOM_CTX
+    CUSTOM_COND -->|returns| CUSTOM_VALUES
+    CUSTOM_CTX -->|evaluated by| CUSTOM_EVAL
+    CUSTOM_EVAL -->|stored in| CUSTOM_REG
+
+    style CUSTOM_COND fill:#e1f5ff
+    style CUSTOM_CTX fill:#e1f5ff
+    style CUSTOM_EVAL fill:#e1f5ff
+    style CUSTOM_REG fill:#e1f5ff
+    style CUSTOM_VALUES fill:#e1f5ff
+```
+
+**Extension Points:**
+1. **Custom Value Types** - Any `S : Any` type can be used as flag values
+2. **Custom Contexts** - Extend `Context` interface with domain-specific fields
+3. **Custom Evaluators** - Extend `Evaluable<C>` for business logic
+4. **Custom Registries** - Implement `FlagRegistry` for alternative storage
+
 ## Defining Custom Types
 
 ### Simple Custom Type
@@ -353,6 +395,6 @@ object ConfigVersionType : ValueType<ConfigVersion> {
 
 ## Next Steps
 
-- Learn about [Migration](/migration/) strategies for evolving flag configurations
-- Explore [Patch Updates](/patch-updates/) for dynamic configuration changes
-- Review the [Serialization API](../serialization/api/) for complete details
+- Learn about [Migration](migration.md) strategies for evolving flag configurations
+- Explore [Patch Updates](patch-updates.md) for dynamic configuration changes
+- Review the [Serialization API](../serialization/api.md) for complete details

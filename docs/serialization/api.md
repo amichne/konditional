@@ -1120,6 +1120,6 @@ SingletonFlagRegistry.load(newSnapshot)
 
 ## See Also
 
-- [Integration Guide](/serialization/integration/)
-- [Step-by-Step Tutorial](/serialization/steps/step-01-dependencies/)
-- [Full Runthrough](/serialization/runthrough/)
+- [Integration Guide](../serialization/integration.md)
+- [Step-by-Step Tutorial](../serialization/steps/step-01-dependencies.md)
+- [Full Runthrough](../serialization/runthrough.md)

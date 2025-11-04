@@ -444,6 +444,6 @@ fun main(args: Array<String>) {
 
 ## Next Steps
 
-- Review [Patch Updates](/advanced/patch-updates/) for incremental configuration changes
-- Learn about [Custom Types](/advanced/custom-types/) for complex flag values
-- Explore the [Serialization API](/serialization/api/) for complete details
+- Review [Patch Updates](patch-updates.md) for incremental configuration changes
+- Learn about [Custom Types](custom-types.md) for complex flag values
+- Explore the [Serialization API](../serialization/api.md) for complete details

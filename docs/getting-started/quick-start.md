@@ -45,17 +45,19 @@ Create an enum implementing `Conditional<S, C>` where `S` is the value type and 
 
 ```kotlin
 import io.amichne.konditional.core.Conditional
-import io.amichne.konditional.builders.FlagBuilder
+import io.amichne.konditional.core.instance.FlagRegistry
 import io.amichne.konditional.context.Context
 
 enum class Features(override val key: String) : Conditional<Boolean, Context> {
     DARK_MODE("dark_mode"),
     NEW_CHECKOUT("new_checkout"),
-    ANALYTICS("analytics"),
-    ;
+    ANALYTICS("analytics");
 
+    override val registry = FlagRegistry
 }
 ```
+
+**Note**: Each flag must specify which registry it uses. `FlagRegistry` is the singleton default registry.
 
 ### 2. Configure Your Flags
 
@@ -95,24 +97,26 @@ Create an evaluation context and check flag values:
 ```kotlin
 import io.amichne.konditional.core.evaluate
 import io.amichne.konditional.context.*
-import io.amichne.konditional.core.StableId
+import io.amichne.konditional.rules.versions.Version
 
 // Create a context with user/app information
 val context = Context(
     locale = AppLocale.EN_US,
     platform = Platform.IOS,
     appVersion = Version(2, 1, 0),
-    stableId = StableId.of("user-123")
+    stableId = HexId.from("user-123")
 )
 
-// Evaluate flags (uses SingletonFlagRegistry by default)
-val isDarkModeEnabled = context.evaluate(Features.DARK_MODE)  // true (iOS)
-val isNewCheckout = context.evaluate(Features.NEW_CHECKOUT)   // true (v2.0+)
+// Evaluate flags - returns typed values
+val isDarkModeEnabled = context.evaluate(Features.DARK_MODE)  // Boolean: true (iOS)
+val isNewCheckout = context.evaluate(Features.NEW_CHECKOUT)   // Boolean: true (v2.0+)
 
 if (isDarkModeEnabled) {
     applyDarkTheme()
 }
 ```
+
+**StableId Types**: Use `HexId.from(string)` to create a stable identifier for deterministic bucketing.
 
 ## Common Patterns
 
@@ -123,9 +127,9 @@ For configuration values like API endpoints or theme names:
 ```kotlin
 enum class Config(override val key: String) : Conditional<String, Context> {
     API_ENDPOINT("api_endpoint"),
-    THEME_NAME("theme_name"),
-    ;
+    THEME_NAME("theme_name");
 
+    override val registry = FlagRegistry
 }
 
 config {
@@ -138,7 +142,7 @@ config {
     }
 }
 
-val endpoint = context.evaluate(Config.API_ENDPOINT)
+val endpoint: String = context.evaluate(Config.API_ENDPOINT)
 ```
 
 ### Integer-Based Flags
@@ -148,9 +152,9 @@ For numeric limits and thresholds:
 ```kotlin
 enum class Limits(override val key: String) : Conditional<Int, Context> {
     MAX_CONNECTIONS("max_connections"),
-    TIMEOUT_SECONDS("timeout_seconds"),
-    ;
+    TIMEOUT_SECONDS("timeout_seconds");
 
+    override val registry = FlagRegistry
 }
 
 config {
@@ -163,7 +167,7 @@ config {
     }
 }
 
-val maxConnections = context.evaluate(Limits.MAX_CONNECTIONS)
+val maxConnections: Int = context.evaluate(Limits.MAX_CONNECTIONS)
 ```
 
 ### Gradual Rollouts
@@ -210,10 +214,10 @@ config {
 
 ## Next Steps
 
-- Learn about [Architecture](/advanced/architecture/) to understand how Konditional works
-- Explore [Conditional Types](/advanced/conditional-types/) for using different value types
-- Read about [Context Polymorphism](/advanced/context-polymorphism/) to create custom contexts
-- Learn about [Serialization](/serialization/overview/) to manage flags remotely
+- Learn about [Architecture](../advanced/architecture.md) to understand how Konditional works
+- Explore [Conditional Types](../advanced/conditional-types.md) for using different value types
+- Read about [Context Polymorphism](../advanced/context-polymorphism.md) to create custom contexts
+- Learn about [Serialization](../serialization/overview.md) to manage flags remotely
 
 ## Example Project
 

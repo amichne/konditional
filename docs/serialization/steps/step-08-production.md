@@ -553,6 +553,6 @@ You've completed the integration! Your serialization system is now production-re
 
 ## Quick Links
 
-- [API Reference](/serialization/api/) - Complete API documentation
-- [Patch Updates](/advanced/patch-updates/) - Advanced patch techniques
-- [Migration Guide](/advanced/migration/) - Migrating existing systems
+- [API Reference](../api.md) - Complete API documentation
+- [Patch Updates](../../advanced/patch-updates.md) - Advanced patch techniques
+- [Migration Guide](../../advanced/migration.md) - Migrating existing systems
