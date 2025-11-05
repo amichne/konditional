@@ -2,118 +2,70 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://amichne.github.io/konditional/</loc>
-         <lastmod>2025-11-04</lastmod>
+         <lastmod>2025-11-05</lastmod>
     </url>
     <url>
-         <loc>https://amichne.github.io/konditional/advanced/architecture/</loc>
-         <lastmod>2025-11-04</lastmod>
+         <loc>https://amichne.github.io/konditional/api/Builders/</loc>
+         <lastmod>2025-11-05</lastmod>
     </url>
     <url>
-         <loc>https://amichne.github.io/konditional/advanced/conditional-types/</loc>
-         <lastmod>2025-11-04</lastmod>
+         <loc>https://amichne.github.io/konditional/api/Context/</loc>
+         <lastmod>2025-11-05</lastmod>
     </url>
     <url>
-         <loc>https://amichne.github.io/konditional/advanced/context-polymorphism/</loc>
-         <lastmod>2025-11-04</lastmod>
+         <loc>https://amichne.github.io/konditional/api/Core/</loc>
+         <lastmod>2025-11-05</lastmod>
     </url>
     <url>
-         <loc>https://amichne.github.io/konditional/advanced/custom-types/</loc>
-         <lastmod>2025-11-04</lastmod>
+         <loc>https://amichne.github.io/konditional/api/Flags/</loc>
+         <lastmod>2025-11-05</lastmod>
     </url>
     <url>
-         <loc>https://amichne.github.io/konditional/advanced/migration/</loc>
-         <lastmod>2025-11-04</lastmod>
+         <loc>https://amichne.github.io/konditional/api/Overview/</loc>
+         <lastmod>2025-11-05</lastmod>
     </url>
     <url>
-         <loc>https://amichne.github.io/konditional/advanced/patch-updates/</loc>
-         <lastmod>2025-11-04</lastmod>
+         <loc>https://amichne.github.io/konditional/api/Rules/</loc>
+         <lastmod>2025-11-05</lastmod>
     </url>
     <url>
-         <loc>https://amichne.github.io/konditional/getting-started/introduction/</loc>
-         <lastmod>2025-11-04</lastmod>
+         <loc>https://amichne.github.io/konditional/api/Serialization/</loc>
+         <lastmod>2025-11-05</lastmod>
     </url>
     <url>
-         <loc>https://amichne.github.io/konditional/getting-started/quick-start/</loc>
-         <lastmod>2025-11-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/serialization/api/</loc>
-         <lastmod>2025-11-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/serialization/integration/</loc>
-         <lastmod>2025-11-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/serialization/overview/</loc>
-         <lastmod>2025-11-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/serialization/runthrough/</loc>
-         <lastmod>2025-11-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/serialization/steps/step-01-dependencies/</loc>
-         <lastmod>2025-11-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/serialization/steps/step-02-register/</loc>
-         <lastmod>2025-11-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/serialization/steps/step-03-configuration/</loc>
-         <lastmod>2025-11-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/serialization/steps/step-04-serialize/</loc>
-         <lastmod>2025-11-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/serialization/steps/step-05-deserialize/</loc>
-         <lastmod>2025-11-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/serialization/steps/step-06-load/</loc>
-         <lastmod>2025-11-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/serialization/steps/step-07-testing/</loc>
-         <lastmod>2025-11-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/serialization/steps/step-08-production/</loc>
-         <lastmod>2025-11-04</lastmod>
+         <loc>https://amichne.github.io/konditional/api/examples/</loc>
+         <lastmod>2025-11-05</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/venv/lib/python3.14/site-packages/backrefs-5.9.dist-info/licenses/LICENSE/</loc>
-         <lastmod>2025-11-04</lastmod>
+         <lastmod>2025-11-05</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/venv/lib/python3.14/site-packages/idna-3.11.dist-info/licenses/LICENSE/</loc>
-         <lastmod>2025-11-04</lastmod>
+         <lastmod>2025-11-05</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/venv/lib/python3.14/site-packages/markdown-3.9.dist-info/licenses/LICENSE/</loc>
-         <lastmod>2025-11-04</lastmod>
+         <lastmod>2025-11-05</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/venv/lib/python3.14/site-packages/mkdocs_get_deps-0.2.0.dist-info/licenses/LICENSE/</loc>
-         <lastmod>2025-11-04</lastmod>
+         <lastmod>2025-11-05</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/venv/lib/python3.14/site-packages/mkdocs_material_extensions-1.3.1.dist-info/licenses/LICENSE/</loc>
-         <lastmod>2025-11-04</lastmod>
+         <lastmod>2025-11-05</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/venv/lib/python3.14/site-packages/pip-25.2.dist-info/licenses/src/pip/_vendor/idna/LICENSE/</loc>
-         <lastmod>2025-11-04</lastmod>
+         <lastmod>2025-11-05</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/venv/lib/python3.14/site-packages/pymdown_extensions-10.16.1.dist-info/licenses/LICENSE/</loc>
-         <lastmod>2025-11-04</lastmod>
+         <lastmod>2025-11-05</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/venv/lib/python3.14/site-packages/soupsieve-2.8.dist-info/licenses/LICENSE/</loc>
-         <lastmod>2025-11-04</lastmod>
+         <lastmod>2025-11-05</lastmod>
     </url>
 </urlset>
