@@ -56,33 +56,28 @@ markdown_extensions:
           class: mermaid
           format: !!python/name:mermaid2.fence_mermaid_custom
 
-nav:
-  - Home: index.md
-  - Getting Started:
-      - Introduction: getting-started/introduction.md
-      - Quick Start: getting-started/quick-start.md
-  - Serialization:
-      - Overview: serialization/overview.md
-      - Integration Guide: serialization/integration.md
-      - Full Runthrough: serialization/runthrough.md
-      - API Reference: serialization/api.md
-  - Step-by-Step Guide:
-      - 'Step 1: Dependencies': serialization/steps/step-01-dependencies.md
-      - 'Step 2: Register Flags': serialization/steps/step-02-register.md
-      - 'Step 3: Create Configuration': serialization/steps/step-03-configuration.md
-      - 'Step 4: Serialize': serialization/steps/step-04-serialize.md
-      - 'Step 5: Deserialize': serialization/steps/step-05-deserialize.md
-      - 'Step 6: Load into Runtime': serialization/steps/step-06-load.md
-      - 'Step 7: Testing': serialization/steps/step-07-testing.md
-      - 'Step 8: Production Setup': serialization/steps/step-08-production.md
-  - Core Concepts:
-      - Architecture: advanced/architecture.md
-      - Conditional Value Types: advanced/conditional-types.md
-      - Context Polymorphism: advanced/context-polymorphism.md
 
 plugins:
   - search
   - mermaid2
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Migration Guide: api/examples/README.md
+    - '01: Basic Usage': api/examples/01-BasicUsage.kt
+    - '02: Rollouts': api/examples/02-Rollouts.kt
+    - '03: Custom Context': api/examples/03-CustomContext.kt
+    - '04: Serialization': api/examples/04-Serialization.kt
+  - Core Concepts:
+    - Architecture Overview: api/Overview.md
+    - Builder DSL: api/Builders.md
+    - Core API: api/Core.md
+  - Advanced Topics:
+    - Context System: api/Context.md
+    - Rules Engine: api/Rules.md
+    - Flag Registry: api/Flags.md
+    - Serialization: api/Serialization.md
 
 extra:
   social:

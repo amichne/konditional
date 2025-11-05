@@ -1,6 +1,16 @@
+import java.time.Duration
+
 plugins {
     kotlin("jvm") version "2.2.0"
+    `maven-publish`
+    signing
+    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
 }
+
+// Load properties
+val props = project.properties
+group = props["GROUP"] as String
+version = props["VERSION"] as String
 
 kotlin {
     jvmToolchain(17)
@@ -25,4 +35,121 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+// ============================================================================
+// Publishing Configuration
+// ============================================================================
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+
+            groupId = props["GROUP"] as String
+            artifactId = props["ARTIFACT_ID"] as String
+            version = props["VERSION"] as String
+
+            pom {
+                name.set(props["POM_NAME"] as String)
+                description.set(props["POM_DESCRIPTION"] as String)
+                url.set(props["POM_URL"] as String)
+
+                licenses {
+                    license {
+                        name.set(props["POM_LICENCE_NAME"] as String)
+                        url.set(props["POM_LICENCE_URL"] as String)
+                        distribution.set(props["POM_LICENCE_DIST"] as String)
+                    }
+                }
+
+                developers {
+                    developer {
+                        id.set(props["POM_DEVELOPER_ID"] as String)
+                        name.set(props["POM_DEVELOPER_NAME"] as String)
+                        url.set(props["POM_DEVELOPER_URL"] as String)
+                    }
+                }
+
+                scm {
+                    url.set(props["POM_SCM_URL"] as String)
+                    connection.set(props["POM_SCM_CONNECTION"] as String)
+                    developerConnection.set(props["POM_SCM_DEV_CONNECTION"] as String)
+                }
+            }
+        }
+    }
+
+    repositories {
+        // GitHub Packages
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/amichne/konditional")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR") ?: props["githubActor"] as String?
+                password = System.getenv("GITHUB_TOKEN") ?: props["githubToken"] as String?
+            }
+        }
+        mavenLocal { }
+    }
+}
+
+signing {
+    // Only require signing if publishing to Maven Central
+    isRequired = gradle.taskGraph.hasTask("publishToSonatype") ||
+        gradle.taskGraph.hasTask("publishToMavenCentral")
+
+    // Use in-memory key from environment (CI) or gpg agent (local)
+    val signingKey = System.getenv("SIGNING_KEY")
+    val signingPassword = System.getenv("SIGNING_PASSWORD")
+
+    if (signingKey != null && signingPassword != null) {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+    }
+
+    sign(publishing.publications["maven"])
+}
+
+// Maven Central publishing via Sonatype
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+
+            username.set(System.getenv("OSSRH_USERNAME") ?: props["ossrhUsername"] as String?)
+            password.set(System.getenv("OSSRH_PASSWORD") ?: props["ossrhPassword"] as String?)
+        }
+    }
+
+    // Configure timeouts for larger artifacts
+    connectTimeout.set(Duration.ofMinutes(3))
+    clientTimeout.set(Duration.ofMinutes(3))
+}
+
+// ============================================================================
+// Release Tasks
+// ============================================================================
+
+tasks.register("prepareRelease") {
+    group = "release"
+    description = "Validates project is ready for release"
+
+    doLast {
+        val version = project.version.toString()
+        require(!version.contains("SNAPSHOT")) {
+            "Cannot release a SNAPSHOT version: $version"
+        }
+        require(version != "unspecified") {
+            "Version must be specified in gradle.properties"
+        }
+
+        println("Version validated: $version")
+        println("Ready to release")
+    }
 }
