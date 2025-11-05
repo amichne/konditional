@@ -550,4 +550,4 @@ data class EnterpriseContext(
 - [Core API](Core.md) - Conditional and evaluation basics
 - [Rules System](Rules.md) - Using context in rule matching
 - [Builders](Builders.md) - Building flags with context types
-- [Examples](examples/) - Complete context usage examples
+- [Examples](examples/README.md) - Complete context usage examples

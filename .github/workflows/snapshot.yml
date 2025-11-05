@@ -1,0 +1,103 @@
+name: Publish Snapshot
+
+on:
+  workflow_dispatch:
+    inputs:
+      snapshot-version:
+        description: 'Snapshot version (e.g., 0.1.0-SNAPSHOT)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish-snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Validate snapshot version
+        run: |
+          VERSION="${{ github.event.inputs.snapshot-version }}"
+          if [[ ! "$VERSION" =~ -SNAPSHOT$ ]]; then
+            echo "ERROR: Version must end with -SNAPSHOT"
+            exit 1
+          fi
+          echo "✓ Valid snapshot version: $VERSION"
+
+      - name: Override version
+        run: |
+          VERSION="${{ github.event.inputs.snapshot-version }}"
+          echo "Overriding version to: $VERSION"
+          sed -i.bak "s/^VERSION=.*/VERSION=$VERSION/" gradle.properties
+          cat gradle.properties | grep VERSION
+
+      - name: Run tests
+        run: ./gradlew test --no-daemon
+
+      - name: Publish to Sonatype Snapshots
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+        run: |
+          ./gradlew publishToSonatype \
+            --no-daemon \
+            --stacktrace
+
+      - name: Publish to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+        run: |
+          ./gradlew publishMavenPublicationToGitHubPackagesRepository \
+            --no-daemon \
+            --stacktrace
+
+      - name: Summary
+        run: |
+          VERSION="${{ github.event.inputs.snapshot-version }}"
+          cat << EOF >> $GITHUB_STEP_SUMMARY
+          ## Snapshot Published ✅
+
+          **Version:** \`$VERSION\`
+
+          ### Maven Central Snapshots
+          Available at: https://s01.oss.sonatype.org/content/repositories/snapshots/
+
+          \`\`\`kotlin
+          repositories {
+              maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+          }
+
+          dependencies {
+              implementation("io.amichne:konditional:$VERSION")
+          }
+          \`\`\`
+
+          ### GitHub Packages
+          \`\`\`kotlin
+          repositories {
+              maven {
+                  url = uri("https://maven.pkg.github.com/amichne/konditional")
+                  credentials {
+                      username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
+                      password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+                  }
+              }
+          }
+
+          dependencies {
+              implementation("io.amichne:konditional:$VERSION")
+          }
+          \`\`\`
+          EOF

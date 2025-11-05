@@ -6,6 +6,15 @@ CLAUDE.md
 ai/
 site/
 
+# Publishing and Release
+*.asc
+*.gpg
+private-key.*
+secring.*
+
+# Local gradle properties (may contain secrets)
+local.properties
+
 
 ### Intellij template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider

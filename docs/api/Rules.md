@@ -715,4 +715,4 @@ FlagRegistry.update(MY_FLAG.flag {
 - [Core API](Core.md) - Conditional and FeatureFlag types
 - [Context](Context.md) - Context types and extension
 - [Builders](Builders.md) - DSL for defining rules
-- [Examples](examples/) - Complete rule examples
+- [Examples](examples/README.md - Complete rule examples

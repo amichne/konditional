@@ -63,20 +63,21 @@ plugins:
 
 nav:
   - Home: index.md
-  - API Reference:
-    - Overview: api/Overview.md
-    - Core: api/Core.md
-    - Flags: api/Flags.md
-    - Context: api/Context.md
-    - Builders: api/Builders.md
-    - Rules: api/Rules.md
+  - Getting Started:
+    - Migration Guide: api/examples/README.md
+    - '01: Basic Usage': api/examples/01-BasicUsage.kt
+    - '02: Rollouts': api/examples/02-Rollouts.kt
+    - '03: Custom Context': api/examples/03-CustomContext.kt
+    - '04: Serialization': api/examples/04-Serialization.kt
+  - Core Concepts:
+    - Architecture Overview: api/Overview.md
+    - Builder DSL: api/Builders.md
+    - Core API: api/Core.md
+  - Advanced Topics:
+    - Context System: api/Context.md
+    - Rules Engine: api/Rules.md
+    - Flag Registry: api/Flags.md
     - Serialization: api/Serialization.md
-    - Examples:
-      - Getting Started: api/examples/README.md
-      - Basic Usage: api/examples/01-BasicUsage.kt
-      - Rollouts: api/examples/02-Rollouts.kt
-      - Custom Context: api/examples/03-CustomContext.kt
-      - Serialization: api/examples/04-Serialization.kt
 
 extra:
   social:

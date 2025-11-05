@@ -57,43 +57,127 @@ Extend `Context` to add custom targeting dimensions.
 ## Architecture
 
 ```mermaid
-graph TD
-    A[Conditional Key] --> B[FlagRegistry]
-    B --> C[FeatureFlag]
-    C --> D[ConditionalValue]
-    D --> E[Rule]
-    D --> F[Target Value]
-    E --> G[BaseEvaluable]
-    E --> H[Extension Evaluable]
-    I[Context] --> C
-    I --> E
+graph TB
+    subgraph "1. Define"
+        A[Conditional Key<br/>Type-safe identifier]
+    end
 
-    style A fill:#e1f5ff
-    style B fill:#fff4e1
-    style C fill:#ffe1f5
-    style D fill:#e1ffe1
-    style E fill:#f5e1ff
+    subgraph "2. Register"
+        B[FlagRegistry<br/>Thread-safe storage]
+        C[FeatureFlag<br/>Configuration]
+    end
+
+    subgraph "3. Configure"
+        D[ConditionalValue<br/>Rule + Target pair]
+        E[Rule<br/>Matching criteria]
+        F[Target Value<br/>Result when matched]
+    end
+
+    subgraph "4. Evaluate"
+        G[Context<br/>Evaluation dimensions]
+        H{Matches?}
+        I[Return Value]
+    end
+
+    A -->|registers into| B
+    B -->|contains| C
+    C -->|has multiple| D
+    D -->|contains| E
+    D -->|returns| F
+    G -->|evaluates against| E
+    E --> H
+    H -->|Yes| F
+    H -->|No| I[Default Value]
+    F --> I
+
+    style A fill:#e1f5ff,stroke:#0066cc,stroke-width:2px
+    style B fill:#fff4e1,stroke:#cc8800,stroke-width:2px
+    style C fill:#ffe1f5,stroke:#cc0066,stroke-width:2px
+    style G fill:#e1ffe1,stroke:#00cc66,stroke-width:2px
+    style I fill:#f0f0f0,stroke:#333,stroke-width:3px
 ```
+
+<details>
+<summary><strong>Architecture Walkthrough</strong></summary>
+
+1. **Define**: Create a `Conditional<S, C>` key with value type `S` and context type `C`
+2. **Register**: Store the flag configuration in `FlagRegistry` (thread-safe singleton)
+3. **Configure**: Define rules and their target values using the builder DSL
+4. **Evaluate**: Pass a `Context` to evaluate which rule matches and return the appropriate value
+
+This architecture ensures type safety at every step while maintaining flexibility for complex targeting logic.
+</details>
 
 ## Evaluation Flow
 
 ```mermaid
 sequenceDiagram
-    participant Client
-    participant Context
-    participant Registry
-    participant Flag
-    participant Rules
+    participant C as Client Code
+    participant Ctx as Context
+    participant R as FlagRegistry
+    participant F as FeatureFlag
+    participant Rule as Rules Engine
 
-    Client->>Context: evaluate(conditional)
-    Context->>Registry: featureFlag(conditional)
-    Registry->>Flag: Found
-    Context->>Flag: evaluate(context)
-    Flag->>Rules: Find matching rules
-    Rules->>Rules: Check specificity
-    Rules->>Rules: Check rollout
-    Flag->>Client: Return value
+    C->>+Ctx: evaluate(FEATURE_FLAG)
+    Ctx->>+R: get(FEATURE_FLAG)
+    R-->>-Ctx: FeatureFlag instance
+
+    Ctx->>+F: evaluate(context)
+
+    alt Flag is inactive
+        F-->>Ctx: Return default value
+    else Flag is active
+        F->>+Rule: Sort rules by specificity (high→low)
+        Rule-->>-F: Sorted rules
+
+        loop For each rule (highest specificity first)
+            F->>+Rule: matches(context)?
+
+            alt Base criteria match
+                Rule->>Rule: Check locale, platform, version
+                alt Rollout specified
+                    Rule->>Rule: Calculate hash(stableId + salt)
+                    Rule->>Rule: Compare with rollout %
+                    alt In rollout bucket
+                        Rule-->>F: ✅ MATCH
+                    else Not in bucket
+                        Rule-->>F: ❌ No match
+                    end
+                else No rollout
+                    Rule-->>F: ✅ MATCH
+                end
+            else Base criteria don't match
+                Rule-->>-F: ❌ No match
+            end
+
+            alt Rule matched
+                F-->>Ctx: Return rule's target value
+            end
+        end
+
+        F-->>Ctx: No matches → Return default value
+    end
+
+    Ctx-->>-C: Final value (type-safe!)
+
+    Note over C,Rule: All type checking happens at compile time
 ```
+
+<details>
+<summary><strong>Evaluation Flow Explained</strong></summary>
+
+1. **Client calls** `context.evaluate(FEATURE_FLAG)`
+2. **Registry lookup**: Find the `FeatureFlag` configuration
+3. **Active check**: If inactive, return default immediately
+4. **Sort rules**: Order by specificity (most specific first)
+5. **Match loop**: For each rule:
+   - Check base criteria (locale, platform, version)
+   - If rollout specified, perform deterministic bucket check using SHA-256
+   - Return target value on first match
+6. **Default fallback**: If no rules match, return default value
+
+The entire flow is type-safe - the compiler ensures the returned value matches the `Conditional<S, C>` type parameter `S`.
+</details>
 
 ## Type Safety
 
@@ -176,4 +260,4 @@ ConfigBuilder.config {
 - [Rules System](Rules.md) - Rule composition and evaluation
 - [Builder DSL](Builders.md) - Declarative flag configuration
 - [Serialization](Serialization.md) - JSON serialization and deserialization
-- [Examples](examples/) - Complete working examples
+- [Examples](examples/README.md - Complete working examples

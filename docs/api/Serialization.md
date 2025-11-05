@@ -751,4 +751,4 @@ fun testSerializationRoundtrip() {
 - [Core API](Core.md) - ParseResult and error handling
 - [Flag Registry](Flags.md) - Loading and updating configurations
 - [Builders](Builders.md) - Creating configurations to serialize
-- [Examples](examples/) - Complete serialization examples
+- [Examples](examples/README.md - Complete serialization examples
