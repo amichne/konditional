@@ -1,4 +1,5 @@
 package io.amichne.konditional.core
+import io.amichne.konditional.core.types.EncodableValue
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.instance.Konfig
@@ -89,7 +90,7 @@ interface FlagRegistry {
      * @param S The type of the flag's value
      * @param C The type of the context used for evaluation
      */
-    fun <S : Any, C : Context> update(definition: FeatureFlag<S, C>)
+    fun <S : EncodableValue<*>, C : Context> update(definition: FeatureFlag<S, C>)
 
     /**
      * Retrieves the current snapshot of all flag configurations.
@@ -110,7 +111,7 @@ interface FlagRegistry {
      * @param C The type of the context used for evaluation
      */
     @Suppress("UNCHECKED_CAST")
-    fun <S : Any, C : Context> featureFlag(key: Conditional<S, C>): FeatureFlag<S, C>? =
+    fun <S : EncodableValue<*>, C : Context> featureFlag(key: Conditional<S, C>): FeatureFlag<S, C>? =
         konfig().flags[key] as? FeatureFlag<S, C>
 
     /**

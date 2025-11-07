@@ -5,6 +5,7 @@ package io.amichne.konditional.core
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.core.id.HexId
+import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.ConditionalValue
 import java.security.MessageDigest
 import kotlin.math.roundToInt
@@ -12,10 +13,10 @@ import kotlin.math.roundToInt
 /**
  * Represents a complete flag definition with its evaluation rules and default value.
  *
- * @param S The type of the value this flag produces. It must be a non-nullable type.
+ * @param S The EncodableValue type wrapping the value (Boolean, String, Int, or Double).
  * @param C The type of the context that this flag evaluates against.
  */
-internal class FlagDefinition<S : Any, C : Context>(
+internal class FlagDefinition<S : EncodableValue<*>, C : Context>(
     conditional: Conditional<S, C>,
     values: List<ConditionalValue<S, C>>,
     defaultValue: S,

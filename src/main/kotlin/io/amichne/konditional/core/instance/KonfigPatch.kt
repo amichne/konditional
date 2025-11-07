@@ -1,4 +1,5 @@
 package io.amichne.konditional.core.instance
+import io.amichne.konditional.core.types.EncodableValue
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Conditional
@@ -74,7 +75,7 @@ data class KonfigPatch internal constructor(
          *
          * @param entry Pair of Conditional key and its flag definition
          */
-        fun <S : Any, C : Context> add(
+        fun <S : EncodableValue<*>, C : Context> add(
             entry: FeatureFlag<S, C>
         ) {
             flags[entry.conditional] = entry

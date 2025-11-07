@@ -11,6 +11,7 @@ import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.instance.KonfigPatch
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
@@ -56,7 +57,7 @@ object ConditionalRegistry {
      * @param conditional The conditional to register
      * @throws IllegalStateException if a different conditional is already registered with the same key
      */
-    fun <S : Any, C : Context> register(conditional: Conditional<S, C>) {
+    fun <S : EncodableValue<*>, C : Context> register(conditional: Conditional<S, C>) {
         registry[conditional.key] = conditional
     }
 
@@ -120,7 +121,7 @@ fun Konfig.toSerializable(): SerializableSnapshot {
 /**
  * Converts a FlagDefinition to a SerializableFlag.
  */
-private fun <S : Any, C : Context> FlagDefinition<S, C>.toSerializable(flagKey: String): SerializableFlag {
+private fun <S : EncodableValue<*>, C : Context> FlagDefinition<S, C>.toSerializable(flagKey: String): SerializableFlag {
     return SerializableFlag(
         key = flagKey,
         defaultValue = FlagValue.from(defaultValue),
@@ -133,7 +134,7 @@ private fun <S : Any, C : Context> FlagDefinition<S, C>.toSerializable(flagKey: 
 /**
  * Converts a ConditionalValue to a SerializableRule.
  */
-private fun <S : Any, C : Context> ConditionalValue<S, C>.toSerializable(): SerializableRule {
+private fun <S : EncodableValue<*>, C : Context> ConditionalValue<S, C>.toSerializable(): SerializableRule {
     return SerializableRule(
         value = FlagValue.from(value),
         rampUp = rule.rollout.value,
@@ -189,7 +190,7 @@ private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Conditional<*, *>, F
  * Type-safe: no casting required thanks to FlagValue sealed class.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : Any, C : Context> SerializableFlag.toFlagDefinition(
+private fun <S : EncodableValue<*>, C : Context> SerializableFlag.toFlagDefinition(
     conditional: Conditional<S, C>
 ): FlagDefinition<S, C> {
     // Extract typed value from FlagValue (type-safe extraction)
@@ -216,7 +217,7 @@ private fun <T : Any> FlagValue<*>.extractValue(): T = this.value as T
  * Converts a SerializableRule to a ConditionalValue.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : Any, C : Context> SerializableRule.toValue(): ConditionalValue<S, C> {
+private fun <S : EncodableValue<*>, C : Context> SerializableRule.toValue(): ConditionalValue<S, C> {
     val typedValue = value.extractValue<S>()
     val rule = toRule<C>()
     return rule.targetedBy(typedValue)

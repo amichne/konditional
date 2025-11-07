@@ -9,6 +9,7 @@ import io.amichne.konditional.context.evaluate
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.internal.SingletonFlagRegistry
+import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.versions.Unbounded
@@ -30,7 +31,7 @@ class FlagEntryTypeSafetyTest {
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
 
-    enum class BoolFlags(override val key: String) : Conditional<Boolean, Context> by Conditional(key) {
+    enum class BoolFlags(override val key: String) : Conditional<EncodableValue.BooleanEncodeable, Context> by Conditional(key) {
         FEATURE_A("feature_a"),
         FEATURE_B("feature_b"),
     }

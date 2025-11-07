@@ -4,6 +4,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.core.FeatureFlag
 import io.amichne.konditional.core.FeatureFlagDsl
+import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
@@ -11,14 +12,14 @@ import io.amichne.konditional.rules.Rule
 /**
  * A builder class for constructing and configuring a feature flag.
  *
- * @param S The type of the state associated with the feature flag.
+ * @param S The EncodableValue type (Boolean, String, Int, or Double wrapper).
  * @param C The type of the context that the feature flag evaluates against.
  * @property conditional The feature flag key used to uniquely identify the flag.
  * @constructor Creates a new instance of the FlagBuilder with the specified feature flag key.
  */
 @ConsistentCopyVisibility
 @FeatureFlagDsl
-data class FlagBuilder<S : Any, C : Context> internal constructor(
+data class FlagBuilder<S : EncodableValue<*>, C : Context> internal constructor(
     private val conditional: Conditional<S, C>,
 ) {
     private val conditionalValues = mutableListOf<ConditionalValue<S, C>>()
@@ -27,7 +28,7 @@ data class FlagBuilder<S : Any, C : Context> internal constructor(
     private var salt: String = "v1"
 
     companion object {
-        fun <S : Any, C : Context> Conditional<S, C>.flag(
+        fun <S : EncodableValue<*>, C : Context> Conditional<S, C>.flag(
             flagBuilder: FlagBuilder<S, C>.() -> Unit = {},
         ): FeatureFlag<S, C> = FlagBuilder(this).apply(flagBuilder).build()
     }
@@ -39,7 +40,7 @@ data class FlagBuilder<S : Any, C : Context> internal constructor(
      * if no other value is explicitly provided. The default value ensures that the
      * flag has a meaningful state even when not explicitly set.
      *
-     * @param value The default value to assign to the flag.
+     * @param value The default EncodableValue to assign to the flag.
      * @param coverage The coverage percentage for the default value.
      */
     fun default(

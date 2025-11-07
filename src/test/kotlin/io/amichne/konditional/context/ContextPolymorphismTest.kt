@@ -3,6 +3,7 @@ package io.amichne.konditional.context
 import io.amichne.konditional.builders.ConfigBuilder.Companion.config
 import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.fakes.FakeRegistry
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.evaluable.Evaluable
@@ -50,7 +51,7 @@ class ContextPolymorphismTest {
     // SingletonFlagRegistry using EnterpriseContext
     enum class EnterpriseFlags(
         override val key: String,
-    ) : Conditional<Boolean, EnterpriseContext> by Conditional(key) {
+    ) : Conditional<EncodableValue.BooleanEncodeable, EnterpriseContext>{
         ADVANCED_ANALYTICS("advanced_analytics"),
         BULK_EXPORT("bulk_export"),
         CUSTOM_BRANDING("custom_branding"),

@@ -1,4 +1,5 @@
 package io.amichne.konditional.context
+import io.amichne.konditional.core.types.EncodableValue
 
 import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.core.FeatureFlag
@@ -19,7 +20,7 @@ import io.amichne.konditional.core.internal.SingletonFlagRegistry
  * @param C The type of the context
  */
 @Suppress("UNCHECKED_CAST")
-fun <S : Any, C : Context> C.evaluate(
+fun <S : EncodableValue<*>, C : Context> C.evaluate(
     key: Conditional<S, C>,
     registry: FlagRegistry = FlagRegistry
 ): S {
