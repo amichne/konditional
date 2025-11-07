@@ -23,15 +23,15 @@ import io.amichne.konditional.rules.ConditionalValue
  *
  */
 
-sealed class FeatureFlag<S : EncodableValue<*>, C : Context>(
+sealed class FeatureFlag<S : EncodableValue<T>, T : Any, C : Context>(
     /**
      * The default value returned when no targeting rules match or the flag is inactive.
      */
-    val defaultValue: S,
+    val defaultValue: T,
     val isActive: Boolean,
-    val conditional: Conditional<S, C>,
-    val values: List<ConditionalValue<S, C>>,
-    val salt: String = "v1"
+    val conditional: Conditional<S, T, C>,
+    val values: List<ConditionalValue<S, T, C>>,
+    val salt: String = "v1",
 ) {
     /**
      * Evaluates this feature flag within the given context.
@@ -39,19 +39,19 @@ sealed class FeatureFlag<S : EncodableValue<*>, C : Context>(
      * @param context The evaluation context containing user/environment information.
      * @return The evaluated EncodableValue based on targeting rules, or the default value.
      */
-    internal abstract fun evaluate(context: C): S
+    internal abstract fun evaluate(context: C): T
 
     internal companion object {
         /**
          * Creates a FeatureFlag instance.
          */
-        operator fun <S : EncodableValue<*>, C : Context> invoke(
-            conditional: Conditional<S, C>,
-            bounds: List<ConditionalValue<S, C>>,
-            defaultValue: S,
+        operator fun <S : EncodableValue<T>, T : Any, C : Context> invoke(
+            conditional: Conditional<S, T, C>,
+            bounds: List<ConditionalValue<S, T, C>>,
+            defaultValue: T,
             salt: String = "v1",
             isActive: Boolean = true,
-        ): FeatureFlag<S, C> {
+        ): FeatureFlag<S, T, C> {
             return FlagDefinition(
                 conditional,
                 bounds,

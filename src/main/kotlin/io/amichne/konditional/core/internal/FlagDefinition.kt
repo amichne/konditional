@@ -16,13 +16,13 @@ import kotlin.math.roundToInt
  * @param S The EncodableValue type wrapping the value (Boolean, String, Int, or Double).
  * @param C The type of the context that this flag evaluates against.
  */
-internal class FlagDefinition<S : EncodableValue<*>, C : Context>(
-    conditional: Conditional<S, C>,
-    values: List<ConditionalValue<S, C>>,
-    defaultValue: S,
+internal class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context>(
+    conditional: Conditional<S, T, C>,
+    values: List<ConditionalValue<S, T, C>>,
+    defaultValue: T,
     salt: String = "v1",
     isActive: Boolean = true,
-) : FeatureFlag<S, C>(defaultValue, isActive, conditional, values, salt) {
+) : FeatureFlag<S, T, C>(defaultValue, isActive, conditional, values, salt) {
     val key: String
         get() = conditional.key
 
@@ -30,8 +30,8 @@ internal class FlagDefinition<S : EncodableValue<*>, C : Context>(
         val shaDigestSpi: MessageDigest = requireNotNull(MessageDigest.getInstance("SHA-256"))
     }
 
-    private val conditionalValues: List<ConditionalValue<S, C>> =
-        values.sortedWith(compareByDescending<ConditionalValue<S, C>> { it.rule.specificity() }.thenBy {
+    private val conditionalValues: List<ConditionalValue<S, T, C>> =
+        values.sortedWith(compareByDescending<ConditionalValue<S, T, C>> { it.rule.specificity() }.thenBy {
             it.rule.note ?: ""
         })
 
@@ -41,7 +41,7 @@ internal class FlagDefinition<S : EncodableValue<*>, C : Context>(
      * @param context The context in which the flag evaluation is performed.
      * @return The result of the evaluation, of type `S`. If the flag is not active, returns the defaultValue.
      */
-    override fun evaluate(context: C): S {
+    override fun evaluate(context: C): T {
         if (!isActive) return defaultValue
 
         return conditionalValues.firstOrNull {

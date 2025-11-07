@@ -19,18 +19,18 @@ import io.amichne.konditional.rules.Rule
  */
 @ConsistentCopyVisibility
 @FeatureFlagDsl
-data class FlagBuilder<S : EncodableValue<*>, C : Context> internal constructor(
-    private val conditional: Conditional<S, C>,
+data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context> internal constructor(
+    private val conditional: Conditional<S, T, C>,
 ) {
-    private val conditionalValues = mutableListOf<ConditionalValue<S, C>>()
-    private var defaultValue: S? = null
+    private val conditionalValues = mutableListOf<ConditionalValue<S,T, C>>()
+    private var defaultValue: T? = null
     private var defaultCoverage: Double? = null
     private var salt: String = "v1"
 
     companion object {
-        fun <S : EncodableValue<*>, C : Context> Conditional<S, C>.flag(
-            flagBuilder: FlagBuilder<S, C>.() -> Unit = {},
-        ): FeatureFlag<S, C> = FlagBuilder(this).apply(flagBuilder).build()
+        fun <S : EncodableValue<T>, T : Any, C : Context> Conditional<S, T, C>.flag(
+            flagBuilder: FlagBuilder<S, T, C>.() -> Unit = {},
+        ): FeatureFlag<S, T, C> = FlagBuilder(this).apply(flagBuilder).build()
     }
 
     /**
@@ -44,7 +44,7 @@ data class FlagBuilder<S : EncodableValue<*>, C : Context> internal constructor(
      * @param coverage The coverage percentage for the default value.
      */
     fun default(
-        value: S,
+        value: T,
         coverage: Double? = null,
     ) {
         defaultValue = value
@@ -70,7 +70,7 @@ data class FlagBuilder<S : EncodableValue<*>, C : Context> internal constructor(
     fun rule(build: RuleBuilder<C>.() -> Unit): Rule<C> = RuleBuilder<C>().apply(build).build()
 
     @FeatureFlagDsl
-    infix fun Rule<C>.implies(value: S) {
+    infix fun Rule<C>.implies(value: T) {
         conditionalValues += targetedBy(value)
     }
 
@@ -80,7 +80,7 @@ data class FlagBuilder<S : EncodableValue<*>, C : Context> internal constructor(
      *
      * @return A `FlagDefinition` instance constructed based on the current configuration.
      */
-    internal fun build(): FeatureFlag<S, C> {
+    internal fun build(): FeatureFlag<S, T, C> {
         requireNotNull(defaultValue) { "Default value must be set" }
         return FeatureFlag(
             conditional = conditional,

@@ -11,8 +11,12 @@ import io.amichne.konditional.core.types.EncodableValue
  * @param C The context type used for rule evaluation
  */
 @ConsistentCopyVisibility
-data class ConditionalValue<S : EncodableValue<*>, C : Context> private constructor(val rule: Rule<C>, val value: S) {
+data class ConditionalValue<S : EncodableValue<T>, T : Any, C : Context> private constructor(
+    val rule: Rule<C>,
+    val value: T,
+) {
     companion object {
-        internal fun <S : EncodableValue<*>, C : Context> Rule<C>.targetedBy(value: S): ConditionalValue<S, C> = ConditionalValue(this, value)
+        internal fun <S : EncodableValue<T>, T : Any, C : Context> Rule<C>.targetedBy(value: T): ConditionalValue<S, T, C> =
+            ConditionalValue(this, value)
     }
 }

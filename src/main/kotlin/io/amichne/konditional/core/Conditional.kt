@@ -13,11 +13,20 @@ import io.amichne.konditional.core.types.EncodableValue
  * @param S The EncodableValue type wrapping the actual value (Boolean, String, Int, or Double).
  * @param C The type of the context that the feature flag evaluates against.
  */
-interface Conditional<S : EncodableValue<*>, C : Context> {
+sealed interface Conditional<S : EncodableValue<T>, T : Any, C : Context> {
     val registry: FlagRegistry
     val key: String
 
-    fun update(definition: FeatureFlag<S, C>) = registry.update(definition)
+    fun update(definition: FeatureFlag<S, T, C>) = registry.update(definition)
+
+    interface OfBoolean<C : Context> :
+        Conditional<EncodableValue.BooleanEncodeable, Boolean, C>
+    interface OfString<C : Context> :
+        Conditional<EncodableValue.StringEncodeable, String, C>
+    interface OfInt<C : Context> :
+        Conditional<EncodableValue.IntegerEncodeable, Int, C>
+    interface OfDouble<C : Context> :
+        Conditional<EncodableValue.DecimalEncodeable, Double, C>
 
     companion object {
         /**
@@ -26,7 +35,10 @@ interface Conditional<S : EncodableValue<*>, C : Context> {
         fun <C : Context> boolean(
             key: String,
             registry: FlagRegistry = FlagRegistry,
-        ): Conditional<EncodableValue.BooleanEncodeable, C> = create(key, registry)
+        ): OfBoolean<C> = object : OfBoolean<C> {
+            override val registry: FlagRegistry = registry
+            override val key: String = key
+        }
 
         /**
          * Creates a String Conditional.
@@ -34,7 +46,10 @@ interface Conditional<S : EncodableValue<*>, C : Context> {
         fun <C : Context> string(
             key: String,
             registry: FlagRegistry = FlagRegistry,
-        ): Conditional<EncodableValue.StringEncodeable, C> = create(key, registry)
+        ): OfString<C> =  object : OfString<C> {
+            override val registry: FlagRegistry = registry
+            override val key: String = key
+        }
 
         /**
          * Creates an Int Conditional.
@@ -42,7 +57,10 @@ interface Conditional<S : EncodableValue<*>, C : Context> {
         fun <C : Context> int(
             key: String,
             registry: FlagRegistry = FlagRegistry,
-        ): Conditional<EncodableValue.IntegerEncodeable, C> = create(key, registry)
+        ): OfInt<C> = object : OfInt<C> {
+            override val registry: FlagRegistry = registry
+            override val key: String = key
+        }
 
         /**
          * Creates a Double Conditional.
@@ -50,17 +68,14 @@ interface Conditional<S : EncodableValue<*>, C : Context> {
         fun <C : Context> double(
             key: String,
             registry: FlagRegistry = FlagRegistry,
-        ): Conditional<EncodableValue.DecimalEncodeable, C> = create(key, registry)
-
-        private fun <S : EncodableValue<*>, C : Context> create(
-            key: String,
-            registry: FlagRegistry,
-        ): Conditional<S, C> = object : Conditional<S, C> {
+        ): OfDouble<C> = object : OfDouble<C> {
             override val registry: FlagRegistry = registry
             override val key: String = key
         }
 
-        internal inline fun <reified T, S : EncodableValue<*>, C : Context> parse(key: String): T where T : Conditional<S, C>, T : Enum<T> =
-            enumValues<T>().first { it.key == key }
+        internal inline fun <reified R, S : EncodableValue<T>, T : Any, C : Context> parse(
+            key: String,
+        ): R where R : Conditional<S, T, C>, R : Enum<R> =
+            enumValues<R>().first { it.key == key }
     }
 }

@@ -29,7 +29,7 @@ import io.amichne.konditional.core.types.EncodableValue
 
 @FeatureFlagDsl
 class ConfigBuilder private constructor() {
-    private val flags = LinkedHashMap<Conditional<*, *>, FeatureFlag<*, *>>()
+    private val flags = LinkedHashMap<Conditional<*, *, *>, FeatureFlag<*, *, *>>()
 
     /**
      * Define a flag using infix syntax:
@@ -40,9 +40,9 @@ class ConfigBuilder private constructor() {
      * }
      * ```
      */
-    infix fun <S : EncodableValue<*>, C : Context> Conditional<S, C>.with(build: FlagBuilder<S, C>.() -> Unit) {
+    infix fun <S : EncodableValue<T>, T : Any, C : Context> Conditional<S, T, C>.with(build: FlagBuilder<S, T, C>.() -> Unit) {
         require(this !in this@ConfigBuilder.flags) { "Duplicate flag $this" }
-        this@ConfigBuilder.flags[this] = FlagBuilder(this).apply<FlagBuilder<S, C>>(build).build()
+        this@ConfigBuilder.flags[this] = FlagBuilder(this).apply<FlagBuilder<S, T, C>>(build).build()
     }
 
     fun build(): Konfig = Konfig(flags.toMap())
