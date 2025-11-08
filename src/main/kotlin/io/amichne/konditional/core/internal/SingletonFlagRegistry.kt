@@ -1,4 +1,5 @@
 package io.amichne.konditional.core.internal
+import io.amichne.konditional.core.types.EncodableValue
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.FeatureFlag
@@ -61,10 +62,11 @@ internal object SingletonFlagRegistry : FlagRegistry {
      * This operation atomically updates the specified flag while leaving others unchanged.
      *
      * @param definition The [io.amichne.konditional.core.internal.FlagDefinition] to update
-     * @param S The type of the flag's value
+     * @param S The EncodableValue wrapper type
+     * @param T The actual value type
      * @param C The type of the context used for evaluation
      */
-    override fun <S : Any, C : Context> update(definition: FeatureFlag<S, C>) {
+    override fun <S : EncodableValue<T>, T : Any, C : Context> update(definition: FeatureFlag<S, T, C>) {
         current.updateAndGet { currentSnapshot ->
             val mutableFlags = currentSnapshot.flags.toMutableMap()
             mutableFlags[definition.conditional] = definition

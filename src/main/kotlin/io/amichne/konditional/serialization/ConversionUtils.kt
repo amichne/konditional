@@ -11,6 +11,7 @@ import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.instance.KonfigPatch
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
@@ -48,7 +49,7 @@ import io.amichne.konditional.serialization.models.SerializableSnapshot
  * @see io.amichne.konditional.serialization.SnapshotSerializer
  */
 object ConditionalRegistry {
-    private val registry = mutableMapOf<String, Conditional<*, *>>()
+    private val registry = mutableMapOf<String, Conditional<*, *, *>>()
 
     /**
      * Registers a Conditional instance with its key.
@@ -56,7 +57,7 @@ object ConditionalRegistry {
      * @param conditional The conditional to register
      * @throws IllegalStateException if a different conditional is already registered with the same key
      */
-    fun <S : Any, C : Context> register(conditional: Conditional<S, C>) {
+    fun <S : EncodableValue<T>, T : Any, C : Context> register(conditional: Conditional<S, T, C>) {
         registry[conditional.key] = conditional
     }
 
@@ -73,7 +74,7 @@ object ConditionalRegistry {
      *
      * @param T The enum type that implements Conditional
      */
-    inline fun <reified T> registerEnum() where T : Enum<T>, T : Conditional<*, *> {
+    inline fun <reified T> registerEnum() where T : Enum<T>, T : Conditional<*, *, *> {
         enumValues<T>().forEach { register(it) }
     }
 
@@ -83,7 +84,7 @@ object ConditionalRegistry {
      * @param key The string key of the conditional
      * @return ParseResult with the registered Conditional or an error
      */
-    fun get(key: String): ParseResult<Conditional<*, *>> {
+    fun get(key: String): ParseResult<Conditional<*, *, *>> {
         return registry[key]?.let { ParseResult.Success(it) }
             ?: ParseResult.Failure(ParseError.ConditionalNotFound(key))
     }
@@ -112,7 +113,7 @@ object ConditionalRegistry {
  */
 fun Konfig.toSerializable(): SerializableSnapshot {
     val serializableFlags = flags.map { (conditional, flag) ->
-        (flag as FlagDefinition<*, *>).toSerializable(conditional.key)
+        (flag as FlagDefinition<*, *, *>).toSerializable(conditional.key)
     }
     return SerializableSnapshot(serializableFlags)
 }
@@ -120,7 +121,7 @@ fun Konfig.toSerializable(): SerializableSnapshot {
 /**
  * Converts a FlagDefinition to a SerializableFlag.
  */
-private fun <S : Any, C : Context> FlagDefinition<S, C>.toSerializable(flagKey: String): SerializableFlag {
+private fun <S : EncodableValue<T>, T : Any, C : Context> FlagDefinition<S, T, C>.toSerializable(flagKey: String): SerializableFlag {
     return SerializableFlag(
         key = flagKey,
         defaultValue = FlagValue.from(defaultValue),
@@ -133,7 +134,7 @@ private fun <S : Any, C : Context> FlagDefinition<S, C>.toSerializable(flagKey: 
 /**
  * Converts a ConditionalValue to a SerializableRule.
  */
-private fun <S : Any, C : Context> ConditionalValue<S, C>.toSerializable(): SerializableRule {
+private fun <S : EncodableValue<T>, T : Any, C : Context> ConditionalValue<S, T, C>.toSerializable(): SerializableRule {
     return SerializableRule(
         value = FlagValue.from(value),
         rampUp = rule.rollout.value,
@@ -160,7 +161,7 @@ fun SerializableSnapshot.toSnapshot(): ParseResult<Konfig> {
 
         // Extract successful values
         val flagMap = flagResults
-            .filterIsInstance<ParseResult.Success<Pair<Conditional<*, *>, FeatureFlag<*, *>>>>()
+            .filterIsInstance<ParseResult.Success<Pair<Conditional<*, *, *>, FeatureFlag<*, *, *>>>>()
             .associate { it.value }
 
         ParseResult.Success(Konfig(flagMap))
@@ -173,7 +174,7 @@ fun SerializableSnapshot.toSnapshot(): ParseResult<Konfig> {
  * Converts a SerializableFlag to a Map.Entry of Conditional to FeatureFlag.
  * Returns ParseResult for type-safe error handling.
  */
-private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Conditional<*, *>, FeatureFlag<*, *>>> {
+private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Conditional<*, *, *>, FeatureFlag<*, *, *>>> {
     return when (val conditionalResult = ConditionalRegistry.get(key)) {
         is ParseResult.Success -> {
             val conditional = conditionalResult.value
@@ -189,12 +190,12 @@ private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Conditional<*, *>, F
  * Type-safe: no casting required thanks to FlagValue sealed class.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : Any, C : Context> SerializableFlag.toFlagDefinition(
-    conditional: Conditional<S, C>
-): FlagDefinition<S, C> {
+private fun <S : EncodableValue<T>, T : Any, C : Context> SerializableFlag.toFlagDefinition(
+    conditional: Conditional<S, T, C>
+): FlagDefinition<S, T, C> {
     // Extract typed value from FlagValue (type-safe extraction)
-    val typedDefaultValue = defaultValue.extractValue<S>()
-    val values = rules.map { it.toValue<S, C>() }
+    val typedDefaultValue = defaultValue.extractValue<T>()
+    val values = rules.map { it.toValue<S, T, C>() }
 
     return FlagDefinition(
         conditional = conditional,
@@ -216,8 +217,8 @@ private fun <T : Any> FlagValue<*>.extractValue(): T = this.value as T
  * Converts a SerializableRule to a ConditionalValue.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : Any, C : Context> SerializableRule.toValue(): ConditionalValue<S, C> {
-    val typedValue = value.extractValue<S>()
+private fun <S : EncodableValue<T>, T : Any, C : Context> SerializableRule.toValue(): ConditionalValue<S, T, C> {
+    val typedValue = value.extractValue<T>()
     val rule = toRule<C>()
     return rule.targetedBy(typedValue)
 }
@@ -241,7 +242,7 @@ private fun <C : Context> SerializableRule.toRule(): Rule<C> {
  */
 fun KonfigPatch.toSerializable(): SerializablePatch {
     val serializableFlags = flags.map { (conditional, flag) ->
-        (flag as FlagDefinition<*, *>).toSerializable(conditional.key)
+        (flag as FlagDefinition<*, *, *>).toSerializable(conditional.key)
     }
     val removeKeyStrings = removeKeys.map { it.key }
     return SerializablePatch(serializableFlags, removeKeyStrings)
@@ -263,7 +264,7 @@ fun SerializablePatch.toPatch(): ParseResult<KonfigPatch> {
 
         // Extract successful values
         val flagMap = flagResults
-            .filterIsInstance<ParseResult.Success<Pair<Conditional<*, *>, FeatureFlag<*, *>>>>()
+            .filterIsInstance<ParseResult.Success<Pair<Conditional<*, *, *>, FeatureFlag<*, *, *>>>>()
             .associate { it.value }
 
         // For removeKeys, skip keys that aren't registered (they may have been removed)

@@ -1,4 +1,5 @@
 package io.amichne.konditional.core.instance
+import io.amichne.konditional.core.types.EncodableValue
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Conditional
@@ -19,8 +20,8 @@ import io.amichne.konditional.core.FeatureFlag
  */
 @ConsistentCopyVisibility
 data class KonfigPatch internal constructor(
-    val flags: Map<Conditional<*, *>, FeatureFlag<*, *>>,
-    val removeKeys: Set<Conditional<*, *>> = emptySet(),
+    val flags: Map<Conditional<*, *, *>, FeatureFlag<*, *, *>>,
+    val removeKeys: Set<Conditional<*, *, *>> = emptySet(),
 ) {
     /**
      * Applies a patch to a konfig, creating a new konfig with the changes.
@@ -66,16 +67,16 @@ data class KonfigPatch internal constructor(
      * Builder for creating patches with a DSL-style API.
      */
     class PatchBuilder internal constructor() {
-        private val flags = mutableMapOf<Conditional<*, *>, FeatureFlag<*, *>>()
-        private val removeKeys = mutableSetOf<Conditional<*, *>>()
+        private val flags = mutableMapOf<Conditional<*, *, *>, FeatureFlag<*, *, *>>()
+        private val removeKeys = mutableSetOf<Conditional<*, *, *>>()
 
         /**
          * Adds or updates a flag in the patch.
          *
          * @param entry Pair of Conditional key and its flag definition
          */
-        fun <S : Any, C : Context> add(
-            entry: FeatureFlag<S, C>
+        fun <S : EncodableValue<T>, T : Any, C : Context> add(
+            entry: FeatureFlag<S, T, C>
         ) {
             flags[entry.conditional] = entry
             // If we're adding a flag, ensure it's not also in removeKeys
@@ -87,7 +88,7 @@ data class KonfigPatch internal constructor(
          *
          * @param key The conditional key to remove
          */
-        fun remove(key: Conditional<*, *>) {
+        fun remove(key: Conditional<*, *, *>) {
             removeKeys.add(key)
             // If we're removing a flag, ensure it's not also in flags
             flags.remove(key)

@@ -4,6 +4,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.instance.KonfigPatch
 import io.amichne.konditional.core.internal.SingletonFlagRegistry
+import io.amichne.konditional.core.types.EncodableValue
 
 /**
  * Abstraction for managing feature flag configurations and evaluations.
@@ -89,7 +90,7 @@ interface FlagRegistry {
      * @param S The type of the flag's value
      * @param C The type of the context used for evaluation
      */
-    fun <S : Any, C : Context> update(definition: FeatureFlag<S, C>)
+    fun <S : EncodableValue<T>, T : Any, C : Context> update(definition: FeatureFlag<S, T, C>)
 
     /**
      * Retrieves the current snapshot of all flag configurations.
@@ -110,15 +111,15 @@ interface FlagRegistry {
      * @param C The type of the context used for evaluation
      */
     @Suppress("UNCHECKED_CAST")
-    fun <S : Any, C : Context> featureFlag(key: Conditional<S, C>): FeatureFlag<S, C>? =
-        konfig().flags[key] as? FeatureFlag<S, C>
+    fun <S : EncodableValue<T>, T : Any, C : Context> featureFlag(key: Conditional<S, T, C>): FeatureFlag<S, T, C>? =
+        konfig().flags[key] as? FeatureFlag<S, T, C>
 
     /**
      * Retrieves all flags from the registry.
      *
      * @return Map of all [Conditional] keys to their [FeatureFlag] definitions
      */
-    fun allFlags(): Map<Conditional<*, *>, FeatureFlag<*, *>> =
+    fun allFlags(): Map<Conditional<*, *, *>, FeatureFlag<*, *, *>> =
         konfig().flags
 
     companion object : FlagRegistry by SingletonFlagRegistry
