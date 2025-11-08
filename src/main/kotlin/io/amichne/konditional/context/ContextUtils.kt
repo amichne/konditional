@@ -1,4 +1,5 @@
 package io.amichne.konditional.context
+import io.amichne.konditional.core.types.EncodableValue
 
 import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.core.FeatureFlag
@@ -13,16 +14,17 @@ import io.amichne.konditional.core.internal.SingletonFlagRegistry
  *
  * @param key The feature flag to evaluate
  * @param registry The [io.amichne.konditional.core.FlagRegistry] to use (defaults to [SingletonFlagRegistry])
- * @return The evaluated value of type [S]
+ * @return The evaluated value of type [T]
  * @throws IllegalStateException if the flag is not found in the registry
- * @param S The type of the flag's value
+ * @param S The EncodableValue wrapper type
+ * @param T The actual value type
  * @param C The type of the context
  */
 @Suppress("UNCHECKED_CAST")
-fun <S : Any, C : Context> C.evaluate(
-    key: Conditional<S, C>,
+fun <S : EncodableValue<T>, T : Any, C : Context> C.evaluate(
+    key: Conditional<S, T, C>,
     registry: FlagRegistry = FlagRegistry
-): S {
+): T {
     val flag = registry.featureFlag(key)
         ?: throw IllegalStateException("Flag not found: ${key.key}")
     return flag.evaluate(this)
@@ -41,7 +43,7 @@ fun <S : Any, C : Context> C.evaluate(
  * @param C The type of the context
  */
 @Suppress("UNCHECKED_CAST")
-fun <C : Context> C.evaluate(registry: FlagRegistry = FlagRegistry): Map<Conditional<*, *>, Any?> =
+fun <C : Context> C.evaluate(registry: FlagRegistry = FlagRegistry): Map<Conditional<*, *, *>, Any?> =
     registry.allFlags().mapValues { (_, flag) ->
-        (flag as? FeatureFlag<*, C>)?.evaluate(this)
+        (flag as? FeatureFlag<*, *, C>)?.evaluate(this)
     }

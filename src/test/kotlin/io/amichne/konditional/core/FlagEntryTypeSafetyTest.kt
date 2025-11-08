@@ -9,8 +9,9 @@ import io.amichne.konditional.context.evaluate
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.internal.SingletonFlagRegistry
-import io.amichne.konditional.rules.Rule
+import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
+import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -30,17 +31,17 @@ class FlagEntryTypeSafetyTest {
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
 
-    enum class BoolFlags(override val key: String) : Conditional<Boolean, Context> by Conditional(key) {
+    enum class BoolFlags(override val key: String) : BooleanFeature<Context> by boolean(key) {
         FEATURE_A("feature_a"),
         FEATURE_B("feature_b"),
     }
 
-    enum class StringFlags(override val key: String) : Conditional<String, Context> by Conditional(key) {
+    enum class StringFlags(override val key: String) : StringFeature<Context> by string(key) {
         CONFIG_A("config_a"),
         CONFIG_B("config_b"),
     }
 
-    enum class IntFlags(override val key: String) : Conditional<Int, Context> by Conditional(key) {
+    enum class IntFlags(override val key: String) : IntFeature<Context> by int(key) {
         TIMEOUT("timeout"),
     }
 
@@ -73,7 +74,7 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded,
         )
 
-        val boolFlag: FeatureFlag<Boolean, Context> = FlagDefinition(
+        val boolFlag: FeatureFlag<EncodableValue.BooleanEncodeable, Boolean, Context> = FlagDefinition(
             conditional = BoolFlags.FEATURE_A,
             values = listOf(rule.targetedBy(true)),
             defaultValue = false,
@@ -108,19 +109,19 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded,
         )
 
-        val boolFlag: FeatureFlag<Boolean, Context> = FlagDefinition(
+        val boolFlag: FeatureFlag<EncodableValue.BooleanEncodeable, Boolean, Context> = FlagDefinition(
             conditional = BoolFlags.FEATURE_A,
             values = listOf(boolRule.targetedBy(true)),
             defaultValue = false,
         )
 
-        val stringFlag: FeatureFlag<String, Context> = FlagDefinition(
+        val stringFlag: FeatureFlag<EncodableValue.StringEncodeable, String, Context> = FlagDefinition(
             conditional = StringFlags.CONFIG_A,
             values = listOf(stringRule.targetedBy("value")),
             defaultValue = "default",
         )
 
-        val intFlag: FeatureFlag<Int, Context> = FlagDefinition(
+        val intFlag: FeatureFlag<EncodableValue.IntEncodeable, Int, Context> = FlagDefinition(
             conditional = IntFlags.TIMEOUT,
             values = listOf(intRule.targetedBy(30)),
             defaultValue = 10,
@@ -263,8 +264,7 @@ class FlagEntryTypeSafetyTest {
         val stringResult = context.evaluate(StringFlags.CONFIG_A)
 
         // Type safety is maintained - we get the correct types back
-        assertTrue(boolResult is Boolean)
-        assertTrue(stringResult is String)
+        assertEquals(true, boolResult)
     }
 
     @Test
@@ -277,7 +277,7 @@ class FlagEntryTypeSafetyTest {
             val customField: String,
         ) : Context
 
-        data class CustomIntFlag(override val key: String = "custom_int") : Conditional<Int, CustomContext> by Conditional(key)
+        data class CustomIntFlag(override val key: String = "custom_int") : IntFeature<CustomContext> by int(key)
 
         val customIntFlag = CustomIntFlag()
 
@@ -288,7 +288,7 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded,
         )
 
-        val flag: FeatureFlag<Int, CustomContext> = FlagDefinition(
+        val flag: FeatureFlag<EncodableValue.IntEncodeable, Int, CustomContext> = FlagDefinition(
             conditional = customIntFlag,
             values = listOf(rule.targetedBy(42)),
             defaultValue = 0,
@@ -304,7 +304,6 @@ class FlagEntryTypeSafetyTest {
 
         val result = flag.evaluate(customCtx)
 
-        assertTrue(result is Int)
         assertEquals(42, result)
     }
 

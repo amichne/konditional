@@ -16,7 +16,7 @@ class StringSingletonFlagRegistryTest {
     // Define a simple enum for string-valued flags
     enum class StringFeatureFlags(
         override val key: String,
-    ) : Conditional<String, Context> by Conditional(key) {
+    ) : StringFeature<Context> by string(key) {
         API_ENDPOINT("api_endpoint"),
         THEME("theme"),
         WELCOME_MESSAGE("welcome_message"),

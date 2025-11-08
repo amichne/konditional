@@ -113,9 +113,24 @@ class SnapshotSerializerTest {
 
         // Verify by comparing evaluation results with different contexts
         val contexts = listOf(
-            Context(AppLocale.EN_US, Platform.IOS, Version.of(1, 0, 0), StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d1")),
-            Context(AppLocale.EN_US, Platform.IOS, Version.of(1, 0, 0), StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d2")),
-            Context(AppLocale.EN_US, Platform.ANDROID, Version.of(1, 0, 0), StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d3")),
+            Context(
+                AppLocale.EN_US,
+                Platform.IOS,
+                Version.of(1, 0, 0),
+                StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d1")
+            ),
+            Context(
+                AppLocale.EN_US,
+                Platform.IOS,
+                Version.of(1, 0, 0),
+                StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d2")
+            ),
+            Context(
+                AppLocale.EN_US,
+                Platform.ANDROID,
+                Version.of(1, 0, 0),
+                StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d3")
+            ),
             Context(AppLocale.ES_US, Platform.IOS, Version.of(1, 0, 0), StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d4"))
         )
 
@@ -231,7 +246,7 @@ class SnapshotSerializerTest {
 
         // Compare each flag
         originalValues.forEach { (key, value) ->
-            assertEquals(value, deserializedValues[key], "Flag ${(key as Conditional<*, *>).key} should match")
+            assertEquals(value, deserializedValues[key], "Flag ${(key as Conditional<*, *, *>).key} should match")
         }
     }
 
@@ -418,9 +433,24 @@ class SnapshotSerializerTest {
 
         // Test with multiple contexts to ensure behavior is identical
         val contexts = listOf(
-            Context(AppLocale.EN_US, Platform.IOS, Version.of(1, 0, 0), StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d1")),
-            Context(AppLocale.EN_CA, Platform.IOS, Version.of(7, 5, 0), StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d2")),
-            Context(AppLocale.ES_US, Platform.ANDROID, Version.of(8, 0, 0), StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d3")),
+            Context(
+                AppLocale.EN_US,
+                Platform.IOS,
+                Version.of(1, 0, 0),
+                StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d1")
+            ),
+            Context(
+                AppLocale.EN_CA,
+                Platform.IOS,
+                Version.of(7, 5, 0),
+                StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d2")
+            ),
+            Context(
+                AppLocale.ES_US,
+                Platform.ANDROID,
+                Version.of(8, 0, 0),
+                StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d3")
+            ),
             Context(AppLocale.HI_IN, Platform.WEB, Version.of(6, 0, 0), StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d4"))
         )
 
@@ -441,7 +471,7 @@ class SnapshotSerializerTest {
                 assertEquals(
                     value,
                     deserializedValues[key],
-                    "Flag ${(key as Conditional<*, *>).key} should match for context: $context"
+                    "Flag ${key.key} should match for context: $context"
                 )
             }
         }

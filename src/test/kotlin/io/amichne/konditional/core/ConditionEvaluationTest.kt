@@ -6,8 +6,8 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
+import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -19,7 +19,7 @@ import kotlin.test.assertTrue
  */
 class ConditionEvaluationTest {
 
-    enum class TestFlags(override val key: String) : Conditional<String, Context> by Conditional(key) {
+    enum class TestFlags(override val key: String) : StringFeature<Context> by string(key) {
         TEST_FLAG("test_flag"),
     }
 

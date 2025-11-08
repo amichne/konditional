@@ -4,4 +4,4 @@ import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.core.FeatureFlag
 
 @ConsistentCopyVisibility
-data class Konfig internal constructor(val flags: Map<Conditional<*, *>, FeatureFlag<*, *>>)
+data class Konfig internal constructor(val flags: Map<Conditional<*, *, *>, FeatureFlag<*, *, *>>)
