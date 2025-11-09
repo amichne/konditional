@@ -26,12 +26,31 @@ data class KonfigPatch internal constructor(
     /**
      * Applies a patch to a konfig, creating a new konfig with the changes.
      *
+     * This method updates individual flags within their respective modules.
+     * If a flag is added or removed, the module structure is preserved.
+     *
      * @param konfig The konfig to apply the patch to
      * @return A new Konfig with the patch applied
      */
-    fun applyTo(konfig: Konfig): Konfig = konfig.flags.toMutableMap().let { map ->
-        removeKeys.forEach { map.remove(it) }
-        Konfig(map.also { it.putAll(flags) })
+    fun applyTo(konfig: Konfig): Konfig {
+        // Get all current flags and apply the patch
+        val updatedFlags = konfig.flags.toMutableMap()
+        removeKeys.forEach { updatedFlags.remove(it) }
+        updatedFlags.putAll(flags)
+
+        // Rebuild modules with updated flags
+        val updatedModules = konfig.modules.mapValues { (moduleName, moduleConfig) ->
+            val moduleFlags = moduleConfig.flags.keys
+            val updatedModuleFlags = updatedFlags.filterKeys { it in moduleFlags }
+
+            @Suppress("UNCHECKED_CAST")
+            ModuleConfig(
+                module = moduleConfig.module as io.amichne.konditional.core.Module<io.amichne.konditional.context.Context>,
+                flags = updatedModuleFlags as Map<io.amichne.konditional.core.Conditional<*, *, io.amichne.konditional.context.Context>, FeatureFlag<*, *, io.amichne.konditional.context.Context>>
+            )
+        }
+
+        return Konfig(updatedModules)
     }
 
     companion object {

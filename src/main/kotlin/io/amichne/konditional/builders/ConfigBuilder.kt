@@ -1,16 +1,17 @@
 /**
-import io.amichne.konditional.core.types.EncodableValue
  * A builder class for defining and configuring feature flags using a DSL (Domain-Specific Language).
  *
- * This class allows you to define feature flags and their associated rules in a declarative manner.
- * The flags are stored in a registry that can be loaded into the application.
+ * This class allows you to define modules containing feature flags and their associated rules
+ * in a declarative manner. Flags must be organized into modules and cannot be registered directly.
  *
  * Example usage:
  * ```
  * ConfigBuilder.config {
- *     Conditional.ENABLE_COMPACT_CARDS with {
- *         default(value = BooleanConditional.TRUE)
- *         boundary { ... }
+ *     module(MyModules.USER_FEATURES) {
+ *         UserFlags.ENABLE_PROFILE with {
+ *             default(true)
+ *             rule { ... } implies false
+ *         }
  *     }
  * }
  * ```
@@ -20,32 +21,50 @@ import io.amichne.konditional.core.types.EncodableValue
 package io.amichne.konditional.builders
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.Conditional
-import io.amichne.konditional.core.FeatureFlag
 import io.amichne.konditional.core.FeatureFlagDsl
 import io.amichne.konditional.core.FlagRegistry
+import io.amichne.konditional.core.Module
 import io.amichne.konditional.core.instance.Konfig
-import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.core.instance.ModuleConfig
 
 @FeatureFlagDsl
 class ConfigBuilder private constructor() {
-    private val flags = LinkedHashMap<Conditional<*, *, *>, FeatureFlag<*, *, *>>()
+    private val modules = LinkedHashMap<String, ModuleConfig<*>>()
 
     /**
-     * Define a flag using infix syntax:
+     * Define a module with its feature flags.
+     *
+     * All flags declared in the module must be defined within the builder block.
+     *
+     * Example:
      * ```
-     * Conditional.ENABLE_COMPACT_CARDS with {
-     *     default(value = BooleanConditional.TRUE)
-     *     boundary { ... }
+     * module(MyModules.USER_FEATURES) {
+     *     UserFlags.ENABLE_PROFILE with {
+     *         default(true)
+     *         rule { ... } implies false
+     *     }
+     *     UserFlags.ENABLE_NOTIFICATIONS with {
+     *         default(false)
+     *     }
      * }
      * ```
+     *
+     * @param C The type of context used for flag evaluation
+     * @param module The module instance to configure
+     * @param build The module configuration lambda
      */
-    infix fun <S : EncodableValue<T>, T : Any, C : Context> Conditional<S, T, C>.with(build: FlagBuilder<S, T, C>.() -> Unit) {
-        require(this !in this@ConfigBuilder.flags) { "Duplicate flag $this" }
-        this@ConfigBuilder.flags[this] = FlagBuilder(this).apply<FlagBuilder<S, T, C>>(build).build()
+    fun <C : Context> module(
+        module: Module<C>,
+        build: ModuleBuilder<C>.() -> Unit
+    ) {
+        val moduleName = module.moduleName
+        require(moduleName !in modules) {
+            "Duplicate module '$moduleName'"
+        }
+        modules[moduleName] = ModuleBuilder(module).apply(build).build()
     }
 
-    fun build(): Konfig = Konfig(flags.toMap())
+    fun build(): Konfig = Konfig(modules.toMap())
 
     @FeatureFlagDsl
     companion object {
