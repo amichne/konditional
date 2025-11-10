@@ -7,7 +7,7 @@ This document describes the newly added support for extension types and JSON obj
 The type-safe primitive DSL has been extended to support:
 
 1. **Extension Types** (Custom Wrapper Types): "0-depth primitive-like values" that wrap JSON primitives
-2. **JSON Objects**: Complex data structures for HSON-object type representation
+2. **JSON Objects**: Complex data structures for JSON-object type representation
 
 Both features maintain compile-time type safety while enabling flexible value representations.
 
@@ -93,7 +93,7 @@ fun Duration.toEncodable(): EncodableValue.CustomEncodeable<Duration, Double> =
     )
 ```
 
-## JSON Objects (HSON-Object Type Representation)
+## JSON Objects (JSON-Object Type Representation)
 
 JSON objects enable complex data structures as conditional values, providing a "distinct super type of object nodes" that represent different values based on conditions.
 
@@ -145,7 +145,7 @@ fun ApiConfig.toEncodable(): EncodableValue.JsonObjectEncodeable<ApiConfig> =
         decoder = { ApiConfig.fromMap(it) }
     )
 
-// Configure with HSON-object type representation
+// Configure with JSON-object type representation
 config {
     API_CONFIG with {
         default(ApiConfig(

@@ -6,6 +6,7 @@ import io.amichne.konditional.core.StringFeature
 import io.amichne.konditional.core.boolean
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.string
+import io.amichne.konditional.example.SampleModules
 import io.amichne.konditional.fakes.FakeRegistry
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.evaluable.Evaluable
@@ -81,15 +82,17 @@ class ContextPolymorphismTest {
     @Test
     fun `Given EnterpriseContext, When evaluating flags, Then context-specific properties are accessible`() {
         config {
-            EnterpriseFlags.ADVANCED_ANALYTICS with {
-                default(false)
-                // This demonstrates that the rule can access base Context properties
-                rule {
-                    platforms(Platform.WEB)
-                    versions {
-                        min(2, 0)
-                    }
-                } implies true
+            module(SampleModules.EXPERIMENTAL) {
+                EnterpriseFlags.ADVANCED_ANALYTICS with {
+                    default(false)
+                    // This demonstrates that the rule can access base Context properties
+                    rule {
+                        platforms(Platform.WEB)
+                        versions {
+                            min(2, 0)
+                        }
+                    } implies true
+                }
             }
         }
 
@@ -109,14 +112,16 @@ class ContextPolymorphismTest {
     @Test
     fun `Given ExperimentContext, When evaluating flags, Then experiment-specific properties are accessible`() {
         config {
-            ExperimentFlags.HOMEPAGE_VARIANT with {
-                default("control")
-                rule {
-                    platforms(Platform.IOS, Platform.ANDROID)
-                } implies "variant-a"
-                rule {
-                    platforms(Platform.WEB)
-                } implies "variant-b"
+            module(SampleModules.EXPERIMENTAL) {
+                ExperimentFlags.HOMEPAGE_VARIANT with {
+                    default("control")
+                    rule {
+                        platforms(Platform.IOS, Platform.ANDROID)
+                    } implies "variant-a"
+                    rule {
+                        platforms(Platform.WEB)
+                    } implies "variant-b"
+                }
             }
         }
 
@@ -146,15 +151,17 @@ class ContextPolymorphismTest {
     @Test
     fun `Given multiple custom contexts, When using different flags, Then contexts are independent`() {
         config {
-            EnterpriseFlags.API_ACCESS with {
-                default(false)
-                rule {
-                } implies true
-            }
-            ExperimentFlags.ONBOARDING_STYLE with {
-                default("classic")
-                rule {
-                } implies "modern"
+            module(SampleModules.EXPERIMENTAL) {
+                EnterpriseFlags.API_ACCESS with {
+                    default(false)
+                    rule {
+                    } implies true
+                }
+                ExperimentFlags.ONBOARDING_STYLE with {
+                    default("classic")
+                    rule {
+                    } implies "modern"
+                }
             }
         }
 
@@ -193,17 +200,19 @@ class ContextPolymorphismTest {
         val standardFlagA = StandardFlagA()
 
         config {
-            standardFlagA with {
-                default(false)
-                rule {
-                    platforms(Platform.IOS)
-                } implies true
-            }
-            EnterpriseFlags.CUSTOM_BRANDING with {
-                default(false)
-                rule {
-                    platforms(Platform.WEB)
-                } implies true
+            module(SampleModules.EXPERIMENTAL) {
+                standardFlagA with {
+                    default(false)
+                    rule {
+                        platforms(Platform.IOS)
+                    } implies true
+                }
+                EnterpriseFlags.CUSTOM_BRANDING with {
+                    default(false)
+                    rule {
+                        platforms(Platform.WEB)
+                    } implies true
+                }
             }
         }
 
@@ -267,16 +276,18 @@ class ContextPolymorphismTest {
     fun `Given custom EnterpriseRule, When matching with business logic, Then custom properties are enforced`() {
         val registry = FakeRegistry()
         config(registry) {
-            EnterpriseFlags.API_ACCESS with {
-                default(false)
-                rule {
-                    platforms(Platform.WEB)
-                    rollout = Rollout.MAX
+            module(SampleModules.EXPERIMENTAL) {
+                EnterpriseFlags.API_ACCESS with {
+                    default(false)
+                    rule {
+                        platforms(Platform.WEB)
+                        rollout = Rollout.MAX
 
-                    extension {
-                        EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN)
-                    }
-                } implies true
+                        extension {
+                            EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN)
+                        }
+                    } implies true
+                }
             }
         }
 

@@ -10,11 +10,15 @@ import io.amichne.konditional.context.evaluate
 import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.core.FeatureFlag
 import io.amichne.konditional.core.FlagDefinition
+import io.amichne.konditional.core.Module
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Konfig
+import io.amichne.konditional.core.instance.ModuleConfig
 import io.amichne.konditional.core.internal.SingletonFlagRegistry
+import io.amichne.konditional.core.moduleNameFromEnum
 import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.example.SampleFeatureEnum
+import io.amichne.konditional.example.SampleModules
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.LeftBound
@@ -28,6 +32,41 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+
+/**
+ * Test module for single flag tests
+ */
+private enum class SingleFlagModule : Module {
+    TEST_MODULE
+}
+
+/**
+ * Test module for two flags
+ */
+private enum class TwoFlagsModule : Module {
+    TEST_MODULE
+}
+
+/**
+ * Test module for three flags
+ */
+private enum class ThreeFlagsModule : Module {
+    TEST_MODULE
+}
+
+/**
+ * Test module for versioned flag
+ */
+private enum class VersionedFlagModule : Module {
+    TEST_MODULE
+}
+
+/**
+ * Test module for fifty/fifty flag
+ */
+private enum class FiftyFiftyModule : Module {
+    TEST_MODULE
+}
 
 class SnapshotSerializerTest {
     private val serializer = SnapshotSerializer.default
@@ -46,10 +85,12 @@ class SnapshotSerializerTest {
 
     @Test
     fun `test simple flag serialization and deserialization`() {
-        // Create a simple snapshot with one flag
+        // Create a simple snapshot with one flag using module
         val snapshot = ConfigBuilder.buildSnapshot {
-            SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
-                default(true)
+            module(SingleFlagModule.TEST_MODULE) {
+                SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
+                    default(true)
+                }
             }
         }
 
@@ -95,8 +136,13 @@ class SnapshotSerializerTest {
             defaultValue = false
         )
 
+        val moduleConfig = ModuleConfig(
+            module = FiftyFiftyModule.TEST_MODULE,
+            flags = mapOf(SampleFeatureEnum.FIFTY_TRUE_US_IOS to condition)
+        )
+
         val konfig = Konfig(
-            mapOf(SampleFeatureEnum.FIFTY_TRUE_US_IOS to (condition))
+            modules = mapOf(FiftyFiftyModule.TEST_MODULE.moduleName to moduleConfig)
         )
 
         // Serialize
@@ -162,8 +208,13 @@ class SnapshotSerializerTest {
             defaultValue = false
         )
 
+        val moduleConfig = ModuleConfig(
+            module = VersionedFlagModule.TEST_MODULE,
+            flags = mapOf(SampleFeatureEnum.VERSIONED to condition)
+        )
+
         val konfig = Konfig(
-            mapOf(SampleFeatureEnum.VERSIONED to condition)
+            modules = mapOf(VersionedFlagModule.TEST_MODULE.moduleName to moduleConfig)
         )
 
         // Serialize
@@ -206,14 +257,16 @@ class SnapshotSerializerTest {
     @Test
     fun `test multiple flags serialization`() {
         val snapshot = ConfigBuilder.buildSnapshot {
-            SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
-                default(true)
-            }
-            SampleFeatureEnum.USE_LIGHTWEIGHT_HOME with {
-                default(false)
-            }
-            SampleFeatureEnum.UNIFORM50 with {
-                default(false)
+            module(ThreeFlagsModule.TEST_MODULE) {
+                SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
+                    default(true)
+                }
+                SampleFeatureEnum.USE_LIGHTWEIGHT_HOME with {
+                    default(false)
+                }
+                SampleFeatureEnum.UNIFORM50 with {
+                    default(false)
+                }
             }
         }
 
@@ -254,8 +307,10 @@ class SnapshotSerializerTest {
     fun `test patch update - add new flag`() {
         // Create initial snapshot with one flag
         val initialSnapshot = ConfigBuilder.buildSnapshot {
-            SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
-                default(true)
+            module(SingleFlagModule.TEST_MODULE) {
+                SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
+                    default(true)
+                }
             }
         }
 
@@ -299,8 +354,10 @@ class SnapshotSerializerTest {
     fun `test patch update - update existing flag`() {
         // Create initial snapshot
         val initialSnapshot = ConfigBuilder.buildSnapshot {
-            SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
-                default(false)
+            module(SingleFlagModule.TEST_MODULE) {
+                SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
+                    default(false)
+                }
             }
         }
 
@@ -335,11 +392,13 @@ class SnapshotSerializerTest {
     fun `test patch update - remove flag`() {
         // Create initial snapshot with two flags
         val initialSnapshot = ConfigBuilder.buildSnapshot {
-            SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
-                default(true)
-            }
-            SampleFeatureEnum.USE_LIGHTWEIGHT_HOME with {
-                default(false)
+            module(TwoFlagsModule.TEST_MODULE) {
+                SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
+                    default(true)
+                }
+                SampleFeatureEnum.USE_LIGHTWEIGHT_HOME with {
+                    default(false)
+                }
             }
         }
 
@@ -371,8 +430,10 @@ class SnapshotSerializerTest {
     fun `test patch from JSON`() {
         // Create initial snapshot
         val initialSnapshot = ConfigBuilder.buildSnapshot {
-            SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
-                default(false)
+            module(SingleFlagModule.TEST_MODULE) {
+                SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
+                    default(false)
+                }
             }
         }
 
@@ -414,16 +475,32 @@ class SnapshotSerializerTest {
 
     @Test
     fun `test round-trip equality with complex configuration`() {
-        // Create a complex snapshot with multiple flags
+        // Create a complex snapshot with multiple flags using SampleModules
         val snapshot = ConfigBuilder.buildSnapshot {
-            SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
-                default(true)
+            module(SampleModules.UI_FEATURES) {
+                SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
+                    default(true)
+                }
+                SampleFeatureEnum.USE_LIGHTWEIGHT_HOME with {
+                    default(false)
+                }
             }
-            SampleFeatureEnum.USE_LIGHTWEIGHT_HOME with {
-                default(false)
-            }
-            SampleFeatureEnum.VERSIONED with {
-                default(false)
+            module(SampleModules.EXPERIMENTAL) {
+                SampleFeatureEnum.FIFTY_TRUE_US_IOS with {
+                    default(false)
+                }
+                SampleFeatureEnum.DEFAULT_TRUE_EXCEPT_ANDROID_LEGACY with {
+                    default(true)
+                }
+                SampleFeatureEnum.PRIORITY_CHECK with {
+                    default(false)
+                }
+                SampleFeatureEnum.VERSIONED with {
+                    default(false)
+                }
+                SampleFeatureEnum.UNIFORM50 with {
+                    default(false)
+                }
             }
         }
 

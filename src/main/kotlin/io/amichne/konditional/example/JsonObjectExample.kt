@@ -5,15 +5,14 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.context.evaluate
 import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.types.EncodableValue
 
 /**
- * Example demonstrating JSON object support for HSON-object type representation.
+ * Example demonstrating JSON object support for JSON-object type representation.
  *
- * HSON-object: Distinct super type of object nodes that represent different
+ * JSON-object: Distinct super type of object nodes that represent different
  * values given specific conditions.
  */
 object JsonObjectExample {
@@ -207,37 +206,40 @@ object JsonObjectExample {
             metadata = mapOf("tier" to "premium", "priority" to true)
         )
 
-        // Configure with HSON-object type representation
+        // Configure with JSON-object type representation
         // Each condition produces a distinct object node
         config {
-            API_CONFIG with {
-                default(prodApi.toEncodable().value)
 
-                // Different API config for WEB platform
-                rule {
-                    platforms(Platform.WEB)
-                } implies devApi.toEncodable().value
-            }
+            module(SampleModules.EXPERIMENTAL) {
+                API_CONFIG with {
+                    default(prodApi.toEncodable().value)
 
-            THEME with {
-                default(lightTheme.toEncodable().value)
+                    // Different API config for WEB platform
+                    rule {
+                        platforms(Platform.WEB)
+                    } implies devApi.toEncodable().value
+                }
 
-                // Dark theme for specific locales
-                rule {
-                    locales(AppLocale.EN_US)
-                } implies darkTheme.toEncodable().value
-            }
+                THEME with {
+                    default(lightTheme.toEncodable().value)
 
-            FEATURES with {
-                default(basicFeatures.toEncodable().value)
+                    // Dark theme for specific locales
+                    rule {
+                        locales(AppLocale.EN_US)
+                    } implies darkTheme.toEncodable().value
+                }
 
-                // Premium features for iOS v2.0+
-                rule {
-                    platforms(Platform.IOS)
-                    versions {
-                        min(2, 0)
-                    }
-                } implies premiumFeatures.toEncodable().value
+                FEATURES with {
+                    default(basicFeatures.toEncodable().value)
+
+                    // Premium features for iOS v2.0+
+                    rule {
+                        platforms(Platform.IOS)
+                        versions {
+                            min(2, 0)
+                        }
+                    } implies premiumFeatures.toEncodable().value
+                }
             }
         }
 
@@ -257,7 +259,7 @@ object JsonObjectExample {
         )
 
         // In practice, evaluation would return the domain objects
-        // This demonstrates HSON-object type representation:
+        // This demonstrates JSON-object type representation:
         // - Same conditional produces different object structures based on rules
         // - Each rule "implies" a distinct object node
         // - Type-safe throughout the evaluation chain

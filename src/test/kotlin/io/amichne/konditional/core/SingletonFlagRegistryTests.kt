@@ -9,6 +9,7 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.evaluate
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.example.SampleFeatureEnum
+import io.amichne.konditional.example.SampleModules
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -30,23 +31,25 @@ class SingletonFlagRegistryTests {
     @BeforeTest
     fun loadSample() {
         config {
-            SampleFeatureEnum.FIFTY_TRUE_US_IOS with {
-                default(false)
-                rule {
-                    platforms(Platform.IOS)
-                    versions {
-                        min(7, 10, 0)
-                    }
-                } implies true
-            }
-            SampleFeatureEnum.DEFAULT_TRUE_EXCEPT_ANDROID_LEGACY with {
-                default(true)
-                rule {
-                    platforms(Platform.ANDROID)
-                    versions {
-                        max(6, 4, 99)
-                    }
-                } implies false
+            module(SampleModules.EXPERIMENTAL) {
+                SampleFeatureEnum.FIFTY_TRUE_US_IOS with {
+                    default(false)
+                    rule {
+                        platforms(Platform.IOS)
+                        versions {
+                            min(7, 10, 0)
+                        }
+                    } implies true
+                }
+                SampleFeatureEnum.DEFAULT_TRUE_EXCEPT_ANDROID_LEGACY with {
+                    default(true)
+                    rule {
+                        platforms(Platform.ANDROID)
+                        versions {
+                            max(6, 4, 99)
+                        }
+                    } implies false
+                }
             }
         }
     }
@@ -72,13 +75,15 @@ class SingletonFlagRegistryTests {
     @Test
     fun `Given multiple rules, When specificity differs, Then most specific rule wins`() {
         config {
-            SampleFeatureEnum.PRIORITY_CHECK with {
-                default(false)
-                rule {
-                } implies true
-                rule {
-                    platforms(Platform.IOS)
-                } implies true
+            module(SampleModules.EXPERIMENTAL) {
+                SampleFeatureEnum.PRIORITY_CHECK with {
+                    default(false)
+                    rule {
+                    } implies true
+                    rule {
+                        platforms(Platform.IOS)
+                    } implies true
+                }
             }
         }
         val id = "0123456789abcdef0123456789abcdef"
@@ -89,14 +94,16 @@ class SingletonFlagRegistryTests {
     @Test
     fun `Given version bounds, When inclusive, Then correctly matches edges`() {
         config {
-            SampleFeatureEnum.VERSIONED with {
-                default(false)
-                rule {
-                    versions {
-                        min(7, 10, 0)
-                        max(7, 12, 3)
-                    }
-                } implies true
+            module(SampleModules.EXPERIMENTAL) {
+                SampleFeatureEnum.VERSIONED with {
+                    default(false)
+                    rule {
+                        versions {
+                            min(7, 10, 0)
+                            max(7, 12, 3)
+                        }
+                    } implies true
+                }
             }
         }
 
@@ -108,13 +115,15 @@ class SingletonFlagRegistryTests {
     @Test
     fun `Given at least major version, When evaluating, Then correctly matches range`() {
         config {
-            SampleFeatureEnum.VERSIONED with {
-                default(false)
-                rule {
-                    versions {
-                        min(7) // >= 7.0.0
-                    }
-                } implies true
+            module(SampleModules.EXPERIMENTAL) {
+                SampleFeatureEnum.VERSIONED with {
+                    default(false)
+                    rule {
+                        versions {
+                            min(7) // >= 7.0.0
+                        }
+                    } implies true
+                }
             }
         }
 
@@ -131,13 +140,15 @@ class SingletonFlagRegistryTests {
     @Test
     fun `Given at least major minor version, When evaluating, Then correctly matches range`() {
         config {
-            SampleFeatureEnum.VERSIONED with {
-                default(false)
-                rule {
-                    versions {
-                        min(7, 10) // >= 7.10.0
-                    }
-                } implies true
+            module(SampleModules.EXPERIMENTAL) {
+                SampleFeatureEnum.VERSIONED with {
+                    default(false)
+                    rule {
+                        versions {
+                            min(7, 10) // >= 7.10.0
+                        }
+                    } implies true
+                }
             }
         }
 
@@ -154,13 +165,15 @@ class SingletonFlagRegistryTests {
     @Test
     fun `Given at least major minor patch version, When evaluating, Then correctly matches range`() {
         config {
-            SampleFeatureEnum.VERSIONED with {
-                default(false)
-                rule {
-                    versions {
-                        min(7, 10, 5) // >= 7.10.5
-                    }
-                } implies true
+            module(SampleModules.EXPERIMENTAL) {
+                SampleFeatureEnum.VERSIONED with {
+                    default(false)
+                    rule {
+                        versions {
+                            min(7, 10, 5) // >= 7.10.5
+                        }
+                    } implies true
+                }
             }
         }
 
@@ -177,13 +190,15 @@ class SingletonFlagRegistryTests {
     @Test
     fun `Given at most major version, When evaluating, Then correctly matches range`() {
         config {
-            SampleFeatureEnum.VERSIONED with {
-                default(false)
-                rule {
-                    versions {
-                        max(7) // <= 7.0.0
-                    }
-                } implies true
+            module(SampleModules.EXPERIMENTAL) {
+                SampleFeatureEnum.VERSIONED with {
+                    default(false)
+                    rule {
+                        versions {
+                            max(7) // <= 7.0.0
+                        }
+                    } implies true
+                }
             }
         }
 
@@ -201,13 +216,15 @@ class SingletonFlagRegistryTests {
     @Test
     fun `Given at most major minor version, When evaluating, Then correctly matches range`() {
         config {
-            SampleFeatureEnum.VERSIONED with {
-                default(false)
-                rule {
-                    versions {
-                        max(7, 10) // <= 7.10.0
-                    }
-                } implies true
+            module(SampleModules.EXPERIMENTAL) {
+                SampleFeatureEnum.VERSIONED with {
+                    default(false)
+                    rule {
+                        versions {
+                            max(7, 10) // <= 7.10.0
+                        }
+                    } implies true
+                }
             }
         }
 
@@ -225,13 +242,15 @@ class SingletonFlagRegistryTests {
     @Test
     fun `Given at most major minor patch version, When evaluating, Then correctly matches range`() {
         config {
-            SampleFeatureEnum.VERSIONED with {
-                default(false)
-                rule {
-                    versions {
-                        max(7, 10, 5) // <= 7.10.5
-                    }
-                } implies true
+            module(SampleModules.EXPERIMENTAL) {
+                SampleFeatureEnum.VERSIONED with {
+                    default(false)
+                    rule {
+                        versions {
+                            max(7, 10, 5) // <= 7.10.5
+                        }
+                    } implies true
+                }
             }
         }
 
@@ -249,14 +268,16 @@ class SingletonFlagRegistryTests {
     @Test
     fun `Given combined version granularities, When evaluating, Then correctly matches range`() {
         config {
-            SampleFeatureEnum.VERSIONED with {
-                default(false)
-                rule {
-                    versions {
-                        min(5) // >= 5.0.0
-                        max(7, 10, 5) // <= 7.10.5
-                    }
-                } implies true
+            module(SampleModules.EXPERIMENTAL) {
+                SampleFeatureEnum.VERSIONED with {
+                    default(false)
+                    rule {
+                        versions {
+                            min(5) // >= 5.0.0
+                            max(7, 10, 5) // <= 7.10.5
+                        }
+                    } implies true
+                }
             }
         }
 
@@ -277,13 +298,15 @@ class SingletonFlagRegistryTests {
     @Test
     fun `Given open ended minimum version, When evaluating, Then correctly matches range`() {
         config {
-            SampleFeatureEnum.VERSIONED with {
-                default(false)
-                rule {
-                    versions {
-                        min(7, 10) // >= 7.10.0, no maximum
-                    }
-                } implies true
+            module(SampleModules.EXPERIMENTAL) {
+                SampleFeatureEnum.VERSIONED with {
+                    default(false)
+                    rule {
+                        versions {
+                            min(7, 10) // >= 7.10.0, no maximum
+                        }
+                    } implies true
+                }
             }
         }
 
@@ -296,13 +319,16 @@ class SingletonFlagRegistryTests {
     @Test
     fun `Given open ended maximum version, When evaluating, Then correctly matches range`() {
         config {
-            SampleFeatureEnum.VERSIONED with {
-                default(false)
-                rule {
-                    versions {
-                        max(7, 10) // <= 7.10.0, no minimum
-                    }
-                } implies true
+
+            module(SampleModules.EXPERIMENTAL) {
+                SampleFeatureEnum.VERSIONED with {
+                    default(false)
+                    rule {
+                        versions {
+                            max(7, 10) // <= 7.10.0, no minimum
+                        }
+                    } implies true
+                }
             }
         }
 
@@ -315,11 +341,13 @@ class SingletonFlagRegistryTests {
     @Test
     fun `Given uniform bucket distribution, When evaluating, Then distribution is reasonable`() {
         config {
-            SampleFeatureEnum.UNIFORM50 with {
-                default(false)
-                rule {
-                    rollout = Rollout.of(50.0)
-                } implies true
+            module(SampleModules.EXPERIMENTAL) {
+                SampleFeatureEnum.UNIFORM50 with {
+                    default(false)
+                    rule {
+                        rollout = Rollout.of(50.0)
+                    } implies true
+                }
             }
         }
 
@@ -353,11 +381,13 @@ class SingletonFlagRegistryTests {
                 latch.await()
                 repeat(50) {
                     config {
-                        SampleFeatureEnum.FIFTY_TRUE_US_IOS with {
-                            default(false)
-                            rule {
-                                platforms(Platform.IOS)
-                            } implies true
+                        module(SampleModules.EXPERIMENTAL) {
+                            SampleFeatureEnum.FIFTY_TRUE_US_IOS with {
+                                default(false)
+                                rule {
+                                    platforms(Platform.IOS)
+                                } implies true
+                            }
                         }
                     }
                 }
@@ -373,14 +403,16 @@ class SingletonFlagRegistryTests {
         // This test validates that using enum-based keys provides compile-time type safety
         // and prevents typos or undefined flag keys
         config {
-            SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
-                default(false)
-                rule {
-                    platforms(Platform.IOS)
-                } implies true
-            }
-            SampleFeatureEnum.USE_LIGHTWEIGHT_HOME with {
-                default(true)
+            module(SampleModules.EXPERIMENTAL) {
+                SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
+                    default(false)
+                    rule {
+                        platforms(Platform.IOS)
+                    } implies true
+                }
+                SampleFeatureEnum.USE_LIGHTWEIGHT_HOME with {
+                    default(true)
+                }
             }
         }
 

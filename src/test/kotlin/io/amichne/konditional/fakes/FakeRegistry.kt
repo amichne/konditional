@@ -18,7 +18,9 @@ import io.amichne.konditional.core.internal.SingletonFlagRegistry
  * fun `test flag evaluation`() {
  *     val registry = FakeRegistry()
  *     val snapshot = buildSnapshot {
- *         MY_FLAG with { default(true) }
+ *         module(TestModule.FEATURES) {
+ *             MY_FLAG with { default(true) }
+ *         }
  *     }
  *     registry.load(snapshot)
  *

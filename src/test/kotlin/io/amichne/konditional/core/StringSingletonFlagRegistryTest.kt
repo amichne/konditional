@@ -8,6 +8,7 @@ import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.evaluate
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.example.SampleModules
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -32,14 +33,16 @@ class StringSingletonFlagRegistryTest {
     @Test
     fun `Given platform targeting, When evaluating string flag, Then correct theme is returned`() {
         config {
-            StringFeatureFlags.THEME with {
-                default("light")
-                rule {
-                    platforms(Platform.ANDROID)
-                } implies "material"
-                rule {
-                    platforms(Platform.IOS)
-                } implies "cupertino"
+            module(SampleModules.EXPERIMENTAL) {
+                StringFeatureFlags.THEME with {
+                    default("light")
+                    rule {
+                        platforms(Platform.ANDROID)
+                    } implies "material"
+                    rule {
+                        platforms(Platform.IOS)
+                    } implies "cupertino"
+                }
             }
         }
 
@@ -63,17 +66,19 @@ class StringSingletonFlagRegistryTest {
     @Test
     fun `Given locale targeting, When evaluating string flag, Then correct message is returned`() {
         config {
-            StringFeatureFlags.WELCOME_MESSAGE with {
-                default("Welcome!")
-                rule {
-                    locales(AppLocale.ES_US)
-                } implies "¡Bienvenido!"
-                rule {
-                    locales(AppLocale.EN_CA)
-                } implies "Welcome, eh!"
-                rule {
-                    locales(AppLocale.HI_IN)
-                } implies "स्वागत है!"
+            module(SampleModules.EXPERIMENTAL) {
+                StringFeatureFlags.WELCOME_MESSAGE with {
+                    default("Welcome!")
+                    rule {
+                        locales(AppLocale.ES_US)
+                    } implies "¡Bienvenido!"
+                    rule {
+                        locales(AppLocale.EN_CA)
+                    } implies "Welcome, eh!"
+                    rule {
+                        locales(AppLocale.HI_IN)
+                    } implies "स्वागत है!"
+                }
             }
         }
 
@@ -110,19 +115,21 @@ class StringSingletonFlagRegistryTest {
     @Test
     fun `Given version targeting, When evaluating string flag, Then correct endpoint is returned`() {
         config {
-            StringFeatureFlags.API_ENDPOINT with {
-                default("https://api.example.com/v1")
-                rule {
-                    versions {
-                        min(8, 0)
-                        max(8, 99, 99)
-                    }
-                } implies "https://api.example.com/v2"
-                rule {
-                    versions {
-                        min(9, 0)
-                    }
-                } implies "https://api.example.com/v3"
+            module(SampleModules.EXPERIMENTAL) {
+                StringFeatureFlags.API_ENDPOINT with {
+                    default("https://api.example.com/v1")
+                    rule {
+                        versions {
+                            min(8, 0)
+                            max(8, 99, 99)
+                        }
+                    } implies "https://api.example.com/v2"
+                    rule {
+                        versions {
+                            min(9, 0)
+                        }
+                    } implies "https://api.example.com/v3"
+                }
             }
         }
 
@@ -148,12 +155,14 @@ class StringSingletonFlagRegistryTest {
     @Test
     fun `Given coverage rollout, When evaluating string flag, Then distribution is correct`() {
         config {
-            StringFeatureFlags.API_ENDPOINT with {
-                default("https://api-old.example.com")
-                rule {
-                    // 30% of users get the new endpoint
-                    rollout = Rollout.of(30.0)
-                } implies "https://api-new.example.com"
+            module(SampleModules.EXPERIMENTAL) {
+                StringFeatureFlags.API_ENDPOINT with {
+                    default("https://api-old.example.com")
+                    rule {
+                        // 30% of users get the new endpoint
+                        rollout = Rollout.of(30.0)
+                    } implies "https://api-new.example.com"
+                }
             }
         }
 
@@ -182,25 +191,27 @@ class StringSingletonFlagRegistryTest {
     @Test
     fun `Given complex targeting, When evaluating string flag, Then correct distribution is returned`() {
         config {
-            StringFeatureFlags.API_ENDPOINT with {
-                default("https://api.example.com/stable")
+            module(SampleModules.EXPERIMENTAL) {
+                StringFeatureFlags.API_ENDPOINT with {
+                    default("https://api.example.com/stable")
 
-                // Beta API for iOS 9.0+ users at 25% rollout
-                rule {
-                    platforms(Platform.IOS)
-                    versions {
-                        min(9, 0)
-                    }
-                    rollout = Rollout.of(25.0)
-                } implies "https://api.example.com/beta"
+                    // Beta API for iOS 9.0+ users at 25% rollout
+                    rule {
+                        platforms(Platform.IOS)
+                        versions {
+                            min(9, 0)
+                        }
+                        rollout = Rollout.of(25.0)
+                    } implies "https://api.example.com/beta"
 
-                // Canary API for all Android 10.0+ users
-                rule {
-                    platforms(Platform.ANDROID)
-                    versions {
-                        min(10, 0)
-                    }
-                } implies "https://api.example.com/canary"
+                    // Canary API for all Android 10.0+ users
+                    rule {
+                        platforms(Platform.ANDROID)
+                        versions {
+                            min(10, 0)
+                        }
+                    } implies "https://api.example.com/canary"
+                }
             }
         }
 
@@ -246,10 +257,12 @@ class StringSingletonFlagRegistryTest {
     @Test
     fun `Given same Id, When evaluating string flag multiple times, Then result is deterministic`() {
         config {
-            StringFeatureFlags.THEME with {
-                default("light")
-                rule {
-                } implies "dark"
+            module(SampleModules.EXPERIMENTAL) {
+                StringFeatureFlags.THEME with {
+                    default("light")
+                    rule {
+                    } implies "dark"
+                }
             }
         }
 
@@ -266,15 +279,17 @@ class StringSingletonFlagRegistryTest {
     @Test
     fun `Given same Id, When evaluating different string flags, Then results are independent and deterministic`() {
         config {
-            StringFeatureFlags.THEME with {
-                default("light")
-                rule {
-                } implies "dark"
-            }
-            StringFeatureFlags.API_ENDPOINT with {
-                default("https://api.example.com/v1")
-                rule {
-                } implies "https://api.example.com/v2"
+            module(SampleModules.EXPERIMENTAL) {
+                StringFeatureFlags.THEME with {
+                    default("light")
+                    rule {
+                    } implies "dark"
+                }
+                StringFeatureFlags.API_ENDPOINT with {
+                    default("https://api.example.com/v1")
+                    rule {
+                    } implies "https://api.example.com/v2"
+                }
             }
         }
 

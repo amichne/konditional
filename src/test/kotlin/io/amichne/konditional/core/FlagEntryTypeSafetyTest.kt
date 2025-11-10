@@ -8,8 +8,10 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.evaluate
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Konfig
+import io.amichne.konditional.core.instance.ModuleConfig
 import io.amichne.konditional.core.internal.SingletonFlagRegistry
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.example.SampleModules
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
@@ -172,9 +174,15 @@ class FlagEntryTypeSafetyTest {
 
         val konfig = Konfig(
             mapOf(
-                BoolFlags.FEATURE_A to boolFlag,
-                StringFlags.CONFIG_A to stringFlag,
+                SampleModules.EXPERIMENTAL.moduleName to ModuleConfig(
+                    SampleModules.EXPERIMENTAL,
+                    mapOf(
+                        BoolFlags.FEATURE_A to boolFlag,
+                        StringFlags.CONFIG_A to stringFlag,
+                    )
+                )
             )
+
         )
 
         SingletonFlagRegistry.load(konfig)
@@ -192,34 +200,37 @@ class FlagEntryTypeSafetyTest {
     @Test
     fun `Given config with multiple flag types, When loaded, Then ContextualFeatureFlag maintains type safety`() {
         config {
-            BoolFlags.FEATURE_A with {
-                default(false)
-                rule {
-                    platforms(Platform.IOS)
-                } implies true
-            }
-            BoolFlags.FEATURE_B with {
-                default(true)
-            }
-            StringFlags.CONFIG_A with {
-                default("default")
-                rule {
-                    platforms(Platform.ANDROID)
-                } implies "android-value"
-            }
-            StringFlags.CONFIG_B with {
-                default("config-b-default")
-                rule {
-                    locales(AppLocale.EN_US)
-                } implies "en-us-value"
-            }
-            IntFlags.TIMEOUT with {
-                default(10)
-                rule {
-                    versions {
-                        min(2, 0)
-                    }
-                } implies 30
+            module(SampleModules.EXPERIMENTAL) {
+
+                BoolFlags.FEATURE_A with {
+                    default(false)
+                    rule {
+                        platforms(Platform.IOS)
+                    } implies true
+                }
+                BoolFlags.FEATURE_B with {
+                    default(true)
+                }
+                StringFlags.CONFIG_A with {
+                    default("default")
+                    rule {
+                        platforms(Platform.ANDROID)
+                    } implies "android-value"
+                }
+                StringFlags.CONFIG_B with {
+                    default("config-b-default")
+                    rule {
+                        locales(AppLocale.EN_US)
+                    } implies "en-us-value"
+                }
+                IntFlags.TIMEOUT with {
+                    default(10)
+                    rule {
+                        versions {
+                            min(2, 0)
+                        }
+                    } implies 30
+                }
             }
         }
 
@@ -244,15 +255,17 @@ class FlagEntryTypeSafetyTest {
     @Test
     fun `Given ContextualFeatureFlag in map, When retrieving by key, Then type information is preserved`() {
         config {
-            BoolFlags.FEATURE_A with {
-                default(false)
-                rule {
-                } implies true
-            }
-            StringFlags.CONFIG_A with {
-                default("default")
-                rule {
-                } implies "enabled"
+            module(SampleModules.EXPERIMENTAL) {
+                BoolFlags.FEATURE_A with {
+                    default(false)
+                    rule {
+                    } implies true
+                }
+                StringFlags.CONFIG_A with {
+                    default("default")
+                    rule {
+                    } implies "enabled"
+                }
             }
         }
 
@@ -313,11 +326,13 @@ class FlagEntryTypeSafetyTest {
         // @Suppress("UNCHECKED_CAST") annotations at call sites
 
         config {
-            BoolFlags.FEATURE_A with {
-                default(false)
-                rule {
-                    platforms(Platform.IOS)
-                } implies true
+            module(SampleModules.EXPERIMENTAL) {
+                BoolFlags.FEATURE_A with {
+                    default(false)
+                    rule {
+                        platforms(Platform.IOS)
+                    } implies true
+                }
             }
         }
 

@@ -79,8 +79,8 @@ class EvaluationResultTest {
         )
         testRegistry.update(KonfigPatch(
             flags = mapOf(TestFlags.REGISTERED_FLAG to TestFlags.REGISTERED_FLAG.flag {
-                rule implies "test-value"
                 default("default-value")
+                rule {} implies "test-value"
             }),
         ))
 

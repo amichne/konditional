@@ -29,7 +29,7 @@ data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context> internal con
 
     companion object {
         fun <S : EncodableValue<T>, T : Any, C : Context> Conditional<S, T, C>.flag(
-            flagBuilder: FlagBuilder<S, T, C>.() -> Unit = {},
+            flagBuilder: FlagBuilder<S, T, out C>.() -> Unit = {},
         ): FeatureFlag<S, T, C> = FlagBuilder(this).apply(flagBuilder).build()
     }
 

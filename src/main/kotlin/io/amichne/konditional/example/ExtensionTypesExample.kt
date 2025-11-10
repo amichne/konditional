@@ -100,24 +100,27 @@ object ExtensionTypesExample {
     fun demonstrateUsage() {
         // Configure flags with extension types
         config {
-            CREATED_AT with {
-                default(DateTime.now().toEncodable().value)
+            module(SampleModules.EXPERIMENTAL) {
 
-                rule {
-                    platforms(Platform.IOS)
-                } implies DateTime.parse("2025-01-01T00:00:00Z").toEncodable().value
-            }
+                CREATED_AT with {
+                    default(DateTime.now().toEncodable().value)
 
-            REQUEST_ID with {
-                default(UUID.random().toEncodable().value)
-            }
+                    rule {
+                        platforms(Platform.IOS)
+                    } implies DateTime.parse("2025-01-01T00:00:00Z").toEncodable().value
+                }
 
-            TIMEOUT with {
-                default(Duration.ofSeconds(30).toEncodable().value)
+                REQUEST_ID with {
+                    default(UUID.random().toEncodable().value)
+                }
 
-                rule {
-                    platforms(Platform.WEB)
-                } implies Duration.ofMinutes(2).toEncodable().value
+                TIMEOUT with {
+                    default(Duration.ofSeconds(30).toEncodable().value)
+
+                    rule {
+                        platforms(Platform.WEB)
+                    } implies Duration.ofMinutes(2).toEncodable().value
+                }
             }
         }
 

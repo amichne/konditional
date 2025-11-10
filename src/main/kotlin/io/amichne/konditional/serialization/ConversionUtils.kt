@@ -9,9 +9,11 @@ import io.amichne.konditional.core.FeatureFlag
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.instance.KonfigPatch
+import io.amichne.konditional.core.instance.ModuleConfig
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.example.SampleModules
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
@@ -164,7 +166,16 @@ fun SerializableSnapshot.toSnapshot(): ParseResult<Konfig> {
             .filterIsInstance<ParseResult.Success<Pair<Conditional<*, *, *>, FeatureFlag<*, *, *>>>>()
             .associate { it.value }
 
-        ParseResult.Success(Konfig(flagMap))
+        ParseResult.Success(
+            Konfig(
+                mapOf(
+                    SampleModules.EXPERIMENTAL.moduleName to ModuleConfig(
+                        SampleModules.EXPERIMENTAL,
+                        flagMap
+                    )
+                )
+            )
+        )
     } catch (e: Exception) {
         ParseResult.Failure(ParseError.InvalidSnapshot(e.message ?: "Unknown error"))
     }

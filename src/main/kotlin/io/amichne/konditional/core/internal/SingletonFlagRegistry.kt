@@ -1,11 +1,14 @@
 package io.amichne.konditional.core.internal
-import io.amichne.konditional.core.types.EncodableValue
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.FeatureFlag
 import io.amichne.konditional.core.FlagRegistry
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.instance.KonfigPatch
+import io.amichne.konditional.core.instance.ModuleConfig
+import io.amichne.konditional.core.moduleNameFromEnum
+import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.example.SampleModules
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -22,7 +25,7 @@ import java.util.concurrent.atomic.AtomicReference
  * @see io.amichne.konditional.core.FlagRegistry
  */
 internal object SingletonFlagRegistry : FlagRegistry {
-    private val current = AtomicReference(Konfig(emptyMap()))
+    private val current = AtomicReference(Konfig(mapOf<String, ModuleConfig>()))
 
     /**
      * Loads the flag values from the provided [config] snapshot.
@@ -70,7 +73,14 @@ internal object SingletonFlagRegistry : FlagRegistry {
         current.updateAndGet { currentSnapshot ->
             val mutableFlags = currentSnapshot.flags.toMutableMap()
             mutableFlags[definition.conditional] = definition
-            Konfig(mutableFlags)
+            Konfig(
+                mapOf(
+                    SampleModules.EXPERIMENTAL.moduleName to ModuleConfig(
+                        SampleModules.EXPERIMENTAL,
+                        mutableFlags
+                    )
+                )
+            )
         }
     }
 }

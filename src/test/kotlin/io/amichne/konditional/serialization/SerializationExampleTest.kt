@@ -11,6 +11,7 @@ import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.internal.SingletonFlagRegistry
 import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.example.SampleFeatureEnum
+import io.amichne.konditional.example.SampleModules
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -48,20 +49,23 @@ class SerializationExampleTest {
         // Step 1: Create a configuration using the ConfigBuilder
         println("Step 1: Creating configuration...")
         val snapshot = ConfigBuilder.buildSnapshot {
-            SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
-                default(false)
-                rule {
-                    rollout = Rollout.of(50.0)
-                    locales(AppLocale.EN_US)
-                    platforms(Platform.IOS)
-                }.implies(true)
-            }
+            module(SampleModules.EXPERIMENTAL) {
+                SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
+                    default(false)
+                    rule {
+                        rollout = Rollout.of(50.0)
+                        locales(AppLocale.EN_US)
+                        platforms(Platform.IOS)
+                    }.implies(true)
+                }
 
-            SampleFeatureEnum.USE_LIGHTWEIGHT_HOME with {
-                default(false)
-                rule {
-                    platforms(Platform.WEB)
-                }.implies(true)
+
+                SampleFeatureEnum.USE_LIGHTWEIGHT_HOME with {
+                    default(false)
+                    rule {
+                        platforms(Platform.WEB)
+                    }.implies(true)
+                }
             }
         }
         println("✓ Configuration created with 2 flags\n")
@@ -143,8 +147,10 @@ class SerializationExampleTest {
 
         // Create a configuration
         val snapshot = ConfigBuilder.buildSnapshot {
-            SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
-                default(true)
+            module(SampleModules.EXPERIMENTAL) {
+                SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
+                    default(true)
+                }
             }
         }
 

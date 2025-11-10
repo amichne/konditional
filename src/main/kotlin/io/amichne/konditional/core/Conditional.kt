@@ -31,7 +31,7 @@ sealed interface Conditional<S : EncodableValue<T>, T : Any, C : Context> {
     /**
      * Conditional for JSON object types.
      *
-     * Enables HSON-object type representation: distinct super type of object nodes
+     * Enables JSON-object type representation: distinct super type of object nodes
      * that represent different values given specific conditions.
      *
      * @param T The domain object type (data class, complex structure, etc.)
@@ -60,7 +60,7 @@ sealed interface Conditional<S : EncodableValue<T>, T : Any, C : Context> {
         /**
          * Creates a JSON Object Conditional.
          *
-         * Use this for complex data classes and HSON-object type representations.
+         * Use this for complex data classes and JSON-object type representations.
          *
          * Example:
          * ```kotlin

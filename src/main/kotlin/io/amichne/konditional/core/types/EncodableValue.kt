@@ -74,7 +74,7 @@ sealed interface EncodableValue<T : Any> {
      *
      * This enables support for:
      * - Complex data classes
-     * - HSON-object type representations (conditional values as distinct object nodes)
+     * - JSON-object type representations (conditional values as distinct object nodes)
      * - Any type with custom JSON serialization
      *
      * @param T The domain type being encoded
