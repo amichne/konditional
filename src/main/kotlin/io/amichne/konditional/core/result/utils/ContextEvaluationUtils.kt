@@ -1,7 +1,7 @@
 package io.amichne.konditional.core.result.utils
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.Conditional
+import io.amichne.konditional.core.Feature
 import io.amichne.konditional.core.FlagRegistry
 import io.amichne.konditional.core.result.EvaluationResult
 import io.amichne.konditional.core.result.FlagEvaluationException
@@ -38,7 +38,7 @@ import io.amichne.konditional.core.result.FlagNotFoundException
  * @return typed result that never throws
  */
 fun <S : Any, C : Context> C.evaluateSafe(
-    key: Conditional<S, C>,
+    key: Feature<S, C>,
     registry: FlagRegistry = FlagRegistry
 ): EvaluationResult<S> =
     registry.featureFlag(key)?.let { flag ->
@@ -67,7 +67,7 @@ fun <S : Any, C : Context> C.evaluateSafe(
  * ```
  */
 fun <S : Any, C : Context> C.evaluateOrNull(
-    key: Conditional<S, C>,
+    key: Feature<S, C>,
     registry: FlagRegistry = FlagRegistry
 ): S? = evaluateSafe(key, registry).getOrNull()
 
@@ -86,7 +86,7 @@ fun <S : Any, C : Context> C.evaluateOrNull(
  * ```
  */
 fun <S : Any, C : Context> C.evaluateOrDefault(
-    key: Conditional<S, C>,
+    key: Feature<S, C>,
     default: S,
     registry: FlagRegistry = FlagRegistry
 ): S = evaluateSafe(key, registry).getOrDefault(default)
@@ -109,7 +109,7 @@ fun <S : Any, C : Context> C.evaluateOrDefault(
  * @throws FlagEvaluationException if evaluation throws an exception
  */
 fun <S : Any, C : Context> C.evaluateOrThrow(
-    key: Conditional<S, C>,
+    key: Feature<S, C>,
     registry: FlagRegistry = FlagRegistry
 ): S = evaluateSafe(key, registry).fold(
     onSuccess = { it },

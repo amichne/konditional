@@ -1,7 +1,7 @@
 package io.amichne.konditional.core.internal
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.FeatureFlag
+import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.FlagRegistry
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.instance.KonfigPatch
@@ -64,7 +64,7 @@ internal object SingletonFlagRegistry : FlagRegistry {
      * @param S The type of the flag's value
      * @param C The type of the context used for evaluation
      */
-    override fun <S : Any, C : Context> update(definition: FeatureFlag<S, C>) {
+    override fun <S : Any, C : Context> update(definition: FlagDefinition<S, C>) {
         current.updateAndGet { currentSnapshot ->
             val mutableFlags = currentSnapshot.flags.toMutableMap()
             mutableFlags[definition.conditional] = definition

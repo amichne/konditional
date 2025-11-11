@@ -6,6 +6,7 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.FlagDefinitionImpl
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.versions.Unbounded
@@ -32,7 +33,7 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given condition with no matching rules, When evaluating, Then returns default value`() {
-        val condition = FlagDefinition(
+        val condition = FlagDefinitionImpl(
             conditional = TestFlags.TEST_FLAG,
             values = emptyList(),
             defaultValue = "default",
@@ -51,7 +52,7 @@ class ConditionEvaluationTest {
             versionRange = Unbounded,
         )
 
-        val condition = FlagDefinition(
+        val condition = FlagDefinitionImpl(
             conditional = TestFlags.TEST_FLAG,
             values = listOf(rule.targetedBy("en-us-value")),
             defaultValue = "default",
@@ -87,7 +88,7 @@ class ConditionEvaluationTest {
             versionRange = Unbounded,
         )
 
-        val condition = FlagDefinition(
+        val condition = FlagDefinitionImpl(
             conditional = TestFlags.TEST_FLAG,
             values = listOf(
                 generalRule.targetedBy("general"),
@@ -137,7 +138,7 @@ class ConditionEvaluationTest {
         // Both rules have same specificity but different notes
         assertEquals(ruleA.specificity(), ruleB.specificity())
 
-        val condition = FlagDefinition(
+        val condition = FlagDefinitionImpl(
             conditional = TestFlags.TEST_FLAG,
             values = listOf(
                 ruleB.targetedBy("value-b"),
@@ -166,7 +167,7 @@ class ConditionEvaluationTest {
             versionRange = Unbounded,
         )
 
-        val condition = FlagDefinition(
+        val condition = FlagDefinitionImpl(
             conditional = TestFlags.TEST_FLAG,
             values = listOf(rule.targetedBy("enabled")),
             defaultValue = "disabled",
@@ -189,7 +190,7 @@ class ConditionEvaluationTest {
             versionRange = Unbounded,
         )
 
-        val condition = FlagDefinition(
+        val condition = FlagDefinitionImpl(
             conditional = TestFlags.TEST_FLAG,
             values = listOf(rule.targetedBy("enabled")),
             defaultValue = "disabled",
@@ -212,7 +213,7 @@ class ConditionEvaluationTest {
             versionRange = Unbounded,
         )
 
-        val condition = FlagDefinition(
+        val condition = FlagDefinitionImpl(
             conditional = TestFlags.TEST_FLAG,
             values = listOf(rule.targetedBy("enabled")),
             defaultValue = "disabled",
@@ -240,7 +241,7 @@ class ConditionEvaluationTest {
             versionRange = Unbounded,
         )
 
-        val condition = FlagDefinition(
+        val condition = FlagDefinitionImpl(
             conditional = TestFlags.TEST_FLAG,
             values = listOf(rule.targetedBy("enabled")),
             defaultValue = "disabled",
@@ -264,14 +265,14 @@ class ConditionEvaluationTest {
             versionRange = Unbounded,
         )
 
-        val conditionV1 = FlagDefinition(
+        val conditionV1 = FlagDefinitionImpl(
             conditional = TestFlags.TEST_FLAG,
             values = listOf(rule.targetedBy("enabled")),
             defaultValue = "disabled",
             salt = "v1",
         )
 
-        val conditionV2 = FlagDefinition(
+        val conditionV2 = FlagDefinitionImpl(
             conditional = TestFlags.TEST_FLAG,
             values = listOf(rule.targetedBy("enabled")),
             defaultValue = "disabled",
@@ -311,7 +312,7 @@ class ConditionEvaluationTest {
             versionRange = Unbounded,
         )
 
-        val condition = FlagDefinition(
+        val condition = FlagDefinitionImpl(
             conditional = TestFlags.TEST_FLAG,
             values = listOf(
                 iosOnlyRule.targetedBy("ios-value"),
@@ -346,7 +347,7 @@ class ConditionEvaluationTest {
             versionRange = Unbounded,
         )
 
-        val condition = FlagDefinition(
+        val condition = FlagDefinitionImpl(
             conditional = TestFlags.TEST_FLAG,
             values = listOf(
                 highSpecificityLowRampup.targetedBy("specific"),
@@ -397,7 +398,7 @@ class ConditionEvaluationTest {
         )
 
         // Provide in wrong order
-        val condition = FlagDefinition(
+        val condition = FlagDefinitionImpl(
             conditional = TestFlags.TEST_FLAG,
             values = listOf(
                 general.targetedBy("general-value"),

@@ -33,12 +33,12 @@ class SerializationExampleTest {
     @BeforeEach
     fun setUp() {
         // Register feature flags before deserialization
-        ConditionalRegistry.registerEnum<SampleFeatureEnum>()
+        FeatureRegistry.registerEnum<SampleFeatureEnum>()
     }
 
     @AfterEach
     fun tearDown() {
-        ConditionalRegistry.clear()
+        FeatureRegistry.clear()
     }
 
     @Test

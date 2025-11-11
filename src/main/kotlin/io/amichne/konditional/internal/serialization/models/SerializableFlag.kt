@@ -4,7 +4,7 @@ import com.squareup.moshi.JsonClass
 
 /**
  * Serializable representation of a single flag configuration.
- * Contains all the data needed to reconstruct a FlagDefinition with its Conditional.
+ * Contains all the data needed to reconstruct a FlagDefinition with its Feature.
  *
  * Now uses type-safe FlagValue instead of type-erased Any values.
  */

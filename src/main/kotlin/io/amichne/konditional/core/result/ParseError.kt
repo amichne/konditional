@@ -31,11 +31,11 @@ sealed interface ParseError {
     data class InvalidVersion internal constructor(val input: String, override val message: String) : ParseError
 
     /**
-     * Conditional key not found in registry.
+     * Feature key not found in registry.
      */
     @ConsistentCopyVisibility
-    data class ConditionalNotFound internal constructor(val key: String) : ParseError {
-        override val message: String get() = "Conditional not found: $key"
+    data class FeatureNotFound internal constructor(val key: String) : ParseError {
+        override val message: String get() = "Feature not found: $key"
     }
 
     /**

@@ -8,8 +8,8 @@ import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.evaluate
 import io.amichne.konditional.core.Conditional
-import io.amichne.konditional.core.FeatureFlag
 import io.amichne.konditional.core.FlagDefinition
+import io.amichne.konditional.core.FlagDefinitionImpl
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.internal.SingletonFlagRegistry
@@ -35,13 +35,13 @@ class SnapshotSerializerTest {
     @BeforeEach
     fun setUp() {
         // Register the test enum flags
-        ConditionalRegistry.registerEnum<SampleFeatureEnum>()
+        FeatureRegistry.registerEnum<SampleFeatureEnum>()
     }
 
     @AfterEach
     fun tearDown() {
         // Clean up registry after each test
-        ConditionalRegistry.clear()
+        FeatureRegistry.clear()
     }
 
     @Test
@@ -83,7 +83,7 @@ class SnapshotSerializerTest {
     @Test
     fun `test flag with rules serialization and deserialization`() {
         // Create a snapshot with complex rules using direct Condition construction
-        val condition = FlagDefinition(
+        val condition = FlagDefinitionImpl(
             conditional = SampleFeatureEnum.FIFTY_TRUE_US_IOS,
             values = listOf(
                 Rule<Context>(
@@ -136,7 +136,7 @@ class SnapshotSerializerTest {
 
     @Test
     fun `test flag with version ranges serialization`() {
-        val condition = FeatureFlag(
+        val condition = FlagDefinition(
             conditional = SampleFeatureEnum.VERSIONED,
             bounds = listOf(
                 Rule<Context>(

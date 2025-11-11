@@ -22,11 +22,13 @@ import io.amichne.konditional.internal.builders.ConfigBuilder
  * ```
  *
  * @param registry The FlagRegistry to load the configuration into. Defaults to the singleton registry.
- * @param fn The DSL block for configuring flags
+ * @param fn The DSL block for configuring flags. The receiver is [ConfigScope], a sealed interface
+ *           that defines the public DSL API.
  */
 @FeatureFlagDsl
-fun config(registry: FlagRegistry = FlagRegistry, fn: ConfigBuilder.() -> Unit): Unit =
-    ConfigBuilder.config(registry, fn)
+inline fun config(registry: FlagRegistry = FlagRegistry, fn: ConfigScope.() -> Unit) {
+    ConfigBuilder().apply(fn).build().let { registry.load(it) }
+}
 
 /**
  * Builds a Konfig configuration without loading it into any registry.
@@ -45,9 +47,10 @@ fun config(registry: FlagRegistry = FlagRegistry, fn: ConfigBuilder.() -> Unit):
  * }
  * ```
  *
- * @param fn The DSL block for configuring flags
+ * @param fn The DSL block for configuring flags. The receiver is [ConfigScope], a sealed interface
+ *           that defines the public DSL API.
  * @return The built Konfig instance
  */
 @FeatureFlagDsl
-fun buildSnapshot(fn: ConfigBuilder.() -> Unit): Konfig =
-    ConfigBuilder.buildSnapshot(fn)
+inline fun buildSnapshot(fn: ConfigScope.() -> Unit): Konfig =
+    ConfigBuilder().apply(fn).build()

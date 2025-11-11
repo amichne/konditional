@@ -1,31 +1,40 @@
 package io.amichne.konditional.internal.builders.versions
 
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.core.VersionRangeScope
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.rules.versions.LeftBound
 import io.amichne.konditional.rules.versions.RightBound
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
+/**
+ * Internal implementation of [io.amichne.konditional.core.VersionRangeScope].
+ *
+ * This class is the internal implementation of the version range configuration DSL scope.
+ * Users interact with the public [io.amichne.konditional.core.VersionRangeScope] interface,
+ * not this implementation directly.
+ *
+ * @constructor Internal constructor - users cannot instantiate this class directly.
+ */
 @ConsistentCopyVisibility
-data class VersionRangeBuilder @PublishedApi internal constructor(
+@PublishedApi
+internal data class VersionRangeBuilder(
     private var leftBound: Version = Version.default,
     private var rightBound: Version = Version.default
-) {
+) : VersionRangeScope {
 
-    fun min(
-        major: Int,
-        minor: Int = 0,
-        patch: Int = 0,
-    ) {
+    /**
+     * Implementation of [VersionRangeScope.min].
+     */
+    override fun min(major: Int, minor: Int, patch: Int) {
         leftBound = Version(major, minor, patch)
     }
 
-    fun max(
-        major: Int,
-        minor: Int = 0,
-        patch: Int = 0,
-    ) {
+    /**
+     * Implementation of [VersionRangeScope.max].
+     */
+    override fun max(major: Int, minor: Int, patch: Int) {
         rightBound = Version(major, minor, patch)
     }
 

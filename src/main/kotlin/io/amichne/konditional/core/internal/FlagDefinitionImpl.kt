@@ -10,18 +10,18 @@ import java.security.MessageDigest
 import kotlin.math.roundToInt
 
 /**
- * Represents a complete flag definition with its evaluation rules and default value.
+ * Internal implementation of a complete flag definition with its evaluation rules and default value.
  *
  * @param S The type of the value this flag produces. It must be a non-nullable type.
  * @param C The type of the context that this flag evaluates against.
  */
-internal class FlagDefinition<S : Any, C : Context>(
-    conditional: Conditional<S, C>,
+internal class FlagDefinitionImpl<S : Any, C : Context>(
+    conditional: Feature<S, C>,
     values: List<ConditionalValue<S, C>>,
     defaultValue: S,
     salt: String = "v1",
     isActive: Boolean = true,
-) : FeatureFlag<S, C>(defaultValue, isActive, conditional, values, salt) {
+) : FlagDefinition<S, C>(defaultValue, isActive, conditional, values, salt) {
     val key: String
         get() = conditional.key
 

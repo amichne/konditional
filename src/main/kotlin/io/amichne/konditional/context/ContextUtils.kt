@@ -1,7 +1,7 @@
 package io.amichne.konditional.context
 
-import io.amichne.konditional.core.Conditional
-import io.amichne.konditional.core.FeatureFlag
+import io.amichne.konditional.core.Feature
+import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.FlagRegistry
 import io.amichne.konditional.core.internal.SingletonFlagRegistry
 
@@ -20,7 +20,7 @@ import io.amichne.konditional.core.internal.SingletonFlagRegistry
  */
 @Suppress("UNCHECKED_CAST")
 fun <S : Any, C : Context> C.evaluate(
-    key: Conditional<S, C>,
+    key: Feature<S, C>,
     registry: FlagRegistry = FlagRegistry
 ): S {
     val flag = registry.featureFlag(key)
@@ -36,12 +36,12 @@ fun <S : Any, C : Context> C.evaluate(
  * null values in the resulting map.
  *
  * @param registry The [FlagRegistry] to use (defaults to [SingletonFlagRegistry])
- * @return A map where each key is a [Conditional] and the value is the result
+ * @return A map where each key is a [Feature] and the value is the result
  *         of its evaluation (may be null if the flag doesn't match the context type)
  * @param C The type of the context
  */
 @Suppress("UNCHECKED_CAST")
-fun <C : Context> C.evaluate(registry: FlagRegistry = FlagRegistry): Map<Conditional<*, *>, Any?> =
+fun <C : Context> C.evaluate(registry: FlagRegistry = FlagRegistry): Map<Feature<*, *>, Any?> =
     registry.allFlags().mapValues { (_, flag) ->
-        (flag as? FeatureFlag<*, C>)?.evaluate(this)
+        (flag as? FlagDefinition<*, C>)?.evaluate(this)
     }

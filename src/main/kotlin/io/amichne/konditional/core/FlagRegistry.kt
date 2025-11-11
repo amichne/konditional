@@ -89,7 +89,7 @@ interface FlagRegistry {
      * @param S The type of the flag's value
      * @param C The type of the context used for evaluation
      */
-    fun <S : Any, C : Context> update(definition: FeatureFlag<S, C>)
+    fun <S : Any, C : Context> update(definition: FlagDefinition<S, C>)
 
     /**
      * Retrieves the current snapshot of all flag configurations.
@@ -104,21 +104,21 @@ interface FlagRegistry {
     /**
      * Retrieves a specific flag definition from the registry.
      *
-     * @param key The [Conditional] key for the flag
-     * @return The [FeatureFlag] if found, null otherwise
+     * @param key The [Feature] key for the flag
+     * @return The [FlagDefinition] if found, null otherwise
      * @param S The type of the flag's value
      * @param C The type of the context used for evaluation
      */
     @Suppress("UNCHECKED_CAST")
-    fun <S : Any, C : Context> featureFlag(key: Conditional<S, C>): FeatureFlag<S, C>? =
-        konfig().flags[key] as? FeatureFlag<S, C>
+    fun <S : Any, C : Context> featureFlag(key: Feature<S, C>): FlagDefinition<S, C>? =
+        konfig().flags[key] as? FlagDefinition<S, C>
 
     /**
      * Retrieves all flags from the registry.
      *
-     * @return Map of all [Conditional] keys to their [FeatureFlag] definitions
+     * @return Map of all [Feature] keys to their [FlagDefinition] definitions
      */
-    fun allFlags(): Map<Conditional<*, *>, FeatureFlag<*, *>> =
+    fun allFlags(): Map<Feature<*, *>, FlagDefinition<*, *>> =
         konfig().flags
 
     companion object : FlagRegistry by SingletonFlagRegistry

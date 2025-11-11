@@ -195,9 +195,9 @@ class ParseResultTest {
     }
 
     @Test
-    fun `ParseError ConditionalNotFound generates message`() {
-        val error = ParseError.ConditionalNotFound("test-key")
-        assertEquals("Conditional not found: test-key", error.message)
+    fun `ParseError FeatureNotFound generates message`() {
+        val error = ParseError.FeatureNotFound("test-key")
+        assertEquals("Feature not found: test-key", error.message)
     }
 
     @Test

@@ -1,76 +1,63 @@
 package io.amichne.konditional.internal.builders
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.Conditional
-import io.amichne.konditional.core.FeatureFlag
+import io.amichne.konditional.core.Feature
+import io.amichne.konditional.core.FlagDefinition
+import io.amichne.konditional.core.FlagScope
 import io.amichne.konditional.core.FeatureFlagDsl
+import io.amichne.konditional.core.RuleScope
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 
 /**
- * A builder class for constructing and configuring a feature flag.
+ * Internal implementation of [io.amichne.konditional.core.FlagScope].
+ *
+ * This class is the internal implementation of the flag configuration DSL scope.
+ * Users interact with the public [io.amichne.konditional.core.FlagScope] interface,
+ * not this implementation directly.
  *
  * @param S The type of the state associated with the feature flag.
  * @param C The type of the context that the feature flag evaluates against.
  * @property conditional The feature flag key used to uniquely identify the flag.
- * @constructor Creates a new instance of the FlagBuilder with the specified feature flag key.
+ * @constructor Internal constructor - users cannot instantiate this class directly.
  */
 @ConsistentCopyVisibility
 @FeatureFlagDsl
-data class FlagBuilder<S : Any, C : Context> @PublishedApi internal constructor(
-    private val conditional: Conditional<S, C>,
-) {
+@PublishedApi
+internal data class FlagBuilder<S : Any, C : Context>(
+    private val conditional: Feature<S, C>,
+) : FlagScope<S, C> {
     private val conditionalValues = mutableListOf<ConditionalValue<S, C>>()
     private var defaultValue: S? = null
     private var defaultCoverage: Double? = null
     private var salt: String = "v1"
 
-    companion object {
-        fun <S : Any, C : Context> Conditional<S, C>.flag(
-            flagBuilder: FlagBuilder<S, C>.() -> Unit = {},
-        ): FeatureFlag<S, C> = FlagBuilder(this).apply(flagBuilder).build()
-    }
-
     /**
-     * Sets the default value for the flag being built.
-     *
-     * This function allows you to specify a default value that the flag will take
-     * if no other value is explicitly provided. The default value ensures that the
-     * flag has a meaningful state even when not explicitly set.
-     *
-     * @param value The default value to assign to the flag.
-     * @param coverage The coverage percentage for the default value.
+     * Implementation of [FlagScope.default].
      */
-    fun default(
-        value: S,
-        coverage: Double? = null,
-    ) {
+    override fun default(value: S, coverage: Double?) {
         defaultValue = value
         defaultCoverage = coverage
     }
 
     /**
-     * Sets the salt value for the configuration.
-     *
-     * @param value The salt value to be used, represented as a string.
+     * Implementation of [FlagScope.salt].
      */
-    fun salt(value: String) {
+    override fun salt(value: String) {
         salt = value
     }
 
     /**
-     * Defines a targeting rule for this flag using the provided [build] lambda.
-     * The [build] lambda is an extension function on [RuleBuilder] that allows
-     * you to configure the rule's behavior and properties.
-     *
-     * @param build A lambda with receiver of type [RuleBuilder<C>] used to build the rule.
+     * Implementation of [FlagScope.rule] that delegates to [RuleBuilder].
      */
-    @PublishedApi
-    internal fun rule(build: RuleBuilder<C>.() -> Unit): Rule<C> = RuleBuilder<C>().apply(build).build()
+    override fun rule(build: RuleScope<C>.() -> Unit): Rule<C> = RuleBuilder<C>().apply(build).build()
 
+    /**
+     * Implementation of [FlagScope.implies].
+     */
     @FeatureFlagDsl
-    infix fun Rule<C>.implies(value: S) {
+    override infix fun Rule<C>.implies(value: S) {
         conditionalValues += targetedBy(value)
     }
 
@@ -81,9 +68,9 @@ data class FlagBuilder<S : Any, C : Context> @PublishedApi internal constructor(
      * @return A `FlagDefinition` instance constructed based on the current configuration.
      */
     @PublishedApi
-    internal fun build(): FeatureFlag<S, C> {
+    internal fun build(): FlagDefinition<S, C> {
         requireNotNull(defaultValue) { "Default value must be set" }
-        return FeatureFlag(
+        return FlagDefinition(
             conditional = conditional,
             bounds = conditionalValues.toList(),
             defaultValue = defaultValue!!,

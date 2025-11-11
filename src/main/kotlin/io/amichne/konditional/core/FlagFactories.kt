@@ -4,7 +4,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.internal.builders.FlagBuilder
 
 /**
- * Creates a FeatureFlag for this Conditional using a DSL builder.
+ * Creates a FlagDefinition for this Feature using a DSL builder.
  *
  * This is a convenience function for creating flags programmatically,
  * particularly useful in tests or when dynamic flag creation is needed.
@@ -20,12 +20,11 @@ import io.amichne.konditional.internal.builders.FlagBuilder
  * }
  * ```
  *
- * @param flagBuilder The DSL block for configuring the flag
- * @return A configured FeatureFlag instance
+ * @param flagBuilder The DSL block for configuring the flag. The receiver is [FlagScope],
+ *                    a sealed interface that defines the public DSL API.
+ * @return A configured FlagDefinition instance
  */
 @FeatureFlagDsl
-fun <S : Any, C : Context> Conditional<S, C>.flag(
-    flagBuilder: FlagBuilder<S, C>.() -> Unit = {},
-): FeatureFlag<S, C> = FlagBuilder.run {
-    this@flag.flag(flagBuilder)
-}
+inline fun <S : Any, C : Context> Feature<S, C>.flag(
+    flagBuilder: FlagScope<S, C>.() -> Unit = {},
+): FlagDefinition<S, C> = FlagBuilder(this).apply(flagBuilder).build()
