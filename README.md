@@ -4,6 +4,8 @@
 
 Konditional is a lightweight feature flag framework that puts type safety and developer experience first. Unlike traditional feature flag systems that force you into boolean flags and string-based configuration, Konditional works with your domain types and provides compile-time guarantees.
 
+**For teams using string-based configuration:** If you're experiencing runtime errors from typos, type mismatches, or null handling in your current system, Konditional's type safety eliminates these entire classes of errors at compile time. See our [Migration Guide](docs/Migration.md) to learn how to transition safely.
+
 ## Why Konditional?
 
 ### Type Safety at Every Level
@@ -175,12 +177,22 @@ Konditional is perfect for:
 
 ## Documentation
 
-- **[Architecture Overview](docs/architecture.md)**: High-level design and core concepts
-- **[Context Polymorphism](docs/context-polymorphism.md)**: Creating custom contexts for your domain
-- **[Conditional Types](docs/conditional-types.md)**: Using custom value types beyond Boolean
-- **[Rule Evaluation](docs/rule-evaluation.md)**: How rules are matched and evaluated
-- **[Examples](docs/examples.md)**: Comprehensive usage examples
-- **[Testing Guide](docs/testing.md)**: Testing strategies for your flags
+### Getting Started
+- **[Why Type Safety?](docs/WhyTypeSafety.md)**: See how compile-time guarantees eliminate entire classes of runtime errors
+- **[Quick Start](docs/QuickStart.md)**: Get your first type-safe flag running in 5 minutes
+- **[Migration Guide](docs/Migration.md)**: Step-by-step migration from string-based configuration systems
+- **[Error Prevention Reference](docs/ErrorPrevention.md)**: Complete catalog of errors eliminated by type safety
+
+### Core Concepts
+- **[Core Concepts](docs/CoreConcepts.md)**: The type-safe building blocks (Feature, Context, Rule, EncodableValue)
+- **[Evaluation](docs/Evaluation.md)**: How flags are evaluated, specificity ordering, and rollout bucketing
+- **[Registry and Concurrency](docs/RegistryAndConcurrency.md)**: Thread-safe flag management without locks
+
+### Guides
+- **[Context Guide](docs/Context.md)**: Creating custom contexts for your business domain
+- **[Builders Guide](docs/Builders.md)**: Master the type-safe DSL
+- **[Rules Guide](docs/Rules.md)**: Advanced targeting and rollout strategies
+- **[Serialization Guide](docs/Serialization.md)**: Remote configuration and JSON handling
 
 ## Getting Started
 

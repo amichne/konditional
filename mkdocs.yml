@@ -63,13 +63,24 @@ plugins:
 
 
 nav:
-  - Overview: index.md
-  - Architecture: Architecture.md
-  - Builder DSL: Builders.md
-  - Context System: Context.md
-  - Rules Engine: Rules.md
-  - Flag Registry: Flags.md
-  - Serialization: Serialization.md
+  - Home: index.md
+  - Getting Started:
+    - Why Type Safety?: WhyTypeSafety.md
+    - Quick Start: QuickStart.md
+    - Migration Guide: Migration.md
+    - Error Prevention: ErrorPrevention.md
+  - Core Concepts:
+    - Type System: CoreConcepts.md
+    - Evaluation: Evaluation.md
+    - Registry & Concurrency: RegistryAndConcurrency.md
+  - Guides:
+    - Builder DSL: Builders.md
+    - Context System: Context.md
+    - Rules Engine: Rules.md
+    - Flag Registry: Flags.md
+    - Serialization: Serialization.md
+  - Reference:
+    - Architecture (Legacy): Architecture.md
 
 extra:
   social:
