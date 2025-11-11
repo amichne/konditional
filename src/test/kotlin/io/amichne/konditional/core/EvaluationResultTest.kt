@@ -1,7 +1,5 @@
 package io.amichne.konditional.core
 
-import io.amichne.konditional.builders.FlagBuilder
-import io.amichne.konditional.builders.FlagBuilder.Companion.flag
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
@@ -47,9 +45,14 @@ import kotlin.test.assertTrue
  */
 class EvaluationResultTest {
 
-    enum class TestFlags(override val key: String) : StringFeature<Context> by string(key) {
+    enum class TestFlags(override val key: String) : Feature<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, Context> {
         REGISTERED_FLAG("registered_flag"),
-        UNREGISTERED_FLAG("unregistered_flag"),
+        UNREGISTERED_FLAG("unregistered_flag");
+
+        override val registry: FlagRegistry = FlagRegistry
+        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, Context>) {
+            registry.update(definition)
+        }
     }
 
     // Mock Outcome type for testing adaptation
@@ -75,7 +78,7 @@ class EvaluationResultTest {
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
         testRegistry.update(KonfigPatch(
             flags = mapOf(TestFlags.REGISTERED_FLAG to TestFlags.REGISTERED_FLAG.flag {
@@ -86,10 +89,10 @@ class EvaluationResultTest {
 
 
         TestFlags.REGISTERED_FLAG.update(
-            FlagBuilder(TestFlags.REGISTERED_FLAG).apply {
-                rule implies "test-value"
+            TestFlags.REGISTERED_FLAG.flag {
+                rule { } implies "test-value"
                 default("default-value")
-            }.build()
+            }
         )
     }
 

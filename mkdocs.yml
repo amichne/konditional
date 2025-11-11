@@ -61,23 +61,15 @@ plugins:
   - search
   - mermaid2
 
+
 nav:
-  - Home: index.md
-  - Getting Started:
-    - Migration Guide: api/examples/README.md
-    - '01: Basic Usage': api/examples/01-BasicUsage.kt
-    - '02: Rollouts': api/examples/02-Rollouts.kt
-    - '03: Custom Context': api/examples/03-CustomContext.kt
-    - '04: Serialization': api/examples/04-Serialization.kt
-  - Core Concepts:
-    - Architecture Overview: api/Overview.md
-    - Builder DSL: api/Builders.md
-    - Core API: api/Core.md
-  - Advanced Topics:
-    - Context System: api/Context.md
-    - Rules Engine: api/Rules.md
-    - Flag Registry: api/Flags.md
-    - Serialization: api/Serialization.md
+  - Overview: index.md
+  - Architecture: Architecture.md
+  - Builder DSL: Builders.md
+  - Context System: Context.md
+  - Rules Engine: Rules.md
+  - Flag Registry: Flags.md
+  - Serialization: Serialization.md
 
 extra:
   social:

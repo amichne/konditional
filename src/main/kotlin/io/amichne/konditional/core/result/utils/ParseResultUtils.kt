@@ -84,6 +84,55 @@ fun <T> ParseResult<T>.isSuccess(): Boolean = this is ParseResult.Success
 fun <T> ParseResult<T>.isFailure(): Boolean = this is ParseResult.Failure
 
 /**
+ * Execute an action if the result is successful, then return the result.
+ *
+ * Useful for logging or side effects without changing the result:
+ * ```kotlin
+ * parseResult
+ *     .onSuccess { value -> logger.info("Parsed successfully: $value") }
+ *     .getOrElse { default }
+ * ```
+ */
+inline fun <T> ParseResult<T>.onSuccess(action: (T) -> Unit): ParseResult<T> {
+    if (this is ParseResult.Success) {
+        action(value)
+    }
+    return this
+}
+
+/**
+ * Execute an action if the result is a failure, then return the result.
+ *
+ * Useful for logging errors or side effects without changing the result:
+ * ```kotlin
+ * parseResult
+ *     .onFailure { error -> logger.error("Parse failed: ${error.message}") }
+ *     .recover { defaultValue }
+ * ```
+ */
+inline fun <T> ParseResult<T>.onFailure(action: (ParseError) -> Unit): ParseResult<T> {
+    if (this is ParseResult.Failure) {
+        action(error)
+    }
+    return this
+}
+
+/**
+ * Recover from a failure by providing a fallback value.
+ *
+ * Unlike `getOrElse`, this always returns a value (not a ParseResult):
+ * ```kotlin
+ * val config = Konfig.fromJson(json)
+ *     .onFailure { error -> logger.error(error.message) }
+ *     .recover { Konfig.empty() }
+ * ```
+ */
+inline fun <T> ParseResult<T>.recover(transform: (ParseError) -> T): T = when (this) {
+    is ParseResult.Success -> value
+    is ParseResult.Failure -> transform(error)
+}
+
+/**
  * Convert ParseResult to Kotlin's Result type.
  * Wraps ParseError in ParseException for compatibility with Result.
  */

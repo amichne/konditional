@@ -1,8 +1,7 @@
 package io.amichne.konditional.core.result.utils
-import io.amichne.konditional.core.types.EncodableValue
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.Conditional
+import io.amichne.konditional.core.Feature
 import io.amichne.konditional.core.FlagRegistry
 import io.amichne.konditional.core.result.EvaluationResult
 import io.amichne.konditional.core.result.FlagEvaluationException
@@ -38,8 +37,8 @@ import io.amichne.konditional.core.result.FlagNotFoundException
  * @param registry the flag registry to lookup the flag (defaults to SingletonFlagRegistry)
  * @return typed result that never throws
  */
-fun <S : EncodableValue<T>, T : Any, C : Context> C.evaluateSafe(
-    key: Conditional<S, T, C>,
+fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> C.evaluateSafe(
+    key: Feature<S, T, C>,
     registry: FlagRegistry = FlagRegistry
 ): EvaluationResult<T> =
     registry.featureFlag(key)?.let { flag ->
@@ -67,8 +66,8 @@ fun <S : EncodableValue<T>, T : Any, C : Context> C.evaluateSafe(
  * }
  * ```
  */
-fun <S : EncodableValue<T>, T : Any, C : Context> C.evaluateOrNull(
-    key: Conditional<S, T, C>,
+fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> C.evaluateOrNull(
+    key: Feature<S, T, C>,
     registry: FlagRegistry = FlagRegistry
 ): T? = evaluateSafe(key, registry).getOrNull()
 
@@ -86,8 +85,8 @@ fun <S : EncodableValue<T>, T : Any, C : Context> C.evaluateOrNull(
  * val feature: String = context.evaluateOrDefault(MY_FLAG, default = "off")
  * ```
  */
-fun <S : EncodableValue<T>, T : Any, C : Context> C.evaluateOrDefault(
-    key: Conditional<S, T, C>,
+fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> C.evaluateOrDefault(
+    key: Feature<S, T, C>,
     default: T,
     registry: FlagRegistry = FlagRegistry
 ): T = evaluateSafe(key, registry).getOrDefault(default)
@@ -109,8 +108,8 @@ fun <S : EncodableValue<T>, T : Any, C : Context> C.evaluateOrDefault(
  * @throws FlagNotFoundException if the flag is not registered
  * @throws FlagEvaluationException if evaluation throws an exception
  */
-fun <S : EncodableValue<T>, T : Any, C : Context> C.evaluateOrThrow(
-    key: Conditional<S, T, C>,
+fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> C.evaluateOrThrow(
+    key: Feature<S, T, C>,
     registry: FlagRegistry = FlagRegistry
 ): T = evaluateSafe(key, registry).fold(
     onSuccess = { it },

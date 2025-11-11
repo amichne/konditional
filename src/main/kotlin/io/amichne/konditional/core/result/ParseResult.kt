@@ -34,21 +34,3 @@ fun <T> ParseResult<T>.getOrThrow(): T = when (this) {
     is ParseResult.Success -> value
     is ParseResult.Failure -> throw IllegalStateException(error.message)
 }
-
-/**
- * Returns the value if successful, or null if failed.
- */
-fun <T> ParseResult<T>.getOrNull(): T? = when (this) {
-    is ParseResult.Success -> value
-    is ParseResult.Failure -> null
-}
-
-/**
- * Returns true if this is a Success result.
- */
-fun <T> ParseResult<T>.isSuccess(): Boolean = this is ParseResult.Success
-
-/**
- * Returns true if this is a Failure result.
- */
-fun <T> ParseResult<T>.isFailure(): Boolean = this is ParseResult.Failure

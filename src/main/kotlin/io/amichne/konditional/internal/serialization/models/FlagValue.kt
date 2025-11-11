@@ -1,4 +1,4 @@
-package io.amichne.konditional.serialization.models
+package io.amichne.konditional.internal.serialization.models
 
 import com.squareup.moshi.JsonClass
 import io.amichne.konditional.core.ValueType
@@ -17,7 +17,7 @@ import io.amichne.konditional.core.ValueType
  * - Primitives: Boolean, String, Int, Long, Double
  * - Complex: JSON objects (Map<String, Any?>)
  */
-sealed class FlagValue<out T : Any> {
+internal sealed class FlagValue<out T : Any> {
     abstract val value: T
 
     /**

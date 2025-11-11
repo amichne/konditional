@@ -19,8 +19,13 @@ import kotlin.test.assertTrue
  */
 class ConditionEvaluationTest {
 
-    enum class TestFlags(override val key: String) : StringFeature<Context> by string(key) {
-        TEST_FLAG("test_flag"),
+    enum class TestFlags(override val key: String) : Feature<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, Context> {
+        TEST_FLAG("test_flag");
+
+        override val registry: FlagRegistry = FlagRegistry
+        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, Context>) {
+            registry.update(definition)
+        }
     }
 
     private fun ctx(
@@ -33,9 +38,9 @@ class ConditionEvaluationTest {
     @Test
     fun `Given condition with no matching rules, When evaluating, Then returns default value`() {
         val condition = FlagDefinition(
-            conditional = TestFlags.TEST_FLAG,
-            values = emptyList(),
             defaultValue = "default",
+            feature = TestFlags.TEST_FLAG,
+            values = emptyList(),
         )
 
         val result = condition.evaluate(ctx("11111111111111111111111111111111"))
@@ -48,11 +53,11 @@ class ConditionEvaluationTest {
             rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val condition = FlagDefinition(
-            conditional = TestFlags.TEST_FLAG,
+            feature = TestFlags.TEST_FLAG,
             values = listOf(rule.targetedBy("en-us-value")),
             defaultValue = "default",
         )
@@ -70,25 +75,25 @@ class ConditionEvaluationTest {
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val platformRule = Rule<Context>(
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val platformAndLocaleRule = Rule<Context>(
             rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val condition = FlagDefinition(
-            conditional = TestFlags.TEST_FLAG,
+            feature = TestFlags.TEST_FLAG,
             values = listOf(
                 generalRule.targetedBy("general"),
                 platformRule.targetedBy("ios"),
@@ -122,7 +127,7 @@ class ConditionEvaluationTest {
             rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
             note = "rule-a",
         )
 
@@ -130,7 +135,7 @@ class ConditionEvaluationTest {
             rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
             note = "rule-b",
         )
 
@@ -138,7 +143,7 @@ class ConditionEvaluationTest {
         assertEquals(ruleA.specificity(), ruleB.specificity())
 
         val condition = FlagDefinition(
-            conditional = TestFlags.TEST_FLAG,
+            feature = TestFlags.TEST_FLAG,
             values = listOf(
                 ruleB.targetedBy("value-b"),
                 ruleA.targetedBy("value-a"),
@@ -163,11 +168,11 @@ class ConditionEvaluationTest {
             rollout = Rollout.of(0.0),
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val condition = FlagDefinition(
-            conditional = TestFlags.TEST_FLAG,
+            feature = TestFlags.TEST_FLAG,
             values = listOf(rule.targetedBy("enabled")),
             defaultValue = "disabled",
         )
@@ -186,11 +191,11 @@ class ConditionEvaluationTest {
             rollout = Rollout.of(100.0),
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val condition = FlagDefinition(
-            conditional = TestFlags.TEST_FLAG,
+            feature = TestFlags.TEST_FLAG,
             values = listOf(rule.targetedBy("enabled")),
             defaultValue = "disabled",
         )
@@ -209,11 +214,11 @@ class ConditionEvaluationTest {
             rollout = Rollout.of(50.0),
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val condition = FlagDefinition(
-            conditional = TestFlags.TEST_FLAG,
+            feature = TestFlags.TEST_FLAG,
             values = listOf(rule.targetedBy("enabled")),
             defaultValue = "disabled",
         )
@@ -237,11 +242,11 @@ class ConditionEvaluationTest {
             rollout = Rollout.of(50.0),
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val condition = FlagDefinition(
-            conditional = TestFlags.TEST_FLAG,
+            feature = TestFlags.TEST_FLAG,
             values = listOf(rule.targetedBy("enabled")),
             defaultValue = "disabled",
         )
@@ -261,18 +266,18 @@ class ConditionEvaluationTest {
             rollout = Rollout.of(50.0),
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val conditionV1 = FlagDefinition(
-            conditional = TestFlags.TEST_FLAG,
+            feature = TestFlags.TEST_FLAG,
             values = listOf(rule.targetedBy("enabled")),
             defaultValue = "disabled",
             salt = "v1",
         )
 
         val conditionV2 = FlagDefinition(
-            conditional = TestFlags.TEST_FLAG,
+            feature = TestFlags.TEST_FLAG,
             values = listOf(rule.targetedBy("enabled")),
             defaultValue = "disabled",
             salt = "v2",
@@ -301,18 +306,18 @@ class ConditionEvaluationTest {
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val androidOnlyRule = Rule<Context>(
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.ANDROID),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val condition = FlagDefinition(
-            conditional = TestFlags.TEST_FLAG,
+            feature = TestFlags.TEST_FLAG,
             values = listOf(
                 iosOnlyRule.targetedBy("ios-value"),
                 androidOnlyRule.targetedBy("android-value"),
@@ -336,18 +341,18 @@ class ConditionEvaluationTest {
             rollout = Rollout.of(1.0), // Very low ramp-up
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val lowSpecificityHighRampup = Rule<Context>(
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val condition = FlagDefinition(
-            conditional = TestFlags.TEST_FLAG,
+            feature = TestFlags.TEST_FLAG,
             values = listOf(
                 highSpecificityLowRampup.targetedBy("specific"),
                 lowSpecificityHighRampup.targetedBy("fallback"),
@@ -384,7 +389,7 @@ class ConditionEvaluationTest {
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
             note = "general",
         )
 
@@ -392,13 +397,13 @@ class ConditionEvaluationTest {
             rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
             note = "specific",
         )
 
         // Provide in wrong order
         val condition = FlagDefinition(
-            conditional = TestFlags.TEST_FLAG,
+            feature = TestFlags.TEST_FLAG,
             values = listOf(
                 general.targetedBy("general-value"),
                 specific.targetedBy("specific-value"),

@@ -1,6 +1,6 @@
 package io.amichne.konditional.serialization
 
-import io.amichne.konditional.builders.ConfigBuilder
+import io.amichne.konditional.core.buildSnapshot
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
@@ -33,12 +33,12 @@ class SerializationExampleTest {
     @BeforeEach
     fun setUp() {
         // Register feature flags before deserialization
-        ConditionalRegistry.registerEnum<SampleFeatureEnum>()
+        FeatureRegistry.registerEnum<SampleFeatureEnum>()
     }
 
     @AfterEach
     fun tearDown() {
-        ConditionalRegistry.clear()
+        FeatureRegistry.clear()
     }
 
     @Test
@@ -47,7 +47,7 @@ class SerializationExampleTest {
 
         // Step 1: Create a configuration using the ConfigBuilder
         println("Step 1: Creating configuration...")
-        val snapshot = ConfigBuilder.buildSnapshot {
+        val snapshot = buildSnapshot {
             SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
                 default(false)
                 rule {
@@ -142,7 +142,7 @@ class SerializationExampleTest {
         println("=== File System Integration Example ===\n")
 
         // Create a configuration
-        val snapshot = ConfigBuilder.buildSnapshot {
+        val snapshot = buildSnapshot {
             SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
                 default(true)
             }

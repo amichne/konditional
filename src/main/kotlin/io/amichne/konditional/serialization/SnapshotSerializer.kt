@@ -1,15 +1,20 @@
 package io.amichne.konditional.serialization
 
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.core.instance.Konfig
-import io.amichne.konditional.core.instance.KonfigPatch
-import io.amichne.konditional.serialization.adapters.FlagValueAdapter
-import io.amichne.konditional.serialization.adapters.VersionRangeAdapter
-import io.amichne.konditional.serialization.models.SerializablePatch
-import io.amichne.konditional.serialization.models.SerializableSnapshot
+import io.amichne.konditional.internal.serialization.adapters.FlagValueAdapter
+import io.amichne.konditional.internal.serialization.adapters.VersionRangeAdapter
+import io.amichne.konditional.internal.serialization.models.SerializablePatch
+import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
+import io.amichne.konditional.rules.versions.FullyBound
+import io.amichne.konditional.rules.versions.LeftBound
+import io.amichne.konditional.rules.versions.RightBound
+import io.amichne.konditional.rules.versions.Unbounded
+import io.amichne.konditional.rules.versions.VersionRange
 
 /**
  * Main serialization interface for Konfig configurations.
@@ -58,7 +63,7 @@ class SnapshotSerializer(
      * @param json The JSON string to deserialize
      * @return ParseResult containing either the deserialized patch or an error
      */
-    fun deserializePatch(json: String): ParseResult<SerializablePatch> {
+    internal fun deserializePatch(json: String): ParseResult<SerializablePatch> {
         return try {
             val patch = patchAdapter.fromJson(json)
                 ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parse patch JSON: null result"))
@@ -75,7 +80,7 @@ class SnapshotSerializer(
      * @param patch The patch to apply
      * @return ParseResult containing either the new Konfig with the patch applied or an error
      */
-    fun applyPatch(currentKonfig: Konfig, patch: SerializablePatch): ParseResult<Konfig> {
+    internal fun applyPatch(currentKonfig: Konfig, patch: SerializablePatch): ParseResult<Konfig> {
         return try {
             // Convert current snapshot to serializable form
             val currentSerializable = currentKonfig.toSerializable()
@@ -115,30 +120,6 @@ class SnapshotSerializer(
         }
     }
 
-    /**
-     * Serializes a core KonfigPatch to a JSON string.
-     *
-     * @param patch The KonfigPatch to serialize
-     * @return JSON string representation of the patch
-     */
-    fun serializePatch(patch: KonfigPatch): String {
-        val serializable = patch.toSerializable()
-        return patchAdapter.toJson(serializable)
-    }
-
-    /**
-     * Deserializes a JSON string to a core KonfigPatch.
-     *
-     * @param json The JSON string to deserialize
-     * @return ParseResult containing either the deserialized KonfigPatch or an error
-     */
-    fun deserializePatchToCore(json: String): ParseResult<KonfigPatch> {
-        return when (val serializableResult = deserializePatch(json)) {
-            is ParseResult.Success -> serializableResult.value.toPatch()
-            is ParseResult.Failure -> ParseResult.Failure(serializableResult.error)
-        }
-    }
-
     companion object {
         /**
          * Creates the default Moshi instance with all necessary adapters.
@@ -152,10 +133,19 @@ class SnapshotSerializer(
             // This ensures our custom adapters take precedence over reflection-based serialization
             return Moshi.Builder()
                 .add(FlagValueAdapter.FACTORY)
-                .add(VersionRangeAdapter(
-                    // Create a minimal Moshi for VersionRangeAdapter to use for Version
-                    Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
-                ))
+                .add(
+                    VersionRangeAdapter(
+                        // Create a minimal Moshi for VersionRangeAdapter to use for Version
+                        Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
+                    )
+                )
+                .add(
+                    PolymorphicJsonAdapterFactory.of(VersionRange::class.java, "type")
+                        .withSubtype(FullyBound::class.java, VersionRange.Type.MIN_AND_MAX_BOUND.name)
+                        .withSubtype(Unbounded::class.java, VersionRange.Type.UNBOUNDED.name)
+                        .withSubtype(LeftBound::class.java, VersionRange.Type.MIN_BOUND.name)
+                        .withSubtype(RightBound::class.java, VersionRange.Type.MAX_BOUND.name)
+                )
                 .add(KotlinJsonAdapterFactory())
                 .build()
         }
@@ -163,6 +153,7 @@ class SnapshotSerializer(
         /**
          * Default singleton instance for convenience.
          */
-        val default = SnapshotSerializer()
+        val default: SnapshotSerializer
+            get() = SnapshotSerializer()
     }
 }

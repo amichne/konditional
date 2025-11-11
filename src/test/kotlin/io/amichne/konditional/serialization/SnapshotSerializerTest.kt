@@ -1,27 +1,25 @@
 package io.amichne.konditional.serialization
 
-import io.amichne.konditional.builders.ConfigBuilder
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.evaluate
-import io.amichne.konditional.core.Conditional
-import io.amichne.konditional.core.FeatureFlag
 import io.amichne.konditional.core.FlagDefinition
+import io.amichne.konditional.core.buildSnapshot
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.internal.SingletonFlagRegistry
 import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.example.SampleFeatureEnum
+import io.amichne.konditional.internal.serialization.models.FlagValue
+import io.amichne.konditional.internal.serialization.models.SerializableFlag
+import io.amichne.konditional.internal.serialization.models.SerializablePatch
+import io.amichne.konditional.internal.serialization.models.SerializableRule
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.LeftBound
-import io.amichne.konditional.serialization.models.FlagValue
-import io.amichne.konditional.serialization.models.SerializableFlag
-import io.amichne.konditional.serialization.models.SerializablePatch
-import io.amichne.konditional.serialization.models.SerializableRule
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -35,19 +33,19 @@ class SnapshotSerializerTest {
     @BeforeEach
     fun setUp() {
         // Register the test enum flags
-        ConditionalRegistry.registerEnum<SampleFeatureEnum>()
+        FeatureRegistry.registerEnum<SampleFeatureEnum>()
     }
 
     @AfterEach
     fun tearDown() {
         // Clean up registry after each test
-        ConditionalRegistry.clear()
+        FeatureRegistry.clear()
     }
 
     @Test
     fun `test simple flag serialization and deserialization`() {
         // Create a simple snapshot with one flag
-        val snapshot = ConfigBuilder.buildSnapshot {
+        val snapshot = buildSnapshot {
             SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
                 default(true)
             }
@@ -84,7 +82,7 @@ class SnapshotSerializerTest {
     fun `test flag with rules serialization and deserialization`() {
         // Create a snapshot with complex rules using direct Condition construction
         val condition = FlagDefinition(
-            conditional = SampleFeatureEnum.FIFTY_TRUE_US_IOS,
+            feature = SampleFeatureEnum.FIFTY_TRUE_US_IOS,
             values = listOf(
                 Rule<Context>(
                     rollout = Rollout.of(50.0),
@@ -151,8 +149,8 @@ class SnapshotSerializerTest {
 
     @Test
     fun `test flag with version ranges serialization`() {
-        val condition = FeatureFlag(
-            conditional = SampleFeatureEnum.VERSIONED,
+        val condition = FlagDefinition(
+            feature = SampleFeatureEnum.VERSIONED,
             bounds = listOf(
                 Rule<Context>(
                     rollout = Rollout.of(100.0),
@@ -205,7 +203,7 @@ class SnapshotSerializerTest {
 
     @Test
     fun `test multiple flags serialization`() {
-        val snapshot = ConfigBuilder.buildSnapshot {
+        val snapshot = buildSnapshot {
             SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
                 default(true)
             }
@@ -246,14 +244,14 @@ class SnapshotSerializerTest {
 
         // Compare each flag
         originalValues.forEach { (key, value) ->
-            assertEquals(value, deserializedValues[key], "Flag ${(key as Conditional<*, *, *>).key} should match")
+            assertEquals(value, deserializedValues[key], "Flag ${key.key} should match")
         }
     }
 
     @Test
     fun `test patch update - add new flag`() {
         // Create initial snapshot with one flag
-        val initialSnapshot = ConfigBuilder.buildSnapshot {
+        val initialSnapshot = buildSnapshot {
             SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
                 default(true)
             }
@@ -298,7 +296,7 @@ class SnapshotSerializerTest {
     @Test
     fun `test patch update - update existing flag`() {
         // Create initial snapshot
-        val initialSnapshot = ConfigBuilder.buildSnapshot {
+        val initialSnapshot = buildSnapshot {
             SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
                 default(false)
             }
@@ -334,7 +332,7 @@ class SnapshotSerializerTest {
     @Test
     fun `test patch update - remove flag`() {
         // Create initial snapshot with two flags
-        val initialSnapshot = ConfigBuilder.buildSnapshot {
+        val initialSnapshot = buildSnapshot {
             SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
                 default(true)
             }
@@ -370,7 +368,7 @@ class SnapshotSerializerTest {
     @Test
     fun `test patch from JSON`() {
         // Create initial snapshot
-        val initialSnapshot = ConfigBuilder.buildSnapshot {
+        val initialSnapshot = buildSnapshot {
             SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
                 default(false)
             }
@@ -415,7 +413,7 @@ class SnapshotSerializerTest {
     @Test
     fun `test round-trip equality with complex configuration`() {
         // Create a complex snapshot with multiple flags
-        val snapshot = ConfigBuilder.buildSnapshot {
+        val snapshot = buildSnapshot {
             SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
                 default(true)
             }

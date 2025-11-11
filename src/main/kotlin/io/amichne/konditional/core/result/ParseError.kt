@@ -31,11 +31,11 @@ sealed interface ParseError {
     data class InvalidVersion internal constructor(val input: String, override val message: String) : ParseError
 
     /**
-     * Conditional key not found in registry.
+     * Feature key not found in registry.
      */
     @ConsistentCopyVisibility
-    data class ConditionalNotFound internal constructor(val key: String) : ParseError {
-        override val message: String get() = "Conditional not found: $key"
+    data class FeatureNotFound internal constructor(val key: String) : ParseError {
+        override val message: String get() = "Feature not found: $key"
     }
 
     /**
@@ -47,26 +47,11 @@ sealed interface ParseError {
     }
 
     /**
-     * Invalid salt value for bucketing.
-     */
-    @ConsistentCopyVisibility
-    data class InvalidSalt internal constructor(val input: String, override val message: String) : ParseError
-
-    /**
      * Failed to deserialize JSON into a snapshot.
      */
     @ConsistentCopyVisibility
     data class InvalidSnapshot internal constructor(val reason: String) : ParseError {
         override val message: String get() = "Invalid snapshot: $reason"
-    }
-
-    /**
-     * Type mismatch during deserialization.
-     */
-    @ConsistentCopyVisibility
-    data class TypeMismatch internal constructor(val expected: String, val actual: String, val context: String) :
-        ParseError {
-        override val message: String get() = "Type mismatch in $context: expected $expected but got $actual"
     }
 
     /**

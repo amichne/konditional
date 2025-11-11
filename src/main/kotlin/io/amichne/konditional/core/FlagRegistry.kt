@@ -4,7 +4,6 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.instance.KonfigPatch
 import io.amichne.konditional.core.internal.SingletonFlagRegistry
-import io.amichne.konditional.core.types.EncodableValue
 
 /**
  * Abstraction for managing feature flag configurations and evaluations.
@@ -87,10 +86,11 @@ interface FlagRegistry {
      * creating a full patch or snapshot.
      *
      * @param definition The [io.amichne.konditional.core.internal.FlagDefinition] to update
-     * @param S The type of the flag's value
+     * @param S The EncodableValue type wrapping the actual value
+     * @param T The actual value type
      * @param C The type of the context used for evaluation
      */
-    fun <S : EncodableValue<T>, T : Any, C : Context> update(definition: FeatureFlag<S, T, C>)
+    fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> update(definition: FlagDefinition<S, T, C>)
 
     /**
      * Retrieves the current snapshot of all flag configurations.
@@ -105,22 +105,67 @@ interface FlagRegistry {
     /**
      * Retrieves a specific flag definition from the registry.
      *
-     * @param key The [Conditional] key for the flag
-     * @return The [FeatureFlag] if found, null otherwise
-     * @param S The type of the flag's value
+     * @param key The [Feature] key for the flag
+     * @return The [FlagDefinition] if found, null otherwise
+     * @param S The EncodableValue type wrapping the actual value
+     * @param T The actual value type
      * @param C The type of the context used for evaluation
      */
     @Suppress("UNCHECKED_CAST")
-    fun <S : EncodableValue<T>, T : Any, C : Context> featureFlag(key: Conditional<S, T, C>): FeatureFlag<S, T, C>? =
-        konfig().flags[key] as? FeatureFlag<S, T, C>
+    fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> featureFlag(key: Feature<S, T, C>): FlagDefinition<S, T, C>? =
+        konfig().flags[key] as? FlagDefinition<S, T, C>
 
     /**
      * Retrieves all flags from the registry.
      *
-     * @return Map of all [Conditional] keys to their [FeatureFlag] definitions
+     * @return Map of all [Feature] keys to their [FlagDefinition] definitions
      */
-    fun allFlags(): Map<Conditional<*, *, *>, FeatureFlag<*, *, *>> =
+    fun allFlags(): Map<Feature<*, *, *>, FlagDefinition<*, *, *>> =
         konfig().flags
 
-    companion object : FlagRegistry by SingletonFlagRegistry
+    companion object : FlagRegistry by SingletonFlagRegistry {
+
+        /**
+         * Creates a new in-memory registry instance.
+         *
+         * This is useful for testing scenarios where you need isolated
+         * registry instances that don't interfere with each other.
+         *
+         * Example:
+         * ```kotlin
+         * @Test
+         * fun `test feature flag`() {
+         *     val testRegistry = FlagRegistry.create()
+         *     config(testRegistry) {
+         *         MyFlags.FEATURE_A with { default(true) }
+         *     }
+         *     // Test with isolated registry
+         * }
+         * ```
+         *
+         * @return A new [InMemoryFlagRegistry] instance
+         * @since 0.0.2
+         */
+        fun create(): FlagRegistry = InMemoryFlagRegistry()
+
+        /**
+         * Creates a new in-memory registry instance with an initial configuration.
+         *
+         * This is a convenience method for creating and loading a registry in one step.
+         *
+         * Example:
+         * ```kotlin
+         * val testRegistry = FlagRegistry.create(buildSnapshot {
+         *     MyFlags.FEATURE_A with { default(true) }
+         * })
+         * ```
+         *
+         * @param initialConfig The initial [Konfig] to load into the registry
+         * @return A new [InMemoryFlagRegistry] instance with the initial configuration loaded
+         * @since 0.0.2
+         */
+        fun create(initialConfig: Konfig): FlagRegistry = InMemoryFlagRegistry().apply {
+            load(initialConfig)
+        }
+    }
 }

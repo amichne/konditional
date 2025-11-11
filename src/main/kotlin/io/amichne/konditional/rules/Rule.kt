@@ -66,7 +66,7 @@ import io.amichne.konditional.rules.versions.VersionRange
 data class Rule<C : Context> internal constructor(
     val rollout: Rollout = Rollout.of(100.0),
     val note: String? = null,
-    val baseEvaluable: BaseEvaluable<C> = BaseEvaluable(),
+    internal val baseEvaluable: BaseEvaluable<C> = BaseEvaluable(),
     val extension: Evaluable<C> = object : Evaluable<C>() {},
 ) : Evaluable<C>() {
     internal constructor(
@@ -74,7 +74,7 @@ data class Rule<C : Context> internal constructor(
         note: String? = null,
         locales: Set<AppLocale> = emptySet(),
         platforms: Set<Platform> = emptySet(),
-        versionRange: VersionRange = Unbounded,
+        versionRange: VersionRange = Unbounded(),
         extension: Evaluable<C> = object : Evaluable<C>() {},
     ) : this(rollout, note, BaseEvaluable(locales, platforms, versionRange), extension)
 
