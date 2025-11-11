@@ -34,23 +34,6 @@ data class KonfigPatch internal constructor(
     }
 
     companion object {
-        /**
-         * Creates a new [KonfigPatch] from a current snapshot by building new flag definitions.
-         *
-         * Example:
-         * ```
-         * val patch = KonfigPatch.from(currentSnapshot) {
-         *     add(MY_FLAG to myFlagDefinition)
-         *     remove(OLD_FLAG)
-         * }
-         * ```
-         *
-         * @param current The current snapshot to base the patch on
-         * @param builder A builder function to configure the patch
-         * @return A new KonfigPatch
-         */
-        fun from(current: Konfig, builder: PatchBuilder.() -> Unit): KonfigPatch =
-            PatchBuilder().apply(builder).build()
 
         /**
          * Creates an empty patch with no changes.

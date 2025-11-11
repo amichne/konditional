@@ -1,6 +1,5 @@
 package io.amichne.konditional.core
 
-import io.amichne.konditional.core.flag
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
@@ -46,7 +45,7 @@ import kotlin.test.assertTrue
  */
 class EvaluationResultTest {
 
-    enum class TestFlags(override val key: String) : Conditional<String, Context> by Conditional(key) {
+    enum class TestFlags(override val key: String) : Feature<String, Context> by Feature(key) {
         REGISTERED_FLAG("registered_flag"),
         UNREGISTERED_FLAG("unregistered_flag"),
     }

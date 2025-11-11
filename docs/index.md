@@ -291,7 +291,7 @@ ConfigBuilder.config {
 
 **Ready to integrate?**
 
-1. [Core API](api/Core.md) - Conditionals and evaluation
+1. [Core API](api/Architecture.md) - Conditionals and evaluation
 2. [Context System](api/Context.md) - Targeting dimensions
 3. [Rules System](api/Rules.md) - Advanced targeting logic
 4. [Serialization](api/Serialization.md) - Remote configuration

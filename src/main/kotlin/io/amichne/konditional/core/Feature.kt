@@ -1,7 +1,6 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.result.EvaluationResult
 
 /**
  * Represents a feature that can be used to enable or disable specific functionality
@@ -15,10 +14,6 @@ interface Feature<S : Any, C : Context> {
     val key: String
 
     fun update(definition: FlagDefinition<S, C>) = registry.update(definition)
-
-//    fun evaluate(context: C): S = requireNotNull(registry.featureFlag(this)).evaluate(context)
-//
-//    fun evaluateSafe(): EvaluationResult<S> = EvaluationResult
 
     companion object {
         operator fun <S : Any, C : Context> invoke(

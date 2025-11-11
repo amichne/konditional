@@ -1,6 +1,5 @@
 package io.amichne.konditional.core
 
-import io.amichne.konditional.core.config
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
@@ -16,7 +15,7 @@ class StringSingletonFlagRegistryTest {
     // Define a simple enum for string-valued flags
     enum class StringFeatureFlags(
         override val key: String,
-    ) : Conditional<String, Context> by Conditional(key) {
+    ) : Feature<String, Context> by Feature(key) {
         API_ENDPOINT("api_endpoint"),
         THEME("theme"),
         WELCOME_MESSAGE("welcome_message"),

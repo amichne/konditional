@@ -4,7 +4,6 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.JsonWriter
-import com.squareup.moshi.Moshi
 import io.amichne.konditional.internal.serialization.models.FlagValue
 import java.lang.reflect.Type
 
@@ -105,7 +104,7 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
          * Factory for creating FlagValueAdapter instances.
          * This ensures the adapter is properly registered with Moshi for the FlagValue type.
          */
-        val FACTORY: JsonAdapter.Factory = JsonAdapter.Factory { type, _, _ ->
+        val FACTORY: Factory = Factory { type, _, _ ->
             if (Types.getRawType(type) == FlagValue::class.java) {
                 FlagValueAdapter()
             } else {

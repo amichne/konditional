@@ -33,7 +33,7 @@ class ConditionalExtensibilityTest {
 
     enum class ApiConfigFlags(
         override val key: String,
-    ) : Conditional<ApiConfig, Context> by Conditional(key) {
+    ) : Feature<ApiConfig, Context> by Feature(key) {
         PRIMARY_API("primary_api");
     }
 
@@ -47,21 +47,21 @@ class ConditionalExtensibilityTest {
 
     enum class ThemeFlags(
         override val key: String,
-    ) : Conditional<ThemeConfig, Context> by Conditional(key) {
+    ) : Feature<ThemeConfig, Context> by Feature(key) {
         APP_THEME("app_theme"),
     }
 
     // Custom value type: List of strings
     enum class ListFlags(
         override val key: String,
-    ) : Conditional<List<String>, Context> by Conditional(key) {
+    ) : Feature<List<String>, Context> by Feature(key) {
         ENABLED_FEATURES("enabled_features");
     }
 
     // Custom value type: Integer
     enum class IntFlags(
         override val key: String,
-    ) : Conditional<Int, Context> by Conditional(key) {
+    ) : Feature<Int, Context> by Feature(key) {
         MAX_CONNECTIONS("max_connections");
     }
 
@@ -72,14 +72,14 @@ class ConditionalExtensibilityTest {
 
     enum class LogConfigFlags(
         override val key: String,
-    ) : Conditional<LogLevel, Context> by Conditional(key) {
+    ) : Feature<LogLevel, Context> by Feature(key) {
         APP_LOG_LEVEL("app_log_level"),
     }
 
     // Custom value type: Map
     enum class MapFlags(
         override val key: String,
-    ) : Conditional<Map<String, String>, Context> by Conditional(key) {
+    ) : Feature<Map<String, String>, Context> by Feature(key) {
         FEATURE_TOGGLES("feature_toggles"),
     }
 
@@ -323,7 +323,7 @@ class ConditionalExtensibilityTest {
             val level3: ApiConfig,
         )
 
-        data class DeepFlag(override val key: String = "nested_config") : Conditional<DeepConfig, Context> by Conditional(key)
+        data class DeepFlag(override val key: String = "nested_config") : Feature<DeepConfig, Context> by Feature<S, C>(key)
 
         val nestedConfigFlag = DeepFlag()
 

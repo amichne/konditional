@@ -7,7 +7,6 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.evaluate
-import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.FlagDefinitionImpl
 import io.amichne.konditional.core.id.StableId
@@ -231,7 +230,7 @@ class SnapshotSerializerTest {
 
         // Compare each flag
         originalValues.forEach { (key, value) ->
-            assertEquals(value, deserializedValues[key], "Flag ${(key as Conditional<*, *>).key} should match")
+            assertEquals(value, deserializedValues[key], "Flag ${(key as Feature<*, *>).key} should match")
         }
     }
 
@@ -441,7 +440,7 @@ class SnapshotSerializerTest {
                 assertEquals(
                     value,
                     deserializedValues[key],
-                    "Flag ${(key as Conditional<*, *>).key} should match for context: $context"
+                    "Flag ${(key as Feature<*, *>).key} should match for context: $context"
                 )
             }
         }

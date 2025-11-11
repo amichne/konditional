@@ -2,10 +2,9 @@ package io.amichne.konditional.serialization
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.core.instance.Konfig
-import io.amichne.konditional.core.instance.KonfigPatch
 import io.amichne.konditional.internal.serialization.adapters.FlagValueAdapter
 import io.amichne.konditional.internal.serialization.adapters.VersionRangeAdapter
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
@@ -112,30 +111,6 @@ class SnapshotSerializer(
         return when (val patchResult = deserializePatch(patchJson)) {
             is ParseResult.Success -> applyPatch(currentKonfig, patchResult.value)
             is ParseResult.Failure -> ParseResult.Failure(patchResult.error)
-        }
-    }
-
-    /**
-     * Serializes a core KonfigPatch to a JSON string.
-     *
-     * @param patch The KonfigPatch to serialize
-     * @return JSON string representation of the patch
-     */
-    fun serializePatch(patch: KonfigPatch): String {
-        val serializable = patch.toSerializable()
-        return patchAdapter.toJson(serializable)
-    }
-
-    /**
-     * Deserializes a JSON string to a core KonfigPatch.
-     *
-     * @param json The JSON string to deserialize
-     * @return ParseResult containing either the deserialized KonfigPatch or an error
-     */
-    fun deserializePatchToCore(json: String): ParseResult<KonfigPatch> {
-        return when (val serializableResult = deserializePatch(json)) {
-            is ParseResult.Success -> serializableResult.value.toPatch()
-            is ParseResult.Failure -> ParseResult.Failure(serializableResult.error)
         }
     }
 

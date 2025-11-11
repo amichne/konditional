@@ -122,21 +122,6 @@ interface FlagRegistry {
         konfig().flags
 
     companion object : FlagRegistry by SingletonFlagRegistry {
-        /**
-         * Returns the default singleton registry.
-         *
-         * This is the same as using `FlagRegistry` directly via companion delegation,
-         * but provides a more explicit way to access the singleton.
-         *
-         * Example:
-         * ```kotlin
-         * val registry = FlagRegistry.Default
-         * registry.load(konfig)
-         * ```
-         *
-         * @since 0.0.2
-         */
-        val Default: FlagRegistry get() = SingletonFlagRegistry
 
         /**
          * Creates a new in-memory registry instance.

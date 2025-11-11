@@ -15,7 +15,6 @@ import io.amichne.konditional.core.Feature
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.FlagScope
 import io.amichne.konditional.core.FeatureFlagDsl
-import io.amichne.konditional.core.FlagRegistry
 import io.amichne.konditional.core.instance.Konfig
 
 @FeatureFlagDsl

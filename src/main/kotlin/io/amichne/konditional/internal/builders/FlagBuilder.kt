@@ -2,9 +2,9 @@ package io.amichne.konditional.internal.builders
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Feature
+import io.amichne.konditional.core.FeatureFlagDsl
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.FlagScope
-import io.amichne.konditional.core.FeatureFlagDsl
 import io.amichne.konditional.core.RuleScope
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
@@ -22,7 +22,6 @@ import io.amichne.konditional.rules.Rule
  * @property conditional The feature flag key used to uniquely identify the flag.
  * @constructor Internal constructor - users cannot instantiate this class directly.
  */
-@ConsistentCopyVisibility
 @FeatureFlagDsl
 @PublishedApi
 internal data class FlagBuilder<S : Any, C : Context>(

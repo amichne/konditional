@@ -1,6 +1,5 @@
 package io.amichne.konditional.core
 
-import io.amichne.konditional.core.config
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
@@ -9,9 +8,8 @@ import io.amichne.konditional.context.evaluate
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.internal.SingletonFlagRegistry
-import io.amichne.konditional.core.FlagDefinitionImpl
-import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
+import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -31,17 +29,17 @@ class FlagEntryTypeSafetyTest {
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
 
-    enum class BoolFlags(override val key: String) : Conditional<Boolean, Context> by Conditional(key) {
+    enum class BoolFlags(override val key: String) : Feature<Boolean, Context> by Feature(key) {
         FEATURE_A("feature_a"),
         FEATURE_B("feature_b"),
     }
 
-    enum class StringFlags(override val key: String) : Conditional<String, Context> by Conditional(key) {
+    enum class StringFlags(override val key: String) : Feature<String, Context> by Feature(key) {
         CONFIG_A("config_a"),
         CONFIG_B("config_b"),
     }
 
-    enum class IntFlags(override val key: String) : Conditional<Int, Context> by Conditional(key) {
+    enum class IntFlags(override val key: String) : Feature<Int, Context> by Feature(key) {
         TIMEOUT("timeout"),
     }
 
@@ -278,7 +276,7 @@ class FlagEntryTypeSafetyTest {
             val customField: String,
         ) : Context
 
-        data class CustomIntFlag(override val key: String = "custom_int") : Conditional<Int, CustomContext> by Conditional(key)
+        data class CustomIntFlag(override val key: String = "custom_int") : Feature<Int, CustomContext> by Feature(key)
 
         val customIntFlag = CustomIntFlag()
 

@@ -72,7 +72,7 @@ nav:
   - Core Concepts:
     - Architecture Overview: api/Overview.md
     - Builder DSL: api/Builders.md
-    - Core API: api/Core.md
+    - Core API: api/Architecture.md
   - Advanced Topics:
     - Context System: api/Context.md
     - Rules Engine: api/Rules.md

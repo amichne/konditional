@@ -1,7 +1,6 @@
 package io.amichne.konditional.context
 
 import io.amichne.konditional.core.config
-import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fakes.FakeRegistry
 import io.amichne.konditional.rules.Rule
@@ -50,9 +49,8 @@ class ContextPolymorphismTest {
     // SingletonFlagRegistry using EnterpriseContext
     enum class EnterpriseFlags(
         override val key: String,
-    ) : Conditional<Boolean, EnterpriseContext> by Conditional(key) {
+    ) : Feature<Boolean, EnterpriseContext> by Feature(key) {
         ADVANCED_ANALYTICS("advanced_analytics"),
-        BULK_EXPORT("bulk_export"),
         CUSTOM_BRANDING("custom_branding"),
         API_ACCESS("api_access"),
     }
@@ -60,7 +58,7 @@ class ContextPolymorphismTest {
     // SingletonFlagRegistry using ExperimentContext
     enum class ExperimentFlags(
         override val key: String,
-    ) : Conditional<String, ExperimentContext> by Conditional(key) {
+    ) : Feature<String, ExperimentContext> by Feature(key) {
         HOMEPAGE_VARIANT("homepage_variant"),
         ONBOARDING_STYLE("onboarding_style"),
     }
@@ -186,7 +184,7 @@ class ContextPolymorphismTest {
     fun `Given base Context and custom Context, When both used, Then type safety is maintained`() {
         // Define flag in scope
         data class StandardFlagA(override val key: String = "feature_a") :
-            Conditional<Boolean, Context> by Conditional(key)
+            Feature<Boolean, Context> by Feature<S, C>(key)
 
         val standardFlagA = StandardFlagA()
 
