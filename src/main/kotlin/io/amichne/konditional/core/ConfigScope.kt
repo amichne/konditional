@@ -1,6 +1,7 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.types.EncodableValue
 
 /**
  * DSL scope for configuration building.
@@ -35,9 +36,10 @@ interface ConfigScope {
      * }
      * ```
      *
-     * @param S The type of value the flag returns
+     * @param S The EncodableValue type wrapping the actual value
+     * @param T The actual value type
      * @param C The context type the flag evaluates against
      * @param build DSL block for configuring the flag
      */
-    infix fun <S : Any, C : Context> Feature<S, C>.with(build: FlagScope<S, C>.() -> Unit)
+    infix fun <S : EncodableValue<T>, T : Any, C : Context> Feature<S, T, C>.with(build: FlagScope<S, T, C>.() -> Unit)
 }

@@ -6,6 +6,7 @@ import io.amichne.konditional.core.FeatureFlagDsl
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.FlagScope
 import io.amichne.konditional.core.RuleScope
+import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
@@ -17,25 +18,26 @@ import io.amichne.konditional.rules.Rule
  * Users interact with the public [io.amichne.konditional.core.FlagScope] interface,
  * not this implementation directly.
  *
- * @param S The type of the state associated with the feature flag.
+ * @param S The EncodableValue type wrapping the actual value.
+ * @param T The actual value type.
  * @param C The type of the context that the feature flag evaluates against.
  * @property conditional The feature flag key used to uniquely identify the flag.
  * @constructor Internal constructor - users cannot instantiate this class directly.
  */
 @FeatureFlagDsl
 @PublishedApi
-internal data class FlagBuilder<S : Any, C : Context>(
-    private val conditional: Feature<S, C>,
-) : FlagScope<S, C> {
-    private val conditionalValues = mutableListOf<ConditionalValue<S, C>>()
-    private var defaultValue: S? = null
+internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context>(
+    private val conditional: Feature<S, T, C>,
+) : FlagScope<S, T, C> {
+    private val conditionalValues = mutableListOf<ConditionalValue<S, T, C>>()
+    private var defaultValue: T? = null
     private var defaultCoverage: Double? = null
     private var salt: String = "v1"
 
     /**
      * Implementation of [FlagScope.default].
      */
-    override fun default(value: S, coverage: Double?) {
+    override fun default(value: T, coverage: Double?) {
         defaultValue = value
         defaultCoverage = coverage
     }
@@ -56,7 +58,7 @@ internal data class FlagBuilder<S : Any, C : Context>(
      * Implementation of [FlagScope.implies].
      */
     @FeatureFlagDsl
-    override infix fun Rule<C>.implies(value: S) {
+    override infix fun Rule<C>.implies(value: T) {
         conditionalValues += targetedBy(value)
     }
 
@@ -67,10 +69,10 @@ internal data class FlagBuilder<S : Any, C : Context>(
      * @return A `FlagDefinition` instance constructed based on the current configuration.
      */
     @PublishedApi
-    internal fun build(): FlagDefinition<S, C> {
+    internal fun build(): FlagDefinition<S, T, C> {
         requireNotNull(defaultValue) { "Default value must be set" }
         return FlagDefinition(
-            conditional = conditional,
+            feature = conditional,
             bounds = conditionalValues.toList(),
             defaultValue = defaultValue!!,
             salt = salt,

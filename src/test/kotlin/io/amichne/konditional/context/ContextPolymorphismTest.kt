@@ -49,18 +49,30 @@ class ContextPolymorphismTest {
     // SingletonFlagRegistry using EnterpriseContext
     enum class EnterpriseFlags(
         override val key: String,
-    ) : Feature<Boolean, EnterpriseContext> by Feature(key) {
+    ) : Feature<io.amichne.konditional.core.types.EncodableValue.BooleanEncodeable, Boolean, EnterpriseContext> {
         ADVANCED_ANALYTICS("advanced_analytics"),
         CUSTOM_BRANDING("custom_branding"),
-        API_ACCESS("api_access"),
+        API_ACCESS("api_access");
+
+        override val registry: io.amichne.konditional.core.FlagRegistry = io.amichne.konditional.core.FlagRegistry
+
+        override fun update(definition: io.amichne.konditional.core.FlagDefinition<io.amichne.konditional.core.types.EncodableValue.BooleanEncodeable, Boolean, EnterpriseContext>) {
+            registry.update(definition)
+        }
     }
 
     // SingletonFlagRegistry using ExperimentContext
     enum class ExperimentFlags(
         override val key: String,
-    ) : Feature<String, ExperimentContext> by Feature(key) {
+    ) : Feature<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, ExperimentContext> {
         HOMEPAGE_VARIANT("homepage_variant"),
-        ONBOARDING_STYLE("onboarding_style"),
+        ONBOARDING_STYLE("onboarding_style");
+
+        override val registry: io.amichne.konditional.core.FlagRegistry = io.amichne.konditional.core.FlagRegistry
+
+        override fun update(definition: io.amichne.konditional.core.FlagDefinition<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, ExperimentContext>) {
+            registry.update(definition)
+        }
     }
 
     // Custom rule that extends Rule for EnterpriseContext

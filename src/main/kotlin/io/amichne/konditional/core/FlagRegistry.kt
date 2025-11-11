@@ -86,10 +86,11 @@ interface FlagRegistry {
      * creating a full patch or snapshot.
      *
      * @param definition The [io.amichne.konditional.core.internal.FlagDefinition] to update
-     * @param S The type of the flag's value
+     * @param S The EncodableValue type wrapping the actual value
+     * @param T The actual value type
      * @param C The type of the context used for evaluation
      */
-    fun <S : Any, C : Context> update(definition: FlagDefinition<S, C>)
+    fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> update(definition: FlagDefinition<S, T, C>)
 
     /**
      * Retrieves the current snapshot of all flag configurations.
@@ -106,19 +107,20 @@ interface FlagRegistry {
      *
      * @param key The [Feature] key for the flag
      * @return The [FlagDefinition] if found, null otherwise
-     * @param S The type of the flag's value
+     * @param S The EncodableValue type wrapping the actual value
+     * @param T The actual value type
      * @param C The type of the context used for evaluation
      */
     @Suppress("UNCHECKED_CAST")
-    fun <S : Any, C : Context> featureFlag(key: Feature<S, C>): FlagDefinition<S, C>? =
-        konfig().flags[key] as? FlagDefinition<S, C>
+    fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> featureFlag(key: Feature<S, T, C>): FlagDefinition<S, T, C>? =
+        konfig().flags[key] as? FlagDefinition<S, T, C>
 
     /**
      * Retrieves all flags from the registry.
      *
      * @return Map of all [Feature] keys to their [FlagDefinition] definitions
      */
-    fun allFlags(): Map<Feature<*, *>, FlagDefinition<*, *>> =
+    fun allFlags(): Map<Feature<*, *, *>, FlagDefinition<*, *, *>> =
         konfig().flags
 
     companion object : FlagRegistry by SingletonFlagRegistry {

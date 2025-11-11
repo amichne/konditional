@@ -25,6 +25,6 @@ import io.amichne.konditional.internal.builders.FlagBuilder
  * @return A configured FlagDefinition instance
  */
 @FeatureFlagDsl
-inline fun <S : Any, C : Context> Feature<S, C>.flag(
-    flagBuilder: FlagScope<S, C>.() -> Unit = {},
-): FlagDefinition<S, C> = FlagBuilder(this).apply(flagBuilder).build()
+inline fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> Feature<S, T, C>.flag(
+    flagBuilder: FlagScope<S, T, C>.() -> Unit = {},
+): FlagDefinition<S, T, C> = FlagBuilder(this).apply(flagBuilder).build()

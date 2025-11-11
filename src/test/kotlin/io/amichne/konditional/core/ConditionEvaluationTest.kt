@@ -9,6 +9,7 @@ import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.versions.Unbounded
+import kotlin.collections.emptyList
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -32,8 +33,8 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given condition with no matching rules, When evaluating, Then returns default value`() {
-        val condition = FlagDefinitionImpl(
-            conditional = TestFlags.TEST_FLAG,
+        val condition = FlagDefinition(
+            feature = TestFlags.TEST_FLAG,
             values = emptyList(),
             defaultValue = "default",
         )

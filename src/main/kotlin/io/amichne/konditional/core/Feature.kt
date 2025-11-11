@@ -18,7 +18,7 @@ import io.amichne.konditional.core.types.EncodableValue
  * @param T The actual value type.
  * @param C The type of the context that the feature flag evaluates against.
  */
-sealed interface Conditional<S : EncodableValue<T>, T : Any, C : Context> {
+interface Feature<S : EncodableValue<T>, T : Any, C : Context> {
     val registry: FlagRegistry
     val key: String
 
@@ -29,7 +29,7 @@ sealed interface Conditional<S : EncodableValue<T>, T : Any, C : Context> {
     // ========== JSON Object Type Interface ==========
 
     /**
-     * Conditional for JSON object types.
+     * Feature for JSON object types.
      *
      * Enables HSON-object type representation: distinct super type of object nodes
      * that represent different values given specific conditions.
@@ -38,12 +38,12 @@ sealed interface Conditional<S : EncodableValue<T>, T : Any, C : Context> {
      * @param C The context type
      */
     interface OfJsonObject<T : Any, C : Context> :
-        Conditional<EncodableValue.JsonObjectEncodeable<T>, T, C>
+        Feature<EncodableValue.JsonObjectEncodeable<T>, T, C>
 
     // ========== Custom Wrapper Type Interface ==========
 
     /**
-     * Conditional for custom wrapper types that encode to primitives.
+     * Feature for custom wrapper types that encode to primitives.
      *
      * Enables extension types: "0-depth primitive-like values" such as DateTime, UUID, etc.
      *
@@ -52,13 +52,32 @@ sealed interface Conditional<S : EncodableValue<T>, T : Any, C : Context> {
      * @param C The context type
      */
     interface OfCustom<T : Any, P : Any, C : Context> :
-        Conditional<EncodableValue.CustomEncodeable<T, P>, T, C>
+        Feature<EncodableValue.CustomEncodeable<T, P>, T, C>
 
     companion object {
-        // ========== JSON Object Conditional Factory ==========
+        // ========== Basic Feature Factory ==========
 
         /**
-         * Creates a JSON Object Conditional.
+         * Creates a basic Feature with explicit type parameters.
+         *
+         * Example:
+         * ```kotlin
+         * val ENABLED: Feature<EncodableValue.BooleanEncodeable, Boolean, Context> =
+         *     Feature("enabled")
+         * ```
+         */
+        operator fun <S : EncodableValue<T>, T : Any, C : Context> invoke(
+            key: String,
+            registry: FlagRegistry = FlagRegistry,
+        ): Feature<S, T, C> = object : Feature<S, T, C> {
+            override val registry: FlagRegistry = registry
+            override val key: String = key
+        }
+
+        // ========== JSON Object Feature Factory ==========
+
+        /**
+         * Creates a JSON Object Feature.
          *
          * Use this for complex data classes and HSON-object type representations.
          *
@@ -66,8 +85,8 @@ sealed interface Conditional<S : EncodableValue<T>, T : Any, C : Context> {
          * ```kotlin
          * data class ApiConfig(val url: String, val timeout: Int)
          *
-         * val API_CONFIG: Conditional.OfJsonObject<ApiConfig, Context> =
-         *     Conditional.jsonObject("api_config")
+         * val API_CONFIG: Feature.OfJsonObject<ApiConfig, Context> =
+         *     Feature.jsonObject("api_config")
          * ```
          *
          * @param T The domain object type
@@ -81,10 +100,10 @@ sealed interface Conditional<S : EncodableValue<T>, T : Any, C : Context> {
             override val key: String = key
         }
 
-        // ========== Custom Wrapper Conditional Factory ==========
+        // ========== Custom Wrapper Feature Factory ==========
 
         /**
-         * Creates a Custom Wrapper Conditional.
+         * Creates a Custom Wrapper Feature.
          *
          * Use this for extension types that wrap JSON primitives (DateTime, UUID, etc.).
          *
@@ -92,8 +111,8 @@ sealed interface Conditional<S : EncodableValue<T>, T : Any, C : Context> {
          * ```kotlin
          * data class DateTime(val iso8601: String)
          *
-         * val CREATED_AT: Conditional.OfCustom<DateTime, String, Context> =
-         *     Conditional.custom("created_at")
+         * val CREATED_AT: Feature.OfCustom<DateTime, String, Context> =
+         *     Feature.custom("created_at")
          * ```
          *
          * @param T The wrapper type (DateTime, UUID, etc.)
@@ -112,7 +131,7 @@ sealed interface Conditional<S : EncodableValue<T>, T : Any, C : Context> {
 
         internal inline fun <reified R, S : EncodableValue<T>, T : Any, C : Context> parse(
             key: String,
-        ): R where R : Conditional<S, T, C>, R : Enum<R> =
+        ): R where R : Feature<S, T, C>, R : Enum<R> =
             enumValues<R>().first { it.key == key }
     }
 }

@@ -1,6 +1,7 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.Rule
 
 /**
@@ -22,12 +23,13 @@ import io.amichne.konditional.rules.Rule
  * }
  * ```
  *
- * @param S The type of value the flag returns
+ * @param S The EncodableValue type wrapping the actual value
+ * @param T The actual value type
  * @param C The context type the flag evaluates against
  * @since 0.0.2
  */
 @FeatureFlagDsl
-interface FlagScope<S : Any, C : Context> {
+interface FlagScope<S : EncodableValue<T>, T : Any, C : Context> {
     /**
      * Sets the default value for the flag.
      *
@@ -36,7 +38,7 @@ interface FlagScope<S : Any, C : Context> {
      * @param value The default value to assign to the flag
      * @param coverage The coverage percentage for the default value (optional)
      */
-    fun default(value: S, coverage: Double? = null)
+    fun default(value: T, coverage: Double? = null)
 
     /**
      * Sets the salt value for the flag.
@@ -79,5 +81,5 @@ interface FlagScope<S : Any, C : Context> {
      *
      * @param value The value to return when the rule matches
      */
-    infix fun Rule<C>.implies(value: S)
+    infix fun Rule<C>.implies(value: T)
 }

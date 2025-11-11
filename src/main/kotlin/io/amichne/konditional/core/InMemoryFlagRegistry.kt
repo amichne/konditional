@@ -83,10 +83,10 @@ class InMemoryFlagRegistry : FlagRegistry {
      * @param S The type of the flag's value
      * @param C The type of the context used for evaluation
      */
-    override fun <S : Any, C : Context> update(definition: FlagDefinition<S, C>) {
+    override fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> update(definition: FlagDefinition<S, T, C>) {
         current.updateAndGet { currentSnapshot ->
             val mutableFlags = currentSnapshot.flags.toMutableMap()
-            mutableFlags[definition.conditional] = definition
+            mutableFlags[definition.feature] = definition
             Konfig(mutableFlags)
         }
     }

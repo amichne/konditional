@@ -28,15 +28,16 @@ sealed interface EncodableValue<T : Any> {
 
         companion object {
             inline fun <reified T : Any> T.parse(): EncodableValue<T> {
-                return when (this) {
-                    is Boolean -> BooleanEncodeable(this)
-                    is String -> StringEncodeable(this)
-                    is Int -> IntEncodeable(this)
-                    is Double -> DecimalEncodeable(this)
+                return when (this::class) {
+                    BOOLEAN.klazz -> of(this)
+                    STRING.klazz -> of(this)
+                    INTEGER.klazz -> of(this)
+                    DECIMAL.klazz -> of(this)
                     else -> throw IllegalArgumentException("Unsupported EncodableValue type: ${T::class.simpleName}")
-                } as EncodableValue<T>
+                }
             }
 
+            @Suppress("UNCHECKED_CAST")
             inline fun <reified T : Any> of(value: T): EncodableValue<T> {
                 return when (value) {
                     is Boolean -> BooleanEncodeable(value)
@@ -128,7 +129,14 @@ sealed interface EncodableValue<T : Any> {
         override val encoding: Encoding = primitiveEncoding
 
         init {
-            require(primitiveEncoding in listOf(Encoding.BOOLEAN, Encoding.STRING, Encoding.INTEGER, Encoding.DECIMAL)) {
+            require(
+                primitiveEncoding in listOf(
+                    Encoding.BOOLEAN,
+                    Encoding.STRING,
+                    Encoding.INTEGER,
+                    Encoding.DECIMAL
+                )
+            ) {
                 "CustomEncodeable must encode to a primitive type (BOOLEAN, STRING, INTEGER, or DECIMAL)"
             }
         }
