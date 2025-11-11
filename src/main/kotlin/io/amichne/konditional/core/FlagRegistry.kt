@@ -121,5 +121,64 @@ interface FlagRegistry {
     fun allFlags(): Map<Feature<*, *>, FlagDefinition<*, *>> =
         konfig().flags
 
-    companion object : FlagRegistry by SingletonFlagRegistry
+    companion object : FlagRegistry by SingletonFlagRegistry {
+        /**
+         * Returns the default singleton registry.
+         *
+         * This is the same as using `FlagRegistry` directly via companion delegation,
+         * but provides a more explicit way to access the singleton.
+         *
+         * Example:
+         * ```kotlin
+         * val registry = FlagRegistry.Default
+         * registry.load(konfig)
+         * ```
+         *
+         * @since 0.0.2
+         */
+        val Default: FlagRegistry get() = SingletonFlagRegistry
+
+        /**
+         * Creates a new in-memory registry instance.
+         *
+         * This is useful for testing scenarios where you need isolated
+         * registry instances that don't interfere with each other.
+         *
+         * Example:
+         * ```kotlin
+         * @Test
+         * fun `test feature flag`() {
+         *     val testRegistry = FlagRegistry.create()
+         *     config(testRegistry) {
+         *         MyFlags.FEATURE_A with { default(true) }
+         *     }
+         *     // Test with isolated registry
+         * }
+         * ```
+         *
+         * @return A new [InMemoryFlagRegistry] instance
+         * @since 0.0.2
+         */
+        fun create(): FlagRegistry = InMemoryFlagRegistry()
+
+        /**
+         * Creates a new in-memory registry instance with an initial configuration.
+         *
+         * This is a convenience method for creating and loading a registry in one step.
+         *
+         * Example:
+         * ```kotlin
+         * val testRegistry = FlagRegistry.create(buildSnapshot {
+         *     MyFlags.FEATURE_A with { default(true) }
+         * })
+         * ```
+         *
+         * @param initialConfig The initial [Konfig] to load into the registry
+         * @return A new [InMemoryFlagRegistry] instance with the initial configuration loaded
+         * @since 0.0.2
+         */
+        fun create(initialConfig: Konfig): FlagRegistry = InMemoryFlagRegistry().apply {
+            load(initialConfig)
+        }
+    }
 }
