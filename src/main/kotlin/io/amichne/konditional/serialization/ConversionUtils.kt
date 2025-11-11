@@ -6,7 +6,6 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.core.Feature
 import io.amichne.konditional.core.FlagDefinition
-import io.amichne.konditional.core.FlagDefinitionImpl
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.instance.KonfigPatch
 import io.amichne.konditional.core.result.ParseError
@@ -112,15 +111,15 @@ object FeatureRegistry {
  */
 internal fun Konfig.toSerializable(): SerializableSnapshot {
     val serializableFlags = flags.map { (conditional, flag) ->
-        (flag as FlagDefinitionImpl<*, *, *>).toSerializable(conditional.key)
+        flag.toSerializable(conditional.key)
     }
     return SerializableSnapshot(serializableFlags)
 }
 
 /**
- * Converts a FlagDefinitionImpl to a SerializableFlag.
+ * Converts a FlagDefinition to a SerializableFlag.
  */
-private fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> FlagDefinitionImpl<S, T, C>.toSerializable(flagKey: String): SerializableFlag {
+private fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> FlagDefinition<S, T, C>.toSerializable(flagKey: String): SerializableFlag {
     return SerializableFlag(
         key = flagKey,
         defaultValue = FlagValue.from(defaultValue),
@@ -191,14 +190,14 @@ private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Feature<*, *, *>, Fl
 @Suppress("UNCHECKED_CAST")
 private fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> SerializableFlag.toFlagDefinition(
     conditional: Feature<S, T, C>
-): FlagDefinitionImpl<S, T, C> {
+): FlagDefinition<S, T, C> {
     // Extract typed value from FlagValue (type-safe extraction)
     val typedDefaultValue = defaultValue.extractValue<T>()
     val values = rules.map { it.toValue<S, T, C>() }
 
-    return FlagDefinitionImpl(
+    return FlagDefinition(
         feature = conditional,
-        values = values,
+        bounds = values,
         defaultValue = typedDefaultValue,
         salt = salt,
         isActive = isActive
@@ -241,7 +240,7 @@ private fun <C : Context> SerializableRule.toRule(): Rule<C> {
  */
 internal fun KonfigPatch.toSerializable(): SerializablePatch {
     val serializableFlags = flags.map { (conditional, flag) ->
-        (flag as FlagDefinitionImpl<*, *, *>).toSerializable(conditional.key)
+        flag.toSerializable(conditional.key)
     }
     val removeKeyStrings = removeKeys.map { it.key }
     return SerializablePatch(serializableFlags, removeKeyStrings)

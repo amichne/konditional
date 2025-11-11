@@ -45,9 +45,14 @@ import kotlin.test.assertTrue
  */
 class EvaluationResultTest {
 
-    enum class TestFlags(override val key: String) : Feature<String, Context> by Feature(key) {
+    enum class TestFlags(override val key: String) : Feature<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, Context> {
         REGISTERED_FLAG("registered_flag"),
-        UNREGISTERED_FLAG("unregistered_flag"),
+        UNREGISTERED_FLAG("unregistered_flag");
+
+        override val registry: FlagRegistry = FlagRegistry
+        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, Context>) {
+            registry.update(definition)
+        }
     }
 
     // Mock Outcome type for testing adaptation

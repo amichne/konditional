@@ -8,6 +8,7 @@ import io.amichne.konditional.context.evaluate
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.internal.SingletonFlagRegistry
+import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
@@ -29,18 +30,36 @@ class FlagEntryTypeSafetyTest {
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
 
-    enum class BoolFlags(override val key: String) : Feature<Boolean, Context> by Feature(key) {
+    enum class BoolFlags(override val key: String) :
+        Feature<io.amichne.konditional.core.types.EncodableValue.BooleanEncodeable, Boolean, Context> {
         FEATURE_A("feature_a"),
-        FEATURE_B("feature_b"),
+        FEATURE_B("feature_b");
+
+        override val registry: FlagRegistry = FlagRegistry
+        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.BooleanEncodeable, Boolean, Context>) {
+            registry.update(definition)
+        }
     }
 
-    enum class StringFlags(override val key: String) : Feature<String, Context> by Feature(key) {
+    enum class StringFlags(override val key: String) :
+        Feature<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, Context> {
         CONFIG_A("config_a"),
-        CONFIG_B("config_b"),
+        CONFIG_B("config_b");
+
+        override val registry: FlagRegistry = FlagRegistry
+        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, Context>) {
+            registry.update(definition)
+        }
     }
 
-    enum class IntFlags(override val key: String) : Feature<Int, Context> by Feature(key) {
-        TIMEOUT("timeout"),
+    enum class IntFlags(override val key: String) :
+        Feature<io.amichne.konditional.core.types.EncodableValue.IntEncodeable, Int, Context> {
+        TIMEOUT("timeout");
+
+        override val registry: FlagRegistry = FlagRegistry
+        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.IntEncodeable, Int, Context>) {
+            registry.update(definition)
+        }
     }
 
     @Test
@@ -52,8 +71,8 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded,
         )
 
-        val flag = FlagDefinitionImpl(
-            conditional = BoolFlags.FEATURE_A,
+        val flag = FlagDefinition(
+            feature = BoolFlags.FEATURE_A,
             values = listOf(rule.targetedBy(true)),
             defaultValue = false,
         )
@@ -72,8 +91,8 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded,
         )
 
-        val boolFlag: FlagDefinition<Boolean, Context> = FlagDefinitionImpl(
-            conditional = BoolFlags.FEATURE_A,
+        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context> = FlagDefinition(
+            feature = BoolFlags.FEATURE_A,
             values = listOf(rule.targetedBy(true)),
             defaultValue = false,
         )
@@ -107,20 +126,20 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded,
         )
 
-        val boolFlag: FlagDefinition<Boolean, Context> = FlagDefinitionImpl(
-            conditional = BoolFlags.FEATURE_A,
+        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context> = FlagDefinition(
+            feature = BoolFlags.FEATURE_A,
             values = listOf(boolRule.targetedBy(true)),
             defaultValue = false,
         )
 
-        val stringFlag: FlagDefinition<String, Context> = FlagDefinitionImpl(
-            conditional = StringFlags.CONFIG_A,
+        val stringFlag: FlagDefinition<EncodableValue.StringEncodeable, String, Context> = FlagDefinition(
+            feature = StringFlags.CONFIG_A,
             values = listOf(stringRule.targetedBy("value")),
             defaultValue = "default",
         )
 
-        val intFlag: FlagDefinition<Int, Context> = FlagDefinitionImpl(
-            conditional = IntFlags.TIMEOUT,
+        val intFlag: FlagDefinition<EncodableValue.IntEncodeable, Int, Context> = FlagDefinition(
+            feature = IntFlags.TIMEOUT,
             values = listOf(intRule.targetedBy(30)),
             defaultValue = 10,
         )
@@ -156,14 +175,14 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded,
         )
 
-        val boolFlag = FlagDefinitionImpl(
-            conditional = BoolFlags.FEATURE_A,
+        val boolFlag = FlagDefinition(
+            feature = BoolFlags.FEATURE_A,
             values = listOf(boolRule.targetedBy(true)),
             defaultValue = false,
         )
 
-        val stringFlag = FlagDefinitionImpl(
-            conditional = StringFlags.CONFIG_A,
+        val stringFlag = FlagDefinition(
+            feature = StringFlags.CONFIG_A,
             values = listOf(stringRule.targetedBy("test")),
             defaultValue = "default",
         )
@@ -276,7 +295,13 @@ class FlagEntryTypeSafetyTest {
             val customField: String,
         ) : Context
 
-        data class CustomIntFlag(override val key: String = "custom_int") : Feature<Int, CustomContext> by Feature(key)
+        data class CustomIntFlag(override val key: String = "custom_int") :
+            Feature<io.amichne.konditional.core.types.EncodableValue.IntEncodeable, Int, CustomContext> {
+            override val registry: FlagRegistry = FlagRegistry
+            override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.IntEncodeable, Int, CustomContext>) {
+                registry.update(definition)
+            }
+        }
 
         val customIntFlag = CustomIntFlag()
 
@@ -287,8 +312,8 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded,
         )
 
-        val flag: FlagDefinition<Int, CustomContext> = FlagDefinitionImpl(
-            conditional = customIntFlag,
+        val flag: FlagDefinition<EncodableValue.IntEncodeable, Int, CustomContext> = FlagDefinition(
+            feature = customIntFlag,
             values = listOf(rule.targetedBy(42)),
             defaultValue = 0,
         )

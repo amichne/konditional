@@ -279,6 +279,7 @@ class ParseResultTest {
         assertIs<ParseError.InvalidRollout>(exception.error)
     }
 
+    @Suppress("KotlinConstantConditions")
     @Test
     fun `Success and Failure are distinct types`() {
         val success: ParseResult<String> = ParseResult.Success("value")

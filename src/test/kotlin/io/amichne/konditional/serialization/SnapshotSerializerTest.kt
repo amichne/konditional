@@ -1,6 +1,5 @@
 package io.amichne.konditional.serialization
 
-import io.amichne.konditional.core.buildSnapshot
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
@@ -8,19 +7,19 @@ import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.evaluate
 import io.amichne.konditional.core.FlagDefinition
-import io.amichne.konditional.core.FlagDefinitionImpl
+import io.amichne.konditional.core.buildSnapshot
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.internal.SingletonFlagRegistry
 import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.example.SampleFeatureEnum
-import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
-import io.amichne.konditional.rules.Rule
-import io.amichne.konditional.rules.versions.LeftBound
 import io.amichne.konditional.internal.serialization.models.FlagValue
 import io.amichne.konditional.internal.serialization.models.SerializableFlag
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
 import io.amichne.konditional.internal.serialization.models.SerializableRule
+import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
+import io.amichne.konditional.rules.Rule
+import io.amichne.konditional.rules.versions.LeftBound
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -82,8 +81,8 @@ class SnapshotSerializerTest {
     @Test
     fun `test flag with rules serialization and deserialization`() {
         // Create a snapshot with complex rules using direct Condition construction
-        val condition = FlagDefinitionImpl(
-            conditional = SampleFeatureEnum.FIFTY_TRUE_US_IOS,
+        val condition = FlagDefinition(
+            feature = SampleFeatureEnum.FIFTY_TRUE_US_IOS,
             values = listOf(
                 Rule<Context>(
                     rollout = Rollout.of(50.0),
@@ -112,9 +111,24 @@ class SnapshotSerializerTest {
 
         // Verify by comparing evaluation results with different contexts
         val contexts = listOf(
-            Context(AppLocale.EN_US, Platform.IOS, Version.of(1, 0, 0), StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d1")),
-            Context(AppLocale.EN_US, Platform.IOS, Version.of(1, 0, 0), StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d2")),
-            Context(AppLocale.EN_US, Platform.ANDROID, Version.of(1, 0, 0), StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d3")),
+            Context(
+                AppLocale.EN_US,
+                Platform.IOS,
+                Version.of(1, 0, 0),
+                StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d1")
+            ),
+            Context(
+                AppLocale.EN_US,
+                Platform.IOS,
+                Version.of(1, 0, 0),
+                StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d2")
+            ),
+            Context(
+                AppLocale.EN_US,
+                Platform.ANDROID,
+                Version.of(1, 0, 0),
+                StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d3")
+            ),
             Context(AppLocale.ES_US, Platform.IOS, Version.of(1, 0, 0), StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d4"))
         )
 
@@ -136,7 +150,7 @@ class SnapshotSerializerTest {
     @Test
     fun `test flag with version ranges serialization`() {
         val condition = FlagDefinition(
-            conditional = SampleFeatureEnum.VERSIONED,
+            feature = SampleFeatureEnum.VERSIONED,
             bounds = listOf(
                 Rule<Context>(
                     rollout = Rollout.of(100.0),
@@ -230,7 +244,7 @@ class SnapshotSerializerTest {
 
         // Compare each flag
         originalValues.forEach { (key, value) ->
-            assertEquals(value, deserializedValues[key], "Flag ${(key as Feature<*, *>).key} should match")
+            assertEquals(value, deserializedValues[key], "Flag ${key.key} should match")
         }
     }
 
@@ -417,9 +431,24 @@ class SnapshotSerializerTest {
 
         // Test with multiple contexts to ensure behavior is identical
         val contexts = listOf(
-            Context(AppLocale.EN_US, Platform.IOS, Version.of(1, 0, 0), StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d1")),
-            Context(AppLocale.EN_CA, Platform.IOS, Version.of(7, 5, 0), StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d2")),
-            Context(AppLocale.ES_US, Platform.ANDROID, Version.of(8, 0, 0), StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d3")),
+            Context(
+                AppLocale.EN_US,
+                Platform.IOS,
+                Version.of(1, 0, 0),
+                StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d1")
+            ),
+            Context(
+                AppLocale.EN_CA,
+                Platform.IOS,
+                Version.of(7, 5, 0),
+                StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d2")
+            ),
+            Context(
+                AppLocale.ES_US,
+                Platform.ANDROID,
+                Version.of(8, 0, 0),
+                StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d3")
+            ),
             Context(AppLocale.HI_IN, Platform.WEB, Version.of(6, 0, 0), StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d4"))
         )
 
@@ -440,7 +469,7 @@ class SnapshotSerializerTest {
                 assertEquals(
                     value,
                     deserializedValues[key],
-                    "Flag ${(key as Feature<*, *>).key} should match for context: $context"
+                    "Flag ${key.key} should match for context: $context"
                 )
             }
         }

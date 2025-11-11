@@ -28,14 +28,14 @@ import kotlin.math.roundToInt
  *
  */
 
-sealed class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context>(
+class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context> internal constructor(
     /**
      * The default value returned when no targeting rules match or the flag is inactive.
      */
     val defaultValue: T,
-    val isActive: Boolean,
     val feature: Feature<S, T, C>,
     internal val values: List<ConditionalValue<S, T, C>>,
+    val isActive: Boolean = true,
     val salt: String = "v1"
 ) {
 
@@ -78,17 +78,14 @@ sealed class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context>(
             defaultValue: T,
             salt: String = "v1",
             isActive: Boolean = true,
-        ): FlagDefinition<S, T, C> = FlagDefinitionImpl(
-            feature,
-            bounds,
-            defaultValue,
-            salt,
-            isActive,
+        ): FlagDefinition<S, T, C> = FlagDefinition(
+            defaultValue = defaultValue,
+            feature = feature,
+            values = bounds,
+            isActive = isActive,
+            salt = salt,
         )
     }
-
-//    private companion object {
-//    }
 
     /**
      * Determines if the current context belongs to an ineligible segment.
@@ -126,21 +123,4 @@ sealed class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context>(
                     ).toLong() and 0xFFFF_FFFFL
                 ).mod(10_000L).toInt()
         }
-}
-
-/**
- * Internal implementation of a complete flag definition with its evaluation rules and default value.
- *
- * @param S The EncodableValue type wrapping the actual value.
- * @param T The actual value type.
- * @param C The type of the context that this flag evaluates against.
- */
-internal class FlagDefinitionImpl<S : EncodableValue<T>, T : Any, C : Context>(
-    feature: Feature<S, T, C>,
-    values: List<ConditionalValue<S, T, C>>,
-    defaultValue: T,
-    salt: String = "v1",
-    isActive: Boolean = true,
-) : FlagDefinition<S, T, C>(defaultValue, isActive, feature, values, salt) {
-
 }

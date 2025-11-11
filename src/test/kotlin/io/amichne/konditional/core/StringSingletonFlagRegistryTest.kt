@@ -15,10 +15,15 @@ class StringSingletonFlagRegistryTest {
     // Define a simple enum for string-valued flags
     enum class StringFeatureFlags(
         override val key: String,
-    ) : Feature<String, Context> by Feature(key) {
+    ) : Feature<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, Context> {
         API_ENDPOINT("api_endpoint"),
         THEME("theme"),
-        WELCOME_MESSAGE("welcome_message"),
+        WELCOME_MESSAGE("welcome_message");
+
+        override val registry: FlagRegistry = FlagRegistry
+        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, Context>) {
+            registry.update(definition)
+        }
     }
 
     private fun ctx(

@@ -33,8 +33,13 @@ class ConditionalExtensibilityTest {
 
     enum class ApiConfigFlags(
         override val key: String,
-    ) : Feature<ApiConfig, Context> by Feature(key) {
+    ) : Feature.OfJsonObject<ApiConfig, Context> {
         PRIMARY_API("primary_api");
+
+        override val registry: FlagRegistry = FlagRegistry
+        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.JsonObjectEncodeable<ApiConfig>, ApiConfig, Context>) {
+            registry.update(definition)
+        }
     }
 
     // Custom value type: Theme configuration
@@ -47,22 +52,37 @@ class ConditionalExtensibilityTest {
 
     enum class ThemeFlags(
         override val key: String,
-    ) : Feature<ThemeConfig, Context> by Feature(key) {
-        APP_THEME("app_theme"),
+    ) : Feature.OfJsonObject<ThemeConfig, Context> {
+        APP_THEME("app_theme");
+
+        override val registry: FlagRegistry = FlagRegistry
+        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.JsonObjectEncodeable<ThemeConfig>, ThemeConfig, Context>) {
+            registry.update(definition)
+        }
     }
 
     // Custom value type: List of strings
     enum class ListFlags(
         override val key: String,
-    ) : Feature<List<String>, Context> by Feature(key) {
+    ) : Feature.OfJsonObject<List<String>, Context> {
         ENABLED_FEATURES("enabled_features");
+
+        override val registry: FlagRegistry = FlagRegistry
+        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.JsonObjectEncodeable<List<String>>, List<String>, Context>) {
+            registry.update(definition)
+        }
     }
 
     // Custom value type: Integer
     enum class IntFlags(
         override val key: String,
-    ) : Feature<Int, Context> by Feature(key) {
+    ) : Feature<io.amichne.konditional.core.types.EncodableValue.IntEncodeable, Int, Context> {
         MAX_CONNECTIONS("max_connections");
+
+        override val registry: FlagRegistry = FlagRegistry
+        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.IntEncodeable, Int, Context>) {
+            registry.update(definition)
+        }
     }
 
     // Custom value type: Enum
@@ -72,15 +92,25 @@ class ConditionalExtensibilityTest {
 
     enum class LogConfigFlags(
         override val key: String,
-    ) : Feature<LogLevel, Context> by Feature(key) {
-        APP_LOG_LEVEL("app_log_level"),
+    ) : Feature.OfCustom<LogLevel, String, Context> {
+        APP_LOG_LEVEL("app_log_level");
+
+        override val registry: FlagRegistry = FlagRegistry
+        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.CustomEncodeable<LogLevel, String>, LogLevel, Context>) {
+            registry.update(definition)
+        }
     }
 
     // Custom value type: Map
     enum class MapFlags(
         override val key: String,
-    ) : Feature<Map<String, String>, Context> by Feature(key) {
-        FEATURE_TOGGLES("feature_toggles"),
+    ) : Feature.OfJsonObject<Map<String, String>, Context> {
+        FEATURE_TOGGLES("feature_toggles");
+
+        override val registry: FlagRegistry = FlagRegistry
+        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.JsonObjectEncodeable<Map<String, String>>, Map<String, String>, Context>) {
+            registry.update(definition)
+        }
     }
 
     @Test
@@ -323,7 +353,12 @@ class ConditionalExtensibilityTest {
             val level3: ApiConfig,
         )
 
-        data class DeepFlag(override val key: String = "nested_config") : Feature<DeepConfig, Context> by Feature<S, C>(key)
+        data class DeepFlag(override val key: String = "nested_config") : Feature.OfJsonObject<DeepConfig, Context> {
+            override val registry: FlagRegistry = FlagRegistry
+            override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.JsonObjectEncodeable<DeepConfig>, DeepConfig, Context>) {
+                registry.update(definition)
+            }
+        }
 
         val nestedConfigFlag = DeepFlag()
 
