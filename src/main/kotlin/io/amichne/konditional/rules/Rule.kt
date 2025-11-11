@@ -74,7 +74,7 @@ data class Rule<C : Context> internal constructor(
         note: String? = null,
         locales: Set<AppLocale> = emptySet(),
         platforms: Set<Platform> = emptySet(),
-        versionRange: VersionRange = Unbounded,
+        versionRange: VersionRange = Unbounded(),
         extension: Evaluable<C> = object : Evaluable<C>() {},
     ) : this(rollout, note, BaseEvaluable(locales, platforms, versionRange), extension)
 

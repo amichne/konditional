@@ -18,6 +18,7 @@ import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
+import io.amichne.konditional.rules.versions.Unbounded
 
 /**
  * Registry for mapping flag keys to their Feature instances.
@@ -231,7 +232,7 @@ private fun <C : Context> SerializableRule.toRule(): Rule<C> {
         note = note,
         locales = locales.map { AppLocale.valueOf(it) }.toSet(),
         platforms = platforms.map { Platform.valueOf(it) }.toSet(),
-        versionRange = versionRange ?: io.amichne.konditional.rules.versions.Unbounded
+        versionRange = (versionRange ?: Unbounded())
     )
 }
 

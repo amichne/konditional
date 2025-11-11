@@ -43,7 +43,7 @@ internal class VersionRangeAdapter(moshi: Moshi) {
 
         // Parse at the boundary: construct typed domain objects with validation
         return when (type) {
-            "UNBOUNDED" -> Unbounded
+            "UNBOUNDED" -> Unbounded()
             "MIN_BOUND" -> min?.let { LeftBound(it) }
                 ?: throw JsonDataException("MIN_BOUND requires 'min' field")
             "MAX_BOUND" -> max?.let { RightBound(it) }

@@ -78,7 +78,7 @@ class EvaluationResultTest {
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
         testRegistry.update(KonfigPatch(
             flags = mapOf(TestFlags.REGISTERED_FLAG to TestFlags.REGISTERED_FLAG.flag {

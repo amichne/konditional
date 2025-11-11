@@ -68,7 +68,7 @@ class FlagEntryTypeSafetyTest {
             rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val flag = FlagDefinition(
@@ -88,7 +88,7 @@ class FlagEntryTypeSafetyTest {
             rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context> = FlagDefinition(
@@ -109,21 +109,21 @@ class FlagEntryTypeSafetyTest {
             rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val stringRule = Rule<Context>(
             rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val intRule = Rule<Context>(
             rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context> = FlagDefinition(
@@ -165,14 +165,14 @@ class FlagEntryTypeSafetyTest {
             rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val stringRule = Rule<Context>(
             rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val boolFlag = FlagDefinition(
@@ -309,7 +309,7 @@ class FlagEntryTypeSafetyTest {
             rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val flag: FlagDefinition<EncodableValue.IntEncodeable, Int, CustomContext> = FlagDefinition(

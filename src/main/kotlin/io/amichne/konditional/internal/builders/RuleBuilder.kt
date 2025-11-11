@@ -1,6 +1,5 @@
 package io.amichne.konditional.internal.builders
 
-import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
@@ -8,6 +7,7 @@ import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.core.FeatureFlagDsl
 import io.amichne.konditional.core.RuleScope
 import io.amichne.konditional.core.VersionRangeScope
+import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.versions.Unbounded
@@ -29,7 +29,7 @@ import io.amichne.konditional.rules.versions.VersionRange
 internal data class RuleBuilder<C : Context>(
     private var extension: Evaluable<C> = object : Evaluable<C>() {},
     private var note: String? = null,
-    private var range: VersionRange = Unbounded,
+    private var range: VersionRange = Unbounded(),
     private val platforms: LinkedHashSet<Platform> = linkedSetOf(),
     override var rollout: Rollout? = null,
     private val locales: LinkedHashSet<AppLocale> = linkedSetOf()

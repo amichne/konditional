@@ -53,7 +53,7 @@ class ConditionEvaluationTest {
             rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val condition = FlagDefinition(
@@ -75,21 +75,21 @@ class ConditionEvaluationTest {
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val platformRule = Rule<Context>(
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val platformAndLocaleRule = Rule<Context>(
             rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val condition = FlagDefinition(
@@ -127,7 +127,7 @@ class ConditionEvaluationTest {
             rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
             note = "rule-a",
         )
 
@@ -135,7 +135,7 @@ class ConditionEvaluationTest {
             rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
             note = "rule-b",
         )
 
@@ -168,7 +168,7 @@ class ConditionEvaluationTest {
             rollout = Rollout.of(0.0),
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val condition = FlagDefinition(
@@ -191,7 +191,7 @@ class ConditionEvaluationTest {
             rollout = Rollout.of(100.0),
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val condition = FlagDefinition(
@@ -214,7 +214,7 @@ class ConditionEvaluationTest {
             rollout = Rollout.of(50.0),
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val condition = FlagDefinition(
@@ -242,7 +242,7 @@ class ConditionEvaluationTest {
             rollout = Rollout.of(50.0),
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val condition = FlagDefinition(
@@ -266,7 +266,7 @@ class ConditionEvaluationTest {
             rollout = Rollout.of(50.0),
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val conditionV1 = FlagDefinition(
@@ -306,14 +306,14 @@ class ConditionEvaluationTest {
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val androidOnlyRule = Rule<Context>(
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.ANDROID),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val condition = FlagDefinition(
@@ -341,14 +341,14 @@ class ConditionEvaluationTest {
             rollout = Rollout.of(1.0), // Very low ramp-up
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val lowSpecificityHighRampup = Rule<Context>(
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val condition = FlagDefinition(
@@ -389,7 +389,7 @@ class ConditionEvaluationTest {
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
             note = "general",
         )
 
@@ -397,7 +397,7 @@ class ConditionEvaluationTest {
             rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
             note = "specific",
         )
 
