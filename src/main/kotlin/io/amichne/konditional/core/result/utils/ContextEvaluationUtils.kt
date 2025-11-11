@@ -34,7 +34,7 @@ import io.amichne.konditional.core.result.FlagNotFoundException
  * ```
  *
  * @param key the conditional key identifying the flag
- * @param registry the flag registry to lookup the flag (defaults to SingletonFlagRegistry)
+ * @param registry the flag registry to look up the flag (defaults to SingletonFlagRegistry)
  * @return typed result that never throws
  */
 fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> C.evaluateSafe(

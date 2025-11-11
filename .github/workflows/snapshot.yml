@@ -67,7 +67,7 @@ jobs:
         run: |
           VERSION="${{ github.event.inputs.snapshot-version }}"
           cat << EOF >> $GITHUB_STEP_SUMMARY
-          ## Snapshot Published ✅
+          ## Snapshot Published 
 
           **Version:** \`$VERSION\`
 

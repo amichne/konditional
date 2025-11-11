@@ -33,7 +33,7 @@ fi
 
 # Check for uncommitted changes
 if ! git diff-index --quiet HEAD --; then
-    echo "❌ ERROR: You have uncommitted changes"
+    echo "ERROR: You have uncommitted changes"
     echo ""
     git status --short
     echo ""
@@ -49,7 +49,7 @@ echo ""
 
 # Check if version is a snapshot
 if [[ "$CURRENT_VERSION" == *-SNAPSHOT ]]; then
-    echo "❌ ERROR: Cannot release a SNAPSHOT version"
+    echo "ERROR: Cannot release a SNAPSHOT version"
     echo ""
     echo "Run: ./scripts/bump-version.sh patch"
     echo "Then run this script again."
@@ -61,7 +61,7 @@ echo "Running tests..."
 ./gradlew test --no-daemon --console=plain
 
 echo ""
-echo "✅ Tests passed!"
+echo " Tests passed!"
 echo ""
 
 # Check for changelog entries
@@ -91,9 +91,9 @@ cat << EOF
   Release Checklist for v$CURRENT_VERSION
 ═══════════════════════════════════════════════════════════════
 
-✅ Tests passing
-✅ No uncommitted changes
-✅ Version set to: $CURRENT_VERSION
+ Tests passing
+ No uncommitted changes
+ Version set to: $CURRENT_VERSION
 
 Next steps:
 
@@ -127,14 +127,14 @@ echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     git tag -a "v$CURRENT_VERSION" -m "Release v$CURRENT_VERSION"
     echo ""
-    echo "✅ Tag created: v$CURRENT_VERSION"
+    echo " Tag created: v$CURRENT_VERSION"
     echo ""
     read -p "Push tag to origin? (y/N) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         git push origin "v$CURRENT_VERSION"
         echo ""
-        echo "✅ Tag pushed! Release workflow started."
+        echo " Tag pushed! Release workflow started."
         echo ""
         echo "Monitor at: https://github.com/amichne/konditional/actions"
     fi

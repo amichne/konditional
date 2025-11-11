@@ -51,25 +51,36 @@ markdown_extensions:
 
   - pymdownx.superfences:
       # make exceptions to highlighting of code:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:mermaid2.fence_mermaid_custom
+#      custom_fences:
+#        - name: mermaid
+#          class: mermaid
+#          format: !!python/name:mermaid2.fence_mermaid_custom
 
 
 plugins:
   - search
-  - mermaid2
+#  - mermaid2
 
 
 nav:
-  - Overview: index.md
-  - Architecture: Architecture.md
-  - Builder DSL: Builders.md
-  - Context System: Context.md
-  - Rules Engine: Rules.md
-  - Flag Registry: Flags.md
-  - Serialization: Serialization.md
+  - Home: index.md
+  - Getting Started:
+    - Why Type Safety?: WhyTypeSafety.md
+    - Quick Start: QuickStart.md
+    - Migration Guide: Migration.md
+    - Error Prevention: ErrorPrevention.md
+  - Core Concepts:
+    - Type System: CoreConcepts.md
+    - Evaluation: Evaluation.md
+    - Registry & Concurrency: RegistryAndConcurrency.md
+  - Guides:
+    - Builder DSL: Builders.md
+    - Context System: Context.md
+    - Rules Engine: Rules.md
+    - Flag Registry: Flags.md
+    - Serialization: Serialization.md
+  - Reference:
+    - Architecture (Legacy): Architecture.md
 
 extra:
   social:
