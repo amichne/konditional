@@ -34,7 +34,7 @@ import io.amichne.konditional.rules.versions.VersionRange
 internal data class BaseEvaluable<C : Context>(
     val locales: Set<AppLocale> = emptySet(),
     val platforms: Set<Platform> = emptySet(),
-    val versionRange: VersionRange = Unbounded,
+    val versionRange: VersionRange = Unbounded(),
 ) : Evaluable<C>() {
     /**
      * Determines if the context matches all specified constraints.

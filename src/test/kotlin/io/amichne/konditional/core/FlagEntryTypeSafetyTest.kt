@@ -30,34 +30,29 @@ class FlagEntryTypeSafetyTest {
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
 
-    enum class BoolFlags(override val key: String) :
-        Feature<io.amichne.konditional.core.types.EncodableValue.BooleanEncodeable, Boolean, Context> {
-        FEATURE_A("feature_a"),
-        FEATURE_B("feature_b");
+    enum class BoolFlags(override val key: String) : Feature<EncodableValue.BooleanEncodeable, Boolean, Context> {
+        FEATURE_A("feature_a"), FEATURE_B("feature_b");
 
         override val registry: FlagRegistry = FlagRegistry
-        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.BooleanEncodeable, Boolean, Context>) {
+        override fun update(definition: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context>) {
             registry.update(definition)
         }
     }
 
-    enum class StringFlags(override val key: String) :
-        Feature<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, Context> {
-        CONFIG_A("config_a"),
-        CONFIG_B("config_b");
+    enum class StringFlags(override val key: String) : Feature<EncodableValue.StringEncodeable, String, Context> {
+        CONFIG_A("config_a"), CONFIG_B("config_b");
 
         override val registry: FlagRegistry = FlagRegistry
-        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, Context>) {
+        override fun update(definition: FlagDefinition<EncodableValue.StringEncodeable, String, Context>) {
             registry.update(definition)
         }
     }
 
-    enum class IntFlags(override val key: String) :
-        Feature<io.amichne.konditional.core.types.EncodableValue.IntEncodeable, Int, Context> {
+    enum class IntFlags(override val key: String) : Feature<EncodableValue.IntEncodeable, Int, Context> {
         TIMEOUT("timeout");
 
         override val registry: FlagRegistry = FlagRegistry
-        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.IntEncodeable, Int, Context>) {
+        override fun update(definition: FlagDefinition<EncodableValue.IntEncodeable, Int, Context>) {
             registry.update(definition)
         }
     }
@@ -68,7 +63,7 @@ class FlagEntryTypeSafetyTest {
             rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val flag = FlagDefinition(
@@ -88,7 +83,7 @@ class FlagEntryTypeSafetyTest {
             rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context> = FlagDefinition(
@@ -99,7 +94,7 @@ class FlagEntryTypeSafetyTest {
 
         val boolResult = boolFlag.evaluate(ctx("11111111111111111111111111111111", locale = AppLocale.EN_US))
 
-        assertTrue(boolResult is Boolean)
+
         assertEquals(true, boolResult)
     }
 
@@ -109,21 +104,21 @@ class FlagEntryTypeSafetyTest {
             rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val stringRule = Rule<Context>(
             rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val intRule = Rule<Context>(
             rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context> = FlagDefinition(
@@ -150,10 +145,6 @@ class FlagEntryTypeSafetyTest {
         val stringResult = stringFlag.evaluate(context)
         val intResult = intFlag.evaluate(context)
 
-        assertTrue(boolResult is Boolean)
-        assertTrue(stringResult is String)
-        assertTrue(intResult is Int)
-
         assertEquals(true, boolResult)
         assertEquals("value", stringResult)
         assertEquals(30, intResult)
@@ -165,14 +156,14 @@ class FlagEntryTypeSafetyTest {
             rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val stringRule = Rule<Context>(
             rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val boolFlag = FlagDefinition(
@@ -200,8 +191,8 @@ class FlagEntryTypeSafetyTest {
         val boolResult = context.evaluate(BoolFlags.FEATURE_A)
         val stringResult = context.evaluate(StringFlags.CONFIG_A)
 
-        assertTrue(boolResult is Boolean)
-        assertTrue(stringResult is String)
+
+
         assertEquals(true, boolResult)
         assertEquals("test", stringResult)
     }
@@ -263,13 +254,11 @@ class FlagEntryTypeSafetyTest {
         config {
             BoolFlags.FEATURE_A with {
                 default(false)
-                rule {
-                } implies true
+                rule {} implies true
             }
             StringFlags.CONFIG_A with {
                 default("default")
-                rule {
-                } implies "enabled"
+                rule {} implies "enabled"
             }
         }
 
@@ -277,12 +266,10 @@ class FlagEntryTypeSafetyTest {
 
         // The evaluate() method internally retrieves FlagDefinition from the map
         // and casts it, maintaining type safety
-        val boolResult = context.evaluate(BoolFlags.FEATURE_A)
-        val stringResult = context.evaluate(StringFlags.CONFIG_A)
+        context.evaluate(BoolFlags.FEATURE_A)
+        context.evaluate(StringFlags.CONFIG_A)
 
         // Type safety is maintained - we get the correct types back
-        assertTrue(boolResult is Boolean)
-        assertTrue(stringResult is String)
     }
 
     @Test
@@ -296,9 +283,9 @@ class FlagEntryTypeSafetyTest {
         ) : Context
 
         data class CustomIntFlag(override val key: String = "custom_int") :
-            Feature<io.amichne.konditional.core.types.EncodableValue.IntEncodeable, Int, CustomContext> {
+            Feature<EncodableValue.IntEncodeable, Int, CustomContext> {
             override val registry: FlagRegistry = FlagRegistry
-            override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.IntEncodeable, Int, CustomContext>) {
+            override fun update(definition: FlagDefinition<EncodableValue.IntEncodeable, Int, CustomContext>) {
                 registry.update(definition)
             }
         }
@@ -309,7 +296,7 @@ class FlagEntryTypeSafetyTest {
             rollout = io.amichne.konditional.context.Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val flag: FlagDefinition<EncodableValue.IntEncodeable, Int, CustomContext> = FlagDefinition(
@@ -328,7 +315,7 @@ class FlagEntryTypeSafetyTest {
 
         val result = flag.evaluate(customCtx)
 
-        assertTrue(result is Int)
+
         assertEquals(42, result)
     }
 

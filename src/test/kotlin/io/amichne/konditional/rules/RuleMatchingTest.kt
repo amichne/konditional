@@ -31,7 +31,7 @@ class RuleMatchingTest {
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         assertTrue(rule.matches(ctx()))
@@ -46,7 +46,7 @@ class RuleMatchingTest {
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         assertTrue(rule.matches(ctx(platform = Platform.IOS)))
@@ -60,7 +60,7 @@ class RuleMatchingTest {
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS, Platform.ANDROID),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         assertTrue(rule.matches(ctx(platform = Platform.IOS)))
@@ -74,7 +74,7 @@ class RuleMatchingTest {
             rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         assertTrue(rule.matches(ctx(locale = AppLocale.EN_US)))
@@ -88,7 +88,7 @@ class RuleMatchingTest {
             rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US, AppLocale.EN_CA),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         assertTrue(rule.matches(ctx(locale = AppLocale.EN_US)))
@@ -146,21 +146,21 @@ class RuleMatchingTest {
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val rulePlatform = Rule<Context>(
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val ruleLocale = Rule<Context>(
             rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val ruleVersion = Rule<Context>(
@@ -174,7 +174,7 @@ class RuleMatchingTest {
             rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val ruleAll = Rule<Context>(
@@ -207,28 +207,28 @@ class RuleMatchingTest {
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val ruleTwoPlatforms = Rule<Context>(
             rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS, Platform.ANDROID),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val ruleOneLocale = Rule<Context>(
             rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         val ruleTwoLocales = Rule<Context>(
             rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US, AppLocale.EN_CA),
             platforms = emptySet(),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
         )
 
         // Having multiple values in a dimension doesn't increase specificity - only presence matters
@@ -246,7 +246,7 @@ class RuleMatchingTest {
             rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
             note = "Rule A",
         )
 
@@ -254,7 +254,7 @@ class RuleMatchingTest {
             rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
             platforms = setOf(Platform.IOS),
-            versionRange = Unbounded,
+            versionRange = Unbounded(),
             note = "Rule B",
         )
 

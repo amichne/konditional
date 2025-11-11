@@ -1,6 +1,7 @@
 package io.amichne.konditional.serialization
 
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.result.ParseError
@@ -9,6 +10,11 @@ import io.amichne.konditional.internal.serialization.adapters.FlagValueAdapter
 import io.amichne.konditional.internal.serialization.adapters.VersionRangeAdapter
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
 import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
+import io.amichne.konditional.rules.versions.FullyBound
+import io.amichne.konditional.rules.versions.LeftBound
+import io.amichne.konditional.rules.versions.RightBound
+import io.amichne.konditional.rules.versions.Unbounded
+import io.amichne.konditional.rules.versions.VersionRange
 
 /**
  * Main serialization interface for Konfig configurations.
@@ -127,10 +133,19 @@ class SnapshotSerializer(
             // This ensures our custom adapters take precedence over reflection-based serialization
             return Moshi.Builder()
                 .add(FlagValueAdapter.FACTORY)
-                .add(VersionRangeAdapter(
-                    // Create a minimal Moshi for VersionRangeAdapter to use for Version
-                    Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
-                ))
+                .add(
+                    VersionRangeAdapter(
+                        // Create a minimal Moshi for VersionRangeAdapter to use for Version
+                        Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
+                    )
+                )
+                .add(
+                    PolymorphicJsonAdapterFactory.of(VersionRange::class.java, "type")
+                        .withSubtype(FullyBound::class.java, VersionRange.Type.MIN_AND_MAX_BOUND.name)
+                        .withSubtype(Unbounded::class.java, VersionRange.Type.UNBOUNDED.name)
+                        .withSubtype(LeftBound::class.java, VersionRange.Type.MIN_BOUND.name)
+                        .withSubtype(RightBound::class.java, VersionRange.Type.MAX_BOUND.name)
+                )
                 .add(KotlinJsonAdapterFactory())
                 .build()
         }
@@ -138,6 +153,7 @@ class SnapshotSerializer(
         /**
          * Default singleton instance for convenience.
          */
-        val default = SnapshotSerializer()
+        val default: SnapshotSerializer
+            get() = SnapshotSerializer()
     }
 }
