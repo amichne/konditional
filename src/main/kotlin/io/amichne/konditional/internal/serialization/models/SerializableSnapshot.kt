@@ -1,4 +1,4 @@
-package io.amichne.konditional.serialization.models
+package io.amichne.konditional.internal.serialization.models
 
 import com.squareup.moshi.JsonClass
 
@@ -7,6 +7,6 @@ import com.squareup.moshi.JsonClass
  * This is the top-level object that gets serialized to/from JSON.
  */
 @JsonClass(generateAdapter = true)
-data class SerializableSnapshot(
+internal data class SerializableSnapshot(
     val flags: List<SerializableFlag>,
 )

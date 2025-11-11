@@ -1,7 +1,6 @@
 package io.amichne.konditional.core
 
-import io.amichne.konditional.builders.FlagBuilder
-import io.amichne.konditional.builders.FlagBuilder.Companion.flag
+import io.amichne.konditional.core.flag
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
@@ -86,10 +85,10 @@ class EvaluationResultTest {
 
 
         TestFlags.REGISTERED_FLAG.update(
-            FlagBuilder(TestFlags.REGISTERED_FLAG).apply {
-                rule implies "test-value"
+            TestFlags.REGISTERED_FLAG.flag {
+                rule { } implies "test-value"
                 default("default-value")
-            }.build()
+            }
         )
     }
 

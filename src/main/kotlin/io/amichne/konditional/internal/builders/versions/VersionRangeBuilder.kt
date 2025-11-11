@@ -1,4 +1,4 @@
-package io.amichne.konditional.builders.versions
+package io.amichne.konditional.internal.builders.versions
 
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.rules.versions.FullyBound
@@ -8,7 +8,7 @@ import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
 @ConsistentCopyVisibility
-data class VersionRangeBuilder internal constructor(
+data class VersionRangeBuilder @PublishedApi internal constructor(
     private var leftBound: Version = Version.default,
     private var rightBound: Version = Version.default
 ) {

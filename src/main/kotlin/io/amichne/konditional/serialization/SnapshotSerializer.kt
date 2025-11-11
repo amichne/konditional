@@ -6,10 +6,10 @@ import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.instance.KonfigPatch
-import io.amichne.konditional.serialization.adapters.FlagValueAdapter
-import io.amichne.konditional.serialization.adapters.VersionRangeAdapter
-import io.amichne.konditional.serialization.models.SerializablePatch
-import io.amichne.konditional.serialization.models.SerializableSnapshot
+import io.amichne.konditional.internal.serialization.adapters.FlagValueAdapter
+import io.amichne.konditional.internal.serialization.adapters.VersionRangeAdapter
+import io.amichne.konditional.internal.serialization.models.SerializablePatch
+import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
 
 /**
  * Main serialization interface for Konfig configurations.
@@ -58,7 +58,7 @@ class SnapshotSerializer(
      * @param json The JSON string to deserialize
      * @return ParseResult containing either the deserialized patch or an error
      */
-    fun deserializePatch(json: String): ParseResult<SerializablePatch> {
+    internal fun deserializePatch(json: String): ParseResult<SerializablePatch> {
         return try {
             val patch = patchAdapter.fromJson(json)
                 ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parse patch JSON: null result"))
@@ -75,7 +75,7 @@ class SnapshotSerializer(
      * @param patch The patch to apply
      * @return ParseResult containing either the new Konfig with the patch applied or an error
      */
-    fun applyPatch(currentKonfig: Konfig, patch: SerializablePatch): ParseResult<Konfig> {
+    internal fun applyPatch(currentKonfig: Konfig, patch: SerializablePatch): ParseResult<Konfig> {
         return try {
             // Convert current snapshot to serializable form
             val currentSerializable = currentKonfig.toSerializable()

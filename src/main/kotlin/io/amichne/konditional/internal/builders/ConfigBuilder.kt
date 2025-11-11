@@ -16,7 +16,7 @@
  *
  * @constructor Private constructor to enforce usage of the DSL entry point via the `config` function.
  */
-package io.amichne.konditional.builders
+package io.amichne.konditional.internal.builders
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Conditional
@@ -26,7 +26,7 @@ import io.amichne.konditional.core.FlagRegistry
 import io.amichne.konditional.core.instance.Konfig
 
 @FeatureFlagDsl
-class ConfigBuilder private constructor() {
+class ConfigBuilder @PublishedApi internal constructor() {
     private val flags = LinkedHashMap<Conditional<*, *>, FeatureFlag<*, *>>()
 
     /**
@@ -43,7 +43,8 @@ class ConfigBuilder private constructor() {
         this@ConfigBuilder.flags[this] = FlagBuilder(this).apply<FlagBuilder<S, C>>(build).build()
     }
 
-    fun build(): Konfig = Konfig(flags.toMap())
+    @PublishedApi
+    internal fun build(): Konfig = Konfig(flags.toMap())
 
     @FeatureFlagDsl
     companion object {

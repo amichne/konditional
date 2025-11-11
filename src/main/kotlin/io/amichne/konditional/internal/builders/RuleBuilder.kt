@@ -1,6 +1,6 @@
-package io.amichne.konditional.builders
+package io.amichne.konditional.internal.builders
 
-import io.amichne.konditional.builders.versions.VersionRangeBuilder
+import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
@@ -18,7 +18,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  */
 @ConsistentCopyVisibility
 @FeatureFlagDsl
-data class RuleBuilder<C : Context> internal constructor(
+data class RuleBuilder<C : Context> @PublishedApi internal constructor(
     private var extension: Evaluable<C> = object : Evaluable<C>() {},
     private var note: String? = null,
     private var range: VersionRange = Unbounded,

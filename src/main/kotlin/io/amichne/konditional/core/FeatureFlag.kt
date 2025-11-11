@@ -27,7 +27,7 @@ sealed class FeatureFlag<S : Any, C : Context>(
     val defaultValue: S,
     val isActive: Boolean,
     val conditional: Conditional<S, C>,
-    val values: List<ConditionalValue<S, C>>,
+    internal val values: List<ConditionalValue<S, C>>,
     val salt: String = "v1"
 ) {
 

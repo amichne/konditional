@@ -1,4 +1,4 @@
-package io.amichne.konditional.serialization.models
+package io.amichne.konditional.internal.serialization.models
 
 import com.squareup.moshi.JsonClass
 
@@ -7,7 +7,7 @@ import com.squareup.moshi.JsonClass
  * Only includes flags that should be updated or added.
  */
 @JsonClass(generateAdapter = true)
-data class SerializablePatch(
+internal data class SerializablePatch(
     val flags: List<SerializableFlag>,
     val removeKeys: List<String> = emptyList(),
 )

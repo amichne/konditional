@@ -14,11 +14,11 @@ import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
-import io.amichne.konditional.serialization.models.FlagValue
-import io.amichne.konditional.serialization.models.SerializableFlag
-import io.amichne.konditional.serialization.models.SerializablePatch
-import io.amichne.konditional.serialization.models.SerializableRule
-import io.amichne.konditional.serialization.models.SerializableSnapshot
+import io.amichne.konditional.internal.serialization.models.FlagValue
+import io.amichne.konditional.internal.serialization.models.SerializableFlag
+import io.amichne.konditional.internal.serialization.models.SerializablePatch
+import io.amichne.konditional.internal.serialization.models.SerializableRule
+import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
 
 /**
  * Registry for mapping flag keys to their Conditional instances.
@@ -110,7 +110,7 @@ object ConditionalRegistry {
 /**
  * Converts a Konfig to a SerializableSnapshot.
  */
-fun Konfig.toSerializable(): SerializableSnapshot {
+internal fun Konfig.toSerializable(): SerializableSnapshot {
     val serializableFlags = flags.map { (conditional, flag) ->
         (flag as FlagDefinition<*, *>).toSerializable(conditional.key)
     }
@@ -148,7 +148,7 @@ private fun <S : Any, C : Context> ConditionalValue<S, C>.toSerializable(): Seri
  * Converts a SerializableSnapshot to a Konfig.
  * Returns ParseResult for type-safe error handling.
  */
-fun SerializableSnapshot.toSnapshot(): ParseResult<Konfig> {
+internal fun SerializableSnapshot.toSnapshot(): ParseResult<Konfig> {
     return try {
         val flagResults = flags.map { it.toFlagPair() }
 
@@ -239,7 +239,7 @@ private fun <C : Context> SerializableRule.toRule(): Rule<C> {
 /**
  * Converts a KonfigPatch to a SerializablePatch.
  */
-fun KonfigPatch.toSerializable(): SerializablePatch {
+internal fun KonfigPatch.toSerializable(): SerializablePatch {
     val serializableFlags = flags.map { (conditional, flag) ->
         (flag as FlagDefinition<*, *>).toSerializable(conditional.key)
     }
@@ -251,7 +251,7 @@ fun KonfigPatch.toSerializable(): SerializablePatch {
  * Converts a SerializablePatch to a KonfigPatch.
  * Returns ParseResult for type-safe error handling.
  */
-fun SerializablePatch.toPatch(): ParseResult<KonfigPatch> {
+internal fun SerializablePatch.toPatch(): ParseResult<KonfigPatch> {
     return try {
         val flagResults = flags.map { it.toFlagPair() }
 

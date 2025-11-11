@@ -1,6 +1,6 @@
 package io.amichne.konditional.context
 
-import io.amichne.konditional.builders.ConfigBuilder.Companion.config
+import io.amichne.konditional.core.config
 import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fakes.FakeRegistry

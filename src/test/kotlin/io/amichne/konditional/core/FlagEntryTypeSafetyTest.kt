@@ -1,6 +1,6 @@
 package io.amichne.konditional.core
 
-import io.amichne.konditional.builders.ConfigBuilder.Companion.config
+import io.amichne.konditional.core.config
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform

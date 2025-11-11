@@ -1,11 +1,11 @@
-package io.amichne.konditional.serialization.adapters
+package io.amichne.konditional.internal.serialization.adapters
 
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
-import io.amichne.konditional.serialization.models.FlagValue
+import io.amichne.konditional.internal.serialization.models.FlagValue
 import java.lang.reflect.Type
 
 /**
@@ -14,7 +14,7 @@ import java.lang.reflect.Type
  * Serializes FlagValue subclasses with their type discriminator for type-safe deserialization.
  * Parse-don't-validate: Deserialization constructs typed domain objects at the boundary.
  */
-class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
+internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
 
     override fun toJson(writer: JsonWriter, value: FlagValue<*>?) {
         if (value == null) {

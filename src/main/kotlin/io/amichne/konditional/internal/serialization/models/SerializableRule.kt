@@ -1,4 +1,4 @@
-package io.amichne.konditional.serialization.models
+package io.amichne.konditional.internal.serialization.models
 
 import com.squareup.moshi.JsonClass
 import io.amichne.konditional.rules.versions.VersionRange
@@ -10,7 +10,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * and uses VersionRange directly (serialized via custom Moshi adapter).
  */
 @JsonClass(generateAdapter = true)
-data class SerializableRule(
+internal data class SerializableRule(
     val value: FlagValue<*>,
     val rampUp: Double = 100.0,
     val note: String? = null,

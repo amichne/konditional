@@ -1,4 +1,4 @@
-package io.amichne.konditional.builders
+package io.amichne.konditional.internal.builders
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Conditional
@@ -18,7 +18,7 @@ import io.amichne.konditional.rules.Rule
  */
 @ConsistentCopyVisibility
 @FeatureFlagDsl
-data class FlagBuilder<S : Any, C : Context> internal constructor(
+data class FlagBuilder<S : Any, C : Context> @PublishedApi internal constructor(
     private val conditional: Conditional<S, C>,
 ) {
     private val conditionalValues = mutableListOf<ConditionalValue<S, C>>()
@@ -66,7 +66,8 @@ data class FlagBuilder<S : Any, C : Context> internal constructor(
      *
      * @param build A lambda with receiver of type [RuleBuilder<C>] used to build the rule.
      */
-    fun rule(build: RuleBuilder<C>.() -> Unit): Rule<C> = RuleBuilder<C>().apply(build).build()
+    @PublishedApi
+    internal fun rule(build: RuleBuilder<C>.() -> Unit): Rule<C> = RuleBuilder<C>().apply(build).build()
 
     @FeatureFlagDsl
     infix fun Rule<C>.implies(value: S) {
@@ -79,6 +80,7 @@ data class FlagBuilder<S : Any, C : Context> internal constructor(
      *
      * @return A `FlagDefinition` instance constructed based on the current configuration.
      */
+    @PublishedApi
     internal fun build(): FeatureFlag<S, C> {
         requireNotNull(defaultValue) { "Default value must be set" }
         return FeatureFlag(

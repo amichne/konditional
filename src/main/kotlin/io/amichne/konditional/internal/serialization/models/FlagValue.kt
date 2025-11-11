@@ -1,4 +1,4 @@
-package io.amichne.konditional.serialization.models
+package io.amichne.konditional.internal.serialization.models
 
 import com.squareup.moshi.JsonClass
 import io.amichne.konditional.core.ValueType
@@ -13,7 +13,7 @@ import io.amichne.konditional.core.ValueType
  *
  * Each subclass encodes both the value AND its type in a type-safe manner.
  */
-sealed class FlagValue<out T : Any> {
+internal sealed class FlagValue<out T : Any> {
     abstract val value: T
 
     /**

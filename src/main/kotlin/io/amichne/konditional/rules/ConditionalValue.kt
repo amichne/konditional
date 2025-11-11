@@ -10,7 +10,7 @@ import io.amichne.konditional.context.Context
  * @param C The context type used for rule evaluation
  */
 @ConsistentCopyVisibility
-data class ConditionalValue<S : Any, C : Context> private constructor(val rule: Rule<C>, val value: S) {
+internal data class ConditionalValue<S : Any, C : Context> private constructor(val rule: Rule<C>, val value: S) {
     companion object {
         internal fun <S : Any, C : Context> Rule<C>.targetedBy(value: S): ConditionalValue<S, C> = ConditionalValue(this, value)
     }

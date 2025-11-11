@@ -66,7 +66,7 @@ import io.amichne.konditional.rules.versions.VersionRange
 data class Rule<C : Context> internal constructor(
     val rollout: Rollout = Rollout.of(100.0),
     val note: String? = null,
-    val baseEvaluable: BaseEvaluable<C> = BaseEvaluable(),
+    internal val baseEvaluable: BaseEvaluable<C> = BaseEvaluable(),
     val extension: Evaluable<C> = object : Evaluable<C>() {},
 ) : Evaluable<C>() {
     internal constructor(

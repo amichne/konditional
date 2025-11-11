@@ -1,4 +1,4 @@
-package io.amichne.konditional.serialization.models
+package io.amichne.konditional.internal.serialization.models
 
 import com.squareup.moshi.JsonClass
 
@@ -9,7 +9,7 @@ import com.squareup.moshi.JsonClass
  * Now uses type-safe FlagValue instead of type-erased Any values.
  */
 @JsonClass(generateAdapter = true)
-data class SerializableFlag(
+internal data class SerializableFlag(
     val key: String,
     val defaultValue: FlagValue<*>,
     val salt: String = "v1",
