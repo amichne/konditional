@@ -5,6 +5,7 @@ package io.amichne.konditional.core
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.core.id.HexId
+import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.ConditionalValue
 import java.security.MessageDigest
 import kotlin.math.roundToInt
@@ -12,16 +13,17 @@ import kotlin.math.roundToInt
 /**
  * Internal implementation of a complete flag definition with its evaluation rules and default value.
  *
- * @param S The type of the value this flag produces. It must be a non-nullable type.
+ * @param S The EncodableValue type wrapping the actual value.
+ * @param T The actual value type.
  * @param C The type of the context that this flag evaluates against.
  */
-internal class FlagDefinitionImpl<S : Any, C : Context>(
-    conditional: Feature<S, C>,
-    values: List<ConditionalValue<S, C>>,
-    defaultValue: S,
+internal class FlagDefinitionImpl<S : EncodableValue<T>, T : Any, C : Context>(
+    conditional: Conditional<S, T, C>,
+    values: List<ConditionalValue<S, T, C>>,
+    defaultValue: T,
     salt: String = "v1",
     isActive: Boolean = true,
-) : FlagDefinition<S, C>(defaultValue, isActive, conditional, values, salt) {
+) : FeatureFlag<S, T, C>(defaultValue, isActive, conditional, values, salt) {
     val key: String
         get() = conditional.key
 
@@ -29,18 +31,18 @@ internal class FlagDefinitionImpl<S : Any, C : Context>(
         val shaDigestSpi: MessageDigest = requireNotNull(MessageDigest.getInstance("SHA-256"))
     }
 
-    private val conditionalValues: List<ConditionalValue<S, C>> =
-        values.sortedWith(compareByDescending<ConditionalValue<S, C>> { it.rule.specificity() }.thenBy {
+    private val conditionalValues: List<ConditionalValue<S, T, C>> =
+        values.sortedWith(compareByDescending<ConditionalValue<S, T, C>> { it.rule.specificity() }.thenBy {
             it.rule.note ?: ""
         })
 
     /**
-     * Evaluates the current flag based on the provided context and returns a result of type `S`.
+     * Evaluates the current flag based on the provided context and returns a result of type `T`.
      *
      * @param context The context in which the flag evaluation is performed.
-     * @return The result of the evaluation, of type `S`. If the flag is not active, returns the defaultValue.
+     * @return The result of the evaluation, of type `T`. If the flag is not active, returns the defaultValue.
      */
-    override fun evaluate(context: C): S {
+    override fun evaluate(context: C): T {
         if (!isActive) return defaultValue
 
         return conditionalValues.firstOrNull {

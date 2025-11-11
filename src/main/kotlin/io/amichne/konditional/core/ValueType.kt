@@ -9,4 +9,5 @@ enum class ValueType {
     INT,
     LONG,
     DOUBLE,
+    JSON,
 }
