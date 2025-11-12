@@ -47,14 +47,11 @@ import kotlin.to
 class EvaluationResultTest {
 
     enum class TestFlags(override val key: String) :
-        Feature<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, Context> {
+        StringFeature<Context, FeatureModule.Core> {
         REGISTERED_FLAG("registered_flag"),
         UNREGISTERED_FLAG("unregistered_flag");
 
-        override val registry: ModuleRegistry = ModuleRegistry
-        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, Context>) {
-            registry.update(definition)
-        }
+        override val module: FeatureModule.Core = FeatureModule.Core
     }
 
     // Mock Outcome type for testing adaptation

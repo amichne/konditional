@@ -35,6 +35,8 @@ class ConditionalExtensibilityTest {
         override val key: String,
     ) : Feature.OfJsonObject<ApiConfig, Context, FeatureModule.Core> {
         PRIMARY_API("primary_api");
+
+        override val module: FeatureModule.Core = FeatureModule.Core
     }
 
     // Custom value type: Theme configuration
@@ -49,6 +51,8 @@ class ConditionalExtensibilityTest {
         override val key: String,
     ) : Feature.OfJsonObject<ThemeConfig, Context, FeatureModule.Core> {
         APP_THEME("app_theme");
+
+        override val module: FeatureModule.Core = FeatureModule.Core
     }
 
     // Custom value type: List of strings
@@ -57,6 +61,7 @@ class ConditionalExtensibilityTest {
     ) : Feature.OfJsonObject<List<String>, Context, FeatureModule.Core> {
         ENABLED_FEATURES("enabled_features");
 
+        override val module: FeatureModule.Core = FeatureModule.Core
     }
 
     // Custom value type: Integer
@@ -64,6 +69,8 @@ class ConditionalExtensibilityTest {
         override val key: String,
     ) : IntFeature<Context, FeatureModule.Core> {
         MAX_CONNECTIONS("max_connections");
+
+        override val module: FeatureModule.Core = FeatureModule.Core
     }
 
     // Custom value type: Enum
@@ -76,6 +83,7 @@ class ConditionalExtensibilityTest {
     ) : Feature.OfCustom<LogLevel, String, Context, FeatureModule.Core> {
         APP_LOG_LEVEL("app_log_level");
 
+        override val module: FeatureModule.Core = FeatureModule.Core
     }
 
     // Custom value type: Map
@@ -83,6 +91,8 @@ class ConditionalExtensibilityTest {
         override val key: String,
     ) : Feature.OfJsonObject<Map<String, String>, Context, FeatureModule.Core> {
         FEATURE_TOGGLES("feature_toggles");
+
+        override val module: FeatureModule.Core = FeatureModule.Core
     }
 
     @Test
@@ -325,7 +335,9 @@ class ConditionalExtensibilityTest {
             val level3: ApiConfig,
         )
 
-        data class DeepFlag(override val key: String = "nested_config") : Feature.OfJsonObject<DeepConfig, Context, FeatureModule.Core>
+        data class DeepFlag(override val key: String = "nested_config") : Feature.OfJsonObject<DeepConfig, Context, FeatureModule.Core> {
+            override val module: FeatureModule.Core = FeatureModule.Core
+        }
 
         val nestedConfigFlag = DeepFlag()
 

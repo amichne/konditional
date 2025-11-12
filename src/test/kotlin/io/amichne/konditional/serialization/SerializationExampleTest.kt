@@ -10,6 +10,7 @@ import io.amichne.konditional.core.buildSnapshot
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.internal.SingletonModuleRegistry
 import io.amichne.konditional.core.result.getOrThrow
+import io.amichne.konditional.example.PaymentFeatures
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -32,7 +33,7 @@ class SerializationExampleTest {
     @BeforeEach
     fun setUp() {
         // Register feature flags before deserialization
-        FeatureRegistry.registerEnum<io.amichne.konditional.example.SearchFeatures>()
+        FeatureRegistry.registerEnum<io.amichne.konditional.example.PaymentFeatures>()
     }
 
     @AfterEach
@@ -47,7 +48,7 @@ class SerializationExampleTest {
         // Step 1: Create a configuration using the ConfigBuilder
         println("Step 1: Creating configuration...")
         val snapshot = buildSnapshot {
-            SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
+            PaymentFeatures.ENABLE_COMPACT_CARDS with {
                 default(false)
                 rule {
                     rollout = Rollout.of(50.0)
@@ -56,7 +57,7 @@ class SerializationExampleTest {
                 }.implies(true)
             }
 
-            SampleFeatureEnum.USE_LIGHTWEIGHT_HOME with {
+            PaymentFeatures.USE_LIGHTWEIGHT_HOME with {
                 default(false)
                 rule {
                     platforms(Platform.WEB)
@@ -87,12 +88,12 @@ class SerializationExampleTest {
         )
 
         SingletonModuleRegistry.load(snapshot)
-        val originalCompactCards = testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
-        val originalLightweightHome = testContext.evaluate(SampleFeatureEnum.USE_LIGHTWEIGHT_HOME)
+        val originalCompactCards = testContext.evaluate(PaymentFeatures.ENABLE_COMPACT_CARDS)
+        val originalLightweightHome = testContext.evaluate(PaymentFeatures.USE_LIGHTWEIGHT_HOME)
 
         SingletonModuleRegistry.load(deserialized)
-        val deserializedCompactCards = testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
-        val deserializedLightweightHome = testContext.evaluate(SampleFeatureEnum.USE_LIGHTWEIGHT_HOME)
+        val deserializedCompactCards = testContext.evaluate(PaymentFeatures.ENABLE_COMPACT_CARDS)
+        val deserializedLightweightHome = testContext.evaluate(PaymentFeatures.USE_LIGHTWEIGHT_HOME)
 
         assertEquals(originalCompactCards, deserializedCompactCards)
         assertEquals(originalLightweightHome, deserializedLightweightHome)
@@ -129,9 +130,9 @@ class SerializationExampleTest {
         println("Step 6: Verifying patched configuration...")
         SingletonModuleRegistry.load(patched)
 
-        println("  - ENABLE_COMPACT_CARDS: ${testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)}")
+        println("  - ENABLE_COMPACT_CARDS: ${testContext.evaluate(PaymentFeatures.ENABLE_COMPACT_CARDS)}")
 
-        assertEquals(true, testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS))
+        assertEquals(true, testContext.evaluate(PaymentFeatures.ENABLE_COMPACT_CARDS))
 
         println("\n=== Example Complete ===")
     }
@@ -142,7 +143,7 @@ class SerializationExampleTest {
 
         // Create a configuration
         val snapshot = buildSnapshot {
-            SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
+            PaymentFeatures.ENABLE_COMPACT_CARDS with {
                 default(true)
             }
         }
@@ -174,7 +175,7 @@ class SerializationExampleTest {
             Version.of(1, 0, 0),
             StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
-        val value = context.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
+        val value = context.evaluate(PaymentFeatures.ENABLE_COMPACT_CARDS)
         assertEquals(true, value)
         println("✓ Configuration loaded and evaluated successfully: $value")
 
