@@ -4,29 +4,47 @@ import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.internal.builders.ConfigBuilder
 
 /**
- * Configures feature flags using the DSL and loads them into the registry.
+ * Configures feature flags for this featureModule using the DSL.
  *
- * This is the primary entry point for defining feature flag configurations.
- * The configuration is immediately loaded into the provided registry (or the default singleton).
+ * This is the primary entry point for defining featureModule-specific feature flag configurations.
+ * The configuration is immediately loaded into the featureModule's isolated registry.
  *
- * Example:
+ * ## FeatureModule-Scoped Configuration
+ *
+ * Each featureModule configures only its own flags, ensuring complete isolation:
+ *
  * ```kotlin
- * config {
- *     MyFlags.FEATURE_A with {
+ * // Configure Team A's flags
+ * FeatureModule.Team.TeamA.config {
+ *     TeamAFeatures.FEATURE_X with {
  *         default(value = true)
  *         rule {
  *             platforms(Platform.IOS)
  *         } implies false
  *     }
  * }
+ *
+ * // Configure Team B's flags (completely isolated)
+ * FeatureModule.Team.TeamB.config {
+ *     TeamBFeatures.FEATURE_Y with {
+ *         default(value = false)
+ *     }
+ * }
  * ```
  *
- * @param registry The FlagRegistry to load the configuration into. Defaults to the singleton registry.
+ * ## Benefits
+ *
+ * - **Zero shared files**: Teams never touch the same configuration code
+ * - **Compile-time isolation**: Cannot accidentally configure another featureModule's flags
+ * - **Runtime isolation**: Each featureModule has its own registry instance
+ * - **Independent deployment**: FeatureModule configs can be deployed separately
+ *
+ * @param M The featureModule type (inferred from receiver)
  * @param fn The DSL block for configuring flags. The receiver is [ConfigScope], a sealed interface
  *           that defines the public DSL API.
  */
 @FeatureFlagDsl
-inline fun config(registry: FlagRegistry = FlagRegistry, fn: ConfigScope.() -> Unit) {
+inline fun <M : FeatureModule> M.config(registry: ModuleRegistry = this.registry, fn: ConfigScope.() -> Unit) {
     ConfigBuilder().apply(fn).build().let { registry.load(it) }
 }
 

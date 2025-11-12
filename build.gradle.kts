@@ -2,6 +2,7 @@ import java.time.Duration
 
 plugins {
     kotlin("jvm") version "2.2.0"
+    `java-test-fixtures`
     `maven-publish`
     signing
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"

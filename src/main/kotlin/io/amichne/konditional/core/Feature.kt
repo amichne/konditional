@@ -7,6 +7,9 @@ import io.amichne.konditional.core.types.EncodableValue
  * Represents a feature flag that can be used to enable or disable specific functionality
  * in an application based on a given state or condition.
  *
+ * Features are **type-bound** to their [FeatureModule], providing compile-time isolation between teams.
+ * Each feature can only be defined and configured within its designated featureModule.
+ *
  * Type S is constrained to EncodableValue subtypes at compile time, ensuring type safety.
  *
  * Supports:
@@ -14,15 +17,33 @@ import io.amichne.konditional.core.types.EncodableValue
  * - JSON Objects: Complex data classes and structures
  * - Custom Wrappers: Extension types that wrap primitives (DateTime, UUID, etc.)
  *
+ * ## Example
+ *
+ * ```kotlin
+ * enum class PaymentFeatures(override val key: String)
+ *     : Feature<BoolEncodeable, Boolean, Context, FeatureModule.Team.Payments> {
+ *     APPLE_PAY("apple_pay");
+ *     override val featureModule = FeatureModule.Team.Payments
+ * }
+ * ```
+ *
  * @param S The EncodableValue type wrapping the actual value.
  * @param T The actual value type.
  * @param C The type of the context that the feature flag evaluates against.
+ * @param M The featureModule this feature belongs to (compile-time binding).
  */
-interface Feature<S : EncodableValue<T>, T : Any, C : Context> {
-    val registry: FlagRegistry
+sealed interface Feature<S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule> {
     val key: String
+    val module: M
+        get() = this.module
+    val registry: ModuleRegistry get() = module.registry
 
-    fun update(definition: FlagDefinition<S, T, C>): Unit = registry.update(definition)
+    class Impl<S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule>(
+        override val key: String,
+        override val module: M,
+    ) : Feature<S, T, C, M>
+
+    fun update(definition: FlagDefinition<S, T, C, M>): Unit = registry.update(definition)
 
     // ========== Primitive Type Interfaces ==========
 
@@ -36,9 +57,9 @@ interface Feature<S : EncodableValue<T>, T : Any, C : Context> {
      *
      * @param T The domain object type (data class, complex structure, etc.)
      * @param C The context type
+     * @param M The featureModule this feature belongs to
      */
-    interface OfJsonObject<T : Any, C : Context> :
-        Feature<EncodableValue.JsonObjectEncodeable<T>, T, C>
+    interface OfJsonObject<T : Any, C : Context, M : FeatureModule> : Feature<EncodableValue.JsonObjectEncodeable<T>, T, C, M>
 
     // ========== Custom Wrapper Type Interface ==========
 
@@ -50,9 +71,10 @@ interface Feature<S : EncodableValue<T>, T : Any, C : Context> {
      * @param T The wrapper type (DateTime, UUID, etc.)
      * @param P The primitive type it encodes to (String, Int, Double, Boolean)
      * @param C The context type
+     * @param M The featureModule this feature belongs to
      */
-    interface OfCustom<T : Any, P : Any, C : Context> :
-        Feature<EncodableValue.CustomEncodeable<T, P>, T, C>
+    interface OfCustom<T : Any, P : Any, C : Context, M : FeatureModule> :
+        Feature<EncodableValue.CustomEncodeable<T, P>, T, C, M>
 
     companion object {
         // ========== Basic Feature Factory ==========
@@ -62,17 +84,14 @@ interface Feature<S : EncodableValue<T>, T : Any, C : Context> {
          *
          * Example:
          * ```kotlin
-         * val ENABLED: Feature<EncodableValue.BooleanEncodeable, Boolean, Context> =
-         *     Feature("enabled")
+         * val ENABLED: Feature<EncodableValue.BooleanEncodeable, Boolean, Context, FeatureModule.Team.MyTeam> =
+         *     Feature("enabled", FeatureModule.Team.MyTeam)
          * ```
          */
-        operator fun <S : EncodableValue<T>, T : Any, C : Context> invoke(
+        operator fun <S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule> invoke(
             key: String,
-            registry: FlagRegistry = FlagRegistry,
-        ): Feature<S, T, C> = object : Feature<S, T, C> {
-            override val registry: FlagRegistry = registry
-            override val key: String = key
-        }
+            module: M,
+        ): Feature<S, T, C, M> = Impl(key, module)
 
         // ========== JSON Object Feature Factory ==========
 
@@ -85,19 +104,21 @@ interface Feature<S : EncodableValue<T>, T : Any, C : Context> {
          * ```kotlin
          * data class ApiConfig(val url: String, val timeout: Int)
          *
-         * val API_CONFIG: Feature.OfJsonObject<ApiConfig, Context> =
-         *     Feature.jsonObject("api_config")
+         * val API_CONFIG: Feature.OfJsonObject<ApiConfig, Context, FeatureModule.Team.MyTeam> =
+         *     Feature.jsonObject("api_config", FeatureModule.Team.MyTeam)
          * ```
          *
          * @param T The domain object type
          * @param C The context type
+         * @param M The featureModule this feature belongs to
          */
-        fun <T : Any, C : Context> jsonObject(
+
+        fun <T : Any, C : Context, M : FeatureModule> jsonObject(
             key: String,
-            registry: FlagRegistry = FlagRegistry,
-        ): OfJsonObject<T, C> = object : OfJsonObject<T, C> {
-            override val registry: FlagRegistry = registry
+            module: M,
+        ): OfJsonObject<T, C, M> = object : OfJsonObject<T, C, M> {
             override val key: String = key
+            override val module: M = module
         }
 
         // ========== Custom Wrapper Feature Factory ==========
@@ -111,27 +132,32 @@ interface Feature<S : EncodableValue<T>, T : Any, C : Context> {
          * ```kotlin
          * data class DateTime(val iso8601: String)
          *
-         * val CREATED_AT: Feature.OfCustom<DateTime, String, Context> =
-         *     Feature.custom("created_at")
+         * val CREATED_AT: Feature.OfCustom<DateTime, String, Context, FeatureModule.Team.MyTeam> =
+         *     Feature.custom("created_at", FeatureModule.Team.MyTeam)
          * ```
          *
          * @param T The wrapper type (DateTime, UUID, etc.)
          * @param P The primitive type it encodes to
          * @param C The context type
+         * @param M The featureModule this feature belongs to
          */
-        fun <T : Any, P : Any, C : Context> custom(
+
+        fun <T : Any, P : Any, C : Context, M : FeatureModule> custom(
             key: String,
-            registry: FlagRegistry = FlagRegistry,
-        ): OfCustom<T, P, C> = object : OfCustom<T, P, C> {
-            override val registry: FlagRegistry = registry
-            override val key: String = key
+            module: M,
+        ): OfCustom<T, P, C, M> = object : OfCustom<T, P, C, M> {
+            override val key: String
+                get() = key
+
+            override val module: M
+                get() = super.module
+
         }
 
         // ========== Internal ==========
 
-        internal inline fun <reified R, S : EncodableValue<T>, T : Any, C : Context> parse(
+        internal inline fun <reified R, S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule> parse(
             key: String,
-        ): R where R : Feature<S, T, C>, R : Enum<R> =
-            enumValues<R>().first { it.key == key }
+        ): R where R : Feature<S, T, C, M>, R : Enum<R> = enumValues<R>().first { it.key == key }
     }
 }

@@ -21,15 +21,26 @@ import io.amichne.konditional.rules.versions.VersionRange
  * Provides methods to serialize/deserialize snapshots to/from JSON, and apply patch updates.
  *
  * Now returns ParseResult for all deserialization operations, following parse-don't-validate principles.
+ *
+ * This serializer is storage-agnostic - it only handles JSON conversion, allowing callers
+ * to choose their storage solution (files, databases, cloud storage, etc.).
+ *
+ * For featureModule-scoped serialization, use [ModuleSnapshotSerializer] instead.
  */
 class SnapshotSerializer(
     moshi: Moshi = defaultMoshi()
-) {
+) : Serializer<Konfig> {
     private val snapshotAdapter = moshi.adapter(SerializableSnapshot::class.java).indent("  ")
     private val patchAdapter = moshi.adapter(SerializablePatch::class.java).indent("  ")
 
     /**
-     * Serializes a SingletonFlagRegistry.Konfig to a JSON string.
+     * The Konfig being serialized.
+     * Must be set before calling toJson().
+     */
+    private var currentKonfig: Konfig? = null
+
+    /**
+     * Serializes a Konfig to a JSON string.
      *
      * @param konfig The konfig to serialize
      * @return JSON string representation
@@ -37,6 +48,43 @@ class SnapshotSerializer(
     fun serialize(konfig: Konfig): String {
         val serializable = konfig.toSerializable()
         return snapshotAdapter.toJson(serializable)
+    }
+
+    /**
+     * Serializes the current Konfig to JSON.
+     *
+     * This method implements the [Serializer] interface.
+     * Note: You must use [withKonfig] or call [serialize] directly to provide the Konfig.
+     *
+     * Example:
+     * ```kotlin
+     * val serializer = SnapshotSerializer().withKonfig(myKonfig)
+     * val json = serializer.toJson()
+     * ```
+     *
+     * @return JSON string representation
+     * @throws IllegalStateException if no Konfig has been set
+     */
+    override fun toJson(): String {
+        val konfig = currentKonfig
+            ?: throw IllegalStateException("No Konfig set. Use withKonfig() or call serialize() directly.")
+        return serialize(konfig)
+    }
+
+    /**
+     * Sets the Konfig to be serialized and returns this serializer.
+     *
+     * This enables fluent usage with the [Serializer] interface:
+     * ```kotlin
+     * val json = SnapshotSerializer().withKonfig(myKonfig).toJson()
+     * ```
+     *
+     * @param konfig The konfig to serialize
+     * @return This serializer instance
+     */
+    fun withKonfig(konfig: Konfig): SnapshotSerializer {
+        this.currentKonfig = konfig
+        return this
     }
 
     /**
@@ -56,6 +104,28 @@ class SnapshotSerializer(
             ParseResult.Failure(ParseError.InvalidJson(e.message ?: "Unknown JSON parsing error"))
         }
     }
+
+    /**
+     * Deserializes JSON into a Konfig.
+     *
+     * This method implements the [Serializer] interface.
+     * Returns ParseResult for type-safe error handling following parse-don't-validate principles.
+     *
+     * Note: Unlike [ModuleSnapshotSerializer.fromJson], this does NOT automatically load
+     * the configuration into any registry. Callers must explicitly load the result if desired:
+     *
+     * ```kotlin
+     * val result = serializer.fromJson(json)
+     * when (result) {
+     *     is ParseResult.Success -> registry.load(result.value)
+     *     is ParseResult.Failure -> handleError(result.error)
+     * }
+     * ```
+     *
+     * @param json JSON string to deserialize
+     * @return ParseResult containing either the deserialized Konfig or a structured error
+     */
+    override fun fromJson(json: String): ParseResult<Konfig> = deserialize(json)
 
     /**
      * Deserializes a JSON string to a SerializablePatch.

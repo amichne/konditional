@@ -1,17 +1,18 @@
 # Feature Registration
 
-Features are the entry point for defining and evaluating feature flags in Konditional. This document covers feature creation patterns, registration strategies, and organizational best practices.
+Features are the entry point for defining and evaluating feature flags in Konditional. This document covers feature
+creation patterns, registration strategies, and organizational best practices.
 
 ## Feature Interface
 
 The `Feature` interface represents a configurable flag with a specific value type and evaluation context:
 
 ```kotlin
-interface Feature<S : EncodableValue<T>, T : Any, C : Context> {
+interface Feature<S : EncodableValue<T>, T : Any, C : Context, M : Module> {
     val registry: FlagRegistry
     val key: String
 
-    fun update(definition: FlagDefinition<S, T, C>)
+    fun update(definition: FlagDefinition<S, T, C, M>)
 }
 ```
 
@@ -69,6 +70,7 @@ enum class AppFeatures(
 ```
 
 Benefits:
+
 - IDE auto-completion
 - Compile-time existence checking
 - Easy to find all features
@@ -233,19 +235,23 @@ object ComplexFeatures {
 
 config {
     ComplexFeatures.API_CONFIG with {
-        default(ApiConfig(
-            baseUrl = "https://api.prod.example.com",
-            timeout = 30,
-            retryEnabled = true
-        ))
+        default(
+            ApiConfig(
+                baseUrl = "https://api.prod.example.com",
+                timeout = 30,
+                retryEnabled = true
+            )
+        )
 
         rule {
             platforms(Platform.WEB)
-        }.implies(ApiConfig(
-            baseUrl = "https://api.staging.example.com",
-            timeout = 60,
-            retryEnabled = false
-        ))
+        }.implies(
+            ApiConfig(
+                baseUrl = "https://api.staging.example.com",
+                timeout = 60,
+                retryEnabled = false
+            )
+        )
     }
 }
 ```
@@ -302,7 +308,7 @@ enum class EnterpriseFeatures(
 
 // These features can only be evaluated with EnterpriseContext
 val enterpriseContext: EnterpriseContext = // ...
-enterpriseContext.evaluateSafe(EnterpriseFeatures.ADVANCED_ANALYTICS)  // OK
+    enterpriseContext.evaluateSafe(EnterpriseFeatures.ADVANCED_ANALYTICS)  // OK
 
 val basicContext: Context = // ...
 // basicContext.evaluateSafe(EnterpriseFeatures.ADVANCED_ANALYTICS)  // Compile error!

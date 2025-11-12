@@ -1,14 +1,16 @@
 package io.amichne.konditional.example
 
-import io.amichne.konditional.builders.ConfigBuilder.Companion.config
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.context.evaluate
-import io.amichne.konditional.core.Conditional
+import io.amichne.konditional.core.Feature
+import io.amichne.konditional.core.FeatureModule
+import io.amichne.konditional.core.config
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.core.types.asCustomDouble
+import io.amichne.konditional.core.types.asCustomString
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 
@@ -17,6 +19,7 @@ import java.time.format.DateTimeFormatter
  * These are wrapper types that encode to JSON primitives (DateTime, UUID, etc.)
  */
 object ExtensionTypesExample {
+    val module = FeatureModule.Team.Search
 
     // ========== Custom Wrapper Type: DateTime ==========
 
@@ -37,18 +40,14 @@ object ExtensionTypesExample {
      * Conditional for DateTime values.
      * Uses CustomEncodeable with String encoding.
      */
-    val CREATED_AT: Conditional.OfCustom<DateTime, String, Context> =
-        Conditional.custom("created_at")
+    val CREATED_AT: Feature.OfCustom<DateTime, String, Context, FeatureModule.Team.Search> =
+        Feature.custom("created_at", module)
 
     /**
      * Helper to create EncodableValue from DateTime.
      */
     fun DateTime.toEncodable(): EncodableValue.CustomEncodeable<DateTime, String> =
-        EncodableValue.CustomEncodeable.asString(
-            value = this,
-            encoder = { it.toIso8601() },
-            decoder = { DateTime.parse(it) }
-        )
+        asCustomString().encoder { it.toIso8601() }.decoder { DateTime.parse(it) }
 
     // ========== Custom Wrapper Type: UUID ==========
 
@@ -64,15 +63,11 @@ object ExtensionTypesExample {
         }
     }
 
-    val REQUEST_ID: Conditional.OfCustom<UUID, String, Context> =
-        Conditional.custom("request_id")
-
     fun UUID.toEncodable(): EncodableValue.CustomEncodeable<UUID, String> =
-        EncodableValue.CustomEncodeable.asString(
-            value = this,
-            encoder = { it.value },
-            decoder = { UUID(it) }
-        )
+        asCustomString().encoder { it.value }.decoder { UUID(it) }
+
+    val REQUEST_ID: Feature.OfCustom<UUID, String, Context, FeatureModule.Team.Search> =
+        Feature.custom("request_id", module)
 
     // ========== Custom Wrapper Type: Duration (milliseconds) ==========
 
@@ -85,21 +80,17 @@ object ExtensionTypesExample {
         }
     }
 
-    val TIMEOUT: Conditional.OfCustom<Duration, Double, Context> =
-        Conditional.custom("timeout")
+    val TIMEOUT: Feature.OfCustom<Duration, Double, Context, FeatureModule.Team.Messaging> =
+        Feature.custom("timeout", FeatureModule.Team.Messaging)
 
     fun Duration.toEncodable(): EncodableValue.CustomEncodeable<Duration, Double> =
-        EncodableValue.CustomEncodeable.asDouble(
-            value = this,
-            encoder = { it.millis.toDouble() },
-            decoder = { Duration(it.toLong()) }
-        )
+        asCustomDouble().encoder { it.millis.toDouble() }.decoder { Duration(it.toLong()) }
 
     // ========== Usage Example ==========
 
     fun demonstrateUsage() {
         // Configure flags with extension types
-        config {
+        FeatureModule.Core.config {
             CREATED_AT with {
                 default(DateTime.now().toEncodable().value)
 
@@ -122,7 +113,7 @@ object ExtensionTypesExample {
         }
 
         // Evaluate
-        val context = Context(
+        Context(
             locale = AppLocale.EN_US,
             platform = Platform.IOS,
             appVersion = Version(1, 0, 0),

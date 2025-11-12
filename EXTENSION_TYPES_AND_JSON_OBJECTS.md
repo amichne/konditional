@@ -13,7 +13,8 @@ Both features maintain compile-time type safety while enabling flexible value re
 
 ## Extension Types (Custom Wrapper Types)
 
-Extension types are wrapper types that encode to JSON primitives, providing type safety and domain semantics while remaining serializable.
+Extension types are wrapper types that encode to JSON primitives, providing type safety and domain semantics while
+remaining serializable.
 
 ### Supported Primitive Encodings
 
@@ -95,7 +96,8 @@ fun Duration.toEncodable(): EncodableValue.CustomEncodeable<Duration, Double> =
 
 ## JSON Objects (HSON-Object Type Representation)
 
-JSON objects enable complex data structures as conditional values, providing a "distinct super type of object nodes" that represent different values based on conditions.
+JSON objects enable complex data structures as conditional values, providing a "distinct super type of object nodes"
+that represent different values based on conditions.
 
 ### Use Cases
 
@@ -263,7 +265,7 @@ sealed interface EncodableValue<T : Any> {
 ### Conditional Interfaces
 
 ```kotlin
-sealed interface Conditional<S : EncodableValue<T>, T : Any, C : Context> {
+sealed interface Conditional<S : EncodableValue<T>, T : Any, C : Context, M : Module> {
     // Primitives
     interface OfBoolean<C : Context>
     interface OfString<C : Context>
@@ -346,6 +348,7 @@ val CONFIG: Conditional.OfJsonObject<Config, Context> =
 ## Examples
 
 See complete working examples:
+
 - [`ExtensionTypesExample.kt`](src/main/kotlin/io/amichne/konditional/example/ExtensionTypesExample.kt)
 - [`JsonObjectExample.kt`](src/main/kotlin/io/amichne/konditional/example/JsonObjectExample.kt)
 
@@ -359,6 +362,7 @@ See complete working examples:
 ## Future Enhancements
 
 Potential improvements:
+
 - Automatic encoder/decoder generation via KSP/annotation processing
 - First-class support for common types (Instant, UUID, Duration)
 - Schema validation for JSON objects

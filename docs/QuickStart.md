@@ -22,6 +22,7 @@ dependencies {
 ```kotlin
 import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.FeatureModule
 
 enum class Features(override val key: String) : Conditional<Boolean, Context> {
     DARK_MODE("dark_mode")
@@ -297,8 +298,7 @@ enum class SubscriptionTier {
 }
 
 // Define flag requiring custom context
-enum class PremiumFeatures(override val key: String)
-    : Conditional<Boolean, AppContext> {  // ← Requires AppContext
+enum class PremiumFeatures(override val key: String) : Conditional<Boolean, AppContext> {  // ← Requires AppContext
     DATA_EXPORT("export_enabled")
 }
 
@@ -517,6 +517,7 @@ val theme = context.evaluate(Features.THEME)
 ```
 
 **Specificity scoring:**
+
 - Platform: +1
 - Locale: +1
 - Version: +1
@@ -527,15 +528,15 @@ val theme = context.evaluate(Features.THEME)
 
 ## What Makes This Type-Safe?
 
-| Feature | String-Based | Konditional |
-|---------|--------------|-------------|
-| **Null returns** | `Boolean?` | `Boolean` (non-null) |
-| **Type errors** | Runtime `ClassCastException` | Compile error |
-| **Typos** | Silent failure | Compile error |
-| **Refactoring** | Manual search-replace | IDE symbol rename |
-| **Auto-complete** | None | Full IDE support |
-| **Context requirements** | Invisible | Explicit type parameter |
-| **Testing** | Mock frameworks | Simple data classes |
+| Feature                  | String-Based                 | Konditional             |
+|--------------------------|------------------------------|-------------------------|
+| **Null returns**         | `Boolean?`                   | `Boolean` (non-null)    |
+| **Type errors**          | Runtime `ClassCastException` | Compile error           |
+| **Typos**                | Silent failure               | Compile error           |
+| **Refactoring**          | Manual search-replace        | IDE symbol rename       |
+| **Auto-complete**        | None                         | Full IDE support        |
+| **Context requirements** | Invisible                    | Explicit type parameter |
+| **Testing**              | Mock frameworks              | Simple data classes     |
 
 ---
 

@@ -3,7 +3,6 @@ package io.amichne.konditional.core
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.instance.KonfigPatch
-import io.amichne.konditional.core.internal.SingletonFlagRegistry
 
 /**
  * Abstraction for managing feature flag configurations and evaluations.
@@ -17,9 +16,9 @@ import io.amichne.konditional.core.internal.SingletonFlagRegistry
  * Implementations of this interface can provide different backing stores,
  * particularly useful when writing tests.
  *
- * By default, [io.amichne.konditional.core.internal.SingletonFlagRegistry] is provided as a thread-safe, in-memory implementation.
+ * By default, [io.amichne.konditional.core.internal.SingletonModuleRegistry] is provided as a thread-safe, in-memory implementation.
  *
- * It is accessible via the [io.amichne.konditional.core.FlagRegistry.Companion] object.
+ * It is accessible via the [io.amichne.konditional.core.ModuleRegistry.Companion] object.
  *
  * ## Core Operations
  *
@@ -37,12 +36,12 @@ import io.amichne.konditional.core.internal.SingletonFlagRegistry
  * registry.update(patch)
  * ```
  *
- * ### Updating Individual SingletonFlagRegistry
+ * ### Updating Individual SingletonModuleRegistry
  * ```kotlin
  * registry.update(flagDefinition)
  * ```
  *
- * ### Evaluating SingletonFlagRegistry
+ * ### Evaluating SingletonModuleRegistry
  * Use the extension functions on [Context] for evaluation:
  * ```kotlin
  * val value = MY_FLAG.evaluate(context, registry)
@@ -51,14 +50,14 @@ import io.amichne.konditional.core.internal.SingletonFlagRegistry
  *
  * ## Implementations
  *
- * The primary implementation is [io.amichne.konditional.core.internal.SingletonFlagRegistry], which provides a thread-safe,
+ * The primary implementation is [io.amichne.konditional.core.internal.SingletonModuleRegistry], which provides a thread-safe,
  * singleton registry backed by [java.util.concurrent.atomic.AtomicReference].
  *
- * @see io.amichne.konditional.core.internal.SingletonFlagRegistry
+ * @see io.amichne.konditional.core.internal.SingletonModuleRegistry
  * @see Konfig
  * @see KonfigPatch
  */
-interface FlagRegistry {
+interface ModuleRegistry {
     /**
      * Loads a complete flag configuration from the provided snapshot.
      *
@@ -90,7 +89,7 @@ interface FlagRegistry {
      * @param T The actual value type
      * @param C The type of the context used for evaluation
      */
-    fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> update(definition: FlagDefinition<S, T, C>)
+    fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> update(definition: FlagDefinition<S, T, C, *>)
 
     /**
      * Retrieves the current snapshot of all flag configurations.
@@ -110,43 +109,50 @@ interface FlagRegistry {
      * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
      * @param C The type of the context used for evaluation
+     * @param M The featureModule the feature belongs to
      */
     @Suppress("UNCHECKED_CAST")
-    fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> featureFlag(key: Feature<S, T, C>): FlagDefinition<S, T, C>? =
-        konfig().flags[key] as? FlagDefinition<S, T, C>
+    fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : FeatureModule> featureFlag(
+        key: Feature<S, T, C, M>
+    ): FlagDefinition<S, T, C, M>? =
+        konfig().flags[key] as? FlagDefinition<S, T, C, M>
 
     /**
      * Retrieves all flags from the registry.
      *
      * @return Map of all [Feature] keys to their [FlagDefinition] definitions
      */
-    fun allFlags(): Map<Feature<*, *, *>, FlagDefinition<*, *, *>> =
+    fun allFlags(): Map<Feature<*, *, *, *>, FlagDefinition<*, *, *, *>> =
         konfig().flags
 
-    companion object : FlagRegistry by SingletonFlagRegistry {
+    companion object {
 
         /**
          * Creates a new in-memory registry instance.
          *
-         * This is useful for testing scenarios where you need isolated
-         * registry instances that don't interfere with each other.
+         * This is the primary way to create registry instances for modules.
+         * Each featureModule should have its own isolated registry instance.
          *
          * Example:
          * ```kotlin
+         * // FeatureModule definition
+         * data object MyTeam : FeatureModule.Team("my-team") {
+         *     override val registry = ModuleRegistry.create()
+         * }
+         *
+         * // Testing with isolated registry
          * @Test
          * fun `test feature flag`() {
-         *     val testRegistry = FlagRegistry.create()
-         *     config(testRegistry) {
-         *         MyFlags.FEATURE_A with { default(true) }
-         *     }
+         *     val testRegistry = ModuleRegistry.create()
+         *     testRegistry.load(/* config */)
          *     // Test with isolated registry
          * }
          * ```
          *
-         * @return A new [InMemoryFlagRegistry] instance
+         * @return A new [InMemoryModuleRegistry] instance
          * @since 0.0.2
          */
-        fun create(): FlagRegistry = InMemoryFlagRegistry()
+        fun create(): ModuleRegistry = InMemoryModuleRegistry()
 
         /**
          * Creates a new in-memory registry instance with an initial configuration.
@@ -155,16 +161,18 @@ interface FlagRegistry {
          *
          * Example:
          * ```kotlin
-         * val testRegistry = FlagRegistry.create(buildSnapshot {
-         *     MyFlags.FEATURE_A with { default(true) }
-         * })
+         * data object MyTeam : FeatureModule.Team("my-team") {
+         *     override val registry = ModuleRegistry.create(buildSnapshot {
+         *         MyFlags.FEATURE_A with { default(true) }
+         *     })
+         * }
          * ```
          *
          * @param initialConfig The initial [Konfig] to load into the registry
-         * @return A new [InMemoryFlagRegistry] instance with the initial configuration loaded
+         * @return A new [InMemoryModuleRegistry] instance with the initial configuration loaded
          * @since 0.0.2
          */
-        fun create(initialConfig: Konfig): FlagRegistry = InMemoryFlagRegistry().apply {
+        fun create(initialConfig: Konfig): ModuleRegistry = InMemoryModuleRegistry().apply {
             load(initialConfig)
         }
     }

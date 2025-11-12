@@ -19,13 +19,12 @@ import kotlin.test.assertTrue
  */
 class ConditionEvaluationTest {
 
-    enum class TestFlags(override val key: String) : Feature<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, Context> {
+    enum class TestFlags(override val key: String) :
+        StringFeature<Context, FeatureModule.Core> {
         TEST_FLAG("test_flag");
 
-        override val registry: FlagRegistry = FlagRegistry
-        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, Context>) {
-            registry.update(definition)
-        }
+        override val module: FeatureModule.Core
+            get() = FeatureModule.Core
     }
 
     private fun ctx(

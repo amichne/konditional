@@ -10,9 +10,10 @@ import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.buildSnapshot
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Konfig
-import io.amichne.konditional.core.internal.SingletonFlagRegistry
+import io.amichne.konditional.core.internal.SingletonModuleRegistry
 import io.amichne.konditional.core.result.getOrThrow
-import io.amichne.konditional.example.SampleFeatureEnum
+import io.amichne.konditional.example.PaymentFeatures
+import io.amichne.konditional.example.SearchFeatures
 import io.amichne.konditional.internal.serialization.models.FlagValue
 import io.amichne.konditional.internal.serialization.models.SerializableFlag
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
@@ -33,7 +34,8 @@ class SnapshotSerializerTest {
     @BeforeEach
     fun setUp() {
         // Register the test enum flags
-        FeatureRegistry.registerEnum<SampleFeatureEnum>()
+        FeatureRegistry.registerEnum<PaymentFeatures>()
+        FeatureRegistry.registerEnum<SearchFeatures>()
     }
 
     @AfterEach
@@ -46,7 +48,7 @@ class SnapshotSerializerTest {
     fun `test simple flag serialization and deserialization`() {
         // Create a simple snapshot with one flag
         val snapshot = buildSnapshot {
-            SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
+            PaymentFeatures.ENABLE_COMPACT_CARDS with {
                 default(true)
             }
         }
@@ -69,11 +71,11 @@ class SnapshotSerializerTest {
             stableId = StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
 
-        SingletonFlagRegistry.load(snapshot)
-        val originalValue = testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
+        SingletonModuleRegistry.load(snapshot)
+        val originalValue = testContext.evaluate(PaymentFeatures.ENABLE_COMPACT_CARDS)
 
-        SingletonFlagRegistry.load(deserialized)
-        val deserializedValue = testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
+        SingletonModuleRegistry.load(deserialized)
+        val deserializedValue = testContext.evaluate(PaymentFeatures.ENABLE_COMPACT_CARDS)
 
         assertEquals(originalValue, deserializedValue)
     }
@@ -82,7 +84,7 @@ class SnapshotSerializerTest {
     fun `test flag with rules serialization and deserialization`() {
         // Create a snapshot with complex rules using direct Condition construction
         val condition = FlagDefinition(
-            feature = SampleFeatureEnum.FIFTY_TRUE_US_IOS,
+            feature = PaymentFeatures.FIFTY_TRUE_US_IOS,
             values = listOf(
                 Rule<Context>(
                     rollout = Rollout.of(50.0),
@@ -94,7 +96,7 @@ class SnapshotSerializerTest {
         )
 
         val konfig = Konfig(
-            mapOf(SampleFeatureEnum.FIFTY_TRUE_US_IOS to (condition))
+            mapOf(PaymentFeatures.FIFTY_TRUE_US_IOS to (condition))
         )
 
         // Serialize
@@ -133,11 +135,11 @@ class SnapshotSerializerTest {
         )
 
         contexts.forEach { context ->
-            SingletonFlagRegistry.load(konfig)
-            val originalValue = context.evaluate(SampleFeatureEnum.FIFTY_TRUE_US_IOS)
+            SingletonModuleRegistry.load(konfig)
+            val originalValue = context.evaluate(PaymentFeatures.FIFTY_TRUE_US_IOS)
 
-            SingletonFlagRegistry.load(deserialized)
-            val deserializedValue = context.evaluate(SampleFeatureEnum.FIFTY_TRUE_US_IOS)
+            SingletonModuleRegistry.load(deserialized)
+            val deserializedValue = context.evaluate(PaymentFeatures.FIFTY_TRUE_US_IOS)
 
             assertEquals(
                 originalValue,
@@ -150,8 +152,8 @@ class SnapshotSerializerTest {
     @Test
     fun `test flag with version ranges serialization`() {
         val condition = FlagDefinition(
-            feature = SampleFeatureEnum.VERSIONED,
-            bounds = listOf(
+            feature = SearchFeatures.VERSIONED,
+            values = listOf(
                 Rule<Context>(
                     rollout = Rollout.of(100.0),
                     versionRange = LeftBound(Version(7, 10, 0))
@@ -161,7 +163,7 @@ class SnapshotSerializerTest {
         )
 
         val konfig = Konfig(
-            mapOf(SampleFeatureEnum.VERSIONED to condition)
+            mapOf(SearchFeatures.VERSIONED to condition)
         )
 
         // Serialize
@@ -190,11 +192,11 @@ class SnapshotSerializerTest {
                 StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
             )
 
-            SingletonFlagRegistry.load(konfig)
-            val originalValue = context.evaluate(SampleFeatureEnum.VERSIONED)
+            SingletonModuleRegistry.load(konfig)
+            val originalValue = context.evaluate(SearchFeatures.VERSIONED)
 
-            SingletonFlagRegistry.load(deserialized)
-            val deserializedValue = context.evaluate(SampleFeatureEnum.VERSIONED)
+            SingletonModuleRegistry.load(deserialized)
+            val deserializedValue = context.evaluate(SearchFeatures.VERSIONED)
 
             assertEquals(originalValue, deserializedValue)
             assertEquals(expected, deserializedValue, "Version $version should evaluate to $expected")
@@ -204,13 +206,13 @@ class SnapshotSerializerTest {
     @Test
     fun `test multiple flags serialization`() {
         val snapshot = buildSnapshot {
-            SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
+            PaymentFeatures.ENABLE_COMPACT_CARDS with {
                 default(true)
             }
-            SampleFeatureEnum.USE_LIGHTWEIGHT_HOME with {
+            PaymentFeatures.USE_LIGHTWEIGHT_HOME with {
                 default(false)
             }
-            SampleFeatureEnum.UNIFORM50 with {
+            SearchFeatures.UNIFORM50 with {
                 default(false)
             }
         }
@@ -233,10 +235,10 @@ class SnapshotSerializerTest {
             StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
 
-        SingletonFlagRegistry.load(snapshot)
+        SingletonModuleRegistry.load(snapshot)
         val originalValues = context.evaluate()
 
-        SingletonFlagRegistry.load(deserialized)
+        SingletonModuleRegistry.load(deserialized)
         val deserializedValues = context.evaluate()
 
         assertEquals(3, originalValues.size)
@@ -252,7 +254,7 @@ class SnapshotSerializerTest {
     fun `test patch update - add new flag`() {
         // Create initial snapshot with one flag
         val initialSnapshot = buildSnapshot {
-            SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
+            PaymentFeatures.ENABLE_COMPACT_CARDS with {
                 default(true)
             }
         }
@@ -285,19 +287,19 @@ class SnapshotSerializerTest {
             StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
 
-        SingletonFlagRegistry.load(patchedSnapshot)
+        SingletonModuleRegistry.load(patchedSnapshot)
         val values = context.evaluate()
 
         assertEquals(2, values.size, "Should have 2 flags after patch")
-        assertTrue(values.containsKey(SampleFeatureEnum.ENABLE_COMPACT_CARDS))
-        assertTrue(values.containsKey(SampleFeatureEnum.USE_LIGHTWEIGHT_HOME))
+        assertTrue(values.containsKey(PaymentFeatures.ENABLE_COMPACT_CARDS))
+        assertTrue(values.containsKey(PaymentFeatures.USE_LIGHTWEIGHT_HOME))
     }
 
     @Test
     fun `test patch update - update existing flag`() {
         // Create initial snapshot
         val initialSnapshot = buildSnapshot {
-            SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
+            PaymentFeatures.ENABLE_COMPACT_CARDS with {
                 default(false)
             }
         }
@@ -323,8 +325,8 @@ class SnapshotSerializerTest {
             StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
 
-        SingletonFlagRegistry.load(patchedSnapshot)
-        val value = context.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
+        SingletonModuleRegistry.load(patchedSnapshot)
+        val value = context.evaluate(PaymentFeatures.ENABLE_COMPACT_CARDS)
 
         assertEquals(true, value, "Flag should now default to true")
     }
@@ -333,10 +335,10 @@ class SnapshotSerializerTest {
     fun `test patch update - remove flag`() {
         // Create initial snapshot with two flags
         val initialSnapshot = buildSnapshot {
-            SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
+            PaymentFeatures.ENABLE_COMPACT_CARDS with {
                 default(true)
             }
-            SampleFeatureEnum.USE_LIGHTWEIGHT_HOME with {
+            PaymentFeatures.USE_LIGHTWEIGHT_HOME with {
                 default(false)
             }
         }
@@ -358,18 +360,18 @@ class SnapshotSerializerTest {
             StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
 
-        SingletonFlagRegistry.load(patchedSnapshot)
+        SingletonModuleRegistry.load(patchedSnapshot)
         val values = context.evaluate()
 
         assertEquals(1, values.size, "Should have 1 flag after removal")
-        assertTrue(values.containsKey(SampleFeatureEnum.ENABLE_COMPACT_CARDS))
+        assertTrue(values.containsKey(PaymentFeatures.ENABLE_COMPACT_CARDS))
     }
 
     @Test
     fun `test patch from JSON`() {
         // Create initial snapshot
         val initialSnapshot = buildSnapshot {
-            SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
+            PaymentFeatures.ENABLE_COMPACT_CARDS with {
                 default(false)
             }
         }
@@ -404,8 +406,8 @@ class SnapshotSerializerTest {
             StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
 
-        SingletonFlagRegistry.load(patchedSnapshot)
-        val value = context.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
+        SingletonModuleRegistry.load(patchedSnapshot)
+        val value = context.evaluate(PaymentFeatures.ENABLE_COMPACT_CARDS)
 
         assertEquals(true, value, "Flag should be updated to true")
     }
@@ -414,13 +416,13 @@ class SnapshotSerializerTest {
     fun `test round-trip equality with complex configuration`() {
         // Create a complex snapshot with multiple flags
         val snapshot = buildSnapshot {
-            SampleFeatureEnum.ENABLE_COMPACT_CARDS with {
+            PaymentFeatures.ENABLE_COMPACT_CARDS with {
                 default(true)
             }
-            SampleFeatureEnum.USE_LIGHTWEIGHT_HOME with {
+            PaymentFeatures.USE_LIGHTWEIGHT_HOME with {
                 default(false)
             }
-            SampleFeatureEnum.VERSIONED with {
+            SearchFeatures.VERSIONED with {
                 default(false)
             }
         }
@@ -453,10 +455,10 @@ class SnapshotSerializerTest {
         )
 
         contexts.forEach { context ->
-            SingletonFlagRegistry.load(snapshot)
+            SingletonModuleRegistry.load(snapshot)
             val originalValues = context.evaluate()
 
-            SingletonFlagRegistry.load(deserialized)
+            SingletonModuleRegistry.load(deserialized)
             val deserializedValues = context.evaluate()
 
             assertEquals(

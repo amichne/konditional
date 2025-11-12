@@ -29,7 +29,7 @@ import io.amichne.konditional.rules.Rule
  * @since 0.0.2
  */
 @FeatureFlagDsl
-interface FlagScope<S : EncodableValue<T>, T : Any, C : Context> {
+interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule> {
     /**
      * Sets the default value for the flag.
      *

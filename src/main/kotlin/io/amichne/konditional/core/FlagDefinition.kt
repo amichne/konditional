@@ -28,21 +28,21 @@ import kotlin.math.roundToInt
  *
  */
 
-class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context> internal constructor(
+class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule> internal constructor(
     /**
      * The default value returned when no targeting rules match or the flag is inactive.
      */
     val defaultValue: T,
-    val feature: Feature<S, T, C>,
-    internal val values: List<ConditionalValue<S, T, C>>,
+    val feature: Feature<S, T, C, M>,
+    internal val values: List<ConditionalValue<S, T, C, M>>,
     val isActive: Boolean = true,
     val salt: String = "v1"
 ) {
 
     val key: String
         get() = feature.key
-    private val conditionalValues: List<ConditionalValue<S, T, C>> =
-        values.sortedWith(compareByDescending<ConditionalValue<S, T, C>> { it.rule.specificity() }.thenBy {
+    private val conditionalValues: List<ConditionalValue<S, T, C, M>> =
+        values.sortedWith(compareByDescending<ConditionalValue<S, T, C, M>> { it.rule.specificity() }.thenBy {
             it.rule.note ?: ""
         })
 
@@ -72,13 +72,13 @@ class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context> internal const
         /**
          * Creates a FlagDefinition instance.
          */
-        operator fun <S : EncodableValue<T>, T : Any, C : Context> invoke(
-            feature: Feature<S, T, C>,
-            bounds: List<ConditionalValue<S, T, C>>,
+        operator fun <S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule> invoke(
+            feature: Feature<S, T, C, M>,
+            bounds: List<ConditionalValue<S, T, C, M>>,
             defaultValue: T,
             salt: String = "v1",
             isActive: Boolean = true,
-        ): FlagDefinition<S, T, C> = FlagDefinition(
+        ): FlagDefinition<S, T, C, M> = FlagDefinition(
             defaultValue = defaultValue,
             feature = feature,
             values = bounds,

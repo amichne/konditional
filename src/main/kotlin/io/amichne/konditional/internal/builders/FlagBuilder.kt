@@ -5,6 +5,7 @@ import io.amichne.konditional.core.Feature
 import io.amichne.konditional.core.FeatureFlagDsl
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.FlagScope
+import io.amichne.konditional.core.FeatureModule
 import io.amichne.konditional.core.RuleScope
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.ConditionalValue
@@ -26,10 +27,10 @@ import io.amichne.konditional.rules.Rule
  */
 @FeatureFlagDsl
 @PublishedApi
-internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context>(
-    private val conditional: Feature<S, T, C>,
-) : FlagScope<S, T, C> {
-    private val conditionalValues = mutableListOf<ConditionalValue<S, T, C>>()
+internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule>(
+    private val conditional: Feature<S, T, C, M>,
+) : FlagScope<S, T, C, M> {
+    private val conditionalValues = mutableListOf<ConditionalValue<S, T, C, M>>()
     private var defaultValue: T? = null
     private var defaultCoverage: Double? = null
     private var salt: String = "v1"
@@ -69,7 +70,7 @@ internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context>(
      * @return A `FlagDefinition` instance constructed based on the current configuration.
      */
     @PublishedApi
-    internal fun build(): FlagDefinition<S, T, C> {
+    internal fun build(): FlagDefinition<S, T, C, M> {
         requireNotNull(defaultValue) { "Default value must be set" }
         return FlagDefinition(
             feature = conditional,

@@ -7,8 +7,11 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.evaluate
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Konfig
-import io.amichne.konditional.core.internal.SingletonFlagRegistry
+import io.amichne.konditional.core.internal.SingletonModuleRegistry
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.fixtures.TestBooleanFeatures
+import io.amichne.konditional.fixtures.TestIntFeatures
+import io.amichne.konditional.fixtures.TestStringFeatures
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
@@ -30,31 +33,22 @@ class FlagEntryTypeSafetyTest {
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
 
-    enum class BoolFlags(override val key: String) : Feature<EncodableValue.BooleanEncodeable, Boolean, Context> {
+    enum class BoolFlags(override val key: String) : BooleanFeature<Context, FeatureModule.Core> {
         FEATURE_A("feature_a"), FEATURE_B("feature_b");
 
-        override val registry: FlagRegistry = FlagRegistry
-        override fun update(definition: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context>) {
-            registry.update(definition)
-        }
+        override val module: FeatureModule.Core = FeatureModule.Core
     }
 
-    enum class StringFlags(override val key: String) : Feature<EncodableValue.StringEncodeable, String, Context> {
+    enum class StringFlags(override val key: String) : StringFeature<Context, FeatureModule.Core> {
         CONFIG_A("config_a"), CONFIG_B("config_b");
 
-        override val registry: FlagRegistry = FlagRegistry
-        override fun update(definition: FlagDefinition<EncodableValue.StringEncodeable, String, Context>) {
-            registry.update(definition)
-        }
+        override val module: FeatureModule.Core = FeatureModule.Core
     }
 
-    enum class IntFlags(override val key: String) : Feature<EncodableValue.IntEncodeable, Int, Context> {
+    enum class IntFlags(override val key: String) : IntFeature<Context, FeatureModule.Core> {
         TIMEOUT("timeout");
 
-        override val registry: FlagRegistry = FlagRegistry
-        override fun update(definition: FlagDefinition<EncodableValue.IntEncodeable, Int, Context>) {
-            registry.update(definition)
-        }
+        override val module: FeatureModule.Core = FeatureModule.Core
     }
 
     @Test
@@ -86,7 +80,7 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded(),
         )
 
-        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context> = FlagDefinition(
+        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context, FeatureModule.Core> = FlagDefinition(
             feature = BoolFlags.FEATURE_A,
             values = listOf(rule.targetedBy(true)),
             defaultValue = false,
@@ -121,19 +115,19 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded(),
         )
 
-        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context> = FlagDefinition(
+        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context, FeatureModule.Core> = FlagDefinition(
             feature = BoolFlags.FEATURE_A,
             values = listOf(boolRule.targetedBy(true)),
             defaultValue = false,
         )
 
-        val stringFlag: FlagDefinition<EncodableValue.StringEncodeable, String, Context> = FlagDefinition(
+        val stringFlag: FlagDefinition<EncodableValue.StringEncodeable, String, Context, FeatureModule.Core> = FlagDefinition(
             feature = StringFlags.CONFIG_A,
             values = listOf(stringRule.targetedBy("value")),
             defaultValue = "default",
         )
 
-        val intFlag: FlagDefinition<EncodableValue.IntEncodeable, Int, Context> = FlagDefinition(
+        val intFlag: FlagDefinition<EncodableValue.IntEncodeable, Int, Context, FeatureModule.Core> = FlagDefinition(
             feature = IntFlags.TIMEOUT,
             values = listOf(intRule.targetedBy(30)),
             defaultValue = 10,
@@ -185,7 +179,7 @@ class FlagEntryTypeSafetyTest {
             )
         )
 
-        SingletonFlagRegistry.load(konfig)
+        SingletonModuleRegistry.load(konfig)
 
         val context = ctx("33333333333333333333333333333333")
         val boolResult = context.evaluate(BoolFlags.FEATURE_A)
@@ -283,11 +277,8 @@ class FlagEntryTypeSafetyTest {
         ) : Context
 
         data class CustomIntFlag(override val key: String = "custom_int") :
-            Feature<EncodableValue.IntEncodeable, Int, CustomContext> {
-            override val registry: FlagRegistry = FlagRegistry
-            override fun update(definition: FlagDefinition<EncodableValue.IntEncodeable, Int, CustomContext>) {
-                registry.update(definition)
-            }
+            IntFeature<CustomContext, FeatureModule.Core> {
+            override val module: FeatureModule.Core = FeatureModule.Core
         }
 
         val customIntFlag = CustomIntFlag()
@@ -299,7 +290,7 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded(),
         )
 
-        val flag: FlagDefinition<EncodableValue.IntEncodeable, Int, CustomContext> = FlagDefinition(
+        val flag: FlagDefinition<EncodableValue.IntEncodeable, Int, CustomContext, FeatureModule.Core> = FlagDefinition(
             feature = customIntFlag,
             values = listOf(rule.targetedBy(42)),
             defaultValue = 0,

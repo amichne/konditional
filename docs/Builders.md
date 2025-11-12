@@ -1,6 +1,7 @@
 # Builder DSL
 
-Konditional provides a type-safe, expressive DSL for configuring feature flags. The DSL uses Kotlin's receiver types and inline functions to create a fluent configuration interface while maintaining compile-time safety.
+Konditional provides a type-safe, expressive DSL for configuring feature flags. The DSL uses Kotlin's receiver types and
+inline functions to create a fluent configuration interface while maintaining compile-time safety.
 
 ## Overview
 
@@ -36,6 +37,7 @@ config(registry: FlagRegistry = FlagRegistry) {
 ```
 
 **Parameters:**
+
 - `registry`: Target registry (defaults to singleton)
 
 **Usage:**
@@ -433,6 +435,7 @@ val json = SnapshotSerializer.default.serialize(snapshot)
 ```
 
 **Use cases:**
+
 - Testing configurations
 - Building configurations programmatically
 - Serializing configurations
@@ -469,7 +472,7 @@ The DSL uses `@FeatureFlagDsl` annotation to prevent accidental nesting:
 interface ConfigScope { /* ... */ }
 
 @FeatureFlagDsl
-interface FlagScope<S, T, C> { /* ... */ }
+interface FlagScope<S, T, C, M> { /* ... */ }
 
 @FeatureFlagDsl
 interface RuleScope<C> { /* ... */ }

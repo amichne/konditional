@@ -41,5 +41,5 @@ interface ConfigScope {
      * @param C The context type the flag evaluates against
      * @param build DSL block for configuring the flag
      */
-    infix fun <S : EncodableValue<T>, T : Any, C : Context> Feature<S, T, C>.with(build: FlagScope<S, T, C>.() -> Unit)
+    infix fun <S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule> Feature<S, T, C, M>.with(build: FlagScope<S, T, C, M>.() -> Unit)
 }

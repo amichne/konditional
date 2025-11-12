@@ -6,6 +6,15 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.evaluate
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.fixtures.ApiConfig
+import io.amichne.konditional.fixtures.LogLevel
+import io.amichne.konditional.fixtures.TestCustomWrapperFeatures
+import io.amichne.konditional.fixtures.TestIntFeatures
+import io.amichne.konditional.fixtures.TestJsonObjectFeatures
+import io.amichne.konditional.fixtures.TestListFeatures
+import io.amichne.konditional.fixtures.TestMapFeatures
+import io.amichne.konditional.fixtures.TestThemeFeatures
+import io.amichne.konditional.fixtures.ThemeConfig
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -23,96 +32,6 @@ class ConditionalExtensibilityTest {
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
 
-    // Custom value type: API configuration
-    data class ApiConfig(
-        val baseUrl: String,
-        val timeout: Int,
-        val retries: Int,
-        val useHttps: Boolean,
-    )
-
-    enum class ApiConfigFlags(
-        override val key: String,
-    ) : Feature.OfJsonObject<ApiConfig, Context> {
-        PRIMARY_API("primary_api");
-
-        override val registry: FlagRegistry = FlagRegistry
-        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.JsonObjectEncodeable<ApiConfig>, ApiConfig, Context>) {
-            registry.update(definition)
-        }
-    }
-
-    // Custom value type: Theme configuration
-    data class ThemeConfig(
-        val primaryColor: String,
-        val secondaryColor: String,
-        val fontFamily: String,
-        val darkModeEnabled: Boolean,
-    )
-
-    enum class ThemeFlags(
-        override val key: String,
-    ) : Feature.OfJsonObject<ThemeConfig, Context> {
-        APP_THEME("app_theme");
-
-        override val registry: FlagRegistry = FlagRegistry
-        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.JsonObjectEncodeable<ThemeConfig>, ThemeConfig, Context>) {
-            registry.update(definition)
-        }
-    }
-
-    // Custom value type: List of strings
-    enum class ListFlags(
-        override val key: String,
-    ) : Feature.OfJsonObject<List<String>, Context> {
-        ENABLED_FEATURES("enabled_features");
-
-        override val registry: FlagRegistry = FlagRegistry
-        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.JsonObjectEncodeable<List<String>>, List<String>, Context>) {
-            registry.update(definition)
-        }
-    }
-
-    // Custom value type: Integer
-    enum class IntFlags(
-        override val key: String,
-    ) : Feature<io.amichne.konditional.core.types.EncodableValue.IntEncodeable, Int, Context> {
-        MAX_CONNECTIONS("max_connections");
-
-        override val registry: FlagRegistry = FlagRegistry
-        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.IntEncodeable, Int, Context>) {
-            registry.update(definition)
-        }
-    }
-
-    // Custom value type: Enum
-    enum class LogLevel {
-        DEBUG, INFO, ERROR
-    }
-
-    enum class LogConfigFlags(
-        override val key: String,
-    ) : Feature.OfCustom<LogLevel, String, Context> {
-        APP_LOG_LEVEL("app_log_level");
-
-        override val registry: FlagRegistry = FlagRegistry
-        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.CustomEncodeable<LogLevel, String>, LogLevel, Context>) {
-            registry.update(definition)
-        }
-    }
-
-    // Custom value type: Map
-    enum class MapFlags(
-        override val key: String,
-    ) : Feature.OfJsonObject<Map<String, String>, Context> {
-        FEATURE_TOGGLES("feature_toggles");
-
-        override val registry: FlagRegistry = FlagRegistry
-        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.JsonObjectEncodeable<Map<String, String>>, Map<String, String>, Context>) {
-            registry.update(definition)
-        }
-    }
-
     @Test
     fun `Given custom data class value type, When evaluating, Then correct instance is returned`() {
         val prodConfig = ApiConfig(
@@ -129,8 +48,8 @@ class ConditionalExtensibilityTest {
             useHttps = false,
         )
 
-        config {
-            ApiConfigFlags.PRIMARY_API with {
+        FeatureModule.Core.config {
+            TestJsonObjectFeatures.PRIMARY_API with {
                 default(prodConfig)
                 rule {
                     platforms(Platform.WEB)
@@ -139,11 +58,11 @@ class ConditionalExtensibilityTest {
         }
 
         val iosResult = ctx("11111111111111111111111111111111", platform = Platform.IOS)
-            .evaluate(ApiConfigFlags.PRIMARY_API)
+            .evaluate(TestJsonObjectFeatures.PRIMARY_API)
         assertEquals(prodConfig, iosResult)
 
         val webResult = ctx("22222222222222222222222222222222", platform = Platform.WEB)
-            .evaluate(ApiConfigFlags.PRIMARY_API)
+            .evaluate(TestJsonObjectFeatures.PRIMARY_API)
         assertEquals(devConfig, webResult)
     }
 
@@ -163,8 +82,8 @@ class ConditionalExtensibilityTest {
             darkModeEnabled = true,
         )
 
-        config {
-            ThemeFlags.APP_THEME with {
+        FeatureModule.Core.config {
+            TestThemeFeatures.APP_THEME with {
                 default(lightTheme)
                 rule {
                     locales(AppLocale.EN_US)
@@ -173,7 +92,7 @@ class ConditionalExtensibilityTest {
         }
 
         val result = ctx("33333333333333333333333333333333", locale = AppLocale.EN_US)
-            .evaluate(ThemeFlags.APP_THEME)
+            .evaluate(TestThemeFeatures.APP_THEME)
 
         assertEquals(darkTheme, result)
         assertTrue(result.darkModeEnabled)
@@ -185,8 +104,8 @@ class ConditionalExtensibilityTest {
         val defaultFeatures = listOf("core", "basic")
         val premiumFeatures = listOf("core", "basic", "advanced", "analytics")
 
-        config {
-            ListFlags.ENABLED_FEATURES with {
+        FeatureModule.Core.config {
+            TestListFeatures.ENABLED_FEATURES with {
                 default(defaultFeatures)
                 rule {
                     versions {
@@ -197,20 +116,20 @@ class ConditionalExtensibilityTest {
         }
 
         val v1Result = ctx("44444444444444444444444444444444", version = "1.5.0")
-            .evaluate(ListFlags.ENABLED_FEATURES)
+            .evaluate(TestListFeatures.ENABLED_FEATURES)
         assertEquals(defaultFeatures, v1Result)
         assertEquals(2, v1Result.size)
 
         val v2Result = ctx("55555555555555555555555555555555", version = "2.5.0")
-            .evaluate(ListFlags.ENABLED_FEATURES)
+            .evaluate(TestListFeatures.ENABLED_FEATURES)
         assertEquals(premiumFeatures, v2Result)
         assertEquals(4, v2Result.size)
     }
 
     @Test
     fun `Given Int value type, When evaluating, Then correct integer is returned`() {
-        config {
-            IntFlags.MAX_CONNECTIONS with {
+        FeatureModule.Core.config {
+            TestIntFeatures.MAX_CONNECTIONS with {
                 default(10)
                 rule {
                     platforms(Platform.WEB)
@@ -225,22 +144,22 @@ class ConditionalExtensibilityTest {
         }
 
         val iosResult = ctx("66666666666666666666666666666666", platform = Platform.IOS)
-            .evaluate(IntFlags.MAX_CONNECTIONS)
+            .evaluate(TestIntFeatures.MAX_CONNECTIONS)
         assertEquals(10, iosResult)
 
         val webV2Result = ctx("77777777777777777777777777777777", platform = Platform.WEB, version = "2.0.0")
-            .evaluate(IntFlags.MAX_CONNECTIONS)
+            .evaluate(TestIntFeatures.MAX_CONNECTIONS)
         assertEquals(50, webV2Result)
 
         val webV3Result = ctx("88888888888888888888888888888888", platform = Platform.WEB, version = "3.0.0")
-            .evaluate(IntFlags.MAX_CONNECTIONS)
+            .evaluate(TestIntFeatures.MAX_CONNECTIONS)
         assertEquals(100, webV3Result)
     }
 
     @Test
     fun `Given Enum value type, When evaluating, Then correct enum is returned`() {
-        config {
-            LogConfigFlags.APP_LOG_LEVEL with {
+        FeatureModule.Core.config {
+            TestCustomWrapperFeatures.APP_LOG_LEVEL with {
                 default(LogLevel.INFO)
                 rule {
                     platforms(Platform.WEB)
@@ -254,15 +173,15 @@ class ConditionalExtensibilityTest {
         }
 
         val defaultResult = ctx("99999999999999999999999999999999", platform = Platform.IOS, version = "2.0.0")
-            .evaluate(LogConfigFlags.APP_LOG_LEVEL)
+            .evaluate(TestCustomWrapperFeatures.APP_LOG_LEVEL)
         assertEquals(LogLevel.INFO, defaultResult)
 
         val webResult = ctx("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", platform = Platform.WEB, version = "2.0.0")
-            .evaluate(LogConfigFlags.APP_LOG_LEVEL)
+            .evaluate(TestCustomWrapperFeatures.APP_LOG_LEVEL)
         assertEquals(LogLevel.DEBUG, webResult)
 
         val oldVersionResult = ctx("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", platform = Platform.IOS, version = "0.9.0")
-            .evaluate(LogConfigFlags.APP_LOG_LEVEL)
+            .evaluate(TestCustomWrapperFeatures.APP_LOG_LEVEL)
         assertEquals(LogLevel.ERROR, oldVersionResult)
     }
 
@@ -279,8 +198,8 @@ class ConditionalExtensibilityTest {
             "feature3" to "beta",
         )
 
-        config {
-            MapFlags.FEATURE_TOGGLES with {
+        FeatureModule.Core.config {
+            TestMapFeatures.FEATURE_TOGGLES with {
                 default(defaultToggles)
                 rule {
                     locales(AppLocale.EN_US, AppLocale.EN_CA)
@@ -289,12 +208,12 @@ class ConditionalExtensibilityTest {
         }
 
         val defaultResult = ctx("cccccccccccccccccccccccccccccccc", locale = AppLocale.ES_US)
-            .evaluate(MapFlags.FEATURE_TOGGLES)
+            .evaluate(TestMapFeatures.FEATURE_TOGGLES)
         assertEquals(defaultToggles, defaultResult)
         assertEquals(2, defaultResult.size)
 
         val betaResult = ctx("dddddddddddddddddddddddddddddddd", locale = AppLocale.EN_US)
-            .evaluate(MapFlags.FEATURE_TOGGLES)
+            .evaluate(TestMapFeatures.FEATURE_TOGGLES)
         assertEquals(betaToggles, betaResult)
         assertEquals(3, betaResult.size)
     }
@@ -305,31 +224,31 @@ class ConditionalExtensibilityTest {
         val theme = ThemeConfig("#FFFFFF", "#F0F0F0", "Arial", false)
         val features = listOf("core")
 
-        config {
-            ApiConfigFlags.PRIMARY_API with {
+        FeatureModule.Core.config {
+            TestJsonObjectFeatures.PRIMARY_API with {
                 default(apiConfig)
             }
-            ThemeFlags.APP_THEME with {
+            TestThemeFeatures.APP_THEME with {
                 default(theme)
             }
-            ListFlags.ENABLED_FEATURES with {
+            TestListFeatures.ENABLED_FEATURES with {
                 default(features)
             }
-            IntFlags.MAX_CONNECTIONS with {
+            TestIntFeatures.MAX_CONNECTIONS with {
                 default(10)
             }
-            LogConfigFlags.APP_LOG_LEVEL with {
+            TestCustomWrapperFeatures.APP_LOG_LEVEL with {
                 default(LogLevel.INFO)
             }
         }
 
         val context = ctx("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
 
-        val apiResult = context.evaluate(ApiConfigFlags.PRIMARY_API)
-        val themeResult = context.evaluate(ThemeFlags.APP_THEME)
-        val featuresResult = context.evaluate(ListFlags.ENABLED_FEATURES)
-        val connectionsResult = context.evaluate(IntFlags.MAX_CONNECTIONS)
-        val logLevelResult = context.evaluate(LogConfigFlags.APP_LOG_LEVEL)
+        val apiResult = context.evaluate(TestJsonObjectFeatures.PRIMARY_API)
+        val themeResult = context.evaluate(TestThemeFeatures.APP_THEME)
+        val featuresResult = context.evaluate(TestListFeatures.ENABLED_FEATURES)
+        val connectionsResult = context.evaluate(TestIntFeatures.MAX_CONNECTIONS)
+        val logLevelResult = context.evaluate(TestCustomWrapperFeatures.APP_LOG_LEVEL)
 
         // Verify each type is correctly returned
         assertTrue(apiResult is ApiConfig)
@@ -353,11 +272,8 @@ class ConditionalExtensibilityTest {
             val level3: ApiConfig,
         )
 
-        data class DeepFlag(override val key: String = "nested_config") : Feature.OfJsonObject<DeepConfig, Context> {
-            override val registry: FlagRegistry = FlagRegistry
-            override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.JsonObjectEncodeable<DeepConfig>, DeepConfig, Context>) {
-                registry.update(definition)
-            }
+        data class DeepFlag(override val key: String = "nested_config") : Feature.OfJsonObject<DeepConfig, Context, FeatureModule.Core> {
+            override val module: FeatureModule.Core = FeatureModule.Core
         }
 
         val nestedConfigFlag = DeepFlag()
@@ -371,7 +287,7 @@ class ConditionalExtensibilityTest {
             level3 = ApiConfig("https://nested.example.com", 20, 2, true),
         )
 
-        config {
+        FeatureModule.Core.config {
             nestedConfigFlag with {
                 default(complexConfig)
             }

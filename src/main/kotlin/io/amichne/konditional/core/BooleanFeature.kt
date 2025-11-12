@@ -4,21 +4,17 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.BooleanFeature.Companion.BooleanFeatureImpl
 import io.amichne.konditional.core.types.EncodableValue
 
-@SubclassOptInRequired
-interface BooleanFeature<C : Context> : Conditional<EncodableValue.BooleanEncodeable, Boolean, C> {
-    override val registry: FlagRegistry
-        get() = FlagRegistry
-
+interface BooleanFeature<C : Context, M : FeatureModule> : Feature<EncodableValue.BooleanEncodeable, Boolean, C, M> {
     companion object {
         @PublishedApi
-        internal data class BooleanFeatureImpl<C : Context>(
+        internal data class BooleanFeatureImpl<C : Context, M : FeatureModule>(
             override val key: String,
-            override val registry: FlagRegistry = FlagRegistry,
-        ) : BooleanFeature<C>
+            override val module: M,
+        ) : BooleanFeature<C, M>
     }
 }
 
-inline fun <E, reified S : BooleanFeature<C>, reified C : Context> boolean(
+inline fun <E, reified S : BooleanFeature<C, M>, reified C : Context, M : FeatureModule> boolean(
     key: String,
-    registry: FlagRegistry = FlagRegistry,
-): S where  E : Enum<E> = BooleanFeatureImpl<C>(key, registry) as S
+    module: M,
+): S where E : Enum<E> = BooleanFeatureImpl<C, M>(key, module) as S

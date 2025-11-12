@@ -19,20 +19,20 @@ interface FlagRegistry {
     fun update(patch: KonfigPatch)
 
     // Update single flag
-    fun <S : EncodableValue<T>, T : Any, C : Context> update(
-        definition: FlagDefinition<S, T, C>
+    fun <S : EncodableValue<T>, T : Any, C : Context, M : Module> update(
+        definition: FlagDefinition<S, T, C, M>
     )
 
     // Read current configuration
     fun konfig(): Konfig
 
     // Lookup specific flag
-    fun <S : EncodableValue<T>, T : Any, C : Context> featureFlag(
-        key: Feature<S, T, C>
-    ): FlagDefinition<S, T, C>?
+    fun <S : EncodableValue<T>, T : Any, C : Context, M : Module> featureFlag(
+        key: Feature<S, T, C, M>
+    ): FlagDefinition<S, T, C, M>?
 
     // Read all flags
-    fun allFlags(): Map<Feature<*, *, *>, FlagDefinition<*, *, *>>
+    fun allFlags(): Map<Feature<*, *, *>, FlagDefinition<*, *, *, *>>
 }
 ```
 
@@ -50,7 +50,7 @@ internal class SingletonFlagRegistry : FlagRegistry {
         konfigRef.set(config)  // Atomic swap
     }
 
-    override fun featureFlag(key: Feature<S, T, C>): FlagDefinition<S, T, C>? {
+    override fun featureFlag(key: Feature<S, T, C, M>): FlagDefinition<S, T, C, M>? {
         return konfigRef.get().flags[key]  // Lock-free read
     }
 
@@ -67,6 +67,7 @@ internal class SingletonFlagRegistry : FlagRegistry {
 **The Problem with Locks:**
 
 String-based systems often use locks:
+
 ```kotlin
 // Traditional approach: Lock-based
 class ConfigService {
@@ -94,6 +95,7 @@ class ConfigService {
 ```
 
 **Problems:**
+
 - Read contention under high load
 - Write blocks all reads
 - Potential deadlocks
@@ -105,7 +107,7 @@ class ConfigService {
 class SingletonFlagRegistry : FlagRegistry {
     private val konfigRef = AtomicReference<Konfig>(Konfig.EMPTY)
 
-    override fun featureFlag(key: Feature<S, T, C>): FlagDefinition<S, T, C>? {
+    override fun featureFlag(key: Feature<S, T, C, M>): FlagDefinition<S, T, C, M>? {
         return konfigRef.get().flags[key]  // ✓ Lock-free, no contention
     }
 
@@ -116,11 +118,12 @@ class SingletonFlagRegistry : FlagRegistry {
 ```
 
 **Benefits:**
--  Zero lock contention
--  Reads never block
--  Writes don't block reads
--  No deadlock possible
--  Hardware-level atomic operations
+
+- Zero lock contention
+- Reads never block
+- Writes don't block reads
+- No deadlock possible
+- Hardware-level atomic operations
 
 ### Immutable Data Structures
 
@@ -129,20 +132,20 @@ All configuration data is **immutable**:
 ```kotlin
 // Konfig: Immutable snapshot
 data class Konfig(
-    val flags: Map<Feature<*, *, *>, FlagDefinition<*, *, *>>
+    val flags: Map<Feature<*, *, *>, FlagDefinition<*, *, *, *>>
 )  // Map is immutable (not MutableMap)
 
 // FlagDefinition: Immutable configuration
-data class FlagDefinition<S, T, C>(
-    val feature: Feature<S, T, C>,
+data class FlagDefinition<S, T, C, M>(
+    val feature: Feature<S, T, C, M>,
     val defaultValue: T,                       // Immutable
-    val values: List<ConditionalValue<S, T, C>>,  // List is immutable
+    val values: List<ConditionalValue<S, T, C, M>>,  // List is immutable
     val isActive: Boolean,                     // Immutable
     val salt: String                           // Immutable
 )
 
 // ConditionalValue: Immutable rule + value
-data class ConditionalValue<S, T, C>(
+data class ConditionalValue<S, T, C, M>(
     val rule: Rule<C>,  // Immutable
     val value: T        // Immutable
 )
@@ -201,10 +204,11 @@ konfigRef = AtomicReference(newKonfig)
 ```
 
 **Properties:**
--  Atomic: All flags update together
--  Consistent: Readers see old OR new, never mixed
--  Lock-free: No blocking
--  Fast: Single memory write
+
+- Atomic: All flags update together
+- Consistent: Readers see old OR new, never mixed
+- Lock-free: No blocking
+- Fast: Single memory write
 
 ### Incremental Patching
 
@@ -256,9 +260,10 @@ override fun update(patch: KonfigPatch) {
 ```
 
 **Properties:**
--  Incremental: Only changed flags in patch
--  Atomic: All patch changes applied together
--  Type-safe: Parse errors caught before application
+
+- Incremental: Only changed flags in patch
+- Atomic: All patch changes applied together
+- Type-safe: Parse errors caught before application
 
 ---
 
@@ -280,7 +285,10 @@ class ConfigService {
         }
     }
 
-    fun updateFlag(key: String, value: Any) {
+    fun updateFlag(
+        key: String,
+        value: Any
+    ) {
         lock.writeLock().lock()  // ⚠️ Blocks ALL reads
         try {
             config[key] = value
@@ -292,6 +300,7 @@ class ConfigService {
 ```
 
 **Issues:**
+
 - Write locks block reads (high latency during updates)
 - Mutable state = race conditions possible
 - Per-flag updates = inconsistent intermediate states
@@ -303,7 +312,7 @@ class ConfigService {
 class SingletonFlagRegistry : FlagRegistry {
     private val konfigRef = AtomicReference<Konfig>(Konfig.EMPTY)
 
-    override fun featureFlag(key: Feature<S, T, C>): FlagDefinition<S, T, C>? {
+    override fun featureFlag(key: Feature<S, T, C, M>): FlagDefinition<S, T, C, M>? {
         return konfigRef.get().flags[key]  // Lock-free
     }
 
@@ -314,10 +323,11 @@ class SingletonFlagRegistry : FlagRegistry {
 ```
 
 **Benefits:**
--  Lock-free reads (no contention)
--  Immutable state (no race conditions)
--  Atomic updates (consistent snapshots)
--  Type errors caught at compile time
+
+- Lock-free reads (no contention)
+- Immutable state (no race conditions)
+- Atomic updates (consistent snapshots)
+- Type errors caught at compile time
 
 ---
 
@@ -379,6 +389,7 @@ synchronized(updateLock) {
 ### Memory
 
 **String-based system:**
+
 ```kotlin
 // Mutable map = potential fragmentation
 private var config: MutableMap<String, Any> = mutableMapOf()
@@ -388,6 +399,7 @@ config["key"] = newValue  // Heap allocation, GC pressure
 ```
 
 **Konditional:**
+
 ```kotlin
 // Immutable snapshots = structural sharing
 private val konfigRef = AtomicReference<Konfig>(...)
@@ -397,18 +409,19 @@ konfigRef.set(newKonfig)  // Old snapshot GC'd when no references remain
 ```
 
 **Benefits:**
--  Structural sharing (maps share structure)
--  Predictable GC (old snapshots collected together)
--  No fragmentation
+
+- Structural sharing (maps share structure)
+- Predictable GC (old snapshots collected together)
+- No fragmentation
 
 ### Latency
 
-| Operation | String-Based (Locks) | Konditional (Lock-Free) |
-|-----------|---------------------|------------------------|
-| **Read** | 50-200 ns (uncontended lock) | 5-10 ns (AtomicReference.get) |
-| **Read (contended)** | 500-5000 ns (lock wait) | 5-10 ns (no contention) |
-| **Write** | 100-500 ns (lock acquire + release) | 10-20 ns (AtomicReference.set) |
-| **Write impact on reads** | Blocks reads (ms latency spike) | No impact (lock-free) |
+| Operation                 | String-Based (Locks)                | Konditional (Lock-Free)        |
+|---------------------------|-------------------------------------|--------------------------------|
+| **Read**                  | 50-200 ns (uncontended lock)        | 5-10 ns (AtomicReference.get)  |
+| **Read (contended)**      | 500-5000 ns (lock wait)             | 5-10 ns (no contention)        |
+| **Write**                 | 100-500 ns (lock acquire + release) | 10-20 ns (AtomicReference.set) |
+| **Write impact on reads** | Blocks reads (ms latency spike)     | No impact (lock-free)          |
 
 **Benchmarks (approximate, JVM):**
 
@@ -430,10 +443,12 @@ fun readFlag_LockFree() {
 ### Throughput
 
 **String-based system:**
+
 - Reads: ~5-10M ops/sec (uncontended), ~1M ops/sec (contended)
 - Writes: Block all reads
 
 **Konditional:**
+
 - Reads: ~100M+ ops/sec (scales linearly with cores)
 - Writes: Don't block reads
 
@@ -446,24 +461,24 @@ fun readFlag_LockFree() {
 ```kotlin
 @Test
 fun `concurrent reads are safe`() = runBlocking {
-    val registry = FlagRegistry.create()
+        val registry = FlagRegistry.create()
 
-    config(registry) {
-        Features.DARK_MODE with { default(false) }
-    }
-
-    val context = basicContext()
-
-    // Launch 1000 concurrent reads
-    val results = (1..1000).map {
-        async(Dispatchers.Default) {
-            context.evaluate(Features.DARK_MODE, registry)
+        config(registry) {
+            Features.DARK_MODE with { default(false) }
         }
-    }.awaitAll()
 
-    // All return same value
-    assertTrue(results.all { it == false })
-}
+        val context = basicContext()
+
+        // Launch 1000 concurrent reads
+        val results = (1..1000).map {
+            async(Dispatchers.Default) {
+                context.evaluate(Features.DARK_MODE, registry)
+            }
+        }.awaitAll()
+
+        // All return same value
+        assertTrue(results.all { it == false })
+    }
 ```
 
 ### Concurrent Reads + Write
@@ -471,37 +486,37 @@ fun `concurrent reads are safe`() = runBlocking {
 ```kotlin
 @Test
 fun `concurrent reads during write are safe`() = runBlocking {
-    val registry = FlagRegistry.create()
+        val registry = FlagRegistry.create()
 
-    config(registry) {
-        Features.DARK_MODE with { default(false) }
-    }
+        config(registry) {
+            Features.DARK_MODE with { default(false) }
+        }
 
-    val context = basicContext()
+        val context = basicContext()
 
-    // Launch 1000 concurrent readers
-    val readerJobs = (1..1000).map {
-        launch(Dispatchers.Default) {
-            repeat(100) {
-                context.evaluate(Features.DARK_MODE, registry)
+        // Launch 1000 concurrent readers
+        val readerJobs = (1..1000).map {
+            launch(Dispatchers.Default) {
+                repeat(100) {
+                    context.evaluate(Features.DARK_MODE, registry)
+                }
             }
         }
-    }
 
-    // Concurrent write
-    val writerJob = launch(Dispatchers.Default) {
-        repeat(10) {
-            config(registry) {
-                Features.DARK_MODE with { default(true) }
+        // Concurrent write
+        val writerJob = launch(Dispatchers.Default) {
+            repeat(10) {
+                config(registry) {
+                    Features.DARK_MODE with { default(true) }
+                }
+                delay(10)
             }
-            delay(10)
         }
-    }
 
-    // Wait for completion (no exceptions = success)
-    readerJobs.joinAll()
-    writerJob.join()
-}
+        // Wait for completion (no exceptions = success)
+        readerJobs.joinAll()
+        writerJob.join()
+    }
 ```
 
 ---
@@ -511,6 +526,7 @@ fun `concurrent reads during write are safe`() = runBlocking {
 ### When to Implement Custom Registry
 
 **Use cases:**
+
 - Database-backed configuration
 - Distributed cache (Redis, Memcached)
 - Multi-tenant registries (per-tenant config)
@@ -538,7 +554,7 @@ class DatabaseBackedRegistry(
         konfigRef.set(config)
     }
 
-    override fun featureFlag(key: Feature<S, T, C>): FlagDefinition<S, T, C>? {
+    override fun featureFlag(key: Feature<S, T, C, M>): FlagDefinition<S, T, C, M>? {
         // Read from in-memory cache (lock-free)
         return konfigRef.get().flags[key]
     }
@@ -561,7 +577,7 @@ class TenantAwareFlagRegistry(
 
     private val registries = ConcurrentHashMap<TenantId, AtomicReference<Konfig>>()
 
-    override fun featureFlag(key: Feature<S, T, C>): FlagDefinition<S, T, C>? {
+    override fun featureFlag(key: Feature<S, T, C, M>): FlagDefinition<S, T, C, M>? {
         val tenantId = tenantProvider()
         val konfigRef = registries.computeIfAbsent(tenantId) {
             AtomicReference(Konfig.EMPTY)
@@ -648,14 +664,14 @@ fun `test feature`() {
 
 ## Summary: Concurrency Guarantees
 
-| Aspect | Guarantee |
-|--------|-----------|
-| **Read safety** | Lock-free, no contention, scales linearly |
-| **Write safety** | Atomic updates, consistent snapshots |
-| **Read-write interaction** | Writes don't block reads |
-| **Data consistency** | Readers see complete old OR new config, never mixed |
-| **Memory safety** | Immutable data, no race conditions |
-| **Performance** | ~100M+ reads/sec, <10ns latency |
+| Aspect                     | Guarantee                                           |
+|----------------------------|-----------------------------------------------------|
+| **Read safety**            | Lock-free, no contention, scales linearly           |
+| **Write safety**           | Atomic updates, consistent snapshots                |
+| **Read-write interaction** | Writes don't block reads                            |
+| **Data consistency**       | Readers see complete old OR new config, never mixed |
+| **Memory safety**          | Immutable data, no race conditions                  |
+| **Performance**            | ~100M+ reads/sec, <10ns latency                     |
 
 **Core Principle:** Thread safety through immutability and atomic references, not locks.
 
