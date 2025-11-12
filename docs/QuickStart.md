@@ -90,35 +90,12 @@ if (isDarkMode) {
 
 ## Before & After Comparison
 
-### String-Based (Your Current System)
-
-```kotlin
-// Definition: Scattered string literals
-val enabled = config.getBoolean("dark_mode")
-
-// Problems:
-// - Returns Boolean? (nullable)
-// - Typo "dakr_mode" compiles
-// - No IDE auto-complete
-// - ClassCastException if wrong type
-```
-
-### Type-Safe (Konditional)
-
-```kotlin
-// Definition: Type-safe enum
-enum class Features(override val key: String) : Conditional<Boolean, Context> {
-    DARK_MODE("dark_mode")
-}
-
-val enabled: Boolean = context.evaluate(Features.DARK_MODE)
-
-// Benefits:
-// - Returns Boolean (non-null)
-// - Typo won't compile
-// - Full IDE auto-complete
-// - Type mismatch is compile error
-```
+| String-Based | Type-Safe (Konditional) |
+|--------------|-------------------------|
+| `config.getBoolean("dark_mode")` returns `Boolean?` | `context.evaluate(Features.DARK_MODE)` returns `Boolean` |
+| Typos compile silently | Typos are compile errors |
+| No IDE auto-complete | Full IDE support |
+| Runtime ClassCastException | Compile-time type checking |
 
 ---
 
@@ -281,138 +258,11 @@ applyTheme(theme.primaryColor, theme.fontSize, theme.darkMode)
 
 ---
 
-## Custom Context for Business Logic
-
-```kotlin
-// Define context with business domain
-data class AppContext(
-    override val locale: AppLocale,
-    override val platform: Platform,
-    override val appVersion: Version,
-    override val stableId: StableId,
-    val subscriptionTier: SubscriptionTier  // Custom field
-) : Context
-
-enum class SubscriptionTier {
-    FREE, PROFESSIONAL, ENTERPRISE
-}
-
-// Define flag requiring custom context
-enum class PremiumFeatures(override val key: String) : Conditional<Boolean, AppContext> {  // ← Requires AppContext
-    DATA_EXPORT("export_enabled")
-}
-
-// Configure with custom logic
-config {
-    PremiumFeatures.DATA_EXPORT with {
-        default(false)
-
-        // Enable for enterprise tier
-        rule {
-            extension {
-                object : Evaluable<AppContext>() {
-                    override fun matches(context: AppContext): Boolean =
-                        context.subscriptionTier == SubscriptionTier.ENTERPRISE
-                    override fun specificity(): Int = 1
-                }
-            }
-        }.implies(true)
-    }
-}
-
-// Usage: Type-safe context required
-val context = AppContext(
-    locale = AppLocale.EN_US,
-    platform = Platform.ANDROID,
-    appVersion = Version(1, 0, 0),
-    stableId = StableId.of("user-123"),
-    subscriptionTier = SubscriptionTier.ENTERPRISE
-)
-
-val canExport: Boolean = context.evaluate(PremiumFeatures.DATA_EXPORT)
-// Returns: true (enterprise tier matched)
-
-// Wrong context type won't compile:
-val basicContext: Context = basicContext(...)
-basicContext.evaluate(PremiumFeatures.DATA_EXPORT)  // ✗ Compile error
-```
-
-**What you get:**
-
-- Business logic declarative in config
-- Context requirements explicit in types
-- Compiler enforces correct context
-
----
-
-## Testing: Simple Data Classes
-
-```kotlin
-@Test
-fun `dark mode enabled on iOS`() {
-    // Create test context
-    val context = basicContext(
-        platform = Platform.IOS,
-        stableId = StableId.of("test-user")
-    )
-
-    // Evaluate
-    val enabled = context.evaluate(Features.DARK_MODE)
-
-    // Assert
-    assertTrue(enabled)
-}
-
-@Test
-fun `dark mode disabled on Android`() {
-    val context = basicContext(
-        platform = Platform.ANDROID,
-        stableId = StableId.of("test-user")
-    )
-
-    assertFalse(context.evaluate(Features.DARK_MODE))
-}
-
-// Reusable test context factory
-fun testContext(
-    platform: Platform = Platform.ANDROID,
-    tier: SubscriptionTier = SubscriptionTier.FREE
-) = AppContext(
-    locale = AppLocale.EN_US,
-    platform = platform,
-    appVersion = Version(1, 0, 0),
-    stableId = StableId.of("test-user"),
-    subscriptionTier = tier
-)
-
-@Test
-fun `premium export enabled for enterprise`() {
-    val context = testContext(tier = SubscriptionTier.ENTERPRISE)
-    assertTrue(context.evaluate(PremiumFeatures.DATA_EXPORT))
-}
-```
-
-**What you get:**
-
-- No mocking frameworks needed
-- Simple data class construction
-- Reusable test factories
-
----
-
 ## Common Patterns
 
-### Multiple Flags in One Enum
-
-```kotlin
-enum class Features(override val key: String) : Conditional<Boolean, Context> {
-    DARK_MODE("dark_mode"),
-    NEW_CHECKOUT("new_checkout"),
-    ANALYTICS("analytics_enabled")
-}
-```
-
 ### Organizing by Domain
+
+Organize flags by type and domain for clarity:
 
 ```kotlin
 enum class UiFeatures(override val key: String) : Conditional<Boolean, Context> {
@@ -431,45 +281,18 @@ enum class Limits(override val key: String) : Conditional<Int, Context> {
 }
 ```
 
-### Version-Based Rules
+### Combining Multiple Criteria
 
-```kotlin
-config {
-    Features.NEW_CHECKOUT with {
-        default(false)
-
-        rule {
-            versions { min(2, 0, 0) }  // Version 2.0.0+
-        }.implies(true)
-    }
-}
-```
-
-### Locale-Based Rules
-
-```kotlin
-config {
-    Features.METRIC_UNITS with {
-        default(false)
-
-        rule {
-            locales(AppLocale.EN_GB, AppLocale.FR_FR)  // UK and France
-        }.implies(true)
-    }
-}
-```
-
-### Multiple Criteria
+Rules support platform, version, locale, and rollout conditions:
 
 ```kotlin
 config {
     Features.PREMIUM_EXPORT with {
         default(false)
 
-        // All conditions must match
         rule {
             platforms(Platform.IOS)
-            versions { min(2, 0, 0) }
+            versions { min(2, 0, 0) }  // Version 2.0.0+
             locales(AppLocale.EN_US)
             rollout = Rollout.of(50.0)  // 50% of eligible users
         }.implies(true)
@@ -477,52 +300,7 @@ config {
 }
 ```
 
----
-
-## Rule Specificity (Automatic Ordering)
-
-Rules are evaluated **most-specific first**:
-
-```kotlin
-config {
-    Features.THEME with {
-        default("light")
-
-        // Specificity = 2 (platform + locale) - checked first
-        rule {
-            platforms(Platform.IOS)
-            locales(AppLocale.EN_US)
-        }.implies("dark-us-ios")
-
-        // Specificity = 1 (platform only) - checked second
-        rule {
-            platforms(Platform.IOS)
-        }.implies("dark-ios")
-
-        // Specificity = 1 (locale only) - checked third
-        rule {
-            locales(AppLocale.EN_US)
-        }.implies("light-us")
-    }
-}
-
-// Context: iOS + EN_US
-val context = basicContext(
-    platform = Platform.IOS,
-    locale = AppLocale.EN_US
-)
-
-val theme = context.evaluate(Features.THEME)
-// Returns: "dark-us-ios" (most specific rule wins)
-```
-
-**Specificity scoring:**
-
-- Platform: +1
-- Locale: +1
-- Version: +1
-- Custom extension: +1
-- **Total: 0-4**
+**Rule Specificity:** Rules are automatically evaluated most-specific first (platform=1, locale=1, version=1, extension=1, max=4).
 
 ---
 
