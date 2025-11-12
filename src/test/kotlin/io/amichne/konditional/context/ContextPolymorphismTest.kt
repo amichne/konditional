@@ -2,12 +2,17 @@ package io.amichne.konditional.context
 
 import io.amichne.konditional.core.BooleanFeature
 import io.amichne.konditional.core.FeatureModule
-import io.amichne.konditional.core.StringFeature
 import io.amichne.konditional.core.config
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fakes.FakeRegistry
+import io.amichne.konditional.fixtures.EnterpriseContext
+import io.amichne.konditional.fixtures.EnterpriseFeatures
+import io.amichne.konditional.fixtures.EnterpriseRule
+import io.amichne.konditional.fixtures.ExperimentContext
+import io.amichne.konditional.fixtures.ExperimentFeatures
+import io.amichne.konditional.fixtures.SubscriptionTier
+import io.amichne.konditional.fixtures.UserRole
 import io.amichne.konditional.rules.Rule
-import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.versions.FullyBound
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -20,71 +25,10 @@ import kotlin.test.assertTrue
  */
 class ContextPolymorphismTest {
 
-    // Custom context for enterprise features
-    data class EnterpriseContext(
-        override val locale: AppLocale,
-        override val platform: Platform,
-        override val appVersion: Version,
-        override val stableId: StableId,
-        val organizationId: String,
-        val subscriptionTier: SubscriptionTier,
-        val userRole: UserRole,
-    ) : Context
-
-    enum class SubscriptionTier {
-        BASIC, PREMIUM, ENTERPRISE
-    }
-
-    enum class UserRole {
-        EDITOR, ADMIN, OWNER
-    }
-
-    // Custom context for A/B testing
-    data class ExperimentContext(
-        override val locale: AppLocale,
-        override val platform: Platform,
-        override val appVersion: Version,
-        override val stableId: StableId,
-        val experimentGroups: Set<String>,
-        val sessionId: String,
-    ) : Context
-
-    // SingletonModuleRegistry using EnterpriseContext
-    enum class EnterpriseFlags(
-        override val key: String,
-    ) : BooleanFeature<EnterpriseContext, FeatureModule.Core> {
-        ADVANCED_ANALYTICS("advanced_analytics"),
-        CUSTOM_BRANDING("custom_branding"),
-        API_ACCESS("api_access");
-
-        override val module: FeatureModule.Core = FeatureModule.Core
-    }
-
-    // SingletonModuleRegistry using ExperimentContext
-    enum class ExperimentFlags(
-        override val key: String,
-    ) : StringFeature<ExperimentContext, FeatureModule.Core> {
-        HOMEPAGE_VARIANT("homepage_variant"),
-        ONBOARDING_STYLE("onboarding_style");
-
-        override val module: FeatureModule.Core
-            get() = FeatureModule.Core
-    }
-
-    // Custom rule that extends Rule for EnterpriseContext
-    data class EnterpriseRule(
-        val requiredTier: SubscriptionTier? = null,
-        val requiredRole: UserRole? = null,
-    ) : Evaluable<EnterpriseContext>() {
-        override fun matches(context: EnterpriseContext): Boolean =
-            (requiredTier == null || context.subscriptionTier >= requiredTier) &&
-                (requiredRole == null || context.userRole >= requiredRole)
-    }
-
     @Test
     fun `Given EnterpriseContext, When evaluating flags, Then context-specific properties are accessible`() {
         FeatureModule.Core.config {
-            EnterpriseFlags.ADVANCED_ANALYTICS with {
+            EnterpriseFeatures.ADVANCED_ANALYTICS with {
                 default(false)
                 // This demonstrates that the rule can access base Context properties
                 rule {
@@ -106,13 +50,13 @@ class ContextPolymorphismTest {
             userRole = UserRole.ADMIN,
         )
 
-        assertTrue(ctx.evaluate(EnterpriseFlags.ADVANCED_ANALYTICS))
+        assertTrue(ctx.evaluate(EnterpriseFeatures.ADVANCED_ANALYTICS))
     }
 
     @Test
     fun `Given ExperimentContext, When evaluating flags, Then experiment-specific properties are accessible`() {
         FeatureModule.Core.config {
-            ExperimentFlags.HOMEPAGE_VARIANT with {
+            ExperimentFeatures.HOMEPAGE_VARIANT with {
                 default("control")
                 rule {
                     platforms(Platform.IOS, Platform.ANDROID)
@@ -141,20 +85,20 @@ class ContextPolymorphismTest {
             sessionId = "session-xyz",
         )
 
-        assertEquals("variant-a", mobileCtx.evaluate(ExperimentFlags.HOMEPAGE_VARIANT))
-        assertEquals("variant-b", webCtx.evaluate(ExperimentFlags.HOMEPAGE_VARIANT))
+        assertEquals("variant-a", mobileCtx.evaluate(ExperimentFeatures.HOMEPAGE_VARIANT))
+        assertEquals("variant-b", webCtx.evaluate(ExperimentFeatures.HOMEPAGE_VARIANT))
     }
 
     @Suppress("USELESS_IS_CHECK")
     @Test
     fun `Given multiple custom contexts, When using different flags, Then contexts are independent`() {
         FeatureModule.Core.config {
-            EnterpriseFlags.API_ACCESS with {
+            EnterpriseFeatures.API_ACCESS with {
                 default(false)
                 rule {
                 } implies true
             }
-            ExperimentFlags.ONBOARDING_STYLE with {
+            ExperimentFeatures.ONBOARDING_STYLE with {
                 default("classic")
                 rule {
                 } implies "modern"
@@ -181,8 +125,8 @@ class ContextPolymorphismTest {
         )
 
         // Each context can be evaluated independently with its own flags
-        val apiAccess = enterpriseCtx.evaluate(EnterpriseFlags.API_ACCESS)
-        val onboardingStyle = experimentCtx.evaluate(ExperimentFlags.ONBOARDING_STYLE)
+        val apiAccess = enterpriseCtx.evaluate(EnterpriseFeatures.API_ACCESS)
+        val onboardingStyle = experimentCtx.evaluate(ExperimentFeatures.ONBOARDING_STYLE)
 
         assertTrue(apiAccess is Boolean)
         assertTrue(onboardingStyle is String)
@@ -207,7 +151,7 @@ class ContextPolymorphismTest {
                     platforms(Platform.IOS)
                 } implies true
             }
-            EnterpriseFlags.CUSTOM_BRANDING with {
+            EnterpriseFeatures.CUSTOM_BRANDING with {
                 default(false)
                 rule {
                     platforms(Platform.WEB)
@@ -235,7 +179,7 @@ class ContextPolymorphismTest {
         )
 
         assertTrue(baseCtx.evaluate(standardFlagA))
-        assertTrue(enterpriseCtx.evaluate(EnterpriseFlags.CUSTOM_BRANDING))
+        assertTrue(enterpriseCtx.evaluate(EnterpriseFeatures.CUSTOM_BRANDING))
     }
 
     @Test
@@ -275,7 +219,7 @@ class ContextPolymorphismTest {
     fun `Given custom EnterpriseRule, When matching with business logic, Then custom properties are enforced`() {
         val registry = FakeRegistry()
         FeatureModule.Core.config(registry) {
-            EnterpriseFlags.API_ACCESS with {
+            EnterpriseFeatures.API_ACCESS with {
                 default(false)
                 rule {
                     platforms(Platform.WEB)
@@ -308,7 +252,7 @@ class ContextPolymorphismTest {
             userRole = UserRole.EDITOR,
         )
 
-        assertFalse(premiumEditor.evaluate(EnterpriseFlags.API_ACCESS))
-        assertTrue(enterpriseAdmin.evaluate(EnterpriseFlags.API_ACCESS))
+        assertFalse(premiumEditor.evaluate(EnterpriseFeatures.API_ACCESS))
+        assertTrue(enterpriseAdmin.evaluate(EnterpriseFeatures.API_ACCESS))
     }
 }

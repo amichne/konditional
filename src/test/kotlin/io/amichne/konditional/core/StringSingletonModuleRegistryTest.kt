@@ -7,22 +7,12 @@ import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.evaluate
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.fixtures.TestStringFeatures
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class StringSingletonModuleRegistryTest {
-    // Define a simple enum for string-valued flags
-    enum class StringFeatureFlags(
-        override val key: String,
-    ) : StringFeature<Context, FeatureModule.Core> {
-        API_ENDPOINT("api_endpoint"),
-        THEME("theme"),
-        WELCOME_MESSAGE("welcome_message");
-
-        override val module: FeatureModule.Core = FeatureModule.Core
-    }
-
     private fun ctx(
         idHex: String,
         locale: AppLocale = AppLocale.EN_US,
@@ -33,7 +23,7 @@ class StringSingletonModuleRegistryTest {
     @Test
     fun `Given platform targeting, When evaluating string flag, Then correct theme is returned`() {
         config {
-            StringFeatureFlags.THEME with {
+            TestStringFeatures.THEME with {
                 default("light")
                 rule {
                     platforms(Platform.ANDROID)
@@ -49,7 +39,7 @@ class StringSingletonModuleRegistryTest {
             ctx(
                 "11111111111111111111111111111111",
                 platform = Platform.ANDROID,
-            ).evaluate(StringFeatureFlags.THEME)
+            ).evaluate(TestStringFeatures.THEME)
         assertEquals("material", androidResult)
 
         // iOS should get cupertino theme
@@ -57,14 +47,14 @@ class StringSingletonModuleRegistryTest {
             ctx(
                 "22222222222222222222222222222222",
                 platform = Platform.IOS,
-            ).evaluate(StringFeatureFlags.THEME)
+            ).evaluate(TestStringFeatures.THEME)
         assertEquals("cupertino", iosResult)
     }
 
     @Test
     fun `Given locale targeting, When evaluating string flag, Then correct message is returned`() {
         config {
-            StringFeatureFlags.WELCOME_MESSAGE with {
+            TestStringFeatures.WELCOME_MESSAGE with {
                 default("Welcome!")
                 rule {
                     locales(AppLocale.ES_US)
@@ -83,35 +73,35 @@ class StringSingletonModuleRegistryTest {
             ctx(
                 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa01",
                 locale = AppLocale.EN_US,
-            ).evaluate(StringFeatureFlags.WELCOME_MESSAGE),
+            ).evaluate(TestStringFeatures.WELCOME_MESSAGE),
         )
         assertEquals(
             "¡Bienvenido!",
             ctx(
                 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa02",
                 locale = AppLocale.ES_US,
-            ).evaluate(StringFeatureFlags.WELCOME_MESSAGE),
+            ).evaluate(TestStringFeatures.WELCOME_MESSAGE),
         )
         assertEquals(
             "Welcome, eh!",
             ctx(
                 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa03",
                 locale = AppLocale.EN_CA,
-            ).evaluate(StringFeatureFlags.WELCOME_MESSAGE),
+            ).evaluate(TestStringFeatures.WELCOME_MESSAGE),
         )
         assertEquals(
             "स्वागत है!",
             ctx(
                 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa04",
                 locale = AppLocale.HI_IN,
-            ).evaluate(StringFeatureFlags.WELCOME_MESSAGE),
+            ).evaluate(TestStringFeatures.WELCOME_MESSAGE),
         )
     }
 
     @Test
     fun `Given version targeting, When evaluating string flag, Then correct endpoint is returned`() {
         config {
-            StringFeatureFlags.API_ENDPOINT with {
+            TestStringFeatures.API_ENDPOINT with {
                 default("https://api.example.com/v1")
                 rule {
                     versions {
@@ -130,26 +120,26 @@ class StringSingletonModuleRegistryTest {
         // Version 7.x should use v1
         assertEquals(
             "https://api.example.com/v1",
-            ctx("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb01", version = "7.5.0").evaluate(StringFeatureFlags.API_ENDPOINT),
+            ctx("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb01", version = "7.5.0").evaluate(TestStringFeatures.API_ENDPOINT),
         )
 
         // Version 8.x should use v2
         assertEquals(
             "https://api.example.com/v2",
-            ctx("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb02", version = "8.2.0").evaluate(StringFeatureFlags.API_ENDPOINT),
+            ctx("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb02", version = "8.2.0").evaluate(TestStringFeatures.API_ENDPOINT),
         )
 
         // Version 9.x should use v3
         assertEquals(
             "https://api.example.com/v3",
-            ctx("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb03", version = "9.1.0").evaluate(StringFeatureFlags.API_ENDPOINT),
+            ctx("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb03", version = "9.1.0").evaluate(TestStringFeatures.API_ENDPOINT),
         )
     }
 
     @Test
     fun `Given coverage rollout, When evaluating string flag, Then distribution is correct`() {
         config {
-            StringFeatureFlags.API_ENDPOINT with {
+            TestStringFeatures.API_ENDPOINT with {
                 default("https://api-old.example.com")
                 rule {
                     // 30% of users get the new endpoint
@@ -165,7 +155,7 @@ class StringSingletonModuleRegistryTest {
 
         for (i in 0 until samples) {
             val id = "%032x".format(i)
-            val result = ctx(id).evaluate(StringFeatureFlags.API_ENDPOINT)
+            val result = ctx(id).evaluate(TestStringFeatures.API_ENDPOINT)
             when (result) {
                 "https://api-new.example.com" -> newEndpointCount++
                 "https://api-old.example.com" -> oldEndpointCount++
@@ -183,7 +173,7 @@ class StringSingletonModuleRegistryTest {
     @Test
     fun `Given complex targeting, When evaluating string flag, Then correct distribution is returned`() {
         config {
-            StringFeatureFlags.API_ENDPOINT with {
+            TestStringFeatures.API_ENDPOINT with {
                 default("https://api.example.com/stable")
 
                 // Beta API for iOS 9.0+ users at 25% rollout
@@ -209,7 +199,7 @@ class StringSingletonModuleRegistryTest {
         assertEquals(
             "https://api.example.com/stable",
             ctx("cccccccccccccccccccccccccccccc01", platform = Platform.IOS, version = "8.5.0").evaluate(
-                StringFeatureFlags.API_ENDPOINT,
+                TestStringFeatures.API_ENDPOINT,
             ),
         )
 
@@ -220,7 +210,7 @@ class StringSingletonModuleRegistryTest {
                 "cccccccccccccccccccccccccccccc02",
                 platform = Platform.ANDROID,
                 version = "10.0.0",
-            ).evaluate(StringFeatureFlags.API_ENDPOINT),
+            ).evaluate(TestStringFeatures.API_ENDPOINT),
         )
 
         // iOS 9.0+ users get beta or stable based on 25% coverage
@@ -233,7 +223,7 @@ class StringSingletonModuleRegistryTest {
             val id = "%032x".format(i)
             val result =
                 ctx(id, platform = Platform.IOS, version = "9.2.0")
-                    .evaluate(StringFeatureFlags.API_ENDPOINT)
+                    .evaluate(TestStringFeatures.API_ENDPOINT)
             when (result) {
                 "https://api.example.com/beta" -> betaCount++
                 "https://api.example.com/stable" -> stableCount++
@@ -247,7 +237,7 @@ class StringSingletonModuleRegistryTest {
     @Test
     fun `Given same Id, When evaluating string flag multiple times, Then result is deterministic`() {
         config {
-            StringFeatureFlags.THEME with {
+            TestStringFeatures.THEME with {
                 default("light")
                 rule {
                 } implies "dark"
@@ -255,11 +245,11 @@ class StringSingletonModuleRegistryTest {
         }
 
         val id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1"
-        val firstResult = ctx(id).evaluate(StringFeatureFlags.THEME)
+        val firstResult = ctx(id).evaluate(TestStringFeatures.THEME)
 
         // Same user should always get the same result
         repeat(100) {
-            val result = ctx(id).evaluate(StringFeatureFlags.THEME)
+            val result = ctx(id).evaluate(TestStringFeatures.THEME)
             assertEquals(firstResult, result, "User should get consistent results")
         }
     }
@@ -267,12 +257,12 @@ class StringSingletonModuleRegistryTest {
     @Test
     fun `Given same Id, When evaluating different string flags, Then results are independent and deterministic`() {
         config {
-            StringFeatureFlags.THEME with {
+            TestStringFeatures.THEME with {
                 default("light")
                 rule {
                 } implies "dark"
             }
-            StringFeatureFlags.API_ENDPOINT with {
+            TestStringFeatures.API_ENDPOINT with {
                 default("https://api.example.com/v1")
                 rule {
                 } implies "https://api.example.com/v2"
@@ -282,8 +272,8 @@ class StringSingletonModuleRegistryTest {
         val id = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 
         // Different flags can have different values for the same user (independent bucketing)
-        val themeResult = ctx(id).evaluate(StringFeatureFlags.THEME)
-        val apiResult = ctx(id).evaluate(StringFeatureFlags.API_ENDPOINT)
+        val themeResult = ctx(id).evaluate(TestStringFeatures.THEME)
+        val apiResult = ctx(id).evaluate(TestStringFeatures.API_ENDPOINT)
 
         // Just verify both return values (they can differ since bucketing is independent)
         assertTrue(themeResult in listOf("light", "dark"))
@@ -291,8 +281,8 @@ class StringSingletonModuleRegistryTest {
 
         // But each should be deterministic for the same user
         repeat(10) {
-            assertEquals(themeResult, ctx(id).evaluate(StringFeatureFlags.THEME))
-            assertEquals(apiResult, ctx(id).evaluate(StringFeatureFlags.API_ENDPOINT))
+            assertEquals(themeResult, ctx(id).evaluate(TestStringFeatures.THEME))
+            assertEquals(apiResult, ctx(id).evaluate(TestStringFeatures.API_ENDPOINT))
         }
     }
 }

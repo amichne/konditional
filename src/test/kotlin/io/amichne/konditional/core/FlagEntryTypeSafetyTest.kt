@@ -9,6 +9,9 @@ import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.internal.SingletonModuleRegistry
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.fixtures.TestBooleanFeatures
+import io.amichne.konditional.fixtures.TestIntFeatures
+import io.amichne.konditional.fixtures.TestStringFeatures
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
