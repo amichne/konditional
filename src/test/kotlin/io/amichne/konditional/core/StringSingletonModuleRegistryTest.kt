@@ -11,7 +11,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class StringSingletonFlagRegistryTest {
+class StringSingletonModuleRegistryTest {
     // Define a simple enum for string-valued flags
     enum class StringFeatureFlags(
         override val key: String,
@@ -20,7 +20,7 @@ class StringSingletonFlagRegistryTest {
         THEME("theme"),
         WELCOME_MESSAGE("welcome_message");
 
-        override val registry: FlagRegistry = FlagRegistry
+        override val registry: ModuleRegistry = ModuleRegistry
         override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, Context>) {
             registry.update(definition)
         }

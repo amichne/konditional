@@ -120,7 +120,10 @@ sealed interface EncodableValue<T : Any> {
     ) : EncodableValue<T> {
         override val encoding: Encoding = Encoding.JSON
 
-        @Deprecated("Use the fluent builder API: value.asJsonObject().encoder { }.decoder { }", ReplaceWith("value.asJsonObject().encoder(encoder).decoder(decoder)"))
+        @Deprecated(
+            "Use the fluent builder API: value.asJsonObject().encoder { }.decoder { }",
+            ReplaceWith("value.asJsonObject().encoder(encoder).decoder(decoder)")
+        )
         constructor(
             value: T,
             encoder: (T) -> Map<String, Any?>,
@@ -165,7 +168,10 @@ sealed interface EncodableValue<T : Any> {
             }
         }
 
-        @Deprecated("Use the fluent builder API: value.asCustomString().encoder { }.decoder { }", ReplaceWith("value.asCustomString().encoder(encoder).decoder(decoder)"))
+        @Deprecated(
+            "Use the fluent builder API: value.asCustomString().encoder { }.decoder { }",
+            ReplaceWith("value.asCustomString().encoder(encoder).decoder(decoder)")
+        )
         constructor(
             value: T,
             primitiveEncoding: Encoding,

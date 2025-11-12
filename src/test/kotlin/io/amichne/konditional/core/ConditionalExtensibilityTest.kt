@@ -33,13 +33,8 @@ class ConditionalExtensibilityTest {
 
     enum class ApiConfigFlags(
         override val key: String,
-    ) : Feature.OfJsonObject<ApiConfig, Context> {
+    ) : Feature.OfJsonObject<ApiConfig, Context, FeatureModule.Core> {
         PRIMARY_API("primary_api");
-
-        override val registry: FlagRegistry = FlagRegistry
-        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.JsonObjectEncodeable<ApiConfig>, ApiConfig, Context>) {
-            registry.update(definition)
-        }
     }
 
     // Custom value type: Theme configuration
@@ -52,37 +47,23 @@ class ConditionalExtensibilityTest {
 
     enum class ThemeFlags(
         override val key: String,
-    ) : Feature.OfJsonObject<ThemeConfig, Context> {
+    ) : Feature.OfJsonObject<ThemeConfig, Context, FeatureModule.Core> {
         APP_THEME("app_theme");
-
-        override val registry: FlagRegistry = FlagRegistry
-        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.JsonObjectEncodeable<ThemeConfig>, ThemeConfig, Context>) {
-            registry.update(definition)
-        }
     }
 
     // Custom value type: List of strings
     enum class ListFlags(
         override val key: String,
-    ) : Feature.OfJsonObject<List<String>, Context> {
+    ) : Feature.OfJsonObject<List<String>, Context, FeatureModule.Core> {
         ENABLED_FEATURES("enabled_features");
 
-        override val registry: FlagRegistry = FlagRegistry
-        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.JsonObjectEncodeable<List<String>>, List<String>, Context>) {
-            registry.update(definition)
-        }
     }
 
     // Custom value type: Integer
     enum class IntFlags(
         override val key: String,
-    ) : Feature<io.amichne.konditional.core.types.EncodableValue.IntEncodeable, Int, Context> {
+    ) : IntFeature<Context, FeatureModule.Core> {
         MAX_CONNECTIONS("max_connections");
-
-        override val registry: FlagRegistry = FlagRegistry
-        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.IntEncodeable, Int, Context>) {
-            registry.update(definition)
-        }
     }
 
     // Custom value type: Enum
@@ -92,25 +73,16 @@ class ConditionalExtensibilityTest {
 
     enum class LogConfigFlags(
         override val key: String,
-    ) : Feature.OfCustom<LogLevel, String, Context> {
+    ) : Feature.OfCustom<LogLevel, String, Context, FeatureModule.Core> {
         APP_LOG_LEVEL("app_log_level");
 
-        override val registry: FlagRegistry = FlagRegistry
-        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.CustomEncodeable<LogLevel, String>, LogLevel, Context>) {
-            registry.update(definition)
-        }
     }
 
     // Custom value type: Map
     enum class MapFlags(
         override val key: String,
-    ) : Feature.OfJsonObject<Map<String, String>, Context> {
+    ) : Feature.OfJsonObject<Map<String, String>, Context, FeatureModule.Core> {
         FEATURE_TOGGLES("feature_toggles");
-
-        override val registry: FlagRegistry = FlagRegistry
-        override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.JsonObjectEncodeable<Map<String, String>>, Map<String, String>, Context>) {
-            registry.update(definition)
-        }
     }
 
     @Test
@@ -129,7 +101,7 @@ class ConditionalExtensibilityTest {
             useHttps = false,
         )
 
-        config {
+        FeatureModule.Core.config {
             ApiConfigFlags.PRIMARY_API with {
                 default(prodConfig)
                 rule {
@@ -163,7 +135,7 @@ class ConditionalExtensibilityTest {
             darkModeEnabled = true,
         )
 
-        config {
+        FeatureModule.Core.config {
             ThemeFlags.APP_THEME with {
                 default(lightTheme)
                 rule {
@@ -185,7 +157,7 @@ class ConditionalExtensibilityTest {
         val defaultFeatures = listOf("core", "basic")
         val premiumFeatures = listOf("core", "basic", "advanced", "analytics")
 
-        config {
+        FeatureModule.Core.config {
             ListFlags.ENABLED_FEATURES with {
                 default(defaultFeatures)
                 rule {
@@ -209,7 +181,7 @@ class ConditionalExtensibilityTest {
 
     @Test
     fun `Given Int value type, When evaluating, Then correct integer is returned`() {
-        config {
+        FeatureModule.Core.config {
             IntFlags.MAX_CONNECTIONS with {
                 default(10)
                 rule {
@@ -239,7 +211,7 @@ class ConditionalExtensibilityTest {
 
     @Test
     fun `Given Enum value type, When evaluating, Then correct enum is returned`() {
-        config {
+        FeatureModule.Core.config {
             LogConfigFlags.APP_LOG_LEVEL with {
                 default(LogLevel.INFO)
                 rule {
@@ -279,7 +251,7 @@ class ConditionalExtensibilityTest {
             "feature3" to "beta",
         )
 
-        config {
+        FeatureModule.Core.config {
             MapFlags.FEATURE_TOGGLES with {
                 default(defaultToggles)
                 rule {
@@ -305,7 +277,7 @@ class ConditionalExtensibilityTest {
         val theme = ThemeConfig("#FFFFFF", "#F0F0F0", "Arial", false)
         val features = listOf("core")
 
-        config {
+        FeatureModule.Core.config {
             ApiConfigFlags.PRIMARY_API with {
                 default(apiConfig)
             }
@@ -353,12 +325,7 @@ class ConditionalExtensibilityTest {
             val level3: ApiConfig,
         )
 
-        data class DeepFlag(override val key: String = "nested_config") : Feature.OfJsonObject<DeepConfig, Context> {
-            override val registry: FlagRegistry = FlagRegistry
-            override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.JsonObjectEncodeable<DeepConfig>, DeepConfig, Context>) {
-                registry.update(definition)
-            }
-        }
+        data class DeepFlag(override val key: String = "nested_config") : Feature.OfJsonObject<DeepConfig, Context, FeatureModule.Core>
 
         val nestedConfigFlag = DeepFlag()
 
@@ -371,7 +338,7 @@ class ConditionalExtensibilityTest {
             level3 = ApiConfig("https://nested.example.com", 20, 2, true),
         )
 
-        config {
+        FeatureModule.Core.config {
             nestedConfigFlag with {
                 default(complexConfig)
             }

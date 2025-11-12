@@ -1,10 +1,10 @@
 package io.amichne.konditional.fakes
 
-import io.amichne.konditional.core.FlagRegistry
-import io.amichne.konditional.core.internal.SingletonFlagRegistry
+import io.amichne.konditional.core.ModuleRegistry
+import io.amichne.konditional.core.internal.SingletonModuleRegistry
 
 /**
- * A test fake implementation of [FlagRegistry] for unit testing.
+ * A test fake implementation of [ModuleRegistry] for unit testing.
  *
  * This implementation provides a simple, mutable in-memory registry
  * that's ideal for testing flag evaluation logic without the overhead
@@ -67,7 +67,7 @@ import io.amichne.konditional.core.internal.SingletonFlagRegistry
  * - Follows the "parse, don't validate" principle by delegating validation
  *   to the Konfig type itself
  *
- * @see FlagRegistry
- * @see io.amichne.konditional.core.internal.SingletonFlagRegistry
+ * @see ModuleRegistry
+ * @see io.amichne.konditional.core.internal.SingletonModuleRegistry
  */
-class FakeRegistry : FlagRegistry by SingletonFlagRegistry
+class FakeRegistry : ModuleRegistry by SingletonModuleRegistry

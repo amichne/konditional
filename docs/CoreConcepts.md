@@ -9,9 +9,9 @@ This document explains the fundamental types that make Konditional's compile-tim
 Konditional's type safety comes from **generic type parameters** that flow through every component:
 
 ```kotlin
-Feature<S : EncodableValue<T>, T : Any, C : Context>
-           ↓                      ↓          ↓
-    EncodableValue wrapper    Actual value  Context type
+Feature < S : EncodableValue<T>, T : Any, C : Context, M : Module>
+↓                      ↓          ↓
+EncodableValue wrapper Actual value Context type
 ```
 
 Let's understand each component and how they guarantee compile-time safety.
@@ -33,7 +33,7 @@ enum class Features(override val key: String) : Conditional<Boolean, Context> {
 ### Type Parameters Explained
 
 ```kotlin
-interface Feature<S : EncodableValue<T>, T : Any, C : Context> {
+interface Feature<S : EncodableValue<T>, T : Any, C : Context, M : Module> {
     val key: String
 }
 
@@ -44,6 +44,7 @@ interface Feature<S : EncodableValue<T>, T : Any, C : Context> {
 ```
 
 **What this guarantees:**
+
 - `DARK_MODE` always returns `Boolean`, never `String` or `Int`
 - Evaluation requires `Context`, not some other type
 - The compiler enforces these at every usage site
@@ -51,6 +52,7 @@ interface Feature<S : EncodableValue<T>, T : Any, C : Context> {
 ### Why Three Type Parameters?
 
 **`S: EncodableValue<T>`** - The wrapper type for serialization
+
 ```kotlin
 // Internal: How the value is encoded/decoded
 sealed interface EncodableValue<T : Any> {
@@ -60,6 +62,7 @@ sealed interface EncodableValue<T : Any> {
 ```
 
 **`T: Any`** - The actual value type you work with
+
 ```kotlin
 // What you get when evaluating
 val enabled: Boolean = context.evaluate(Features.DARK_MODE)
@@ -67,6 +70,7 @@ val enabled: Boolean = context.evaluate(Features.DARK_MODE)
 ```
 
 **`C: Context`** - The required evaluation context
+
 ```kotlin
 // What information evaluation needs
 interface Context {
@@ -80,6 +84,7 @@ interface Context {
 ### Common Feature Patterns
 
 **Boolean flags:**
+
 ```kotlin
 enum class Features(override val key: String) : Conditional<Boolean, Context> {
     DARK_MODE("dark_mode"),
@@ -89,6 +94,7 @@ enum class Features(override val key: String) : Conditional<Boolean, Context> {
 ```
 
 **String configuration:**
+
 ```kotlin
 enum class ApiConfig(override val key: String) : Conditional<String, Context> {
     ENDPOINT("api_endpoint"),
@@ -97,6 +103,7 @@ enum class ApiConfig(override val key: String) : Conditional<String, Context> {
 ```
 
 **Integer limits:**
+
 ```kotlin
 enum class Limits(override val key: String) : Conditional<Int, Context> {
     MAX_RETRIES("max_retries"),
@@ -105,8 +112,12 @@ enum class Limits(override val key: String) : Conditional<Int, Context> {
 ```
 
 **Custom types:**
+
 ```kotlin
-data class ThemeConfig(val primaryColor: String, val fontSize: Int)
+data class ThemeConfig(
+    val primaryColor: String,
+    val fontSize: Int
+)
 
 enum class Theme(override val key: String) : Conditional<ThemeConfig, Context> {
     APP_THEME("app_theme")
@@ -120,12 +131,14 @@ enum class Theme(override val key: String) : Conditional<ThemeConfig, Context> {
 ### The Problem It Solves
 
 **String-based systems:** Any type can be stored, leading to runtime errors
+
 ```kotlin
 config.set("timeout", "not-a-number")  // ✓ Compiles
 val timeout: Int = config.getInt("timeout")  // 💣 Runtime error
 ```
 
 **Konditional:** Only supported types can exist
+
 ```kotlin
 enum class Config(override val key: String) : Conditional<Int, Context> {
     TIMEOUT("timeout")
@@ -154,14 +167,14 @@ sealed interface EncodableValue<T : Any> {
 
 **Built-in encodeable types:**
 
-| Kotlin Type | EncodableValue Wrapper | Encoding |
-|-------------|------------------------|----------|
-| `Boolean` | `BooleanEncodeable` | `BOOLEAN` |
-| `String` | `StringEncodeable` | `STRING` |
-| `Int` | `IntEncodeable` | `INTEGER` |
-| `Double` | `DecimalEncodeable` | `DECIMAL` |
-| Data classes | `JsonObjectEncodeable<T>` | `JSON` |
-| Custom wrappers | `CustomEncodeable<T, P>` | Varies |
+| Kotlin Type     | EncodableValue Wrapper    | Encoding  |
+|-----------------|---------------------------|-----------|
+| `Boolean`       | `BooleanEncodeable`       | `BOOLEAN` |
+| `String`        | `StringEncodeable`        | `STRING`  |
+| `Int`           | `IntEncodeable`           | `INTEGER` |
+| `Double`        | `DecimalEncodeable`       | `DECIMAL` |
+| Data classes    | `JsonObjectEncodeable<T>` | `JSON`    |
+| Custom wrappers | `CustomEncodeable<T, P>`  | Varies    |
 
 ### How It Works
 
@@ -177,7 +190,8 @@ enum class ApiConfig(override val key: String) : Conditional<String, Context> {
 }
 ```
 
-**You never interact with wrappers directly** - they're internal. You just specify the value type (`Boolean`, `String`, etc.) and the compiler handles the rest.
+**You never interact with wrappers directly** - they're internal. You just specify the value type (`Boolean`, `String`,
+etc.) and the compiler handles the rest.
 
 ### Custom Types via JSON
 
@@ -239,12 +253,14 @@ interface Context {
 ### Why Context Is Type-Safe
 
 **String-based systems:** Context requirements are invisible
+
 ```kotlin
 // What does this flag need to know?
 val enabled = config.getBoolean("premium_export")  // ⚠️ Hidden dependencies
 ```
 
 **Konditional:** Context requirements are explicit in the type
+
 ```kotlin
 data class EnterpriseContext(
     override val locale: AppLocale,
@@ -254,8 +270,8 @@ data class EnterpriseContext(
     val subscriptionTier: SubscriptionTier  // ← Visible requirement
 ) : Context
 
-enum class PremiumFeatures(override val key: String)
-    : Conditional<Boolean, EnterpriseContext> {  // ← Type documents requirement
+enum class PremiumFeatures(override val key: String) :
+    Conditional<Boolean, EnterpriseContext> {  // ← Type documents requirement
     DATA_EXPORT("export_enabled")
 }
 
@@ -292,10 +308,11 @@ enum class SubscriptionTier {
 ```
 
 **What this enables:**
--  Type-safe access to business fields in rules
--  Compiler prevents evaluation with wrong context
--  Self-documenting context requirements
--  IDE auto-complete for all context fields
+
+- Type-safe access to business fields in rules
+- Compiler prevents evaluation with wrong context
+- Self-documenting context requirements
+- IDE auto-complete for all context fields
 
 ### Context Polymorphism
 
@@ -303,20 +320,17 @@ Different flags can require different contexts:
 
 ```kotlin
 // Basic features use base Context
-enum class BasicFeatures(override val key: String)
-    : Conditional<Boolean, Context> {
+enum class BasicFeatures(override val key: String) : Conditional<Boolean, Context> {
     DARK_MODE("dark_mode")
 }
 
 // Premium features require AppContext
-enum class PremiumFeatures(override val key: String)
-    : Conditional<Boolean, AppContext> {
+enum class PremiumFeatures(override val key: String) : Conditional<Boolean, AppContext> {
     DATA_EXPORT("export_enabled")
 }
 
 // Enterprise features require EnterpriseContext
-enum class EnterpriseFeatures(override val key: String)
-    : Conditional<Boolean, EnterpriseContext> {
+enum class EnterpriseFeatures(override val key: String) : Conditional<Boolean, EnterpriseContext> {
     ADVANCED_ANALYTICS("analytics")
 }
 
@@ -378,6 +392,7 @@ rule {
 ```
 
 **All criteria must match** for the rule to match:
+
 - Platform must be in specified set
 - Locale must be in specified set
 - Version must be in specified range
@@ -427,8 +442,7 @@ config {
 **Context type is enforced:**
 
 ```kotlin
-enum class PremiumFeatures(override val key: String)
-    : Conditional<Boolean, AppContext> {
+enum class PremiumFeatures(override val key: String) : Conditional<Boolean, AppContext> {
     DATA_EXPORT("export_enabled")
 }
 
@@ -467,10 +481,10 @@ config {
 `FlagDefinition` is the internal representation of a configured flag:
 
 ```kotlin
-data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context>(
-    val feature: Feature<S, T, C>,
+data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Module>(
+    val feature: Feature<S, T, C, M>,
     val defaultValue: T,
-    val values: List<ConditionalValue<S, T, C>>,
+    val values: List<ConditionalValue<S, T, C, M>>,
     val isActive: Boolean,
     val salt: String
 )
@@ -494,7 +508,8 @@ fun evaluate(context: C): T {
     // Iterate through rules (sorted by specificity)
     for (conditionalValue in values) {
         if (conditionalValue.rule.matches(context) &&
-            isInEligibleSegment(context.stableId, rollout)) {
+            isInEligibleSegment(context.stableId, rollout)
+        ) {
             return conditionalValue.value  // ← Type T guaranteed
         }
     }
@@ -538,16 +553,19 @@ val result: Boolean = context.evaluate(Features.DARK_MODE)
 ### Design Principles in Action
 
 **1. Type Safety First**
+
 - Generic type parameters enforce constraints
 - Invalid types are unrepresentable
 - No string-based lookups
 
 **2. Parse, Don't Validate**
+
 - Configuration validated at definition time
 - Evaluation never fails with type errors
 - Results are always the expected type
 
 **3. Composition Over Inheritance**
+
 - Rules compose base + extension evaluables
 - Features compose key + type + context
 - Builders use sealed interfaces
@@ -556,13 +574,13 @@ val result: Boolean = context.evaluate(Features.DARK_MODE)
 
 ## Summary: The Type Safety Guarantees
 
-| Component | Type Safety Guarantee |
-|-----------|----------------------|
-| **Feature** | Generic type parameters enforce value and context types |
-| **EncodableValue** | Only supported types can be stored |
-| **Context** | Context requirements explicit in type parameter |
-| **Rule** | Value type and context type enforced in builders |
-| **FlagDefinition** | Returns exactly the declared type, never null |
+| Component          | Type Safety Guarantee                                   |
+|--------------------|---------------------------------------------------------|
+| **Feature**        | Generic type parameters enforce value and context types |
+| **EncodableValue** | Only supported types can be stored                      |
+| **Context**        | Context requirements explicit in type parameter         |
+| **Rule**           | Value type and context type enforced in builders        |
+| **FlagDefinition** | Returns exactly the declared type, never null           |
 
 **Core Principle:** If it compiles, the types are correct. No runtime type errors possible.
 

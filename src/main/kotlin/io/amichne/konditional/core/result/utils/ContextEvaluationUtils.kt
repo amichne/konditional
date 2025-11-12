@@ -2,7 +2,6 @@ package io.amichne.konditional.core.result.utils
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Feature
-import io.amichne.konditional.core.FlagRegistry
 import io.amichne.konditional.core.result.EvaluationResult
 import io.amichne.konditional.core.result.FlagEvaluationException
 import io.amichne.konditional.core.result.FlagNotFoundException
@@ -14,6 +13,8 @@ import io.amichne.konditional.core.result.FlagNotFoundException
  * - Successfully getting a value
  * - Flag not being registered
  * - Evaluation throwing an exception
+ *
+ * The feature's featureModule-scoped registry is automatically used.
  *
  * Usage:
  * ```kotlin
@@ -34,14 +35,12 @@ import io.amichne.konditional.core.result.FlagNotFoundException
  * ```
  *
  * @param key the conditional key identifying the flag
- * @param registry the flag registry to look up the flag (defaults to SingletonFlagRegistry)
  * @return typed result that never throws
  */
-fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> C.evaluateSafe(
-    key: Feature<S, T, C>,
-    registry: FlagRegistry = FlagRegistry
+fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : io.amichne.konditional.core.FeatureModule> C.evaluateSafe(
+    key: Feature<S, T, C, M>
 ): EvaluationResult<T> =
-    registry.featureFlag(key)?.let { flag ->
+    key.registry.featureFlag(key)?.let { flag ->
         runCatching { flag.evaluate(this) }
             .fold(
                 onSuccess = { EvaluationResult.Success(it) },
@@ -59,6 +58,8 @@ fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Conte
  *
  * If you need to distinguish error cases, use `evaluateSafe()` instead.
  *
+ * The feature's featureModule-scoped registry is automatically used.
+ *
  * ```kotlin
  * val feature: String? = context.evaluateOrNull(MY_FLAG)
  * if (feature != null) {
@@ -66,10 +67,9 @@ fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Conte
  * }
  * ```
  */
-fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> C.evaluateOrNull(
-    key: Feature<S, T, C>,
-    registry: FlagRegistry = FlagRegistry
-): T? = evaluateSafe(key, registry).getOrNull()
+fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : io.amichne.konditional.core.FeatureModule> C.evaluateOrNull(
+    key: Feature<S, T, C, M>
+): T? = evaluateSafe(key).getOrNull()
 
 /**
  * Evaluate a flag, returning a default value if not found or evaluation fails.
@@ -81,15 +81,16 @@ fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Conte
  *
  * If you need to distinguish error cases, use `evaluateSafe()` instead.
  *
+ * The feature's featureModule-scoped registry is automatically used.
+ *
  * ```kotlin
  * val feature: String = context.evaluateOrDefault(MY_FLAG, default = "off")
  * ```
  */
-fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> C.evaluateOrDefault(
-    key: Feature<S, T, C>,
-    default: T,
-    registry: FlagRegistry = FlagRegistry
-): T = evaluateSafe(key, registry).getOrDefault(default)
+fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : io.amichne.konditional.core.FeatureModule> C.evaluateOrDefault(
+    key: Feature<S, T, C, M>,
+    default: T
+): T = evaluateSafe(key).getOrDefault(default)
 
 /**
  * Evaluate a flag, throwing an exception if not found or evaluation fails.
@@ -101,6 +102,8 @@ fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Conte
  * - You're in a context that already uses exceptions
  * - You want fail-fast behavior
  *
+ * The feature's featureModule-scoped registry is automatically used.
+ *
  * ```kotlin
  * val feature: String = context.evaluateOrThrow(MY_FLAG)
  * ```
@@ -108,10 +111,9 @@ fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Conte
  * @throws FlagNotFoundException if the flag is not registered
  * @throws FlagEvaluationException if evaluation throws an exception
  */
-fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> C.evaluateOrThrow(
-    key: Feature<S, T, C>,
-    registry: FlagRegistry = FlagRegistry
-): T = evaluateSafe(key, registry).fold(
+fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : io.amichne.konditional.core.FeatureModule> C.evaluateOrThrow(
+    key: Feature<S, T, C, M>
+): T = evaluateSafe(key).fold(
     onSuccess = { it },
     onFlagNotFound = { throw FlagNotFoundException(it) },
     onEvaluationError = { flagKey, error -> throw FlagEvaluationException(flagKey, error) }

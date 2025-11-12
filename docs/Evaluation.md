@@ -1,6 +1,7 @@
 # Evaluation: Deterministic Flag Resolution
 
-This document explains how Konditional evaluates flags, including rule matching, specificity ordering, and rollout bucketing.
+This document explains how Konditional evaluates flags, including rule matching, specificity ordering, and rollout
+bucketing.
 
 ---
 
@@ -29,7 +30,7 @@ Context.evaluate(feature)
   |
   +-> FlagRegistry.featureFlag(feature)
   |     |
-  |     +-> Returns FlagDefinition<S, T, C>?
+  |     +-> Returns FlagDefinition<S, T, C, M>?
   |
   +-> If null: Return EvaluationResult.NotFound
   |
@@ -325,7 +326,7 @@ Rules are **sorted once at configuration time**:
 ```kotlin
 // Configuration time:
 values.sortedWith(
-    compareByDescending<ConditionalValue<S, T, C>> { it.rule.specificity() }
+    compareByDescending<ConditionalValue<S, T, C, M>> { it.rule.specificity() }
         .thenBy { it.rule.note ?: "" }
 )
 
@@ -372,6 +373,7 @@ fun stableBucket(
 ### Bucketing Properties
 
 **1. Deterministic**
+
 ```kotlin
 // Same inputs always produce same bucket
 val context = basicContext(stableId = StableId.of("user-123"))
@@ -381,6 +383,7 @@ context.evaluate(Features.NEW_CHECKOUT)  // Result: true (always)
 ```
 
 **2. Independent Per Flag**
+
 ```kotlin
 // Flag key is part of hash input
 // Each flag has its own bucketing space
@@ -391,6 +394,7 @@ SHA256("salt:feature_b:user-123")  // Bucket for feature B (independent!)
 ```
 
 **3. Platform-Stable**
+
 ```kotlin
 // SHA-256 is platform-independent
 // Same user gets same bucket on JVM, Android, iOS, web
@@ -400,6 +404,7 @@ val androidBucket = stableBucket("flag", StableId.of("user-123"), "salt")
 ```
 
 **4. Fine-Grained**
+
 ```kotlin
 // 0-9999 range = 0.01% granularity
 rollout = Rollout.of(0.5)   // 0.5% rollout (50 out of 10,000)
@@ -408,6 +413,7 @@ rollout = Rollout.of(99.99) // 99.99% rollout (9,999 out of 10,000)
 ```
 
 **5. Salt-Based Redistribution**
+
 ```kotlin
 // Changing salt redistributes buckets
 config {
@@ -434,13 +440,13 @@ config {
 
 ### Rollout Guarantees
 
-| Property | String-Based Approach | Konditional |
-|----------|----------------------|-------------|
-| **Deterministic** | hashCode() varies by platform/restart | SHA-256 always same |
-| **Independent** | Same hash for all flags = correlation | Separate hash per flag |
-| **Stable** | Changes across sessions | Same via stableId |
-| **Fine-grained** | Usually % only | 0.01% granularity |
-| **Redistributable** | Hard to change | Change salt |
+| Property            | String-Based Approach                 | Konditional            |
+|---------------------|---------------------------------------|------------------------|
+| **Deterministic**   | hashCode() varies by platform/restart | SHA-256 always same    |
+| **Independent**     | Same hash for all flags = correlation | Separate hash per flag |
+| **Stable**          | Changes across sessions               | Same via stableId      |
+| **Fine-grained**    | Usually % only                        | 0.01% granularity      |
+| **Redistributable** | Hard to change                        | Change salt            |
 
 ---
 
@@ -473,13 +479,13 @@ basicContext.evaluate(EnterpriseFeatures.ANALYTICS)  // ✗ Type mismatch
 
 ### Evaluation Guarantees
 
-| Guarantee | How Achieved |
-|-----------|--------------|
+| Guarantee           | How Achieved                           |
+|---------------------|----------------------------------------|
 | **Non-null result** | Default value required at compile time |
-| **Correct type** | Generic type parameter enforced |
-| **Correct context** | Context type parameter enforced |
-| **Deterministic** | SHA-256 bucketing, sorted rules |
-| **Thread-safe** | Immutable data structures |
+| **Correct type**    | Generic type parameter enforced        |
+| **Correct context** | Context type parameter enforced        |
+| **Deterministic**   | SHA-256 bucketing, sorted rules        |
+| **Thread-safe**     | Immutable data structures              |
 
 ---
 
@@ -527,10 +533,11 @@ val result = definition.evaluate(context)       // No allocation
 ```
 
 **Performance characteristics:**
--  No locks (lock-free reads)
--  No allocations (immutable snapshots)
--  Predictable latency (deterministic algorithm)
--  Cache-friendly (sorted data, sequential access)
+
+- No locks (lock-free reads)
+- No allocations (immutable snapshots)
+- Predictable latency (deterministic algorithm)
+- Cache-friendly (sorted data, sequential access)
 
 ---
 
@@ -625,15 +632,15 @@ fun `rollout percentage approximate`() {
 
 ## Summary: Evaluation Guarantees
 
-| Aspect | Guarantee |
-|--------|-----------|
-| **Type safety** | Return type matches flag definition, enforced at compile time |
-| **Determinism** | Same inputs always produce same output |
-| **Specificity** | Most specific matching rule always wins |
-| **Bucketing** | SHA-256 ensures independent, stable buckets per flag |
-| **Performance** | O(n) where n = rules per flag (typically < 10) |
-| **Thread safety** | Lock-free reads, immutable data |
-| **Null safety** | Never returns null, default value guaranteed |
+| Aspect            | Guarantee                                                     |
+|-------------------|---------------------------------------------------------------|
+| **Type safety**   | Return type matches flag definition, enforced at compile time |
+| **Determinism**   | Same inputs always produce same output                        |
+| **Specificity**   | Most specific matching rule always wins                       |
+| **Bucketing**     | SHA-256 ensures independent, stable buckets per flag          |
+| **Performance**   | O(n) where n = rules per flag (typically < 10)                |
+| **Thread safety** | Lock-free reads, immutable data                               |
+| **Null safety**   | Never returns null, default value guaranteed                  |
 
 **Core Principle:** Evaluation is deterministic, type-safe, and performant.
 

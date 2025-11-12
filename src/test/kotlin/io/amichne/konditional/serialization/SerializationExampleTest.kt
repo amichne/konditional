@@ -1,16 +1,15 @@
 package io.amichne.konditional.serialization
 
-import io.amichne.konditional.core.buildSnapshot
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.evaluate
+import io.amichne.konditional.core.buildSnapshot
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.internal.SingletonFlagRegistry
+import io.amichne.konditional.core.internal.SingletonModuleRegistry
 import io.amichne.konditional.core.result.getOrThrow
-import io.amichne.konditional.example.SampleFeatureEnum
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -33,7 +32,7 @@ class SerializationExampleTest {
     @BeforeEach
     fun setUp() {
         // Register feature flags before deserialization
-        FeatureRegistry.registerEnum<SampleFeatureEnum>()
+        FeatureRegistry.registerEnum<io.amichne.konditional.example.SearchFeatures>()
     }
 
     @AfterEach
@@ -87,11 +86,11 @@ class SerializationExampleTest {
             stableId = StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
 
-        SingletonFlagRegistry.load(snapshot)
+        SingletonModuleRegistry.load(snapshot)
         val originalCompactCards = testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
         val originalLightweightHome = testContext.evaluate(SampleFeatureEnum.USE_LIGHTWEIGHT_HOME)
 
-        SingletonFlagRegistry.load(deserialized)
+        SingletonModuleRegistry.load(deserialized)
         val deserializedCompactCards = testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
         val deserializedLightweightHome = testContext.evaluate(SampleFeatureEnum.USE_LIGHTWEIGHT_HOME)
 
@@ -128,7 +127,7 @@ class SerializationExampleTest {
 
         // Step 6: Verify patch results
         println("Step 6: Verifying patched configuration...")
-        SingletonFlagRegistry.load(patched)
+        SingletonModuleRegistry.load(patched)
 
         println("  - ENABLE_COMPACT_CARDS: ${testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)}")
 
@@ -161,14 +160,14 @@ class SerializationExampleTest {
         println("To load from file, you would:")
         println("  val json = File(\"config.json\").readText()")
         println("  val snapshot = SnapshotSerializer.default.deserialize(json)")
-        println("  SingletonFlagRegistry.load(snapshot)")
+        println("  SingletonModuleRegistry.load(snapshot)")
         println()
 
         // Simulate loading from file
         val loadedSnapshot = serializer.deserialize(json).getOrThrow()
 
         // Verify it works
-        SingletonFlagRegistry.load(loadedSnapshot)
+        SingletonModuleRegistry.load(loadedSnapshot)
         val context = Context(
             AppLocale.EN_US,
             Platform.IOS,

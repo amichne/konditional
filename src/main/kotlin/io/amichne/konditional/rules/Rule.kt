@@ -60,7 +60,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  *
  * @see Evaluable
  * @see io.amichne.konditional.rules.evaluable.BaseEvaluable
- * @see io.amichne.konditional.core.internal.SingletonFlagRegistry
+ * @see io.amichne.konditional.core.internal.SingletonModuleRegistry
  */
 @ConsistentCopyVisibility
 data class Rule<C : Context> internal constructor(

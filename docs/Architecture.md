@@ -1,6 +1,7 @@
 # Architecture
 
-This document explains Konditional's internal architecture, design principles, and how the various components work together.
+This document explains Konditional's internal architecture, design principles, and how the various components work
+together.
 
 ## Design Principles
 
@@ -45,7 +46,7 @@ Components compose through interfaces:
 Entry point for defining flags:
 
 ```
-Feature<S : EncodableValue<T>, T : Any, C : Context>
+Feature<S : EncodableValue<T>, T : Any, C : Context, M : Module>
   |
   +-- key: String
   +-- registry: FlagRegistry
@@ -59,11 +60,11 @@ Features are typically implemented as enum members or object declarations.
 Internal representation of configured flags:
 
 ```
-FlagDefinition<S, T, C>
+FlagDefinition<S, T, C, M>
   |
-  +-- feature: Feature<S, T, C>
+  +-- feature: Feature<S, T, C, M>
   +-- defaultValue: T
-  +-- values: List<ConditionalValue<S, T, C>>
+  +-- values: List<ConditionalValue<S, T, C, M>>
   +-- isActive: Boolean
   +-- salt: String
   |
@@ -71,6 +72,7 @@ FlagDefinition<S, T, C>
 ```
 
 FlagDefinition handles:
+
 - Rule evaluation and specificity ordering
 - Rollout bucketing via SHA-256 hashing
 - Fallback to default value
@@ -107,6 +109,7 @@ Rule<C : Context>
 ```
 
 Rules compose:
+
 - Base targeting (locale, platform, version)
 - Custom extension logic
 - Both must match for rule to match
@@ -139,10 +142,10 @@ FlagRegistry
   |
   +-- load(konfig: Konfig)
   +-- update(patch: KonfigPatch)
-  +-- update(definition: FlagDefinition<S, T, C>)
+  +-- update(definition: FlagDefinition<S, T, C, M>)
   +-- konfig(): Konfig
-  +-- featureFlag(key: Feature<S, T, C>): FlagDefinition<S, T, C>?
-  +-- allFlags(): Map<Feature<*, *, *>, FlagDefinition<*, *, *>>
+  +-- featureFlag(key: Feature<S, T, C, M>): FlagDefinition<S, T, C, M>?
+  +-- allFlags(): Map<Feature<*, *, *>, FlagDefinition<*, *, *, *>>
 ```
 
 Default implementation uses `AtomicReference<Konfig>` for thread-safe updates.
@@ -229,6 +232,7 @@ fun stableBucket(
 ```
 
 Properties:
+
 - Deterministic: Same inputs always hash to same bucket
 - Independent: Each flag has separate bucketing space
 - Stable: Changing salt redistributes buckets
@@ -244,7 +248,7 @@ Flag evaluation requires no locks:
 class SingletonFlagRegistry : FlagRegistry {
     private val konfigRef = AtomicReference<Konfig>(Konfig.EMPTY)
 
-    override fun featureFlag(key: Feature<S, T, C>): FlagDefinition<S, T, C>? {
+    override fun featureFlag(key: Feature<S, T, C, M>): FlagDefinition<S, T, C, M>? {
         return konfigRef.get().flags[key]  // No lock needed
     }
 }
@@ -270,12 +274,12 @@ All configuration data is immutable:
 
 ```kotlin
 data class Konfig(
-    val flags: Map<Feature<*, *, *>, FlagDefinition<*, *, *>>
+    val flags: Map<Feature<*, *, *>, FlagDefinition<*, *, *, *>>
 )  // Map is immutable
 
-data class FlagDefinition<S, T, C>(
+data class FlagDefinition<S, T, C, M>(
     val defaultValue: T,  // Immutable
-    val values: List<ConditionalValue<S, T, C>>,  // List is immutable
+    val values: List<ConditionalValue<S, T, C, M>>,  // List is immutable
     // ...
 )
 ```
@@ -290,8 +294,8 @@ Immutability ensures thread safety without locks.
 ConfigScope (sealed interface)
   -> ConfigBuilder (internal implementation)
 
-FlagScope<S, T, C> (sealed interface)
-  -> FlagBuilder<S, T, C> (internal implementation)
+FlagScope<S, T, C, M> (sealed interface)
+  -> FlagBuilder<S, T, C, M> (internal implementation)
 
 RuleScope<C> (sealed interface)
   -> RuleBuilder<C> (internal implementation)
@@ -304,7 +308,7 @@ Sealed interfaces hide implementation, preventing direct instantiation.
 Builders use typestate pattern:
 
 ```kotlin
-interface FlagScope<S, T, C> {
+interface FlagScope<S, T, C, M> {
     fun rule(build: RuleScope<C>.() -> Unit): Rule<C>
     infix fun Rule<C>.implies(value: T)  // Rule must be associated with value
 }
@@ -324,7 +328,7 @@ annotation class FeatureFlagDsl
 interface ConfigScope
 
 @FeatureFlagDsl
-interface FlagScope<S, T, C>
+interface FlagScope<S, T, C, M>
 
 @FeatureFlagDsl
 interface RuleScope<C>
@@ -362,8 +366,12 @@ VersionRange uses polymorphic JSON:
 ```json
 {
   "type": "MIN_AND_MAX_BOUND",
-  "min": {...},
-  "max": {...}
+  "min": {
+    ...
+  },
+  "max": {
+    ...
+  }
 }
 ```
 
@@ -430,10 +438,10 @@ Implement `FlagRegistry` for custom storage:
 interface FlagRegistry {
     fun load(config: Konfig)
     fun update(patch: KonfigPatch)
-    fun update(definition: FlagDefinition<S, T, C>)
+    fun update(definition: FlagDefinition<S, T, C, M>)
     fun konfig(): Konfig
-    fun featureFlag(key: Feature<S, T, C>): FlagDefinition<S, T, C>?
-    fun allFlags(): Map<Feature<*, *, *>, FlagDefinition<*, *, *>>
+    fun featureFlag(key: Feature<S, T, C, M>): FlagDefinition<S, T, C, M>?
+    fun allFlags(): Map<Feature<*, *, *>, FlagDefinition<*, *, *, *>>
 }
 
 class DatabaseBackedRegistry(private val db: Database) : FlagRegistry {

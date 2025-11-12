@@ -1,45 +1,26 @@
-package io.amichne.konditional.core
+package io.amichne.konditional.core.internal
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.FlagDefinition
+import io.amichne.konditional.core.ModuleRegistry
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.instance.KonfigPatch
 import java.util.concurrent.atomic.AtomicReference
 
 /**
- * In-memory implementation of [FlagRegistry] that can be instantiated for testing.
+ * Default singleton implementation of [io.amichne.konditional.core.ModuleRegistry] for the Konditional core featureModule.
  *
- * Unlike the singleton [io.amichne.konditional.core.internal.SingletonFlagRegistry],
- * this class can be instantiated multiple times, making it ideal for:
- * - Unit tests that need isolated flag configurations
- * - Integration tests that run in parallel
- * - Scenarios where multiple independent registries are needed
- *
- * Example usage in tests:
- * ```kotlin
- * @Test
- * fun `test feature flag behavior`() {
- *     val testRegistry = InMemoryFlagRegistry()
- *
- *     config(testRegistry) {
- *         MyFlags.FEATURE_A with {
- *             default(true)
- *         }
- *     }
- *
- *     val value = testRegistry.featureFlag(MyFlags.FEATURE_A)
- *     assertEquals(true, value?.defaultValue)
- * }
- * ```
+ * This object provides a thread-safe, in-memory registry for managing feature flags.
+ * It uses [java.util.concurrent.atomic.AtomicReference] to ensure atomic updates and lock-free reads.
  *
  * ## Thread Safety
  *
- * This implementation is thread-safe and uses [AtomicReference] for lock-free reads
- * and compare-and-swap updates.
+ * All operations on this registry are atomic and thread-safe. Multiple threads can
+ * safely read and update flags concurrently.
  *
- * @constructor Creates a new empty in-memory registry
- * @since 0.0.2
+ * @see io.amichne.konditional.core.ModuleRegistry
  */
-class InMemoryFlagRegistry : FlagRegistry {
+internal object SingletonModuleRegistry : ModuleRegistry {
     private val current = AtomicReference(Konfig(emptyMap()))
 
     /**
@@ -54,12 +35,12 @@ class InMemoryFlagRegistry : FlagRegistry {
     }
 
     /**
-     * Applies a [KonfigPatch] to the current snapshot, atomically updating the flag configuration.
+     * Applies a [io.amichne.konditional.core.instance.KonfigPatch] to the current snapshot, atomically updating the flag configuration.
      *
      * This method is useful for incremental updates without replacing the entire snapshot.
      * The update is performed atomically using compare-and-swap semantics.
      *
-     * @param patch The [KonfigPatch] to apply
+     * @param patch The [io.amichne.konditional.core.instance.KonfigPatch] to apply
      */
     override fun update(patch: KonfigPatch) {
         current.updateAndGet { currentSnapshot ->
@@ -79,11 +60,11 @@ class InMemoryFlagRegistry : FlagRegistry {
      *
      * This operation atomically updates the specified flag while leaving others unchanged.
      *
-     * @param definition The [FlagDefinition] to update
+     * @param definition The [io.amichne.konditional.core.internal.FlagDefinition] to update
      * @param S The type of the flag's value
      * @param C The type of the context used for evaluation
      */
-    override fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> update(definition: FlagDefinition<S, T, C>) {
+    override fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> update(definition: FlagDefinition<S, T, C, *>) {
         current.updateAndGet { currentSnapshot ->
             val mutableFlags = currentSnapshot.flags.toMutableMap()
             mutableFlags[definition.feature] = definition

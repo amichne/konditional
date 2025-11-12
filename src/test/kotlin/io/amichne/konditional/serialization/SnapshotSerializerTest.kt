@@ -10,7 +10,7 @@ import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.buildSnapshot
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Konfig
-import io.amichne.konditional.core.internal.SingletonFlagRegistry
+import io.amichne.konditional.core.internal.SingletonModuleRegistry
 import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.example.SampleFeatureEnum
 import io.amichne.konditional.internal.serialization.models.FlagValue
@@ -69,10 +69,10 @@ class SnapshotSerializerTest {
             stableId = StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
 
-        SingletonFlagRegistry.load(snapshot)
+        SingletonModuleRegistry.load(snapshot)
         val originalValue = testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
 
-        SingletonFlagRegistry.load(deserialized)
+        SingletonModuleRegistry.load(deserialized)
         val deserializedValue = testContext.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
 
         assertEquals(originalValue, deserializedValue)
@@ -133,10 +133,10 @@ class SnapshotSerializerTest {
         )
 
         contexts.forEach { context ->
-            SingletonFlagRegistry.load(konfig)
+            SingletonModuleRegistry.load(konfig)
             val originalValue = context.evaluate(SampleFeatureEnum.FIFTY_TRUE_US_IOS)
 
-            SingletonFlagRegistry.load(deserialized)
+            SingletonModuleRegistry.load(deserialized)
             val deserializedValue = context.evaluate(SampleFeatureEnum.FIFTY_TRUE_US_IOS)
 
             assertEquals(
@@ -190,10 +190,10 @@ class SnapshotSerializerTest {
                 StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
             )
 
-            SingletonFlagRegistry.load(konfig)
+            SingletonModuleRegistry.load(konfig)
             val originalValue = context.evaluate(SampleFeatureEnum.VERSIONED)
 
-            SingletonFlagRegistry.load(deserialized)
+            SingletonModuleRegistry.load(deserialized)
             val deserializedValue = context.evaluate(SampleFeatureEnum.VERSIONED)
 
             assertEquals(originalValue, deserializedValue)
@@ -233,10 +233,10 @@ class SnapshotSerializerTest {
             StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
 
-        SingletonFlagRegistry.load(snapshot)
+        SingletonModuleRegistry.load(snapshot)
         val originalValues = context.evaluate()
 
-        SingletonFlagRegistry.load(deserialized)
+        SingletonModuleRegistry.load(deserialized)
         val deserializedValues = context.evaluate()
 
         assertEquals(3, originalValues.size)
@@ -285,7 +285,7 @@ class SnapshotSerializerTest {
             StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
 
-        SingletonFlagRegistry.load(patchedSnapshot)
+        SingletonModuleRegistry.load(patchedSnapshot)
         val values = context.evaluate()
 
         assertEquals(2, values.size, "Should have 2 flags after patch")
@@ -323,7 +323,7 @@ class SnapshotSerializerTest {
             StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
 
-        SingletonFlagRegistry.load(patchedSnapshot)
+        SingletonModuleRegistry.load(patchedSnapshot)
         val value = context.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
 
         assertEquals(true, value, "Flag should now default to true")
@@ -358,7 +358,7 @@ class SnapshotSerializerTest {
             StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
 
-        SingletonFlagRegistry.load(patchedSnapshot)
+        SingletonModuleRegistry.load(patchedSnapshot)
         val values = context.evaluate()
 
         assertEquals(1, values.size, "Should have 1 flag after removal")
@@ -404,7 +404,7 @@ class SnapshotSerializerTest {
             StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
         )
 
-        SingletonFlagRegistry.load(patchedSnapshot)
+        SingletonModuleRegistry.load(patchedSnapshot)
         val value = context.evaluate(SampleFeatureEnum.ENABLE_COMPACT_CARDS)
 
         assertEquals(true, value, "Flag should be updated to true")
@@ -453,10 +453,10 @@ class SnapshotSerializerTest {
         )
 
         contexts.forEach { context ->
-            SingletonFlagRegistry.load(snapshot)
+            SingletonModuleRegistry.load(snapshot)
             val originalValues = context.evaluate()
 
-            SingletonFlagRegistry.load(deserialized)
+            SingletonModuleRegistry.load(deserialized)
             val deserializedValues = context.evaluate()
 
             assertEquals(

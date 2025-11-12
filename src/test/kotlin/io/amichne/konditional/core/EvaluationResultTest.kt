@@ -7,7 +7,7 @@ import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.KonfigPatch
-import io.amichne.konditional.core.internal.SingletonFlagRegistry
+import io.amichne.konditional.core.internal.SingletonModuleRegistry
 import io.amichne.konditional.core.result.EvaluationResult
 import io.amichne.konditional.core.result.FlagEvaluationException
 import io.amichne.konditional.core.result.FlagNotFoundException
@@ -32,6 +32,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.to
 
 /**
  * Tests for EvaluationResult and evaluation APIs following Parse, Don't Validate principles.
@@ -45,11 +46,12 @@ import kotlin.test.assertTrue
  */
 class EvaluationResultTest {
 
-    enum class TestFlags(override val key: String) : Feature<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, Context> {
+    enum class TestFlags(override val key: String) :
+        Feature<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, Context> {
         REGISTERED_FLAG("registered_flag"),
         UNREGISTERED_FLAG("unregistered_flag");
 
-        override val registry: FlagRegistry = FlagRegistry
+        override val registry: ModuleRegistry = ModuleRegistry
         override fun update(definition: FlagDefinition<io.amichne.konditional.core.types.EncodableValue.StringEncodeable, String, Context>) {
             registry.update(definition)
         }
@@ -70,7 +72,7 @@ class EvaluationResultTest {
         StableId.of("11111111111111111111111111111111")
     )
 
-    private val testRegistry = object : FlagRegistry by SingletonFlagRegistry {}
+    private val testRegistry = object : ModuleRegistry by SingletonModuleRegistry {}
 
     init {
         // Register a normal flag
@@ -80,12 +82,14 @@ class EvaluationResultTest {
             platforms = emptySet(),
             versionRange = Unbounded(),
         )
-        testRegistry.update(KonfigPatch(
-            flags = mapOf(TestFlags.REGISTERED_FLAG to TestFlags.REGISTERED_FLAG.flag {
-                rule implies "test-value"
-                default("default-value")
-            }),
-        ))
+        testRegistry.update(
+            KonfigPatch(
+                flags = mapOf(TestFlags.REGISTERED_FLAG to TestFlags.REGISTERED_FLAG.flag {
+                    rule implies "test-value"
+                    default("default-value")
+                }),
+            )
+        )
 
 
         TestFlags.REGISTERED_FLAG.update(
@@ -266,12 +270,12 @@ class EvaluationResultTest {
             IllegalStateException("Test error")
         )
         val result = errorResult.getOrElse { error ->
-                when (error) {
-                    is EvaluationResult.FlagNotFound -> "missing: ${error.key}"
-                    is EvaluationResult.EvaluationError -> "error: ${error.key}"
-                    else -> "unknown"
-                }
+            when (error) {
+                is EvaluationResult.FlagNotFound -> "missing: ${error.key}"
+                is EvaluationResult.EvaluationError -> "error: ${error.key}"
+                else -> "unknown"
             }
+        }
 
         assertEquals("error: test_key", result)
     }
@@ -486,9 +490,13 @@ class EvaluationResultTest {
         }
 
         assertEquals("success: test-value", handleResult(testContext.evaluateSafe(TestFlags.REGISTERED_FLAG)))
-        assertEquals("not found: unregistered_flag", handleResult(testContext.evaluateSafe(TestFlags.UNREGISTERED_FLAG)))
+        assertEquals(
+            "not found: unregistered_flag",
+            handleResult(testContext.evaluateSafe(TestFlags.UNREGISTERED_FLAG))
+        )
 
-        val errorResult: EvaluationResult<String> = EvaluationResult.EvaluationError("test_key", IllegalStateException())
+        val errorResult: EvaluationResult<String> =
+            EvaluationResult.EvaluationError("test_key", IllegalStateException())
         assertEquals("error: test_key", handleResult(errorResult))
     }
 }

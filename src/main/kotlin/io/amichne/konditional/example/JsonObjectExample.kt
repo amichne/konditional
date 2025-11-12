@@ -1,19 +1,19 @@
 package io.amichne.konditional.example
 
-import io.amichne.konditional.builders.ConfigBuilder.Companion.config
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.context.evaluate
-import io.amichne.konditional.core.Conditional
+import io.amichne.konditional.core.Feature
+import io.amichne.konditional.core.Feature.Companion.jsonObject
+import io.amichne.konditional.core.FeatureModule
+import io.amichne.konditional.core.config
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.types.EncodableValue
 
 /**
  * Example demonstrating JSON object support for HSON-object type representation.
  *
- * HSON-object: Distinct super type of object nodes that represent different
+ * JSON-object: Distinct super type of object nodes that represent different
  * values given specific conditions.
  */
 object JsonObjectExample {
@@ -29,31 +29,7 @@ object JsonObjectExample {
         val retries: Int,
         val useHttps: Boolean,
         val headers: Map<String, String> = emptyMap()
-    ) {
-        /**
-         * Encode to Map for JSON serialization.
-         */
-        fun toMap(): Map<String, Any?> = mapOf(
-            "baseUrl" to baseUrl,
-            "timeout" to timeout,
-            "retries" to retries,
-            "useHttps" to useHttps,
-            "headers" to headers
-        )
-
-        companion object {
-            /**
-             * Decode from Map after JSON deserialization.
-             */
-            fun fromMap(map: Map<String, Any?>): ApiConfig = ApiConfig(
-                baseUrl = map["baseUrl"] as String,
-                timeout = (map["timeout"] as Number).toInt(),
-                retries = (map["retries"] as Number).toInt(),
-                useHttps = map["useHttps"] as Boolean,
-                headers = (map["headers"] as? Map<String, String>) ?: emptyMap()
-            )
-        }
-    }
+    )
 
     /**
      * Theme configuration - another complex object.
@@ -64,25 +40,7 @@ object JsonObjectExample {
         val fontFamily: String,
         val fontSize: Int,
         val darkModeEnabled: Boolean
-    ) {
-        fun toMap(): Map<String, Any?> = mapOf(
-            "primaryColor" to primaryColor,
-            "secondaryColor" to secondaryColor,
-            "fontFamily" to fontFamily,
-            "fontSize" to fontSize,
-            "darkModeEnabled" to darkModeEnabled
-        )
-
-        companion object {
-            fun fromMap(map: Map<String, Any?>): ThemeConfig = ThemeConfig(
-                primaryColor = map["primaryColor"] as String,
-                secondaryColor = map["secondaryColor"] as String,
-                fontFamily = map["fontFamily"] as String,
-                fontSize = (map["fontSize"] as Number).toInt(),
-                darkModeEnabled = map["darkModeEnabled"] as Boolean
-            )
-        }
-    }
+    )
 
     /**
      * Feature set configuration - shows nested objects.
@@ -91,22 +49,7 @@ object JsonObjectExample {
         val features: List<String>,
         val limits: Map<String, Int>,
         val metadata: Map<String, Any?>
-    ) {
-        fun toMap(): Map<String, Any?> = mapOf(
-            "features" to features,
-            "limits" to limits,
-            "metadata" to metadata
-        )
-
-        companion object {
-            @Suppress("UNCHECKED_CAST")
-            fun fromMap(map: Map<String, Any?>): FeatureSet = FeatureSet(
-                features = map["features"] as List<String>,
-                limits = (map["limits"] as Map<String, Number>).mapValues { it.value.toInt() },
-                metadata = map["metadata"] as Map<String, Any?>
-            )
-        }
-    }
+    )
 
     // ========== Conditional Declarations ==========
 
@@ -114,45 +57,22 @@ object JsonObjectExample {
      * API configuration conditional.
      * Different API configs for different platforms/environments.
      */
-    val API_CONFIG: Conditional.OfJsonObject<ApiConfig, Context> =
-        Conditional.jsonObject("api_config")
+    val API_CONFIG: Feature.OfJsonObject<ApiConfig, Context, FeatureModule.Team.Recommendations> =
+        jsonObject("api_config", FeatureModule.Team.Recommendations)
 
     /**
      * Theme configuration conditional.
      * Different themes per platform.
      */
-    val THEME: Conditional.OfJsonObject<ThemeConfig, Context> =
-        Conditional.jsonObject("app_theme")
+    val THEME: Feature.OfJsonObject<ThemeConfig, Context, FeatureModule.Team.Recommendations> =
+        jsonObject("app_theme", FeatureModule.Team.Recommendations)
 
     /**
      * Feature set conditional.
      * Different feature sets based on context.
      */
-    val FEATURES: Conditional.OfJsonObject<FeatureSet, Context> =
-        Conditional.jsonObject("feature_set")
-
-    // ========== Helper Functions ==========
-
-    fun ApiConfig.toEncodable(): EncodableValue.JsonObjectEncodeable<ApiConfig> =
-        EncodableValue.JsonObjectEncodeable.of(
-            value = this,
-            encoder = { it.toMap() },
-            decoder = { ApiConfig.fromMap(it) }
-        )
-
-    fun ThemeConfig.toEncodable(): EncodableValue.JsonObjectEncodeable<ThemeConfig> =
-        EncodableValue.JsonObjectEncodeable.of(
-            value = this,
-            encoder = { it.toMap() },
-            decoder = { ThemeConfig.fromMap(it) }
-        )
-
-    fun FeatureSet.toEncodable(): EncodableValue.JsonObjectEncodeable<FeatureSet> =
-        EncodableValue.JsonObjectEncodeable.of(
-            value = this,
-            encoder = { it.toMap() },
-            decoder = { FeatureSet.fromMap(it) }
-        )
+    val FEATURES: Feature.OfJsonObject<FeatureSet, Context, FeatureModule.Team.Recommendations> =
+        jsonObject("feature_set", FeatureModule.Team.Recommendations)
 
     // ========== Usage Example ==========
 
@@ -209,27 +129,27 @@ object JsonObjectExample {
 
         // Configure with HSON-object type representation
         // Each condition produces a distinct object node
-        config {
+        FeatureModule.Team.Recommendations.config {
             API_CONFIG with {
-                default(prodApi.toEncodable().value)
+                default(prodApi)
 
                 // Different API config for WEB platform
                 rule {
                     platforms(Platform.WEB)
-                } implies devApi.toEncodable().value
+                } implies devApi
             }
 
             THEME with {
-                default(lightTheme.toEncodable().value)
+                default(lightTheme)
 
                 // Dark theme for specific locales
                 rule {
                     locales(AppLocale.EN_US)
-                } implies darkTheme.toEncodable().value
+                } implies darkTheme
             }
 
             FEATURES with {
-                default(basicFeatures.toEncodable().value)
+                default(basicFeatures)
 
                 // Premium features for iOS v2.0+
                 rule {
@@ -237,19 +157,19 @@ object JsonObjectExample {
                     versions {
                         min(2, 0)
                     }
-                } implies premiumFeatures.toEncodable().value
+                } implies premiumFeatures
             }
         }
 
         // Evaluate
-        val iosContext = Context(
+        Context(
             locale = AppLocale.EN_US,
             platform = Platform.IOS,
             appVersion = Version(2, 5, 0),
             stableId = StableId.of("11111111111111111111111111111111")
         )
 
-        val webContext = Context(
+        Context(
             locale = AppLocale.EN_CA,
             platform = Platform.WEB,
             appVersion = Version(1, 0, 0),

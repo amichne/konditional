@@ -18,7 +18,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class SingletonFlagRegistryTests {
+class SingletonModuleRegistryTests {
     private fun ctx(
         idHex: String,
         locale: AppLocale = AppLocale.EN_US,

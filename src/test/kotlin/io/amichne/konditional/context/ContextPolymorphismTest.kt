@@ -1,9 +1,10 @@
 package io.amichne.konditional.context
 
-import io.amichne.konditional.core.Feature
+import io.amichne.konditional.core.BooleanFeature
+import io.amichne.konditional.core.FeatureModule
+import io.amichne.konditional.core.StringFeature
 import io.amichne.konditional.core.config
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.fakes.FakeRegistry
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.evaluable.Evaluable
@@ -48,33 +49,26 @@ class ContextPolymorphismTest {
         val sessionId: String,
     ) : Context
 
-    // SingletonFlagRegistry using EnterpriseContext
+    // SingletonModuleRegistry using EnterpriseContext
     enum class EnterpriseFlags(
         override val key: String,
-    ) : Feature<EncodableValue.BooleanEncodeable, Boolean, EnterpriseContext> {
+    ) : BooleanFeature<EnterpriseContext, FeatureModule.Core> {
         ADVANCED_ANALYTICS("advanced_analytics"),
         CUSTOM_BRANDING("custom_branding"),
         API_ACCESS("api_access");
 
-        override val registry: io.amichne.konditional.core.FlagRegistry = io.amichne.konditional.core.FlagRegistry
-
-        override fun update(definition: io.amichne.konditional.core.FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, EnterpriseContext>) {
-            registry.update(definition)
-        }
+        override val module: FeatureModule.Core = FeatureModule.Core
     }
 
-    // SingletonFlagRegistry using ExperimentContext
+    // SingletonModuleRegistry using ExperimentContext
     enum class ExperimentFlags(
         override val key: String,
-    ) : Feature<EncodableValue.StringEncodeable, String, ExperimentContext> {
+    ) : StringFeature<ExperimentContext, FeatureModule.Core> {
         HOMEPAGE_VARIANT("homepage_variant"),
         ONBOARDING_STYLE("onboarding_style");
 
-        override val registry: io.amichne.konditional.core.FlagRegistry = io.amichne.konditional.core.FlagRegistry
-
-        override fun update(definition: io.amichne.konditional.core.FlagDefinition<EncodableValue.StringEncodeable, String, ExperimentContext>) {
-            registry.update(definition)
-        }
+        override val module: FeatureModule.Core
+            get() = FeatureModule.Core
     }
 
     // Custom rule that extends Rule for EnterpriseContext
@@ -89,7 +83,7 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given EnterpriseContext, When evaluating flags, Then context-specific properties are accessible`() {
-        config {
+        FeatureModule.Core.config {
             EnterpriseFlags.ADVANCED_ANALYTICS with {
                 default(false)
                 // This demonstrates that the rule can access base Context properties
@@ -117,7 +111,7 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given ExperimentContext, When evaluating flags, Then experiment-specific properties are accessible`() {
-        config {
+        FeatureModule.Core.config {
             ExperimentFlags.HOMEPAGE_VARIANT with {
                 default("control")
                 rule {
@@ -154,7 +148,7 @@ class ContextPolymorphismTest {
     @Suppress("USELESS_IS_CHECK")
     @Test
     fun `Given multiple custom contexts, When using different flags, Then contexts are independent`() {
-        config {
+        FeatureModule.Core.config {
             EnterpriseFlags.API_ACCESS with {
                 default(false)
                 rule {
@@ -197,17 +191,16 @@ class ContextPolymorphismTest {
     @Test
     fun `Given base Context and custom Context, When both used, Then type safety is maintained`() {
         // Define flag in scope
-        data class StandardFlagA(override val key: String = "feature_a") :
-            Feature<EncodableValue.BooleanEncodeable, Boolean, Context> {
-            override val registry: io.amichne.konditional.core.FlagRegistry = io.amichne.konditional.core.FlagRegistry
-            override fun update(definition: io.amichne.konditional.core.FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context>) {
-                registry.update(definition)
-            }
+        data class StandardFlagA(
+            override val key: String = "feature_a",
+        ) : BooleanFeature<Context, FeatureModule.Core> {
+
+            override val module: FeatureModule.Core = FeatureModule.Core
         }
 
         val standardFlagA = StandardFlagA()
 
-        config {
+        FeatureModule.Core.config {
             standardFlagA with {
                 default(false)
                 rule {
@@ -281,7 +274,7 @@ class ContextPolymorphismTest {
     @Test
     fun `Given custom EnterpriseRule, When matching with business logic, Then custom properties are enforced`() {
         val registry = FakeRegistry()
-        config(registry) {
+        FeatureModule.Core.config(registry) {
             EnterpriseFlags.API_ACCESS with {
                 default(false)
                 rule {
@@ -315,7 +308,7 @@ class ContextPolymorphismTest {
             userRole = UserRole.EDITOR,
         )
 
-        assertFalse(premiumEditor.evaluate(EnterpriseFlags.API_ACCESS, registry = registry))
-        assertTrue(enterpriseAdmin.evaluate(EnterpriseFlags.API_ACCESS, registry = registry))
+        assertFalse(premiumEditor.evaluate(EnterpriseFlags.API_ACCESS))
+        assertTrue(enterpriseAdmin.evaluate(EnterpriseFlags.API_ACCESS))
     }
 }
