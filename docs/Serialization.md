@@ -649,4 +649,4 @@ fun `serialization round-trip preserves configuration`() {
 ## Next Steps
 
 - **[Architecture](Architecture.md)**: Understand how serialization fits into the overall design
-- **[Overview](Overview.md)**: Back to API overview
+- **[Overview](index.md)**: Back to API overview

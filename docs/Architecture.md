@@ -468,6 +468,7 @@ class DatabaseBackedRegistry(private val db: Database) : FlagRegistry {
 Create isolated registries for tests:
 
 ```kotlin
+
 @Test
 fun `test feature evaluation`() {
     val testRegistry = FlagRegistry.create()
@@ -476,7 +477,7 @@ fun `test feature evaluation`() {
         MyFeature.FLAG with { default(false) }
     }
 
-    val context = Context(...)
+    val context = Context(TODO())
     val result = context.evaluateSafe(MyFeature.FLAG, testRegistry)
 
     assertTrue(result is EvaluationResult.Success)
@@ -526,6 +527,6 @@ Design for lock-free concurrent access where possible.
 
 ## Next Steps
 
-- **[Overview](Overview.md)**: Back to API overview
+- **[Overview](index.md)**: Back to API overview
 - **[Context](Context.md)**: Deep dive into contexts
 - **[Rules](Rules.md)**: Understand rule evaluation
