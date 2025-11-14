@@ -22,25 +22,23 @@ import io.amichne.konditional.rules.Rule
  * @param S The EncodableValue type wrapping the actual value.
  * @param T The actual value type.
  * @param C The type of the context that the feature flag evaluates against.
- * @property conditional The feature flag key used to uniquely identify the flag.
+ * @property feature The feature flag key used to uniquely identify the flag.
  * @constructor Internal constructor - users cannot instantiate this class directly.
  */
 @FeatureFlagDsl
 @PublishedApi
 internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy>(
-    private val conditional: Feature<S, T, C, M>,
+    private val feature: Feature<S, T, C, M>,
 ) : FlagScope<S, T, C, M> {
     private val conditionalValues = mutableListOf<ConditionalValue<S, T, C, M>>()
     private var defaultValue: T? = null
-    private var defaultCoverage: Double? = null
     private var salt: String = "v1"
 
     /**
      * Implementation of [FlagScope.default].
      */
-    override fun default(value: T, coverage: Double?) {
+    override fun default(value: T) {
         defaultValue = value
-        defaultCoverage = coverage
     }
 
     /**
@@ -73,7 +71,7 @@ internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M :
     internal fun build(): FlagDefinition<S, T, C, M> {
         requireNotNull(defaultValue) { "Default value must be set" }
         return FlagDefinition(
-            feature = conditional,
+            feature = feature,
             bounds = conditionalValues.toList(),
             defaultValue = defaultValue!!,
             salt = salt,

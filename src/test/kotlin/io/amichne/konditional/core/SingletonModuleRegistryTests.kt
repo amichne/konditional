@@ -2,10 +2,9 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.context.evaluate
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.example.PaymentFeatures
 import io.amichne.konditional.example.SearchFeatures
@@ -29,8 +28,8 @@ class SingletonModuleRegistryTests {
 
     @BeforeTest
     fun loadSample() {
-        Taxonomy.Core.config {
-            PaymentFeatures.FIFTY_TRUE_US_IOS with {
+        object : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
+            val FIFTY_TRUE_US_IOS by boolean<Context>("") {
                 default(false)
                 rule {
                     platforms(Platform.IOS)
@@ -39,7 +38,7 @@ class SingletonModuleRegistryTests {
                     }
                 } implies true
             }
-            SearchFeatures.DEFAULT_TRUE_EXCEPT_ANDROID_LEGACY with {
+            val DEFAULT_TRUE_EXCEPT_ANDROID_LEGACY by boolean("") {
                 default(true)
                 rule {
                     platforms(Platform.ANDROID)
@@ -71,8 +70,7 @@ class SingletonModuleRegistryTests {
 
     @Test
     fun `Given multiple rules, When specificity differs, Then most specific rule wins`() {
-        Taxonomy.Core.config {
-            SearchFeatures.PRIORITY_CHECK with {
+            SearchFeatures.PRIORITY_CHECK.update {
                 default(false)
                 rule {
                 } implies true
@@ -80,7 +78,6 @@ class SingletonModuleRegistryTests {
                     platforms(Platform.IOS)
                 } implies true
             }
-        }
         val id = "0123456789abcdef0123456789abcdef"
         val result = ctx(id).evaluate(SearchFeatures.PRIORITY_CHECK)
         assertTrue(result)
@@ -337,7 +334,7 @@ class SingletonModuleRegistryTests {
             SearchFeatures.UNIFORM50 with {
                 default(false)
                 rule {
-                    rollout = Rollout.of(50.0)
+                    rollout { 50.0 }
                 } implies true
             }
         }

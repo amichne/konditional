@@ -67,7 +67,7 @@ class EvaluationResultTest {
     init {
         // Register a normal flag
         val rule = Rule<Context>(
-            rollout = Rollout.MAX,
+            rollout {  Rollout.MAX }
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded(),

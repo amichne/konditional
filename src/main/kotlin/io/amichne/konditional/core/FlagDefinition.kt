@@ -38,9 +38,6 @@ class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> 
     val isActive: Boolean = true,
     val salt: String = "v1"
 ) {
-
-    val key: String
-        get() = feature.key
     private val conditionalValues: List<ConditionalValue<S, T, C, M>> =
         values.sortedWith(compareByDescending<ConditionalValue<S, T, C, M>> { it.rule.specificity() }.thenBy {
             it.rule.note ?: ""

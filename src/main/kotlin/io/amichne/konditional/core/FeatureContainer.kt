@@ -1,9 +1,13 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.dsl.FlagScope
+import io.amichne.konditional.core.dsl.BooleanScope
+import io.amichne.konditional.core.dsl.DecimalScope
+import io.amichne.konditional.core.dsl.IntegerScope
+import io.amichne.konditional.core.dsl.StringScope
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.internal.builders.FlagBuilder
+import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -37,20 +41,16 @@ import kotlin.reflect.KProperty
  * @param C The context type for evaluation
  * @param M The module this container belongs to
  */
-abstract class FeatureContainer<C : Context, M : Taxonomy>(
-    protected val taxonomy: M
+abstract class FeatureContainer<M : Taxonomy>(
+    protected val taxonomy: M,
 ) {
-    private val _features = mutableListOf<Feature<*, *, C, M>>()
+    private val _features = mutableListOf<Feature<*, *, *, M>>()
 
     /**
      * Returns all features declared in this container.
      * Features are registered lazily on first access.
      */
-    fun allFeatures(): List<Feature<*, *, C, M>> = _features.toList()
-
-    infix fun <S : EncodableValue<T>, T : Any> Feature<S, T, C, M>.defined(build: FlagScope<S, T, C, M>.() -> Unit) {
-        FlagBuilder(this).apply(build).build()
-    }
+    fun allFeatures(): List<Feature<*, *, *, M>> = _features.toList()
 
     /**
      * Creates a Boolean feature with automatic registration.
@@ -58,16 +58,10 @@ abstract class FeatureContainer<C : Context, M : Taxonomy>(
      * @param key The unique feature key
      * @return A delegated property that returns a [BooleanFeature]
      */
-    protected fun boolean(key: String): ReadOnlyProperty<FeatureContainer<C, M>, BooleanFeature<C, M>> {
-        return ContainerFeaturePropertyDelegate { BooleanFeature.invoke(key, taxonomy) }
-    }
-
-    protected fun boolean(
-        key: String,
-        flagScope: FlagScope<EncodableValue.BooleanEncodeable, Boolean, C, M>.() -> Unit
-    ): ReadOnlyProperty<FeatureContainer<C, M>, BooleanFeature<C, M>> {
-        return ContainerFeaturePropertyDelegate { BooleanFeature.invoke(key, taxonomy) }
-    }
+    protected fun <C : Context> boolean(
+        flagScope: BooleanScope<C, M>.() -> Unit,
+    ): ReadOnlyProperty<FeatureContainer<M>, BooleanFeature<C, M>> =
+        ContainerFeaturePropertyDelegate { BooleanFeature(it, taxonomy) }
 
     /**
      * Creates a String feature with automatic registration.
@@ -75,9 +69,10 @@ abstract class FeatureContainer<C : Context, M : Taxonomy>(
      * @param key The unique feature key
      * @return A delegated property that returns a [StringFeature]
      */
-    protected fun string(key: String): ReadOnlyProperty<FeatureContainer<C, M>, StringFeature<C, M>> {
-        return ContainerFeaturePropertyDelegate { StringFeature(key, taxonomy) }
-    }
+    protected fun <C : Context> string(
+        stringScope: StringScope<C, M>.() -> Unit,
+    ): ReadOnlyProperty<FeatureContainer<M>, StringFeature<C, M>> =
+        ContainerFeaturePropertyDelegate { StringFeature(it, taxonomy) }
 
     /**
      * Creates an Int feature with automatic registration.
@@ -85,9 +80,10 @@ abstract class FeatureContainer<C : Context, M : Taxonomy>(
      * @param key The unique feature key
      * @return A delegated property that returns an [IntFeature]
      */
-    protected fun int(key: String): ReadOnlyProperty<FeatureContainer<C, M>, IntFeature<C, M>> {
-        return ContainerFeaturePropertyDelegate { IntFeature(key, taxonomy) }
-    }
+    protected fun <C : Context> int(
+        integerScope: IntegerScope<C, M>.() -> Unit,
+    ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<C, M>> =
+        ContainerFeaturePropertyDelegate { IntFeature(it, taxonomy) }
 
     /**
      * Creates a Double feature with automatic registration.
@@ -95,22 +91,22 @@ abstract class FeatureContainer<C : Context, M : Taxonomy>(
      * @param key The unique feature key
      * @return A delegated property that returns a [DoubleFeature]
      */
-    protected fun double(key: String): ReadOnlyProperty<FeatureContainer<C, M>, DoubleFeature<C, M>> {
-        return ContainerFeaturePropertyDelegate { DoubleFeature(key, taxonomy) }
-    }
+    protected fun <C : Context> double(
+        decimalScope: DecimalScope<C, M>.() -> Unit,
+    ): ReadOnlyProperty<FeatureContainer<M>, DoubleFeature<C, M>> =
+        ContainerFeaturePropertyDelegate { DoubleFeature(it, taxonomy) }
 
     /**
      * Creates a JSON object feature with automatic registration.
      *
      * @param T The data class type
      * @param key The unique feature key
-     * @return A delegated property that returns a [Feature.OfJsonObject]
+     * @return A delegated property that returns a [JsonEncodeableFeature]
      */
-    protected inline fun <reified T : Any> jsonObject(
-        key: String
-    ): ReadOnlyProperty<FeatureContainer<C, M>, Feature.OfJsonObject<T, C, M>> {
-        return ContainerFeaturePropertyDelegate { Feature.jsonObject(key, taxonomy) }
-    }
+    protected inline fun <C : Context, reified T : Any> jsonObject(
+        key: String,
+    ): ReadOnlyProperty<FeatureContainer<M>, JsonFeature<C, M, T>> =
+        ContainerFeaturePropertyDelegate { JsonFeature(key, taxonomy) }
 
     /**
      * Creates a custom wrapper type feature with automatic registration.
@@ -118,13 +114,13 @@ abstract class FeatureContainer<C : Context, M : Taxonomy>(
      * @param T The wrapped type (e.g., LocalDateTime, UUID)
      * @param P The primitive type used for encoding (String, Int, etc.)
      * @param key The unique feature key
-     * @return A delegated property that returns a [Feature.OfCustom]
+     * @return A delegated property that returns a [OfCustom]
      */
-    protected inline fun <reified T : Any, reified P> custom(
-        key: String
-    ): ReadOnlyProperty<FeatureContainer<C, M>, Feature.OfCustom<T, P, C, M>> where
-        P : Any, P : EncodableValue<P> {
-        return ContainerFeaturePropertyDelegate { Feature.custom(key, taxonomy) }
+    protected inline fun <reified T : Any, reified P, C : Context> custom(
+        key: String,
+    ): ReadOnlyProperty<FeatureContainer<M>, OfCustom<T, P, C, M>> where
+        P : Any, P : EncodableValue<P> = ContainerFeaturePropertyDelegate {
+        Feature.custom(key, taxonomy)
     }
 
     /**
@@ -133,10 +129,24 @@ abstract class FeatureContainer<C : Context, M : Taxonomy>(
      * Features are created lazily on first property access and automatically
      * registered in the container's feature list.
      */
-    inner class ContainerFeaturePropertyDelegate<F : Feature<*, *, C, M>>(private val factory: () -> F) :
-        ReadOnlyProperty<FeatureContainer<C, M>, F> {
-        private val feature by lazy { factory().also { _features.add(it) } }
+    inner class ContainerFeaturePropertyDelegate<F : Feature<*, *, *, M>>(private val factory: M.(String) -> F) :
+        ReadOnlyProperty<FeatureContainer<M>, F>, PropertyDelegateProvider<FeatureContainer<M>, F> {
+        lateinit var name: String
 
-        override fun getValue(thisRef: FeatureContainer<C, M>, property: KProperty<*>): F = feature
+        private val feature by lazy { factory(taxonomy, name).also { _features.add(it) } }
+
+        override fun getValue(
+            thisRef: FeatureContainer<M>,
+            property: KProperty<*>,
+        ): F = feature
+
+        override fun provideDelegate(
+            thisRef: FeatureContainer<M>,
+            property: KProperty<*>,
+        ): F = run {
+            if (!::name.isInitialized) {
+                name = property.name
+            }
+        }.let { feature }
     }
 }

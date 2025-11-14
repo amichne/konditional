@@ -7,6 +7,7 @@ import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.rules.evaluable.Evaluable
+import io.amichne.konditional.rules.evaluable.Evaluable.Companion.factory
 import io.amichne.konditional.rules.versions.LeftBound
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -76,14 +77,9 @@ class RuleGuaranteesTest {
     /**
      * Custom rule that adds subscription tier matching.
      */
-    class SubscriptionRule<C : CustomContext>(
+    data class SubscriptionRule<C : CustomContext>(
         val requiredTier: String? = null,
-    ) : Evaluable<C>() {
-
-        override fun matches(context: C): Boolean = requiredTier == null || context.subscriptionTier == requiredTier
-
-        override fun specificity(): Int = if (requiredTier != null) 1 else 0
-    }
+    ) : Evaluable<C> by factory({ context -> requiredTier == null || context.subscriptionTier == requiredTier })
 
     @Test
     fun `base rule with no restrictions matches any context`() {

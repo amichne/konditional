@@ -19,7 +19,7 @@ import io.amichne.konditional.context.Context
  * @see io.amichne.konditional.rules.Rule
  * @see BaseEvaluable
  */
-abstract class Evaluable<C : Context> {
+fun interface Evaluable<in C : Context> : Specifier {
     /**
      * Determines if this evaluable matches the given context.
      *
@@ -29,18 +29,10 @@ abstract class Evaluable<C : Context> {
      * @param context The context to evaluate against
      * @return true if the context matches this evaluable's criteria, false otherwise
      */
-    open fun matches(context: C): Boolean = true
+    fun matches(context: C): Boolean
 
-    /**
-     * Calculates the specificity of this evaluable.
-     *
-     * Specificity determines precedence when multiple rules could match - higher values
-     * are evaluated first. The default implementation returns 0, representing no specificity.
-     *
-     * When composing multiple Evaluables, their specificity values should be summed to
-     * calculate the total specificity of the composition.
-     *
-     * @return The specificity value (higher is more specific)
-     */
-    open fun specificity(): Int = 0
+    companion object {
+        fun <C : Context> factory(matcher: (C) -> Boolean): Evaluable<C> = Evaluable { context -> matcher(context) }
+    }
+
 }

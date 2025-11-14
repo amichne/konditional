@@ -1,8 +1,10 @@
 package io.amichne.konditional.context
 
+import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.core.BooleanFeature
 import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.config
+import io.amichne.konditional.core.dsl.rollout
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fakes.FakeRegistry
 import io.amichne.konditional.fixtures.EnterpriseContext
@@ -185,7 +187,7 @@ class ContextPolymorphismTest {
     @Test
     fun `Given EnterpriseContext subclass, When matching rules, Then base Context properties work correctly`() {
         val rule = Rule<EnterpriseContext>(
-            rollout = Rollout.MAX,
+            rollout {  Rollout.MAX }
             locales = setOf(AppLocale.EN_US, AppLocale.EN_CA),
             platforms = setOf(Platform.WEB),
             versionRange = FullyBound(Version(2, 0, 0), Version(3, 0, 0)),
@@ -223,7 +225,7 @@ class ContextPolymorphismTest {
                 default(false)
                 rule {
                     platforms(Platform.WEB)
-                    rollout = Rollout.MAX
+                    rollout { Rollout.MAX }
 
                     extension {
                         EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN)

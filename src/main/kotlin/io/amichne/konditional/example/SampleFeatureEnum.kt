@@ -1,15 +1,11 @@
 package io.amichne.konditional.example
 
-import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Rollout.Companion.default
-import io.amichne.konditional.context.Version.Companion.default
-import io.amichne.konditional.context.evaluate
+import io.amichne.konditional.context.Context.Companion.evaluate
+import io.amichne.konditional.context.Platform
 import io.amichne.konditional.core.BooleanFeature
 import io.amichne.konditional.core.FeatureContainer
 import io.amichne.konditional.core.Taxonomy
-import io.amichne.konditional.core.config
-import io.amichne.konditional.serialization.SnapshotSerializer.Companion.default
 
 /**
  * Example features demonstrating the taxonomy-scoped architecture.
@@ -24,16 +20,20 @@ import io.amichne.konditional.serialization.SnapshotSerializer.Companion.default
  * These are system-wide flags like kill switches and maintenance modes.
  */
 // TODO - try to constrain the feature container on the taxonomy type only, and feature level allow context to be dynamic
-object CoreFeatures : FeatureContainer<Context, Taxonomy.Core>(Taxonomy.Core) {
-    val KILL_SWITCH: BooleanFeature<Context, Taxonomy.Core> by boolean("kill_switch") {
+data object CoreFeatures : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
+    val toggleOnOff: BooleanFeature<Context, Taxonomy.Core> by boolean {
         default(true)
+    }
+
+    val MAINTENANCE_MODE: BooleanFeature<Context, Taxonomy.Core> by boolean {
+        default(false)
     }
 
 }
 
 object test {
     init {
-        if (Context(TODO(), TODO(), TODO(), TODO()).evaluate(CoreFeatures.KILL_SWITCH) ) {
+        if (Context(TODO(), TODO(), TODO(), TODO()).evaluate(CoreFeatures.toggleOnOff)) {
 
         }
     }
@@ -44,12 +44,22 @@ object test {
  *
  * These flags are completely isolated from other teams' modules.
  */
-enum class PaymentFeatures : FeatureContainer<Context, Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
-    ENABLE_COMPACT_CARDS("enable_compact_cards"),
-    USE_LIGHTWEIGHT_HOME("use_lightweight_home"),
-    FIFTY_TRUE_US_IOS("fifty_true_us_ios");
+data object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
+    val ENABLE_COMPACT_CARDS by boolean<Context> {
 
-    override val module = Taxonomy.Domain.Payments
+    }
+    val USE_LIGHTWEIGHT_HOME by boolean<Context> {
+
+    }
+    val FIFTY_TRUE_US_IOS by boolean<Context> {
+        default(false)
+
+        rule {
+            platforms(Platform.IOS)
+            rollout { 50 }
+        }
+
+    }
 }
 
 /**
@@ -57,13 +67,9 @@ enum class PaymentFeatures : FeatureContainer<Context, Taxonomy.Domain.Payments>
  *
  * These flags are completely isolated from other teams' modules.
  */
-enum class SearchFeatures(
-    override val key: String,
-) : BooleanFeature<Context, Taxonomy.Domain.Search> {
-    DEFAULT_TRUE_EXCEPT_ANDROID_LEGACY("default_true_except_android_legacy"),
-    PRIORITY_CHECK("priority_check"),
-    VERSIONED("versioned"),
-    UNIFORM50("uniform50");
-
-    override val module = Taxonomy.Domain.Search
+object SearchFeatures : FeatureContainer<Taxonomy.Domain.Search>(Taxonomy.Domain.Search) {
+    val DEFAULT_TRUE_EXCEPT_ANDROID_LEGACY by string<Context> { }
+    val PRIORITY_CHECK by boolean<Context> { }
+    val VERSIONED by string<Context> { }
+    val UNIFORM50 by string<Context> { }
 }

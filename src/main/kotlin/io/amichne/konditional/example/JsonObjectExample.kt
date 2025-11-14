@@ -4,8 +4,7 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Feature
-import io.amichne.konditional.core.Feature.Companion.jsonObject
+import io.amichne.konditional.core.JsonEncodeableFeature
 import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.config
 import io.amichne.konditional.core.id.StableId
@@ -57,22 +56,22 @@ object JsonObjectExample {
      * API configuration conditional.
      * Different API configs for different platforms/environments.
      */
-    val API_CONFIG: Feature.OfJsonObject<ApiConfig, Context, Taxonomy.Domain.Recommendations> =
-        jsonObject("api_config", Taxonomy.Domain.Recommendations)
+    val API_CONFIG: JsonEncodeableFeature<ApiConfig, Context, Taxonomy.Domain.Recommendations> =
+        JsonEncodeableFeature("api_config", Taxonomy.Domain.Recommendations)
 
     /**
      * Theme configuration conditional.
      * Different themes per platform.
      */
-    val THEME: Feature.OfJsonObject<ThemeConfig, Context, Taxonomy.Domain.Recommendations> =
-        jsonObject("app_theme", Taxonomy.Domain.Recommendations)
+    val THEME: JsonEncodeableFeature<ThemeConfig, Context, Taxonomy.Domain.Recommendations> =
+        JsonEncodeableFeature("app_theme", Taxonomy.Domain.Recommendations)
 
     /**
      * Feature set conditional.
      * Different feature sets based on context.
      */
-    val FEATURES: Feature.OfJsonObject<FeatureSet, Context, Taxonomy.Domain.Recommendations> =
-        jsonObject("feature_set", Taxonomy.Domain.Recommendations)
+    val FEATURES: JsonEncodeableFeature<FeatureSet, Context, Taxonomy.Domain.Recommendations> =
+        JsonEncodeableFeature("feature_set", Taxonomy.Domain.Recommendations)
 
     // ========== Usage Example ==========
 

@@ -40,7 +40,7 @@ class FeatureContainerTest {
         assertTrue(TestFeatures.STRING_CONFIG is StringFeature<*, *>)
         assertTrue(TestFeatures.INT_LIMIT is IntFeature<*, *>)
         assertTrue(TestFeatures.DOUBLE_THRESHOLD is DoubleFeature<*, *>)
-        assertTrue(TestFeatures.JSON_CONFIG is Feature.OfJsonObject<*, *, *>)
+        assertTrue(TestFeatures.JSON_CONFIG is JsonEncodeableFeature<*, *, *>)
     }
 
     @Test

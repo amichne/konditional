@@ -10,7 +10,7 @@ import io.amichne.konditional.fixtures.ApiConfig
 import io.amichne.konditional.fixtures.LogLevel
 import io.amichne.konditional.fixtures.TestCustomWrapperFeatures
 import io.amichne.konditional.fixtures.TestIntFeatures
-import io.amichne.konditional.fixtures.TestJsonObjectFeatures
+import io.amichne.konditional.fixtures.TestJsonEncodeableFeatureFeatures
 import io.amichne.konditional.fixtures.TestListFeatures
 import io.amichne.konditional.fixtures.TestMapFeatures
 import io.amichne.konditional.fixtures.TestThemeFeatures
@@ -49,7 +49,7 @@ class ConditionalExtensibilityTest {
         )
 
         Taxonomy.Core.config {
-            TestJsonObjectFeatures.PRIMARY_API with {
+            TestJsonEncodeableFeatureFeatures.PRIMARY_API with {
                 default(prodConfig)
                 rule {
                     platforms(Platform.WEB)
@@ -58,11 +58,11 @@ class ConditionalExtensibilityTest {
         }
 
         val iosResult = ctx("11111111111111111111111111111111", platform = Platform.IOS)
-            .evaluate(TestJsonObjectFeatures.PRIMARY_API)
+            .evaluate(TestJsonEncodeableFeatureFeatures.PRIMARY_API)
         assertEquals(prodConfig, iosResult)
 
         val webResult = ctx("22222222222222222222222222222222", platform = Platform.WEB)
-            .evaluate(TestJsonObjectFeatures.PRIMARY_API)
+            .evaluate(TestJsonEncodeableFeatureFeatures.PRIMARY_API)
         assertEquals(devConfig, webResult)
     }
 
@@ -225,7 +225,7 @@ class ConditionalExtensibilityTest {
         val features = listOf("core")
 
         Taxonomy.Core.config {
-            TestJsonObjectFeatures.PRIMARY_API with {
+            TestJsonEncodeableFeatureFeatures.PRIMARY_API with {
                 default(apiConfig)
             }
             TestThemeFeatures.APP_THEME with {
@@ -244,7 +244,7 @@ class ConditionalExtensibilityTest {
 
         val context = ctx("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
 
-        val apiResult = context.evaluate(TestJsonObjectFeatures.PRIMARY_API)
+        val apiResult = context.evaluate(TestJsonEncodeableFeatureFeatures.PRIMARY_API)
         val themeResult = context.evaluate(TestThemeFeatures.APP_THEME)
         val featuresResult = context.evaluate(TestListFeatures.ENABLED_FEATURES)
         val connectionsResult = context.evaluate(TestIntFeatures.MAX_CONNECTIONS)
@@ -272,7 +272,7 @@ class ConditionalExtensibilityTest {
             val level3: ApiConfig,
         )
 
-        data class DeepFlag(override val key: String = "nested_config") : Feature.OfJsonObject<DeepConfig, Context, Taxonomy.Core> {
+        data class DeepFlag(override val key: String = "nested_config") : JsonEncodeableFeature<DeepConfig, Context, Taxonomy.Core> {
             override val module: Taxonomy.Core = Taxonomy.Core
         }
 

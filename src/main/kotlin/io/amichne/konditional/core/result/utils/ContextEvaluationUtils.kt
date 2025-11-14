@@ -2,9 +2,11 @@ package io.amichne.konditional.core.result.utils
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Feature
+import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.result.EvaluationResult
 import io.amichne.konditional.core.result.FlagEvaluationException
 import io.amichne.konditional.core.result.FlagNotFoundException
+import io.amichne.konditional.core.types.EncodableValue
 
 /**
  * Evaluate a flag with explicit error handling that never throws.
@@ -37,16 +39,16 @@ import io.amichne.konditional.core.result.FlagNotFoundException
  * @param key the conditional key identifying the flag
  * @return typed result that never throws
  */
-fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : io.amichne.konditional.core.Taxonomy> C.evaluateSafe(
+fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> C.evaluateSafe(
     key: Feature<S, T, C, M>
 ): EvaluationResult<T> =
     key.registry.featureFlag(key)?.let { flag ->
         runCatching { flag.evaluate(this) }
             .fold(
                 onSuccess = { EvaluationResult.Success(it) },
-                onFailure = { EvaluationResult.EvaluationError(key.key, it) }
+                onFailure = { EvaluationResult.EvaluationError(key.toString(), it) }
             )
-    } ?: EvaluationResult.FlagNotFound(key.key)
+    } ?: EvaluationResult.FlagNotFound(key.toString())
 
 /**
  * Evaluate a flag, returning null if not found or evaluation fails.
@@ -67,7 +69,7 @@ fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Conte
  * }
  * ```
  */
-fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : io.amichne.konditional.core.Taxonomy> C.evaluateOrNull(
+fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> C.evaluateOrNull(
     key: Feature<S, T, C, M>
 ): T? = evaluateSafe(key).getOrNull()
 
@@ -87,7 +89,7 @@ fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Conte
  * val feature: String = context.evaluateOrDefault(MY_FLAG, default = "off")
  * ```
  */
-fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : io.amichne.konditional.core.Taxonomy> C.evaluateOrDefault(
+fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> C.evaluateOrDefault(
     key: Feature<S, T, C, M>,
     default: T
 ): T = evaluateSafe(key).getOrDefault(default)
@@ -111,7 +113,7 @@ fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Conte
  * @throws FlagNotFoundException if the flag is not registered
  * @throws FlagEvaluationException if evaluation throws an exception
  */
-fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : io.amichne.konditional.core.Taxonomy> C.evaluateOrThrow(
+fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> C.evaluateOrThrow(
     key: Feature<S, T, C, M>
 ): T = evaluateSafe(key).fold(
     onSuccess = { it },

@@ -2,10 +2,10 @@ package io.amichne.konditional.fixtures
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.BooleanFeature
-import io.amichne.konditional.core.DoubleFeature
-import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.FeatureContainer
 import io.amichne.konditional.core.IntFeature
 import io.amichne.konditional.core.StringFeature
+import io.amichne.konditional.core.Taxonomy
 
 /**
  * Common test features for basic types (Boolean, String, Int, Double).
@@ -13,6 +13,14 @@ import io.amichne.konditional.core.StringFeature
  * These features use the Core module and are available for use across all tests.
  * They provide a standardized set of feature flags for testing common scenarios.
  */
+
+object CommonTestFeatures : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
+    // This object can be used to group common test features if needed
+
+    val ALWAYS_TRUE by boolean<Context> {
+
+    }
+}
 
 /**
  * Boolean feature flags for testing.
@@ -100,11 +108,11 @@ enum class TestIntFeatures(
  *
  * Use these for tests involving decimal configuration values.
  */
-enum class TestDoubleFeatures(
-    override val key: String,
-) : DoubleFeature<Context, Taxonomy.Core> {
+data object TestDoubleFeatures : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
     /** Threshold configuration */
-    THRESHOLD("threshold"),
+    val  THRESHOLD by double("threshold"){
+
+    }
 
     /** Rate limit configuration */
     RATE_LIMIT("rate_limit");

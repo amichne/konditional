@@ -3,7 +3,6 @@ package io.amichne.konditional.core.dsl
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.rules.evaluable.Evaluable
 
 /**
@@ -22,7 +21,7 @@ import io.amichne.konditional.rules.evaluable.Evaluable
  *         min(1, 2, 0)
  *         max(2, 0, 0)
  *     }
- *     rollout = Rollout.of(50.0)
+ *     rollout {  Rollout.of(50.0) }
  *     note("Rollout to mobile users only")
  * }
  * ```
@@ -101,8 +100,8 @@ interface RuleScope<C : Context> {
      *
      * Example:
      * ```kotlin
-     * rollout = Rollout.of(50.0)  // 50% of matching users
+     * rollout {  50.0  // 50% of matching users }
      * ```
      */
-    var rollout: Rollout?
+    fun rollout(function: () -> Number)
 }

@@ -1,7 +1,8 @@
 package io.amichne.konditional.fixtures
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.Feature
+import io.amichne.konditional.core.OfCustom
+import io.amichne.konditional.core.JsonEncodeableFeature
 import io.amichne.konditional.core.Taxonomy
 
 /**
@@ -33,9 +34,9 @@ data class ThemeConfig(
 /**
  * JSON object feature flags for testing complex data structures.
  */
-enum class TestJsonObjectFeatures(
+enum class TestJsonEncodeableFeatureFeatures(
     override val key: String,
-) : Feature.OfJsonObject<ApiConfig, Context, Taxonomy.Core> {
+) : JsonEncodeableFeature<ApiConfig, Context, Taxonomy.Core> {
     /** Primary API configuration */
     PRIMARY_API("primary_api");
 
@@ -44,7 +45,7 @@ enum class TestJsonObjectFeatures(
 
 enum class TestThemeFeatures(
     override val key: String,
-) : Feature.OfJsonObject<ThemeConfig, Context, Taxonomy.Core> {
+) : JsonEncodeableFeature<ThemeConfig, Context, Taxonomy.Core> {
     /** Application theme configuration */
     APP_THEME("app_theme");
 
@@ -53,7 +54,7 @@ enum class TestThemeFeatures(
 
 enum class TestListFeatures(
     override val key: String,
-) : Feature.OfJsonObject<List<String>, Context, Taxonomy.Core> {
+) : JsonEncodeableFeature<List<String>, Context, Taxonomy.Core> {
     /** Enabled features list */
     ENABLED_FEATURES("enabled_features");
 
@@ -62,7 +63,7 @@ enum class TestListFeatures(
 
 enum class TestMapFeatures(
     override val key: String,
-) : Feature.OfJsonObject<Map<String, String>, Context, Taxonomy.Core> {
+) : JsonEncodeableFeature<Map<String, String>, Context, Taxonomy.Core> {
     /** Feature toggles map */
     FEATURE_TOGGLES("feature_toggles");
 
@@ -79,7 +80,7 @@ enum class LogLevel {
 /** Custom wrapper feature flags */
 enum class TestCustomWrapperFeatures(
     override val key: String,
-) : Feature.OfCustom<LogLevel, String, Context, Taxonomy.Core> {
+) : OfCustom<LogLevel, String, Context, Taxonomy.Core> {
     /** Application log level */
     APP_LOG_LEVEL("app_log_level");
 

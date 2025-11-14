@@ -24,7 +24,7 @@ import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
  *
  * ```kotlin
  * // Serialize a taxonomy's configuration
- * val serializer = ModuleSnapshotSerializer(Taxonomy.Domain.Payments)
+ * val serializer = TaxonomySnapshotSerializer(Taxonomy.Domain.Payments)
  * val json = serializer.toJson()
  *
  * // Save to your storage backend
@@ -59,7 +59,7 @@ import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
  * @property module The taxonomy whose configuration is being serialized
  * @property moshi The Moshi instance for JSON processing (defaults to shared instance)
  */
-class ModuleSnapshotSerializer<M : Taxonomy>(
+class TaxonomySnapshotSerializer<M : Taxonomy>(
     private val module: M,
     moshi: Moshi = SnapshotSerializer.defaultMoshi()
 ) : Serializer<Konfig> {
@@ -135,15 +135,15 @@ class ModuleSnapshotSerializer<M : Taxonomy>(
          *
          * Example:
          * ```kotlin
-         * val serializer = ModuleSnapshotSerializer.forModule(Taxonomy.Domain.Payments)
+         * val serializer = TaxonomySnapshotSerializer.forModule(Taxonomy.Domain.Payments)
          * val json = serializer.toJson()
          * ```
          *
          * @param M The taxonomy type (inferred)
          * @param module The taxonomy to create a serializer for
-         * @return A new ModuleSnapshotSerializer instance
+         * @return A new TaxonomySnapshotSerializer instance
          */
-        fun <M : Taxonomy> forModule(module: M): ModuleSnapshotSerializer<M> =
-            ModuleSnapshotSerializer(module)
+        fun <M : Taxonomy> forModule(module: M): TaxonomySnapshotSerializer<M> =
+            TaxonomySnapshotSerializer(module)
     }
 }

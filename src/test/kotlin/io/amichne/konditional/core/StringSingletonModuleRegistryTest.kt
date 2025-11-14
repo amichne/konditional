@@ -6,6 +6,7 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.evaluate
+import io.amichne.konditional.core.dsl.rollout
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.TestStringFeatures
 import kotlin.test.Test
@@ -145,7 +146,7 @@ class StringSingletonModuleRegistryTest {
                 default("https://api-old.example.com")
                 rule {
                     // 30% of users get the new endpoint
-                    rollout = Rollout.of(30.0)
+                    rollout {  Rollout.of(30.0) }
                 } implies "https://api-new.example.com"
             }
         }
@@ -185,7 +186,7 @@ class StringSingletonModuleRegistryTest {
                     versions {
                         min(9, 0)
                     }
-                    rollout = Rollout.of(25.0)
+                    rollout {  Rollout.of(25.0) }
                 } implies "https://api.example.com/beta"
 
                 // Canary API for all Android 10.0+ users

@@ -19,7 +19,7 @@ import io.amichne.konditional.rules.Rule
  *     salt("v2")
  *     rule {
  *         platforms(Platform.IOS)
- *         rollout = Rollout.of(50.0)
+ *         rollout {  Rollout.of(50.0) }
  *     }.implies(false)
  * }
  * ```
@@ -39,7 +39,7 @@ interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> {
      * @param value The default value to assign to the flag
      * @param coverage The coverage percentage for the default value (optional)
      */
-    fun default(value: T, coverage: Double? = null)
+    fun default(value: T)
 
     /**
      * Sets the salt value for the flag.
@@ -61,7 +61,7 @@ interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> {
      * rule {
      *     platforms(Platform.IOS)
      *     locales(AppLocale.EN_US)
-     *     rollout = Rollout.of(50.0)
+     *     rollout {  Rollout.of(50.0) }
      * }.implies(true)
      * ```
      *

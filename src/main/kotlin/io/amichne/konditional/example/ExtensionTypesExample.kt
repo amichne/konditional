@@ -5,6 +5,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Feature
+import io.amichne.konditional.core.OfCustom
 import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.config
 import io.amichne.konditional.core.id.StableId
@@ -40,7 +41,7 @@ object ExtensionTypesExample {
      * Conditional for DateTime values.
      * Uses CustomEncodeable with String encoding.
      */
-    val CREATED_AT: Feature.OfCustom<DateTime, String, Context, Taxonomy.Domain.Search> =
+    val CREATED_AT: OfCustom<DateTime, String, Context, Taxonomy.Domain.Search> =
         Feature.custom("created_at", module)
 
     /**
@@ -66,7 +67,7 @@ object ExtensionTypesExample {
     fun UUID.toEncodable(): EncodableValue.CustomEncodeable<UUID, String> =
         asCustomString().encoder { it.value }.decoder { UUID(it) }
 
-    val REQUEST_ID: Feature.OfCustom<UUID, String, Context, Taxonomy.Domain.Search> =
+    val REQUEST_ID: OfCustom<UUID, String, Context, Taxonomy.Domain.Search> =
         Feature.custom("request_id", module)
 
     // ========== Custom Wrapper Type: Duration (milliseconds) ==========
@@ -80,7 +81,7 @@ object ExtensionTypesExample {
         }
     }
 
-    val TIMEOUT: Feature.OfCustom<Duration, Double, Context, Taxonomy.Domain.Messaging> =
+    val TIMEOUT: OfCustom<Duration, Double, Context, Taxonomy.Domain.Messaging> =
         Feature.custom("timeout", Taxonomy.Domain.Messaging)
 
     fun Duration.toEncodable(): EncodableValue.CustomEncodeable<Duration, Double> =

@@ -25,7 +25,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * This serializer is storage-agnostic - it only handles JSON conversion, allowing callers
  * to choose their storage solution (files, databases, cloud storage, etc.).
  *
- * For taxonomy-scoped serialization, use [ModuleSnapshotSerializer] instead.
+ * For taxonomy-scoped serialization, use [TaxonomySnapshotSerializer] instead.
  */
 class SnapshotSerializer(
     moshi: Moshi = defaultMoshi()
@@ -111,7 +111,7 @@ class SnapshotSerializer(
      * This method implements the [Serializer] interface.
      * Returns ParseResult for type-safe error handling following parse-don't-validate principles.
      *
-     * Note: Unlike [ModuleSnapshotSerializer.fromJson], this does NOT automatically load
+     * Note: Unlike [TaxonomySnapshotSerializer.fromJson], this does NOT automatically load
      * the configuration into any registry. Callers must explicitly load the result if desired:
      *
      * ```kotlin
