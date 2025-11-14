@@ -66,6 +66,7 @@ abstract class FeatureContainer<M : Taxonomy>(
      */
     protected fun <C : Context> boolean(
         default: Boolean = false,
+        registry: ModuleRegistry = taxonomy.registry,
         flagScope: BooleanScope<C, M>.() -> Unit,
     ): ReadOnlyProperty<FeatureContainer<M>, BooleanFeature<C, M>> =
         ContainerFeaturePropertyDelegate(default) { BooleanFeature(it, taxonomy) }
@@ -78,6 +79,7 @@ abstract class FeatureContainer<M : Taxonomy>(
      */
     protected fun <C : Context> string(
         default: String = "",
+        registry: ModuleRegistry = taxonomy.registry,
         stringScope: StringScope<C, M>.() -> Unit,
     ): ReadOnlyProperty<FeatureContainer<M>, StringFeature<C, M>> =
         ContainerFeaturePropertyDelegate(default) { StringFeature(it, taxonomy) }
@@ -90,9 +92,13 @@ abstract class FeatureContainer<M : Taxonomy>(
      */
     protected fun <C : Context> int(
         default: Int = 0,
+        registry: ModuleRegistry = taxonomy.registry,
         integerScope: IntegerScope<C, M>.() -> Unit,
     ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(default) { IntFeature(it, taxonomy) }
+        ContainerFeaturePropertyDelegate(default) {
+
+            IntFeature(it, taxonomy, registry)
+        }
 
     /**
      * Creates a Double feature with automatic registration.
@@ -102,9 +108,10 @@ abstract class FeatureContainer<M : Taxonomy>(
      */
     protected fun <C : Context> double(
         default: Double = 0.0,
+        registry: ModuleRegistry = taxonomy.registry,
         decimalScope: DecimalScope<C, M>.() -> Unit,
     ): ReadOnlyProperty<FeatureContainer<M>, DoubleFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(default) { DoubleFeature(it, taxonomy) }
+        ContainerFeaturePropertyDelegate(default) { DoubleFeature(it, taxonomy, registry) }
 
     /**
      * Creates a JSON object feature with automatic registration.
@@ -116,8 +123,9 @@ abstract class FeatureContainer<M : Taxonomy>(
     protected inline fun <C : Context, reified T : Any> jsonObject(
         default: T,
         key: String,
+        registry: ModuleRegistry = taxonomy.registry,
     ): ReadOnlyProperty<FeatureContainer<M>, JsonFeature<C, M, T>> =
-        ContainerFeaturePropertyDelegate(default) { JsonFeature(key, taxonomy) }
+        ContainerFeaturePropertyDelegate(default) { JsonFeature(key, taxonomy, registry) }
 
     /**
      * Creates a custom wrapper type feature with automatic registration.
@@ -130,9 +138,10 @@ abstract class FeatureContainer<M : Taxonomy>(
     protected inline fun <reified T : Any, reified P, C : Context> custom(
         default: T,
         key: String,
+        registry: ModuleRegistry = taxonomy.registry,
     ): ReadOnlyProperty<FeatureContainer<M>, OfCustom<T, P, C, M>> where
         P : Any, P : EncodableValue<P> = ContainerFeaturePropertyDelegate(default) {
-        Feature.custom(key, taxonomy)
+        Feature.custom(key, taxonomy, registry)
     }
 
     /**

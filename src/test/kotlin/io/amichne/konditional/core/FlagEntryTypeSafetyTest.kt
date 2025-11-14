@@ -6,13 +6,15 @@ import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout.Companion.MAX
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.core.Taxonomy.Core
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Konfig
-import io.amichne.konditional.core.internal.SingletonModuleRegistry
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
+import io.amichne.konditional.serialization.SnapshotSerializer
+import org.junit.jupiter.api.BeforeEach
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -22,6 +24,39 @@ import kotlin.test.assertNotNull
  * Validates that the FlagEntry wrapper maintains type safety and eliminates unsafe casts.
  */
 class FlagEntryTypeSafetyTest {
+    @BeforeEach
+    fun setup() {
+        // Reset registry before each test
+        println("Core")
+        println("--------")
+        println(SnapshotSerializer().serialize(Core.registry.konfig()))
+        println("--------")
+
+        println("Payments")
+        println("--------")
+        println(SnapshotSerializer().serialize(Taxonomy.Domain.Payments.registry.konfig()))
+        println("--------")
+
+        println("Search")
+        println("--------")
+        println(SnapshotSerializer().serialize(Taxonomy.Domain.Search.registry.konfig()))
+        println("--------")
+
+        println(
+            "Does Core registry match Search? ${
+                SnapshotSerializer().serialize(Core.registry.konfig()) == SnapshotSerializer().serialize(
+                    Taxonomy.Domain.Search.registry.konfig()
+                )
+            }"
+        )
+        println(
+            "Does Core registry match Payments? ${
+                SnapshotSerializer().serialize(Core.registry.konfig()) == SnapshotSerializer().serialize(
+                    Taxonomy.Domain.Payments.registry.konfig()
+                )
+            }"
+        )
+    }
 
     private fun ctx(
         idHex: String,

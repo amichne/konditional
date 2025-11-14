@@ -37,7 +37,7 @@ import io.amichne.konditional.internal.builders.FlagBuilder
 sealed interface Feature<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> {
     val key: String
     val module: M
-    val registry: ModuleRegistry get() = module.registry
+    val registry: ModuleRegistry
 
     fun update(definition: FlagDefinition<S, T, C, M>): Unit = registry.update(definition)
 
@@ -48,9 +48,12 @@ sealed interface Feature<S : EncodableValue<T>, T : Any, C : Context, M : Taxono
         fun <T : Any, P : Any, C : Context, M : Taxonomy> custom(
             key: String,
             module: M,
+            registry: ModuleRegistry = module.registry,
         ): OfCustom<T, P, C, M> = object : OfCustom<T, P, C, M> {
             override val module: M
                 get() = module
+            override val registry: ModuleRegistry
+                get() = registry
             override val key: String = key
         }
     }

@@ -12,6 +12,7 @@ sealed interface BooleanFeature<C : Context, M : Taxonomy> : Feature<EncodableVa
         internal data class BooleanFeatureImpl<C : Context, M : Taxonomy>(
             override val key: String,
             override val module: M,
+            override val registry: ModuleRegistry = module.registry,
         ) : BooleanFeature<C, M>
     }
 }

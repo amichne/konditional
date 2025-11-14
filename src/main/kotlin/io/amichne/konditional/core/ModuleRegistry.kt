@@ -3,6 +3,7 @@ package io.amichne.konditional.core
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.instance.KonfigPatch
+import io.amichne.konditional.core.internal.SingletonModuleRegistry
 import io.amichne.konditional.core.types.EncodableValue
 
 /**

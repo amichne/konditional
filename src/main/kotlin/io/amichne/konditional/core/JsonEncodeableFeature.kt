@@ -37,10 +37,13 @@ interface JsonEncodeableFeature<T : Any, C : Context, M : Taxonomy> :
         operator fun <T : Any, C : Context, M : Taxonomy> invoke(
             key: String,
             module: M,
+            registry: ModuleRegistry = module.registry,
         ): JsonEncodeableFeature<T, C, M> = object : JsonEncodeableFeature<T, C, M> {
             override val key: String
                 get() = key
             override val module: M = module
+            override val registry: ModuleRegistry
+                get() = registry
         }
     }
 }

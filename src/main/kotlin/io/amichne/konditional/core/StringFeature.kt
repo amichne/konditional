@@ -5,13 +5,18 @@ import io.amichne.konditional.core.types.EncodableValue
 
 sealed interface StringFeature<C : Context, M : Taxonomy> : Feature<EncodableValue.StringEncodeable, String, C, M> {
     companion object {
-        internal operator fun <C : Context, M : Taxonomy> invoke(key: String, module: M): StringFeature<C, M> =
-            StringFeatureImpl(key, module)
+        internal operator fun <C : Context, M : Taxonomy> invoke(
+            key: String,
+            module: M,
+            registry: ModuleRegistry = module.registry,
+        ): StringFeature<C, M> =
+            StringFeatureImpl(key, module, registry)
 
         @PublishedApi
         internal data class StringFeatureImpl<C : Context, M : Taxonomy>(
             override val key: String,
             override val module: M,
+            override val registry: ModuleRegistry = module.registry,
         ) : StringFeature<C, M>
     }
 }

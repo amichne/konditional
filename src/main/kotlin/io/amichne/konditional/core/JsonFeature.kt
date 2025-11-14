@@ -11,12 +11,14 @@ sealed interface JsonFeature<C : Context, M : Taxonomy, T : Any> :
         internal operator fun <C : Context, M : Taxonomy, T : Any> invoke(
             key: String,
             module: M,
-        ): JsonFeature<C, M, T> = JsonFeatureImpl(key, module)
+            registry: ModuleRegistry = module.registry
+        ): JsonFeature<C, M, T> = JsonFeatureImpl(key, module, registry)
 
         @PublishedApi
         internal data class JsonFeatureImpl<C : Context, M : Taxonomy, T : Any>(
             override val key: String,
             override val module: M,
+            override val registry: ModuleRegistry,
         ) : JsonFeature<C, M, T>
     }
 }

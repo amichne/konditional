@@ -56,7 +56,7 @@ sealed class Taxonomy(val id: String) {
      * Each taxonomy gets its own registry instance, ensuring complete runtime isolation
      * between teams. Flags from different modules cannot interfere with each other.
      */
-    abstract val registry: ModuleRegistry
+    abstract var registry: ModuleRegistry
 
     /**
      * Core taxonomy containing shared flags accessible to all teams.
@@ -75,7 +75,7 @@ sealed class Taxonomy(val id: String) {
      * ```
      */
     data object Core : Taxonomy("core") {
-        override val registry: ModuleRegistry = ModuleRegistry.create()
+        override var registry: ModuleRegistry = ModuleRegistry.create()
     }
 
     /**
@@ -106,7 +106,7 @@ sealed class Taxonomy(val id: String) {
      * - **Recommendations**: Recommendation engine flags
      */
     sealed class Domain(id: String) : Taxonomy(id) {
-        override val registry: ModuleRegistry = ModuleRegistry.create()
+        override var registry: ModuleRegistry = ModuleRegistry.create()
 
         /** Authentication and authorization features */
         data object Authentication : Domain("auth")

@@ -2,6 +2,7 @@ package io.amichne.konditional.context
 
 import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.Taxonomy.Core
 import io.amichne.konditional.core.config
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.EnterpriseContext
@@ -11,6 +12,8 @@ import io.amichne.konditional.fixtures.ExperimentContext
 import io.amichne.konditional.fixtures.ExperimentFeatures
 import io.amichne.konditional.fixtures.SubscriptionTier
 import io.amichne.konditional.fixtures.UserRole
+import io.amichne.konditional.serialization.SnapshotSerializer
+import org.junit.jupiter.api.BeforeEach
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -21,6 +24,24 @@ import kotlin.test.assertTrue
  * Validates that custom Context implementations can be used with the feature flag system.
  */
 class ContextPolymorphismTest {
+    @BeforeEach
+    fun setup() {
+        // Reset registry before each test
+        println("Core")
+        println("--------")
+        println(SnapshotSerializer().serialize(Core.registry.konfig()))
+        println("--------")
+
+        println("Payments")
+        println("--------")
+        println(SnapshotSerializer().serialize(Taxonomy.Domain.Payments.registry.konfig()))
+        println("--------")
+
+        println("Search")
+        println("--------")
+        println(SnapshotSerializer().serialize(Taxonomy.Domain.Search.registry.konfig()))
+        println("--------")
+    }
 
     @Test
     fun `Given EnterpriseContext, When evaluating flags, Then context-specific properties are accessible`() {

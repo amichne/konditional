@@ -5,9 +5,12 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.core.Taxonomy.Core
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.example.PaymentFeatures
 import io.amichne.konditional.example.SearchFeatures
+import io.amichne.konditional.serialization.SnapshotSerializer
+import org.junit.jupiter.api.BeforeEach
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -18,6 +21,26 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class SingletonModuleRegistryTests {
+
+    @BeforeEach
+    fun setup() {
+        // Reset registry before each test
+        println("Core")
+        println("--------")
+        println(SnapshotSerializer().serialize(Core.registry.konfig()))
+        println("--------")
+
+        println("Payments")
+        println("--------")
+        println(SnapshotSerializer().serialize(Taxonomy.Domain.Payments.registry.konfig()))
+        println("--------")
+
+        println("Search")
+        println("--------")
+        println(SnapshotSerializer().serialize(Taxonomy.Domain.Search.registry.konfig()))
+        println("--------")
+    }
+
     private fun ctx(
         idHex: String,
         locale: AppLocale = AppLocale.EN_US,
@@ -52,6 +75,7 @@ class SingletonModuleRegistryTests {
                 platforms(Platform.IOS)
             } implies true
         }
+
         val id = "0123456789abcdef0123456789abcdef"
         val result = ctx(id).evaluate(SearchFeatures.PRIORITY_CHECK)
         assertTrue(result)
@@ -385,15 +409,13 @@ class SingletonModuleRegistryTests {
         val writer = Runnable {
             latch.await()
             repeat(50) {
-                Taxonomy.Core.config {
-                    PaymentFeatures.FIFTY_TRUE_US_IOS with {
-                        default(false)
-                        rule {
-                            platforms(
-                                Platform.IOS
-                            )
-                        } implies true
-                    }
+                PaymentFeatures.FIFTY_TRUE_US_IOS.update {
+                    default(false)
+                    rule {
+                        platforms(
+                            Platform.IOS
+                        )
+                    } implies true
                 }
             }
         }

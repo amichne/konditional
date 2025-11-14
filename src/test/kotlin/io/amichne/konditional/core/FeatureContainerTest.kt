@@ -2,12 +2,16 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.utils.evaluateOrDefault
+import io.amichne.konditional.core.types.asJsonObject
+import io.amichne.konditional.serialization.TaxonomySnapshotSerializer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 /**
@@ -19,6 +23,10 @@ class FeatureContainerTest {
     object TestFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
         Taxonomy.Domain.Payments
     ) {
+        init {
+            taxonomy.registry = ModuleRegistry.create()
+        }
+
         val defaultTestConfig = TestConfig(
             enabled = false,
             value = 0
@@ -133,7 +141,7 @@ class FeatureContainerTest {
         )
 
         // Evaluate features
-        assertEquals(true, context.evaluateOrDefault(TestFeatures.test_boolean, false))
+        assertEquals(true, context.evaluate(TestFeatures.test_boolean))
         assertEquals("test-value", context.evaluateOrDefault(TestFeatures.test_string, ""))
         assertEquals(100, context.evaluateOrDefault(TestFeatures.test_int, 0))
     }
