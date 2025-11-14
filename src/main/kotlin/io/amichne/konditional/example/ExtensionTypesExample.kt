@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter
  * These are wrapper types that encode to JSON primitives (DateTime, UUID, etc.)
  */
 object ExtensionTypesExample {
-    val module = Taxonomy.Domain.Search
 
     // ========== Custom Wrapper Type: DateTime ==========
 
@@ -42,7 +41,7 @@ object ExtensionTypesExample {
      * Uses CustomEncodeable with String encoding.
      */
     val CREATED_AT: OfCustom<DateTime, String, Context, Taxonomy.Domain.Search> =
-        Feature.custom("created_at", module)
+        Feature.custom("created_at", Taxonomy.Domain.Search)
 
     /**
      * Helper to create EncodableValue from DateTime.
@@ -68,7 +67,7 @@ object ExtensionTypesExample {
         asCustomString().encoder { it.value }.decoder { UUID(it) }
 
     val REQUEST_ID: OfCustom<UUID, String, Context, Taxonomy.Domain.Search> =
-        Feature.custom("request_id", module)
+        Feature.custom("request_id", Taxonomy.Domain.Search)
 
     // ========== Custom Wrapper Type: Duration (milliseconds) ==========
 

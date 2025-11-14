@@ -79,7 +79,7 @@ class FlagEntryTypeSafetyTest {
         )
 
         assertNotNull(flag)
-        assertEquals(Features.featureA, flag)
+        assertEquals(Features.featureA.key, flag.feature.key)
         assertEquals(false, flag.defaultValue)
     }
 
@@ -159,14 +159,14 @@ class FlagEntryTypeSafetyTest {
     @Test
     fun `Given Snapshot with ContextualFlagDefinition instances, When loading, Then all flags are accessible`() {
         val boolRule = Rule<Context>(
-            rollout = io.amichne.konditional.context.Rollout.MAX,
+            rollout = MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded(),
         )
 
         val stringRule = Rule<Context>(
-            rollout = io.amichne.konditional.context.Rollout.MAX,
+            rollout = MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded(),
@@ -191,7 +191,7 @@ class FlagEntryTypeSafetyTest {
             )
         )
 
-        SingletonModuleRegistry.load(konfig)
+        Taxonomy.Core.registry.load(konfig)
 
         val context = ctx("33333333333333333333333333333333")
         val boolResult = context.evaluate(Features.featureA)

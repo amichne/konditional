@@ -58,7 +58,6 @@ data object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonom
             platforms(Platform.IOS)
             rollout { 50 }
         }
-
     }
 }
 

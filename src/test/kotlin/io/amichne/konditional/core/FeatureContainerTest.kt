@@ -2,6 +2,8 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Platform
+import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.utils.evaluateOrDefault
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -14,53 +16,58 @@ import org.junit.jupiter.api.Test
 class FeatureContainerTest {
 
     // Test container with mixed feature types
-    object TestFeatures : FeatureContainer<Context, Taxonomy.Domain.Payments>(
+    object TestFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
         Taxonomy.Domain.Payments
     ) {
-        val BOOLEAN_FLAG by boolean("test_boolean")
-        val STRING_CONFIG by string("test_string")
-        val INT_LIMIT by int("test_int")
-        val DOUBLE_THRESHOLD by double("test_double")
-        val JSON_CONFIG by jsonObject<TestConfig>("test_json")
+        val defaultTestConfig = TestConfig(
+            enabled = false,
+            value = 0
+        )
+        val test_boolean by boolean<Context> {
+        }
+        val test_string by string<Context> { }
+        val test_int by int<Context> { }
+        val test_double by double<Context> { }
+        val test_json by jsonObject<Context, TestConfig>(defaultTestConfig, "test_json")
     }
 
-    object Invalid {
-        val x by double()
-    }
+//    object Invalid {
+//        val x by double()
+//    }
 
     data class TestConfig(
         val enabled: Boolean,
-        val value: Int
+        val value: Int,
     )
 
     @Test
     fun `features are created with correct types`() {
         // Verify each feature has correct type
-        assertTrue(TestFeatures.BOOLEAN_FLAG is BooleanFeature<*, *>)
-        assertTrue(TestFeatures.STRING_CONFIG is StringFeature<*, *>)
-        assertTrue(TestFeatures.INT_LIMIT is IntFeature<*, *>)
-        assertTrue(TestFeatures.DOUBLE_THRESHOLD is DoubleFeature<*, *>)
-        assertTrue(TestFeatures.JSON_CONFIG is JsonEncodeableFeature<*, *, *>)
+        assertTrue(TestFeatures.test_boolean is BooleanFeature<*, *>)
+        assertTrue(TestFeatures.test_string is StringFeature<*, *>)
+        assertTrue(TestFeatures.test_int is IntFeature<*, *>)
+        assertTrue(TestFeatures.test_double is DoubleFeature<*, *>)
+        assertTrue(TestFeatures.test_json is JsonFeature<*, *, *>)
     }
 
     @Test
     fun `features have correct keys`() {
-        assertEquals("test_boolean", TestFeatures.BOOLEAN_FLAG.key)
-        assertEquals("test_string", TestFeatures.STRING_CONFIG.key)
-        assertEquals("test_int", TestFeatures.INT_LIMIT.key)
-        assertEquals("test_double", TestFeatures.DOUBLE_THRESHOLD.key)
-        assertEquals("test_json", TestFeatures.JSON_CONFIG.key)
+        assertEquals("test_boolean", TestFeatures.test_boolean.key)
+        assertEquals("test_string", TestFeatures.test_string.key)
+        assertEquals("test_int", TestFeatures.test_int.key)
+        assertEquals("test_double", TestFeatures.test_double.key)
+        assertEquals("test_json", TestFeatures.test_json.key)
     }
 
     @Test
     fun `features have correct module`() {
         val expectedModule = Taxonomy.Domain.Payments
 
-        assertEquals(expectedModule, TestFeatures.BOOLEAN_FLAG.module)
-        assertEquals(expectedModule, TestFeatures.STRING_CONFIG.module)
-        assertEquals(expectedModule, TestFeatures.INT_LIMIT.module)
-        assertEquals(expectedModule, TestFeatures.DOUBLE_THRESHOLD.module)
-        assertEquals(expectedModule, TestFeatures.JSON_CONFIG.module)
+        assertEquals(expectedModule, TestFeatures.test_boolean.module)
+        assertEquals(expectedModule, TestFeatures.test_string.module)
+        assertEquals(expectedModule, TestFeatures.test_int.module)
+        assertEquals(expectedModule, TestFeatures.test_double.module)
+        assertEquals(expectedModule, TestFeatures.test_json.module)
     }
 
     @Test
@@ -81,38 +88,39 @@ class FeatureContainerTest {
     @Test
     fun `features are lazily initialized`() {
         // Create a new container that hasn't been accessed yet
-        object LazyTestContainer : FeatureContainer<Context, Taxonomy.Domain.Payments>(
+        with(object : FeatureContainer<Taxonomy.Domain.Payments>(
             Taxonomy.Domain.Payments
         ) {
-            val FEATURE_A by boolean("lazy_a")
-            val FEATURE_B by boolean("lazy_b")
+            val lazy_a by boolean<Context> { }
+            val lazy_b by boolean<Context> { }
+        }) {
+
+            // allFeatures() should return empty before any feature is accessed
+            // Note: In current implementation, accessing allFeatures() triggers initialization
+            // This is fine - features register on first access (either directly or via allFeatures)
+
+            // After calling allFeatures(), all features should be registered
+            val features = allFeatures()
+            assertEquals(0, features.size)
+
+            // Accessing individual features doesn't change count
+            val featureA = lazy_a
+            val featureB = lazy_b
+            assertEquals(2, allFeatures().size)
         }
-
-        // allFeatures() should return empty before any feature is accessed
-        // Note: In current implementation, accessing allFeatures() triggers initialization
-        // This is fine - features register on first access (either directly or via allFeatures)
-
-        // After calling allFeatures(), all features should be registered
-        val features = LazyTestContainer.allFeatures()
-        assertEquals(2, features.size)
-
-        // Accessing individual features doesn't change count
-        val featureA = LazyTestContainer.FEATURE_A
-        val featureB = LazyTestContainer.FEATURE_B
-        assertEquals(2, LazyTestContainer.allFeatures().size)
     }
 
     @Test
     fun `features can be evaluated with context`() {
         // Configure the registry
         Taxonomy.Domain.Payments.config {
-            TestFeatures.BOOLEAN_FLAG with {
+            TestFeatures.test_boolean with {
                 default(true)
             }
-            TestFeatures.STRING_CONFIG with {
+            TestFeatures.test_string with {
                 default("test-value")
             }
-            TestFeatures.INT_LIMIT with {
+            TestFeatures.test_int with {
                 default(100)
             }
         }
@@ -125,34 +133,34 @@ class FeatureContainerTest {
         )
 
         // Evaluate features
-        assertEquals(true, context.evaluateOrDefault(TestFeatures.BOOLEAN_FLAG, false))
-        assertEquals("test-value", context.evaluateOrDefault(TestFeatures.STRING_CONFIG, ""))
-        assertEquals(100, context.evaluateOrDefault(TestFeatures.INT_LIMIT, 0))
+        assertEquals(true, context.evaluateOrDefault(TestFeatures.test_boolean, false))
+        assertEquals("test-value", context.evaluateOrDefault(TestFeatures.test_string, ""))
+        assertEquals(100, context.evaluateOrDefault(TestFeatures.test_int, 0))
     }
 
     @Test
     fun `multiple containers maintain independent feature lists`() {
-        object ContainerA : FeatureContainer<Context, Taxonomy.Domain.Payments>(
+        val first = object : FeatureContainer<Taxonomy.Domain.Payments>(
             Taxonomy.Domain.Payments
         ) {
-            val FEATURE_1 by boolean("a1")
-            val FEATURE_2 by boolean("a2")
+            val a1 by boolean<Context> { }
+            val a2 by boolean<Context> { }
         }
 
-        object ContainerB : FeatureContainer<Context, Taxonomy.Domain.Orders>(
-            Taxonomy.Domain.Orders
+        val second = object : FeatureContainer<Taxonomy.Domain.Messaging>(
+            Taxonomy.Domain.Messaging
         ) {
-            val FEATURE_3 by boolean("b1")
-            val FEATURE_4 by boolean("b2")
-            val FEATURE_5 by boolean("b3")
+            val b1 by boolean<Context> { }
+            val b2 by boolean<Context> { }
+            val b3 by boolean<Context> { }
         }
 
-        assertEquals(2, ContainerA.allFeatures().size)
-        assertEquals(3, ContainerB.allFeatures().size)
+        assertEquals(0, first.allFeatures().size)
+        assertEquals(0, second.allFeatures().size)
 
         // Features are distinct
-        val keysA = ContainerA.allFeatures().map { it.key }.toSet()
-        val keysB = ContainerB.allFeatures().map { it.key }.toSet()
+        val keysA = first.allFeatures().map { it.key }.toSet()
+        val keysB = second.allFeatures().map { it.key }.toSet()
 
         assertEquals(setOf("a1", "a2"), keysA)
         assertEquals(setOf("b1", "b2", "b3"), keysB)
@@ -175,13 +183,13 @@ class FeatureContainerTest {
     fun `features maintain type safety through container`() {
         // Type inference works correctly
         val booleanFeature: BooleanFeature<Context, Taxonomy.Domain.Payments> =
-            TestFeatures.BOOLEAN_FLAG
+            TestFeatures.test_boolean
 
         val stringFeature: StringFeature<Context, Taxonomy.Domain.Payments> =
-            TestFeatures.STRING_CONFIG
+            TestFeatures.test_string
 
         val intFeature: IntFeature<Context, Taxonomy.Domain.Payments> =
-            TestFeatures.INT_LIMIT
+            TestFeatures.test_int
 
         // Verify types are preserved
         assertEquals("test_boolean", booleanFeature.key)

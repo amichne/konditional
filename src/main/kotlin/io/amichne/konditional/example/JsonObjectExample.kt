@@ -4,7 +4,6 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.JsonEncodeableFeature
 import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.config
 import io.amichne.konditional.core.id.StableId
@@ -15,7 +14,9 @@ import io.amichne.konditional.core.id.StableId
  * JSON-object: Distinct super type of object nodes that represent different
  * values given specific conditions.
  */
-object JsonObjectExample {
+object JsonObjectExample : io.amichne.konditional.core.FeatureContainer<Taxonomy.Domain.Recommendations>(
+    Taxonomy.Domain.Recommendations
+) {
 
     // ========== Domain Types ==========
 
@@ -27,7 +28,7 @@ object JsonObjectExample {
         val timeout: Int,
         val retries: Int,
         val useHttps: Boolean,
-        val headers: Map<String, String> = emptyMap()
+        val headers: Map<String, String> = emptyMap(),
     )
 
     /**
@@ -38,7 +39,7 @@ object JsonObjectExample {
         val secondaryColor: String,
         val fontFamily: String,
         val fontSize: Int,
-        val darkModeEnabled: Boolean
+        val darkModeEnabled: Boolean,
     )
 
     /**
@@ -47,7 +48,57 @@ object JsonObjectExample {
     data class FeatureSet(
         val features: List<String>,
         val limits: Map<String, Int>,
-        val metadata: Map<String, Any?>
+        val metadata: Map<String, Any?>,
+    )
+
+    // Production API config
+    val prodApi = ApiConfig(
+        baseUrl = "https://api.prod.example.com",
+        timeout = 30,
+        retries = 3,
+        useHttps = true,
+        headers = mapOf("X-Environment" to "production")
+    )
+
+    // Development API config
+    val devApi = ApiConfig(
+        baseUrl = "https://api.dev.example.com",
+        timeout = 60,
+        retries = 1,
+        useHttps = true,
+        headers = mapOf("X-Environment" to "development")
+    )
+
+    // Light theme
+    val lightTheme = ThemeConfig(
+        primaryColor = "#FFFFFF",
+        secondaryColor = "#F0F0F0",
+        fontFamily = "Roboto",
+        fontSize = 14,
+        darkModeEnabled = false
+    )
+
+    // Dark theme
+    val darkTheme = ThemeConfig(
+        primaryColor = "#1E1E1E",
+        secondaryColor = "#2D2D2D",
+        fontFamily = "Roboto",
+        fontSize = 14,
+        darkModeEnabled = true
+    )
+
+    // Basic feature set
+    val basicFeatures = FeatureSet(
+        features = listOf("core", "basic"),
+        limits = mapOf("maxUsers" to 10, "maxStorage" to 100),
+        metadata = mapOf("tier" to "free")
+    )
+
+    // Premium feature set
+    val premiumFeatures = FeatureSet(
+        features = listOf("core", "basic", "advanced", "analytics"),
+        limits = mapOf("maxUsers" to 1000, "maxStorage" to 10000),
+        metadata = mapOf("tier" to "premium", "priority" to true)
     )
 
     // ========== Conditional Declarations ==========
@@ -56,80 +107,28 @@ object JsonObjectExample {
      * API configuration conditional.
      * Different API configs for different platforms/environments.
      */
-    val API_CONFIG: JsonEncodeableFeature<ApiConfig, Context, Taxonomy.Domain.Recommendations> =
-        JsonEncodeableFeature("api_config", Taxonomy.Domain.Recommendations)
+    val api_config by jsonObject<Context, ApiConfig>(devApi, "api_config")
 
     /**
      * Theme configuration conditional.
      * Different themes per platform.
      */
-    val THEME: JsonEncodeableFeature<ThemeConfig, Context, Taxonomy.Domain.Recommendations> =
-        JsonEncodeableFeature("app_theme", Taxonomy.Domain.Recommendations)
+    val app_theme by jsonObject<Context, ThemeConfig>(lightTheme, "app_theme")
 
     /**
      * Feature set conditional.
      * Different feature sets based on context.
      */
-    val FEATURES: JsonEncodeableFeature<FeatureSet, Context, Taxonomy.Domain.Recommendations> =
-        JsonEncodeableFeature("feature_set", Taxonomy.Domain.Recommendations)
+    val feature_set by jsonObject<Context, FeatureSet>(premiumFeatures, "feature_set")
 
     // ========== Usage Example ==========
 
     fun demonstrateUsage() {
-        // Production API config
-        val prodApi = ApiConfig(
-            baseUrl = "https://api.prod.example.com",
-            timeout = 30,
-            retries = 3,
-            useHttps = true,
-            headers = mapOf("X-Environment" to "production")
-        )
-
-        // Development API config
-        val devApi = ApiConfig(
-            baseUrl = "https://api.dev.example.com",
-            timeout = 60,
-            retries = 1,
-            useHttps = true,
-            headers = mapOf("X-Environment" to "development")
-        )
-
-        // Light theme
-        val lightTheme = ThemeConfig(
-            primaryColor = "#FFFFFF",
-            secondaryColor = "#F0F0F0",
-            fontFamily = "Roboto",
-            fontSize = 14,
-            darkModeEnabled = false
-        )
-
-        // Dark theme
-        val darkTheme = ThemeConfig(
-            primaryColor = "#1E1E1E",
-            secondaryColor = "#2D2D2D",
-            fontFamily = "Roboto",
-            fontSize = 14,
-            darkModeEnabled = true
-        )
-
-        // Basic feature set
-        val basicFeatures = FeatureSet(
-            features = listOf("core", "basic"),
-            limits = mapOf("maxUsers" to 10, "maxStorage" to 100),
-            metadata = mapOf("tier" to "free")
-        )
-
-        // Premium feature set
-        val premiumFeatures = FeatureSet(
-            features = listOf("core", "basic", "advanced", "analytics"),
-            limits = mapOf("maxUsers" to 1000, "maxStorage" to 10000),
-            metadata = mapOf("tier" to "premium", "priority" to true)
-        )
 
         // Configure with HSON-object type representation
         // Each condition produces a distinct object node
         Taxonomy.Domain.Recommendations.config {
-            API_CONFIG with {
+            api_config with {
                 default(prodApi)
 
                 // Different API config for WEB platform
@@ -138,7 +137,7 @@ object JsonObjectExample {
                 } implies devApi
             }
 
-            THEME with {
+            app_theme with {
                 default(lightTheme)
 
                 // Dark theme for specific locales
@@ -147,7 +146,7 @@ object JsonObjectExample {
                 } implies darkTheme
             }
 
-            FEATURES with {
+            feature_set with {
                 default(basicFeatures)
 
                 // Premium features for iOS v2.0+

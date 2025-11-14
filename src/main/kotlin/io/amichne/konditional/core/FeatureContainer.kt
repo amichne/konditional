@@ -46,6 +46,12 @@ abstract class FeatureContainer<M : Taxonomy>(
 ) {
     private val _features = mutableListOf<Feature<*, *, *, M>>()
 
+    init {
+        _features.forEach {
+
+        }
+    }
+
     /**
      * Returns all features declared in this container.
      * Features are registered lazily on first access.
@@ -59,9 +65,10 @@ abstract class FeatureContainer<M : Taxonomy>(
      * @return A delegated property that returns a [BooleanFeature]
      */
     protected fun <C : Context> boolean(
+        default: Boolean = false,
         flagScope: BooleanScope<C, M>.() -> Unit,
     ): ReadOnlyProperty<FeatureContainer<M>, BooleanFeature<C, M>> =
-        ContainerFeaturePropertyDelegate { BooleanFeature(it, taxonomy) }
+        ContainerFeaturePropertyDelegate(default) { BooleanFeature(it, taxonomy) }
 
     /**
      * Creates a String feature with automatic registration.
@@ -70,9 +77,10 @@ abstract class FeatureContainer<M : Taxonomy>(
      * @return A delegated property that returns a [StringFeature]
      */
     protected fun <C : Context> string(
+        default: String = "",
         stringScope: StringScope<C, M>.() -> Unit,
     ): ReadOnlyProperty<FeatureContainer<M>, StringFeature<C, M>> =
-        ContainerFeaturePropertyDelegate { StringFeature(it, taxonomy) }
+        ContainerFeaturePropertyDelegate(default) { StringFeature(it, taxonomy) }
 
     /**
      * Creates an Int feature with automatic registration.
@@ -81,9 +89,10 @@ abstract class FeatureContainer<M : Taxonomy>(
      * @return A delegated property that returns an [IntFeature]
      */
     protected fun <C : Context> int(
+        default: Int = 0,
         integerScope: IntegerScope<C, M>.() -> Unit,
     ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<C, M>> =
-        ContainerFeaturePropertyDelegate { IntFeature(it, taxonomy) }
+        ContainerFeaturePropertyDelegate(default) { IntFeature(it, taxonomy) }
 
     /**
      * Creates a Double feature with automatic registration.
@@ -92,9 +101,10 @@ abstract class FeatureContainer<M : Taxonomy>(
      * @return A delegated property that returns a [DoubleFeature]
      */
     protected fun <C : Context> double(
+        default: Double = 0.0,
         decimalScope: DecimalScope<C, M>.() -> Unit,
     ): ReadOnlyProperty<FeatureContainer<M>, DoubleFeature<C, M>> =
-        ContainerFeaturePropertyDelegate { DoubleFeature(it, taxonomy) }
+        ContainerFeaturePropertyDelegate(default) { DoubleFeature(it, taxonomy) }
 
     /**
      * Creates a JSON object feature with automatic registration.
@@ -104,9 +114,10 @@ abstract class FeatureContainer<M : Taxonomy>(
      * @return A delegated property that returns a [JsonEncodeableFeature]
      */
     protected inline fun <C : Context, reified T : Any> jsonObject(
+        default: T,
         key: String,
     ): ReadOnlyProperty<FeatureContainer<M>, JsonFeature<C, M, T>> =
-        ContainerFeaturePropertyDelegate { JsonFeature(key, taxonomy) }
+        ContainerFeaturePropertyDelegate(default) { JsonFeature(key, taxonomy) }
 
     /**
      * Creates a custom wrapper type feature with automatic registration.
@@ -117,9 +128,10 @@ abstract class FeatureContainer<M : Taxonomy>(
      * @return A delegated property that returns a [OfCustom]
      */
     protected inline fun <reified T : Any, reified P, C : Context> custom(
+        default: T,
         key: String,
     ): ReadOnlyProperty<FeatureContainer<M>, OfCustom<T, P, C, M>> where
-        P : Any, P : EncodableValue<P> = ContainerFeaturePropertyDelegate {
+        P : Any, P : EncodableValue<P> = ContainerFeaturePropertyDelegate(default) {
         Feature.custom(key, taxonomy)
     }
 
@@ -129,24 +141,27 @@ abstract class FeatureContainer<M : Taxonomy>(
      * Features are created lazily on first property access and automatically
      * registered in the container's feature list.
      */
-    inner class ContainerFeaturePropertyDelegate<F : Feature<*, *, *, M>>(private val factory: M.(String) -> F) :
+    inner class ContainerFeaturePropertyDelegate<F : Feature<*, T, *, M>, T : Any>(
+        default: T,
+        private val factory: M.(String) -> F,
+    ) :
         ReadOnlyProperty<FeatureContainer<M>, F>, PropertyDelegateProvider<FeatureContainer<M>, F> {
         lateinit var name: String
 
-        private val feature by lazy { factory(taxonomy, name).also { _features.add(it) } }
+        private val feature: F by lazy {
+            factory(taxonomy, name).also { _features.add(it) }.also {
+                it.registry.update(FlagBuilder(it).apply { default(default) }.build())
+            }
+        }
 
         override fun getValue(
             thisRef: FeatureContainer<M>,
             property: KProperty<*>,
-        ): F = feature
+        ): F = provideDelegate(thisRef, property)
 
         override fun provideDelegate(
             thisRef: FeatureContainer<M>,
             property: KProperty<*>,
-        ): F = run {
-            if (!::name.isInitialized) {
-                name = property.name
-            }
-        }.let { feature }
+        ): F = run { name = property.name }.let { feature }
     }
 }
