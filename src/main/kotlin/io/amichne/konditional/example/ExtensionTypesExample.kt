@@ -5,7 +5,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Feature
-import io.amichne.konditional.core.FeatureModule
+import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.config
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.types.EncodableValue
@@ -19,7 +19,7 @@ import java.time.format.DateTimeFormatter
  * These are wrapper types that encode to JSON primitives (DateTime, UUID, etc.)
  */
 object ExtensionTypesExample {
-    val module = FeatureModule.Team.Search
+    val module = Taxonomy.Domain.Search
 
     // ========== Custom Wrapper Type: DateTime ==========
 
@@ -40,7 +40,7 @@ object ExtensionTypesExample {
      * Conditional for DateTime values.
      * Uses CustomEncodeable with String encoding.
      */
-    val CREATED_AT: Feature.OfCustom<DateTime, String, Context, FeatureModule.Team.Search> =
+    val CREATED_AT: Feature.OfCustom<DateTime, String, Context, Taxonomy.Domain.Search> =
         Feature.custom("created_at", module)
 
     /**
@@ -66,7 +66,7 @@ object ExtensionTypesExample {
     fun UUID.toEncodable(): EncodableValue.CustomEncodeable<UUID, String> =
         asCustomString().encoder { it.value }.decoder { UUID(it) }
 
-    val REQUEST_ID: Feature.OfCustom<UUID, String, Context, FeatureModule.Team.Search> =
+    val REQUEST_ID: Feature.OfCustom<UUID, String, Context, Taxonomy.Domain.Search> =
         Feature.custom("request_id", module)
 
     // ========== Custom Wrapper Type: Duration (milliseconds) ==========
@@ -80,8 +80,8 @@ object ExtensionTypesExample {
         }
     }
 
-    val TIMEOUT: Feature.OfCustom<Duration, Double, Context, FeatureModule.Team.Messaging> =
-        Feature.custom("timeout", FeatureModule.Team.Messaging)
+    val TIMEOUT: Feature.OfCustom<Duration, Double, Context, Taxonomy.Domain.Messaging> =
+        Feature.custom("timeout", Taxonomy.Domain.Messaging)
 
     fun Duration.toEncodable(): EncodableValue.CustomEncodeable<Duration, Double> =
         asCustomDouble().encoder { it.millis.toDouble() }.decoder { Duration(it.toLong()) }
@@ -90,7 +90,7 @@ object ExtensionTypesExample {
 
     fun demonstrateUsage() {
         // Configure flags with extension types
-        FeatureModule.Core.config {
+        Taxonomy.Core.config {
             CREATED_AT with {
                 default(DateTime.now().toEncodable().value)
 

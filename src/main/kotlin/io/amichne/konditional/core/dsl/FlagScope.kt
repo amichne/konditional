@@ -1,6 +1,7 @@
-package io.amichne.konditional.core
+package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.Rule
 
@@ -29,7 +30,7 @@ import io.amichne.konditional.rules.Rule
  * @since 0.0.2
  */
 @FeatureFlagDsl
-interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule> {
+interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> {
     /**
      * Sets the default value for the flag.
      *

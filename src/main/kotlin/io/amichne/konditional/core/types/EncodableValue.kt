@@ -61,24 +61,6 @@ sealed interface EncodableValue<T : Any> {
                     JSON -> throw IllegalArgumentException("Cannot create JSON encodable from primitive. Use asJsonObject() instead.")
                 } as EncodableValue<T>
             }
-
-            /**
-             * Deprecated unsafe version - use of(value, evidence) instead.
-             */
-            @Deprecated(
-                "Use of(value, evidence) with explicit EncodableEvidence for type safety",
-                ReplaceWith("of(value, EncodableEvidence.get())")
-            )
-            @Suppress("UNCHECKED_CAST")
-            inline fun <reified T : Any> parse(value: T): EncodableValue<T> {
-                return when (value) {
-                    is Boolean -> BooleanEncodeable(value)
-                    is String -> StringEncodeable(value)
-                    is Int -> IntEncodeable(value)
-                    is Double -> DecimalEncodeable(value)
-                    else -> throw IllegalArgumentException("Unsupported EncodableValue type: ${T::class.simpleName}")
-                } as EncodableValue<T>
-            }
         }
     }
 

@@ -1,8 +1,9 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.modules.FeatureModule
-import io.amichne.konditional.serialization.EncodableValue
+import io.amichne.konditional.core.dsl.FlagScope
+import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.internal.builders.FlagBuilder
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -18,8 +19,8 @@ import kotlin.reflect.KProperty
  *
  * **Example:**
  * ```kotlin
- * object PaymentFeatures : FeatureContainer<Context, FeatureModule.Team.Payments>(
- *     FeatureModule.Team.Payments
+ * object PaymentFeatures : FeatureContainer<Context, Taxonomy.Domain.Payments>(
+ *     Taxonomy.Domain.Payments
  * ) {
  *     val APPLE_PAY by boolean("apple_pay")
  *     val CARD_LIMIT by int("card_limit")
@@ -27,7 +28,7 @@ import kotlin.reflect.KProperty
  * }
  *
  * // Complete enumeration
- * val all = PaymentFeatures.allFeatures() // List<Feature<*, *, Context, FeatureModule.Team.Payments>>
+ * val all = PaymentFeatures.allFeatures() // List<Feature<*, *, Context, Taxonomy.Domain.Payments>>
  *
  * // Usage (same as current API)
  * context.evaluateSafe(PaymentFeatures.APPLE_PAY)
@@ -36,8 +37,8 @@ import kotlin.reflect.KProperty
  * @param C The context type for evaluation
  * @param M The module this container belongs to
  */
-abstract class FeatureContainer<C : Context, M : FeatureModule>(
-    protected val module: M
+abstract class FeatureContainer<C : Context, M : Taxonomy>(
+    protected val taxonomy: M
 ) {
     private val _features = mutableListOf<Feature<*, *, C, M>>()
 
@@ -47,14 +48,25 @@ abstract class FeatureContainer<C : Context, M : FeatureModule>(
      */
     fun allFeatures(): List<Feature<*, *, C, M>> = _features.toList()
 
+    infix fun <S : EncodableValue<T>, T : Any> Feature<S, T, C, M>.defined(build: FlagScope<S, T, C, M>.() -> Unit) {
+        FlagBuilder(this).apply(build).build()
+    }
+
     /**
      * Creates a Boolean feature with automatic registration.
      *
      * @param key The unique feature key
      * @return A delegated property that returns a [BooleanFeature]
      */
-    protected fun boolean(key: String): ReadOnlyProperty<Any?, BooleanFeature<C, M>> {
-        return featureDelegate { BooleanFeature(key, module) }
+    protected fun boolean(key: String): ReadOnlyProperty<FeatureContainer<C, M>, BooleanFeature<C, M>> {
+        return ContainerFeaturePropertyDelegate { BooleanFeature.invoke(key, taxonomy) }
+    }
+
+    protected fun boolean(
+        key: String,
+        flagScope: FlagScope<EncodableValue.BooleanEncodeable, Boolean, C, M>.() -> Unit
+    ): ReadOnlyProperty<FeatureContainer<C, M>, BooleanFeature<C, M>> {
+        return ContainerFeaturePropertyDelegate { BooleanFeature.invoke(key, taxonomy) }
     }
 
     /**
@@ -63,8 +75,8 @@ abstract class FeatureContainer<C : Context, M : FeatureModule>(
      * @param key The unique feature key
      * @return A delegated property that returns a [StringFeature]
      */
-    protected fun string(key: String): ReadOnlyProperty<Any?, StringFeature<C, M>> {
-        return featureDelegate { StringFeature(key, module) }
+    protected fun string(key: String): ReadOnlyProperty<FeatureContainer<C, M>, StringFeature<C, M>> {
+        return ContainerFeaturePropertyDelegate { StringFeature(key, taxonomy) }
     }
 
     /**
@@ -73,8 +85,8 @@ abstract class FeatureContainer<C : Context, M : FeatureModule>(
      * @param key The unique feature key
      * @return A delegated property that returns an [IntFeature]
      */
-    protected fun int(key: String): ReadOnlyProperty<Any?, IntFeature<C, M>> {
-        return featureDelegate { IntFeature(key, module) }
+    protected fun int(key: String): ReadOnlyProperty<FeatureContainer<C, M>, IntFeature<C, M>> {
+        return ContainerFeaturePropertyDelegate { IntFeature(key, taxonomy) }
     }
 
     /**
@@ -83,8 +95,8 @@ abstract class FeatureContainer<C : Context, M : FeatureModule>(
      * @param key The unique feature key
      * @return A delegated property that returns a [DoubleFeature]
      */
-    protected fun double(key: String): ReadOnlyProperty<Any?, DoubleFeature<C, M>> {
-        return featureDelegate { DoubleFeature(key, module) }
+    protected fun double(key: String): ReadOnlyProperty<FeatureContainer<C, M>, DoubleFeature<C, M>> {
+        return ContainerFeaturePropertyDelegate { DoubleFeature(key, taxonomy) }
     }
 
     /**
@@ -96,8 +108,8 @@ abstract class FeatureContainer<C : Context, M : FeatureModule>(
      */
     protected inline fun <reified T : Any> jsonObject(
         key: String
-    ): ReadOnlyProperty<Any?, Feature.OfJsonObject<T, C, M>> {
-        return featureDelegate { Feature.jsonObject(key, module) }
+    ): ReadOnlyProperty<FeatureContainer<C, M>, Feature.OfJsonObject<T, C, M>> {
+        return ContainerFeaturePropertyDelegate { Feature.jsonObject(key, taxonomy) }
     }
 
     /**
@@ -108,11 +120,11 @@ abstract class FeatureContainer<C : Context, M : FeatureModule>(
      * @param key The unique feature key
      * @return A delegated property that returns a [Feature.OfCustom]
      */
-    protected inline fun <reified T : Any, reified P : Any> custom(
+    protected inline fun <reified T : Any, reified P> custom(
         key: String
-    ): ReadOnlyProperty<Any?, Feature.OfCustom<T, P, C, M>> where
-            P : EncodableValue<P> {
-        return featureDelegate { Feature.custom(key, module) }
+    ): ReadOnlyProperty<FeatureContainer<C, M>, Feature.OfCustom<T, P, C, M>> where
+        P : Any, P : EncodableValue<P> {
+        return ContainerFeaturePropertyDelegate { Feature.custom(key, taxonomy) }
     }
 
     /**
@@ -121,15 +133,10 @@ abstract class FeatureContainer<C : Context, M : FeatureModule>(
      * Features are created lazily on first property access and automatically
      * registered in the container's feature list.
      */
-    private fun <F : Feature<*, *, C, M>> featureDelegate(
-        factory: () -> F
-    ): ReadOnlyProperty<Any?, F> {
-        return object : ReadOnlyProperty<Any?, F> {
-            private val feature by lazy {
-                factory().also { _features.add(it) }
-            }
+    inner class ContainerFeaturePropertyDelegate<F : Feature<*, *, C, M>>(private val factory: () -> F) :
+        ReadOnlyProperty<FeatureContainer<C, M>, F> {
+        private val feature by lazy { factory().also { _features.add(it) } }
 
-            override fun getValue(thisRef: Any?, property: KProperty<*>): F = feature
-        }
+        override fun getValue(thisRef: FeatureContainer<C, M>, property: KProperty<*>): F = feature
     }
 }

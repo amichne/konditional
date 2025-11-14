@@ -8,7 +8,7 @@ import io.amichne.konditional.core.instance.KonfigPatch
 import java.util.concurrent.atomic.AtomicReference
 
 /**
- * Default singleton implementation of [io.amichne.konditional.core.ModuleRegistry] for the Konditional core featureModule.
+ * Default singleton implementation of [io.amichne.konditional.core.ModuleRegistry] for the Konditional core taxonomy.
  *
  * This object provides a thread-safe, in-memory registry for managing feature flags.
  * It uses [java.util.concurrent.atomic.AtomicReference] to ensure atomic updates and lock-free reads.

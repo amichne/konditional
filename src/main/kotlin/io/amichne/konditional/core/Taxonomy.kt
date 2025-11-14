@@ -1,67 +1,67 @@
 package io.amichne.konditional.core
 
 /**
- * Represents a feature flag featureModule with isolated configuration and runtime isolation.
+ * Represents a feature flag taxonomy with isolated configuration and runtime isolation.
  *
  * Modules provide:
- * - **Compile-time isolation**: Features are type-bound to their featureModule
- * - **Runtime isolation**: Each featureModule has its own [ModuleRegistry] instance
+ * - **Compile-time isolation**: Features are type-bound to their taxonomy
+ * - **Runtime isolation**: Each taxonomy has its own [ModuleRegistry] instance
  * - **Governance**: All modules enumerated in one sealed hierarchy
- * - **Type safety**: FeatureModule identity is encoded in the type system
+ * - **Type safety**: Taxonomy identity is encoded in the type system
  *
- * ## FeatureModule Types
+ * ## Taxonomy Types
  *
- * ### Core FeatureModule
- * The [Core] featureModule contains shared flags accessible to all teams:
+ * ### Core Taxonomy
+ * The [Core] taxonomy contains shared flags accessible to all teams:
  * ```kotlin
  * enum class CoreFeatures(override val key: String)
- *     : Feature<BoolEncodeable, Boolean, Context, FeatureModule.Core> {
+ *     : Feature<BoolEncodeable, Boolean, Context, Taxonomy.Core> {
  *     KILL_SWITCH("kill_switch");
- *     override val featureModule = FeatureModule.Core
+ *     override val taxonomy = Taxonomy.Core
  * }
  * ```
  *
- * ### Team Modules
- * Team modules provide isolated namespaces for functional areas:
+ * ### Domain Modules
+ * Domain modules provide isolated namespaces for functional areas:
  * ```kotlin
  * enum class PaymentFeatures(override val key: String)
- *     : Feature<BoolEncodeable, Boolean, Context, FeatureModule.Team.Payments> {
+ *     : Feature<BoolEncodeable, Boolean, Context, Taxonomy.Domain.Payments> {
  *     APPLE_PAY("apple_pay");
- *     override val featureModule = FeatureModule.Team.Payments
+ *     override val taxonomy = Taxonomy.Domain.Payments
  * }
  * ```
  *
  * ## Adding New Modules
  *
- * To add a new team featureModule, add an object to the [Team] sealed class:
+ * To add a new team taxonomy, add an object to the [Domain] sealed class:
  * ```kotlin
- * sealed class Team(id: String) : FeatureModule(id) {
+ * sealed class Domain(id: String) : Taxonomy(id) {
  *     // ... existing teams ...
- *     data object NewTeam : Team("new-team")
+ *     data object NewTeam : Domain("new-team")
  * }
  * ```
  *
  * The sealed hierarchy ensures:
- * - No featureModule ID collisions at compile time
+ * - No taxonomy ID collisions at compile time
  * - Exhaustive when-expressions
  * - IDE autocomplete for all modules
  *
- * @property id Unique identifier for this featureModule
- * @property registry Isolated registry instance for this featureModule's flags
+ * @property id Unique identifier for this taxonomy
+ * @property registry Isolated registry instance for this taxonomy's flags
  */
-sealed class FeatureModule(val id: String) {
+sealed class Taxonomy(val id: String) {
     /**
-     * Isolated flag registry for this featureModule.
+     * Isolated flag registry for this taxonomy.
      *
-     * Each featureModule gets its own registry instance, ensuring complete runtime isolation
+     * Each taxonomy gets its own registry instance, ensuring complete runtime isolation
      * between teams. Flags from different modules cannot interfere with each other.
      */
     abstract val registry: ModuleRegistry
 
     /**
-     * Core featureModule containing shared flags accessible to all teams.
+     * Core taxonomy containing shared flags accessible to all teams.
      *
-     * Use this featureModule for:
+     * Use this taxonomy for:
      * - System-wide kill switches
      * - Maintenance mode flags
      * - Cross-cutting feature toggles
@@ -69,19 +69,19 @@ sealed class FeatureModule(val id: String) {
      *
      * Example:
      * ```kotlin
-     * FeatureModule.Core.config {
+     * Taxonomy.Core.config {
      *     CoreFeatures.KILL_SWITCH with { default(false) }
      * }
      * ```
      */
-    data object Core : FeatureModule("core") {
+    data object Core : Taxonomy("core") {
         override val registry: ModuleRegistry = ModuleRegistry.create()
     }
 
     /**
-     * Team modules providing isolated namespaces for functional areas.
+     * Domain modules providing isolated namespaces for functional areas.
      *
-     * Each team featureModule:
+     * Each team taxonomy:
      * - Has its own registry instance (runtime isolation)
      * - Is type-bound to its features (compile-time isolation)
      * - Can be serialized/deployed independently
@@ -91,7 +91,7 @@ sealed class FeatureModule(val id: String) {
      *
      * New team modules are added here via PR. This ensures:
      * - Central visibility of all modules
-     * - No duplicate featureModule IDs
+     * - No duplicate taxonomy IDs
      * - Clear ownership tracking
      *
      * ## Example Teams
@@ -105,35 +105,35 @@ sealed class FeatureModule(val id: String) {
      * - **Search**: Search algorithms, ranking experiments
      * - **Recommendations**: Recommendation engine flags
      */
-    sealed class Team(id: String) : FeatureModule(id) {
+    sealed class Domain(id: String) : Taxonomy(id) {
         override val registry: ModuleRegistry = ModuleRegistry.create()
 
         /** Authentication and authorization features */
-        data object Authentication : Team("auth")
+        data object Authentication : Domain("auth")
 
         /** Payment processing and checkout features */
-        data object Payments : Team("payments")
+        data object Payments : Domain("payments")
 
         /** Messaging, chat, and notification features */
-        data object Messaging : Team("messaging")
+        data object Messaging : Domain("messaging")
 
         /** Search functionality and algorithms */
-        data object Search : Team("search")
+        data object Search : Domain("search")
 
         /** Recommendation engine and personalization */
-        data object Recommendations : Team("recommendations")
+        data object Recommendations : Domain("recommendations")
 
         // Add your organization's team modules here:
-        // data object YourTeam : Team("your-team")
+        // data object YourTeam : Domain("your-team")
     }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is FeatureModule) return false
+        if (other !is Taxonomy) return false
         return id == other.id
     }
 
     override fun hashCode(): Int = id.hashCode()
 
-    override fun toString(): String = "FeatureModule($id)"
+    override fun toString(): String = "Taxonomy($id)"
 }

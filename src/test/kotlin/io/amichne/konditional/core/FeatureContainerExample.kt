@@ -1,7 +1,6 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.modules.FeatureModule
 
 /**
  * Example comparing current enum approach vs FeatureContainer approach
@@ -12,18 +11,18 @@ import io.amichne.konditional.modules.FeatureModule
 // ============================================================================
 
 enum class PaymentFeaturesEnum(override val key: String)
-    : BooleanFeature<Context, FeatureModule.Team.Payments> {
+    : BooleanFeature<Context, Taxonomy.Domain.Payments> {
     APPLE_PAY("apple_pay"),
     GOOGLE_PAY("google_pay"),
     CARD_ON_FILE("card_on_file");
 
     // ❌ Boilerplate: Must override module on every enum
-    override val module = FeatureModule.Team.Payments
+    override val module = Taxonomy.Domain.Payments
 }
 
 // ❌ Problem 1: Can't mix types in enums
 // This won't compile - enums can't have different return types per entry
-// enum class MixedFeaturesEnum : Feature<???, ???, Context, FeatureModule.Team.Payments>
+// enum class MixedFeaturesEnum : Feature<???, ???, Context, Taxonomy.Domain.Payments>
 
 // ❌ Problem 2: No automatic enumeration
 // Have to manually maintain list of all features
@@ -38,8 +37,8 @@ object CurrentFeatureRegistry {
 // NEW APPROACH: FeatureContainer with delegation
 // ============================================================================
 
-object PaymentFeatures : FeatureContainer<Context, FeatureModule.Team.Payments>(
-    FeatureModule.Team.Payments
+object PaymentFeatures : FeatureContainer<Context, Taxonomy.Domain.Payments>(
+    Taxonomy.Domain.Payments
 ) {
     // ✅ Ergonomic: Clean delegation syntax
     val APPLE_PAY by boolean("apple_pay")
@@ -63,8 +62,8 @@ data class CardConfiguration(
     val supportedNetworks: List<String>
 )
 
-object OrderFeatures : FeatureContainer<Context, FeatureModule.Team.Orders>(
-    FeatureModule.Team.Orders
+object OrderFeatures : FeatureContainer<Context, Taxonomy.Domain.Orders>(
+    Taxonomy.Domain.Orders
 ) {
     val FAST_CHECKOUT by boolean("fast_checkout")
     val ORDER_LIMIT by int("order_limit")
@@ -95,11 +94,11 @@ object FeatureContainerValueDemo {
     // ✅ BENEFIT 2: Type safety preserved
     fun typeSafetyDemo(context: Context) {
         // Boolean feature
-        val applePay: BooleanFeature<Context, FeatureModule.Team.Payments> =
+        val applePay: BooleanFeature<Context, Taxonomy.Domain.Payments> =
             PaymentFeatures.APPLE_PAY
 
         // Int feature
-        val maxCards: IntFeature<Context, FeatureModule.Team.Payments> =
+        val maxCards: IntFeature<Context, Taxonomy.Domain.Payments> =
             PaymentFeatures.MAX_CARDS
 
         // Type inference works
@@ -133,7 +132,7 @@ object FeatureContainerValueDemo {
     fun testAllFeatures(context: Context) {
         PaymentFeatures.allFeatures().forEach { feature ->
             // Type-erased, but we can still evaluate safely
-            when (val result = context.evaluateSafe(feature as Feature<*, Any, Context, FeatureModule.Team.Payments>)) {
+            when (val result = context.evaluateSafe(feature as Feature<*, Any, Context, Taxonomy.Domain.Payments>)) {
                 is EvaluationResult.Success -> println("${feature.key} = ${result.value}")
                 is EvaluationResult.NotFound -> println("${feature.key} not configured")
             }

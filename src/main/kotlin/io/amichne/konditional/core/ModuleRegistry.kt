@@ -3,6 +3,7 @@ package io.amichne.konditional.core
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.instance.KonfigPatch
+import io.amichne.konditional.core.types.EncodableValue
 
 /**
  * Abstraction for managing feature flag configurations and evaluations.
@@ -89,7 +90,7 @@ interface ModuleRegistry {
      * @param T The actual value type
      * @param C The type of the context used for evaluation
      */
-    fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> update(definition: FlagDefinition<S, T, C, *>)
+    fun <S : EncodableValue<T>, T : Any, C : Context> update(definition: FlagDefinition<S, T, C, *>)
 
     /**
      * Retrieves the current snapshot of all flag configurations.
@@ -109,10 +110,10 @@ interface ModuleRegistry {
      * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
      * @param C The type of the context used for evaluation
-     * @param M The featureModule the feature belongs to
+     * @param M The taxonomy the feature belongs to
      */
     @Suppress("UNCHECKED_CAST")
-    fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : FeatureModule> featureFlag(
+    fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> featureFlag(
         key: Feature<S, T, C, M>
     ): FlagDefinition<S, T, C, M>? =
         konfig().flags[key] as? FlagDefinition<S, T, C, M>
@@ -131,12 +132,12 @@ interface ModuleRegistry {
          * Creates a new in-memory registry instance.
          *
          * This is the primary way to create registry instances for modules.
-         * Each featureModule should have its own isolated registry instance.
+         * Each taxonomy should have its own isolated registry instance.
          *
          * Example:
          * ```kotlin
-         * // FeatureModule definition
-         * data object MyTeam : FeatureModule.Team("my-team") {
+         * // Taxonomy definition
+         * data object MyTeam : Taxonomy.Domain("my-team") {
          *     override val registry = ModuleRegistry.create()
          * }
          *
@@ -161,7 +162,7 @@ interface ModuleRegistry {
          *
          * Example:
          * ```kotlin
-         * data object MyTeam : FeatureModule.Team("my-team") {
+         * data object MyTeam : Taxonomy.Domain("my-team") {
          *     override val registry = ModuleRegistry.create(buildSnapshot {
          *         MyFlags.FEATURE_A with { default(true) }
          *     })

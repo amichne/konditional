@@ -25,7 +25,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * This serializer is storage-agnostic - it only handles JSON conversion, allowing callers
  * to choose their storage solution (files, databases, cloud storage, etc.).
  *
- * For featureModule-scoped serialization, use [ModuleSnapshotSerializer] instead.
+ * For taxonomy-scoped serialization, use [ModuleSnapshotSerializer] instead.
  */
 class SnapshotSerializer(
     moshi: Moshi = defaultMoshi()

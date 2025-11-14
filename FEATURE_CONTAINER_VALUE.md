@@ -19,13 +19,13 @@
 
 ```kotlin
 enum class PaymentFeatures(override val key: String)
-    : BooleanFeature<Context, FeatureModule.Team.Payments> {
+    : BooleanFeature<Context, Taxonomy.Team.Payments> {
     APPLE_PAY("apple_pay"),
     GOOGLE_PAY("google_pay"),
     CARD_ON_FILE("card_on_file");
 
     // ❌ BOILERPLATE: Must override module on every enum
-    override val module = FeatureModule.Team.Payments
+    override val module = Taxonomy.Team.Payments
 }
 
 // ❌ Can't mix types (all must be BooleanFeature)
@@ -35,8 +35,8 @@ enum class PaymentFeatures(override val key: String)
 ### New Approach (FeatureContainer)
 
 ```kotlin
-object PaymentFeatures : FeatureContainer<Context, FeatureModule.Team.Payments>(
-    FeatureModule.Team.Payments  // ✅ Module declared ONCE
+object PaymentFeatures : FeatureContainer<Context, Taxonomy.Team.Payments>(
+    Taxonomy.Team.Payments  // ✅ Module declared ONCE
 ) {
     // ✅ Clean delegation syntax
     val APPLE_PAY by boolean("apple_pay")
@@ -130,7 +130,7 @@ fun `all payment features should evaluate without errors`() {
     PaymentFeatures.allFeatures().forEach { feature ->
         // Test each feature can be evaluated
         assertDoesNotThrow {
-            context.evaluateSafe(feature as Feature<*, Any, Context, FeatureModule.Team.Payments>)
+            context.evaluateSafe(feature as Feature<*, Any, Context, Taxonomy.Team.Payments>)
         }
     }
 }
@@ -250,7 +250,7 @@ object Features : FeatureContainer<Context, Module>(Module) {
 ### Core Components
 
 ```kotlin
-abstract class FeatureContainer<C : Context, M : FeatureModule>(
+abstract class FeatureContainer<C : Context, M : Taxonomy>(
     protected val module: M
 ) {
     // Auto-registration list

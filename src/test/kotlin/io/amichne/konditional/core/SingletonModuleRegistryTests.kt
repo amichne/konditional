@@ -29,7 +29,7 @@ class SingletonModuleRegistryTests {
 
     @BeforeTest
     fun loadSample() {
-        config {
+        Taxonomy.Core.config {
             PaymentFeatures.FIFTY_TRUE_US_IOS with {
                 default(false)
                 rule {
@@ -71,7 +71,7 @@ class SingletonModuleRegistryTests {
 
     @Test
     fun `Given multiple rules, When specificity differs, Then most specific rule wins`() {
-        config {
+        Taxonomy.Core.config {
             SearchFeatures.PRIORITY_CHECK with {
                 default(false)
                 rule {
@@ -88,7 +88,7 @@ class SingletonModuleRegistryTests {
 
     @Test
     fun `Given version bounds, When inclusive, Then correctly matches edges`() {
-        config {
+        Taxonomy.Core.config {
             SearchFeatures.VERSIONED with {
                 default(false)
                 rule {
@@ -107,7 +107,9 @@ class SingletonModuleRegistryTests {
 
     @Test
     fun `Given at least major version, When evaluating, Then correctly matches range`() {
-        config {
+        // >= 7.0.0
+        Taxonomy.Core.config<Taxonomy.Core> // >= 7.0.0
+        {
             SearchFeatures.VERSIONED with {
                 default(false)
                 rule {
@@ -130,7 +132,9 @@ class SingletonModuleRegistryTests {
 
     @Test
     fun `Given at least major minor version, When evaluating, Then correctly matches range`() {
-        config {
+        // >= 7.10.0
+        Taxonomy.Core.config<Taxonomy.Core> // >= 7.10.0
+        {
             SearchFeatures.VERSIONED with {
                 default(false)
                 rule {
@@ -153,7 +157,9 @@ class SingletonModuleRegistryTests {
 
     @Test
     fun `Given at least major minor patch version, When evaluating, Then correctly matches range`() {
-        config {
+        // >= 7.10.5
+        Taxonomy.Core.config<Taxonomy.Core> // >= 7.10.5
+        {
             SearchFeatures.VERSIONED with {
                 default(false)
                 rule {
@@ -176,7 +182,9 @@ class SingletonModuleRegistryTests {
 
     @Test
     fun `Given at most major version, When evaluating, Then correctly matches range`() {
-        config {
+        // <= 7.0.0
+        Taxonomy.Core.config<Taxonomy.Core> // <= 7.0.0
+        {
             SearchFeatures.VERSIONED with {
                 default(false)
                 rule {
@@ -200,7 +208,9 @@ class SingletonModuleRegistryTests {
 
     @Test
     fun `Given at most major minor version, When evaluating, Then correctly matches range`() {
-        config {
+        // <= 7.10.0
+        Taxonomy.Core.config<Taxonomy.Core> // <= 7.10.0
+        {
             SearchFeatures.VERSIONED with {
                 default(false)
                 rule {
@@ -224,7 +234,9 @@ class SingletonModuleRegistryTests {
 
     @Test
     fun `Given at most major minor patch version, When evaluating, Then correctly matches range`() {
-        config {
+        // <= 7.10.5
+        Taxonomy.Core.config<Taxonomy.Core> // <= 7.10.5
+        {
             SearchFeatures.VERSIONED with {
                 default(false)
                 rule {
@@ -248,17 +260,20 @@ class SingletonModuleRegistryTests {
 
     @Test
     fun `Given combined version granularities, When evaluating, Then correctly matches range`() {
-        config {
-            SearchFeatures.VERSIONED with {
-                default(false)
-                rule {
-                    versions {
-                        min(5) // >= 5.0.0
-                        max(7, 10, 5) // <= 7.10.5
-                    }
-                } implies true
+        // >= 5.0.0
+        Taxonomy // <= 7.10.5
+            .Core.config<Taxonomy.Core> // >= 5.0.0 // <= 7.10.5
+            {
+                SearchFeatures.VERSIONED with {
+                    default(false)
+                    rule {
+                        versions {
+                            min(5) // >= 5.0.0
+                            max(7, 10, 5) // <= 7.10.5
+                        }
+                    } implies true
+                }
             }
-        }
 
         // Below range
         assertFalse(ctx("70000000000000000000000000000001", version = "4.99.99").evaluate(SearchFeatures.VERSIONED))
@@ -276,7 +291,9 @@ class SingletonModuleRegistryTests {
 
     @Test
     fun `Given open ended minimum version, When evaluating, Then correctly matches range`() {
-        config {
+        // >= 7.10.0, no maximum
+        Taxonomy.Core.config<Taxonomy.Core> // >= 7.10.0, no maximum
+        {
             SearchFeatures.VERSIONED with {
                 default(false)
                 rule {
@@ -295,7 +312,9 @@ class SingletonModuleRegistryTests {
 
     @Test
     fun `Given open ended maximum version, When evaluating, Then correctly matches range`() {
-        config {
+        // <= 7.10.0, no minimum
+        Taxonomy.Core.config<Taxonomy.Core> // <= 7.10.0, no minimum
+        {
             SearchFeatures.VERSIONED with {
                 default(false)
                 rule {
@@ -314,7 +333,7 @@ class SingletonModuleRegistryTests {
 
     @Test
     fun `Given uniform bucket distribution, When evaluating, Then distribution is reasonable`() {
-        config {
+        Taxonomy.Core.config {
             SearchFeatures.UNIFORM50 with {
                 default(false)
                 rule {
@@ -352,11 +371,13 @@ class SingletonModuleRegistryTests {
             Runnable {
                 latch.await()
                 repeat(50) {
-                    config {
+                    Taxonomy.Core.config {
                         PaymentFeatures.FIFTY_TRUE_US_IOS with {
                             default(false)
                             rule {
-                                platforms(Platform.IOS)
+                                platforms(
+                                    Platform.IOS
+                                )
                             } implies true
                         }
                     }
@@ -372,7 +393,7 @@ class SingletonModuleRegistryTests {
     fun `Given enum based keys, When evaluating, Then type safety is enforced`() {
         // This test validates that using enum-based keys provides compile-time type safety
         // and prevents typos or undefined flag keys
-        config {
+        Taxonomy.Core.config {
             PaymentFeatures.ENABLE_COMPACT_CARDS with {
                 default(false)
                 rule {

@@ -22,7 +22,7 @@ dependencies {
 ```kotlin
 import io.amichne.konditional.core.Conditional
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.FeatureModule
+import io.amichne.konditional.core.Taxonomy
 
 enum class Features(override val key: String) : Conditional<Boolean, Context> {
     DARK_MODE("dark_mode")

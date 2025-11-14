@@ -22,7 +22,7 @@ class StringSingletonModuleRegistryTest {
 
     @Test
     fun `Given platform targeting, When evaluating string flag, Then correct theme is returned`() {
-        config {
+        Taxonomy.Core.config {
             TestStringFeatures.THEME with {
                 default("light")
                 rule {
@@ -53,7 +53,7 @@ class StringSingletonModuleRegistryTest {
 
     @Test
     fun `Given locale targeting, When evaluating string flag, Then correct message is returned`() {
-        config {
+        Taxonomy.Core.config {
             TestStringFeatures.WELCOME_MESSAGE with {
                 default("Welcome!")
                 rule {
@@ -100,7 +100,7 @@ class StringSingletonModuleRegistryTest {
 
     @Test
     fun `Given version targeting, When evaluating string flag, Then correct endpoint is returned`() {
-        config {
+        Taxonomy.Core.config {
             TestStringFeatures.API_ENDPOINT with {
                 default("https://api.example.com/v1")
                 rule {
@@ -138,7 +138,9 @@ class StringSingletonModuleRegistryTest {
 
     @Test
     fun `Given coverage rollout, When evaluating string flag, Then distribution is correct`() {
-        config {
+        // 30% of users get the new endpoint
+        Taxonomy.Core.config<Taxonomy.Core> // 30% of users get the new endpoint
+        {
             TestStringFeatures.API_ENDPOINT with {
                 default("https://api-old.example.com")
                 rule {
@@ -172,7 +174,8 @@ class StringSingletonModuleRegistryTest {
 
     @Test
     fun `Given complex targeting, When evaluating string flag, Then correct distribution is returned`() {
-        config {
+        // Beta API for iOS 9.0+ users at 25% rollout
+        Taxonomy.Core.config<Taxonomy.Core> {
             TestStringFeatures.API_ENDPOINT with {
                 default("https://api.example.com/stable")
 
@@ -236,7 +239,7 @@ class StringSingletonModuleRegistryTest {
 
     @Test
     fun `Given same Id, When evaluating string flag multiple times, Then result is deterministic`() {
-        config {
+        Taxonomy.Core.config {
             TestStringFeatures.THEME with {
                 default("light")
                 rule {
@@ -256,7 +259,7 @@ class StringSingletonModuleRegistryTest {
 
     @Test
     fun `Given same Id, When evaluating different string flags, Then results are independent and deterministic`() {
-        config {
+        Taxonomy.Core.config {
             TestStringFeatures.THEME with {
                 default("light")
                 rule {

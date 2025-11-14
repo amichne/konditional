@@ -28,7 +28,7 @@ import kotlin.math.roundToInt
  *
  */
 
-class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule> internal constructor(
+class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> internal constructor(
     /**
      * The default value returned when no targeting rules match or the flag is inactive.
      */
@@ -72,7 +72,7 @@ class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : FeatureMod
         /**
          * Creates a FlagDefinition instance.
          */
-        operator fun <S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule> invoke(
+        operator fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> invoke(
             feature: Feature<S, T, C, M>,
             bounds: List<ConditionalValue<S, T, C, M>>,
             defaultValue: T,

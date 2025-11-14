@@ -20,11 +20,11 @@ import kotlin.test.assertTrue
 class ConditionEvaluationTest {
 
     enum class TestFlags(override val key: String) :
-        StringFeature<Context, FeatureModule.Core> {
+        StringFeature<Context, Taxonomy.Core> {
         TEST_FLAG("test_flag");
 
-        override val module: FeatureModule.Core
-            get() = FeatureModule.Core
+        override val module: Taxonomy.Core
+            get() = Taxonomy.Core
     }
 
     private fun ctx(

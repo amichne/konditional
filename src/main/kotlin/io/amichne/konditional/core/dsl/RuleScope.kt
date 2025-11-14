@@ -1,4 +1,4 @@
-package io.amichne.konditional.core
+package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context

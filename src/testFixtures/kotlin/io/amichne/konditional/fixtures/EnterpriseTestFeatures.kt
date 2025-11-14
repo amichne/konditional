@@ -5,7 +5,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.BooleanFeature
-import io.amichne.konditional.core.FeatureModule
+import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.StringFeature
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.rules.evaluable.Evaluable
@@ -60,7 +60,7 @@ data class ExperimentContext(
  */
 enum class EnterpriseFeatures(
     override val key: String,
-) : BooleanFeature<EnterpriseContext, FeatureModule.Core> {
+) : BooleanFeature<EnterpriseContext, Taxonomy.Core> {
     /** Advanced analytics feature */
     ADVANCED_ANALYTICS("advanced_analytics"),
 
@@ -70,7 +70,7 @@ enum class EnterpriseFeatures(
     /** API access feature */
     API_ACCESS("api_access");
 
-    override val module: FeatureModule.Core = FeatureModule.Core
+    override val module: Taxonomy.Core = Taxonomy.Core
 }
 
 /**
@@ -78,14 +78,14 @@ enum class EnterpriseFeatures(
  */
 enum class ExperimentFeatures(
     override val key: String,
-) : StringFeature<ExperimentContext, FeatureModule.Core> {
+) : StringFeature<ExperimentContext, Taxonomy.Core> {
     /** Homepage variant */
     HOMEPAGE_VARIANT("homepage_variant"),
 
     /** Onboarding style */
     ONBOARDING_STYLE("onboarding_style");
 
-    override val module: FeatureModule.Core = FeatureModule.Core
+    override val module: Taxonomy.Core = Taxonomy.Core
 }
 
 // ========== Custom Rules ==========

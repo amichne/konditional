@@ -48,7 +48,7 @@ class ConditionalExtensibilityTest {
             useHttps = false,
         )
 
-        FeatureModule.Core.config {
+        Taxonomy.Core.config {
             TestJsonObjectFeatures.PRIMARY_API with {
                 default(prodConfig)
                 rule {
@@ -82,7 +82,7 @@ class ConditionalExtensibilityTest {
             darkModeEnabled = true,
         )
 
-        FeatureModule.Core.config {
+        Taxonomy.Core.config {
             TestThemeFeatures.APP_THEME with {
                 default(lightTheme)
                 rule {
@@ -104,7 +104,7 @@ class ConditionalExtensibilityTest {
         val defaultFeatures = listOf("core", "basic")
         val premiumFeatures = listOf("core", "basic", "advanced", "analytics")
 
-        FeatureModule.Core.config {
+        Taxonomy.Core.config {
             TestListFeatures.ENABLED_FEATURES with {
                 default(defaultFeatures)
                 rule {
@@ -128,7 +128,7 @@ class ConditionalExtensibilityTest {
 
     @Test
     fun `Given Int value type, When evaluating, Then correct integer is returned`() {
-        FeatureModule.Core.config {
+        Taxonomy.Core.config {
             TestIntFeatures.MAX_CONNECTIONS with {
                 default(10)
                 rule {
@@ -158,7 +158,7 @@ class ConditionalExtensibilityTest {
 
     @Test
     fun `Given Enum value type, When evaluating, Then correct enum is returned`() {
-        FeatureModule.Core.config {
+        Taxonomy.Core.config {
             TestCustomWrapperFeatures.APP_LOG_LEVEL with {
                 default(LogLevel.INFO)
                 rule {
@@ -198,7 +198,7 @@ class ConditionalExtensibilityTest {
             "feature3" to "beta",
         )
 
-        FeatureModule.Core.config {
+        Taxonomy.Core.config {
             TestMapFeatures.FEATURE_TOGGLES with {
                 default(defaultToggles)
                 rule {
@@ -224,7 +224,7 @@ class ConditionalExtensibilityTest {
         val theme = ThemeConfig("#FFFFFF", "#F0F0F0", "Arial", false)
         val features = listOf("core")
 
-        FeatureModule.Core.config {
+        Taxonomy.Core.config {
             TestJsonObjectFeatures.PRIMARY_API with {
                 default(apiConfig)
             }
@@ -272,8 +272,8 @@ class ConditionalExtensibilityTest {
             val level3: ApiConfig,
         )
 
-        data class DeepFlag(override val key: String = "nested_config") : Feature.OfJsonObject<DeepConfig, Context, FeatureModule.Core> {
-            override val module: FeatureModule.Core = FeatureModule.Core
+        data class DeepFlag(override val key: String = "nested_config") : Feature.OfJsonObject<DeepConfig, Context, Taxonomy.Core> {
+            override val module: Taxonomy.Core = Taxonomy.Core
         }
 
         val nestedConfigFlag = DeepFlag()
@@ -287,7 +287,7 @@ class ConditionalExtensibilityTest {
             level3 = ApiConfig("https://nested.example.com", 20, 2, true),
         )
 
-        FeatureModule.Core.config {
+        Taxonomy.Core.config {
             nestedConfigFlag with {
                 default(complexConfig)
             }

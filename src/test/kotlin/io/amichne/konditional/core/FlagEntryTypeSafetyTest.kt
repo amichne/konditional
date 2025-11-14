@@ -9,9 +9,6 @@ import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.internal.SingletonModuleRegistry
 import io.amichne.konditional.core.types.EncodableValue
-import io.amichne.konditional.fixtures.TestBooleanFeatures
-import io.amichne.konditional.fixtures.TestIntFeatures
-import io.amichne.konditional.fixtures.TestStringFeatures
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
@@ -33,22 +30,22 @@ class FlagEntryTypeSafetyTest {
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
 
-    enum class BoolFlags(override val key: String) : BooleanFeature<Context, FeatureModule.Core> {
+    enum class BoolFlags(override val key: String) : BooleanFeature<Context, Taxonomy.Core> {
         FEATURE_A("feature_a"), FEATURE_B("feature_b");
 
-        override val module: FeatureModule.Core = FeatureModule.Core
+        override val module: Taxonomy.Core = Taxonomy.Core
     }
 
-    enum class StringFlags(override val key: String) : StringFeature<Context, FeatureModule.Core> {
+    enum class StringFlags(override val key: String) : StringFeature<Context, Taxonomy.Core> {
         CONFIG_A("config_a"), CONFIG_B("config_b");
 
-        override val module: FeatureModule.Core = FeatureModule.Core
+        override val module: Taxonomy.Core = Taxonomy.Core
     }
 
-    enum class IntFlags(override val key: String) : IntFeature<Context, FeatureModule.Core> {
+    enum class IntFlags(override val key: String) : IntFeature<Context, Taxonomy.Core> {
         TIMEOUT("timeout");
 
-        override val module: FeatureModule.Core = FeatureModule.Core
+        override val module: Taxonomy.Core = Taxonomy.Core
     }
 
     @Test
@@ -80,7 +77,7 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded(),
         )
 
-        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context, FeatureModule.Core> = FlagDefinition(
+        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context, Taxonomy.Core> = FlagDefinition(
             feature = BoolFlags.FEATURE_A,
             values = listOf(rule.targetedBy(true)),
             defaultValue = false,
@@ -115,19 +112,19 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded(),
         )
 
-        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context, FeatureModule.Core> = FlagDefinition(
+        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context, Taxonomy.Core> = FlagDefinition(
             feature = BoolFlags.FEATURE_A,
             values = listOf(boolRule.targetedBy(true)),
             defaultValue = false,
         )
 
-        val stringFlag: FlagDefinition<EncodableValue.StringEncodeable, String, Context, FeatureModule.Core> = FlagDefinition(
+        val stringFlag: FlagDefinition<EncodableValue.StringEncodeable, String, Context, Taxonomy.Core> = FlagDefinition(
             feature = StringFlags.CONFIG_A,
             values = listOf(stringRule.targetedBy("value")),
             defaultValue = "default",
         )
 
-        val intFlag: FlagDefinition<EncodableValue.IntEncodeable, Int, Context, FeatureModule.Core> = FlagDefinition(
+        val intFlag: FlagDefinition<EncodableValue.IntEncodeable, Int, Context, Taxonomy.Core> = FlagDefinition(
             feature = IntFlags.TIMEOUT,
             values = listOf(intRule.targetedBy(30)),
             defaultValue = 10,
@@ -193,7 +190,7 @@ class FlagEntryTypeSafetyTest {
 
     @Test
     fun `Given config with multiple flag types, When loaded, Then ContextualFlagDefinition maintains type safety`() {
-        config {
+        Taxonomy.Core.config {
             BoolFlags.FEATURE_A with {
                 default(false)
                 rule {
@@ -245,7 +242,7 @@ class FlagEntryTypeSafetyTest {
 
     @Test
     fun `Given ContextualFlagDefinition in map, When retrieving by key, Then type information is preserved`() {
-        config {
+        Taxonomy.Core.config {
             BoolFlags.FEATURE_A with {
                 default(false)
                 rule {} implies true
@@ -277,8 +274,8 @@ class FlagEntryTypeSafetyTest {
         ) : Context
 
         data class CustomIntFlag(override val key: String = "custom_int") :
-            IntFeature<CustomContext, FeatureModule.Core> {
-            override val module: FeatureModule.Core = FeatureModule.Core
+            IntFeature<CustomContext, Taxonomy.Core> {
+            override val module: Taxonomy.Core = Taxonomy.Core
         }
 
         val customIntFlag = CustomIntFlag()
@@ -290,7 +287,7 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded(),
         )
 
-        val flag: FlagDefinition<EncodableValue.IntEncodeable, Int, CustomContext, FeatureModule.Core> = FlagDefinition(
+        val flag: FlagDefinition<EncodableValue.IntEncodeable, Int, CustomContext, Taxonomy.Core> = FlagDefinition(
             feature = customIntFlag,
             values = listOf(rule.targetedBy(42)),
             defaultValue = 0,
@@ -315,7 +312,7 @@ class FlagEntryTypeSafetyTest {
         // This test validates that the FlagEntry wrapper eliminates the need for
         // @Suppress("UNCHECKED_CAST") annotations at call sites
 
-        config {
+        Taxonomy.Core.config {
             BoolFlags.FEATURE_A with {
                 default(false)
                 rule {

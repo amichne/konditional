@@ -2,21 +2,21 @@ package io.amichne.konditional.internal.builders
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Feature
-import io.amichne.konditional.core.FeatureFlagDsl
+import io.amichne.konditional.core.dsl.FeatureFlagDsl
 import io.amichne.konditional.core.FlagDefinition
-import io.amichne.konditional.core.FlagScope
-import io.amichne.konditional.core.FeatureModule
-import io.amichne.konditional.core.RuleScope
+import io.amichne.konditional.core.dsl.FlagScope
+import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.dsl.RuleScope
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 
 /**
- * Internal implementation of [io.amichne.konditional.core.FlagScope].
+ * Internal implementation of [FlagScope].
  *
  * This class is the internal implementation of the flag configuration DSL scope.
- * Users interact with the public [io.amichne.konditional.core.FlagScope] interface,
+ * Users interact with the public [FlagScope] interface,
  * not this implementation directly.
  *
  * @param S The EncodableValue type wrapping the actual value.
@@ -27,7 +27,7 @@ import io.amichne.konditional.rules.Rule
  */
 @FeatureFlagDsl
 @PublishedApi
-internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule>(
+internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy>(
     private val conditional: Feature<S, T, C, M>,
 ) : FlagScope<S, T, C, M> {
     private val conditionalValues = mutableListOf<ConditionalValue<S, T, C, M>>()

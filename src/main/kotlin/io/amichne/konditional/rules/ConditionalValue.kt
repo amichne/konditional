@@ -1,7 +1,7 @@
 package io.amichne.konditional.rules
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.FeatureModule
+import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.types.EncodableValue
 
 /**
@@ -13,12 +13,12 @@ import io.amichne.konditional.core.types.EncodableValue
  * @param C The context type used for rule evaluation
  */
 @ConsistentCopyVisibility
-internal data class ConditionalValue<S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule> private constructor(
+internal data class ConditionalValue<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> private constructor(
     val rule: Rule<C>,
     val value: T
 ) {
     companion object {
-        internal fun <S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule> Rule<C>.targetedBy(value: T): ConditionalValue<S, T, C, M> =
+        internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> Rule<C>.targetedBy(value: T): ConditionalValue<S, T, C, M> =
             ConditionalValue(this, value)
     }
 }

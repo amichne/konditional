@@ -1,7 +1,7 @@
 package io.amichne.konditional.context
 
 import io.amichne.konditional.core.BooleanFeature
-import io.amichne.konditional.core.FeatureModule
+import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.config
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fakes.FakeRegistry
@@ -27,7 +27,7 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given EnterpriseContext, When evaluating flags, Then context-specific properties are accessible`() {
-        FeatureModule.Core.config {
+        Taxonomy.Core.config {
             EnterpriseFeatures.ADVANCED_ANALYTICS with {
                 default(false)
                 // This demonstrates that the rule can access base Context properties
@@ -55,7 +55,7 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given ExperimentContext, When evaluating flags, Then experiment-specific properties are accessible`() {
-        FeatureModule.Core.config {
+        Taxonomy.Core.config {
             ExperimentFeatures.HOMEPAGE_VARIANT with {
                 default("control")
                 rule {
@@ -92,7 +92,7 @@ class ContextPolymorphismTest {
     @Suppress("USELESS_IS_CHECK")
     @Test
     fun `Given multiple custom contexts, When using different flags, Then contexts are independent`() {
-        FeatureModule.Core.config {
+        Taxonomy.Core.config {
             EnterpriseFeatures.API_ACCESS with {
                 default(false)
                 rule {
@@ -137,14 +137,14 @@ class ContextPolymorphismTest {
         // Define flag in scope
         data class StandardFlagA(
             override val key: String = "feature_a",
-        ) : BooleanFeature<Context, FeatureModule.Core> {
+        ) : BooleanFeature<Context, Taxonomy.Core> {
 
-            override val module: FeatureModule.Core = FeatureModule.Core
+            override val module: Taxonomy.Core = Taxonomy.Core
         }
 
         val standardFlagA = StandardFlagA()
 
-        FeatureModule.Core.config {
+        Taxonomy.Core.config {
             standardFlagA with {
                 default(false)
                 rule {
@@ -218,7 +218,7 @@ class ContextPolymorphismTest {
     @Test
     fun `Given custom EnterpriseRule, When matching with business logic, Then custom properties are enforced`() {
         val registry = FakeRegistry()
-        FeatureModule.Core.config(registry) {
+        Taxonomy.Core.config(registry) {
             EnterpriseFeatures.API_ACCESS with {
                 default(false)
                 rule {

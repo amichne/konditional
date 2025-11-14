@@ -6,7 +6,7 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Feature
 import io.amichne.konditional.core.Feature.Companion.jsonObject
-import io.amichne.konditional.core.FeatureModule
+import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.config
 import io.amichne.konditional.core.id.StableId
 
@@ -57,22 +57,22 @@ object JsonObjectExample {
      * API configuration conditional.
      * Different API configs for different platforms/environments.
      */
-    val API_CONFIG: Feature.OfJsonObject<ApiConfig, Context, FeatureModule.Team.Recommendations> =
-        jsonObject("api_config", FeatureModule.Team.Recommendations)
+    val API_CONFIG: Feature.OfJsonObject<ApiConfig, Context, Taxonomy.Domain.Recommendations> =
+        jsonObject("api_config", Taxonomy.Domain.Recommendations)
 
     /**
      * Theme configuration conditional.
      * Different themes per platform.
      */
-    val THEME: Feature.OfJsonObject<ThemeConfig, Context, FeatureModule.Team.Recommendations> =
-        jsonObject("app_theme", FeatureModule.Team.Recommendations)
+    val THEME: Feature.OfJsonObject<ThemeConfig, Context, Taxonomy.Domain.Recommendations> =
+        jsonObject("app_theme", Taxonomy.Domain.Recommendations)
 
     /**
      * Feature set conditional.
      * Different feature sets based on context.
      */
-    val FEATURES: Feature.OfJsonObject<FeatureSet, Context, FeatureModule.Team.Recommendations> =
-        jsonObject("feature_set", FeatureModule.Team.Recommendations)
+    val FEATURES: Feature.OfJsonObject<FeatureSet, Context, Taxonomy.Domain.Recommendations> =
+        jsonObject("feature_set", Taxonomy.Domain.Recommendations)
 
     // ========== Usage Example ==========
 
@@ -129,7 +129,7 @@ object JsonObjectExample {
 
         // Configure with HSON-object type representation
         // Each condition produces a distinct object node
-        FeatureModule.Team.Recommendations.config {
+        Taxonomy.Domain.Recommendations.config {
             API_CONFIG with {
                 default(prodApi)
 

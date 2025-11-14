@@ -5,7 +5,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.core.Feature
-import io.amichne.konditional.core.FeatureModule
+import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.instance.KonfigPatch
@@ -192,7 +192,7 @@ private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Feature<*, *, *, *>,
  * Type-safe: no casting required thanks to FlagValue sealed class.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : FeatureModule> SerializableFlag.toFlagDefinition(
+private fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : Taxonomy> SerializableFlag.toFlagDefinition(
     conditional: Feature<S, T, C, M>
 ): FlagDefinition<S, T, C, M> {
     // Extract typed value from FlagValue (type-safe extraction)
@@ -219,7 +219,7 @@ private fun <T : Any> FlagValue<*>.extractValue(): T = this.value as T
  * Converts a SerializableRule to a ConditionalValue.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : FeatureModule> SerializableRule.toValue(): ConditionalValue<S, T, C, M> {
+private fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : Taxonomy> SerializableRule.toValue(): ConditionalValue<S, T, C, M> {
     val typedValue = value.extractValue<T>()
     val rule = toRule<C>()
     return rule.targetedBy(typedValue)

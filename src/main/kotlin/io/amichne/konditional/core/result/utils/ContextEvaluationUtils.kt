@@ -14,7 +14,7 @@ import io.amichne.konditional.core.result.FlagNotFoundException
  * - Flag not being registered
  * - Evaluation throwing an exception
  *
- * The feature's featureModule-scoped registry is automatically used.
+ * The feature's taxonomy-scoped registry is automatically used.
  *
  * Usage:
  * ```kotlin
@@ -37,7 +37,7 @@ import io.amichne.konditional.core.result.FlagNotFoundException
  * @param key the conditional key identifying the flag
  * @return typed result that never throws
  */
-fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : io.amichne.konditional.core.FeatureModule> C.evaluateSafe(
+fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : io.amichne.konditional.core.Taxonomy> C.evaluateSafe(
     key: Feature<S, T, C, M>
 ): EvaluationResult<T> =
     key.registry.featureFlag(key)?.let { flag ->
@@ -58,7 +58,7 @@ fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Conte
  *
  * If you need to distinguish error cases, use `evaluateSafe()` instead.
  *
- * The feature's featureModule-scoped registry is automatically used.
+ * The feature's taxonomy-scoped registry is automatically used.
  *
  * ```kotlin
  * val feature: String? = context.evaluateOrNull(MY_FLAG)
@@ -67,7 +67,7 @@ fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Conte
  * }
  * ```
  */
-fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : io.amichne.konditional.core.FeatureModule> C.evaluateOrNull(
+fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : io.amichne.konditional.core.Taxonomy> C.evaluateOrNull(
     key: Feature<S, T, C, M>
 ): T? = evaluateSafe(key).getOrNull()
 
@@ -81,13 +81,13 @@ fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Conte
  *
  * If you need to distinguish error cases, use `evaluateSafe()` instead.
  *
- * The feature's featureModule-scoped registry is automatically used.
+ * The feature's taxonomy-scoped registry is automatically used.
  *
  * ```kotlin
  * val feature: String = context.evaluateOrDefault(MY_FLAG, default = "off")
  * ```
  */
-fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : io.amichne.konditional.core.FeatureModule> C.evaluateOrDefault(
+fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : io.amichne.konditional.core.Taxonomy> C.evaluateOrDefault(
     key: Feature<S, T, C, M>,
     default: T
 ): T = evaluateSafe(key).getOrDefault(default)
@@ -102,7 +102,7 @@ fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Conte
  * - You're in a context that already uses exceptions
  * - You want fail-fast behavior
  *
- * The feature's featureModule-scoped registry is automatically used.
+ * The feature's taxonomy-scoped registry is automatically used.
  *
  * ```kotlin
  * val feature: String = context.evaluateOrThrow(MY_FLAG)
@@ -111,7 +111,7 @@ fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Conte
  * @throws FlagNotFoundException if the flag is not registered
  * @throws FlagEvaluationException if evaluation throws an exception
  */
-fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : io.amichne.konditional.core.FeatureModule> C.evaluateOrThrow(
+fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : io.amichne.konditional.core.Taxonomy> C.evaluateOrThrow(
     key: Feature<S, T, C, M>
 ): T = evaluateSafe(key).fold(
     onSuccess = { it },

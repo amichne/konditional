@@ -10,7 +10,7 @@
  */
 enum class EnterpriseFeatures(
     override val key: String,
-) : BooleanFeature<EnterpriseContext, FeatureModule.Core> {
+) : BooleanFeature<EnterpriseContext, Taxonomy.Core> {
     /** Advanced analytics feature */
     ADVANCED_ANALYTICS("advanced_analytics"),
 
@@ -20,7 +20,7 @@ enum class EnterpriseFeatures(
     /** API access feature */
     API_ACCESS("api_access");
 
-    override val module: FeatureModule.Core = FeatureModule.Core  // ❌ BOILERPLATE
+    override val module: Taxonomy.Core = Taxonomy.Core  // ❌ BOILERPLATE
 }
 
 /**
@@ -28,20 +28,20 @@ enum class EnterpriseFeatures(
  */
 enum class ExperimentFeatures(
     override val key: String,
-) : StringFeature<ExperimentContext, FeatureModule.Core> {
+) : StringFeature<ExperimentContext, Taxonomy.Core> {
     /** Homepage variant */
     HOMEPAGE_VARIANT("homepage_variant"),
 
     /** Onboarding style */
     ONBOARDING_STYLE("onboarding_style");
 
-    override val module: FeatureModule.Core = FeatureModule.Core  // ❌ BOILERPLATE
+    override val module: Taxonomy.Core = Taxonomy.Core  // ❌ BOILERPLATE
 }
 ```
 
 ### Problems with Current Approach
 
-1. ❌ **Boilerplate**: `override val module = FeatureModule.Core` repeated in EVERY enum
+1. ❌ **Boilerplate**: `override val module = Taxonomy.Core` repeated in EVERY enum
 2. ❌ **Type separation**: Boolean features in one enum, String features in another
 3. ❌ **No enumeration**: Can't get list of all enterprise-related features
 4. ❌ **Manual tracking**: Need to manually maintain lists for testing/validation
@@ -57,8 +57,8 @@ enum class ExperimentFeatures(
  * All enterprise-related features in one container.
  * Supports Boolean, String, Int, and custom types.
  */
-object EnterpriseFeatures : FeatureContainer<EnterpriseContext, FeatureModule.Core>(
-    FeatureModule.Core  // ✅ Module declared ONCE
+object EnterpriseFeatures : FeatureContainer<EnterpriseContext, Taxonomy.Core>(
+    Taxonomy.Core  // ✅ Module declared ONCE
 ) {
     // Boolean features
     val ADVANCED_ANALYTICS by boolean("advanced_analytics")
@@ -99,25 +99,25 @@ enum class EnterpriseFeatures(
     override val key: String,
 ) : BooleanFeature<
     EnterpriseContext,
-    FeatureModule.Core
+    Taxonomy.Core
 > {
     ADVANCED_ANALYTICS("advanced_analytics"),
     CUSTOM_BRANDING("custom_branding"),
     API_ACCESS("api_access");
 
-    override val module = FeatureModule.Core
+    override val module = Taxonomy.Core
 }
 
 enum class ExperimentFeatures(
     override val key: String,
 ) : StringFeature<
     ExperimentContext,
-    FeatureModule.Core
+    Taxonomy.Core
 > {
     HOMEPAGE_VARIANT("homepage_variant"),
     ONBOARDING_STYLE("onboarding_style");
 
-    override val module = FeatureModule.Core
+    override val module = Taxonomy.Core
 }
 
 // Lines: 26
@@ -133,8 +133,8 @@ enum class ExperimentFeatures(
 // 1 unified container
 object EnterpriseFeatures : FeatureContainer<
     EnterpriseContext,
-    FeatureModule.Core
->(FeatureModule.Core) {
+    Taxonomy.Core
+>(Taxonomy.Core) {
 
     val ADVANCED_ANALYTICS by boolean("advanced_analytics")
     val CUSTOM_BRANDING by boolean("custom_branding")
@@ -185,7 +185,7 @@ fun `test all enterprise features are configured`() {
     EnterpriseFeatures.allFeatures().forEach { feature ->
         // Automatically includes ALL features, always up to date
         assertDoesNotThrow {
-            context.evaluateSafe(feature as Feature<*, Any, EnterpriseContext, FeatureModule.Core>)
+            context.evaluateSafe(feature as Feature<*, Any, EnterpriseContext, Taxonomy.Core>)
         }
     }
 }

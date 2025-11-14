@@ -1,4 +1,4 @@
-package io.amichne.konditional.core
+package io.amichne.konditional.core.dsl
 
 /**
  * DSL scope for version range configuration.

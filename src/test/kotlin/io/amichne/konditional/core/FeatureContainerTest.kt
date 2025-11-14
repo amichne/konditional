@@ -1,11 +1,9 @@
 package io.amichne.konditional.core
 
+import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.modules.FeatureModule
-import io.amichne.konditional.types.AppLocale
-import io.amichne.konditional.types.Platform
-import io.amichne.konditional.types.StableId
-import io.amichne.konditional.types.Version
+import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.result.utils.evaluateOrDefault
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -16,14 +14,18 @@ import org.junit.jupiter.api.Test
 class FeatureContainerTest {
 
     // Test container with mixed feature types
-    object TestFeatures : FeatureContainer<Context, FeatureModule.Team.Payments>(
-        FeatureModule.Team.Payments
+    object TestFeatures : FeatureContainer<Context, Taxonomy.Domain.Payments>(
+        Taxonomy.Domain.Payments
     ) {
         val BOOLEAN_FLAG by boolean("test_boolean")
         val STRING_CONFIG by string("test_string")
         val INT_LIMIT by int("test_int")
         val DOUBLE_THRESHOLD by double("test_double")
         val JSON_CONFIG by jsonObject<TestConfig>("test_json")
+    }
+
+    object Invalid {
+        val x by double()
     }
 
     data class TestConfig(
@@ -52,7 +54,7 @@ class FeatureContainerTest {
 
     @Test
     fun `features have correct module`() {
-        val expectedModule = FeatureModule.Team.Payments
+        val expectedModule = Taxonomy.Domain.Payments
 
         assertEquals(expectedModule, TestFeatures.BOOLEAN_FLAG.module)
         assertEquals(expectedModule, TestFeatures.STRING_CONFIG.module)
@@ -79,8 +81,8 @@ class FeatureContainerTest {
     @Test
     fun `features are lazily initialized`() {
         // Create a new container that hasn't been accessed yet
-        object LazyTestContainer : FeatureContainer<Context, FeatureModule.Team.Payments>(
-            FeatureModule.Team.Payments
+        object LazyTestContainer : FeatureContainer<Context, Taxonomy.Domain.Payments>(
+            Taxonomy.Domain.Payments
         ) {
             val FEATURE_A by boolean("lazy_a")
             val FEATURE_B by boolean("lazy_b")
@@ -103,7 +105,7 @@ class FeatureContainerTest {
     @Test
     fun `features can be evaluated with context`() {
         // Configure the registry
-        FeatureModule.Team.Payments.config {
+        Taxonomy.Domain.Payments.config {
             TestFeatures.BOOLEAN_FLAG with {
                 default(true)
             }
@@ -130,15 +132,15 @@ class FeatureContainerTest {
 
     @Test
     fun `multiple containers maintain independent feature lists`() {
-        object ContainerA : FeatureContainer<Context, FeatureModule.Team.Payments>(
-            FeatureModule.Team.Payments
+        object ContainerA : FeatureContainer<Context, Taxonomy.Domain.Payments>(
+            Taxonomy.Domain.Payments
         ) {
             val FEATURE_1 by boolean("a1")
             val FEATURE_2 by boolean("a2")
         }
 
-        object ContainerB : FeatureContainer<Context, FeatureModule.Team.Orders>(
-            FeatureModule.Team.Orders
+        object ContainerB : FeatureContainer<Context, Taxonomy.Domain.Orders>(
+            Taxonomy.Domain.Orders
         ) {
             val FEATURE_3 by boolean("b1")
             val FEATURE_4 by boolean("b2")
@@ -172,13 +174,13 @@ class FeatureContainerTest {
     @Test
     fun `features maintain type safety through container`() {
         // Type inference works correctly
-        val booleanFeature: BooleanFeature<Context, FeatureModule.Team.Payments> =
+        val booleanFeature: BooleanFeature<Context, Taxonomy.Domain.Payments> =
             TestFeatures.BOOLEAN_FLAG
 
-        val stringFeature: StringFeature<Context, FeatureModule.Team.Payments> =
+        val stringFeature: StringFeature<Context, Taxonomy.Domain.Payments> =
             TestFeatures.STRING_CONFIG
 
-        val intFeature: IntFeature<Context, FeatureModule.Team.Payments> =
+        val intFeature: IntFeature<Context, Taxonomy.Domain.Payments> =
             TestFeatures.INT_LIMIT
 
         // Verify types are preserved
