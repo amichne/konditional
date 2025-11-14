@@ -1,10 +1,7 @@
 package io.amichne.konditional.fixtures
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.BooleanFeature
 import io.amichne.konditional.core.FeatureContainer
-import io.amichne.konditional.core.IntFeature
-import io.amichne.konditional.core.StringFeature
 import io.amichne.konditional.core.Taxonomy
 
 /**
@@ -17,9 +14,7 @@ import io.amichne.konditional.core.Taxonomy
 object CommonTestFeatures : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
     // This object can be used to group common test features if needed
 
-    val ALWAYS_TRUE by boolean<Context> {
-
-    }
+    val always_true by boolean<Context> { }
 }
 
 /**
@@ -27,31 +22,27 @@ object CommonTestFeatures : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
  *
  * Use these for tests involving boolean feature toggles.
  */
-enum class TestBooleanFeatures(
-    override val key: String,
-) : BooleanFeature<Context, Taxonomy.Core> {
+object TestBooleanFeatures : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
     /** General-purpose test feature flag */
-    TEST_FEATURE("test_feature"),
+    val test_feature by boolean<Context> { }
 
     /** Feature flag for testing enabled state */
-    ENABLED_FEATURE("enabled_feature"),
+    val enabled_feature by boolean<Context> { }
 
     /** Feature flag for testing disabled state */
-    DISABLED_FEATURE("disabled_feature"),
+    val disabled_feature by boolean<Context> { }
 
     /** Feature flag for testing rollout percentages */
-    ROLLOUT_FEATURE("rollout_feature"),
+    val rollout_feature by boolean<Context> { }
 
     /** Feature flag for testing platform targeting */
-    PLATFORM_FEATURE("platform_feature"),
+    val platform_feature by boolean<Context> { }
 
     /** Feature flag for testing locale targeting */
-    LOCALE_FEATURE("locale_feature"),
+    val locale_feature by boolean<Context> { }
 
     /** Feature flag for testing version ranges */
-    VERSION_FEATURE("version_feature");
-
-    override val module: Taxonomy.Core = Taxonomy.Core
+    val version_feature by boolean<Context> { }
 }
 
 /**
@@ -59,28 +50,24 @@ enum class TestBooleanFeatures(
  *
  * Use these for tests involving string configuration values.
  */
-enum class TestStringFeatures(
-    override val key: String,
-) : StringFeature<Context, Taxonomy.Core> {
+object TestStringFeatures : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
     /** API endpoint configuration */
-    API_ENDPOINT("api_endpoint"),
+    val api_endpoint by string<Context> { }
 
     /** Theme configuration */
-    THEME("theme"),
+    val theme by string<Context> { }
 
     /** Welcome message configuration */
-    WELCOME_MESSAGE("welcome_message"),
+    val welcome_message by string<Context> { }
 
     /** General-purpose test string flag */
-    TEST_STRING("test_string"),
+    val test_string by string<Context> { }
 
     /** Registered flag for testing found scenarios */
-    REGISTERED_FLAG("registered_flag"),
+    val registered_flag by string<Context> { }
 
     /** Unregistered flag for testing not-found scenarios */
-    UNREGISTERED_FLAG("unregistered_flag");
-
-    override val module: Taxonomy.Core = Taxonomy.Core
+    val unregistered_flag by string<Context> { }
 }
 
 /**
@@ -88,19 +75,15 @@ enum class TestStringFeatures(
  *
  * Use these for tests involving numeric configuration values.
  */
-enum class TestIntFeatures(
-    override val key: String,
-) : IntFeature<Context, Taxonomy.Core> {
+object TestIntFeatures : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
     /** Maximum connections configuration */
-    MAX_CONNECTIONS("max_connections"),
+    val max_connections by int<Context> { }
 
     /** Timeout configuration */
-    TIMEOUT("timeout"),
+    val timeout by int<Context> { }
 
     /** Retry count configuration */
-    RETRY_COUNT("retry_count");
-
-    override val module: Taxonomy.Core = Taxonomy.Core
+    val retry_count by int<Context> { }
 }
 
 /**
@@ -108,14 +91,10 @@ enum class TestIntFeatures(
  *
  * Use these for tests involving decimal configuration values.
  */
-data object TestDoubleFeatures : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
+object TestDoubleFeatures : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
     /** Threshold configuration */
-    val  THRESHOLD by double("threshold"){
-
-    }
+    val threshold by double<Context> { }
 
     /** Rate limit configuration */
-    RATE_LIMIT("rate_limit");
-
-    override val module: Taxonomy.Core = Taxonomy.Core
+    val rate_limit by double<Context> { }
 }

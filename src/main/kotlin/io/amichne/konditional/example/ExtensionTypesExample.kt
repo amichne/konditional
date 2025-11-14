@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter
  * These are wrapper types that encode to JSON primitives (DateTime, UUID, etc.)
  */
 object ExtensionTypesExample {
-    val module = Taxonomy.Domain.Search
 
     // ========== Custom Wrapper Type: DateTime ==========
 

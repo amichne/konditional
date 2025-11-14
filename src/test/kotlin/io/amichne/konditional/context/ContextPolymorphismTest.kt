@@ -30,7 +30,7 @@ class ContextPolymorphismTest {
     @Test
     fun `Given EnterpriseContext, When evaluating flags, Then context-specific properties are accessible`() {
         Taxonomy.Core.config {
-            EnterpriseFeatures.ADVANCED_ANALYTICS with {
+            EnterpriseFeatures.advanced_analytics with {
                 default(false)
                 // This demonstrates that the rule can access base Context properties
                 rule {
@@ -52,13 +52,13 @@ class ContextPolymorphismTest {
             userRole = UserRole.ADMIN,
         )
 
-        assertTrue(ctx.evaluate(EnterpriseFeatures.ADVANCED_ANALYTICS))
+        assertTrue(ctx.evaluate(EnterpriseFeatures.advanced_analytics))
     }
 
     @Test
     fun `Given ExperimentContext, When evaluating flags, Then experiment-specific properties are accessible`() {
         Taxonomy.Core.config {
-            ExperimentFeatures.HOMEPAGE_VARIANT with {
+            ExperimentFeatures.homepage_variant with {
                 default("control")
                 rule {
                     platforms(Platform.IOS, Platform.ANDROID)
@@ -87,20 +87,20 @@ class ContextPolymorphismTest {
             sessionId = "session-xyz",
         )
 
-        assertEquals("variant-a", mobileCtx.evaluate(ExperimentFeatures.HOMEPAGE_VARIANT))
-        assertEquals("variant-b", webCtx.evaluate(ExperimentFeatures.HOMEPAGE_VARIANT))
+        assertEquals("variant-a", mobileCtx.evaluate(ExperimentFeatures.homepage_variant))
+        assertEquals("variant-b", webCtx.evaluate(ExperimentFeatures.homepage_variant))
     }
 
     @Suppress("USELESS_IS_CHECK")
     @Test
     fun `Given multiple custom contexts, When using different flags, Then contexts are independent`() {
         Taxonomy.Core.config {
-            EnterpriseFeatures.API_ACCESS with {
+            EnterpriseFeatures.api_access with {
                 default(false)
                 rule {
                 } implies true
             }
-            ExperimentFeatures.ONBOARDING_STYLE with {
+            ExperimentFeatures.onboarding_style with {
                 default("classic")
                 rule {
                 } implies "modern"
@@ -127,8 +127,8 @@ class ContextPolymorphismTest {
         )
 
         // Each context can be evaluated independently with its own flags
-        val apiAccess = enterpriseCtx.evaluate(EnterpriseFeatures.API_ACCESS)
-        val onboardingStyle = experimentCtx.evaluate(ExperimentFeatures.ONBOARDING_STYLE)
+        val apiAccess = enterpriseCtx.evaluate(EnterpriseFeatures.api_access)
+        val onboardingStyle = experimentCtx.evaluate(ExperimentFeatures.onboarding_style)
 
         assertTrue(apiAccess is Boolean)
         assertTrue(onboardingStyle is String)
@@ -153,7 +153,7 @@ class ContextPolymorphismTest {
                     platforms(Platform.IOS)
                 } implies true
             }
-            EnterpriseFeatures.CUSTOM_BRANDING with {
+            EnterpriseFeatures.custom_branding with {
                 default(false)
                 rule {
                     platforms(Platform.WEB)
@@ -181,7 +181,7 @@ class ContextPolymorphismTest {
         )
 
         assertTrue(baseCtx.evaluate(standardFlagA))
-        assertTrue(enterpriseCtx.evaluate(EnterpriseFeatures.CUSTOM_BRANDING))
+        assertTrue(enterpriseCtx.evaluate(EnterpriseFeatures.custom_branding))
     }
 
     @Test
@@ -221,7 +221,7 @@ class ContextPolymorphismTest {
     fun `Given custom EnterpriseRule, When matching with business logic, Then custom properties are enforced`() {
         val registry = FakeRegistry()
         Taxonomy.Core.config(registry) {
-            EnterpriseFeatures.API_ACCESS with {
+            EnterpriseFeatures.api_access with {
                 default(false)
                 rule {
                     platforms(Platform.WEB)
@@ -254,7 +254,7 @@ class ContextPolymorphismTest {
             userRole = UserRole.EDITOR,
         )
 
-        assertFalse(premiumEditor.evaluate(EnterpriseFeatures.API_ACCESS))
-        assertTrue(enterpriseAdmin.evaluate(EnterpriseFeatures.API_ACCESS))
+        assertFalse(premiumEditor.evaluate(EnterpriseFeatures.api_access))
+        assertTrue(enterpriseAdmin.evaluate(EnterpriseFeatures.api_access))
     }
 }

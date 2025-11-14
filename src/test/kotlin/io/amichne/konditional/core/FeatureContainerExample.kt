@@ -37,20 +37,20 @@ object CurrentFeatureRegistry {
 // NEW APPROACH: FeatureContainer with delegation
 // ============================================================================
 
-object PaymentFeatures : FeatureContainer<Context, Taxonomy.Domain.Payments>(
+object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
     Taxonomy.Domain.Payments
 ) {
     // ✅ Ergonomic: Clean delegation syntax
-    val APPLE_PAY by boolean("apple_pay")
-    val GOOGLE_PAY by boolean("google_pay")
-    val CARD_ON_FILE by boolean("card_on_file")
+    val apple_pay by boolean<Context> { }
+    val google_pay by boolean<Context> { }
+    val card_on_file by boolean<Context> { }
 
     // ✅ Mixed types: Can combine different feature types
-    val MAX_CARDS by int("max_cards")
-    val PAYMENT_PROVIDER by string("payment_provider")
+    val max_cards by int<Context> { }
+    val payment_provider by string<Context> { }
 
     // ✅ Complex types: JSON objects work seamlessly
-    val CARD_CONFIG by jsonObject<CardConfiguration>("card_config")
+    val card_config by jsonObject<Context, CardConfiguration>("card_config")
 
     // ✅ No boilerplate: Module declared once at container level
     // ✅ Auto-registration: All features automatically tracked
@@ -62,12 +62,12 @@ data class CardConfiguration(
     val supportedNetworks: List<String>
 )
 
-object OrderFeatures : FeatureContainer<Context, Taxonomy.Domain.Orders>(
+object OrderFeatures : FeatureContainer<Taxonomy.Domain.Orders>(
     Taxonomy.Domain.Orders
 ) {
-    val FAST_CHECKOUT by boolean("fast_checkout")
-    val ORDER_LIMIT by int("order_limit")
-    val DISCOUNT_CODE by string("discount_code")
+    val fast_checkout by boolean<Context> { }
+    val order_limit by int<Context> { }
+    val discount_code by string<Context> { }
 }
 
 
@@ -95,18 +95,18 @@ object FeatureContainerValueDemo {
     fun typeSafetyDemo(context: Context) {
         // Boolean feature
         val applePay: BooleanFeature<Context, Taxonomy.Domain.Payments> =
-            PaymentFeatures.APPLE_PAY
+            PaymentFeatures.apple_pay
 
         // Int feature
         val maxCards: IntFeature<Context, Taxonomy.Domain.Payments> =
-            PaymentFeatures.MAX_CARDS
+            PaymentFeatures.max_cards
 
         // Type inference works
-        val enabled = context.evaluateOrDefault(PaymentFeatures.APPLE_PAY, false)
-        val limit = context.evaluateOrDefault(PaymentFeatures.MAX_CARDS, 5)
+        val enabled = context.evaluateOrDefault(PaymentFeatures.apple_pay, false)
+        val limit = context.evaluateOrDefault(PaymentFeatures.max_cards, 5)
 
         // Compile-time type safety
-        // val x: Int = PaymentFeatures.APPLE_PAY // ❌ Type mismatch
+        // val x: Int = PaymentFeatures.apple_pay // ❌ Type mismatch
     }
 
     // ✅ BENEFIT 3: Discovery and auditing

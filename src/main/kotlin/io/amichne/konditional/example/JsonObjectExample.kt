@@ -4,7 +4,6 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.JsonEncodeableFeature
 import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.config
 import io.amichne.konditional.core.id.StableId
@@ -15,7 +14,9 @@ import io.amichne.konditional.core.id.StableId
  * JSON-object: Distinct super type of object nodes that represent different
  * values given specific conditions.
  */
-object JsonObjectExample {
+object JsonObjectExample : io.amichne.konditional.core.FeatureContainer<Taxonomy.Domain.Recommendations>(
+    Taxonomy.Domain.Recommendations
+) {
 
     // ========== Domain Types ==========
 
@@ -56,22 +57,19 @@ object JsonObjectExample {
      * API configuration conditional.
      * Different API configs for different platforms/environments.
      */
-    val API_CONFIG: JsonEncodeableFeature<ApiConfig, Context, Taxonomy.Domain.Recommendations> =
-        JsonEncodeableFeature("api_config", Taxonomy.Domain.Recommendations)
+    val api_config by jsonObject<Context, ApiConfig>("api_config")
 
     /**
      * Theme configuration conditional.
      * Different themes per platform.
      */
-    val THEME: JsonEncodeableFeature<ThemeConfig, Context, Taxonomy.Domain.Recommendations> =
-        JsonEncodeableFeature("app_theme", Taxonomy.Domain.Recommendations)
+    val app_theme by jsonObject<Context, ThemeConfig>("app_theme")
 
     /**
      * Feature set conditional.
      * Different feature sets based on context.
      */
-    val FEATURES: JsonEncodeableFeature<FeatureSet, Context, Taxonomy.Domain.Recommendations> =
-        JsonEncodeableFeature("feature_set", Taxonomy.Domain.Recommendations)
+    val feature_set by jsonObject<Context, FeatureSet>("feature_set")
 
     // ========== Usage Example ==========
 
@@ -129,7 +127,7 @@ object JsonObjectExample {
         // Configure with HSON-object type representation
         // Each condition produces a distinct object node
         Taxonomy.Domain.Recommendations.config {
-            API_CONFIG with {
+            api_config with {
                 default(prodApi)
 
                 // Different API config for WEB platform
@@ -138,7 +136,7 @@ object JsonObjectExample {
                 } implies devApi
             }
 
-            THEME with {
+            app_theme with {
                 default(lightTheme)
 
                 // Dark theme for specific locales
@@ -147,7 +145,7 @@ object JsonObjectExample {
                 } implies darkTheme
             }
 
-            FEATURES with {
+            feature_set with {
                 default(basicFeatures)
 
                 // Premium features for iOS v2.0+
