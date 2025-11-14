@@ -46,9 +46,9 @@ fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> C.evaluateSafe(
         runCatching { flag.evaluate(this) }
             .fold(
                 onSuccess = { EvaluationResult.Success(it) },
-                onFailure = { EvaluationResult.EvaluationError(key.toString(), it) }
+                onFailure = { EvaluationResult.EvaluationError(key.key, it) }
             )
-    } ?: EvaluationResult.FlagNotFound(key.toString())
+    } ?: EvaluationResult.FlagNotFound(key.key)
 
 /**
  * Evaluate a flag, returning null if not found or evaluation fails.

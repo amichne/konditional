@@ -1,6 +1,7 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.result.utils.evaluateOrDefault
 
 /**
  * Example comparing current enum approach vs FeatureContainer approach
@@ -10,28 +11,27 @@ import io.amichne.konditional.context.Context
 // CURRENT APPROACH: Enum-based features
 // ============================================================================
 
-enum class PaymentFeaturesEnum(override val key: String)
-    : BooleanFeature<Context, Taxonomy.Domain.Payments> {
-    APPLE_PAY("apple_pay"),
-    GOOGLE_PAY("google_pay"),
-    CARD_ON_FILE("card_on_file");
-
-    // ❌ Boilerplate: Must override module on every enum
-    override val module = Taxonomy.Domain.Payments
-}
-
+//enum class PaymentFeaturesEnum(override val key: String)
+//    : BooleanFeature<Context, Taxonomy.Domain.Payments> {
+//    APPLE_PAY("apple_pay"),
+//    GOOGLE_PAY("google_pay"),
+//    CARD_ON_FILE("card_on_file");
+//
+//    // ❌ Boilerplate: Must override module on every enum
+//    override val module = Taxonomy.Domain.Payments
+//}
+//
 // ❌ Problem 1: Can't mix types in enums
 // This won't compile - enums can't have different return types per entry
 // enum class MixedFeaturesEnum : Feature<???, ???, Context, Taxonomy.Domain.Payments>
 
 // ❌ Problem 2: No automatic enumeration
 // Have to manually maintain list of all features
-object CurrentFeatureRegistry {
-    val allPaymentFeatures = PaymentFeaturesEnum.values().toList()
-    // Must manually add each enum/object to this list
-    val allFeatures = allPaymentFeatures // + orderFeatures + accountFeatures...
-}
-
+//object CurrentFeatureRegistry {
+//    val allPaymentFeatures = PaymentFeaturesEnum.values().toList()
+//    // Must manually add each enum/object to this list
+//    val allFeatures = allPaymentFeatures // + orderFeatures + accountFeatures...
+//}
 
 // ============================================================================
 // NEW APPROACH: FeatureContainer with delegation
@@ -40,6 +40,12 @@ object CurrentFeatureRegistry {
 object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
     Taxonomy.Domain.Payments
 ) {
+    val defaultCardConfiguration = CardConfiguration(
+        maxLength = 16,
+        validateCvv = true,
+        supportedNetworks = listOf("VISA", "MASTERCARD", "AMEX")
+    )
+
     // ✅ Ergonomic: Clean delegation syntax
     val apple_pay by boolean<Context> { }
     val google_pay by boolean<Context> { }
@@ -50,7 +56,7 @@ object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
     val payment_provider by string<Context> { }
 
     // ✅ Complex types: JSON objects work seamlessly
-    val card_config by jsonObject<Context, CardConfiguration>("card_config")
+    val card_config by jsonObject<Context, CardConfiguration>(defaultCardConfiguration, "card_config")
 
     // ✅ No boilerplate: Module declared once at container level
     // ✅ Auto-registration: All features automatically tracked
@@ -59,17 +65,16 @@ object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
 data class CardConfiguration(
     val maxLength: Int,
     val validateCvv: Boolean,
-    val supportedNetworks: List<String>
+    val supportedNetworks: List<String>,
 )
 
-object OrderFeatures : FeatureContainer<Taxonomy.Domain.Orders>(
-    Taxonomy.Domain.Orders
+object OrderFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
+    Taxonomy.Domain.Payments
 ) {
     val fast_checkout by boolean<Context> { }
     val order_limit by int<Context> { }
     val discount_code by string<Context> { }
 }
-
 
 // ============================================================================
 // VALUE DEMONSTRATION
@@ -128,16 +133,17 @@ object FeatureContainerValueDemo {
         }
     }
 
-    // ✅ BENEFIT 4: Testing - can easily get all features for comprehensive testing
-    fun testAllFeatures(context: Context) {
-        PaymentFeatures.allFeatures().forEach { feature ->
-            // Type-erased, but we can still evaluate safely
-            when (val result = context.evaluateSafe(feature as Feature<*, Any, Context, Taxonomy.Domain.Payments>)) {
-                is EvaluationResult.Success -> println("${feature.key} = ${result.value}")
-                is EvaluationResult.NotFound -> println("${feature.key} not configured")
-            }
-        }
-    }
+//    // ✅ BENEFIT 4: Testing - can easily get all features for comprehensive testing
+//    fun <C : Context> testAllFeatures(context: C) {
+//        PaymentFeatures.allFeatures().filter { it }.forEach { feature ->
+//            // Type-erased, but we can still evaluate safely
+//            when (val result = context.evaluate()) {
+//                is EvaluationResult.Success -> println("${feature.key} = ${result.value}")
+//                is EvaluationResult.FlagNotFound -> println("${feature.key} not configured")
+//                is EvaluationResult.EvaluationError -> println("Error evaluating ${feature.key}: ${result.exception}")
+//            }
+//        }
+//    }
 
     // ✅ BENEFIT 5: Validation - ensure all features are configured
     fun validateConfiguration() {
@@ -166,7 +172,6 @@ object FeatureContainerValueDemo {
         }
     }
 }
-
 
 // ============================================================================
 // COMPARISON SUMMARY

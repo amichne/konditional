@@ -28,7 +28,7 @@ object JsonObjectExample : io.amichne.konditional.core.FeatureContainer<Taxonomy
         val timeout: Int,
         val retries: Int,
         val useHttps: Boolean,
-        val headers: Map<String, String> = emptyMap()
+        val headers: Map<String, String> = emptyMap(),
     )
 
     /**
@@ -39,7 +39,7 @@ object JsonObjectExample : io.amichne.konditional.core.FeatureContainer<Taxonomy
         val secondaryColor: String,
         val fontFamily: String,
         val fontSize: Int,
-        val darkModeEnabled: Boolean
+        val darkModeEnabled: Boolean,
     )
 
     /**
@@ -48,7 +48,57 @@ object JsonObjectExample : io.amichne.konditional.core.FeatureContainer<Taxonomy
     data class FeatureSet(
         val features: List<String>,
         val limits: Map<String, Int>,
-        val metadata: Map<String, Any?>
+        val metadata: Map<String, Any?>,
+    )
+
+    // Production API config
+    val prodApi = ApiConfig(
+        baseUrl = "https://api.prod.example.com",
+        timeout = 30,
+        retries = 3,
+        useHttps = true,
+        headers = mapOf("X-Environment" to "production")
+    )
+
+    // Development API config
+    val devApi = ApiConfig(
+        baseUrl = "https://api.dev.example.com",
+        timeout = 60,
+        retries = 1,
+        useHttps = true,
+        headers = mapOf("X-Environment" to "development")
+    )
+
+    // Light theme
+    val lightTheme = ThemeConfig(
+        primaryColor = "#FFFFFF",
+        secondaryColor = "#F0F0F0",
+        fontFamily = "Roboto",
+        fontSize = 14,
+        darkModeEnabled = false
+    )
+
+    // Dark theme
+    val darkTheme = ThemeConfig(
+        primaryColor = "#1E1E1E",
+        secondaryColor = "#2D2D2D",
+        fontFamily = "Roboto",
+        fontSize = 14,
+        darkModeEnabled = true
+    )
+
+    // Basic feature set
+    val basicFeatures = FeatureSet(
+        features = listOf("core", "basic"),
+        limits = mapOf("maxUsers" to 10, "maxStorage" to 100),
+        metadata = mapOf("tier" to "free")
+    )
+
+    // Premium feature set
+    val premiumFeatures = FeatureSet(
+        features = listOf("core", "basic", "advanced", "analytics"),
+        limits = mapOf("maxUsers" to 1000, "maxStorage" to 10000),
+        metadata = mapOf("tier" to "premium", "priority" to true)
     )
 
     // ========== Conditional Declarations ==========
@@ -57,72 +107,23 @@ object JsonObjectExample : io.amichne.konditional.core.FeatureContainer<Taxonomy
      * API configuration conditional.
      * Different API configs for different platforms/environments.
      */
-    val api_config by jsonObject<Context, ApiConfig>("api_config")
+    val api_config by jsonObject<Context, ApiConfig>(devApi, "api_config")
 
     /**
      * Theme configuration conditional.
      * Different themes per platform.
      */
-    val app_theme by jsonObject<Context, ThemeConfig>("app_theme")
+    val app_theme by jsonObject<Context, ThemeConfig>(lightTheme, "app_theme")
 
     /**
      * Feature set conditional.
      * Different feature sets based on context.
      */
-    val feature_set by jsonObject<Context, FeatureSet>("feature_set")
+    val feature_set by jsonObject<Context, FeatureSet>(premiumFeatures, "feature_set")
 
     // ========== Usage Example ==========
 
     fun demonstrateUsage() {
-        // Production API config
-        val prodApi = ApiConfig(
-            baseUrl = "https://api.prod.example.com",
-            timeout = 30,
-            retries = 3,
-            useHttps = true,
-            headers = mapOf("X-Environment" to "production")
-        )
-
-        // Development API config
-        val devApi = ApiConfig(
-            baseUrl = "https://api.dev.example.com",
-            timeout = 60,
-            retries = 1,
-            useHttps = true,
-            headers = mapOf("X-Environment" to "development")
-        )
-
-        // Light theme
-        val lightTheme = ThemeConfig(
-            primaryColor = "#FFFFFF",
-            secondaryColor = "#F0F0F0",
-            fontFamily = "Roboto",
-            fontSize = 14,
-            darkModeEnabled = false
-        )
-
-        // Dark theme
-        val darkTheme = ThemeConfig(
-            primaryColor = "#1E1E1E",
-            secondaryColor = "#2D2D2D",
-            fontFamily = "Roboto",
-            fontSize = 14,
-            darkModeEnabled = true
-        )
-
-        // Basic feature set
-        val basicFeatures = FeatureSet(
-            features = listOf("core", "basic"),
-            limits = mapOf("maxUsers" to 10, "maxStorage" to 100),
-            metadata = mapOf("tier" to "free")
-        )
-
-        // Premium feature set
-        val premiumFeatures = FeatureSet(
-            features = listOf("core", "basic", "advanced", "analytics"),
-            limits = mapOf("maxUsers" to 1000, "maxStorage" to 10000),
-            metadata = mapOf("tier" to "premium", "priority" to true)
-        )
 
         // Configure with HSON-object type representation
         // Each condition produces a distinct object node

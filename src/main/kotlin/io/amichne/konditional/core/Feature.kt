@@ -1,7 +1,9 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.internal.builders.FlagBuilder
 
 /**
  * Represents a feature flag that can be used to enable or disable specific functionality
@@ -38,6 +40,9 @@ sealed interface Feature<S : EncodableValue<T>, T : Any, C : Context, M : Taxono
     val registry: ModuleRegistry get() = module.registry
 
     fun update(definition: FlagDefinition<S, T, C, M>): Unit = registry.update(definition)
+
+    fun update(function: FlagScope<S, T, C, M>.() -> Unit): Unit =
+        registry.update(FlagBuilder(this).apply(function).build())
 
     companion object {
         fun <T : Any, P : Any, C : Context, M : Taxonomy> custom(

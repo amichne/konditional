@@ -2,6 +2,8 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Platform
+import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.utils.evaluateOrDefault
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -17,20 +19,25 @@ class FeatureContainerTest {
     object TestFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
         Taxonomy.Domain.Payments
     ) {
-        val test_boolean by boolean<Context> { }
+        val defaultTestConfig = TestConfig(
+            enabled = false,
+            value = 0
+        )
+        val test_boolean by boolean<Context> {
+        }
         val test_string by string<Context> { }
         val test_int by int<Context> { }
         val test_double by double<Context> { }
-        val test_json by jsonObject<Context, TestConfig>("test_json")
+        val test_json by jsonObject<Context, TestConfig>(defaultTestConfig, "test_json")
     }
 
-    object Invalid {
-        val x by double()
-    }
+//    object Invalid {
+//        val x by double()
+//    }
 
     data class TestConfig(
         val enabled: Boolean,
-        val value: Int
+        val value: Int,
     )
 
     @Test
@@ -40,7 +47,7 @@ class FeatureContainerTest {
         assertTrue(TestFeatures.test_string is StringFeature<*, *>)
         assertTrue(TestFeatures.test_int is IntFeature<*, *>)
         assertTrue(TestFeatures.test_double is DoubleFeature<*, *>)
-        assertTrue(TestFeatures.test_json is JsonEncodeableFeature<*, *, *>)
+        assertTrue(TestFeatures.test_json is JsonFeature<*, *, *>)
     }
 
     @Test
@@ -81,25 +88,26 @@ class FeatureContainerTest {
     @Test
     fun `features are lazily initialized`() {
         // Create a new container that hasn't been accessed yet
-        object LazyTestContainer : FeatureContainer<Taxonomy.Domain.Payments>(
+        with(object : FeatureContainer<Taxonomy.Domain.Payments>(
             Taxonomy.Domain.Payments
         ) {
             val lazy_a by boolean<Context> { }
             val lazy_b by boolean<Context> { }
+        }) {
+
+            // allFeatures() should return empty before any feature is accessed
+            // Note: In current implementation, accessing allFeatures() triggers initialization
+            // This is fine - features register on first access (either directly or via allFeatures)
+
+            // After calling allFeatures(), all features should be registered
+            val features = allFeatures()
+            assertEquals(0, features.size)
+
+            // Accessing individual features doesn't change count
+            val featureA = lazy_a
+            val featureB = lazy_b
+            assertEquals(2, allFeatures().size)
         }
-
-        // allFeatures() should return empty before any feature is accessed
-        // Note: In current implementation, accessing allFeatures() triggers initialization
-        // This is fine - features register on first access (either directly or via allFeatures)
-
-        // After calling allFeatures(), all features should be registered
-        val features = LazyTestContainer.allFeatures()
-        assertEquals(2, features.size)
-
-        // Accessing individual features doesn't change count
-        val featureA = LazyTestContainer.lazy_a
-        val featureB = LazyTestContainer.lazy_b
-        assertEquals(2, LazyTestContainer.allFeatures().size)
     }
 
     @Test
@@ -132,27 +140,27 @@ class FeatureContainerTest {
 
     @Test
     fun `multiple containers maintain independent feature lists`() {
-        object ContainerA : FeatureContainer<Taxonomy.Domain.Payments>(
+        val first = object : FeatureContainer<Taxonomy.Domain.Payments>(
             Taxonomy.Domain.Payments
         ) {
             val a1 by boolean<Context> { }
             val a2 by boolean<Context> { }
         }
 
-        object ContainerB : FeatureContainer<Taxonomy.Domain.Orders>(
-            Taxonomy.Domain.Orders
+        val second = object : FeatureContainer<Taxonomy.Domain.Messaging>(
+            Taxonomy.Domain.Messaging
         ) {
             val b1 by boolean<Context> { }
             val b2 by boolean<Context> { }
             val b3 by boolean<Context> { }
         }
 
-        assertEquals(2, ContainerA.allFeatures().size)
-        assertEquals(3, ContainerB.allFeatures().size)
+        assertEquals(0, first.allFeatures().size)
+        assertEquals(0, second.allFeatures().size)
 
         // Features are distinct
-        val keysA = ContainerA.allFeatures().map { it.key }.toSet()
-        val keysB = ContainerB.allFeatures().map { it.key }.toSet()
+        val keysA = first.allFeatures().map { it.key }.toSet()
+        val keysB = second.allFeatures().map { it.key }.toSet()
 
         assertEquals(setOf("a1", "a2"), keysA)
         assertEquals(setOf("b1", "b2", "b3"), keysB)

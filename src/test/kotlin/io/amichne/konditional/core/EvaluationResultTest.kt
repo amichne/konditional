@@ -33,7 +33,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import kotlin.to
 
 /**
  * Tests for EvaluationResult and evaluation APIs following Parse, Don't Validate principles.
@@ -67,14 +66,14 @@ class EvaluationResultTest {
     init {
         // Register a normal flag
         val rule = Rule<Context>(
-            rollout {  Rollout.MAX }
+            rollout = Rollout.MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded(),
         )
         testRegistry.update(
             KonfigPatch(
-                flags = mapOf(TestStringFeatures.REGISTERED_FLAG to TestStringFeatures.REGISTERED_FLAG.flag {
+                flags = mapOf(TestStringFeatures.registered_flag to TestStringFeatures.registered_flag.flag {
                     rule implies "test-value"
                     default("default-value")
                 }),
@@ -82,8 +81,8 @@ class EvaluationResultTest {
         )
 
 
-        TestStringFeatures.REGISTERED_FLAG.update(
-            TestStringFeatures.REGISTERED_FLAG.flag {
+        TestStringFeatures.registered_flag.update(
+            TestStringFeatures.registered_flag.flag {
                 rule { } implies "test-value"
                 default("default-value")
             }
@@ -92,7 +91,7 @@ class EvaluationResultTest {
 
     @Test
     fun `evaluateSafe returns Success when flag is found and evaluates successfully`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.REGISTERED_FLAG)
+        val result = testContext.evaluateSafe(TestStringFeatures.registered_flag)
 
         assertIs<EvaluationResult.Success<String>>(result)
         assertEquals("test-value", result.value)
@@ -100,7 +99,7 @@ class EvaluationResultTest {
 
     @Test
     fun `evaluateSafe returns FlagNotFound when flag is not registered`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.UNREGISTERED_FLAG)
+        val result = testContext.evaluateSafe(TestStringFeatures.unregistered_flag)
 
         assertIs<EvaluationResult.FlagNotFound>(result)
         assertEquals("unregistered_flag", result.key)
@@ -123,7 +122,7 @@ class EvaluationResultTest {
 
     @Test
     fun `fold transforms Success to target type`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.REGISTERED_FLAG).fold(
+        val result = testContext.evaluateSafe(TestStringFeatures.registered_flag).fold(
             onSuccess = { "success: $it" },
             onFlagNotFound = { "not found: $it" },
             onEvaluationError = { key, _ -> "error: $key" }
@@ -134,7 +133,7 @@ class EvaluationResultTest {
 
     @Test
     fun `fold transforms FlagNotFound to target type`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.UNREGISTERED_FLAG).fold(
+        val result = testContext.evaluateSafe(TestStringFeatures.unregistered_flag).fold(
             onSuccess = { "success: $it" },
             onFlagNotFound = { "not found: $it" },
             onEvaluationError = { key, _ -> "error: $key" }
@@ -161,7 +160,7 @@ class EvaluationResultTest {
 
     @Test
     fun `map transforms Success value`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.REGISTERED_FLAG)
+        val result = testContext.evaluateSafe(TestStringFeatures.registered_flag)
             .map { it.uppercase() }
 
         assertIs<EvaluationResult.Success<String>>(result)
@@ -170,7 +169,7 @@ class EvaluationResultTest {
 
     @Test
     fun `map preserves FlagNotFound`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.UNREGISTERED_FLAG)
+        val result = testContext.evaluateSafe(TestStringFeatures.unregistered_flag)
             .map { it.uppercase() }
 
         assertIs<EvaluationResult.FlagNotFound>(result)
@@ -191,13 +190,13 @@ class EvaluationResultTest {
 
     @Test
     fun `getOrNull returns value on Success`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.REGISTERED_FLAG)
+        val result = testContext.evaluateSafe(TestStringFeatures.registered_flag)
         assertEquals("test-value", result.getOrNull())
     }
 
     @Test
     fun `getOrNull returns null on FlagNotFound`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.UNREGISTERED_FLAG)
+        val result = testContext.evaluateSafe(TestStringFeatures.unregistered_flag)
         assertNull(result.getOrNull())
     }
 
@@ -212,13 +211,13 @@ class EvaluationResultTest {
 
     @Test
     fun `getOrDefault returns value on Success`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.REGISTERED_FLAG)
+        val result = testContext.evaluateSafe(TestStringFeatures.registered_flag)
         assertEquals("test-value", result.getOrDefault("fallback"))
     }
 
     @Test
     fun `getOrDefault returns default on FlagNotFound`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.UNREGISTERED_FLAG)
+        val result = testContext.evaluateSafe(TestStringFeatures.unregistered_flag)
         assertEquals("fallback", result.getOrDefault("fallback"))
     }
 
@@ -233,7 +232,7 @@ class EvaluationResultTest {
 
     @Test
     fun `getOrElse returns value on Success`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.REGISTERED_FLAG)
+        val result = testContext.evaluateSafe(TestStringFeatures.registered_flag)
             .getOrElse { "fallback" }
 
         assertEquals("test-value", result)
@@ -241,7 +240,7 @@ class EvaluationResultTest {
 
     @Test
     fun `getOrElse computes default on FlagNotFound`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.UNREGISTERED_FLAG)
+        val result = testContext.evaluateSafe(TestStringFeatures.unregistered_flag)
             .getOrElse { error ->
                 when (error) {
                     is EvaluationResult.FlagNotFound -> "missing: ${error.key}"
@@ -272,13 +271,13 @@ class EvaluationResultTest {
 
     @Test
     fun `isSuccess returns true for Success`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.REGISTERED_FLAG)
+        val result = testContext.evaluateSafe(TestStringFeatures.registered_flag)
         assertTrue(result.isSuccess())
     }
 
     @Test
     fun `isSuccess returns false for FlagNotFound`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.UNREGISTERED_FLAG)
+        val result = testContext.evaluateSafe(TestStringFeatures.unregistered_flag)
         assertFalse(result.isSuccess())
     }
 
@@ -290,13 +289,13 @@ class EvaluationResultTest {
 
     @Test
     fun `isFailure returns false for Success`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.REGISTERED_FLAG)
+        val result = testContext.evaluateSafe(TestStringFeatures.registered_flag)
         assertFalse(result.isFailure())
     }
 
     @Test
     fun `isFailure returns true for FlagNotFound`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.UNREGISTERED_FLAG)
+        val result = testContext.evaluateSafe(TestStringFeatures.unregistered_flag)
         assertTrue(result.isFailure())
     }
 
@@ -308,38 +307,38 @@ class EvaluationResultTest {
 
     @Test
     fun `evaluateOrNull returns value when flag exists`() {
-        val value = testContext.evaluateOrNull(TestStringFeatures.REGISTERED_FLAG)
+        val value = testContext.evaluateOrNull(TestStringFeatures.registered_flag)
         assertEquals("test-value", value)
     }
 
     @Test
     fun `evaluateOrNull returns null when flag not found`() {
-        val value = testContext.evaluateOrNull(TestStringFeatures.UNREGISTERED_FLAG)
+        val value = testContext.evaluateOrNull(TestStringFeatures.unregistered_flag)
         assertNull(value)
     }
 
     @Test
     fun `evaluateOrDefault returns value when flag exists`() {
-        val value = testContext.evaluateOrDefault(TestStringFeatures.REGISTERED_FLAG, "default")
+        val value = testContext.evaluateOrDefault(TestStringFeatures.registered_flag, "default")
         assertEquals("test-value", value)
     }
 
     @Test
     fun `evaluateOrDefault returns default when flag not found`() {
-        val value = testContext.evaluateOrDefault(TestStringFeatures.UNREGISTERED_FLAG, "default")
+        val value = testContext.evaluateOrDefault(TestStringFeatures.unregistered_flag, "default")
         assertEquals("default", value)
     }
 
     @Test
     fun `evaluateOrThrow returns value when flag exists`() {
-        val value = testContext.evaluateOrThrow(TestStringFeatures.REGISTERED_FLAG)
+        val value = testContext.evaluateOrThrow(TestStringFeatures.registered_flag)
         assertEquals("test-value", value)
     }
 
     @Test
     fun `evaluateOrThrow throws FlagNotFoundException when flag not found`() {
         val exception = assertFailsWith<FlagNotFoundException> {
-            testContext.evaluateOrThrow(TestStringFeatures.UNREGISTERED_FLAG)
+            testContext.evaluateOrThrow(TestStringFeatures.unregistered_flag)
         }
 
         assertEquals("unregistered_flag", exception.key)
@@ -368,7 +367,7 @@ class EvaluationResultTest {
 
     @Test
     fun `toResult converts Success to Result success`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.REGISTERED_FLAG).toResult()
+        val result = testContext.evaluateSafe(TestStringFeatures.registered_flag).toResult()
 
         assertTrue(result.isSuccess)
         assertEquals("test-value", result.getOrNull())
@@ -376,7 +375,7 @@ class EvaluationResultTest {
 
     @Test
     fun `toResult converts FlagNotFound to Result failure`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.UNREGISTERED_FLAG).toResult()
+        val result = testContext.evaluateSafe(TestStringFeatures.unregistered_flag).toResult()
 
         assertTrue(result.isFailure)
         val exception = result.exceptionOrNull()
@@ -400,7 +399,7 @@ class EvaluationResultTest {
 
     @Test
     fun `fold can adapt to custom Outcome type`() {
-        val adapted: TestOutcome<MyError, String> = testContext.evaluateSafe(TestStringFeatures.REGISTERED_FLAG).fold(
+        val adapted: TestOutcome<MyError, String> = testContext.evaluateSafe(TestStringFeatures.registered_flag).fold(
             onSuccess = { TestOutcome.Success(it) },
             onFlagNotFound = { TestOutcome.Failure(MyError("Flag not found: $it")) },
             onEvaluationError = { key, error -> TestOutcome.Failure(MyError("Evaluation failed: $key - ${error.message}")) }
@@ -412,7 +411,7 @@ class EvaluationResultTest {
 
     @Test
     fun `fold adapts FlagNotFound to custom Outcome type`() {
-        val adapted: TestOutcome<MyError, String> = testContext.evaluateSafe(TestStringFeatures.UNREGISTERED_FLAG).fold(
+        val adapted: TestOutcome<MyError, String> = testContext.evaluateSafe(TestStringFeatures.unregistered_flag).fold(
             onSuccess = { TestOutcome.Success(it) },
             onFlagNotFound = { TestOutcome.Failure(MyError("Flag not found: $it")) },
             onEvaluationError = { key, error -> TestOutcome.Failure(MyError("Evaluation failed: $key - ${error.message}")) }
@@ -441,7 +440,7 @@ class EvaluationResultTest {
 
     @Test
     fun `chain multiple map operations on Success`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.REGISTERED_FLAG)
+        val result = testContext.evaluateSafe(TestStringFeatures.registered_flag)
             .map { it.uppercase() }
             .map { "$it!" }
             .map { it.length }
@@ -479,10 +478,10 @@ class EvaluationResultTest {
             is EvaluationResult.EvaluationError -> "error: ${result.key}"
         }
 
-        assertEquals("success: test-value", handleResult(testContext.evaluateSafe(TestStringFeatures.REGISTERED_FLAG)))
+        assertEquals("success: test-value", handleResult(testContext.evaluateSafe(TestStringFeatures.registered_flag)))
         assertEquals(
             "not found: unregistered_flag",
-            handleResult(testContext.evaluateSafe(TestStringFeatures.UNREGISTERED_FLAG))
+            handleResult(testContext.evaluateSafe(TestStringFeatures.unregistered_flag))
         )
 
         val errorResult: EvaluationResult<String> =
