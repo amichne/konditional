@@ -50,7 +50,10 @@ inline fun <M : Taxonomy> M.config(registry: ModuleRegistry = this.registry, fn:
     ConfigBuilder().apply(fn).build().let { registry.load(it) }
 }
 
-@Deprecated(message = "Replace with receiver varient", replaceWith = ReplaceWith("Taxonomy.Core.config(fn)"))
+@Deprecated(
+    message = "Replace with receiver variant",
+    replaceWith = ReplaceWith("Taxonomy.Core.config(fn)")
+)
 fun config(fn: ConfigScope.() -> Unit) {
     ConfigBuilder().apply(fn).build().let { Taxonomy.Core.registry.load(it) }
 }

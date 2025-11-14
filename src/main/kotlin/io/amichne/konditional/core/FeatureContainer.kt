@@ -46,12 +46,6 @@ abstract class FeatureContainer<M : Taxonomy>(
 ) {
     private val _features = mutableListOf<Feature<*, *, *, M>>()
 
-    init {
-        _features.forEach {
-
-        }
-    }
-
     /**
      * Returns all features declared in this container.
      * Features are registered lazily on first access.
