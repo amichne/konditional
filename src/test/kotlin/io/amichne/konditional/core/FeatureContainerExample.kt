@@ -68,8 +68,8 @@ data class CardConfiguration(
     val supportedNetworks: List<String>,
 )
 
-object OrderFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object OrderFeatures : FeatureContainer<Taxonomy.Domain.Orders>(
+    Taxonomy.Domain.Orders
 ) {
     val fast_checkout by boolean<Context> { }
     val order_limit by int<Context> { }

@@ -155,8 +155,15 @@ class FeatureContainerTest {
             val b3 by boolean<Context> { }
         }
 
-        assertEquals(0, first.allFeatures().size)
-        assertEquals(0, second.allFeatures().size)
+        // Access properties to trigger registration
+        first.a1
+        first.a2
+        second.b1
+        second.b2
+        second.b3
+
+        assertEquals(2, first.allFeatures().size)
+        assertEquals(3, second.allFeatures().size)
 
         // Features are distinct
         val keysA = first.allFeatures().map { it.key }.toSet()
