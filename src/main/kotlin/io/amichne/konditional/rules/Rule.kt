@@ -4,7 +4,7 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
-import io.amichne.konditional.rules.evaluable.Always
+import io.amichne.konditional.rules.evaluable.Placeholder
 import io.amichne.konditional.rules.evaluable.BaseEvaluable
 import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.versions.Unbounded
@@ -68,7 +68,7 @@ data class Rule<C : Context> internal constructor(
     val rollout: Rollout = Rollout.default,
     val note: String? = null,
     internal val baseEvaluable: BaseEvaluable<C> = BaseEvaluable(),
-    val extension: Evaluable<C> = Always,
+    val extension: Evaluable<C> = Placeholder,
 ) : Evaluable<C> {
     internal constructor(
         rollout: Rollout =  Rollout.default,
@@ -76,7 +76,7 @@ data class Rule<C : Context> internal constructor(
         locales: Set<AppLocale> = emptySet(),
         platforms: Set<Platform> = emptySet(),
         versionRange: VersionRange = Unbounded(),
-        extension: Evaluable<C> = Always,
+        extension: Evaluable<C> = Placeholder,
     ) : this(rollout, note, BaseEvaluable(locales, platforms, versionRange), extension)
 
     /**

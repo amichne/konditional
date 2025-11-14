@@ -9,7 +9,7 @@ import io.amichne.konditional.core.dsl.RuleScope
 import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.Rule
-import io.amichne.konditional.rules.evaluable.Always
+import io.amichne.konditional.rules.evaluable.Placeholder
 import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
@@ -27,7 +27,7 @@ import io.amichne.konditional.rules.versions.VersionRange
 @FeatureFlagDsl
 @PublishedApi
 internal data class RuleBuilder<C : Context>(
-    private var extension: Evaluable<C> = Always,
+    private var extension: Evaluable<C> = Placeholder,
     private var note: String? = null,
     private var range: VersionRange = Unbounded(),
     private val platforms: LinkedHashSet<Platform> = linkedSetOf(),

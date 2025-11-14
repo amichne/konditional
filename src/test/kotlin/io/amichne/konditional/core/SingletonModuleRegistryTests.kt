@@ -12,7 +12,6 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -71,7 +70,10 @@ class SingletonModuleRegistryTests {
         }
 
         assertEquals(
-            "unknown", ctx("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", version = "7.10.0").evaluate(SearchFeatures.VERSIONED)
+            "unknown", ctx("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", version = "7.9.99").evaluate(SearchFeatures.VERSIONED)
+        )
+        assertEquals(
+            "inrange", ctx("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", version = "7.10.0").evaluate(SearchFeatures.VERSIONED)
         )
         assertEquals(
             "inrange", ctx("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", version = "7.12.3").evaluate(SearchFeatures.VERSIONED)
@@ -405,18 +407,15 @@ class SingletonModuleRegistryTests {
     fun `Given enum based keys, When evaluating, Then type safety is enforced`() {
         // This test validates that using enum-based keys provides compile-time type safety
         // and prevents typos or undefined flag keys
-        Taxonomy.Core.config {
-            PaymentFeatures.ENABLE_COMPACT_CARDS with {
-                default(false)
-                rule {
-                    platforms(Platform.IOS)
-                } implies true
-            }
-            PaymentFeatures.USE_LIGHTWEIGHT_HOME with {
-                default(true)
-            }
+        PaymentFeatures.ENABLE_COMPACT_CARDS.update {
+            default(false)
+            rule {
+                platforms(Platform.IOS)
+            } implies true
         }
-
+        PaymentFeatures.USE_LIGHTWEIGHT_HOME.update {
+            default(true)
+        }
         val id = "0123456789abcdef0123456789abcdef"
         // These calls are type-safe - cannot pass a string or invalid key
         val result1 = ctx(id).evaluate(PaymentFeatures.ENABLE_COMPACT_CARDS)

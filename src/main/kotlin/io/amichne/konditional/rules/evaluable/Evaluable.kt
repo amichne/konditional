@@ -34,5 +34,4 @@ fun interface Evaluable<in C : Context> : Specifier {
     companion object {
         fun <C : Context> factory(matcher: (C) -> Boolean): Evaluable<C> = Evaluable { context -> matcher(context) }
     }
-
 }

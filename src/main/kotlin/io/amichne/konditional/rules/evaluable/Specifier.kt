@@ -12,5 +12,7 @@ interface Specifier {
      *
      * @return The specificity value (higher is more specific)
      */
-    fun specificity(): Int = 0
+    fun specificity(): Int = 1
+
+    companion object : Specifier
 }

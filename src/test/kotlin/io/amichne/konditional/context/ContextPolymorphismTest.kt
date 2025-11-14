@@ -1,11 +1,9 @@
 package io.amichne.konditional.context
 
 import io.amichne.konditional.context.Context.Companion.evaluate
-import io.amichne.konditional.core.BooleanFeature
 import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.config
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.fakes.FakeRegistry
 import io.amichne.konditional.fixtures.EnterpriseContext
 import io.amichne.konditional.fixtures.EnterpriseFeatures
 import io.amichne.konditional.fixtures.EnterpriseRule
@@ -13,8 +11,6 @@ import io.amichne.konditional.fixtures.ExperimentContext
 import io.amichne.konditional.fixtures.ExperimentFeatures
 import io.amichne.konditional.fixtures.SubscriptionTier
 import io.amichne.konditional.fixtures.UserRole
-import io.amichne.konditional.rules.Rule
-import io.amichne.konditional.rules.versions.FullyBound
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -218,19 +214,16 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given custom EnterpriseRule, When matching with business logic, Then custom properties are enforced`() {
-        val registry = FakeRegistry()
-        Taxonomy.Core.config(registry) {
-            EnterpriseFeatures.api_access with {
-                default(false)
-                rule {
-                    platforms(Platform.WEB)
-                    rollout { 100 }
+        EnterpriseFeatures.api_access.update {
+            default(false)
+            rule {
+                platforms(Platform.WEB)
+                rollout { 100 }
 
-                    extension {
-                        EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN)
-                    }
-                } implies true
-            }
+                extension {
+                    EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN)
+                }
+            } implies true
         }
 
         val enterpriseAdmin = EnterpriseContext(
