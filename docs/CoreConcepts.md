@@ -6,15 +6,59 @@ This document explains the fundamental types that make Konditional's compile-tim
 
 ## The Type Safety Architecture
 
-Konditional's type safety comes from **generic type parameters** that flow through every component:
+Konditional's type safety comes from **generic type parameters** that flow through every component. The diagram below shows how the core types relate to each other:
 
-```kotlin
-Feature < S : EncodableValue<T>, T : Any, C : Context, M : Module>
-↓                      ↓          ↓
-EncodableValue wrapper Actual value Context type
+```mermaid
+classDiagram
+    class Feature~S, T, C, M~ {
+        <<interface>>
+        +String key
+    }
+
+    class FlagDefinition~S, T, C, M~ {
+        +Feature feature
+        +T defaultValue
+        +List~ConditionalValue~ values
+        +Boolean isActive
+        +String salt
+        +evaluate(C context) T
+    }
+
+    class Rule~C~ {
+        +Rollout rollout
+        +String note
+        +BaseEvaluable baseEvaluable
+        +Evaluable extension
+        +matches(C context) Boolean
+    }
+
+    class Evaluable~C~ {
+        <<abstract>>
+        +matches(C context) Boolean
+        +specificity() Int
+    }
+
+    class Context {
+        <<interface>>
+        +AppLocale locale
+        +Platform platform
+        +Version appVersion
+        +StableId stableId
+    }
+
+    class EncodableValue~T~ {
+        <<interface>>
+        +T value
+        +Encoding encoding
+    }
+
+    Feature --> FlagDefinition : defines
+    FlagDefinition --> Rule : contains
+    Rule --> Evaluable : uses
+    Rule --> Context : evaluates with
+    Feature --> EncodableValue : wraps type
+    Feature --> Context : requires
 ```
-
-Let's understand each component and how they guarantee compile-time safety.
 
 ---
 
@@ -36,89 +80,38 @@ enum class Features(override val key: String) : Conditional<Boolean, Context> {
 interface Feature<S : EncodableValue<T>, T : Any, C : Context, M : Module> {
     val key: String
 }
-
-// Example:
-// S = BooleanEncodeable (wrapper type)
-// T = Boolean (actual value type)
-// C = Context (evaluation context type)
 ```
 
-**What this guarantees:**
+- **`S: EncodableValue<T>`** - Internal wrapper for serialization (you never interact with this directly)
+- **`T: Any`** - The actual value type returned by `evaluate()` (e.g., `Boolean`, `String`, `Int`)
+- **`C: Context`** - The evaluation context required (defines what information is available during evaluation)
+- **`M: Module`** - The module namespace for organizing flags (prevents key collisions)
 
+**What this guarantees:**
 - `DARK_MODE` always returns `Boolean`, never `String` or `Int`
 - Evaluation requires `Context`, not some other type
 - The compiler enforces these at every usage site
 
-### Why Three Type Parameters?
-
-**`S: EncodableValue<T>`** - The wrapper type for serialization
-
-```kotlin
-// Internal: How the value is encoded/decoded
-sealed interface EncodableValue<T : Any> {
-    val value: T
-    val encoding: Encoding
-}
-```
-
-**`T: Any`** - The actual value type you work with
-
-```kotlin
-// What you get when evaluating
-val enabled: Boolean = context.evaluate(Features.DARK_MODE)
-//            ↑ This is T
-```
-
-**`C: Context`** - The required evaluation context
-
-```kotlin
-// What information evaluation needs
-interface Context {
-    val locale: AppLocale
-    val platform: Platform
-    val appVersion: Version
-    val stableId: StableId
-}
-```
-
 ### Common Feature Patterns
 
-**Boolean flags:**
-
 ```kotlin
+// Boolean flags
 enum class Features(override val key: String) : Conditional<Boolean, Context> {
-    DARK_MODE("dark_mode"),
-    NEW_CHECKOUT("new_checkout"),
-    ANALYTICS("analytics_enabled")
+    DARK_MODE("dark_mode")
 }
-```
 
-**String configuration:**
-
-```kotlin
+// String configuration
 enum class ApiConfig(override val key: String) : Conditional<String, Context> {
-    ENDPOINT("api_endpoint"),
-    AUTH_URL("auth_url")
+    ENDPOINT("api_endpoint")
 }
-```
 
-**Integer limits:**
-
-```kotlin
+// Integer limits
 enum class Limits(override val key: String) : Conditional<Int, Context> {
-    MAX_RETRIES("max_retries"),
-    BATCH_SIZE("batch_size")
+    MAX_RETRIES("max_retries")
 }
-```
 
-**Custom types:**
-
-```kotlin
-data class ThemeConfig(
-    val primaryColor: String,
-    val fontSize: Int
-)
-
+// Custom data classes
+data class ThemeConfig(val primaryColor: String, val fontSize: Int)
 enum class Theme(override val key: String) : Conditional<ThemeConfig, Context> {
     APP_THEME("app_theme")
 }
@@ -195,43 +188,32 @@ etc.) and the compiler handles the rest.
 
 ### Custom Types via JSON
 
-For data classes, use `asJsonObject()` evidence:
+Data classes are automatically serialized as JSON:
 
 ```kotlin
-data class ThemeConfig(
-    val primaryColor: String,
-    val fontSize: Int
-)
+data class ThemeConfig(val primaryColor: String, val fontSize: Int)
 
 enum class Theme(override val key: String) : Conditional<ThemeConfig, Context> {
     APP_THEME("app_theme")
 }
 
-// Configure with type-safe values
 config {
     Theme.APP_THEME with {
-        default(ThemeConfig("#FFFFFF", 14))  // ✓ Type-safe
-
-        rule {
-            platforms(Platform.IOS)
-        }.implies(ThemeConfig("#000000", 16))  // ✓ Type-safe
+        default(ThemeConfig("#FFFFFF", 14))
+        rule { platforms(Platform.IOS) }.implies(ThemeConfig("#000000", 16))
     }
 }
 ```
 
 ### The "Parse, Don't Validate" Principle
 
-**Invalid types cannot be represented:**
+Invalid types cannot be represented - if your flag compiles, its type is supported:
 
 ```kotlin
-// This enum won't compile:
 enum class BadConfig(override val key: String) : Conditional<MyWeirdType, Context> {
-    //                                                         ↑ Error: No EncodableEvidence for MyWeirdType
-    BAD_FLAG("bad_flag")
+    BAD_FLAG("bad_flag")  // ✗ Compile error: No EncodableEvidence for MyWeirdType
 }
 ```
-
-**Guarantee:** If your flag compiles, its type is supported. No runtime type errors possible.
 
 ---
 
@@ -252,14 +234,7 @@ interface Context {
 
 ### Why Context Is Type-Safe
 
-**String-based systems:** Context requirements are invisible
-
-```kotlin
-// What does this flag need to know?
-val enabled = config.getBoolean("premium_export")  // ⚠️ Hidden dependencies
-```
-
-**Konditional:** Context requirements are explicit in the type
+Context requirements are explicit in the type signature:
 
 ```kotlin
 data class EnterpriseContext(
@@ -267,11 +242,11 @@ data class EnterpriseContext(
     override val platform: Platform,
     override val appVersion: Version,
     override val stableId: StableId,
-    val subscriptionTier: SubscriptionTier  // ← Visible requirement
+    val subscriptionTier: SubscriptionTier  // Custom field
 ) : Context
 
 enum class PremiumFeatures(override val key: String) :
-    Conditional<Boolean, EnterpriseContext> {  // ← Type documents requirement
+    Conditional<Boolean, EnterpriseContext> {  // Type documents requirement
     DATA_EXPORT("export_enabled")
 }
 
@@ -285,65 +260,44 @@ enterpriseContext.evaluate(PremiumFeatures.DATA_EXPORT)  // ✓ Compiles
 
 ### Custom Context Extensions
 
-Extend `Context` with your business domain:
+Extend `Context` with domain-specific fields:
 
 ```kotlin
 data class AppContext(
-    // Base fields (required)
     override val locale: AppLocale,
     override val platform: Platform,
     override val appVersion: Version,
     override val stableId: StableId,
-
-    // Custom fields
     val userId: String,
     val subscriptionTier: SubscriptionTier,
-    val organizationId: String?,
-    val experimentGroups: Set<String>
+    val organizationId: String?
 ) : Context
 
-enum class SubscriptionTier {
-    FREE, PROFESSIONAL, ENTERPRISE
-}
+enum class SubscriptionTier { FREE, PROFESSIONAL, ENTERPRISE }
 ```
 
-**What this enables:**
-
-- Type-safe access to business fields in rules
-- Compiler prevents evaluation with wrong context
-- Self-documenting context requirements
-- IDE auto-complete for all context fields
+This enables type-safe access to business fields in rules, with compiler-enforced context requirements and IDE auto-complete.
 
 ### Context Polymorphism
 
 Different flags can require different contexts:
 
 ```kotlin
-// Basic features use base Context
 enum class BasicFeatures(override val key: String) : Conditional<Boolean, Context> {
     DARK_MODE("dark_mode")
 }
 
-// Premium features require AppContext
 enum class PremiumFeatures(override val key: String) : Conditional<Boolean, AppContext> {
     DATA_EXPORT("export_enabled")
 }
 
-// Enterprise features require EnterpriseContext
-enum class EnterpriseFeatures(override val key: String) : Conditional<Boolean, EnterpriseContext> {
-    ADVANCED_ANALYTICS("analytics")
-}
-
-// Usage: Type system enforces correct context
+// Type system enforces correct context
 val basic: Context = basicContext(...)
 basic.evaluate(BasicFeatures.DARK_MODE)  // ✓ Works
 
 val app: AppContext = AppContext(...)
 app.evaluate(BasicFeatures.DARK_MODE)     // ✓ Works (AppContext extends Context)
 app.evaluate(PremiumFeatures.DATA_EXPORT) // ✓ Works
-
-val enterprise: EnterpriseContext = EnterpriseContext(...)
-enterprise.evaluate(EnterpriseFeatures.ADVANCED_ANALYTICS)  // ✓ Works
 ```
 
 ---
@@ -501,6 +455,29 @@ data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Modul
 
 ### Evaluation Logic
 
+The evaluation flow follows this process:
+
+```mermaid
+flowchart LR
+    Context[Context] --> Registry[Registry]
+    Registry --> FlagDef[FlagDefinition]
+    FlagDef --> Active{Flag Active?}
+    Active -->|No| Default1[Return Default]
+    Active -->|Yes| Rules[Rules<br/>sorted by specificity]
+    Rules --> Match{Rule Matches?}
+    Match -->|No| NextRule[Next Rule]
+    NextRule --> Match
+    Match -->|Yes| Rollout{In Rollout<br/>Segment?}
+    Rollout -->|No| NextRule
+    Rollout -->|Yes| Value[Return Rule Value]
+    Match -->|No More Rules| Default2[Return Default]
+
+    style Context fill:#e1f5ff
+    style Value fill:#d4edda
+    style Default1 fill:#d4edda
+    style Default2 fill:#d4edda
+```
+
 ```kotlin
 fun evaluate(context: C): T {
     if (!isActive) return defaultValue
@@ -526,13 +503,33 @@ fun evaluate(context: C): T {
 
 ### The Type Flow
 
+Types flow through the entire system, ensuring end-to-end type safety:
+
+```mermaid
+flowchart TD
+    Feature["Feature&lt;S, T, C, M&gt;<br/>Declares types"]
+    FlagDef["FlagDefinition&lt;S, T, C, M&gt;<br/>Stores configuration"]
+    Rule["Rule&lt;C&gt;<br/>Targeting logic"]
+    Evaluable["Evaluable&lt;C&gt;<br/>Custom logic"]
+    Value["Value: T<br/>Type-safe result"]
+
+    Feature -->|"defines<br/>(S: EncodableValue&lt;T&gt;,<br/>T: Any,<br/>C: Context)"| FlagDef
+    FlagDef -->|"contains<br/>(context type C)"| Rule
+    Rule -->|"uses<br/>(matches: C → Boolean)"| Evaluable
+    FlagDef -->|"evaluate(C) → T"| Value
+
+    style Feature fill:#e1f5ff
+    style FlagDef fill:#fff3cd
+    style Rule fill:#d4edda
+    style Evaluable fill:#f8d7da
+    style Value fill:#d1ecf1
+```
+
 ```kotlin
 // 1. Define feature with types
 enum class Features : Conditional<Boolean, Context> {
-    DARK_MODE("dark_mode")
+    DARK_MODE("dark_mode")  // Type parameters: Boolean, Context
 }
-//                         ↓          ↓        ↓
-//                      Boolean    Boolean  Context
 
 // 2. Configure with type-safe DSL
 config {
@@ -542,8 +539,7 @@ config {
     }
 }
 
-// 3. Internal FlagDefinition created
-//    FlagDefinition<BooleanEncodeable, Boolean, Context>
+// 3. Internal FlagDefinition created: FlagDefinition<BooleanEncodeable, Boolean, Context>
 
 // 4. Evaluate with type-safe return
 val result: Boolean = context.evaluate(Features.DARK_MODE)
@@ -552,23 +548,9 @@ val result: Boolean = context.evaluate(Features.DARK_MODE)
 
 ### Design Principles in Action
 
-**1. Type Safety First**
-
-- Generic type parameters enforce constraints
-- Invalid types are unrepresentable
-- No string-based lookups
-
-**2. Parse, Don't Validate**
-
-- Configuration validated at definition time
-- Evaluation never fails with type errors
-- Results are always the expected type
-
-**3. Composition Over Inheritance**
-
-- Rules compose base + extension evaluables
-- Features compose key + type + context
-- Builders use sealed interfaces
+1. **Type Safety First** - Generic type parameters enforce constraints, invalid types are unrepresentable
+2. **Parse, Don't Validate** - Configuration validated at definition time, evaluation never fails with type errors
+3. **Composition Over Inheritance** - Rules compose base + extension evaluables, features compose key + type + context
 
 ---
 

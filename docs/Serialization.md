@@ -122,9 +122,27 @@ result.fold(
 )
 ```
 
-## JSON Format
+## Serialization Flow
+
+```mermaid
+graph LR
+    A[Konfig Object] -->|serialize| B[JSON String]
+    B -->|deserialize| C[ParseResult]
+    C -->|Success| D[Konfig Object]
+    C -->|Failure| E[ParseError]
+
+    F[Current Konfig] -->|applyPatchJson| G[Patched Konfig]
+
+    style A fill:#e1f5ff
+    style D fill:#e1f5ff
+    style E fill:#ffe1e1
+```
+
+## JSON Format Reference
 
 ### Snapshot Structure
+
+A complete snapshot contains an array of flag definitions:
 
 ```json
 {
@@ -137,11 +155,9 @@ result.fold(
       "salt": "v1",
       "rules": [
         {
-          "locales": [],
+          "locales": ["en_US"],
           "platforms": ["IOS"],
-          "versionRange": {
-            "type": "UNBOUNDED"
-          },
+          "versionRange": { "type": "UNBOUNDED" },
           "rollout": 100.0,
           "note": "iOS users get dark mode",
           "value": true
@@ -152,114 +168,22 @@ result.fold(
 }
 ```
 
-### Version Ranges
+### Supported Value Types
 
-```json
-// Unbounded (all versions)
-{
-  "type": "UNBOUNDED"
-}
+- **`BOOLEAN`**: `true` or `false`
+- **`STRING`**: Text values
+- **`INTEGER`**: Whole numbers
+- **`DECIMAL`**: Floating point numbers
+- **`JSON`**: Arbitrary JSON objects
 
-// Minimum bound (>= 2.0.0)
-{
-  "type": "MIN_BOUND",
-  "min": {
-    "major": 2,
-    "minor": 0,
-    "patch": 0
-  }
-}
+### Version Range Types
 
-// Maximum bound (<= 3.0.0)
-{
-  "type": "MAX_BOUND",
-  "max": {
-    "major": 3,
-    "minor": 0,
-    "patch": 0
-  }
-}
+- **`UNBOUNDED`**: All versions
+- **`MIN_BOUND`**: Minimum version (>= specified version)
+- **`MAX_BOUND`**: Maximum version (<= specified version)
+- **`MIN_AND_MAX_BOUND`**: Both minimum and maximum bounds
 
-// Fully bound (>= 2.0.0 and <= 3.0.0)
-{
-  "type": "MIN_AND_MAX_BOUND",
-  "min": {
-    "major": 2,
-    "minor": 0,
-    "patch": 0
-  },
-  "max": {
-    "major": 3,
-    "minor": 0,
-    "patch": 0
-  }
-}
-```
-
-### Value Types
-
-```json
-// Boolean
-{
-  "valueType": "BOOLEAN",
-  "defaultValue": false,
-  "rules": [
-    {
-      "value": true
-    }
-  ]
-}
-
-// String
-{
-  "valueType": "STRING",
-  "defaultValue": "production",
-  "rules": [
-    {
-      "value": "staging"
-    }
-  ]
-}
-
-// Integer
-{
-  "valueType": "INTEGER",
-  "defaultValue": 30,
-  "rules": [
-    {
-      "value": 60
-    }
-  ]
-}
-
-// Decimal
-{
-  "valueType": "DECIMAL",
-  "defaultValue": 0.5,
-  "rules": [
-    {
-      "value": 0.75
-    }
-  ]
-}
-
-// JSON Object
-{
-  "valueType": "JSON",
-  "defaultValue": {
-    "baseUrl": "https://api.prod.example.com",
-    "timeout": 30
-  },
-  "rules": [
-    {
-      "value": {
-        "baseUrl": "https://api.staging.example.com",
-        "timeout": 60
-      }
-    }
-  ]
-}
-```
+Version objects use semantic versioning: `{ "major": 2, "minor": 0, "patch": 0 }`
 
 ## Patches
 
@@ -312,7 +236,7 @@ when (val result = SnapshotSerializer.default.applyPatchJson(currentKonfig, patc
 
 ## Remote Configuration
 
-### Loading from Remote Server
+Load configurations from remote servers and poll for updates:
 
 ```kotlin
 class RemoteConfigLoader(
@@ -333,22 +257,15 @@ class RemoteConfigLoader(
         }
     }
 
-    suspend fun applyRemotePatch(patchUrl: String): Result<Unit> {
-        return try {
-            val patchJson = apiClient.get(patchUrl).bodyAsText()
-            val currentKonfig = FlagRegistry.konfig()
-
-            when (val result = serializer.applyPatchJson(currentKonfig, patchJson)) {
-                is ParseResult.Success -> {
-                    FlagRegistry.load(result.value)
-                    Result.success(Unit)
-                }
-                is ParseResult.Failure -> Result.failure(
-                    ConfigurationException("Patch error: ${result.error}")
-                )
+    // Poll for updates
+    fun startPolling(configUrl: String, intervalMs: Long, scope: CoroutineScope): Job {
+        return scope.launch {
+            while (isActive) {
+                loadConfiguration(configUrl)
+                    .onSuccess { FlagRegistry.load(it) }
+                    .onFailure { logError("Poll failed", it) }
+                delay(intervalMs)
             }
-        } catch (e: Exception) {
-            Result.failure(e)
         }
     }
 }
@@ -359,73 +276,28 @@ Usage:
 ```kotlin
 val loader = RemoteConfigLoader(httpClient)
 
-// Initial load
+// One-time load
 loader.loadConfiguration("https://config.example.com/flags.json")
-    .onSuccess { konfig ->
-        FlagRegistry.load(konfig)
-        println("Configuration loaded")
-    }
-    .onFailure { error ->
-        logError("Failed to load configuration", error)
-    }
+    .onSuccess { FlagRegistry.load(it) }
 
-// Apply incremental update
-loader.applyRemotePatch("https://config.example.com/patches/123.json")
-    .onSuccess {
-        println("Patch applied")
-    }
-    .onFailure { error ->
-        logError("Failed to apply patch", error)
-    }
-```
-
-### Polling for Updates
-
-```kotlin
-class ConfigurationPoller(
-    private val loader: RemoteConfigLoader,
-    private val pollIntervalMs: Long = 60_000
-) {
-    private var pollingJob: Job? = null
-
-    fun startPolling(configUrl: String, scope: CoroutineScope) {
-        pollingJob = scope.launch {
-            while (isActive) {
-                try {
-                    loader.loadConfiguration(configUrl)
-                        .onSuccess { konfig ->
-                            FlagRegistry.load(konfig)
-                            logInfo("Configuration updated")
-                        }
-                        .onFailure { error ->
-                            logError("Poll failed", error)
-                        }
-                } catch (e: Exception) {
-                    logError("Polling error", e)
-                }
-
-                delay(pollIntervalMs)
-            }
-        }
-    }
-
-    fun stopPolling() {
-        pollingJob?.cancel()
-        pollingJob = null
-    }
-}
+// Continuous polling
+val pollingJob = loader.startPolling(
+    configUrl = "https://config.example.com/flags.json",
+    intervalMs = 60_000,
+    scope = applicationScope
+)
 ```
 
 ## Database Storage
 
-### Storing Configurations
+Persist configurations to a database:
 
 ```kotlin
 class ConfigurationRepository(
     private val database: Database,
     private val serializer: SnapshotSerializer = SnapshotSerializer.default
 ) {
-    fun saveConfiguration(name: String, konfig: Konfig) {
+    fun save(name: String, konfig: Konfig) {
         val json = serializer.serialize(konfig)
         database.execute(
             "INSERT INTO configurations (name, json, updated_at) VALUES (?, ?, ?) " +
@@ -434,7 +306,7 @@ class ConfigurationRepository(
         )
     }
 
-    fun loadConfiguration(name: String): Konfig? {
+    fun load(name: String): Konfig? {
         val json = database.queryString(
             "SELECT json FROM configurations WHERE name = ?",
             name
@@ -443,84 +315,15 @@ class ConfigurationRepository(
         return when (val result = serializer.deserialize(json)) {
             is ParseResult.Success -> result.value
             is ParseResult.Failure -> {
-                logError("Failed to deserialize configuration: ${result.error}")
+                logError("Failed to deserialize: ${result.error}")
                 null
             }
         }
     }
-
-    fun listConfigurations(): List<String> {
-        return database.queryList(
-            "SELECT name FROM configurations ORDER BY name"
-        )
-    }
 }
 ```
 
-## Versioning Configurations
-
-Track configuration versions:
-
-```kotlin
-data class VersionedConfiguration(
-    val version: Int,
-    val timestamp: Instant,
-    val konfig: Konfig,
-    val author: String,
-    val description: String
-)
-
-class VersionedConfigurationRepository(
-    private val database: Database,
-    private val serializer: SnapshotSerializer = SnapshotSerializer.default
-) {
-    fun saveVersion(config: VersionedConfiguration) {
-        val json = serializer.serialize(config.konfig)
-        database.execute(
-            """
-            INSERT INTO configuration_versions
-            (version, timestamp, json, author, description)
-            VALUES (?, ?, ?, ?, ?)
-            """,
-            config.version,
-            config.timestamp,
-            json,
-            config.author,
-            config.description
-        )
-    }
-
-    fun loadVersion(version: Int): VersionedConfiguration? {
-        return database.queryOne(
-            """
-            SELECT version, timestamp, json, author, description
-            FROM configuration_versions
-            WHERE version = ?
-            """,
-            version
-        ) { rs ->
-            val json = rs.getString("json")
-            when (val result = serializer.deserialize(json)) {
-                is ParseResult.Success -> VersionedConfiguration(
-                    version = rs.getInt("version"),
-                    timestamp = rs.getInstant("timestamp"),
-                    konfig = result.value,
-                    author = rs.getString("author"),
-                    description = rs.getString("description")
-                )
-                is ParseResult.Failure -> null
-            }
-        }
-    }
-
-    fun rollback(toVersion: Int) {
-        loadVersion(toVersion)?.let { config ->
-            FlagRegistry.load(config.konfig)
-            logInfo("Rolled back to version $toVersion")
-        }
-    }
-}
-```
+For versioned configurations with rollback capability, add `version`, `timestamp`, `author`, and `description` columns to track configuration history.
 
 ## Best Practices
 

@@ -1,8 +1,8 @@
 package io.amichne.konditional.fixtures
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.Feature
-import io.amichne.konditional.core.FeatureModule
+import io.amichne.konditional.core.features.FeatureContainer
+import io.amichne.konditional.core.Taxonomy
 
 /**
  * Test features for validating extensibility with custom value types.
@@ -33,40 +33,32 @@ data class ThemeConfig(
 /**
  * JSON object feature flags for testing complex data structures.
  */
-enum class TestJsonObjectFeatures(
-    override val key: String,
-) : Feature.OfJsonObject<ApiConfig, Context, FeatureModule.Core> {
+object TestJsonEncodeableFeatureFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    private val defaultApiConfig = ApiConfig("", 0, 0, false)
+
     /** Primary API configuration */
-    PRIMARY_API("primary_api");
-
-    override val module: FeatureModule.Core = FeatureModule.Core
+    val primary_api by jsonObject<Context, ApiConfig>(defaultApiConfig, "primary_api")
 }
 
-enum class TestThemeFeatures(
-    override val key: String,
-) : Feature.OfJsonObject<ThemeConfig, Context, FeatureModule.Core> {
+object TestThemeFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    private val defaultThemeConfig = ThemeConfig("", "", "", false)
+
     /** Application theme configuration */
-    APP_THEME("app_theme");
-
-    override val module: FeatureModule.Core = FeatureModule.Core
+    val app_theme by jsonObject<Context, ThemeConfig>(defaultThemeConfig, "app_theme")
 }
 
-enum class TestListFeatures(
-    override val key: String,
-) : Feature.OfJsonObject<List<String>, Context, FeatureModule.Core> {
+object TestListFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    private val defaultList = emptyList<String>()
+
     /** Enabled features list */
-    ENABLED_FEATURES("enabled_features");
-
-    override val module: FeatureModule.Core = FeatureModule.Core
+    val enabled_features by jsonObject<Context, List<String>>(defaultList, "enabled_features")
 }
 
-enum class TestMapFeatures(
-    override val key: String,
-) : Feature.OfJsonObject<Map<String, String>, Context, FeatureModule.Core> {
-    /** Feature toggles map */
-    FEATURE_TOGGLES("feature_toggles");
+object TestMapFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    private val defaultMap = emptyMap<String, String>()
 
-    override val module: FeatureModule.Core = FeatureModule.Core
+    /** Feature toggles map */
+    val feature_toggles by jsonObject<Context, Map<String, String>>(defaultMap, "feature_toggles")
 }
 
 // ========== Custom Wrapper Type ==========
@@ -77,11 +69,7 @@ enum class LogLevel {
 }
 
 /** Custom wrapper feature flags */
-enum class TestCustomWrapperFeatures(
-    override val key: String,
-) : Feature.OfCustom<LogLevel, String, Context, FeatureModule.Core> {
+object TestCustomWrapperFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
     /** Application log level */
-    APP_LOG_LEVEL("app_log_level");
-
-    override val module: FeatureModule.Core = FeatureModule.Core
+//    val app_log_level by custom<LogLevel, String, Context>("app_log_level")
 }

@@ -1,6 +1,10 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.dsl.FeatureFlagDsl
+import io.amichne.konditional.core.dsl.FlagScope
+import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.internal.builders.FlagBuilder
 
 /**
@@ -20,11 +24,11 @@ import io.amichne.konditional.internal.builders.FlagBuilder
  * }
  * ```
  *
- * @param flagBuilder The DSL block for configuring the flag. The receiver is [FlagScope],
+ * @param flagBuilder The DSL block for configuring the flag. The receiver is [io.amichne.konditional.core.dsl.FlagScope],
  *                    a sealed interface that defines the public DSL API.
  * @return A configured FlagDefinition instance
  */
 @FeatureFlagDsl
-inline fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : FeatureModule> Feature<S, T, C, M>.flag(
+inline fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> Feature<S, T, C, M>.flag(
     flagBuilder: FlagScope<S, T, C, M>.() -> Unit = {},
 ): FlagDefinition<S, T, C, M> = FlagBuilder(this).apply(flagBuilder).build()

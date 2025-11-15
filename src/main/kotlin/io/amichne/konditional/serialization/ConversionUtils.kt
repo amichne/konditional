@@ -4,8 +4,8 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
-import io.amichne.konditional.core.Feature
-import io.amichne.konditional.core.FeatureModule
+import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.instance.KonfigPatch
@@ -20,93 +20,6 @@ import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
-
-/**
- * Registry for mapping flag keys to their Feature instances.
- *
- * This registry is required for deserialization since we need to reconstruct the proper
- * Feature references when loading flag configurations from JSON. The registry maintains
- * a bidirectional mapping between string keys and Feature instances.
- *
- * ## Registration
- *
- * Before deserializing flags, you must register all Feature instances that might appear
- * in the serialized configuration:
- *
- * ```kotlin
- * // Register individual conditionals
- * FeatureRegistry.register(Features.DARK_MODE)
- *
- * // Or register entire enum at once
- * FeatureRegistry.registerEnum<Features>()
- * ```
- *
- * ## Thread Safety
- *
- * This registry is NOT thread-safe. Registration should happen during application initialization
- * before any concurrent access.
- *
- * @see io.amichne.konditional.serialization.SnapshotSerializer
- */
-object FeatureRegistry {
-    private val registry = mutableMapOf<String, Feature<*, *, *, *>>()
-
-    /**
-     * Registers a Feature instance with its key.
-     *
-     * @param conditional The conditional to register
-     * @throws IllegalStateException if a different conditional is already registered with the same key
-     */
-    fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context> register(conditional: Feature<S, T, C, *>) {
-        registry[conditional.key] = conditional
-    }
-
-    /**
-     * Registers all Features from an enum class.
-     *
-     * This is a convenience method for registering entire enum classes that implement Feature.
-     *
-     * Example:
-     * ```kotlin
-     * enum class Features : Feature<Boolean, Context> { ... }
-     * FeatureRegistry.registerEnum<Features>()
-     * ```
-     *
-     * @param T The enum type that implements Feature
-     */
-    inline fun <reified T> registerEnum() where T : Enum<T>, T : Feature<*, *, *, *> {
-        enumValues<T>().forEach { register(it) }
-    }
-
-    /**
-     * Retrieves a Feature by its key, returning ParseResult for type-safe error handling.
-     *
-     * @param key The string key of the conditional
-     * @return ParseResult with the registered Feature or an error
-     */
-    fun get(key: String): ParseResult<Feature<*, *, *, *>> {
-        return registry[key]?.let { ParseResult.Success(it) }
-            ?: ParseResult.Failure(ParseError.FeatureNotFound(key))
-    }
-
-    /**
-     * Checks if a key is registered.
-     *
-     * @param key The string key to check
-     * @return true if the key is registered, false otherwise
-     */
-    fun contains(key: String): Boolean = registry.containsKey(key)
-
-    /**
-     * Clears all registrations.
-     *
-     * This is primarily useful for testing to ensure a clean state between tests.
-     * Should not be called in production code.
-     */
-    fun clear() {
-        registry.clear()
-    }
-}
 
 /**
  * Converts a Konfig to a SerializableSnapshot.
@@ -192,7 +105,7 @@ private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Feature<*, *, *, *>,
  * Type-safe: no casting required thanks to FlagValue sealed class.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : FeatureModule> SerializableFlag.toFlagDefinition(
+private fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : Taxonomy> SerializableFlag.toFlagDefinition(
     conditional: Feature<S, T, C, M>
 ): FlagDefinition<S, T, C, M> {
     // Extract typed value from FlagValue (type-safe extraction)
@@ -219,7 +132,7 @@ private fun <T : Any> FlagValue<*>.extractValue(): T = this.value as T
  * Converts a SerializableRule to a ConditionalValue.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : FeatureModule> SerializableRule.toValue(): ConditionalValue<S, T, C, M> {
+private fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : Taxonomy> SerializableRule.toValue(): ConditionalValue<S, T, C, M> {
     val typedValue = value.extractValue<T>()
     val rule = toRule<C>()
     return rule.targetedBy(typedValue)

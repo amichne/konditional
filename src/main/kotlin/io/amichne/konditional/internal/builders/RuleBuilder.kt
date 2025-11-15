@@ -4,35 +4,35 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
-import io.amichne.konditional.core.FeatureFlagDsl
-import io.amichne.konditional.core.RuleScope
-import io.amichne.konditional.core.VersionRangeScope
+import io.amichne.konditional.core.dsl.FeatureFlagDsl
+import io.amichne.konditional.core.dsl.RuleScope
+import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.Rule
+import io.amichne.konditional.rules.evaluable.Placeholder
 import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
 /**
- * Internal implementation of [io.amichne.konditional.core.RuleScope].
+ * Internal implementation of [RuleScope].
  *
  * This class is the internal implementation of the rule configuration DSL scope.
- * Users interact with the public [io.amichne.konditional.core.RuleScope] interface,
+ * Users interact with the public [RuleScope] interface,
  * not this implementation directly.
  *
  * @param C The type of the context that the rules will evaluate against.
  * @constructor Internal constructor - users cannot instantiate this class directly.
  */
-@ConsistentCopyVisibility
 @FeatureFlagDsl
 @PublishedApi
 internal data class RuleBuilder<C : Context>(
-    private var extension: Evaluable<C> = object : Evaluable<C>() {},
+    private var extension: Evaluable<C> = Placeholder,
     private var note: String? = null,
     private var range: VersionRange = Unbounded(),
     private val platforms: LinkedHashSet<Platform> = linkedSetOf(),
-    override var rollout: Rollout? = null,
-    private val locales: LinkedHashSet<AppLocale> = linkedSetOf()
+    private val locales: LinkedHashSet<AppLocale> = linkedSetOf(),
+    private var rollout: Rollout? = null,
 ) : RuleScope<C> {
 
     /**
@@ -69,6 +69,10 @@ internal data class RuleBuilder<C : Context>(
      */
     override fun note(text: String) {
         note = text
+    }
+
+    override fun rollout(function: () -> Number) {
+        this.rollout = Rollout.of(function().toDouble())
     }
 
     /**

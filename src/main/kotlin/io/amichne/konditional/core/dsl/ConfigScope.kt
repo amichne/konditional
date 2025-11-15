@@ -1,6 +1,8 @@
-package io.amichne.konditional.core
+package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.types.EncodableValue
 
 /**
@@ -41,5 +43,5 @@ interface ConfigScope {
      * @param C The context type the flag evaluates against
      * @param build DSL block for configuring the flag
      */
-    infix fun <S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule> Feature<S, T, C, M>.with(build: FlagScope<S, T, C, M>.() -> Unit)
+    infix fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> Feature<S, T, C, M>.with(build: FlagScope<S, T, C, M>.() -> Unit)
 }

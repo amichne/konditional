@@ -5,6 +5,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
@@ -19,12 +20,10 @@ import kotlin.test.assertTrue
  */
 class ConditionEvaluationTest {
 
-    enum class TestFlags(override val key: String) :
-        StringFeature<Context, FeatureModule.Core> {
-        TEST_FLAG("test_flag");
-
-        override val module: FeatureModule.Core
-            get() = FeatureModule.Core
+    object TestFlags : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+        val TEST_FLAG by string<Context> {
+            default("default")
+        }
     }
 
     private fun ctx(

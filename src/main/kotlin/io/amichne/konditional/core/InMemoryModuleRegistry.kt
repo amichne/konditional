@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicReference
 /**
  * In-memory implementation of [ModuleRegistry] that can be instantiated for testing.
  *
- * Unlike the singleton [io.amichne.konditional.core.internal.SingletonModuleRegistry],
  * this class can be instantiated multiple times, making it ideal for:
  * - Unit tests that need isolated flag configurations
  * - Integration tests that run in parallel

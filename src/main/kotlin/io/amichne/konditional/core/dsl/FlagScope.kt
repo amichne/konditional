@@ -1,6 +1,7 @@
-package io.amichne.konditional.core
+package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.Rule
 
@@ -18,7 +19,7 @@ import io.amichne.konditional.rules.Rule
  *     salt("v2")
  *     rule {
  *         platforms(Platform.IOS)
- *         rollout = Rollout.of(50.0)
+ *         rollout {  Rollout.of(50.0) }
  *     }.implies(false)
  * }
  * ```
@@ -29,7 +30,7 @@ import io.amichne.konditional.rules.Rule
  * @since 0.0.2
  */
 @FeatureFlagDsl
-interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule> {
+interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> {
     /**
      * Sets the default value for the flag.
      *
@@ -38,7 +39,7 @@ interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : FeatureModu
      * @param value The default value to assign to the flag
      * @param coverage The coverage percentage for the default value (optional)
      */
-    fun default(value: T, coverage: Double? = null)
+    fun default(value: T)
 
     /**
      * Sets the salt value for the flag.
@@ -60,7 +61,7 @@ interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : FeatureModu
      * rule {
      *     platforms(Platform.IOS)
      *     locales(AppLocale.EN_US)
-     *     rollout = Rollout.of(50.0)
+     *     rollout {  Rollout.of(50.0) }
      * }.implies(true)
      * ```
      *

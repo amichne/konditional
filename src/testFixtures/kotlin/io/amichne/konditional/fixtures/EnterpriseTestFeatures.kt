@@ -4,9 +4,8 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.BooleanFeature
-import io.amichne.konditional.core.FeatureModule
-import io.amichne.konditional.core.StringFeature
+import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.rules.evaluable.Evaluable
 
@@ -58,34 +57,26 @@ data class ExperimentContext(
 /**
  * Feature flags for enterprise contexts.
  */
-enum class EnterpriseFeatures(
-    override val key: String,
-) : BooleanFeature<EnterpriseContext, FeatureModule.Core> {
+object EnterpriseFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
     /** Advanced analytics feature */
-    ADVANCED_ANALYTICS("advanced_analytics"),
+    val advanced_analytics by boolean<EnterpriseContext> { }
 
     /** Custom branding feature */
-    CUSTOM_BRANDING("custom_branding"),
+    val custom_branding by boolean<EnterpriseContext> { }
 
     /** API access feature */
-    API_ACCESS("api_access");
-
-    override val module: FeatureModule.Core = FeatureModule.Core
+    val api_access by boolean<EnterpriseContext> { }
 }
 
 /**
  * Feature flags for experiment contexts.
  */
-enum class ExperimentFeatures(
-    override val key: String,
-) : StringFeature<ExperimentContext, FeatureModule.Core> {
+object ExperimentFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
     /** Homepage variant */
-    HOMEPAGE_VARIANT("homepage_variant"),
+    val homepage_variant by string<ExperimentContext> { }
 
     /** Onboarding style */
-    ONBOARDING_STYLE("onboarding_style");
-
-    override val module: FeatureModule.Core = FeatureModule.Core
+    val onboarding_style by string<ExperimentContext> { }
 }
 
 // ========== Custom Rules ==========
@@ -98,7 +89,7 @@ enum class ExperimentFeatures(
 data class EnterpriseRule(
     val requiredTier: SubscriptionTier? = null,
     val requiredRole: UserRole? = null,
-) : Evaluable<EnterpriseContext>() {
+) : Evaluable<EnterpriseContext> {
     override fun matches(context: EnterpriseContext): Boolean =
         (requiredTier == null || context.subscriptionTier >= requiredTier) &&
             (requiredRole == null || context.userRole >= requiredRole)

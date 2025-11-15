@@ -7,77 +7,52 @@ bucketing.
 
 ## The Evaluation Flow
 
-### High-Level Overview
+```mermaid
+flowchart TD
+    Start([context.evaluate<br/>Features.DARK_MODE]) --> Lookup[Registry Lookup:<br/>Get FlagDefinition]
+    Lookup --> CheckNull{Definition<br/>exists?}
+    CheckNull -->|No| NotFound[Return NotFound]
+    CheckNull -->|Yes| CheckActive{isActive?}
+    CheckActive -->|No| ReturnDefault1[Return defaultValue]
+    CheckActive -->|Yes| IterateRules[Iterate rules<br/>sorted by specificity DESC]
 
-```kotlin
-context.evaluate(Features.DARK_MODE)
-    ↓
-Registry lookup: Get FlagDefinition for DARK_MODE
-    ↓
-Iterate through rules (sorted by specificity DESC)
-    ↓
-For each rule:
-    - Does rule match context? (platform, locale, version, custom logic)
-    - Is context in rollout bucket? (SHA-256 bucketing)
-    ↓
-Return first matching value, or default if no match
-```
+    IterateRules --> RuleCheck{Next rule?}
+    RuleCheck -->|No more rules| ReturnDefault2[Return defaultValue]
+    RuleCheck -->|Yes| PlatformCheck{Platform<br/>match?}
 
-### Complete Flow Diagram
+    PlatformCheck -->|No| RuleCheck
+    PlatformCheck -->|Yes| LocaleCheck{Locale<br/>match?}
+    LocaleCheck -->|No| RuleCheck
+    LocaleCheck -->|Yes| VersionCheck{Version<br/>match?}
+    VersionCheck -->|No| RuleCheck
+    VersionCheck -->|Yes| ExtensionCheck{Extension<br/>match?}
+    ExtensionCheck -->|No| RuleCheck
+    ExtensionCheck -->|Yes| RolloutCheck{In rollout<br/>bucket?}
 
-```
-Context.evaluate(feature)
-  |
-  +-> FlagRegistry.featureFlag(feature)
-  |     |
-  |     +-> Returns FlagDefinition<S, T, C, M>?
-  |
-  +-> If null: Return EvaluationResult.NotFound
-  |
-  +-> FlagDefinition.evaluate(context)
-        |
-        +-> Check isActive
-        |     |
-        |     +-> If false: Return defaultValue
-        |
-        +-> Iterate rules (sorted by specificity DESC)
-        |     |
-        |     +-> For each ConditionalValue:
-        |           |
-        |           +-> Rule.matches(context)?
-        |           |     |
-        |           |     +-> BaseEvaluable.matches(context)?
-        |           |     |     |
-        |           |     |     +-> Platform match?
-        |           |     |     +-> Locale match?
-        |           |     |     +-> Version match?
-        |           |     |
-        |           |     +-> Extension.matches(context)?
-        |           |           |
-        |           |           +-> Custom business logic
-        |           |
-        |           +-> isInEligibleSegment(context, rollout)?
-        |           |     |
-        |           |     +-> SHA-256 bucketing
-        |           |
-        |           +-> If both true: RETURN value
-        |
-        +-> No match: Return defaultValue
+    RolloutCheck -->|No| RuleCheck
+    RolloutCheck -->|Yes| Hash[SHA-256 hash:<br/>salt:flagKey:stableId]
+    Hash --> Bucket[Bucket = hash % 10000]
+    Bucket --> Compare{Bucket <<br/>rollout%?}
+    Compare -->|No| RuleCheck
+    Compare -->|Yes| ReturnValue[Return rule value]
+
+    style Start fill:#e1f5ff
+    style ReturnValue fill:#c8e6c9
+    style ReturnDefault1 fill:#fff9c4
+    style ReturnDefault2 fill:#fff9c4
+    style NotFound fill:#ffcdd2
 ```
 
 ---
 
 ## Rule Matching
 
-### The AND Logic
-
-For a rule to match, **all criteria must be true**:
+For a rule to match, **all criteria must be true** (AND logic):
 
 ```kotlin
 config {
     Features.PREMIUM_EXPORT with {
         default(false)
-
         rule {
             platforms(Platform.IOS)           // Must be iOS
             versions { min(2, 0, 0) }         // AND version >= 2.0.0
@@ -86,104 +61,27 @@ config {
     }
 }
 
-// Match requires ALL three:
+// Match requires ALL conditions
 val context = AppContext(
-    platform = Platform.IOS,        // ✓ Match
-    appVersion = Version(2, 1, 0),  // ✓ Match (>= 2.0.0)
-    stableId = StableId.of("user-123")  // SHA-256 bucket check
+    platform = Platform.IOS,        // ✓
+    appVersion = Version(2, 1, 0),  // ✓
+    stableId = StableId.of("user-123")
 )
-
-// If stableId hashes into top 50% bucket:
-context.evaluate(Features.PREMIUM_EXPORT)  // Returns: true
-
-// If any condition fails:
-val androidContext = context.copy(platform = Platform.ANDROID)
-androidContext.evaluate(Features.PREMIUM_EXPORT)  // Returns: false (default)
+context.evaluate(Features.PREMIUM_EXPORT)  // true (if in bucket)
 ```
 
-### Platform Matching
+### Matching Rules
+
+**Platform:** `context.platform in platforms` (empty = all match)
+**Locale:** `context.locale in locales` (empty = all match)
+**Version:** `context.appVersion in [min, max)` (empty = all match)
+**Extension:** Custom `Evaluable` with business logic
 
 ```kotlin
+// Combined matching
 rule {
-    platforms(Platform.IOS, Platform.ANDROID)
-}.implies(value)
-
-// Match if:
-context.platform in setOf(Platform.IOS, Platform.ANDROID)
-
-// If platforms() not called:
-// Matches ALL platforms (no constraint)
-```
-
-### Locale Matching
-
-```kotlin
-rule {
-    locales(AppLocale.EN_US, AppLocale.EN_GB)
-}.implies(value)
-
-// Match if:
-context.locale in setOf(AppLocale.EN_US, AppLocale.EN_GB)
-
-// If locales() not called:
-// Matches ALL locales (no constraint)
-```
-
-### Version Matching
-
-```kotlin
-rule {
-    versions { min(2, 0, 0) }           // >= 2.0.0
-}.implies(value)
-
-rule {
-    versions { max(3, 0, 0) }           // < 3.0.0
-}.implies(value)
-
-rule {
-    versions {
-        min(2, 0, 0)
-        max(3, 0, 0)
-    }                                    // >= 2.0.0 AND < 3.0.0
-}.implies(value)
-
-// Match if:
-context.appVersion in versionRange
-
-// If versions() not called:
-// Matches ALL versions (no constraint)
-```
-
-### Custom Extension Matching
-
-```kotlin
-rule {
-    extension {
-        object : Evaluable<AppContext>() {
-            override fun matches(context: AppContext): Boolean {
-                // Custom business logic
-                return context.subscriptionTier == SubscriptionTier.ENTERPRISE &&
-                       context.experimentGroups.contains("new-ui")
-            }
-
-            override fun specificity(): Int = 1
-        }
-    }
-}.implies(value)
-
-// Match if:
-extension.matches(context) == true
-```
-
-### Combining Base and Extension
-
-```kotlin
-rule {
-    // Base targeting
     platforms(Platform.IOS)
-    versions { min(2, 0, 0) }
-
-    // Custom extension
+    versions { min(2, 0, 0); max(3, 0, 0) }  // [2.0.0, 3.0.0)
     extension {
         object : Evaluable<AppContext>() {
             override fun matches(context: AppContext): Boolean =
@@ -192,439 +90,230 @@ rule {
         }
     }
 }.implies(value)
-
-// Match requires:
-// context.platform == Platform.IOS
-// AND context.appVersion >= Version(2, 0, 0)
-// AND context.subscriptionTier == SubscriptionTier.ENTERPRISE
+// Matches if: iOS AND version in range AND enterprise tier
 ```
 
 ---
 
 ## Specificity Ordering
 
-### Why Specificity Matters
-
-When multiple rules match, **the most specific rule wins**:
-
-```kotlin
-config {
-    Features.THEME with {
-        default("light")
-
-        // Specificity = 1 (platform only)
-        rule {
-            platforms(Platform.IOS)
-        }.implies("dark-ios")
-
-        // Specificity = 2 (platform + locale)
-        rule {
-            platforms(Platform.IOS)
-            locales(AppLocale.EN_US)
-        }.implies("dark-us-ios")
-    }
-}
-
-// Context: iOS + EN_US
-val context = basicContext(
-    platform = Platform.IOS,
-    locale = AppLocale.EN_US
-)
-
-// Both rules match, but specificity = 2 wins
-context.evaluate(Features.THEME)  // Returns: "dark-us-ios"
-```
+When multiple rules match, **the most specific rule wins**. Rules are sorted by specificity (DESC), then by note text for tie-breaking.
 
 ### Specificity Calculation
 
-```kotlin
-Rule specificity = baseEvaluable.specificity() + extension.specificity()
+```mermaid
+graph LR
+    A[Rule Specificity] --> B[Base Specificity]
+    A --> C[Extension Specificity]
 
-BaseEvaluable specificity:
-  (platforms not empty ? 1 : 0) +
-  (locales not empty ? 1 : 0) +
-  (version has bounds ? 1 : 0)
+    B --> B1["+1 if platforms set"]
+    B --> B2["+1 if locales set"]
+    B --> B3["+1 if version bounds set"]
 
-Extension specificity:
-  Custom evaluable's specificity() method (default: 0)
+    C --> C1["Custom specificity() method"]
 
-Total range: 0 to 4+ (base 0-3, extension 0+)
+    B1 --> Total[Total: 0 to 4+]
+    B2 --> Total
+    B3 --> Total
+    C1 --> Total
+
+    style A fill:#e1f5ff
+    style Total fill:#c8e6c9
 ```
 
-### Examples
+**Formula:** `specificity = (platforms ? 1 : 0) + (locales ? 1 : 0) + (versions ? 1 : 0) + extension.specificity()`
 
-```kotlin
-// Specificity = 0 (no constraints)
-rule {
-    // No criteria
-}.implies("default")
+### Ordering Examples
 
-// Specificity = 1 (platform)
-rule {
-    platforms(Platform.IOS)
-}.implies("ios")
+```mermaid
+graph TD
+    subgraph "Specificity Rankings"
+        S0["Specificity 0<br/>rule { }.implies(value)"]
+        S1["Specificity 1<br/>platforms(IOS)"]
+        S2["Specificity 2<br/>platforms(IOS) + locales(EN_US)"]
+        S3["Specificity 3<br/>platforms(IOS) + locales(EN_US) + versions"]
+        S4["Specificity 4<br/>All base + extension(specificity=1)"]
+    end
 
-// Specificity = 2 (platform + locale)
-rule {
-    platforms(Platform.IOS)
-    locales(AppLocale.EN_US)
-}.implies("ios-us")
+    S4 -->|Evaluated first| S3
+    S3 --> S2
+    S2 --> S1
+    S1 -->|Evaluated last| S0
 
-// Specificity = 3 (platform + locale + version)
-rule {
-    platforms(Platform.IOS)
-    locales(AppLocale.EN_US)
-    versions { min(2, 0, 0) }
-}.implies("ios-us-v2")
-
-// Specificity = 4 (base 3 + extension 1)
-rule {
-    platforms(Platform.IOS)
-    locales(AppLocale.EN_US)
-    versions { min(2, 0, 0) }
-    extension {
-        object : Evaluable<AppContext>() {
-            override fun matches(context: AppContext): Boolean =
-                context.subscriptionTier == SubscriptionTier.ENTERPRISE
-            override fun specificity(): Int = 1
-        }
-    }
-}.implies("ios-us-v2-enterprise")
+    style S4 fill:#4caf50
+    style S3 fill:#8bc34a
+    style S2 fill:#cddc39
+    style S1 fill:#ffeb3b
+    style S0 fill:#ffc107
 ```
 
-### Tie-Breaking
-
-If two rules have the same specificity, **note text is used for deterministic ordering**:
+### Example with Sorting
 
 ```kotlin
 config {
     Features.THEME with {
         default("light")
 
-        // Both have specificity = 1
+        rule { platforms(Platform.IOS) }.implies("dark-ios")              // Specificity: 1
         rule {
             platforms(Platform.IOS)
-            note("iOS dark theme")  // ← Comes first alphabetically
-        }.implies("dark-ios")
-
-        rule {
             locales(AppLocale.EN_US)
-            note("US light theme")  // ← Comes second alphabetically
-        }.implies("light-us")
+        }.implies("dark-us-ios")                                           // Specificity: 2
     }
 }
 
-// If both match, "iOS dark theme" wins (alphabetically first)
+val context = basicContext(platform = Platform.IOS, locale = AppLocale.EN_US)
+context.evaluate(Features.THEME)  // "dark-us-ios" (more specific wins)
 ```
 
-**Best practice:** Use unique, descriptive notes to ensure deterministic ordering.
+**Tie-breaking:** If specificities match, rules are sorted by `note` text alphabetically.
 
-### Evaluation Order
-
-Rules are **sorted once at configuration time**:
-
-```kotlin
-// Configuration time:
-values.sortedWith(
-    compareByDescending<ConditionalValue<S, T, C, M>> { it.rule.specificity() }
-        .thenBy { it.rule.note ?: "" }
-)
-
-// Evaluation time:
-// Iterate through pre-sorted list
-// Return first match
-```
-
-**Performance:** O(n) where n = number of rules (typically < 10)
+**Performance:** Rules sorted once at configuration time; evaluation is O(n) where n < 10 typically.
 
 ---
 
 ## Rollout Bucketing
 
-### The Bucketing Algorithm
+Konditional uses **SHA-256 hashing** for deterministic, independent bucketing per flag.
 
-Konditional uses **SHA-256 hashing** for deterministic bucketing:
+### Bucketing Algorithm
+
+```mermaid
+flowchart LR
+    A[StableId:<br/>'user-123'] --> Concat
+    B[FlagKey:<br/>'new_checkout'] --> Concat
+    C[Salt:<br/>'v1'] --> Concat
+
+    Concat[Concatenate:<br/>'v1:new_checkout:user-123'] --> Hash[SHA-256 Hash]
+    Hash --> Bytes[First 4 bytes → int]
+    Bytes --> Mod[Modulo 10,000]
+    Mod --> Bucket[Bucket: 0-9999]
+    Bucket --> Compare{Bucket <<br/>rollout × 100?}
+
+    Compare -->|Yes| Enabled[User ENABLED]
+    Compare -->|No| Disabled[User DISABLED]
+
+    style A fill:#e1f5ff
+    style B fill:#e1f5ff
+    style C fill:#e1f5ff
+    style Enabled fill:#c8e6c9
+    style Disabled fill:#ffcdd2
+```
 
 ```kotlin
-fun isInEligibleSegment(
-    flagKey: String,
-    stableId: StableId,
-    salt: String,
-    rollout: Rollout
-): Boolean {
+fun stableBucket(flagKey: String, stableId: StableId, salt: String): Int {
+    val hash = SHA256("$salt:$flagKey:${stableId.id}")
+    return hash.take(4).toInt() % 10_000  // 0-9999 (0.01% granularity)
+}
+
+fun isInEligibleSegment(bucket: Int, rollout: Rollout): Boolean {
     if (rollout <= 0.0) return false
     if (rollout >= 100.0) return true
-
-    val bucket = stableBucket(flagKey, stableId, salt)
     return bucket < (rollout.value * 100).toInt()
 }
-
-fun stableBucket(
-    flagKey: String,
-    stableId: StableId,
-    salt: String
-): Int {
-    val hash = SHA256("$salt:$flagKey:${stableId.id}")
-    val first4Bytes = hash.take(4).toInt()
-    return first4Bytes % 10_000  // Range: 0-9999 (0.01% granularity)
-}
 ```
 
-### Bucketing Properties
+### Key Properties
 
-**1. Deterministic**
+| Property            | Benefit                                                  |
+|---------------------|----------------------------------------------------------|
+| **Deterministic**   | Same inputs → same bucket (always)                       |
+| **Independent**     | Each flag has separate bucketing space                   |
+| **Platform-Stable** | Same bucket across JVM, Android, iOS, web                |
+| **Fine-Grained**    | 0.01% granularity (0-9999 bucket range)                  |
+| **Redistributable** | Change salt to reassign buckets without code deployment  |
 
 ```kotlin
-// Same inputs always produce same bucket
+// Deterministic: Always same result
 val context = basicContext(stableId = StableId.of("user-123"))
+context.evaluate(Features.NEW_CHECKOUT)  // true
+context.evaluate(Features.NEW_CHECKOUT)  // true (always)
 
-context.evaluate(Features.NEW_CHECKOUT)  // Result: true
-context.evaluate(Features.NEW_CHECKOUT)  // Result: true (always)
+// Independent: Different flags have different buckets
+SHA256("v1:feature_a:user-123")  // Bucket for feature A
+SHA256("v1:feature_b:user-123")  // Bucket for feature B (independent)
+
+// Redistributable: Change salt to reassign
+config { Features.X with { salt("v1") }}  // Original bucketing
+config { Features.X with { salt("v2") }}  // New bucket assignments
 ```
-
-**2. Independent Per Flag**
-
-```kotlin
-// Flag key is part of hash input
-// Each flag has its own bucketing space
-SHA256("salt:feature_a:user-123")  // Bucket for feature A
-SHA256("salt:feature_b:user-123")  // Bucket for feature B (independent!)
-
-// User in 50% rollout for feature A != user in 50% rollout for feature B
-```
-
-**3. Platform-Stable**
-
-```kotlin
-// SHA-256 is platform-independent
-// Same user gets same bucket on JVM, Android, iOS, web
-val jvmBucket = stableBucket("flag", StableId.of("user-123"), "salt")
-val androidBucket = stableBucket("flag", StableId.of("user-123"), "salt")
-// jvmBucket == androidBucket (guaranteed)
-```
-
-**4. Fine-Grained**
-
-```kotlin
-// 0-9999 range = 0.01% granularity
-rollout = Rollout.of(0.5)   // 0.5% rollout (50 out of 10,000)
-rollout = Rollout.of(25.0)  // 25% rollout (2,500 out of 10,000)
-rollout = Rollout.of(99.99) // 99.99% rollout (9,999 out of 10,000)
-```
-
-**5. Salt-Based Redistribution**
-
-```kotlin
-// Changing salt redistributes buckets
-config {
-    Features.NEW_CHECKOUT with {
-        default(false)
-        salt("v1")  // Salt version
-        rule {
-            rollout = Rollout.of(50.0)
-        }.implies(true)
-    }
-}
-
-// If rollout goes wrong, change salt to redistribute
-config {
-    Features.NEW_CHECKOUT with {
-        default(false)
-        salt("v2")  // ← New salt = new bucket assignments
-        rule {
-            rollout = Rollout.of(50.0)
-        }.implies(true)
-    }
-}
-```
-
-### Rollout Guarantees
-
-| Property            | String-Based Approach                 | Konditional            |
-|---------------------|---------------------------------------|------------------------|
-| **Deterministic**   | hashCode() varies by platform/restart | SHA-256 always same    |
-| **Independent**     | Same hash for all flags = correlation | Separate hash per flag |
-| **Stable**          | Changes across sessions               | Same via stableId      |
-| **Fine-grained**    | Usually % only                        | 0.01% granularity      |
-| **Redistributable** | Hard to change                        | Change salt            |
 
 ---
 
-## Why This Prevents Errors
+## Type Safety Guarantees
 
-### String-Based Evaluation
-
-```kotlin
-// Runtime errors possible at every step
-val definition = config.getFlag("dark_mode")  // Could be null
-val value = definition?.evaluate(context)     // Could be null
-val enabled: Boolean = value as Boolean       // Could throw ClassCastException
-
-// Wrong context type: Runtime error
-val wrongContext = BasicContext(...)
-wrongContext.evaluate("enterprise_feature")  // 💣 Missing required fields
-```
-
-### Type-Safe Evaluation
+| Guarantee           | String-Based (Runtime Error)              | Konditional (Compile-Time Safe)           |
+|---------------------|-------------------------------------------|-------------------------------------------|
+| **Non-null result** | `value as Boolean` may throw              | Default value required                    |
+| **Correct type**    | ClassCastException possible               | Generic type enforced                     |
+| **Correct context** | Missing fields fail at runtime            | Context type parameter enforced           |
+| **Deterministic**   | hashCode() varies by platform             | SHA-256 bucketing, sorted rules           |
+| **Thread-safe**     | Requires locks                            | Lock-free reads, immutable data           |
 
 ```kotlin
-// Type safety at every step
+// Type-safe evaluation
 val enabled: Boolean = context.evaluate(Features.DARK_MODE)
-//          ↑ Non-null                  ↑ Enum member     ↑ Context type enforced
-
-// Wrong context type: Compile error
-val basicContext: Context = basicContext(...)
-basicContext.evaluate(EnterpriseFeatures.ANALYTICS)  // ✗ Type mismatch
+//          ↑ Non-null    ↑ Type-checked   ↑ Enum member   ↑ Context enforced
 ```
-
-### Evaluation Guarantees
-
-| Guarantee           | How Achieved                           |
-|---------------------|----------------------------------------|
-| **Non-null result** | Default value required at compile time |
-| **Correct type**    | Generic type parameter enforced        |
-| **Correct context** | Context type parameter enforced        |
-| **Deterministic**   | SHA-256 bucketing, sorted rules        |
-| **Thread-safe**     | Immutable data structures              |
 
 ---
 
 ## Evaluation Performance
 
-### Lookup: O(1)
+**Complexity:** O(1) lookup + O(n) matching + O(1) bucketing = **O(n)** where n = rules per flag (typically < 10)
 
-```kotlin
-// HashMap lookup by feature key
-val definition = registry.featureFlag(Features.DARK_MODE)
-// Time: O(1) average case
-```
+| Operation       | Time       | Details                                      |
+|-----------------|------------|----------------------------------------------|
+| **Lookup**      | O(1)       | HashMap lookup by feature key                |
+| **Matching**    | O(n)       | Iterate pre-sorted rules until first match   |
+| **Bucketing**   | O(1)       | SHA-256 hash computation (fixed-length)      |
+| **Memory**      | Zero alloc | Immutable, pre-allocated data structures     |
 
-### Matching: O(n)
-
-```kotlin
-// Iterate through rules (sorted by specificity)
-for (conditionalValue in sortedValues) {
-    if (conditionalValue.rule.matches(context)) {
-        return conditionalValue.value
-    }
-}
-// Time: O(n) where n = number of rules
-// Typical: n < 10, so effectively constant
-```
-
-### Bucketing: O(1)
-
-```kotlin
-// SHA-256 hash computation
-val bucket = stableBucket(flagKey, stableId, salt)
-// Time: O(1) for fixed-length input
-```
-
-### Total: O(1) + O(n) + O(1) = O(n)
-
-**In practice:** Near-constant time for typical flag configurations (< 10 rules).
-
-### Memory: Zero Per-Request Allocation
-
-```kotlin
-// All data structures immutable and pre-allocated
-val definition = registry.featureFlag(feature)  // No allocation
-val result = definition.evaluate(context)       // No allocation
-```
-
-**Performance characteristics:**
-
-- No locks (lock-free reads)
-- No allocations (immutable snapshots)
-- Predictable latency (deterministic algorithm)
-- Cache-friendly (sorted data, sequential access)
+**Characteristics:** Lock-free reads, predictable latency, cache-friendly sequential access
 
 ---
 
 ## Testing Evaluation
 
-### Testing Specificity
-
 ```kotlin
+// Test specificity ordering
 @Test
 fun `most specific rule wins`() {
-    val registry = FlagRegistry.create()
-
     config(registry) {
         Features.THEME with {
             default("light")
-
-            rule {
-                platforms(Platform.IOS)
-            }.implies("dark-ios")
-
-            rule {
-                platforms(Platform.IOS)
-                locales(AppLocale.EN_US)
-            }.implies("dark-us-ios")
+            rule { platforms(Platform.IOS) }.implies("dark-ios")              // Specificity: 1
+            rule { platforms(Platform.IOS); locales(AppLocale.EN_US) }.implies("dark-us-ios")  // Specificity: 2
         }
     }
 
-    val context = basicContext(
-        platform = Platform.IOS,
-        locale = AppLocale.EN_US
-    )
-
-    val result = context.evaluate(Features.THEME, registry)
-
-    assertEquals("dark-us-ios", result)  // Most specific wins
+    val context = basicContext(platform = Platform.IOS, locale = AppLocale.EN_US)
+    assertEquals("dark-us-ios", context.evaluate(Features.THEME))  // Most specific wins
 }
-```
 
-### Testing Rollout Bucketing
-
-```kotlin
+// Test deterministic bucketing
 @Test
 fun `rollout bucketing is deterministic`() {
-    val registry = FlagRegistry.create()
-
     config(registry) {
         Features.NEW_CHECKOUT with {
             default(false)
-            rule {
-                rollout = Rollout.of(50.0)  // 50% rollout
-            }.implies(true)
+            rule { rollout = Rollout.of(50.0) }.implies(true)
         }
     }
 
     val context = basicContext(stableId = StableId.of("user-123"))
-
-    // Evaluate multiple times
-    val result1 = context.evaluate(Features.NEW_CHECKOUT, registry)
-    val result2 = context.evaluate(Features.NEW_CHECKOUT, registry)
-    val result3 = context.evaluate(Features.NEW_CHECKOUT, registry)
-
-    // Same result every time
-    assertEquals(result1, result2)
-    assertEquals(result2, result3)
+    val result1 = context.evaluate(Features.NEW_CHECKOUT)
+    val result2 = context.evaluate(Features.NEW_CHECKOUT)
+    assertEquals(result1, result2)  // Always same result
 }
 
+// Test rollout distribution
 @Test
 fun `rollout percentage approximate`() {
-    val registry = FlagRegistry.create()
-
-    config(registry) {
-        Features.NEW_CHECKOUT with {
-            default(false)
-            rule {
-                rollout = Rollout.of(50.0)
-            }.implies(true)
-        }
-    }
-
-    // Test with 1000 different users
     val enabled = (1..1000).count { i ->
-        val context = basicContext(stableId = StableId.of("user-$i"))
-        context.evaluate(Features.NEW_CHECKOUT, registry)
+        basicContext(stableId = StableId.of("user-$i")).evaluate(Features.NEW_CHECKOUT)
     }
-
-    // Should be approximately 500 (50%)
-    assertTrue(enabled in 450..550)  // Allow 10% variance
+    assertTrue(enabled in 450..550)  // ~50% with 10% variance
 }
 ```
 

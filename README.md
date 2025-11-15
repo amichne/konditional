@@ -79,101 +79,29 @@ val showNewCheckout = context.evaluate(Features.NEW_CHECKOUT) // Boolean
 
 ## Beyond Boolean Flags
 
-Use any type that makes sense for your domain:
-
-```kotlin
-// String configuration
-enum class ApiConfig(override val key: String) : Conditional<String, Context> {
-    ENDPOINT("api_endpoint"),
-}
-
-config {
-    ApiConfig.ENDPOINT with {
-        default("https://api.prod.example.com")
-        rule {
-            platforms(Platform.WEB)
-        } implies "https://api.staging.example.com"
-    }
-}
-
-// Data class configuration
-data class ThemeConfig(
-    val primaryColor: String,
-    val darkModeEnabled: Boolean,
-    val fontSize: Int
-)
-
-enum class AppTheme(override val key: String) : Conditional<ThemeConfig, Context> {
-    THEME("app_theme"),
-}
-
-config {
-    AppTheme.THEME with {
-        default(ThemeConfig("#FFFFFF", false, 14))
-        rule {
-            locales(AppLocale.EN_US)
-        } implies ThemeConfig("#1E1E1E", true, 16)
-    }
-}
-```
+Konditional supports any type—not just booleans:
+- **Strings**: API endpoints, feature variants, configuration values
+- **Numbers**: Thresholds, timeouts, limits
+- **Data classes**: Complex configuration (themes, rate limits, feature bundles)
+- **Custom types**: Enums, sealed classes, domain objects
 
 ## Custom Contexts for Your Domain
 
-Extend the base `Context` interface to add your own business logic:
-
-```kotlin
-data class EnterpriseContext(
-    override val locale: AppLocale,
-    override val platform: Platform,
-    override val appVersion: Version,
-    override val stableId: StableId,
-    // Your custom fields
-    val organizationId: String,
-    val subscriptionTier: SubscriptionTier,
-    val userRole: UserRole,
-) : Context
-
-// Use with enterprise-specific flags
-enum class EnterpriseFeatures(
-    override val key: String
-) : Conditional<Boolean, EnterpriseContext> {
-    ADVANCED_ANALYTICS("advanced_analytics"),
-    BULK_EXPORT("bulk_export"),
-}
-```
+Extend `Context` to add business-specific fields like organization IDs, user roles, subscription tiers, or experiment groups. Your custom context flows through the entire evaluation chain with full type safety.
 
 ## Use Cases
 
-Konditional is perfect for:
-
-- **Feature Rollouts**: Gradually roll out new features to a percentage of users
-- **A/B Testing**: Test different variants with deterministic user assignment
-- **Configuration Management**: Type-safe configuration that varies by environment, platform, or user
-- **Canary Deployments**: Test risky changes with a small subset of users first
-- **Kill Switches**: Quickly disable features in production without redeploying
-- **Multi-tenancy**: Different feature sets for different organizations or subscription tiers
-- **Regional Customization**: Different experiences for different locales or regions
-- **Platform-Specific Features**: Enable features only on specific platforms (iOS, Android, Web)
+- **Gradual Rollouts & A/B Testing**: Deterministic percentage-based rollouts with stable user bucketing
+- **Configuration Management**: Type-safe config that varies by platform, locale, version, or custom context
+- **Kill Switches & Canary Deployments**: Disable features instantly or test risky changes with small user segments
+- **Multi-tenancy**: Different feature sets per organization, subscription tier, or user role
 
 ## Key Benefits
 
-### For Developers
-- **Compile-time errors** instead of runtime surprises
-- **IDE auto-completion** for all flag names and configuration
-- **Refactoring support**: Rename flags safely with IDE refactoring tools
-- **Type-safe DSL**: Configuration errors caught at compile time
-
-### For Teams
-- **Decouple deployment from release**: Ship code dark, enable features later
-- **Reduce risk**: Roll out features gradually and monitor impact
-- **Fast rollback**: Disable problematic features instantly without redeploying
-- **Better testing**: Test multiple configurations without code changes
-
-### For Operations
-- **Deterministic behavior**: Same user always gets same experience
-- **Thread-safe**: No locks on read path, atomic updates
-- **Low overhead**: Pure computation, no network calls or database queries
-- **Observable**: Easily log which flags are evaluated and their values
+- **Compile-time safety**: Catch configuration errors before runtime with IDE support and type checking
+- **Deterministic behavior**: Same user always gets same experience via stable SHA-256 bucketing
+- **Decouple deploy from release**: Ship dark, enable gradually, rollback instantly
+- **Zero overhead**: Thread-safe with lock-free reads, no reflection or external dependencies
 
 ## Documentation
 
@@ -194,20 +122,8 @@ Konditional is perfect for:
 - **[Rules Guide](docs/Rules.md)**: Advanced targeting and rollout strategies
 - **[Serialization Guide](docs/Serialization.md)**: Remote configuration and JSON handling
 
-## Getting Started
+---
 
-1. **Add Konditional to your project** (coming soon: Maven Central)
-2. **Define your flags** using enums or data classes
-3. **Configure rules** with the type-safe DSL
-4. **Evaluate in context** wherever you need the values
+**Get started**: `1)` Add dependency → `2)` Define flags → `3)` Configure rules → `4)` Evaluate
 
-See [Examples](docs/examples.md) for complete working examples.
-
-## Design Principles
-
-- **Type safety first**: No stringly-typed APIs or runtime type errors
-- **Deterministic by default**: Same inputs always produce same outputs
-- **Context agnostic**: You define what information matters for your rules
-- **Minimal dependencies**: (nearly) Pure Kotlin, easy to integrate anywhere
-- **Thread-safe**: Safe to use from multiple threads concurrently
-- **Extensible**: Add your own context types, value types, and rule logic
+See the [Quick Start](docs/QuickStart.md) for a complete walkthrough.

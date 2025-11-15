@@ -4,6 +4,7 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
+import io.amichne.konditional.rules.evaluable.Placeholder
 import io.amichne.konditional.rules.evaluable.BaseEvaluable
 import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.versions.Unbounded
@@ -34,7 +35,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * Basic rule with standard targeting:
  * ```kotlin
  * Rule(
- *     rollout = Rollout.of(50.0),
+ *     rollout {  Rollout.of(50.0) }
  *     locales = setOf(AppLocale.EN_US),
  *     platforms = setOf(Platform.IOS),
  *     versionRange = LeftBound(Version(2, 0, 0))
@@ -44,7 +45,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * Rule with custom extension logic:
  * ```kotlin
  * Rule(
- *     rollout = Rollout.of(100.0),
+ *     rollout {  Rollout.of(100.0) }
  *     extension = object : Evaluable<MyContext>() {
  *         override fun matches(context: MyContext) = context.isPremiumUser
  *         override fun specificity() = 1
@@ -60,22 +61,22 @@ import io.amichne.konditional.rules.versions.VersionRange
  *
  * @see Evaluable
  * @see io.amichne.konditional.rules.evaluable.BaseEvaluable
- * @see io.amichne.konditional.core.internal.SingletonModuleRegistry
+ * @see io.amichne.konditional.core.RegistryScope
  */
 @ConsistentCopyVisibility
 data class Rule<C : Context> internal constructor(
-    val rollout: Rollout = Rollout.of(100.0),
+    val rollout: Rollout = Rollout.default,
     val note: String? = null,
     internal val baseEvaluable: BaseEvaluable<C> = BaseEvaluable(),
-    val extension: Evaluable<C> = object : Evaluable<C>() {},
-) : Evaluable<C>() {
+    val extension: Evaluable<C> = Placeholder,
+) : Evaluable<C> {
     internal constructor(
-        rollout: Rollout = Rollout.of(100.0),
+        rollout: Rollout =  Rollout.default,
         note: String? = null,
         locales: Set<AppLocale> = emptySet(),
         platforms: Set<Platform> = emptySet(),
         versionRange: VersionRange = Unbounded(),
-        extension: Evaluable<C> = object : Evaluable<C>() {},
+        extension: Evaluable<C> = Placeholder,
     ) : this(rollout, note, BaseEvaluable(locales, platforms, versionRange), extension)
 
     /**

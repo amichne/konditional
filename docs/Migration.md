@@ -134,173 +134,7 @@ class SettingsActivity(private val context: Context) {
 
 ---
 
-### Example 2: String Configuration
-
-**Before:**
-```kotlin
-class ApiClient {
-    private val config: ConfigService
-
-    fun getEndpoint(): String {
-        val env = System.getenv("ENV") ?: "prod"
-        return when (env) {
-            "dev" -> config.getString("api_endpoint_dev") ?: "https://dev.api"
-            "staging" -> config.getString("api_endpoint_staging") ?: "https://staging.api"
-            else -> config.getString("api_endpoint_prod") ?: "https://api.prod"
-        }
-    }
-}
-```
-
-**Issues:**
-- 3 separate flag names
-- Environment logic in application code
-- 3 null checks
-- Easy to typo flag names
-
-**After:**
-```kotlin
-// 1. Define the flag
-enum class ApiConfig(override val key: String) : Conditional<String, Context> {
-    ENDPOINT("api_endpoint")
-}
-
-// 2. Configure with environment-based rules
-config {
-    ApiConfig.ENDPOINT with {
-        default("https://api.prod.example.com")
-
-        rule {
-            extension {
-                object : Evaluable<Context>() {
-                    override fun matches(context: Context): Boolean =
-                        System.getenv("ENV") == "dev"
-                    override fun specificity(): Int = 1
-                }
-            }
-        }.implies("https://dev.api.example.com")
-
-        rule {
-            extension {
-                object : Evaluable<Context>() {
-                    override fun matches(context: Context): Boolean =
-                        System.getenv("ENV") == "staging"
-                    override fun specificity(): Int = 1
-                }
-            }
-        }.implies("https://staging.api.example.com")
-    }
-}
-
-// 3. Use it
-class ApiClient(private val context: Context) {
-    fun getEndpoint(): String =
-        context.evaluate(ApiConfig.ENDPOINT)  // Environment handled automatically
-}
-```
-
-**Benefits:**
--  Single flag name
--  Environment logic centralized
--  Zero null checks
--  Testable by mocking context, not environment variables
-
----
-
-### Example 3: Complex Type (Data Class)
-
-**Before:**
-```kotlin
-class ThemeManager {
-    private val config: ConfigService
-
-    fun getTheme(): ThemeConfig {
-        val primaryColor = config.getString("theme_primary_color") ?: "#FFFFFF"
-        val secondaryColor = config.getString("theme_secondary_color") ?: "#000000"
-        val fontSize = config.getInt("theme_font_size") ?: 14
-        val darkMode = config.getBoolean("theme_dark_mode") ?: false
-
-        return ThemeConfig(primaryColor, secondaryColor, fontSize, darkMode)
-    }
-}
-```
-
-**Issues:**
-- 4 separate flags for one logical concept
-- 4 null checks
-- No guarantee all theme parts are consistent
-- Hard to A/B test complete themes
-
-**After:**
-```kotlin
-// 1. Define the type
-data class ThemeConfig(
-    val primaryColor: String,
-    val secondaryColor: String,
-    val fontSize: Int,
-    val darkMode: Boolean
-)
-
-// 2. Define single flag for entire theme
-enum class Theme(override val key: String) : Conditional<ThemeConfig, Context> {
-    APP_THEME("app_theme")
-}
-
-// 3. Configure complete themes atomically
-config {
-    Theme.APP_THEME with {
-        default(
-            ThemeConfig(
-                primaryColor = "#FFFFFF",
-                secondaryColor = "#000000",
-                fontSize = 14,
-                darkMode = false
-            )
-        )
-
-        // Entire theme for iOS
-        rule {
-            platforms(Platform.IOS)
-        }.implies(
-            ThemeConfig(
-                primaryColor = "#F5F5F5",
-                secondaryColor = "#1E1E1E",
-                fontSize = 16,
-                darkMode = true
-            )
-        )
-
-        // Gradual rollout of new theme
-        rule {
-            platforms(Platform.ANDROID)
-            rollout = Rollout.of(25.0)  // 25% of Android users
-        }.implies(
-            ThemeConfig(
-                primaryColor = "#E0E0E0",
-                secondaryColor = "#2C2C2C",
-                fontSize = 15,
-                darkMode = true
-            )
-        )
-    }
-}
-
-// 4. Use it
-class ThemeManager(private val context: Context) {
-    fun getTheme(): ThemeConfig =
-        context.evaluate(Theme.APP_THEME)  // Atomic, type-safe, non-null
-}
-```
-
-**Benefits:**
--  Atomic theme updates
--  Single flag for related config
--  A/B testing entire themes
--  Guaranteed consistency
-
----
-
-### Example 4: Context-Dependent Flag
+### Example 2: Context-Dependent Flag with Custom Context
 
 **Before:**
 ```kotlin
@@ -480,34 +314,19 @@ context.evaluate(ApiConfig.ENDPOINT)
 
 ## Step 6: Testing Strategy
 
-### Before: Mocking Config Service
-
-```kotlin
-@Test
-fun `test dark mode enabled`() {
-    val mockConfig = mock<ConfigService>()
-    whenever(mockConfig.getBoolean("dark_mode")).thenReturn(true)
-
-    val activity = SettingsActivity(mockConfig)
-    assertTrue(activity.isDarkModeEnabled())
-}
-```
-
-**Issues:**
-- Mock setup boilerplate
-- String literal duplication
-- Mocking framework dependency
-
-### After: Simple Context Objects
+Testing becomes significantly simpler - no mocking frameworks needed, just plain data class construction:
 
 ```kotlin
 @Test
 fun `test dark mode enabled on iOS`() {
     val context = TestContext(platform = Platform.IOS)
+    assertTrue(context.evaluate(Features.DARK_MODE))
+}
 
-    val enabled = context.evaluate(Features.DARK_MODE)
-
-    assertTrue(enabled)
+@Test
+fun `test premium export for enterprise users`() {
+    val context = TestContext(subscriptionTier = SubscriptionTier.ENTERPRISE)
+    assertTrue(context.evaluate(Features.DATA_EXPORT))
 }
 
 // Reusable test context factory
@@ -520,11 +339,7 @@ fun TestContext(
 ) = AppContext(locale, platform, appVersion, stableId, subscriptionTier)
 ```
 
-**Benefits:**
--  No mocking needed
--  Simple data class construction
--  Type-safe test setup
--  Reusable factories
+**Key benefits**: No mocks, type-safe setup, reusable factories, simple data class construction
 
 ---
 
@@ -594,83 +409,53 @@ SnapshotSerializer.default.applyPatchJson(currentConfig, patchJson)
 
 ## Common Migration Patterns
 
-### Pattern 1: Feature Flag → Conditional Boolean
-
+### Feature Flags
 ```kotlin
-// Before
+// Before: Nullable boolean checks
 if (config.getBoolean("new_feature") == true) { }
 
-// After
+// After: Type-safe evaluation
 if (context.evaluate(Features.NEW_FEATURE)) { }
 ```
 
-### Pattern 2: Environment Config → Custom Evaluable
-
+### Environment-Based Configuration
 ```kotlin
-// Before
+// Before: Environment logic in code
 val endpoint = when (System.getenv("ENV")) {
-    "dev" -> config.getString("dev_endpoint")
-    else -> config.getString("prod_endpoint")
+    "dev" -> config.getString("dev_endpoint") ?: "https://dev.api"
+    else -> config.getString("prod_endpoint") ?: "https://api.prod"
 }
 
-// After
-enum class ApiConfig(override val key: String) : Conditional<String, Context> {
-    ENDPOINT("api_endpoint")
-}
-
+// After: Environment logic in configuration
 config {
     ApiConfig.ENDPOINT with {
         default("https://api.prod")
         rule {
-            extension {
-                object : Evaluable<Context>() {
-                    override fun matches(context: Context) =
-                        System.getenv("ENV") == "dev"
-                    override fun specificity() = 1
-                }
-            }
+            extension { /* environment check */ }
         }.implies("https://api.dev")
     }
 }
 ```
 
-### Pattern 3: User Segmentation → Context Extensions
-
+### User Segmentation
 ```kotlin
-// Before
-fun isPremiumFeatureEnabled(user: User): Boolean {
-    val enabled = config.getBoolean("premium_feature") ?: false
+// Before: Business logic mixed with config
+fun canExport(): Boolean {
+    val enabled = config.getBoolean("export") ?: false
     return enabled && user.tier == "premium"
 }
 
-// After
-data class AppContext(
-    // ... base fields
-    val subscriptionTier: SubscriptionTier
-) : Context
-
-enum class PremiumFeatures(override val key: String)
-    : Conditional<Boolean, AppContext> {
-    ADVANCED_ANALYTICS("premium_feature")
-}
+// After: Business logic in configuration
+data class AppContext(..., val subscriptionTier: SubscriptionTier) : Context
 
 config {
-    PremiumFeatures.ADVANCED_ANALYTICS with {
+    Features.DATA_EXPORT with {
         default(false)
         rule {
-            extension {
-                object : Evaluable<AppContext>() {
-                    override fun matches(context: AppContext) =
-                        context.subscriptionTier == SubscriptionTier.PREMIUM
-                    override fun specificity() = 1
-                }
-            }
+            extension { context.subscriptionTier == SubscriptionTier.PREMIUM }
         }.implies(true)
     }
 }
-
-// Usage
-val enabled = context.evaluate(PremiumFeatures.ADVANCED_ANALYTICS)
 ```
 
 ---
@@ -703,60 +488,13 @@ val enabled = context.evaluate(PremiumFeatures.ADVANCED_ANALYTICS)
 
 ---
 
-## Troubleshooting
+## Troubleshooting Common Scenarios
 
-### "I need different context for different flags"
+**Different context per flag**: Define multiple context types - basic features use `Context`, domain-specific features use custom contexts like `EnterpriseContext`.
 
-Use multiple context types:
+**Runtime-dependent flags**: Use custom `Evaluable` extensions that check runtime state (time of day, system resources, etc.).
 
-```kotlin
-// Basic features use base context
-enum class BasicFeatures(override val key: String)
-    : Conditional<Boolean, Context> {
-    DARK_MODE("dark_mode")
-}
-
-// Enterprise features require more context
-enum class EnterpriseFeatures(override val key: String)
-    : Conditional<Boolean, EnterpriseContext> {
-    BULK_EXPORT("bulk_export")
-}
-```
-
-### "My flag depends on runtime state"
-
-Use custom Evaluable extensions:
-
-```kotlin
-config {
-    Features.PEAK_HOURS_MODE with {
-        default(false)
-        rule {
-            extension {
-                object : Evaluable<Context>() {
-                    override fun matches(context: Context): Boolean {
-                        val hour = LocalTime.now().hour
-                        return hour in 9..17  // 9 AM - 5 PM
-                    }
-                    override fun specificity() = 1
-                }
-            }
-        }.implies(true)
-    }
-}
-```
-
-### "I need to update config at runtime"
-
-Use atomic registry updates:
-
-```kotlin
-// Update entire config
-FlagRegistry.load(newSnapshot)
-
-// Or apply incremental patch
-SnapshotSerializer.default.applyPatchJson(currentSnapshot, patchJson)
-```
+**Dynamic config updates**: Use `FlagRegistry.load(newSnapshot)` for full updates or `SnapshotSerializer.default.applyPatchJson()` for incremental patches.
 
 ---
 

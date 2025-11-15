@@ -2,6 +2,7 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Rollout
+import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.ConditionalValue
@@ -28,7 +29,8 @@ import kotlin.math.roundToInt
  *
  */
 
-class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule> internal constructor(
+@ConsistentCopyVisibility
+data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> internal constructor(
     /**
      * The default value returned when no targeting rules match or the flag is inactive.
      */
@@ -38,13 +40,31 @@ class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : FeatureMod
     val isActive: Boolean = true,
     val salt: String = "v1"
 ) {
-
-    val key: String
-        get() = feature.key
     private val conditionalValues: List<ConditionalValue<S, T, C, M>> =
         values.sortedWith(compareByDescending<ConditionalValue<S, T, C, M>> { it.rule.specificity() }.thenBy {
             it.rule.note ?: ""
         })
+
+    internal companion object {
+        val shaDigestSpi: MessageDigest = requireNotNull(MessageDigest.getInstance("SHA-256"))
+
+        /**
+         * Creates a FlagDefinition instance.
+         */
+        operator fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> invoke(
+            feature: Feature<S, T, C, M>,
+            bounds: List<ConditionalValue<S, T, C, M>>,
+            defaultValue: T,
+            salt: String = "v1",
+            isActive: Boolean = true,
+        ): FlagDefinition<S, T, C, M> = FlagDefinition(
+            defaultValue = defaultValue,
+            feature = feature,
+            values = bounds,
+            isActive = isActive,
+            salt = salt,
+        )
+    }
 
     /**
      * Evaluates the current flag based on the provided context and returns a result of type `T`.
@@ -64,27 +84,6 @@ class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : FeatureMod
                     rollout = it.rule.rollout
                 )
         }?.value ?: defaultValue
-    }
-
-    internal companion object {
-        val shaDigestSpi: MessageDigest = requireNotNull(MessageDigest.getInstance("SHA-256"))
-
-        /**
-         * Creates a FlagDefinition instance.
-         */
-        operator fun <S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule> invoke(
-            feature: Feature<S, T, C, M>,
-            bounds: List<ConditionalValue<S, T, C, M>>,
-            defaultValue: T,
-            salt: String = "v1",
-            isActive: Boolean = true,
-        ): FlagDefinition<S, T, C, M> = FlagDefinition(
-            defaultValue = defaultValue,
-            feature = feature,
-            values = bounds,
-            isActive = isActive,
-            salt = salt,
-        )
     }
 
     /**

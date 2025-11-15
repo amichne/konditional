@@ -1,10 +1,36 @@
 # Error Prevention Reference
 
-This document catalogs every class of runtime error that Konditional's type system **completely eliminates**. These errors are not just caught early—they're impossible to write.
+## Why Konditional?
+
+Traditional feature flag systems use string-based APIs that compile successfully but fail at runtime. Konditional uses Kotlin's type system to make entire classes of errors **impossible to write**. These aren't bugs caught earlier—they literally cannot exist in your code.
+
+**The value**: Ship features faster with confidence. Move error detection from production monitoring to compile time. Let the compiler catch bugs, not your users.
 
 ---
 
-## Eliminated: NullPointerException
+## Error Classes Eliminated
+
+Konditional's type system completely prevents these 11 categories of runtime errors:
+
+| Error Type | What Goes Wrong | How Konditional Prevents It |
+|------------|----------------|----------------------------|
+| **NullPointerException** | Feature flag getters return nullable types; forgotten null checks crash at runtime | `evaluate()` returns non-null values; compiler enforces default values at configuration time |
+| **ClassCastException** | Wrong type getter used (e.g., `getBoolean()` on an integer flag) causes runtime cast failures | Generic type parameters ensure returned value always matches declared type; mismatches are compile errors |
+| **KeyNotFoundException** | Typos in string-based flag names compile successfully but return null/crash at runtime | Flag names are enum members; typos become "unresolved reference" compile errors |
+| **Wrong Context Type** | Context requirements are invisible; missing required fields discovered at runtime | Context type declared in generic parameter; compiler enforces compatible context types |
+| **Configuration Inconsistency** | Related config values updated separately; partial updates create invalid states (e.g., dark mode with light colors) | Compound types updated atomically; impossible to have inconsistent related values |
+| **Validation Duplication** | Validation logic scattered across codebase; different services validate same config differently or forget validation | Value types enforce invariants at construction; parse once, use everywhere safely |
+| **Rollout Bucketing Bugs** | Manual bucketing uses platform-dependent hashing; inconsistent bucketing across restarts or platforms | SHA-256 based deterministic bucketing; stable, platform-independent, per-flag independence |
+| **Refactoring Breaks** | Renaming flags requires manual string search-replace across codebase; easy to miss usages | IDE refactoring renames all usages atomically; missed updates become compile errors |
+| **Testing Complexity** | Tests require mock frameworks with verbose setup; string literals duplicated; brittle mock verification | Simple data class construction; no mocking needed; type-safe test contexts |
+| **JSON Parsing Errors** | Invalid JSON types silently create wrong behavior or crash during evaluation | Parse errors caught before applying configuration; type-safe deserialization with explicit error handling |
+| **Hidden Dependencies** | Context requirements exist only in documentation; missing fields discovered at evaluation time | Context requirements self-documented in type signatures; compiler enforces all required fields present |
+
+---
+
+## Representative Examples
+
+### Example 1: NullPointerException Eliminated
 
 ### String-Based System
 
@@ -58,7 +84,7 @@ httpClient.setEndpoint(endpoint)  // ✓ Safe
 
 ---
 
-## Eliminated: ClassCastException
+### Example 2: ClassCastException Eliminated
 
 ### String-Based System
 
@@ -103,92 +129,7 @@ val enabled: Boolean = context.evaluate(Features.DARK_MODE)  // ✓ Correct
 
 ---
 
-## Eliminated: KeyNotFoundException / Silent Failures
-
-### String-Based System
-
-```kotlin
-// Typos compile successfully
-val enabled = config.getBoolean("dakr_mode")  // ✓ Compiles - "dark_mode" typo
-val endpoint = config.getString("api_edpoint")  // ✓ Compiles - "endpoint" typo
-val timeout = config.getInt("timout_ms")  // ✓ Compiles - "timeout" typo
-
-// Returns null, uses wrong default
-val enabled = config.getBoolean("dakr_mode") ?: false  // Silent failure
-// User intended dark mode, gets light mode
-
-// No IDE help
-config.getBoolean("???")  // What flags exist?
-```
-
-### Type-Safe System
-
-```kotlin
-// Typos are compile errors
-val enabled = context.evaluate(Features.DAKR_MODE)  // ✗ Unresolved reference
-
-// IDE shows all available flags
-context.evaluate(Features.  // Auto-complete: DARK_MODE, NEW_CHECKOUT, ...
-
-// Refactoring updates all usages
-enum class Features(override val key: String) : Conditional<Boolean, Context> {
-    DARK_MODE("dark_mode")  // ← Rename this symbol
-}
-
-// IDE rename refactoring updates every usage site automatically
-```
-
-**Guarantee**: Flag names **must exist** as enum members, or code won't compile.
-
----
-
-## Eliminated: Wrong Context Type
-
-### String-Based System
-
-```kotlin
-// Context requirements invisible
-fun canExport(config: ConfigService): Boolean {
-    return config.getBoolean("premium_export") ?: false
-    // ⚠️ How does it know user tier? Runtime surprise!
-}
-
-// Runtime error when wrong context passed
-val basicContext = mapOf("platform" to "ios")
-val exportEnabled = evaluator.evaluate("premium_export", basicContext)  // 💣 Missing "tier"
-```
-
-### Type-Safe System
-
-```kotlin
-// Context requirements explicit in type parameter
-enum class PremiumFeatures(override val key: String)
-    : Conditional<Boolean, AppContext> {  // ← Requires AppContext
-    PREMIUM_EXPORT("premium_export")
-}
-
-data class AppContext(
-    override val locale: AppLocale,
-    override val platform: Platform,
-    override val appVersion: Version,
-    override val stableId: StableId,
-    val subscriptionTier: SubscriptionTier  // ← Required field
-) : Context
-
-// Wrong context type won't compile
-val basicContext: Context = // ...
-val enabled = basicContext.evaluate(PremiumFeatures.PREMIUM_EXPORT)  // ✗ Type mismatch
-
-// Correct context type required
-val appContext: AppContext = // ...
-val enabled = appContext.evaluate(PremiumFeatures.PREMIUM_EXPORT)  // ✓ Compiles
-```
-
-**Guarantee**: Evaluation **requires compatible context type**, enforced at compile time.
-
----
-
-## Eliminated: Configuration Inconsistency
+### Example 3: Configuration Inconsistency Eliminated
 
 ### String-Based System
 
@@ -248,367 +189,6 @@ val theme: ThemeConfig = context.evaluate(Theme.APP_THEME)
 ```
 
 **Guarantee**: Related configuration values are **updated atomically** as a single unit.
-
----
-
-## Eliminated: Validation Duplication
-
-### String-Based System
-
-```kotlin
-// Validation scattered across codebase
-class PaymentService(private val config: ConfigService) {
-    fun getMaxRetries(): Int {
-        val value = config.getInt("max_retries") ?: 3
-        require(value in 1..10) { "max_retries must be 1-10" }
-        return value
-    }
-}
-
-class NetworkService(private val config: ConfigService) {
-    fun getMaxRetries(): Int {
-        val value = config.getInt("max_retries") ?: 3
-        // ⚠️ Forgot validation here - inconsistent!
-        return value
-    }
-}
-
-class BackgroundWorker(private val config: ConfigService) {
-    fun getMaxRetries(): Int {
-        val value = config.getInt("max_retries") ?: 3
-        require(value >= 1) { "max_retries must be positive" }
-        // ⚠️ Different validation rules!
-        return value
-    }
-}
-```
-
-### Type-Safe System
-
-```kotlin
-// Validation once at configuration time
-@JvmInline
-value class Retries(val value: Int) {
-    init {
-        require(value in 1..10) { "Retries must be 1-10" }
-    }
-}
-
-enum class Config(override val key: String) : Conditional<Retries, Context> {
-    MAX_RETRIES("max_retries")
-}
-
-config {
-    Config.MAX_RETRIES with {
-        default(Retries(3))  // ✓ Validated at construction
-
-        rule {
-            platforms(Platform.IOS)
-        }.implies(Retries(5))  // ✓ Validated at construction
-    }
-}
-
-// Usage: No validation needed
-val retries: Retries = context.evaluate(Config.MAX_RETRIES)
-// ✓ Guaranteed valid by type system
-```
-
-**Guarantee**: Invalid values are **unrepresentable** in the type system. Parse once, use everywhere.
-
----
-
-## Eliminated: Rollout Bucketing Bugs
-
-### String-Based System
-
-```kotlin
-// Manual bucketing logic
-class RolloutManager(private val config: ConfigService) {
-    fun isEnabled(flagKey: String, userId: String): Boolean {
-        val baseEnabled = config.getBoolean(flagKey) ?: false
-        if (!baseEnabled) return false
-
-        val percentage = config.getInt("${flagKey}_rollout_pct") ?: 0
-
-        // Bug: hashCode() differs across platforms
-        val hash = userId.hashCode()
-        val bucket = (hash % 100).absoluteValue
-        return bucket < percentage
-    }
-}
-
-// Problems:
-// 1. hashCode() not stable across JVM restarts
-// 2. Different bucketing per flag leads to correlation
-// 3. Easy to forget absoluteValue - negative buckets
-// 4. Percentage stored separately from flag
-```
-
-### Type-Safe System
-
-```kotlin
-enum class Features(override val key: String) : Conditional<Boolean, Context> {
-    NEW_CHECKOUT("new_checkout")
-}
-
-config {
-    Features.NEW_CHECKOUT with {
-        default(false)
-        rule {
-            rollout = Rollout.of(25.0)  // 25% rollout
-        }.implies(true)
-    }
-}
-
-// Usage: Automatic, deterministic bucketing
-val enabled = context.evaluate(Features.NEW_CHECKOUT)
-
-// Bucketing properties:
-// ✓ SHA-256 based (deterministic, platform-independent)
-// ✓ Independent buckets per flag (no correlation)
-// ✓ Stable across sessions via context.stableId
-// ✓ Percentage stored with flag definition
-```
-
-**Guarantee**: Rollouts use **cryptographic hashing** for deterministic, independent bucketing.
-
----
-
-## Eliminated: Refactoring Breaks
-
-### String-Based System
-
-```kotlin
-// Flag name used in 50 places
-class FeatureA { config.getBoolean("dark_mode") }
-class FeatureB { config.getBoolean("dark_mode") }
-// ... 48 more usages
-
-// Developer renames flag
-// Changes backend config: "dark_mode" → "darkMode"
-
-// Update code:
-class FeatureA { config.getBoolean("darkMode") }  // ✓ Updated
-class FeatureB { config.getBoolean("dark_mode") }  // ✗ Forgot to update!
-// ... 48 more to manually update
-
-// Runtime failures in production
-```
-
-### Type-Safe System
-
-```kotlin
-// Flag name as enum member
-enum class Features(override val key: String) : Conditional<Boolean, Context> {
-    DARK_MODE("dark_mode")
-}
-
-// Used in 50 places
-class FeatureA { context.evaluate(Features.DARK_MODE) }
-class FeatureB { context.evaluate(Features.DARK_MODE) }
-// ... 48 more usages
-
-// Developer renames: Right-click → Rename Symbol
-enum class Features(override val key: String) : Conditional<Boolean, Context> {
-    DARK_MODE("darkMode")  // IDE updates all 50 usages automatically
-}
-
-// ✓ All usages updated atomically
-// ✓ Compile error if any usage missed
-```
-
-**Guarantee**: IDE refactoring **updates all usages** atomically. Missed updates = compile errors.
-
----
-
-## Eliminated: Testing Complexity
-
-### String-Based System
-
-```kotlin
-// Test requires mocking config service
-@Test
-fun `test premium feature enabled`() {
-    val mockConfig = mock<ConfigService>()
-
-    // Mock setup for every related flag
-    whenever(mockConfig.getBoolean("premium_export")).thenReturn(true)
-    whenever(mockConfig.getBoolean("premium_analytics")).thenReturn(true)
-    whenever(mockConfig.getString("premium_tier")).thenReturn("enterprise")
-
-    val manager = FeatureManager(mockConfig)
-    assertTrue(manager.canExport())
-
-    // Verify mock interactions
-    verify(mockConfig).getBoolean("premium_export")
-}
-
-// Problems:
-// - Mocking framework required
-// - String literals duplicated
-// - Setup boilerplate
-// - Mock verification noise
-```
-
-### Type-Safe System
-
-```kotlin
-// Test uses simple data class
-@Test
-fun `test premium feature enabled`() {
-    val context = AppContext(
-        locale = AppLocale.EN_US,
-        platform = Platform.IOS,
-        appVersion = Version(1, 0, 0),
-        stableId = StableId.of("test-user"),
-        subscriptionTier = SubscriptionTier.ENTERPRISE
-    )
-
-    val enabled = context.evaluate(PremiumFeatures.DATA_EXPORT)
-
-    assertTrue(enabled)
-}
-
-// Reusable test factory
-fun testContext(
-    tier: SubscriptionTier = SubscriptionTier.FREE
-) = AppContext(
-    locale = AppLocale.EN_US,
-    platform = Platform.ANDROID,
-    appVersion = Version(1, 0, 0),
-    stableId = StableId.of("test-user"),
-    subscriptionTier = tier
-)
-
-@Test
-fun `test enterprise features`() {
-    val context = testContext(tier = SubscriptionTier.ENTERPRISE)
-    assertTrue(context.evaluate(PremiumFeatures.DATA_EXPORT))
-}
-```
-
-**Guarantee**: Tests use **simple data classes**, no mocking frameworks needed.
-
----
-
-## Eliminated: JSON Parsing Errors
-
-### String-Based System
-
-```kotlin
-// Manual JSON parsing
-val json = """{ "dark_mode": "true" }"""  // ⚠️ String instead of boolean
-
-val config = mutableMapOf<String, Any>()
-val jsonObj = JSONObject(json)
-jsonObj.keys().forEach { key ->
-    config[key] = jsonObj.get(key)
-}
-
-// Runtime crash
-val enabled = config["dark_mode"] as Boolean  // 💣 ClassCastException: String cannot be cast to Boolean
-
-// Or silent wrong behavior
-val enabled = config["dark_mode"] as? Boolean ?: false  // Returns false for "true"
-```
-
-### Type-Safe System
-
-```kotlin
-// Type-safe deserialization with error handling
-val json = """
-{
-  "flags": [
-    {
-      "key": "dark_mode",
-      "value_type": "boolean",
-      "default": "true"
-    }
-  ]
-}
-"""
-
-when (val result = SnapshotSerializer.default.deserialize(json)) {
-    is ParseResult.Success -> {
-        FlagRegistry.load(result.value)
-        // ✓ Type-safe configuration loaded
-    }
-    is ParseResult.Failure -> {
-        logger.error("Parse error: ${result.error}")
-        // ⚠️ Error caught before applying bad config
-    }
-}
-```
-
-**Guarantee**: Invalid JSON is **rejected before application**, not at evaluation time.
-
----
-
-## Eliminated: Hidden Dependencies
-
-### String-Based System
-
-```kotlin
-// What context does this flag need?
-fun canAccessPremiumFeature(userId: String): Boolean {
-    return config.getBoolean("premium_feature") ?: false
-    // ⚠️ How does backend know user tier?
-    // ⚠️ What other context is needed?
-    // ⚠️ Documentation only source of truth
-}
-
-// Runtime surprise
-val canAccess = canAccessPremiumFeature("user-123")
-// 💣 Backend evaluation fails: Missing required field "subscription_tier"
-```
-
-### Type-Safe System
-
-```kotlin
-// Context requirements explicit in types
-data class AppContext(
-    override val locale: AppLocale,
-    override val platform: Platform,
-    override val appVersion: Version,
-    override val stableId: StableId,
-    val subscriptionTier: SubscriptionTier  // ← Visible requirement
-) : Context
-
-enum class PremiumFeatures(override val key: String)
-    : Conditional<Boolean, AppContext> {  // ← Type documents requirement
-    ADVANCED_ANALYTICS("premium_feature")
-}
-
-// Compiler enforces requirements
-fun canAccessPremiumFeature(context: AppContext): Boolean {
-    return context.evaluate(PremiumFeatures.ADVANCED_ANALYTICS)
-    // ✓ All required context fields present
-}
-
-// IDE shows type signature
-val context: AppContext = buildAppContext(...)  // ✓ Explicit construction
-val canAccess = canAccessPremiumFeature(context)
-```
-
-**Guarantee**: Context requirements are **self-documenting** via type system.
-
----
-
-## Summary: Error Classes Eliminated
-
-| Error Class | String-Based Risk | Type-Safe Guarantee |
-|-------------|-------------------|---------------------|
-| **NullPointerException** | Nullable returns, forgotten null checks | Non-null returns, compiler-enforced defaults |
-| **ClassCastException** | Wrong type getter used | Generic type parameter enforced |
-| **KeyNotFoundException** | Typos in flag names | Enum member or compile error |
-| **Wrong Context** | Context requirements invisible | Context type parameter enforced |
-| **Inconsistent Config** | Partial updates of related values | Atomic updates of compound types |
-| **Validation Errors** | Validation scattered/duplicated | Type invariants enforced once |
-| **Rollout Bugs** | Manual bucketing, platform differences | SHA-256 deterministic bucketing |
-| **Refactoring Breaks** | String search-replace, manual updates | IDE symbol refactoring |
-| **Test Complexity** | Mock framework required | Simple data class construction |
-| **Parse Errors** | Runtime crashes on bad JSON | Parse errors before application |
-| **Hidden Dependencies** | Documentation only | Type signatures self-document |
 
 ---
 

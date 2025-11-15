@@ -14,7 +14,7 @@ group = props["GROUP"] as String
 version = props["VERSION"] as String
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
     compilerOptions {
         freeCompilerArgs.add("-Xcontext-parameters")
     }

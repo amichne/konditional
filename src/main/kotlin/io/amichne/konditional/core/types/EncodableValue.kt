@@ -61,24 +61,6 @@ sealed interface EncodableValue<T : Any> {
                     JSON -> throw IllegalArgumentException("Cannot create JSON encodable from primitive. Use asJsonObject() instead.")
                 } as EncodableValue<T>
             }
-
-            /**
-             * Deprecated unsafe version - use of(value, evidence) instead.
-             */
-            @Deprecated(
-                "Use of(value, evidence) with explicit EncodableEvidence for type safety",
-                ReplaceWith("of(value, EncodableEvidence.get())")
-            )
-            @Suppress("UNCHECKED_CAST")
-            inline fun <reified T : Any> parse(value: T): EncodableValue<T> {
-                return when (value) {
-                    is Boolean -> BooleanEncodeable(value)
-                    is String -> StringEncodeable(value)
-                    is Int -> IntEncodeable(value)
-                    is Double -> DecimalEncodeable(value)
-                    else -> throw IllegalArgumentException("Unsupported EncodableValue type: ${T::class.simpleName}")
-                } as EncodableValue<T>
-            }
         }
     }
 
@@ -119,16 +101,6 @@ sealed interface EncodableValue<T : Any> {
         val converter: Converter<T, Map<String, Any?>>,
     ) : EncodableValue<T> {
         override val encoding: Encoding = Encoding.JSON
-
-        @Deprecated(
-            "Use the fluent builder API: value.asJsonObject().encoder { }.decoder { }",
-            ReplaceWith("value.asJsonObject().encoder(encoder).decoder(decoder)")
-        )
-        constructor(
-            value: T,
-            encoder: (T) -> Map<String, Any?>,
-            decoder: (Map<String, Any?>) -> T,
-        ) : this(value, Converter(encoder, decoder))
     }
 
     // ========== Custom Wrapper Types ==========
@@ -167,17 +139,6 @@ sealed interface EncodableValue<T : Any> {
                 "CustomEncodeable must encode to a primitive type (BOOLEAN, STRING, INTEGER, or DECIMAL)"
             }
         }
-
-        @Deprecated(
-            "Use the fluent builder API: value.asCustomString().encoder { }.decoder { }",
-            ReplaceWith("value.asCustomString().encoder(encoder).decoder(decoder)")
-        )
-        constructor(
-            value: T,
-            primitiveEncoding: Encoding,
-            encoder: (T) -> P,
-            decoder: (P) -> T,
-        ) : this(value, primitiveEncoding, Converter(encoder, decoder))
     }
 }
 

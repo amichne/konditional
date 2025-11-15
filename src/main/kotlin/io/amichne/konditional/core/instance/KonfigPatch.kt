@@ -1,14 +1,14 @@
 package io.amichne.konditional.core.instance
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.Feature
+import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.FlagDefinition
 
 /**
  * Represents an incremental update to a [Konfig].
  *
  * A patch contains:
- * - SingletonModuleRegistry to add or update
+ * - Flags to add or update
  * - Keys of flags to remove
  *
  * Patches can be created from a current snapshot and applied to produce a new snapshot,

@@ -1,7 +1,7 @@
 package io.amichne.konditional.internal.builders.versions
 
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.VersionRangeScope
+import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.rules.versions.LeftBound
 import io.amichne.konditional.rules.versions.RightBound
@@ -9,10 +9,10 @@ import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
 /**
- * Internal implementation of [io.amichne.konditional.core.VersionRangeScope].
+ * Internal implementation of [VersionRangeScope].
  *
  * This class is the internal implementation of the version range configuration DSL scope.
- * Users interact with the public [io.amichne.konditional.core.VersionRangeScope] interface,
+ * Users interact with the public [VersionRangeScope] interface,
  * not this implementation directly.
  *
  * @constructor Internal constructor - users cannot instantiate this class directly.

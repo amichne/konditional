@@ -1,113 +1,85 @@
 package io.amichne.konditional.fixtures
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.BooleanFeature
-import io.amichne.konditional.core.DoubleFeature
-import io.amichne.konditional.core.FeatureModule
-import io.amichne.konditional.core.IntFeature
-import io.amichne.konditional.core.StringFeature
+import io.amichne.konditional.core.features.FeatureContainer
+import io.amichne.konditional.core.Taxonomy
 
 /**
- * Common test features for basic types (Boolean, String, Int, Double).
+ * Common test features demonstrating mixed-type capabilities of FeatureContainer.
  *
- * These features use the Core module and are available for use across all tests.
- * They provide a standardized set of feature flags for testing common scenarios.
+ * This consolidated fixture showcases how FeatureContainer can hold Boolean, String,
+ * Int, and Double features together in a single object, providing:
+ * - Complete enumeration via [allFeatures]
+ * - Ergonomic delegation for all feature types
+ * - Type safety with full compile-time checking
+ * - Single module declaration for the entire container
+ *
+ * All features use the Global taxonomy and are available across all tests.
+ *
+ * **Naming convention:**
+ * - Feature properties use camelCase following Kotlin best practices
+ * - Feature keys match property names automatically for consistency and discoverability
  */
+object CommonTestFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 
-/**
- * Boolean feature flags for testing.
- *
- * Use these for tests involving boolean feature toggles.
- */
-enum class TestBooleanFeatures(
-    override val key: String,
-) : BooleanFeature<Context, FeatureModule.Core> {
+    // Boolean features
     /** General-purpose test feature flag */
-    TEST_FEATURE("test_feature"),
+    val testFeature by boolean<Context> { }
+
+    /** Always-enabled feature for testing true state */
+    val alwaysTrue by boolean<Context> { }
 
     /** Feature flag for testing enabled state */
-    ENABLED_FEATURE("enabled_feature"),
+    val enabledFeature by boolean<Context> { }
 
     /** Feature flag for testing disabled state */
-    DISABLED_FEATURE("disabled_feature"),
+    val disabledFeature by boolean<Context> { }
 
     /** Feature flag for testing rollout percentages */
-    ROLLOUT_FEATURE("rollout_feature"),
+    val rolloutFeature by boolean<Context> { }
 
     /** Feature flag for testing platform targeting */
-    PLATFORM_FEATURE("platform_feature"),
+    val platformFeature by boolean<Context> { }
 
     /** Feature flag for testing locale targeting */
-    LOCALE_FEATURE("locale_feature"),
+    val localeFeature by boolean<Context> { }
 
     /** Feature flag for testing version ranges */
-    VERSION_FEATURE("version_feature");
+    val versionFeature by boolean<Context> { }
 
-    override val module: FeatureModule.Core = FeatureModule.Core
-}
-
-/**
- * String feature flags for testing.
- *
- * Use these for tests involving string configuration values.
- */
-enum class TestStringFeatures(
-    override val key: String,
-) : StringFeature<Context, FeatureModule.Core> {
+    // String features
     /** API endpoint configuration */
-    API_ENDPOINT("api_endpoint"),
+    val apiEndpoint by string<Context> { }
 
     /** Theme configuration */
-    THEME("theme"),
+    val theme by string<Context> { }
 
     /** Welcome message configuration */
-    WELCOME_MESSAGE("welcome_message"),
+    val welcomeMessage by string<Context> { }
 
     /** General-purpose test string flag */
-    TEST_STRING("test_string"),
+    val testString by string<Context> { }
 
     /** Registered flag for testing found scenarios */
-    REGISTERED_FLAG("registered_flag"),
+    val registeredFlag by string<Context> { }
 
     /** Unregistered flag for testing not-found scenarios */
-    UNREGISTERED_FLAG("unregistered_flag");
+    val unregisteredFlag by string<Context> { }
 
-    override val module: FeatureModule.Core = FeatureModule.Core
-}
-
-/**
- * Integer feature flags for testing.
- *
- * Use these for tests involving numeric configuration values.
- */
-enum class TestIntFeatures(
-    override val key: String,
-) : IntFeature<Context, FeatureModule.Core> {
+    // Integer features
     /** Maximum connections configuration */
-    MAX_CONNECTIONS("max_connections"),
+    val maxConnections by int<Context> { }
 
-    /** Timeout configuration */
-    TIMEOUT("timeout"),
+    /** Timeout configuration in milliseconds */
+    val timeout by int<Context> { }
 
     /** Retry count configuration */
-    RETRY_COUNT("retry_count");
+    val retryCount by int<Context> { }
 
-    override val module: FeatureModule.Core = FeatureModule.Core
-}
-
-/**
- * Double feature flags for testing.
- *
- * Use these for tests involving decimal configuration values.
- */
-enum class TestDoubleFeatures(
-    override val key: String,
-) : DoubleFeature<Context, FeatureModule.Core> {
+    // Double features
     /** Threshold configuration */
-    THRESHOLD("threshold"),
+    val threshold by double<Context> { }
 
     /** Rate limit configuration */
-    RATE_LIMIT("rate_limit");
-
-    override val module: FeatureModule.Core = FeatureModule.Core
+    val rateLimit by double<Context> { }
 }
