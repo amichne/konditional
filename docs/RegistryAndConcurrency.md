@@ -64,12 +64,9 @@ internal class SingletonFlagRegistry : FlagRegistry {
 
 ### Lock-Free Reads
 
-**The Problem with Locks:**
-
-String-based systems often use locks:
+**Traditional lock-based approach:**
 
 ```kotlin
-// Traditional approach: Lock-based
 class ConfigService {
     private val lock = ReentrantReadWriteLock()
     private var config: Map<String, Any> = emptyMap()
@@ -82,43 +79,28 @@ class ConfigService {
             lock.readLock().unlock()
         }
     }
-
-    fun updateConfig(newConfig: Map<String, Any>) {
-        lock.writeLock().lock()  // ⚠️ Blocks all reads
-        try {
-            config = newConfig
-        } finally {
-            lock.writeLock().unlock()
-        }
-    }
 }
 ```
 
-**Problems:**
+**Problems:** Read contention under high load, writes block all reads, potential deadlocks, performance overhead.
 
-- Read contention under high load
-- Write blocks all reads
-- Potential deadlocks
-- Performance overhead
-
-**Konditional's Solution: AtomicReference**
+**Konditional's AtomicReference solution:**
 
 ```kotlin
 class SingletonFlagRegistry : FlagRegistry {
     private val konfigRef = AtomicReference<Konfig>(Konfig.EMPTY)
 
     override fun featureFlag(key: Feature<S, T, C, M>): FlagDefinition<S, T, C, M>? {
-        return konfigRef.get().flags[key]  // ✓ Lock-free, no contention
+        return konfigRef.get().flags[key]  // Lock-free, no contention
     }
 
     override fun load(config: Konfig) {
-        konfigRef.set(config)  // ✓ Atomic swap, lock-free
+        konfigRef.set(config)  // Atomic swap, doesn't block reads
     }
 }
 ```
 
 **Benefits:**
-
 - Zero lock contention
 - Reads never block
 - Writes don't block reads
@@ -133,25 +115,19 @@ All configuration data is **immutable**:
 // Konfig: Immutable snapshot
 data class Konfig(
     val flags: Map<Feature<*, *, *>, FlagDefinition<*, *, *, *>>
-)  // Map is immutable (not MutableMap)
+)
 
 // FlagDefinition: Immutable configuration
 data class FlagDefinition<S, T, C, M>(
     val feature: Feature<S, T, C, M>,
-    val defaultValue: T,                       // Immutable
-    val values: List<ConditionalValue<S, T, C, M>>,  // List is immutable
-    val isActive: Boolean,                     // Immutable
-    val salt: String                           // Immutable
-)
-
-// ConditionalValue: Immutable rule + value
-data class ConditionalValue<S, T, C, M>(
-    val rule: Rule<C>,  // Immutable
-    val value: T        // Immutable
+    val defaultValue: T,
+    val values: List<ConditionalValue<S, T, C, M>>,
+    val isActive: Boolean,
+    val salt: String
 )
 ```
 
-**Why immutability matters:**
+**Why this matters:**
 
 ```kotlin
 // Thread A: Reading configuration
@@ -174,41 +150,15 @@ registry.load(newConfig)
 ### Full Config Replacement
 
 ```kotlin
-// Build new configuration
 val newConfig = config {
-    Features.DARK_MODE with {
-        default(false)
-        rule { platforms(Platform.IOS) }.implies(true)
-    }
-    Features.NEW_CHECKOUT with {
-        default(false)
-        rule { rollout = Rollout.of(50.0) }.implies(true)
-    }
+    Features.DARK_MODE with { default(false) }
+    Features.NEW_CHECKOUT with { default(false) }
 }
 
-// Atomic swap
-FlagRegistry.load(newConfig)
+FlagRegistry.load(newConfig)  // Atomic swap - all flags update together
 ```
 
-**What happens:**
-
-```kotlin
-// Before: Old Konfig with old flags
-konfigRef = AtomicReference(oldKonfig)
-
-// During: Atomic swap (single CPU instruction)
-konfigRef.set(newKonfig)
-
-// After: New Konfig with new flags
-konfigRef = AtomicReference(newKonfig)
-```
-
-**Properties:**
-
-- Atomic: All flags update together
-- Consistent: Readers see old OR new, never mixed
-- Lock-free: No blocking
-- Fast: Single memory write
+**Properties:** Atomic (all flags update together), consistent (readers see old OR new), lock-free, fast (single memory write).
 
 ### Incremental Patching
 
@@ -228,106 +178,66 @@ val patchJson = """
 }
 """
 
-// Parse patch
 when (val result = SnapshotSerializer.default.deserializeKonfigPatch(patchJson)) {
-    is ParseResult.Success -> {
-        // Apply atomically
-        FlagRegistry.update(result.value)
-    }
-    is ParseResult.Failure -> {
-        logger.error("Patch failed: ${result.error}")
-    }
+    is ParseResult.Success -> FlagRegistry.update(result.value)
+    is ParseResult.Failure -> logger.error("Patch failed: ${result.error}")
 }
 ```
 
-**Patch application:**
+**Implementation:**
 
 ```kotlin
 override fun update(patch: KonfigPatch) {
-    // Read current config (lock-free)
     val current = konfigRef.get()
-
-    // Build new config from current + patch
     val newFlags = current.flags.toMutableMap()
     patch.addOrUpdate.forEach { newFlags[it.feature] = it }
     patch.remove.forEach { newFlags.remove(it) }
-
-    val newKonfig = Konfig(newFlags.toMap())
-
-    // Atomic swap (lock-free)
-    konfigRef.set(newKonfig)
+    konfigRef.set(Konfig(newFlags.toMap()))  // Atomic swap
 }
 ```
 
-**Properties:**
-
-- Incremental: Only changed flags in patch
-- Atomic: All patch changes applied together
-- Type-safe: Parse errors caught before application
+**Properties:** Incremental, atomic, type-safe.
 
 ---
 
-## Why This Matters: String-Based vs. Type-Safe
+## Architecture Overview
 
-### String-Based System
+```mermaid
+graph TB
+    subgraph "Thread-Safe Registry Architecture"
+        AR[AtomicReference&lt;Konfig&gt;]
+        K1[Konfig Snapshot v1<br/>Immutable]
+        K2[Konfig Snapshot v2<br/>Immutable]
 
-```kotlin
-class ConfigService {
-    private val lock = ReentrantReadWriteLock()
-    private var config: MutableMap<String, Any> = mutableMapOf()
+        R1[Reader Thread 1]
+        R2[Reader Thread 2]
+        R3[Reader Thread 3]
+        W[Writer Thread]
 
-    fun getBoolean(key: String): Boolean? {
-        lock.readLock().lock()
-        try {
-            return config[key] as? Boolean
-        } finally {
-            lock.readLock().unlock()
-        }
-    }
+        AR -.current reference.-> K1
+        AR -.after swap.-> K2
 
-    fun updateFlag(
-        key: String,
-        value: Any
-    ) {
-        lock.writeLock().lock()  // ⚠️ Blocks ALL reads
-        try {
-            config[key] = value
-        } finally {
-            lock.writeLock().unlock()
-        }
-    }
-}
+        R1 -->|lock-free get| AR
+        R2 -->|lock-free get| AR
+        R3 -->|lock-free get| AR
+        W -->|atomic set| AR
+
+        K1 -.->|holds reference| R1
+        K1 -.->|holds reference| R2
+        K2 -.->|new reference| R3
+    end
+
+    style AR fill:#e1f5ff
+    style K1 fill:#d4edda
+    style K2 fill:#d4edda
+    style W fill:#fff3cd
 ```
 
-**Issues:**
-
-- Write locks block reads (high latency during updates)
-- Mutable state = race conditions possible
-- Per-flag updates = inconsistent intermediate states
-- Type errors not caught until runtime
-
-### Type-Safe System
-
-```kotlin
-class SingletonFlagRegistry : FlagRegistry {
-    private val konfigRef = AtomicReference<Konfig>(Konfig.EMPTY)
-
-    override fun featureFlag(key: Feature<S, T, C, M>): FlagDefinition<S, T, C, M>? {
-        return konfigRef.get().flags[key]  // Lock-free
-    }
-
-    override fun load(config: Konfig) {
-        konfigRef.set(config)  // Atomic, doesn't block reads
-    }
-}
-```
-
-**Benefits:**
-
-- Lock-free reads (no contention)
-- Immutable state (no race conditions)
-- Atomic updates (consistent snapshots)
-- Type errors caught at compile time
+**Key Properties:**
+- **Lock-free reads:** Multiple threads read simultaneously without contention
+- **Immutable snapshots:** Each Konfig is immutable; updates create new snapshots
+- **Atomic updates:** Writer swaps reference atomically; readers see old or new (never partial)
+- **Consistent views:** Readers holding a reference maintain consistent view even after updates
 
 ---
 
@@ -349,11 +259,11 @@ val result2 = context.evaluate(Features.DARK_MODE)
 
 ```kotlin
 // Thread A: Evaluating
-val definition = registry.featureFlag(Features.DARK_MODE)  // Read old or new
-val result = definition?.evaluate(context)                 // Consistent snapshot
+val definition = registry.featureFlag(Features.DARK_MODE)
+val result = definition?.evaluate(context)
 
 // Thread B: Updating (concurrent)
-FlagRegistry.load(newConfig)  // Atomic swap
+FlagRegistry.load(newConfig)
 
 // Thread A's definition remains valid
 // Sees complete old config OR complete new config, never mixed
@@ -369,7 +279,6 @@ FlagRegistry.load(configA)
 FlagRegistry.load(configB)
 
 // Last write wins (AtomicReference semantics)
-// Final state: configA or configB (deterministic on platform)
 ```
 
 **Note:** For complex write coordination, use external synchronization:
@@ -386,138 +295,77 @@ synchronized(updateLock) {
 
 ## Performance Characteristics
 
-### Memory
+### Memory Model
 
-**String-based system:**
-
-```kotlin
-// Mutable map = potential fragmentation
-private var config: MutableMap<String, Any> = mutableMapOf()
-
-// Updates modify in place
-config["key"] = newValue  // Heap allocation, GC pressure
-```
-
-**Konditional:**
+**Konditional uses immutable snapshots:**
 
 ```kotlin
-// Immutable snapshots = structural sharing
 private val konfigRef = AtomicReference<Konfig>(...)
-
-// Updates create new snapshots (structural sharing)
 konfigRef.set(newKonfig)  // Old snapshot GC'd when no references remain
 ```
 
-**Benefits:**
+**Benefits:** Structural sharing, predictable GC, no fragmentation.
 
-- Structural sharing (maps share structure)
-- Predictable GC (old snapshots collected together)
-- No fragmentation
+### Performance Comparison
 
-### Latency
+| Operation          | String-Based (Locks)     | Konditional (Lock-Free) |
+|--------------------|--------------------------|-------------------------|
+| **Read**           | 50-200 ns (uncontended)  | 5-10 ns                 |
+| **Read (contended)** | 500-5000 ns (lock wait) | 5-10 ns (no contention) |
+| **Write**          | Blocks all reads         | No impact on reads      |
+| **Throughput**     | ~1-10M ops/sec          | ~100M+ ops/sec          |
 
-| Operation                 | String-Based (Locks)                | Konditional (Lock-Free)        |
-|---------------------------|-------------------------------------|--------------------------------|
-| **Read**                  | 50-200 ns (uncontended lock)        | 5-10 ns (AtomicReference.get)  |
-| **Read (contended)**      | 500-5000 ns (lock wait)             | 5-10 ns (no contention)        |
-| **Write**                 | 100-500 ns (lock acquire + release) | 10-20 ns (AtomicReference.set) |
-| **Write impact on reads** | Blocks reads (ms latency spike)     | No impact (lock-free)          |
-
-**Benchmarks (approximate, JVM):**
-
-```kotlin
-@Benchmark
-fun readFlag_LockBased() {
-    // 50-200 ns/op (uncontended)
-    // 500-5000 ns/op (contended, 10 threads)
-    lockBasedConfig.getBoolean("dark_mode")
-}
-
-@Benchmark
-fun readFlag_LockFree() {
-    // 5-10 ns/op (always, regardless of contention)
-    context.evaluate(Features.DARK_MODE)
-}
-```
-
-### Throughput
-
-**String-based system:**
-
-- Reads: ~5-10M ops/sec (uncontended), ~1M ops/sec (contended)
-- Writes: Block all reads
-
-**Konditional:**
-
-- Reads: ~100M+ ops/sec (scales linearly with cores)
-- Writes: Don't block reads
+**Key advantage:** Lock-free reads scale linearly with CPU cores without contention.
 
 ---
 
 ## Testing Thread Safety
 
-### Concurrent Reads
-
-```kotlin
-@Test
-fun `concurrent reads are safe`() = runBlocking {
-        val registry = FlagRegistry.create()
-
-        config(registry) {
-            Features.DARK_MODE with { default(false) }
-        }
-
-        val context = basicContext()
-
-        // Launch 1000 concurrent reads
-        val results = (1..1000).map {
-            async(Dispatchers.Default) {
-                context.evaluate(Features.DARK_MODE, registry)
-            }
-        }.awaitAll()
-
-        // All return same value
-        assertTrue(results.all { it == false })
-    }
-```
-
-### Concurrent Reads + Write
+### Concurrent Read-Write Test
 
 ```kotlin
 @Test
 fun `concurrent reads during write are safe`() = runBlocking {
-        val registry = FlagRegistry.create()
+    val registry = FlagRegistry.create()
 
-        config(registry) {
-            Features.DARK_MODE with { default(false) }
-        }
-
-        val context = basicContext()
-
-        // Launch 1000 concurrent readers
-        val readerJobs = (1..1000).map {
-            launch(Dispatchers.Default) {
-                repeat(100) {
-                    context.evaluate(Features.DARK_MODE, registry)
-                }
-            }
-        }
-
-        // Concurrent write
-        val writerJob = launch(Dispatchers.Default) {
-            repeat(10) {
-                config(registry) {
-                    Features.DARK_MODE with { default(true) }
-                }
-                delay(10)
-            }
-        }
-
-        // Wait for completion (no exceptions = success)
-        readerJobs.joinAll()
-        writerJob.join()
+    config(registry) {
+        Features.DARK_MODE with { default(false) }
     }
+
+    val context = basicContext()
+
+    // Launch 1000 concurrent readers
+    val readerJobs = (1..1000).map {
+        launch(Dispatchers.Default) {
+            repeat(100) {
+                // Lock-free read
+                context.evaluate(Features.DARK_MODE, registry)
+            }
+        }
+    }
+
+    // Concurrent writer
+    val writerJob = launch(Dispatchers.Default) {
+        repeat(10) {
+            // Atomic update
+            config(registry) {
+                Features.DARK_MODE with { default(true) }
+            }
+            delay(10)
+        }
+    }
+
+    // All complete without exceptions or data races
+    readerJobs.joinAll()
+    writerJob.join()
+}
 ```
+
+**What this tests:**
+- Concurrent reads don't block each other
+- Writes don't block reads
+- No exceptions from race conditions
+- Readers see consistent snapshots (old or new, never mixed)
 
 ---
 
@@ -525,9 +373,8 @@ fun `concurrent reads during write are safe`() = runBlocking {
 
 ### When to Implement Custom Registry
 
-**Use cases:**
-
-- Database-backed configuration
+Common use cases:
+- Database-backed configuration with persistence
 - Distributed cache (Redis, Memcached)
 - Multi-tenant registries (per-tenant config)
 - Audit logging (track all config changes)
@@ -542,7 +389,7 @@ class DatabaseBackedRegistry(
     private val konfigRef = AtomicReference<Konfig>(loadFromDb())
 
     override fun load(config: Konfig) {
-        // Write to database
+        // Persist to database
         database.transaction {
             deleteAllFlags()
             config.flags.forEach { (feature, definition) ->
@@ -550,7 +397,7 @@ class DatabaseBackedRegistry(
             }
         }
 
-        // Update in-memory cache
+        // Update in-memory cache atomically
         konfigRef.set(config)
     }
 
@@ -568,32 +415,7 @@ class DatabaseBackedRegistry(
 }
 ```
 
-### Example: Multi-Tenant Registry
-
-```kotlin
-class TenantAwareFlagRegistry(
-    private val tenantProvider: () -> TenantId
-) : FlagRegistry {
-
-    private val registries = ConcurrentHashMap<TenantId, AtomicReference<Konfig>>()
-
-    override fun featureFlag(key: Feature<S, T, C, M>): FlagDefinition<S, T, C, M>? {
-        val tenantId = tenantProvider()
-        val konfigRef = registries.computeIfAbsent(tenantId) {
-            AtomicReference(Konfig.EMPTY)
-        }
-        return konfigRef.get().flags[key]
-    }
-
-    override fun load(config: Konfig) {
-        val tenantId = tenantProvider()
-        val konfigRef = registries.computeIfAbsent(tenantId) {
-            AtomicReference(Konfig.EMPTY)
-        }
-        konfigRef.set(config)
-    }
-}
-```
+**Pattern:** Maintain lock-free in-memory cache backed by persistent storage.
 
 ---
 
@@ -625,21 +447,12 @@ Features.NEW_CHECKOUT.update { default(false) }
 // ✓ Good: Parse, validate, then apply
 when (val result = SnapshotSerializer.default.deserialize(json)) {
     is ParseResult.Success -> {
-        FlagRegistry.load(result.value)  // Only apply if valid
+        FlagRegistry.load(result.value)
     }
     is ParseResult.Failure -> {
         logger.error("Parse error: ${result.error}")
-        // Don't apply bad config
     }
 }
-```
-
-### Don't: Apply Unvalidated Config
-
-```kotlin
-// ✗ Bad: Runtime errors if JSON invalid
-val config = parseJsonUnsafe(json)  // May throw
-FlagRegistry.load(config)            // May have wrong types
 ```
 
 ### Do: Use Test Registries for Tests
@@ -649,13 +462,10 @@ FlagRegistry.load(config)            // May have wrong types
 @Test
 fun `test feature`() {
     val testRegistry = FlagRegistry.create()
-
     config(testRegistry) {
         Features.DARK_MODE with { default(false) }
     }
-
     val result = context.evaluate(Features.DARK_MODE, testRegistry)
-
     assertFalse(result)
 }
 ```

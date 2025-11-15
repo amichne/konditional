@@ -15,12 +15,12 @@ import io.amichne.konditional.core.result.ParseResult
  * ## Implementations
  *
  * - [SnapshotSerializer]: Serializes Konfig configurations
- * - [ModuleSnapshotSerializer]: Serializes a single featureModule's configuration
+ * - [TaxonomySnapshotSerializer]: Serializes a single taxonomy's configuration
  *
  * ## Usage Example
  *
  * ```kotlin
- * val serializer: Serializer<Konfig> = ModuleSnapshotSerializer(FeatureModule.Team.Payments)
+ * val serializer: Serializer<Konfig> = TaxonomySnapshotSerializer(Taxonomy.Domain.Payments)
  *
  * // Serialize to JSON
  * val json = serializer.toJson()

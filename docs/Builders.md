@@ -5,11 +5,12 @@ inline functions to create a fluent configuration interface while maintaining co
 
 ## Overview
 
-The configuration DSL consists of three scope levels:
+The configuration DSL consists of four scope levels:
 
 1. **ConfigScope**: Top-level configuration block
 2. **FlagScope**: Individual flag configuration
 3. **RuleScope**: Rule definition within a flag
+4. **VersionRangeScope**: Version constraint definition
 
 ```kotlin
 config {  // ConfigScope
@@ -20,6 +21,20 @@ config {  // ConfigScope
         }.implies(value)
     }
 }
+```
+
+### DSL Scope Hierarchy
+
+```mermaid
+graph LR
+    A[ConfigScope] --> B[FlagScope]
+    B --> C[RuleScope]
+    C --> D[VersionRangeScope]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#ffe1f5
+    style D fill:#e1ffe1
 ```
 
 ## ConfigScope
@@ -296,84 +311,14 @@ config {
 
         rule {
             platforms(Platform.IOS, Platform.ANDROID)
+            rollout = Rollout.of(50.0)
+            note("Mobile dark mode, 50% rollout")
         }.implies(true)
     }
 }
 ```
 
-### Multi-Rule Configuration
-
-```kotlin
-config {
-    MyFeatures.THEME with {
-        default("light")
-        salt("v2")
-
-        // Highest specificity: platform + locale + version
-        rule {
-            platforms(Platform.IOS)
-            locales(AppLocale.EN_US)
-            versions {
-                min(2, 0, 0)
-            }
-            rollout = Rollout.of(50.0)
-            note("iOS US users on v2+, 50% rollout")
-        }.implies("dark")
-
-        // Medium specificity: platform + locale
-        rule {
-            platforms(Platform.IOS)
-            locales(AppLocale.EN_US)
-            note("All iOS US users not in above bucket")
-        }.implies("auto")
-
-        // Low specificity: platform only
-        rule {
-            platforms(Platform.IOS)
-        }.implies("light-ios")
-    }
-}
-```
-
-### Complex Type Flag
-
-```kotlin
-data class ApiConfig(
-    val baseUrl: String,
-    val timeout: Int,
-    val retryEnabled: Boolean
-)
-
-config {
-    MyFeatures.API_CONFIG with {
-        default(ApiConfig(
-            baseUrl = "https://api.prod.example.com",
-            timeout = 30,
-            retryEnabled = true
-        ))
-
-        rule {
-            platforms(Platform.WEB)
-            rollout = Rollout.of(25.0)
-            note("Staging API for 25% of web users")
-        }.implies(ApiConfig(
-            baseUrl = "https://api.staging.example.com",
-            timeout = 60,
-            retryEnabled = false
-        ))
-
-        rule {
-            locales(AppLocale.EN_US)
-        }.implies(ApiConfig(
-            baseUrl = "https://api-us.prod.example.com",
-            timeout = 30,
-            retryEnabled = true
-        ))
-    }
-}
-```
-
-### Enterprise Context Flag
+### Custom Context with Extensions
 
 ```kotlin
 config {
@@ -465,136 +410,19 @@ config {
 
 ## DSL Markers
 
-The DSL uses `@FeatureFlagDsl` annotation to prevent accidental nesting:
-
-```kotlin
-@FeatureFlagDsl
-interface ConfigScope { /* ... */ }
-
-@FeatureFlagDsl
-interface FlagScope<S, T, C, M> { /* ... */ }
-
-@FeatureFlagDsl
-interface RuleScope<C> { /* ... */ }
-```
-
-This prevents invalid constructions like:
-
-```kotlin
-config {
-    MyFeature.FLAG with {
-        rule {
-            rule {  // Compile error: Can't nest rule inside rule
-                // ...
-            }
-        }
-    }
-}
-```
+The DSL uses `@FeatureFlagDsl` annotation to prevent invalid scope nesting. All scope interfaces are marked with this annotation, ensuring compile-time safety and preventing constructions like nesting `rule` inside `rule` or `config` inside `rule`.
 
 ## Best Practices
 
-### Separate Configuration Files
+**Organize by Feature Area**: Separate configurations into dedicated files (e.g., `UIConfig.kt`, `ApiConfig.kt`) and initialize them together. This improves maintainability and code organization.
 
-Organize configurations by feature area:
+**Use Named Values**: Extract complex values into named variables for clarity, especially for configuration objects used multiple times.
 
-```kotlin
-// UIConfig.kt
-object UIConfig {
-    fun configure() = config {
-        UIFeatures.DARK_MODE with { /* ... */ }
-        UIFeatures.ANIMATIONS with { /* ... */ }
-    }
-}
+**Extract Complex Extensions**: Create reusable `Evaluable` classes for custom logic instead of inline anonymous objects. This improves testability and reusability.
 
-// ApiConfig.kt
-object ApiConfig {
-    fun configure() = config {
-        ApiFeatures.ENDPOINT with { /* ... */ }
-        ApiFeatures.TIMEOUT with { /* ... */ }
-    }
-}
+**Document with `note()`**: Add context to rules using `note()`, especially for experiments and gradual rollouts. Include tracking IDs, ownership, duration, and rationale.
 
-// Initialize all
-fun initializeFeatureFlags() {
-    UIConfig.configure()
-    ApiConfig.configure()
-}
-```
-
-### Use Named Values for Clarity
-
-```kotlin
-config {
-    MyFeatures.API_CONFIG with {
-        val prodConfig = ApiConfig(
-            baseUrl = "https://api.prod.example.com",
-            timeout = 30
-        )
-
-        val stagingConfig = ApiConfig(
-            baseUrl = "https://api.staging.example.com",
-            timeout = 60
-        )
-
-        default(prodConfig)
-
-        rule {
-            platforms(Platform.WEB)
-        }.implies(stagingConfig)
-    }
-}
-```
-
-### Extract Complex Extensions
-
-```kotlin
-class EnterpriseCustomerEvaluable : Evaluable<EnterpriseContext>() {
-    override fun matches(context: EnterpriseContext): Boolean =
-        context.subscriptionTier in setOf(
-            SubscriptionTier.PROFESSIONAL,
-            SubscriptionTier.ENTERPRISE
-        )
-
-    override fun specificity(): Int = 1
-}
-
-config {
-    MyFeatures.PREMIUM_FEATURE with {
-        default(false)
-
-        rule {
-            extension { EnterpriseCustomerEvaluable() }
-        }.implies(true)
-    }
-}
-```
-
-### Document Complex Configurations
-
-```kotlin
-config {
-    MyFeatures.EXPERIMENT_A with {
-        default(false)
-        salt("experiment_a_v2")  // Changed salt for fresh distribution
-
-        rule {
-            platforms(Platform.IOS)
-            versions {
-                min(2, 5, 0)  // Requires new API features
-            }
-            rollout = Rollout.of(20.0)
-            note("""
-                Phase 1 rollout of Experiment A.
-                Target: iOS users on v2.5+
-                Tracking: analytics_experiment_a_v2
-                Owner: product-team@example.com
-                Duration: 2024-Q1
-            """.trimIndent())
-        }.implies(true)
-    }
-}
-```
+**Maintain Salt Hygiene**: Document salt changes and their purpose. Changing salt redistributes rollout buckets, so track versions carefully.
 
 ## Next Steps
 

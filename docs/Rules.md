@@ -4,12 +4,14 @@ Rules define targeting criteria and rollout strategies for feature flags. The Ko
 
 ## Rule Fundamentals
 
-A **Rule** specifies conditions that must be met for a particular value to be returned. Rules combine:
+A **Rule** specifies conditions that must be met for a particular value to be returned. Rules are the core mechanism for conditional feature flag behavior in Konditional.
 
-- Standard targeting criteria (locale, platform, version)
-- Custom evaluation logic through extensions
-- Rollout percentage for gradual deployment
-- Optional documentation notes
+Rules combine:
+
+- **Standard targeting criteria**: Platform, locale, and version constraints
+- **Custom evaluation logic**: Extensions for domain-specific targeting
+- **Rollout percentage**: Gradual deployment to a percentage of matching users
+- **Documentation notes**: Optional metadata explaining the rule's purpose
 
 ```kotlin
 rule {
@@ -24,32 +26,19 @@ rule {
 }.implies(true)
 ```
 
+**Key concept**: All constraints in a rule must match for the rule to apply. If any constraint fails (platform doesn't match, version out of range, rollout bucket excluded), the rule is skipped and evaluation continues to the next rule.
+
 ## Basic Targeting
 
 ### Platform Targeting
 
-Target specific platforms where your application runs:
+Target specific platforms (`Platform.IOS`, `Platform.ANDROID`, `Platform.WEB`, `Platform.DESKTOP`, `Platform.SERVER`):
 
 ```kotlin
 rule {
     platforms(Platform.IOS, Platform.ANDROID)
 }.implies(mobileValue)
-
-rule {
-    platforms(Platform.WEB)
-}.implies(webValue)
-
-rule {
-    platforms(Platform.SERVER)
-}.implies(backendValue)
 ```
-
-Available platforms:
-- `Platform.IOS`
-- `Platform.ANDROID`
-- `Platform.WEB`
-- `Platform.DESKTOP`
-- `Platform.SERVER`
 
 ### Locale Targeting
 
@@ -59,14 +48,6 @@ Target users based on language and region:
 rule {
     locales(AppLocale.EN_US, AppLocale.EN_CA, AppLocale.EN_GB)
 }.implies(englishValue)
-
-rule {
-    locales(AppLocale.FR_FR, AppLocale.FR_CA)
-}.implies(frenchValue)
-
-rule {
-    locales(AppLocale.ES_ES, AppLocale.ES_MX)
-}.implies(spanishValue)
 ```
 
 ### Version Targeting
@@ -76,16 +57,12 @@ Target specific version ranges using semantic versioning:
 ```kotlin
 // Minimum version only
 rule {
-    versions {
-        min(2, 0, 0)  // Version 2.0.0 or higher
-    }
+    versions { min(2, 0, 0) }  // Version 2.0.0 or higher
 }.implies(newFeatureValue)
 
 // Maximum version only
 rule {
-    versions {
-        max(2, 0, 0)  // Version 2.0.0 or lower
-    }
+    versions { max(1, 9, 9) }  // Version 1.9.9 or lower
 }.implies(legacyValue)
 
 // Version range
@@ -96,7 +73,7 @@ rule {
     }
 }.implies(transitionValue)
 
-// Exact version
+// Exact version targeting
 rule {
     versions {
         min(2, 1, 3)
@@ -121,7 +98,7 @@ rule {
 
 ## Rollouts
 
-Rollouts enable gradual feature deployment to a percentage of users who match the rule criteria.
+Rollouts enable gradual feature deployment to a percentage of users who match the rule criteria. Users are assigned to rollout buckets using hash-based bucketing on their `stableId`.
 
 ### Basic Rollout
 
@@ -130,80 +107,44 @@ rule {
     platforms(Platform.IOS)
     rollout = Rollout.of(25.0)  // 25% of iOS users
 }.implies(true)
+
+// Common rollout values
+Rollout.of(0.0)    // 0% - effectively disabled
+Rollout.of(10.0)   // 10% - canary/pilot
+Rollout.of(50.0)   // 50% - A/B test
+Rollout.MAX        // 100% - full rollout
 ```
 
 ### Rollout Characteristics
 
-**Deterministic**: The same user (identified by `stableId`) always gets the same rollout assignment.
-
-```kotlin
-val user1 = Context(
-    locale = AppLocale.EN_US,
-    platform = Platform.IOS,
-    appVersion = Version(2, 0, 0),
-    stableId = StableId.of("user-123")
-)
-
-// This user will always get the same result
-val result1 = user1.evaluateSafe(feature)  // Deterministic
-val result2 = user1.evaluateSafe(feature)  // Same as result1
-```
-
-**Independent**: Each flag has its own bucketing space. A user in the 25% rollout for one feature is independent of their assignment in another feature.
-
-**Stable**: Changing a flag's configuration does not affect rollout assignments unless you change the salt.
+- **Deterministic**: Same user (by `stableId`) always gets the same assignment
+- **Independent**: Each flag has its own bucketing space
+- **Stable**: Assignments don't change unless you modify the salt
 
 ### Rollout Strategies
 
 #### Gradual Rollout
 
-Increase rollout percentage over time:
+Increase rollout percentage over time for safe feature deployment:
 
 ```kotlin
-// Phase 1: 10%
+// Phase 1: Start with 10%
 config {
     MyFeature.NEW_CHECKOUT with {
         default(false)
         rule {
             rollout = Rollout.of(10.0)
+            note("Initial rollout - Phase 1")
         }.implies(true)
     }
 }
 
-// Phase 2: 50%
+// Phase 2: Increase to 50%, then eventually to 100%
 config {
     MyFeature.NEW_CHECKOUT with {
         default(false)
         rule {
-            rollout = Rollout.of(50.0)
-        }.implies(true)
-    }
-}
-
-// Phase 3: 100%
-config {
-    MyFeature.NEW_CHECKOUT with {
-        default(false)
-        rule {
-            rollout = Rollout.MAX  // or Rollout.of(100.0)
-        }.implies(true)
-    }
-}
-```
-
-#### Canary Deployment
-
-Test with a small percentage before wider rollout:
-
-```kotlin
-config {
-    MyFeature.RISKY_FEATURE with {
-        default(false)
-
-        // Canary: 1% of production users
-        rule {
-            rollout = Rollout.of(1.0)
-            note("Canary deployment - monitoring for issues")
+            rollout = Rollout.MAX  // Full rollout
         }.implies(true)
     }
 }
@@ -211,14 +152,14 @@ config {
 
 #### Segmented Rollout
 
-Different rollout percentages for different segments:
+Different rollout percentages for different user segments:
 
 ```kotlin
 config {
     MyFeature.BETA_FEATURE with {
         default(false)
 
-        // 100% rollout for internal users
+        // 100% for internal users
         rule {
             extension {
                 object : Evaluable<EnterpriseContext>() {
@@ -230,7 +171,7 @@ config {
             rollout = Rollout.MAX
         }.implies(true)
 
-        // 25% rollout for enterprise customers
+        // 25% for enterprise customers
         rule {
             extension {
                 object : Evaluable<EnterpriseContext>() {
@@ -253,20 +194,7 @@ The salt affects hash-based bucketing. Changing the salt redistributes users acr
 config {
     MyFeature.EXPERIMENT with {
         default(false)
-        salt("v1")  // Initial salt
-
-        rule {
-            rollout = Rollout.of(50.0)
-        }.implies(true)
-    }
-}
-
-// Change salt to redistribute users
-config {
-    MyFeature.EXPERIMENT with {
-        default(false)
-        salt("v2")  // Different salt = different buckets
-
+        salt("v1")  // Change to "v2" to redistribute users
         rule {
             rollout = Rollout.of(50.0)
         }.implies(true)
@@ -274,10 +202,7 @@ config {
 }
 ```
 
-Use cases for changing salt:
-- Reset an A/B test with fresh user assignments
-- Fix biased rollout distributions
-- Run a new experiment on the same feature
+Use cases: Reset A/B tests, fix biased distributions, or run new experiments on the same feature.
 
 ## Rule Evaluation Order
 
@@ -285,10 +210,10 @@ Rules are evaluated in order of **specificity** (highest first). When multiple r
 
 ### Specificity Calculation
 
-Specificity is the sum of specified constraints:
+Specificity is the sum of specified constraints. Rules with higher specificity are evaluated first:
 
 ```kotlin
-// Specificity = 0 (no constraints)
+// Specificity = 0 (no constraints - matches everything)
 rule {
     rollout = Rollout.MAX
 }.implies(value)
@@ -311,16 +236,48 @@ rule {
     versions { min(2, 0, 0) }
 }.implies(value)
 
-// Custom extensions add to specificity
+// Custom extensions contribute their own specificity
 rule {
-    platforms(Platform.IOS)  // +1
-    extension {  // +1 (from extension's specificity())
+    platforms(Platform.IOS)  // +1 specificity
+    extension {
         object : Evaluable<Context>() {
-            override fun matches(context: Context) = /* custom logic */
-            override fun specificity() = 1
+            override fun matches(context: Context) = true
+            override fun specificity() = 1  // +1 specificity
         }
     }
 }.implies(value)  // Total specificity = 2
+```
+
+**How specificity affects evaluation**: When a context matches multiple rules, only the highest-specificity matching rule's value is returned. This ensures more specific targeting overrides general targeting.
+
+### Rule Evaluation Flow
+
+```mermaid
+flowchart TD
+    Start[Context Evaluation] --> Rules[Get Rules Sorted by Specificity]
+    Rules --> NextRule{Next Rule}
+    NextRule -->|No more rules| Default[Return Default Value]
+    NextRule -->|Has rule| CheckPlatform{Platform Matches?}
+
+    CheckPlatform -->|No| NextRule
+    CheckPlatform -->|Yes| CheckLocale{Locale Matches?}
+
+    CheckLocale -->|No| NextRule
+    CheckLocale -->|Yes| CheckVersion{Version Matches?}
+
+    CheckVersion -->|No| NextRule
+    CheckVersion -->|Yes| CheckExtension{Extension Matches?}
+
+    CheckExtension -->|No| NextRule
+    CheckExtension -->|Yes| CheckRollout{In Rollout Percentage?}
+
+    CheckRollout -->|No| NextRule
+    CheckRollout -->|Yes| Return[Return Rule Value]
+
+    style Start fill:#e1f5ff
+    style Return fill:#d4edda
+    style Default fill:#fff3cd
+    style NextRule fill:#f8f9fa
 ```
 
 ### Evaluation Example
@@ -340,40 +297,16 @@ config {
         rule {
             platforms(Platform.IOS)
         }.implies("dark-ios")
-
-        // Specificity = 1, evaluated third (tie broken by note alphabetically)
-        rule {
-            locales(AppLocale.EN_US)
-        }.implies("light-us")
     }
 }
 
-// Context: iOS + EN_US
-// Matches both rule 1 (specificity 2) and rule 2 (specificity 1)
-// Returns "dark-us" (highest specificity wins)
-val context1 = Context(
-    platform = Platform.IOS,
-    locale = AppLocale.EN_US,
-    // ...
-)
-context1.evaluateSafe(MyFeature.THEME)  // "dark-us"
-
-// Context: iOS + FR_FR
-// Matches only rule 2 (specificity 1)
-// Returns "dark-ios"
-val context2 = Context(
-    platform = Platform.IOS,
-    locale = AppLocale.FR_FR,
-    // ...
-)
-context2.evaluateSafe(MyFeature.THEME)  // "dark-ios"
+// iOS + EN_US → "dark-us" (matches both, highest specificity wins)
+// iOS + FR_FR → "dark-ios" (matches only second rule)
 ```
 
 ## Custom Extensions
 
-Extensions allow domain-specific targeting beyond standard criteria using the `Evaluable` abstraction.
-
-### Evaluable Interface
+Extensions allow domain-specific targeting beyond standard criteria using the `Evaluable` abstraction:
 
 ```kotlin
 abstract class Evaluable<C : Context> {
@@ -382,24 +315,9 @@ abstract class Evaluable<C : Context> {
 }
 ```
 
-### Basic Extension
+### Pattern 1: Inline Extensions
 
-```kotlin
-rule {
-    extension {
-        object : Evaluable<EnterpriseContext>() {
-            override fun matches(context: EnterpriseContext): Boolean =
-                context.subscriptionTier == SubscriptionTier.ENTERPRISE
-
-            override fun specificity(): Int = 1
-        }
-    }
-}.implies(enterpriseValue)
-```
-
-### Complex Extensions
-
-Combine multiple conditions:
+For simple, one-off targeting logic:
 
 ```kotlin
 rule {
@@ -407,26 +325,18 @@ rule {
     extension {
         object : Evaluable<EnterpriseContext>() {
             override fun matches(context: EnterpriseContext): Boolean {
-                val isPremium = context.subscriptionTier in setOf(
-                    SubscriptionTier.PROFESSIONAL,
-                    SubscriptionTier.ENTERPRISE
-                )
-                val isAdmin = context.userRole in setOf(
-                    UserRole.ADMIN,
-                    UserRole.OWNER
-                )
-                return isPremium && isAdmin
+                return context.subscriptionTier == SubscriptionTier.ENTERPRISE &&
+                       context.userRole == UserRole.ADMIN
             }
-
-            override fun specificity(): Int = 2  // Two conditions checked
+            override fun specificity(): Int = 2
         }
     }
-}.implies(premiumAdminValue)
+}.implies(enterpriseAdminValue)
 ```
 
-### Reusable Extensions
+### Pattern 2: Reusable Extension Classes
 
-Define extension classes for reuse:
+For complex logic used across multiple features:
 
 ```kotlin
 class SubscriptionTierEvaluable(
@@ -434,34 +344,13 @@ class SubscriptionTierEvaluable(
 ) : Evaluable<EnterpriseContext>() {
     override fun matches(context: EnterpriseContext): Boolean =
         context.subscriptionTier in allowedTiers
-
     override fun specificity(): Int = 1
 }
 
-class UserRoleEvaluable(
-    private val allowedRoles: Set<UserRole>
-) : Evaluable<EnterpriseContext>() {
-    override fun matches(context: EnterpriseContext): Boolean =
-        context.userRole in allowedRoles
-
-    override fun specificity(): Int = 1
-}
-
-// Use in rules
+// Use in multiple rules
 config {
-    MyFeature.ADMIN_PANEL with {
-        default(false)
-
-        rule {
-            extension {
-                UserRoleEvaluable(setOf(UserRole.ADMIN, UserRole.OWNER))
-            }
-        }.implies(true)
-    }
-
     MyFeature.PREMIUM_FEATURES with {
         default(false)
-
         rule {
             extension {
                 SubscriptionTierEvaluable(setOf(
@@ -476,38 +365,25 @@ config {
 
 ## Rule Composition
 
-Rules compose base targeting with custom extensions. Both must match for the rule to match.
+Rules compose base targeting with custom extensions - all must match:
 
 ```kotlin
 rule {
-    // Base targeting (BaseEvaluable)
-    platforms(Platform.WEB)
-    locales(AppLocale.EN_US)
-
-    // Custom extension
-    extension {
+    platforms(Platform.WEB)         // 1. Base targeting
+    extension {                     // 2. Custom logic
         object : Evaluable<EnterpriseContext>() {
             override fun matches(context: EnterpriseContext) =
                 context.organizationId == "enterprise-123"
             override fun specificity() = 1
         }
     }
-
-    // Rollout (checked after matching)
-    rollout = Rollout.of(50.0)
+    rollout = Rollout.of(50.0)     // 3. Rollout bucketing
 }.implies(value)
 ```
 
-Evaluation order:
-1. Base targeting matches (platform, locale, version)
-2. Extension matches (custom logic)
-3. Rollout eligibility (hash-based bucketing)
-
-All three must succeed for the rule to select its value.
-
 ## Rule Notes
 
-Add documentation to rules for clarity:
+Add documentation to rules using `note()` for clarity:
 
 ```kotlin
 rule {
@@ -515,73 +391,27 @@ rule {
     rollout = Rollout.of(25.0)
     note("Gradual rollout to iOS users - Phase 1 of mobile launch")
 }.implies(true)
-
-rule {
-    extension {
-        object : Evaluable<EnterpriseContext>() {
-            override fun matches(context: EnterpriseContext) =
-                context.organizationId in setOf("beta-tester-1", "beta-tester-2")
-            override fun specificity() = 1
-        }
-    }
-    note("Beta testing with specific partner organizations")
-}.implies(betaValue)
 ```
-
-Notes are useful for:
-- Explaining complex targeting logic
-- Tracking rollout phases
-- Documenting business decisions
-- Debugging evaluation behavior
-
-## Empty Rule Semantics
-
-Empty constraints match everything:
-
-```kotlin
-// Matches all contexts (no constraints)
-rule {
-    rollout = Rollout.MAX
-}.implies(defaultValue)
-
-// Matches all platforms (locales empty)
-rule {
-    locales(AppLocale.EN_US)
-}.implies(englishValue)
-
-// Matches all versions (versionRange unbounded)
-rule {
-    platforms(Platform.IOS)
-}.implies(iosValue)
-```
-
-This "match all" semantic is useful for default rules or broad targeting.
 
 ## Best Practices
 
-### Order Rules by Specificity
+### Think in Specificity
 
-While Konditional handles this automatically, thinking in terms of specificity helps design clearer rules:
+Design rules from most to least specific. While Konditional sorts automatically, this mental model creates clearer configurations:
 
 ```kotlin
 config {
     MyFeature.VALUE with {
         default("default")
 
-        // Most specific: platform + locale + version
+        // Most specific
         rule {
             platforms(Platform.IOS)
             locales(AppLocale.EN_US)
             versions { min(2, 0, 0) }
         }.implies("specific")
 
-        // Medium specific: platform + locale
-        rule {
-            platforms(Platform.IOS)
-            locales(AppLocale.EN_US)
-        }.implies("medium")
-
-        // Least specific: platform only
+        // Less specific
         rule {
             platforms(Platform.IOS)
         }.implies("broad")
@@ -589,58 +419,56 @@ config {
 }
 ```
 
-### Use Extensions for Domain Logic
+### Separate Concerns
 
-Keep standard targeting for platform/locale/version and use extensions for business logic:
+Use standard targeting for technical criteria and extensions for business logic:
 
 ```kotlin
-// Good: Separation of concerns
 rule {
-    platforms(Platform.WEB)  // Standard targeting
-    extension {  // Domain logic
+    platforms(Platform.WEB)  // Technical targeting
+    extension {              // Business logic
         SubscriptionTierEvaluable(setOf(SubscriptionTier.ENTERPRISE))
     }
 }.implies(value)
-
-// Avoid: Mixing concerns in one place would require custom rule types
 ```
 
-### Document Complex Rules
+### Document Complex Logic
 
-Use notes for rules with non-obvious logic:
+Add notes to explain non-obvious targeting decisions:
 
 ```kotlin
 rule {
-    extension {
-        object : Evaluable<Context>() {
-            override fun matches(context: Context) = /* complex logic */
-            override fun specificity() = 3
-        }
-    }
     rollout = Rollout.of(15.0)
-    note("Targeting high-value users for premium feature test - approved by PM on 2024-01-15")
-}.implies(premiumValue)
+    note("Targeting high-value users - approved by PM on 2024-01-15")
+}.implies(value)
 ```
 
-### Test Rule Evaluation
+### Test Your Rules
 
 Create unit tests for complex rule logic:
 
 ```kotlin
 @Test
-fun `enterprise users get premium features`() {
+fun `enterprise users on web get premium features`() {
     val context = EnterpriseContext(
-        locale = AppLocale.EN_US,
         platform = Platform.WEB,
-        appVersion = Version(2, 0, 0),
-        stableId = StableId.of("test-user"),
         subscriptionTier = SubscriptionTier.ENTERPRISE,
+        stableId = StableId.of("test-user"),
         // ...
     )
-
-    val result = context.evaluateSafe(MyFeature.PREMIUM_FEATURE)
-    assertTrue(result is EvaluationResult.Success && result.value == true)
+    val result = context.evaluateSafe(MyFeature.PREMIUM)
+    assertTrue(result is EvaluationResult.Success && result.value)
 }
+```
+
+### Empty Constraints Match All
+
+Omitted constraints match everything - useful for broad default rules:
+
+```kotlin
+rule {
+    rollout = Rollout.MAX  // Matches all contexts
+}.implies(defaultValue)
 ```
 
 ## Next Steps

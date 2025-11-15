@@ -117,9 +117,27 @@ val context = AppContext(
 
 Extend the base `Context` interface to add domain-specific targeting fields. This is one of Konditional's most powerful features, allowing you to target flags based on your business logic.
 
-### Enterprise Context
+```mermaid
+graph TD
+    A[Context Interface] --> B[AppContext]
+    A --> C[EnterpriseContext]
+    A --> D[ExperimentContext]
+    A --> E[TenantContext]
 
-Add organization and subscription information:
+    B --> F[Standard Properties]
+    C --> G[Standard Properties + Business Logic]
+    D --> H[Standard Properties + Experimentation]
+    E --> I[Standard Properties + Multi-tenancy]
+
+    F --> J[locale, platform, appVersion, stableId]
+    G --> K[+ organizationId, subscriptionTier, userRole]
+    H --> L[+ activeExperiments, userSegment]
+    I --> M[+ tenantId, tenantRegion, featureWhitelist]
+```
+
+### Example: Enterprise Context
+
+Add organization and subscription information for enterprise features:
 
 ```kotlin
 data class EnterpriseContext(
@@ -132,18 +150,8 @@ data class EnterpriseContext(
     val userRole: UserRole
 ) : Context
 
-enum class SubscriptionTier {
-    FREE,
-    PROFESSIONAL,
-    ENTERPRISE
-}
-
-enum class UserRole {
-    VIEWER,
-    EDITOR,
-    ADMIN,
-    OWNER
-}
+enum class SubscriptionTier { FREE, PROFESSIONAL, ENTERPRISE }
+enum class UserRole { VIEWER, EDITOR, ADMIN, OWNER }
 ```
 
 Use custom context fields in rule extensions:
@@ -161,13 +169,11 @@ enum class EnterpriseFeatures(
 config {
     EnterpriseFeatures.ADVANCED_ANALYTICS with {
         default(false)
-
         rule {
             extension {
                 object : Evaluable<EnterpriseContext>() {
                     override fun matches(context: EnterpriseContext): Boolean =
                         context.subscriptionTier == SubscriptionTier.ENTERPRISE
-
                     override fun specificity(): Int = 1
                 }
             }
@@ -176,65 +182,20 @@ config {
 }
 ```
 
-### Experimentation Context
-
-Add A/B testing and experiment tracking:
-
-```kotlin
-data class ExperimentContext(
-    override val locale: AppLocale,
-    override val platform: Platform,
-    override val appVersion: Version,
-    override val stableId: StableId,
-    val activeExperiments: Set<String>,
-    val userSegment: UserSegment
-) : Context
-
-enum class UserSegment {
-    NEW_USER,
-    ACTIVE_USER,
-    POWER_USER,
-    AT_RISK
-}
-```
-
-### Multi-Tenant Context
-
-Support multi-tenant applications:
-
-```kotlin
-data class TenantContext(
-    override val locale: AppLocale,
-    override val platform: Platform,
-    override val appVersion: Version,
-    override val stableId: StableId,
-    val tenantId: String,
-    val tenantRegion: String,
-    val tenantPlan: String,
-    val featureWhitelist: Set<String>
-) : Context
-```
+Other common extension patterns include experimentation contexts (for A/B testing with `activeExperiments` and `userSegment` fields) and multi-tenant contexts (with `tenantId`, `tenantRegion`, and feature whitelists).
 
 ## Context Patterns
 
 ### Immutability
 
-Context instances should be immutable. This ensures thread safety and prevents accidental modifications during evaluation:
+Always use immutable data classes for thread safety. Use `val` for all properties and leverage Kotlin's `copy()` for modifications:
 
 ```kotlin
 // Good: Immutable data class
-data class AppContext(
-    override val locale: AppLocale,
-    override val platform: Platform,
-    override val appVersion: Version,
-    override val stableId: StableId
-) : Context
+data class AppContext(...) : Context
 
 // Bad: Mutable properties
-class MutableContext(
-    override var locale: AppLocale,  // Don't do this
-    // ...
-) : Context
+class MutableContext(override var locale: AppLocale, ...) : Context  // Don't do this
 ```
 
 ### Context Factories
@@ -243,105 +204,39 @@ Create factory functions for common context creation patterns:
 
 ```kotlin
 object ContextFactory {
-    fun fromRequest(request: HttpRequest): AppContext {
-        return AppContext(
+    fun fromRequest(request: HttpRequest): AppContext =
+        AppContext(
             locale = parseLocale(request.headers["Accept-Language"]),
             platform = detectPlatform(request.headers["User-Agent"]),
             appVersion = parseVersion(request.headers["X-App-Version"]),
             stableId = StableId.of(request.cookies["user_id"] ?: generateAnonymousId())
         )
-    }
 
-    fun fromUser(user: User, device: Device): AppContext {
-        return AppContext(
-            locale = user.preferredLocale,
-            platform = device.platform,
-            appVersion = device.appVersion,
-            stableId = StableId.of(user.id)
-        )
-    }
+    fun fromUser(user: User, device: Device): AppContext =
+        AppContext(user.preferredLocale, device.platform, device.appVersion, StableId.of(user.id))
 }
 ```
 
 ### Context Builders
 
-For complex contexts, provide builders:
-
-```kotlin
-class EnterpriseContextBuilder {
-    private var locale: AppLocale? = null
-    private var platform: Platform? = null
-    private var appVersion: Version? = null
-    private var stableId: StableId? = null
-    private var organizationId: String? = null
-    private var subscriptionTier: SubscriptionTier? = null
-    private var userRole: UserRole? = null
-
-    fun locale(value: AppLocale) = apply { this.locale = value }
-    fun platform(value: Platform) = apply { this.platform = value }
-    fun appVersion(value: Version) = apply { this.appVersion = value }
-    fun stableId(value: StableId) = apply { this.stableId = value }
-    fun organizationId(value: String) = apply { this.organizationId = value }
-    fun subscriptionTier(value: SubscriptionTier) = apply { this.subscriptionTier = value }
-    fun userRole(value: UserRole) = apply { this.userRole = value }
-
-    fun build(): EnterpriseContext {
-        return EnterpriseContext(
-            locale = requireNotNull(locale) { "locale is required" },
-            platform = requireNotNull(platform) { "platform is required" },
-            appVersion = requireNotNull(appVersion) { "appVersion is required" },
-            stableId = requireNotNull(stableId) { "stableId is required" },
-            organizationId = requireNotNull(organizationId) { "organizationId is required" },
-            subscriptionTier = requireNotNull(subscriptionTier) { "subscriptionTier is required" },
-            userRole = requireNotNull(userRole) { "userRole is required" }
-        )
-    }
-}
-```
+For complex contexts with many optional fields, use builders to improve readability and ensure all required fields are set.
 
 ## StableId Best Practices
 
-The `stableId` is critical for consistent rollout behavior. Follow these guidelines:
-
-### Choose Appropriate Identifiers
+The `stableId` is critical for consistent rollout behavior. Choose identifiers based on targeting level:
 
 ```kotlin
-// User-level targeting: Use user ID
+// User-level: Use user ID
 val stableId = StableId.of(userId)
 
-// Device-level targeting: Use device ID
+// Device-level: Use device ID
 val stableId = StableId.of(deviceId)
 
-// Session-level targeting: Use session ID
-val stableId = StableId.of(sessionId)
-
-// Anonymous users: Generate and persist an anonymous ID
-val stableId = StableId.of(anonymousUserId)
-```
-
-### Stability Considerations
-
-The identifier should be:
-- **Persistent**: Survives application restarts
-- **Unique**: Different for each user/device/session
-- **Consistent**: Same value across requests for the same entity
-
-### Anonymous Users
-
-For anonymous users, generate and persist an identifier:
-
-```kotlin
-fun getOrCreateAnonymousId(): String {
-    val stored = localStorage.getItem("anonymous_id")
-    if (stored != null) return stored
-
-    val newId = UUID.randomUUID().toString()
-    localStorage.setItem("anonymous_id", newId)
-    return newId
-}
-
+// Anonymous: Generate and persist
 val stableId = StableId.of(getOrCreateAnonymousId())
 ```
+
+The identifier must be **persistent** (survives restarts), **unique** (per user/device/session), and **consistent** (same value across requests). For anonymous users, generate a UUID and store it in localStorage or cookies.
 
 ## Context Polymorphism
 

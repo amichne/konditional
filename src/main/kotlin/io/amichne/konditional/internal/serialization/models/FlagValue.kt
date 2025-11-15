@@ -2,6 +2,8 @@ package io.amichne.konditional.internal.serialization.models
 
 import com.squareup.moshi.JsonClass
 import io.amichne.konditional.core.ValueType
+import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.core.types.asJsonObject
 
 /**
  * Type-safe representation of flag values that replaces the type-erased SerializableValue.
