@@ -3,7 +3,7 @@ package io.amichne.konditional.demo
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
-import io.amichne.konditional.core.FeatureModule
+import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.config
 import io.amichne.konditional.rules.versions.Version
 
@@ -11,7 +11,7 @@ import io.amichne.konditional.rules.versions.Version
  * Initializes the demo configuration with example rules and rollouts
  */
 fun initializeDemoConfig() {
-    FeatureModule.Core.config {
+    Taxonomy.Global.config {
         // Boolean Features
         DemoFeatures.DARK_MODE with {
             default(false)
@@ -136,7 +136,7 @@ fun initializeDemoConfig() {
  * Initializes the enterprise configuration with enterprise-specific features
  */
 fun initializeEnterpriseConfig() {
-    FeatureModule.Core.config {
+    Taxonomy.Global.config {
         EnterpriseFeatures.SSO_ENABLED with {
             default(false)
             rule {

@@ -1,8 +1,9 @@
 package io.amichne.konditional.demo
 
 import io.amichne.konditional.context.AppLocale
+import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.core.FeatureModule
+import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.rules.versions.Version
 import io.amichne.konditional.serialization.SnapshotSerializer
@@ -52,7 +53,7 @@ fun Application.configureRouting() {
 
         get("/api/snapshot") {
             try {
-                val snapshot = FeatureModule.Core.registry.snapshot()
+                val snapshot = Taxonomy.Global.registry.snapshot()
                 val json = SnapshotSerializer.toJson(snapshot)
                 call.respondText(json, ContentType.Application.Json)
             } catch (e: Exception) {
@@ -103,16 +104,16 @@ private fun evaluateEnterpriseContext(params: Parameters): String {
 private fun buildEvaluationJson(context: DemoContext): String {
     val results = mutableMapOf<String, Any>()
 
-    // Evaluate all demo features
-    results["darkMode"] = Features.DARK_MODE.evaluate(context)
-    results["betaFeatures"] = Features.BETA_FEATURES.evaluate(context)
-    results["analyticsEnabled"] = Features.ANALYTICS_ENABLED.evaluate(context)
-    results["welcomeMessage"] = Features.WELCOME_MESSAGE.evaluate(context)
-    results["themeColor"] = Features.THEME_COLOR.evaluate(context)
-    results["maxItemsPerPage"] = Features.MAX_ITEMS_PER_PAGE.evaluate(context)
-    results["cacheTtlSeconds"] = Features.CACHE_TTL_SECONDS.evaluate(context)
-    results["discountPercentage"] = Features.DISCOUNT_PERCENTAGE.evaluate(context)
-    results["apiRateLimit"] = Features.API_RATE_LIMIT.evaluate(context)
+    // Evaluate all demo features using Context.evaluate()
+    results["darkMode"] = context.evaluate(DemoFeatures.DARK_MODE)
+    results["betaFeatures"] = context.evaluate(DemoFeatures.BETA_FEATURES)
+    results["analyticsEnabled"] = context.evaluate(DemoFeatures.ANALYTICS_ENABLED)
+    results["welcomeMessage"] = context.evaluate(DemoFeatures.WELCOME_MESSAGE)
+    results["themeColor"] = context.evaluate(DemoFeatures.THEME_COLOR)
+    results["maxItemsPerPage"] = context.evaluate(DemoFeatures.MAX_ITEMS_PER_PAGE)
+    results["cacheTtlSeconds"] = context.evaluate(DemoFeatures.CACHE_TTL_SECONDS)
+    results["discountPercentage"] = context.evaluate(DemoFeatures.DISCOUNT_PERCENTAGE)
+    results["apiRateLimit"] = context.evaluate(DemoFeatures.API_RATE_LIMIT)
 
     return com.squareup.moshi.Moshi.Builder().build()
         .adapter(Map::class.java)
@@ -123,21 +124,21 @@ private fun buildEnterpriseEvaluationJson(context: EnterpriseContext): String {
     val results = mutableMapOf<String, Any>()
 
     // Evaluate base features with enterprise context
-    results["darkMode"] = DemoFeatures.DARK_MODE.evaluate(context)
-    results["betaFeatures"] = DemoFeatures.BETA_FEATURES.evaluate(context)
-    results["analyticsEnabled"] = DemoFeatures.ANALYTICS_ENABLED.evaluate(context)
-    results["welcomeMessage"] = DemoFeatures.WELCOME_MESSAGE.evaluate(context)
-    results["themeColor"] = DemoFeatures.THEME_COLOR.evaluate(context)
-    results["maxItemsPerPage"] = DemoFeatures.MAX_ITEMS_PER_PAGE.evaluate(context)
-    results["cacheTtlSeconds"] = DemoFeatures.CACHE_TTL_SECONDS.evaluate(context)
-    results["discountPercentage"] = DemoFeatures.DISCOUNT_PERCENTAGE.evaluate(context)
-    results["apiRateLimit"] = DemoFeatures.API_RATE_LIMIT.evaluate(context)
+    results["darkMode"] = context.evaluate(DemoFeatures.DARK_MODE)
+    results["betaFeatures"] = context.evaluate(DemoFeatures.BETA_FEATURES)
+    results["analyticsEnabled"] = context.evaluate(DemoFeatures.ANALYTICS_ENABLED)
+    results["welcomeMessage"] = context.evaluate(DemoFeatures.WELCOME_MESSAGE)
+    results["themeColor"] = context.evaluate(DemoFeatures.THEME_COLOR)
+    results["maxItemsPerPage"] = context.evaluate(DemoFeatures.MAX_ITEMS_PER_PAGE)
+    results["cacheTtlSeconds"] = context.evaluate(DemoFeatures.CACHE_TTL_SECONDS)
+    results["discountPercentage"] = context.evaluate(DemoFeatures.DISCOUNT_PERCENTAGE)
+    results["apiRateLimit"] = context.evaluate(DemoFeatures.API_RATE_LIMIT)
 
     // Evaluate enterprise features
-    results["ssoEnabled"] = EnterpriseFeatureRefs.SSO_ENABLED.evaluate(context)
-    results["advancedAnalytics"] = EnterpriseFeatureRefs.ADVANCED_ANALYTICS.evaluate(context)
-    results["customBranding"] = EnterpriseFeatureRefs.CUSTOM_BRANDING.evaluate(context)
-    results["dedicatedSupport"] = EnterpriseFeatureRefs.DEDICATED_SUPPORT.evaluate(context)
+    results["ssoEnabled"] = context.evaluate(EnterpriseFeatures.SSO_ENABLED)
+    results["advancedAnalytics"] = context.evaluate(EnterpriseFeatures.ADVANCED_ANALYTICS)
+    results["customBranding"] = context.evaluate(EnterpriseFeatures.CUSTOM_BRANDING)
+    results["dedicatedSupport"] = context.evaluate(EnterpriseFeatures.DEDICATED_SUPPORT)
 
     return com.squareup.moshi.Moshi.Builder().build()
         .adapter(Map::class.java)
@@ -348,7 +349,7 @@ private fun HTML.renderMainPage() {
         div("container") {
             div("header") {
                 h1 { +"🚀 Konditional Demo" }
-                p { +"Interactive Feature Flags with Type-Safe Evaluation" }
+                p { +"Interactive Feature Flags with FeatureContainer Delegation" }
             }
             div("content") {
                 // Left panel - Configuration
