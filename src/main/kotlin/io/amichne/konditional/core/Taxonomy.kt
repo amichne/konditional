@@ -11,13 +11,13 @@ package io.amichne.konditional.core
  *
  * ## Taxonomy Types
  *
- * ### Core Taxonomy
- * The [Core] taxonomy contains shared flags accessible to all teams:
+ * ### Global Taxonomy
+ * The [Global] taxonomy contains shared flags accessible to all teams:
  * ```kotlin
  * enum class CoreFeatures(override val key: String)
- *     : Feature<BoolEncodeable, Boolean, Context, Taxonomy.Core> {
+ *     : Feature<BoolEncodeable, Boolean, Context, Taxonomy.Global> {
  *     KILL_SWITCH("kill_switch");
- *     override val taxonomy = Taxonomy.Core
+ *     override val taxonomy = Taxonomy.Global
  * }
  * ```
  *
@@ -58,8 +58,9 @@ sealed class Taxonomy(val id: String) {
      */
     abstract var registry: ModuleRegistry
 
+
     /**
-     * Core taxonomy containing shared flags accessible to all teams.
+     * Global taxonomy containing shared flags accessible to all teams.
      *
      * Use this taxonomy for:
      * - System-wide kill switches
@@ -69,13 +70,14 @@ sealed class Taxonomy(val id: String) {
      *
      * Example:
      * ```kotlin
-     * Taxonomy.Core.config {
+     * Taxonomy.Global.config {
      *     CoreFeatures.KILL_SWITCH with { default(false) }
      * }
      * ```
      */
-    data object Core : Taxonomy("core") {
+    data object Global : Taxonomy("global") {
         override var registry: ModuleRegistry = ModuleRegistry.create()
+
     }
 
     /**

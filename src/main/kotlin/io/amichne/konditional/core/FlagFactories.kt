@@ -3,6 +3,7 @@ package io.amichne.konditional.core
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.dsl.FeatureFlagDsl
 import io.amichne.konditional.core.dsl.FlagScope
+import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.internal.builders.FlagBuilder
 

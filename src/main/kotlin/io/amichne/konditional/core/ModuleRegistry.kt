@@ -1,6 +1,7 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.instance.KonfigPatch
 import io.amichne.konditional.core.types.EncodableValue
@@ -20,7 +21,7 @@ import io.amichne.konditional.core.types.EncodableValue
  * By default, [io.amichne.konditional.core.RegistryScope.global] provides a thread-safe, in-memory implementation
  * accessible globally or through [io.amichne.konditional.core.RegistryScope.current] for scoped access.
  *
- * ## Core Operations
+ * ## Global Operations
  *
  * ### Loading Configuration
  * ```kotlin
@@ -107,7 +108,7 @@ interface ModuleRegistry {
     /**
      * Retrieves a specific flag definition from the registry.
      *
-     * @param key The [Feature] key for the flag
+     * @param key The [io.amichne.konditional.core.features.Feature] key for the flag
      * @return The [FlagDefinition] if found, null otherwise
      * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type

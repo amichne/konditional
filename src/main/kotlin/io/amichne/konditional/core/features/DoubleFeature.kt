@@ -1,6 +1,8 @@
-package io.amichne.konditional.core
+package io.amichne.konditional.core.features
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.ModuleRegistry
+import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.types.EncodableValue
 
 sealed interface DoubleFeature<C : Context, M : Taxonomy> :

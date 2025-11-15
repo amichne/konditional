@@ -1,7 +1,7 @@
 package io.amichne.konditional.core.instance
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.Feature
+import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.FlagDefinition
 
 /**

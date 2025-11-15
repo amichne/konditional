@@ -1,6 +1,9 @@
-package io.amichne.konditional.core
+package io.amichne.konditional.core.features
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.FlagDefinition
+import io.amichne.konditional.core.ModuleRegistry
+import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.internal.builders.FlagBuilder
@@ -9,7 +12,7 @@ import io.amichne.konditional.internal.builders.FlagBuilder
  * Represents a feature flag that can be used to enable or disable specific functionality
  * in an application based on a given state or condition.
  *
- * Features are **type-bound** to their [Taxonomy], providing compile-time isolation between teams.
+ * Features are **type-bound** to their [io.amichne.konditional.core.Taxonomy], providing compile-time isolation between teams.
  * Each feature can only be defined and configured within its designated taxonomy.
  *
  * Type S is constrained to EncodableValue subtypes at compile time, ensuring type safety.
@@ -49,7 +52,7 @@ sealed interface Feature<S : EncodableValue<T>, T : Any, C : Context, M : Taxono
             key: String,
             module: M,
             registry: ModuleRegistry = module.registry,
-        ): OfCustom<T, P, C, M> = object : OfCustom<T, P, C, M> {
+        ): CustomFeature<T, P, C, M> = object : CustomFeature<T, P, C, M> {
             override val module: M
                 get() = module
             override val registry: ModuleRegistry

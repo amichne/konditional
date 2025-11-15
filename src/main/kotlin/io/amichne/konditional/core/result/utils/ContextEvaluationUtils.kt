@@ -1,7 +1,7 @@
 package io.amichne.konditional.core.result.utils
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.Feature
+import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.result.EvaluationResult
 import io.amichne.konditional.core.result.FlagEvaluationException

@@ -6,7 +6,8 @@ import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout.Companion.MAX
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Taxonomy.Core
+import io.amichne.konditional.core.Taxonomy.Global
+import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.types.EncodableValue
@@ -27,9 +28,9 @@ class FlagEntryTypeSafetyTest {
     @BeforeEach
     fun setup() {
         // Reset registry before each test
-        println("Core")
+        println("Global")
         println("--------")
-        println(SnapshotSerializer().serialize(Core.registry.konfig()))
+        println(SnapshotSerializer().serialize(Global.registry.konfig()))
         println("--------")
 
         println("Payments")
@@ -43,15 +44,15 @@ class FlagEntryTypeSafetyTest {
         println("--------")
 
         println(
-            "Does Core registry match Search? ${
-                SnapshotSerializer().serialize(Core.registry.konfig()) == SnapshotSerializer().serialize(
+            "Does Global registry match Search? ${
+                SnapshotSerializer().serialize(Global.registry.konfig()) == SnapshotSerializer().serialize(
                     Taxonomy.Domain.Search.registry.konfig()
                 )
             }"
         )
         println(
-            "Does Core registry match Payments? ${
-                SnapshotSerializer().serialize(Core.registry.konfig()) == SnapshotSerializer().serialize(
+            "Does Global registry match Payments? ${
+                SnapshotSerializer().serialize(Global.registry.konfig()) == SnapshotSerializer().serialize(
                     Taxonomy.Domain.Payments.registry.konfig()
                 )
             }"
@@ -65,7 +66,7 @@ class FlagEntryTypeSafetyTest {
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
 
-    private object Features : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
+    private object Features : FeatureContainer<Global>(Taxonomy.Global) {
         val featureA by boolean<Context> {
             default(false)
             rule {
@@ -127,7 +128,7 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded(),
         )
 
-        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context, Taxonomy.Core> = FlagDefinition(
+        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context, Taxonomy.Global> = FlagDefinition(
             feature = Features.featureB,
             values = listOf(rule.targetedBy(true)),
             defaultValue = false,
@@ -162,19 +163,19 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded(),
         )
 
-        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context, Taxonomy.Core> = FlagDefinition(
+        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context, Taxonomy.Global> = FlagDefinition(
             feature = Features.featureA,
             values = listOf(boolRule.targetedBy(true)),
             defaultValue = false,
         )
 
-        val stringFlag: FlagDefinition<EncodableValue.StringEncodeable, String, Context, Taxonomy.Core> = FlagDefinition(
+        val stringFlag: FlagDefinition<EncodableValue.StringEncodeable, String, Context, Taxonomy.Global> = FlagDefinition(
             feature = Features.configA,
             values = listOf(stringRule.targetedBy("value")),
             defaultValue = "default",
         )
 
-        val intFlag: FlagDefinition<EncodableValue.IntEncodeable, Int, Context, Taxonomy.Core> = FlagDefinition(
+        val intFlag: FlagDefinition<EncodableValue.IntEncodeable, Int, Context, Taxonomy.Global> = FlagDefinition(
             feature = Features.timeout,
             values = listOf(intRule.targetedBy(30)),
             defaultValue = 10,
@@ -226,7 +227,7 @@ class FlagEntryTypeSafetyTest {
             )
         )
 
-        Taxonomy.Core.registry.load(konfig)
+        Taxonomy.Global.registry.load(konfig)
 
         val context = ctx("33333333333333333333333333333333")
         val boolResult = context.evaluate(Features.featureA)
@@ -240,7 +241,7 @@ class FlagEntryTypeSafetyTest {
 //
 //    @Test
 //    fun `Given config with multiple flag types, When loaded, Then ContextualFlagDefinition maintains type safety`() {
-//        Taxonomy.Core.config {
+//        Taxonomy.Global.config {
 //        }
 //
 //        val iosCtx = ctx("44444444444444444444444444444444", platform = Platform.IOS)
@@ -263,7 +264,7 @@ class FlagEntryTypeSafetyTest {
 //
 //    @Test
 //    fun `Given ContextualFlagDefinition in map, When retrieving by key, Then type information is preserved`() {
-//        Taxonomy.Core.config {
+//        Taxonomy.Global.config {
 //            BoolFlags.FEATURE_A with {
 //                default(false)
 //                rule {} implies true
@@ -295,8 +296,8 @@ class FlagEntryTypeSafetyTest {
 //        ) : Context
 //
 //        data class CustomIntFlag(override val key: String = "custom_int") :
-//            IntFeature<CustomContext, Taxonomy.Core> {
-//            override val module: Taxonomy.Core = Taxonomy.Core
+//            IntFeature<CustomContext, Taxonomy.Global> {
+//            override val module: Taxonomy.Global = Taxonomy.Global
 //        }
 //
 //        val customIntFlag = CustomIntFlag()
@@ -308,7 +309,7 @@ class FlagEntryTypeSafetyTest {
 //            versionRange = Unbounded(),
 //        )
 //
-//        val flag: FlagDefinition<EncodableValue.IntEncodeable, Int, CustomContext, Taxonomy.Core> = FlagDefinition(
+//        val flag: FlagDefinition<EncodableValue.IntEncodeable, Int, CustomContext, Taxonomy.Global> = FlagDefinition(
 //            feature = customIntFlag,
 //            values = listOf(rule.targetedBy(42)),
 //            defaultValue = 0,
@@ -333,7 +334,7 @@ class FlagEntryTypeSafetyTest {
 //        // This test validates that the FlagEntry wrapper eliminates the need for
 //        // @Suppress("UNCHECKED_CAST") annotations at call sites
 //
-//        Taxonomy.Core.config {
+//        Taxonomy.Global.config {
 //            BoolFlags.FEATURE_A with {
 //                default(false)
 //                rule {

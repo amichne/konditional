@@ -2,6 +2,7 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Rollout
+import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.ConditionalValue
@@ -28,7 +29,8 @@ import kotlin.math.roundToInt
  *
  */
 
-class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> internal constructor(
+@ConsistentCopyVisibility
+data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> internal constructor(
     /**
      * The default value returned when no targeting rules match or the flag is inactive.
      */
@@ -42,26 +44,6 @@ class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> 
         values.sortedWith(compareByDescending<ConditionalValue<S, T, C, M>> { it.rule.specificity() }.thenBy {
             it.rule.note ?: ""
         })
-
-    /**
-     * Evaluates the current flag based on the provided context and returns a result of type `T`.
-     *
-     * @param context The context in which the flag evaluation is performed.
-     * @return The result of the evaluation, of type `T`. If the flag is not active, returns the defaultValue.
-     */
-    fun evaluate(context: C): T {
-        if (!isActive) return defaultValue
-
-        return conditionalValues.firstOrNull {
-            it.rule.matches(context) &&
-                isInEligibleSegment(
-                    flagKey = feature.key,
-                    id = context.stableId.hexId,
-                    salt = salt,
-                    rollout = it.rule.rollout
-                )
-        }?.value ?: defaultValue
-    }
 
     internal companion object {
         val shaDigestSpi: MessageDigest = requireNotNull(MessageDigest.getInstance("SHA-256"))
@@ -82,6 +64,26 @@ class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> 
             isActive = isActive,
             salt = salt,
         )
+    }
+
+    /**
+     * Evaluates the current flag based on the provided context and returns a result of type `T`.
+     *
+     * @param context The context in which the flag evaluation is performed.
+     * @return The result of the evaluation, of type `T`. If the flag is not active, returns the defaultValue.
+     */
+    fun evaluate(context: C): T {
+        if (!isActive) return defaultValue
+
+        return conditionalValues.firstOrNull {
+            it.rule.matches(context) &&
+                isInEligibleSegment(
+                    flagKey = feature.key,
+                    id = context.stableId.hexId,
+                    salt = salt,
+                    rollout = it.rule.rollout
+                )
+        }?.value ?: defaultValue
     }
 
     /**

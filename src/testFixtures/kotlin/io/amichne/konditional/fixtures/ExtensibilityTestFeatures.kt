@@ -1,7 +1,7 @@
 package io.amichne.konditional.fixtures
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.FeatureContainer
+import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.Taxonomy
 
 /**
@@ -33,28 +33,28 @@ data class ThemeConfig(
 /**
  * JSON object feature flags for testing complex data structures.
  */
-object TestJsonEncodeableFeatureFeatures : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
+object TestJsonEncodeableFeatureFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
     private val defaultApiConfig = ApiConfig("", 0, 0, false)
 
     /** Primary API configuration */
     val primary_api by jsonObject<Context, ApiConfig>(defaultApiConfig, "primary_api")
 }
 
-object TestThemeFeatures : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
+object TestThemeFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
     private val defaultThemeConfig = ThemeConfig("", "", "", false)
 
     /** Application theme configuration */
     val app_theme by jsonObject<Context, ThemeConfig>(defaultThemeConfig, "app_theme")
 }
 
-object TestListFeatures : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
+object TestListFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
     private val defaultList = emptyList<String>()
 
     /** Enabled features list */
     val enabled_features by jsonObject<Context, List<String>>(defaultList, "enabled_features")
 }
 
-object TestMapFeatures : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
+object TestMapFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
     private val defaultMap = emptyMap<String, String>()
 
     /** Feature toggles map */
@@ -69,7 +69,7 @@ enum class LogLevel {
 }
 
 /** Custom wrapper feature flags */
-object TestCustomWrapperFeatures : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
+object TestCustomWrapperFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
     /** Application log level */
 //    val app_log_level by custom<LogLevel, String, Context>("app_log_level")
 }

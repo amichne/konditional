@@ -1,7 +1,7 @@
 package io.amichne.konditional.serialization
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.Feature
+import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.EncodableValue

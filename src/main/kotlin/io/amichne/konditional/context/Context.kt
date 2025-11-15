@@ -1,6 +1,6 @@
 package io.amichne.konditional.context
 
-import io.amichne.konditional.core.Feature
+import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.types.EncodableValue

@@ -2,7 +2,7 @@ package io.amichne.konditional.internal.builders
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.dsl.ConfigScope
-import io.amichne.konditional.core.Feature
+import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.dsl.FeatureFlagDsl
 import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.FlagDefinition

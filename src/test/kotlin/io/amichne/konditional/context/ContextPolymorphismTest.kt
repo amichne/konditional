@@ -2,7 +2,7 @@ package io.amichne.konditional.context
 
 import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.core.Taxonomy
-import io.amichne.konditional.core.Taxonomy.Core
+import io.amichne.konditional.core.Taxonomy.Global
 import io.amichne.konditional.core.config
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.EnterpriseContext
@@ -27,9 +27,9 @@ class ContextPolymorphismTest {
     @BeforeEach
     fun setup() {
         // Reset registry before each test
-        println("Core")
+        println("Global")
         println("--------")
-        println(SnapshotSerializer().serialize(Core.registry.konfig()))
+        println(SnapshotSerializer().serialize(Global.registry.konfig()))
         println("--------")
 
         println("Payments")
@@ -45,7 +45,7 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given EnterpriseContext, When evaluating flags, Then context-specific properties are accessible`() {
-        Taxonomy.Core.config {
+        Taxonomy.Global.config {
             EnterpriseFeatures.advanced_analytics with {
                 default(false)
                 // This demonstrates that the rule can access base Context properties
@@ -73,7 +73,7 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given ExperimentContext, When evaluating flags, Then experiment-specific properties are accessible`() {
-        Taxonomy.Core.config {
+        Taxonomy.Global.config {
             ExperimentFeatures.homepage_variant with {
                 default("control")
                 rule {
@@ -110,7 +110,7 @@ class ContextPolymorphismTest {
     @Suppress("USELESS_IS_CHECK")
     @Test
     fun `Given multiple custom contexts, When using different flags, Then contexts are independent`() {
-        Taxonomy.Core.config {
+        Taxonomy.Global.config {
             EnterpriseFeatures.api_access with {
                 default(false)
                 rule {
@@ -155,14 +155,14 @@ class ContextPolymorphismTest {
 //        // Define flag in scope
 //        data class StandardFlagA(
 //            override val key: String = "feature_a",
-//        ) : BooleanFeature<Context, Taxonomy.Core> {
+//        ) : BooleanFeature<Context, Taxonomy.Global> {
 //
-//            override val module: Taxonomy.Core = Taxonomy.Core
+//            override val module: Taxonomy.Global = Taxonomy.Global
 //        }
 //
 //        val standardFlagA = StandardFlagA()
 //
-//        Taxonomy.Core.config {
+//        Taxonomy.Global.config {
 //            standardFlagA with {
 //                default(false)
 //                rule {

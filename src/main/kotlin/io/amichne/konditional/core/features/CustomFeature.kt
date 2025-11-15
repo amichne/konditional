@@ -1,6 +1,7 @@
-package io.amichne.konditional.core
+package io.amichne.konditional.core.features
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.types.EncodableValue
 
 /**
@@ -13,5 +14,5 @@ import io.amichne.konditional.core.types.EncodableValue
  * @param C The context type
  * @param M The taxonomy this feature belongs to
  */
-interface OfCustom<T : Any, P : Any, C : Context, M : Taxonomy> :
+interface CustomFeature<T : Any, P : Any, C : Context, M : Taxonomy> :
     Feature<EncodableValue.CustomEncodeable<T, P>, T, C, M>

@@ -4,7 +4,7 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
-import io.amichne.konditional.core.Feature
+import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.instance.Konfig

@@ -5,13 +5,16 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.core.features.BooleanFeature
+import io.amichne.konditional.core.features.DoubleFeature
+import io.amichne.konditional.core.features.FeatureContainer
+import io.amichne.konditional.core.features.IntFeature
+import io.amichne.konditional.core.features.JsonFeature
+import io.amichne.konditional.core.features.StringFeature
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.utils.evaluateOrDefault
-import io.amichne.konditional.core.types.asJsonObject
-import io.amichne.konditional.serialization.TaxonomySnapshotSerializer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 /**
@@ -24,7 +27,7 @@ class FeatureContainerTest {
         Taxonomy.Domain.Payments
     ) {
         init {
-            taxonomy.registry = ModuleRegistry.create()
+            RegistryScope.setGlobal(ModuleRegistry.create())
         }
 
         val defaultTestConfig = TestConfig(

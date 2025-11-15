@@ -1,6 +1,9 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.features.BooleanFeature
+import io.amichne.konditional.core.features.FeatureContainer
+import io.amichne.konditional.core.features.IntFeature
 import io.amichne.konditional.core.result.utils.evaluateOrDefault
 
 /**
