@@ -1,7 +1,7 @@
 import java.time.Duration
 
 plugins {
-    kotlin("jvm") version "2.2.0"
+    kotlin("jvm") version "2.0.0"
     `java-test-fixtures`
     `maven-publish`
     signing
