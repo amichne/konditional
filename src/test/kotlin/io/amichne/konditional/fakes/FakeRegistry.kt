@@ -1,7 +1,7 @@
 package io.amichne.konditional.fakes
 
+import io.amichne.konditional.core.InMemoryModuleRegistry
 import io.amichne.konditional.core.ModuleRegistry
-import io.amichne.konditional.core.internal.SingletonModuleRegistry
 
 /**
  * A test fake implementation of [ModuleRegistry] for unit testing.
@@ -68,6 +68,6 @@ import io.amichne.konditional.core.internal.SingletonModuleRegistry
  *   to the Konfig type itself
  *
  * @see ModuleRegistry
- * @see io.amichne.konditional.core.internal.SingletonModuleRegistry
+ * @see InMemoryModuleRegistry
  */
-class FakeRegistry : ModuleRegistry by SingletonModuleRegistry
+class FakeRegistry : ModuleRegistry by InMemoryModuleRegistry()

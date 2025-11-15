@@ -5,96 +5,81 @@ import io.amichne.konditional.core.FeatureContainer
 import io.amichne.konditional.core.Taxonomy
 
 /**
- * Common test features for basic types (Boolean, String, Int, Double).
+ * Common test features demonstrating mixed-type capabilities of FeatureContainer.
  *
- * These features use the Core module and are available for use across all tests.
- * They provide a standardized set of feature flags for testing common scenarios.
+ * This consolidated fixture showcases how FeatureContainer can hold Boolean, String,
+ * Int, and Double features together in a single object, providing:
+ * - Complete enumeration via [allFeatures]
+ * - Ergonomic delegation for all feature types
+ * - Type safety with full compile-time checking
+ * - Single module declaration for the entire container
+ *
+ * All features use the Core taxonomy and are available across all tests.
+ *
+ * **Naming convention:**
+ * - Feature properties use camelCase following Kotlin best practices
+ * - Feature keys match property names automatically for consistency and discoverability
  */
-
 object CommonTestFeatures : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
-    // This object can be used to group common test features if needed
 
-    val always_true by boolean<Context> { }
-}
-
-/**
- * Boolean feature flags for testing.
- *
- * Use these for tests involving boolean feature toggles.
- */
-object TestBooleanFeatures : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
+    // Boolean features
     /** General-purpose test feature flag */
-    val test_feature by boolean<Context> { }
+    val testFeature by boolean<Context> { }
+
+    /** Always-enabled feature for testing true state */
+    val alwaysTrue by boolean<Context> { }
 
     /** Feature flag for testing enabled state */
-    val enabled_feature by boolean<Context> { }
+    val enabledFeature by boolean<Context> { }
 
     /** Feature flag for testing disabled state */
-    val disabled_feature by boolean<Context> { }
+    val disabledFeature by boolean<Context> { }
 
     /** Feature flag for testing rollout percentages */
-    val rollout_feature by boolean<Context> { }
+    val rolloutFeature by boolean<Context> { }
 
     /** Feature flag for testing platform targeting */
-    val platform_feature by boolean<Context> { }
+    val platformFeature by boolean<Context> { }
 
     /** Feature flag for testing locale targeting */
-    val locale_feature by boolean<Context> { }
+    val localeFeature by boolean<Context> { }
 
     /** Feature flag for testing version ranges */
-    val version_feature by boolean<Context> { }
-}
+    val versionFeature by boolean<Context> { }
 
-/**
- * String feature flags for testing.
- *
- * Use these for tests involving string configuration values.
- */
-object TestStringFeatures : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
+    // String features
     /** API endpoint configuration */
-    val api_endpoint by string<Context> { }
+    val apiEndpoint by string<Context> { }
 
     /** Theme configuration */
     val theme by string<Context> { }
 
     /** Welcome message configuration */
-    val welcome_message by string<Context> { }
+    val welcomeMessage by string<Context> { }
 
     /** General-purpose test string flag */
-    val test_string by string<Context> { }
+    val testString by string<Context> { }
 
     /** Registered flag for testing found scenarios */
-    val registered_flag by string<Context> { }
+    val registeredFlag by string<Context> { }
 
     /** Unregistered flag for testing not-found scenarios */
-    val unregistered_flag by string<Context> { }
-}
+    val unregisteredFlag by string<Context> { }
 
-/**
- * Integer feature flags for testing.
- *
- * Use these for tests involving numeric configuration values.
- */
-object TestIntFeatures : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
+    // Integer features
     /** Maximum connections configuration */
-    val max_connections by int<Context> { }
+    val maxConnections by int<Context> { }
 
-    /** Timeout configuration */
+    /** Timeout configuration in milliseconds */
     val timeout by int<Context> { }
 
     /** Retry count configuration */
-    val retry_count by int<Context> { }
-}
+    val retryCount by int<Context> { }
 
-/**
- * Double feature flags for testing.
- *
- * Use these for tests involving decimal configuration values.
- */
-object TestDoubleFeatures : FeatureContainer<Taxonomy.Core>(Taxonomy.Core) {
+    // Double features
     /** Threshold configuration */
     val threshold by double<Context> { }
 
     /** Rate limit configuration */
-    val rate_limit by double<Context> { }
+    val rateLimit by double<Context> { }
 }

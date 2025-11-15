@@ -7,7 +7,6 @@ import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.KonfigPatch
-import io.amichne.konditional.core.internal.SingletonModuleRegistry
 import io.amichne.konditional.core.result.EvaluationResult
 import io.amichne.konditional.core.result.FlagEvaluationException
 import io.amichne.konditional.core.result.FlagNotFoundException
@@ -23,7 +22,7 @@ import io.amichne.konditional.core.result.utils.isFailure
 import io.amichne.konditional.core.result.utils.isSuccess
 import io.amichne.konditional.core.result.utils.map
 import io.amichne.konditional.core.result.utils.toResult
-import io.amichne.konditional.fixtures.TestStringFeatures
+import io.amichne.konditional.fixtures.CommonTestFeatures
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
 import kotlin.test.Test
@@ -61,28 +60,12 @@ class EvaluationResultTest {
         StableId.of("11111111111111111111111111111111")
     )
 
-    private val testRegistry = object : ModuleRegistry by SingletonModuleRegistry {}
+
 
     init {
         // Register a normal flag
-        val rule = Rule<Context>(
-            rollout = Rollout.MAX,
-            locales = emptySet(),
-            platforms = emptySet(),
-            versionRange = Unbounded(),
-        )
-        testRegistry.update(
-            KonfigPatch(
-                flags = mapOf(TestStringFeatures.registered_flag to TestStringFeatures.registered_flag.flag {
-                    rule implies "test-value"
-                    default("default-value")
-                }),
-            )
-        )
-
-
-        TestStringFeatures.registered_flag.update(
-            TestStringFeatures.registered_flag.flag {
+        CommonTestFeatures.registeredFlag.update(
+            CommonTestFeatures.registeredFlag.flag {
                 rule { } implies "test-value"
                 default("default-value")
             }
@@ -91,7 +74,7 @@ class EvaluationResultTest {
 
     @Test
     fun `evaluateSafe returns Success when flag is found and evaluates successfully`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.registered_flag)
+        val result = testContext.evaluateSafe(CommonTestFeatures.registeredFlag)
 
         assertIs<EvaluationResult.Success<String>>(result)
         assertEquals("test-value", result.value)
@@ -115,7 +98,7 @@ class EvaluationResultTest {
 
     @Test
     fun `fold transforms Success to target type`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.registered_flag).fold(
+        val result = testContext.evaluateSafe(CommonTestFeatures.registeredFlag).fold(
             onSuccess = { "success: $it" },
             onFlagNotFound = { "not found: $it" },
             onEvaluationError = { key, _ -> "error: $key" }
@@ -143,7 +126,7 @@ class EvaluationResultTest {
 
     @Test
     fun `map transforms Success value`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.registered_flag)
+        val result = testContext.evaluateSafe(CommonTestFeatures.registeredFlag)
             .map { it.uppercase() }
 
         assertIs<EvaluationResult.Success<String>>(result)
@@ -165,7 +148,7 @@ class EvaluationResultTest {
 
     @Test
     fun `getOrNull returns value on Success`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.registered_flag)
+        val result = testContext.evaluateSafe(CommonTestFeatures.registeredFlag)
         assertEquals("test-value", result.getOrNull())
     }
 
@@ -180,7 +163,7 @@ class EvaluationResultTest {
 
     @Test
     fun `getOrDefault returns value on Success`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.registered_flag)
+        val result = testContext.evaluateSafe(CommonTestFeatures.registeredFlag)
         assertEquals("test-value", result.getOrDefault("fallback"))
     }
 
@@ -196,7 +179,7 @@ class EvaluationResultTest {
 
     @Test
     fun `getOrElse returns value on Success`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.registered_flag)
+        val result = testContext.evaluateSafe(CommonTestFeatures.registeredFlag)
             .getOrElse { "fallback" }
 
         assertEquals("test-value", result)
@@ -222,7 +205,7 @@ class EvaluationResultTest {
 
     @Test
     fun `isSuccess returns true for Success`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.registered_flag)
+        val result = testContext.evaluateSafe(CommonTestFeatures.registeredFlag)
         assertTrue(result.isSuccess())
     }
 
@@ -235,7 +218,7 @@ class EvaluationResultTest {
 
     @Test
     fun `isFailure returns false for Success`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.registered_flag)
+        val result = testContext.evaluateSafe(CommonTestFeatures.registeredFlag)
         assertFalse(result.isFailure())
     }
 
@@ -248,21 +231,21 @@ class EvaluationResultTest {
 
     @Test
     fun `evaluateOrNull returns value when flag exists`() {
-        val value = testContext.evaluateOrNull(TestStringFeatures.registered_flag)
+        val value = testContext.evaluateOrNull(CommonTestFeatures.registeredFlag)
         assertEquals("test-value", value)
     }
 
 
     @Test
     fun `evaluateOrDefault returns value when flag exists`() {
-        val value = testContext.evaluateOrDefault(TestStringFeatures.registered_flag, "default")
+        val value = testContext.evaluateOrDefault(CommonTestFeatures.registeredFlag, "default")
         assertEquals("test-value", value)
     }
 
 
     @Test
     fun `evaluateOrThrow returns value when flag exists`() {
-        val value = testContext.evaluateOrThrow(TestStringFeatures.registered_flag)
+        val value = testContext.evaluateOrThrow(CommonTestFeatures.registeredFlag)
         assertEquals("test-value", value)
     }
 
@@ -289,7 +272,7 @@ class EvaluationResultTest {
 
     @Test
     fun `toResult converts Success to Result success`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.registered_flag).toResult()
+        val result = testContext.evaluateSafe(CommonTestFeatures.registeredFlag).toResult()
 
         assertTrue(result.isSuccess)
         assertEquals("test-value", result.getOrNull())
@@ -312,7 +295,7 @@ class EvaluationResultTest {
 
     @Test
     fun `fold can adapt to custom Outcome type`() {
-        val adapted: TestOutcome<MyError, String> = testContext.evaluateSafe(TestStringFeatures.registered_flag).fold(
+        val adapted: TestOutcome<MyError, String> = testContext.evaluateSafe(CommonTestFeatures.registeredFlag).fold(
             onSuccess = { TestOutcome.Success(it) },
             onFlagNotFound = { TestOutcome.Failure(MyError("Flag not found: $it")) },
             onEvaluationError = { key, error -> TestOutcome.Failure(MyError("Evaluation failed: $key - ${error.message}")) }
@@ -342,7 +325,7 @@ class EvaluationResultTest {
 
     @Test
     fun `chain multiple map operations on Success`() {
-        val result = testContext.evaluateSafe(TestStringFeatures.registered_flag)
+        val result = testContext.evaluateSafe(CommonTestFeatures.registeredFlag)
             .map { it.uppercase() }
             .map { "$it!" }
             .map { it.length }

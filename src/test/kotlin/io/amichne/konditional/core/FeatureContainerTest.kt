@@ -31,12 +31,12 @@ class FeatureContainerTest {
             enabled = false,
             value = 0
         )
-        val test_boolean by boolean<Context> {
+        val testBoolean by boolean<Context> {
         }
-        val test_string by string<Context> { }
-        val test_int by int<Context> { }
-        val test_double by double<Context> { }
-        val test_json by jsonObject<Context, TestConfig>(defaultTestConfig, "test_json")
+        val testString by string<Context> { }
+        val testInt by int<Context> { }
+        val testDouble by double<Context> { }
+        val testJson by jsonObject<Context, TestConfig>(defaultTestConfig, "testJson")
     }
 
 //    object Invalid {
@@ -51,31 +51,31 @@ class FeatureContainerTest {
     @Test
     fun `features are created with correct types`() {
         // Verify each feature has correct type
-        assertTrue(TestFeatures.test_boolean is BooleanFeature<*, *>)
-        assertTrue(TestFeatures.test_string is StringFeature<*, *>)
-        assertTrue(TestFeatures.test_int is IntFeature<*, *>)
-        assertTrue(TestFeatures.test_double is DoubleFeature<*, *>)
-        assertTrue(TestFeatures.test_json is JsonFeature<*, *, *>)
+        assertTrue(TestFeatures.testBoolean is BooleanFeature<*, *>)
+        assertTrue(TestFeatures.testString is StringFeature<*, *>)
+        assertTrue(TestFeatures.testInt is IntFeature<*, *>)
+        assertTrue(TestFeatures.testDouble is DoubleFeature<*, *>)
+        assertTrue(TestFeatures.testJson is JsonFeature<*, *, *>)
     }
 
     @Test
     fun `features have correct keys`() {
-        assertEquals("test_boolean", TestFeatures.test_boolean.key)
-        assertEquals("test_string", TestFeatures.test_string.key)
-        assertEquals("test_int", TestFeatures.test_int.key)
-        assertEquals("test_double", TestFeatures.test_double.key)
-        assertEquals("test_json", TestFeatures.test_json.key)
+        assertEquals("testBoolean", TestFeatures.testBoolean.key)
+        assertEquals("testString", TestFeatures.testString.key)
+        assertEquals("testInt", TestFeatures.testInt.key)
+        assertEquals("testDouble", TestFeatures.testDouble.key)
+        assertEquals("testJson", TestFeatures.testJson.key)
     }
 
     @Test
     fun `features have correct module`() {
         val expectedModule = Taxonomy.Domain.Payments
 
-        assertEquals(expectedModule, TestFeatures.test_boolean.module)
-        assertEquals(expectedModule, TestFeatures.test_string.module)
-        assertEquals(expectedModule, TestFeatures.test_int.module)
-        assertEquals(expectedModule, TestFeatures.test_double.module)
-        assertEquals(expectedModule, TestFeatures.test_json.module)
+        assertEquals(expectedModule, TestFeatures.testBoolean.module)
+        assertEquals(expectedModule, TestFeatures.testString.module)
+        assertEquals(expectedModule, TestFeatures.testInt.module)
+        assertEquals(expectedModule, TestFeatures.testDouble.module)
+        assertEquals(expectedModule, TestFeatures.testJson.module)
     }
 
     @Test
@@ -88,7 +88,7 @@ class FeatureContainerTest {
         // Should contain all feature keys
         val keys = allFeatures.map { it.key }.toSet()
         assertEquals(
-            setOf("test_boolean", "test_string", "test_int", "test_double", "test_json"),
+            setOf("testBoolean", "testString", "testInt", "testDouble", "testJson"),
             keys
         )
     }
@@ -99,8 +99,8 @@ class FeatureContainerTest {
         with(object : FeatureContainer<Taxonomy.Domain.Payments>(
             Taxonomy.Domain.Payments
         ) {
-            val lazy_a by boolean<Context> { }
-            val lazy_b by boolean<Context> { }
+            val lazyA by boolean<Context> { }
+            val lazyB by boolean<Context> { }
         }) {
 
             // allFeatures() should return empty before any feature is accessed
@@ -112,8 +112,8 @@ class FeatureContainerTest {
             assertEquals(0, features.size)
 
             // Accessing individual features doesn't change count
-            val featureA = lazy_a
-            val featureB = lazy_b
+            val featureA = lazyA
+            val featureB = lazyB
             assertEquals(2, allFeatures().size)
         }
     }
@@ -122,13 +122,13 @@ class FeatureContainerTest {
     fun `features can be evaluated with context`() {
         // Configure the registry
         Taxonomy.Domain.Payments.config {
-            TestFeatures.test_boolean with {
+            TestFeatures.testBoolean with {
                 default(true)
             }
-            TestFeatures.test_string with {
+            TestFeatures.testString with {
                 default("test-value")
             }
-            TestFeatures.test_int with {
+            TestFeatures.testInt with {
                 default(100)
             }
         }
@@ -141,9 +141,9 @@ class FeatureContainerTest {
         )
 
         // Evaluate features
-        assertEquals(true, context.evaluate(TestFeatures.test_boolean))
-        assertEquals("test-value", context.evaluateOrDefault(TestFeatures.test_string, ""))
-        assertEquals(100, context.evaluateOrDefault(TestFeatures.test_int, 0))
+        assertEquals(true, context.evaluate(TestFeatures.testBoolean))
+        assertEquals("test-value", context.evaluateOrDefault(TestFeatures.testString, ""))
+        assertEquals(100, context.evaluateOrDefault(TestFeatures.testInt, 0))
     }
 
     @Test
@@ -184,31 +184,31 @@ class FeatureContainerTest {
     @Test
     fun `can iterate over all features for validation`() {
         // Real-world use case: validate all features are configured
-        val configuredKeys = setOf("test_boolean", "test_string", "test_int")
+        val configuredKeys = setOf("testBoolean", "testString", "testInt")
 
         val allKeys = TestFeatures.allFeatures().map { it.key }.toSet()
         val missingKeys = allKeys - configuredKeys
 
         // In this test, we expect some features to be "missing" from config
-        assertTrue(missingKeys.contains("test_double"))
-        assertTrue(missingKeys.contains("test_json"))
+        assertTrue(missingKeys.contains("testDouble"))
+        assertTrue(missingKeys.contains("testJson"))
     }
 
     @Test
     fun `features maintain type safety through container`() {
         // Type inference works correctly
         val booleanFeature: BooleanFeature<Context, Taxonomy.Domain.Payments> =
-            TestFeatures.test_boolean
+            TestFeatures.testBoolean
 
         val stringFeature: StringFeature<Context, Taxonomy.Domain.Payments> =
-            TestFeatures.test_string
+            TestFeatures.testString
 
         val intFeature: IntFeature<Context, Taxonomy.Domain.Payments> =
-            TestFeatures.test_int
+            TestFeatures.testInt
 
         // Verify types are preserved
-        assertEquals("test_boolean", booleanFeature.key)
-        assertEquals("test_string", stringFeature.key)
-        assertEquals("test_int", intFeature.key)
+        assertEquals("testBoolean", booleanFeature.key)
+        assertEquals("testString", stringFeature.key)
+        assertEquals("testInt", intFeature.key)
     }
 }

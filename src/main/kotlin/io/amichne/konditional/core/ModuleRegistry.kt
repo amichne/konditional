@@ -3,7 +3,6 @@ package io.amichne.konditional.core
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.instance.KonfigPatch
-import io.amichne.konditional.core.internal.SingletonModuleRegistry
 import io.amichne.konditional.core.types.EncodableValue
 
 /**
@@ -18,9 +17,8 @@ import io.amichne.konditional.core.types.EncodableValue
  * Implementations of this interface can provide different backing stores,
  * particularly useful when writing tests.
  *
- * By default, [io.amichne.konditional.core.internal.SingletonModuleRegistry] is provided as a thread-safe, in-memory implementation.
- *
- * It is accessible via the [io.amichne.konditional.core.ModuleRegistry.Companion] object.
+ * By default, [io.amichne.konditional.core.RegistryScope.global] provides a thread-safe, in-memory implementation
+ * accessible globally or through [io.amichne.konditional.core.RegistryScope.current] for scoped access.
  *
  * ## Core Operations
  *
@@ -38,12 +36,12 @@ import io.amichne.konditional.core.types.EncodableValue
  * registry.update(patch)
  * ```
  *
- * ### Updating Individual SingletonModuleRegistry
+ * ### Updating Individual Flags
  * ```kotlin
  * registry.update(flagDefinition)
  * ```
  *
- * ### Evaluating SingletonModuleRegistry
+ * ### Evaluating Flags
  * Use the extension functions on [Context] for evaluation:
  * ```kotlin
  * val value = MY_FLAG.evaluate(context, registry)
@@ -52,10 +50,13 @@ import io.amichne.konditional.core.types.EncodableValue
  *
  * ## Implementations
  *
- * The primary implementation is [io.amichne.konditional.core.internal.SingletonModuleRegistry], which provides a thread-safe,
- * singleton registry backed by [java.util.concurrent.atomic.AtomicReference].
+ * The primary implementation is [InMemoryModuleRegistry], which provides a thread-safe
+ * registry backed by [java.util.concurrent.atomic.AtomicReference].
  *
- * @see io.amichne.konditional.core.internal.SingletonModuleRegistry
+ * For global access, use [RegistryScope.global] or [RegistryScope.current].
+ *
+ * @see InMemoryModuleRegistry
+ * @see RegistryScope
  * @see Konfig
  * @see KonfigPatch
  */

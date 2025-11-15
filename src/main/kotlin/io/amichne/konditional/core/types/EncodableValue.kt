@@ -101,16 +101,6 @@ sealed interface EncodableValue<T : Any> {
         val converter: Converter<T, Map<String, Any?>>,
     ) : EncodableValue<T> {
         override val encoding: Encoding = Encoding.JSON
-
-        @Deprecated(
-            "Use the fluent builder API: value.asJsonObject().encoder { }.decoder { }",
-            ReplaceWith("value.asJsonObject().encoder(encoder).decoder(decoder)")
-        )
-        constructor(
-            value: T,
-            encoder: (T) -> Map<String, Any?>,
-            decoder: (Map<String, Any?>) -> T,
-        ) : this(value, Converter(encoder, decoder))
     }
 
     // ========== Custom Wrapper Types ==========
@@ -149,17 +139,6 @@ sealed interface EncodableValue<T : Any> {
                 "CustomEncodeable must encode to a primitive type (BOOLEAN, STRING, INTEGER, or DECIMAL)"
             }
         }
-
-        @Deprecated(
-            "Use the fluent builder API: value.asCustomString().encoder { }.decoder { }",
-            ReplaceWith("value.asCustomString().encoder(encoder).decoder(decoder)")
-        )
-        constructor(
-            value: T,
-            primitiveEncoding: Encoding,
-            encoder: (T) -> P,
-            decoder: (P) -> T,
-        ) : this(value, primitiveEncoding, Converter(encoder, decoder))
     }
 }
 

@@ -38,19 +38,12 @@ import kotlin.reflect.KProperty
  * context.evaluateSafe(PaymentFeatures.APPLE_PAY)
  * ```
  *
- * @param C The context type for evaluation
  * @param M The module this container belongs to
  */
 abstract class FeatureContainer<M : Taxonomy>(
     protected val taxonomy: M,
 ) {
     private val _features = mutableListOf<Feature<*, *, *, M>>()
-
-    init {
-        _features.forEach {
-
-        }
-    }
 
     /**
      * Returns all features declared in this container.
@@ -62,7 +55,7 @@ abstract class FeatureContainer<M : Taxonomy>(
      * Creates a Boolean feature with automatic registration.
      *
      * @param key The unique feature key
-     * @return A delegated property that returns a [BooleanFeature]
+     * @return A delegated property that returns a [llllhh_aeBooleanFeature]
      */
     protected fun <C : Context> boolean(
         default: Boolean = false,
