@@ -1,6 +1,7 @@
 package io.amichne.konditional.context
 
 import io.amichne.konditional.context.Context.Companion.evaluate
+import io.amichne.konditional.core.RegistryScope
 import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.Taxonomy.Global
 import io.amichne.konditional.core.id.StableId
@@ -112,44 +113,48 @@ class ContextPolymorphismTest {
     @Test
     fun `Given multiple custom contexts, When using different flags, Then contexts are independent`() {
         // Configure using buildSnapshot and load for test-specific configuration
-        Global.registry.load(io.amichne.konditional.core.buildSnapshot {
-            EnterpriseFeatures.api_access with {
+        RegistryScope.testRegistryScope {
+            EnterpriseFeatures.api_access.update {
                 default(false)
                 rule {
                 } implies true
             }
-            ExperimentFeatures.onboarding_style with {
+            ExperimentFeatures.onboarding_style.update {
                 default("classic")
                 rule {
                 } implies "modern"
             }
-        })
 
-        val enterpriseCtx = EnterpriseContext(
-            locale = AppLocale.EN_US,
-            platform = Platform.WEB,
-            appVersion = Version(1, 0, 0),
-            stableId = StableId.of("44444444444444444444444444444444"),
-            organizationId = "org-456",
-            subscriptionTier = SubscriptionTier.ENTERPRISE,
-            userRole = UserRole.OWNER,
-        )
+            val enterpriseCtx = EnterpriseContext(
+                locale = AppLocale.EN_US,
+                platform = Platform.WEB,
+                appVersion = Version(1, 0, 0),
+                stableId = StableId.of("44444444444444444444444444444444"),
+                organizationId = "org-456",
+                subscriptionTier = SubscriptionTier.ENTERPRISE,
+                userRole = UserRole.OWNER,
+            )
 
-        val experimentCtx = ExperimentContext(
-            locale = AppLocale.EN_US,
-            platform = Platform.IOS,
-            appVersion = Version(1, 0, 0),
-            stableId = StableId.of("55555555555555555555555555555555"),
-            experimentGroups = setOf("exp-003"),
-            sessionId = "session-123",
-        )
+            val experimentCtx = ExperimentContext(
+                locale = AppLocale.EN_US,
+                platform = Platform.IOS,
+                appVersion = Version(1, 0, 0),
+                stableId = StableId.of("55555555555555555555555555555555"),
+                experimentGroups = setOf("exp-003"),
+                sessionId = "session-123",
+            )
 
-        // Each context can be evaluated independently with its own flags
-        val apiAccess = enterpriseCtx.evaluate(EnterpriseFeatures.api_access)
-        val onboardingStyle = experimentCtx.evaluate(ExperimentFeatures.onboarding_style)
+            // Each context can be evaluated independently with its own flags
+            val apiAccess = enterpriseCtx.evaluate(EnterpriseFeatures.api_access)
+            val onboardingStyle = experimentCtx.evaluate(ExperimentFeatures.onboarding_style)
 
-        assertTrue(apiAccess is Boolean)
-        assertTrue(onboardingStyle is String)
+            assertTrue(apiAccess is Boolean)
+            assertTrue(onboardingStyle is String)
+
+        }
+
+
+
     }
 
 //    @Test

@@ -21,7 +21,7 @@ import kotlin.reflect.KProperty
  * - **Complete enumeration**: `allFeatures()` provides all features at runtime
  * - **Ergonomic delegation**: Use `by boolean {}`, `by string {}`, etc. with DSL configuration
  * - **Single taxonomy declaration**: No need to repeat taxonomy on every feature
- * - **Mixed types**: Combine Boolean, String, Int, Double, JSON, and custom features in one container
+ * - **Mixed types**: Combine Boolean, String, Int, and Double features in one container
  * - **Type safety**: Full type inference and compile-time checking
  * - **Lazy registration**: Features are created and registered only when first accessed
  *
@@ -43,11 +43,6 @@ import kotlin.reflect.KProperty
  *             platforms(Platform.WEB)
  *         } implies 10000
  *     }
- *
- *     val API_CONFIG by jsonObject<ApiConfig>(
- *         default = ApiConfig("https://api.example.com", 30),
- *         key = "api_config"
- *     )
  * }
  *
  * // Complete enumeration
@@ -112,10 +107,11 @@ abstract class FeatureContainer<M : Taxonomy>(
      * @return A delegated property that returns a [BooleanFeature]
      */
     protected fun <C : Context> boolean(
+        default: Boolean = false,
         registry: ModuleRegistry = taxonomy.registry,
-        flagScope: FlagScope<EncodableValue.BooleanEncodeable, Boolean, C, M>.() -> Unit,
+        flagScope: FlagScope<EncodableValue.BooleanEncodeable, Boolean, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, BooleanFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(registry, flagScope) { BooleanFeature(it, taxonomy) }
+        ContainerFeaturePropertyDelegate(default, registry, flagScope) { BooleanFeature(it, taxonomy) }
 
     /**
      * Creates a String feature with automatic registration and configuration.
@@ -142,10 +138,11 @@ abstract class FeatureContainer<M : Taxonomy>(
      * @return A delegated property that returns a [StringFeature]
      */
     protected fun <C : Context> string(
+        default: String = "default",
         registry: ModuleRegistry = taxonomy.registry,
-        stringScope: FlagScope<EncodableValue.StringEncodeable, String, C, M>.() -> Unit,
+        stringScope: FlagScope<EncodableValue.StringEncodeable, String, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, StringFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(registry, stringScope) { StringFeature.Companion(it, taxonomy) }
+        ContainerFeaturePropertyDelegate(default, registry, stringScope) { StringFeature.Companion(it, taxonomy) }
 
     /**
      * Creates an Int feature with automatic registration and configuration.
@@ -172,10 +169,11 @@ abstract class FeatureContainer<M : Taxonomy>(
      * @return A delegated property that returns an [IntFeature]
      */
     protected fun <C : Context> int(
+        default: Int = 0,
         registry: ModuleRegistry = taxonomy.registry,
-        integerScope: FlagScope<EncodableValue.IntEncodeable, Int, C, M>.() -> Unit,
+        integerScope: FlagScope<EncodableValue.IntEncodeable, Int, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(registry, integerScope) {
+        ContainerFeaturePropertyDelegate(default, registry, integerScope) {
             IntFeature.Companion(it, taxonomy, registry)
         }
 
@@ -204,78 +202,11 @@ abstract class FeatureContainer<M : Taxonomy>(
      * @return A delegated property that returns a [DoubleFeature]
      */
     protected fun <C : Context> double(
+        default: Double = 0.0,
         registry: ModuleRegistry = taxonomy.registry,
-        decimalScope: FlagScope<EncodableValue.DecimalEncodeable, Double, C, M>.() -> Unit,
+        decimalScope: FlagScope<EncodableValue.DecimalEncodeable, Double, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, DoubleFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(registry, decimalScope) { DoubleFeature(it, taxonomy, registry) }
-
-    /**
-     * Creates a JSON object feature with automatic registration and configuration.
-     *
-     * This method is used for complex data structures that need to be serialized as JSON.
-     * The type T must be a data class or other JSON-serializable type.
-     * Configuration is automatically applied to the registry when the feature is first accessed.
-     *
-     * **Example:**
-     * ```kotlin
-     * data class ApiConfig(val baseUrl: String, val timeout: Int)
-     *
-     * object MyFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
-     *     val API_CONFIG by jsonObject(
-     *         default = ApiConfig("https://api.example.com", 30),
-     *         key = "api_config"
-     *     )
-     * }
-     * ```
-     *
-     * @param T The data class type for the JSON object
-     * @param C The context type used for evaluation
-     * @param default The default value when no rules match
-     * @param key The unique feature key used for identification
-     * @param registry The module registry for storing configuration (defaults to taxonomy.registry)
-     * @return A delegated property that returns a [JsonFeature]
-     */
-    protected inline fun <C : Context, reified T : Any> jsonObject(
-        default: T,
-        key: String,
-        registry: ModuleRegistry = taxonomy.registry,
-    ): ReadOnlyProperty<FeatureContainer<M>, JsonFeature<C, M, T>> =
-        ContainerFeaturePropertyDelegate(registry, { default(default) }) { JsonFeature(key, taxonomy, registry) }
-
-    /**
-     * Creates a custom wrapper type feature with automatic registration and configuration.
-     *
-     * This method is used for custom types that need special encoding/decoding logic,
-     * such as DateTime, UUID, or other domain-specific wrapper types.
-     * Configuration is automatically applied to the registry when the feature is first accessed.
-     *
-     * **Example:**
-     * ```kotlin
-     * // Assuming you have a custom DateTime wrapper type
-     * object MyFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
-     *     val MAINTENANCE_WINDOW by custom<DateTime, String, Context>(
-     *         default = DateTime.parse("2024-01-01T00:00:00Z"),
-     *         key = "maintenance_window"
-     *     )
-     * }
-     * ```
-     *
-     * @param T The wrapped type (e.g., LocalDateTime, UUID, custom domain types)
-     * @param P The primitive type used for encoding (String, Int, etc.) that extends EncodableValue
-     * @param C The context type used for evaluation
-     * @param default The default value when no rules match
-     * @param key The unique feature key used for identification
-     * @param registry The module registry for storing configuration (defaults to taxonomy.registry)
-     * @return A delegated property that returns a [CustomFeature]
-     */
-    protected inline fun <reified T : Any, reified P, C : Context> custom(
-        default: T,
-        key: String,
-        registry: ModuleRegistry = taxonomy.registry,
-    ): ReadOnlyProperty<FeatureContainer<M>, CustomFeature<T, P, C, M>> where
-        P : Any, P : EncodableValue<P> = ContainerFeaturePropertyDelegate(registry, { default(default) }) {
-        Feature.custom(key, taxonomy, registry)
-    }
+        ContainerFeaturePropertyDelegate(default, registry, decimalScope) { DoubleFeature(it, taxonomy, registry) }
 
     /**
      * Internal delegate factory that handles feature creation, configuration, and registration.
@@ -304,7 +235,8 @@ abstract class FeatureContainer<M : Taxonomy>(
      * @param factory A function that creates the feature given the taxonomy and property name
      */
     @Suppress("UNCHECKED_CAST")
-    inner class ContainerFeaturePropertyDelegate<F : Feature<S, T, C, M>, S : EncodableValue< T>, T : Any, C : Context>(
+    inner class ContainerFeaturePropertyDelegate<F : Feature<S, T, C, M>, S : EncodableValue<T>, T : Any, C : Context>(
+        private val default: T,
         private val registry: ModuleRegistry,
         private val configScope: FlagScope<S, T, C, M>.() -> Unit,
         private val factory: M.(String) -> F,
@@ -314,7 +246,7 @@ abstract class FeatureContainer<M : Taxonomy>(
         private val feature: F by lazy {
             factory(taxonomy, name).also { _features.add(it) }.also { createdFeature ->
                 // Execute the DSL configuration block and update the registry
-                val flagDefinition = FlagBuilder(createdFeature).apply(configScope).build()
+                val flagDefinition = FlagBuilder(createdFeature).apply(configScope).apply { default(default) }.build()
                 registry.update(flagDefinition)
             }
         }

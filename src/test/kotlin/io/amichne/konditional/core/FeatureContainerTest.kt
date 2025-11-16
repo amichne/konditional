@@ -9,7 +9,6 @@ import io.amichne.konditional.core.features.BooleanFeature
 import io.amichne.konditional.core.features.DoubleFeature
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.features.IntFeature
-import io.amichne.konditional.core.features.JsonFeature
 import io.amichne.konditional.core.features.StringFeature
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.utils.evaluateOrDefault
@@ -30,10 +29,6 @@ class FeatureContainerTest {
             RegistryScope.setGlobal(ModuleRegistry.create())
         }
 
-        val defaultTestConfig = TestConfig(
-            enabled = false,
-            value = 0
-        )
         val testBoolean by boolean<Context> {
             default(false)
         }
@@ -46,17 +41,11 @@ class FeatureContainerTest {
         val testDouble by double<Context> {
             default(0.0)
         }
-        val testJson by jsonObject<Context, TestConfig>(defaultTestConfig, "testJson")
     }
 
 //    object Invalid {
 //        val x by double()
 //    }
-
-    data class TestConfig(
-        val enabled: Boolean,
-        val value: Int,
-    )
 
     @Test
     fun `features are created with correct types`() {
@@ -65,7 +54,6 @@ class FeatureContainerTest {
         assertTrue(TestFeatures.testString is StringFeature<*, *>)
         assertTrue(TestFeatures.testInt is IntFeature<*, *>)
         assertTrue(TestFeatures.testDouble is DoubleFeature<*, *>)
-        assertTrue(TestFeatures.testJson is JsonFeature<*, *, *>)
     }
 
     @Test
@@ -74,7 +62,6 @@ class FeatureContainerTest {
         assertEquals("testString", TestFeatures.testString.key)
         assertEquals("testInt", TestFeatures.testInt.key)
         assertEquals("testDouble", TestFeatures.testDouble.key)
-        assertEquals("testJson", TestFeatures.testJson.key)
     }
 
     @Test
@@ -85,20 +72,19 @@ class FeatureContainerTest {
         assertEquals(expectedModule, TestFeatures.testString.module)
         assertEquals(expectedModule, TestFeatures.testInt.module)
         assertEquals(expectedModule, TestFeatures.testDouble.module)
-        assertEquals(expectedModule, TestFeatures.testJson.module)
     }
 
     @Test
     fun `allFeatures returns all declared features`() {
         val allFeatures = TestFeatures.allFeatures()
 
-        // Should have exactly 5 features
-        assertEquals(5, allFeatures.size)
+        // Should have exactly 4 features
+        assertEquals(4, allFeatures.size)
 
         // Should contain all feature keys
         val keys = allFeatures.map { it.key }.toSet()
         assertEquals(
-            setOf("testBoolean", "testString", "testInt", "testDouble", "testJson"),
+            setOf("testBoolean", "testString", "testInt", "testDouble"),
             keys
         )
     }
@@ -134,15 +120,9 @@ class FeatureContainerTest {
         val testFeatures = object : FeatureContainer<Taxonomy.Domain.Payments>(
             Taxonomy.Domain.Payments
         ) {
-            val configuredBoolean by boolean<Context> {
-                default(true)
-            }
-            val configuredString by string<Context> {
-                default("test-value")
-            }
-            val configuredInt by int<Context> {
-                default(100)
-            }
+            val configuredBoolean by boolean<Context>(default = true)
+            val configuredString by string<Context>("test-value") {}
+            val configuredInt by int<Context>(100)
         }
 
         val context = Context(
@@ -203,7 +183,6 @@ class FeatureContainerTest {
 
         // In this test, we expect some features to be "missing" from config
         assertTrue(missingKeys.contains("testDouble"))
-        assertTrue(missingKeys.contains("testJson"))
     }
 
     @Test

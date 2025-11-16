@@ -12,6 +12,8 @@ import java.lang.reflect.Type
  *
  * Serializes FlagValue subclasses with their type discriminator for type-safe deserialization.
  * Parse-don't-validate: Deserialization constructs typed domain objects at the boundary.
+ *
+ * Supports only primitive types: Boolean, String, Int, Double
  */
 internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
 
@@ -35,31 +37,9 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
                 writer.name("type").value("INT")
                 writer.name("value").value(value.value)
             }
-            is FlagValue.LongValue -> {
-                writer.name("type").value("LONG")
-                writer.name("value").value(value.value)
-            }
             is FlagValue.DoubleValue -> {
                 writer.name("type").value("DOUBLE")
                 writer.name("value").value(value.value)
-            }
-            is FlagValue.JsonObjectValue -> {
-                writer.name("type").value("JSON")
-                writer.name("value")
-                // Write the map as a JSON object
-                writer.beginObject()
-                value.value.forEach { (k, v) ->
-                    writer.name(k)
-                    when (v) {
-                        null -> writer.nullValue()
-                        is Boolean -> writer.value(v)
-                        is String -> writer.value(v)
-                        is Number -> writer.value(v)
-                        is Map<*, *> -> writer.jsonValue(v.toString()) // Nested objects
-                        else -> writer.value(v.toString())
-                    }
-                }
-                writer.endObject()
             }
         }
         writer.endObject()
@@ -70,9 +50,7 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
         var boolValue: Boolean? = null
         var stringValue: String? = null
         var intValue: Int? = null
-        var longValue: Long? = null
         var doubleValue: Double? = null
-        var jsonObjectValue: Map<String, Any?>? = null
 
         reader.beginObject()
         while (reader.hasNext()) {
@@ -88,14 +66,8 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
                             val numStr = reader.nextString()
                             when {
                                 numStr.contains('.') -> doubleValue = numStr.toDouble()
-                                numStr.toLongOrNull()?.let { it > Int.MAX_VALUE || it < Int.MIN_VALUE } == true ->
-                                    longValue = numStr.toLong()
                                 else -> intValue = numStr.toInt()
                             }
-                        }
-                        JsonReader.Token.BEGIN_OBJECT -> {
-                            // Read JSON object
-                            jsonObjectValue = readJsonObject(reader)
                         }
                         else -> reader.skipValue()
                     }
@@ -113,43 +85,11 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
                 ?: throw JsonDataException("STRING type requires string value")
             "INT" -> intValue?.let { FlagValue.IntValue(it) }
                 ?: throw JsonDataException("INT type requires int value")
-            "LONG" -> longValue?.let { FlagValue.LongValue(it) }
-                ?: throw JsonDataException("LONG type requires long value")
             "DOUBLE" -> doubleValue?.let { FlagValue.DoubleValue(it) }
                 ?: throw JsonDataException("DOUBLE type requires double value")
-            "JSON" -> jsonObjectValue?.let { FlagValue.JsonObjectValue(it) }
-                ?: throw JsonDataException("JSON type requires object value")
             null -> throw JsonDataException("Missing required 'type' field")
             else -> throw JsonDataException("Unknown FlagValue type: $type")
         }
-    }
-
-    private fun readJsonObject(reader: JsonReader): Map<String, Any?> {
-        val map = mutableMapOf<String, Any?>()
-        reader.beginObject()
-        while (reader.hasNext()) {
-            val key = reader.nextName()
-            val value = when (reader.peek()) {
-                JsonReader.Token.BOOLEAN -> reader.nextBoolean()
-                JsonReader.Token.STRING -> reader.nextString()
-                JsonReader.Token.NUMBER -> {
-                    val numStr = reader.nextString()
-                    when {
-                        numStr.contains('.') -> numStr.toDouble()
-                        else -> numStr.toLong()
-                    }
-                }
-                JsonReader.Token.BEGIN_OBJECT -> readJsonObject(reader) // Recursive
-                JsonReader.Token.NULL -> reader.nextNull<Any?>()
-                else -> {
-                    reader.skipValue()
-                    null
-                }
-            }
-            map[key] = value
-        }
-        reader.endObject()
-        return map
     }
 
     companion object {

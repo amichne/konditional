@@ -3,7 +3,6 @@ package io.amichne.konditional.internal.serialization.models
 import com.squareup.moshi.JsonClass
 import io.amichne.konditional.core.ValueType
 import io.amichne.konditional.core.types.EncodableValue
-import io.amichne.konditional.core.types.asJsonObject
 
 /**
  * Type-safe representation of flag values that replaces the type-erased SerializableValue.
@@ -15,9 +14,8 @@ import io.amichne.konditional.core.types.asJsonObject
  *
  * Each subclass encodes both the value AND its type in a type-safe manner.
  *
- * Supports:
- * - Primitives: Boolean, String, Int, Long, Double
- * - Complex: JSON objects (Map<String, Any?>)
+ * Supports only primitive types:
+ * - Boolean, String, Int, Double
  */
 internal sealed class FlagValue<out T : Any> {
     abstract val value: T
@@ -45,27 +43,8 @@ internal sealed class FlagValue<out T : Any> {
     }
 
     @JsonClass(generateAdapter = true)
-    data class LongValue(override val value: Long) : FlagValue<Long>() {
-        override fun toValueType() = ValueType.LONG
-    }
-
-    @JsonClass(generateAdapter = true)
     data class DoubleValue(override val value: Double) : FlagValue<Double>() {
         override fun toValueType() = ValueType.DOUBLE
-    }
-
-    // ========== JSON Object Type ==========
-
-    /**
-     * Represents a JSON object value.
-     *
-     * The value is stored as a Map<String, Any?> which can be serialized/deserialized
-     * using Moshi. Domain types must provide encoder/decoder functions to convert
-     * to/from this representation.
-     */
-    @JsonClass(generateAdapter = true)
-    data class JsonObjectValue(override val value: Map<String, Any?>) : FlagValue<Map<String, Any?>>() {
-        override fun toValueType() = ValueType.JSON
     }
 
     companion object {
@@ -77,15 +56,10 @@ internal sealed class FlagValue<out T : Any> {
             is Boolean -> BooleanValue(value)
             is String -> StringValue(value)
             is Int -> IntValue(value)
-            is Long -> LongValue(value)
             is Double -> DoubleValue(value)
-            is Map<*, *> -> {
-                @Suppress("UNCHECKED_CAST")
-                JsonObjectValue(value as Map<String, Any?>)
-            }
             else -> throw IllegalArgumentException(
                 "Unsupported value type: ${value::class.simpleName}. " +
-                "Primitives (Boolean, String, Int, Long, Double) and Map<String, Any?> are supported."
+                "Only primitives (Boolean, String, Int, Double) are supported."
             )
         }
     }

@@ -63,17 +63,4 @@ sealed interface Feature<S : EncodableValue<T>, T : Any, C : Context, M : Taxono
     fun update(function: FlagScope<S, T, C, M>.() -> Unit): Unit =
         registry.update(FlagBuilder(this).apply(function).build())
 
-    companion object {
-        fun <T : Any, P : Any, C : Context, M : Taxonomy> custom(
-            key: String,
-            module: M,
-            registry: ModuleRegistry = module.registry,
-        ): CustomFeature<T, P, C, M> = object : CustomFeature<T, P, C, M> {
-            override val module: M
-                get() = module
-            override val registry: ModuleRegistry
-                get() = registry
-            override val key: String = key
-        }
-    }
 }

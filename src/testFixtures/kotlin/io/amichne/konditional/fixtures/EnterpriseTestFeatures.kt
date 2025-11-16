@@ -65,7 +65,7 @@ object EnterpriseFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
     val custom_branding by boolean<EnterpriseContext> { }
 
     /** API access feature */
-    val api_access by boolean<EnterpriseContext> { }
+    val api_access by boolean<EnterpriseContext> { default(false) }
 }
 
 /**
@@ -73,10 +73,10 @@ object EnterpriseFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
  */
 object ExperimentFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
     /** Homepage variant */
-    val homepage_variant by string<ExperimentContext> { }
+    val homepage_variant by string<ExperimentContext> { default("default")}
 
     /** Onboarding style */
-    val onboarding_style by string<ExperimentContext> { }
+    val onboarding_style by string<ExperimentContext> { default("test") }
 }
 
 // ========== Custom Rules ==========
