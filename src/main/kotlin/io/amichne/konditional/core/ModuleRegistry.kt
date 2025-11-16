@@ -78,9 +78,13 @@ interface ModuleRegistry {
      * leaving other flags unchanged. This is more efficient than loading a
      * complete snapshot when only a few flags need to be updated.
      *
+     * **Internal API**: This method is used internally by FeatureContainer and should not be
+     * called directly. Configuration updates are handled automatically through delegation.
+     *
      * @param patch The [KonfigPatch] to apply
      */
-    fun update(patch: KonfigPatch)
+    @PublishedApi
+    internal fun update(patch: KonfigPatch)
 
     /**
      * Updates a single flag definition in the current configuration.
@@ -88,12 +92,16 @@ interface ModuleRegistry {
      * This is a convenience method for updating individual flags without
      * creating a full patch or snapshot.
      *
+     * **Internal API**: This method is used internally by FeatureContainer and should not be
+     * called directly. Configuration updates are handled automatically through delegation.
+     *
      * @param definition The [io.amichne.konditional.core.internal.FlagDefinition] to update
      * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
      * @param C The type of the context used for evaluation
      */
-    fun <S : EncodableValue<T>, T : Any, C : Context> update(definition: FlagDefinition<S, T, C, *>)
+    @PublishedApi
+    internal fun <S : EncodableValue<T>, T : Any, C : Context> update(definition: FlagDefinition<S, T, C, *>)
 
     /**
      * Retrieves the current snapshot of all flag configurations.

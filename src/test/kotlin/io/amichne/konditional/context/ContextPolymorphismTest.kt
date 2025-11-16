@@ -43,6 +43,7 @@ class ContextPolymorphismTest {
         println("--------")
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `Given EnterpriseContext, When evaluating flags, Then context-specific properties are accessible`() {
         Taxonomy.Global.config {
@@ -71,6 +72,7 @@ class ContextPolymorphismTest {
         assertTrue(ctx.evaluate(EnterpriseFeatures.advanced_analytics))
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `Given ExperimentContext, When evaluating flags, Then experiment-specific properties are accessible`() {
         Taxonomy.Global.config {
@@ -107,7 +109,7 @@ class ContextPolymorphismTest {
         assertEquals("variant-b", webCtx.evaluate(ExperimentFeatures.homepage_variant))
     }
 
-    @Suppress("USELESS_IS_CHECK")
+    @Suppress("USELESS_IS_CHECK", "DEPRECATION")
     @Test
     fun `Given multiple custom contexts, When using different flags, Then contexts are independent`() {
         Taxonomy.Global.config {
@@ -233,18 +235,22 @@ class ContextPolymorphismTest {
 //        assertFalse(rule.matches(nonMatchingCtx))
 //    }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `Given custom EnterpriseRule, When matching with business logic, Then custom properties are enforced`() {
-        EnterpriseFeatures.api_access.update {
-            default(false)
-            rule {
-                platforms(Platform.WEB)
-                rollout { 100 }
+        // Configure using the legacy config API (kept for testing dynamic configuration)
+        Taxonomy.Global.config {
+            EnterpriseFeatures.api_access with {
+                default(false)
+                rule {
+                    platforms(Platform.WEB)
+                    rollout { 100 }
 
-                extension {
-                    EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN)
-                }
-            } implies true
+                    extension {
+                        EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN)
+                    }
+                } implies true
+            }
         }
 
         val enterpriseAdmin = EnterpriseContext(

@@ -8,43 +8,41 @@ import io.amichne.konditional.internal.builders.ConfigBuilder
 /**
  * Configures feature flags for this taxonomy using the DSL.
  *
- * This is the primary entry point for defining taxonomy-specific feature flag configurations.
- * The configuration is immediately loaded into the taxonomy's isolated registry.
+ * **DEPRECATED**: This function is deprecated in favor of using `FeatureContainer` with automatic
+ * configuration through delegation. Configuration is now handled automatically when features are
+ * accessed through `FeatureContainer`.
  *
- * ## Taxonomy-Scoped Configuration
- *
- * Each taxonomy configures only its own flags, ensuring complete isolation:
- *
+ * **Migration**:
  * ```kotlin
- * // Configure Domain A's flags
- * Taxonomy.Domain.TeamA.config {
- *     TeamAFeatures.FEATURE_X with {
- *         default(value = true)
- *         rule {
- *             platforms(Platform.IOS)
- *         } implies false
+ * // Old approach (deprecated)
+ * Taxonomy.Domain.Payments.config {
+ *     PaymentFeatures.APPLE_PAY with {
+ *         default(false)
+ *         rule { platforms(Platform.IOS) } implies true
  *     }
  * }
  *
- * // Configure Domain B's flags (completely isolated)
- * Taxonomy.Domain.TeamB.config {
- *     TeamBFeatures.FEATURE_Y with {
- *         default(value = false)
+ * // New approach (recommended)
+ * object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
+ *     val APPLE_PAY by boolean {
+ *         default(false)
+ *         rule { platforms(Platform.IOS) } implies true
  *     }
  * }
  * ```
- *
- * ## Benefits
- *
- * - **Zero shared files**: Teams never touch the same configuration code
- * - **Compile-time isolation**: Cannot accidentally configure another taxonomy's flags
- * - **Runtime isolation**: Each taxonomy has its own registry instance
- * - **Independent deployment**: Taxonomy configs can be deployed separately
  *
  * @param M The taxonomy type (inferred from receiver)
  * @param fn The DSL block for configuring flags. The receiver is [io.amichne.konditional.core.dsl.ConfigScope], a sealed interface
  *           that defines the public DSL API.
  */
+@Deprecated(
+    message = "Use FeatureContainer with delegation instead. Configuration is now handled automatically.",
+    replaceWith = ReplaceWith(
+        "object YourFeatures : FeatureContainer<M>(this) { val FEATURE by boolean { /* config */ } }",
+        "io.amichne.konditional.core.features.FeatureContainer"
+    ),
+    level = DeprecationLevel.WARNING
+)
 @FeatureFlagDsl
 inline fun <M : Taxonomy> M.config(registry: ModuleRegistry = this.registry, fn: ConfigScope.() -> Unit) {
     ConfigBuilder().apply(fn).build().let { registry.load(it) }

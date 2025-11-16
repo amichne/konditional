@@ -59,9 +59,13 @@ class InMemoryModuleRegistry : ModuleRegistry {
      * This method is useful for incremental updates without replacing the entire snapshot.
      * The update is performed atomically using compare-and-swap semantics.
      *
+     * **Internal API**: Used internally by FeatureContainer. Configuration updates are
+     * handled automatically through delegation.
+     *
      * @param patch The [KonfigPatch] to apply
      */
-    override fun update(patch: KonfigPatch) {
+    @PublishedApi
+    internal override fun update(patch: KonfigPatch) {
         current.updateAndGet { currentSnapshot ->
             patch.applyTo(currentSnapshot)
         }
@@ -79,11 +83,15 @@ class InMemoryModuleRegistry : ModuleRegistry {
      *
      * This operation atomically updates the specified flag while leaving others unchanged.
      *
+     * **Internal API**: Used internally by FeatureContainer. Configuration updates are
+     * handled automatically through delegation.
+     *
      * @param definition The [FlagDefinition] to update
      * @param S The type of the flag's value
      * @param C The type of the context used for evaluation
      */
-    override fun <S : EncodableValue<T>, T : Any, C : Context> update(definition: FlagDefinition<S, T, C, *>) {
+    @PublishedApi
+    internal override fun <S : EncodableValue<T>, T : Any, C : Context> update(definition: FlagDefinition<S, T, C, *>) {
         current.updateAndGet { currentSnapshot ->
             val mutableFlags = currentSnapshot.flags.toMutableMap()
             mutableFlags[definition.feature] = definition

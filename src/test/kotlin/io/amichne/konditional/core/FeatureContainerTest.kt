@@ -123,15 +123,17 @@ class FeatureContainerTest {
 
     @Test
     fun `features can be evaluated with context`() {
-        // Configure the registry
-        Taxonomy.Domain.Payments.config {
-            TestFeatures.testBoolean with {
+        // Create a test container with configured features
+        val testFeatures = object : FeatureContainer<Taxonomy.Domain.Payments>(
+            Taxonomy.Domain.Payments
+        ) {
+            val configuredBoolean by boolean<Context> {
                 default(true)
             }
-            TestFeatures.testString with {
+            val configuredString by string<Context> {
                 default("test-value")
             }
-            TestFeatures.testInt with {
+            val configuredInt by int<Context> {
                 default(100)
             }
         }
@@ -143,10 +145,10 @@ class FeatureContainerTest {
             stableId = StableId.of("12345678901234567890123456789012")
         )
 
-        // Evaluate features
-        assertEquals(true, context.evaluate(TestFeatures.testBoolean))
-        assertEquals("test-value", context.evaluateOrDefault(TestFeatures.testString, ""))
-        assertEquals(100, context.evaluateOrDefault(TestFeatures.testInt, 0))
+        // Evaluate features - configuration is automatic through delegation
+        assertEquals(true, context.evaluate(testFeatures.configuredBoolean))
+        assertEquals("test-value", context.evaluateOrDefault(testFeatures.configuredString, ""))
+        assertEquals(100, context.evaluateOrDefault(testFeatures.configuredInt, 0))
     }
 
     @Test
