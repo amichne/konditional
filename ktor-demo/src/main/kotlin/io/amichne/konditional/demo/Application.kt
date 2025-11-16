@@ -3,7 +3,9 @@ package io.amichne.konditional.demo
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
+import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.config
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.rules.versions.Version
 import io.amichne.konditional.serialization.SnapshotSerializer
@@ -16,6 +18,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.html.*
+import java.security.MessageDigest
 
 fun main() {
     // Initialize configurations
@@ -25,6 +28,15 @@ fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
         configureRouting()
     }.start(wait = true)
+}
+
+/**
+ * Converts a string identifier to a valid HexId by hashing it with SHA-256
+ */
+fun String.toHexId(): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    val hashBytes = digest.digest(this.toByteArray())
+    return hashBytes.joinToString("") { "%02x".format(it) }
 }
 
 fun Application.configureRouting() {
@@ -47,6 +59,7 @@ fun Application.configureRouting() {
 
                 call.respondText(result, ContentType.Application.Json)
             } catch (e: Exception) {
+                e.printStackTrace()
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "Unknown error")))
             }
         }
@@ -60,6 +73,26 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.InternalServerError, mapOf("error" to (e.message ?: "Unknown error")))
             }
         }
+
+        post("/api/config/update") {
+            try {
+                val params = call.receiveParameters()
+                updateConfiguration(params)
+                call.respond(HttpStatusCode.OK, mapOf("status" to "success"))
+            } catch (e: Exception) {
+                e.printStackTrace()
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "Unknown error")))
+            }
+        }
+
+        get("/api/rules") {
+            try {
+                val rules = getCurrentRules()
+                call.respondText(rules, ContentType.Application.Json)
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to (e.message ?: "Unknown error")))
+            }
+        }
     }
 }
 
@@ -67,7 +100,10 @@ private fun evaluateBaseContext(params: Parameters): String {
     val locale = AppLocale.valueOf(params["locale"] ?: "EN_US")
     val platform = Platform.valueOf(params["platform"] ?: "WEB")
     val version = Version.parse(params["version"] ?: "1.0.0")
-    val stableId = StableId.of(params["stableId"] ?: "user-001")
+    val userIdentifier = params["userIdentifier"] ?: "user-001"
+
+    // Convert user identifier to valid HexId
+    val stableId = StableId.of(userIdentifier.toHexId())
 
     val context = DemoContext(
         locale = locale,
@@ -83,10 +119,13 @@ private fun evaluateEnterpriseContext(params: Parameters): String {
     val locale = AppLocale.valueOf(params["locale"] ?: "EN_US")
     val platform = Platform.valueOf(params["platform"] ?: "WEB")
     val version = Version.parse(params["version"] ?: "1.0.0")
-    val stableId = StableId.of(params["stableId"] ?: "user-001")
+    val userIdentifier = params["userIdentifier"] ?: "user-001"
     val subscriptionTier = SubscriptionTier.fromString(params["subscriptionTier"] ?: "FREE")
     val organizationId = params["organizationId"] ?: "org-001"
     val employeeCount = params["employeeCount"]?.toIntOrNull() ?: 10
+
+    // Convert user identifier to valid HexId
+    val stableId = StableId.of(userIdentifier.toHexId())
 
     val context = EnterpriseContext(
         locale = locale,
@@ -145,6 +184,37 @@ private fun buildEnterpriseEvaluationJson(context: EnterpriseContext): String {
         .toJson(results)
 }
 
+private fun updateConfiguration(params: Parameters) {
+    // Reinitialize configuration based on parameters
+    initializeDemoConfig()
+    initializeEnterpriseConfig()
+}
+
+private fun getCurrentRules(): String {
+    val rulesMap = mutableMapOf<String, Any>()
+
+    rulesMap["DARK_MODE"] = listOf(
+        mapOf("platforms" to listOf("IOS", "ANDROID"), "rollout" to 50.0, "value" to true),
+        mapOf("platforms" to listOf("WEB"), "rollout" to 75.0, "value" to true)
+    )
+
+    rulesMap["BETA_FEATURES"] = listOf(
+        mapOf("versionMin" to "2.0.0", "versionMax" to "3.0.0", "rollout" to 25.0, "value" to true),
+        mapOf("versionMin" to "3.0.0", "rollout" to 100.0, "value" to true)
+    )
+
+    rulesMap["WELCOME_MESSAGE"] = listOf(
+        mapOf("locales" to listOf("EN_US", "EN_GB"), "value" to "Welcome to Konditional Demo!"),
+        mapOf("locales" to listOf("FR_FR"), "value" to "Bienvenue dans Konditional Demo!"),
+        mapOf("locales" to listOf("DE_DE"), "value" to "Willkommen bei Konditional Demo!"),
+        mapOf("locales" to listOf("ES_ES"), "value" to "¡Bienvenido a Konditional Demo!")
+    )
+
+    return com.squareup.moshi.Moshi.Builder().build()
+        .adapter(Map::class.java)
+        .toJson(rulesMap)
+}
+
 private fun HTML.renderMainPage() {
     head {
         title { +"Konditional Demo - Interactive Feature Flags" }
@@ -160,7 +230,7 @@ private fun HTML.renderMainPage() {
                         padding: 20px;
                     }
                     .container {
-                        max-width: 1400px;
+                        max-width: 1600px;
                         margin: 0 auto;
                         background: white;
                         border-radius: 12px;
@@ -177,7 +247,7 @@ private fun HTML.renderMainPage() {
                     .header p { font-size: 1.1em; opacity: 0.9; }
                     .content {
                         display: grid;
-                        grid-template-columns: 1fr 1fr;
+                        grid-template-columns: 1fr 1fr 1fr;
                         gap: 20px;
                         padding: 30px;
                     }
@@ -186,6 +256,9 @@ private fun HTML.renderMainPage() {
                         border-radius: 8px;
                         padding: 20px;
                         border: 1px solid #e9ecef;
+                    }
+                    .panel.full-width {
+                        grid-column: 1 / -1;
                     }
                     .panel h2 {
                         color: #495057;
@@ -202,6 +275,7 @@ private fun HTML.renderMainPage() {
                         margin-bottom: 5px;
                         color: #495057;
                         font-weight: 500;
+                        font-size: 14px;
                     }
                     .form-group input, .form-group select {
                         width: 100%;
@@ -323,6 +397,47 @@ private fun HTML.renderMainPage() {
                         background: #8b5cf6;
                         color: white;
                     }
+                    .rule-item {
+                        background: white;
+                        border-radius: 6px;
+                        padding: 12px;
+                        margin-bottom: 10px;
+                        border: 1px solid #e9ecef;
+                    }
+                    .rule-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 10px;
+                    }
+                    .rule-title {
+                        font-weight: 600;
+                        color: #495057;
+                    }
+                    .rule-params {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                        gap: 10px;
+                        margin-top: 10px;
+                        padding-top: 10px;
+                        border-top: 1px dashed #dee2e6;
+                    }
+                    .rule-param {
+                        font-size: 13px;
+                    }
+                    .rule-param-label {
+                        font-weight: 500;
+                        color: #6c757d;
+                        display: block;
+                        margin-bottom: 3px;
+                    }
+                    .rule-param-value {
+                        color: #495057;
+                        background: #f8f9fa;
+                        padding: 4px 8px;
+                        border-radius: 4px;
+                        display: inline-block;
+                    }
                     .json-output {
                         background: #1e293b;
                         color: #e2e8f0;
@@ -340,6 +455,34 @@ private fun HTML.renderMainPage() {
                         padding: 40px;
                         color: #6c757d;
                     }
+                    .mini-switch {
+                        position: relative;
+                        display: inline-block;
+                        width: 40px;
+                        height: 20px;
+                    }
+                    .mini-switch input { opacity: 0; width: 0; height: 0; }
+                    .mini-slider {
+                        position: absolute;
+                        cursor: pointer;
+                        top: 0; left: 0; right: 0; bottom: 0;
+                        background-color: #ccc;
+                        transition: .4s;
+                        border-radius: 20px;
+                    }
+                    .mini-slider:before {
+                        position: absolute;
+                        content: "";
+                        height: 14px;
+                        width: 14px;
+                        left: 3px;
+                        bottom: 3px;
+                        background-color: white;
+                        transition: .4s;
+                        border-radius: 50%;
+                    }
+                    input:checked + .mini-slider { background-color: #10b981; }
+                    input:checked + .mini-slider:before { transform: translateX(20px); }
                     """
                 )
             }
@@ -349,12 +492,12 @@ private fun HTML.renderMainPage() {
         div("container") {
             div("header") {
                 h1 { +"🚀 Konditional Demo" }
-                p { +"Interactive Feature Flags with FeatureContainer Delegation" }
+                p { +"Interactive Feature Flags with FeatureContainer Delegation & Dynamic Rules" }
             }
             div("content") {
                 // Left panel - Configuration
                 div("panel") {
-                    h2 { +"⚙️ Configuration" }
+                    h2 { +"⚙️ Context Configuration" }
                     form {
                         id = "contextForm"
                         div("form-group") {
@@ -369,8 +512,22 @@ private fun HTML.renderMainPage() {
                                 }
                                 option {
                                     value = "enterprise"
-                                    +"Enterprise Context (Extended)"
+                                    +"Enterprise Context"
                                 }
+                            }
+                        }
+                        div("form-group") {
+                            label { +"User Identifier" }
+                            input {
+                                type = InputType.text
+                                id = "userIdentifier"
+                                name = "userIdentifier"
+                                value = "user-001"
+                                placeholder = "e.g., user-123"
+                            }
+                            small {
+                                attributes["style"] = "color: #6c757d; font-size: 12px;"
+                                +"Hashed to HexId internally"
                             }
                         }
                         div("form-group") {
@@ -405,16 +562,6 @@ private fun HTML.renderMainPage() {
                                 name = "version"
                                 value = "1.0.0"
                                 placeholder = "e.g., 2.5.0"
-                            }
-                        }
-                        div("form-group") {
-                            label { +"Stable ID (User ID)" }
-                            input {
-                                type = InputType.text
-                                id = "stableId"
-                                name = "stableId"
-                                value = "user-001"
-                                placeholder = "e.g., user-123"
                             }
                         }
 
@@ -472,7 +619,7 @@ private fun HTML.renderMainPage() {
                     }
                 }
 
-                // Right panel - Results
+                // Middle panel - Results
                 div("panel") {
                     h2 { +"📊 Feature Evaluation Results" }
                     div {
@@ -481,9 +628,17 @@ private fun HTML.renderMainPage() {
                     }
                 }
 
-                // Bottom full-width panel - JSON Output
+                // Right panel - Rules Management
                 div("panel") {
-                    attributes["style"] = "grid-column: 1 / -1;"
+                    h2 { +"🎛️ Rules Management" }
+                    div {
+                        id = "rulesPanel"
+                        div("loading") { +"Loading rules..." }
+                    }
+                }
+
+                // Bottom full-width panel - JSON Output
+                div("panel full-width") {
                     h2 { +"📝 Konfig JSON Snapshot" }
                     div("json-output") {
                         id = "jsonOutput"
@@ -498,10 +653,12 @@ private fun HTML.renderMainPage() {
                 raw(
                     """
                     let hotReloadEnabled = false;
+                    let currentRules = {};
 
                     // Initialize
                     document.addEventListener('DOMContentLoaded', () => {
                         loadSnapshot();
+                        loadRules();
                         setupEventListeners();
                     });
 
@@ -605,6 +762,110 @@ private fun HTML.renderMainPage() {
                                 <span class="feature-value ${'$'}{type}">${'$'}{displayValue}</span>
                             </div>
                         `;
+                    }
+
+                    async function loadRules() {
+                        try {
+                            const response = await fetch('/api/rules');
+                            currentRules = await response.json();
+                            renderRules();
+                        } catch (error) {
+                            console.error('Rules loading error:', error);
+                            document.getElementById('rulesPanel').innerHTML =
+                                '<div class="loading" style="color: #ef4444;">Error loading rules</div>';
+                        }
+                    }
+
+                    function renderRules() {
+                        const panel = document.getElementById('rulesPanel');
+                        let html = '';
+
+                        for (const [featureName, rules] of Object.entries(currentRules)) {
+                            html += `
+                                <div style="margin-bottom: 20px;">
+                                    <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 10px; color: #667eea;">
+                                        ${'$'}{featureName}
+                                    </h3>
+                            `;
+
+                            rules.forEach((rule, idx) => {
+                                html += renderRule(featureName, rule, idx);
+                            });
+
+                            html += '</div>';
+                        }
+
+                        panel.innerHTML = html;
+                    }
+
+                    function renderRule(featureName, rule, idx) {
+                        let params = '';
+
+                        if (rule.platforms) {
+                            params += `
+                                <div class="rule-param">
+                                    <span class="rule-param-label">Platforms:</span>
+                                    <span class="rule-param-value">${'$'}{rule.platforms.join(', ')}</span>
+                                </div>
+                            `;
+                        }
+
+                        if (rule.locales) {
+                            params += `
+                                <div class="rule-param">
+                                    <span class="rule-param-label">Locales:</span>
+                                    <span class="rule-param-value">${'$'}{rule.locales.join(', ')}</span>
+                                </div>
+                            `;
+                        }
+
+                        if (rule.rollout !== undefined) {
+                            params += `
+                                <div class="rule-param">
+                                    <span class="rule-param-label">Rollout:</span>
+                                    <span class="rule-param-value">${'$'}{rule.rollout}%</span>
+                                </div>
+                            `;
+                        }
+
+                        if (rule.versionMin) {
+                            params += `
+                                <div class="rule-param">
+                                    <span class="rule-param-label">Version Range:</span>
+                                    <span class="rule-param-value">${'$'}{rule.versionMin} - ${'$'}{rule.versionMax || '∞'}</span>
+                                </div>
+                            `;
+                        }
+
+                        if (rule.value !== undefined) {
+                            const valueStr = typeof rule.value === 'string' ? rule.value : JSON.stringify(rule.value);
+                            params += `
+                                <div class="rule-param">
+                                    <span class="rule-param-label">Value:</span>
+                                    <span class="rule-param-value">${'$'}{valueStr}</span>
+                                </div>
+                            `;
+                        }
+
+                        return `
+                            <div class="rule-item">
+                                <div class="rule-header">
+                                    <span class="rule-title">Rule ${'$'}{idx + 1}</span>
+                                    <label class="mini-switch">
+                                        <input type="checkbox" checked onchange="toggleRule('${'$'}{featureName}', ${'$'}{idx})">
+                                        <span class="mini-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="rule-params">
+                                    ${'$'}{params}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    function toggleRule(featureName, ruleIdx) {
+                        console.log('Toggle rule:', featureName, ruleIdx);
+                        // TODO: Implement rule toggling
                     }
 
                     async function loadSnapshot() {
