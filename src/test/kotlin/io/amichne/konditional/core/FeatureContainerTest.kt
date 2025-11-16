@@ -35,10 +35,17 @@ class FeatureContainerTest {
             value = 0
         )
         val testBoolean by boolean<Context> {
+            default(false)
         }
-        val testString by string<Context> { }
-        val testInt by int<Context> { }
-        val testDouble by double<Context> { }
+        val testString by string<Context> {
+            default("default")
+        }
+        val testInt by int<Context> {
+            default(0)
+        }
+        val testDouble by double<Context> {
+            default(0.0)
+        }
         val testJson by jsonObject<Context, TestConfig>(defaultTestConfig, "testJson")
     }
 
@@ -102,8 +109,8 @@ class FeatureContainerTest {
         with(object : FeatureContainer<Taxonomy.Domain.Payments>(
             Taxonomy.Domain.Payments
         ) {
-            val lazyA by boolean<Context> { }
-            val lazyB by boolean<Context> { }
+            val lazyA by boolean<Context> { default(true) }
+            val lazyB by boolean<Context> { default(true) }
         }) {
 
             // allFeatures() should return empty before any feature is accessed
@@ -123,15 +130,17 @@ class FeatureContainerTest {
 
     @Test
     fun `features can be evaluated with context`() {
-        // Configure the registry
-        Taxonomy.Domain.Payments.config {
-            TestFeatures.testBoolean with {
+        // Create a test container with configured features
+        val testFeatures = object : FeatureContainer<Taxonomy.Domain.Payments>(
+            Taxonomy.Domain.Payments
+        ) {
+            val configuredBoolean by boolean<Context> {
                 default(true)
             }
-            TestFeatures.testString with {
+            val configuredString by string<Context> {
                 default("test-value")
             }
-            TestFeatures.testInt with {
+            val configuredInt by int<Context> {
                 default(100)
             }
         }
@@ -143,10 +152,10 @@ class FeatureContainerTest {
             stableId = StableId.of("12345678901234567890123456789012")
         )
 
-        // Evaluate features
-        assertEquals(true, context.evaluate(TestFeatures.testBoolean))
-        assertEquals("test-value", context.evaluateOrDefault(TestFeatures.testString, ""))
-        assertEquals(100, context.evaluateOrDefault(TestFeatures.testInt, 0))
+        // Evaluate features - configuration is automatic through delegation
+        assertEquals(true, context.evaluate(testFeatures.configuredBoolean))
+        assertEquals("test-value", context.evaluateOrDefault(testFeatures.configuredString, ""))
+        assertEquals(100, context.evaluateOrDefault(testFeatures.configuredInt, 0))
     }
 
     @Test
@@ -154,16 +163,16 @@ class FeatureContainerTest {
         val first = object : FeatureContainer<Taxonomy.Domain.Payments>(
             Taxonomy.Domain.Payments
         ) {
-            val a1 by boolean<Context> { }
-            val a2 by boolean<Context> { }
+            val a1 by boolean<Context> { default(true) }
+            val a2 by boolean<Context> { default(true) }
         }
 
         val second = object : FeatureContainer<Taxonomy.Domain.Messaging>(
             Taxonomy.Domain.Messaging
         ) {
-            val b1 by boolean<Context> { }
-            val b2 by boolean<Context> { }
-            val b3 by boolean<Context> { }
+            val b1 by boolean<Context> { default(true) }
+            val b2 by boolean<Context> { default(true) }
+            val b3 by boolean<Context> { default(true) }
         }
 
         // Access properties to trigger registration

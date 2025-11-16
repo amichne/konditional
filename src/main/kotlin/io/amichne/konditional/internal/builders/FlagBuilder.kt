@@ -69,7 +69,7 @@ internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M :
      */
     @PublishedApi
     internal fun build(): FlagDefinition<S, T, C, M> {
-//        requireNotNull(defaultValue) { "Default value must be set" }
+        requireNotNull(defaultValue) { "Default value must be set" }
         return FlagDefinition(
             feature = feature,
             bounds = conditionalValues.toList(),

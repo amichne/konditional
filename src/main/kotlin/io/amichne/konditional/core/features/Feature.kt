@@ -42,8 +42,24 @@ sealed interface Feature<S : EncodableValue<T>, T : Any, C : Context, M : Taxono
     val module: M
     val registry: ModuleRegistry
 
+    /**
+     * Updates this feature's definition in the registry.
+     *
+     * **Internal API**: This method is used internally and should not be called directly.
+     * When using FeatureContainer, configuration is handled automatically through delegation.
+     *
+     * @param definition The flag definition to update
+     */
     fun update(definition: FlagDefinition<S, T, C, M>): Unit = registry.update(definition)
 
+    /**
+     * Updates this feature using a DSL configuration block.
+     *
+     * **Internal API**: This method is used internally and should not be called directly.
+     * When using FeatureContainer, configuration is handled automatically through delegation.
+     *
+     * @param function The DSL configuration block
+     */
     fun update(function: FlagScope<S, T, C, M>.() -> Unit): Unit =
         registry.update(FlagBuilder(this).apply(function).build())
 

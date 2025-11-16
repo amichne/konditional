@@ -59,6 +59,9 @@ class InMemoryModuleRegistry : ModuleRegistry {
      * This method is useful for incremental updates without replacing the entire snapshot.
      * The update is performed atomically using compare-and-swap semantics.
      *
+     * **Internal API**: Used internally by FeatureContainer. Configuration updates are
+     * handled automatically through delegation.
+     *
      * @param patch The [KonfigPatch] to apply
      */
     override fun update(patch: KonfigPatch) {
@@ -78,6 +81,9 @@ class InMemoryModuleRegistry : ModuleRegistry {
      * Updates a single flag definition in the current configuration.
      *
      * This operation atomically updates the specified flag while leaving others unchanged.
+     *
+     * **Internal API**: Used internally by FeatureContainer. Configuration updates are
+     * handled automatically through delegation.
      *
      * @param definition The [FlagDefinition] to update
      * @param S The type of the flag's value

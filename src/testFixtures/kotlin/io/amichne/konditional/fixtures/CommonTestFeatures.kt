@@ -1,8 +1,9 @@
 package io.amichne.konditional.fixtures
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.features.FeatureContainer
+import io.amichne.konditional.fixtures.CommonTestFeatures.allFeatures
 
 /**
  * Common test features demonstrating mixed-type capabilities of FeatureContainer.
@@ -61,7 +62,9 @@ object CommonTestFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
     val testString by string<Context> { }
 
     /** Registered flag for testing found scenarios */
-    val registeredFlag by string<Context> { }
+    val registeredFlag by string<Context> {
+        default("test")
+    }
 
     /** Unregistered flag for testing not-found scenarios */
     val unregisteredFlag by string<Context> { }

@@ -3,10 +3,7 @@ package io.amichne.konditional.core.features
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.ModuleRegistry
 import io.amichne.konditional.core.Taxonomy
-import io.amichne.konditional.core.dsl.BooleanScope
-import io.amichne.konditional.core.dsl.DecimalScope
-import io.amichne.konditional.core.dsl.IntegerScope
-import io.amichne.konditional.core.dsl.StringScope
+import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.internal.builders.FlagBuilder
 import kotlin.properties.PropertyDelegateProvider
@@ -91,10 +88,11 @@ abstract class FeatureContainer<M : Taxonomy>(
     fun allFeatures(): List<Feature<*, *, *, M>> = _features.toList()
 
     /**
-     * Creates a Boolean feature with automatic registration.
+     * Creates a Boolean feature with automatic registration and configuration.
      *
      * The feature is configured using a DSL scope that provides type-safe access to
      * boolean-specific configuration options like rules, defaults, and targeting.
+     * Configuration is automatically applied to the registry when the feature is first accessed.
      *
      * **Example:**
      * ```kotlin
@@ -109,23 +107,22 @@ abstract class FeatureContainer<M : Taxonomy>(
      * ```
      *
      * @param C The context type used for evaluation
-     * @param default The default value when no rules match (defaults to false)
      * @param registry The module registry for storing configuration (defaults to taxonomy.registry)
      * @param flagScope DSL scope for configuring the boolean feature
      * @return A delegated property that returns a [BooleanFeature]
      */
     protected fun <C : Context> boolean(
-        default: Boolean = false,
         registry: ModuleRegistry = taxonomy.registry,
-        flagScope: BooleanScope<C, M>.() -> Unit,
+        flagScope: FlagScope<EncodableValue.BooleanEncodeable, Boolean, C, M>.() -> Unit,
     ): ReadOnlyProperty<FeatureContainer<M>, BooleanFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(default) { BooleanFeature(it, taxonomy) }
+        ContainerFeaturePropertyDelegate(registry, flagScope) { BooleanFeature(it, taxonomy) }
 
     /**
-     * Creates a String feature with automatic registration.
+     * Creates a String feature with automatic registration and configuration.
      *
      * The feature is configured using a DSL scope that provides type-safe access to
      * string-specific configuration options like rules, defaults, and targeting.
+     * Configuration is automatically applied to the registry when the feature is first accessed.
      *
      * **Example:**
      * ```kotlin
@@ -140,23 +137,22 @@ abstract class FeatureContainer<M : Taxonomy>(
      * ```
      *
      * @param C The context type used for evaluation
-     * @param default The default value when no rules match (defaults to empty string)
      * @param registry The module registry for storing configuration (defaults to taxonomy.registry)
      * @param stringScope DSL scope for configuring the string feature
      * @return A delegated property that returns a [StringFeature]
      */
     protected fun <C : Context> string(
-        default: String = "",
         registry: ModuleRegistry = taxonomy.registry,
-        stringScope: StringScope<C, M>.() -> Unit,
+        stringScope: FlagScope<EncodableValue.StringEncodeable, String, C, M>.() -> Unit,
     ): ReadOnlyProperty<FeatureContainer<M>, StringFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(default) { StringFeature.Companion(it, taxonomy) }
+        ContainerFeaturePropertyDelegate(registry, stringScope) { StringFeature.Companion(it, taxonomy) }
 
     /**
-     * Creates an Int feature with automatic registration.
+     * Creates an Int feature with automatic registration and configuration.
      *
      * The feature is configured using a DSL scope that provides type-safe access to
      * integer-specific configuration options like rules, defaults, and targeting.
+     * Configuration is automatically applied to the registry when the feature is first accessed.
      *
      * **Example:**
      * ```kotlin
@@ -171,26 +167,24 @@ abstract class FeatureContainer<M : Taxonomy>(
      * ```
      *
      * @param C The context type used for evaluation
-     * @param default The default value when no rules match (defaults to 0)
      * @param registry The module registry for storing configuration (defaults to taxonomy.registry)
      * @param integerScope DSL scope for configuring the integer feature
      * @return A delegated property that returns an [IntFeature]
      */
     protected fun <C : Context> int(
-        default: Int = 0,
         registry: ModuleRegistry = taxonomy.registry,
-        integerScope: IntegerScope<C, M>.() -> Unit,
+        integerScope: FlagScope<EncodableValue.IntEncodeable, Int, C, M>.() -> Unit,
     ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(default) {
-
+        ContainerFeaturePropertyDelegate(registry, integerScope) {
             IntFeature.Companion(it, taxonomy, registry)
         }
 
     /**
-     * Creates a Double feature with automatic registration.
+     * Creates a Double feature with automatic registration and configuration.
      *
      * The feature is configured using a DSL scope that provides type-safe access to
      * decimal-specific configuration options like rules, defaults, and targeting.
+     * Configuration is automatically applied to the registry when the feature is first accessed.
      *
      * **Example:**
      * ```kotlin
@@ -205,23 +199,22 @@ abstract class FeatureContainer<M : Taxonomy>(
      * ```
      *
      * @param C The context type used for evaluation
-     * @param default The default value when no rules match (defaults to 0.0)
      * @param registry The module registry for storing configuration (defaults to taxonomy.registry)
      * @param decimalScope DSL scope for configuring the double feature
      * @return A delegated property that returns a [DoubleFeature]
      */
     protected fun <C : Context> double(
-        default: Double = 0.0,
         registry: ModuleRegistry = taxonomy.registry,
-        decimalScope: DecimalScope<C, M>.() -> Unit,
+        decimalScope: FlagScope<EncodableValue.DecimalEncodeable, Double, C, M>.() -> Unit,
     ): ReadOnlyProperty<FeatureContainer<M>, DoubleFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(default) { DoubleFeature(it, taxonomy, registry) }
+        ContainerFeaturePropertyDelegate(registry, decimalScope) { DoubleFeature(it, taxonomy, registry) }
 
     /**
-     * Creates a JSON object feature with automatic registration.
+     * Creates a JSON object feature with automatic registration and configuration.
      *
      * This method is used for complex data structures that need to be serialized as JSON.
      * The type T must be a data class or other JSON-serializable type.
+     * Configuration is automatically applied to the registry when the feature is first accessed.
      *
      * **Example:**
      * ```kotlin
@@ -247,13 +240,14 @@ abstract class FeatureContainer<M : Taxonomy>(
         key: String,
         registry: ModuleRegistry = taxonomy.registry,
     ): ReadOnlyProperty<FeatureContainer<M>, JsonFeature<C, M, T>> =
-        ContainerFeaturePropertyDelegate(default) { JsonFeature(key, taxonomy, registry) }
+        ContainerFeaturePropertyDelegate(registry, { default(default) }) { JsonFeature(key, taxonomy, registry) }
 
     /**
-     * Creates a custom wrapper type feature with automatic registration.
+     * Creates a custom wrapper type feature with automatic registration and configuration.
      *
      * This method is used for custom types that need special encoding/decoding logic,
      * such as DateTime, UUID, or other domain-specific wrapper types.
+     * Configuration is automatically applied to the registry when the feature is first accessed.
      *
      * **Example:**
      * ```kotlin
@@ -279,12 +273,12 @@ abstract class FeatureContainer<M : Taxonomy>(
         key: String,
         registry: ModuleRegistry = taxonomy.registry,
     ): ReadOnlyProperty<FeatureContainer<M>, CustomFeature<T, P, C, M>> where
-        P : Any, P : EncodableValue<P> = ContainerFeaturePropertyDelegate(default) {
+        P : Any, P : EncodableValue<P> = ContainerFeaturePropertyDelegate(registry, { default(default) }) {
         Feature.custom(key, taxonomy, registry)
     }
 
     /**
-     * Internal delegate factory that handles feature creation and registration.
+     * Internal delegate factory that handles feature creation, configuration, and registration.
      *
      * This class implements both [ReadOnlyProperty] and [PropertyDelegateProvider] to enable
      * Kotlin's property delegation pattern with lazy initialization. It performs the following:
@@ -293,28 +287,35 @@ abstract class FeatureContainer<M : Taxonomy>(
      *    to use as the feature key
      * 2. **Lazy initialization**: Creates the feature only on first access
      * 3. **Automatic registration**: Adds the feature to the container's feature list
-     * 4. **Default configuration**: Applies the default value via FlagBuilder
+     * 4. **Automatic configuration**: Executes the DSL configuration block and updates the registry
      *
      * **Implementation details:**
      * - The `factory` function is responsible for creating the feature instance
      * - The feature is created using the property name as the feature key
-     * - The default value is automatically configured in the feature's registry
+     * - The DSL configuration block is executed and applied to the feature's registry
      * - All features in the container share the same taxonomy
      *
      * @param F The feature type (BooleanFeature, StringFeature, etc.)
+     * @param S The EncodableValue type wrapping the actual value
      * @param T The value type (Boolean, String, Int, etc.)
-     * @param default The default value to configure for this feature
+     * @param C The context type used for evaluation
+     * @param registry The module registry for storing configuration
+     * @param configScope The DSL configuration block to execute
      * @param factory A function that creates the feature given the taxonomy and property name
      */
-    inner class ContainerFeaturePropertyDelegate<F : Feature<*, T, *, M>, T : Any>(
-        default: T,
+    @Suppress("UNCHECKED_CAST")
+    inner class ContainerFeaturePropertyDelegate<F : Feature<S, T, C, M>, S : EncodableValue< T>, T : Any, C : Context>(
+        private val registry: ModuleRegistry,
+        private val configScope: FlagScope<S, T, C, M>.() -> Unit,
         private val factory: M.(String) -> F,
     ) : ReadOnlyProperty<FeatureContainer<M>, F>, PropertyDelegateProvider<FeatureContainer<M>, F> {
         lateinit var name: String
 
         private val feature: F by lazy {
-            factory(taxonomy, name).also { _features.add(it) }.also {
-                it.registry.update(FlagBuilder(it).also { builder -> builder.default(default) }.build())
+            factory(taxonomy, name).also { _features.add(it) }.also { createdFeature ->
+                // Execute the DSL configuration block and update the registry
+                val flagDefinition = FlagBuilder(createdFeature).apply(configScope).build()
+                registry.update(flagDefinition)
             }
         }
 

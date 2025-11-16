@@ -70,8 +70,8 @@ sealed class Taxonomy(val id: String) {
      *
      * Example:
      * ```kotlin
-     * Taxonomy.Global.config {
-     *     CoreFeatures.KILL_SWITCH with { default(false) }
+     * object CoreFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+     *     val KILL_SWITCH by boolean { default(false) }
      * }
      * ```
      */

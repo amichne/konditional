@@ -3,7 +3,6 @@ package io.amichne.konditional.context
 import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.Taxonomy.Global
-import io.amichne.konditional.core.config
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.EnterpriseContext
 import io.amichne.konditional.fixtures.EnterpriseFeatures
@@ -45,7 +44,8 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given EnterpriseContext, When evaluating flags, Then context-specific properties are accessible`() {
-        Taxonomy.Global.config {
+        // Configure using buildSnapshot and load for test-specific configuration
+        Global.registry.load(io.amichne.konditional.core.buildSnapshot {
             EnterpriseFeatures.advanced_analytics with {
                 default(false)
                 // This demonstrates that the rule can access base Context properties
@@ -56,7 +56,7 @@ class ContextPolymorphismTest {
                     }
                 } implies true
             }
-        }
+        })
 
         val ctx = EnterpriseContext(
             locale = AppLocale.EN_US,
@@ -73,7 +73,8 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given ExperimentContext, When evaluating flags, Then experiment-specific properties are accessible`() {
-        Taxonomy.Global.config {
+        // Configure using buildSnapshot and load for test-specific configuration
+        Global.registry.load(io.amichne.konditional.core.buildSnapshot {
             ExperimentFeatures.homepage_variant with {
                 default("control")
                 rule {
@@ -83,7 +84,7 @@ class ContextPolymorphismTest {
                     platforms(Platform.WEB)
                 } implies "variant-b"
             }
-        }
+        })
 
         val mobileCtx = ExperimentContext(
             locale = AppLocale.EN_US,
@@ -110,7 +111,8 @@ class ContextPolymorphismTest {
     @Suppress("USELESS_IS_CHECK")
     @Test
     fun `Given multiple custom contexts, When using different flags, Then contexts are independent`() {
-        Taxonomy.Global.config {
+        // Configure using buildSnapshot and load for test-specific configuration
+        Global.registry.load(io.amichne.konditional.core.buildSnapshot {
             EnterpriseFeatures.api_access with {
                 default(false)
                 rule {
@@ -121,7 +123,7 @@ class ContextPolymorphismTest {
                 rule {
                 } implies "modern"
             }
-        }
+        })
 
         val enterpriseCtx = EnterpriseContext(
             locale = AppLocale.EN_US,
@@ -235,17 +237,20 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given custom EnterpriseRule, When matching with business logic, Then custom properties are enforced`() {
-        EnterpriseFeatures.api_access.update {
-            default(false)
-            rule {
-                platforms(Platform.WEB)
-                rollout { 100 }
+        // Configure using buildSnapshot and load for test-specific configuration
+        Global.registry.load(io.amichne.konditional.core.buildSnapshot {
+            EnterpriseFeatures.api_access with {
+                default(false)
+                rule {
+                    platforms(Platform.WEB)
+                    rollout { 100 }
 
-                extension {
-                    EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN)
-                }
-            } implies true
-        }
+                    extension {
+                        EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN)
+                    }
+                } implies true
+            }
+        })
 
         val enterpriseAdmin = EnterpriseContext(
             locale = AppLocale.EN_US,
