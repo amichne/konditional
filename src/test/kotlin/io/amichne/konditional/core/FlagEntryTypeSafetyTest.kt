@@ -30,30 +30,30 @@ class FlagEntryTypeSafetyTest {
         // Reset registry before each test
         println("Global")
         println("--------")
-        println(SnapshotSerializer().serialize(Global.registry.konfig()))
+        println(SnapshotSerializer().serialize(Global.konfig()))
         println("--------")
 
         println("Payments")
         println("--------")
-        println(SnapshotSerializer().serialize(Taxonomy.Domain.Payments.registry.konfig()))
+        println(SnapshotSerializer().serialize(Taxonomy.Domain.Payments.konfig()))
         println("--------")
 
         println("Search")
         println("--------")
-        println(SnapshotSerializer().serialize(Taxonomy.Domain.Search.registry.konfig()))
+        println(SnapshotSerializer().serialize(Taxonomy.Domain.Search.konfig()))
         println("--------")
 
         println(
             "Does Global registry match Search? ${
-                SnapshotSerializer().serialize(Global.registry.konfig()) == SnapshotSerializer().serialize(
-                    Taxonomy.Domain.Search.registry.konfig()
+                SnapshotSerializer().serialize(Global.konfig()) == SnapshotSerializer().serialize(
+                    Taxonomy.Domain.Search.konfig()
                 )
             }"
         )
         println(
             "Does Global registry match Payments? ${
-                SnapshotSerializer().serialize(Global.registry.konfig()) == SnapshotSerializer().serialize(
-                    Taxonomy.Domain.Payments.registry.konfig()
+                SnapshotSerializer().serialize(Global.konfig()) == SnapshotSerializer().serialize(
+                    Taxonomy.Domain.Payments.konfig()
                 )
             }"
         )
@@ -67,30 +67,24 @@ class FlagEntryTypeSafetyTest {
     ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
 
     private object Features : FeatureContainer<Global>(Taxonomy.Global) {
-        val featureA by boolean<Context> {
-            default(false)
+        val featureA by boolean<Context>(default = false) {
             rule {
                 platforms(Platform.IOS)
             } implies true
         }
-        val featureB by boolean<Context> {
-            default(true)
-        }
-        val configA by string<Context> {
-            default("default")
+        val featureB by boolean<Context>(default = true)
+        val configA by string<Context>(default = "default") {
             rule {
                 platforms(Platform.ANDROID)
             } implies "android-value"
         }
 
-        val configB by string<Context> {
-            default("config-b-default")
+        val configB by string<Context>(default = "config-b-default") {
             rule {
                 locales(AppLocale.EN_US)
             } implies "en-us-value"
         }
-        val timeout by int<Context> {
-            default(10)
+        val timeout by int<Context>(default = 10) {
             rule {
                 versions {
                     min(2, 0)
@@ -227,7 +221,7 @@ class FlagEntryTypeSafetyTest {
             )
         )
 
-        Taxonomy.Global.registry.load(konfig)
+        Taxonomy.Global.load(konfig)
 
         val context = ctx("33333333333333333333333333333333")
         val boolResult = context.evaluate(Features.featureA)

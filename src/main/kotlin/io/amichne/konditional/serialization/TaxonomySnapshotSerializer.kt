@@ -69,19 +69,19 @@ class TaxonomySnapshotSerializer<M : Taxonomy>(
     /**
      * Serializes the taxonomy's current flag configuration to JSON.
      *
-     * Only flags from this taxonomy's registry are included in the output.
+     * Only flags from this taxonomy are included in the output.
      * The JSON is formatted with 2-space indentation for readability.
      *
      * @return JSON string representation of the taxonomy's configuration
      */
     override fun toJson(): String {
-        val konfig = module.registry.konfig()
+        val konfig = module.konfig()
         val serializable = konfig.toSerializable()
         return snapshotAdapter.toJson(serializable)
     }
 
     /**
-     * Deserializes JSON into a Konfig and loads it into the taxonomy's registry.
+     * Deserializes JSON into a Konfig and loads it into the taxonomy.
      *
      * Returns ParseResult for type-safe error handling following parse-don't-validate principles.
      *
@@ -94,8 +94,8 @@ class TaxonomySnapshotSerializer<M : Taxonomy>(
      *
      * ## Side Effects
      *
-     * On success, the deserialized configuration is **immediately loaded** into the taxonomy's
-     * registry, replacing any existing configuration. This ensures the taxonomy's runtime
+     * On success, the deserialized configuration is **immediately loaded** into the taxonomy,
+     * replacing any existing configuration. This ensures the taxonomy's runtime
      * state matches the serialized configuration.
      *
      * @param json JSON string to deserialize
@@ -112,8 +112,8 @@ class TaxonomySnapshotSerializer<M : Taxonomy>(
             when (val parseResult = serializable.toSnapshot()) {
                 is ParseResult.Success -> {
                     val konfig = parseResult.value
-                    // Load the parsed configuration into the taxonomy's registry
-                    module.registry.load(konfig)
+                    // Load the parsed configuration into the taxonomy
+                    module.load(konfig)
                     ParseResult.Success(konfig)
                 }
                 is ParseResult.Failure -> parseResult

@@ -1,8 +1,9 @@
 package io.amichne.konditional.fixtures
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.features.FeatureContainer
+import io.amichne.konditional.fixtures.CommonTestFeatures.allFeatures
 
 /**
  * Common test features demonstrating mixed-type capabilities of FeatureContainer.
@@ -24,62 +25,62 @@ object CommonTestFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 
     // Boolean features
     /** General-purpose test feature flag */
-    val testFeature by boolean<Context> { }
+    val testFeature by boolean<Context>(default = false)
 
     /** Always-enabled feature for testing true state */
-    val alwaysTrue by boolean<Context> { }
+    val alwaysTrue by boolean<Context>(default = true)
 
     /** Feature flag for testing enabled state */
-    val enabledFeature by boolean<Context> { }
+    val enabledFeature by boolean<Context>(default = true)
 
     /** Feature flag for testing disabled state */
-    val disabledFeature by boolean<Context> { }
+    val disabledFeature by boolean<Context>(default = false)
 
     /** Feature flag for testing rollout percentages */
-    val rolloutFeature by boolean<Context> { }
+    val rolloutFeature by boolean<Context>(default = false)
 
     /** Feature flag for testing platform targeting */
-    val platformFeature by boolean<Context> { }
+    val platformFeature by boolean<Context>(default = false)
 
     /** Feature flag for testing locale targeting */
-    val localeFeature by boolean<Context> { }
+    val localeFeature by boolean<Context>(default = false)
 
     /** Feature flag for testing version ranges */
-    val versionFeature by boolean<Context> { }
+    val versionFeature by boolean<Context>(default = false)
 
     // String features
     /** API endpoint configuration */
-    val apiEndpoint by string<Context> { }
+    val apiEndpoint by string<Context>(default = "https://api.example.com")
 
     /** Theme configuration */
-    val theme by string<Context> { }
+    val theme by string<Context>(default = "light")
 
     /** Welcome message configuration */
-    val welcomeMessage by string<Context> { }
+    val welcomeMessage by string<Context>(default = "Welcome!")
 
     /** General-purpose test string flag */
-    val testString by string<Context> { }
+    val testString by string<Context>(default = "default")
 
     /** Registered flag for testing found scenarios */
-    val registeredFlag by string<Context> { }
+    val registeredFlag by string<Context>(default = "test")
 
     /** Unregistered flag for testing not-found scenarios */
-    val unregisteredFlag by string<Context> { }
+    val unregisteredFlag by string<Context>(default = "")
 
     // Integer features
     /** Maximum connections configuration */
-    val maxConnections by int<Context> { }
+    val maxConnections by int<Context>(default = 100)
 
     /** Timeout configuration in milliseconds */
-    val timeout by int<Context> { }
+    val timeout by int<Context>(default = 5000)
 
     /** Retry count configuration */
-    val retryCount by int<Context> { }
+    val retryCount by int<Context>(default = 3)
 
     // Double features
     /** Threshold configuration */
-    val threshold by double<Context> { }
+    val threshold by double<Context>(default = 0.5)
 
     /** Rate limit configuration */
-    val rateLimit by double<Context> { }
+    val rateLimit by double<Context>(default = 100.0)
 }

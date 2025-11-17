@@ -5,20 +5,19 @@ inline functions to create a fluent configuration interface while maintaining co
 
 ## Overview
 
-The configuration DSL consists of four scope levels:
+The configuration DSL consists of three main scope levels:
 
-1. **ConfigScope**: Top-level configuration block
-2. **FlagScope**: Individual flag configuration
+1. **FeatureContainer**: Top-level container for organizing related features
+2. **FlagScope**: Individual flag configuration within delegation
 3. **RuleScope**: Rule definition within a flag
 4. **VersionRangeScope**: Version constraint definition
 
 ```kotlin
-config {  // ConfigScope
-    MyFeature.FLAG with {  // FlagScope
-        default(value)
+object MyFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    val MY_FLAG by boolean(default = true) {  // FlagScope
         rule {  // RuleScope
             platforms(Platform.IOS)
-        }.implies(value)
+        } implies false
     }
 }
 ```
@@ -27,7 +26,7 @@ config {  // ConfigScope
 
 ```mermaid
 graph LR
-    A[ConfigScope] --> B[FlagScope]
+    A[FeatureContainer] --> B[FlagScope]
     B --> C[RuleScope]
     C --> D[VersionRangeScope]
 
@@ -37,7 +36,7 @@ graph LR
     style D fill:#e1ffe1
 ```
 
-## ConfigScope
+## FeatureContainer
 
 The outermost scope for defining flag configurations.
 
@@ -357,31 +356,31 @@ config {
 }
 ```
 
-## buildSnapshot()
+## Exporting Configurations
 
-Create configurations without loading them into a registry:
+To export a configuration snapshot for serialization or testing, use the registry's `konfig()` method:
 
 ```kotlin
-val snapshot = buildSnapshot {
-    MyFeatures.FLAG_A with {
-        default(false)
-    }
-
-    MyFeatures.FLAG_B with {
-        default(true)
-    }
+// Define features using FeatureContainer
+object MyFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    val FLAG_A by boolean(default = false)
+    val FLAG_B by boolean(default = true)
 }
 
-// Use snapshot later
-registry.load(snapshot)
+// Get the current configuration snapshot
+val snapshot = Taxonomy.Global.registry.konfig()
 
-// Or serialize it
+// Serialize it
 val json = SnapshotSerializer.default.serialize(snapshot)
+
+// Or load it into another registry for testing
+testRegistry.load(snapshot)
 ```
 
 **Use cases:**
 
-- Testing configurations
+- Exporting current configuration state
+- Testing with isolated registries
 - Building configurations programmatically
 - Serializing configurations
 - External configuration management

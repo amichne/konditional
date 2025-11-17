@@ -109,19 +109,21 @@ config {
 }
 ```
 
-### Building Snapshots
+### Configuration Snapshots
 
-For testing or external configuration management, use `buildSnapshot` to create configurations without loading them:
+For testing or external configuration management, export configuration snapshots from the registry:
 
 ```kotlin
-val testConfig = buildSnapshot {
-    AppFeatures.DARK_MODE with {
-        default(true)
-    }
+// Define features using FeatureContainer
+object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    val DARK_MODE by boolean(default = true)
 }
 
-// Use with a test registry
-val testRegistry = FlagRegistry.create(testConfig)
+// Get current configuration snapshot
+val snapshot = Taxonomy.Global.konfig()
+
+// Load into a test registry
+val testRegistry = ModuleRegistry.create(snapshot)
 ```
 
 ## Evaluation
@@ -233,10 +235,9 @@ Create isolated registries for testing or multi-tenant scenarios:
 // Create empty registry
 val customRegistry = FlagRegistry.create()
 
-// Create with initial configuration
-val customRegistry = FlagRegistry.create(buildSnapshot {
-    AppFeatures.DARK_MODE with { default(true) }
-})
+// Create with initial configuration from another registry
+val snapshot = Taxonomy.Global.konfig()
+val customRegistry = ModuleRegistry.create(snapshot)
 
 // Evaluate using custom registry
 context.evaluateSafe(AppFeatures.DARK_MODE, registry = customRegistry)

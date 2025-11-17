@@ -1,12 +1,9 @@
 package io.amichne.konditional.core.features
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.ModuleRegistry
 import io.amichne.konditional.core.Taxonomy
-import io.amichne.konditional.core.dsl.BooleanScope
-import io.amichne.konditional.core.dsl.DecimalScope
-import io.amichne.konditional.core.dsl.IntegerScope
-import io.amichne.konditional.core.dsl.StringScope
+import io.amichne.konditional.core.dsl.FlagScope
+import io.amichne.konditional.core.registry.ModuleRegistry.Companion.updateDefinition
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.internal.builders.FlagBuilder
 import kotlin.properties.PropertyDelegateProvider
@@ -24,7 +21,7 @@ import kotlin.reflect.KProperty
  * - **Complete enumeration**: `allFeatures()` provides all features at runtime
  * - **Ergonomic delegation**: Use `by boolean {}`, `by string {}`, etc. with DSL configuration
  * - **Single taxonomy declaration**: No need to repeat taxonomy on every feature
- * - **Mixed types**: Combine Boolean, String, Int, Double, JSON, and custom features in one container
+ * - **Mixed types**: Combine Boolean, String, Int, and Double features in one container
  * - **Type safety**: Full type inference and compile-time checking
  * - **Lazy registration**: Features are created and registered only when first accessed
  *
@@ -46,11 +43,6 @@ import kotlin.reflect.KProperty
  *             platforms(Platform.WEB)
  *         } implies 10000
  *     }
- *
- *     val API_CONFIG by jsonObject<ApiConfig>(
- *         default = ApiConfig("https://api.example.com", 30),
- *         key = "api_config"
- *     )
  * }
  *
  * // Complete enumeration
@@ -91,16 +83,16 @@ abstract class FeatureContainer<M : Taxonomy>(
     fun allFeatures(): List<Feature<*, *, *, M>> = _features.toList()
 
     /**
-     * Creates a Boolean feature with automatic registration.
+     * Creates a Boolean feature with automatic registration and configuration.
      *
      * The feature is configured using a DSL scope that provides type-safe access to
      * boolean-specific configuration options like rules, defaults, and targeting.
+     * Configuration is automatically applied to the taxonomy when the feature is first accessed.
      *
      * **Example:**
      * ```kotlin
      * object MyFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
-     *     val DARK_MODE by boolean {
-     *         default(false)
+     *     val DARK_MODE by boolean(default = false) {
      *         rule {
      *             platforms(Platform.IOS)
      *         } implies true
@@ -109,29 +101,27 @@ abstract class FeatureContainer<M : Taxonomy>(
      * ```
      *
      * @param C The context type used for evaluation
-     * @param default The default value when no rules match (defaults to false)
-     * @param registry The module registry for storing configuration (defaults to taxonomy.registry)
+     * @param default The default value for this feature (required)
      * @param flagScope DSL scope for configuring the boolean feature
      * @return A delegated property that returns a [BooleanFeature]
      */
     protected fun <C : Context> boolean(
-        default: Boolean = false,
-        registry: ModuleRegistry = taxonomy.registry,
-        flagScope: BooleanScope<C, M>.() -> Unit,
+        default: Boolean,
+        flagScope: FlagScope<EncodableValue.BooleanEncodeable, Boolean, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, BooleanFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(default) { BooleanFeature(it, taxonomy) }
+        ContainerFeaturePropertyDelegate(default, flagScope) { BooleanFeature(it, taxonomy) }
 
     /**
-     * Creates a String feature with automatic registration.
+     * Creates a String feature with automatic registration and configuration.
      *
      * The feature is configured using a DSL scope that provides type-safe access to
      * string-specific configuration options like rules, defaults, and targeting.
+     * Configuration is automatically applied to the taxonomy when the feature is first accessed.
      *
      * **Example:**
      * ```kotlin
      * object MyFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
-     *     val API_ENDPOINT by string {
-     *         default("https://api.example.com")
+     *     val API_ENDPOINT by string(default = "https://api.example.com") {
      *         rule {
      *             platforms(Platform.ANDROID)
      *         } implies "https://api-android.example.com"
@@ -140,29 +130,27 @@ abstract class FeatureContainer<M : Taxonomy>(
      * ```
      *
      * @param C The context type used for evaluation
-     * @param default The default value when no rules match (defaults to empty string)
-     * @param registry The module registry for storing configuration (defaults to taxonomy.registry)
+     * @param default The default value for this feature (required)
      * @param stringScope DSL scope for configuring the string feature
      * @return A delegated property that returns a [StringFeature]
      */
     protected fun <C : Context> string(
-        default: String = "",
-        registry: ModuleRegistry = taxonomy.registry,
-        stringScope: StringScope<C, M>.() -> Unit,
+        default: String,
+        stringScope: FlagScope<EncodableValue.StringEncodeable, String, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, StringFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(default) { StringFeature.Companion(it, taxonomy) }
+        ContainerFeaturePropertyDelegate(default, stringScope) { StringFeature.Companion(it, taxonomy) }
 
     /**
-     * Creates an Int feature with automatic registration.
+     * Creates an Int feature with automatic registration and configuration.
      *
      * The feature is configured using a DSL scope that provides type-safe access to
      * integer-specific configuration options like rules, defaults, and targeting.
+     * Configuration is automatically applied to the taxonomy when the feature is first accessed.
      *
      * **Example:**
      * ```kotlin
      * object MyFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
-     *     val MAX_RETRY_COUNT by int {
-     *         default(3)
+     *     val MAX_RETRY_COUNT by int(default = 3) {
      *         rule {
      *             platforms(Platform.IOS)
      *         } implies 5
@@ -171,32 +159,29 @@ abstract class FeatureContainer<M : Taxonomy>(
      * ```
      *
      * @param C The context type used for evaluation
-     * @param default The default value when no rules match (defaults to 0)
-     * @param registry The module registry for storing configuration (defaults to taxonomy.registry)
+     * @param default The default value for this feature (required)
      * @param integerScope DSL scope for configuring the integer feature
      * @return A delegated property that returns an [IntFeature]
      */
     protected fun <C : Context> int(
-        default: Int = 0,
-        registry: ModuleRegistry = taxonomy.registry,
-        integerScope: IntegerScope<C, M>.() -> Unit,
+        default: Int,
+        integerScope: FlagScope<EncodableValue.IntEncodeable, Int, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(default) {
-
-            IntFeature.Companion(it, taxonomy, registry)
+        ContainerFeaturePropertyDelegate(default, integerScope) {
+            IntFeature.Companion(it, taxonomy)
         }
 
     /**
-     * Creates a Double feature with automatic registration.
+     * Creates a Double feature with automatic registration and configuration.
      *
      * The feature is configured using a DSL scope that provides type-safe access to
      * decimal-specific configuration options like rules, defaults, and targeting.
+     * Configuration is automatically applied to the taxonomy when the feature is first accessed.
      *
      * **Example:**
      * ```kotlin
      * object MyFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
-     *     val TRANSACTION_FEE by double {
-     *         default(0.029)
+     *     val TRANSACTION_FEE by double(default = 0.029) {
      *         rule {
      *             platforms(Platform.WEB)
      *         } implies 0.019
@@ -205,86 +190,18 @@ abstract class FeatureContainer<M : Taxonomy>(
      * ```
      *
      * @param C The context type used for evaluation
-     * @param default The default value when no rules match (defaults to 0.0)
-     * @param registry The module registry for storing configuration (defaults to taxonomy.registry)
+     * @param default The default value for this feature (required)
      * @param decimalScope DSL scope for configuring the double feature
      * @return A delegated property that returns a [DoubleFeature]
      */
     protected fun <C : Context> double(
-        default: Double = 0.0,
-        registry: ModuleRegistry = taxonomy.registry,
-        decimalScope: DecimalScope<C, M>.() -> Unit,
+        default: Double,
+        decimalScope: FlagScope<EncodableValue.DecimalEncodeable, Double, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, DoubleFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(default) { DoubleFeature(it, taxonomy, registry) }
+        ContainerFeaturePropertyDelegate(default, decimalScope) { DoubleFeature(it, taxonomy) }
 
     /**
-     * Creates a JSON object feature with automatic registration.
-     *
-     * This method is used for complex data structures that need to be serialized as JSON.
-     * The type T must be a data class or other JSON-serializable type.
-     *
-     * **Example:**
-     * ```kotlin
-     * data class ApiConfig(val baseUrl: String, val timeout: Int)
-     *
-     * object MyFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
-     *     val API_CONFIG by jsonObject(
-     *         default = ApiConfig("https://api.example.com", 30),
-     *         key = "api_config"
-     *     )
-     * }
-     * ```
-     *
-     * @param T The data class type for the JSON object
-     * @param C The context type used for evaluation
-     * @param default The default value when no rules match
-     * @param key The unique feature key used for identification
-     * @param registry The module registry for storing configuration (defaults to taxonomy.registry)
-     * @return A delegated property that returns a [JsonFeature]
-     */
-    protected inline fun <C : Context, reified T : Any> jsonObject(
-        default: T,
-        key: String,
-        registry: ModuleRegistry = taxonomy.registry,
-    ): ReadOnlyProperty<FeatureContainer<M>, JsonFeature<C, M, T>> =
-        ContainerFeaturePropertyDelegate(default) { JsonFeature(key, taxonomy, registry) }
-
-    /**
-     * Creates a custom wrapper type feature with automatic registration.
-     *
-     * This method is used for custom types that need special encoding/decoding logic,
-     * such as DateTime, UUID, or other domain-specific wrapper types.
-     *
-     * **Example:**
-     * ```kotlin
-     * // Assuming you have a custom DateTime wrapper type
-     * object MyFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
-     *     val MAINTENANCE_WINDOW by custom<DateTime, String, Context>(
-     *         default = DateTime.parse("2024-01-01T00:00:00Z"),
-     *         key = "maintenance_window"
-     *     )
-     * }
-     * ```
-     *
-     * @param T The wrapped type (e.g., LocalDateTime, UUID, custom domain types)
-     * @param P The primitive type used for encoding (String, Int, etc.) that extends EncodableValue
-     * @param C The context type used for evaluation
-     * @param default The default value when no rules match
-     * @param key The unique feature key used for identification
-     * @param registry The module registry for storing configuration (defaults to taxonomy.registry)
-     * @return A delegated property that returns a [CustomFeature]
-     */
-    protected inline fun <reified T : Any, reified P, C : Context> custom(
-        default: T,
-        key: String,
-        registry: ModuleRegistry = taxonomy.registry,
-    ): ReadOnlyProperty<FeatureContainer<M>, CustomFeature<T, P, C, M>> where
-        P : Any, P : EncodableValue<P> = ContainerFeaturePropertyDelegate(default) {
-        Feature.custom(key, taxonomy, registry)
-    }
-
-    /**
-     * Internal delegate factory that handles feature creation and registration.
+     * Internal delegate factory that handles feature creation, configuration, and registration.
      *
      * This class implements both [ReadOnlyProperty] and [PropertyDelegateProvider] to enable
      * Kotlin's property delegation pattern with lazy initialization. It performs the following:
@@ -293,28 +210,34 @@ abstract class FeatureContainer<M : Taxonomy>(
      *    to use as the feature key
      * 2. **Lazy initialization**: Creates the feature only on first access
      * 3. **Automatic registration**: Adds the feature to the container's feature list
-     * 4. **Default configuration**: Applies the default value via FlagBuilder
+     * 4. **Automatic configuration**: Executes the DSL configuration block and updates the taxonomy
      *
      * **Implementation details:**
      * - The `factory` function is responsible for creating the feature instance
      * - The feature is created using the property name as the feature key
-     * - The default value is automatically configured in the feature's registry
+     * - The DSL configuration block is executed and applied to the taxonomy
      * - All features in the container share the same taxonomy
      *
      * @param F The feature type (BooleanFeature, StringFeature, etc.)
+     * @param S The EncodableValue type wrapping the actual value
      * @param T The value type (Boolean, String, Int, etc.)
-     * @param default The default value to configure for this feature
+     * @param C The context type used for evaluation
+     * @param configScope The DSL configuration block to execute
      * @param factory A function that creates the feature given the taxonomy and property name
      */
-    inner class ContainerFeaturePropertyDelegate<F : Feature<*, T, *, M>, T : Any>(
-        default: T,
+    @Suppress("UNCHECKED_CAST")
+    inner class ContainerFeaturePropertyDelegate<F : Feature<S, T, C, M>, S : EncodableValue<T>, T : Any, C : Context>(
+        private val default: T,
+        private val configScope: FlagScope<S, T, C, M>.() -> Unit,
         private val factory: M.(String) -> F,
     ) : ReadOnlyProperty<FeatureContainer<M>, F>, PropertyDelegateProvider<FeatureContainer<M>, F> {
         lateinit var name: String
 
         private val feature: F by lazy {
-            factory(taxonomy, name).also { _features.add(it) }.also {
-                it.registry.update(FlagBuilder(it).also { builder -> builder.default(default) }.build())
+            factory(taxonomy, name).also { _features.add(it) }.also { createdFeature ->
+                // Execute the DSL configuration block and update the taxonomy
+                val flagDefinition = FlagBuilder(createdFeature).apply(configScope).apply { default(default) }.build()
+                taxonomy.updateDefinition(flagDefinition)
             }
         }
 

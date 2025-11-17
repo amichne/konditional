@@ -1,12 +1,8 @@
 package io.amichne.konditional.core.features
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.FlagDefinition
-import io.amichne.konditional.core.ModuleRegistry
 import io.amichne.konditional.core.Taxonomy
-import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.types.EncodableValue
-import io.amichne.konditional.internal.builders.FlagBuilder
 
 /**
  * Represents a feature flag that can be used to enable or disable specific functionality
@@ -40,24 +36,4 @@ import io.amichne.konditional.internal.builders.FlagBuilder
 sealed interface Feature<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> {
     val key: String
     val module: M
-    val registry: ModuleRegistry
-
-    fun update(definition: FlagDefinition<S, T, C, M>): Unit = registry.update(definition)
-
-    fun update(function: FlagScope<S, T, C, M>.() -> Unit): Unit =
-        registry.update(FlagBuilder(this).apply(function).build())
-
-    companion object {
-        fun <T : Any, P : Any, C : Context, M : Taxonomy> custom(
-            key: String,
-            module: M,
-            registry: ModuleRegistry = module.registry,
-        ): CustomFeature<T, P, C, M> = object : CustomFeature<T, P, C, M> {
-            override val module: M
-                get() = module
-            override val registry: ModuleRegistry
-                get() = registry
-            override val key: String = key
-        }
-    }
 }

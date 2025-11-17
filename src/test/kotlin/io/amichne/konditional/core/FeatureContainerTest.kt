@@ -9,9 +9,10 @@ import io.amichne.konditional.core.features.BooleanFeature
 import io.amichne.konditional.core.features.DoubleFeature
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.features.IntFeature
-import io.amichne.konditional.core.features.JsonFeature
 import io.amichne.konditional.core.features.StringFeature
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.registry.ModuleRegistry
+import io.amichne.konditional.core.registry.RegistryScope
 import io.amichne.konditional.core.result.utils.evaluateOrDefault
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -27,29 +28,18 @@ class FeatureContainerTest {
         Taxonomy.Domain.Payments
     ) {
         init {
-            RegistryScope.setGlobal(ModuleRegistry.create())
+            RegistryScope.setGlobal(ModuleRegistry())
         }
 
-        val defaultTestConfig = TestConfig(
-            enabled = false,
-            value = 0
-        )
-        val testBoolean by boolean<Context> {
-        }
-        val testString by string<Context> { }
-        val testInt by int<Context> { }
-        val testDouble by double<Context> { }
-        val testJson by jsonObject<Context, TestConfig>(defaultTestConfig, "testJson")
+        val testBoolean by boolean<Context>(default = false)
+        val testString by string<Context>(default = "default")
+        val testInt by int<Context>(default = 0)
+        val testDouble by double<Context>(default = 0.0)
     }
 
 //    object Invalid {
 //        val x by double()
 //    }
-
-    data class TestConfig(
-        val enabled: Boolean,
-        val value: Int,
-    )
 
     @Test
     fun `features are created with correct types`() {
@@ -58,7 +48,6 @@ class FeatureContainerTest {
         assertTrue(TestFeatures.testString is StringFeature<*, *>)
         assertTrue(TestFeatures.testInt is IntFeature<*, *>)
         assertTrue(TestFeatures.testDouble is DoubleFeature<*, *>)
-        assertTrue(TestFeatures.testJson is JsonFeature<*, *, *>)
     }
 
     @Test
@@ -67,7 +56,6 @@ class FeatureContainerTest {
         assertEquals("testString", TestFeatures.testString.key)
         assertEquals("testInt", TestFeatures.testInt.key)
         assertEquals("testDouble", TestFeatures.testDouble.key)
-        assertEquals("testJson", TestFeatures.testJson.key)
     }
 
     @Test
@@ -78,20 +66,19 @@ class FeatureContainerTest {
         assertEquals(expectedModule, TestFeatures.testString.module)
         assertEquals(expectedModule, TestFeatures.testInt.module)
         assertEquals(expectedModule, TestFeatures.testDouble.module)
-        assertEquals(expectedModule, TestFeatures.testJson.module)
     }
 
     @Test
     fun `allFeatures returns all declared features`() {
         val allFeatures = TestFeatures.allFeatures()
 
-        // Should have exactly 5 features
-        assertEquals(5, allFeatures.size)
+        // Should have exactly 4 features
+        assertEquals(4, allFeatures.size)
 
         // Should contain all feature keys
         val keys = allFeatures.map { it.key }.toSet()
         assertEquals(
-            setOf("testBoolean", "testString", "testInt", "testDouble", "testJson"),
+            setOf("testBoolean", "testString", "testInt", "testDouble"),
             keys
         )
     }
@@ -102,8 +89,8 @@ class FeatureContainerTest {
         with(object : FeatureContainer<Taxonomy.Domain.Payments>(
             Taxonomy.Domain.Payments
         ) {
-            val lazyA by boolean<Context> { }
-            val lazyB by boolean<Context> { }
+            val lazyA by boolean<Context>(default = true)
+            val lazyB by boolean<Context>(default = true)
         }) {
 
             // allFeatures() should return empty before any feature is accessed
@@ -123,17 +110,13 @@ class FeatureContainerTest {
 
     @Test
     fun `features can be evaluated with context`() {
-        // Configure the registry
-        Taxonomy.Domain.Payments.config {
-            TestFeatures.testBoolean with {
-                default(true)
-            }
-            TestFeatures.testString with {
-                default("test-value")
-            }
-            TestFeatures.testInt with {
-                default(100)
-            }
+        // Create a test container with configured features
+        val testFeatures = object : FeatureContainer<Taxonomy.Domain.Payments>(
+            Taxonomy.Domain.Payments
+        ) {
+            val configuredBoolean by boolean<Context>(default = true)
+            val configuredString by string<Context>("test-value") {}
+            val configuredInt by int<Context>(100)
         }
 
         val context = Context(
@@ -143,10 +126,10 @@ class FeatureContainerTest {
             stableId = StableId.of("12345678901234567890123456789012")
         )
 
-        // Evaluate features
-        assertEquals(true, context.evaluate(TestFeatures.testBoolean))
-        assertEquals("test-value", context.evaluateOrDefault(TestFeatures.testString, ""))
-        assertEquals(100, context.evaluateOrDefault(TestFeatures.testInt, 0))
+        // Evaluate features - configuration is automatic through delegation
+        assertEquals(true, context.evaluate(testFeatures.configuredBoolean))
+        assertEquals("test-value", context.evaluateOrDefault(testFeatures.configuredString, ""))
+        assertEquals(100, context.evaluateOrDefault(testFeatures.configuredInt, 0))
     }
 
     @Test
@@ -154,16 +137,16 @@ class FeatureContainerTest {
         val first = object : FeatureContainer<Taxonomy.Domain.Payments>(
             Taxonomy.Domain.Payments
         ) {
-            val a1 by boolean<Context> { }
-            val a2 by boolean<Context> { }
+            val a1 by boolean<Context>(default = true)
+            val a2 by boolean<Context>(default = true)
         }
 
         val second = object : FeatureContainer<Taxonomy.Domain.Messaging>(
             Taxonomy.Domain.Messaging
         ) {
-            val b1 by boolean<Context> { }
-            val b2 by boolean<Context> { }
-            val b3 by boolean<Context> { }
+            val b1 by boolean<Context>(default = true)
+            val b2 by boolean<Context>(default = true)
+            val b3 by boolean<Context>(default = true)
         }
 
         // Access properties to trigger registration
@@ -194,7 +177,6 @@ class FeatureContainerTest {
 
         // In this test, we expect some features to be "missing" from config
         assertTrue(missingKeys.contains("testDouble"))
-        assertTrue(missingKeys.contains("testJson"))
     }
 
     @Test

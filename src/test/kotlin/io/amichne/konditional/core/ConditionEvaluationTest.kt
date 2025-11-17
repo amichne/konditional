@@ -21,9 +21,7 @@ import kotlin.test.assertTrue
 class ConditionEvaluationTest {
 
     object TestFlags : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
-        val TEST_FLAG by string<Context> {
-            default("default")
-        }
+        val TEST_FLAG by string<Context>(default = "default")
     }
 
     private fun ctx(

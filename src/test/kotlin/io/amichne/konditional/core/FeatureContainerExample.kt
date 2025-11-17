@@ -43,40 +43,25 @@ import io.amichne.konditional.core.result.utils.evaluateOrDefault
 object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
     Taxonomy.Domain.Payments
 ) {
-    val defaultCardConfiguration = CardConfiguration(
-        maxLength = 16,
-        validateCvv = true,
-        supportedNetworks = listOf("VISA", "MASTERCARD", "AMEX")
-    )
-
     // ✅ Ergonomic: Clean delegation syntax
-    val apple_pay by boolean<Context> { }
-    val google_pay by boolean<Context> { }
-    val card_on_file by boolean<Context> { }
+    val apple_pay by boolean<Context>(default = false)
+    val google_pay by boolean<Context>(default = false)
+    val card_on_file by boolean<Context>(default = false)
 
     // ✅ Mixed types: Can combine different feature types
-    val max_cards by int<Context> { }
-    val payment_provider by string<Context> { }
-
-    // ✅ Complex types: JSON objects work seamlessly
-    val card_config by jsonObject<Context, CardConfiguration>(defaultCardConfiguration, "card_config")
+    val max_cards by int<Context>(default = 5)
+    val payment_provider by string<Context>(default = "stripe")
 
     // ✅ No boilerplate: Module declared once at container level
     // ✅ Auto-registration: All features automatically tracked
 }
 
-data class CardConfiguration(
-    val maxLength: Int,
-    val validateCvv: Boolean,
-    val supportedNetworks: List<String>,
-)
-
 object OrderFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
     Taxonomy.Domain.Payments
 ) {
-    val fast_checkout by boolean<Context> { }
-    val order_limit by int<Context> { }
-    val discount_code by string<Context> { }
+    val fast_checkout by boolean<Context>(default = false)
+    val order_limit by int<Context>(default = 1000)
+    val discount_code by string<Context>(default = "")
 }
 
 // ============================================================================
@@ -90,7 +75,7 @@ object FeatureContainerValueDemo {
         val paymentFeatures = PaymentFeatures.allFeatures()
         val orderFeatures = OrderFeatures.allFeatures()
 
-        println("Payment features: ${paymentFeatures.size}") // 6 features
+        println("Payment features: ${paymentFeatures.size}") // 5 features
         println("Order features: ${orderFeatures.size}")     // 3 features
 
         // Can iterate over all features
