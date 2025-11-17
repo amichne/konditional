@@ -61,7 +61,7 @@ import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
  */
 class TaxonomySnapshotSerializer<M : Taxonomy>(
     private val module: M,
-    moshi: Moshi = SnapshotSerializer.defaultMoshi()
+    private val moshi: Moshi = SnapshotSerializer.defaultMoshi()
 ) : Serializer<Konfig> {
 
     private val snapshotAdapter = moshi.adapter(SerializableSnapshot::class.java).indent("  ")

@@ -14,8 +14,9 @@ import io.amichne.konditional.core.result.ParseResult
  *
  * ## Implementations
  *
- * - [SnapshotSerializer]: Serializes Konfig configurations
  * - [TaxonomySnapshotSerializer]: Serializes a single taxonomy's configuration
+ *
+ * Note: [SnapshotSerializer] is an object with static methods and does not implement this interface.
  *
  * ## Usage Example
  *

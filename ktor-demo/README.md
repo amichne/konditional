@@ -1,203 +1,175 @@
-# Konditional Ktor Demo
+# Konditional Demo - Full-Stack Kotlin Application
 
-An interactive web application demonstrating the Konditional feature flags library with a full-featured UI.
-
-## Features
-
-🎨 **Interactive Web UI** - Built with Ktor and kotlinx.html
-- Visual representation of enabled/disabled features
-- Real-time feature evaluation
-- JSON configuration viewer
-
-🔧 **Dynamic Context Parameters** - Modify evaluation context on the fly:
-- Locale (EN_US, FR_FR, DE_DE, ES_ES, JA_JP, EN_GB)
-- Platform (Web, iOS, Android, Desktop)
-- App Version (semantic versioning)
-- Stable ID (user identifier for bucketing)
-
-📊 **Multiple Context Types**:
-- **Base Context**: Standard feature flags with locale, platform, version, and user ID
-- **Enterprise Context**: Extended context with subscription tier, organization ID, and employee count
-
-🎯 **Rich Feature Types Demonstrated**:
-- **Boolean Features**: Dark Mode, Beta Features, Analytics
-- **String Features**: Welcome Messages (localized), Theme Colors
-- **Integer Features**: Max Items Per Page, Cache TTL
-- **Double Features**: Discount Percentages, API Rate Limits
-
-🔥 **Hot Reload Mode**:
-- Toggle to enable automatic re-evaluation on parameter changes
-- Disables manual evaluate button when enabled
-- Debounced updates for text inputs (500ms)
-
-## Quick Start
-
-### Prerequisites
-
-- JDK 17 or higher
-- Gradle 8.0+
-
-### Running the Demo
-
-```bash
-# From the project root
-gradle :ktor-demo:run
-
-# Or from the ktor-demo directory
-cd ktor-demo
-gradle run
-```
-
-The server will start on `http://localhost:8080`
-
-### Using the Demo
-
-1. **Open your browser** to `http://localhost:8080`
-
-2. **Select Context Type**:
-   - Choose "Base Context" for standard features
-   - Choose "Enterprise Context" to see extended features (SSO, Advanced Analytics, etc.)
-
-3. **Modify Context Parameters**:
-   - Change locale to see localized welcome messages
-   - Switch platforms to see platform-specific rules
-   - Adjust app version to trigger version-based rollouts
-   - Change user ID to see different bucketing results (due to SHA-256 hashing)
-
-4. **For Enterprise Context**:
-   - Select subscription tier (Free, Starter, Professional, Enterprise)
-   - Set organization ID
-   - Adjust employee count to see enterprise feature targeting
-
-5. **Evaluation Modes**:
-   - **Manual**: Click "Evaluate Features" button to see results
-   - **Hot Reload**: Toggle "Hot Reload Mode" for automatic updates on every change
-
-6. **View JSON Configuration**:
-   - Scroll to bottom to see the complete Konfig JSON snapshot
-   - Updates automatically when page loads
-
-## Example Configurations
-
-### Dark Mode with Rollout
-
-```kotlin
-DemoFeatures.DARK_MODE with {
-    default(false)
-    rule {
-        platforms(Platform.IOS, Platform.ANDROID)
-        rollout = Rollout.of(50.0)
-    } implies true
-    rule {
-        platforms(Platform.WEB)
-        rollout = Rollout.of(75.0)
-    } implies true
-}
-```
-
-- **iOS/Android**: 50% rollout
-- **Web**: 75% rollout
-- **Desktop**: Default (false)
-
-### Localized Welcome Messages
-
-```kotlin
-DemoFeatures.WELCOME_MESSAGE with {
-    default("Welcome!")
-    rule { locales(AppLocale.EN_US, AppLocale.EN_GB) } implies "Welcome to Konditional Demo!"
-    rule { locales(AppLocale.FR_FR) } implies "Bienvenue dans Konditional Demo!"
-    rule { locales(AppLocale.DE_DE) } implies "Willkommen bei Konditional Demo!"
-    rule { locales(AppLocale.ES_ES) } implies "¡Bienvenido a Konditional Demo!"
-}
-```
-
-### Enterprise Features with Custom Rules
-
-```kotlin
-EnterpriseFeatures.ADVANCED_ANALYTICS with {
-    default(false)
-    rule {
-        custom<EnterpriseContext> { ctx ->
-            ctx.subscriptionTier == SubscriptionTier.ENTERPRISE &&
-                ctx.employeeCount > 100
-        }
-    } implies true
-    rule {
-        custom<EnterpriseContext> { ctx ->
-            ctx.subscriptionTier == SubscriptionTier.PROFESSIONAL
-        }
-        rollout = Rollout.of(50.0)
-    } implies true
-}
-```
-
-- **Enterprise tier + 100+ employees**: Always enabled
-- **Professional tier**: 50% rollout
+An interactive web application demonstrating the Konditional feature flags library with type-safe Kotlin on both client and server.
 
 ## Architecture
 
-### Project Structure
+This demo uses **Kotlin Multiplatform** with separate modules for client and server:
 
 ```
 ktor-demo/
-├── src/main/kotlin/io/amichne/konditional/demo/
-│   ├── Application.kt          # Ktor server and routing
-│   ├── DemoContexts.kt         # Context type definitions
-│   ├── DemoFeatures.kt         # Feature flag definitions
-│   └── DemoConfiguration.kt    # Feature flag rules and configs
-├── build.gradle.kts            # Build configuration
-└── README.md                   # This file
+├── src/main/kotlin/          # JVM server code (Ktor)
+│   └── io/amichne/konditional/demo/
+│       ├── Application.kt    # Server routes & HTML generation
+│       ├── DemoFeatures.kt   # Feature definitions
+│       └── DemoContexts.kt   # Context types
+└── demo-client/              # Kotlin/JS client module
+    └── src/main/kotlin/
+        └── io/amichne/konditional/demo/client/
+            └── DemoClient.kt # Type-safe client logic
 ```
 
-### Key Components
+## Key Features
 
-**Application.kt**:
-- Ktor server setup (Netty engine on port 8080)
-- Routes:
-  - `GET /` - Main UI page
-  - `POST /api/evaluate` - Evaluate features with context
-  - `GET /api/snapshot` - Get Konfig JSON snapshot
-- HTML rendering with kotlinx.html
-- JavaScript for interactivity
+### ✨ Type-Safe Client Code with Kotlin/JS
+Instead of embedding raw JavaScript strings in HTML, the demo uses **Kotlin/JS** for maintainable, type-safe client code:
 
-**DemoContexts.kt**:
-- `DemoContext`: Base context with required fields
-- `EnterpriseContext`: Extended context with business fields
-- `SubscriptionTier`: Enum for subscription levels
+**Before**:
+```kotlin
+script {
+    unsafe {
+        raw("""
+            let hotReloadEnabled = false;
+            // ... hundreds of lines of JavaScript
+            // No type safety, hard to maintain
+        """)
+    }
+}
+```
 
-**DemoFeatures.kt**:
-- 9 demo features across all value types (Boolean, String, Int, Double)
-- 4 enterprise-specific features
-- Type-safe feature references
+**After**:
+```kotlin
+// In DemoClient.kt - pure Kotlin!
+object DemoClient {
+    private var hotReloadEnabled = false
 
-**DemoConfiguration.kt**:
-- `initializeDemoConfig()`: Configures base features
-- `initializeEnterpriseConfig()`: Configures enterprise features
-- Rich examples of rules, rollouts, and targeting
+    fun evaluate() {
+        GlobalScope.launch {
+            val response = window.fetch("/api/evaluate", ...).await()
+            val data = response.json().await()
+            renderResults(data)
+        }
+    }
+}
+```
+
+Benefits:
+- ✅ Compile-time type safety
+- ✅ IDE autocomplete and refactoring
+- ✅ Kotlin coroutines (compile to JS Promises)
+- ✅ Testable, maintainable code
+
+### 🔒 HexId-Compliant Values
+All stable IDs use valid hexadecimal strings compliant with `HexId`:
+- Predefined test users (User Alpha, Beta, Gamma, Delta, Epsilon)
+- No arbitrary strings that fail at runtime
+- Example: `a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6`
+
+### 🎯 Kotlin-Generated UI
+All dropdown options are generated from Kotlin enum types:
+```kotlin
+AppLocale.entries.forEach { locale ->
+    option {
+        value = locale.name
+        +locale.displayName  // Extension property
+    }
+}
+```
+
+No hardcoded HTML - everything is type-safe and refactorable!
+
+### 📊 Feature Types Demonstrated
+- **Boolean**: Dark Mode, Beta Features, Analytics
+- **String**: Welcome Messages (localized), Theme Colors
+- **Integer**: Max Items Per Page, Cache TTL
+- **Double**: Discount Percentages, API Rate Limits
+
+### 🔥 Hot Reload Mode
+- Auto-evaluation on parameter changes
+- Debounced text input (500ms)
+- Type-safe event handling in Kotlin
+
+## Prerequisites
+
+- JDK 17 or higher
+- Gradle 8.0+ (wrapper included)
+
+## Building
+
+The build automatically compiles both server and client:
+
+```bash
+# Build everything (JVM + JS compilation)
+./gradlew :ktor-demo:build
+
+# Just compile the Kotlin/JS client
+./gradlew :ktor-demo:demo-client:browserProductionWebpack
+
+# Clean build
+./gradlew clean :ktor-demo:build
+```
+
+The build process:
+1. Compiles Kotlin/JS client to JavaScript
+2. Packages with webpack
+3. Copies `demo-client.js` to server resources
+4. Serves at `/static/demo-client.js`
+
+## Running
+
+```bash
+# Run the server (auto-builds client first)
+./gradlew :ktor-demo:run
+
+# Or from ktor-demo directory
+cd ktor-demo
+../gradlew run
+```
+
+Then visit: **http://localhost:8080**
+
+The server will display:
+```
+Initializing Konditional Demo Client (Kotlin/JS)
+```
+
+## Development Workflow
+
+For faster iteration:
+
+```bash
+# Terminal 1: Watch and auto-rebuild client
+./gradlew :ktor-demo:demo-client:browserDevelopmentRun --continuous
+
+# Terminal 2: Run server
+./gradlew :ktor-demo:run
+```
+
+Or use the Gradle daemon:
+```bash
+./gradlew :ktor-demo:run --continuous
+```
 
 ## API Endpoints
 
-### POST /api/evaluate
+### Server Routes
+- `GET /` - Main demo page (server-rendered HTML)
+- `GET /static/*` - Static resources (compiled Kotlin/JS)
 
-Evaluates all features with the provided context.
+### REST API
+- `POST /api/evaluate` - Evaluate features for a context
+- `GET /api/snapshot` - Get Konfig JSON snapshot
+- `GET /api/rules` - Get rules metadata (feature types, defaults, rule counts)
 
-**Request (application/x-www-form-urlencoded)**:
-```
-contextType=base
-locale=EN_US
-platform=WEB
-version=1.0.0
-stableId=user-001
-```
+### Example Request
 
-**Enterprise Context Additional Parameters**:
-```
-subscriptionTier=ENTERPRISE
-organizationId=org-001
-employeeCount=150
+```bash
+curl -X POST http://localhost:8080/api/evaluate \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "contextType=base&locale=EN_US&platform=WEB&version=1.0.0&stableId=a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"
 ```
 
-**Response (application/json)**:
+Response:
 ```json
 {
   "darkMode": false,
@@ -212,156 +184,271 @@ employeeCount=150
 }
 ```
 
-### GET /api/snapshot
+## Using the Demo
 
-Returns the complete Konfig JSON snapshot.
+1. **Open** http://localhost:8080
 
-**Response (application/json)**:
-```json
-{
-  "dark_mode": {
-    "default": false,
-    "values": [
-      {
-        "value": true,
-        "rollout": 50,
-        "platforms": ["IOS", "ANDROID"]
-      }
-    ]
-  },
-  ...
-}
-```
+2. **Choose Context Type**:
+   - **Base Context**: Standard features
+   - **Enterprise Context**: Extended features (SSO, Advanced Analytics, etc.)
+
+3. **Configure Parameters**:
+   - **Locale**: EN_US, ES_US, EN_CA, HI_IN
+   - **Platform**: Web, iOS, Android
+   - **App Version**: Semantic versioning (e.g., "2.5.0")
+   - **Stable ID**: Select from predefined test users
+
+4. **Enterprise Options** (if Enterprise Context selected):
+   - **Subscription Tier**: Free, Starter, Professional, Enterprise
+   - **Organization ID**: Custom org identifier
+   - **Employee Count**: Number of employees
+
+5. **Evaluate**:
+   - Click "Evaluate Features" button
+   - Or toggle "Hot Reload Mode" for automatic updates
+
+6. **View Results**:
+   - **Middle Panel**: Feature evaluation results
+   - **Right Panel**: Rules configuration (types, defaults, rule counts)
+   - **Bottom Panel**: Complete Konfig JSON snapshot
 
 ## Technical Highlights
 
-### Type Safety
-
-All features are type-safe at compile time:
-
-```kotlin
-// ✅ Compiles - correct type
-val darkMode: Boolean = Features.DARK_MODE.evaluate(context)
-
-// ❌ Won't compile - type mismatch
-val darkMode: String = Features.DARK_MODE.evaluate(context)
-```
-
-### Deterministic Bucketing
-
-Rollout bucketing is deterministic and uses SHA-256 hashing:
+### Type-Safe JavaScript
+All client logic is written in Kotlin and compiled to JavaScript:
 
 ```kotlin
-rollout = Rollout.of(50.0)  // 50% of users
-```
+// Type-safe DOM access
+private fun getSelectElement(id: String): HTMLSelectElement =
+    document.getElementById(id) as HTMLSelectElement
 
-- Same user always gets the same experience for a flag
-- Different flags can bucket the same user differently
-- Hash: `SHA-256(salt + flag_key + stable_id) % 10000`
+// Kotlin coroutines → JS Promises
+GlobalScope.launch {
+    val response = window.fetch("/api/evaluate").await()
+    val data = response.json().await()
+    renderResults(data)
+}
 
-### Context Polymorphism
-
-Enterprise context extends base context:
-
-```kotlin
-data class EnterpriseContext(
-    override val locale: AppLocale,
-    override val platform: Platform,
-    override val appVersion: Version,
-    override val stableId: StableId,
-    val subscriptionTier: SubscriptionTier,
-    val organizationId: String,
-    val employeeCount: Int,
-) : Context
-```
-
-Enterprise features can only be evaluated with `EnterpriseContext`, enforced at compile time.
-
-### Hot Reload Implementation
-
-```javascript
-// Automatic evaluation on change
-form.querySelectorAll('input, select').forEach(input => {
-    input.addEventListener('change', () => {
-        if (hotReloadEnabled) evaluate();
-    });
-    input.addEventListener('input', () => {
-        if (hotReloadEnabled && input.type === 'text') {
-            clearTimeout(input.timeout);
-            input.timeout = setTimeout(() => evaluate(), 500);
-        }
-    });
-});
-```
-
-- Immediate evaluation on dropdown/checkbox changes
-- Debounced (500ms) evaluation on text input changes
-- Prevents excessive API calls while typing
-
-## Customization
-
-### Adding New Features
-
-1. **Define the feature** in `DemoFeatures.kt`:
-```kotlin
-enum class DemoFeatures(override val key: String) : Feature<*, *, Context, FeatureModule.Core> {
-    NEW_FEATURE("new_feature");
-    // ...
+// Type-safe enums
+enum class FeatureType(val cssClass: String) {
+    BOOLEAN("boolean"),
+    STRING("string"),
+    NUMBER("number")
 }
 ```
 
-2. **Configure the feature** in `DemoConfiguration.kt`:
+### Server-Side Type Safety
+HTML generation uses kotlinx-html-jvm:
+
 ```kotlin
-DemoFeatures.NEW_FEATURE with {
-    default(someValue)
+// Type-safe HTML DSL
+div("panel") {
+    h2 { +"📊 Feature Evaluation Results" }
+    div {
+        id = "results"
+        div("loading") { +"Click 'Evaluate Features' to see results" }
+    }
+}
+
+// Enum-driven dropdowns
+Platform.entries.forEach { platform ->
+    option {
+        value = platform.name
+        if (platform == Platform.WEB) selected = true
+        +platform.displayName
+    }
+}
+```
+
+### Shared Type Safety
+Both client and server use the same Kotlin types (through JSON):
+- Feature keys
+- Value types (Boolean, String, Int, Double)
+- Context structure
+
+## Dependencies
+
+### Server (JVM)
+```kotlin
+// Ktor server
+implementation("io.ktor:ktor-server-core-jvm:3.0.1")
+implementation("io.ktor:ktor-server-netty-jvm:3.0.1")
+implementation("io.ktor:ktor-server-html-builder-jvm:3.0.1")
+
+// kotlinx.html for server-side rendering
+implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.11.0")
+
+// JSON serialization
+implementation("com.squareup.moshi:moshi:1.15.0")
+```
+
+### Client (JS)
+```kotlin
+// kotlinx libraries for Kotlin/JS
+implementation("org.jetbrains.kotlinx:kotlinx-html-js:0.11.0")
+implementation("org.jetbrains.kotlinx:kotlinx-browser:0.2")
+implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:1.10.1")
+```
+
+## Project Structure
+
+### Server Code (JVM)
+
+**Application.kt**:
+- Ktor server setup (Netty on port 8080)
+- Static resource serving
+- REST API endpoints
+- HTML rendering with kotlinx-html
+- Extension properties for display names
+
+**DemoFeatures.kt**:
+- 9 demo features using `FeatureContainer` delegation
+- Mix of Boolean, String, Int, Double types
+- Rules with targeting (platforms, locales, versions, rollouts)
+
+**DemoContexts.kt**:
+- `DemoContext`: Base context (locale, platform, version, stableId)
+- `EnterpriseContext`: Extended with subscriptionTier, organizationId, employeeCount
+- `SubscriptionTier`: Enum (FREE, STARTER, PROFESSIONAL, ENTERPRISE)
+
+### Client Code (JS)
+
+**DemoClient.kt** (Kotlin/JS):
+- Main client application object
+- Event listeners (type-safe)
+- Async API calls (coroutines → Promises)
+- DOM manipulation (kotlinx-browser)
+- Feature rendering logic
+- External JS API declarations (URLSearchParams, FormData, JSON)
+
+## Example Feature Configuration
+
+### Dark Mode with Platform-Specific Rollouts
+
+```kotlin
+val DARK_MODE by boolean<Context>(false) {
     rule {
-        // targeting conditions
-    } implies someOtherValue
+        platforms(Platform.IOS, Platform.ANDROID)
+        rollout { 50.0 }
+    } implies true
+    rule {
+        platforms(Platform.WEB)
+        rollout { 75.0 }
+    } implies true
 }
 ```
 
-3. **Update evaluation** in `Application.kt`:
+### Localized Welcome Messages
+
 ```kotlin
-results["newFeature"] = Features.NEW_FEATURE.evaluate(context)
+val WELCOME_MESSAGE by string<Context>("Hello!") {
+    default("Welcome!")
+    rule {
+        locales(AppLocale.EN_US, AppLocale.EN_CA)
+    } implies "Welcome to Konditional Demo!"
+    rule {
+        locales(AppLocale.ES_US)
+    } implies "¡Bienvenido a Konditional Demo!"
+}
 ```
 
-4. **Update UI rendering** in JavaScript:
-```javascript
-html += renderFeature('New Feature', data.newFeature, 'boolean');
+### Enterprise Feature with Custom Logic
+
+```kotlin
+val SSO_ENABLED by boolean<EnterpriseContext>(true) {
+    rule {
+        extension {
+            factory { ctx ->
+                ctx.subscriptionTier == SubscriptionTier.ENTERPRISE ||
+                ctx.subscriptionTier == SubscriptionTier.PROFESSIONAL
+            }
+        }
+    } implies true
+}
 ```
-
-### Modifying Rules
-
-Edit `DemoConfiguration.kt` to change rollout percentages, targeting conditions, or default values.
-
-Server automatically picks up changes after restart.
 
 ## Troubleshooting
 
-**Server won't start**:
-- Ensure port 8080 is available
-- Check JDK version (must be 17+)
+### Client JavaScript not loading
+**Symptom**: Page loads but no interactivity, console errors
 
-**Features not evaluating**:
-- Check browser console for errors
-- Verify context parameters are valid
-- Ensure feature configuration is initialized
+**Solution**:
+```bash
+# Verify compiled JS exists
+ls ktor-demo/build/resources/main/static/demo-client.js
 
-**JSON snapshot not loading**:
-- Check server logs for serialization errors
-- Ensure all features have valid configurations
+# Rebuild client
+./gradlew clean :ktor-demo:demo-client:browserProductionWebpack
 
-**Hot reload not working**:
-- Verify toggle is enabled (switch should be blue)
-- Check that evaluate button is disabled
-- Open browser console to see API calls
+# Check browser console for: "Initializing Konditional Demo Client (Kotlin/JS)"
+```
+
+### Build errors
+**Symptom**: Gradle build fails
+
+**Solution**:
+```bash
+# Ensure Java 17+
+java -version
+
+# Clean and rebuild
+./gradlew clean build
+
+# Check Kotlin version (should be 2.2.0)
+./gradlew :ktor-demo:demo-client:dependencies
+```
+
+### Client changes not reflected
+**Symptom**: Modified DemoClient.kt but no changes in browser
+
+**Solution**:
+```bash
+# Clear webpack cache
+./gradlew clean
+
+# Force rebuild
+./gradlew :ktor-demo:demo-client:browserProductionWebpack --rerun-tasks
+
+# Hard refresh browser (Ctrl+Shift+R or Cmd+Shift+R)
+```
+
+### Port 8080 in use
+**Symptom**: "Address already in use"
+
+**Solution**:
+```bash
+# Find process using port 8080
+lsof -i :8080  # Mac/Linux
+netstat -ano | findstr :8080  # Windows
+
+# Kill process or change port in Application.kt:
+embeddedServer(Netty, port = 8081, ...)
+```
+
+## Why Kotlin/JS?
+
+Traditional web apps split client (JavaScript) and server (Kotlin/JVM) with:
+- ❌ Two different languages
+- ❌ Duplicated logic
+- ❌ No shared types
+- ❌ Error-prone string templates
+
+Kotlin/JS enables:
+- ✅ Single language (Kotlin) everywhere
+- ✅ Shared types and logic
+- ✅ Compile-time safety
+- ✅ Modern IDE support
+
+Result: **Type-safe full-stack Kotlin** from database to browser!
 
 ## Learn More
 
 - [Konditional Documentation](../../docs/)
 - [Konditional GitHub](https://github.com/amichne/konditional)
-- [Ktor Documentation](https://ktor.io/)
+- [Kotlin/JS Documentation](https://kotlinlang.org/docs/js-overview.html)
 - [kotlinx.html](https://github.com/Kotlin/kotlinx.html)
+- [kotlinx-browser](https://github.com/Kotlin/kotlinx-browser)
+- [Ktor Documentation](https://ktor.io/)
 
 ## License
 

@@ -13,6 +13,7 @@ import io.ktor.http.Parameters
 import io.ktor.server.application.Application
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.html.respondHtml
+import io.ktor.server.http.content.staticResources
 import io.ktor.server.netty.Netty
 import io.ktor.server.request.receiveParameters
 import io.ktor.server.response.respond
@@ -42,8 +43,74 @@ import kotlinx.html.style
 import kotlinx.html.title
 import kotlinx.html.unsafe
 
+// Extension properties for display names
+private val AppLocale.displayName: String
+    get() = when (this) {
+        AppLocale.EN_US -> "English (US)"
+        AppLocale.ES_US -> "Spanish (US)"
+        AppLocale.EN_CA -> "English (Canada)"
+        AppLocale.HI_IN -> "Hindi (India)"
+    }
+
+private val Platform.displayName: String
+    get() = when (this) {
+        Platform.IOS -> "iOS"
+        Platform.ANDROID -> "Android"
+        Platform.WEB -> "Web"
+    }
+
+private val SubscriptionTier.displayName: String
+    get() = when (this) {
+        SubscriptionTier.FREE -> "Free"
+        SubscriptionTier.STARTER -> "Starter"
+        SubscriptionTier.PROFESSIONAL -> "Professional"
+        SubscriptionTier.ENTERPRISE -> "Enterprise"
+    }
+
+// Predefined HexId-compliant user IDs for testing
+private object SampleHexIds {
+    val USER_1 = "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"
+    val USER_2 = "f1e2d3c4b5a6978685746352413021ab"
+    val USER_3 = "123456789abcdef0fedcba9876543210"
+    val USER_4 = "deadbeefcafebabe1234567890abcdef"
+    val USER_5 = "0f1e2d3c4b5a69788574635241302100"
+
+    val all = listOf(USER_1, USER_2, USER_3, USER_4, USER_5)
+    val displayNames = listOf(
+        "User Alpha",
+        "User Beta",
+        "User Gamma",
+        "User Delta",
+        "User Epsilon"
+    )
+}
+
 fun main() {
-    // Initialize configurations
+    // Force initialization of feature containers by accessing their properties
+    // This triggers the property delegation which registers features with the taxonomy
+    println("[main] Initializing DemoFeatures...")
+    with(DemoFeatures) {
+        listOf(DARK_MODE, BETA_FEATURES, ANALYTICS_ENABLED, WELCOME_MESSAGE,
+               THEME_COLOR, MAX_ITEMS_PER_PAGE, CACHE_TTL_SECONDS,
+               DISCOUNT_PERCENTAGE, API_RATE_LIMIT)
+    }
+    println("[main] Initializing EnterpriseFeatures...")
+    with(EnterpriseFeatures) {
+        listOf(SSO_ENABLED, ADVANCED_ANALYTICS, CUSTOM_BRANDING, DEDICATED_SUPPORT)
+    }
+
+    // Verify features are registered
+    val konfig = Taxonomy.Global.konfig()
+    val snapshot = SnapshotSerializer.serialize(konfig)
+    println("[main] Konfig snapshot length: ${snapshot.length}")
+    if (snapshot.length < 100) {
+        println("[main] WARNING: Snapshot is suspiciously small!")
+        println("[main] Snapshot: $snapshot")
+    } else {
+        println("[main] Successfully initialized ${DemoFeatures.allFeatures().size + EnterpriseFeatures.allFeatures().size} features")
+    }
+
+    println("[main] Starting server on port 8080...")
     embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
         configureRouting()
     }.start(wait = true)
@@ -51,6 +118,9 @@ fun main() {
 
 fun Application.configureRouting() {
     routing {
+        // Serve static resources (compiled Kotlin/JS)
+        staticResources("/static", "static")
+
         get("/") {
             call.respondHtml {
                 renderMainPage()
@@ -72,25 +142,62 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "Unknown error")))
             }
         }
-
-        get("/api/snapshot") {
-            try {
-                call.respondText(
-                    SnapshotSerializer().withKonfig(Taxonomy.Global.konfig()).toJson(),
-                    ContentType.Application.Json
-                )
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to (e.message ?: "Unknown error")))
-            }
-        }
     }
+}
+
+private fun buildRulesInfo(): String {
+    println("[buildRulesInfo] Starting to build rules info")
+    val moshi = com.squareup.moshi.Moshi.Builder().build()
+    val adapter = moshi.adapter(Map::class.java)
+
+    // Parse the snapshot to extract rule details
+    val snapshot = SnapshotSerializer.serialize(Taxonomy.Global.konfig())
+    println("[buildRulesInfo] Snapshot length: ${snapshot.length}")
+
+    val snapshotData = moshi.adapter(Map::class.java).fromJson(snapshot) as? Map<*, *>
+    println("[buildRulesInfo] Snapshot parsed, keys: ${snapshotData?.keys}")
+
+    val flags = snapshotData?.get("flags")
+    println("[buildRulesInfo] Flags data: $flags")
+    println("[buildRulesInfo] Flags type: ${flags?.javaClass?.name}")
+
+    val featuresData = (snapshotData?.get("flags") as? List<*>)?.map { flagData ->
+        val flag = flagData as? Map<*, *>
+        val key = flag?.get("key") as? String ?: "unknown"
+
+        // Get rules array (not "values")
+        val rules = flag?.get("rules") as? List<*> ?: emptyList<Any>()
+
+        // Get defaultValue object and extract the actual value
+        val defaultValueObj = flag?.get("defaultValue") as? Map<*, *>
+        val defaultValue = defaultValueObj?.get("value")
+        val typeStr = defaultValueObj?.get("type") as? String ?: "Unknown"
+
+        println("[buildRulesInfo] Processing flag: key=$key, rulesCount=${rules.size}, default=$defaultValue, type=$typeStr")
+
+        mapOf(
+            "key" to key,
+            "type" to typeStr.lowercase().replaceFirstChar { it.uppercase() }, // "BOOLEAN" -> "Boolean"
+            "default" to defaultValue,
+            "rulesCount" to rules.size,
+            "hasRules" to rules.isNotEmpty()
+        )
+    } ?: emptyList()
+
+    println("[buildRulesInfo] Features data count: ${featuresData.size}")
+
+    val rulesMap = mapOf("features" to featuresData)
+    val result = adapter.toJson(rulesMap)
+    println("[buildRulesInfo] Final JSON: $result")
+    return result
 }
 
 private fun evaluateBaseContext(params: Parameters): String {
     val locale = AppLocale.valueOf(params["locale"] ?: "EN_US")
     val platform = Platform.valueOf(params["platform"] ?: "WEB")
     val version = Version.parse(params["version"] ?: "1.0.0")
-    val stableId = StableId.of(params["stableId"] ?: "11111111111111111111111111111111")
+    val stableIdHex = params["stableId"] ?: "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"
+    val stableId = StableId.of(stableIdHex)
 
     val context = DemoContext(
         locale = locale,
@@ -106,7 +213,8 @@ private fun evaluateEnterpriseContext(params: Parameters): String {
     val locale = AppLocale.valueOf(params["locale"] ?: "EN_US")
     val platform = Platform.valueOf(params["platform"] ?: "WEB")
     val version = Version.parse(params["version"] ?: "1.0.0")
-    val stableId = StableId.of(params["stableId"] ?: "22222222222222222222222222222222")
+    val stableIdHex = params["stableId"] ?: "f1e2d3c4b5a6978685746352413021ab"
+    val stableId = StableId.of(stableIdHex)
     val subscriptionTier = SubscriptionTier.fromString(params["subscriptionTier"] ?: "FREE")
     val organizationId = params["organizationId"] ?: "org-001"
     val employeeCount = params["employeeCount"]?.toIntOrNull() ?: 10
@@ -200,7 +308,7 @@ private fun HTML.renderMainPage() {
                     .header p { font-size: 1.1em; opacity: 0.9; }
                     .content {
                         display: grid;
-                        grid-template-columns: 1fr 1fr;
+                        grid-template-columns: 1fr 1fr 1fr;
                         gap: 20px;
                         padding: 30px;
                     }
@@ -363,6 +471,38 @@ private fun HTML.renderMainPage() {
                         padding: 40px;
                         color: #6c757d;
                     }
+                    .rule-item {
+                        background: white;
+                        padding: 12px;
+                        border-radius: 6px;
+                        margin-bottom: 10px;
+                        border-left: 3px solid #667eea;
+                    }
+                    .rule-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 8px;
+                    }
+                    .rule-name {
+                        font-weight: 600;
+                        color: #495057;
+                        font-size: 14px;
+                    }
+                    .rule-details {
+                        font-size: 12px;
+                        color: #6c757d;
+                        padding: 4px 0;
+                    }
+                    .rule-badge {
+                        background: #e7f2ff;
+                        color: #667eea;
+                        padding: 2px 8px;
+                        border-radius: 4px;
+                        font-size: 11px;
+                        font-weight: 600;
+                        margin-right: 4px;
+                    }
                     """
                 )
             }
@@ -401,12 +541,13 @@ private fun HTML.renderMainPage() {
                             select {
                                 id = "locale"
                                 name = "locale"
-                                option { value = "EN_US"; selected = true; +"English (US)" }
-                                option { value = "EN_GB"; +"English (UK)" }
-                                option { value = "FR_FR"; +"French (France)" }
-                                option { value = "DE_DE"; +"German (Germany)" }
-                                option { value = "ES_ES"; +"Spanish (Spain)" }
-                                option { value = "JA_JP"; +"Japanese (Japan)" }
+                                AppLocale.entries.forEach { locale ->
+                                    option {
+                                        value = locale.name
+                                        if (locale == AppLocale.EN_US) selected = true
+                                        +locale.displayName
+                                    }
+                                }
                             }
                         }
                         div("form-group") {
@@ -414,10 +555,13 @@ private fun HTML.renderMainPage() {
                             select {
                                 id = "platform"
                                 name = "platform"
-                                option { value = "WEB"; selected = true; +"Web" }
-                                option { value = "IOS"; +"iOS" }
-                                option { value = "ANDROID"; +"Android" }
-                                option { value = "DESKTOP"; +"Desktop" }
+                                Platform.entries.forEach { platform ->
+                                    option {
+                                        value = platform.name
+                                        if (platform == Platform.WEB) selected = true
+                                        +platform.displayName
+                                    }
+                                }
                             }
                         }
                         div("form-group") {
@@ -431,13 +575,17 @@ private fun HTML.renderMainPage() {
                             }
                         }
                         div("form-group") {
-                            label { +"Stable ID (User ID)" }
-                            input {
-                                type = InputType.text
+                            label { +"Stable ID (Test User)" }
+                            select {
                                 id = "stableId"
                                 name = "stableId"
-                                value = "user-001"
-                                placeholder = "e.g., user-123"
+                                SampleHexIds.all.forEachIndexed { index, hexId ->
+                                    option {
+                                        value = hexId
+                                        if (index == 0) selected = true
+                                        +SampleHexIds.displayNames[index]
+                                    }
+                                }
                             }
                         }
 
@@ -449,10 +597,13 @@ private fun HTML.renderMainPage() {
                                 select {
                                     id = "subscriptionTier"
                                     name = "subscriptionTier"
-                                    option { value = "FREE"; selected = true; +"Free" }
-                                    option { value = "STARTER"; +"Starter" }
-                                    option { value = "PROFESSIONAL"; +"Professional" }
-                                    option { value = "ENTERPRISE"; +"Enterprise" }
+                                    SubscriptionTier.entries.forEach { tier ->
+                                        option {
+                                            value = tier.name
+                                            if (tier == SubscriptionTier.FREE) selected = true
+                                            +tier.displayName
+                                        }
+                                    }
                                 }
                             }
                             div("form-group") {
@@ -495,12 +646,21 @@ private fun HTML.renderMainPage() {
                     }
                 }
 
-                // Right panel - Results
+                // Middle panel - Results
                 div("panel") {
                     h2 { +"📊 Feature Evaluation Results" }
                     div {
                         id = "results"
                         div("loading") { +"Click 'Evaluate Features' to see results" }
+                    }
+                }
+
+                // Right panel - Rules Configuration
+                div("panel") {
+                    h2 { +"🎯 Rules & Targeting" }
+                    div {
+                        id = "rulesPanel"
+                        div("loading") { +"Loading rules..." }
                     }
                 }
 
@@ -516,134 +676,19 @@ private fun HTML.renderMainPage() {
             }
         }
 
+        // Embed snapshot and rules data directly in HTML
         script {
             unsafe {
-                raw(
-                    """
-                    let hotReloadEnabled = false;
-
-                    // Initialize
-                    document.addEventListener('DOMContentLoaded', () => {
-                        loadSnapshot();
-                        setupEventListeners();
-                    });
-
-                    function setupEventListeners() {
-                        const contextType = document.getElementById('contextType');
-                        const hotReloadToggle = document.getElementById('hotReloadToggle');
-                        const evaluateBtn = document.getElementById('evaluateBtn');
-                        const form = document.getElementById('contextForm');
-
-                        // Context type change
-                        contextType.addEventListener('change', (e) => {
-                            const enterpriseFields = document.getElementById('enterpriseFields');
-                            if (e.target.value === 'enterprise') {
-                                enterpriseFields.classList.add('visible');
-                            } else {
-                                enterpriseFields.classList.remove('visible');
-                            }
-                            if (hotReloadEnabled) evaluate();
-                        });
-
-                        // Hot reload toggle
-                        hotReloadToggle.addEventListener('change', (e) => {
-                            hotReloadEnabled = e.target.checked;
-                            evaluateBtn.disabled = hotReloadEnabled;
-                            if (hotReloadEnabled) evaluate();
-                        });
-
-                        // Evaluate button
-                        evaluateBtn.addEventListener('click', evaluate);
-
-                        // Auto-evaluate on input change if hot reload is enabled
-                        form.querySelectorAll('input, select').forEach(input => {
-                            input.addEventListener('change', () => {
-                                if (hotReloadEnabled) evaluate();
-                            });
-                            input.addEventListener('input', () => {
-                                if (hotReloadEnabled && input.type === 'text') {
-                                    clearTimeout(input.timeout);
-                                    input.timeout = setTimeout(() => evaluate(), 500);
-                                }
-                            });
-                        });
-                    }
-
-                    async function evaluate() {
-                        const form = document.getElementById('contextForm');
-                        const formData = new FormData(form);
-
-                        try {
-                            const response = await fetch('/api/evaluate', {
-                                method: 'POST',
-                                body: new URLSearchParams(formData)
-                            });
-
-                            const data = await response.json();
-                            renderResults(data);
-                        } catch (error) {
-                            console.error('Evaluation error:', error);
-                            document.getElementById('results').innerHTML =
-                                '<div class="loading" style="color: #ef4444;">Error: ' + error.message + '</div>';
-                        }
-                    }
-
-                    function renderResults(data) {
-                        const results = document.getElementById('results');
-                        const contextType = document.getElementById('contextType').value;
-
-                        let html = '<div class="features-grid">';
-
-                        // Base features
-                        html += renderFeature('Dark Mode', data.darkMode, 'boolean');
-                        html += renderFeature('Beta Features', data.betaFeatures, 'boolean');
-                        html += renderFeature('Analytics Enabled', data.analyticsEnabled, 'boolean');
-                        html += renderFeature('Welcome Message', data.welcomeMessage, 'string');
-                        html += renderFeature('Theme Color', data.themeColor, 'string');
-                        html += renderFeature('Max Items Per Page', data.maxItemsPerPage, 'number');
-                        html += renderFeature('Cache TTL (seconds)', data.cacheTtlSeconds, 'number');
-                        html += renderFeature('Discount %', data.discountPercentage + '%', 'number');
-                        html += renderFeature('API Rate Limit', data.apiRateLimit, 'number');
-
-                        // Enterprise features
-                        if (contextType === 'enterprise') {
-                            html += renderFeature('SSO Enabled', data.ssoEnabled, 'boolean');
-                            html += renderFeature('Advanced Analytics', data.advancedAnalytics, 'boolean');
-                            html += renderFeature('Custom Branding', data.customBranding, 'boolean');
-                            html += renderFeature('Dedicated Support', data.dedicatedSupport, 'boolean');
-                        }
-
-                        html += '</div>';
-                        results.innerHTML = html;
-                    }
-
-                    function renderFeature(name, value, type) {
-                        const isEnabled = type === 'boolean' ? value : true;
-                        const displayValue = type === 'boolean' ? (value ? 'Enabled' : 'Disabled') : value;
-                        const statusClass = type === 'boolean' ? (value ? 'enabled' : 'disabled') : 'enabled';
-
-                        return `
-                            <div class="feature-item ${'$'}{statusClass}">
-                                <span class="feature-name">${'$'}{name}</span>
-                                <span class="feature-value ${'$'}{type}">${'$'}{displayValue}</span>
-                            </div>
-                        `;
-                    }
-
-                    async function loadSnapshot() {
-                        try {
-                            const response = await fetch('/api/snapshot');
-                            const json = await response.text();
-                            const formatted = JSON.stringify(JSON.parse(json), null, 2);
-                            document.getElementById('jsonOutput').textContent = formatted;
-                        } catch (error) {
-                            console.error('Snapshot error:', error);
-                            document.getElementById('jsonOutput').textContent = 'Error loading snapshot: ' + error.message;
-                        }
-                    }
-                    """
-                )
+                raw("""
+                    window.KONDITIONAL_SNAPSHOT = ${SnapshotSerializer.serialize(Taxonomy.Global.konfig())};
+                    window.KONDITIONAL_RULES = ${buildRulesInfo()};
+                """.trimIndent())
             }
+        }
+
+        // Load compiled Kotlin/JS client code
+        script {
+            src = "/static/demo-client.js"
         }
     }
 }
