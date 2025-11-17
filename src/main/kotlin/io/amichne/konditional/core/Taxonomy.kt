@@ -1,11 +1,13 @@
 package io.amichne.konditional.core
 
+import io.amichne.konditional.core.registry.ModuleRegistry
+
 /**
  * Represents a feature flag taxonomy with isolated configuration and runtime isolation.
  *
  * Modules provide:
  * - **Compile-time isolation**: Features are type-bound to their taxonomy
- * - **Runtime isolation**: Each taxonomy has its own [ModuleRegistry] instance
+ * - **Runtime isolation**: Each taxonomy has its own [io.amichne.konditional.core.registry.ModuleRegistry] instance
  * - **Governance**: All modules enumerated in one sealed hierarchy
  * - **Type safety**: Taxonomy identity is encoded in the type system
  *
@@ -76,8 +78,7 @@ sealed class Taxonomy(val id: String) {
      * ```
      */
     data object Global : Taxonomy("global") {
-        override var registry: ModuleRegistry = ModuleRegistry.create()
-
+        override var registry: ModuleRegistry = ModuleRegistry()
     }
 
     /**
@@ -108,7 +109,7 @@ sealed class Taxonomy(val id: String) {
      * - **Recommendations**: Recommendation engine flags
      */
     sealed class Domain(id: String) : Taxonomy(id) {
-        override var registry: ModuleRegistry = ModuleRegistry.create()
+        override var registry: ModuleRegistry = ModuleRegistry()
 
         /** Authentication and authorization features */
         data object Authentication : Domain("auth")

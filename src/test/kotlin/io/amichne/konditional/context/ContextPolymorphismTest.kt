@@ -1,10 +1,11 @@
 package io.amichne.konditional.context
 
 import io.amichne.konditional.context.Context.Companion.evaluate
-import io.amichne.konditional.core.RegistryScope
 import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.Taxonomy.Global
+import io.amichne.konditional.core.features.update
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.registry.withRegistry
 import io.amichne.konditional.fixtures.EnterpriseContext
 import io.amichne.konditional.fixtures.EnterpriseFeatures
 import io.amichne.konditional.fixtures.EnterpriseRule
@@ -45,19 +46,17 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given EnterpriseContext, When evaluating flags, Then context-specific properties are accessible`() {
-        // Configure using buildSnapshot and load for test-specific configuration
-        Global.registry.load(io.amichne.konditional.core.buildSnapshot {
-            EnterpriseFeatures.advanced_analytics with {
-                default(false)
-                // This demonstrates that the rule can access base Context properties
-                rule {
-                    platforms(Platform.WEB)
-                    versions {
-                        min(2, 0)
-                    }
-                } implies true
-            }
-        })
+        // Configure using .update() for test-specific configuration
+        EnterpriseFeatures.advanced_analytics.update {
+            default(false)
+            // This demonstrates that the rule can access base Context properties
+            rule {
+                platforms(Platform.WEB)
+                versions {
+                    min(2, 0)
+                }
+            } implies true
+        }
 
         val ctx = EnterpriseContext(
             locale = AppLocale.EN_US,
@@ -74,18 +73,16 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given ExperimentContext, When evaluating flags, Then experiment-specific properties are accessible`() {
-        // Configure using buildSnapshot and load for test-specific configuration
-        Global.registry.load(io.amichne.konditional.core.buildSnapshot {
-            ExperimentFeatures.homepage_variant with {
-                default("control")
-                rule {
-                    platforms(Platform.IOS, Platform.ANDROID)
-                } implies "variant-a"
-                rule {
-                    platforms(Platform.WEB)
-                } implies "variant-b"
-            }
-        })
+        // Configure using .update() for test-specific configuration
+        ExperimentFeatures.homepage_variant.update {
+            default("control")
+            rule {
+                platforms(Platform.IOS, Platform.ANDROID)
+            } implies "variant-a"
+            rule {
+                platforms(Platform.WEB)
+            } implies "variant-b"
+        }
 
         val mobileCtx = ExperimentContext(
             locale = AppLocale.EN_US,
@@ -112,8 +109,8 @@ class ContextPolymorphismTest {
     @Suppress("USELESS_IS_CHECK")
     @Test
     fun `Given multiple custom contexts, When using different flags, Then contexts are independent`() {
-        // Configure using buildSnapshot and load for test-specific configuration
-        RegistryScope.testRegistryScope {
+        // Configure using .update() for test-specific configuration
+        withRegistry() {
             EnterpriseFeatures.api_access.update {
                 default(false)
                 rule {
@@ -242,20 +239,18 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given custom EnterpriseRule, When matching with business logic, Then custom properties are enforced`() {
-        // Configure using buildSnapshot and load for test-specific configuration
-        Global.registry.load(io.amichne.konditional.core.buildSnapshot {
-            EnterpriseFeatures.api_access with {
-                default(false)
-                rule {
-                    platforms(Platform.WEB)
-                    rollout { 100 }
+        // Configure using .update() for test-specific configuration
+        EnterpriseFeatures.api_access.update {
+            default(false)
+            rule {
+                platforms(Platform.WEB)
+                rollout { 100 }
 
-                    extension {
-                        EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN)
-                    }
-                } implies true
-            }
-        })
+                extension {
+                    EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN)
+                }
+            } implies true
+        }
 
         val enterpriseAdmin = EnterpriseContext(
             locale = AppLocale.EN_US,

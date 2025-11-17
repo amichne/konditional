@@ -1,6 +1,7 @@
-package io.amichne.konditional.core
+package io.amichne.konditional.core.registry
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.instance.Konfig
 import io.amichne.konditional.core.instance.KonfigPatch
 import io.amichne.konditional.core.types.EncodableValue
@@ -33,13 +34,13 @@ import java.util.concurrent.atomic.AtomicReference
  *
  * ## Thread Safety
  *
- * This implementation is thread-safe and uses [AtomicReference] for lock-free reads
+ * This implementation is thread-safe and uses [java.util.concurrent.atomic.AtomicReference] for lock-free reads
  * and compare-and-swap updates.
  *
  * @constructor Creates a new empty in-memory registry
  * @since 0.0.2
  */
-class InMemoryModuleRegistry : ModuleRegistry {
+internal class InMemoryModuleRegistry : ModuleRegistry {
     private val current = AtomicReference(Konfig(emptyMap()))
 
     /**
@@ -54,7 +55,14 @@ class InMemoryModuleRegistry : ModuleRegistry {
     }
 
     /**
-     * Applies a [KonfigPatch] to the current snapshot, atomically updating the flag configuration.
+     * Returns the current snapshot of all flag configurations.
+     *
+     * @return The current [Konfig]
+     */
+    override fun konfig(): Konfig = current.get()
+
+    /**
+     * Applies a [io.amichne.konditional.core.instance.KonfigPatch] to the current snapshot, atomically updating the flag configuration.
      *
      * This method is useful for incremental updates without replacing the entire snapshot.
      * The update is performed atomically using compare-and-swap semantics.
@@ -62,20 +70,13 @@ class InMemoryModuleRegistry : ModuleRegistry {
      * **Internal API**: Used internally by FeatureContainer. Configuration updates are
      * handled automatically through delegation.
      *
-     * @param patch The [KonfigPatch] to apply
+     * @param patch The [io.amichne.konditional.core.instance.KonfigPatch] to apply
      */
-    override fun update(patch: KonfigPatch) {
+    internal fun updatePatch(patch: KonfigPatch) {
         current.updateAndGet { currentSnapshot ->
             patch.applyTo(currentSnapshot)
         }
     }
-
-    /**
-     * Returns the current snapshot of all flag configurations.
-     *
-     * @return The current [Konfig]
-     */
-    override fun konfig(): Konfig = current.get()
 
     /**
      * Updates a single flag definition in the current configuration.
@@ -85,11 +86,11 @@ class InMemoryModuleRegistry : ModuleRegistry {
      * **Internal API**: Used internally by FeatureContainer. Configuration updates are
      * handled automatically through delegation.
      *
-     * @param definition The [FlagDefinition] to update
+     * @param definition The [io.amichne.konditional.core.FlagDefinition] to update
      * @param S The type of the flag's value
      * @param C The type of the context used for evaluation
      */
-    override fun <S : EncodableValue<T>, T : Any, C : Context> update(definition: FlagDefinition<S, T, C, *>) {
+    internal fun <S : EncodableValue<T>, T : Any, C : Context> updateDefinition(definition: FlagDefinition<S, T, C, *>) {
         current.updateAndGet { currentSnapshot ->
             val mutableFlags = currentSnapshot.flags.toMutableMap()
             mutableFlags[definition.feature] = definition

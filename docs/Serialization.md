@@ -33,26 +33,7 @@ val serializer = SnapshotSerializer(customMoshi)
 
 ### Basic Serialization
 
-Export a `Konfig` to JSON:
-
-```kotlin
-// Build configuration
-val konfig = buildSnapshot {
-    MyFeatures.DARK_MODE with {
-        default(false)
-        rule {
-            platforms(Platform.IOS)
-        }.implies(true)
-    }
-}
-
-// Serialize to JSON
-val json = SnapshotSerializer.default.serialize(konfig)
-```
-
-### Serializing from Registry
-
-Export the current registry state:
+Export a `Konfig` to JSON by getting a snapshot from the registry:
 
 ```kotlin
 // Get current configuration
@@ -420,9 +401,9 @@ Test serialization round-trips:
 ```kotlin
 @Test
 fun `serialization round-trip preserves configuration`() {
-    val original = buildSnapshot {
-        MyFeatures.DARK_MODE with {
-            default(false)
+    // Define features using FeatureContainer
+    object MyFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+        val DARK_MODE by boolean(default = false) {
             rule {
                 platforms(Platform.IOS)
                 locales(AppLocale.EN_US)
@@ -430,9 +411,12 @@ fun `serialization round-trip preserves configuration`() {
                     min(2, 0, 0)
                 }
                 rollout = Rollout.of(50.0)
-            }.implies(true)
+            } implies true
         }
     }
+
+    // Get the configuration snapshot
+    val original = Taxonomy.Global.registry.konfig()
 
     // Serialize
     val json = SnapshotSerializer.default.serialize(original)

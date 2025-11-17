@@ -3,10 +3,9 @@ package io.amichne.konditional.core
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.core.features.update
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.instance.KonfigPatch
 import io.amichne.konditional.core.result.EvaluationResult
 import io.amichne.konditional.core.result.FlagEvaluationException
 import io.amichne.konditional.core.result.FlagNotFoundException
@@ -23,8 +22,6 @@ import io.amichne.konditional.core.result.utils.isSuccess
 import io.amichne.konditional.core.result.utils.map
 import io.amichne.konditional.core.result.utils.toResult
 import io.amichne.konditional.fixtures.CommonTestFeatures
-import io.amichne.konditional.rules.Rule
-import io.amichne.konditional.rules.versions.Unbounded
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

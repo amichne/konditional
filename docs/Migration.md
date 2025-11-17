@@ -369,11 +369,13 @@ enum class Features(override val key: String) : Conditional<Boolean, Context> {
 }
 
 // 2. Export current config
-val snapshot = buildSnapshot {
-    Features.DARK_MODE with {
-        default(false)
-    }
+// First, ensure features are defined using FeatureContainer
+object Features : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    val DARK_MODE by boolean(default = false)
 }
+
+// Get the configuration snapshot
+val snapshot = Taxonomy.Global.registry.konfig()
 
 val json = SnapshotSerializer.default.serialize(snapshot)
 

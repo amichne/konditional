@@ -11,6 +11,8 @@ import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.features.IntFeature
 import io.amichne.konditional.core.features.StringFeature
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.registry.ModuleRegistry
+import io.amichne.konditional.core.registry.RegistryScope
 import io.amichne.konditional.core.result.utils.evaluateOrDefault
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -26,7 +28,7 @@ class FeatureContainerTest {
         Taxonomy.Domain.Payments
     ) {
         init {
-            RegistryScope.setGlobal(ModuleRegistry.create())
+            RegistryScope.setGlobal(ModuleRegistry())
         }
 
         val testBoolean by boolean<Context>(default = false)

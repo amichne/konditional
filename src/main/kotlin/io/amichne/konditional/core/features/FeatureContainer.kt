@@ -1,9 +1,10 @@
 package io.amichne.konditional.core.features
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.ModuleRegistry
 import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.dsl.FlagScope
+import io.amichne.konditional.core.registry.ModuleRegistry
+import io.amichne.konditional.core.registry.ModuleRegistry.Companion.updateDefinition
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.internal.builders.FlagBuilder
 import kotlin.properties.PropertyDelegateProvider
@@ -247,7 +248,7 @@ abstract class FeatureContainer<M : Taxonomy>(
             factory(taxonomy, name).also { _features.add(it) }.also { createdFeature ->
                 // Execute the DSL configuration block and update the registry
                 val flagDefinition = FlagBuilder(createdFeature).apply(configScope).apply { default(default) }.build()
-                registry.update(flagDefinition)
+                registry.updateDefinition(flagDefinition)
             }
         }
 

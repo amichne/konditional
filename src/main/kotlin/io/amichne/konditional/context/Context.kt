@@ -29,7 +29,7 @@ import io.amichne.konditional.core.types.EncodableValue
  * @property appVersion The semantic version of the application
  * @property stableId A stable, unique identifier used for deterministic bucketing in rollouts
  *
- * @see io.amichne.konditional.core.RegistryScope
+ * @see io.amichne.konditional.core.registry.RegistryScope
  * @see io.amichne.konditional.rules.Rule
  */
 interface Context {
