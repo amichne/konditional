@@ -67,30 +67,24 @@ class FlagEntryTypeSafetyTest {
     ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
 
     private object Features : FeatureContainer<Global>(Taxonomy.Global) {
-        val featureA by boolean<Context> {
-            default(false)
+        val featureA by boolean<Context>(default = false) {
             rule {
                 platforms(Platform.IOS)
             } implies true
         }
-        val featureB by boolean<Context> {
-            default(true)
-        }
-        val configA by string<Context> {
-            default("default")
+        val featureB by boolean<Context>(default = true)
+        val configA by string<Context>(default = "default") {
             rule {
                 platforms(Platform.ANDROID)
             } implies "android-value"
         }
 
-        val configB by string<Context> {
-            default("config-b-default")
+        val configB by string<Context>(default = "config-b-default") {
             rule {
                 locales(AppLocale.EN_US)
             } implies "en-us-value"
         }
-        val timeout by int<Context> {
-            default(10)
+        val timeout by int<Context>(default = 10) {
             rule {
                 versions {
                     min(2, 0)

@@ -29,18 +29,10 @@ class FeatureContainerTest {
             RegistryScope.setGlobal(ModuleRegistry.create())
         }
 
-        val testBoolean by boolean<Context> {
-            default(false)
-        }
-        val testString by string<Context> {
-            default("default")
-        }
-        val testInt by int<Context> {
-            default(0)
-        }
-        val testDouble by double<Context> {
-            default(0.0)
-        }
+        val testBoolean by boolean<Context>(default = false)
+        val testString by string<Context>(default = "default")
+        val testInt by int<Context>(default = 0)
+        val testDouble by double<Context>(default = 0.0)
     }
 
 //    object Invalid {
@@ -95,8 +87,8 @@ class FeatureContainerTest {
         with(object : FeatureContainer<Taxonomy.Domain.Payments>(
             Taxonomy.Domain.Payments
         ) {
-            val lazyA by boolean<Context> { default(true) }
-            val lazyB by boolean<Context> { default(true) }
+            val lazyA by boolean<Context>(default = true)
+            val lazyB by boolean<Context>(default = true)
         }) {
 
             // allFeatures() should return empty before any feature is accessed
@@ -143,16 +135,16 @@ class FeatureContainerTest {
         val first = object : FeatureContainer<Taxonomy.Domain.Payments>(
             Taxonomy.Domain.Payments
         ) {
-            val a1 by boolean<Context> { default(true) }
-            val a2 by boolean<Context> { default(true) }
+            val a1 by boolean<Context>(default = true)
+            val a2 by boolean<Context>(default = true)
         }
 
         val second = object : FeatureContainer<Taxonomy.Domain.Messaging>(
             Taxonomy.Domain.Messaging
         ) {
-            val b1 by boolean<Context> { default(true) }
-            val b2 by boolean<Context> { default(true) }
-            val b3 by boolean<Context> { default(true) }
+            val b1 by boolean<Context>(default = true)
+            val b2 by boolean<Context>(default = true)
+            val b3 by boolean<Context>(default = true)
         }
 
         // Access properties to trigger registration

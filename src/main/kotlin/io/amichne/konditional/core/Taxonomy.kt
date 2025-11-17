@@ -71,7 +71,7 @@ sealed class Taxonomy(val id: String) {
      * Example:
      * ```kotlin
      * object CoreFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
-     *     val KILL_SWITCH by boolean { default(false) }
+     *     val KILL_SWITCH by boolean(default = false)
      * }
      * ```
      */

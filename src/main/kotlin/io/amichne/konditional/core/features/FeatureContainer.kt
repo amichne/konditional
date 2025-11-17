@@ -92,8 +92,7 @@ abstract class FeatureContainer<M : Taxonomy>(
      * **Example:**
      * ```kotlin
      * object MyFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
-     *     val DARK_MODE by boolean {
-     *         default(false)
+     *     val DARK_MODE by boolean(default = false) {
      *         rule {
      *             platforms(Platform.IOS)
      *         } implies true
@@ -102,12 +101,13 @@ abstract class FeatureContainer<M : Taxonomy>(
      * ```
      *
      * @param C The context type used for evaluation
+     * @param default The default value for this feature (required)
      * @param registry The module registry for storing configuration (defaults to taxonomy.registry)
      * @param flagScope DSL scope for configuring the boolean feature
      * @return A delegated property that returns a [BooleanFeature]
      */
     protected fun <C : Context> boolean(
-        default: Boolean = false,
+        default: Boolean,
         registry: ModuleRegistry = taxonomy.registry,
         flagScope: FlagScope<EncodableValue.BooleanEncodeable, Boolean, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, BooleanFeature<C, M>> =
@@ -123,8 +123,7 @@ abstract class FeatureContainer<M : Taxonomy>(
      * **Example:**
      * ```kotlin
      * object MyFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
-     *     val API_ENDPOINT by string {
-     *         default("https://api.example.com")
+     *     val API_ENDPOINT by string(default = "https://api.example.com") {
      *         rule {
      *             platforms(Platform.ANDROID)
      *         } implies "https://api-android.example.com"
@@ -133,12 +132,13 @@ abstract class FeatureContainer<M : Taxonomy>(
      * ```
      *
      * @param C The context type used for evaluation
+     * @param default The default value for this feature (required)
      * @param registry The module registry for storing configuration (defaults to taxonomy.registry)
      * @param stringScope DSL scope for configuring the string feature
      * @return A delegated property that returns a [StringFeature]
      */
     protected fun <C : Context> string(
-        default: String = "default",
+        default: String,
         registry: ModuleRegistry = taxonomy.registry,
         stringScope: FlagScope<EncodableValue.StringEncodeable, String, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, StringFeature<C, M>> =
@@ -154,8 +154,7 @@ abstract class FeatureContainer<M : Taxonomy>(
      * **Example:**
      * ```kotlin
      * object MyFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
-     *     val MAX_RETRY_COUNT by int {
-     *         default(3)
+     *     val MAX_RETRY_COUNT by int(default = 3) {
      *         rule {
      *             platforms(Platform.IOS)
      *         } implies 5
@@ -164,12 +163,13 @@ abstract class FeatureContainer<M : Taxonomy>(
      * ```
      *
      * @param C The context type used for evaluation
+     * @param default The default value for this feature (required)
      * @param registry The module registry for storing configuration (defaults to taxonomy.registry)
      * @param integerScope DSL scope for configuring the integer feature
      * @return A delegated property that returns an [IntFeature]
      */
     protected fun <C : Context> int(
-        default: Int = 0,
+        default: Int,
         registry: ModuleRegistry = taxonomy.registry,
         integerScope: FlagScope<EncodableValue.IntEncodeable, Int, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<C, M>> =
@@ -187,8 +187,7 @@ abstract class FeatureContainer<M : Taxonomy>(
      * **Example:**
      * ```kotlin
      * object MyFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
-     *     val TRANSACTION_FEE by double {
-     *         default(0.029)
+     *     val TRANSACTION_FEE by double(default = 0.029) {
      *         rule {
      *             platforms(Platform.WEB)
      *         } implies 0.019
@@ -197,12 +196,13 @@ abstract class FeatureContainer<M : Taxonomy>(
      * ```
      *
      * @param C The context type used for evaluation
+     * @param default The default value for this feature (required)
      * @param registry The module registry for storing configuration (defaults to taxonomy.registry)
      * @param decimalScope DSL scope for configuring the double feature
      * @return A delegated property that returns a [DoubleFeature]
      */
     protected fun <C : Context> double(
-        default: Double = 0.0,
+        default: Double,
         registry: ModuleRegistry = taxonomy.registry,
         decimalScope: FlagScope<EncodableValue.DecimalEncodeable, Double, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, DoubleFeature<C, M>> =
