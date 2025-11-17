@@ -8,3 +8,4 @@ pluginManagement {
 rootProject.name = "konditional"
 
 include("ktor-demo")
+include("ktor-demo:demo-client")

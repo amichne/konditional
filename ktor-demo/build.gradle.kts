@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "2.2.0"
+    kotlin("jvm") version "2.2.20"
     id("io.ktor.plugin") version "3.0.1"
     application
 }
@@ -32,6 +32,17 @@ dependencies {
     // Moshi (for JSON handling, matching main project)
     implementation("com.squareup.moshi:moshi:1.15.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.15.0")
+}
+
+// Task to copy compiled JS from client module to server resources
+val copyClientJs by tasks.registering(Copy::class) {
+    dependsOn(":ktor-demo:demo-client:browserProductionWebpack")
+    from(project(":ktor-demo:demo-client").layout.buildDirectory.dir("kotlin-webpack/js/productionExecutable"))
+    into(layout.buildDirectory.dir("resources/main/static"))
+}
+
+tasks.named("processResources") {
+    dependsOn(copyClientJs)
 }
 
 application {
