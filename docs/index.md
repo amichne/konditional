@@ -1,321 +1,448 @@
 # Konditional
 
-Type-safe, deterministic feature configuration for Kotlin
+Type-safe, deterministic feature flags for Kotlin.
 
-Konditional provides a type-safe, composable API for feature flag management. This document introduces the core concepts and demonstrates common usage patterns.
+## Overview
+
+Konditional is a type-safe feature flag library that eliminates runtime errors through compile-time guarantees. Define flags with strong typing, evaluate them deterministically, and organize them by domain using the Taxonomy system.
+
+**Core Principles:**
+
+- **Type Safety First**: Generic type parameters eliminate runtime type errors
+- **Deterministic**: Same inputs always produce same outputs
+- **Zero Dependencies**: Pure Kotlin with Moshi for JSON serialization only
+- **Thread-Safe**: Lock-free reads with atomic updates
+
+## Quick Example
+
+```kotlin
+import io.amichne.konditional.core.features.FeatureContainer
+import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.context.*
+
+// Define features
+object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    val DARK_MODE by boolean(default = false) {
+        rule {
+            platforms(Platform.IOS)
+            rollout { 50.0 }
+        } implies true
+    }
+}
+
+// Evaluate
+val context = Context(
+    locale = AppLocale.EN_US,
+    platform = Platform.IOS,
+    appVersion = Version.parse("2.1.0"),
+    stableId = StableId.of("user-123")
+)
+
+val enabled: Boolean = context.evaluateOrDefault(AppFeatures.DARK_MODE, default = false)
+```
 
 ## Core Concepts
 
 ### Features
 
-A **Feature** represents a configurable flag with a specific value type and evaluation context. Features are the primary interface for defining and evaluating flags.
-
-Features are typically organized as enum members for type safety and IDE support:
+Features are type-safe flag definitions. Use `FeatureContainer` delegation for the most ergonomic API:
 
 ```kotlin
-enum class AppFeatures(override val key: String) : Feature<EncodableValue.BooleanEncodeable, Boolean, Context> {
-    DARK_MODE("dark_mode"),
-    NEW_CHECKOUT("new_checkout"),
-    ADVANCED_SEARCH("advanced_search");
-
-    override val registry: FlagRegistry = FlagRegistry
+object MyFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    val BOOLEAN_FLAG by boolean(default = false)
+    val STRING_FLAG by string(default = "production")
+    val INT_FLAG by int(default = 42)
+    val DOUBLE_FLAG by double(default = 3.14)
 }
 ```
 
+The delegation pattern provides:
+
+- Property access instead of method calls
+- Type inference from default values
+- Automatic registration with taxonomy
+- Inline rule configuration
+
+See **[Features](Features.md)** for enum-based patterns and custom contexts.
+
 ### Context
 
-**Context** provides the evaluation environment for feature flags. It contains standard targeting dimensions (locale, platform, version, stable ID) and can be extended with custom fields:
+Context provides the evaluation environment. All evaluations require four standard fields:
 
 ```kotlin
-// Standard context
-val context = Context(
-    locale = AppLocale.EN_US,
-    platform = Platform.IOS,
-    appVersion = Version(2, 5, 0),
-    stableId = StableId.of("user-123")
+data class Context(
+    val locale: AppLocale,       // User's locale (EN_US, FR_FR, etc.)
+    val platform: Platform,      // Platform (IOS, ANDROID, WEB)
+    val appVersion: Version,     // Semantic version (2.1.0)
+    val stableId: StableId       // Stable user ID for bucketing
 )
+```
 
-// Custom context with domain-specific fields
+Extend Context with custom fields for business logic:
+
+```kotlin
 data class EnterpriseContext(
     override val locale: AppLocale,
     override val platform: Platform,
     override val appVersion: Version,
     override val stableId: StableId,
-    val organizationId: String,
-    val subscriptionTier: SubscriptionTier
+    val subscriptionTier: SubscriptionTier,  // Custom field
+    val organizationId: String                // Custom field
 ) : Context
 ```
 
+See **[Context](Context.md)** for custom contexts and polymorphism.
+
 ### Rules
 
-**Rules** define targeting criteria and rollout strategies. Each rule specifies conditions that must be met for a particular value to be returned:
+Rules define targeting criteria. All criteria must match for a rule to apply:
 
 ```kotlin
 rule {
-    platforms(Platform.IOS, Platform.ANDROID)
-    locales(AppLocale.EN_US)
+    platforms(Platform.IOS, Platform.ANDROID)  // Must be mobile
+    locales(AppLocale.EN_US)                   // AND English US
     versions {
-        min(2, 0, 0)
+        min(2, 0, 0)                           // AND version >= 2.0.0
     }
-    rollout = Rollout.of(50.0)  // 50% gradual rollout
-    note("Mobile-only feature, 50% rollout")
-}.implies(true)
+    rollout { 50.0 }                           // AND in 50% bucket
+} implies true
 ```
 
-### Flag Definitions
-
-A **FlagDefinition** combines a feature with its configured rules and default value. Definitions are created through the DSL and evaluated against a context:
+Rules are automatically sorted by specificity (most specific first):
 
 ```kotlin
-config {
-    AppFeatures.DARK_MODE with {
-        default(false)
+// Specificity = 2 (platform + locale) - evaluated first
+rule {
+    platforms(Platform.IOS)
+    locales(AppLocale.EN_US)
+} implies "specific-value"
 
-        rule {
-            platforms(Platform.IOS)
-            rollout = Rollout.of(100.0)
-        }.implies(true)
-    }
+// Specificity = 1 (platform only) - evaluated second
+rule {
+    platforms(Platform.IOS)
+} implies "general-value"
+```
+
+See **[Rules](Rules.md)** for advanced targeting and custom evaluables.
+
+### Taxonomy
+
+Taxonomy provides isolation between feature domains:
+
+```kotlin
+// Global taxonomy for shared features
+object GlobalFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    val MAINTENANCE_MODE by boolean(default = false)
+}
+
+// Domain-specific taxonomies
+object AuthFeatures : FeatureContainer<Taxonomy.Domain.Authentication>(
+    Taxonomy.Domain.Authentication
+) {
+    val SOCIAL_LOGIN by boolean(default = false)
+}
+
+object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
+    Taxonomy.Domain.Payments
+) {
+    val APPLE_PAY by boolean(default = false)
 }
 ```
 
-## Configuration
+Benefits:
 
-### Using the DSL
+- **Compile-time isolation**: Features type-bound to taxonomy
+- **Runtime isolation**: Each taxonomy has separate registry
+- **Organization**: Clear ownership boundaries
 
-The primary way to configure flags is through the `config` DSL:
-
-```kotlin
-config {
-    // Configure a boolean flag
-    AppFeatures.DARK_MODE with {
-        default(false)
-        salt("v2")  // Optional: change to redistribute rollout buckets
-
-        rule {
-            platforms(Platform.IOS)
-        }.implies(true)
-    }
-
-    // Configure a complex type flag
-    AppConfig.API_SETTINGS with {
-        default(ApiSettings(url = "https://prod.api.example.com", timeout = 30))
-
-        rule {
-            platforms(Platform.WEB)
-            rollout = Rollout.of(25.0)
-        }.implies(ApiSettings(url = "https://beta.api.example.com", timeout = 60))
-    }
-}
-```
-
-### Configuration Snapshots
-
-For testing or external configuration management, export configuration snapshots from the registry:
-
-```kotlin
-// Define features using FeatureContainer
-object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
-    val DARK_MODE by boolean(default = true)
-}
-
-// Get current configuration snapshot
-val snapshot = Taxonomy.Global.konfig()
-
-// Load into a test registry
-val testRegistry = ModuleRegistry.create(snapshot)
-```
+See **[Registry](Registry.md)** for taxonomy management and registry operations.
 
 ## Evaluation
 
-### Basic Evaluation
+### Evaluation Methods
 
-Evaluate flags by calling extension functions on your context:
+Choose based on your error handling needs:
 
 ```kotlin
-// Returns EvaluationResult (Success, FlagNotFound, or EvaluationError)
-val result: EvaluationResult<Boolean> = context.evaluateSafe(AppFeatures.DARK_MODE)
-
+// Safe: Returns EvaluationResult<T>
+val result: EvaluationResult<Boolean> = context.evaluateSafe(MyFeatures.FLAG)
 when (result) {
-    is EvaluationResult.Success -> println("Dark mode: ${result.value}")
-    is EvaluationResult.FlagNotFound -> println("Flag not registered: ${result.key}")
-    is EvaluationResult.EvaluationError -> println("Evaluation failed: ${result.error}")
+    is EvaluationResult.Success -> use(result.value)
+    is EvaluationResult.FlagNotFound -> logWarning("Flag not found")
+    is EvaluationResult.EvaluationError -> logError("Evaluation failed", result.error)
+}
+
+// Convenient: Returns null on failure
+val value: Boolean? = context.evaluateOrNull(MyFeatures.FLAG)
+
+// Default: Returns default value on failure
+val value: Boolean = context.evaluateOrDefault(MyFeatures.FLAG, default = false)
+
+// Unsafe: Throws exception on failure (use sparingly)
+val value: Boolean = context.evaluateOrThrow(MyFeatures.FLAG)
+```
+
+See **[Evaluation](Evaluation.md)** for evaluation flow and specificity ordering.
+
+See **[Results](Results.md)** for EvaluationResult and ParseResult error handling patterns.
+
+### Deterministic Bucketing
+
+Rollout bucketing is deterministic and independent per flag:
+
+```kotlin
+// SHA-256 based bucketing
+fun bucket(flagKey: String, stableId: StableId, salt: String): Int {
+    val hash = SHA256("$salt:$flagKey:${stableId.id}")
+    return hash.take(4).toInt() % 10_000  // 0-9999 range (0.01% granularity)
 }
 ```
 
-### Convenience Methods
+Properties:
 
-For simpler use cases, convenience methods are available:
+- **Deterministic**: Same user always gets same bucket
+- **Independent**: Each flag has separate bucketing space
+- **Platform-stable**: Consistent across JVM/Android/iOS/Web
+- **Redistributable**: Change salt to reassign buckets
+
+## Configuration
+
+### Inline Configuration
+
+Configure rules directly in the delegation:
 
 ```kotlin
-// Returns null on any failure
-val enabled: Boolean? = context.evaluateOrNull(AppFeatures.DARK_MODE)
+object MyFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    val EXPERIMENT by boolean(default = false) {
+        // Salt affects bucketing (change to redistribute)
+        salt("v2")
 
-// Returns default value on failure
-val enabled: Boolean = context.evaluateOrDefault(AppFeatures.DARK_MODE, default = false)
+        // Rule with multiple criteria
+        rule {
+            platforms(Platform.IOS)
+            locales(AppLocale.EN_US, AppLocale.EN_CA)
+            versions {
+                min(2, 0, 0)
+                max(3, 0, 0)
+            }
+            rollout { 25.0 }
+            note("iOS English speakers, v2.x, 25% rollout")
+        } implies true
 
-// Throws exception on failure (use sparingly)
-val enabled: Boolean = context.evaluateOrThrow(AppFeatures.DARK_MODE)
+        // Fallback rule for all iOS users
+        rule {
+            platforms(Platform.IOS)
+        } implies false
+    }
+}
 ```
+
+See **[Configuration](Configuration.md)** for complete DSL reference.
+
+## Serialization
+
+Export and import configurations as JSON:
+
+```kotlin
+// Serialize current configuration
+val json = SnapshotSerializer.serialize(Taxonomy.Global.konfig())
+File("flags.json").writeText(json)
+
+// Deserialize and load
+val json = File("flags.json").readText()
+when (val result = SnapshotSerializer.fromJson(json)) {
+    is ParseResult.Success -> Taxonomy.Global.load(result.value)
+    is ParseResult.Failure -> logError("Parse failed: ${result.error}")
+}
+
+// Apply incremental patch
+when (val result = SnapshotSerializer.applyPatchJson(currentKonfig, patchJson)) {
+    is ParseResult.Success -> Taxonomy.Global.load(result.value)
+    is ParseResult.Failure -> logError("Patch failed: ${result.error}")
+}
+```
+
+See **[Serialization](Serialization.md)** for JSON format, remote configuration, and database persistence.
 
 ## Value Types
 
-Konditional supports multiple value types through the `EncodableValue` abstraction.
-
-### Primitive Types
-
-Boolean, String, Int, and Double are supported natively:
+Konditional supports four primitive types and data classes:
 
 ```kotlin
-val booleanFlag: Feature<EncodableValue.BooleanEncodeable, Boolean, Context> = Feature("bool")
-val stringFlag: Feature<EncodableValue.StringEncodeable, String, Context> = Feature("string")
-val intFlag: Feature<EncodableValue.IntEncodeable, Int, Context> = Feature("int")
-val doubleFlag: Feature<EncodableValue.DecimalEncodeable, Double, Context> = Feature("double")
-```
-
-### JSON Object Types
-
-Complex data classes can be used via the `OfJsonObject` feature type:
-
-```kotlin
-data class ThemeConfig(val primaryColor: String, val fontSize: Int)
-
-val themeFlag: Feature.OfJsonObject<ThemeConfig, Context> =
-    Feature.jsonObject("theme")
-
-config {
-    themeFlag with {
-        default(ThemeConfig(primaryColor = "#FFFFFF", fontSize = 14))
-    }
+object MyFlags : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    // Primitives
+    val BOOLEAN_FLAG by boolean(default = false)
+    val STRING_FLAG by string(default = "value")
+    val INT_FLAG by int(default = 42)
+    val DOUBLE_FLAG by double(default = 3.14)
 }
 ```
 
-### Custom Wrapper Types
-
-Extend primitives with domain-specific wrappers:
+For complex types, use data classes (automatically serialized as JSON):
 
 ```kotlin
-data class ApiUrl(val value: String)
+data class ThemeConfig(
+    val primaryColor: String,
+    val fontSize: Int,
+    val darkMode: Boolean
+)
 
-val urlFlag: Feature.OfCustom<ApiUrl, String, Context> =
-    Feature.custom("api_url")
-
-config {
-    urlFlag with {
-        default(
-            ApiUrl("https://prod.example.com").asCustomString()
-                .encoder { it.value }
-                .decoder { ApiUrl(it) }
+object MyThemes : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    // Data classes work automatically
+    val APP_THEME by jsonObject(
+        default = ThemeConfig(
+            primaryColor = "#FFFFFF",
+            fontSize = 14,
+            darkMode = false
         )
-    }
-}
-```
-
-## Registry Management
-
-### Singleton Registry
-
-By default, Konditional uses a thread-safe singleton registry:
-
-```kotlin
-// Load configuration into singleton
-config {
-    // ... flag definitions
-}
-
-// Evaluate using singleton (implicit)
-context.evaluateSafe(AppFeatures.DARK_MODE)
-```
-
-### Custom Registries
-
-Create isolated registries for testing or multi-tenant scenarios:
-
-```kotlin
-// Create empty registry
-val customRegistry = FlagRegistry.create()
-
-// Create with initial configuration from another registry
-val snapshot = Taxonomy.Global.konfig()
-val customRegistry = ModuleRegistry.create(snapshot)
-
-// Evaluate using custom registry
-context.evaluateSafe(AppFeatures.DARK_MODE, registry = customRegistry)
-```
-
-### Dynamic Updates
-
-Update configurations at runtime without restarting:
-
-```kotlin
-// Update individual flag
-val newDefinition = FlagDefinition(
-    feature = AppFeatures.DARK_MODE,
-    defaultValue = true,
-    bounds = emptyList()
-)
-registry.update(newDefinition)
-
-// Load complete new configuration
-registry.load(newConfig)
-
-// Apply incremental patch
-registry.update(patch)
-```
-
-## Error Handling
-
-Konditional follows the "parse, don't validate" principle with explicit result types.
-
-### EvaluationResult
-
-The primary result type for flag evaluation:
-
-```kotlin
-sealed interface EvaluationResult<out S> {
-    data class Success<S>(val value: S) : EvaluationResult<S>
-    data class FlagNotFound(val key: String) : EvaluationResult<Nothing>
-    data class EvaluationError(val key: String, val error: Throwable) : EvaluationResult<Nothing>
-}
-```
-
-### Folding Results
-
-Transform evaluation results into your preferred error handling type:
-
-```kotlin
-val outcome = context.evaluateSafe(AppFeatures.DARK_MODE).fold(
-    onSuccess = { Result.success(it) },
-    onFlagNotFound = { Result.failure(FlagMissingException(it)) },
-    onEvaluationError = { key, err -> Result.failure(FlagFailedException(key, err)) }
-)
-```
-
-### ParseResult
-
-Used for deserialization operations:
-
-```kotlin
-sealed interface ParseResult<out T> {
-    data class Success<T>(val value: T) : ParseResult<T>
-    data class Failure(val error: ParseError) : ParseResult<Nothing>
+    )
 }
 ```
 
 ## Thread Safety
 
-Konditional is designed for safe concurrent access:
+Konditional is designed for concurrent access without locks:
 
-- **Lock-free reads**: Flag evaluation requires no locks
-- **Atomic updates**: Configuration changes are atomic via `AtomicReference`
-- **Independent evaluations**: Each flag evaluation is independent and thread-safe
-- **Deterministic bucketing**: Rollout assignments are stable across threads
+**Lock-Free Reads**: Flag evaluation requires no synchronization. Multiple threads can evaluate flags concurrently without contention.
+
+**Atomic Updates**: Registry updates use `AtomicReference` for atomic snapshots. Readers see either old or new configuration, never partial updates.
+
+**Immutable Data**: `Konfig` and `FlagDefinition` are immutable. Once created, they cannot be modified.
+
+**Independent Evaluations**: Each evaluation is stateless and independent. No shared mutable state during evaluation.
+
+## Type Safety Guarantees
+
+| Guarantee | How Konditional Enforces It |
+|-----------|----------------------------|
+| **Non-null returns** | Default value required at definition time |
+| **Correct type** | Generic type parameters enforce value type |
+| **Correct context** | Context type parameter enforced by compiler |
+| **Valid rollout** | Rollout.of() validates 0.0-100.0 range |
+| **Valid version** | Version.parse() validates semantic versioning |
+| **Valid stable ID** | StableId.of() validates hexadecimal format |
+| **Supported types** | Only Boolean, String, Int, Double, and data classes allowed |
+
+**Core Principle**: If it compiles, the types are correct. No runtime type errors.
+
+## Documentation Guide
+
+**Getting Started:**
+
+1. **[Quick Start](QuickStart.md)** - Get running in 5 minutes
+
+**Core Concepts:**
+
+2. **[Features](Features.md)** - Feature definition patterns
+3. **[Context](Context.md)** - Evaluation contexts
+4. **[Evaluation](Evaluation.md)** - Flag evaluation mechanics
+
+**Configuration:**
+
+5. **[Configuration](Configuration.md)** - DSL reference
+6. **[Rules](Rules.md)** - Targeting and rollouts
+
+**Advanced:**
+
+7. **[Serialization](Serialization.md)** - JSON import/export
+8. **[Registry](Registry.md)** - Taxonomy and registry management
+9. **[Results](Results.md)** - Error handling patterns
+
+## Common Use Cases
+
+### Feature Flags
+
+Gradual rollout of new features:
+
+```kotlin
+val NEW_CHECKOUT by boolean(default = false) {
+    rule {
+        platforms(Platform.ANDROID)
+        rollout { 10.0 }  // Start with 10%
+    } implies true
+}
+```
+
+### Configuration Management
+
+Environment-specific configuration:
+
+```kotlin
+val API_ENDPOINT by string(default = "https://api.prod.example.com") {
+    rule {
+        platforms(Platform.WEB)
+    } implies "https://api-staging.example.com"
+}
+```
+
+### A/B Testing
+
+Split traffic for experiments:
+
+```kotlin
+val RECOMMENDATION_ALGORITHM by string(default = "collaborative") {
+    rule {
+        rollout { 50.0 }  // 50/50 split
+    } implies "content-based"
+}
+```
+
+### Kill Switches
+
+Emergency feature disable:
+
+```kotlin
+val PAYMENT_PROCESSING by boolean(default = true) {
+    // Can be updated remotely via JSON to disable instantly
+}
+```
+
+## Performance
+
+**Evaluation Complexity**: O(n) where n = number of rules per flag (typically < 10)
+
+**Memory**: Zero allocations during evaluation. All data structures are pre-allocated and immutable.
+
+**Concurrency**: Lock-free reads. No thread contention during evaluation.
+
+**Bucketing**: O(1) SHA-256 hash computation per rollout evaluation.
+
+## Best Practices
+
+**Use FeatureContainer delegation**: Simplest and most ergonomic API for most use cases.
+
+**Organize by domain**: Use Taxonomy to separate features by team or business domain.
+
+**Start with small rollouts**: Begin with 10% rollout, increase gradually after monitoring.
+
+**Document with note()**: Add context to rules explaining why they exist.
+
+**Use evaluateOrDefault**: Provides failsafe behavior without exception handling.
+
+**Version your salts**: Track salt changes to understand bucketing redistribution.
+
+**Test with custom contexts**: Create test contexts with specific values to verify rule logic.
+
+**Validate after deserialization**: Check rollout ranges and required flags after loading JSON.
+
+## Migration Path
+
+Migrating from string-based configuration systems:
+
+1. **Inventory existing flags**: Document all current flags and their types
+2. **Define features**: Create FeatureContainer with current defaults
+3. **Run in parallel**: Evaluate both systems, compare results
+4. **Migrate incrementally**: Move flags one by one
+5. **Deprecate old system**: Remove string-based system after full migration
 
 ## Next Steps
 
-- **[Context](Context.md)**: Learn about context types and custom extensions
-- **[Rules](Rules.md)**: Deep dive into rule evaluation and specificity
-- **[Flags](Flags.md)**: Understand feature registration patterns
-- **[Builders](Builders.md)**: Master the configuration DSL
-- **[Serialization](Serialization.md)**: Work with JSON configurations
-- **[Architecture](Architecture.md)**: Understand the internal design
+**New to Konditional?** Start with **[Quick Start](QuickStart.md)**
+
+**Need to define features?** See **[Features](Features.md)**
+
+**Building targeting rules?** See **[Rules](Rules.md)**
+
+**Loading remote config?** See **[Serialization](Serialization.md)**
+
+**Organizing by team?** See **[Registry](Registry.md)**

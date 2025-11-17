@@ -2,78 +2,68 @@
 
 Get your first type-safe feature flag running in 5 minutes.
 
----
-
 ## Installation
 
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.amichne:konditional:1.0.0")
+    implementation("io.amichne:konditional:0.0.1")
 }
 ```
 
----
+## Your First Feature Flag
 
-## Your First Type-Safe Flag (2 Minutes)
+### Step 1: Define Your Features
 
-### Step 1: Define Your Flag
+Use the `FeatureContainer` delegation pattern for the simplest approach:
 
 ```kotlin
-import io.amichne.konditional.core.Conditional
-import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.Taxonomy
 
-enum class Features(override val key: String) : Conditional<Boolean, Context> {
-    DARK_MODE("dark_mode")
+object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    val DARK_MODE by boolean(default = false)
 }
 ```
 
 **What this gives you:**
 
-- IDE auto-complete for `Features.DARK_MODE`
-- Compile error if you typo the name
+- Property access: `AppFeatures.DARK_MODE`
 - Type-safe: Always returns `Boolean`, never null
+- Compile-time validation: Typos become compile errors
 
-### Step 2: Configure the Flag
+### Step 2: Configure Rules (Optional)
+
+Add targeting rules within the delegation:
 
 ```kotlin
-import io.amichne.konditional.builders.config
-
-val configuration = config {
-    Features.DARK_MODE with {
-        default(false)  // Required - no nulls possible
+object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    val DARK_MODE by boolean(default = false) {
+        rule {
+            platforms(Platform.IOS)
+            rollout { 50.0 }
+        } implies true
     }
 }
 ```
 
-**What this gives you:**
+### Step 3: Evaluate the Flag
 
-- Compiler enforces default value
-- Type-safe: `default(false)` must be Boolean
-
-### Step 3: Load Configuration
+Create a context and evaluate:
 
 ```kotlin
-import io.amichne.konditional.registry.FlagRegistry
+import io.amichne.konditional.context.*
 
-FlagRegistry.load(configuration)
-```
-
-### Step 4: Evaluate the Flag
-
-```kotlin
-import io.amichne.konditional.context.basicContext
-import io.amichne.konditional.context.evaluate
-
-// Create a context
-val context = basicContext(
-    platform = Platform.ANDROID,
+// Create evaluation context
+val context = Context(
+    locale = AppLocale.EN_US,
+    platform = Platform.IOS,
+    appVersion = Version.parse("2.1.0"),
     stableId = StableId.of("user-123")
 )
 
 // Evaluate the flag
-val isDarkMode: Boolean = context.evaluate(Features.DARK_MODE)
+val isDarkMode = context.evaluateOrDefault(AppFeatures.DARK_MODE, default = false)
 
 // Use it
 if (isDarkMode) {
@@ -81,262 +71,152 @@ if (isDarkMode) {
 }
 ```
 
-**What this gives you:**
+**What you get:**
 
-- Non-null result guaranteed
+- Non-null result guaranteed (via `evaluateOrDefault`)
 - Type-safe: `isDarkMode` is always `Boolean`
-
----
-
-## Before & After Comparison
-
-| String-Based | Type-Safe (Konditional) |
-|--------------|-------------------------|
-| `config.getBoolean("dark_mode")` returns `Boolean?` | `context.evaluate(Features.DARK_MODE)` returns `Boolean` |
-| Typos compile silently | Typos are compile errors |
-| No IDE auto-complete | Full IDE support |
-| Runtime ClassCastException | Compile-time type checking |
-
----
-
-## Adding Platform-Specific Rules (3 Minutes)
-
-```kotlin
-config {
-    Features.DARK_MODE with {
-        default(false)  // Default for all platforms
-
-        // Enable on iOS only
-        rule {
-            platforms(Platform.IOS)
-        }.implies(true)
-    }
-}
-
-// Evaluation: Automatic platform handling
-val context = basicContext(
-    platform = Platform.IOS,
-    stableId = StableId.of("user-123")
-)
-
-val enabled = context.evaluate(Features.DARK_MODE)
-// Returns: true (iOS rule matched)
-```
-
-**What you get:**
-
-- Platform logic declarative in config
-
-- No if/when statements in application code
-
-- Easy to test by changing context
-
----
-
-## Adding Gradual Rollout (2 Minutes)
-
-```kotlin
-config {
-    Features.DARK_MODE with {
-        default(false)
-
-        // 25% rollout on Android
-        rule {
-            platforms(Platform.ANDROID)
-            rollout = Rollout.of(25.0)  // 25% of users
-        }.implies(true)
-
-        // Full rollout on iOS
-        rule {
-            platforms(Platform.IOS)
-        }.implies(true)
-    }
-}
-
-// Evaluation: Automatic bucketing via stableId
-val context = basicContext(
-    platform = Platform.ANDROID,
-    stableId = StableId.of("user-123")  // Deterministic bucketing
-)
-
-val enabled = context.evaluate(Features.DARK_MODE)
-// Returns: true or false based on SHA-256(stableId + flag_key)
-```
-
-**What you get:**
-
-- Deterministic: Same user always gets same result
-- Independent: Each flag has its own bucket
-- Platform-stable: Works across JVM, Android, iOS
-
----
-
-## Beyond Booleans: String Configuration
-
-```kotlin
-// Define string flag
-enum class ApiConfig(override val key: String) : Conditional<String, Context> {
-    ENDPOINT("api_endpoint")
-}
-
-// Configure with environment-specific rules
-config {
-    ApiConfig.ENDPOINT with {
-        default("https://api.prod.example.com")
-
-        rule {
-            platforms(Platform.IOS)
-        }.implies("https://api-ios.prod.example.com")
-
-        rule {
-            platforms(Platform.ANDROID)
-        }.implies("https://api-android.prod.example.com")
-    }
-}
-
-// Usage: Type-safe, non-null
-val endpoint: String = context.evaluate(ApiConfig.ENDPOINT)
-httpClient.setBaseUrl(endpoint)
-```
-
-**What you get:**
-
-- Type-safe: Always returns `String`, never null
-- Platform-specific URLs declarative
-- No string matching in application code
-
----
-
-## Complex Types: Data Classes
-
-```kotlin
-// Define your type
-data class ThemeConfig(
-    val primaryColor: String,
-    val fontSize: Int,
-    val darkMode: Boolean
-)
-
-// Define flag for that type
-enum class Theme(override val key: String) : Conditional<ThemeConfig, Context> {
-    APP_THEME("app_theme")
-}
-
-// Configure complete themes
-config {
-    Theme.APP_THEME with {
-        default(
-            ThemeConfig(
-                primaryColor = "#FFFFFF",
-                fontSize = 14,
-                darkMode = false
-            )
-        )
-
-        rule {
-            platforms(Platform.IOS)
-        }.implies(
-            ThemeConfig(
-                primaryColor = "#000000",
-                fontSize = 16,
-                darkMode = true
-            )
-        )
-    }
-}
-
-// Usage: Atomic, consistent theme
-val theme: ThemeConfig = context.evaluate(Theme.APP_THEME)
-applyTheme(theme.primaryColor, theme.fontSize, theme.darkMode)
-```
-
-**What you get:**
-
-- Atomic updates: All theme values consistent
-- Type-safe: Guaranteed ThemeConfig, never null
-- No validation needed: Type enforces structure
-
----
+- Deterministic: Same context always returns same value
 
 ## Common Patterns
 
-### Organizing by Domain
+### Multiple Flag Types
 
-Organize flags by type and domain for clarity:
+Define different value types in the same container:
 
 ```kotlin
-enum class UiFeatures(override val key: String) : Conditional<Boolean, Context> {
-    DARK_MODE("dark_mode"),
-    NEW_NAVIGATION("new_navigation")
-}
-
-enum class ApiConfig(override val key: String) : Conditional<String, Context> {
-    ENDPOINT("api_endpoint"),
-    TIMEOUT_URL("timeout_url")
-}
-
-enum class Limits(override val key: String) : Conditional<Int, Context> {
-    MAX_RETRIES("max_retries"),
-    BATCH_SIZE("batch_size")
+object AppConfig : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    val DARK_MODE by boolean(default = false)
+    val API_ENDPOINT by string(default = "https://api.prod.example.com")
+    val MAX_RETRIES by int(default = 3)
+    val TIMEOUT_SECONDS by double(default = 30.0)
 }
 ```
 
-### Combining Multiple Criteria
+### Platform-Specific Values
 
-Rules support platform, version, locale, and rollout conditions:
+Configure different values for different platforms:
 
 ```kotlin
-config {
-    Features.PREMIUM_EXPORT with {
-        default(false)
-
+object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    val API_ENDPOINT by string(default = "https://api.example.com") {
         rule {
             platforms(Platform.IOS)
-            versions { min(2, 0, 0) }  // Version 2.0.0+
-            locales(AppLocale.EN_US)
-            rollout = Rollout.of(50.0)  // 50% of eligible users
-        }.implies(true)
+        } implies "https://api-ios.example.com"
+
+        rule {
+            platforms(Platform.ANDROID)
+        } implies "https://api-android.example.com"
     }
 }
 ```
 
-**Rule Specificity:** Rules are automatically evaluated most-specific first (platform=1, locale=1, version=1, extension=1, max=4).
+### Gradual Rollout
 
----
+Deploy features gradually using rollout percentages:
 
-## What Makes This Type-Safe?
+```kotlin
+object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    val NEW_CHECKOUT by boolean(default = false) {
+        rule {
+            platforms(Platform.ANDROID)
+            rollout { 25.0 }  // 25% of Android users
+        } implies true
+    }
+}
+```
 
-| Feature                  | String-Based                 | Konditional             |
-|--------------------------|------------------------------|-------------------------|
-| **Null returns**         | `Boolean?`                   | `Boolean` (non-null)    |
-| **Type errors**          | Runtime `ClassCastException` | Compile error           |
-| **Typos**                | Silent failure               | Compile error           |
-| **Refactoring**          | Manual search-replace        | IDE symbol rename       |
-| **Auto-complete**        | None                         | Full IDE support        |
-| **Context requirements** | Invisible                    | Explicit type parameter |
-| **Testing**              | Mock frameworks              | Simple data classes     |
+**Rollout characteristics:**
 
----
+- Deterministic: Same user always gets same result
+- Independent: Each flag buckets users independently
+- Stable: SHA-256 based bucketing
+
+### Combining Criteria
+
+Rules support multiple targeting criteria (all must match):
+
+```kotlin
+object PremiumFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    val ADVANCED_ANALYTICS by boolean(default = false) {
+        rule {
+            platforms(Platform.IOS)
+            locales(AppLocale.EN_US)
+            versions {
+                min(2, 0, 0)  // Version 2.0.0 or higher
+            }
+            rollout { 50.0 }
+        } implies true
+    }
+}
+```
+
+## Evaluation Methods
+
+Konditional provides multiple evaluation methods for different error handling needs:
+
+```kotlin
+// Safe evaluation with Result type
+val result: EvaluationResult<Boolean> = context.evaluateSafe(AppFeatures.DARK_MODE)
+when (result) {
+    is EvaluationResult.Success -> println("Value: ${result.value}")
+    is EvaluationResult.FlagNotFound -> println("Flag not found")
+    is EvaluationResult.EvaluationError -> println("Error: ${result.error}")
+}
+
+// Null on failure
+val value: Boolean? = context.evaluateOrNull(AppFeatures.DARK_MODE)
+
+// Default on failure
+val value: Boolean = context.evaluateOrDefault(AppFeatures.DARK_MODE, default = false)
+
+// Throw exception on failure (use sparingly)
+val value: Boolean = context.evaluateOrThrow(AppFeatures.DARK_MODE)
+```
+
+## Organizing Features by Domain
+
+Use Taxonomy to organize features by team or domain:
+
+```kotlin
+object AuthFeatures : FeatureContainer<Taxonomy.Domain.Authentication>(
+    Taxonomy.Domain.Authentication
+) {
+    val SOCIAL_LOGIN by boolean(default = false)
+    val TWO_FACTOR_AUTH by boolean(default = true)
+}
+
+object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
+    Taxonomy.Domain.Payments
+) {
+    val APPLE_PAY by boolean(default = false)
+    val GOOGLE_PAY by boolean(default = false)
+}
+```
+
+Benefits:
+
+- Isolation: Features don't collide across taxonomies
+- Organization: Clear ownership boundaries
+- Type safety: Compile-time taxonomy enforcement
 
 ## Next Steps
 
-**Now you've seen type safety in action. Go deeper:**
+Now that you have basic flags running, explore:
 
-1. **[Why Type Safety](./WhyTypeSafety.md)** - Understand the complete value proposition
-2. **[Error Prevention](./ErrorPrevention.md)** - See all eliminated error classes
-3. **[Migration Guide](./Migration.md)** - Migrate your existing flags
-4. **[Context Guide](./Context.md)** - Design custom context types
-5. **[Builders Guide](./Builders.md)** - Master the configuration DSL
-6. **[Rules Guide](./Rules.md)** - Advanced targeting and rollouts
-
----
+- **[Overview](index.md)**: Complete API overview and core concepts
+- **[Features](Features.md)**: All feature definition patterns
+- **[Context](Context.md)**: Evaluation contexts and custom extensions
+- **[Rules](Rules.md)**: Advanced targeting and rollouts
+- **[Evaluation](Evaluation.md)**: Deep dive into flag evaluation
+- **[Configuration](Configuration.md)**: Complete DSL reference
+- **[Results](Results.md)**: Error handling with EvaluationResult
+- **[Serialization](Serialization.md)**: Export/import configurations as JSON
+- **[Registry](Registry.md)**: Taxonomy and registry management
 
 ## Key Takeaways
 
-**Define once, use safely everywhere**
-**Compiler catches errors, not users**
-**IDE provides full tooling support**
-**Business logic declarative in config**
-**No null checks, no type errors, no typos**
-
-**Core Principle**: If it compiles, it works.
+- **FeatureContainer delegation**: Simplest way to define features
+- **Context required**: All evaluations need locale, platform, version, stableId
+- **Multiple evaluation methods**: Choose based on error handling needs
+- **Type safety**: If it compiles, the types are correct
+- **Deterministic**: Same inputs always produce same outputs
