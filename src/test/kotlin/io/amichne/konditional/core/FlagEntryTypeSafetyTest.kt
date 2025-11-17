@@ -30,30 +30,30 @@ class FlagEntryTypeSafetyTest {
         // Reset registry before each test
         println("Global")
         println("--------")
-        println(SnapshotSerializer().serialize(Global.registry.konfig()))
+        println(SnapshotSerializer().serialize(Global.konfig()))
         println("--------")
 
         println("Payments")
         println("--------")
-        println(SnapshotSerializer().serialize(Taxonomy.Domain.Payments.registry.konfig()))
+        println(SnapshotSerializer().serialize(Taxonomy.Domain.Payments.konfig()))
         println("--------")
 
         println("Search")
         println("--------")
-        println(SnapshotSerializer().serialize(Taxonomy.Domain.Search.registry.konfig()))
+        println(SnapshotSerializer().serialize(Taxonomy.Domain.Search.konfig()))
         println("--------")
 
         println(
             "Does Global registry match Search? ${
-                SnapshotSerializer().serialize(Global.registry.konfig()) == SnapshotSerializer().serialize(
-                    Taxonomy.Domain.Search.registry.konfig()
+                SnapshotSerializer().serialize(Global.konfig()) == SnapshotSerializer().serialize(
+                    Taxonomy.Domain.Search.konfig()
                 )
             }"
         )
         println(
             "Does Global registry match Payments? ${
-                SnapshotSerializer().serialize(Global.registry.konfig()) == SnapshotSerializer().serialize(
-                    Taxonomy.Domain.Payments.registry.konfig()
+                SnapshotSerializer().serialize(Global.konfig()) == SnapshotSerializer().serialize(
+                    Taxonomy.Domain.Payments.konfig()
                 )
             }"
         )
@@ -221,7 +221,7 @@ class FlagEntryTypeSafetyTest {
             )
         )
 
-        Taxonomy.Global.registry.load(konfig)
+        Taxonomy.Global.load(konfig)
 
         val context = ctx("33333333333333333333333333333333")
         val boolResult = context.evaluate(Features.featureA)

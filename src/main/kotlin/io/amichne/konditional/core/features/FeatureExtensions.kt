@@ -25,10 +25,10 @@ fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> Feature<S, T, C,
  */
 internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> Feature<S, T, C, M>.update(
     function: FlagScope<S, T, C, M>.() -> Unit
-): Unit = registry.updateDefinition(FlagBuilder(this).apply(function).build())
+): Unit = module.updateDefinition(FlagBuilder(this).apply(function).build())
 
 /**
- * Updates this feature's definition in the registry.
+ * Updates this feature's definition in the taxonomy.
  *
  * **Internal API**: This method is used internally and should not be called directly.
  * When using FeatureContainer, configuration is handled automatically through delegation.
@@ -37,4 +37,4 @@ internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> Feature
  */
 internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> Feature<S, T, C, M>.update(
     definition: FlagDefinition<S, T, C, M>
-): Unit = registry.updateDefinition(definition)
+): Unit = module.updateDefinition(definition)

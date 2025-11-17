@@ -67,7 +67,7 @@ interface Context {
          * Evaluates a specific feature flag in the context of this [Context].
          *
          * This extension function provides convenient access to flag evaluation.
-         * The feature's taxonomy-scoped registry is automatically used.
+         * The feature's taxonomy registry is automatically used.
          *
          * @param key The feature flag to evaluate
          * @return The evaluated value of type [T]
@@ -79,7 +79,7 @@ interface Context {
          */
         fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> C.evaluate(
             key: Feature<S, T, C, M>,
-        ): T = key.registry.featureFlag(key)?.evaluate(this)
+        ): T = key.module.featureFlag(key)?.evaluate(this)
                ?: throw IllegalStateException("Flag not found, Key: ${key.key}, Taxonomy: ${key.module.id}")
     }
 }

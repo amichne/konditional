@@ -5,11 +5,12 @@ import io.amichne.konditional.core.registry.ModuleRegistry
 /**
  * Represents a feature flag taxonomy with isolated configuration and runtime isolation.
  *
- * Modules provide:
+ * Taxonomies provide:
  * - **Compile-time isolation**: Features are type-bound to their taxonomy
- * - **Runtime isolation**: Each taxonomy has its own [io.amichne.konditional.core.registry.ModuleRegistry] instance
+ * - **Runtime isolation**: Each taxonomy has its own flag registry
  * - **Governance**: All modules enumerated in one sealed hierarchy
  * - **Type safety**: Taxonomy identity is encoded in the type system
+ * - **Direct registry operations**: Taxonomies implement [ModuleRegistry], eliminating the need for `.registry` access
  *
  * ## Taxonomy Types
  *
@@ -48,17 +49,26 @@ import io.amichne.konditional.core.registry.ModuleRegistry
  * - Exhaustive when-expressions
  * - IDE autocomplete for all modules
  *
+ * ## Direct Registry Operations
+ *
+ * Taxonomies implement [ModuleRegistry], so you can call registry methods directly:
+ * ```kotlin
+ * // Load configuration
+ * Taxonomy.Global.load(konfig)
+ *
+ * // Get current state
+ * val snapshot = Taxonomy.Global.konfig()
+ *
+ * // Query flags
+ * val flag = Taxonomy.Global.featureFlag(MY_FLAG)
+ * ```
+ *
  * @property id Unique identifier for this taxonomy
- * @property registry Isolated registry instance for this taxonomy's flags
  */
-sealed class Taxonomy(val id: String) {
-    /**
-     * Isolated flag registry for this taxonomy.
-     *
-     * Each taxonomy gets its own registry instance, ensuring complete runtime isolation
-     * between teams. Flags from different modules cannot interfere with each other.
-     */
-    abstract var registry: ModuleRegistry
+sealed class Taxonomy(
+    val id: String,
+    @PublishedApi internal val registry: ModuleRegistry = ModuleRegistry()
+) : ModuleRegistry by registry {
 
 
     /**
@@ -77,9 +87,7 @@ sealed class Taxonomy(val id: String) {
      * }
      * ```
      */
-    data object Global : Taxonomy("global") {
-        override var registry: ModuleRegistry = ModuleRegistry()
-    }
+    data object Global : Taxonomy("global")
 
     /**
      * Domain modules providing isolated namespaces for functional areas.
@@ -109,7 +117,6 @@ sealed class Taxonomy(val id: String) {
      * - **Recommendations**: Recommendation engine flags
      */
     sealed class Domain(id: String) : Taxonomy(id) {
-        override var registry: ModuleRegistry = ModuleRegistry()
 
         /** Authentication and authorization features */
         data object Authentication : Domain("auth")

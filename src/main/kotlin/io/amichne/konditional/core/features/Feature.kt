@@ -2,7 +2,6 @@ package io.amichne.konditional.core.features
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Taxonomy
-import io.amichne.konditional.core.registry.ModuleRegistry
 import io.amichne.konditional.core.types.EncodableValue
 
 /**
@@ -37,5 +36,4 @@ import io.amichne.konditional.core.types.EncodableValue
 sealed interface Feature<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> {
     val key: String
     val module: M
-    val registry: ModuleRegistry
 }

@@ -120,7 +120,7 @@ object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 }
 
 // Get current configuration snapshot
-val snapshot = Taxonomy.Global.registry.konfig()
+val snapshot = Taxonomy.Global.konfig()
 
 // Load into a test registry
 val testRegistry = ModuleRegistry.create(snapshot)
@@ -236,7 +236,7 @@ Create isolated registries for testing or multi-tenant scenarios:
 val customRegistry = FlagRegistry.create()
 
 // Create with initial configuration from another registry
-val snapshot = Taxonomy.Global.registry.konfig()
+val snapshot = Taxonomy.Global.konfig()
 val customRegistry = ModuleRegistry.create(snapshot)
 
 // Evaluate using custom registry

@@ -16,7 +16,7 @@ import io.amichne.konditional.core.types.EncodableValue
  * - Flag not being registered
  * - Evaluation throwing an exception
  *
- * The feature's taxonomy-scoped registry is automatically used.
+ * The feature's taxonomy registry is automatically used.
  *
  * Usage:
  * ```kotlin
@@ -42,7 +42,7 @@ import io.amichne.konditional.core.types.EncodableValue
 fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> C.evaluateSafe(
     key: Feature<S, T, C, M>
 ): EvaluationResult<T> =
-    key.registry.featureFlag(key)?.let { flag ->
+    key.module.featureFlag(key)?.let { flag ->
         runCatching { flag.evaluate(this) }
             .fold(
                 onSuccess = { EvaluationResult.Success(it) },
@@ -60,7 +60,7 @@ fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> C.evaluateSafe(
  *
  * If you need to distinguish error cases, use `evaluateSafe()` instead.
  *
- * The feature's taxonomy-scoped registry is automatically used.
+ * The feature's taxonomy registry is automatically used.
  *
  * ```kotlin
  * val feature: String? = context.evaluateOrNull(MY_FLAG)
@@ -83,7 +83,7 @@ fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> C.evaluateOrNull
  *
  * If you need to distinguish error cases, use `evaluateSafe()` instead.
  *
- * The feature's taxonomy-scoped registry is automatically used.
+ * The feature's taxonomy registry is automatically used.
  *
  * ```kotlin
  * val feature: String = context.evaluateOrDefault(MY_FLAG, default = "off")
@@ -104,7 +104,7 @@ fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> C.evaluateOrDefa
  * - You're in a context that already uses exceptions
  * - You want fail-fast behavior
  *
- * The feature's taxonomy-scoped registry is automatically used.
+ * The feature's taxonomy registry is automatically used.
  *
  * ```kotlin
  * val feature: String = context.evaluateOrThrow(MY_FLAG)

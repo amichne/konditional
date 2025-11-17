@@ -168,9 +168,11 @@ interface ModuleRegistry {
         internal fun <S : EncodableValue<T>, T : Any, C : Context> ModuleRegistry.updateDefinition(
             definition: FlagDefinition<S, T, C, *>
         ) {
-            // Only InMemoryModuleRegistry implements ModuleRegistry
-            require(this is InMemoryModuleRegistry) { "updateDefinition only supported on InMemoryModuleRegistry" }
-            this.updateDefinition(definition)
+            when (this) {
+                is InMemoryModuleRegistry -> this.updateDefinition(definition)
+                is Taxonomy -> registry.updateDefinition(definition)
+                else -> error("updateDefinition only supported on InMemoryModuleRegistry or Taxonomy")
+            }
         }
     }
 }

@@ -30,17 +30,17 @@ class ContextPolymorphismTest {
         // Reset registry before each test
         println("Global")
         println("--------")
-        println(SnapshotSerializer().serialize(Global.registry.konfig()))
+        println(SnapshotSerializer().serialize(Global.konfig()))
         println("--------")
 
         println("Payments")
         println("--------")
-        println(SnapshotSerializer().serialize(Taxonomy.Domain.Payments.registry.konfig()))
+        println(SnapshotSerializer().serialize(Taxonomy.Domain.Payments.konfig()))
         println("--------")
 
         println("Search")
         println("--------")
-        println(SnapshotSerializer().serialize(Taxonomy.Domain.Search.registry.konfig()))
+        println(SnapshotSerializer().serialize(Taxonomy.Domain.Search.konfig()))
         println("--------")
     }
 
