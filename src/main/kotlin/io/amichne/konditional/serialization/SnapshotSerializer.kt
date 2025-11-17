@@ -17,27 +17,33 @@ import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
 /**
- * Main serialization interface for Konfig configurations.
+ * Main serialization object for Konfig configurations.
  * Provides methods to serialize/deserialize snapshots to/from JSON, and apply patch updates.
  *
- * Now returns ParseResult for all deserialization operations, following parse-don't-validate principles.
+ * Returns ParseResult for all deserialization operations, following parse-don't-validate principles.
  *
  * This serializer is storage-agnostic - it only handles JSON conversion, allowing callers
  * to choose their storage solution (files, databases, cloud storage, etc.).
  *
  * For taxonomy-scoped serialization, use [TaxonomySnapshotSerializer] instead.
+ *
+ * ## Usage
+ *
+ * ```kotlin
+ * // Serialize
+ * val json = SnapshotSerializer.serialize(konfig)
+ *
+ * // Deserialize
+ * when (val result = SnapshotSerializer.fromJson(json)) {
+ *     is ParseResult.Success -> println("Loaded: ${result.value}")
+ *     is ParseResult.Failure -> println("Error: ${result.error}")
+ * }
+ * ```
  */
-class SnapshotSerializer(
-    moshi: Moshi = defaultMoshi()
-) : Serializer<Konfig> {
+object SnapshotSerializer {
+    private val moshi = defaultMoshi()
     private val snapshotAdapter = moshi.adapter(SerializableSnapshot::class.java).indent("  ")
     private val patchAdapter = moshi.adapter(SerializablePatch::class.java).indent("  ")
-
-    /**
-     * The Konfig being serialized.
-     * Must be set before calling toJson().
-     */
-    private var currentKonfig: Konfig? = null
 
     /**
      * Serializes a Konfig to a JSON string.
@@ -51,51 +57,24 @@ class SnapshotSerializer(
     }
 
     /**
-     * Serializes the current Konfig to JSON.
-     *
-     * This method implements the [Serializer] interface.
-     * Note: You must use [withKonfig] or call [serialize] directly to provide the Konfig.
-     *
-     * Example:
-     * ```kotlin
-     * val serializer = SnapshotSerializer().withKonfig(myKonfig)
-     * val json = serializer.toJson()
-     * ```
-     *
-     * @return JSON string representation
-     * @throws IllegalStateException if no Konfig has been set
-     */
-    override fun toJson(): String {
-        val konfig = currentKonfig
-            ?: throw IllegalStateException("No Konfig set. Use withKonfig() or call serialize() directly.")
-        return serialize(konfig)
-    }
-
-    /**
-     * Sets the Konfig to be serialized and returns this serializer.
-     *
-     * This enables fluent usage with the [Serializer] interface:
-     * ```kotlin
-     * val json = SnapshotSerializer().withKonfig(myKonfig).toJson()
-     * ```
-     *
-     * @param konfig The konfig to serialize
-     * @return This serializer instance
-     */
-    fun withKonfig(konfig: Konfig): SnapshotSerializer {
-        this.currentKonfig = konfig
-        return this
-    }
-
-    /**
      * Deserializes a JSON string to a Konfig.
      *
      * Returns ParseResult for type-safe error handling following parse-don't-validate principles.
      *
+     * Note: This does NOT automatically load the configuration into any registry.
+     * Callers must explicitly load the result if desired:
+     *
+     * ```kotlin
+     * when (val result = SnapshotSerializer.fromJson(json)) {
+     *     is ParseResult.Success -> taxonomy.load(result.value)
+     *     is ParseResult.Failure -> handleError(result.error)
+     * }
+     * ```
+     *
      * @param json The JSON string to deserialize
      * @return ParseResult containing either the deserialized Konfig or a structured error
      */
-    fun deserialize(json: String): ParseResult<Konfig> {
+    fun fromJson(json: String): ParseResult<Konfig> {
         return try {
             val serializable = snapshotAdapter.fromJson(json)
                 ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parse JSON: null result"))
@@ -106,26 +85,14 @@ class SnapshotSerializer(
     }
 
     /**
-     * Deserializes JSON into a Konfig.
+     * Serializes a KonfigPatch to a JSON string.
      *
-     * This method implements the [Serializer] interface.
-     * Returns ParseResult for type-safe error handling following parse-don't-validate principles.
-     *
-     * Note: Unlike [TaxonomySnapshotSerializer.fromJson], this does NOT automatically load
-     * the configuration into any registry. Callers must explicitly load the result if desired:
-     *
-     * ```kotlin
-     * val result = serializer.fromJson(json)
-     * when (result) {
-     *     is ParseResult.Success -> registry.load(result.value)
-     *     is ParseResult.Failure -> handleError(result.error)
-     * }
-     * ```
-     *
-     * @param json JSON string to deserialize
-     * @return ParseResult containing either the deserialized Konfig or a structured error
+     * @param patch The patch to serialize
+     * @return JSON string representation
      */
-    override fun fromJson(json: String): ParseResult<Konfig> = deserialize(json)
+    internal fun serializePatch(patch: SerializablePatch): String {
+        return patchAdapter.toJson(patch)
+    }
 
     /**
      * Deserializes a JSON string to a SerializablePatch.
@@ -133,7 +100,7 @@ class SnapshotSerializer(
      * @param json The JSON string to deserialize
      * @return ParseResult containing either the deserialized patch or an error
      */
-    internal fun deserializePatch(json: String): ParseResult<SerializablePatch> {
+    internal fun fromJsonPatch(json: String): ParseResult<SerializablePatch> {
         return try {
             val patch = patchAdapter.fromJson(json)
                 ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parse patch JSON: null result"))
@@ -184,46 +151,38 @@ class SnapshotSerializer(
      * @return ParseResult containing either the new Konfig with the patch applied or an error
      */
     fun applyPatchJson(currentKonfig: Konfig, patchJson: String): ParseResult<Konfig> {
-        return when (val patchResult = deserializePatch(patchJson)) {
+        return when (val patchResult = fromJsonPatch(patchJson)) {
             is ParseResult.Success -> applyPatch(currentKonfig, patchResult.value)
             is ParseResult.Failure -> ParseResult.Failure(patchResult.error)
         }
     }
 
-    companion object {
-        /**
-         * Creates the default Moshi instance with all necessary adapters.
-         * Registers custom adapters for domain types like VersionRange and FlagValue.
-         *
-         * Note: Custom adapters (FlagValueAdapter.FACTORY, VersionRangeAdapter) must be added before
-         * KotlinJsonAdapterFactory to take precedence over reflection-based serialization.
-         */
-        fun defaultMoshi(): Moshi {
-            // Build Moshi with custom adapters registered BEFORE KotlinJsonAdapterFactory
-            // This ensures our custom adapters take precedence over reflection-based serialization
-            return Moshi.Builder()
-                .add(FlagValueAdapter.FACTORY)
-                .add(
-                    VersionRangeAdapter(
-                        // Create a minimal Moshi for VersionRangeAdapter to use for Version
-                        Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
-                    )
+    /**
+     * Creates the default Moshi instance with all necessary adapters.
+     * Registers custom adapters for domain types like VersionRange and FlagValue.
+     *
+     * Note: Custom adapters (FlagValueAdapter.FACTORY, VersionRangeAdapter) must be added before
+     * KotlinJsonAdapterFactory to take precedence over reflection-based serialization.
+     */
+    fun defaultMoshi(): Moshi {
+        // Build Moshi with custom adapters registered BEFORE KotlinJsonAdapterFactory
+        // This ensures our custom adapters take precedence over reflection-based serialization
+        return Moshi.Builder()
+            .add(FlagValueAdapter.FACTORY)
+            .add(
+                VersionRangeAdapter(
+                    // Create a minimal Moshi for VersionRangeAdapter to use for Version
+                    Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
                 )
-                .add(
-                    PolymorphicJsonAdapterFactory.of(VersionRange::class.java, "type")
-                        .withSubtype(FullyBound::class.java, VersionRange.Type.MIN_AND_MAX_BOUND.name)
-                        .withSubtype(Unbounded::class.java, VersionRange.Type.UNBOUNDED.name)
-                        .withSubtype(LeftBound::class.java, VersionRange.Type.MIN_BOUND.name)
-                        .withSubtype(RightBound::class.java, VersionRange.Type.MAX_BOUND.name)
-                )
-                .add(KotlinJsonAdapterFactory())
-                .build()
-        }
-
-        /**
-         * Default singleton instance for convenience.
-         */
-        val default: SnapshotSerializer
-            get() = SnapshotSerializer()
+            )
+            .add(
+                PolymorphicJsonAdapterFactory.of(VersionRange::class.java, "type")
+                    .withSubtype(FullyBound::class.java, VersionRange.Type.MIN_AND_MAX_BOUND.name)
+                    .withSubtype(Unbounded::class.java, VersionRange.Type.UNBOUNDED.name)
+                    .withSubtype(LeftBound::class.java, VersionRange.Type.MIN_BOUND.name)
+                    .withSubtype(RightBound::class.java, VersionRange.Type.MAX_BOUND.name)
+            )
+            .add(KotlinJsonAdapterFactory())
+            .build()
     }
 }

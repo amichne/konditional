@@ -30,29 +30,29 @@ class FlagEntryTypeSafetyTest {
         // Reset registry before each test
         println("Global")
         println("--------")
-        println(SnapshotSerializer().serialize(Global.konfig()))
+        println(SnapshotSerializer.serialize(Global.konfig()))
         println("--------")
 
         println("Payments")
         println("--------")
-        println(SnapshotSerializer().serialize(Taxonomy.Domain.Payments.konfig()))
+        println(SnapshotSerializer.serialize(Taxonomy.Domain.Payments.konfig()))
         println("--------")
 
         println("Search")
         println("--------")
-        println(SnapshotSerializer().serialize(Taxonomy.Domain.Search.konfig()))
+        println(SnapshotSerializer.serialize(Taxonomy.Domain.Search.konfig()))
         println("--------")
 
         println(
             "Does Global registry match Search? ${
-                SnapshotSerializer().serialize(Global.konfig()) == SnapshotSerializer().serialize(
+                SnapshotSerializer.serialize(Global.konfig()) == SnapshotSerializer.serialize(
                     Taxonomy.Domain.Search.konfig()
                 )
             }"
         )
         println(
             "Does Global registry match Payments? ${
-                SnapshotSerializer().serialize(Global.konfig()) == SnapshotSerializer().serialize(
+                SnapshotSerializer.serialize(Global.konfig()) == SnapshotSerializer.serialize(
                     Taxonomy.Domain.Payments.konfig()
                 )
             }"

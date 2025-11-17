@@ -101,7 +101,7 @@ fun main() {
 
     // Verify features are registered
     val konfig = Taxonomy.Global.konfig()
-    val snapshot = SnapshotSerializer().withKonfig(konfig).toJson()
+    val snapshot = SnapshotSerializer.serialize(konfig)
     println("[main] Konfig snapshot length: ${snapshot.length}")
     if (snapshot.length < 100) {
         println("[main] WARNING: Snapshot is suspiciously small!")
@@ -142,36 +142,6 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "Unknown error")))
             }
         }
-
-        get("/api/snapshot") {
-            try {
-                println("[/api/snapshot] Request received")
-                val snapshot = SnapshotSerializer().withKonfig(Taxonomy.Global.konfig()).toJson()
-                println("[/api/snapshot] Snapshot generated, length: ${snapshot.length}")
-                println("[/api/snapshot] First 200 chars: ${snapshot.take(200)}")
-                call.respondText(snapshot, ContentType.Application.Json)
-                println("[/api/snapshot] Response sent successfully")
-            } catch (e: Exception) {
-                println("[/api/snapshot] ERROR: ${e.message}")
-                e.printStackTrace()
-                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to (e.message ?: "Unknown error")))
-            }
-        }
-
-        get("/api/rules") {
-            try {
-                println("[/api/rules] Request received")
-                val rulesInfo = buildRulesInfo()
-                println("[/api/rules] Rules info generated, length: ${rulesInfo.length}")
-                println("[/api/rules] Content: $rulesInfo")
-                call.respondText(rulesInfo, ContentType.Application.Json)
-                println("[/api/rules] Response sent successfully")
-            } catch (e: Exception) {
-                println("[/api/rules] ERROR: ${e.message}")
-                e.printStackTrace()
-                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to (e.message ?: "Unknown error")))
-            }
-        }
     }
 }
 
@@ -181,7 +151,7 @@ private fun buildRulesInfo(): String {
     val adapter = moshi.adapter(Map::class.java)
 
     // Parse the snapshot to extract rule details
-    val snapshot = SnapshotSerializer().withKonfig(Taxonomy.Global.konfig()).toJson()
+    val snapshot = SnapshotSerializer.serialize(Taxonomy.Global.konfig())
     println("[buildRulesInfo] Snapshot length: ${snapshot.length}")
 
     val snapshotData = moshi.adapter(Map::class.java).fromJson(snapshot) as? Map<*, *>
@@ -703,6 +673,16 @@ private fun HTML.renderMainPage() {
                         +"Loading..."
                     }
                 }
+            }
+        }
+
+        // Embed snapshot and rules data directly in HTML
+        script {
+            unsafe {
+                raw("""
+                    window.KONDITIONAL_SNAPSHOT = ${SnapshotSerializer.serialize(Taxonomy.Global.konfig())};
+                    window.KONDITIONAL_RULES = ${buildRulesInfo()};
+                """.trimIndent())
             }
         }
 

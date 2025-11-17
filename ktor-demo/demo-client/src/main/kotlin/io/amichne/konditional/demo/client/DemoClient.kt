@@ -112,41 +112,20 @@ object DemoClient {
     private fun evaluate() {
         GlobalScope.launch {
             try {
-                console.log("[evaluate] Starting evaluation...")
                 val form = getFormElement("contextForm")
-                console.log("[evaluate] Got form element:", form)
-
                 val formData = FormData(form)
-                console.log("[evaluate] Created FormData")
-
                 val params = URLSearchParams()
-                console.log("[evaluate] Created URLSearchParams")
 
-                // Convert FormData to URLSearchParams using proper FormData API
-                try {
-                    console.log("[evaluate] Converting FormData to URLSearchParams...")
-                    // Use FormData.entries() API properly
-                    val iterator: dynamic = js("formData.entries()")
-                    var entry: dynamic = iterator.next()
-                    while (entry.done == false) {
-                        val pair = entry.value.unsafeCast<Array<String>>()
-                        val key = pair[0]
-                        val value = pair[1]
-                        params.append(key, value)
-                        console.log("[evaluate] Form param: $key = $value")
-                        entry = iterator.next()
-                    }
-                    console.log("[evaluate] FormData conversion complete")
-                } catch (e: Exception) {
-                    console.error("[evaluate] Error converting FormData:", e)
-                    console.error("[evaluate] Error details:", JSON.stringify(e.asDynamic(), null, 2))
-                    throw e
+                // Convert FormData to URLSearchParams
+                val iterator: dynamic = js("formData.entries()")
+                var entry: dynamic = iterator.next()
+                while (entry.done == false) {
+                    val pair = entry.value.unsafeCast<Array<String>>()
+                    params.append(pair[0], pair[1])
+                    entry = iterator.next()
                 }
 
-                console.log("[evaluate] Sending request to /api/evaluate")
-                console.log("[evaluate] Request body:", params.toString())
-
-                // Use plain JS object instead of RequestInit to avoid null values
+                // Make API request
                 val fetchOptions = json(
                     "method" to "POST",
                     "body" to params.toString(),
@@ -157,52 +136,30 @@ object DemoClient {
 
                 val response = window.fetch("/api/evaluate", fetchOptions.unsafeCast<RequestInit>()).await()
 
-                console.log("[evaluate] Response status: ${response.status}, ok: ${response.ok}")
-
                 if (response.ok) {
                     val data = response.json().await()
-                    console.log("[evaluate] Received data type:", js("typeof data"))
-                    console.log("[evaluate] Data:", data)
                     renderResults(data.unsafeCast<Json>())
                 } else {
-                    console.error("[evaluate] Request failed with status: ${response.status}")
                     val errorText = response.text().await()
                     console.error("[evaluate] Error response:", errorText)
                     showError("results", "Evaluation failed: ${response.statusText}")
                 }
             } catch (e: dynamic) {
-                console.error("[evaluate] Exception caught (raw):", e)
-                console.error("[evaluate] Exception type:", js("typeof e"))
-                console.error("[evaluate] Exception constructor:", js("e.constructor.name"))
-                console.error("[evaluate] Exception toString:", js("e.toString()"))
-
-                // Try to get more details from the error
                 val errorMsg = js("e.message || e.toString() || 'Unknown error'") as String
-                console.error("[evaluate] Error message extracted:", errorMsg)
-
-                // Log all error properties
-                console.error("[evaluate] Error properties:", js("Object.keys(e)"))
-                console.error("[evaluate] Error JSON:", JSON.stringify(e, null, 2))
-
+                console.error("[evaluate] Error:", errorMsg)
                 showError("results", "Error: $errorMsg")
             }
         }
     }
 
     private fun renderResults(data: Json) {
-        console.log("[renderResults] Starting to render results")
-        console.log("[renderResults] Data keys:", js("Object.keys(data)"))
-        console.log("[renderResults] Full data:", data)
-
         val results = getDivElement("results")
         val contextType = getSelectElement("contextType").value
-        console.log("[renderResults] Context type:", contextType)
-
-        var html = """<div class="features-grid">"""
 
         try {
+            var html = """<div class="features-grid">"""
+
             // Base features
-            console.log("[renderResults] Rendering base features...")
             html += renderFeature("Dark Mode", data["darkMode"], FeatureType.BOOLEAN)
             html += renderFeature("Beta Features", data["betaFeatures"], FeatureType.BOOLEAN)
             html += renderFeature("Analytics Enabled", data["analyticsEnabled"], FeatureType.BOOLEAN)
@@ -215,7 +172,6 @@ object DemoClient {
 
             // Enterprise features
             if (contextType == "enterprise") {
-                console.log("[renderResults] Rendering enterprise features...")
                 html += renderFeature("SSO Enabled", data["ssoEnabled"], FeatureType.BOOLEAN)
                 html += renderFeature("Advanced Analytics", data["advancedAnalytics"], FeatureType.BOOLEAN)
                 html += renderFeature("Custom Branding", data["customBranding"], FeatureType.BOOLEAN)
@@ -224,10 +180,8 @@ object DemoClient {
 
             html += """</div>"""
             results.innerHTML = html
-            console.log("[renderResults] Successfully rendered results")
         } catch (e: Exception) {
-            console.error("[renderResults] Error rendering:", e)
-            console.error("[renderResults] Error message:", e.message)
+            console.error("[renderResults] Error:", e.message)
             showError("results", "Error rendering results: ${e.message}")
         }
     }
@@ -252,125 +206,75 @@ object DemoClient {
     }
 
     private fun loadSnapshot() {
-        GlobalScope.launch {
-            try {
-                console.log("[loadSnapshot] Fetching snapshot from /api/snapshot")
-                val fetchPromise: dynamic = js("fetch('/api/snapshot')")
-                val response = fetchPromise.await()
-                console.log("[loadSnapshot] Response status: ${response.status}")
+        try {
+            console.log("[loadSnapshot] Reading embedded snapshot from window.KONDITIONAL_SNAPSHOT")
+            val snapshotData: dynamic = js("window.KONDITIONAL_SNAPSHOT")
 
-                val json = response.text().await()
-                console.log("[loadSnapshot] Received JSON length:", json.length)
-
-                val formatted = JSON.stringify(JSON.parse(json), null, 2)
-                getDivElement("jsonOutput").textContent = formatted
-                console.log("[loadSnapshot] Successfully loaded and formatted snapshot")
-            } catch (e: Exception) {
-                console.error("[loadSnapshot] Error:", e)
-                console.error("[loadSnapshot] Error message:", e.message)
-                getDivElement("jsonOutput").textContent = "Error loading snapshot: ${e.message}"
+            if (snapshotData == null || js("typeof snapshotData === 'undefined'") == true) {
+                console.error("[loadSnapshot] No embedded snapshot data found")
+                getDivElement("jsonOutput").textContent = "Error: No snapshot data available"
+                return
             }
+
+            val formatted = JSON.stringify(snapshotData, null, 2)
+            getDivElement("jsonOutput").textContent = formatted
+            console.log("[loadSnapshot] Successfully loaded and formatted embedded snapshot")
+        } catch (e: Exception) {
+            console.error("[loadSnapshot] Error:", e)
+            console.error("[loadSnapshot] Error message:", e.message)
+            getDivElement("jsonOutput").textContent = "Error loading snapshot: ${e.message}"
         }
     }
 
     private fun loadRules() {
-        console.log("[loadRules] ===== STARTING loadRules() =====")
-        GlobalScope.launch {
-            try {
-                console.log("[loadRules] Fetching rules from /api/rules")
-                val fetchPromise: dynamic = js("fetch('/api/rules')")
-                console.log("[loadRules] Fetch promise created:", fetchPromise)
+        try {
+            console.log("[loadRules] Reading embedded rules from window.KONDITIONAL_RULES")
+            val rulesData: dynamic = js("window.KONDITIONAL_RULES")
 
-                val response = fetchPromise.await()
-                console.log("[loadRules] Response received:", response)
-                console.log("[loadRules] Response status: ${response.status}, ok: ${response.ok}")
-
-                if (!response.ok) {
-                    console.error("[loadRules] Request failed with status: ${response.status}")
-                    showError("rulesPanel", "Failed to load rules: ${response.statusText}")
-                    return@launch
-                }
-
-                console.log("[loadRules] Calling response.json()...")
-                val jsonPromise: dynamic = response.json()
-                console.log("[loadRules] JSON promise created:", jsonPromise)
-
-                val data = jsonPromise.await()
-                console.log("[loadRules] JSON parsed successfully")
-                console.log("[loadRules] Received data type:", js("typeof data"))
-                console.log("[loadRules] Data:", data)
-                console.log("[loadRules] Data keys:", js("Object.keys(data)"))
-                console.log("[loadRules] Data.features:", js("data.features"))
-                console.log("[loadRules] Data.features type:", js("typeof data.features"))
-                console.log("[loadRules] Is features an Array?:", js("Array.isArray(data.features)"))
-                console.log("[loadRules] Features length:", js("data.features ? data.features.length : 'undefined'"))
-
-                console.log("[loadRules] About to call renderRules()...")
-                renderRules(data.unsafeCast<Json>())
-                console.log("[loadRules] renderRules() call completed")
-            } catch (e: dynamic) {
-                console.error("[loadRules] ===== EXCEPTION IN loadRules() =====")
-                console.error("[loadRules] Exception caught (raw):", e)
-                console.error("[loadRules] Exception type:", js("typeof e"))
-                console.error("[loadRules] Exception toString:", js("e.toString()"))
-                console.error("[loadRules] Exception message:", js("e.message || 'no message'"))
-                console.error("[loadRules] Exception stack:", js("e.stack || 'no stack'"))
-                showError("rulesPanel", "Error loading rules: ${js("e.message || e.toString()")}")
+            if (rulesData == null || js("typeof rulesData === 'undefined'") == true) {
+                console.error("[loadRules] No embedded rules data found")
+                showError("rulesPanel", "Error: No rules data available")
+                return
             }
+
+            console.log("[loadRules] Rules data loaded, calling renderRules()")
+            renderRules(rulesData.unsafeCast<Json>())
+            console.log("[loadRules] Successfully loaded and rendered embedded rules")
+        } catch (e: Exception) {
+            console.error("[loadRules] Error:", e)
+            console.error("[loadRules] Error message:", e.message)
+            showError("rulesPanel", "Error loading rules: ${e.message}")
         }
-        console.log("[loadRules] ===== loadRules() GlobalScope.launch created =====")
     }
 
     private fun renderRules(data: Json) {
-        console.log("[renderRules] ===== STARTING renderRules() =====")
-        console.log("[renderRules] Received data:", data)
-        console.log("[renderRules] Data type:", js("typeof data"))
-        console.log("[renderRules] Data keys:", js("Object.keys(data)"))
-
         val rulesPanel = getDivElement("rulesPanel")
-        console.log("[renderRules] Got rulesPanel element:", rulesPanel)
 
         try {
-            console.log("[renderRules] Accessing data['features']...")
             val featuresData = data["features"]
-            console.log("[renderRules] Features data:", featuresData)
-            console.log("[renderRules] Features type:", js("typeof featuresData"))
-            console.log("[renderRules] Features is null?:", featuresData == null)
-            console.log("[renderRules] Features is undefined?:", js("featuresData === undefined"))
-            console.log("[renderRules] Is Array?:", js("Array.isArray(featuresData)"))
 
-            if (featuresData == null || js("featuresData === undefined") == true) {
-                console.error("[renderRules] ERROR: featuresData is null or undefined!")
+            if (featuresData == null) {
                 showError("rulesPanel", "No features data received")
                 return
             }
 
-            console.log("[renderRules] Attempting to cast to Array<*>...")
             val features = featuresData as? Array<*>
-            console.log("[renderRules] Cast to Array successful:", features != null)
-            console.log("[renderRules] Features count:", features?.size ?: 0)
 
             if (features == null) {
-                console.error("[renderRules] ERROR: Failed to cast featuresData to Array!")
-                console.error("[renderRules] featuresData value:", featuresData)
                 showError("rulesPanel", "Invalid features data format")
                 return
             }
 
-            if (features != null && features.isNotEmpty()) {
+            if (features.isNotEmpty()) {
                 var html = ""
 
-                features.forEachIndexed { index, featureData ->
-                    console.log("[renderRules] Processing feature #$index:", featureData)
-
+                features.forEach { featureData ->
                     val feature = featureData.unsafeCast<Json>()
                     val key = feature["key"].unsafeCast<String?>() ?: "unknown"
                     val type = feature["type"].unsafeCast<String?>() ?: "Unknown"
                     val default = feature["default"]
                     val rulesCount = feature["rulesCount"].unsafeCast<Number?>()?.toInt() ?: 0
                     val hasRules = feature["hasRules"].unsafeCast<Boolean?>() ?: false
-
-                    console.log("[renderRules] Feature details - key: $key, type: $type, rulesCount: $rulesCount, hasRules: $hasRules")
 
                     val defaultDisplay = if (default is String) """"$default"""" else default.toString()
                     val rulesText = if (hasRules) {
@@ -394,15 +298,11 @@ object DemoClient {
                 }
 
                 rulesPanel.innerHTML = html
-                console.log("[renderRules] Successfully rendered ${features.size} rules")
             } else {
-                console.log("[renderRules] No features found or empty array")
                 rulesPanel.innerHTML = """<div class="loading">No rules configured</div>"""
             }
         } catch (e: Exception) {
-            console.error("[renderRules] Error rendering rules:", e)
-            console.error("[renderRules] Error message:", e.message)
-            console.error("[renderRules] Stack trace:", e.stackTraceToString())
+            console.error("[renderRules] Error:", e.message)
             showError("rulesPanel", "Error rendering rules: ${e.message}")
         }
     }
