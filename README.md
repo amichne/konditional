@@ -332,7 +332,7 @@ val enabled = context.evaluateOrDefault(MyFeatures.MY_FLAG, false)
 
 ## Contributing
 
-Contributions welcome! See [CLAUDE.md](CONTRIBUTING.md) for development guidelines.
+Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
 
 ## License
 
