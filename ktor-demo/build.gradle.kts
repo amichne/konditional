@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "2.2.20"
     id("io.ktor.plugin") version "3.0.1"
+    id("com.google.cloud.tools.jib") version "3.4.4"
     application
 }
 
@@ -47,4 +48,48 @@ tasks.named("processResources") {
 
 application {
     mainClass.set("io.amichne.konditional.demo.ApplicationKt")
+}
+
+jib {
+    from {
+        image = "eclipse-temurin:21-jre-alpine"
+        platforms {
+            platform {
+                architecture = "amd64"
+                os = "linux"
+            }
+            platform {
+                architecture = "arm64"
+                os = "linux"
+            }
+        }
+    }
+
+    to {
+        image = "docker.io/austinmichne/konditional-demo"
+        tags = setOf(version.toString(), "latest")
+    }
+
+    container {
+        jvmFlags = listOf(
+            "-XX:+UseContainerSupport",
+            "-XX:MaxRAMPercentage=75.0",
+            "-Djava.security.egd=file:/dev/./urandom"
+        )
+        ports = listOf("8080")
+        creationTime.set("USE_CURRENT_TIMESTAMP")
+        mainClass = "io.amichne.konditional.demo.ApplicationKt"
+    }
+}
+
+tasks.register("dockerBuild") {
+    group = "docker"
+    description = "Build and load image to local Docker daemon"
+    dependsOn("jibDockerBuild")
+}
+
+tasks.register("dockerPush") {
+    group = "docker"
+    description = "Build and push image to docker.io"
+    dependsOn("jib")
 }
