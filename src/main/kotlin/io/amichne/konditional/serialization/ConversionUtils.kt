@@ -5,10 +5,10 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.FlagDefinition
-import io.amichne.konditional.core.instance.Konfig
-import io.amichne.konditional.core.instance.KonfigPatch
+import io.amichne.konditional.core.instance.Configuration
+import io.amichne.konditional.core.instance.ConfigurationPatch
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.internal.serialization.models.FlagValue
@@ -22,9 +22,9 @@ import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
 
 /**
- * Converts a Konfig to a SerializableSnapshot.
+ * Converts a Configuration to a SerializableSnapshot.
  */
-internal fun Konfig.toSerializable(): SerializableSnapshot {
+internal fun Configuration.toSerializable(): SerializableSnapshot {
     val serializableFlags = flags.map { (conditional, flag) ->
         flag.toSerializable(conditional.key)
     }
@@ -61,10 +61,10 @@ private fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C
 }
 
 /**
- * Converts a SerializableSnapshot to a Konfig.
+ * Converts a SerializableSnapshot to a Configuration.
  * Returns ParseResult for type-safe error handling.
  */
-internal fun SerializableSnapshot.toSnapshot(): ParseResult<Konfig> {
+internal fun SerializableSnapshot.toSnapshot(): ParseResult<Configuration> {
     return try {
         val flagResults = flags.map { it.toFlagPair() }
 
@@ -79,7 +79,7 @@ internal fun SerializableSnapshot.toSnapshot(): ParseResult<Konfig> {
             .filterIsInstance<ParseResult.Success<Pair<Feature<*, *, *, *>, FlagDefinition<*, *, *, *>>>>()
             .associate { it.value }
 
-        ParseResult.Success(Konfig(flagMap))
+        ParseResult.Success(Configuration(flagMap))
     } catch (e: Exception) {
         ParseResult.Failure(ParseError.InvalidSnapshot(e.message ?: "Unknown error"))
     }
@@ -105,7 +105,7 @@ private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Feature<*, *, *, *>,
  * Type-safe: no casting required thanks to FlagValue sealed class.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : Taxonomy> SerializableFlag.toFlagDefinition(
+private fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : Namespace> SerializableFlag.toFlagDefinition(
     conditional: Feature<S, T, C, M>
 ): FlagDefinition<S, T, C, M> {
     // Extract typed value from FlagValue (type-safe extraction)
@@ -132,7 +132,7 @@ private fun <T : Any> FlagValue<*>.extractValue(): T = this.value as T
  * Converts a SerializableRule to a ConditionalValue.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : Taxonomy> SerializableRule.toValue(): ConditionalValue<S, T, C, M> {
+private fun <S : io.amichne.konditional.core.types.EncodableValue<T>, T : Any, C : Context, M : Namespace> SerializableRule.toValue(): ConditionalValue<S, T, C, M> {
     val typedValue = value.extractValue<T>()
     val rule = toRule<C>()
     return rule.targetedBy(typedValue)
@@ -153,9 +153,9 @@ private fun <C : Context> SerializableRule.toRule(): Rule<C> {
 }
 
 /**
- * Converts a KonfigPatch to a SerializablePatch.
+ * Converts a ConfigurationPatch to a SerializablePatch.
  */
-internal fun KonfigPatch.toSerializable(): SerializablePatch {
+internal fun ConfigurationPatch.toSerializable(): SerializablePatch {
     val serializableFlags = flags.map { (conditional, flag) ->
         flag.toSerializable(conditional.key)
     }
@@ -164,10 +164,10 @@ internal fun KonfigPatch.toSerializable(): SerializablePatch {
 }
 
 /**
- * Converts a SerializablePatch to a KonfigPatch.
+ * Converts a SerializablePatch to a ConfigurationPatch.
  * Returns ParseResult for type-safe error handling.
  */
-internal fun SerializablePatch.toPatch(): ParseResult<KonfigPatch> {
+internal fun SerializablePatch.toPatch(): ParseResult<ConfigurationPatch> {
     return try {
         val flagResults = flags.map { it.toFlagPair() }
 
@@ -190,7 +190,7 @@ internal fun SerializablePatch.toPatch(): ParseResult<KonfigPatch> {
             }
         }.toSet()
 
-        ParseResult.Success(KonfigPatch(flagMap, removeFeatures))
+        ParseResult.Success(ConfigurationPatch(flagMap, removeFeatures))
     } catch (e: Exception) {
         ParseResult.Failure(ParseError.InvalidSnapshot(e.message ?: "Unknown error"))
     }

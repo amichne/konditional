@@ -6,12 +6,11 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.FlagDefinition
-import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.features.update
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.instance.Konfig
-import io.amichne.konditional.core.registry.withRegistry
+import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
@@ -33,7 +32,7 @@ import kotlin.test.assertTrue
  */
 class SnapshotSerializerTest {
 
-    private object TestFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    private object TestFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
         val boolFlag by boolean<Context>(default = false)
         val stringFlag by string<Context>(default = "default")
         val intFlag by int<Context>(default = 0)
@@ -42,8 +41,9 @@ class SnapshotSerializerTest {
 
     @BeforeEach
     fun setup() {
-        // Clear registry before each test
+        // Clear both FeatureRegistry and Namespace.Global registry before each test
         FeatureRegistry.clear()
+        Namespace.Global.load(Configuration(emptyMap()))
 
         // Register test features
         FeatureRegistry.register(TestFeatures.boolFlag)
@@ -63,9 +63,9 @@ class SnapshotSerializerTest {
 
     @Test
     fun `Given empty Konfig, When serialized, Then produces valid JSON with empty flags array`() {
-        val konfig = Konfig(emptyMap())
+        val configuration = Configuration(emptyMap())
 
-        val json = SnapshotSerializer.serialize(konfig)
+        val json = SnapshotSerializer.serialize(configuration)
 
         assertNotNull(json)
         assertTrue(json.contains("\"flags\""))
@@ -78,12 +78,12 @@ class SnapshotSerializerTest {
                 default(true)
             }
 
-            val json = SnapshotSerializer.serialize(Taxonomy.Global.konfig)
+            val json = SnapshotSerializer.serialize(Namespace.Global.configuration)
 
             assertNotNull(json)
-            assertTrue(json.contains("\"key\" : \"${TestFeatures.boolFlag.key}\""))
-            assertTrue(json.contains("\"type\" : \"BOOLEAN\""))
-            assertTrue(json.contains("\"value\" : true"))
+            assertTrue(json.contains("\"key\": \"${TestFeatures.boolFlag.key}\""))
+            assertTrue(json.contains("\"type\": \"BOOLEAN\""))
+            assertTrue(json.contains("\"value\": true"))
     }
 
     @Test
@@ -92,14 +92,14 @@ class SnapshotSerializerTest {
             feature = TestFeatures.stringFlag,
             defaultValue = "test-value",
         )
-        val konfig = Konfig(mapOf(TestFeatures.stringFlag to flag))
+        val configuration = Configuration(mapOf(TestFeatures.stringFlag to flag))
 
-        val json = SnapshotSerializer.serialize(konfig)
+        val json = SnapshotSerializer.serialize(configuration)
 
         assertNotNull(json)
-        assertTrue(json.contains("\"key\" : \"${TestFeatures.stringFlag.key}\""))
-        assertTrue(json.contains("\"type\" : \"STRING\""))
-        assertTrue(json.contains("\"value\" : \"test-value\""))
+        assertTrue(json.contains("\"key\": \"${TestFeatures.stringFlag.key}\""))
+        assertTrue(json.contains("\"type\": \"STRING\""))
+        assertTrue(json.contains("\"value\": \"test-value\""))
     }
 
     @Test
@@ -107,7 +107,7 @@ class SnapshotSerializerTest {
         TestFeatures.intFlag.update {
             default(42)
         }
-        val json = SnapshotSerializer.serialize(Taxonomy.Global.konfig)
+        val json = SnapshotSerializer.serialize(Namespace.Global.configuration)
 
 
         assertNotNull(json)
@@ -119,18 +119,16 @@ class SnapshotSerializerTest {
 
     @Test
     fun `Given Konfig with double flag, When serialized, Then includes flag with correct type`() {
-        withRegistry {
-            TestFeatures.doubleFlag.update {
-                default(3.14)
-            }
-
-            val json = SnapshotSerializer.serialize(konfig)
-
-            assertNotNull(json)
-            assertTrue(json.contains("\"key\" : \"${TestFeatures.doubleFlag.key}\""))
-            assertTrue(json.contains("\"type\" : \"DOUBLE\""))
-            assertTrue(json.contains("\"value\" : 3.14"))
+        TestFeatures.doubleFlag.update {
+            default(3.14)
         }
+
+        val json = SnapshotSerializer.serialize(Namespace.Global.configuration)
+
+        assertNotNull(json)
+        assertTrue(json.contains("\"key\": \"${TestFeatures.doubleFlag.key}\""))
+        assertTrue(json.contains("\"type\": \"DOUBLE\""))
+        assertTrue(json.contains("\"value\": 3.14"))
     }
 
     @Test
@@ -148,13 +146,13 @@ class SnapshotSerializerTest {
             bounds = listOf(rule.targetedBy(true)),
             defaultValue = false,
         )
-        val konfig = Konfig(mapOf(TestFeatures.boolFlag to flag))
+        val configuration = Configuration(mapOf(TestFeatures.boolFlag to flag))
 
-        val json = SnapshotSerializer.serialize(konfig)
+        val json = SnapshotSerializer.serialize(configuration)
 
         assertNotNull(json)
-        assertTrue(json.contains("\"rampUp\" : 50.0"))
-        assertTrue(json.contains("\"note\" : \"Test rule\""))
+        assertTrue(json.contains("\"rampUp\": 50.0"))
+        assertTrue(json.contains("\"note\": \"Test rule\""))
         assertTrue(json.contains("EN_US"))
         assertTrue(json.contains("FR_FR"))
         assertTrue(json.contains("IOS"))
@@ -168,7 +166,7 @@ class SnapshotSerializerTest {
         val stringFlag = FlagDefinition(feature = TestFeatures.stringFlag, defaultValue = "test")
         val intFlag = FlagDefinition(feature = TestFeatures.intFlag, defaultValue = 10)
 
-        val konfig = Konfig(
+        val configuration = Configuration(
             mapOf(
                 TestFeatures.boolFlag to boolFlag,
                 TestFeatures.stringFlag to stringFlag,
@@ -176,7 +174,7 @@ class SnapshotSerializerTest {
             )
         )
 
-        val json = SnapshotSerializer.serialize(konfig)
+        val json = SnapshotSerializer.serialize(configuration)
 
         assertNotNull(json)
         assertTrue(json.contains(TestFeatures.boolFlag.key))
@@ -196,7 +194,7 @@ class SnapshotSerializerTest {
 
         val result = SnapshotSerializer.fromJson(json)
 
-        assertIs<ParseResult.Success<Konfig>>(result)
+        assertIs<ParseResult.Success<Configuration>>(result)
         assertEquals(0, result.value.flags.size)
     }
 
@@ -221,7 +219,7 @@ class SnapshotSerializerTest {
 
         val result = SnapshotSerializer.fromJson(json)
 
-        assertIs<ParseResult.Success<Konfig>>(result)
+        assertIs<ParseResult.Success<Configuration>>(result)
         val konfig = result.value
         assertEquals(1, konfig.flags.size)
 
@@ -251,7 +249,7 @@ class SnapshotSerializerTest {
 
         val result = SnapshotSerializer.fromJson(json)
 
-        assertIs<ParseResult.Success<Konfig>>(result)
+        assertIs<ParseResult.Success<Configuration>>(result)
         val flag = result.value.flags[TestFeatures.stringFlag]
         assertNotNull(flag)
         assertEquals("test-value", flag.defaultValue)
@@ -278,7 +276,7 @@ class SnapshotSerializerTest {
 
         val result = SnapshotSerializer.fromJson(json)
 
-        assertIs<ParseResult.Success<Konfig>>(result)
+        assertIs<ParseResult.Success<Configuration>>(result)
         val flag = result.value.flags[TestFeatures.intFlag]
         assertNotNull(flag)
         assertEquals(42, flag.defaultValue)
@@ -305,7 +303,7 @@ class SnapshotSerializerTest {
 
         val result = SnapshotSerializer.fromJson(json)
 
-        assertIs<ParseResult.Success<Konfig>>(result)
+        assertIs<ParseResult.Success<Configuration>>(result)
         val flag = result.value.flags[TestFeatures.doubleFlag]
         assertNotNull(flag)
         assertEquals(3.14, flag.defaultValue)
@@ -356,7 +354,7 @@ class SnapshotSerializerTest {
 
         val result = SnapshotSerializer.fromJson(json)
 
-        assertIs<ParseResult.Success<Konfig>>(result)
+        assertIs<ParseResult.Success<Configuration>>(result)
         val flag = result.value.flags[TestFeatures.boolFlag]
         assertNotNull(flag)
         assertEquals(1, flag.values.size)
@@ -410,12 +408,12 @@ class SnapshotSerializerTest {
     @Test
     fun `Given boolean flag, When round-tripped, Then deserialized value equals original`() {
         val originalFlag = FlagDefinition(feature = TestFeatures.boolFlag, defaultValue = true)
-        val originalKonfig = Konfig(mapOf(TestFeatures.boolFlag to originalFlag))
+        val originalConfiguration = Configuration(mapOf(TestFeatures.boolFlag to originalFlag))
 
-        val json = SnapshotSerializer.serialize(originalKonfig)
+        val json = SnapshotSerializer.serialize(originalConfiguration)
         val result = SnapshotSerializer.fromJson(json)
 
-        assertIs<ParseResult.Success<Konfig>>(result)
+        assertIs<ParseResult.Success<Configuration>>(result)
         val deserializedFlag = result.value.flags[TestFeatures.boolFlag]
         assertNotNull(deserializedFlag)
         assertEquals(originalFlag.defaultValue, deserializedFlag.defaultValue)
@@ -426,12 +424,12 @@ class SnapshotSerializerTest {
     @Test
     fun `Given string flag, When round-tripped, Then deserialized value equals original`() {
         val originalFlag = FlagDefinition(feature = TestFeatures.stringFlag, defaultValue = "test-value")
-        val originalKonfig = Konfig(mapOf(TestFeatures.stringFlag to originalFlag))
+        val originalConfiguration = Configuration(mapOf(TestFeatures.stringFlag to originalFlag))
 
-        val json = SnapshotSerializer.serialize(originalKonfig)
+        val json = SnapshotSerializer.serialize(originalConfiguration)
         val result = SnapshotSerializer.fromJson(json)
 
-        assertIs<ParseResult.Success<Konfig>>(result)
+        assertIs<ParseResult.Success<Configuration>>(result)
         val deserializedFlag = result.value.flags[TestFeatures.stringFlag]
         assertNotNull(deserializedFlag)
         assertEquals(originalFlag.defaultValue, deserializedFlag.defaultValue)
@@ -440,12 +438,12 @@ class SnapshotSerializerTest {
     @Test
     fun `Given int flag, When round-tripped, Then deserialized value equals original`() {
         val originalFlag = FlagDefinition(feature = TestFeatures.intFlag, defaultValue = 42)
-        val originalKonfig = Konfig(mapOf(TestFeatures.intFlag to originalFlag))
+        val originalConfiguration = Configuration(mapOf(TestFeatures.intFlag to originalFlag))
 
-        val json = SnapshotSerializer.serialize(originalKonfig)
+        val json = SnapshotSerializer.serialize(originalConfiguration)
         val result = SnapshotSerializer.fromJson(json)
 
-        assertIs<ParseResult.Success<Konfig>>(result)
+        assertIs<ParseResult.Success<Configuration>>(result)
         val deserializedFlag = result.value.flags[TestFeatures.intFlag]
         assertNotNull(deserializedFlag)
         assertEquals(originalFlag.defaultValue, deserializedFlag.defaultValue)
@@ -454,12 +452,12 @@ class SnapshotSerializerTest {
     @Test
     fun `Given double flag, When round-tripped, Then deserialized value equals original`() {
         val originalFlag = FlagDefinition(feature = TestFeatures.doubleFlag, defaultValue = 3.14)
-        val originalKonfig = Konfig(mapOf(TestFeatures.doubleFlag to originalFlag))
+        val originalConfiguration = Configuration(mapOf(TestFeatures.doubleFlag to originalFlag))
 
-        val json = SnapshotSerializer.serialize(originalKonfig)
+        val json = SnapshotSerializer.serialize(originalConfiguration)
         val result = SnapshotSerializer.fromJson(json)
 
-        assertIs<ParseResult.Success<Konfig>>(result)
+        assertIs<ParseResult.Success<Configuration>>(result)
         val deserializedFlag = result.value.flags[TestFeatures.doubleFlag]
         assertNotNull(deserializedFlag)
         assertEquals(originalFlag.defaultValue, deserializedFlag.defaultValue)
@@ -480,12 +478,12 @@ class SnapshotSerializerTest {
             bounds = listOf(rule.targetedBy(true)),
             defaultValue = false,
         )
-        val originalKonfig = Konfig(mapOf(TestFeatures.boolFlag to originalFlag))
+        val originalConfiguration = Configuration(mapOf(TestFeatures.boolFlag to originalFlag))
 
-        val json = SnapshotSerializer.serialize(originalKonfig)
+        val json = SnapshotSerializer.serialize(originalConfiguration)
         val result = SnapshotSerializer.fromJson(json)
 
-        assertIs<ParseResult.Success<Konfig>>(result)
+        assertIs<ParseResult.Success<Configuration>>(result)
         val deserializedFlag = result.value.flags[TestFeatures.boolFlag]
         assertNotNull(deserializedFlag)
         assertEquals(1, deserializedFlag.values.size)
@@ -509,7 +507,7 @@ class SnapshotSerializerTest {
         val intFlag = FlagDefinition(feature = TestFeatures.intFlag, defaultValue = 10)
         val doubleFlag = FlagDefinition(feature = TestFeatures.doubleFlag, defaultValue = 2.5)
 
-        val originalKonfig = Konfig(
+        val originalConfiguration = Configuration(
             mapOf(
                 TestFeatures.boolFlag to boolFlag,
                 TestFeatures.stringFlag to stringFlag,
@@ -518,10 +516,10 @@ class SnapshotSerializerTest {
             )
         )
 
-        val json = SnapshotSerializer.serialize(originalKonfig)
+        val json = SnapshotSerializer.serialize(originalConfiguration)
         val result = SnapshotSerializer.fromJson(json)
 
-        assertIs<ParseResult.Success<Konfig>>(result)
+        assertIs<ParseResult.Success<Configuration>>(result)
         val deserializedKonfig = result.value
         assertEquals(4, deserializedKonfig.flags.size)
 
@@ -535,7 +533,7 @@ class SnapshotSerializerTest {
 
     @Test
     fun `Given patch with new flag, When applied, Then new flag is added to konfig`() {
-        val originalKonfig = Konfig(emptyMap())
+        val originalConfiguration = Configuration(emptyMap())
 
         val newFlagJson = """
             {
@@ -557,9 +555,9 @@ class SnapshotSerializerTest {
             }
         """.trimIndent()
 
-        val result = SnapshotSerializer.applyPatchJson(originalKonfig, patchJson)
+        val result = SnapshotSerializer.applyPatchJson(originalConfiguration, patchJson)
 
-        assertIs<ParseResult.Success<Konfig>>(result)
+        assertIs<ParseResult.Success<Configuration>>(result)
         val patchedKonfig = result.value
         assertEquals(1, patchedKonfig.flags.size)
         assertNotNull(patchedKonfig.flags[TestFeatures.boolFlag])
@@ -568,7 +566,7 @@ class SnapshotSerializerTest {
     @Test
     fun `Given patch with updated flag, When applied, Then flag is updated in konfig`() {
         val originalFlag = FlagDefinition(feature = TestFeatures.boolFlag, defaultValue = false)
-        val originalKonfig = Konfig(mapOf(TestFeatures.boolFlag to originalFlag))
+        val originalConfiguration = Configuration(mapOf(TestFeatures.boolFlag to originalFlag))
 
         val updatedFlagJson = """
             {
@@ -590,9 +588,9 @@ class SnapshotSerializerTest {
             }
         """.trimIndent()
 
-        val result = SnapshotSerializer.applyPatchJson(originalKonfig, patchJson)
+        val result = SnapshotSerializer.applyPatchJson(originalConfiguration, patchJson)
 
-        assertIs<ParseResult.Success<Konfig>>(result)
+        assertIs<ParseResult.Success<Configuration>>(result)
         val patchedFlag = result.value.flags[TestFeatures.boolFlag]
         assertNotNull(patchedFlag)
         assertEquals(true, patchedFlag.defaultValue)
@@ -602,7 +600,7 @@ class SnapshotSerializerTest {
     @Test
     fun `Given patch with remove key, When applied, Then flag is removed from konfig`() {
         val originalFlag = FlagDefinition(feature = TestFeatures.boolFlag, defaultValue = true)
-        val originalKonfig = Konfig(mapOf(TestFeatures.boolFlag to originalFlag))
+        val originalConfiguration = Configuration(mapOf(TestFeatures.boolFlag to originalFlag))
 
         val patchJson = """
             {
@@ -611,9 +609,9 @@ class SnapshotSerializerTest {
             }
         """.trimIndent()
 
-        val result = SnapshotSerializer.applyPatchJson(originalKonfig, patchJson)
+        val result = SnapshotSerializer.applyPatchJson(originalConfiguration, patchJson)
 
-        assertIs<ParseResult.Success<Konfig>>(result)
+        assertIs<ParseResult.Success<Configuration>>(result)
         val patchedKonfig = result.value
         assertEquals(0, patchedKonfig.flags.size)
     }
@@ -622,7 +620,7 @@ class SnapshotSerializerTest {
     fun `Given patch with multiple operations, When applied, Then all operations are executed`() {
         val existingFlag = FlagDefinition(feature = TestFeatures.boolFlag, defaultValue = false)
         val toRemoveFlag = FlagDefinition(feature = TestFeatures.stringFlag, defaultValue = "remove-me")
-        val originalKonfig = Konfig(
+        val originalConfiguration = Configuration(
             mapOf(
                 TestFeatures.boolFlag to existingFlag,
                 TestFeatures.stringFlag to toRemoveFlag,
@@ -657,9 +655,9 @@ class SnapshotSerializerTest {
             }
         """.trimIndent()
 
-        val result = SnapshotSerializer.applyPatchJson(originalKonfig, patchJson)
+        val result = SnapshotSerializer.applyPatchJson(originalConfiguration, patchJson)
 
-        assertIs<ParseResult.Success<Konfig>>(result)
+        assertIs<ParseResult.Success<Configuration>>(result)
         val patchedKonfig = result.value
 
         // Updated flag
@@ -681,10 +679,10 @@ class SnapshotSerializerTest {
 
     @Test
     fun `Given invalid patch JSON, When applied, Then returns failure`() {
-        val originalKonfig = Konfig(emptyMap())
+        val originalConfiguration = Configuration(emptyMap())
         val invalidPatchJson = "not valid json"
 
-        val result = SnapshotSerializer.applyPatchJson(originalKonfig, invalidPatchJson)
+        val result = SnapshotSerializer.applyPatchJson(originalConfiguration, invalidPatchJson)
 
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.InvalidJson>(result.error)
@@ -708,7 +706,7 @@ class SnapshotSerializerTest {
 
     @Test
     fun `Given direct patch application, When valid, Then applies patch correctly`() {
-        val originalKonfig = Konfig(emptyMap())
+        val originalConfiguration = Configuration(emptyMap())
 
         val patchJson = """
             {
@@ -720,8 +718,8 @@ class SnapshotSerializerTest {
         val patchResult = SnapshotSerializer.fromJsonPatch(patchJson)
         assertIs<ParseResult.Success<SerializablePatch>>(patchResult)
 
-        val result = SnapshotSerializer.applyPatch(originalKonfig, patchResult.value)
+        val result = SnapshotSerializer.applyPatch(originalConfiguration, patchResult.value)
 
-        assertIs<ParseResult.Success<Konfig>>(result)
+        assertIs<ParseResult.Success<Configuration>>(result)
     }
 }

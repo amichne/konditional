@@ -29,7 +29,7 @@ import io.amichne.konditional.rules.evaluable.Evaluable
  * @param C The context type the rule evaluates against
  * @since 0.0.2
  */
-@FeatureFlagDsl
+@KonditionalDsl
 interface RuleScope<C : Context> {
     /**
      * Specifies which locales this rule applies to.

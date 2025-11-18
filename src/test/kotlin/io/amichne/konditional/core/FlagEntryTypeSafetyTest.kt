@@ -6,10 +6,10 @@ import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout.Companion.MAX
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Taxonomy.Global
+import io.amichne.konditional.core.Namespace.Global
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.instance.Konfig
+import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
@@ -30,30 +30,30 @@ class FlagEntryTypeSafetyTest {
         // Reset registry before each test
         println("Global")
         println("--------")
-        println(SnapshotSerializer.serialize(Global.konfig))
+        println(SnapshotSerializer.serialize(Global.configuration))
         println("--------")
 
         println("Payments")
         println("--------")
-        println(SnapshotSerializer.serialize(Taxonomy.Domain.Payments.konfig))
+        println(SnapshotSerializer.serialize(Namespace.Payments.configuration))
         println("--------")
 
         println("Search")
         println("--------")
-        println(SnapshotSerializer.serialize(Taxonomy.Domain.Search.konfig))
+        println(SnapshotSerializer.serialize(Namespace.Search.configuration))
         println("--------")
 
         println(
             "Does Global registry match Search? ${
-                SnapshotSerializer.serialize(Global.konfig) == SnapshotSerializer.serialize(
-                    Taxonomy.Domain.Search.konfig
+                SnapshotSerializer.serialize(Global.configuration) == SnapshotSerializer.serialize(
+                    Namespace.Search.configuration
                 )
             }"
         )
         println(
             "Does Global registry match Payments? ${
-                SnapshotSerializer.serialize(Global.konfig) == SnapshotSerializer.serialize(
-                    Taxonomy.Domain.Payments.konfig
+                SnapshotSerializer.serialize(Global.configuration) == SnapshotSerializer.serialize(
+                    Namespace.Payments.configuration
                 )
             }"
         )
@@ -66,30 +66,30 @@ class FlagEntryTypeSafetyTest {
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
 
-    private object Features : FeatureContainer<Global>(Taxonomy.Global) {
+    private object Features : FeatureContainer<Global>(Namespace.Global) {
         val featureA by boolean<Context>(default = false) {
             rule {
                 platforms(Platform.IOS)
-            } implies true
+            } returns true
         }
         val featureB by boolean<Context>(default = true)
         val configA by string<Context>(default = "default") {
             rule {
                 platforms(Platform.ANDROID)
-            } implies "android-value"
+            } returns "android-value"
         }
 
         val configB by string<Context>(default = "config-b-default") {
             rule {
                 locales(AppLocale.EN_US)
-            } implies "en-us-value"
+            } returns "en-us-value"
         }
         val timeout by int<Context>(default = 10) {
             rule {
                 versions {
                     min(2, 0)
                 }
-            } implies 30
+            } returns 30
         }
     }
 
@@ -122,7 +122,7 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded(),
         )
 
-        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context, Taxonomy.Global> = FlagDefinition(
+        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context, Namespace.Global> = FlagDefinition(
             feature = Features.featureB,
             values = listOf(rule.targetedBy(true)),
             defaultValue = false,
@@ -157,19 +157,19 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded(),
         )
 
-        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context, Taxonomy.Global> = FlagDefinition(
+        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context, Namespace.Global> = FlagDefinition(
             feature = Features.featureA,
             values = listOf(boolRule.targetedBy(true)),
             defaultValue = false,
         )
 
-        val stringFlag: FlagDefinition<EncodableValue.StringEncodeable, String, Context, Taxonomy.Global> = FlagDefinition(
+        val stringFlag: FlagDefinition<EncodableValue.StringEncodeable, String, Context, Namespace.Global> = FlagDefinition(
             feature = Features.configA,
             values = listOf(stringRule.targetedBy("value")),
             defaultValue = "default",
         )
 
-        val intFlag: FlagDefinition<EncodableValue.IntEncodeable, Int, Context, Taxonomy.Global> = FlagDefinition(
+        val intFlag: FlagDefinition<EncodableValue.IntEncodeable, Int, Context, Namespace.Global> = FlagDefinition(
             feature = Features.timeout,
             values = listOf(intRule.targetedBy(30)),
             defaultValue = 10,
@@ -214,14 +214,14 @@ class FlagEntryTypeSafetyTest {
             defaultValue = "default",
         )
 
-        val konfig = Konfig(
+        val configuration = Configuration(
             mapOf(
                 Features.featureA to boolFlag,
                 Features.configA to stringFlag,
             )
         )
 
-        Taxonomy.Global.load(konfig)
+        Namespace.Global.load(configuration)
 
         val context = ctx("33333333333333333333333333333333")
         val boolResult = context.evaluate(Features.featureA)
@@ -235,7 +235,7 @@ class FlagEntryTypeSafetyTest {
 //
 //    @Test
 //    fun `Given config with multiple flag types, When loaded, Then ContextualFlagDefinition maintains type safety`() {
-//        Taxonomy.Global.config {
+//        Namespace.Global.config {
 //        }
 //
 //        val iosCtx = ctx("44444444444444444444444444444444", platform = Platform.IOS)
@@ -258,14 +258,14 @@ class FlagEntryTypeSafetyTest {
 //
 //    @Test
 //    fun `Given ContextualFlagDefinition in map, When retrieving by key, Then type information is preserved`() {
-//        Taxonomy.Global.config {
+//        Namespace.Global.config {
 //            BoolFlags.FEATURE_A with {
 //                default(false)
-//                rule {} implies true
+//                rule {} returns true
 //            }
 //            StringFlags.CONFIG_A with {
 //                default("default")
-//                rule {} implies "enabled"
+//                rule {} returns "enabled"
 //            }
 //        }
 //
@@ -290,8 +290,8 @@ class FlagEntryTypeSafetyTest {
 //        ) : Context
 //
 //        data class CustomIntFlag(override val key: String = "custom_int") :
-//            IntFeature<CustomContext, Taxonomy.Global> {
-//            override val module: Taxonomy.Global = Taxonomy.Global
+//            IntFeature<CustomContext, Namespace.Global> {
+//            override val module: Namespace.Global = Namespace.Global
 //        }
 //
 //        val customIntFlag = CustomIntFlag()
@@ -303,7 +303,7 @@ class FlagEntryTypeSafetyTest {
 //            versionRange = Unbounded(),
 //        )
 //
-//        val flag: FlagDefinition<EncodableValue.IntEncodeable, Int, CustomContext, Taxonomy.Global> = FlagDefinition(
+//        val flag: FlagDefinition<EncodableValue.IntEncodeable, Int, CustomContext, Namespace.Global> = FlagDefinition(
 //            feature = customIntFlag,
 //            values = listOf(rule.targetedBy(42)),
 //            defaultValue = 0,
@@ -328,12 +328,12 @@ class FlagEntryTypeSafetyTest {
 //        // This test validates that the FlagEntry wrapper eliminates the need for
 //        // @Suppress("UNCHECKED_CAST") annotations at call sites
 //
-//        Taxonomy.Global.config {
+//        Namespace.Global.config {
 //            BoolFlags.FEATURE_A with {
 //                default(false)
 //                rule {
 //                    platforms(Platform.IOS)
-//                } implies true
+//                } returns true
 //            }
 //        }
 //

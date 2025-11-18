@@ -4,7 +4,7 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.rules.evaluable.Evaluable
@@ -57,7 +57,7 @@ data class ExperimentContext(
 /**
  * Feature flags for enterprise contexts.
  */
-object EnterpriseFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object EnterpriseFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     /** Advanced analytics feature */
     val advanced_analytics by boolean<EnterpriseContext>(default = false)
 
@@ -71,7 +71,7 @@ object EnterpriseFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 /**
  * Feature flags for experiment contexts.
  */
-object ExperimentFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object ExperimentFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     /** Homepage variant */
     val homepage_variant by string<ExperimentContext>(default = "default")
 

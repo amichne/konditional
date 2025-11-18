@@ -19,9 +19,9 @@ This guide focuses on the FeatureContainer delegation approach, which provides t
 
 ```kotlin
 import io.amichne.konditional.core.features.FeatureContainer
-import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.Namespace
 
-object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val DARK_MODE by boolean(default = false)
     val API_ENDPOINT by string(default = "https://api.example.com")
     val MAX_RETRIES by int(default = 3)
@@ -33,7 +33,7 @@ object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 
 - **Automatic registration**: Features register themselves on first access
 - **Type inference**: Default value determines the feature type
-- **Single taxonomy declaration**: No need to repeat taxonomy on every feature
+- **Single namespace declaration**: No need to repeat namespace on every feature
 - **Mixed types**: Combine Boolean, String, Int, and Double features in one container
 - **Complete enumeration**: `allFeatures()` provides runtime access to all features
 
@@ -46,12 +46,12 @@ FeatureContainer provides four delegation methods for different value types:
 Creates a Boolean feature with optional configuration:
 
 ```kotlin
-object MyFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object MyFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val DARK_MODE by boolean(default = false) {
         rule {
             platforms(Platform.IOS)
             rollout { 50.0 }
-        } implies true
+        } returns true
     }
 }
 ```
@@ -73,11 +73,11 @@ protected fun <C : Context> boolean(
 Creates a String feature with optional configuration:
 
 ```kotlin
-object MyFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object MyFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val API_ENDPOINT by string(default = "https://api.prod.example.com") {
         rule {
             platforms(Platform.ANDROID)
-        } implies "https://api-android.example.com"
+        } returns "https://api-android.example.com"
     }
 }
 ```
@@ -95,11 +95,11 @@ protected fun <C : Context> string(
 Creates an Int feature with optional configuration:
 
 ```kotlin
-object MyFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object MyFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val MAX_RETRY_COUNT by int(default = 3) {
         rule {
             platforms(Platform.IOS)
-        } implies 5
+        } returns 5
     }
 }
 ```
@@ -117,11 +117,11 @@ protected fun <C : Context> int(
 Creates a Double feature with optional configuration:
 
 ```kotlin
-object MyFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object MyFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val TRANSACTION_FEE by double(default = 0.029) {
         rule {
             platforms(Platform.WEB)
-        } implies 0.019
+        } returns 0.019
     }
 }
 ```
@@ -160,7 +160,7 @@ val EXPERIMENT by boolean(default = false) {
 
     rule {
         rollout { 50.0 }
-    } implies true
+    } returns true
 }
 ```
 
@@ -181,39 +181,39 @@ val MY_FLAG by boolean(default = false) {
         platforms(Platform.IOS, Platform.ANDROID)
         locales(AppLocale.EN_US)
         rollout { 50.0 }
-    } implies true
+    } returns true
 }
 ```
 
-**Returns:** A `Rule<C>` object that must be associated with a value using `implies`
+**Returns:** A `Rule<C>` object that must be associated with a value using `returns`
 
 **Signature:**
 ```kotlin
 fun rule(build: RuleScope<C>.() -> Unit): Rule<C>
 ```
 
-### implies (infix)
+### returns (infix)
 
 Associates a rule with its return value:
 
 ```kotlin
 rule {
     platforms(Platform.IOS)
-} implies true
+} returns true
 ```
 
 **Type safety:** The value type must match the feature's declared type.
 
 ```kotlin
 val BOOLEAN_FLAG by boolean(default = false) {
-    rule { platforms(Platform.IOS) } implies true    // ✓ Valid
-    rule { platforms(Platform.WEB) } implies "true"  // ✗ Compile error
+    rule { platforms(Platform.IOS) } returns true    // ✓ Valid
+    rule { platforms(Platform.WEB) } returns "true"  // ✗ Compile error
 }
 ```
 
 **Signature:**
 ```kotlin
-infix fun Rule<C>.implies(value: T)
+infix fun Rule<C>.returns(value: T)
 ```
 
 ## RuleScope DSL
@@ -227,7 +227,7 @@ Specify which platforms the rule applies to:
 ```kotlin
 rule {
     platforms(Platform.IOS, Platform.ANDROID)
-} implies mobileValue
+} returns mobileValue
 ```
 
 **Available platforms:**
@@ -246,7 +246,7 @@ Specify which locales the rule applies to:
 ```kotlin
 rule {
     locales(AppLocale.EN_US, AppLocale.EN_CA, AppLocale.EN_GB)
-} implies englishValue
+} returns englishValue
 ```
 
 **Common locales:**
@@ -270,7 +270,7 @@ rule {
         min(2, 0, 0)  // >= 2.0.0
         max(3, 0, 0)  // < 3.0.0
     }
-} implies value
+} returns value
 ```
 
 **Version range patterns:**
@@ -303,7 +303,7 @@ Set gradual rollout percentage (0-100):
 rule {
     platforms(Platform.IOS)
     rollout { 50.0 }  // 50% of iOS users
-} implies true
+} returns true
 ```
 
 **Common values:**
@@ -335,7 +335,7 @@ rule {
             override fun specificity(): Int = 1
         }
     }
-} implies true
+} returns true
 ```
 
 **Use cases:**
@@ -352,7 +352,7 @@ rule {
     platforms(Platform.IOS)
     rollout { 10.0 }
     note("iOS canary deployment - Phase 1")
-} implies true
+} returns true
 ```
 
 **Best practices:**
@@ -414,13 +414,13 @@ max(2, 9, 99)    // < 2.9.99
 ### Simple Boolean Flag
 
 ```kotlin
-object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val DARK_MODE by boolean(default = false) {
         rule {
             platforms(Platform.IOS, Platform.ANDROID)
             rollout { 50.0 }
             note("Mobile dark mode, 50% rollout")
-        } implies true
+        } returns true
     }
 }
 ```
@@ -428,19 +428,19 @@ object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 ### Multi-Platform with Different Values
 
 ```kotlin
-object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val API_ENDPOINT by string(default = "https://api.example.com") {
         rule {
             platforms(Platform.IOS)
-        } implies "https://api-ios.example.com"
+        } returns "https://api-ios.example.com"
 
         rule {
             platforms(Platform.ANDROID)
-        } implies "https://api-android.example.com"
+        } returns "https://api-android.example.com"
 
         rule {
             platforms(Platform.WEB)
-        } implies "https://api-web.example.com"
+        } returns "https://api-web.example.com"
     }
 }
 ```
@@ -448,12 +448,12 @@ object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 ### Version-Based Feature Rollout
 
 ```kotlin
-object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val NEW_UI by boolean(default = false) {
         // Full rollout for version 3.0.0+
         rule {
             versions { min(3, 0, 0) }
-        } implies true
+        } returns true
 
         // 50% rollout for version 2.5.0 - 2.9.9
         rule {
@@ -462,7 +462,7 @@ object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
                 max(3, 0, 0)
             }
             rollout { 50.0 }
-        } implies true
+        } returns true
 
         // 10% canary for version 2.0.0 - 2.4.9
         rule {
@@ -471,7 +471,7 @@ object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
                 max(2, 5, 0)
             }
             rollout { 10.0 }
-        } implies true
+        } returns true
     }
 }
 ```
@@ -490,7 +490,7 @@ data class EnterpriseContext(
 
 enum class SubscriptionTier { FREE, PROFESSIONAL, ENTERPRISE }
 
-object PremiumFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object PremiumFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val ADVANCED_ANALYTICS by boolean<EnterpriseContext>(default = false) {
         // Enterprise customers: 100% rollout
         rule {
@@ -503,7 +503,7 @@ object PremiumFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
                 }
             }
             note("Full rollout for enterprise customers")
-        } implies true
+        } returns true
 
         // Professional customers: 50% rollout
         rule {
@@ -517,7 +517,7 @@ object PremiumFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
             }
             rollout { 50.0 }
             note("50% rollout for professional tier")
-        } implies true
+        } returns true
     }
 }
 ```
@@ -525,7 +525,7 @@ object PremiumFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 ### Multi-Criteria Targeting
 
 ```kotlin
-object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val PREMIUM_FEATURE by boolean(default = false) {
         rule {
             platforms(Platform.IOS, Platform.ANDROID)
@@ -536,7 +536,7 @@ object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
             }
             rollout { 25.0 }
             note("Mobile English NA users, v2.x, 25% rollout")
-        } implies true
+        } returns true
     }
 }
 ```
@@ -544,7 +544,7 @@ object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 ### Gradual Rollout Strategy
 
 ```kotlin
-object ExperimentFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object ExperimentFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val NEW_CHECKOUT by boolean(default = false) {
         salt("v1")  // Change to re-randomize
 
@@ -558,13 +558,13 @@ object ExperimentFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
                 }
             }
             note("Phase 1: Internal testing")
-        } implies true
+        } returns true
 
         // Phase 2: 10% canary
         rule {
             rollout { 10.0 }
             note("Phase 2: 10% canary")
-        } implies true
+        } returns true
 
         // Later: Increase to 50%, then 100%
         // Update configuration dynamically or through config management
@@ -580,13 +580,13 @@ The DSL enforces type safety at compile time:
 
 ```kotlin
 val BOOLEAN_FLAG by boolean(default = false) {
-    rule { platforms(Platform.IOS) } implies true    // ✓ Valid
-    rule { platforms(Platform.WEB) } implies "true"  // ✗ Type mismatch
+    rule { platforms(Platform.IOS) } returns true    // ✓ Valid
+    rule { platforms(Platform.WEB) } returns "true"  // ✗ Type mismatch
 }
 
 val STRING_FLAG by string(default = "default") {
-    rule { platforms(Platform.IOS) } implies "ios-value"  // ✓ Valid
-    rule { platforms(Platform.WEB) } implies true         // ✗ Type mismatch
+    rule { platforms(Platform.IOS) } returns "ios-value"  // ✓ Valid
+    rule { platforms(Platform.WEB) } returns true         // ✗ Type mismatch
 }
 ```
 
@@ -604,7 +604,7 @@ val CUSTOM_FLAG by boolean<CustomContext>(default = false) {
                 override fun specificity() = 1
             }
         }
-    } implies true
+    } returns true
 }
 ```
 
@@ -615,23 +615,23 @@ val CUSTOM_FLAG by boolean<CustomContext>(default = false) {
 Use separate containers for different domains:
 
 ```kotlin
-object AuthFeatures : FeatureContainer<Taxonomy.Domain.Authentication>(
-    Taxonomy.Domain.Authentication
+object AuthFeatures : FeatureContainer<Namespace.Authentication>(
+    Namespace.Authentication
 ) {
     val SOCIAL_LOGIN by boolean(default = false)
     val TWO_FACTOR_AUTH by boolean(default = true)
 }
 
-object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object PaymentFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     val APPLE_PAY by boolean(default = false)
     val GOOGLE_PAY by boolean(default = false)
     val TRANSACTION_LIMIT by double(default = 10000.0)
 }
 
-object MessagingFeatures : FeatureContainer<Taxonomy.Domain.Messaging>(
-    Taxonomy.Domain.Messaging
+object MessagingFeatures : FeatureContainer<Namespace.Messaging>(
+    Namespace.Messaging
 ) {
     val PUSH_NOTIFICATIONS by boolean(default = true)
     val EMAIL_DIGEST by boolean(default = false)
@@ -642,7 +642,7 @@ object MessagingFeatures : FeatureContainer<Taxonomy.Domain.Messaging>(
 - Clear ownership boundaries
 - Isolation between teams
 - Independent configuration management
-- Type-safe taxonomy enforcement
+- Type-safe namespace enforcement
 
 ### Extracting Complex Rules
 
@@ -663,17 +663,17 @@ class ProfessionalCustomerRule : Evaluable<EnterpriseContext>() {
     override fun specificity(): Int = 1
 }
 
-object PremiumFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object PremiumFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val FEATURE_A by boolean<EnterpriseContext>(default = false) {
         rule {
             extension { EnterpriseCustomerRule() }
-        } implies true
+        } returns true
     }
 
     val FEATURE_B by boolean<EnterpriseContext>(default = false) {
         rule {
             extension { EnterpriseCustomerRule() }
-        } implies true
+        } returns true
     }
 }
 ```
@@ -689,7 +689,7 @@ object PremiumFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 Extract complex values into named constants:
 
 ```kotlin
-object ApiConfig : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object ApiConfig : FeatureContainer<Namespace.Global>(Namespace.Global) {
     private val PROD_ENDPOINT = "https://api.prod.example.com"
     private val STAGING_ENDPOINT = "https://api.staging.example.com"
     private val DEV_ENDPOINT = "https://api.dev.example.com"
@@ -703,7 +703,7 @@ object ApiConfig : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
                     override fun specificity() = 1
                 }
             }
-        } implies STAGING_ENDPOINT
+        } returns STAGING_ENDPOINT
 
         rule {
             extension {
@@ -713,25 +713,25 @@ object ApiConfig : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
                     override fun specificity() = 2
                 }
             }
-        } implies DEV_ENDPOINT
+        } returns DEV_ENDPOINT
     }
 }
 ```
 
 ## Exporting Configurations
 
-### konfig() Method
+### configuration() Method
 
 Get a snapshot of the current configuration:
 
 ```kotlin
-object MyFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object MyFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val FLAG_A by boolean(default = false)
     val FLAG_B by string(default = "default")
 }
 
 // Get configuration snapshot
-val snapshot = Taxonomy.Global.konfig()
+val snapshot = Namespace.Global.configuration()
 
 // Serialize to JSON
 val json = SnapshotSerializer.serialize(snapshot)
@@ -771,7 +771,7 @@ features.forEach { feature ->
 | Scope                | Parent Scope      | Available Methods                                      |
 |----------------------|-------------------|--------------------------------------------------------|
 | FeatureContainer     | -                 | `boolean()`, `string()`, `int()`, `double()`, `allFeatures()` |
-| FlagScope            | Delegation block  | `default()`, `salt()`, `rule()`, `implies`             |
+| FlagScope            | Delegation block  | `default()`, `salt()`, `rule()`, `returns`             |
 | RuleScope            | `rule { }`        | `platforms()`, `locales()`, `versions()`, `rollout()`, `extension()`, `note()` |
 | VersionRangeScope    | `versions { }`    | `min()`, `max()`                                       |
 
@@ -782,7 +782,7 @@ features.forEach { feature ->
 | `default(value: T)`                         | Set default value                         | No*      |
 | `salt(value: String)`                       | Set rollout salt                          | No       |
 | `rule(build: RuleScope<C>.() -> Unit)`      | Define targeting rule                     | No       |
-| `infix fun Rule<C>.implies(value: T)`       | Associate rule with value                 | Yes**    |
+| `infix fun Rule<C>.returns(value: T)`       | Associate rule with value                 | Yes**    |
 
 \* Required when not using delegation parameter
 \** Required for each `rule()` call
@@ -813,14 +813,14 @@ Prefer delegation over manual configuration:
 
 ```kotlin
 // ✓ Recommended
-object MyFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object MyFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val DARK_MODE by boolean(default = false)
 }
 
 // ✗ Avoid (manual configuration)
-enum class MyFeatures : BooleanFeature<Context, Taxonomy.Global> {
+enum class MyFeatures : BooleanFeature<Context, Namespace.Global> {
     DARK_MODE("dark_mode");
-    override val module = Taxonomy.Global
+    override val module = Namespace.Global
 }
 ```
 
@@ -830,12 +830,12 @@ Separate configurations into dedicated containers:
 
 ```kotlin
 // ✓ Clear organization
-object UIFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) { }
-object ApiFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) { }
-object ExperimentFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) { }
+object UIFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) { }
+object ApiFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) { }
+object ExperimentFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) { }
 
 // ✗ Everything in one container
-object AllFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object AllFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val UI_DARK_MODE by boolean(default = false)
     val API_ENDPOINT by string(default = "")
     val EXPERIMENT_A by boolean(default = false)
@@ -866,13 +866,13 @@ rule {
     platforms(Platform.IOS)
     rollout { 10.0 }
     note("EXP-1234: iOS canary for new checkout - Q1 2025 - Owner: payments-team")
-} implies true
+} returns true
 
 // ✗ No context
 rule {
     platforms(Platform.IOS)
     rollout { 10.0 }
-} implies true
+} returns true
 ```
 
 ### 5. Maintain Salt Hygiene
@@ -917,7 +917,7 @@ val FEATURE_A by boolean<EnterpriseContext>(default = false) {
                 override fun specificity() = 1
             }
         }
-    } implies true
+    } returns true
 }
 ```
 
@@ -960,4 +960,4 @@ rollout { 42.7 }
 - **[Context](Context.md)**: Custom contexts and polymorphism
 - **[Evaluation](Evaluation.md)**: Flag evaluation mechanics and result handling
 - **[Serialization](Serialization.md)**: JSON export/import for configurations
-- **[Registry](Registry.md)**: Taxonomy and registry management
+- **[Registry](Registry.md)**: Namespace and registry management

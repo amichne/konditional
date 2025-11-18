@@ -1,7 +1,7 @@
 package io.amichne.konditional.context
 
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.types.EncodableValue
 
@@ -29,7 +29,6 @@ import io.amichne.konditional.core.types.EncodableValue
  * @property appVersion The semantic version of the application
  * @property stableId A stable, unique identifier used for deterministic bucketing in rollouts
  *
- * @see io.amichne.konditional.core.registry.RegistryScope
  * @see io.amichne.konditional.rules.Rule
  */
 interface Context {
@@ -67,7 +66,7 @@ interface Context {
          * Evaluates a specific feature flag in the context of this [Context].
          *
          * This extension function provides convenient access to flag evaluation.
-         * The feature's taxonomy registry is automatically used.
+         * The feature's namespace registry is automatically used.
          *
          * @param key The feature flag to evaluate
          * @return The evaluated value of type [T]
@@ -75,11 +74,11 @@ interface Context {
          * @param S The EncodableValue type wrapping the actual value
          * @param T The actual value type
          * @param C The type of the context
-         * @param M The taxonomy the feature belongs to
+         * @param M The namespace the feature belongs to
          */
-        fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> C.evaluate(
+        fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> C.evaluate(
             key: Feature<S, T, C, M>,
-        ): T = key.module.featureFlag(key)?.evaluate(this)
-               ?: throw IllegalStateException("Flag not found, Key: ${key.key}, Taxonomy: ${key.module.id}")
+        ): T = key.namespace.flag(key)?.evaluate(this)
+               ?: throw IllegalStateException("Flag not found, Key: ${key.key}, Namespace: ${key.namespace.id}")
     }
 }

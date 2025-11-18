@@ -1,11 +1,11 @@
 package io.amichne.konditional.core.instance
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.FlagDefinition
+import io.amichne.konditional.core.features.Feature
 
 /**
- * Represents an incremental update to a [Konfig].
+ * Represents an incremental update to a [Configuration].
  *
  * A patch contains:
  * - Flags to add or update
@@ -18,19 +18,19 @@ import io.amichne.konditional.core.FlagDefinition
  * @property removeKeys Set of flag keys to remove
  */
 @ConsistentCopyVisibility
-data class KonfigPatch internal constructor(
+data class ConfigurationPatch internal constructor(
     val flags: Map<Feature<*, *, *, *>, FlagDefinition<*, *, *, *>>,
     val removeKeys: Set<Feature<*, *, *, *>> = emptySet(),
 ) {
     /**
-     * Applies a patch to a konfig, creating a new konfig with the changes.
+     * Applies a patch to a configuration, creating a new configuration with the changes.
      *
-     * @param konfig The konfig to apply the patch to
-     * @return A new Konfig with the patch applied
+     * @param configuration The configuration to apply the patch to
+     * @return A new Configuration with the patch applied
      */
-    fun applyTo(konfig: Konfig): Konfig = konfig.flags.toMutableMap().let { map ->
+    fun applyTo(configuration: Configuration): Configuration = configuration.flags.toMutableMap().let { map ->
         removeKeys.forEach { map.remove(it) }
-        Konfig(map.also { it.putAll(flags) })
+        Configuration(map.also { it.putAll(flags) })
     }
 
     companion object {
@@ -38,11 +38,11 @@ data class KonfigPatch internal constructor(
         /**
          * Creates an empty patch with no changes.
          */
-        fun empty(): KonfigPatch = KonfigPatch(emptyMap(), emptySet())
+        fun empty(): ConfigurationPatch = ConfigurationPatch(emptyMap(), emptySet())
 
         fun patch(
             builder: PatchBuilder.() -> Unit
-        ): KonfigPatch = PatchBuilder().apply(builder).build()
+        ): ConfigurationPatch = PatchBuilder().apply(builder).build()
     }
 
     /**
@@ -76,6 +76,6 @@ data class KonfigPatch internal constructor(
             flags.remove(key)
         }
 
-        internal fun build(): KonfigPatch = KonfigPatch(flags.toMap(), removeKeys.toSet())
+        internal fun build(): ConfigurationPatch = ConfigurationPatch(flags.toMap(), removeKeys.toSet())
     }
 }

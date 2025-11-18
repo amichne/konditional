@@ -3,7 +3,7 @@ package io.amichne.konditional.serialization
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import io.amichne.konditional.core.instance.Konfig
+import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.internal.serialization.adapters.FlagValueAdapter
@@ -17,7 +17,7 @@ import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
 /**
- * Main serialization object for Konfig configurations.
+ * Main serialization object for Configuration configurations.
  * Provides methods to serialize/deserialize snapshots to/from JSON, and apply patch updates.
  *
  * Returns ParseResult for all deserialization operations, following parse-don't-validate principles.
@@ -25,13 +25,13 @@ import io.amichne.konditional.rules.versions.VersionRange
  * This serializer is storage-agnostic - it only handles JSON conversion, allowing callers
  * to choose their storage solution (files, databases, cloud storage, etc.).
  *
- * For taxonomy-scoped serialization, use [TaxonomySnapshotSerializer] instead.
+ * For namespace-scoped serialization, use [NamespaceSnapshotSerializer] instead.
  *
  * ## Usage
  *
  * ```kotlin
  * // Serialize
- * val json = SnapshotSerializer.serialize(konfig)
+ * val json = SnapshotSerializer.serialize(configuration)
  *
  * // Deserialize
  * when (val result = SnapshotSerializer.fromJson(json)) {
@@ -46,18 +46,18 @@ object SnapshotSerializer {
     private val patchAdapter = moshi.adapter(SerializablePatch::class.java).indent("  ")
 
     /**
-     * Serializes a Konfig to a JSON string.
+     * Serializes a Configuration to a JSON string.
      *
-     * @param konfig The konfig to serialize
+     * @param configuration The configuration to serialize
      * @return JSON string representation
      */
-    fun serialize(konfig: Konfig): String {
-        val serializable = konfig.toSerializable()
+    fun serialize(configuration: Configuration): String {
+        val serializable = configuration.toSerializable()
         return snapshotAdapter.toJson(serializable)
     }
 
     /**
-     * Deserializes a JSON string to a Konfig.
+     * Deserializes a JSON string to a Configuration.
      *
      * Returns ParseResult for type-safe error handling following parse-don't-validate principles.
      *
@@ -66,15 +66,15 @@ object SnapshotSerializer {
      *
      * ```kotlin
      * when (val result = SnapshotSerializer.fromJson(json)) {
-     *     is ParseResult.Success -> taxonomy.load(result.value)
+     *     is ParseResult.Success -> namespace.load(result.value)
      *     is ParseResult.Failure -> handleError(result.error)
      * }
      * ```
      *
      * @param json The JSON string to deserialize
-     * @return ParseResult containing either the deserialized Konfig or a structured error
+     * @return ParseResult containing either the deserialized Configuration or a structured error
      */
-    fun fromJson(json: String): ParseResult<Konfig> {
+    fun fromJson(json: String): ParseResult<Configuration> {
         return try {
             val serializable = snapshotAdapter.fromJson(json)
                 ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parse JSON: null result"))
@@ -85,7 +85,7 @@ object SnapshotSerializer {
     }
 
     /**
-     * Serializes a KonfigPatch to a JSON string.
+     * Serializes a ConfigurationPatch to a JSON string.
      *
      * @param patch The patch to serialize
      * @return JSON string representation
@@ -113,14 +113,14 @@ object SnapshotSerializer {
     /**
      * Applies a patch to an existing snapshot, creating a new snapshot with the updates.
      *
-     * @param currentKonfig The current snapshot to patch
+     * @param currentConfiguration The current snapshot to patch
      * @param patch The patch to apply
-     * @return ParseResult containing either the new Konfig with the patch applied or an error
+     * @return ParseResult containing either the new Configuration with the patch applied or an error
      */
-    internal fun applyPatch(currentKonfig: Konfig, patch: SerializablePatch): ParseResult<Konfig> {
+    internal fun applyPatch(currentConfiguration: Configuration, patch: SerializablePatch): ParseResult<Configuration> {
         return try {
             // Convert current snapshot to serializable form
-            val currentSerializable = currentKonfig.toSerializable()
+            val currentSerializable = currentConfiguration.toSerializable()
 
             // Create a mutable map of flags by key
             val flagMap = currentSerializable.flags.associateBy { it.key }.toMutableMap()
@@ -146,13 +146,13 @@ object SnapshotSerializer {
     /**
      * Applies a patch from a JSON string to an existing snapshot.
      *
-     * @param currentKonfig The current snapshot to patch
+     * @param currentConfiguration The current snapshot to patch
      * @param patchJson The JSON string containing the patch
-     * @return ParseResult containing either the new Konfig with the patch applied or an error
+     * @return ParseResult containing either the new Configuration with the patch applied or an error
      */
-    fun applyPatchJson(currentKonfig: Konfig, patchJson: String): ParseResult<Konfig> {
+    fun applyPatchJson(currentConfiguration: Configuration, patchJson: String): ParseResult<Configuration> {
         return when (val patchResult = fromJsonPatch(patchJson)) {
-            is ParseResult.Success -> applyPatch(currentKonfig, patchResult.value)
+            is ParseResult.Success -> applyPatch(currentConfiguration, patchResult.value)
             is ParseResult.Failure -> ParseResult.Failure(patchResult.error)
         }
     }

@@ -1,7 +1,7 @@
 package io.amichne.konditional.fixtures
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.fixtures.CommonTestFeatures.allFeatures
 
@@ -15,13 +15,13 @@ import io.amichne.konditional.fixtures.CommonTestFeatures.allFeatures
  * - Type safety with full compile-time checking
  * - Single module declaration for the entire container
  *
- * All features use the Global taxonomy and are available across all tests.
+ * All features use the Global namespace and are available across all tests.
  *
  * **Naming convention:**
  * - Feature properties use camelCase following Kotlin best practices
  * - Feature keys match property names automatically for consistency and discoverability
  */
-object CommonTestFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object CommonTestFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
 
     // Boolean features
     /** General-purpose test feature flag */

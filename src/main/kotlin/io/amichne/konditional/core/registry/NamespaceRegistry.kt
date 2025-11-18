@@ -2,9 +2,9 @@ package io.amichne.konditional.core.registry
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.FlagDefinition
-import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.core.instance.Konfig
+import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.types.EncodableValue
 import java.util.concurrent.atomic.AtomicReference
 
@@ -18,15 +18,15 @@ import java.util.concurrent.atomic.AtomicReference
  *
  * ## Primary Usage
  *
- * Most users interact with registries through [io.amichne.konditional.core.Taxonomy] instances and [io.amichne.konditional.core.features.FeatureContainer]:
+ * Most users interact with registries through [io.amichne.konditional.core.Namespace] instances and [io.amichne.konditional.core.features.FeatureContainer]:
  * ```kotlin
  * // Define features using FeatureContainer (recommended)
- * object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
- *     Taxonomy.Domain.Payments
+ * object PaymentFeatures : FeatureContainer<Namespace.Payments>(
+ *     Namespace.Payments
  * ) {
  *     val APPLE_PAY by boolean {
  *         default(false)
- *         rule { platforms(Platform.IOS) } implies true
+ *         rule { platforms(Platform.IOS) } returns true
  *     }
  * }
  *
@@ -39,14 +39,14 @@ import java.util.concurrent.atomic.AtomicReference
  * ### Loading Configuration
  * Load a complete configuration snapshot (typically from JSON):
  * ```kotlin
- * val registry = ModuleRegistry.create()
- * registry.load(konfig)
+ * val registry = NamespaceRegistry.create()
+ * registry.load(configuration)
  * ```
  *
  * ### Inspecting State
  * ```kotlin
- * val currentState = registry.konfig()
- * val specificFlag = registry.featureFlag(MY_FLAG)
+ * val currentState = registry.configuration()
+ * val specificFlag = registry.flag(MY_FLAG)
  * val allFlags = registry.allFlags()
  * ```
  *
@@ -54,7 +54,7 @@ import java.util.concurrent.atomic.AtomicReference
  * ```kotlin
  * @Test
  * fun `test feature behavior`() {
- *     val testRegistry = ModuleRegistry.create()
+ *     val testRegistry = NamespaceRegistry.create()
  *     testRegistry.load(testConfig)
  *
  *     withRegistry(testRegistry) {
@@ -66,26 +66,26 @@ import java.util.concurrent.atomic.AtomicReference
  *
  * ## Implementation Details
  *
- * The primary implementation is [InMemoryModuleRegistry], which provides a thread-safe
+ * The primary implementation is [InMemoryNamespaceRegistry], which provides a thread-safe
  * registry backed by [AtomicReference].
  *
  * **Note**: Configuration updates are handled internally by [io.amichne.konditional.core.features.FeatureContainer].
  * Users should not need to manually update individual flags when using the delegation API.
  *
- * @see InMemoryModuleRegistry
- * @see io.amichne.konditional.core.Taxonomy
+ * @see InMemoryNamespaceRegistry
+ * @see io.amichne.konditional.core.Namespace
  * @see io.amichne.konditional.core.features.FeatureContainer
- * @see Konfig
+ * @see Configuration
  */
-interface ModuleRegistry {
+interface NamespaceRegistry {
     /**
      * Loads a complete flag configuration from the provided snapshot.
      *
      * This operation replaces the entire current configuration atomically.
      *
-     * @param config The [Konfig] containing the flag configuration to load
+     * @param config The [Configuration] containing the flag configuration to load
      */
-    fun load(config: Konfig)
+    fun load(config: Configuration)
 
     /**
      * Retrieves the current snapshot of all flag configurations.
@@ -93,12 +93,9 @@ interface ModuleRegistry {
      * This provides a consistent view of all flags at a point in time.
      * The returned snapshot is immutable and can be safely shared.
      *
-     * @return The current [Konfig]
+     * @return The current [Configuration]
      */
-    @Deprecated("Use val accessor", replaceWith = ReplaceWith("konfig"))
-    fun konfig(): Konfig
-
-    val konfig: Konfig
+    val configuration: Configuration
 
     /**
      * Retrieves a specific flag definition from the registry.
@@ -108,13 +105,13 @@ interface ModuleRegistry {
      * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
      * @param C The type of the context used for evaluation
-     * @param M The taxonomy the feature belongs to
+     * @param M The namespace the feature belongs to
      */
     @Suppress("UNCHECKED_CAST")
-    fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> featureFlag(
+    fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> flag(
         key: Feature<S, T, C, M>
     ): FlagDefinition<S, T, C, M>? =
-        konfig.flags[key] as? FlagDefinition<S, T, C, M>
+        configuration.flags[key] as? FlagDefinition<S, T, C, M>
 
     /**
      * Retrieves all flags from the registry.
@@ -122,7 +119,7 @@ interface ModuleRegistry {
      * @return Map of all [Feature] keys to their [FlagDefinition] definitions
      */
     fun allFlags(): Map<Feature<*, *, *, *>, FlagDefinition<*, *, *, *>> =
-        konfig.flags
+        configuration.flags
 
     companion object {
 
@@ -130,28 +127,28 @@ interface ModuleRegistry {
          * Creates a new in-memory registry instance.
          *
          * This is the primary way to create registry instances for modules.
-         * Each taxonomy should have its own isolated registry instance.
+         * Each namespace should have its own isolated registry instance.
          *
          * Example:
          * ```kotlin
-         * // Taxonomy definition
-         * data object MyTeam : Taxonomy.Domain("my-team") {
-         *     override val registry = ModuleRegistry()
+         * // Namespace definition
+         * data object MyTeam : Namespace("my-team") {
+         *     override val registry = NamespaceRegistry()
          * }
          *
          * // Testing with isolated registry
          * @Test
          * fun `test feature flag`() {
-         *     val testRegistry = ModuleRegistry(/* config */)
+         *     val testRegistry = NamespaceRegistry(/* config */)
          *     // Test with isolated registry
          * }
          * ```
          *
-         * @return A new [InMemoryModuleRegistry] instance
+         * @return A new [InMemoryNamespaceRegistry] instance
          * @since 0.0.2
          */
-        operator fun invoke(konfig: Konfig = Konfig(emptyMap())): ModuleRegistry = InMemoryModuleRegistry().apply {
-            load(konfig)
+        operator fun invoke(configuration: Configuration = Configuration(emptyMap())): NamespaceRegistry = InMemoryNamespaceRegistry().apply {
+            load(configuration)
         }
 
         /**
@@ -168,13 +165,13 @@ interface ModuleRegistry {
          * @param T The actual value type
          * @param C The type of the context used for evaluation
          */
-        internal fun <S : EncodableValue<T>, T : Any, C : Context> ModuleRegistry.updateDefinition(
+        internal fun <S : EncodableValue<T>, T : Any, C : Context> NamespaceRegistry.updateDefinition(
             definition: FlagDefinition<S, T, C, *>
         ) {
             when (this) {
-                is InMemoryModuleRegistry -> updateDefinition(definition)
-                is Taxonomy -> registry.updateDefinition(definition)
-                else -> error("updateDefinition only supported on InMemoryModuleRegistry or Taxonomy")
+                is InMemoryNamespaceRegistry -> updateDefinition(definition)
+                is Namespace -> registry.updateDefinition(definition)
+                else -> error("updateDefinition only supported on InMemoryNamespaceRegistry or Namespace")
             }
         }
     }

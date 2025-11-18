@@ -4,7 +4,7 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
-import io.amichne.konditional.core.dsl.FeatureFlagDsl
+import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.RuleScope
 import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
@@ -24,7 +24,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * @param C The type of the context that the rules will evaluate against.
  * @constructor Internal constructor - users cannot instantiate this class directly.
  */
-@FeatureFlagDsl
+@KonditionalDsl
 @PublishedApi
 internal data class RuleBuilder<C : Context>(
     private var extension: Evaluable<C> = Placeholder,
@@ -45,7 +45,7 @@ internal data class RuleBuilder<C : Context>(
     /**
      * Implementation of [RuleScope.platforms].
      */
-    @FeatureFlagDsl
+    @KonditionalDsl
     override fun platforms(vararg ps: Platform) {
         platforms += ps
     }

@@ -1,30 +1,30 @@
 package io.amichne.konditional.serialization
 
 import com.squareup.moshi.Moshi
-import io.amichne.konditional.core.Taxonomy
-import io.amichne.konditional.core.instance.Konfig
+import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
 
 /**
- * Taxonomy-scoped serializer for feature flag configurations.
+ * Namespace-scoped serializer for feature flag configurations.
  *
- * Provides JSON serialization/deserialization for a single taxonomy's flags,
- * enabling independent deployment and management of taxonomy configurations.
+ * Provides JSON serialization/deserialization for a single namespace's flags,
+ * enabling independent deployment and management of namespace configurations.
  *
- * ## Taxonomy Isolation
+ * ## Namespace Isolation
  *
- * Each taxonomy's configuration is serialized independently:
- * - Only serializes flags from the specific taxonomy
- * - Deserialization loads directly into the taxonomy's registry
+ * Each namespace's configuration is serialized independently:
+ * - Only serializes flags from the specific namespace
+ * - Deserialization loads directly into the namespace's registry
  * - No interference with other modules' configurations
  *
  * ## Usage Example
  *
  * ```kotlin
- * // Serialize a taxonomy's configuration
- * val serializer = TaxonomySnapshotSerializer(Taxonomy.Domain.Payments)
+ * // Serialize a namespace's configuration
+ * val serializer = NamespaceSnapshotSerializer(Namespace.Payments)
  * val json = serializer.toJson()
  *
  * // Save to your storage backend
@@ -36,7 +36,7 @@ import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
  *
  * when (result) {
  *     is ParseResult.Success -> {
- *         // Configuration loaded successfully into taxonomy registry
+ *         // Configuration loaded successfully into namespace registry
  *         println("Loaded ${result.value.flags.size} flags")
  *     }
  *     is ParseResult.Failure -> {
@@ -55,33 +55,33 @@ import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
  * - Configuration services
  * - In-memory caches
  *
- * @param M The taxonomy type (inferred)
- * @property module The taxonomy whose configuration is being serialized
+ * @param M The namespace type (inferred)
+ * @property module The namespace whose configuration is being serialized
  * @property moshi The Moshi instance for JSON processing (defaults to shared instance)
  */
-class TaxonomySnapshotSerializer<M : Taxonomy>(
+class NamespaceSnapshotSerializer<M : Namespace>(
     private val module: M,
     private val moshi: Moshi = SnapshotSerializer.defaultMoshi()
-) : Serializer<Konfig> {
+) : Serializer<Configuration> {
 
     private val snapshotAdapter = moshi.adapter(SerializableSnapshot::class.java).indent("  ")
 
     /**
-     * Serializes the taxonomy's current flag configuration to JSON.
+     * Serializes the namespace's current flag configuration to JSON.
      *
-     * Only flags from this taxonomy are included in the output.
+     * Only flags from this namespace are included in the output.
      * The JSON is formatted with 2-space indentation for readability.
      *
-     * @return JSON string representation of the taxonomy's configuration
+     * @return JSON string representation of the namespace's configuration
      */
     override fun toJson(): String {
-        val konfig = module.konfig
+        val konfig = module.configuration
         val serializable = konfig.toSerializable()
         return snapshotAdapter.toJson(serializable)
     }
 
     /**
-     * Deserializes JSON into a Konfig and loads it into the taxonomy.
+     * Deserializes JSON into a Configuration and loads it into the namespace.
      *
      * Returns ParseResult for type-safe error handling following parse-don't-validate principles.
      *
@@ -94,25 +94,25 @@ class TaxonomySnapshotSerializer<M : Taxonomy>(
      *
      * ## Side Effects
      *
-     * On success, the deserialized configuration is **immediately loaded** into the taxonomy,
-     * replacing any existing configuration. This ensures the taxonomy's runtime
+     * On success, the deserialized configuration is **immediately loaded** into the namespace,
+     * replacing any existing configuration. This ensures the namespace's runtime
      * state matches the serialized configuration.
      *
      * @param json JSON string to deserialize
-     * @return ParseResult containing either the loaded Konfig or a structured error
+     * @return ParseResult containing either the loaded Configuration or a structured error
      */
-    override fun fromJson(json: String): ParseResult<Konfig> {
+    override fun fromJson(json: String): ParseResult<Configuration> {
         return try {
             val serializable = snapshotAdapter.fromJson(json)
                 ?: return ParseResult.Failure(
-                    ParseError.InvalidJson("Failed to parse JSON for taxonomy '${module.id}': null result")
+                    ParseError.InvalidJson("Failed to parse JSON for namespace '${module.id}': null result")
                 )
 
-            // Parse the serializable snapshot into a Konfig
+            // Parse the serializable snapshot into a Configuration
             when (val parseResult = serializable.toSnapshot()) {
                 is ParseResult.Success -> {
                     val konfig = parseResult.value
-                    // Load the parsed configuration into the taxonomy
+                    // Load the parsed configuration into the namespace
                     module.load(konfig)
                     ParseResult.Success(konfig)
                 }
@@ -121,7 +121,7 @@ class TaxonomySnapshotSerializer<M : Taxonomy>(
         } catch (e: Exception) {
             ParseResult.Failure(
                 ParseError.InvalidJson(
-                    "Failed to deserialize JSON for taxonomy '${module.id}': ${e.message ?: "Unknown error"}"
+                    "Failed to deserialize JSON for namespace '${module.id}': ${e.message ?: "Unknown error"}"
                 )
             )
         }
@@ -129,21 +129,21 @@ class TaxonomySnapshotSerializer<M : Taxonomy>(
 
     companion object {
         /**
-         * Creates a serializer for the specified taxonomy.
+         * Creates a serializer for the specified namespace.
          *
-         * Convenience factory method for creating taxonomy-scoped serializers.
+         * Convenience factory method for creating namespace-scoped serializers.
          *
          * Example:
          * ```kotlin
-         * val serializer = TaxonomySnapshotSerializer.forModule(Taxonomy.Domain.Payments)
+         * val serializer = NamespaceSnapshotSerializer.forModule(Namespace.Payments)
          * val json = serializer.toJson()
          * ```
          *
-         * @param M The taxonomy type (inferred)
-         * @param module The taxonomy to create a serializer for
-         * @return A new TaxonomySnapshotSerializer instance
+         * @param M The namespace type (inferred)
+         * @param module The namespace to create a serializer for
+         * @return A new NamespaceSnapshotSerializer instance
          */
-        fun <M : Taxonomy> forModule(module: M): TaxonomySnapshotSerializer<M> =
-            TaxonomySnapshotSerializer(module)
+        fun <M : Namespace> forModule(module: M): NamespaceSnapshotSerializer<M> =
+            NamespaceSnapshotSerializer(module)
     }
 }

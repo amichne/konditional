@@ -3,7 +3,7 @@ package io.amichne.konditional.internal.serialization.models
 import com.squareup.moshi.JsonClass
 
 /**
- * Patch update configuration that can be applied to an existing Konfig.
+ * Patch update configuration that can be applied to an existing Configuration.
  * Only includes flags that should be updated or added.
  */
 @JsonClass(generateAdapter = true)

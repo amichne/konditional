@@ -10,7 +10,7 @@ Konditional's serialization system provides type-safe JSON conversion for featur
 
 - **Storage-agnostic**: Serialization handles only JSON conversion - you choose the storage (files, databases, cloud storage)
 - **Type-safe parsing**: All deserialization returns `ParseResult<T>` for structured error handling
-- **Taxonomy isolation**: Serialize and load configurations per taxonomy for independent deployment
+- **Namespace isolation**: Serialize and load configurations per namespace for independent deployment
 - **Patch support**: Apply incremental updates without replacing entire configurations
 
 **Use Cases:**
@@ -33,13 +33,13 @@ Convert a `Konfig` to JSON format:
 
 ```kotlin
 import io.amichne.konditional.serialization.SnapshotSerializer
-import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.Namespace
 
 // Get current configuration
-val konfig = Taxonomy.Global.konfig()
+val configuration = Namespace.Global.configuration()
 
 // Serialize to JSON string
-val json = SnapshotSerializer.serialize(konfig)
+val json = SnapshotSerializer.serialize(configuration)
 
 // Store however you like
 File("config/flags.json").writeText(json)
@@ -58,11 +58,11 @@ val json = File("config/flags.json").readText()
 // Deserialize with type-safe error handling
 when (val result = SnapshotSerializer.fromJson(json)) {
     is ParseResult.Success -> {
-        val konfig = result.value
-        println("Loaded ${konfig.flags.size} flags")
+        val configuration = result.value
+        println("Loaded ${configuration.flags.size} flags")
 
-        // Load into taxonomy
-        Taxonomy.Global.load(konfig)
+        // Load into namespace
+        Namespace.Global.load(configuration)
     }
     is ParseResult.Failure -> {
         when (val error = result.error) {
@@ -77,7 +77,7 @@ when (val result = SnapshotSerializer.fromJson(json)) {
 }
 ```
 
-**Important**: `fromJson()` does NOT automatically load the configuration into any taxonomy. You must explicitly call `Taxonomy.load()` if you want to update the runtime configuration.
+**Important**: `fromJson()` does NOT automatically load the configuration into any namespace. You must explicitly call `Namespace.load()` if you want to update the runtime configuration.
 
 ### Applying Patch Updates
 
@@ -85,7 +85,7 @@ Apply incremental changes to an existing configuration without replacing it enti
 
 ```kotlin
 // Current configuration
-val currentKonfig = Taxonomy.Global.konfig()
+val currentConfiguration = Namespace.Global.configuration()
 
 // Patch JSON (adds, updates, or removes specific flags)
 val patchJson = """
@@ -107,10 +107,10 @@ val patchJson = """
 """.trimIndent()
 
 // Apply patch
-when (val result = SnapshotSerializer.applyPatchJson(currentKonfig, patchJson)) {
+when (val result = SnapshotSerializer.applyPatchJson(currentConfiguration, patchJson)) {
     is ParseResult.Success -> {
         val patchedKonfig = result.value
-        Taxonomy.Global.load(patchedKonfig)
+        Namespace.Global.load(patchedKonfig)
         println("Patch applied successfully")
     }
     is ParseResult.Failure -> {
@@ -140,46 +140,46 @@ val moshi: Moshi = SnapshotSerializer.defaultMoshi()
 
 ---
 
-## TaxonomySnapshotSerializer
+## NamespaceSnapshotSerializer
 
-`TaxonomySnapshotSerializer` provides taxonomy-scoped serialization, enabling independent configuration management per domain.
+`NamespaceSnapshotSerializer` provides namespace-scoped serialization, enabling independent configuration management per domain.
 
-### Creating a Taxonomy Serializer
+### Creating a Namespace Serializer
 
-Create a serializer for a specific taxonomy:
+Create a serializer for a specific namespace:
 
 ```kotlin
-import io.amichne.konditional.serialization.TaxonomySnapshotSerializer
+import io.amichne.konditional.serialization.NamespaceSnapshotSerializer
 
 // Constructor approach
-val serializer = TaxonomySnapshotSerializer(Taxonomy.Domain.Payments)
+val serializer = NamespaceSnapshotSerializer(Namespace.Payments)
 
 // Or factory method
-val serializer = TaxonomySnapshotSerializer.forModule(Taxonomy.Domain.Payments)
+val serializer = NamespaceSnapshotSerializer.forModule(Namespace.Payments)
 ```
 
-### Serializing a Taxonomy
+### Serializing a Namespace
 
-Export only the flags from a specific taxonomy:
+Export only the flags from a specific namespace:
 
 ```kotlin
-val serializer = TaxonomySnapshotSerializer(Taxonomy.Domain.Payments)
+val serializer = NamespaceSnapshotSerializer(Namespace.Payments)
 
 // Serialize current state
 val json = serializer.toJson()
 
-// Save to taxonomy-specific storage
+// Save to namespace-specific storage
 File("configs/payments.json").writeText(json)
 ```
 
-**Isolation**: Only flags from the specified taxonomy are included in the output.
+**Isolation**: Only flags from the specified namespace are included in the output.
 
-### Deserializing into a Taxonomy
+### Deserializing into a Namespace
 
-Load JSON and automatically update the taxonomy:
+Load JSON and automatically update the namespace:
 
 ```kotlin
-val serializer = TaxonomySnapshotSerializer(Taxonomy.Domain.Payments)
+val serializer = NamespaceSnapshotSerializer(Namespace.Payments)
 
 // Load from storage
 val json = File("configs/payments.json").readText()
@@ -187,7 +187,7 @@ val json = File("configs/payments.json").readText()
 // Deserialize and load (automatic side effect)
 when (val result = serializer.fromJson(json)) {
     is ParseResult.Success -> {
-        // Configuration already loaded into Taxonomy.Domain.Payments
+        // Configuration already loaded into Namespace.Payments
         println("Loaded ${result.value.flags.size} payment flags")
     }
     is ParseResult.Failure -> {
@@ -196,16 +196,16 @@ when (val result = serializer.fromJson(json)) {
 }
 ```
 
-**Important side effect**: Unlike `SnapshotSerializer.fromJson()`, this method **automatically loads** the deserialized configuration into the taxonomy upon success. The taxonomy's runtime state is immediately updated.
+**Important side effect**: Unlike `SnapshotSerializer.fromJson()`, this method **automatically loads** the deserialized configuration into the namespace upon success. The namespace's runtime state is immediately updated.
 
-### Taxonomy Isolation Example
+### Namespace Isolation Example
 
 Manage multiple domains independently:
 
 ```kotlin
-// Serialize each taxonomy separately
-val authSerializer = TaxonomySnapshotSerializer(Taxonomy.Domain.Authentication)
-val paymentSerializer = TaxonomySnapshotSerializer(Taxonomy.Domain.Payments)
+// Serialize each namespace separately
+val authSerializer = NamespaceSnapshotSerializer(Namespace.Authentication)
+val paymentSerializer = NamespaceSnapshotSerializer(Namespace.Payments)
 
 val authJson = authSerializer.toJson()
 val paymentJson = paymentSerializer.toJson()
@@ -221,7 +221,7 @@ paymentSerializer.fromJson(s3.get("configs/payments.json"))
 
 **Benefits**:
 - Independent deployment schedules per domain
-- Reduced blast radius (errors in one taxonomy don't affect others)
+- Reduced blast radius (errors in one namespace don't affect others)
 - Team ownership boundaries (each team manages their own config)
 
 ---
@@ -239,14 +239,14 @@ interface Serializer<T> {
 
 ### When to Use
 
-- `TaxonomySnapshotSerializer` implements this interface for taxonomy-scoped serialization
+- `NamespaceSnapshotSerializer` implements this interface for namespace-scoped serialization
 - `SnapshotSerializer` is an object with static methods and does NOT implement this interface
 - Custom implementations for specialized serialization needs
 
 ### Example Usage
 
 ```kotlin
-val serializer: Serializer<Konfig> = TaxonomySnapshotSerializer(Taxonomy.Global)
+val serializer: Serializer<Konfig> = NamespaceSnapshotSerializer(Namespace.Global)
 
 // Polymorphic usage
 fun saveConfig(serializer: Serializer<Konfig>, path: String) {
@@ -394,7 +394,8 @@ Decimal values:
 
 ### JSON (Data Classes)
 
-Complex structured data:
+#### Temporarily disabled
+~~Complex structured data:~~
 
 ```json
 {
@@ -407,7 +408,8 @@ Complex structured data:
 }
 ```
 
-**Note**: JSON values must match the data class structure expected by the feature definition.
+~~JSON values must match the data class structure expected by the feature definition.~~
+**Note**: There are plans to enable in the immedaite future, but for the time being these are not included
 
 ---
 
@@ -600,8 +602,8 @@ suspend fun fetchRemoteConfig(url: String) {
         // Parse and validate
         when (val result = SnapshotSerializer.fromJson(json)) {
             is ParseResult.Success -> {
-                // Load into taxonomy
-                Taxonomy.Global.load(result.value)
+                // Load into namespace
+                Namespace.Global.load(result.value)
                 println("Remote config loaded successfully")
             }
             is ParseResult.Failure -> {
@@ -635,30 +637,30 @@ suspend fun pollRemoteConfig(url: String, intervalMs: Long) {
 Store configurations in a database:
 
 ```kotlin
-import io.amichne.konditional.serialization.TaxonomySnapshotSerializer
+import io.amichne.konditional.serialization.NamespaceSnapshotSerializer
 
 // Save to database
-fun saveToDatabase(taxonomy: Taxonomy, db: Database) {
-    val serializer = TaxonomySnapshotSerializer(taxonomy)
+fun saveToDatabase(namespace: Namespace, db: Database) {
+    val serializer = NamespaceSnapshotSerializer(namespace)
     val json = serializer.toJson()
 
     db.execute(
-        "INSERT OR REPLACE INTO configurations (taxonomy_id, json, updated_at) VALUES (?, ?, ?)",
-        taxonomy.id,
+        "INSERT OR REPLACE INTO configurations (namespace_id, json, updated_at) VALUES (?, ?, ?)",
+        namespace.id,
         json,
         System.currentTimeMillis()
     )
 }
 
 // Load from database
-fun loadFromDatabase(taxonomy: Taxonomy, db: Database) {
+fun loadFromDatabase(namespace: Namespace, db: Database) {
     val row = db.query(
-        "SELECT json FROM configurations WHERE taxonomy_id = ?",
-        taxonomy.id
+        "SELECT json FROM configurations WHERE namespace_id = ?",
+        namespace.id
     ).firstOrNull()
 
     if (row != null) {
-        val serializer = TaxonomySnapshotSerializer(taxonomy)
+        val serializer = NamespaceSnapshotSerializer(namespace)
         when (val result = serializer.fromJson(row["json"] as String)) {
             is ParseResult.Success ->
                 println("Loaded from database: ${result.value.flags.size} flags")
@@ -669,21 +671,21 @@ fun loadFromDatabase(taxonomy: Taxonomy, db: Database) {
 }
 
 // Audit trail
-fun saveWithHistory(taxonomy: Taxonomy, db: Database, userId: String) {
-    val serializer = TaxonomySnapshotSerializer(taxonomy)
+fun saveWithHistory(namespace: Namespace, db: Database, userId: String) {
+    val serializer = NamespaceSnapshotSerializer(namespace)
     val json = serializer.toJson()
 
     db.transaction {
         // Update current config
         execute(
-            "INSERT OR REPLACE INTO configurations (taxonomy_id, json) VALUES (?, ?)",
-            taxonomy.id, json
+            "INSERT OR REPLACE INTO configurations (namespace_id, json) VALUES (?, ?)",
+            namespace.id, json
         )
 
         // Save to history
         execute(
-            "INSERT INTO config_history (taxonomy_id, json, user_id, created_at) VALUES (?, ?, ?, ?)",
-            taxonomy.id, json, userId, System.currentTimeMillis()
+            "INSERT INTO config_history (namespace_id, json, user_id, created_at) VALUES (?, ?, ?, ?)",
+            namespace.id, json, userId, System.currentTimeMillis()
         )
     }
 }
@@ -695,28 +697,28 @@ Version control and rollback:
 
 ```kotlin
 // Backup current configuration
-fun backupConfiguration(taxonomy: Taxonomy, backupDir: File) {
-    val serializer = TaxonomySnapshotSerializer(taxonomy)
+fun backupConfiguration(namespace: Namespace, backupDir: File) {
+    val serializer = NamespaceSnapshotSerializer(namespace)
     val json = serializer.toJson()
 
     val timestamp = System.currentTimeMillis()
-    val filename = "${taxonomy.id}-$timestamp.json"
+    val filename = "${namespace.id}-$timestamp.json"
 
     backupDir.resolve(filename).writeText(json)
     println("Backed up to $filename")
 }
 
 // List available backups
-fun listBackups(taxonomy: Taxonomy, backupDir: File): List<File> {
+fun listBackups(namespace: Namespace, backupDir: File): List<File> {
     return backupDir.listFiles { file ->
-        file.name.startsWith("${taxonomy.id}-") && file.extension == "json"
+        file.name.startsWith("${namespace.id}-") && file.extension == "json"
     }?.sortedByDescending { it.name } ?: emptyList()
 }
 
 // Restore from backup
-fun restoreConfiguration(taxonomy: Taxonomy, backupFile: File) {
+fun restoreConfiguration(namespace: Namespace, backupFile: File) {
     val json = backupFile.readText()
-    val serializer = TaxonomySnapshotSerializer(taxonomy)
+    val serializer = NamespaceSnapshotSerializer(namespace)
 
     when (val result = serializer.fromJson(json)) {
         is ParseResult.Success ->
@@ -727,15 +729,15 @@ fun restoreConfiguration(taxonomy: Taxonomy, backupFile: File) {
 }
 
 // Automated backup on change
-fun configureAutoBackup(taxonomy: Taxonomy, backupDir: File) {
+fun configureAutoBackup(namespace: Namespace, backupDir: File) {
     var lastJson = ""
 
     // Poll for changes (or use observer pattern)
     Timer().scheduleAtFixedRate(0, 60_000) { // Every minute
-        val currentJson = TaxonomySnapshotSerializer(taxonomy).toJson()
+        val currentJson = NamespaceSnapshotSerializer(namespace).toJson()
 
         if (currentJson != lastJson) {
-            backupConfiguration(taxonomy, backupDir)
+            backupConfiguration(namespace, backupDir)
             lastJson = currentJson
         }
     }
@@ -754,12 +756,12 @@ data class VersionedConfig(
     val author: String
 )
 
-class ConfigVersionManager(private val taxonomy: Taxonomy) {
+class ConfigVersionManager(private val namespace: Namespace) {
     private val versions = mutableListOf<VersionedConfig>()
     private var currentVersion = 0
 
     fun saveVersion(author: String) {
-        val serializer = TaxonomySnapshotSerializer(taxonomy)
+        val serializer = NamespaceSnapshotSerializer(namespace)
         val json = serializer.toJson()
 
         val version = VersionedConfig(
@@ -777,7 +779,7 @@ class ConfigVersionManager(private val taxonomy: Taxonomy) {
         val config = versions.find { it.version == version }
             ?: error("Version $version not found")
 
-        val serializer = TaxonomySnapshotSerializer(taxonomy)
+        val serializer = NamespaceSnapshotSerializer(namespace)
         when (val result = serializer.fromJson(config.json)) {
             is ParseResult.Success ->
                 println("Rolled back to version $version")
@@ -803,7 +805,7 @@ Always validate configurations before applying:
 when (val result = SnapshotSerializer.fromJson(json)) {
     is ParseResult.Success -> {
         // Validation passed, safe to load
-        Taxonomy.Global.load(result.value)
+        Namespace.Global.load(result.value)
     }
     is ParseResult.Failure -> {
         // Handle error, don't load
@@ -812,8 +814,8 @@ when (val result = SnapshotSerializer.fromJson(json)) {
 }
 
 // Bad: Blindly applying without validation
-val konfig = SnapshotSerializer.fromJson(json) as ParseResult.Success
-Taxonomy.Global.load(konfig.value)  // Crashes if parsing failed
+val configuration = SnapshotSerializer.fromJson(json) as ParseResult.Success
+Namespace.Global.load(configuration.value)  // Crashes if parsing failed
 ```
 
 ### Cache Configurations Locally
@@ -830,7 +832,7 @@ suspend fun syncConfiguration(remoteUrl: String, cacheFile: File) {
             is ParseResult.Success -> {
                 // Valid remote config - cache it
                 cacheFile.writeText(remoteJson)
-                Taxonomy.Global.load(result.value)
+                Namespace.Global.load(result.value)
             }
             is ParseResult.Failure -> {
                 // Invalid remote - use cache
@@ -844,19 +846,19 @@ suspend fun syncConfiguration(remoteUrl: String, cacheFile: File) {
 }
 ```
 
-### Use Taxonomy Isolation
+### Use Namespace Isolation
 
 Organize flags by domain for independent deployment:
 
 ```kotlin
 // Good: Independent taxonomies
-TaxonomySnapshotSerializer(Taxonomy.Domain.Payments).fromJson(paymentsJson)
-TaxonomySnapshotSerializer(Taxonomy.Domain.Search).fromJson(searchJson)
+NamespaceSnapshotSerializer(Namespace.Payments).fromJson(paymentsJson)
+NamespaceSnapshotSerializer(Namespace.Search).fromJson(searchJson)
 
 // Better: Each team manages their own
 object PaymentsTeam {
     fun deployConfig(json: String) {
-        TaxonomySnapshotSerializer(Taxonomy.Domain.Payments).fromJson(json)
+        NamespaceSnapshotSerializer(Namespace.Payments).fromJson(json)
     }
 }
 ```
@@ -874,8 +876,8 @@ data class StoredConfig(
     val json: String
 )
 
-fun saveWithMetadata(konfig: Konfig, author: String) {
-    val json = SnapshotSerializer.serialize(konfig)
+fun saveWithMetadata(configuration: Konfig, author: String) {
+    val json = SnapshotSerializer.serialize(configuration)
 
     val stored = StoredConfig(
         version = "1.2.3",
@@ -914,7 +916,7 @@ fun loadConfigWithFallback(
             when (val fallbackResult = SnapshotSerializer.fromJson(fallbackSource())) {
                 is ParseResult.Success -> return fallbackResult.value
                 is ParseResult.Failure -> {
-                    // Both failed - use empty konfig
+                    // Both failed - use empty configuration
                     logError("All sources failed: ${fallbackResult.error}")
                     return Konfig(emptyMap())
                 }
@@ -938,7 +940,7 @@ val patch = """
   "removeKeys": []
 }
 """
-SnapshotSerializer.applyPatchJson(currentKonfig, patch)
+SnapshotSerializer.applyPatchJson(currentConfiguration, patch)
 
 // Less efficient: Full replacement
 val fullConfig = """
@@ -957,17 +959,17 @@ val fullConfig = """
 End-to-end remote configuration with caching:
 
 ```kotlin
-import io.amichne.konditional.serialization.TaxonomySnapshotSerializer
-import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.serialization.NamespaceSnapshotSerializer
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.result.ParseResult
 import java.io.File
 
 class RemoteConfigManager(
-    private val taxonomy: Taxonomy,
+    private val namespace: Namespace,
     private val remoteUrl: String,
     private val cacheFile: File
 ) {
-    private val serializer = TaxonomySnapshotSerializer(taxonomy)
+    private val serializer = NamespaceSnapshotSerializer(namespace)
 
     suspend fun initialize() {
         // Load from cache immediately
@@ -1013,7 +1015,7 @@ class RemoteConfigManager(
 
     fun backup(backupDir: File) {
         val json = serializer.toJson()
-        val filename = "${taxonomy.id}-${System.currentTimeMillis()}.json"
+        val filename = "${namespace.id}-${System.currentTimeMillis()}.json"
         backupDir.resolve(filename).writeText(json)
     }
 }
@@ -1021,7 +1023,7 @@ class RemoteConfigManager(
 // Usage
 suspend fun main() {
     val manager = RemoteConfigManager(
-        taxonomy = Taxonomy.Domain.Payments,
+        namespace = Namespace.Payments,
         remoteUrl = "https://config.example.com/payments.json",
         cacheFile = File("cache/payments.json")
     )
@@ -1045,18 +1047,18 @@ suspend fun main() {
 **Key Takeaways:**
 
 - Use `SnapshotSerializer` for global serialization without automatic loading
-- Use `TaxonomySnapshotSerializer` for taxonomy-scoped serialization with automatic loading
+- Use `NamespaceSnapshotSerializer` for namespace-scoped serialization with automatic loading
 - All deserialization returns `ParseResult` for type-safe error handling
 - Patches enable incremental updates without full configuration replacement
 - Always validate configurations before loading
 - Maintain local caches for offline support
-- Use taxonomy isolation for independent deployment
+- Use namespace isolation for independent deployment
 
 ---
 
 ## Next Steps
 
-- **[Registry](Registry.md)** - Taxonomy management and registry operations
+- **[Registry](Registry.md)** - Namespace management and registry operations
 - **[Results](Results.md)** - Error handling with ParseResult and EvaluationResult
 - **[Configuration](Configuration.md)** - DSL reference for building configurations
 - **[Context](Context.md)** - Custom contexts for domain-specific logic

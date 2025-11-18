@@ -26,12 +26,12 @@ This guide covers Konditional's rule system for sophisticated feature flag targe
 A **Rule** defines **when** a specific value should be used for a feature flag. Rules combine targeting criteria (platform, locale, version, custom logic) with rollout percentages to enable sophisticated feature deployment strategies.
 
 ```kotlin
-object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val DARK_MODE by boolean(default = false) {
         rule {
             platforms(Platform.IOS)
             rollout { 50.0 }
-        } implies true
+        } returns true
     }
 }
 ```
@@ -106,7 +106,7 @@ rule {
     }
     rollout { 50.0 }
     note("Mobile users, English locales, 50% rollout")
-} implies value
+} returns value
 ```
 
 **All targeting criteria are optional** - omitted criteria match everything.
@@ -123,12 +123,12 @@ Target specific platforms using `platforms()`:
 // Single platform
 rule {
     platforms(Platform.IOS)
-} implies "ios-value"
+} returns "ios-value"
 
 // Multiple platforms (OR logic within platforms)
 rule {
     platforms(Platform.IOS, Platform.ANDROID)
-} implies "mobile-value"
+} returns "mobile-value"
 ```
 
 **Available platforms:**
@@ -148,12 +148,12 @@ Target users by language and region using `locales()`:
 // Single locale
 rule {
     locales(AppLocale.EN_US)
-} implies "us-english"
+} returns "us-english"
 
 // Multiple locales
 rule {
     locales(AppLocale.EN_US, AppLocale.EN_CA, AppLocale.EN_GB)
-} implies "english-value"
+} returns "english-value"
 ```
 
 **Available locales:**
@@ -170,7 +170,7 @@ rule {
     platforms(Platform.IOS, Platform.ANDROID)  // Must be iOS or Android
     locales(AppLocale.EN_US)                   // AND must be US English
     rollout { 50.0 }                           // AND must be in 50% bucket
-} implies value
+} returns value
 ```
 
 ---
@@ -197,12 +197,12 @@ interface VersionRangeScope {
 // Minimum version only (>= 2.0.0)
 rule {
     versions { min(2, 0, 0) }
-} implies "new-feature"
+} returns "new-feature"
 
 // Maximum version only (< 2.0.0)
 rule {
     versions { max(2, 0, 0) }
-} implies "legacy-value"
+} returns "legacy-value"
 
 // Bounded range [1.5.0, 2.0.0)
 rule {
@@ -210,7 +210,7 @@ rule {
         min(1, 5, 0)  // >= 1.5.0
         max(2, 0, 0)  // < 2.0.0
     }
-} implies "transition-value"
+} returns "transition-value"
 
 // Exact version targeting
 rule {
@@ -218,7 +218,7 @@ rule {
         min(2, 1, 3)
         max(2, 1, 4)  // Matches only 2.1.3
     }
-} implies "specific-version"
+} returns "specific-version"
 ```
 
 ### Version Range Types
@@ -248,7 +248,7 @@ Use the `rollout { }` function with a percentage value (0-100):
 rule {
     platforms(Platform.IOS)
     rollout { 25.0 }  // 25% of iOS users
-} implies true
+} returns true
 
 // Common rollout values
 rollout { 0.0 }    // 0% - effectively disabled
@@ -303,7 +303,7 @@ val NEW_CHECKOUT by boolean(default = false) {
     rule {
         rollout { 10.0 }
         note("Phase 1 - Initial rollout")
-    } implies true
+    } returns true
 }
 
 // Phase 2: Increase to 50%
@@ -311,7 +311,7 @@ val NEW_CHECKOUT by boolean(default = false) {
     rule {
         rollout { 50.0 }
         note("Phase 2 - Expanded rollout")
-    } implies true
+    } returns true
 }
 
 // Phase 3: Full rollout
@@ -319,7 +319,7 @@ val NEW_CHECKOUT by boolean(default = false) {
     rule {
         rollout { 100.0 }
         note("Phase 3 - Complete rollout")
-    } implies true
+    } returns true
 }
 ```
 
@@ -337,7 +337,7 @@ val BETA_FEATURE by boolean(default = false) {
             }
         }
         rollout { 100.0 }
-    } implies true
+    } returns true
 
     // 50% for enterprise customers
     rule {
@@ -347,12 +347,12 @@ val BETA_FEATURE by boolean(default = false) {
             }
         }
         rollout { 50.0 }
-    } implies true
+    } returns true
 
     // 10% for all other users
     rule {
         rollout { 10.0 }
-    } implies true
+    } returns true
 }
 ```
 
@@ -365,7 +365,7 @@ val EXPERIMENT by boolean(default = false) {
     salt("v1")  // Original bucketing
     rule {
         rollout { 50.0 }
-    } implies true
+    } returns true
 }
 
 // Later: Redistribute users by changing salt
@@ -373,7 +373,7 @@ val EXPERIMENT by boolean(default = false) {
     salt("v2")  // New bucketing - different users enabled
     rule {
         rollout { 50.0 }
-    } implies true
+    } returns true
 }
 ```
 
@@ -398,7 +398,7 @@ specificity = (platforms specified? 1 : 0)
 ```mermaid
 graph TD
     subgraph "Specificity Rankings"
-        S0["Specificity 0<br/>rule { } implies value"]
+        S0["Specificity 0<br/>rule { } returns value"]
         S1["Specificity 1<br/>platforms(IOS)"]
         S2["Specificity 2<br/>platforms(IOS) + locales(EN_US)"]
         S3["Specificity 3<br/>platforms + locales + versions"]
@@ -422,25 +422,25 @@ graph TD
 ```kotlin
 // Specificity = 0 (no constraints)
 rule {
-} implies "default-value"
+} returns "default-value"
 
 // Specificity = 1 (one constraint)
 rule {
     platforms(Platform.IOS)
-} implies "ios-value"
+} returns "ios-value"
 
 // Specificity = 2 (two constraints)
 rule {
     platforms(Platform.IOS)
     locales(AppLocale.EN_US)
-} implies "ios-us-value"
+} returns "ios-us-value"
 
 // Specificity = 3 (three constraints)
 rule {
     platforms(Platform.IOS)
     locales(AppLocale.EN_US)
     versions { min(2, 0, 0) }
-} implies "ios-us-v2-value"
+} returns "ios-us-v2-value"
 
 // Specificity = 4 (base + extension)
 rule {
@@ -454,7 +454,7 @@ rule {
             override fun specificity() = 1  // Adds +1 to total
         }
     }
-} implies "enterprise-ios-us-v2-value"
+} returns "enterprise-ios-us-v2-value"
 ```
 
 ### Evaluation Order Example
@@ -465,12 +465,12 @@ val THEME by string(default = "light") {
     rule {
         platforms(Platform.IOS)
         locales(AppLocale.EN_US)
-    } implies "dark-us-ios"
+    } returns "dark-us-ios"
 
     // Specificity = 1, evaluated SECOND
     rule {
         platforms(Platform.IOS)
-    } implies "dark-ios"
+    } returns "dark-ios"
 }
 
 // iOS + EN_US → "dark-us-ios" (most specific wins)
@@ -486,12 +486,12 @@ When multiple rules have the same specificity, rules are sorted by `note` text a
 rule {
     platforms(Platform.IOS)
     note("A - First rule")
-} implies value1
+} returns value1
 
 rule {
     platforms(Platform.IOS)
     note("B - Second rule")
-} implies value2
+} returns value2
 
 // Both have specificity 1, sorted by note: "A" before "B"
 ```
@@ -530,7 +530,7 @@ rule {
             ctx.organizationId.startsWith("ent-")
         }
     }
-} implies value
+} returns value
 ```
 
 **Note**: Factory-created evaluables have default `specificity() = 1`.
@@ -552,7 +552,7 @@ rule {
             override fun specificity(): Int = 3  // Three conditions = specificity 3
         }
     }
-} implies value
+} returns value
 ```
 
 ### Pattern 3: Reusable Classes
@@ -578,7 +578,7 @@ val PREMIUM_EXPORT by boolean(default = false) {
                 SubscriptionTier.ENTERPRISE
             ))
         }
-    } implies true
+    } returns true
 }
 
 val ADVANCED_ANALYTICS by boolean(default = false) {
@@ -586,7 +586,7 @@ val ADVANCED_ANALYTICS by boolean(default = false) {
         extension {
             SubscriptionTierEvaluable(setOf(SubscriptionTier.ENTERPRISE))
         }
-    } implies true
+    } returns true
 }
 ```
 
@@ -682,7 +682,7 @@ rule {
 
     // Rollout bucketing
     rollout { 50.0 }
-} implies value
+} returns value
 // Total specificity = 2 + 1 = 3
 ```
 
@@ -711,7 +711,7 @@ val API_ENDPOINT by string(default = "https://api.prod.com") {
                 ctx.subscriptionTier == SubscriptionTier.ENTERPRISE
             }
         }
-    } implies "https://api-enterprise-ios-v2.com"
+    } returns "https://api-enterprise-ios-v2.com"
 
     // Less specific: all enterprise users
     rule {
@@ -720,12 +720,12 @@ val API_ENDPOINT by string(default = "https://api.prod.com") {
                 ctx.subscriptionTier == SubscriptionTier.ENTERPRISE
             }
         }
-    } implies "https://api-enterprise.com"
+    } returns "https://api-enterprise.com"
 
     // Least specific: iOS users
     rule {
         platforms(Platform.IOS)
-    } implies "https://api-ios.com"
+    } returns "https://api-ios.com"
 }
 ```
 
@@ -743,7 +743,7 @@ rule {
     extension {
         SubscriptionTierEvaluable(setOf(SubscriptionTier.ENTERPRISE))
     }
-} implies value
+} returns value
 ```
 
 ### 3. Document Non-Obvious Logic
@@ -759,7 +759,7 @@ rule {
     }
     rollout { 15.0 }
     note("Workaround for Android bug #1234 - affects v1.9.0-2.0.x only")
-} implies workaroundValue
+} returns workaroundValue
 ```
 
 ### 4. Use Type-Safe Custom Contexts
@@ -790,7 +790,7 @@ rule {
             ctx.subscriptionTier == SubscriptionTier.ENTERPRISE  // ✓ Type-safe
         }
     }
-} implies true
+} returns true
 ```
 
 ### 5. Match Specificity to Constraint Count

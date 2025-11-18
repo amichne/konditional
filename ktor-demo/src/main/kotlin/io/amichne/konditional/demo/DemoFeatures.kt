@@ -3,7 +3,7 @@ package io.amichne.konditional.demo
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.rules.evaluable.Evaluable.Companion.factory
 
@@ -12,21 +12,21 @@ import io.amichne.konditional.rules.evaluable.Evaluable.Companion.factory
  *
  * This demonstrates the modern pattern of using FeatureContainer instead of enum-based features:
  * - Complete enumeration via allFeatures()
- * - Zero boilerplate (taxonomy declared once)
+ * - Zero boilerplate (namespace declared once)
  * - Mixed types in one container
  * - Type-safe delegation with DSL configuration
  */
-object DemoFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object DemoFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     // Boolean Features
     val DARK_MODE by boolean<Context>(false) {
         rule {
             platforms(Platform.IOS, Platform.ANDROID)
             rollout { 50.0 }
-        } implies true
+        } returns true
         rule {
             platforms(Platform.WEB)
             rollout { 75.0 }
-        } implies true
+        } returns true
     }
 
     val BETA_FEATURES by boolean<Context>(false) {
@@ -37,11 +37,11 @@ object DemoFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
                 min(2)
             }
             rollout { 25.0 }
-        } implies true
+        } returns true
         rule {
             versions { max(3) }
             rollout { 100.0 }
-        } implies true
+        } returns true
     }
     val ANALYTICS_ENABLED by boolean<Context>(true) { }
 
@@ -50,10 +50,10 @@ object DemoFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
         default("Welcome!")
         rule {
             locales(AppLocale.EN_US, AppLocale.EN_CA)
-        } implies "Welcome to Konditional Demo!"
+        } returns "Welcome to Konditional Demo!"
         rule {
             locales(AppLocale.ES_US)
-        } implies "Bienvenue dans Konditional Demo!"
+        } returns "Bienvenue dans Konditional Demo!"
 
     }
     val THEME_COLOR by string<Context>("blue") {
@@ -61,13 +61,13 @@ object DemoFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
         rule {
             platforms(Platform.IOS)
             rollout { 50.0 }
-        } implies "#10B981" // Green
+        } returns "#10B981" // Green
         rule {
             platforms(Platform.ANDROID)
-        } implies "#8B5CF6" // Purple
+        } returns "#8B5CF6" // Purple
         rule {
             platforms(Platform.WEB)
-        } implies "#F59E0B" // Amber
+        } returns "#F59E0B" // Amber
     }
 
     // Integer Features
@@ -75,20 +75,20 @@ object DemoFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
         default(10)
         rule {
             platforms(Platform.WEB)
-        } implies 25
+        } returns 25
         rule {
             platforms(Platform.IOS, Platform.ANDROID)
-        } implies 15
+        } returns 15
     }
 
     val CACHE_TTL_SECONDS by int<Context>(60) {
         default(300) // 5 minutes
         rule {
             versions { min(2) }
-        } implies 600 // 10 minutes for v2+
+        } returns 600 // 10 minutes for v2+
         rule {
             platforms(Platform.WEB)
-        } implies 900 // 15 minutes for web
+        } returns 900 // 15 minutes for web
 
     }
 
@@ -98,25 +98,25 @@ object DemoFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
         rule {
             platforms(Platform.IOS)
             rollout { 30.0 }
-        } implies 10.0
+        } returns 10.0
         rule {
             platforms(Platform.ANDROID)
             rollout { 20.0 }
-        } implies 15.0
+        } returns 15.0
         rule {
             versions { min(2, 5) }
             rollout { 50.0 }
-        } implies 20.0
+        } returns 20.0
 
     }
     val API_RATE_LIMIT by double<Context>(100.5) {
         default(100.0)
         rule {
             platforms(Platform.WEB)
-        } implies 200.0
+        } returns 200.0
         rule {
             versions { min(3) }
-        } implies 500.0
+        } returns 500.0
 
     }
 }
@@ -127,7 +127,7 @@ object DemoFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
  * These features require the EnterpriseContext with additional fields like
  * subscription tier and employee count.
  */
-object EnterpriseFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object EnterpriseFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     // Enterprise Boolean Features
     val SSO_ENABLED by boolean<EnterpriseContext>(true) {
         rule {
@@ -137,7 +137,7 @@ object EnterpriseFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
                         ctx.subscriptionTier == SubscriptionTier.PROFESSIONAL
                 }
             }
-        } implies true
+        } returns true
 
     }
     val ADVANCED_ANALYTICS by boolean<EnterpriseContext>(false) {
@@ -148,7 +148,7 @@ object EnterpriseFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
                         ctx.employeeCount > 100
                 }
             }
-        } implies true
+        } returns true
     }
     val CUSTOM_BRANDING by boolean<EnterpriseContext>(true) { }
     val DEDICATED_SUPPORT by boolean<EnterpriseContext>(false) { }

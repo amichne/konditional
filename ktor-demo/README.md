@@ -78,13 +78,13 @@ AppLocale.entries.forEach { locale ->
 
 No hardcoded HTML - everything is type-safe and refactorable!
 
-### 📊 Feature Types Demonstrated
+### Feature Types Demonstrated
 - **Boolean**: Dark Mode, Beta Features, Analytics
 - **String**: Welcome Messages (localized), Theme Colors
 - **Integer**: Max Items Per Page, Cache TTL
 - **Double**: Discount Percentages, API Rate Limits
 
-### 🔥 Hot Reload Mode
+### Hot Reload Mode
 - Auto-evaluation on parameter changes
 - Debounced text input (500ms)
 - Type-safe event handling in Kotlin
@@ -330,11 +330,11 @@ val DARK_MODE by boolean<Context>(false) {
     rule {
         platforms(Platform.IOS, Platform.ANDROID)
         rollout { 50.0 }
-    } implies true
+    } returns true
     rule {
         platforms(Platform.WEB)
         rollout { 75.0 }
-    } implies true
+    } returns true
 }
 ```
 
@@ -345,10 +345,10 @@ val WELCOME_MESSAGE by string<Context>("Hello!") {
     default("Welcome!")
     rule {
         locales(AppLocale.EN_US, AppLocale.EN_CA)
-    } implies "Welcome to Konditional Demo!"
+    } returns "Welcome to Konditional Demo!"
     rule {
         locales(AppLocale.ES_US)
-    } implies "¡Bienvenido a Konditional Demo!"
+    } returns "¡Bienvenido a Konditional Demo!"
 }
 ```
 
@@ -363,7 +363,7 @@ val SSO_ENABLED by boolean<EnterpriseContext>(true) {
                 ctx.subscriptionTier == SubscriptionTier.PROFESSIONAL
             }
         }
-    } implies true
+    } returns true
 }
 ```
 
