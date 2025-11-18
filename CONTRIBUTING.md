@@ -1,6 +1,4 @@
-# CLAUDE.md - AI Assistant Guide for Konditional
-
-This document provides comprehensive guidance for AI assistants working with the Konditional codebase.
+# Contribution Guide for Konditional
 
 ## Table of Contents
 
@@ -18,7 +16,8 @@ This document provides comprehensive guidance for AI assistants working with the
 
 ## Project Overview
 
-**Konditional** is a type-safe, deterministic feature flags library for Kotlin that prioritizes compile-time guarantees over traditional string-based configuration systems.
+**Konditional** is a type-safe, deterministic feature flags library for Kotlin that prioritizes compile-time guarantees
+over traditional string-based configuration systems.
 
 ### Key Characteristics
 
@@ -36,8 +35,6 @@ This document provides comprehensive guidance for AI assistants working with the
 3. **Zero Dependencies**: Pure Kotlin with minimal external libs (only Moshi for JSON)
 4. **Thread-Safe**: Lock-free reads with atomic updates
 5. **Extensible**: Custom contexts, rules, and value types
-
----
 
 ## Codebase Structure
 
@@ -71,6 +68,7 @@ konditional/
 ### Key Modules
 
 #### **context/** - Evaluation Context
+
 - `Context.kt`: Base interface requiring locale, platform, appVersion, stableId
 - `Platform.kt`: Enum (IOS, ANDROID, WEB, DESKTOP)
 - `AppLocale.kt`: Supported locales (EN_US, FR_FR, DE_DE, etc.)
@@ -78,21 +76,24 @@ konditional/
 - `Rollout.kt`: Value class enforcing 0-100% rollout with SHA-256 bucketing
 
 #### **core/** - Core Framework
+
 - `Feature.kt`: Sealed interface for type-safe feature flags
 - `FeatureModule.kt`: Sealed class for team-scoped isolation
-- `ModuleRegistry.kt`: Abstract registry for flag configurations
-- `InMemoryModuleRegistry.kt`: Default in-memory implementation
+- `NamespaceRegistry.kt`: Abstract registry for flag configurations
+- `InMemoryNamespaceRegistry.kt`: Default in-memory implementation
 - `Config.kt`: DSL entry point for configuration
 - `FlagDefinition.kt`: Flag with default value, rules, and evaluation logic
 - `*Feature.kt`: Type aliases (BooleanFeature, StringFeature, IntFeature, DoubleFeature)
 
 #### **rules/** - Advanced Targeting
+
 - `Rule.kt`: Composable rule with evaluation logic
 - `ConditionalValue.kt`: Pairs Rule with value
 - `Evaluable.kt`, `BaseEvaluable.kt`: Matching conditions + specificity scoring
 - `versions/`: Version range types (FullyBound, LeftBound, RightBound, Unbounded)
 
 #### **serialization/** - JSON Persistence
+
 - `SnapshotSerializer.kt`: Main API for Konfig ↔ JSON
 - `ModuleSnapshotSerializer.kt`: FeatureModule-scoped serialization
 - `Serializer.kt`: Generic interface for custom implementations
@@ -194,6 +195,7 @@ sealed class FeatureModule {
 ```
 
 **Benefits**:
+
 - Each module has its own `ModuleRegistry` instance
 - Feature type binding prevents cross-module pollution
 - Independent configuration and deployment
@@ -207,6 +209,7 @@ Context → Rule.matches() → specificity() → rollout bucketing → value
 **Specificity Ordering**: More specific rules automatically take precedence.
 
 **Deterministic Bucketing**:
+
 - SHA-256 hash of (salt + flag key + stable ID)
 - Consistent 0-10,000 bucketing space
 - Independent per-flag (no cross-contamination)
@@ -244,6 +247,7 @@ Consistent naming across the codebase:
 - `M`: FeatureModule type
 
 **Example**:
+
 ```kotlin
 sealed interface Feature<S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule>
 ```
@@ -300,6 +304,7 @@ fun `Given rule with 50 percent rollout, When evaluating many users, Then approx
 ```
 
 **Benefits**:
+
 - Natural language descriptions
 - Clear test intent
 - Easy to read in test reports
@@ -387,6 +392,7 @@ kotlin {
 ```
 
 **Dependencies**:
+
 ```kotlin
 // JSON Serialization (only external dependency)
 implementation("com.squareup.moshi:moshi:1.15.0")
@@ -425,6 +431,7 @@ git push origin v1.0.0
 ```
 
 **Publishing credentials** (required environment variables):
+
 - `OSSRH_USERNAME` and `OSSRH_PASSWORD` (Sonatype)
 - `SIGNING_KEY` and `SIGNING_PASSWORD` (GPG signing)
 - `GITHUB_TOKEN` (GitHub Packages)
@@ -452,7 +459,7 @@ git push origin v1.0.0
            rule {
                platforms(Platform.IOS)
                rollout = Rollout.of(25.0)
-           } implies true
+           } returns true
        }
    }
    ```
@@ -540,6 +547,7 @@ FeatureModule.Core.config {
 ### 2. Thread Safety
 
 **Safe**:
+
 ```kotlin
 // Reading flags (lock-free)
 val value = feature.evaluate(context)
@@ -549,6 +557,7 @@ registry.update(newKonfig)
 ```
 
 **Unsafe**:
+
 ```kotlin
 // DON'T: Multiple sequential updates without synchronization
 registry.update(konfig1)
@@ -572,11 +581,13 @@ FlagDefinition(
 ### 4. Rollout Bucketing
 
 **Deterministic per flag**:
+
 - Same user gets consistent experience for a flag
 - Different flags can bucket the same user differently
 - Bucketing uses: SHA-256(salt + flag key + stable ID)
 
 **Changing salt resets bucketing**:
+
 ```kotlin
 FlagDefinition(
     salt = "v2",  // New salt = new bucketing
@@ -587,6 +598,7 @@ FlagDefinition(
 ### 5. EncodableValue Type Safety
 
 **Compile-time enforcement**:
+
 ```kotlin
 // ✅ Correct
 enum class StringFlag : Feature<StringEncodeable, String, Context, FeatureModule.Core>
@@ -595,21 +607,36 @@ enum class StringFlag : Feature<StringEncodeable, String, Context, FeatureModule
 enum class StringFlag : Feature<BooleanEncodeable, String, Context, FeatureModule.Core>
 ```
 
-### 6. Module Registry Isolation
+### 6. Namespace Registry Isolation
 
-Each `FeatureModule` has its own registry:
+Each `Namespace` has its own registry:
 
 ```kotlin
-// ✅ Correct - same module
-FeatureModule.Core.registry.get(CoreFeature.FLAG)
+// ✅ Correct - same namespace
+Namespace.Global.flag(CoreFeature.FLAG)
 
-// ❌ Wrong - different modules, won't find flag
-FeatureModule.Team.Payments.registry.get(CoreFeature.FLAG)
+// ❌ Wrong - different namespaces, won't compile (type error)
+Namespace.Payments.flag(CoreFeature.FLAG)
 ```
+
+**Note on Registry Evaluation (v0.0.2):**
+Features now evaluate against their namespace's registry by default:
+
+```kotlin
+// Evaluation uses the feature's namespace automatically
+val value = context.evaluate(PaymentFeatures.APPLE_PAY)
+// Internally: PaymentFeatures.APPLE_PAY.namespace.registry
+
+// For testing, pass registry explicitly
+val value = feature.evaluate(context, registry = testRegistry)
+```
+
+The `withRegistry()` function and `RegistryScope` are deprecated (see `docs/REGISTRY_SIMPLIFICATION.md`).
 
 ### 7. Version Parsing
 
 **Use `Version.parse()` for strings**:
+
 ```kotlin
 // ✅ Correct
 val version = Version.parse("2.5.0")  // Version(2, 5, 0)
@@ -624,6 +651,7 @@ val parts = "2.5.0".split(".")  // Use Version.parse() instead
 ### 8. JSON Serialization
 
 **Moshi is the only external dependency**:
+
 - Use `SnapshotSerializer` for Konfig ↔ JSON
 - Custom adapters in `internal/serialization/adapters/`
 - Don't add other JSON libraries (keep dependencies minimal)
@@ -631,9 +659,10 @@ val parts = "2.5.0".split(".")  // Use Version.parse() instead
 ### 9. Test Fixtures
 
 **Shared test utilities** go in `src/testFixtures/`:
+
 ```kotlin
 // ✅ Reusable test features
-testFixtures/kotlin/CommonTestFeatures.kt
+testFixtures / kotlin / CommonTestFeatures.kt
 
 // ❌ Don't duplicate in each test file
 ```
@@ -641,6 +670,7 @@ testFixtures/kotlin/CommonTestFeatures.kt
 ### 10. Documentation Updates
 
 **When changing public APIs**:
+
 1. Update KDoc comments
 2. Update relevant docs in `docs/` directory
 3. Add examples for new features
@@ -680,17 +710,17 @@ testFixtures/kotlin/CommonTestFeatures.kt
 
 ### File Locations
 
-| Purpose | Location |
-|---------|----------|
-| Core API | `src/main/kotlin/io/amichne/konditional/core/` |
-| Context types | `src/main/kotlin/io/amichne/konditional/context/` |
-| Rule evaluation | `src/main/kotlin/io/amichne/konditional/rules/` |
-| Serialization | `src/main/kotlin/io/amichne/konditional/serialization/` |
-| Tests | `src/test/kotlin/` |
-| Test fixtures | `src/testFixtures/` |
-| Documentation | `docs/` |
-| Build config | `build.gradle.kts`, `gradle.properties` |
-| CI/CD | `.github/workflows/` |
+| Purpose         | Location                                                |
+|-----------------|---------------------------------------------------------|
+| Core API        | `src/main/kotlin/io/amichne/konditional/core/`          |
+| Context types   | `src/main/kotlin/io/amichne/konditional/context/`       |
+| Rule evaluation | `src/main/kotlin/io/amichne/konditional/rules/`         |
+| Serialization   | `src/main/kotlin/io/amichne/konditional/serialization/` |
+| Tests           | `src/test/kotlin/`                                      |
+| Test fixtures   | `src/testFixtures/`                                     |
+| Documentation   | `docs/`                                                 |
+| Build config    | `build.gradle.kts`, `gradle.properties`                 |
+| CI/CD           | `.github/workflows/`                                    |
 
 ### Common Commands
 
@@ -715,7 +745,7 @@ testFixtures/kotlin/CommonTestFeatures.kt
 
 ```kotlin
 // Feature definition
-Feature<S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule>
+Feature < S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule>
 
 // Context (required fields)
 interface Context {
@@ -726,25 +756,11 @@ interface Context {
 }
 
 // Rule evaluation
-Rule<C : Context>
+Rule < C : Context>
 
 // Module registry
 ModuleRegistry
 ```
-
----
-
-## Contributing Guidelines
-
-When contributing to Konditional:
-
-1. **Follow existing conventions**: Match the style and patterns in the codebase
-2. **Add tests**: All new features require corresponding tests
-3. **Update documentation**: Keep docs/ in sync with code changes
-4. **Type safety**: Never compromise compile-time guarantees
-5. **Zero dependencies**: Don't add new dependencies without discussion
-6. **Thread safety**: Ensure new code is thread-safe
-7. **Determinism**: All evaluation must be deterministic
 
 ---
 

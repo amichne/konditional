@@ -17,7 +17,7 @@ package io.amichne.konditional.core.dsl
  *
  * @since 0.0.2
  */
-@FeatureFlagDsl
+@KonditionalDsl
 interface VersionRangeScope {
     /**
      * Sets the minimum version (inclusive) for this range.

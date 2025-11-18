@@ -1,7 +1,7 @@
 package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.Rule
 
@@ -20,7 +20,7 @@ import io.amichne.konditional.rules.Rule
  *     rule {
  *         platforms(Platform.IOS)
  *         rollout {  Rollout.of(50.0) }
- *     }.implies(false)
+ *     }.returns(false)
  * }
  * ```
  *
@@ -29,15 +29,17 @@ import io.amichne.konditional.rules.Rule
  * @param C The context type the flag evaluates against
  * @since 0.0.2
  */
-@FeatureFlagDsl
-interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> {
+@KonditionalDsl
+interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> {
+
+    fun active(block: () -> Boolean): Unit
+
     /**
      * Sets the default value for the flag.
      *
      * This value is returned when no rules match the current context.
      *
      * @param value The default value to assign to the flag
-     * @param coverage The coverage percentage for the default value (optional)
      */
     fun default(value: T)
 
@@ -62,11 +64,11 @@ interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> {
      *     platforms(Platform.IOS)
      *     locales(AppLocale.EN_US)
      *     rollout {  Rollout.of(50.0) }
-     * }.implies(true)
+     * }.returns(true)
      * ```
      *
      * @param build DSL block for configuring the rule
-     * @return A Rule object that can be associated with a value using `implies`
+     * @return A Rule object that can be associated with a value using `returns`
      */
     fun rule(build: RuleScope<C>.() -> Unit): Rule<C>
 
@@ -77,10 +79,10 @@ interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> {
      *
      * Example:
      * ```kotlin
-     * rule { platforms(Platform.IOS) }.implies(true)
+     * rule { platforms(Platform.IOS) }.returns(true)
      * ```
      *
      * @param value The value to return when the rule matches
      */
-    infix fun Rule<C>.implies(value: T)
+    infix fun Rule<C>.returns(value: T)
 }

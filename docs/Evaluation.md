@@ -173,7 +173,7 @@ if (flag == null) {
 }
 ```
 
-The flag must be registered in the correct taxonomy's registry. Cross-taxonomy lookups will not find the flag.
+The flag must be registered in the correct namespace's registry. Cross-namespace lookups will not find the flag.
 
 **2. Flag Activity Check**
 
@@ -261,7 +261,7 @@ rule {
     versions {
         min(2, 0, 0)  // AND version >= 2.0.0
     }
-}.implies(true)
+}.returns(true)
 ```
 
 **Constraint behavior:**
@@ -285,7 +285,7 @@ rule {
             override fun specificity(): Int = 2  // Two constraints
         }
     }
-}.implies(premiumValue)
+}.returns(premiumValue)
 ```
 
 **Both must match:** Base criteria AND extension logic.
@@ -299,7 +299,7 @@ rule {
     platforms(Platform.IOS)  // Must match
     locales(AppLocale.EN_US) // Must match
     rollout = Rollout.of(25.0)  // AND must be in 25% bucket
-}.implies(true)
+}.returns(true)
 ```
 
 Rollout is evaluated last (after all other criteria) to avoid unnecessary bucketing computation.
@@ -329,25 +329,25 @@ specificity = baseSpecificity + extensionSpecificity
 // Specificity = 0 (no constraints)
 rule {
     rollout = Rollout.MAX
-}.implies(defaultValue)
+}.returns(defaultValue)
 
 // Specificity = 1 (platform only)
 rule {
     platforms(Platform.IOS)
-}.implies(iosValue)
+}.returns(iosValue)
 
 // Specificity = 2 (platform + locale)
 rule {
     platforms(Platform.IOS)
     locales(AppLocale.EN_US)
-}.implies(iosEnglishValue)
+}.returns(iosEnglishValue)
 
 // Specificity = 3 (platform + locale + version)
 rule {
     platforms(Platform.IOS)
     locales(AppLocale.EN_US)
     versions { min(2, 0, 0) }
-}.implies(iosEnglishV2Value)
+}.returns(iosEnglishV2Value)
 
 // Specificity = 4 (platform + locale + version + extension)
 rule {
@@ -360,7 +360,7 @@ rule {
             override fun specificity() = 1  // +1 to total
         }
     }
-}.implies(verySpecificValue)
+}.returns(verySpecificValue)
 ```
 
 ### Evaluation Order Visualization
@@ -516,7 +516,7 @@ Konditional's type system ensures correct types at every stage of evaluation.
 **Value type enforcement:**
 
 ```kotlin
-object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val DARK_MODE by boolean(default = false)
 }
 
@@ -540,8 +540,8 @@ data class EnterpriseContext(
     val subscriptionTier: SubscriptionTier
 ) : Context
 
-object PremiumFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object PremiumFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     // This feature requires EnterpriseContext
     val DATA_EXPORT by boolean(default = false)
@@ -585,7 +585,7 @@ val retries: Int = config.getInt("retries")  // 💣 Runtime error or default
 Konditional makes this impossible:
 
 ```kotlin
-object AppConfig : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object AppConfig : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val RETRIES by int(default = 3)
 }
 
@@ -648,7 +648,7 @@ thread3: context.evaluateOrDefault(AppFeatures.DARK_MODE, false)  // No lock
 
 ```kotlin
 // Update sees either old or new configuration atomically
-Taxonomy.Global.load(newKonfig)  // Atomic swap
+Namespace.Global.load(newKonfig)  // Atomic swap
 ```
 
 **Scalability**: Evaluation throughput scales linearly with CPU cores (no contention).
@@ -687,7 +687,7 @@ Registry updates are atomic:
 
 ```kotlin
 // Thread 1: Updating configuration
-Taxonomy.Global.load(newKonfig)  // Atomic swap
+Namespace.Global.load(newKonfig)  // Atomic swap
 
 // Thread 2: Reading during update
 val value = context.evaluateOrDefault(AppFeatures.DARK_MODE, false)  // Sees old OR new, never mixed
@@ -813,18 +813,18 @@ Verify higher specificity rules take precedence:
 ```kotlin
 @Test
 fun `more specific rules override general rules`() {
-    object TestFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    object TestFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
         val VALUE by string(default = "default") {
             // Specificity = 1 (general)
             rule {
                 platforms(Platform.IOS)
-            } implies "ios-general"
+            } returns "ios-general"
 
             // Specificity = 2 (specific)
             rule {
                 platforms(Platform.IOS)
                 locales(AppLocale.EN_US)
-            } implies "ios-english-specific"
+            } returns "ios-english-specific"
         }
     }
 
@@ -873,8 +873,8 @@ Each flag iterates rules until match. Keep rules minimal:
 ```kotlin
 // ✓ Good: 2-3 rules
 val FEATURE by boolean(default = false) {
-    rule { platforms(Platform.IOS) } implies true
-    rule { versions { min(2, 0, 0) } } implies true
+    rule { platforms(Platform.IOS) } returns true
+    rule { versions { min(2, 0, 0) } } returns true
 }
 
 // ✗ Avoid: Too many rules
@@ -896,12 +896,12 @@ val VALUE by string(default = "default") {
         platforms(Platform.IOS)
         locales(AppLocale.EN_US)
         versions { min(2, 0, 0) }
-    } implies "ios-en-v2"
+    } returns "ios-en-v2"
 
     // Less specific (evaluated second)
     rule {
         platforms(Platform.IOS)
-    } implies "ios-all"
+    } returns "ios-all"
 }
 ```
 
@@ -955,7 +955,7 @@ rule {
     platforms(Platform.IOS)
     rollout = Rollout.of(15.0)
     note("Targeting high-value iOS users - approved by PM on 2024-01-15")
-} implies true
+} returns true
 ```
 
 Notes appear in serialized JSON and help with debugging.
@@ -967,12 +967,12 @@ Notes appear in serialized JSON and help with debugging.
 ### Example 1: Simple Boolean Flag
 
 ```kotlin
-object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val DARK_MODE by boolean(default = false) {
         rule {
             platforms(Platform.IOS, Platform.ANDROID)
             rollout = Rollout.of(50.0)
-        } implies true
+        } returns true
     }
 }
 
@@ -996,23 +996,23 @@ if (isDarkMode) {
 ### Example 2: Multi-Rule Configuration
 
 ```kotlin
-object ApiConfig : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object ApiConfig : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val ENDPOINT by string(default = "https://api.prod.example.com") {
         // Specificity = 2: iOS + version
         rule {
             platforms(Platform.IOS)
             versions { min(3, 0, 0) }
-        } implies "https://api-v3-ios.example.com"
+        } returns "https://api-v3-ios.example.com"
 
         // Specificity = 1: iOS only
         rule {
             platforms(Platform.IOS)
-        } implies "https://api-ios.example.com"
+        } returns "https://api-ios.example.com"
 
         // Specificity = 1: Android only
         rule {
             platforms(Platform.ANDROID)
-        } implies "https://api-android.example.com"
+        } returns "https://api-android.example.com"
     }
 }
 
@@ -1025,7 +1025,7 @@ object ApiConfig : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 ### Example 3: Gradual Rollout Strategy
 
 ```kotlin
-object NewFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object NewFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val NEW_CHECKOUT by boolean(default = false) {
         salt("v1")  // Change to redistribute users
 
@@ -1033,14 +1033,14 @@ object NewFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
             platforms(Platform.ANDROID)
             rollout = Rollout.of(10.0)  // Start with 10%
             note("Phase 1: Initial Android rollout")
-        } implies true
+        } returns true
     }
 }
 
 // Phase 1: 10% of Android users
 // Monitor metrics, then increase:
 
-object NewFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object NewFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val NEW_CHECKOUT by boolean(default = false) {
         salt("v1")
 
@@ -1048,7 +1048,7 @@ object NewFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
             platforms(Platform.ANDROID)
             rollout = Rollout.of(50.0)  // Increased to 50%
             note("Phase 2: Expanded Android rollout")
-        } implies true
+        } returns true
     }
 }
 
@@ -1070,8 +1070,8 @@ data class EnterpriseContext(
 
 enum class SubscriptionTier { FREE, PROFESSIONAL, ENTERPRISE }
 
-object PremiumFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object PremiumFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     val DATA_EXPORT by boolean(default = false) {
         rule {
@@ -1084,7 +1084,7 @@ object PremiumFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
                     override fun specificity(): Int = 1
                 }
             }
-        } implies true
+        } returns true
     }
 }
 
@@ -1104,14 +1104,14 @@ val canExport = context.evaluateOrDefault(PremiumFeatures.DATA_EXPORT, default =
 ### Example 5: A/B Testing
 
 ```kotlin
-object Experiments : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object Experiments : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val RECOMMENDATION_ALGORITHM by string(default = "collaborative") {
         salt("experiment-2024-01")  // Unique salt for this experiment
 
         rule {
             rollout = Rollout.of(50.0)  // 50/50 split
             note("A/B test: collaborative vs content-based recommendations")
-        } implies "content-based"
+        } returns "content-based"
     }
 }
 
@@ -1144,5 +1144,5 @@ object Experiments : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 - **[Rules](Rules.md)** - Master advanced targeting and custom evaluables
 - **[Context](Context.md)** - Design custom contexts for business logic
 - **[Configuration](Configuration.md)** - Complete DSL reference
-- **[Registry](Registry.md)** - Taxonomy and concurrency management
+- **[Registry](Registry.md)** - Namespace and concurrency management
 - **[Overview](index.md)** - Back to API overview

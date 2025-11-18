@@ -19,9 +19,9 @@ Use the `FeatureContainer` delegation pattern for the simplest approach:
 
 ```kotlin
 import io.amichne.konditional.core.features.FeatureContainer
-import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.Namespace
 
-object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val DARK_MODE by boolean(default = false)
 }
 ```
@@ -37,12 +37,12 @@ object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 Add targeting rules within the delegation:
 
 ```kotlin
-object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val DARK_MODE by boolean(default = false) {
         rule {
             platforms(Platform.IOS)
             rollout { 50.0 }
-        } implies true
+        } returns true
     }
 }
 ```
@@ -84,7 +84,7 @@ if (isDarkMode) {
 Define different value types in the same container:
 
 ```kotlin
-object AppConfig : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object AppConfig : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val DARK_MODE by boolean(default = false)
     val API_ENDPOINT by string(default = "https://api.prod.example.com")
     val MAX_RETRIES by int(default = 3)
@@ -97,15 +97,15 @@ object AppConfig : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 Configure different values for different platforms:
 
 ```kotlin
-object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val API_ENDPOINT by string(default = "https://api.example.com") {
         rule {
             platforms(Platform.IOS)
-        } implies "https://api-ios.example.com"
+        } returns "https://api-ios.example.com"
 
         rule {
             platforms(Platform.ANDROID)
-        } implies "https://api-android.example.com"
+        } returns "https://api-android.example.com"
     }
 }
 ```
@@ -115,12 +115,12 @@ object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 Deploy features gradually using rollout percentages:
 
 ```kotlin
-object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val NEW_CHECKOUT by boolean(default = false) {
         rule {
             platforms(Platform.ANDROID)
             rollout { 25.0 }  // 25% of Android users
-        } implies true
+        } returns true
     }
 }
 ```
@@ -136,7 +136,7 @@ object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 Rules support multiple targeting criteria (all must match):
 
 ```kotlin
-object PremiumFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object PremiumFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val ADVANCED_ANALYTICS by boolean(default = false) {
         rule {
             platforms(Platform.IOS)
@@ -145,7 +145,7 @@ object PremiumFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
                 min(2, 0, 0)  // Version 2.0.0 or higher
             }
             rollout { 50.0 }
-        } implies true
+        } returns true
     }
 }
 ```
@@ -175,18 +175,18 @@ val value: Boolean = context.evaluateOrThrow(AppFeatures.DARK_MODE)
 
 ## Organizing Features by Domain
 
-Use Taxonomy to organize features by team or domain:
+Use Namespace to organize features by team or domain:
 
 ```kotlin
-object AuthFeatures : FeatureContainer<Taxonomy.Domain.Authentication>(
-    Taxonomy.Domain.Authentication
+object AuthFeatures : FeatureContainer<Namespace.Authentication>(
+    Namespace.Authentication
 ) {
     val SOCIAL_LOGIN by boolean(default = false)
     val TWO_FACTOR_AUTH by boolean(default = true)
 }
 
-object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object PaymentFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     val APPLE_PAY by boolean(default = false)
     val GOOGLE_PAY by boolean(default = false)
@@ -197,7 +197,7 @@ Benefits:
 
 - Isolation: Features don't collide across taxonomies
 - Organization: Clear ownership boundaries
-- Type safety: Compile-time taxonomy enforcement
+- Type safety: Compile-time namespace enforcement
 
 ## Next Steps
 
@@ -211,7 +211,7 @@ Now that you have basic flags running, explore:
 - **[Configuration](Configuration.md)**: Complete DSL reference
 - **[Results](Results.md)**: Error handling with EvaluationResult
 - **[Serialization](Serialization.md)**: Export/import configurations as JSON
-- **[Registry](Registry.md)**: Taxonomy and registry management
+- **[Registry](Registry.md)**: Namespace and registry management
 
 ## Key Takeaways
 

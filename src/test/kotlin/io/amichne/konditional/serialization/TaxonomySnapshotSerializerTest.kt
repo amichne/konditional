@@ -2,9 +2,10 @@ package io.amichne.konditional.serialization
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.features.update
 import io.amichne.konditional.core.id.StableId
@@ -18,22 +19,23 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
- * Tests for TaxonomySnapshotSerializer.
+ * Tests for NamespaceSnapshotSerializer.
  *
- * Validates that taxonomy-scoped serialization works correctly,
- * including automatic loading into the taxonomy registry.
+ * Validates that namespace-scoped serialization works correctly,
+ * including automatic loading into the namespace registry.
  */
-class TaxonomySnapshotSerializerTest {
+class NamespaceSnapshotSerializerTest {
 
-    private object TestFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    private object TestFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
         val boolFlag by boolean<Context>(default = false)
         val stringFlag by string<Context>(default = "default")
     }
 
     @BeforeEach
     fun setup() {
-        // Clear registry before each test
+        // Clear both FeatureRegistry and Namespace.Global registry before each test
         FeatureRegistry.clear()
+        Namespace.Global.load(io.amichne.konditional.core.instance.Configuration(emptyMap()))
 
         // Register test features
         FeatureRegistry.register(TestFeatures.boolFlag)
@@ -48,11 +50,11 @@ class TaxonomySnapshotSerializerTest {
     ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
 
     @Test
-    fun `Given taxonomy with no flags, When serialized, Then produces JSON with empty flags array`() {
-        // Start with empty taxonomy
-        Taxonomy.Global.load(io.amichne.konditional.core.instance.Konfig(emptyMap()))
+    fun `Given namespace with no flags, When serialized, Then produces JSON with empty flags array`() {
+        // Start with empty namespace
+        Namespace.Global.load(io.amichne.konditional.core.instance.Configuration(emptyMap()))
 
-        val serializer = TaxonomySnapshotSerializer(Taxonomy.Global)
+        val serializer = NamespaceSnapshotSerializer(Namespace.Global)
         val json = serializer.toJson()
 
         assertNotNull(json)
@@ -61,7 +63,7 @@ class TaxonomySnapshotSerializerTest {
     }
 
     @Test
-    fun `Given taxonomy with configured flags, When serialized, Then includes all flags`() {
+    fun `Given namespace with configured flags, When serialized, Then includes all flags`() {
         TestFeatures.boolFlag.update {
             default(true)
         }
@@ -69,18 +71,18 @@ class TaxonomySnapshotSerializerTest {
             default("test-value")
         }
 
-        val serializer = TaxonomySnapshotSerializer(Taxonomy.Global)
+        val serializer = NamespaceSnapshotSerializer(Namespace.Global)
         val json = serializer.toJson()
 
         assertNotNull(json)
         assertTrue(json.contains(TestFeatures.boolFlag.key))
         assertTrue(json.contains(TestFeatures.stringFlag.key))
-        assertTrue(json.contains("\"value\" : true"))
-        assertTrue(json.contains("\"value\" : \"test-value\""))
+        assertTrue(json.contains("\"value\": true"))
+        assertTrue(json.contains("\"value\": \"test-value\""))
     }
 
     @Test
-    fun `Given valid JSON, When deserialized, Then loads into taxonomy and returns success`() {
+    fun `Given valid JSON, When deserialized, Then loads into namespace and returns success`() {
         val json = """
             {
               "flags" : [
@@ -98,12 +100,12 @@ class TaxonomySnapshotSerializerTest {
             }
         """.trimIndent()
 
-        val serializer = TaxonomySnapshotSerializer(Taxonomy.Global)
+        val serializer = NamespaceSnapshotSerializer(Namespace.Global)
         val result = serializer.fromJson(json)
 
-        assertIs<ParseResult.Success<io.amichne.konditional.core.instance.Konfig>>(result)
+        assertIs<ParseResult.Success<io.amichne.konditional.core.instance.Configuration>>(result)
 
-        // Verify the flag was loaded into the taxonomy
+        // Verify the flag was loaded into the namespace
         val context = ctx("11111111111111111111111111111111")
         val flagValue = context.evaluate(TestFeatures.boolFlag)
         assertEquals(true, flagValue)
@@ -113,12 +115,12 @@ class TaxonomySnapshotSerializerTest {
     fun `Given invalid JSON, When deserialized, Then returns failure without loading`() {
         val invalidJson = "not valid json"
 
-        val serializer = TaxonomySnapshotSerializer(Taxonomy.Global)
+        val serializer = NamespaceSnapshotSerializer(Namespace.Global)
         val result = serializer.fromJson(invalidJson)
 
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.InvalidJson>(result.error)
-        assertTrue((result.error as ParseError.InvalidJson).message.contains("Global"))
+        assertTrue((result.error as ParseError.InvalidJson).message.contains("global"))
     }
 
     @Test
@@ -140,7 +142,7 @@ class TaxonomySnapshotSerializerTest {
             }
         """.trimIndent()
 
-        val serializer = TaxonomySnapshotSerializer(Taxonomy.Global)
+        val serializer = NamespaceSnapshotSerializer(Namespace.Global)
         val result = serializer.fromJson(json)
 
         assertIs<ParseResult.Failure>(result)
@@ -148,29 +150,29 @@ class TaxonomySnapshotSerializerTest {
     }
 
     @Test
-    fun `Given taxonomy, When round-tripped, Then configuration is preserved`() {
+    fun `Given namespace, When round-tripped, Then configuration is preserved`() {
         // Configure flags
         TestFeatures.boolFlag.update {
             default(true)
             rule {
                 platforms(Platform.IOS)
-            } implies false
+            } returns false
         }
         TestFeatures.stringFlag.update {
             default("original")
             rule {
                 locales(AppLocale.FR_FR)
-            } implies "french"
+            } returns "french"
         }
 
         // Serialize
-        val serializer = TaxonomySnapshotSerializer(Taxonomy.Global)
+        val serializer = NamespaceSnapshotSerializer(Namespace.Global)
         val json = serializer.toJson()
 
         // Clear and deserialize
-        Taxonomy.Global.load(io.amichne.konditional.core.instance.Konfig(emptyMap()))
+        Namespace.Global.load(io.amichne.konditional.core.instance.Configuration(emptyMap()))
         val result = serializer.fromJson(json)
-        assertIs<ParseResult.Success<io.amichne.konditional.core.instance.Konfig>>(result)
+        assertIs<ParseResult.Success<io.amichne.konditional.core.instance.Configuration>>(result)
 
         // Verify flags work correctly
         val iosContext = ctx("11111111111111111111111111111111", platform = Platform.IOS)
@@ -189,7 +191,7 @@ class TaxonomySnapshotSerializerTest {
             default(true)
         }
 
-        val serializer = TaxonomySnapshotSerializer.forModule(Taxonomy.Global)
+        val serializer = NamespaceSnapshotSerializer.forModule(Namespace.Global)
         val json = serializer.toJson()
 
         assertNotNull(json)
@@ -199,12 +201,12 @@ class TaxonomySnapshotSerializerTest {
     @Test
     fun `Given different taxonomies, When serialized separately, Then each has only its own flags`() {
         // Domain.Payments features
-        object PaymentsFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
+        val PaymentsFeatures = object : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
             val paymentEnabled by boolean<Context>(default = true)
         }
 
         // Domain.Search features
-        object SearchFeatures : FeatureContainer<Taxonomy.Domain.Search>(Taxonomy.Domain.Search) {
+        val SearchFeatures = object : FeatureContainer<Namespace.Search>(Namespace.Search) {
             val searchEnabled by boolean<Context>(default = false)
         }
 
@@ -212,9 +214,9 @@ class TaxonomySnapshotSerializerTest {
         FeatureRegistry.register(PaymentsFeatures.paymentEnabled)
         FeatureRegistry.register(SearchFeatures.searchEnabled)
 
-        // Serialize each taxonomy
-        val paymentsSerializer = TaxonomySnapshotSerializer(Taxonomy.Domain.Payments)
-        val searchSerializer = TaxonomySnapshotSerializer(Taxonomy.Domain.Search)
+        // Serialize each namespace
+        val paymentsSerializer = NamespaceSnapshotSerializer(Namespace.Payments)
+        val searchSerializer = NamespaceSnapshotSerializer(Namespace.Search)
 
         val paymentsJson = paymentsSerializer.toJson()
         val searchJson = searchSerializer.toJson()

@@ -1,4 +1,4 @@
-# Registry: Taxonomy-Based Flag Organization
+# Registry: Namespace-Based Flag Organization
 
 This document explains Konditional's registry system, which provides compile-time and runtime isolation for feature flags through taxonomies.
 
@@ -8,51 +8,51 @@ This document explains Konditional's registry system, which provides compile-tim
 
 Konditional organizes feature flags using **taxonomies** - isolated namespaces that provide:
 
-- **Compile-time isolation**: Features are type-bound to their taxonomy
-- **Runtime isolation**: Each taxonomy has its own flag registry
+- **Compile-time isolation**: Features are type-bound to their namespace
+- **Runtime isolation**: Each namespace has its own flag registry
 - **Governance**: All taxonomies enumerated in one sealed hierarchy
 - **Direct operations**: Taxonomies implement `ModuleRegistry`, eliminating `.registry` access
 
 ```kotlin
 // Features are bound to specific taxonomies
-object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object PaymentFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     val APPLE_PAY by boolean(default = false)
 }
 
-// Evaluate using the bound taxonomy
+// Evaluate using the bound namespace
 val isEnabled = context.evaluate(PaymentFeatures.APPLE_PAY)
 
-// Or query the taxonomy directly
-val definition = Taxonomy.Domain.Payments.featureFlag(PaymentFeatures.APPLE_PAY)
+// Or query the namespace directly
+val definition = Namespace.Payments.featureFlag(PaymentFeatures.APPLE_PAY)
 ```
 
 ---
 
-## Taxonomy System
+## Namespace System
 
-### What Is a Taxonomy?
+### What Is a Namespace?
 
-A `Taxonomy` is a sealed class hierarchy that defines organizational boundaries for feature flags.
+A `Namespace` is a sealed class hierarchy that defines organizational boundaries for feature flags.
 
 **Key characteristics:**
 
-- **Unique ID**: Each taxonomy has a string identifier
-- **Isolated registry**: Each taxonomy maintains its own registry instance
+- **Unique ID**: Each namespace has a string identifier
+- **Isolated registry**: Each namespace maintains its own registry instance
 - **ModuleRegistry operations**: Taxonomies provide direct access to registry methods
 - **Sealed hierarchy**: All taxonomies must be defined in the sealed class
 
-### Taxonomy Types
+### Namespace Types
 
-Konditional provides two taxonomy categories:
+Konditional provides two namespace categories:
 
-#### Global Taxonomy
+#### Global Namespace
 
-The `Taxonomy.Global` taxonomy contains shared flags accessible to all teams:
+The `Namespace.Global` namespace contains shared flags accessible to all teams:
 
 ```kotlin
-data object Global : Taxonomy("global")
+data object Global : Namespace("global")
 ```
 
 **Use for:**
@@ -64,7 +64,7 @@ data object Global : Taxonomy("global")
 **Example:**
 
 ```kotlin
-object CoreFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object CoreFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val KILL_SWITCH by boolean(default = false)
     val MAINTENANCE_MODE by boolean(default = false)
     val DEBUG_LOGGING by boolean(default = false)
@@ -76,7 +76,7 @@ object CoreFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 Domain taxonomies provide isolated namespaces for functional areas:
 
 ```kotlin
-sealed class Domain(id: String) : Taxonomy(id) {
+sealed class Domain(id: String) : Namespace(id) {
     data object Authentication : Domain("auth")
     data object Payments : Domain("payments")
     data object Messaging : Domain("messaging")
@@ -85,26 +85,26 @@ sealed class Domain(id: String) : Taxonomy(id) {
 }
 ```
 
-**Each domain taxonomy provides:**
+**Each domain namespace provides:**
 
 - Independent registry instance (runtime isolation)
 - Type-bound features (compile-time isolation)
 - Independent serialization/deployment
-- No cross-taxonomy flag access
+- No cross-namespace flag access
 
 **Example:**
 
 ```kotlin
-object AuthFeatures : FeatureContainer<Taxonomy.Domain.Authentication>(
-    Taxonomy.Domain.Authentication
+object AuthFeatures : FeatureContainer<Namespace.Authentication>(
+    Namespace.Authentication
 ) {
     val SOCIAL_LOGIN by boolean(default = false)
     val TWO_FACTOR_AUTH by boolean(default = true)
     val BIOMETRIC_AUTH by boolean(default = false)
 }
 
-object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object PaymentFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     val APPLE_PAY by boolean(default = false)
     val GOOGLE_PAY by boolean(default = false)
@@ -114,10 +114,10 @@ object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
 
 ### Adding New Taxonomies
 
-To add a new domain taxonomy, add an object to the `Domain` sealed class:
+To add a new domain namespace, add an object to the `Domain` sealed class:
 
 ```kotlin
-sealed class Domain(id: String) : Taxonomy(id) {
+sealed class Domain(id: String) : Namespace(id) {
     // ... existing domains ...
 
     data object Analytics : Domain("analytics")
@@ -127,7 +127,7 @@ sealed class Domain(id: String) : Taxonomy(id) {
 
 **The sealed hierarchy ensures:**
 
-- No taxonomy ID collisions at compile time
+- No namespace ID collisions at compile time
 - Exhaustive when-expressions
 - IDE autocomplete for all taxonomies
 - Central visibility of all modules
@@ -141,7 +141,7 @@ sealed class Domain(id: String) : Taxonomy(id) {
 ```kotlin
 interface ModuleRegistry {
     fun load(config: Konfig)
-    fun konfig(): Konfig
+    fun configuration(): Konfig
     fun <S, T, C, M> featureFlag(key: Feature<S, T, C, M>): FlagDefinition<S, T, C, M>?
     fun allFlags(): Map<Feature<*, *, *, *>, FlagDefinition<*, *, *, *>>
 }
@@ -155,12 +155,12 @@ Load a complete flag configuration snapshot:
 
 ```kotlin
 // Create a Konfig (typically from JSON deserialization)
-val konfig = TaxonomySnapshotSerializer.deserialize<Taxonomy.Domain.Payments>(jsonString)
+val configuration = NamespaceSnapshotSerializer.deserialize<Namespace.Payments>(jsonString)
 
-// Load into taxonomy's registry
-when (konfig) {
-    is ParseResult.Success -> Taxonomy.Domain.Payments.load(konfig.value)
-    is ParseResult.Failure -> logger.error("Failed to load: ${konfig.error}")
+// Load into namespace's registry
+when (configuration) {
+    is ParseResult.Success -> Namespace.Payments.load(configuration.value)
+    is ParseResult.Failure -> logger.error("Failed to load: ${configuration.error}")
 }
 ```
 
@@ -175,7 +175,7 @@ when (konfig) {
 Get the current configuration snapshot:
 
 ```kotlin
-val currentConfig = Taxonomy.Domain.Payments.konfig()
+val currentConfig = Namespace.Payments.configuration()
 
 // Inspect flags
 currentConfig.flags.forEach { (feature, definition) ->
@@ -195,7 +195,7 @@ currentConfig.flags.forEach { (feature, definition) ->
 Retrieve a specific flag definition:
 
 ```kotlin
-val definition = Taxonomy.Domain.Payments.featureFlag(PaymentFeatures.APPLE_PAY)
+val definition = Namespace.Payments.featureFlag(PaymentFeatures.APPLE_PAY)
 
 if (definition != null) {
     println("Default: ${definition.defaultValue}")
@@ -208,10 +208,10 @@ if (definition != null) {
 
 #### Querying All Flags
 
-Retrieve all flags from a taxonomy:
+Retrieve all flags from a namespace:
 
 ```kotlin
-val allFlags = Taxonomy.Domain.Payments.allFlags()
+val allFlags = Namespace.Payments.allFlags()
 
 allFlags.forEach { (feature, definition) ->
     println("${feature.key}: ${definition.defaultValue}")
@@ -224,7 +224,7 @@ Create new registry instances for testing:
 
 ```kotlin
 companion object {
-    operator fun invoke(konfig: Konfig = Konfig(emptyMap())): ModuleRegistry
+    operator fun invoke(configuration: Konfig = Konfig(emptyMap())): ModuleRegistry
 }
 ```
 
@@ -237,7 +237,7 @@ fun `test feature behavior`() {
     val testRegistry = ModuleRegistry()
 
     // Note: Direct registry usage is for advanced cases
-    // Prefer using Taxonomy instances in production
+    // Prefer using Namespace instances in production
 }
 ```
 
@@ -265,10 +265,10 @@ fun `test feature behavior`() {
 
 ```kotlin
 // Get current state
-val konfig = Taxonomy.Domain.Payments.konfig()
+val configuration = Namespace.Payments.configuration()
 
 // Serialize to JSON
-val json = TaxonomySnapshotSerializer.serialize(konfig)
+val json = NamespaceSnapshotSerializer.serialize(configuration)
 
 // Save to file or send over network
 File("payment-config.json").writeText(json)
@@ -281,12 +281,12 @@ File("payment-config.json").writeText(json)
 val json = File("payment-config.json").readText()
 
 // Deserialize
-val result = TaxonomySnapshotSerializer.deserialize<Taxonomy.Domain.Payments>(json)
+val result = NamespaceSnapshotSerializer.deserialize<Namespace.Payments>(json)
 
 when (result) {
     is ParseResult.Success -> {
         // Load into registry
-        Taxonomy.Domain.Payments.load(result.value)
+        Namespace.Payments.load(result.value)
         println("Loaded ${result.value.flags.size} flags")
     }
     is ParseResult.Failure -> {
@@ -299,7 +299,7 @@ when (result) {
 
 ```kotlin
 // Get snapshot
-val snapshot = Taxonomy.Domain.Payments.konfig()
+val snapshot = Namespace.Payments.configuration()
 
 // Evaluate multiple flags against same snapshot
 // (even if registry is updated concurrently)
@@ -312,66 +312,66 @@ val googlePayEnabled = googlePayDef?.evaluate(context)
 
 ---
 
-## Taxonomy-Based Isolation
+## Namespace-Based Isolation
 
 ### Compile-Time Isolation
 
-Features are type-bound to their taxonomy, preventing cross-taxonomy usage:
+Features are type-bound to their namespace, preventing cross-namespace usage:
 
 ```kotlin
-object AuthFeatures : FeatureContainer<Taxonomy.Domain.Authentication>(
-    Taxonomy.Domain.Authentication
+object AuthFeatures : FeatureContainer<Namespace.Authentication>(
+    Namespace.Authentication
 ) {
     val SOCIAL_LOGIN by boolean(default = false)
 }
 
-object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object PaymentFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     val APPLE_PAY by boolean(default = false)
 }
 
-// ✓ Correct: Feature bound to Authentication taxonomy
+// ✓ Correct: Feature bound to Authentication namespace
 val authEnabled = context.evaluate(AuthFeatures.SOCIAL_LOGIN)
 
 // ✗ Won't compile: SOCIAL_LOGIN belongs to Authentication, not Payments
-Taxonomy.Domain.Payments.featureFlag(AuthFeatures.SOCIAL_LOGIN)  // Type error
+Namespace.Payments.featureFlag(AuthFeatures.SOCIAL_LOGIN)  // Type error
 ```
 
 **Benefits:**
 
-- Impossible to query flags from wrong taxonomy
+- Impossible to query flags from wrong namespace
 - Refactoring is safe (types guide changes)
 - Clear ownership boundaries
-- No runtime taxonomy checks needed
+- No runtime namespace checks needed
 
 ### Runtime Isolation
 
-Each taxonomy has its own `ModuleRegistry` instance:
+Each namespace has its own `ModuleRegistry` instance:
 
 ```kotlin
-// Authentication taxonomy has its own registry
-Taxonomy.Domain.Authentication.load(authConfig)
+// Authentication namespace has its own registry
+Namespace.Authentication.load(authConfig)
 
-// Payments taxonomy has its own registry
-Taxonomy.Domain.Payments.load(paymentsConfig)
+// Payments namespace has its own registry
+Namespace.Payments.load(paymentsConfig)
 
 // Registries are independent - no shared state
 ```
 
 **Benefits:**
 
-- Independent deployment of taxonomy configurations
+- Independent deployment of namespace configurations
 - No key collisions between taxonomies
-- Team autonomy (each team owns their taxonomy)
-- Isolated testing (load different configs per taxonomy)
+- Team autonomy (each team owns their namespace)
+- Isolated testing (load different configs per namespace)
 
 ### Governance Through Sealed Hierarchy
 
 All taxonomies must be defined in the sealed class:
 
 ```kotlin
-sealed class Domain(id: String) : Taxonomy(id) {
+sealed class Domain(id: String) : Namespace(id) {
     data object Authentication : Domain("auth")
     data object Payments : Domain("payments")
     // All domains visible here
@@ -381,7 +381,7 @@ sealed class Domain(id: String) : Taxonomy(id) {
 **Benefits:**
 
 - Central registry of all taxonomies
-- No duplicate taxonomy IDs
+- No duplicate namespace IDs
 - Exhaustive when-expressions
 - Clear organizational structure
 
@@ -393,26 +393,26 @@ sealed class Domain(id: String) : Taxonomy(id) {
 
 ```kotlin
 // Multiple threads can read simultaneously without contention
-val def1 = taxonomy.featureFlag(feature)  // Thread 1
-val def2 = taxonomy.featureFlag(feature)  // Thread 2 (concurrent)
+val def1 = namespace.featureFlag(feature)  // Thread 1
+val def2 = namespace.featureFlag(feature)  // Thread 2 (concurrent)
 ```
 
 **Atomic updates:**
 
 ```kotlin
 // Update atomically replaces entire config
-taxonomy.load(newKonfig)  // All flags update together
+namespace.load(newKonfig)  // All flags update together
 ```
 
 **Read-write safety:**
 
 ```kotlin
 // Thread A: Reading
-val definition = taxonomy.featureFlag(feature)
+val definition = namespace.featureFlag(feature)
 val result = definition?.evaluate(context)
 
 // Thread B: Updating (concurrent)
-taxonomy.load(newKonfig)
+namespace.load(newKonfig)
 
 // Thread A's reference remains valid
 // Sees consistent snapshot (old or new, never mixed)
@@ -430,48 +430,48 @@ taxonomy.load(newKonfig)
 
 ---
 
-## Registry Operations Through Taxonomy
+## Registry Operations Through Namespace
 
-Since `Taxonomy` implements `ModuleRegistry` via delegation, you can call registry methods directly:
+Since `Namespace` implements `ModuleRegistry` via delegation, you can call registry methods directly:
 
 ### Loading Configuration
 
 ```kotlin
 // Old style (verbose)
-Taxonomy.Domain.Payments.registry.load(konfig)
+Namespace.Payments.registry.load(configuration)
 
 // New style (direct)
-Taxonomy.Domain.Payments.load(konfig)
+Namespace.Payments.load(configuration)
 ```
 
 ### Querying State
 
 ```kotlin
 // Get current snapshot
-val snapshot = Taxonomy.Domain.Payments.konfig()
+val snapshot = Namespace.Payments.configuration()
 
 // Query specific flag
-val definition = Taxonomy.Domain.Payments.featureFlag(PaymentFeatures.APPLE_PAY)
+val definition = Namespace.Payments.featureFlag(PaymentFeatures.APPLE_PAY)
 
 // Get all flags
-val allFlags = Taxonomy.Domain.Payments.allFlags()
+val allFlags = Namespace.Payments.allFlags()
 ```
 
 ### Example: Loading from Remote Config
 
 ```kotlin
-suspend fun loadRemoteConfig(taxonomy: Taxonomy.Domain.Payments) {
+suspend fun loadRemoteConfig(namespace: Namespace.Payments) {
     try {
         // Fetch from remote
         val json = httpClient.get("https://config.example.com/payments")
 
         // Deserialize
-        val result = TaxonomySnapshotSerializer.deserialize<Taxonomy.Domain.Payments>(json)
+        val result = NamespaceSnapshotSerializer.deserialize<Namespace.Payments>(json)
 
         when (result) {
             is ParseResult.Success -> {
-                // Load directly into taxonomy
-                taxonomy.load(result.value)
+                // Load directly into namespace
+                namespace.load(result.value)
                 logger.info("Loaded ${result.value.flags.size} payment flags")
             }
             is ParseResult.Failure -> {
@@ -486,13 +486,13 @@ suspend fun loadRemoteConfig(taxonomy: Taxonomy.Domain.Payments) {
 
 ---
 
-## Choosing the Right Taxonomy
+## Choosing the Right Namespace
 
-### Use `Taxonomy.Global` for:
+### Use `Namespace.Global` for:
 
 **System-wide flags:**
 ```kotlin
-object SystemFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object SystemFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val KILL_SWITCH by boolean(default = false)
     val MAINTENANCE_MODE by boolean(default = false)
     val RATE_LIMITING by boolean(default = true)
@@ -501,7 +501,7 @@ object SystemFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 
 **Infrastructure flags:**
 ```kotlin
-object InfraFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object InfraFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val NEW_DATABASE by boolean(default = false)
     val CIRCUIT_BREAKER by boolean(default = true)
     val DEBUG_LOGGING by boolean(default = false)
@@ -510,20 +510,20 @@ object InfraFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 
 **Cross-cutting concerns:**
 ```kotlin
-object MonitoringFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object MonitoringFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val METRICS_ENABLED by boolean(default = true)
     val TRACING_ENABLED by boolean(default = false)
     val PROFILING_ENABLED by boolean(default = false)
 }
 ```
 
-### Use `Taxonomy.Domain.*` for:
+### Use `Namespace.*` for:
 
 **Team-owned features:**
 ```kotlin
-// Authentication team owns this taxonomy
-object AuthFeatures : FeatureContainer<Taxonomy.Domain.Authentication>(
-    Taxonomy.Domain.Authentication
+// Authentication team owns this namespace
+object AuthFeatures : FeatureContainer<Namespace.Authentication>(
+    Namespace.Authentication
 ) {
     val SOCIAL_LOGIN by boolean(default = false)
     val TWO_FACTOR_AUTH by boolean(default = true)
@@ -533,9 +533,9 @@ object AuthFeatures : FeatureContainer<Taxonomy.Domain.Authentication>(
 
 **Domain-specific experiments:**
 ```kotlin
-// Payments team owns this taxonomy
-object PaymentExperiments : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+// Payments team owns this namespace
+object PaymentExperiments : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     val NEW_CHECKOUT_FLOW by boolean(default = false)
     val ONE_CLICK_PURCHASE by boolean(default = false)
@@ -546,8 +546,8 @@ object PaymentExperiments : FeatureContainer<Taxonomy.Domain.Payments>(
 **Isolated deployments:**
 ```kotlin
 // Search team can deploy independently
-object SearchFeatures : FeatureContainer<Taxonomy.Domain.Search>(
-    Taxonomy.Domain.Search
+object SearchFeatures : FeatureContainer<Namespace.Search>(
+    Namespace.Search
 ) {
     val FUZZY_SEARCH by boolean(default = false)
     val AUTOCOMPLETE by boolean(default = true)
@@ -618,8 +618,8 @@ PaymentFeatures.values().forEach { FeatureRegistry.register(it) }
 
 ```kotlin
 // FeatureContainer features auto-register when defined
-object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object PaymentFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     // These auto-register during initialization
     val APPLE_PAY by boolean(default = false)
@@ -680,27 +680,27 @@ fun setup() {
 
 ## Best Practices
 
-### Do: Use Taxonomy Instances Directly
+### Do: Use Namespace Instances Directly
 
 ```kotlin
-// ✓ Good: Taxonomy implements ModuleRegistry
-Taxonomy.Domain.Payments.load(konfig)
-val snapshot = Taxonomy.Domain.Payments.konfig()
+// ✓ Good: Namespace implements ModuleRegistry
+Namespace.Payments.load(configuration)
+val snapshot = Namespace.Payments.configuration()
 
 // ✗ Verbose: Accessing internal registry
-Taxonomy.Domain.Payments.registry.load(konfig)
+Namespace.Payments.registry.load(configuration)
 ```
 
 ### Do: Organize by Domain
 
 ```kotlin
 // ✓ Good: Clear ownership
-object AuthFeatures : FeatureContainer<Taxonomy.Domain.Authentication>(
-    Taxonomy.Domain.Authentication
+object AuthFeatures : FeatureContainer<Namespace.Authentication>(
+    Namespace.Authentication
 ) { ... }
 
-object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object PaymentFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) { ... }
 ```
 
@@ -708,12 +708,12 @@ object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
 
 ```kotlin
 // ✓ Good: True system-wide concern
-object SystemFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object SystemFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val KILL_SWITCH by boolean(default = false)
 }
 
 // ✗ Bad: Team feature in Global
-object FeatureFlags : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object FeatureFlags : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val NEW_CHECKOUT by boolean(default = false)  // Should be in Payments domain
 }
 ```
@@ -743,7 +743,7 @@ fun `test payment feature`() {
     val testRegistry = ModuleRegistry()
 
     // Configure test registry
-    // (Advanced usage - prefer using Taxonomy in production)
+    // (Advanced usage - prefer using Namespace in production)
 }
 ```
 
@@ -751,7 +751,7 @@ fun `test payment feature`() {
 
 ```kotlin
 // ✗ Bad: Won't compile - type mismatch
-Taxonomy.Domain.Payments.featureFlag(AuthFeatures.SOCIAL_LOGIN)
+Namespace.Payments.featureFlag(AuthFeatures.SOCIAL_LOGIN)
 ```
 
 ### Don't: Modify FeatureRegistry Concurrently
@@ -772,35 +772,35 @@ fun init() {
 
 ## Complete Example
 
-Here's a complete example showing taxonomy-based organization:
+Here's a complete example showing namespace-based organization:
 
 ```kotlin
 // 1. Define domain-specific features
-object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object PaymentFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     val APPLE_PAY by boolean(default = false) {
         rule {
             platforms(Platform.IOS)
             versions { min(2, 0, 0) }
-        } implies true
+        } returns true
     }
 
     val GOOGLE_PAY by boolean(default = false) {
         rule {
             platforms(Platform.ANDROID)
-        } implies true
+        } returns true
     }
 
     val CRYPTO_PAYMENTS by boolean(default = false) {
         rule {
             rollout = Rollout.of(10.0)  // 10% rollout
-        } implies true
+        } returns true
     }
 }
 
-object AuthFeatures : FeatureContainer<Taxonomy.Domain.Authentication>(
-    Taxonomy.Domain.Authentication
+object AuthFeatures : FeatureContainer<Namespace.Authentication>(
+    Namespace.Authentication
 ) {
     val SOCIAL_LOGIN by boolean(default = false)
     val TWO_FACTOR_AUTH by boolean(default = true)
@@ -811,12 +811,12 @@ object AuthFeatures : FeatureContainer<Taxonomy.Domain.Authentication>(
 suspend fun loadConfigurations() {
     // Load payments config
     val paymentsJson = httpClient.get("https://config.example.com/payments")
-    val paymentsResult = TaxonomySnapshotSerializer
-        .deserialize<Taxonomy.Domain.Payments>(paymentsJson)
+    val paymentsResult = NamespaceSnapshotSerializer
+        .deserialize<Namespace.Payments>(paymentsJson)
 
     when (paymentsResult) {
         is ParseResult.Success -> {
-            Taxonomy.Domain.Payments.load(paymentsResult.value)
+            Namespace.Payments.load(paymentsResult.value)
         }
         is ParseResult.Failure -> {
             logger.error("Failed to load payments config")
@@ -825,12 +825,12 @@ suspend fun loadConfigurations() {
 
     // Load auth config independently
     val authJson = httpClient.get("https://config.example.com/auth")
-    val authResult = TaxonomySnapshotSerializer
-        .deserialize<Taxonomy.Domain.Authentication>(authJson)
+    val authResult = NamespaceSnapshotSerializer
+        .deserialize<Namespace.Authentication>(authJson)
 
     when (authResult) {
         is ParseResult.Success -> {
-            Taxonomy.Domain.Authentication.load(authResult.value)
+            Namespace.Authentication.load(authResult.value)
         }
         is ParseResult.Failure -> {
             logger.error("Failed to load auth config")
@@ -864,13 +864,13 @@ fun handleLogin(context: Context) {
 // 4. Export configurations
 fun exportConfigs() {
     // Export payments config
-    val paymentsSnapshot = Taxonomy.Domain.Payments.konfig()
-    val paymentsJson = TaxonomySnapshotSerializer.serialize(paymentsSnapshot)
+    val paymentsSnapshot = Namespace.Payments.configuration()
+    val paymentsJson = NamespaceSnapshotSerializer.serialize(paymentsSnapshot)
     File("payments.json").writeText(paymentsJson)
 
     // Export auth config
-    val authSnapshot = Taxonomy.Domain.Authentication.konfig()
-    val authJson = TaxonomySnapshotSerializer.serialize(authSnapshot)
+    val authSnapshot = Namespace.Authentication.configuration()
+    val authJson = NamespaceSnapshotSerializer.serialize(authSnapshot)
     File("auth.json").writeText(authJson)
 }
 
@@ -878,13 +878,13 @@ fun exportConfigs() {
 fun debugRegistries() {
     // Inspect payments flags
     println("=== Payments Flags ===")
-    Taxonomy.Domain.Payments.allFlags().forEach { (feature, definition) ->
+    Namespace.Payments.allFlags().forEach { (feature, definition) ->
         println("${feature.key}: active=${definition.isActive}, default=${definition.defaultValue}")
     }
 
     // Inspect auth flags
     println("=== Auth Flags ===")
-    Taxonomy.Domain.Authentication.allFlags().forEach { (feature, definition) ->
+    Namespace.Authentication.allFlags().forEach { (feature, definition) ->
         println("${feature.key}: active=${definition.isActive}, default=${definition.defaultValue}")
     }
 }
@@ -896,9 +896,9 @@ fun debugRegistries() {
 
 | Concept              | Purpose                                                  |
 |----------------------|----------------------------------------------------------|
-| **Taxonomy**         | Organizational namespace with isolated registry          |
-| **Taxonomy.Global**  | System-wide flags (kill switches, maintenance)           |
-| **Taxonomy.Domain**  | Team-owned flags (domain-specific features)              |
+| **Namespace**         | Organizational namespace with isolated registry          |
+| **Namespace.Global**  | System-wide flags (kill switches, maintenance)           |
+| **Namespace**  | Team-owned flags (domain-specific features)              |
 | **ModuleRegistry**   | Interface for loading, querying flag configurations      |
 | **Konfig**           | Immutable snapshot of all flags at a point in time       |
 | **InMemoryModuleRegistry** | Thread-safe registry implementation (AtomicReference) |

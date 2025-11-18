@@ -4,7 +4,7 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.serialization.SnapshotSerializer
 import io.ktor.http.ContentType
@@ -49,6 +49,7 @@ private val AppLocale.displayName: String
         AppLocale.EN_US -> "English (US)"
         AppLocale.ES_US -> "Spanish (US)"
         AppLocale.EN_CA -> "English (Canada)"
+        AppLocale.FR_FR -> "French (France)"
         AppLocale.HI_IN -> "Hindi (India)"
     }
 
@@ -87,7 +88,7 @@ private object SampleHexIds {
 
 fun main() {
     // Force initialization of feature containers by accessing their properties
-    // This triggers the property delegation which registers features with the taxonomy
+    // This triggers the property delegation which registers features with the namespace
     println("[main] Initializing DemoFeatures...")
     with(DemoFeatures) {
         listOf(DARK_MODE, BETA_FEATURES, ANALYTICS_ENABLED, WELCOME_MESSAGE,
@@ -100,7 +101,7 @@ fun main() {
     }
 
     // Verify features are registered
-    val konfig = Taxonomy.Global.konfig()
+    val konfig = Namespace.Global.configuration
     val snapshot = SnapshotSerializer.serialize(konfig)
     println("[main] Konfig snapshot length: ${snapshot.length}")
     if (snapshot.length < 100) {
@@ -151,7 +152,7 @@ private fun buildRulesInfo(): String {
     val adapter = moshi.adapter(Map::class.java)
 
     // Parse the snapshot to extract rule details
-    val snapshot = SnapshotSerializer.serialize(Taxonomy.Global.konfig())
+    val snapshot = SnapshotSerializer.serialize(Namespace.Global.configuration)
     println("[buildRulesInfo] Snapshot length: ${snapshot.length}")
 
     val snapshotData = moshi.adapter(Map::class.java).fromJson(snapshot) as? Map<*, *>
@@ -180,7 +181,8 @@ private fun buildRulesInfo(): String {
             "type" to typeStr.lowercase().replaceFirstChar { it.uppercase() }, // "BOOLEAN" -> "Boolean"
             "default" to defaultValue,
             "rulesCount" to rules.size,
-            "hasRules" to rules.isNotEmpty()
+            "hasRules" to rules.isNotEmpty(),
+            "rules" to rules.map { moshi.adapter(List::class.java).toJsonValue(rules) }
         )
     } ?: emptyList()
 
@@ -680,8 +682,8 @@ private fun HTML.renderMainPage() {
         script {
             unsafe {
                 raw("""
-                    window.KONDITIONAL_SNAPSHOT = ${SnapshotSerializer.serialize(Taxonomy.Global.konfig())};
                     window.KONDITIONAL_RULES = ${buildRulesInfo()};
+                    window.KONDITIONAL_SNAPSHOT = ${SnapshotSerializer.serialize(Namespace.Global.configuration)};
                 """.trimIndent())
             }
         }

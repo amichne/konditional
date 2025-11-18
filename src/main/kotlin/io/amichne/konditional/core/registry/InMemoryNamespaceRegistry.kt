@@ -2,13 +2,13 @@ package io.amichne.konditional.core.registry
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.FlagDefinition
-import io.amichne.konditional.core.instance.Konfig
-import io.amichne.konditional.core.instance.KonfigPatch
+import io.amichne.konditional.core.instance.Configuration
+import io.amichne.konditional.core.instance.ConfigurationPatch
 import io.amichne.konditional.core.types.EncodableValue
 import java.util.concurrent.atomic.AtomicReference
 
 /**
- * In-memory implementation of [ModuleRegistry] that can be instantiated for testing.
+ * In-memory implementation of [NamespaceRegistry] that can be instantiated for testing.
  *
  * this class can be instantiated multiple times, making it ideal for:
  * - Unit tests that need isolated flag configurations
@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicReference
  * ```kotlin
  * @Test
  * fun `test feature flag behavior`() {
- *     val testRegistry = InMemoryModuleRegistry()
+ *     val testRegistry = InMemoryNamespaceRegistry()
  *
  *     config(testRegistry) {
  *         MyFlags.FEATURE_A with {
@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicReference
  *         }
  *     }
  *
- *     val value = testRegistry.featureFlag(MyFlags.FEATURE_A)
+ *     val value = testRegistry.flag(MyFlags.FEATURE_A)
  *     assertEquals(true, value?.defaultValue)
  * }
  * ```
@@ -40,29 +40,30 @@ import java.util.concurrent.atomic.AtomicReference
  * @constructor Creates a new empty in-memory registry
  * @since 0.0.2
  */
-internal class InMemoryModuleRegistry : ModuleRegistry {
-    private val current = AtomicReference(Konfig(emptyMap()))
+internal class InMemoryNamespaceRegistry : NamespaceRegistry {
+    private val current = AtomicReference(Configuration(emptyMap()))
 
     /**
      * Loads the flag values from the provided [config] snapshot.
      *
      * This operation atomically replaces the entire current configuration.
      *
-     * @param config The [Konfig] containing the configuration to load
+     * @param config The [Configuration] containing the configuration to load
      */
-    override fun load(config: Konfig) {
+    override fun load(config: Configuration) {
         current.set(config)
     }
 
     /**
      * Returns the current snapshot of all flag configurations.
      *
-     * @return The current [Konfig]
+     * @return The current [Configuration]
      */
-    override fun konfig(): Konfig = current.get()
+    override val configuration: Configuration
+        get() = current.get()
 
     /**
-     * Applies a [io.amichne.konditional.core.instance.KonfigPatch] to the current snapshot, atomically updating the flag configuration.
+     * Applies a [io.amichne.konditional.core.instance.ConfigurationPatch] to the current snapshot, atomically updating the flag configuration.
      *
      * This method is useful for incremental updates without replacing the entire snapshot.
      * The update is performed atomically using compare-and-swap semantics.
@@ -70,9 +71,9 @@ internal class InMemoryModuleRegistry : ModuleRegistry {
      * **Internal API**: Used internally by FeatureContainer. Configuration updates are
      * handled automatically through delegation.
      *
-     * @param patch The [io.amichne.konditional.core.instance.KonfigPatch] to apply
+     * @param patch The [io.amichne.konditional.core.instance.ConfigurationPatch] to apply
      */
-    internal fun updatePatch(patch: KonfigPatch) {
+    internal fun updatePatch(patch: ConfigurationPatch) {
         current.updateAndGet { currentSnapshot ->
             patch.applyTo(currentSnapshot)
         }
@@ -94,7 +95,7 @@ internal class InMemoryModuleRegistry : ModuleRegistry {
         current.updateAndGet { currentSnapshot ->
             val mutableFlags = currentSnapshot.flags.toMutableMap()
             mutableFlags[definition.feature] = definition
-            Konfig(mutableFlags)
+            Configuration(mutableFlags)
         }
     }
 }

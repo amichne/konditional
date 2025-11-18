@@ -1,6 +1,6 @@
 # Feature Definition
 
-Features are the core building blocks of Konditional. They define the flags you want to evaluate, their value types, and which taxonomy they belong to. This document covers the two patterns for defining features, their type parameters, and best practices for organizing your feature flags.
+Features are the core building blocks of Konditional. They define the flags you want to evaluate, their value types, and which namespace they belong to. This document covers the two patterns for defining features, their type parameters, and best practices for organizing your feature flags.
 
 ---
 
@@ -22,8 +22,8 @@ The `FeatureContainer` pattern uses Kotlin's property delegation to provide a cl
 ### Basic Usage
 
 ```kotlin
-object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object PaymentFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     val APPLE_PAY by boolean<Context>(default = false)
     val GOOGLE_PAY by boolean<Context>(default = false)
@@ -45,7 +45,7 @@ Creates a Boolean feature flag.
 val DARK_MODE by boolean<Context>(default = false) {
     rule {
         platforms(Platform.IOS, Platform.ANDROID)
-    } implies true
+    } returns true
 }
 ```
 
@@ -63,7 +63,7 @@ Creates a String feature flag.
 val API_ENDPOINT by string<Context>(default = "https://api.prod.com") {
     rule {
         platforms(Platform.WEB)
-    } implies "https://api.staging.com"
+    } returns "https://api.staging.com"
 }
 ```
 
@@ -82,7 +82,7 @@ val MAX_RETRIES by int<Context>(default = 3) {
     rule {
         platforms(Platform.ANDROID)
         rollout = Rollout.of(50.0)
-    } implies 5
+    } returns 5
 }
 ```
 
@@ -100,7 +100,7 @@ Creates a Double feature flag.
 val TRANSACTION_FEE by double<Context>(default = 0.029) {
     rule {
         platforms(Platform.WEB)
-    } implies 0.019
+    } returns 0.019
 }
 ```
 
@@ -120,13 +120,13 @@ FeatureContainer uses Kotlin's property delegation (`by`) to automatically:
 4. **Apply configuration** from the DSL block
 
 ```kotlin
-object MyFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object MyFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     // Property name "NEW_CHECKOUT" becomes the feature key
     val NEW_CHECKOUT by boolean<Context>(default = false) {
-        // Configuration is automatically applied to Taxonomy.Global
+        // Configuration is automatically applied to Namespace.Global
         rule {
             platforms(Platform.WEB)
-        } implies true
+        } returns true
     }
 }
 
@@ -145,7 +145,7 @@ println(MyFeatures.NEW_CHECKOUT.key) // "NEW_CHECKOUT"
 FeatureContainer provides complete enumeration of all features in the container:
 
 ```kotlin
-val all: List<Feature<*, *, *, Taxonomy.Domain.Payments>> =
+val all: List<Feature<*, *, *, Namespace.Payments>> =
     PaymentFeatures.allFeatures()
 
 all.forEach { feature ->
@@ -175,7 +175,7 @@ all.forEach { feature ->
 | Feature | FeatureContainer | Enum Pattern |
 |---------|-----------------|--------------|
 | **Mixed types** | Multiple types in one container | Single type per enum |
-| **Boilerplate** | Minimal (taxonomy declared once) | High (module override per entry) |
+| **Boilerplate** | Minimal (namespace declared once) | High (module override per entry) |
 | **Enumeration** | Automatic via `allFeatures()` | Manual tracking required |
 | **Configuration** | Inline with declaration | Separate config block |
 | **IDE support** | Full autocomplete and refactoring | Full autocomplete and refactoring |
@@ -183,7 +183,7 @@ all.forEach { feature ->
 ### Example: Mixed Type Container
 
 ```kotlin
-object AppConfig : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object AppConfig : FeatureContainer<Namespace.Global>(Namespace.Global) {
     // Boolean toggles
     val DARK_MODE by boolean<Context>(default = false)
     val ANALYTICS_ENABLED by boolean<Context>(default = true)
@@ -223,13 +223,13 @@ For Boolean feature flags (on/off toggles):
 
 ```kotlin
 enum class FeatureToggles(override val key: String) :
-    BooleanFeature<Context, Taxonomy.Global> {
+    BooleanFeature<Context, Namespace.Global> {
 
     DARK_MODE("dark_mode"),
     NEW_UI("new_ui"),
     BETA_FEATURES("beta_features");
 
-    override val module = Taxonomy.Global
+    override val module = Namespace.Global
 }
 ```
 
@@ -239,13 +239,13 @@ For String configuration values:
 
 ```kotlin
 enum class StringConfig(override val key: String) :
-    StringFeature<Context, Taxonomy.Global> {
+    StringFeature<Context, Namespace.Global> {
 
     API_ENDPOINT("api_endpoint"),
     LOG_LEVEL("log_level"),
     THEME_NAME("theme_name");
 
-    override val module = Taxonomy.Global
+    override val module = Namespace.Global
 }
 ```
 
@@ -255,13 +255,13 @@ For Integer numeric values:
 
 ```kotlin
 enum class NumericConfig(override val key: String) :
-    IntFeature<Context, Taxonomy.Global> {
+    IntFeature<Context, Namespace.Global> {
 
     MAX_RETRIES("max_retries"),
     TIMEOUT_SECONDS("timeout_seconds"),
     BATCH_SIZE("batch_size");
 
-    override val module = Taxonomy.Global
+    override val module = Namespace.Global
 }
 ```
 
@@ -271,13 +271,13 @@ For Double precision numeric values:
 
 ```kotlin
 enum class DecimalConfig(override val key: String) :
-    DoubleFeature<Context, Taxonomy.Global> {
+    DoubleFeature<Context, Namespace.Global> {
 
     TRANSACTION_FEE("transaction_fee"),
     DISCOUNT_RATE("discount_rate"),
     TAX_RATE("tax_rate");
 
-    override val module = Taxonomy.Global
+    override val module = Namespace.Global
 }
 ```
 
@@ -287,17 +287,17 @@ Each enum must:
 
 1. Implement one of the four feature interfaces
 2. Override `key` with the feature identifier
-3. Override `module` with the taxonomy
+3. Override `module` with the namespace
 
 ```kotlin
 enum class PaymentFeatures(override val key: String) :
-    BooleanFeature<Context, Taxonomy.Domain.Payments> {
+    BooleanFeature<Context, Namespace.Payments> {
 
     APPLE_PAY("apple_pay"),
     GOOGLE_PAY("google_pay"),
     CARD_ON_FILE("card_on_file");
 
-    override val module = Taxonomy.Domain.Payments
+    override val module = Namespace.Payments
 }
 ```
 
@@ -310,12 +310,12 @@ With the enum pattern, configuration is done separately from declaration:
 enum class PaymentFeatures(...) : BooleanFeature<...> { ... }
 
 // Configuration (separate)
-Taxonomy.Domain.Payments.config {
+Namespace.Payments.config {
     PaymentFeatures.APPLE_PAY with {
         default(false)
         rule {
             platforms(Platform.IOS)
-        } implies true
+        } returns true
     }
 }
 ```
@@ -343,7 +343,7 @@ All feature definitions use four generic type parameters:
 ### Type Parameter Reference
 
 ```kotlin
-Feature<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy>
+Feature<S : EncodableValue<T>, T : Any, C : Context, M : Namespace>
 ```
 
 | Parameter | Meaning | Examples | Purpose |
@@ -351,7 +351,7 @@ Feature<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy>
 | **S** | EncodableValue wrapper | `BooleanEncodeable`, `StringEncodeable` | Internal serialization type (automatically inferred) |
 | **T** | Actual value type | `Boolean`, `String`, `Int`, `Double` | The type returned by `evaluate()` |
 | **C** | Context type | `Context`, `EnterpriseContext` | Evaluation context required |
-| **M** | Taxonomy (module) | `Taxonomy.Global`, `Taxonomy.Domain.Payments` | Namespace and registry isolation |
+| **M** | Namespace (module) | `Namespace.Global`, `Namespace.Payments` | Namespace and registry isolation |
 
 ### Understanding S (EncodableValue)
 
@@ -359,17 +359,17 @@ The `S` parameter wraps the actual value type for serialization. You rarely inte
 
 ```kotlin
 // These are equivalent type declarations
-BooleanFeature<Context, Taxonomy.Global>
-Feature<EncodableValue.BooleanEncodeable, Boolean, Context, Taxonomy.Global>
+BooleanFeature<Context, Namespace.Global>
+Feature<EncodableValue.BooleanEncodeable, Boolean, Context, Namespace.Global>
 
-StringFeature<Context, Taxonomy.Global>
-Feature<EncodableValue.StringEncodeable, String, Context, Taxonomy.Global>
+StringFeature<Context, Namespace.Global>
+Feature<EncodableValue.StringEncodeable, String, Context, Namespace.Global>
 
-IntFeature<Context, Taxonomy.Global>
-Feature<EncodableValue.IntEncodeable, Int, Context, Taxonomy.Global>
+IntFeature<Context, Namespace.Global>
+Feature<EncodableValue.IntEncodeable, Int, Context, Namespace.Global>
 
-DoubleFeature<Context, Taxonomy.Global>
-Feature<EncodableValue.DecimalEncodeable, Double, Context, Taxonomy.Global>
+DoubleFeature<Context, Namespace.Global>
+Feature<EncodableValue.DecimalEncodeable, Double, Context, Namespace.Global>
 ```
 
 **You typically use the simplified interfaces** (`BooleanFeature`, `StringFeature`, etc.) instead of specifying `S` manually.
@@ -379,19 +379,19 @@ Feature<EncodableValue.DecimalEncodeable, Double, Context, Taxonomy.Global>
 The `T` parameter determines what type `evaluate()` returns:
 
 ```kotlin
-val DARK_MODE: BooleanFeature<Context, Taxonomy.Global> = // ...
+val DARK_MODE: BooleanFeature<Context, Namespace.Global> = // ...
 val enabled: Boolean = context.evaluate(DARK_MODE)
 //            ^^^^^^^ T = Boolean
 
-val API_URL: StringFeature<Context, Taxonomy.Global> = // ...
+val API_URL: StringFeature<Context, Namespace.Global> = // ...
 val url: String = context.evaluate(API_URL)
 //       ^^^^^^ T = String
 
-val MAX_RETRIES: IntFeature<Context, Taxonomy.Global> = // ...
+val MAX_RETRIES: IntFeature<Context, Namespace.Global> = // ...
 val retries: Int = context.evaluate(MAX_RETRIES)
 //           ^^^ T = Int
 
-val FEE_RATE: DoubleFeature<Context, Taxonomy.Global> = // ...
+val FEE_RATE: DoubleFeature<Context, Namespace.Global> = // ...
 val fee: Double = context.evaluate(FEE_RATE)
 //       ^^^^^^ T = Double
 ```
@@ -421,28 +421,28 @@ basicContext.evaluate(ENTERPRISE_ANALYTICS) // ❌ Compile error!
 
 See [Custom Context with Features](#custom-context-with-features) for details.
 
-### Understanding M (Taxonomy)
+### Understanding M (Namespace)
 
-The `M` parameter binds features to their taxonomy, providing isolation:
+The `M` parameter binds features to their namespace, providing isolation:
 
 ```kotlin
-object CoreFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object CoreFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val KILL_SWITCH by boolean<Context>(default = false)
 }
-// KILL_SWITCH.module == Taxonomy.Global
+// KILL_SWITCH.module == Namespace.Global
 
-object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object PaymentFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     val APPLE_PAY by boolean<Context>(default = false)
 }
-// APPLE_PAY.module == Taxonomy.Domain.Payments
+// APPLE_PAY.module == Namespace.Payments
 ```
 
-**Benefits of taxonomy isolation:**
+**Benefits of namespace isolation:**
 - Different teams can use the same feature keys without collision
-- Each taxonomy has its own registry instance
-- Compile-time enforcement prevents cross-taxonomy access
+- Each namespace has its own registry instance
+- Compile-time enforcement prevents cross-namespace access
 - Independent deployment and versioning
 
 ---
@@ -475,7 +475,7 @@ enum class SubscriptionTier {
 #### FeatureContainer Pattern
 
 ```kotlin
-object EnterpriseFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object EnterpriseFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     // Requires EnterpriseContext
     val ADVANCED_ANALYTICS by boolean<EnterpriseContext>(default = false) {
         rule {
@@ -483,13 +483,13 @@ object EnterpriseFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
             custom { ctx ->
                 ctx.subscriptionTier == SubscriptionTier.ENTERPRISE
             }
-        } implies true
+        } returns true
     }
 
     val BULK_EXPORT by boolean<EnterpriseContext>(default = false) {
         rule {
             custom { ctx -> ctx.seatCount >= 50 }
-        } implies true
+        } returns true
     }
 }
 ```
@@ -498,13 +498,13 @@ object EnterpriseFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 
 ```kotlin
 enum class EnterpriseFeatures(override val key: String) :
-    BooleanFeature<EnterpriseContext, Taxonomy.Global> {
+    BooleanFeature<EnterpriseContext, Namespace.Global> {
 
     ADVANCED_ANALYTICS("advanced_analytics"),
     BULK_EXPORT("bulk_export"),
     CUSTOM_BRANDING("custom_branding");
 
-    override val module = Taxonomy.Global
+    override val module = Namespace.Global
 }
 ```
 
@@ -532,7 +532,7 @@ basicCtx.evaluate(CoreFeatures.DARK_MODE)
 Custom contexts are subypes of `Context`, enabling polymorphic usage:
 
 ```kotlin
-fun evaluateFeature(ctx: Context, feature: BooleanFeature<Context, Taxonomy.Global>): Boolean {
+fun evaluateFeature(ctx: Context, feature: BooleanFeature<Context, Namespace.Global>): Boolean {
     return ctx.evaluate(feature)
 }
 
@@ -546,7 +546,7 @@ evaluateFeature(enterprise, CoreFeatures.DARK_MODE)
 // But enterprise-specific features require EnterpriseContext
 fun evaluateEnterpriseFeature(
     ctx: EnterpriseContext,
-    feature: BooleanFeature<EnterpriseContext, Taxonomy.Global>
+    feature: BooleanFeature<EnterpriseContext, Namespace.Global>
 ): Boolean {
     return ctx.evaluate(feature)
 }
@@ -556,27 +556,27 @@ fun evaluateEnterpriseFeature(
 
 ## Organizational Patterns
 
-### Single Container per Taxonomy
+### Single Container per Namespace
 
-Organize features by functional area using one container per taxonomy:
+Organize features by functional area using one container per namespace:
 
 ```kotlin
-object CoreFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object CoreFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val KILL_SWITCH by boolean<Context>(default = false)
     val MAINTENANCE_MODE by boolean<Context>(default = false)
     val API_VERSION by string<Context>(default = "v1")
 }
 
-object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object PaymentFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     val APPLE_PAY by boolean<Context>(default = false)
     val GOOGLE_PAY by boolean<Context>(default = false)
     val MAX_TRANSACTION by int<Context>(default = 10000)
 }
 
-object MessagingFeatures : FeatureContainer<Taxonomy.Domain.Messaging>(
-    Taxonomy.Domain.Messaging
+object MessagingFeatures : FeatureContainer<Namespace.Messaging>(
+    Namespace.Messaging
 ) {
     val PUSH_NOTIFICATIONS by boolean<Context>(default = true)
     val EMAIL_ENABLED by boolean<Context>(default = true)
@@ -584,36 +584,36 @@ object MessagingFeatures : FeatureContainer<Taxonomy.Domain.Messaging>(
 }
 ```
 
-### Multiple Containers per Taxonomy
+### Multiple Containers per Namespace
 
-For large domains, split features across multiple containers sharing a taxonomy:
+For large domains, split features across multiple containers sharing a namespace:
 
 ```kotlin
-// All share Taxonomy.Domain.Payments
-object CheckoutFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+// All share Namespace.Payments
+object CheckoutFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     val GUEST_CHECKOUT by boolean<Context>(default = false)
     val ONE_CLICK_BUY by boolean<Context>(default = false)
 }
 
-object PaymentMethodFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object PaymentMethodFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     val APPLE_PAY by boolean<Context>(default = false)
     val GOOGLE_PAY by boolean<Context>(default = false)
     val CRYPTO_PAYMENTS by boolean<Context>(default = false)
 }
 
-object FraudDetectionFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object FraudDetectionFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     val RISK_SCORING by boolean<Context>(default = true)
     val MANUAL_REVIEW_THRESHOLD by int<Context>(default = 1000)
 }
 ```
 
-**All features share the same registry** since they use the same taxonomy.
+**All features share the same registry** since they use the same namespace.
 
 ### Grouped by Type (Enum Pattern)
 
@@ -622,26 +622,26 @@ When using enums, group by both domain and type:
 ```kotlin
 // Payment domain - Boolean features
 enum class PaymentToggles(override val key: String) :
-    BooleanFeature<Context, Taxonomy.Domain.Payments> {
+    BooleanFeature<Context, Namespace.Payments> {
     APPLE_PAY("apple_pay"),
     GOOGLE_PAY("google_pay");
-    override val module = Taxonomy.Domain.Payments
+    override val module = Namespace.Payments
 }
 
 // Payment domain - String config
 enum class PaymentConfig(override val key: String) :
-    StringFeature<Context, Taxonomy.Domain.Payments> {
+    StringFeature<Context, Namespace.Payments> {
     API_ENDPOINT("api_endpoint"),
     PROVIDER_NAME("provider_name");
-    override val module = Taxonomy.Domain.Payments
+    override val module = Namespace.Payments
 }
 
 // Payment domain - Numeric limits
 enum class PaymentLimits(override val key: String) :
-    IntFeature<Context, Taxonomy.Domain.Payments> {
+    IntFeature<Context, Namespace.Payments> {
     MAX_TRANSACTION("max_transaction"),
     DAILY_LIMIT("daily_limit");
-    override val module = Taxonomy.Domain.Payments
+    override val module = Namespace.Payments
 }
 ```
 
@@ -655,7 +655,7 @@ For new projects and features, prefer `FeatureContainer` over enum pattern:
 
 ```kotlin
 // ✅ Recommended: FeatureContainer
-object MyFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object MyFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val FEATURE_A by boolean<Context>(default = false)
     val CONFIG_B by string<Context>(default = "default")
     val LIMIT_C by int<Context>(default = 100)
@@ -663,9 +663,9 @@ object MyFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
 
 // ⚠️  Alternative: Enum pattern (more boilerplate)
 enum class MyFeatures(override val key: String) :
-    BooleanFeature<Context, Taxonomy.Global> {
+    BooleanFeature<Context, Namespace.Global> {
     FEATURE_A("feature_a");
-    override val module = Taxonomy.Global
+    override val module = Namespace.Global
 }
 ```
 
@@ -675,14 +675,14 @@ Property names become feature keys automatically:
 
 ```kotlin
 // ✅ Good: Clear, descriptive names
-object Features : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object Features : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val DARK_MODE by boolean<Context>(default = false)
     val NEW_CHECKOUT_FLOW by boolean<Context>(default = false)
     val API_ENDPOINT by string<Context>(default = "https://api.prod.com")
 }
 
 // ❌ Avoid: Ambiguous or inconsistent names
-object Features : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object Features : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val f1 by boolean<Context>(default = false)  // Not descriptive
     val darkMode by boolean<Context>(default = false)  // Inconsistent casing
 }
@@ -711,23 +711,23 @@ Organize features by functional area or team ownership:
 
 ```kotlin
 // ✅ Good: Features grouped by domain
-object AuthFeatures : FeatureContainer<Taxonomy.Domain.Authentication>(
-    Taxonomy.Domain.Authentication
+object AuthFeatures : FeatureContainer<Namespace.Authentication>(
+    Namespace.Authentication
 ) {
     val SSO_ENABLED by boolean<Context>(default = false)
     val MFA_REQUIRED by boolean<Context>(default = false)
     val PASSWORD_MIN_LENGTH by int<Context>(default = 8)
 }
 
-object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object PaymentFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     val APPLE_PAY by boolean<Context>(default = false)
     val MAX_TRANSACTION by int<Context>(default = 10000)
 }
 
 // ❌ Avoid: Unrelated features mixed together
-object Features : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object Features : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val SSO_ENABLED by boolean<Context>(default = false)
     val APPLE_PAY by boolean<Context>(default = false)
     val DARK_MODE by boolean<Context>(default = false)
@@ -741,14 +741,14 @@ Choose taxonomies that match your organizational structure:
 
 ```kotlin
 // ✅ Global: System-wide features
-object CoreFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object CoreFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val KILL_SWITCH by boolean<Context>(default = false)
     val MAINTENANCE_MODE by boolean<Context>(default = false)
 }
 
 // ✅ Domain: Team-specific features
-object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object PaymentFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     val APPLE_PAY by boolean<Context>(default = false)
 }
@@ -776,7 +776,7 @@ fun validateConfiguration() {
 Add KDoc comments for features with complex behavior:
 
 ```kotlin
-object Features : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object Features : FeatureContainer<Namespace.Global>(Namespace.Global) {
     /**
      * Enables the new checkout flow with improved UX.
      *
@@ -792,7 +792,7 @@ object Features : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
         rule {
             platforms(Platform.WEB)
             rollout = Rollout.of(10.0)
-        } implies true
+        } returns true
     }
 }
 ```
@@ -808,7 +808,7 @@ enum class Features(override val key: String) : BooleanFeature<...> {
 }
 
 // ⚠️  FeatureContainer: Property name IS the key
-object Features : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object Features : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val DARK_MODE by boolean<Context>(default = false)
     // Key is "DARK_MODE" - renaming property breaks persistence!
 }
@@ -851,8 +851,8 @@ fun `all features evaluate successfully`() {
  * This container manages all payment-related features including
  * payment methods, fraud detection, and transaction limits.
  */
-object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object PaymentFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     // Payment method toggles
     val APPLE_PAY by boolean<Context>(default = false) {
@@ -860,34 +860,34 @@ object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
             platforms(Platform.IOS)
             versions(FullyBound(Version(2, 0, 0), Version(3, 0, 0)))
             rollout = Rollout.of(25.0)
-        } implies true
+        } returns true
     }
 
     val GOOGLE_PAY by boolean<Context>(default = false) {
         rule {
             platforms(Platform.ANDROID)
-        } implies true
+        } returns true
     }
 
     // Configuration
     val PAYMENT_PROVIDER by string<Context>(default = "stripe") {
         rule {
             platforms(Platform.WEB)
-        } implies "braintree"
+        } returns "braintree"
     }
 
     // Numeric limits
     val MAX_TRANSACTION by int<Context>(default = 10000) {
         rule {
             locales(AppLocale.EN_US)
-        } implies 50000
+        } returns 50000
     }
 
     val TRANSACTION_FEE by double<Context>(default = 0.029) {
         rule {
             platforms(Platform.WEB)
             rollout = Rollout.of(50.0)
-        } implies 0.019
+        } returns 0.019
     }
 }
 
@@ -921,52 +921,52 @@ fun validatePaymentConfig() {
 ```kotlin
 // Declaration
 enum class PaymentFeatures(override val key: String) :
-    BooleanFeature<Context, Taxonomy.Domain.Payments> {
+    BooleanFeature<Context, Namespace.Payments> {
 
     APPLE_PAY("apple_pay"),
     GOOGLE_PAY("google_pay"),
     CRYPTO_PAYMENTS("crypto_payments");
 
-    override val module = Taxonomy.Domain.Payments
+    override val module = Namespace.Payments
 }
 
 enum class PaymentConfig(override val key: String) :
-    StringFeature<Context, Taxonomy.Domain.Payments> {
+    StringFeature<Context, Namespace.Payments> {
 
     PAYMENT_PROVIDER("payment_provider");
 
-    override val module = Taxonomy.Domain.Payments
+    override val module = Namespace.Payments
 }
 
 enum class PaymentLimits(override val key: String) :
-    IntFeature<Context, Taxonomy.Domain.Payments> {
+    IntFeature<Context, Namespace.Payments> {
 
     MAX_TRANSACTION("max_transaction");
 
-    override val module = Taxonomy.Domain.Payments
+    override val module = Namespace.Payments
 }
 
 // Configuration
-Taxonomy.Domain.Payments.config {
+Namespace.Payments.config {
     PaymentFeatures.APPLE_PAY with {
         default(false)
         rule {
             platforms(Platform.IOS)
-        } implies true
+        } returns true
     }
 
     PaymentConfig.PAYMENT_PROVIDER with {
         default("stripe")
         rule {
             platforms(Platform.WEB)
-        } implies "braintree"
+        } returns "braintree"
     }
 
     PaymentLimits.MAX_TRANSACTION with {
         default(10000)
         rule {
             locales(AppLocale.EN_US)
-        } implies 50000
+        } returns 50000
     }
 }
 ```
@@ -991,30 +991,30 @@ enum class SubscriptionTier {
 }
 
 // Features requiring custom context
-object EnterpriseFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object EnterpriseFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val ADVANCED_ANALYTICS by boolean<EnterpriseContext>(default = false) {
         rule {
             custom { ctx ->
                 ctx.subscriptionTier == SubscriptionTier.ENTERPRISE &&
                 ctx.seatCount >= 50
             }
-        } implies true
+        } returns true
     }
 
     val CUSTOM_BRANDING by boolean<EnterpriseContext>(default = false) {
         rule {
             custom { ctx -> ctx.customDomain != null }
-        } implies true
+        } returns true
     }
 
     val API_RATE_LIMIT by int<EnterpriseContext>(default = 100) {
         rule {
             custom { ctx -> ctx.subscriptionTier == SubscriptionTier.ENTERPRISE }
-        } implies 10000
+        } returns 10000
 
         rule {
             custom { ctx -> ctx.subscriptionTier == SubscriptionTier.PROFESSIONAL }
-        } implies 1000
+        } returns 1000
     }
 }
 

@@ -20,7 +20,7 @@ import kotlin.test.assertTrue
  */
 class ConditionEvaluationTest {
 
-    object TestFlags : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+    object TestFlags : FeatureContainer<Namespace.Global>(Namespace.Global) {
         val TEST_FLAG by string<Context>(default = "default")
     }
 

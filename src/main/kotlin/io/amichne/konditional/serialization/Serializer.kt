@@ -14,14 +14,14 @@ import io.amichne.konditional.core.result.ParseResult
  *
  * ## Implementations
  *
- * - [TaxonomySnapshotSerializer]: Serializes a single taxonomy's configuration
+ * - [NamespaceSnapshotSerializer]: Serializes a single namespace's configuration
  *
  * Note: [SnapshotSerializer] is an object with static methods and does not implement this interface.
  *
  * ## Usage Example
  *
  * ```kotlin
- * val serializer: Serializer<Konfig> = TaxonomySnapshotSerializer(Taxonomy.Domain.Payments)
+ * val serializer: Serializer<Configuration> = NamespaceSnapshotSerializer(Namespace.Payments)
  *
  * // Serialize to JSON
  * val json = serializer.toJson()
@@ -48,7 +48,7 @@ import io.amichne.konditional.core.result.ParseResult
  * - **Separation of concerns**: Serialization logic doesn't know about storage
  * - **Type safety**: ParseResult enables compile-time-checked error handling
  *
- * @param T The type being serialized/deserialized (e.g., [io.amichne.konditional.core.instance.Konfig])
+ * @param T The type being serialized/deserialized (e.g., [io.amichne.konditional.core.instance.Configuration])
  */
 interface Serializer<T> {
     /**

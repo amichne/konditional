@@ -11,8 +11,6 @@ import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.features.IntFeature
 import io.amichne.konditional.core.features.StringFeature
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.registry.ModuleRegistry
-import io.amichne.konditional.core.registry.RegistryScope
 import io.amichne.konditional.core.result.utils.evaluateOrDefault
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -24,13 +22,9 @@ import org.junit.jupiter.api.Test
 class FeatureContainerTest {
 
     // Test container with mixed feature types
-    object TestFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-        Taxonomy.Domain.Payments
+    object TestFeatures : FeatureContainer<Namespace.Payments>(
+        Namespace.Payments
     ) {
-        init {
-            RegistryScope.setGlobal(ModuleRegistry())
-        }
-
         val testBoolean by boolean<Context>(default = false)
         val testString by string<Context>(default = "default")
         val testInt by int<Context>(default = 0)
@@ -60,12 +54,12 @@ class FeatureContainerTest {
 
     @Test
     fun `features have correct module`() {
-        val expectedModule = Taxonomy.Domain.Payments
+        val expectedModule = Namespace.Payments
 
-        assertEquals(expectedModule, TestFeatures.testBoolean.module)
-        assertEquals(expectedModule, TestFeatures.testString.module)
-        assertEquals(expectedModule, TestFeatures.testInt.module)
-        assertEquals(expectedModule, TestFeatures.testDouble.module)
+        assertEquals(expectedModule, TestFeatures.testBoolean.namespace)
+        assertEquals(expectedModule, TestFeatures.testString.namespace)
+        assertEquals(expectedModule, TestFeatures.testInt.namespace)
+        assertEquals(expectedModule, TestFeatures.testDouble.namespace)
     }
 
     @Test
@@ -86,8 +80,8 @@ class FeatureContainerTest {
     @Test
     fun `features are lazily initialized`() {
         // Create a new container that hasn't been accessed yet
-        with(object : FeatureContainer<Taxonomy.Domain.Payments>(
-            Taxonomy.Domain.Payments
+        with(object : FeatureContainer<Namespace.Payments>(
+            Namespace.Payments
         ) {
             val lazyA by boolean<Context>(default = true)
             val lazyB by boolean<Context>(default = true)
@@ -111,8 +105,8 @@ class FeatureContainerTest {
     @Test
     fun `features can be evaluated with context`() {
         // Create a test container with configured features
-        val testFeatures = object : FeatureContainer<Taxonomy.Domain.Payments>(
-            Taxonomy.Domain.Payments
+        val testFeatures = object : FeatureContainer<Namespace.Payments>(
+            Namespace.Payments
         ) {
             val configuredBoolean by boolean<Context>(default = true)
             val configuredString by string<Context>("test-value") {}
@@ -134,16 +128,14 @@ class FeatureContainerTest {
 
     @Test
     fun `multiple containers maintain independent feature lists`() {
-        val first = object : FeatureContainer<Taxonomy.Domain.Payments>(
-            Taxonomy.Domain.Payments
+        val first = object : FeatureContainer<Namespace.Payments>(
+            Namespace.Payments
         ) {
             val a1 by boolean<Context>(default = true)
             val a2 by boolean<Context>(default = true)
         }
 
-        val second = object : FeatureContainer<Taxonomy.Domain.Messaging>(
-            Taxonomy.Domain.Messaging
-        ) {
+        val second = object : FeatureContainer<Namespace.Messaging>(Namespace.Messaging) {
             val b1 by boolean<Context>(default = true)
             val b2 by boolean<Context>(default = true)
             val b3 by boolean<Context>(default = true)
@@ -182,13 +174,13 @@ class FeatureContainerTest {
     @Test
     fun `features maintain type safety through container`() {
         // Type inference works correctly
-        val booleanFeature: BooleanFeature<Context, Taxonomy.Domain.Payments> =
+        val booleanFeature: BooleanFeature<Context, Namespace.Payments> =
             TestFeatures.testBoolean
 
-        val stringFeature: StringFeature<Context, Taxonomy.Domain.Payments> =
+        val stringFeature: StringFeature<Context, Namespace.Payments> =
             TestFeatures.testString
 
-        val intFeature: IntFeature<Context, Taxonomy.Domain.Payments> =
+        val intFeature: IntFeature<Context, Namespace.Payments> =
             TestFeatures.testInt
 
         // Verify types are preserved

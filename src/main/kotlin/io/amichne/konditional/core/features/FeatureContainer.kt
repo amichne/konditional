@@ -1,9 +1,9 @@
 package io.amichne.konditional.core.features
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.FlagScope
-import io.amichne.konditional.core.registry.ModuleRegistry.Companion.updateDefinition
+import io.amichne.konditional.core.registry.NamespaceRegistry.Companion.updateDefinition
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.internal.builders.FlagBuilder
 import kotlin.properties.PropertyDelegateProvider
@@ -20,28 +20,28 @@ import kotlin.reflect.KProperty
  * **Benefits over enum-based features:**
  * - **Complete enumeration**: `allFeatures()` provides all features at runtime
  * - **Ergonomic delegation**: Use `by boolean {}`, `by string {}`, etc. with DSL configuration
- * - **Single taxonomy declaration**: No need to repeat taxonomy on every feature
+ * - **Single namespace declaration**: No need to repeat namespace on every feature
  * - **Mixed types**: Combine Boolean, String, Int, and Double features in one container
  * - **Type safety**: Full type inference and compile-time checking
  * - **Lazy registration**: Features are created and registered only when first accessed
  *
  * **Example:**
  * ```kotlin
- * object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
- *     Taxonomy.Domain.Payments
+ * object PaymentFeatures : FeatureContainer<Namespace.Payments>(
+ *     Namespace.Payments
  * ) {
  *     val APPLE_PAY by boolean {
  *         default(false)
  *         rule {
  *             platforms(Platform.IOS)
- *         } implies true
+ *         } returns true
  *     }
  *
  *     val CARD_LIMIT by int {
  *         default(5000)
  *         rule {
  *             platforms(Platform.WEB)
- *         } implies 10000
+ *         } returns 10000
  *     }
  * }
  *
@@ -52,11 +52,11 @@ import kotlin.reflect.KProperty
  * context.evaluateSafe(PaymentFeatures.APPLE_PAY)
  * ```
  *
- * @param M The taxonomy type this container belongs to (e.g., Taxonomy.Domain.Payments)
+ * @param M The namespace type this container belongs to (e.g., Namespace.Payments)
  */
-abstract class FeatureContainer<M : Taxonomy>(
+abstract class FeatureContainer<M : Namespace>(
     @PublishedApi
-    internal val taxonomy: M,
+    internal val namespace: M,
 ) {
     private val _features = mutableListOf<Feature<*, *, *, M>>()
 
@@ -87,15 +87,15 @@ abstract class FeatureContainer<M : Taxonomy>(
      *
      * The feature is configured using a DSL scope that provides type-safe access to
      * boolean-specific configuration options like rules, defaults, and targeting.
-     * Configuration is automatically applied to the taxonomy when the feature is first accessed.
+     * Configuration is automatically applied to the namespace when the feature is first accessed.
      *
      * **Example:**
      * ```kotlin
-     * object MyFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
+     * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
      *     val DARK_MODE by boolean(default = false) {
      *         rule {
      *             platforms(Platform.IOS)
-     *         } implies true
+     *         } returns true
      *     }
      * }
      * ```
@@ -109,22 +109,22 @@ abstract class FeatureContainer<M : Taxonomy>(
         default: Boolean,
         flagScope: FlagScope<EncodableValue.BooleanEncodeable, Boolean, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, BooleanFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(default, flagScope) { BooleanFeature(it, taxonomy) }
+        ContainerFeaturePropertyDelegate(default, flagScope) { BooleanFeature(it, namespace) }
 
     /**
      * Creates a String feature with automatic registration and configuration.
      *
      * The feature is configured using a DSL scope that provides type-safe access to
      * string-specific configuration options like rules, defaults, and targeting.
-     * Configuration is automatically applied to the taxonomy when the feature is first accessed.
+     * Configuration is automatically applied to the namespace when the feature is first accessed.
      *
      * **Example:**
      * ```kotlin
-     * object MyFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
+     * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
      *     val API_ENDPOINT by string(default = "https://api.example.com") {
      *         rule {
      *             platforms(Platform.ANDROID)
-     *         } implies "https://api-android.example.com"
+     *         } returns "https://api-android.example.com"
      *     }
      * }
      * ```
@@ -138,22 +138,22 @@ abstract class FeatureContainer<M : Taxonomy>(
         default: String,
         stringScope: FlagScope<EncodableValue.StringEncodeable, String, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, StringFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(default, stringScope) { StringFeature.Companion(it, taxonomy) }
+        ContainerFeaturePropertyDelegate(default, stringScope) { StringFeature.Companion(it, namespace) }
 
     /**
      * Creates an Int feature with automatic registration and configuration.
      *
      * The feature is configured using a DSL scope that provides type-safe access to
      * integer-specific configuration options like rules, defaults, and targeting.
-     * Configuration is automatically applied to the taxonomy when the feature is first accessed.
+     * Configuration is automatically applied to the namespace when the feature is first accessed.
      *
      * **Example:**
      * ```kotlin
-     * object MyFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
+     * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
      *     val MAX_RETRY_COUNT by int(default = 3) {
      *         rule {
      *             platforms(Platform.IOS)
-     *         } implies 5
+     *         } returns 5
      *     }
      * }
      * ```
@@ -168,7 +168,7 @@ abstract class FeatureContainer<M : Taxonomy>(
         integerScope: FlagScope<EncodableValue.IntEncodeable, Int, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<C, M>> =
         ContainerFeaturePropertyDelegate(default, integerScope) {
-            IntFeature.Companion(it, taxonomy)
+            IntFeature.Companion(it, namespace)
         }
 
     /**
@@ -176,15 +176,15 @@ abstract class FeatureContainer<M : Taxonomy>(
      *
      * The feature is configured using a DSL scope that provides type-safe access to
      * decimal-specific configuration options like rules, defaults, and targeting.
-     * Configuration is automatically applied to the taxonomy when the feature is first accessed.
+     * Configuration is automatically applied to the namespace when the feature is first accessed.
      *
      * **Example:**
      * ```kotlin
-     * object MyFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
+     * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
      *     val TRANSACTION_FEE by double(default = 0.029) {
      *         rule {
      *             platforms(Platform.WEB)
-     *         } implies 0.019
+     *         } returns 0.019
      *     }
      * }
      * ```
@@ -198,7 +198,7 @@ abstract class FeatureContainer<M : Taxonomy>(
         default: Double,
         decimalScope: FlagScope<EncodableValue.DecimalEncodeable, Double, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, DoubleFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(default, decimalScope) { DoubleFeature(it, taxonomy) }
+        ContainerFeaturePropertyDelegate(default, decimalScope) { DoubleFeature(it, namespace) }
 
     /**
      * Internal delegate factory that handles feature creation, configuration, and registration.
@@ -210,20 +210,20 @@ abstract class FeatureContainer<M : Taxonomy>(
      *    to use as the feature key
      * 2. **Lazy initialization**: Creates the feature only on first access
      * 3. **Automatic registration**: Adds the feature to the container's feature list
-     * 4. **Automatic configuration**: Executes the DSL configuration block and updates the taxonomy
+     * 4. **Automatic configuration**: Executes the DSL configuration block and updates the namespace
      *
      * **Implementation details:**
      * - The `factory` function is responsible for creating the feature instance
      * - The feature is created using the property name as the feature key
-     * - The DSL configuration block is executed and applied to the taxonomy
-     * - All features in the container share the same taxonomy
+     * - The DSL configuration block is executed and applied to the namespace
+     * - All features in the container share the same namespace
      *
      * @param F The feature type (BooleanFeature, StringFeature, etc.)
      * @param S The EncodableValue type wrapping the actual value
      * @param T The value type (Boolean, String, Int, etc.)
      * @param C The context type used for evaluation
      * @param configScope The DSL configuration block to execute
-     * @param factory A function that creates the feature given the taxonomy and property name
+     * @param factory A function that creates the feature given the namespace and property name
      */
     @Suppress("UNCHECKED_CAST")
     inner class ContainerFeaturePropertyDelegate<F : Feature<S, T, C, M>, S : EncodableValue<T>, T : Any, C : Context>(
@@ -234,10 +234,10 @@ abstract class FeatureContainer<M : Taxonomy>(
         lateinit var name: String
 
         private val feature: F by lazy {
-            factory(taxonomy, name).also { _features.add(it) }.also { createdFeature ->
-                // Execute the DSL configuration block and update the taxonomy
+            factory(namespace, name).also { _features.add(it) }.also { createdFeature ->
+                // Execute the DSL configuration block and update the namespace
                 val flagDefinition = FlagBuilder(createdFeature).apply(configScope).apply { default(default) }.build()
-                taxonomy.updateDefinition(flagDefinition)
+                namespace.updateDefinition(flagDefinition)
             }
         }
 

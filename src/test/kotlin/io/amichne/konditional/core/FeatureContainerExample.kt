@@ -15,18 +15,18 @@ import io.amichne.konditional.core.result.utils.evaluateOrDefault
 // ============================================================================
 
 //enum class PaymentFeaturesEnum(override val key: String)
-//    : BooleanFeature<Context, Taxonomy.Domain.Payments> {
+//    : BooleanFeature<Context, Namespace.Payments> {
 //    APPLE_PAY("apple_pay"),
 //    GOOGLE_PAY("google_pay"),
 //    CARD_ON_FILE("card_on_file");
 //
 //    // ❌ Boilerplate: Must override module on every enum
-//    override val module = Taxonomy.Domain.Payments
+//    override val module = Namespace.Payments
 //}
 //
 // ❌ Problem 1: Can't mix types in enums
 // This won't compile - enums can't have different return types per entry
-// enum class MixedFeaturesEnum : Feature<???, ???, Context, Taxonomy.Domain.Payments>
+// enum class MixedFeaturesEnum : Feature<???, ???, Context, Namespace.Payments>
 
 // ❌ Problem 2: No automatic enumeration
 // Have to manually maintain list of all features
@@ -40,8 +40,8 @@ import io.amichne.konditional.core.result.utils.evaluateOrDefault
 // NEW APPROACH: FeatureContainer with delegation
 // ============================================================================
 
-object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object PaymentFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     // ✅ Ergonomic: Clean delegation syntax
     val apple_pay by boolean<Context>(default = false)
@@ -56,8 +56,8 @@ object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
     // ✅ Auto-registration: All features automatically tracked
 }
 
-object OrderFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object OrderFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     val fast_checkout by boolean<Context>(default = false)
     val order_limit by int<Context>(default = 1000)
@@ -87,11 +87,11 @@ object FeatureContainerValueDemo {
     // ✅ BENEFIT 2: Type safety preserved
     fun typeSafetyDemo(context: Context) {
         // Boolean feature
-        val applePay: BooleanFeature<Context, Taxonomy.Domain.Payments> =
+        val applePay: BooleanFeature<Context, Namespace.Payments> =
             PaymentFeatures.apple_pay
 
         // Int feature
-        val maxCards: IntFeature<Context, Taxonomy.Domain.Payments> =
+        val maxCards: IntFeature<Context, Namespace.Payments> =
             PaymentFeatures.max_cards
 
         // Type inference works
@@ -116,7 +116,7 @@ object FeatureContainerValueDemo {
 
         // Group by module
         allContainers.forEach { container ->
-            val module = container.allFeatures().first().module
+            val module = container.allFeatures().first().namespace
             println("${module.javaClass.simpleName}: ${container.allFeatures().size} features")
         }
     }

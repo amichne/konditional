@@ -2,7 +2,7 @@ package io.amichne.konditional.core.result.utils
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.result.EvaluationResult
 import io.amichne.konditional.core.result.FlagEvaluationException
 import io.amichne.konditional.core.result.FlagNotFoundException
@@ -16,7 +16,7 @@ import io.amichne.konditional.core.types.EncodableValue
  * - Flag not being registered
  * - Evaluation throwing an exception
  *
- * The feature's taxonomy registry is automatically used.
+ * The feature's namespace registry is automatically used.
  *
  * Usage:
  * ```kotlin
@@ -39,10 +39,10 @@ import io.amichne.konditional.core.types.EncodableValue
  * @param key the conditional key identifying the flag
  * @return typed result that never throws
  */
-fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> C.evaluateSafe(
+fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> C.evaluateSafe(
     key: Feature<S, T, C, M>
 ): EvaluationResult<T> =
-    key.module.featureFlag(key)?.let { flag ->
+    key.namespace.flag(key)?.let { flag ->
         runCatching { flag.evaluate(this) }
             .fold(
                 onSuccess = { EvaluationResult.Success(it) },
@@ -60,7 +60,7 @@ fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> C.evaluateSafe(
  *
  * If you need to distinguish error cases, use `evaluateSafe()` instead.
  *
- * The feature's taxonomy registry is automatically used.
+ * The feature's namespace registry is automatically used.
  *
  * ```kotlin
  * val feature: String? = context.evaluateOrNull(MY_FLAG)
@@ -69,7 +69,7 @@ fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> C.evaluateSafe(
  * }
  * ```
  */
-fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> C.evaluateOrNull(
+fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> C.evaluateOrNull(
     key: Feature<S, T, C, M>
 ): T? = evaluateSafe(key).getOrNull()
 
@@ -83,13 +83,13 @@ fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> C.evaluateOrNull
  *
  * If you need to distinguish error cases, use `evaluateSafe()` instead.
  *
- * The feature's taxonomy registry is automatically used.
+ * The feature's namespace registry is automatically used.
  *
  * ```kotlin
  * val feature: String = context.evaluateOrDefault(MY_FLAG, default = "off")
  * ```
  */
-fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> C.evaluateOrDefault(
+fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> C.evaluateOrDefault(
     key: Feature<S, T, C, M>,
     default: T
 ): T = evaluateSafe(key).getOrDefault(default)
@@ -104,7 +104,7 @@ fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> C.evaluateOrDefa
  * - You're in a context that already uses exceptions
  * - You want fail-fast behavior
  *
- * The feature's taxonomy registry is automatically used.
+ * The feature's namespace registry is automatically used.
  *
  * ```kotlin
  * val feature: String = context.evaluateOrThrow(MY_FLAG)
@@ -113,7 +113,7 @@ fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> C.evaluateOrDefa
  * @throws FlagNotFoundException if the flag is not registered
  * @throws FlagEvaluationException if evaluation throws an exception
  */
-fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> C.evaluateOrThrow(
+fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> C.evaluateOrThrow(
     key: Feature<S, T, C, M>
 ): T = evaluateSafe(key).fold(
     onSuccess = { it },

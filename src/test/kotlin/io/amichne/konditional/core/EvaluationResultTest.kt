@@ -63,7 +63,7 @@ class EvaluationResultTest {
         // Register a normal flag
         CommonTestFeatures.registeredFlag.update(
             CommonTestFeatures.registeredFlag.flag {
-                rule { } implies "test-value"
+                rule { } returns "test-value"
                 default("default-value")
             }
         )

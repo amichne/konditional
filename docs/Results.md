@@ -73,7 +73,7 @@ when (result) {
 
 #### FlagNotFound
 
-Flag is not registered in the taxonomy:
+Flag is not registered in the namespace:
 
 ```kotlin
 when (result) {
@@ -88,7 +88,7 @@ when (result) {
 
 This typically indicates:
 - Flag hasn't been configured yet
-- Wrong taxonomy was used
+- Wrong namespace was used
 - Typo in feature key
 
 #### EvaluationError

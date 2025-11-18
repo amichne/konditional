@@ -4,7 +4,7 @@ Type-safe, deterministic feature flags for Kotlin.
 
 ## Overview
 
-Konditional is a type-safe feature flag library that eliminates runtime errors through compile-time guarantees. Define flags with strong typing, evaluate them deterministically, and organize them by domain using the Taxonomy system.
+Konditional is a type-safe feature flag library that eliminates runtime errors through compile-time guarantees. Define flags with strong typing, evaluate them deterministically, and organize them by domain using the Namespace system.
 
 **Core Principles:**
 
@@ -17,16 +17,16 @@ Konditional is a type-safe feature flag library that eliminates runtime errors t
 
 ```kotlin
 import io.amichne.konditional.core.features.FeatureContainer
-import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.context.*
 
 // Define features
-object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val DARK_MODE by boolean(default = false) {
         rule {
             platforms(Platform.IOS)
             rollout { 50.0 }
-        } implies true
+        } returns true
     }
 }
 
@@ -48,7 +48,7 @@ val enabled: Boolean = context.evaluateOrDefault(AppFeatures.DARK_MODE, default 
 Features are type-safe flag definitions. Use `FeatureContainer` delegation for the most ergonomic API:
 
 ```kotlin
-object MyFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object MyFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val BOOLEAN_FLAG by boolean(default = false)
     val STRING_FLAG by string(default = "production")
     val INT_FLAG by int(default = 42)
@@ -60,7 +60,7 @@ The delegation pattern provides:
 
 - Property access instead of method calls
 - Type inference from default values
-- Automatic registration with taxonomy
+- Automatic registration with namespace
 - Inline rule configuration
 
 See **[Features](Features.md)** for enum-based patterns and custom contexts.
@@ -105,7 +105,7 @@ rule {
         min(2, 0, 0)                           // AND version >= 2.0.0
     }
     rollout { 50.0 }                           // AND in 50% bucket
-} implies true
+} returns true
 ```
 
 Rules are automatically sorted by specificity (most specific first):
@@ -115,35 +115,35 @@ Rules are automatically sorted by specificity (most specific first):
 rule {
     platforms(Platform.IOS)
     locales(AppLocale.EN_US)
-} implies "specific-value"
+} returns "specific-value"
 
 // Specificity = 1 (platform only) - evaluated second
 rule {
     platforms(Platform.IOS)
-} implies "general-value"
+} returns "general-value"
 ```
 
 See **[Rules](Rules.md)** for advanced targeting and custom evaluables.
 
-### Taxonomy
+### Namespace
 
-Taxonomy provides isolation between feature domains:
+Namespace provides isolation between feature domains:
 
 ```kotlin
-// Global taxonomy for shared features
-object GlobalFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+// Global namespace for shared features
+object GlobalFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val MAINTENANCE_MODE by boolean(default = false)
 }
 
 // Domain-specific taxonomies
-object AuthFeatures : FeatureContainer<Taxonomy.Domain.Authentication>(
-    Taxonomy.Domain.Authentication
+object AuthFeatures : FeatureContainer<Namespace.Authentication>(
+    Namespace.Authentication
 ) {
     val SOCIAL_LOGIN by boolean(default = false)
 }
 
-object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
-    Taxonomy.Domain.Payments
+object PaymentFeatures : FeatureContainer<Namespace.Payments>(
+    Namespace.Payments
 ) {
     val APPLE_PAY by boolean(default = false)
 }
@@ -151,11 +151,11 @@ object PaymentFeatures : FeatureContainer<Taxonomy.Domain.Payments>(
 
 Benefits:
 
-- **Compile-time isolation**: Features type-bound to taxonomy
-- **Runtime isolation**: Each taxonomy has separate registry
+- **Compile-time isolation**: Features type-bound to namespace
+- **Runtime isolation**: Each namespace has separate registry
 - **Organization**: Clear ownership boundaries
 
-See **[Registry](Registry.md)** for taxonomy management and registry operations.
+See **[Registry](Registry.md)** for namespace management and registry operations.
 
 ## Evaluation
 
@@ -212,7 +212,7 @@ Properties:
 Configure rules directly in the delegation:
 
 ```kotlin
-object MyFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object MyFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val EXPERIMENT by boolean(default = false) {
         // Salt affects bucketing (change to redistribute)
         salt("v2")
@@ -227,12 +227,12 @@ object MyFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
             }
             rollout { 25.0 }
             note("iOS English speakers, v2.x, 25% rollout")
-        } implies true
+        } returns true
 
         // Fallback rule for all iOS users
         rule {
             platforms(Platform.IOS)
-        } implies false
+        } returns false
     }
 }
 ```
@@ -245,19 +245,19 @@ Export and import configurations as JSON:
 
 ```kotlin
 // Serialize current configuration
-val json = SnapshotSerializer.serialize(Taxonomy.Global.konfig())
+val json = SnapshotSerializer.serialize(Namespace.Global.configuration())
 File("flags.json").writeText(json)
 
 // Deserialize and load
 val json = File("flags.json").readText()
 when (val result = SnapshotSerializer.fromJson(json)) {
-    is ParseResult.Success -> Taxonomy.Global.load(result.value)
+    is ParseResult.Success -> Namespace.Global.load(result.value)
     is ParseResult.Failure -> logError("Parse failed: ${result.error}")
 }
 
 // Apply incremental patch
-when (val result = SnapshotSerializer.applyPatchJson(currentKonfig, patchJson)) {
-    is ParseResult.Success -> Taxonomy.Global.load(result.value)
+when (val result = SnapshotSerializer.applyPatchJson(currentConfiguration, patchJson)) {
+    is ParseResult.Success -> Namespace.Global.load(result.value)
     is ParseResult.Failure -> logError("Patch failed: ${result.error}")
 }
 ```
@@ -269,7 +269,7 @@ See **[Serialization](Serialization.md)** for JSON format, remote configuration,
 Konditional supports four primitive types and data classes:
 
 ```kotlin
-object MyFlags : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object MyFlags : FeatureContainer<Namespace.Global>(Namespace.Global) {
     // Primitives
     val BOOLEAN_FLAG by boolean(default = false)
     val STRING_FLAG by string(default = "value")
@@ -287,7 +287,7 @@ data class ThemeConfig(
     val darkMode: Boolean
 )
 
-object MyThemes : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object MyThemes : FeatureContainer<Namespace.Global>(Namespace.Global) {
     // Data classes work automatically
     val APP_THEME by jsonObject(
         default = ThemeConfig(
@@ -345,7 +345,7 @@ Konditional is designed for concurrent access without locks:
 **Advanced:**
 
 7. **[Serialization](Serialization.md)** - JSON import/export
-8. **[Registry](Registry.md)** - Taxonomy and registry management
+8. **[Registry](Registry.md)** - Namespace and registry management
 9. **[Results](Results.md)** - Error handling patterns
 
 ## Common Use Cases
@@ -359,7 +359,7 @@ val NEW_CHECKOUT by boolean(default = false) {
     rule {
         platforms(Platform.ANDROID)
         rollout { 10.0 }  // Start with 10%
-    } implies true
+    } returns true
 }
 ```
 
@@ -371,7 +371,7 @@ Environment-specific configuration:
 val API_ENDPOINT by string(default = "https://api.prod.example.com") {
     rule {
         platforms(Platform.WEB)
-    } implies "https://api-staging.example.com"
+    } returns "https://api-staging.example.com"
 }
 ```
 
@@ -383,7 +383,7 @@ Split traffic for experiments:
 val RECOMMENDATION_ALGORITHM by string(default = "collaborative") {
     rule {
         rollout { 50.0 }  // 50/50 split
-    } implies "content-based"
+    } returns "content-based"
 }
 ```
 
@@ -411,7 +411,7 @@ val PAYMENT_PROCESSING by boolean(default = true) {
 
 **Use FeatureContainer delegation**: Simplest and most ergonomic API for most use cases.
 
-**Organize by domain**: Use Taxonomy to separate features by team or business domain.
+**Organize by domain**: Use Namespace to separate features by team or business domain.
 
 **Start with small rollouts**: Begin with 10% rollout, increase gradually after monitoring.
 

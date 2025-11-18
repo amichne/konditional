@@ -122,9 +122,9 @@ inline fun <T> ParseResult<T>.onFailure(action: (ParseError) -> Unit): ParseResu
  *
  * Unlike `getOrElse`, this always returns a value (not a ParseResult):
  * ```kotlin
- * val config = Konfig.fromJson(json)
+ * val config = Configuration.fromJson(json)
  *     .onFailure { error -> logger.error(error.message) }
- *     .recover { Konfig.empty() }
+ *     .recover { Configuration.empty() }
  * ```
  */
 inline fun <T> ParseResult<T>.recover(transform: (ParseError) -> T): T = when (this) {

@@ -30,13 +30,13 @@ import kotlin.math.roundToInt
  */
 
 @ConsistentCopyVisibility
-data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> internal constructor(
+data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> internal constructor(
     /**
      * The default value returned when no targeting rules match or the flag is inactive.
      */
     val defaultValue: T,
     val feature: Feature<S, T, C, M>,
-    internal val values: List<ConditionalValue<S, T, C, M>>,
+    internal val values: List<ConditionalValue<S, T, C, M>> = listOf(),
     val isActive: Boolean = true,
     val salt: String = "v1"
 ) {
@@ -51,7 +51,7 @@ data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Taxon
         /**
          * Creates a FlagDefinition instance.
          */
-        operator fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> invoke(
+        operator fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> invoke(
             feature: Feature<S, T, C, M>,
             bounds: List<ConditionalValue<S, T, C, M>>,
             defaultValue: T,

@@ -2,9 +2,9 @@ package io.amichne.konditional.internal.builders
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.FlagDefinition
-import io.amichne.konditional.core.Taxonomy
-import io.amichne.konditional.core.dsl.FeatureFlagDsl
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.FlagScope
+import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.RuleScope
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.types.EncodableValue
@@ -25,14 +25,25 @@ import io.amichne.konditional.rules.Rule
  * @property feature The feature flag key used to uniquely identify the flag.
  * @constructor Internal constructor - users cannot instantiate this class directly.
  */
-@FeatureFlagDsl
+@KonditionalDsl
 @PublishedApi
-internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy>(
+internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M : Namespace>(
     private val feature: Feature<S, T, C, M>,
 ) : FlagScope<S, T, C, M> {
     private val conditionalValues = mutableListOf<ConditionalValue<S, T, C, M>>()
     private var defaultValue: T? = null
     private var salt: String = "v1"
+    private var isActive: Boolean = true
+
+    /**
+     * Sets a rule's [isActive] to the passed boolean
+     *
+     * @param block Evaluable boolean
+     * @see FlagScope.active
+     */
+    override fun active(block: () -> Boolean) {
+        isActive = block()
+    }
 
     /**
      * Implementation of [FlagScope.default].
@@ -54,10 +65,10 @@ internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M :
     override fun rule(build: RuleScope<C>.() -> Unit): Rule<C> = RuleBuilder<C>().apply(build).build()
 
     /**
-     * Implementation of [FlagScope.implies].
+     * Implementation of [FlagScope.returns].
      */
-    @FeatureFlagDsl
-    override infix fun Rule<C>.implies(value: T) {
+    @KonditionalDsl
+    override infix fun Rule<C>.returns(value: T) {
         conditionalValues += targetedBy(value)
     }
 

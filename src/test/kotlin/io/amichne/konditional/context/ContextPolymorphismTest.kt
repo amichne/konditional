@@ -1,11 +1,10 @@
 package io.amichne.konditional.context
 
 import io.amichne.konditional.context.Context.Companion.evaluate
-import io.amichne.konditional.core.Taxonomy
-import io.amichne.konditional.core.Taxonomy.Global
+import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.Namespace.Global
 import io.amichne.konditional.core.features.update
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.registry.withRegistry
 import io.amichne.konditional.fixtures.EnterpriseContext
 import io.amichne.konditional.fixtures.EnterpriseFeatures
 import io.amichne.konditional.fixtures.EnterpriseRule
@@ -30,17 +29,17 @@ class ContextPolymorphismTest {
         // Reset registry before each test
         println("Global")
         println("--------")
-        println(SnapshotSerializer.serialize(Global.konfig()))
+        println(SnapshotSerializer.serialize(Global.configuration))
         println("--------")
 
         println("Payments")
         println("--------")
-        println(SnapshotSerializer.serialize(Taxonomy.Domain.Payments.konfig()))
+        println(SnapshotSerializer.serialize(Namespace.Payments.configuration))
         println("--------")
 
         println("Search")
         println("--------")
-        println(SnapshotSerializer.serialize(Taxonomy.Domain.Search.konfig()))
+        println(SnapshotSerializer.serialize(Namespace.Search.configuration))
         println("--------")
     }
 
@@ -55,7 +54,7 @@ class ContextPolymorphismTest {
                 versions {
                     min(2, 0)
                 }
-            } implies true
+            } returns true
         }
 
         val ctx = EnterpriseContext(
@@ -78,10 +77,10 @@ class ContextPolymorphismTest {
             default("control")
             rule {
                 platforms(Platform.IOS, Platform.ANDROID)
-            } implies "variant-a"
+            } returns "variant-a"
             rule {
                 platforms(Platform.WEB)
-            } implies "variant-b"
+            } returns "variant-b"
         }
 
         val mobileCtx = ExperimentContext(
@@ -110,48 +109,40 @@ class ContextPolymorphismTest {
     @Test
     fun `Given multiple custom contexts, When using different flags, Then contexts are independent`() {
         // Configure using .update() for test-specific configuration
-        withRegistry() {
-            EnterpriseFeatures.api_access.update {
-                default(false)
-                rule {
-                } implies true
-            }
-            ExperimentFeatures.onboarding_style.update {
-                default("classic")
-                rule {
-                } implies "modern"
-            }
-
-            val enterpriseCtx = EnterpriseContext(
-                locale = AppLocale.EN_US,
-                platform = Platform.WEB,
-                appVersion = Version(1, 0, 0),
-                stableId = StableId.of("44444444444444444444444444444444"),
-                organizationId = "org-456",
-                subscriptionTier = SubscriptionTier.ENTERPRISE,
-                userRole = UserRole.OWNER,
-            )
-
-            val experimentCtx = ExperimentContext(
-                locale = AppLocale.EN_US,
-                platform = Platform.IOS,
-                appVersion = Version(1, 0, 0),
-                stableId = StableId.of("55555555555555555555555555555555"),
-                experimentGroups = setOf("exp-003"),
-                sessionId = "session-123",
-            )
-
-            // Each context can be evaluated independently with its own flags
-            val apiAccess = enterpriseCtx.evaluate(EnterpriseFeatures.api_access)
-            val onboardingStyle = experimentCtx.evaluate(ExperimentFeatures.onboarding_style)
-
-            assertTrue(apiAccess is Boolean)
-            assertTrue(onboardingStyle is String)
-
+        // Each context can be evaluated independently with its own flags
+        EnterpriseFeatures.api_access.update {
+            default(false)
+            rule {
+            } returns true
         }
-
-
-
+        ExperimentFeatures.onboarding_style.update {
+            default("classic")
+            rule {
+            } returns "modern"
+        }
+        val enterpriseCtx1 = EnterpriseContext(
+            locale = AppLocale.EN_US,
+            platform = Platform.WEB,
+            appVersion = Version(1, 0, 0),
+            stableId = StableId.of("44444444444444444444444444444444"),
+            organizationId = "org-456",
+            subscriptionTier = SubscriptionTier.ENTERPRISE,
+            userRole = UserRole.OWNER,
+        )
+        val experimentCtx1 = ExperimentContext(
+            locale = AppLocale.EN_US,
+            platform = Platform.IOS,
+            appVersion = Version(1, 0, 0),
+            stableId = StableId.of("55555555555555555555555555555555"),
+            experimentGroups = setOf("exp-003"),
+            sessionId = "session-123",
+        )
+        // Each context can be evaluated independently with its own flags
+        val apiAccess1 = enterpriseCtx1.evaluate(EnterpriseFeatures.api_access)
+        val onboardingStyle1 = experimentCtx1.evaluate(ExperimentFeatures.onboarding_style)
+        assertTrue(apiAccess1 is Boolean)
+        // Each context can be evaluated independently with its own flags
+        assertTrue(onboardingStyle1 is String)
     }
 
 //    @Test
@@ -159,25 +150,25 @@ class ContextPolymorphismTest {
 //        // Define flag in scope
 //        data class StandardFlagA(
 //            override val key: String = "feature_a",
-//        ) : BooleanFeature<Context, Taxonomy.Global> {
+//        ) : BooleanFeature<Context, Namespace.Global> {
 //
-//            override val module: Taxonomy.Global = Taxonomy.Global
+//            override val module: Namespace.Global = Namespace.Global
 //        }
 //
 //        val standardFlagA = StandardFlagA()
 //
-//        Taxonomy.Global.config {
+//        Namespace.Global.config {
 //            standardFlagA with {
 //                default(false)
 //                rule {
 //                    platforms(Platform.IOS)
-//                } implies true
+//                } returns true
 //            }
 //            EnterpriseFeatures.custom_branding with {
 //                default(false)
 //                rule {
 //                    platforms(Platform.WEB)
-//                } implies true
+//                } returns true
 //            }
 //        }
 //
@@ -249,7 +240,7 @@ class ContextPolymorphismTest {
                 extension {
                     EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN)
                 }
-            } implies true
+            } returns true
         }
 
         val enterpriseAdmin = EnterpriseContext(

@@ -125,12 +125,12 @@ val context = Context(
 // Platform-specific targeting
 rule {
     platforms(Platform.IOS, Platform.ANDROID)
-} implies mobileValue
+} returns mobileValue
 
 // Single platform
 rule {
     platforms(Platform.WEB)
-} implies webValue
+} returns webValue
 ```
 
 ---
@@ -161,12 +161,12 @@ val context = Context(
 // Multiple locales
 rule {
     locales(AppLocale.EN_US, AppLocale.EN_CA)
-} implies englishValue
+} returns englishValue
 
 // Single locale
 rule {
     locales(AppLocale.HI_IN)
-} implies hindiValue
+} returns hindiValue
 ```
 
 **Note:** Add new locales to the enum as your application expands to new markets.
@@ -228,7 +228,7 @@ rule {
         min(2, 0, 0)  // >= 2.0.0
         max(3, 0, 0)  // <= 3.0.0
     }
-} implies newFeatureValue
+} returns newFeatureValue
 ```
 
 **Comparison logic:**
@@ -372,11 +372,11 @@ Rollout.of(-10.0)  // Throws IllegalArgumentException
 rule {
     platforms(Platform.IOS)
     rollout = Rollout.of(25.0)  // 25% of iOS users
-} implies true
+} returns true
 
 rule {
     rollout = Rollout.MAX  // 100% of all users
-} implies true
+} returns true
 ```
 
 #### How Rollouts Work
@@ -450,7 +450,7 @@ enum class UserRole { EDITOR, ADMIN, OWNER }
 Define features that require your custom context:
 
 ```kotlin
-object EnterpriseFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object EnterpriseFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val advanced_analytics by boolean<EnterpriseContext>(default = false)
     val custom_branding by boolean<EnterpriseContext>(default = false)
     val api_access by boolean<EnterpriseContext>(default = false)
@@ -478,7 +478,7 @@ EnterpriseFeatures.advanced_analytics.update {
         extension {
             EnterpriseRule(requiredTier = SubscriptionTier.ENTERPRISE)
         }
-    } implies true
+    } returns true
 }
 ```
 
@@ -536,12 +536,12 @@ Konditional's type system enforces context requirements at compile time through 
 
 ```kotlin
 // Feature requiring base Context
-object AppFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val DARK_MODE by boolean<Context>(default = false)
 }
 
 // Feature requiring EnterpriseContext
-object EnterpriseFeatures : FeatureContainer<Taxonomy.Global>(Taxonomy.Global) {
+object EnterpriseFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val ADVANCED_ANALYTICS by boolean<EnterpriseContext>(default = false)
 }
 ```

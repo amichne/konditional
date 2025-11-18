@@ -1,23 +1,23 @@
 package io.amichne.konditional.core.features
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.Taxonomy
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.types.EncodableValue
 
-sealed interface DoubleFeature<C : Context, M : Taxonomy> :
+sealed interface DoubleFeature<C : Context, M : Namespace> :
     Feature<EncodableValue.DecimalEncodeable, Double, C, M> {
 
     companion object {
-        internal operator fun <C : Context, M : Taxonomy> invoke(
+        internal operator fun <C : Context, M : Namespace> invoke(
             key: String,
             module: M,
         ): DoubleFeature<C, M> =
             DoubleFeatureImpl(key, module)
 
         @PublishedApi
-        internal data class DoubleFeatureImpl<C : Context, M : Taxonomy>(
+        internal data class DoubleFeatureImpl<C : Context, M : Namespace>(
             override val key: String,
-            override val module: M,
+            override val namespace: M,
         ) : DoubleFeature<C, M>
     }
 }
