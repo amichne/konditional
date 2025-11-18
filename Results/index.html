@@ -2154,7 +2154,7 @@
 </span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">}</span>
 </span></code></pre></div>
 <h4 id="flagnotfound">FlagNotFound<a class="headerlink" href="#flagnotfound" title="Permanent link">&para;</a></h4>
-<p>Flag is not registered in the taxonomy:</p>
+<p>Flag is not registered in the namespace:</p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="k">is</span><span class="w"> </span><span class="n">EvaluationResult</span><span class="p">.</span><span class="na">FlagNotFound</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">flagKey</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="na">key</span>
@@ -2166,7 +2166,7 @@
 </span></code></pre></div>
 <p>This typically indicates:
 - Flag hasn't been configured yet
-- Wrong taxonomy was used
+- Wrong namespace was used
 - Typo in feature key</p>
 <h4 id="evaluationerror">EvaluationError<a class="headerlink" href="#evaluationerror" title="Permanent link">&para;</a></h4>
 <p>Flag exists but evaluation threw an exception:</p>
