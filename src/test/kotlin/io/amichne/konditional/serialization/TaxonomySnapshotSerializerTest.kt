@@ -2,6 +2,7 @@ package io.amichne.konditional.serialization
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Taxonomy
@@ -199,12 +200,12 @@ class TaxonomySnapshotSerializerTest {
     @Test
     fun `Given different taxonomies, When serialized separately, Then each has only its own flags`() {
         // Domain.Payments features
-        object PaymentsFeatures : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
+        val PaymentsFeatures = object : FeatureContainer<Taxonomy.Domain.Payments>(Taxonomy.Domain.Payments) {
             val paymentEnabled by boolean<Context>(default = true)
         }
 
         // Domain.Search features
-        object SearchFeatures : FeatureContainer<Taxonomy.Domain.Search>(Taxonomy.Domain.Search) {
+        val SearchFeatures = object : FeatureContainer<Taxonomy.Domain.Search>(Taxonomy.Domain.Search) {
             val searchEnabled by boolean<Context>(default = false)
         }
 

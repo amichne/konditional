@@ -27,11 +27,11 @@ internal object RegistryScope {
     }
 
     /** Run a block with a specific registry in scope */
-    internal fun <T> usingRegistry(registry: ModuleRegistry, block: () -> T): T {
+    internal fun usingRegistry(registry: ModuleRegistry = current(), block: ModuleRegistry.() -> Unit): Unit {
         val previous = threadLocal.get()
         threadLocal.set(registry)
         try {
-            return block()
+            return block(current())
         } finally {
             if (previous != null) threadLocal.set(previous)
             else threadLocal.remove()

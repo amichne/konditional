@@ -10,4 +10,5 @@ enum class AppLocale {
     ES_US,
     EN_CA,
     HI_IN,
+    FR_FR,
 }

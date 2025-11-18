@@ -30,17 +30,17 @@ class ContextPolymorphismTest {
         // Reset registry before each test
         println("Global")
         println("--------")
-        println(SnapshotSerializer.serialize(Global.konfig()))
+        println(SnapshotSerializer.serialize(Global.konfig))
         println("--------")
 
         println("Payments")
         println("--------")
-        println(SnapshotSerializer.serialize(Taxonomy.Domain.Payments.konfig()))
+        println(SnapshotSerializer.serialize(Taxonomy.Domain.Payments.konfig))
         println("--------")
 
         println("Search")
         println("--------")
-        println(SnapshotSerializer.serialize(Taxonomy.Domain.Search.konfig()))
+        println(SnapshotSerializer.serialize(Taxonomy.Domain.Search.konfig))
         println("--------")
     }
 
@@ -110,7 +110,7 @@ class ContextPolymorphismTest {
     @Test
     fun `Given multiple custom contexts, When using different flags, Then contexts are independent`() {
         // Configure using .update() for test-specific configuration
-        withRegistry() {
+        withRegistry {
             EnterpriseFeatures.api_access.update {
                 default(false)
                 rule {
@@ -147,11 +147,7 @@ class ContextPolymorphismTest {
 
             assertTrue(apiAccess is Boolean)
             assertTrue(onboardingStyle is String)
-
         }
-
-
-
     }
 
 //    @Test

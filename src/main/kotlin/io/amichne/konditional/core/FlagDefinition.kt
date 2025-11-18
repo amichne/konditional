@@ -36,7 +36,7 @@ data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Taxon
      */
     val defaultValue: T,
     val feature: Feature<S, T, C, M>,
-    internal val values: List<ConditionalValue<S, T, C, M>>,
+    internal val values: List<ConditionalValue<S, T, C, M>> = listOf(),
     val isActive: Boolean = true,
     val salt: String = "v1"
 ) {

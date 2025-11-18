@@ -21,5 +21,5 @@ package io.amichne.konditional.core.registry
  * @param block The code to execute with the scoped registry
  * @return The result of the block
  */
-fun <T> withRegistry(registry: ModuleRegistry = InMemoryModuleRegistry(), block: () -> T): T =
+fun withRegistry(registry: ModuleRegistry = InMemoryModuleRegistry(), block: ModuleRegistry.() -> Unit): Unit =
     RegistryScope.usingRegistry(registry, block)

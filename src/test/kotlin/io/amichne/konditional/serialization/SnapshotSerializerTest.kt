@@ -8,8 +8,10 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Taxonomy
 import io.amichne.konditional.core.features.FeatureContainer
+import io.amichne.konditional.core.features.update
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Konfig
+import io.amichne.konditional.core.registry.withRegistry
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
@@ -72,18 +74,16 @@ class SnapshotSerializerTest {
 
     @Test
     fun `Given Konfig with boolean flag, When serialized, Then includes flag with correct type`() {
-        val flag = FlagDefinition(
-            feature = TestFeatures.boolFlag,
-            defaultValue = true,
-        )
-        val konfig = Konfig(mapOf(TestFeatures.boolFlag to flag))
+            TestFeatures.boolFlag.update {
+                default(true)
+            }
 
-        val json = SnapshotSerializer.serialize(konfig)
+            val json = SnapshotSerializer.serialize(Taxonomy.Global.konfig)
 
-        assertNotNull(json)
-        assertTrue(json.contains("\"key\" : \"${TestFeatures.boolFlag.key}\""))
-        assertTrue(json.contains("\"type\" : \"BOOLEAN\""))
-        assertTrue(json.contains("\"value\" : true"))
+            assertNotNull(json)
+            assertTrue(json.contains("\"key\" : \"${TestFeatures.boolFlag.key}\""))
+            assertTrue(json.contains("\"type\" : \"BOOLEAN\""))
+            assertTrue(json.contains("\"value\" : true"))
     }
 
     @Test
@@ -104,34 +104,33 @@ class SnapshotSerializerTest {
 
     @Test
     fun `Given Konfig with int flag, When serialized, Then includes flag with correct type`() {
-        val flag = FlagDefinition(
-            feature = TestFeatures.intFlag,
-            defaultValue = 42,
-        )
-        val konfig = Konfig(mapOf(TestFeatures.intFlag to flag))
+        TestFeatures.intFlag.update {
+            default(42)
+        }
+        val json = SnapshotSerializer.serialize(Taxonomy.Global.konfig)
 
-        val json = SnapshotSerializer.serialize(konfig)
 
         assertNotNull(json)
-        assertTrue(json.contains("\"key\" : \"${TestFeatures.intFlag.key}\""))
-        assertTrue(json.contains("\"type\" : \"INT\""))
-        assertTrue(json.contains("\"value\" : 42"))
+        println(json)
+        assertTrue(json.contains("\"key\": \"${TestFeatures.intFlag.key}\""))
+        assertTrue(json.contains("\"type\": \"INT\""))
+        assertTrue(json.contains("\"value\": 42"))
     }
 
     @Test
     fun `Given Konfig with double flag, When serialized, Then includes flag with correct type`() {
-        val flag = FlagDefinition(
-            feature = TestFeatures.doubleFlag,
-            defaultValue = 3.14,
-        )
-        val konfig = Konfig(mapOf(TestFeatures.doubleFlag to flag))
+        withRegistry {
+            TestFeatures.doubleFlag.update {
+                default(3.14)
+            }
 
-        val json = SnapshotSerializer.serialize(konfig)
+            val json = SnapshotSerializer.serialize(konfig)
 
-        assertNotNull(json)
-        assertTrue(json.contains("\"key\" : \"${TestFeatures.doubleFlag.key}\""))
-        assertTrue(json.contains("\"type\" : \"DOUBLE\""))
-        assertTrue(json.contains("\"value\" : 3.14"))
+            assertNotNull(json)
+            assertTrue(json.contains("\"key\" : \"${TestFeatures.doubleFlag.key}\""))
+            assertTrue(json.contains("\"type\" : \"DOUBLE\""))
+            assertTrue(json.contains("\"value\" : 3.14"))
+        }
     }
 
     @Test
@@ -403,7 +402,7 @@ class SnapshotSerializerTest {
 
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.FeatureNotFound>(result.error)
-        assertEquals("unregistered_feature", (result.error as ParseError.FeatureNotFound).key)
+        assertEquals("unregistered_feature", result.error.key)
     }
 
     // ========== Round-Trip Tests ==========

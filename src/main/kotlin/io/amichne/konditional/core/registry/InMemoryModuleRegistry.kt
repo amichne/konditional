@@ -59,7 +59,12 @@ internal class InMemoryModuleRegistry : ModuleRegistry {
      *
      * @return The current [Konfig]
      */
-    override fun konfig(): Konfig = current.get()
+
+    @Deprecated("Use val accessor", replaceWith = ReplaceWith("konfig"))
+    override fun konfig(): Konfig = konfig
+
+    override val konfig: Konfig
+        get() = current.get()
 
     /**
      * Applies a [io.amichne.konditional.core.instance.KonfigPatch] to the current snapshot, atomically updating the flag configuration.

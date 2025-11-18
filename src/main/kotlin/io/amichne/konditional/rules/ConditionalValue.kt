@@ -13,7 +13,7 @@ import io.amichne.konditional.core.types.EncodableValue
  * @param C The context type used for rule evaluation
  */
 @ConsistentCopyVisibility
-internal data class ConditionalValue<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> private constructor(
+data class ConditionalValue<S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> private constructor(
     val rule: Rule<C>,
     val value: T
 ) {

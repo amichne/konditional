@@ -75,7 +75,7 @@ class TaxonomySnapshotSerializer<M : Taxonomy>(
      * @return JSON string representation of the taxonomy's configuration
      */
     override fun toJson(): String {
-        val konfig = module.konfig()
+        val konfig = module.konfig
         val serializable = konfig.toSerializable()
         return snapshotAdapter.toJson(serializable)
     }

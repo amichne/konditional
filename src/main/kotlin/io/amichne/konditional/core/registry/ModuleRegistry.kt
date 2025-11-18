@@ -95,7 +95,10 @@ interface ModuleRegistry {
      *
      * @return The current [Konfig]
      */
+    @Deprecated("Use val accessor", replaceWith = ReplaceWith("konfig"))
     fun konfig(): Konfig
+
+    val konfig: Konfig
 
     /**
      * Retrieves a specific flag definition from the registry.
@@ -111,7 +114,7 @@ interface ModuleRegistry {
     fun <S : EncodableValue<T>, T : Any, C : Context, M : Taxonomy> featureFlag(
         key: Feature<S, T, C, M>
     ): FlagDefinition<S, T, C, M>? =
-        konfig().flags[key] as? FlagDefinition<S, T, C, M>
+        konfig.flags[key] as? FlagDefinition<S, T, C, M>
 
     /**
      * Retrieves all flags from the registry.
@@ -119,7 +122,7 @@ interface ModuleRegistry {
      * @return Map of all [Feature] keys to their [FlagDefinition] definitions
      */
     fun allFlags(): Map<Feature<*, *, *, *>, FlagDefinition<*, *, *, *>> =
-        konfig().flags
+        konfig.flags
 
     companion object {
 
@@ -169,7 +172,7 @@ interface ModuleRegistry {
             definition: FlagDefinition<S, T, C, *>
         ) {
             when (this) {
-                is InMemoryModuleRegistry -> this.updateDefinition(definition)
+                is InMemoryModuleRegistry -> updateDefinition(definition)
                 is Taxonomy -> registry.updateDefinition(definition)
                 else -> error("updateDefinition only supported on InMemoryModuleRegistry or Taxonomy")
             }
