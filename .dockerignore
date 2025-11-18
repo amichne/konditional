@@ -1,0 +1,34 @@
+# Build artifacts
+# Exclude all build directories except ktor-demo/build (needed for Docker image)
+build/
+!ktor-demo/build/
+!ktor-demo/build/libs/
+!ktor-demo/build/resources/
+.gradle/
+# Allow JAR files in ktor-demo/build/libs only
+*.jar
+!ktor-demo/build/libs/*.jar
+*.class
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Documentation (not needed in container)
+docs/
+*.md
+!ktor-demo/README.md
+
+# CI/CD
+.github/
+
+# Misc
+.DS_Store
+*.log
