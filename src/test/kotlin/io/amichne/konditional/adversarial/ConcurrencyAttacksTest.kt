@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -24,8 +23,43 @@ import kotlin.test.assertTrue
  *
  * The library claims to be thread-safe with "lock-free reads with atomic updates".
  * Let's test if that holds under adversarial concurrent access.
+ *
+ * NOTE: Some of these tests intentionally create containers locally to test
+ * thread-safety of lazy registration and concurrent access patterns.
  */
 class ConcurrencyAttacksTest {
+
+    companion object {
+        // Shared containers for evaluation stress tests
+        object HighContentionFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
+            val flag1 by boolean<Context>(default = false) {
+                rule { rollout { 50.0 } } returns true
+            }
+            val flag2 by boolean<Context>(default = false) {
+                rule { rollout { 50.0 } } returns true
+            }
+            val flag3 by boolean<Context>(default = false) {
+                rule { rollout { 50.0 } } returns true
+            }
+        }
+
+        object ManyRulesFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
+            val complexFlag by boolean<Context>(default = false) {
+                // Create many rules to increase iteration time
+                repeat(100) { i ->
+                    rule {
+                        note("rule-$i")
+                        when (i % 3) {
+                            0 -> platforms(Platform.ANDROID)
+                            1 -> platforms(Platform.IOS)
+                            2 -> platforms(Platform.WEB)
+                        }
+                        rollout { (i % 100).toDouble() }
+                    } returns (i % 2 == 0)
+                }
+            }
+        }
+    }
 
     // ============================================
     // ATTACK 1: Concurrent Feature Registration
@@ -42,6 +76,7 @@ class ConcurrencyAttacksTest {
          *         - Inconsistent state
          */
 
+        // Create a fresh container for this test
         val container = object : FeatureContainer<Namespace.Global>(Namespace.Global) {
             val concurrentFeature1 by boolean<Context>(default = true)
             val concurrentFeature2 by boolean<Context>(default = false)
@@ -72,15 +107,12 @@ class ConcurrencyAttacksTest {
         latch.await(10, TimeUnit.SECONDS)
         executor.shutdown()
 
-        // Check for race condition errors
         if (errors.isNotEmpty()) {
-            println("FOUND CONCURRENCY BUGS:")
+            println("FOUND CONCURRENCY BUGS IN REGISTRATION:")
             errors.forEach { it.printStackTrace() }
         }
 
         assertTrue(errors.isEmpty(), "Concurrent registration caused errors: $errors")
-
-        // Verify all features registered exactly once
         assertEquals(3, container.allFeatures().size)
     }
 
@@ -99,20 +131,6 @@ class ConcurrencyAttacksTest {
          *         - Value retrieval
          */
 
-        object TestFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
-            val highContentionFlag by boolean<Context>(default = false) {
-                rule {
-                    platforms(Platform.ANDROID)
-                    rollout { 50.0 }
-                } returns true
-
-                rule {
-                    platforms(Platform.IOS)
-                    rollout { 30.0 }
-                } returns true
-            }
-        }
-
         val executor = Executors.newFixedThreadPool(20)
         val latch = CountDownLatch(1000)
         val results = ConcurrentHashMap<Int, Boolean>()
@@ -129,7 +147,7 @@ class ConcurrencyAttacksTest {
                         stableId = StableId.of(String.format("%032d", i))
                     )
 
-                    val result = TestFeatures.highContentionFlag.definition.evaluate(context)
+                    val result = HighContentionFeatures.flag1.definition.evaluate(context)
                     results[i] = result
                 } catch (e: Throwable) {
                     errors.add(e)
@@ -153,8 +171,8 @@ class ConcurrencyAttacksTest {
             stableId = StableId.of(String.format("%032d", 0))
         )
 
-        val result1 = TestFeatures.highContentionFlag.definition.evaluate(context1)
-        val result2 = TestFeatures.highContentionFlag.definition.evaluate(context1)
+        val result1 = HighContentionFeatures.flag1.definition.evaluate(context1)
+        val result2 = HighContentionFeatures.flag1.definition.evaluate(context1)
         assertEquals(result1, result2, "Non-deterministic evaluation detected")
     }
 
@@ -170,23 +188,8 @@ class ConcurrencyAttacksTest {
          * DANGER: If FlagDefinition.shaDigestSpi is shared across threads,
          *         concurrent digest() calls will corrupt each other
          *
-         * NOTE: MessageDigest.getInstance("SHA-256") returns a NEW instance,
-         *       but the code has: "val shaDigestSpi: MessageDigest"
-         *       If this is a singleton, it's a CRITICAL BUG
+         * NOTE: This is the CRITICAL finding - MessageDigest is NOT thread-safe
          */
-
-        object TestFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
-            // Create many flags to stress digest usage
-            val flag1 by boolean<Context>(default = false) {
-                rule { rollout { 50.0 } } returns true
-            }
-            val flag2 by boolean<Context>(default = false) {
-                rule { rollout { 50.0 } } returns true
-            }
-            val flag3 by boolean<Context>(default = false) {
-                rule { rollout { 50.0 } } returns true
-            }
-        }
 
         val executor = Executors.newFixedThreadPool(50)
         val latch = CountDownLatch(5000)
@@ -204,9 +207,9 @@ class ConcurrencyAttacksTest {
                     )
 
                     // Evaluate all flags to maximize digest usage
-                    TestFeatures.flag1.definition.evaluate(context)
-                    TestFeatures.flag2.definition.evaluate(context)
-                    TestFeatures.flag3.definition.evaluate(context)
+                    HighContentionFeatures.flag1.definition.evaluate(context)
+                    HighContentionFeatures.flag2.definition.evaluate(context)
+                    HighContentionFeatures.flag3.definition.evaluate(context)
                 } catch (e: Throwable) {
                     errors.add(e)
                 } finally {
@@ -278,7 +281,7 @@ class ConcurrencyAttacksTest {
     }
 
     // ============================================
-    // ATTACK 5: Memory Visibility - No Synchronization
+    // ATTACK 5: Memory Visibility
     // ============================================
 
     @Test
@@ -334,21 +337,6 @@ class ConcurrencyAttacksTest {
          * DANGER: If rules can be modified during evaluation, could crash
          */
 
-        object TestFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
-            val manyRulesFlag by boolean<Context>(default = false) {
-                // Create many rules to increase iteration time
-                repeat(100) { i ->
-                    rule {
-                        note("rule-$i")
-                        if (i % 3 == 0) platforms(Platform.ANDROID)
-                        if (i % 3 == 1) platforms(Platform.IOS)
-                        if (i % 3 == 2) platforms(Platform.WEB)
-                        rollout { (i % 100).toDouble() }
-                    } returns (i % 2 == 0)
-                }
-            }
-        }
-
         val executor = Executors.newFixedThreadPool(20)
         val latch = CountDownLatch(500)
         val errors = ConcurrentHashMap.newKeySet<Throwable>()
@@ -363,7 +351,7 @@ class ConcurrencyAttacksTest {
                         stableId = StableId.of(String.format("%032d", i))
                     )
 
-                    TestFeatures.manyRulesFlag.definition.evaluate(context)
+                    ManyRulesFeatures.complexFlag.definition.evaluate(context)
                 } catch (e: Throwable) {
                     errors.add(e)
                 } finally {
@@ -399,18 +387,6 @@ class ConcurrencyAttacksTest {
             override val stableId: StableId
         ) : Context
 
-        object TestFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
-            val contextDependentFlag by boolean<Context>(default = false) {
-                rule {
-                    platforms(Platform.ANDROID)
-                } returns true
-
-                rule {
-                    platforms(Platform.IOS)
-                } returns false
-            }
-        }
-
         val mutableContext = MutableContext(
             locale = AppLocale.EN_US,
             platform = Platform.ANDROID,
@@ -418,7 +394,6 @@ class ConcurrencyAttacksTest {
             stableId = StableId.of("12345678901234567890123456789012")
         )
 
-        // Evaluate while mutating context from another thread
         val executor = Executors.newFixedThreadPool(2)
         val results = ConcurrentHashMap<Int, Boolean>()
 
@@ -430,7 +405,7 @@ class ConcurrencyAttacksTest {
 
             executor.submit {
                 // Evaluator thread
-                val result = TestFeatures.contextDependentFlag.definition.evaluate(mutableContext)
+                val result = HighContentionFeatures.flag1.definition.evaluate(mutableContext)
                 results[i] = result
             }
         }
