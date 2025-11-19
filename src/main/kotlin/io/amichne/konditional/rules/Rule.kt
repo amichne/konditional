@@ -105,24 +105,4 @@ data class Rule<C : Context> internal constructor(
      */
     override fun specificity(): Int =
         baseEvaluable.specificity() + extension.specificity()
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Rule<*>) return false
-
-        if (rollout != other.rollout) return false
-        if (note != other.note) return false
-        if (baseEvaluable != other.baseEvaluable) return false
-        if (extension != other.extension) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = rollout.hashCode()
-        result = 31 * result + (note?.hashCode() ?: 0)
-        result = 31 * result + baseEvaluable.hashCode()
-        result = 31 * result + extension.hashCode()
-        return result
-    }
 }
