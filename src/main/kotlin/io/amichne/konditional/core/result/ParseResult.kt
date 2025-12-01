@@ -1,7 +1,7 @@
 package io.amichne.konditional.core.result
 
 /**
- * A parse result that represents either successful parsing or a domain-specific error.
+ * A parseUnsafe result that represents either successful parsing or a domain-specific error.
  *
  * This type follows the "Parse, Don't Validate" principle:
  * - Parse once at system boundaries into refined domain types
@@ -14,13 +14,13 @@ package io.amichne.konditional.core.result
  */
 sealed interface ParseResult<out T> {
     /**
-     * Successful parse result containing the parsed value.
+     * Successful parseUnsafe result containing the parsed value.
      */
     @ConsistentCopyVisibility
     data class Success<T> @PublishedApi internal constructor(val value: T) : ParseResult<T>
 
     /**
-     * Failed parse result containing structured error information.
+     * Failed parseUnsafe result containing structured error information.
      */
     @ConsistentCopyVisibility
     data class Failure @PublishedApi internal constructor(val error: ParseError) : ParseResult<Nothing>

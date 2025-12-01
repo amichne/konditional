@@ -53,7 +53,7 @@ class EvaluationResultTest {
     private val testContext = Context(
         AppLocale.EN_US,
         Platform.IOS,
-        Version.parse("1.0.0"),
+        Version.parseUnsafe("1.0.0"),
         StableId.of("11111111111111111111111111111111")
     )
 

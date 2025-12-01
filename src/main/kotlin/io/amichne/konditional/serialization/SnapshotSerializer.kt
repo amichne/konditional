@@ -20,7 +20,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * Main serialization object for Configuration configurations.
  * Provides methods to serialize/deserialize snapshots to/from JSON, and apply patch updates.
  *
- * Returns ParseResult for all deserialization operations, following parse-don't-validate principles.
+ * Returns ParseResult for all deserialization operations, following parseUnsafe-don't-validate principles.
  *
  * This serializer is storage-agnostic - it only handles JSON conversion, allowing callers
  * to choose their storage solution (files, databases, cloud storage, etc.).
@@ -59,7 +59,7 @@ object SnapshotSerializer {
     /**
      * Deserializes a JSON string to a Configuration.
      *
-     * Returns ParseResult for type-safe error handling following parse-don't-validate principles.
+     * Returns ParseResult for type-safe error handling following parseUnsafe-don't-validate principles.
      *
      * Note: This does NOT automatically load the configuration into any registry.
      * Callers must explicitly load the result if desired:
@@ -77,7 +77,7 @@ object SnapshotSerializer {
     fun fromJson(json: String): ParseResult<Configuration> {
         return try {
             val serializable = snapshotAdapter.fromJson(json)
-                ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parse JSON: null result"))
+                ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parseUnsafe JSON: null result"))
             serializable.toSnapshot()
         } catch (e: Exception) {
             ParseResult.Failure(ParseError.InvalidJson(e.message ?: "Unknown JSON parsing error"))
@@ -103,7 +103,7 @@ object SnapshotSerializer {
     internal fun fromJsonPatch(json: String): ParseResult<SerializablePatch> {
         return try {
             val patch = patchAdapter.fromJson(json)
-                ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parse patch JSON: null result"))
+                ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parseUnsafe patch JSON: null result"))
             ParseResult.Success(patch)
         } catch (e: Exception) {
             ParseResult.Failure(ParseError.InvalidJson(e.message ?: "Unknown JSON parsing error"))

@@ -29,7 +29,7 @@ class ConditionEvaluationTest {
         locale: AppLocale = AppLocale.EN_US,
         platform: Platform = Platform.IOS,
         version: String = "1.0.0",
-    ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
+    ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
 
     @Test
     fun `Given condition with no matching rules, When evaluating, Then returns default value`() {
@@ -118,7 +118,7 @@ class ConditionEvaluationTest {
     }
 
     @Test
-    fun `Given rules with same specificity, When evaluating, Then note is used as tiebreaker`() {
+    fun `Given rules with same specificity, When evaluating, Then insertion order is used as tiebreaker`() {
         val ruleA = Rule<Context>(
             rollout = Rollout.MAX,
             locales = setOf(AppLocale.EN_US),
@@ -135,7 +135,7 @@ class ConditionEvaluationTest {
             note = "rule-b",
         )
 
-        // Both rules have same specificity but different notes
+        // Both rules have same specificity
         assertEquals(ruleA.specificity(), ruleB.specificity())
 
         val condition = FlagDefinition(
@@ -147,7 +147,7 @@ class ConditionEvaluationTest {
             defaultValue = "default",
         )
 
-        // Rule A should win because of alphabetical ordering of notes
+        // Rule B should win because of insertion ordering
         val result = condition.evaluate(
             ctx(
                 "77777777777777777777777777777777",
@@ -155,7 +155,7 @@ class ConditionEvaluationTest {
                 platform = Platform.IOS
             )
         )
-        assertEquals("value-a", result)
+        assertEquals("value-b", result)
     }
 
     @Test

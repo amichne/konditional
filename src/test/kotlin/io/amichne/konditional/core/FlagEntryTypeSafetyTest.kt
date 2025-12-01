@@ -64,7 +64,7 @@ class FlagEntryTypeSafetyTest {
         locale: AppLocale = AppLocale.EN_US,
         platform: Platform = Platform.IOS,
         version: String = "1.0.0",
-    ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
+    ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
 
     private object Features : FeatureContainer<Global>(Namespace.Global) {
         val featureA by boolean<Context>(default = false) {

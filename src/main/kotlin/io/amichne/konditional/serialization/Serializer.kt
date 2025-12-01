@@ -9,7 +9,7 @@ import io.amichne.konditional.core.result.ParseResult
  * feature flag configurations without coupling to specific storage implementations
  * (files, databases, cloud storage, etc.).
  *
- * Follows **parse-don't-validate** principles: deserialization returns [ParseResult]
+ * Follows **parseUnsafe-don't-validate** principles: deserialization returns [ParseResult]
  * instead of throwing exceptions, enabling type-safe error handling.
  *
  * ## Implementations
@@ -64,7 +64,7 @@ interface Serializer<T> {
     /**
      * Deserializes JSON into the target type.
      *
-     * Returns [ParseResult] for type-safe error handling following parse-don't-validate principles.
+     * Returns [ParseResult] for type-safe error handling following parseUnsafe-don't-validate principles.
      * Never throws exceptions - all errors are captured in [ParseResult.Failure].
      *
      * Callers are responsible for loading the JSON from their storage

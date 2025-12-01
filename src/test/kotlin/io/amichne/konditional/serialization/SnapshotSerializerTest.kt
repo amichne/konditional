@@ -32,7 +32,7 @@ import kotlin.test.assertTrue
  */
 class SnapshotSerializerTest {
 
-    private object TestFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
+    private val TestFeatures = object : FeatureContainer<Namespace.Global>(Namespace.Global) {
         val boolFlag by boolean<Context>(default = false)
         val stringFlag by string<Context>(default = "default")
         val intFlag by int<Context>(default = 0)
@@ -57,7 +57,7 @@ class SnapshotSerializerTest {
         locale: AppLocale = AppLocale.EN_US,
         platform: Platform = Platform.IOS,
         version: String = "1.0.0",
-    ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
+    ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
 
     // ========== Serialization Tests ==========
 

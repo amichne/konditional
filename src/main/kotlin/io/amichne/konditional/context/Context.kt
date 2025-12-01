@@ -37,7 +37,15 @@ interface Context {
     val appVersion: Version
     val stableId: StableId
 
+    data class Core(
+        override val locale: AppLocale,
+        override val platform: Platform,
+        override val appVersion: Version,
+        override val stableId: StableId,
+    ) : Context
+
     companion object {
+
         /**
          * Creates a basic Context instance with the specified properties.
          *
@@ -55,12 +63,7 @@ interface Context {
             platform: Platform,
             appVersion: Version,
             stableId: StableId,
-        ): Context = object : Context {
-            override val locale: AppLocale = locale
-            override val platform: Platform = platform
-            override val appVersion: Version = appVersion
-            override val stableId: StableId = stableId
-        }
+        ): Core = Core(locale, platform, appVersion, stableId)
 
         /**
          * Evaluates a specific feature flag in the context of this [Context].

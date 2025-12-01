@@ -2,7 +2,6 @@ package io.amichne.konditional.context
 
 import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.Namespace.Global
 import io.amichne.konditional.core.features.update
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.EnterpriseContext
@@ -29,7 +28,7 @@ class ContextPolymorphismTest {
         // Reset registry before each test
         println("Global")
         println("--------")
-        println(SnapshotSerializer.serialize(Global.configuration))
+        println(SnapshotSerializer.serialize(Namespace.Global.configuration))
         println("--------")
 
         println("Payments")
