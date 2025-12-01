@@ -173,7 +173,7 @@ class ConditionEvaluationTest {
             defaultValue = "disabled",
         )
 
-        // Test many IDs - none should get the enabled value
+        // TestNamespace many IDs - none should get the enabled value
         repeat(100) { i ->
             val id = "%032x".format(i)
             val result = condition.evaluate(ctx(id))
@@ -196,7 +196,7 @@ class ConditionEvaluationTest {
             defaultValue = "disabled",
         )
 
-        // Test many IDs - all should get the enabled value
+        // TestNamespace many IDs - all should get the enabled value
         repeat(100) { i ->
             val id = "%032x".format(i)
             val result = condition.evaluate(ctx(id))
@@ -356,7 +356,7 @@ class ConditionEvaluationTest {
             defaultValue = "default",
         )
 
-        // Test many users - most should fall through to the less specific rule
+        // TestNamespace many users - most should fall through to the less specific rule
         val sampleSize = 1000
         var specificCount = 0
         var fallbackRuleCount = 0

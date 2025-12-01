@@ -17,11 +17,11 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
- * Test suite demonstrating FeatureContainer functionality
+ * TestNamespace suite demonstrating FeatureContainer functionality
  */
 class FeatureContainerTest {
 
-    // Test container with mixed feature types
+    // TestNamespace container with mixed feature types
     object TestFeatures : FeatureContainer<Namespace.Payments>(
         Namespace.Payments
     ) {

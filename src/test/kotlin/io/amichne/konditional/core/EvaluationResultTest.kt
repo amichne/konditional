@@ -135,7 +135,7 @@ class EvaluationResultTest {
     fun `map preserves EvaluationError`() {
         val errorResult: EvaluationResult<String> = EvaluationResult.EvaluationError(
             "test_key",
-            IllegalStateException("Test error")
+            IllegalStateException("TestNamespace error")
         )
         val result = errorResult.map { it.uppercase() }
 
@@ -153,7 +153,7 @@ class EvaluationResultTest {
     fun `getOrNull returns null on EvaluationError`() {
         val errorResult: EvaluationResult<String> = EvaluationResult.EvaluationError(
             "test_key",
-            IllegalStateException("Test error")
+            IllegalStateException("TestNamespace error")
         )
         assertNull(errorResult.getOrNull())
     }
@@ -169,7 +169,7 @@ class EvaluationResultTest {
     fun `getOrDefault returns default on EvaluationError`() {
         val errorResult: EvaluationResult<String> = EvaluationResult.EvaluationError(
             "test_key",
-            IllegalStateException("Test error")
+            IllegalStateException("TestNamespace error")
         )
         assertEquals("fallback", errorResult.getOrDefault("fallback"))
     }
@@ -187,7 +187,7 @@ class EvaluationResultTest {
     fun `getOrElse computes default on EvaluationError`() {
         val errorResult: EvaluationResult<String> = EvaluationResult.EvaluationError(
             "test_key",
-            IllegalStateException("Test error")
+            IllegalStateException("TestNamespace error")
         )
         val result = errorResult.getOrElse { error ->
             when (error) {
@@ -251,7 +251,7 @@ class EvaluationResultTest {
     fun `evaluateOrThrow throws FlagEvaluationException when evaluation throws`() {
         val errorResult: EvaluationResult<String> = EvaluationResult.EvaluationError(
             "test_key",
-            IllegalStateException("Test error")
+            IllegalStateException("TestNamespace error")
         )
 
         val exception = assertFailsWith<FlagEvaluationException> {
@@ -280,7 +280,7 @@ class EvaluationResultTest {
     fun `toResult converts EvaluationError to Result failure`() {
         val errorResult: EvaluationResult<String> = EvaluationResult.EvaluationError(
             "test_key",
-            IllegalStateException("Test error")
+            IllegalStateException("TestNamespace error")
         )
         val result = errorResult.toResult()
 

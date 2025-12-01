@@ -144,7 +144,7 @@ class ContextPolymorphismTest {
         assertTrue(onboardingStyle1 is String)
     }
 
-//    @Test
+//    @TestNamespace
 //    fun `Given base Context and custom Context, When both used, Then type safety is maintained`() {
 //        // Define flag in scope
 //        data class StandardFlagA(
@@ -194,7 +194,7 @@ class ContextPolymorphismTest {
 //        assertTrue(enterpriseCtx.evaluate(EnterpriseFeatures.custom_branding))
 //    }
 //
-//    @Test
+//    @TestNamespace
 //    fun `Given EnterpriseContext subclass, When matching rules, Then base Context properties work correctly`() {
 //        val rule = Rule<EnterpriseContext>(
 //            rollout {  Rollout.MAX }

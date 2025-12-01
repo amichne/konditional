@@ -4,10 +4,11 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.TestNamespace
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.features.evaluate
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.test
 import org.junit.jupiter.api.Test
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
@@ -35,14 +36,14 @@ class ConcurrencyAttacksTest {
     fun `ATTACK - concurrent access to lazy feature registration`() {
         /*
          * ATTACK: Access features concurrently before they're registered
-         * RESULT: Test if lazy registration is thread-safe
+         * RESULT: TestNamespace if lazy registration is thread-safe
          * DANGER: Race condition during first access could cause:
          *         - Multiple registrations
          *         - Partial initialization
          *         - Inconsistent state
          */
 
-        val container = object : FeatureContainer<Namespace.Global>(Namespace.Global) {
+        val container = object : FeatureContainer<TestNamespace>(test()) {
             val concurrentFeature1 by boolean<Context>(default = true)
             val concurrentFeature2 by boolean<Context>(default = false)
             val concurrentFeature3 by string<Context>(default = "test")
@@ -92,14 +93,14 @@ class ConcurrencyAttacksTest {
     fun `ATTACK - concurrent flag evaluation with different contexts`() {
         /*
          * ATTACK: Hammer flag evaluation with many threads
-         * RESULT: Test thread-safety of evaluation logic
+         * RESULT: TestNamespace thread-safety of evaluation logic
          * DANGER: Race conditions in:
          *         - Rule matching
          *         - Bucket calculation (SHA-256 digest)
          *         - Value retrieval
          */
 
-        val TestFeatures = object : FeatureContainer<Namespace.Global>(Namespace.Global) {
+        val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
             val highContentionFlag by boolean<Context>(default = false) {
                 rule {
                     platforms(Platform.ANDROID)
@@ -129,7 +130,7 @@ class ConcurrencyAttacksTest {
                         stableId = StableId.of(String.format("%032d", i))
                     )
 
-                    val result = TestFeatures.highContentionFlag.evaluate(context)
+                    val result = TestNamespaceFeatures.highContentionFlag.evaluate(context)
                     results[i] = result
                 } catch (e: Throwable) {
                     errors.add(e)
@@ -153,8 +154,8 @@ class ConcurrencyAttacksTest {
             stableId = StableId.of(String.format("%032d", 0))
         )
 
-        val result1 = TestFeatures.highContentionFlag.evaluate(context1)
-        val result2 = TestFeatures.highContentionFlag.evaluate(context1)
+        val result1 = TestNamespaceFeatures.highContentionFlag.evaluate(context1)
+        val result2 = TestNamespaceFeatures.highContentionFlag.evaluate(context1)
         assertEquals(result1, result2, "Non-deterministic evaluation detected")
     }
 
@@ -165,7 +166,7 @@ class ConcurrencyAttacksTest {
     @Test
     fun `ATTACK - concurrent SHA-256 digest usage in bucketing`() {
         /*
-         * ATTACK: Test if MessageDigest.getInstance is thread-safe
+         * ATTACK: TestNamespace if MessageDigest.getInstance is thread-safe
          * RESULT: MessageDigest is NOT thread-safe if shared
          * DANGER: If FlagDefinition.shaDigestSpi is shared across threads,
          *         concurrent digest() calls will corrupt each other
@@ -175,7 +176,7 @@ class ConcurrencyAttacksTest {
          *       If this is a singleton, it's a CRITICAL BUG
          */
 
-        val TestFeatures = object : FeatureContainer<Namespace.Global>(Namespace.Global) {
+        val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
             // Create many flags to stress digest usage
             val flag1 by boolean<Context>(default = false) {
                 rule { rollout { 50.0 } } returns true
@@ -204,9 +205,9 @@ class ConcurrencyAttacksTest {
                     )
 
                     // Evaluate all flags to maximize digest usage
-                    TestFeatures.flag1.evaluate(context)
-                    TestFeatures.flag2.evaluate(context)
-                    TestFeatures.flag3.evaluate(context)
+                    TestNamespaceFeatures.flag1.evaluate(context)
+                    TestNamespaceFeatures.flag2.evaluate(context)
+                    TestNamespaceFeatures.flag3.evaluate(context)
                 } catch (e: Throwable) {
                     errors.add(e)
                 } finally {
@@ -244,13 +245,13 @@ class ConcurrencyAttacksTest {
     fun `ATTACK - concurrent registration in same namespace`() {
         /*
          * ATTACK: Multiple containers in same namespace accessed concurrently
-         * RESULT: Test namespace registry thread-safety
+         * RESULT: TestNamespace namespace registry thread-safety
          * DANGER: Registry might not handle concurrent writes correctly
          */
 
         // Create multiple containers in same namespace
         val containers = (1..10).map { i ->
-            object : FeatureContainer<Namespace.Global>(Namespace.Global) {
+            object : FeatureContainer<TestNamespace>(test()) {
                 val feature by boolean<Context>(default = i % 2 == 0)
             }
         }
@@ -288,12 +289,12 @@ class ConcurrencyAttacksTest {
     @Test
     fun `ATTACK - memory visibility of lazy initialization without volatile`() {
         /*
-         * ATTACK: Test if changes are visible across threads
+         * ATTACK: TestNamespace if changes are visible across threads
          * RESULT: Without proper memory barriers, threads might see stale data
          * DANGER: Thread A registers feature, Thread B might not see it
          */
 
-        val container = object : FeatureContainer<Namespace.Global>(Namespace.Global) {
+        val container = object : FeatureContainer<TestNamespace>(test()) {
             val visibilityTest by boolean<Context>(default = true)
         }
 
@@ -333,11 +334,11 @@ class ConcurrencyAttacksTest {
     fun `ATTACK - modification during iteration of conditional values`() {
         /*
          * ATTACK: Try to trigger concurrent modification
-         * RESULT: Test if rule list is properly immutable
+         * RESULT: TestNamespace if rule list is properly immutable
          * DANGER: If rules can be modified during evaluation, could crash
          */
 
-        val TestFeatures = object : FeatureContainer<Namespace.Global>(Namespace.Global) {
+        val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
             val manyRulesFlag by boolean<Context>(default = false) {
                 // Create many rules to increase iteration time
                 repeat(100) { i ->
@@ -366,7 +367,7 @@ class ConcurrencyAttacksTest {
                         stableId = StableId.of(String.format("%032d", i))
                     )
 
-                    TestFeatures.manyRulesFlag.evaluate(context)
+                    TestNamespaceFeatures.manyRulesFlag.evaluate(context)
                 } catch (e: Throwable) {
                     errors.add(e)
                 } finally {
@@ -392,7 +393,7 @@ class ConcurrencyAttacksTest {
     fun `ATTACK - mutating context during evaluation if mutable implementation used`() {
         /*
          * ATTACK: Use mutable context and modify during evaluation
-         * RESULT: Test if evaluation assumes immutable context
+         * RESULT: TestNamespace if evaluation assumes immutable context
          * DANGER: Changing context mid-evaluation could break matching
          */
 
@@ -404,7 +405,7 @@ class ConcurrencyAttacksTest {
             override val stableId: StableId
         ) : Context
 
-        val TestFeatures = object : FeatureContainer<Namespace.Global>(Namespace.Global) {
+        val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
             val contextDependentFlag by boolean<Context>(default = false) {
                 rule {
                     platforms(Platform.ANDROID)
@@ -435,7 +436,7 @@ class ConcurrencyAttacksTest {
 
             executor.submit {
                 // Evaluator thread
-                val result = TestFeatures.contextDependentFlag.evaluate(mutableContext)
+                val result = TestNamespaceFeatures.contextDependentFlag.evaluate(mutableContext)
                 results[i] = result
             }
         }
@@ -456,18 +457,18 @@ class ConcurrencyAttacksTest {
     }
 
     // ============================================
-    // ATTACK 8: Stress Test AllFeatures Concurrent Iteration
+    // ATTACK 8: Stress TestNamespace AllFeatures Concurrent Iteration
     // ============================================
 
     @Test
     fun `ATTACK - concurrent calls to allFeatures() during registration`() {
         /*
          * ATTACK: Call allFeatures() while features are being registered
-         * RESULT: Test if iteration is safe during modification
+         * RESULT: TestNamespace if iteration is safe during modification
          * DANGER: ConcurrentModificationException or inconsistent results
          */
 
-        val container = object : FeatureContainer<Namespace.Global>(Namespace.Global) {
+        val container = object : FeatureContainer<TestNamespace>(test()) {
             val f1 by boolean<Context>(default = true)
             val f2 by boolean<Context>(default = true)
             val f3 by boolean<Context>(default = true)

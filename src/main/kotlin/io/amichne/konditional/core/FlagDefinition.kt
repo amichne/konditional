@@ -43,9 +43,6 @@ data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Names
     private val conditionalValues: List<ConditionalValue<S, T, C, M>> =
         values.sortedWith(compareByDescending<ConditionalValue<S, T, C, M>> { it.rule.specificity() })
 
-    private val shaDigestSpi: MessageDigest = MessageDigest.getInstance("SHA-256")
-
-
     internal companion object {
 
         /**
@@ -107,12 +104,17 @@ data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Names
             else -> stableBucket(flagKey, id, salt) < (rollout.value * 100).roundToInt()
         }
 
+    /**
+     * Create a new MessageDigest instance per call to ensure thread-safety
+     * MessageDigest is NOT thread-safe and cannot be shared across concurrent evaluations
+     */
     private fun stableBucket(
         flagKey: String,
         id: HexId,
         salt: String,
-    ): Int =
-        with(shaDigestSpi.digest("$salt:$flagKey:${id.id}".toByteArray(Charsets.UTF_8))) {
+    ): Int {
+        val digest = MessageDigest.getInstance("SHA-256")
+        return with(digest.digest("$salt:$flagKey:${id.id}".toByteArray(Charsets.UTF_8))) {
             (
                 (
                     get(0).toInt() and 0xFF shl 24 or
@@ -122,4 +124,5 @@ data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Names
                     ).toLong() and 0xFFFF_FFFFL
                 ).mod(10_000L).toInt()
         }
+    }
 }

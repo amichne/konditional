@@ -135,7 +135,7 @@ class SnapshotSerializerTest {
     fun `Given Konfig with complex rules, When serialized, Then includes all rule attributes`() {
         val rule = Rule<Context>(
             rollout = Rollout.of(50.0),
-            note = "Test rule",
+            note = "TestNamespace rule",
             locales = setOf(AppLocale.EN_US, AppLocale.FR_FR),
             platforms = setOf(Platform.IOS, Platform.ANDROID),
             versionRange = FullyBound(Version(1, 0, 0), Version(2, 0, 0)),
@@ -152,7 +152,7 @@ class SnapshotSerializerTest {
 
         assertNotNull(json)
         assertTrue(json.contains("\"rampUp\": 50.0"))
-        assertTrue(json.contains("\"note\": \"Test rule\""))
+        assertTrue(json.contains("\"note\": \"TestNamespace rule\""))
         assertTrue(json.contains("EN_US"))
         assertTrue(json.contains("FR_FR"))
         assertTrue(json.contains("IOS"))
@@ -329,7 +329,7 @@ class SnapshotSerializerTest {
                         "value" : true
                       },
                       "rampUp" : 50.0,
-                      "note" : "Test rule",
+                      "note" : "TestNamespace rule",
                       "locales" : ["EN_US", "FR_FR"],
                       "platforms" : ["IOS", "ANDROID"],
                       "versionRange" : {
@@ -361,7 +361,7 @@ class SnapshotSerializerTest {
 
         val rule = flag.values.first().rule
         assertEquals(50.0, rule.rollout.value)
-        assertEquals("Test rule", rule.note)
+        assertEquals("TestNamespace rule", rule.note)
         assertEquals(setOf(AppLocale.EN_US, AppLocale.FR_FR), rule.baseEvaluable.locales)
         assertEquals(setOf(Platform.IOS, Platform.ANDROID), rule.baseEvaluable.platforms)
         assertIs<FullyBound>(rule.baseEvaluable.versionRange)

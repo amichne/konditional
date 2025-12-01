@@ -14,8 +14,6 @@ import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
-import io.amichne.konditional.serialization.SnapshotSerializer
-import org.junit.jupiter.api.BeforeEach
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -25,40 +23,6 @@ import kotlin.test.assertNotNull
  * Validates that the FlagEntry wrapper maintains type safety and eliminates unsafe casts.
  */
 class FlagEntryTypeSafetyTest {
-    @BeforeEach
-    fun setup() {
-        // Reset registry before each test
-        println("Global")
-        println("--------")
-        println(SnapshotSerializer.serialize(Global.configuration))
-        println("--------")
-
-        println("Payments")
-        println("--------")
-        println(SnapshotSerializer.serialize(Namespace.Payments.configuration))
-        println("--------")
-
-        println("Search")
-        println("--------")
-        println(SnapshotSerializer.serialize(Namespace.Search.configuration))
-        println("--------")
-
-        println(
-            "Does Global registry match Search? ${
-                SnapshotSerializer.serialize(Global.configuration) == SnapshotSerializer.serialize(
-                    Namespace.Search.configuration
-                )
-            }"
-        )
-        println(
-            "Does Global registry match Payments? ${
-                SnapshotSerializer.serialize(Global.configuration) == SnapshotSerializer.serialize(
-                    Namespace.Payments.configuration
-                )
-            }"
-        )
-    }
-
     private fun ctx(
         idHex: String,
         locale: AppLocale = AppLocale.EN_US,
@@ -233,7 +197,7 @@ class FlagEntryTypeSafetyTest {
         assertEquals("test", stringResult)
     }
 //
-//    @Test
+//    @TestNamespace
 //    fun `Given config with multiple flag types, When loaded, Then ContextualFlagDefinition maintains type safety`() {
 //        Namespace.Global.config {
 //        }
@@ -256,7 +220,7 @@ class FlagEntryTypeSafetyTest {
 //        assertEquals(30, newVersionCtx.evaluate(IntFlags.TIMEOUT))
 //    }
 //
-//    @Test
+//    @TestNamespace
 //    fun `Given ContextualFlagDefinition in map, When retrieving by key, Then type information is preserved`() {
 //        Namespace.Global.config {
 //            BoolFlags.FEATURE_A with {
@@ -279,7 +243,7 @@ class FlagEntryTypeSafetyTest {
 //        // Type safety is maintained - we get the correct types back
 //    }
 //
-//    @Test
+//    @TestNamespace
 //    fun `Given mixed context and value types, When using ContextualFlagDefinition, Then maintains both type parameters`() {
 //        data class CustomContext(
 //            override val locale: AppLocale,
@@ -323,7 +287,7 @@ class FlagEntryTypeSafetyTest {
 //        assertEquals(42, result)
 //    }
 //
-//    @Test
+//    @TestNamespace
 //    fun `Given FlagEntry wrapper, When used in Flags singleton, Then no unchecked cast warnings at call site`() {
 //        // This test validates that the FlagEntry wrapper eliminates the need for
 //        // @Suppress("UNCHECKED_CAST") annotations at call sites
