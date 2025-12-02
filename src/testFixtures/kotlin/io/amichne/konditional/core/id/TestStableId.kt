@@ -1,0 +1,24 @@
+package io.amichne.konditional.core.id
+
+private const val HEX_CHARS = "0123456789abcdef"
+private fun randomId(): String = (1..32).map { HEX_CHARS.random() }.joinToString("")
+
+/**
+ * Test implementation of [StaticStableId] that generates a random 32-character hexadecimal ID.
+ *
+ * This is intended for testing purposes only.
+ *
+ * The ID is randomly generated each time the object is accessed, ensuring uniqueness across test runs,
+ * making it suitable for isolated test scenarios. This helps prevent unintended dependencies on non-functional
+ * stable identifiers during testing. We gain randomness while still adhering to the expected format of a stable ID.
+ */
+@ConsistentCopyVisibility
+data class TestStableId private constructor(override val id: String = randomId()) : StaticStableId {
+
+    override val hexId: HexId = HexId(id)
+
+    companion object : StaticStableId by TestStableId() {
+
+        fun newInstance(): TestStableId = TestStableId()
+    }
+}

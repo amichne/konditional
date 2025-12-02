@@ -72,7 +72,6 @@ sealed class Namespace(
 
     ) : NamespaceRegistry by registry {
 
-
     /**
      * Global namespace containing shared flags accessible to all teams.
      *
@@ -138,6 +137,7 @@ sealed class Namespace(
         // Add your organization's team modules here:
         // data object YourTeam : Domain("your-team")
     }
+
     @TestOnly
     abstract class TestNamespaceFacade(id: String) : Namespace(id)
 

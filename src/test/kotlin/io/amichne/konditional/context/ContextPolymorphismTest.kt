@@ -4,6 +4,7 @@ import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.update
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.id.TestStableId
 import io.amichne.konditional.fixtures.EnterpriseContext
 import io.amichne.konditional.fixtures.EnterpriseFeatures
 import io.amichne.konditional.fixtures.EnterpriseRule
@@ -60,7 +61,7 @@ class ContextPolymorphismTest {
             locale = AppLocale.UNITED_STATES,
             platform = Platform.WEB,
             appVersion = Version(2, 5, 0),
-            stableId = StableId.of("11111111111111111111111111111111"),
+            stableId = TestStableId,
             organizationId = "org-123",
             subscriptionTier = SubscriptionTier.PREMIUM,
             userRole = UserRole.ADMIN,
@@ -123,7 +124,7 @@ class ContextPolymorphismTest {
             locale = AppLocale.UNITED_STATES,
             platform = Platform.WEB,
             appVersion = Version(1, 0, 0),
-            stableId = StableId.of("44444444444444444444444444444444"),
+            stableId = TestStableId.newInstance(),
             organizationId = "org-456",
             subscriptionTier = SubscriptionTier.ENTERPRISE,
             userRole = UserRole.OWNER,
@@ -132,7 +133,7 @@ class ContextPolymorphismTest {
             locale = AppLocale.UNITED_STATES,
             platform = Platform.IOS,
             appVersion = Version(1, 0, 0),
-            stableId = StableId.of("55555555555555555555555555555555"),
+            stableId = TestStableId.newInstance(),
             experimentGroups = setOf("exp-003"),
             sessionId = "session-123",
         )

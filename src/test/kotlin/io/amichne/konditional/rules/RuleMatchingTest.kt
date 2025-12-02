@@ -6,6 +6,7 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.id.TestStableId
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.rules.versions.Unbounded
 import kotlin.test.Test
@@ -22,7 +23,7 @@ class RuleMatchingTest {
         locale: AppLocale = AppLocale.UNITED_STATES,
         platform: Platform = Platform.IOS,
         version: String = "1.0.0",
-        idHex: String = "00000000000000000000000000000000",
+        idHex: String = TestStableId.id,
     ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
 
     @Test
@@ -78,7 +79,7 @@ class RuleMatchingTest {
         )
 
         assertTrue(rule.matches(ctx(locale = AppLocale.UNITED_STATES)))
-        assertFalse(rule.matches(ctx(locale = AppLocale.UNITED_STATES)))
+        assertFalse(rule.matches(ctx(locale = AppLocale.MEXICO)))
         assertFalse(rule.matches(ctx(locale = AppLocale.INDIA)))
     }
 
@@ -93,7 +94,7 @@ class RuleMatchingTest {
 
         assertTrue(rule.matches(ctx(locale = AppLocale.UNITED_STATES)))
         assertTrue(rule.matches(ctx(locale = AppLocale.CANADA)))
-        assertFalse(rule.matches(ctx(locale = AppLocale.UNITED_STATES)))
+        assertFalse(rule.matches(ctx(locale = AppLocale.MEXICO)))
     }
 
     @Test
@@ -131,7 +132,7 @@ class RuleMatchingTest {
         assertTrue(rule.matches(ctx(locale = AppLocale.UNITED_STATES, platform = Platform.IOS, version = "2.5.0")))
 
         // Wrong locale
-        assertFalse(rule.matches(ctx(locale = AppLocale.UNITED_STATES, platform = Platform.IOS, version = "2.5.0")))
+        assertFalse(rule.matches(ctx(locale = AppLocale.MEXICO, platform = Platform.IOS, version = "2.5.0")))
 
         // Wrong platform
         assertFalse(rule.matches(ctx(locale = AppLocale.UNITED_STATES, platform = Platform.ANDROID, version = "2.5.0")))

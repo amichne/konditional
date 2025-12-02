@@ -6,9 +6,9 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.id.TestStableId
 import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.evaluable.Evaluable.Companion.factory
-import io.amichne.konditional.rules.evaluable.Specifier
 import io.amichne.konditional.rules.versions.LeftBound
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -55,7 +55,7 @@ class RuleGuaranteesTest {
         locale = AppLocale.UNITED_STATES,
         platform = Platform.ANDROID,
         appVersion = Version(1, 0, 0),
-        stableId = StableId.of("11111111111111111111111111111111")
+        stableId = TestStableId
     )
 
     /**
@@ -95,7 +95,7 @@ class RuleGuaranteesTest {
     fun `base rule locale restriction is always enforced`() {
         val rule = Rule<Context>(
             rollout = Rollout.of(100.0),
-            locales = setOf(AppLocale.UNITED_STATES)
+            locales = setOf(AppLocale.CANADA)
         )
 
         // Context has UNITED_STATES locale, rule requires UNITED_STATES
@@ -130,7 +130,7 @@ class RuleGuaranteesTest {
         // the base locale restriction prevents a match
         val rule = Rule(
             rollout = Rollout.of(100.0),
-            locales = setOf(AppLocale.UNITED_STATES),
+            locales = setOf(AppLocale.MEXICO),
             extension = SubscriptionRule(
                 requiredTier = "premium"
             )
@@ -180,8 +180,8 @@ class RuleGuaranteesTest {
     fun `custom rule specificity includes both base and additional specificity`() {
         val ruleWithLocaleAndTier = Rule(
             locales = setOf(AppLocale.UNITED_STATES), extension = SubscriptionRule(
-                requiredTier = "premium"
-            )
+            requiredTier = "premium"
+        )
         )
 
         // Base specificity: 1 (locale)

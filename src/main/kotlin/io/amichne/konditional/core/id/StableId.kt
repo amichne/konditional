@@ -31,5 +31,5 @@ sealed interface StableId {
             override val id: String
                 get() = hexId.id
         }
-    }
+    } 
 }
