@@ -7,7 +7,7 @@ import io.amichne.konditional.core.types.EncodableValue
 /**
  * Type-safe representation of flag values that replaces the type-erased SerializableValue.
  *
- * This sealed class follows parse-don't-validate principles:
+ * This sealed class follows parseUnsafe-don't-validate principles:
  * - No type erasure via `Any`
  * - Compile-time type safety
  * - Illegal states are unrepresentable (can't have INT type with Boolean value)

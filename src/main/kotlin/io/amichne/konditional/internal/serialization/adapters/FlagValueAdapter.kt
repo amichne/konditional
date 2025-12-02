@@ -93,13 +93,14 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
     }
 
     companion object {
+        private val flagValueAdapter = FlagValueAdapter()
         /**
          * Factory for creating FlagValueAdapter instances.
          * This ensures the adapter is properly registered with Moshi for the FlagValue type.
          */
         val FACTORY: Factory = Factory { type, _, _ ->
             if (Types.getRawType(type) == FlagValue::class.java) {
-                FlagValueAdapter()
+                flagValueAdapter
             } else {
                 null
             }

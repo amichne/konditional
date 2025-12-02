@@ -6,7 +6,7 @@ package io.amichne.konditional.core.types
  *
  * Supported types: Boolean, String, Int, Double
  *
- * This enforces the "parse, don't validate" principle by making illegal states (unsupported types)
+ * This enforces the "parseUnsafe, don't validate" principle by making illegal states (unsupported types)
  * unrepresentable at compile time.
  */
 sealed interface EncodableEvidence<T : Any> {

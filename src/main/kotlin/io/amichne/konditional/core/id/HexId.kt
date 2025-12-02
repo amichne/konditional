@@ -21,6 +21,7 @@ value class HexId internal constructor(internal val externalId: String) {
         get() = byteId.toHexString(HexFormat.Default)
 
     init {
+        require(externalId.isNotBlank()) { "Identifiers must not be blank" }
         require(id == externalId)
     }
 }

@@ -10,7 +10,7 @@ import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.rules.evaluable.Evaluable
 
 /**
- * Test features for validating context polymorphism.
+ * TestNamespace features for validating context polymorphism.
  *
  * These demonstrate custom context types and specialized evaluation rules.
  */

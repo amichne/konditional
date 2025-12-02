@@ -86,6 +86,7 @@ internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M :
             bounds = conditionalValues.toList(),
             defaultValue = defaultValue!!,
             salt = salt,
+            isActive = isActive
         )
     }
 }

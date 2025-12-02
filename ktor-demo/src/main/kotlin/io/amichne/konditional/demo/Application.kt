@@ -6,6 +6,7 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.serialization.SnapshotSerializer
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
@@ -197,7 +198,7 @@ private fun buildRulesInfo(): String {
 private fun evaluateBaseContext(params: Parameters): String {
     val locale = AppLocale.valueOf(params["locale"] ?: "EN_US")
     val platform = Platform.valueOf(params["platform"] ?: "WEB")
-    val version = Version.parse(params["version"] ?: "1.0.0")
+    val version = Version.parseUnsafe(params["version"] ?: "1.0.0")
     val stableIdHex = params["stableId"] ?: "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"
     val stableId = StableId.of(stableIdHex)
 
@@ -214,7 +215,7 @@ private fun evaluateBaseContext(params: Parameters): String {
 private fun evaluateEnterpriseContext(params: Parameters): String {
     val locale = AppLocale.valueOf(params["locale"] ?: "EN_US")
     val platform = Platform.valueOf(params["platform"] ?: "WEB")
-    val version = Version.parse(params["version"] ?: "1.0.0")
+    val version = Version.parse(params["version"] ?: "1.0.0").getOrThrow()
     val stableIdHex = params["stableId"] ?: "f1e2d3c4b5a6978685746352413021ab"
     val stableId = StableId.of(stableIdHex)
     val subscriptionTier = SubscriptionTier.fromString(params["subscriptionTier"] ?: "FREE")

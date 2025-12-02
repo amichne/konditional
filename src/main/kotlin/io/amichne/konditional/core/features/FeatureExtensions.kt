@@ -22,7 +22,7 @@ import io.amichne.konditional.internal.builders.FlagBuilder
 fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Feature<S, T, C, M>.evaluate(
     context: C,
     registry: NamespaceRegistry = namespace
-): T? = registry.flag(this)?.evaluate(context)
+): T = registry.flag(this).evaluate(context)
 
 /**
  * Updates this feature using a DSL configuration block.

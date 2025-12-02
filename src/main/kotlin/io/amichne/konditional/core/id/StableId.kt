@@ -23,7 +23,7 @@ sealed interface StableId {
          *
          * @throws IllegalArgumentException if the provided id is not a valid hexadecimal string.
          */
-        fun of(id: String): StableId = Factory.Instance(HexId(id))
+        fun of(id: String): StableId = Factory.Instance(HexId(id.lowercase()))
     }
 
     private object Factory {

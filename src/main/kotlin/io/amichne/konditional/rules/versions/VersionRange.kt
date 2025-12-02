@@ -1,6 +1,7 @@
 package io.amichne.konditional.rules.versions
 
 import io.amichne.konditional.context.Version
+import kotlin.math.pow
 
 sealed class VersionRange(
     val type: Type,
@@ -16,7 +17,7 @@ sealed class VersionRange(
 
     companion object {
         internal val MIN_VERSION = Version(0, 0, 0)
-        internal val MAX_VERSION = Version(Int.MAX_VALUE, Int.MAX_VALUE, Int.MAX_VALUE)
+        internal val MAX_VERSION = Version(2.0.pow(32.0).toInt(), 2.0.pow(32.0).toInt(), 2.0.pow(32.0).toInt())
     }
 
     open fun contains(v: Version): Boolean = (min?.let { v >= it } ?: true) && (max?.let { v <= it } ?: true)

@@ -813,7 +813,7 @@ Verify higher specificity rules take precedence:
 ```kotlin
 @Test
 fun `more specific rules override general rules`() {
-    object TestFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
+    val TestFeatures = object : FeatureContainer<Namespace.Global>(Namespace.Global) {
         val VALUE by string(default = "default") {
             // Specificity = 1 (general)
             rule {

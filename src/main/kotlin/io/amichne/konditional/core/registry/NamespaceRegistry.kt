@@ -101,7 +101,7 @@ interface NamespaceRegistry {
      * Retrieves a specific flag definition from the registry.
      *
      * @param key The [Feature] key for the flag
-     * @return The [io.amichne.konditional.core.FlagDefinition] if found, null otherwise
+     * @return The [io.amichne.konditional.core.FlagDefinition] which is known to exist via structural guarantee
      * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
      * @param C The type of the context used for evaluation
@@ -110,8 +110,8 @@ interface NamespaceRegistry {
     @Suppress("UNCHECKED_CAST")
     fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> flag(
         key: Feature<S, T, C, M>
-    ): FlagDefinition<S, T, C, M>? =
-        configuration.flags[key] as? FlagDefinition<S, T, C, M>
+    ): FlagDefinition<S, T, C, M> =
+        configuration.flags[key] as FlagDefinition<S, T, C, M>
 
     /**
      * Retrieves all flags from the registry.

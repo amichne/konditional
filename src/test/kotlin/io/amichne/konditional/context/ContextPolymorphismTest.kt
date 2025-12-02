@@ -2,7 +2,6 @@ package io.amichne.konditional.context
 
 import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.Namespace.Global
 import io.amichne.konditional.core.features.update
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.EnterpriseContext
@@ -29,7 +28,7 @@ class ContextPolymorphismTest {
         // Reset registry before each test
         println("Global")
         println("--------")
-        println(SnapshotSerializer.serialize(Global.configuration))
+        println(SnapshotSerializer.serialize(Namespace.Global.configuration))
         println("--------")
 
         println("Payments")
@@ -145,7 +144,7 @@ class ContextPolymorphismTest {
         assertTrue(onboardingStyle1 is String)
     }
 
-//    @Test
+//    @TestNamespace
 //    fun `Given base Context and custom Context, When both used, Then type safety is maintained`() {
 //        // Define flag in scope
 //        data class StandardFlagA(
@@ -195,7 +194,7 @@ class ContextPolymorphismTest {
 //        assertTrue(enterpriseCtx.evaluate(EnterpriseFeatures.custom_branding))
 //    }
 //
-//    @Test
+//    @TestNamespace
 //    fun `Given EnterpriseContext subclass, When matching rules, Then base Context properties work correctly`() {
 //        val rule = Rule<EnterpriseContext>(
 //            rollout {  Rollout.MAX }

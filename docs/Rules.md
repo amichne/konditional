@@ -480,7 +480,7 @@ val THEME by string(default = "light") {
 
 ### Tie-Breaking
 
-When multiple rules have the same specificity, rules are sorted by `note` text alphabetically:
+When multiple rules have the same specificity, rules are sorted by insertion order:
 
 ```kotlin
 rule {
@@ -493,7 +493,7 @@ rule {
     note("B - Second rule")
 } returns value2
 
-// Both have specificity 1, sorted by note: "A" before "B"
+// Both have specificity 1, sorted by insertion order: "A" before "B"
 ```
 
 ---

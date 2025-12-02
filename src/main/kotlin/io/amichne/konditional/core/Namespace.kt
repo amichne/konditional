@@ -1,6 +1,7 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.core.registry.NamespaceRegistry
+import org.jetbrains.annotations.TestOnly
 
 /**
  * Represents a feature flag namespace with isolated configuration and runtime isolation.
@@ -137,6 +138,8 @@ sealed class Namespace(
         // Add your organization's team modules here:
         // data object YourTeam : Domain("your-team")
     }
+    @TestOnly
+    abstract class TestNamespaceFacade(id: String) : Namespace(id)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

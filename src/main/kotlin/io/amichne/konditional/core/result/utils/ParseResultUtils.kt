@@ -74,12 +74,12 @@ inline fun <T> ParseResult<T>.getOrElse(onFailure: (ParseError) -> T): T = when 
 }
 
 /**
- * Returns true if this is a successful parse result.
+ * Returns true if this is a successful parseUnsafe result.
  */
 fun <T> ParseResult<T>.isSuccess(): Boolean = this is ParseResult.Success
 
 /**
- * Returns true if this is a failed parse result.
+ * Returns true if this is a failed parseUnsafe result.
  */
 fun <T> ParseResult<T>.isFailure(): Boolean = this is ParseResult.Failure
 

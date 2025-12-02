@@ -23,7 +23,7 @@ class RuleMatchingTest {
         platform: Platform = Platform.IOS,
         version: String = "1.0.0",
         idHex: String = "00000000000000000000000000000000",
-    ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
+    ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
 
     @Test
     fun `Given rule with no constraints, When matching, Then all contexts match`() {

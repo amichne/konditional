@@ -1,7 +1,7 @@
 package io.amichne.konditional.core.result
 
 /**
- * Domain-specific parse errors that make failure reasons explicit and type-safe.
+ * Domain-specific parseUnsafe errors that make failure reasons explicit and type-safe.
  *
  * Each error type contains structured information about what went wrong,
  * allowing consumers to handle errors precisely.
@@ -13,7 +13,7 @@ sealed interface ParseError {
     val message: String
 
     /**
-     * Failed to parse a hexadecimal identifier.
+     * Failed to parseUnsafe a hexadecimal identifier.
      */
     @ConsistentCopyVisibility
     data class InvalidHexId internal constructor(val input: String, override val message: String) : ParseError
@@ -25,7 +25,7 @@ sealed interface ParseError {
     data class InvalidRollout internal constructor(val value: Double, override val message: String) : ParseError
 
     /**
-     * Failed to parse a semantic version string.
+     * Failed to parseUnsafe a semantic version string.
      */
     @ConsistentCopyVisibility
     data class InvalidVersion internal constructor(val input: String, override val message: String) : ParseError

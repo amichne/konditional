@@ -83,7 +83,7 @@ class NamespaceSnapshotSerializer<M : Namespace>(
     /**
      * Deserializes JSON into a Configuration and loads it into the namespace.
      *
-     * Returns ParseResult for type-safe error handling following parse-don't-validate principles.
+     * Returns ParseResult for type-safe error handling following parseUnsafe-don't-validate principles.
      *
      * ## Error Handling
      *
@@ -105,7 +105,7 @@ class NamespaceSnapshotSerializer<M : Namespace>(
         return try {
             val serializable = snapshotAdapter.fromJson(json)
                 ?: return ParseResult.Failure(
-                    ParseError.InvalidJson("Failed to parse JSON for namespace '${module.id}': null result")
+                    ParseError.InvalidJson("Failed to parseUnsafe JSON for namespace '${module.id}': null result")
                 )
 
             // Parse the serializable snapshot into a Configuration

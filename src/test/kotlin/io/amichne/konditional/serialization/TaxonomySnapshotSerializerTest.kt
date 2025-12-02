@@ -26,7 +26,7 @@ import kotlin.test.assertTrue
  */
 class NamespaceSnapshotSerializerTest {
 
-    private object TestFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
+    private val TestFeatures = object : FeatureContainer<Namespace.Global>(Namespace.Global) {
         val boolFlag by boolean<Context>(default = false)
         val stringFlag by string<Context>(default = "default")
     }
@@ -47,7 +47,7 @@ class NamespaceSnapshotSerializerTest {
         locale: AppLocale = AppLocale.EN_US,
         platform: Platform = Platform.IOS,
         version: String = "1.0.0",
-    ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))
+    ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
 
     @Test
     fun `Given namespace with no flags, When serialized, Then produces JSON with empty flags array`() {
