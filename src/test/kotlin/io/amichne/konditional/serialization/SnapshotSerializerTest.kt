@@ -54,7 +54,7 @@ class SnapshotSerializerTest {
 
     private fun ctx(
         idHex: String,
-        locale: AppLocale = AppLocale.EN_US,
+        locale: AppLocale = AppLocale.UNITED_STATES,
         platform: Platform = Platform.IOS,
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
@@ -136,7 +136,7 @@ class SnapshotSerializerTest {
         val rule = Rule<Context>(
             rollout = Rollout.of(50.0),
             note = "TestNamespace rule",
-            locales = setOf(AppLocale.EN_US, AppLocale.FR_FR),
+            locales = setOf(AppLocale.UNITED_STATES, AppLocale.FRANCE),
             platforms = setOf(Platform.IOS, Platform.ANDROID),
             versionRange = FullyBound(Version(1, 0, 0), Version(2, 0, 0)),
         )
@@ -153,8 +153,8 @@ class SnapshotSerializerTest {
         assertNotNull(json)
         assertTrue(json.contains("\"rampUp\": 50.0"))
         assertTrue(json.contains("\"note\": \"TestNamespace rule\""))
-        assertTrue(json.contains("EN_US"))
-        assertTrue(json.contains("FR_FR"))
+        assertTrue(json.contains("UNITED_STATES"))
+        assertTrue(json.contains("FRANCE"))
         assertTrue(json.contains("IOS"))
         assertTrue(json.contains("ANDROID"))
         assertTrue(json.contains("MIN_AND_MAX_BOUND"))
@@ -330,7 +330,7 @@ class SnapshotSerializerTest {
                       },
                       "rampUp" : 50.0,
                       "note" : "TestNamespace rule",
-                      "locales" : ["EN_US", "FR_FR"],
+                      "locales" : ["UNITED_STATES", "FRANCE"],
                       "platforms" : ["IOS", "ANDROID"],
                       "versionRange" : {
                         "type" : "MIN_AND_MAX_BOUND",
@@ -362,7 +362,7 @@ class SnapshotSerializerTest {
         val rule = flag.values.first().rule
         assertEquals(50.0, rule.rollout.value)
         assertEquals("TestNamespace rule", rule.note)
-        assertEquals(setOf(AppLocale.EN_US, AppLocale.FR_FR), rule.baseEvaluable.locales)
+        assertEquals(setOf(AppLocale.UNITED_STATES, AppLocale.FRANCE), rule.baseEvaluable.locales)
         assertEquals(setOf(Platform.IOS, Platform.ANDROID), rule.baseEvaluable.platforms)
         assertIs<FullyBound>(rule.baseEvaluable.versionRange)
     }
@@ -468,7 +468,7 @@ class SnapshotSerializerTest {
         val rule = Rule<Context>(
             rollout = Rollout.of(75.0),
             note = "Complex rule",
-            locales = setOf(AppLocale.EN_US, AppLocale.ES_US),
+            locales = setOf(AppLocale.UNITED_STATES, AppLocale.UNITED_STATES),
             platforms = setOf(Platform.WEB),
             versionRange = FullyBound(Version(2, 0, 0), Version(3, 0, 0)),
         )
@@ -491,7 +491,7 @@ class SnapshotSerializerTest {
         val deserializedRule = deserializedFlag.values.first().rule
         assertEquals(75.0, deserializedRule.rollout.value)
         assertEquals("Complex rule", deserializedRule.note)
-        assertEquals(setOf(AppLocale.EN_US, AppLocale.ES_US), deserializedRule.baseEvaluable.locales)
+        assertEquals(setOf(AppLocale.UNITED_STATES, AppLocale.UNITED_STATES), deserializedRule.baseEvaluable.locales)
         assertEquals(setOf(Platform.WEB), deserializedRule.baseEvaluable.platforms)
 
         val versionRange = deserializedRule.baseEvaluable.versionRange

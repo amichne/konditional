@@ -114,7 +114,7 @@ class FeatureContainerTest {
         }
 
         val context = Context(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.WEB,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")

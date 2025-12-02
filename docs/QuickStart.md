@@ -56,7 +56,7 @@ import io.amichne.konditional.context.*
 
 // Create evaluation context
 val context = Context(
-    locale = AppLocale.EN_US,
+    locale = AppLocale.UNITED_STATES,
     platform = Platform.IOS,
     appVersion = Version.parse("2.1.0"),
     stableId = StableId.of("user-123")
@@ -140,7 +140,7 @@ object PremiumFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val ADVANCED_ANALYTICS by boolean(default = false) {
         rule {
             platforms(Platform.IOS)
-            locales(AppLocale.EN_US)
+            locales(AppLocale.UNITED_STATES)
             versions {
                 min(2, 0, 0)  // Version 2.0.0 or higher
             }

@@ -124,7 +124,7 @@ class ConcurrencyAttacksTest {
             executor.submit {
                 try {
                     val context = Context(
-                        locale = AppLocale.EN_US,
+                        locale = AppLocale.UNITED_STATES,
                         platform = if (i % 2 == 0) Platform.ANDROID else Platform.IOS,
                         appVersion = Version(1, 0, 0),
                         stableId = StableId.of(String.format("%032d", i))
@@ -148,7 +148,7 @@ class ConcurrencyAttacksTest {
 
         // Verify determinism: same context always gives same result
         val context1 = Context(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of(String.format("%032d", 0))
@@ -198,7 +198,7 @@ class ConcurrencyAttacksTest {
             executor.submit {
                 try {
                     val context = Context(
-                        locale = AppLocale.EN_US,
+                        locale = AppLocale.UNITED_STATES,
                         platform = Platform.WEB,
                         appVersion = Version(1, 0, 0),
                         stableId = StableId.of(String.format("%032d", i))
@@ -361,7 +361,7 @@ class ConcurrencyAttacksTest {
             executor.submit {
                 try {
                     val context = Context(
-                        locale = AppLocale.EN_US,
+                        locale = AppLocale.UNITED_STATES,
                         platform = Platform.entries[i % Platform.entries.size],
                         appVersion = Version(1, 0, 0),
                         stableId = StableId.of(String.format("%032d", i))
@@ -418,7 +418,7 @@ class ConcurrencyAttacksTest {
         }
 
         val mutableContext = MutableContext(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")

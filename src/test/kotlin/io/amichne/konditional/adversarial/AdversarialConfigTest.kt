@@ -154,7 +154,7 @@ class AdversarialConfigTest {
         // The sorting is stable but relies on note comparison as tiebreaker
         // If notes are null, order is implementation-dependent
         val androidContext = Context(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
@@ -172,14 +172,14 @@ class AdversarialConfigTest {
                 // Specificity 3: platform + locale + version
                 rule {
                     platforms(Platform.ANDROID)
-                    locales(AppLocale.EN_US)
+                    locales(AppLocale.UNITED_STATES)
                     versions {
                         min(1, 0, 0)
                     }
                 } returns true
 
                 // Specificity 1: platform only
-                // This rule never fires for Android EN_US v1+ users
+                // This rule never fires for Android UNITED_STATES v1+ users
                 // even if they intended it as a fallback
                 rule {
                     platforms(Platform.ANDROID)
@@ -188,7 +188,7 @@ class AdversarialConfigTest {
         }
 
         val context = Context(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
@@ -248,7 +248,7 @@ class AdversarialConfigTest {
         }
 
         val context = Context(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.WEB,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
@@ -391,7 +391,7 @@ class AdversarialConfigTest {
 
         // Bucketing is deterministic, so specific users always get same result
         val context = Context(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.WEB,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
@@ -408,7 +408,7 @@ class AdversarialConfigTest {
     @Test
     fun `changing salt completely re-randomizes user bucketing`() {
         val context = Context(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.WEB,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("ABCDEF1234567890ABCDEF1234567890")
@@ -455,10 +455,10 @@ class AdversarialConfigTest {
         }
 
         val contexts = listOf(
-            AppLocale.EN_US,
-            AppLocale.ES_US,
-            AppLocale.FR_FR,
-            AppLocale.HI_IN
+            AppLocale.UNITED_STATES,
+            AppLocale.UNITED_STATES,
+            AppLocale.FRANCE,
+            AppLocale.INDIA
         ).map { locale ->
             Context(
                 locale = locale,
@@ -499,7 +499,7 @@ class AdversarialConfigTest {
             Version(2, 0, 1) to false   // Above max
         ).map { (version, expected) ->
             Context(
-                locale = AppLocale.EN_US,
+                locale = AppLocale.UNITED_STATES,
                 platform = Platform.WEB,
                 appVersion = version,
                 stableId = StableId.of("12345678901234567890123456789012")
@@ -526,7 +526,7 @@ class AdversarialConfigTest {
         }
 
         val exactContext = Context.Core(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.WEB,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
@@ -612,7 +612,7 @@ class AdversarialConfigTest {
         }
 
         val context = Context(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.WEB,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
@@ -645,7 +645,7 @@ class AdversarialConfigTest {
         }
 
         val androidContext = Context(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
@@ -680,7 +680,7 @@ class AdversarialConfigTest {
         }
 
         val context = Context(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.WEB,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")

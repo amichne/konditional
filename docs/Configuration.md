@@ -179,7 +179,7 @@ Defines a targeting rule with a DSL configuration block:
 val MY_FLAG by boolean(default = false) {
     rule {
         platforms(Platform.IOS, Platform.ANDROID)
-        locales(AppLocale.EN_US)
+        locales(AppLocale.UNITED_STATES)
         rollout { 50.0 }
     } returns true
 }
@@ -245,14 +245,14 @@ Specify which locales the rule applies to:
 
 ```kotlin
 rule {
-    locales(AppLocale.EN_US, AppLocale.EN_CA, AppLocale.EN_GB)
+    locales(AppLocale.UNITED_STATES, AppLocale.CANADA, AppLocale.UNITED_KINGDOM)
 } returns englishValue
 ```
 
 **Common locales:**
-- `AppLocale.EN_US` (English - US)
-- `AppLocale.EN_GB` (English - UK)
-- `AppLocale.FR_FR` (French - France)
+- `AppLocale.UNITED_STATES` (English - US)
+- `AppLocale.UNITED_KINGDOM` (English - UK)
+- `AppLocale.FRANCE` (French - France)
 - `AppLocale.DE_DE` (German - Germany)
 - `AppLocale.ES_ES` (Spanish - Spain)
 - `AppLocale.JA_JP` (Japanese - Japan)
@@ -529,7 +529,7 @@ object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val PREMIUM_FEATURE by boolean(default = false) {
         rule {
             platforms(Platform.IOS, Platform.ANDROID)
-            locales(AppLocale.EN_US, AppLocale.EN_CA)
+            locales(AppLocale.UNITED_STATES, AppLocale.CANADA)
             versions {
                 min(2, 0, 0)
                 max(3, 0, 0)

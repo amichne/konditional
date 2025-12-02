@@ -15,7 +15,7 @@ import io.amichne.konditional.rules.evaluable.Evaluable
  * Example usage:
  * ```kotlin
  * rule {
- *     locales(AppLocale.EN_US, AppLocale.EN_CA)
+ *     locales(AppLocale.UNITED_STATES, AppLocale.CANADA)
  *     platforms(Platform.IOS, Platform.ANDROID)
  *     versions {
  *         min(1, 2, 0)

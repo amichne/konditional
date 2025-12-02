@@ -12,7 +12,7 @@ Every feature flag evaluation requires a `Context` instance. The context represe
 import io.amichne.konditional.context.*
 
 val context = Context(
-    locale = AppLocale.EN_US,
+    locale = AppLocale.UNITED_STATES,
     platform = Platform.IOS,
     appVersion = Version.parse("2.1.0"),
     stableId = StableId.of("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4")
@@ -61,7 +61,7 @@ The simplest way to create a context is using the companion object factory:
 
 ```kotlin
 val context = Context(
-    locale = AppLocale.EN_US,
+    locale = AppLocale.UNITED_STATES,
     platform = Platform.IOS,
     appVersion = Version.parse("2.1.0"),
     stableId = StableId.of("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4")
@@ -83,7 +83,7 @@ data class AppContext(
 ) : Context
 
 val context = AppContext(
-    locale = AppLocale.EN_US,
+    locale = AppLocale.UNITED_STATES,
     platform = Platform.IOS,
     appVersion = Version.parse("2.1.0"),
     stableId = StableId.of("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4")
@@ -141,17 +141,17 @@ The `AppLocale` enum represents language and regional settings:
 
 ```kotlin
 enum class AppLocale {
-    EN_US,  // English (United States)
-    ES_US,  // Spanish (United States)
-    EN_CA,  // English (Canada)
-    HI_IN   // Hindi (India)
+    UNITED_STATES,  // English (United States)
+    UNITED_STATES,  // Spanish (United States)
+    CANADA,  // English (Canada)
+    INDIA   // Hindi (India)
 }
 ```
 
 **Usage:**
 ```kotlin
 val context = Context(
-    locale = AppLocale.EN_US,
+    locale = AppLocale.UNITED_STATES,
     // ... other properties
 )
 ```
@@ -160,12 +160,12 @@ val context = Context(
 ```kotlin
 // Multiple locales
 rule {
-    locales(AppLocale.EN_US, AppLocale.EN_CA)
+    locales(AppLocale.UNITED_STATES, AppLocale.CANADA)
 } returns englishValue
 
 // Single locale
 rule {
-    locales(AppLocale.HI_IN)
+    locales(AppLocale.INDIA)
 } returns hindiValue
 ```
 
@@ -551,7 +551,7 @@ object EnterpriseFeatures : FeatureContainer<Namespace.Global>(Namespace.Global)
 ```kotlin
 // Base context
 val baseContext: Context = Context(
-    locale = AppLocale.EN_US,
+    locale = AppLocale.UNITED_STATES,
     platform = Platform.WEB,
     appVersion = Version.parse("2.0.0"),
     stableId = StableId.of("abc123def456abc123def456abc123de")
@@ -571,7 +571,7 @@ Extended contexts can evaluate base context features:
 ```kotlin
 // Enterprise context (extends Context)
 val enterpriseContext: EnterpriseContext = EnterpriseContext(
-    locale = AppLocale.EN_US,
+    locale = AppLocale.UNITED_STATES,
     platform = Platform.WEB,
     appVersion = Version.parse("2.0.0"),
     stableId = StableId.of("abc123def456abc123def456abc123de"),
@@ -640,7 +640,7 @@ object ContextFactory {
         )
 
     fun forTesting(
-        locale: AppLocale = AppLocale.EN_US,
+        locale: AppLocale = AppLocale.UNITED_STATES,
         platform: Platform = Platform.WEB,
         version: String = "1.0.0",
         userId: String = "test-user"
@@ -660,7 +660,7 @@ For complex contexts with many fields, consider a builder pattern:
 
 ```kotlin
 class EnterpriseContextBuilder {
-    private var locale: AppLocale = AppLocale.EN_US
+    private var locale: AppLocale = AppLocale.UNITED_STATES
     private var platform: Platform = Platform.WEB
     private var appVersion: Version = Version(1, 0, 0)
     private var stableId: StableId? = null
@@ -690,7 +690,7 @@ class EnterpriseContextBuilder {
 
 // Usage
 val context = EnterpriseContextBuilder()
-    .locale(AppLocale.EN_US)
+    .locale(AppLocale.UNITED_STATES)
     .platform(Platform.WEB)
     .version(Version.parse("2.0.0"))
     .stableId("abc123def456abc123def456abc123de")
@@ -707,7 +707,7 @@ Create reusable test contexts to reduce boilerplate:
 ```kotlin
 object TestContexts {
     val default = Context(
-        locale = AppLocale.EN_US,
+        locale = AppLocale.UNITED_STATES,
         platform = Platform.WEB,
         appVersion = Version(1, 0, 0),
         stableId = StableId.of("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
@@ -827,7 +827,7 @@ enterpriseContext.evaluate(EnterpriseFeatures.ADVANCED_ANALYTICS)  // OK
 import io.amichne.konditional.context.*
 
 val context = Context(
-    locale = AppLocale.EN_US,
+    locale = AppLocale.UNITED_STATES,
     platform = Platform.IOS,
     appVersion = Version.parse("2.1.0"),
     stableId = StableId.of("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4")
@@ -853,7 +853,7 @@ enum class SubscriptionTier { BASIC, PREMIUM, ENTERPRISE }
 enum class UserRole { EDITOR, ADMIN, OWNER }
 
 val context = EnterpriseContext(
-    locale = AppLocale.EN_US,
+    locale = AppLocale.UNITED_STATES,
     platform = Platform.WEB,
     appVersion = Version.parse("2.0.0"),
     stableId = StableId.of("abc123def456abc123def456abc123de"),
@@ -870,21 +870,21 @@ val hasAnalytics = context.evaluate(EnterpriseFeatures.advanced_analytics)
 ```kotlin
 object PlatformContext {
     fun forIOS(userId: String, version: String) = Context(
-        locale = AppLocale.EN_US,
+        locale = AppLocale.UNITED_STATES,
         platform = Platform.IOS,
         appVersion = Version.parse(version),
         stableId = StableId.of(userId)
     )
 
     fun forAndroid(userId: String, version: String) = Context(
-        locale = AppLocale.EN_US,
+        locale = AppLocale.UNITED_STATES,
         platform = Platform.ANDROID,
         appVersion = Version.parse(version),
         stableId = StableId.of(userId)
     )
 
     fun forWeb(sessionId: String, version: String = "1.0.0") = Context(
-        locale = AppLocale.EN_US,
+        locale = AppLocale.UNITED_STATES,
         platform = Platform.WEB,
         appVersion = Version.parse(version),
         stableId = StableId.of(sessionId)
@@ -901,7 +901,7 @@ val webContext = PlatformContext.forWeb("session-abc")
 ```kotlin
 class FeatureFlagTest {
     private fun ctx(
-        locale: AppLocale = AppLocale.EN_US,
+        locale: AppLocale = AppLocale.UNITED_STATES,
         platform: Platform = Platform.IOS,
         version: String = "1.0.0",
         idHex: String = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"

@@ -46,6 +46,19 @@ tasks.test {
 java {
     withSourcesJar()
     withJavadocJar()
+
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+tasks.withType<JavaCompile> {
+    sourceCompatibility = "17"
+    targetCompatibility = "17"
+    options.encoding = "UTF-8"
+    options.isFork = true
+    options.isIncremental = true // avoid re-compilation of unchanged modules
+    options.compilerArgs.add("-parameters") // https://github.com/spring-projects/spring-framework/issues/31643
 }
 
 publishing {

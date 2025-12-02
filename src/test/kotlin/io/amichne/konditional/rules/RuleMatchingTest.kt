@@ -19,7 +19,7 @@ import kotlin.test.assertTrue
  */
 class RuleMatchingTest {
     private fun ctx(
-        locale: AppLocale = AppLocale.EN_US,
+        locale: AppLocale = AppLocale.UNITED_STATES,
         platform: Platform = Platform.IOS,
         version: String = "1.0.0",
         idHex: String = "00000000000000000000000000000000",
@@ -35,7 +35,7 @@ class RuleMatchingTest {
         )
 
         assertTrue(rule.matches(ctx()))
-        assertTrue(rule.matches(ctx(locale = AppLocale.ES_US)))
+        assertTrue(rule.matches(ctx(locale = AppLocale.UNITED_STATES)))
         assertTrue(rule.matches(ctx(platform = Platform.ANDROID)))
         assertTrue(rule.matches(ctx(version = "99.99.99")))
     }
@@ -72,28 +72,28 @@ class RuleMatchingTest {
     fun `Given rule with single locale, When matching, Then only that locale matches`() {
         val rule = Rule<Context>(
             rollout = Rollout.MAX,
-            locales = setOf(AppLocale.EN_US),
+            locales = setOf(AppLocale.UNITED_STATES),
             platforms = emptySet(),
             versionRange = Unbounded(),
         )
 
-        assertTrue(rule.matches(ctx(locale = AppLocale.EN_US)))
-        assertFalse(rule.matches(ctx(locale = AppLocale.ES_US)))
-        assertFalse(rule.matches(ctx(locale = AppLocale.HI_IN)))
+        assertTrue(rule.matches(ctx(locale = AppLocale.UNITED_STATES)))
+        assertFalse(rule.matches(ctx(locale = AppLocale.UNITED_STATES)))
+        assertFalse(rule.matches(ctx(locale = AppLocale.INDIA)))
     }
 
     @Test
     fun `Given rule with multiple locales, When matching, Then any of those locales match`() {
         val rule = Rule<Context>(
             rollout = Rollout.MAX,
-            locales = setOf(AppLocale.EN_US, AppLocale.EN_CA),
+            locales = setOf(AppLocale.UNITED_STATES, AppLocale.CANADA),
             platforms = emptySet(),
             versionRange = Unbounded(),
         )
 
-        assertTrue(rule.matches(ctx(locale = AppLocale.EN_US)))
-        assertTrue(rule.matches(ctx(locale = AppLocale.EN_CA)))
-        assertFalse(rule.matches(ctx(locale = AppLocale.ES_US)))
+        assertTrue(rule.matches(ctx(locale = AppLocale.UNITED_STATES)))
+        assertTrue(rule.matches(ctx(locale = AppLocale.CANADA)))
+        assertFalse(rule.matches(ctx(locale = AppLocale.UNITED_STATES)))
     }
 
     @Test
@@ -119,7 +119,7 @@ class RuleMatchingTest {
     fun `Given rule with combined constraints, When matching, Then all constraints must match`() {
         val rule = Rule<Context>(
             rollout = Rollout.MAX,
-            locales = setOf(AppLocale.EN_US, AppLocale.EN_CA),
+            locales = setOf(AppLocale.UNITED_STATES, AppLocale.CANADA),
             platforms = setOf(Platform.IOS),
             versionRange = FullyBound(
                 min = Version(2, 0, 0),
@@ -128,16 +128,16 @@ class RuleMatchingTest {
         )
 
         // All constraints match
-        assertTrue(rule.matches(ctx(locale = AppLocale.EN_US, platform = Platform.IOS, version = "2.5.0")))
+        assertTrue(rule.matches(ctx(locale = AppLocale.UNITED_STATES, platform = Platform.IOS, version = "2.5.0")))
 
         // Wrong locale
-        assertFalse(rule.matches(ctx(locale = AppLocale.ES_US, platform = Platform.IOS, version = "2.5.0")))
+        assertFalse(rule.matches(ctx(locale = AppLocale.UNITED_STATES, platform = Platform.IOS, version = "2.5.0")))
 
         // Wrong platform
-        assertFalse(rule.matches(ctx(locale = AppLocale.EN_US, platform = Platform.ANDROID, version = "2.5.0")))
+        assertFalse(rule.matches(ctx(locale = AppLocale.UNITED_STATES, platform = Platform.ANDROID, version = "2.5.0")))
 
         // Wrong version
-        assertFalse(rule.matches(ctx(locale = AppLocale.EN_US, platform = Platform.IOS, version = "1.5.0")))
+        assertFalse(rule.matches(ctx(locale = AppLocale.UNITED_STATES, platform = Platform.IOS, version = "1.5.0")))
     }
 
     @Test
@@ -158,7 +158,7 @@ class RuleMatchingTest {
 
         val ruleLocale = Rule<Context>(
             rollout = Rollout.MAX,
-            locales = setOf(AppLocale.EN_US),
+            locales = setOf(AppLocale.UNITED_STATES),
             platforms = emptySet(),
             versionRange = Unbounded(),
         )
@@ -172,14 +172,14 @@ class RuleMatchingTest {
 
         val rulePlatformAndLocale = Rule<Context>(
             rollout = Rollout.MAX,
-            locales = setOf(AppLocale.EN_US),
+            locales = setOf(AppLocale.UNITED_STATES),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded(),
         )
 
         val ruleAll = Rule<Context>(
             rollout = Rollout.MAX,
-            locales = setOf(AppLocale.EN_US, AppLocale.EN_CA),
+            locales = setOf(AppLocale.UNITED_STATES, AppLocale.CANADA),
             platforms = setOf(Platform.IOS, Platform.ANDROID),
             versionRange = FullyBound(Version(1, 0, 0), Version(2, 0, 0)),
         )
@@ -219,14 +219,14 @@ class RuleMatchingTest {
 
         val ruleOneLocale = Rule<Context>(
             rollout = Rollout.MAX,
-            locales = setOf(AppLocale.EN_US),
+            locales = setOf(AppLocale.UNITED_STATES),
             platforms = emptySet(),
             versionRange = Unbounded(),
         )
 
         val ruleTwoLocales = Rule<Context>(
             rollout = Rollout.MAX,
-            locales = setOf(AppLocale.EN_US, AppLocale.EN_CA),
+            locales = setOf(AppLocale.UNITED_STATES, AppLocale.CANADA),
             platforms = emptySet(),
             versionRange = Unbounded(),
         )
@@ -244,7 +244,7 @@ class RuleMatchingTest {
     fun `Given rules with notes, When comparing specificity, Then notes serve as tiebreaker`() {
         val ruleA = Rule<Context>(
             rollout = Rollout.MAX,
-            locales = setOf(AppLocale.EN_US),
+            locales = setOf(AppLocale.UNITED_STATES),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded(),
             note = "Rule A",
@@ -252,7 +252,7 @@ class RuleMatchingTest {
 
         val ruleB = Rule<Context>(
             rollout = Rollout.MAX,
-            locales = setOf(AppLocale.EN_US),
+            locales = setOf(AppLocale.UNITED_STATES),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded(),
             note = "Rule B",

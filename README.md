@@ -38,7 +38,7 @@ object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
 
 // Evaluate with context
 val context = Context(
-    locale = AppLocale.EN_US,
+    locale = AppLocale.UNITED_STATES,
     platform = Platform.IOS,
     appVersion = Version.parse("2.1.0"),
     stableId = StableId.of("user-123")
@@ -140,7 +140,7 @@ Rules compose naturally. All criteria must match for a rule to apply:
 val PREMIUM_FEATURE by boolean(default = false) {
     rule {
         platforms(Platform.IOS, Platform.ANDROID)  // Mobile only
-        locales(AppLocale.EN_US)                   // English US
+        locales(AppLocale.UNITED_STATES)                   // English US
         versions {
             min(2, 0, 0)                           // Version >= 2.0.0
         }
@@ -155,7 +155,7 @@ Rules are automatically sorted by specificity—more specific rules win:
 // Specificity = 2 (platform + locale) → evaluated first
 rule {
     platforms(Platform.IOS)
-    locales(AppLocale.EN_US)
+    locales(AppLocale.UNITED_STATES)
 } returns "specific"
 
 // Specificity = 1 (platform only) → evaluated second
@@ -277,7 +277,7 @@ val MY_FLAG by boolean(default = false) {
 **3. Evaluate**:
 ```kotlin
 val context = Context(
-    locale = AppLocale.EN_US,
+    locale = AppLocale.UNITED_STATES,
     platform = Platform.IOS,
     appVersion = Version.parse("1.0.0"),
     stableId = StableId.of("user-id")

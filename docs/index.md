@@ -32,7 +32,7 @@ object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
 
 // Evaluate
 val context = Context(
-    locale = AppLocale.EN_US,
+    locale = AppLocale.UNITED_STATES,
     platform = Platform.IOS,
     appVersion = Version.parse("2.1.0"),
     stableId = StableId.of("user-123")
@@ -71,7 +71,7 @@ Context provides the evaluation environment. All evaluations require four standa
 
 ```kotlin
 data class Context(
-    val locale: AppLocale,       // User's locale (EN_US, FR_FR, etc.)
+    val locale: AppLocale,       // User's locale (UNITED_STATES, FRANCE, etc.)
     val platform: Platform,      // Platform (IOS, ANDROID, WEB)
     val appVersion: Version,     // Semantic version (2.1.0)
     val stableId: StableId       // Stable user ID for bucketing
@@ -100,7 +100,7 @@ Rules define targeting criteria. All criteria must match for a rule to apply:
 ```kotlin
 rule {
     platforms(Platform.IOS, Platform.ANDROID)  // Must be mobile
-    locales(AppLocale.EN_US)                   // AND English US
+    locales(AppLocale.UNITED_STATES)                   // AND English US
     versions {
         min(2, 0, 0)                           // AND version >= 2.0.0
     }
@@ -114,7 +114,7 @@ Rules are automatically sorted by specificity (most specific first):
 // Specificity = 2 (platform + locale) - evaluated first
 rule {
     platforms(Platform.IOS)
-    locales(AppLocale.EN_US)
+    locales(AppLocale.UNITED_STATES)
 } returns "specific-value"
 
 // Specificity = 1 (platform only) - evaluated second
@@ -220,7 +220,7 @@ object MyFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
         // Rule with multiple criteria
         rule {
             platforms(Platform.IOS)
-            locales(AppLocale.EN_US, AppLocale.EN_CA)
+            locales(AppLocale.UNITED_STATES, AppLocale.CANADA)
             versions {
                 min(2, 0, 0)
                 max(3, 0, 0)

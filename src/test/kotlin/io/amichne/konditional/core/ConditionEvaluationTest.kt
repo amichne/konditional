@@ -26,7 +26,7 @@ class ConditionEvaluationTest {
 
     private fun ctx(
         idHex: String,
-        locale: AppLocale = AppLocale.EN_US,
+        locale: AppLocale = AppLocale.UNITED_STATES,
         platform: Platform = Platform.IOS,
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
@@ -47,7 +47,7 @@ class ConditionEvaluationTest {
     fun `Given condition with one matching rule, When evaluating, Then returns rule value`() {
         val rule = Rule<Context>(
             rollout = Rollout.MAX,
-            locales = setOf(AppLocale.EN_US),
+            locales = setOf(AppLocale.UNITED_STATES),
             platforms = emptySet(),
             versionRange = Unbounded(),
         )
@@ -58,10 +58,10 @@ class ConditionEvaluationTest {
             defaultValue = "default",
         )
 
-        val matchingResult = condition.evaluate(ctx("22222222222222222222222222222222", locale = AppLocale.EN_US))
+        val matchingResult = condition.evaluate(ctx("22222222222222222222222222222222", locale = AppLocale.UNITED_STATES))
         assertEquals("en-us-value", matchingResult)
 
-        val nonMatchingResult = condition.evaluate(ctx("33333333333333333333333333333333", locale = AppLocale.ES_US))
+        val nonMatchingResult = condition.evaluate(ctx("33333333333333333333333333333333", locale = AppLocale.FRANCE))
         assertEquals("default", nonMatchingResult)
     }
 
@@ -83,7 +83,7 @@ class ConditionEvaluationTest {
 
         val platformAndLocaleRule = Rule<Context>(
             rollout = Rollout.MAX,
-            locales = setOf(AppLocale.EN_US),
+            locales = setOf(AppLocale.MEXICO),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded(),
         )
@@ -100,19 +100,19 @@ class ConditionEvaluationTest {
 
         // Most specific rule should match
         val mostSpecificResult = condition.evaluate(
-            ctx("44444444444444444444444444444444", locale = AppLocale.EN_US, platform = Platform.IOS)
+            ctx("44444444444444444444444444444444", locale = AppLocale.MEXICO, platform = Platform.IOS)
         )
         assertEquals("ios-en-us", mostSpecificResult)
 
         // Less specific rule should match when more specific doesn't
         val lessSpecificResult = condition.evaluate(
-            ctx("55555555555555555555555555555555", locale = AppLocale.ES_US, platform = Platform.IOS)
+            ctx("55555555555555555555555555555555", locale = AppLocale.UNITED_STATES, platform = Platform.IOS)
         )
         assertEquals("ios", lessSpecificResult)
 
         // General rule should match when others don't
         val generalResult = condition.evaluate(
-            ctx("66666666666666666666666666666666", locale = AppLocale.ES_US, platform = Platform.ANDROID)
+            ctx("66666666666666666666666666666666", locale = AppLocale.UNITED_STATES, platform = Platform.ANDROID)
         )
         assertEquals("general", generalResult)
     }
@@ -121,7 +121,7 @@ class ConditionEvaluationTest {
     fun `Given rules with same specificity, When evaluating, Then insertion order is used as tiebreaker`() {
         val ruleA = Rule<Context>(
             rollout = Rollout.MAX,
-            locales = setOf(AppLocale.EN_US),
+            locales = setOf(AppLocale.UNITED_STATES),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded(),
             note = "rule-a",
@@ -129,7 +129,7 @@ class ConditionEvaluationTest {
 
         val ruleB = Rule<Context>(
             rollout = Rollout.MAX,
-            locales = setOf(AppLocale.EN_US),
+            locales = setOf(AppLocale.UNITED_STATES),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded(),
             note = "rule-b",
@@ -151,7 +151,7 @@ class ConditionEvaluationTest {
         val result = condition.evaluate(
             ctx(
                 "77777777777777777777777777777777",
-                locale = AppLocale.EN_US,
+                locale = AppLocale.UNITED_STATES,
                 platform = Platform.IOS
             )
         )
@@ -335,7 +335,7 @@ class ConditionEvaluationTest {
     fun `Given rule matching but user not in bucket, When evaluating, Then continues to next rule`() {
         val highSpecificityLowRampup = Rule<Context>(
             rollout = Rollout.of(1.0), // Very low ramp-up
-            locales = setOf(AppLocale.EN_US),
+            locales = setOf(AppLocale.UNITED_STATES),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded(),
         )
@@ -363,7 +363,7 @@ class ConditionEvaluationTest {
 
         repeat(sampleSize) { i ->
             val id = "%032x".format(i)
-            val result = condition.evaluate(ctx(id, locale = AppLocale.EN_US, platform = Platform.IOS))
+            val result = condition.evaluate(ctx(id, locale = AppLocale.UNITED_STATES, platform = Platform.IOS))
             when (result) {
                 "specific" -> specificCount++
                 "fallback" -> fallbackRuleCount++
@@ -391,7 +391,7 @@ class ConditionEvaluationTest {
 
         val specific = Rule<Context>(
             rollout = Rollout.MAX,
-            locales = setOf(AppLocale.EN_US),
+            locales = setOf(AppLocale.UNITED_STATES),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded(),
             note = "specific",
@@ -412,7 +412,7 @@ class ConditionEvaluationTest {
         val result = condition.evaluate(
             ctx(
                 "dddddddddddddddddddddddddddddddd",
-                locale = AppLocale.EN_US,
+                locale = AppLocale.UNITED_STATES,
                 platform = Platform.IOS
             )
         )

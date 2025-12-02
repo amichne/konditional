@@ -96,7 +96,7 @@ interface RuleScope<C : Context> {
 ```kotlin
 rule {
     platforms(Platform.IOS, Platform.ANDROID)
-    locales(AppLocale.EN_US, AppLocale.EN_CA)
+    locales(AppLocale.UNITED_STATES, AppLocale.CANADA)
     versions {
         min(2, 0, 0)
         max(3, 0, 0)
@@ -147,17 +147,17 @@ Target users by language and region using `locales()`:
 ```kotlin
 // Single locale
 rule {
-    locales(AppLocale.EN_US)
+    locales(AppLocale.UNITED_STATES)
 } returns "us-english"
 
 // Multiple locales
 rule {
-    locales(AppLocale.EN_US, AppLocale.EN_CA, AppLocale.EN_GB)
+    locales(AppLocale.UNITED_STATES, AppLocale.CANADA, AppLocale.UNITED_KINGDOM)
 } returns "english-value"
 ```
 
 **Available locales:**
-`EN_US`, `EN_CA`, `EN_GB`, `FR_FR`, `DE_DE`, `ES_US`, `ES_ES`, `IT_IT`, `PT_BR`, `JA_JP`, `ZH_CN`, `KO_KR`, `HI_IN`, `AR_SA`, `RU_RU`, `NL_NL`, `SV_SE`, `PL_PL`, `TR_TR`, `TH_TH`
+`UNITED_STATES`, `CANADA`, `UNITED_KINGDOM`, `FRANCE`, `DE_DE`, `UNITED_STATES`, `ES_ES`, `IT_IT`, `PT_BR`, `JA_JP`, `ZH_CN`, `KO_KR`, `INDIA`, `AR_SA`, `RU_RU`, `NL_NL`, `SV_SE`, `PL_PL`, `TR_TR`, `TH_TH`
 
 **Empty means all**: Omitting `locales()` matches all locales.
 
@@ -168,7 +168,7 @@ Combine multiple criteria - **all must match**:
 ```kotlin
 rule {
     platforms(Platform.IOS, Platform.ANDROID)  // Must be iOS or Android
-    locales(AppLocale.EN_US)                   // AND must be US English
+    locales(AppLocale.UNITED_STATES)                   // AND must be US English
     rollout { 50.0 }                           // AND must be in 50% bucket
 } returns value
 ```
@@ -400,7 +400,7 @@ graph TD
     subgraph "Specificity Rankings"
         S0["Specificity 0<br/>rule { } returns value"]
         S1["Specificity 1<br/>platforms(IOS)"]
-        S2["Specificity 2<br/>platforms(IOS) + locales(EN_US)"]
+        S2["Specificity 2<br/>platforms(IOS) + locales(UNITED_STATES)"]
         S3["Specificity 3<br/>platforms + locales + versions"]
         S4["Specificity 4+<br/>All base + extension"]
     end
@@ -432,20 +432,20 @@ rule {
 // Specificity = 2 (two constraints)
 rule {
     platforms(Platform.IOS)
-    locales(AppLocale.EN_US)
+    locales(AppLocale.UNITED_STATES)
 } returns "ios-us-value"
 
 // Specificity = 3 (three constraints)
 rule {
     platforms(Platform.IOS)
-    locales(AppLocale.EN_US)
+    locales(AppLocale.UNITED_STATES)
     versions { min(2, 0, 0) }
 } returns "ios-us-v2-value"
 
 // Specificity = 4 (base + extension)
 rule {
     platforms(Platform.IOS)
-    locales(AppLocale.EN_US)
+    locales(AppLocale.UNITED_STATES)
     versions { min(2, 0, 0) }
     extension {
         object : Evaluable<EnterpriseContext> {
@@ -464,7 +464,7 @@ val THEME by string(default = "light") {
     // Specificity = 2, evaluated FIRST
     rule {
         platforms(Platform.IOS)
-        locales(AppLocale.EN_US)
+        locales(AppLocale.UNITED_STATES)
     } returns "dark-us-ios"
 
     // Specificity = 1, evaluated SECOND
@@ -473,8 +473,8 @@ val THEME by string(default = "light") {
     } returns "dark-ios"
 }
 
-// iOS + EN_US → "dark-us-ios" (most specific wins)
-// iOS + FR_FR → "dark-ios" (only second rule matches)
+// iOS + UNITED_STATES → "dark-us-ios" (most specific wins)
+// iOS + FRANCE → "dark-ios" (only second rule matches)
 // Android + * → "light" (default, no rules match)
 ```
 
@@ -669,7 +669,7 @@ rule.specificity() =
 rule {
     // Base targeting (specificity = 2)
     platforms(Platform.WEB)
-    locales(AppLocale.EN_US)
+    locales(AppLocale.UNITED_STATES)
 
     // Custom extension (specificity = 1)
     extension {
@@ -688,7 +688,7 @@ rule {
 
 This rule matches only when:
 1. Platform is WEB **AND**
-2. Locale is EN_US **AND**
+2. Locale is UNITED_STATES **AND**
 3. Organization ID starts with "ent-" **AND**
 4. User is in the 50% rollout bucket
 
@@ -824,7 +824,7 @@ For probabilistic rollouts, test with multiple stable IDs:
 fun `50 percent rollout distributes approximately evenly`() {
     val enabled = (1..1000).count { i ->
         val ctx = Context(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.IOS,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("user-$i")
@@ -867,7 +867,7 @@ fun `enterprise iOS users on v2 get premium endpoint`() {
 fun `most specific rule wins when multiple match`() {
     val context = Context(
         platform = Platform.IOS,
-        locale = AppLocale.EN_US,
+        locale = AppLocale.UNITED_STATES,
         appVersion = Version(1, 0, 0),
         stableId = StableId.of("test-user")
     )
@@ -886,7 +886,7 @@ fun `most specific rule wins when multiple match`() {
 fun `rollout is deterministic for same user`() {
     val context = Context(
         platform = Platform.IOS,
-        locale = AppLocale.EN_US,
+        locale = AppLocale.UNITED_STATES,
         appVersion = Version(1, 0, 0),
         stableId = StableId.of("user-123")
     )

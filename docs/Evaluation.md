@@ -257,7 +257,7 @@ Standard targeting criteria from `BaseEvaluable`:
 ```kotlin
 rule {
     platforms(Platform.IOS, Platform.ANDROID)  // Must be iOS OR Android
-    locales(AppLocale.EN_US, AppLocale.EN_CA)  // AND English (US or Canada)
+    locales(AppLocale.UNITED_STATES, AppLocale.CANADA)  // AND English (US or Canada)
     versions {
         min(2, 0, 0)  // AND version >= 2.0.0
     }
@@ -297,7 +297,7 @@ After all criteria match, rollout determines final eligibility:
 ```kotlin
 rule {
     platforms(Platform.IOS)  // Must match
-    locales(AppLocale.EN_US) // Must match
+    locales(AppLocale.UNITED_STATES) // Must match
     rollout = Rollout.of(25.0)  // AND must be in 25% bucket
 }.returns(true)
 ```
@@ -339,20 +339,20 @@ rule {
 // Specificity = 2 (platform + locale)
 rule {
     platforms(Platform.IOS)
-    locales(AppLocale.EN_US)
+    locales(AppLocale.UNITED_STATES)
 }.returns(iosEnglishValue)
 
 // Specificity = 3 (platform + locale + version)
 rule {
     platforms(Platform.IOS)
-    locales(AppLocale.EN_US)
+    locales(AppLocale.UNITED_STATES)
     versions { min(2, 0, 0) }
 }.returns(iosEnglishV2Value)
 
 // Specificity = 4 (platform + locale + version + extension)
 rule {
     platforms(Platform.IOS)
-    locales(AppLocale.EN_US)
+    locales(AppLocale.UNITED_STATES)
     versions { min(2, 0, 0) }
     extension {
         object : Evaluable<Context>() {
@@ -367,13 +367,13 @@ rule {
 
 ```mermaid
 flowchart TD
-    Context[Context: iOS, EN_US, v2.1.0] --> Eval[Evaluation]
+    Context[Context: iOS, UNITED_STATES, v2.1.0] --> Eval[Evaluation]
 
-    Eval --> Rule1["Rule 1: Specificity = 3<br/>platforms(IOS)<br/>locales(EN_US)<br/>versions >= 2.0.0<br/>→ 'specific'"]
+    Eval --> Rule1["Rule 1: Specificity = 3<br/>platforms(IOS)<br/>locales(UNITED_STATES)<br/>versions >= 2.0.0<br/>→ 'specific'"]
 
     Rule1 -->|Matches| Return1[Return 'specific']
 
-    Rule1 -->|Doesn't Match| Rule2["Rule 2: Specificity = 2<br/>platforms(IOS)<br/>locales(EN_US)<br/>→ 'medium'"]
+    Rule1 -->|Doesn't Match| Rule2["Rule 2: Specificity = 2<br/>platforms(IOS)<br/>locales(UNITED_STATES)<br/>→ 'medium'"]
 
     Rule2 -->|Matches| Return2[Return 'medium']
 
@@ -726,10 +726,10 @@ Test that rules evaluate correctly for different contexts:
 
 ```kotlin
 @Test
-fun `iOS users in EN_US locale get dark mode`() {
+fun `iOS users in UNITED_STATES locale get dark mode`() {
     // Arrange
     val context = Context(
-        locale = AppLocale.EN_US,
+        locale = AppLocale.UNITED_STATES,
         platform = Platform.IOS,
         appVersion = Version.parse("2.1.0"),
         stableId = StableId.of("test-user")
@@ -745,7 +745,7 @@ fun `iOS users in EN_US locale get dark mode`() {
 @Test
 fun `Android users get default value`() {
     val context = Context(
-        locale = AppLocale.EN_US,
+        locale = AppLocale.UNITED_STATES,
         platform = Platform.ANDROID,
         appVersion = Version.parse("2.1.0"),
         stableId = StableId.of("test-user")
@@ -768,7 +768,7 @@ fun `50 percent rollout distributes correctly`() {
     val sampleSize = 10_000
     val enabledCount = (0 until sampleSize).count { i ->
         val context = Context(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.IOS,
             appVersion = Version.parse("1.0.0"),
             stableId = StableId.of("user-$i")
@@ -790,7 +790,7 @@ Verify same context always returns same value:
 @Test
 fun `evaluation is deterministic`() {
     val context = Context(
-        locale = AppLocale.EN_US,
+        locale = AppLocale.UNITED_STATES,
         platform = Platform.IOS,
         appVersion = Version.parse("2.1.0"),
         stableId = StableId.of("user-123")
@@ -823,14 +823,14 @@ fun `more specific rules override general rules`() {
             // Specificity = 2 (specific)
             rule {
                 platforms(Platform.IOS)
-                locales(AppLocale.EN_US)
+                locales(AppLocale.UNITED_STATES)
             } returns "ios-english-specific"
         }
     }
 
     // Context matches both rules
     val context = Context(
-        locale = AppLocale.EN_US,
+        locale = AppLocale.UNITED_STATES,
         platform = Platform.IOS,
         appVersion = Version.parse("1.0.0"),
         stableId = StableId.of("user-123")
@@ -894,7 +894,7 @@ val VALUE by string(default = "default") {
     // Most specific (evaluated first)
     rule {
         platforms(Platform.IOS)
-        locales(AppLocale.EN_US)
+        locales(AppLocale.UNITED_STATES)
         versions { min(2, 0, 0) }
     } returns "ios-en-v2"
 
@@ -932,7 +932,7 @@ fun `rollout distribution is balanced`() {
     val sampleSize = 5000
     val enabledCount = (0 until sampleSize).count { i ->
         val ctx = Context(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.IOS,
             appVersion = Version.parse("1.0.0"),
             stableId = StableId.of("user-$i")
@@ -978,7 +978,7 @@ object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
 
 // Evaluation
 val context = Context(
-    locale = AppLocale.EN_US,
+    locale = AppLocale.UNITED_STATES,
     platform = Platform.IOS,
     appVersion = Version.parse("2.1.0"),
     stableId = StableId.of("user-abc123")
@@ -1090,7 +1090,7 @@ object PremiumFeatures : FeatureContainer<Namespace.Payments>(
 
 // Evaluation
 val context = EnterpriseContext(
-    locale = AppLocale.EN_US,
+    locale = AppLocale.UNITED_STATES,
     platform = Platform.WEB,
     appVersion = Version.parse("1.0.0"),
     stableId = StableId.of("user-123"),

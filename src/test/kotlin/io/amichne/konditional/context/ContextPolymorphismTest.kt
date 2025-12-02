@@ -57,7 +57,7 @@ class ContextPolymorphismTest {
         }
 
         val ctx = EnterpriseContext(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.WEB,
             appVersion = Version(2, 5, 0),
             stableId = StableId.of("11111111111111111111111111111111"),
@@ -83,7 +83,7 @@ class ContextPolymorphismTest {
         }
 
         val mobileCtx = ExperimentContext(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.IOS,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("22222222222222222222222222222222"),
@@ -92,7 +92,7 @@ class ContextPolymorphismTest {
         )
 
         val webCtx = ExperimentContext(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.WEB,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("33333333333333333333333333333333"),
@@ -120,7 +120,7 @@ class ContextPolymorphismTest {
             } returns "modern"
         }
         val enterpriseCtx1 = EnterpriseContext(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.WEB,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("44444444444444444444444444444444"),
@@ -129,7 +129,7 @@ class ContextPolymorphismTest {
             userRole = UserRole.OWNER,
         )
         val experimentCtx1 = ExperimentContext(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.IOS,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("55555555555555555555555555555555"),
@@ -173,7 +173,7 @@ class ContextPolymorphismTest {
 //
 //        // Base context can only evaluate base context flags
 //        val baseCtx = Context(
-//            locale = AppLocale.EN_US,
+//            locale = AppLocale.UNITED_STATES,
 //            platform = Platform.IOS,
 //            appVersion = Version(1, 0, 0),
 //            stableId = StableId.of("77777777777777777777777777777777"),
@@ -181,7 +181,7 @@ class ContextPolymorphismTest {
 //
 //        // Enterprise context can evaluate enterprise flags
 //        val enterpriseCtx = EnterpriseContext(
-//            locale = AppLocale.EN_US,
+//            locale = AppLocale.UNITED_STATES,
 //            platform = Platform.WEB,
 //            appVersion = Version(1, 0, 0),
 //            stableId = StableId.of("88888888888888888888888888888888"),
@@ -198,13 +198,13 @@ class ContextPolymorphismTest {
 //    fun `Given EnterpriseContext subclass, When matching rules, Then base Context properties work correctly`() {
 //        val rule = Rule<EnterpriseContext>(
 //            rollout {  Rollout.MAX }
-//            locales = setOf(AppLocale.EN_US, AppLocale.EN_CA),
+//            locales = setOf(AppLocale.UNITED_STATES, AppLocale.CANADA),
 //            platforms = setOf(Platform.WEB),
 //            versionRange = FullyBound(Version(2, 0, 0), Version(3, 0, 0)),
 //        )
 //
 //        val matchingCtx = EnterpriseContext(
-//            locale = AppLocale.EN_US,
+//            locale = AppLocale.UNITED_STATES,
 //            platform = Platform.WEB,
 //            appVersion = Version(2, 5, 0),
 //            stableId = StableId.of("99999999999999999999999999999999"),
@@ -214,7 +214,7 @@ class ContextPolymorphismTest {
 //        )
 //
 //        val nonMatchingCtx = EnterpriseContext(
-//            locale = AppLocale.ES_US,
+//            locale = AppLocale.UNITED_STATES,
 //            platform = Platform.WEB,
 //            appVersion = Version(2, 5, 0),
 //            stableId = StableId.of("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
@@ -243,7 +243,7 @@ class ContextPolymorphismTest {
         }
 
         val enterpriseAdmin = EnterpriseContext(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.WEB,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"),
@@ -253,7 +253,7 @@ class ContextPolymorphismTest {
         )
 
         val premiumEditor = EnterpriseContext(
-            locale = AppLocale.EN_US,
+            locale = AppLocale.UNITED_STATES,
             platform = Platform.WEB,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("cccccccccccccccccccccccccccccccc"),

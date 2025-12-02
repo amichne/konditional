@@ -36,7 +36,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * ```kotlin
  * Rule(
  *     rollout {  Rollout.of(50.0) }
- *     locales = setOf(AppLocale.EN_US),
+ *     locales = setOf(AppLocale.UNITED_STATES),
  *     platforms = setOf(Platform.IOS),
  *     versionRange = LeftBound(Version(2, 0, 0))
  * )

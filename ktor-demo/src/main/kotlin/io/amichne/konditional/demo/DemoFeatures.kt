@@ -49,10 +49,10 @@ object DemoFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val WELCOME_MESSAGE by string<Context>("Hello!") {
         default("Welcome!")
         rule {
-            locales(AppLocale.EN_US, AppLocale.EN_CA)
+            locales(AppLocale.UNITED_STATES, AppLocale.CANADA)
         } returns "Welcome to Konditional Demo!"
         rule {
-            locales(AppLocale.ES_US)
+            locales(AppLocale.UNITED_STATES)
         } returns "Bienvenue dans Konditional Demo!"
 
     }

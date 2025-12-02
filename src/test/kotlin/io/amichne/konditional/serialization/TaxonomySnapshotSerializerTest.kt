@@ -44,7 +44,7 @@ class NamespaceSnapshotSerializerTest {
 
     private fun ctx(
         idHex: String,
-        locale: AppLocale = AppLocale.EN_US,
+        locale: AppLocale = AppLocale.UNITED_STATES,
         platform: Platform = Platform.IOS,
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
@@ -161,7 +161,7 @@ class NamespaceSnapshotSerializerTest {
         TestFeatures.stringFlag.update {
             default("original")
             rule {
-                locales(AppLocale.FR_FR)
+                locales(AppLocale.FRANCE)
             } returns "french"
         }
 
@@ -177,7 +177,7 @@ class NamespaceSnapshotSerializerTest {
         // Verify flags work correctly
         val iosContext = ctx("11111111111111111111111111111111", platform = Platform.IOS)
         val androidContext = ctx("22222222222222222222222222222222", platform = Platform.ANDROID)
-        val frenchContext = ctx("33333333333333333333333333333333", locale = AppLocale.FR_FR)
+        val frenchContext = ctx("33333333333333333333333333333333", locale = AppLocale.FRANCE)
 
         assertEquals(false, iosContext.evaluate(TestFeatures.boolFlag))
         assertEquals(true, androidContext.evaluate(TestFeatures.boolFlag))

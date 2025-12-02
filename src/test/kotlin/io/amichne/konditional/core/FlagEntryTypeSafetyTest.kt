@@ -25,7 +25,7 @@ import kotlin.test.assertNotNull
 class FlagEntryTypeSafetyTest {
     private fun ctx(
         idHex: String,
-        locale: AppLocale = AppLocale.EN_US,
+        locale: AppLocale = AppLocale.UNITED_STATES,
         platform: Platform = Platform.IOS,
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
@@ -45,7 +45,7 @@ class FlagEntryTypeSafetyTest {
 
         val configB by string<Context>(default = "config-b-default") {
             rule {
-                locales(AppLocale.EN_US)
+                locales(AppLocale.UNITED_STATES)
             } returns "en-us-value"
         }
         val timeout by int<Context>(default = 10) {
@@ -81,7 +81,7 @@ class FlagEntryTypeSafetyTest {
     fun `Given ContextualFlagDefinition, When evaluating, Then returns correct value type`() {
         val rule = Rule<Context>(
             rollout = MAX,
-            locales = setOf(AppLocale.EN_US),
+            locales = setOf(AppLocale.UNITED_STATES),
             platforms = emptySet(),
             versionRange = Unbounded(),
         )
@@ -92,7 +92,7 @@ class FlagEntryTypeSafetyTest {
             defaultValue = false,
         )
 
-        val boolResult = boolFlag.evaluate(ctx("11111111111111111111111111111111", locale = AppLocale.EN_US))
+        val boolResult = boolFlag.evaluate(ctx("11111111111111111111111111111111", locale = AppLocale.UNITED_STATES))
 
 
         assertEquals(true, boolResult)
@@ -274,7 +274,7 @@ class FlagEntryTypeSafetyTest {
 //        )
 //
 //        val customCtx = CustomContext(
-//            locale = AppLocale.EN_US,
+//            locale = AppLocale.UNITED_STATES,
 //            platform = Platform.IOS,
 //            appVersion = Version(1, 0, 0),
 //            stableId = StableId.of("88888888888888888888888888888888"),

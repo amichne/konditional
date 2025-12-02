@@ -71,7 +71,7 @@ konditional/
 
 - `Context.kt`: Base interface requiring locale, platform, appVersion, stableId
 - `Platform.kt`: Enum (IOS, ANDROID, WEB, DESKTOP)
-- `AppLocale.kt`: Supported locales (EN_US, FR_FR, DE_DE, etc.)
+- `AppLocale.kt`: Supported locales (UNITED_STATES, FRANCE, DE_DE, etc.)
 - `Version.kt`: Semantic versioning with comparison
 - `Rollout.kt`: Value class enforcing 0-100% rollout with SHA-256 bucketing
 
@@ -321,7 +321,7 @@ fun `Given rule with 50 percent rollout, When evaluating many users, Then approx
    ```kotlin
    private fun ctx(
        idHex: String,
-       locale: AppLocale = AppLocale.EN_US,
+       locale: AppLocale = AppLocale.UNITED_STATES,
        platform: Platform = Platform.IOS,
        version: String = "1.0.0",
    ) = Context(locale, platform, Version.parse(version), StableId.of(idHex))

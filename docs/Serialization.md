@@ -316,7 +316,7 @@ Rules define targeting criteria and conditional values:
   "rampUp": 50.0,
   "note": "iOS users, 50% rollout",
   "platforms": ["IOS", "ANDROID"],
-  "locales": ["EN_US", "EN_CA"],
+  "locales": ["UNITED_STATES", "CANADA"],
   "versionRange": {
     "type": "MIN_AND_MAX_BOUND",
     "min": {

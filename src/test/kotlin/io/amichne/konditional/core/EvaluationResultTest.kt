@@ -51,7 +51,7 @@ class EvaluationResultTest {
     data class MyError(val reason: String)
 
     private val testContext = Context(
-        AppLocale.EN_US,
+        AppLocale.UNITED_STATES,
         Platform.IOS,
         Version.parseUnsafe("1.0.0"),
         StableId.of("11111111111111111111111111111111")

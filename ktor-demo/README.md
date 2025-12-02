@@ -166,7 +166,7 @@ Or use the Gradle daemon:
 ```bash
 curl -X POST http://localhost:8080/api/evaluate \
   -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "contextType=base&locale=EN_US&platform=WEB&version=1.0.0&stableId=a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"
+  -d "contextType=base&locale=UNITED_STATES&platform=WEB&version=1.0.0&stableId=a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"
 ```
 
 Response:
@@ -193,7 +193,7 @@ Response:
    - **Enterprise Context**: Extended features (SSO, Advanced Analytics, etc.)
 
 3. **Configure Parameters**:
-   - **Locale**: EN_US, ES_US, EN_CA, HI_IN
+   - **Locale**: UNITED_STATES, UNITED_STATES, CANADA, INDIA
    - **Platform**: Web, iOS, Android
    - **App Version**: Semantic versioning (e.g., "2.5.0")
    - **Stable ID**: Select from predefined test users
@@ -344,10 +344,10 @@ val DARK_MODE by boolean<Context>(false) {
 val WELCOME_MESSAGE by string<Context>("Hello!") {
     default("Welcome!")
     rule {
-        locales(AppLocale.EN_US, AppLocale.EN_CA)
+        locales(AppLocale.UNITED_STATES, AppLocale.CANADA)
     } returns "Welcome to Konditional Demo!"
     rule {
-        locales(AppLocale.ES_US)
+        locales(AppLocale.UNITED_STATES)
     } returns "¡Bienvenido a Konditional Demo!"
 }
 ```

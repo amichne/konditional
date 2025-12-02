@@ -824,7 +824,7 @@ Leverage `allFeatures()` for comprehensive testing:
 @Test
 fun `all features evaluate successfully`() {
     val testContext = Context(
-        locale = AppLocale.EN_US,
+        locale = AppLocale.UNITED_STATES,
         platform = Platform.WEB,
         appVersion = Version(1, 0, 0),
         stableId = StableId.of("12345678901234567890123456789012")
@@ -879,7 +879,7 @@ object PaymentFeatures : FeatureContainer<Namespace.Payments>(
     // Numeric limits
     val MAX_TRANSACTION by int<Context>(default = 10000) {
         rule {
-            locales(AppLocale.EN_US)
+            locales(AppLocale.UNITED_STATES)
         } returns 50000
     }
 
@@ -965,7 +965,7 @@ Namespace.Payments.config {
     PaymentLimits.MAX_TRANSACTION with {
         default(10000)
         rule {
-            locales(AppLocale.EN_US)
+            locales(AppLocale.UNITED_STATES)
         } returns 50000
     }
 }

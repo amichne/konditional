@@ -52,7 +52,7 @@ import kotlin.test.assertTrue
  */
 class RuleGuaranteesTest {
     private val defaultContext = Context(
-        locale = AppLocale.EN_US,
+        locale = AppLocale.UNITED_STATES,
         platform = Platform.ANDROID,
         appVersion = Version(1, 0, 0),
         stableId = StableId.of("11111111111111111111111111111111")
@@ -67,7 +67,7 @@ class RuleGuaranteesTest {
     }
 
     private val customContext = object : CustomContext {
-        override val locale = AppLocale.EN_US
+        override val locale = AppLocale.UNITED_STATES
         override val platform = Platform.ANDROID
         override val appVersion = Version(1, 0, 0)
         override val stableId = StableId.of("22222222222222222222222222222222")
@@ -95,10 +95,10 @@ class RuleGuaranteesTest {
     fun `base rule locale restriction is always enforced`() {
         val rule = Rule<Context>(
             rollout = Rollout.of(100.0),
-            locales = setOf(AppLocale.ES_US)
+            locales = setOf(AppLocale.UNITED_STATES)
         )
 
-        // Context has EN_US locale, rule requires ES_US
+        // Context has UNITED_STATES locale, rule requires UNITED_STATES
         assertFalse(rule.matches(defaultContext))
     }
 
@@ -130,13 +130,13 @@ class RuleGuaranteesTest {
         // the base locale restriction prevents a match
         val rule = Rule(
             rollout = Rollout.of(100.0),
-            locales = setOf(AppLocale.ES_US),
+            locales = setOf(AppLocale.UNITED_STATES),
             extension = SubscriptionRule(
                 requiredTier = "premium"
             )
         )
 
-        // Context has premium tier (custom match) but EN_US locale (base mismatch)
+        // Context has premium tier (custom match) but UNITED_STATES locale (base mismatch)
         assertFalse(rule.matches(customContext))
     }
 
@@ -164,7 +164,7 @@ class RuleGuaranteesTest {
 
         // Create context with wrong tier
         val basicContext = object : CustomContext {
-            override val locale = AppLocale.EN_US
+            override val locale = AppLocale.UNITED_STATES
             override val platform = Platform.ANDROID
             override val appVersion = Version(1, 0, 0)
             override val stableId = StableId.of("33333333333333333333333333333333")
@@ -179,7 +179,7 @@ class RuleGuaranteesTest {
     @Test
     fun `custom rule specificity includes both base and additional specificity`() {
         val ruleWithLocaleAndTier = Rule(
-            locales = setOf(AppLocale.EN_US), extension = SubscriptionRule(
+            locales = setOf(AppLocale.UNITED_STATES), extension = SubscriptionRule(
                 requiredTier = "premium"
             )
         )
@@ -191,7 +191,7 @@ class RuleGuaranteesTest {
 
         val ruleWithAllAttributes = ruleWithLocaleAndTier.copy(
             baseEvaluable = ruleWithLocaleAndTier.baseEvaluable.copy(
-                locales = setOf(AppLocale.EN_US),
+                locales = setOf(AppLocale.UNITED_STATES),
                 platforms = setOf(Platform.ANDROID),
             )
         )

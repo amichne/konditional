@@ -62,7 +62,7 @@ interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> 
      * ```kotlin
      * rule {
      *     platforms(Platform.IOS)
-     *     locales(AppLocale.EN_US)
+     *     locales(AppLocale.UNITED_STATES)
      *     rollout {  Rollout.of(50.0) }
      * }.returns(true)
      * ```

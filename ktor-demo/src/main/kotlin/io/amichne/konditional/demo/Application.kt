@@ -47,11 +47,12 @@ import kotlinx.html.unsafe
 // Extension properties for display names
 private val AppLocale.displayName: String
     get() = when (this) {
-        AppLocale.EN_US -> "English (US)"
-        AppLocale.ES_US -> "Spanish (US)"
-        AppLocale.EN_CA -> "English (Canada)"
-        AppLocale.FR_FR -> "French (France)"
-        AppLocale.HI_IN -> "Hindi (India)"
+        AppLocale.UNITED_STATES -> "English (US)"
+        AppLocale.UNITED_STATES -> "Spanish (US)"
+        AppLocale.CANADA -> "English (Canada)"
+        AppLocale.FRANCE -> "French (France)"
+        AppLocale.INDIA -> "Hindi (India)"
+        else -> error("Unsupported locale: $this")
     }
 
 private val Platform.displayName: String
@@ -196,7 +197,7 @@ private fun buildRulesInfo(): String {
 }
 
 private fun evaluateBaseContext(params: Parameters): String {
-    val locale = AppLocale.valueOf(params["locale"] ?: "EN_US")
+    val locale = AppLocale.valueOf(params["locale"] ?: "UNITED_STATES")
     val platform = Platform.valueOf(params["platform"] ?: "WEB")
     val version = Version.parseUnsafe(params["version"] ?: "1.0.0")
     val stableIdHex = params["stableId"] ?: "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"
@@ -213,7 +214,7 @@ private fun evaluateBaseContext(params: Parameters): String {
 }
 
 private fun evaluateEnterpriseContext(params: Parameters): String {
-    val locale = AppLocale.valueOf(params["locale"] ?: "EN_US")
+    val locale = AppLocale.valueOf(params["locale"] ?: "UNITED_STATES")
     val platform = Platform.valueOf(params["platform"] ?: "WEB")
     val version = Version.parse(params["version"] ?: "1.0.0").getOrThrow()
     val stableIdHex = params["stableId"] ?: "f1e2d3c4b5a6978685746352413021ab"
@@ -547,7 +548,7 @@ private fun HTML.renderMainPage() {
                                 AppLocale.entries.forEach { locale ->
                                     option {
                                         value = locale.name
-                                        if (locale == AppLocale.EN_US) selected = true
+                                        if (locale == AppLocale.UNITED_STATES) selected = true
                                         +locale.displayName
                                     }
                                 }
