@@ -37,7 +37,7 @@ class EnumFeatureTest {
     object EnumFeatures : FeatureContainer<Namespace.Payments>(
         Namespace.Payments
     ) {
-        val logLevel by enum<LogLevel, Context>(default = LogLevel.INFO) {
+        val logLevel by enum< LogLevel, Context>(default = LogLevel.INFO) {
             rule {
                 platforms(Platform.WEB)
             } returns LogLevel.DEBUG

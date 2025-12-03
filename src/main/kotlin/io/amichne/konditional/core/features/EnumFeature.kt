@@ -16,6 +16,7 @@ sealed interface EnumFeature<E : Enum<E>, C : Context, M : Namespace> :
     Feature<EncodableValue.EnumEncodeable<E>, E, C, M> {
 
     companion object {
+        @PublishedApi
         internal operator fun <E : Enum<E>, C : Context, M : Namespace> invoke(
             key: String,
             module: M,

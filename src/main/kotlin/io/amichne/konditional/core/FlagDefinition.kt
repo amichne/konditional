@@ -4,6 +4,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
+import io.amichne.konditional.core.id.StableId.Companion.discrete
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.ConditionalValue
 import java.security.MessageDigest
@@ -38,7 +39,7 @@ data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Names
     val feature: Feature<S, T, C, M>,
     internal val values: List<ConditionalValue<S, T, C, M>> = listOf(),
     val isActive: Boolean = true,
-    val salt: String = "v1"
+    val salt: String = "v1",
 ) {
     private val conditionalValues: List<ConditionalValue<S, T, C, M>> =
         values.sortedWith(compareByDescending<ConditionalValue<S, T, C, M>> { it.rule.specificity() })
@@ -74,12 +75,12 @@ data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Names
 
         return conditionalValues.firstOrNull {
             it.rule.matches(context) &&
-                isInEligibleSegment(
-                    flagKey = feature.key,
-                    id = context.stableId.hexId,
-                    salt = salt,
-                    rollout = it.rule.rollout
-                )
+            isInEligibleSegment(
+                flagKey = feature.key,
+                id = context.stableId.hexId,
+                salt = salt,
+                rollout = it.rule.rollout
+            )
         }?.value ?: defaultValue
     }
 
@@ -101,28 +102,6 @@ data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Names
         when {
             rollout <= 0.0 -> false
             rollout >= 100.0 -> true
-            else -> stableBucket(flagKey, id, salt) < (rollout.value * 100).roundToInt()
+            else -> discrete(flagKey, id, salt) < (rollout.value * 100).roundToInt()
         }
-
-    /**
-     * Create a new MessageDigest instance per call to ensure thread-safety
-     * MessageDigest is NOT thread-safe and cannot be shared across concurrent evaluations
-     */
-    private fun stableBucket(
-        flagKey: String,
-        id: HexId,
-        salt: String,
-    ): Int {
-        val digest = MessageDigest.getInstance("SHA-256")
-        return with(digest.digest("$salt:$flagKey:${id.id}".toByteArray(Charsets.UTF_8))) {
-            (
-                (
-                    get(0).toInt() and 0xFF shl 24 or
-                        (get(1).toInt() and 0xFF shl 16) or
-                        (get(2).toInt() and 0xFF shl 8) or
-                        (get(3).toInt() and 0xFF)
-                    ).toLong() and 0xFFFF_FFFFL
-                ).mod(10_000L).toInt()
-        }
-    }
 }

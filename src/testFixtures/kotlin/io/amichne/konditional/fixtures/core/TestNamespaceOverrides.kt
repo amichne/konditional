@@ -249,7 +249,7 @@ interface AtomicTestScope {
 data class OverridingScope<M : Namespace, F : FeatureAware<M>> @PublishedApi internal constructor(
     private val features: F,
 ) : FeatureAware<M> by features {
-    inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context> update(
+    inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context> overrides(
         feature: Feature<S, T, C, *>,
         value: T,
     ) {

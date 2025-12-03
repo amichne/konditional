@@ -261,11 +261,11 @@ abstract class FeatureContainer<M : Namespace>(
      * @param enumScope DSL scope for configuring the enum feature
      * @return A delegated property that returns an [EnumFeature]
      */
-    protected fun <E : Enum<E>, C : Context> enum(
+    protected inline fun <E : Enum<E>, C : Context> enum(
         default: E,
-        enumScope: FlagScope<EncodableValue.EnumEncodeable<E>, E, C, M>.() -> Unit = {},
+        crossinline enumScope: FlagScope<EncodableValue.EnumEncodeable<E>, E, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, EnumFeature<E, C, M>> =
-        ContainerFeaturePropertyDelegate(default, enumScope) { EnumFeature(it, namespace) }
+        ContainerFeaturePropertyDelegate(default, { enumScope() }, { EnumFeature(it, namespace) })
 
     /**
      * Internal delegate factory that handles feature creation, configuration, and registration.
@@ -295,7 +295,7 @@ abstract class FeatureContainer<M : Namespace>(
     @Suppress("UNCHECKED_CAST")
     inner class ContainerFeaturePropertyDelegate<F : Feature<S, T, C, M>, S : EncodableValue<T>, T : Any, C : Context>(
         private val default: T,
-        private val configScope: FlagScope<S, T, C, M>.() -> Unit,
+        val configScope: FlagScope<S, T, C, M>.() -> Unit,
         private val factory: M.(String) -> F,
     ) : ReadOnlyProperty<FeatureContainer<M>, F>, PropertyDelegateProvider<FeatureContainer<M>, F> {
         lateinit var name: String

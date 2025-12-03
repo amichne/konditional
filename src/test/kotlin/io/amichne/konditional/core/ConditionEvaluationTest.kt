@@ -349,6 +349,7 @@ class ConditionEvaluationTest {
 
         val condition = FlagDefinition(
             feature = TestFlags.TEST_FLAG,
+
             values = listOf(
                 highSpecificityLowRampup.targetedBy("specific"),
                 lowSpecificityHighRampup.targetedBy("fallback"),
