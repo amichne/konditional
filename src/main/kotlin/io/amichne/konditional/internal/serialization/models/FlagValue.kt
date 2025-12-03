@@ -7,15 +7,15 @@ import io.amichne.konditional.core.types.EncodableValue
 /**
  * Type-safe representation of flag values that replaces the type-erased SerializableValue.
  *
- * This sealed class follows parseUnsafe-don't-validate principles:
+ * This sealed class follows parse-don't-validate principles:
  * - No type erasure via `Any`
  * - Compile-time type safety
  * - Illegal states are unrepresentable (can't have INT type with Boolean value)
  *
  * Each subclass encodes both the value AND its type in a type-safe manner.
  *
- * Supports only primitive types:
- * - Boolean, String, Int, Double
+ * Supports primitive types and user-defined types:
+ * - Boolean, String, Int, Double, Enum
  */
 internal sealed class FlagValue<out T : Any> {
     abstract val value: T
@@ -47,6 +47,19 @@ internal sealed class FlagValue<out T : Any> {
         override fun toValueType() = ValueType.DOUBLE
     }
 
+    /**
+     * Represents an enum value.
+     * Stores the enum as a string (its name) along with the fully qualified enum class name
+     * to enable proper deserialization.
+     */
+    @JsonClass(generateAdapter = true)
+    data class EnumValue(
+        override val value: String,
+        val enumClassName: String
+    ) : FlagValue<String>() {
+        override fun toValueType() = ValueType.ENUM
+    }
+
     companion object {
         /**
          * Creates a FlagValue from an untyped value by inferring its type.
@@ -57,9 +70,13 @@ internal sealed class FlagValue<out T : Any> {
             is String -> StringValue(value)
             is Int -> IntValue(value)
             is Double -> DoubleValue(value)
+            is Enum<*> -> EnumValue(
+                value = value.name,
+                enumClassName = value.javaClass.name
+            )
             else -> throw IllegalArgumentException(
                 "Unsupported value type: ${value::class.simpleName}. " +
-                "Only primitives (Boolean, String, Int, Double) are supported."
+                "Supported types: Boolean, String, Int, Double, Enum."
             )
         }
     }

@@ -3,6 +3,7 @@ package io.amichne.konditional.fixtures.core
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.core.features.FeatureAware
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
 import io.amichne.konditional.core.types.EncodableValue
@@ -229,5 +230,37 @@ fun <M : Namespace, F : FeatureContainer<M>> F.withOverrides(
                 feature as Feature<EncodableValue<Any>, Any, Context, *>
             )
         }
+    }
+}
+
+interface AtomicTestScope {
+    companion object {
+        operator fun <M : Namespace, F : FeatureAware<M>> invoke(
+            overridingScope: OverridingScope<M, F>,
+        ): AtomicTestScope = object : AtomicTestScope {}
+
+
+        infix fun AtomicTestScope.runTest(testBlock: () -> Unit) = testBlock()
+    }
+
+}
+
+@ConsistentCopyVisibility
+data class OverridingScope<M : Namespace, F : FeatureAware<M>> @PublishedApi internal constructor(
+    private val features: F,
+) : FeatureAware<M> by features {
+    inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context> update(
+        feature: Feature<S, T, C, *>,
+        value: T,
+    ) {
+        container.namespace.setOverride(feature, value)
+    }
+
+    companion object {
+        inline fun <reified M : Namespace, reified T> setupTest(
+            container: T,
+            features: T.(OverridingScope<M, T>) -> Unit,
+        ): AtomicTestScope where T : FeatureAware<M> =
+            AtomicTestScope(OverridingScope(container).apply { features(container, this) })
     }
 }

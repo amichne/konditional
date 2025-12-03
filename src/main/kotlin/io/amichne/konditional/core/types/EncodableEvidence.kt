@@ -2,11 +2,11 @@ package io.amichne.konditional.core.types
 
 /**
  * Type witness that provides evidence a type T can be encoded.
- * This is used to constrain Conditional and FeatureFlag to only work with supported primitive types.
+ * This is used to constrain Conditional and FeatureFlag to only work with supported types.
  *
- * Supported types: Boolean, String, Int, Double
+ * Supported types: Boolean, String, Int, Double, Enum<E>
  *
- * This enforces the "parseUnsafe, don't validate" principle by making illegal states (unsupported types)
+ * This enforces the "parse, don't validate" principle by making illegal states (unsupported types)
  * unrepresentable at compile time.
  */
 sealed interface EncodableEvidence<T : Any> {
@@ -27,10 +27,17 @@ sealed interface EncodableEvidence<T : Any> {
                 String::class -> StringEvidence as EncodableEvidence<T>
                 Int::class -> IntEvidence as EncodableEvidence<T>
                 Double::class -> DoubleEvidence as EncodableEvidence<T>
-                else -> throw IllegalArgumentException(
-                    "Type ${T::class.qualifiedName} is not encodable. " +
-                        "Supported types: Boolean, String, Int, Double"
-                )
+                else -> {
+                    // Check if T is an enum type
+                    if (T::class.java.isEnum) {
+                        EnumEvidence<T>() as EncodableEvidence<T>
+                    } else {
+                        throw IllegalArgumentException(
+                            "Type ${T::class.qualifiedName} is not encodable. " +
+                                "Supported types: Boolean, String, Int, Double, Enum"
+                        )
+                    }
+                }
             }
         }
 
@@ -41,7 +48,7 @@ sealed interface EncodableEvidence<T : Any> {
         inline fun <reified T : Any> isEncodable(): Boolean {
             return when (T::class) {
                 Boolean::class, String::class, Int::class, Double::class -> true
-                else -> false
+                else -> T::class.java.isEnum
             }
         }
     }
@@ -60,5 +67,13 @@ sealed interface EncodableEvidence<T : Any> {
 
     object DoubleEvidence : EncodableEvidence<Double> {
         override val encoding: EncodableValue.Encoding = EncodableValue.Encoding.DECIMAL
+    }
+
+    /**
+     * Evidence for enum types. Generic over the specific enum type E.
+     * Each enum type gets its own evidence instance.
+     */
+    class EnumEvidence<E : Any> : EncodableEvidence<E> {
+        override val encoding: EncodableValue.Encoding = EncodableValue.Encoding.ENUM
     }
 }

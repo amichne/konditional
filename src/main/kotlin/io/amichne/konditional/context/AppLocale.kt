@@ -9,12 +9,6 @@ enum class AppLocale(
     private val language: String,
     private val country: String,
 ) {
-//    UNITED_STATES("en", "US"),
-//    UNITED_KINGDOM("en", "GB"),
-//    UNITED_STATES("es", "US"),
-//    CANADA("en", "CA"),
-//    INDIA("hi", "IN"),
-//    FRANCE("fr", "FR"),
     AUSTRALIA("en", "AU"),
     AUSTRIA("de", "AT"),
     BELGIUM_DUTCH("nl", "BE"),
