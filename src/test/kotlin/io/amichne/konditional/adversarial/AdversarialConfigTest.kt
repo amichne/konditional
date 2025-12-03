@@ -6,11 +6,11 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.TestNamespace
+import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.features.evaluate
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.test
+import io.amichne.konditional.fixtures.core.test
 import io.amichne.konditional.rules.versions.FullyBound
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -240,7 +240,7 @@ class AdversarialConfigTest {
 
     @Test
     fun `double values accept NaN - compiles but semantically invalid`() {
-        // NaN compiles fine in Double context
+        // NaN compiles fine in Double contextFn
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
             val nanFlag by double<Context>(default = Double.NaN) {
                 // This compiles! But NaN != NaN by IEEE 754
@@ -276,7 +276,7 @@ class AdversarialConfigTest {
     @Test
     fun `int values at MAX_VALUE - potential overflow in calculations`() {
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
-            val maxIntFlag by int<Context>(default = Int.MAX_VALUE) {
+            val maxIntFlag by integer<Context>(default = Int.MAX_VALUE) {
                 rule {
                     platforms(Platform.WEB)
                 } returns Int.MIN_VALUE

@@ -30,7 +30,7 @@ import io.amichne.konditional.core.types.EncodableValue
  *
  * @param S The EncodableValue type wrapping the actual value.
  * @param T The actual value type.
- * @param C The type of the context that the feature flag evaluates against.
+ * @param C The type of the contextFn that the feature flag evaluates against.
  * @param M The namespace this feature belongs to (compile-time binding).
  */
 sealed interface Feature<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> {

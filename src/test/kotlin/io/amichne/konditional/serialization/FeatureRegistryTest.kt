@@ -23,7 +23,7 @@ class FeatureRegistryTest {
     private val TestFeatures = object : FeatureContainer<Namespace.Global>(Namespace.Global) {
         val feature1 by boolean<Context>(default = false)
         val feature2 by string<Context>(default = "default")
-        val feature3 by int<Context>(default = 0)
+        val feature3 by integer<Context>(default = 0)
     }
 
     @BeforeEach

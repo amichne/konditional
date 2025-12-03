@@ -4,9 +4,20 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.context.contextualize
+import io.amichne.konditional.context.feature
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.getOrThrow
+import io.amichne.konditional.demo.DemoFeatures.ANALYTICS_ENABLED
+import io.amichne.konditional.demo.DemoFeatures.API_RATE_LIMIT
+import io.amichne.konditional.demo.DemoFeatures.BETA_FEATURES
+import io.amichne.konditional.demo.DemoFeatures.CACHE_TTL_SECONDS
+import io.amichne.konditional.demo.DemoFeatures.DARK_MODE
+import io.amichne.konditional.demo.DemoFeatures.DISCOUNT_PERCENTAGE
+import io.amichne.konditional.demo.DemoFeatures.MAX_ITEMS_PER_PAGE
+import io.amichne.konditional.demo.DemoFeatures.THEME_COLOR
+import io.amichne.konditional.demo.DemoFeatures.WELCOME_MESSAGE
 import io.amichne.konditional.serialization.SnapshotSerializer
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
@@ -93,9 +104,11 @@ fun main() {
     // This triggers the property delegation which registers features with the namespace
     println("[main] Initializing DemoFeatures...")
     with(DemoFeatures) {
-        listOf(DARK_MODE, BETA_FEATURES, ANALYTICS_ENABLED, WELCOME_MESSAGE,
-               THEME_COLOR, MAX_ITEMS_PER_PAGE, CACHE_TTL_SECONDS,
-               DISCOUNT_PERCENTAGE, API_RATE_LIMIT)
+        listOf(
+            DARK_MODE, BETA_FEATURES, ANALYTICS_ENABLED, WELCOME_MESSAGE,
+            THEME_COLOR, MAX_ITEMS_PER_PAGE, CACHE_TTL_SECONDS,
+            DISCOUNT_PERCENTAGE, API_RATE_LIMIT
+        )
     }
     println("[main] Initializing EnterpriseFeatures...")
     with(EnterpriseFeatures) {
@@ -294,7 +307,7 @@ private fun HTML.renderMainPage() {
                         min-height: 100vh;
                         padding: 20px;
                     }
-                    .container {
+                    .features {
                         max-width: 1400px;
                         margin: 0 auto;
                         background: white;
@@ -513,7 +526,7 @@ private fun HTML.renderMainPage() {
         }
     }
     body {
-        div("container") {
+        div("features") {
             div("header") {
                 h1 { +"🚀 Konditional Demo" }
                 p { +"Interactive Feature Flags with FeatureContainer Delegation" }
@@ -683,10 +696,12 @@ private fun HTML.renderMainPage() {
         // Embed snapshot and rules data directly in HTML
         script {
             unsafe {
-                raw("""
+                raw(
+                    """
                     window.KONDITIONAL_RULES = ${buildRulesInfo()};
                     window.KONDITIONAL_SNAPSHOT = ${SnapshotSerializer.serialize(Namespace.Global.configuration)};
-                """.trimIndent())
+                """.trimIndent()
+                )
             }
         }
 

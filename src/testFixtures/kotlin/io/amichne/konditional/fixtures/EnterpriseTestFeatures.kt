@@ -10,9 +10,9 @@ import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.rules.evaluable.Evaluable
 
 /**
- * TestNamespace features for validating context polymorphism.
+ * TestNamespace features for validating contextFn polymorphism.
  *
- * These demonstrate custom context types and specialized evaluation rules.
+ * These demonstrate custom contextFn types and specialized evaluation rules.
  */
 
 // ========== Custom Contexts ==========
@@ -28,7 +28,7 @@ enum class UserRole {
 }
 
 /**
- * Enterprise context with additional business-specific properties.
+ * Enterprise contextFn with additional business-specific properties.
  */
 data class EnterpriseContext(
     override val locale: AppLocale,
@@ -41,7 +41,7 @@ data class EnterpriseContext(
 ) : Context
 
 /**
- * Experiment context for A/B testing scenarios.
+ * Experiment contextFn for A/B testing scenarios.
  */
 data class ExperimentContext(
     override val locale: AppLocale,

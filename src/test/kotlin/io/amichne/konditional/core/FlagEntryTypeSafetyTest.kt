@@ -30,7 +30,7 @@ class FlagEntryTypeSafetyTest {
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
 
-    private object Features : FeatureContainer<Global>(Namespace.Global) {
+    private object Features : FeatureContainer<Global>(Global) {
         val featureA by boolean<Context>(default = false) {
             rule {
                 platforms(Platform.IOS)
@@ -48,7 +48,7 @@ class FlagEntryTypeSafetyTest {
                 locales(AppLocale.UNITED_STATES)
             } returns "en-us-value"
         }
-        val timeout by int<Context>(default = 10) {
+        val timeout by integer<Context>(default = 10) {
             rule {
                 versions {
                     min(2, 0)
@@ -86,7 +86,7 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded(),
         )
 
-        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context, Namespace.Global> = FlagDefinition(
+        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context, Global> = FlagDefinition(
             feature = Features.featureB,
             values = listOf(rule.targetedBy(true)),
             defaultValue = false,
@@ -121,19 +121,19 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded(),
         )
 
-        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context, Namespace.Global> = FlagDefinition(
+        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context, Global> = FlagDefinition(
             feature = Features.featureA,
             values = listOf(boolRule.targetedBy(true)),
             defaultValue = false,
         )
 
-        val stringFlag: FlagDefinition<EncodableValue.StringEncodeable, String, Context, Namespace.Global> = FlagDefinition(
+        val stringFlag: FlagDefinition<EncodableValue.StringEncodeable, String, Context, Global> = FlagDefinition(
             feature = Features.configA,
             values = listOf(stringRule.targetedBy("value")),
             defaultValue = "default",
         )
 
-        val intFlag: FlagDefinition<EncodableValue.IntEncodeable, Int, Context, Namespace.Global> = FlagDefinition(
+        val intFlag: FlagDefinition<EncodableValue.IntEncodeable, Int, Context, Global> = FlagDefinition(
             feature = Features.timeout,
             values = listOf(intRule.targetedBy(30)),
             defaultValue = 10,
@@ -185,7 +185,7 @@ class FlagEntryTypeSafetyTest {
             )
         )
 
-        Namespace.Global.load(configuration)
+        Global.load(configuration)
 
         val context = ctx("33333333333333333333333333333333")
         val boolResult = context.evaluate(Features.featureA)
@@ -233,18 +233,18 @@ class FlagEntryTypeSafetyTest {
 //            }
 //        }
 //
-//        val context = ctx("77777777777777777777777777777777")
+//        val contextFn = ctx("77777777777777777777777777777777")
 //
 //        // The evaluate() method internally retrieves FlagDefinition from the map
 //        // and casts it, maintaining type safety
-//        context.evaluate(BoolFlags.FEATURE_A)
-//        context.evaluate(StringFlags.CONFIG_A)
+//        contextFn.evaluate(BoolFlags.FEATURE_A)
+//        contextFn.evaluate(StringFlags.CONFIG_A)
 //
 //        // Type safety is maintained - we get the correct types back
 //    }
 //
 //    @TestNamespace
-//    fun `Given mixed context and value types, When using ContextualFlagDefinition, Then maintains both type parameters`() {
+//    fun `Given mixed contextFn and value types, When using ContextualFlagDefinition, Then maintains both type parameters`() {
 //        data class CustomContext(
 //            override val locale: AppLocale,
 //            override val platform: Platform,
@@ -301,11 +301,11 @@ class FlagEntryTypeSafetyTest {
 //            }
 //        }
 //
-//        val context = ctx("99999999999999999999999999999999", platform = Platform.IOS)
+//        val contextFn = ctx("99999999999999999999999999999999", platform = Platform.IOS)
 //
 //        // This call should not require any @Suppress annotation
 //        // The FlagEntry wrapper maintains type safety internally
-//        val result: Boolean = context.evaluate(BoolFlags.FEATURE_A)
+//        val result: Boolean = contextFn.evaluate(BoolFlags.FEATURE_A)
 //
 //        assertEquals(true, result)
 //    }

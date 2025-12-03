@@ -49,10 +49,10 @@ object PaymentFeatures : FeatureContainer<Namespace.Payments>(
     val card_on_file by boolean<Context>(default = false)
 
     // ✅ Mixed types: Can combine different feature types
-    val max_cards by int<Context>(default = 5)
+    val max_cards by integer<Context>(default = 5)
     val payment_provider by string<Context>(default = "stripe")
 
-    // ✅ No boilerplate: Module declared once at container level
+    // ✅ No boilerplate: Module declared once at features level
     // ✅ Auto-registration: All features automatically tracked
 }
 
@@ -60,7 +60,7 @@ object OrderFeatures : FeatureContainer<Namespace.Payments>(
     Namespace.Payments
 ) {
     val fast_checkout by boolean<Context>(default = false)
-    val order_limit by int<Context>(default = 1000)
+    val order_limit by integer<Context>(default = 1000)
     val discount_code by string<Context>(default = "")
 }
 
@@ -122,10 +122,10 @@ object FeatureContainerValueDemo {
     }
 
 //    // ✅ BENEFIT 4: Testing - can easily get all features for comprehensive testing
-//    fun <C : Context> testAllFeatures(context: C) {
+//    fun <C : Context> testAllFeatures(contextFn: C) {
 //        PaymentFeatures.allFeatures().filter { it }.forEach { feature ->
 //            // Type-erased, but we can still evaluate safely
-//            when (val result = context.evaluate()) {
+//            when (val result = contextFn.evaluate()) {
 //                is EvaluationResult.Success -> println("${feature.key} = ${result.value}")
 //                is EvaluationResult.FlagNotFound -> println("${feature.key} not configured")
 //                is EvaluationResult.EvaluationError -> println("Error evaluating ${feature.key}: ${result.exception}")
@@ -170,7 +170,7 @@ object FeatureContainerValueDemo {
 │ Feature                     │ Enum Approach        │ FeatureContainer         │
 ├─────────────────────────────┼──────────────────────┼──────────────────────────┤
 │ Declaration syntax          │ Verbose enum         │ Clean delegation (by)    │
-│ Module declaration          │ Per-entry override   │ Once per container       │
+│ Module declaration          │ Per-entry override   │ Once per features       │
 │ Mixed types                 │ ❌ Not possible      │ ✅ Boolean, Int, String   │
 │ Auto-enumeration            │ ❌ Manual tracking   │ ✅ allFeatures()          │
 │ Boilerplate                 │ ❌ High              │ ✅ Minimal                │
@@ -185,7 +185,7 @@ object FeatureContainerValueDemo {
 KEY WINS:
 1. 📝 Less boilerplate (no module override per entry)
 2. 🎯 Complete enumeration (allFeatures() automatic)
-3. 🔀 Mixed types in one container
+3. 🔀 Mixed types in one features
 4. 🧪 Better testing (iterate over all features)
 5. ✅ Config validation (detect missing features)
 6. 📊 Audit/inventory generation

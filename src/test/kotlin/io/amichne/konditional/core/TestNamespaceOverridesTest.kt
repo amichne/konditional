@@ -5,20 +5,23 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.TestNamespaceOverrides.clearAllOverrides
-import io.amichne.konditional.core.TestNamespaceOverrides.clearOverride
-import io.amichne.konditional.core.TestNamespaceOverrides.hasOverride
-import io.amichne.konditional.core.TestNamespaceOverrides.setOverride
-import io.amichne.konditional.core.TestNamespaceOverrides.withOverride
-import io.amichne.konditional.core.TestNamespaceOverrides.withOverrides
+import io.amichne.konditional.context.feature
 import io.amichne.konditional.core.features.FeatureContainer
-import io.amichne.konditional.core.id.TestStableId
 import io.amichne.konditional.core.result.getOrThrow
+import io.amichne.konditional.fixtures.core.TestNamespace
+import io.amichne.konditional.fixtures.core.clearAllOverrides
+import io.amichne.konditional.fixtures.core.clearOverride
+import io.amichne.konditional.fixtures.core.hasOverride
+import io.amichne.konditional.fixtures.core.id.TestStableId
+import io.amichne.konditional.fixtures.core.setOverride
+import io.amichne.konditional.fixtures.core.withOverride
+import io.amichne.konditional.fixtures.core.withOverrides
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.shadow.com.univocity.parsers.conversions.Conversions.string
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -134,7 +137,7 @@ class TestNamespaceOverridesTest {
         val TestFeatures = object : FeatureContainer<TestNamespace>(testNamespace) {
             val boolFlag by boolean<Context>(default = false)
             val stringFlag by string<Context>(default = "default")
-            val intFlag by int<Context>(default = 0)
+            val intFlag by integer<Context>(default = 0)
             val doubleFlag by double<Context>(default = 0.0)
         }
 
@@ -171,10 +174,10 @@ class TestNamespaceOverridesTest {
         val TestFeatures = object : FeatureContainer<Namespace.Search>(testNamespace) {
             val flagA by boolean<Context>(default = false)
             val flagB by string<Context>(default = "default")
-            val flagC by int<Context>(default = 0)
+            val flagC by integer<Context>(default = 0)
         }
 
-        testNamespace.withOverrides(
+        TestFeatures.withOverrides(
             TestFeatures.flagA to true,
             TestFeatures.flagB to "test",
             TestFeatures.flagC to 100
@@ -367,7 +370,7 @@ class TestNamespaceOverridesTest {
         val TestFeatures = object : FeatureContainer<TestNamespace>(testNamespace) {
             val flag1 by boolean<Context>(default = false)
             val flag2 by string<Context>(default = "default")
-            val flag3 by int<Context>(default = 0)
+            val flag3 by integer<Context>(default = 0)
         }
 
         // Set multiple configure

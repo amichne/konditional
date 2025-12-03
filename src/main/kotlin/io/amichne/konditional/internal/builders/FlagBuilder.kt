@@ -21,7 +21,7 @@ import io.amichne.konditional.rules.Rule
  *
  * @param S The EncodableValue type wrapping the actual value.
  * @param T The actual value type.
- * @param C The type of the context that the feature flag evaluates against.
+ * @param C The type of the contextFn that the feature flag evaluates against.
  * @property feature The feature flag key used to uniquely identify the flag.
  * @constructor Internal constructor - users cannot instantiate this class directly.
  */
@@ -73,7 +73,7 @@ internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M :
     }
 
     /**
-     * Builds and returns a `FlagDefinition` instance of type `S` with context type `C`.
+     * Builds and returns a `FlagDefinition` instance of type `S` with contextFn type `C`.
      * Internal method - not intended for direct use.
      *
      * @return A `FlagDefinition` instance constructed based on the current configuration.

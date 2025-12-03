@@ -8,12 +8,12 @@ import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.rules.evaluable.Evaluable.Companion.factory
 
 /**
- * Demo features container showcasing different value types using FeatureContainer delegation.
+ * Demo features features showcasing different value types using FeatureContainer delegation.
  *
  * This demonstrates the modern pattern of using FeatureContainer instead of enum-based features:
  * - Complete enumeration via allFeatures()
  * - Zero boilerplate (namespace declared once)
- * - Mixed types in one container
+ * - Mixed types in one features
  * - Type-safe delegation with DSL configuration
  */
 object DemoFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
@@ -71,7 +71,7 @@ object DemoFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     }
 
     // Integer Features
-    val MAX_ITEMS_PER_PAGE by int<Context>(10) {
+    val MAX_ITEMS_PER_PAGE by integer<Context>(10) {
         default(10)
         rule {
             platforms(Platform.WEB)
@@ -81,7 +81,7 @@ object DemoFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
         } returns 15
     }
 
-    val CACHE_TTL_SECONDS by int<Context>(60) {
+    val CACHE_TTL_SECONDS by integer<Context>(60) {
         default(300) // 5 minutes
         rule {
             versions { min(2) }
@@ -122,7 +122,7 @@ object DemoFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
 }
 
 /**
- * Enterprise-specific features container demonstrating context extensibility.
+ * Enterprise-specific features features demonstrating contextFn extensibility.
  *
  * These features require the EnterpriseContext with additional fields like
  * subscription tier and employee count.
@@ -134,7 +134,7 @@ object EnterpriseFeatures : FeatureContainer<Namespace.Global>(Namespace.Global)
             extension {
                 factory { ctx ->
                     ctx.subscriptionTier == SubscriptionTier.ENTERPRISE ||
-                        ctx.subscriptionTier == SubscriptionTier.PROFESSIONAL
+                    ctx.subscriptionTier == SubscriptionTier.PROFESSIONAL
                 }
             }
         } returns true
@@ -145,7 +145,7 @@ object EnterpriseFeatures : FeatureContainer<Namespace.Global>(Namespace.Global)
             extension {
                 factory { ctx ->
                     ctx.subscriptionTier == SubscriptionTier.ENTERPRISE &&
-                        ctx.employeeCount > 100
+                    ctx.employeeCount > 100
                 }
             }
         } returns true

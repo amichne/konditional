@@ -10,7 +10,7 @@ import java.security.MessageDigest
 import kotlin.math.roundToInt
 
 /**
- * Represents a flag definition that can be evaluated within a specific context.
+ * Represents a flag definition that can be evaluated within a specific contextFn.
  *
  * This sealed class provides the minimal API surface for feature flag evaluation,
  * hiding implementation details like rollout strategies, targeting rules, and bucketing algorithms.
@@ -19,7 +19,7 @@ import kotlin.math.roundToInt
  *
  * @param S The EncodableValue type wrapping the actual value (Boolean, String, Int, or Double).
  * @param T The actual value type.
- * @param C The type of context used for evaluation.
+ * @param C The type of contextFn used for evaluation.
  *
  * @property defaultValue The default value returned when no targeting rules match or the flag is inactive.
  * @property feature The feature that defines the flag's key and evaluation rules.
@@ -64,9 +64,9 @@ data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Names
     }
 
     /**
-     * Evaluates the current flag based on the provided context and returns a result of type `T`.
+     * Evaluates the current flag based on the provided contextFn and returns a result of type `T`.
      *
-     * @param context The context in which the flag evaluation is performed.
+     * @param context The contextFn in which the flag evaluation is performed.
      * @return The result of the evaluation, of type `T`. If the flag is not active, returns the defaultValue.
      */
     fun evaluate(context: C): T {
@@ -84,13 +84,13 @@ data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Names
     }
 
     /**
-     * Determines if the current context belongs to an ineligible segment.
+     * Determines if the current contextFn belongs to an ineligible segment.
      *
      * This function evaluates specific conditions to check whether the
-     * current context or entity falls under a segment that is considered
+     * current contextFn or entity falls under a segment that is considered
      * ineligible for a particular operation or feature.
      *
-     * @return `true` if the context is in an ineligible segment, `false` otherwise.
+     * @return `true` if the contextFn is in an ineligible segment, `false` otherwise.
      */
     private fun isInEligibleSegment(
         flagKey: String,

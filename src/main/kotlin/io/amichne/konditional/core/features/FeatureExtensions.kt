@@ -10,12 +10,12 @@ import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.internal.builders.FlagBuilder
 
 /**
- * Evaluates this feature for the given context.
+ * Evaluates this feature for the given contextFn.
  *
  * By default, evaluates using the feature's namespace registry.
  * For testing, you can provide an explicit registry parameter.
  *
- * @param context The evaluation context
+ * @param context The evaluation contextFn
  * @param registry The registry to use (defaults to the feature's namespace)
  * @return The evaluated value, or null if the feature is not registered
  */

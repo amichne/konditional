@@ -35,7 +35,7 @@ class SnapshotSerializerTest {
     private val TestFeatures = object : FeatureContainer<Namespace.Global>(Namespace.Global) {
         val boolFlag by boolean<Context>(default = false)
         val stringFlag by string<Context>(default = "default")
-        val intFlag by int<Context>(default = 0)
+        val intFlag by integer<Context>(default = 0)
         val doubleFlag by double<Context>(default = 0.0)
     }
 

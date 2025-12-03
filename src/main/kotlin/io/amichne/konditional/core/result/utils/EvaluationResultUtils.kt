@@ -10,7 +10,7 @@ import io.amichne.konditional.core.result.FlagNotFoundException
  * This is an inline function with zero runtime overhead.
  * Use this to adapt EvaluationResult to your error handling system:
  * ```kotlin
- * context.evaluateSafe(MY_FLAG).fold(
+ * contextFn.evaluateSafe(MY_FLAG).fold(
  *     onSuccess = { Outcome.Success(it) },
  *     onFlagNotFound = { key -> Outcome.Failure(MyError.FlagNotRegistered(key)) },
  *     onEvaluationError = { key, error -> Outcome.Failure(MyError.EvaluationFailed(key, error)) }

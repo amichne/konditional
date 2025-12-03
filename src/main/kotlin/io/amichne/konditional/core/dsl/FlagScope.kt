@@ -26,7 +26,7 @@ import io.amichne.konditional.rules.Rule
  *
  * @param S The EncodableValue type wrapping the actual value
  * @param T The actual value type
- * @param C The context type the flag evaluates against
+ * @param C The contextFn type the flag evaluates against
  * @since 0.0.2
  */
 @KonditionalDsl
@@ -37,7 +37,7 @@ interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> 
     /**
      * Sets the default value for the flag.
      *
-     * This value is returned when no rules match the current context.
+     * This value is returned when no rules match the current contextFn.
      *
      * @param value The default value to assign to the flag
      */
@@ -56,7 +56,7 @@ interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> 
     /**
      * Defines a targeting rule for this flag.
      *
-     * Rules determine which users receive which values based on context properties.
+     * Rules determine which users receive which values based on contextFn properties.
      *
      * Example:
      * ```kotlin
@@ -75,7 +75,7 @@ interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> 
     /**
      * Associates a rule with a specific value.
      *
-     * When the rule matches the context, the flag will return this value.
+     * When the rule matches the contextFn, the flag will return this value.
      *
      * Example:
      * ```kotlin

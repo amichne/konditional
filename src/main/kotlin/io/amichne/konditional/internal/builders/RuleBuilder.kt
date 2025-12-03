@@ -21,7 +21,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * Users interact with the public [RuleScope] interface,
  * not this implementation directly.
  *
- * @param C The type of the context that the rules will evaluate against.
+ * @param C The type of the contextFn that the rules will evaluate against.
  * @constructor Internal constructor - users cannot instantiate this class directly.
  */
 @KonditionalDsl

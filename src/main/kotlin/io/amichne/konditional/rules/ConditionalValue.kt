@@ -6,11 +6,11 @@ import io.amichne.konditional.core.types.EncodableValue
 
 /**
  * Represents a rule paired with its target value.
- * When the rule matches a context, the paired value is returned.
+ * When the rule matches a contextFn, the paired value is returned.
  *
  * @param S The EncodableValue type wrapping the actual value
  * @param T The actual value type
- * @param C The context type used for rule evaluation
+ * @param C The contextFn type used for rule evaluation
  */
 @ConsistentCopyVisibility
 data class ConditionalValue<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> private constructor(
