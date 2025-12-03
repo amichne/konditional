@@ -10,4 +10,7 @@ enum class ValueType {
     LONG,
     DOUBLE,
     JSON,
+    ENUM,
+    JSON_OBJECT,
+    JSON_ARRAY,
 }

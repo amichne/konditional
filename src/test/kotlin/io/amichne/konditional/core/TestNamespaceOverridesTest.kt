@@ -133,7 +133,7 @@ class TestNamespaceOverridesTest {
 
     @Test
     fun `multiple overrides work independently`() {
-        val testNamespace = TestNamespace.test("multiple-configure")
+        val testNamespace = TestNamespace.test("multiple-testScope")
         val TestFeatures = object : FeatureContainer<TestNamespace>(testNamespace) {
             val boolFlag by boolean<Context>(default = false)
             val stringFlag by string<Context>(default = "default")
@@ -399,7 +399,7 @@ class TestNamespaceOverridesTest {
 
     @Test
     fun `nested withOverride calls work correctly`() {
-        val testNamespace = TestNamespace.test("nested-configure")
+        val testNamespace = TestNamespace.test("nested-testScope")
         val TestFeatures = object : FeatureContainer<TestNamespace>(testNamespace) {
             val outerFlag by boolean<Context>(default = false)
             val innerFlag by string<Context>(default = "default")

@@ -21,7 +21,7 @@ import kotlin.reflect.KProperty
  * - **Complete enumeration**: `allFeatures()` provides all features at runtime
  * - **Ergonomic delegation**: Use `by boolean {}`, `by string {}`, etc. with DSL configuration
  * - **Single namespace declaration**: No need to repeat namespace on every feature
- * - **Mixed types**: Combine Boolean, String, Int, and Double features in one features
+ * - **Mixed types**: Combine Boolean, String, Int, Double, and Enum features in one container
  * - **Type safety**: Full type inference and compile-time checking
  * - **Lazy registration**: Features are created and registered only when first accessed
  *
@@ -234,6 +234,38 @@ abstract class FeatureContainer<M : Namespace>(
         decimalScope: FlagScope<EncodableValue.DecimalEncodeable, Double, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, DoubleFeature<C, M>> =
         ContainerFeaturePropertyDelegate(default, decimalScope) { DoubleFeature(it, namespace) }
+
+    /**
+     * Creates an Enum feature with automatic registration and configuration.
+     *
+     * The feature is configured using a DSL scope that provides type-safe access to
+     * enum-specific configuration options like rules, defaults, and targeting.
+     * Configuration is automatically applied to the namespace when the feature is first accessed.
+     *
+     * **Example:**
+     * ```kotlin
+     * enum class LogLevel { DEBUG, INFO, WARN, ERROR }
+     *
+     * object MyFeatures : FeatureContainer<Namespace.Logging>(Namespace.Logging) {
+     *     val LOG_LEVEL by enum(default = LogLevel.INFO) {
+     *         rule {
+     *             environments(Environment.DEVELOPMENT)
+     *         } returns LogLevel.DEBUG
+     *     }
+     * }
+     * ```
+     *
+     * @param E The enum type
+     * @param C The context type used for evaluation
+     * @param default The default enum value for this feature (required)
+     * @param enumScope DSL scope for configuring the enum feature
+     * @return A delegated property that returns an [EnumFeature]
+     */
+    protected fun <E : Enum<E>, C : Context> enum(
+        default: E,
+        enumScope: FlagScope<EncodableValue.EnumEncodeable<E>, E, C, M>.() -> Unit = {},
+    ): ReadOnlyProperty<FeatureContainer<M>, EnumFeature<E, C, M>> =
+        ContainerFeaturePropertyDelegate(default, enumScope) { EnumFeature(it, namespace) }
 
     /**
      * Internal delegate factory that handles feature creation, configuration, and registration.

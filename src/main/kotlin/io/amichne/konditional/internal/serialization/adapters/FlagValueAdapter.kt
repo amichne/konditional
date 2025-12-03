@@ -13,7 +13,7 @@ import java.lang.reflect.Type
  * Serializes FlagValue subclasses with their type discriminator for type-safe deserialization.
  * Parse-don't-validate: Deserialization constructs typed domain objects at the boundary.
  *
- * Supports only primitive types: Boolean, String, Int, Double
+ * Supports primitive types and user-defined types: Boolean, String, Int, Double, Enum
  */
 internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
 
@@ -41,6 +41,11 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
                 writer.name("type").value("DOUBLE")
                 writer.name("value").value(value.value)
             }
+            is FlagValue.EnumValue -> {
+                writer.name("type").value("ENUM")
+                writer.name("value").value(value.value)
+                writer.name("enumClassName").value(value.enumClassName)
+            }
         }
         writer.endObject()
     }
@@ -51,6 +56,7 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
         var stringValue: String? = null
         var intValue: Int? = null
         var doubleValue: Double? = null
+        var enumClassName: String? = null
 
         reader.beginObject()
         while (reader.hasNext()) {
@@ -72,6 +78,7 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
                         else -> reader.skipValue()
                     }
                 }
+                "enumClassName" -> enumClassName = reader.nextString()
                 else -> reader.skipValue()
             }
         }
@@ -87,6 +94,15 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
                 ?: throw JsonDataException("INT type requires int value")
             "DOUBLE" -> doubleValue?.let { FlagValue.DoubleValue(it) }
                 ?: throw JsonDataException("DOUBLE type requires double value")
+            "ENUM" -> {
+                if (stringValue == null) {
+                    throw JsonDataException("ENUM type requires string value (enum name)")
+                }
+                if (enumClassName == null) {
+                    throw JsonDataException("ENUM type requires enumClassName field")
+                }
+                FlagValue.EnumValue(stringValue, enumClassName)
+            }
             null -> throw JsonDataException("Missing required 'type' field")
             else -> throw JsonDataException("Unknown FlagValue type: $type")
         }
