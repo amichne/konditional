@@ -20,7 +20,7 @@ import io.amichne.konditional.core.types.EncodableValue
  *
  * Usage:
  * ```kotlin
- * when (val result = context.evaluateSafe(MY_FLAG)) {
+ * when (val result = contextFn.evaluateSafe(MY_FLAG)) {
  *     is EvaluationResult.Success -> handleValue(result.value)
  *     is EvaluationResult.FlagNotFound -> handleMissingFlag(result.key)
  *     is EvaluationResult.EvaluationError -> handleError(result.key, result.error)
@@ -29,7 +29,7 @@ import io.amichne.konditional.core.types.EncodableValue
  *
  * Or adapt to your error type:
  * ```kotlin
- * context.evaluateSafe(MY_FLAG).fold(
+ * contextFn.evaluateSafe(MY_FLAG).fold(
  *     onSuccess = { Outcome.Success(it) },
  *     onFlagNotFound = { Outcome.Failure(MyError.FlagNotFound(it)) },
  *     onEvaluationError = { key, err -> Outcome.Failure(MyError.Failed(key, err)) }
@@ -56,14 +56,14 @@ fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> C.evaluateSafe(
  * Use this when:
  * - You don't need to distinguish between FlagNotFound and EvaluationError
  * - Null is an acceptable fallback
- * - You're in a context where nullable types work well
+ * - You're in a contextFn where nullable types work well
  *
  * If you need to distinguish error cases, use `evaluateSafe()` instead.
  *
  * The feature's namespace registry is automatically used.
  *
  * ```kotlin
- * val feature: String? = context.evaluateOrNull(MY_FLAG)
+ * val feature: String? = contextFn.evaluateOrNull(MY_FLAG)
  * if (feature != null) {
  *     // use feature
  * }
@@ -86,7 +86,7 @@ fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> C.evaluateOrNul
  * The feature's namespace registry is automatically used.
  *
  * ```kotlin
- * val feature: String = context.evaluateOrDefault(MY_FLAG, default = "off")
+ * val feature: String = contextFn.evaluateOrDefault(MY_FLAG, default = "off")
  * ```
  */
 fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> C.evaluateOrDefault(
@@ -101,13 +101,13 @@ fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> C.evaluateOrDef
  *
  * Only use this when:
  * - The flag not existing is truly an exceptional (programmer error) case
- * - You're in a context that already uses exceptions
+ * - You're in a contextFn that already uses exceptions
  * - You want fail-fast behavior
  *
  * The feature's namespace registry is automatically used.
  *
  * ```kotlin
- * val feature: String = context.evaluateOrThrow(MY_FLAG)
+ * val feature: String = contextFn.evaluateOrThrow(MY_FLAG)
  * ```
  *
  * @throws FlagNotFoundException if the flag is not registered

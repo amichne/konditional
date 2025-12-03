@@ -1,4 +1,6 @@
-package io.amichne.konditional.core
+package io.amichne.konditional.fixtures.core
+
+import io.amichne.konditional.core.Namespace
 
 /**
  * TestNamespace-scoped namespace for isolated testing.
@@ -22,7 +24,7 @@ package io.amichne.konditional.core
  *         }
  *     }
  *
- *     val result = context.evaluate(TestFeatures.myFlag)
+ *     val result = contextFn.evaluate(TestFeatures.myFlag)
  *     assertEquals(true, result)
  * }
  * ```

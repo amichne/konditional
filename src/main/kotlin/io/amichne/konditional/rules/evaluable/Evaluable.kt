@@ -14,20 +14,20 @@ import io.amichne.konditional.context.Context
  * - Specificity values can be summed to determine rule precedence
  * - Matching logic can be chained (all must match for composition to match)
  *
- * @param C The context type that this evaluable evaluates against
+ * @param C The contextFn type that this evaluable evaluates against
  *
  * @see io.amichne.konditional.rules.Rule
  * @see BaseEvaluable
  */
 fun interface Evaluable<in C : Context> : Specifier {
     /**
-     * Determines if this evaluable matches the given context.
+     * Determines if this evaluable matches the given contextFn.
      *
      * The default implementation always returns true, allowing implementations
      * to selectively override only when they need custom matching logic.
      *
-     * @param context The context to evaluate against
-     * @return true if the context matches this evaluable's criteria, false otherwise
+     * @param context The contextFn to evaluate against
+     * @return true if the contextFn matches this evaluable's criteria, false otherwise
      */
     fun matches(context: C): Boolean
 

@@ -52,7 +52,7 @@ import java.util.concurrent.atomic.AtomicReference
  *     // Set override - flag will always return this value
  *     testNamespace.registry.setOverride(MyFlags.FEATURE_A, true)
  *
- *     val result = context.evaluate(MyFlags.FEATURE_A)
+ *     val result = contextFn.evaluate(MyFlags.FEATURE_A)
  *     assertEquals(true, result)
  *
  *     // Clean up
@@ -99,13 +99,13 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * always evaluates to the override value, bypassing all rules and rollout logic.
      *
      * This override of the [NamespaceRegistry.flag] method ensures that test overrides
-     * are transparently applied when flags are evaluated via `context.evaluate(feature)`.
+     * are transparently applied when flags are evaluated via `contextFn.evaluate(feature)`.
      *
      * @param key The [Feature] key for the flag
      * @return The [FlagDefinition] (potentially wrapped with override logic)
      * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
-     * @param C The type of the context used for evaluation
+     * @param C The type of the contextFn used for evaluation
      * @param M The namespace the feature belongs to
      */
     @Suppress("UNCHECKED_CAST")
@@ -158,7 +158,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      *
      * @param definition The [io.amichne.konditional.core.FlagDefinition] to update
      * @param S The type of the flag's value
-     * @param C The type of the context used for evaluation
+     * @param C The type of the contextFn used for evaluation
      */
     internal fun <S : EncodableValue<T>, T : Any, C : Context> updateDefinition(definition: FlagDefinition<S, T, C, *>) {
         current.updateAndGet { currentSnapshot ->
@@ -172,7 +172,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * Sets a test-scoped override for a specific feature flag.
      *
      * When an override is set, the flag will always return the override value
-     * regardless of rules, context, or rollout configuration. This is useful
+     * regardless of rules, contextFn, or rollout configuration. This is useful
      * for testing specific scenarios without modifying flag definitions.
      *
      * **Thread Safety**: This method is thread-safe and can be called from
@@ -183,7 +183,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @param value The value to return for this flag
      * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
-     * @param C The type of the context used for evaluation
+     * @param C The type of the contextFn used for evaluation
      * @param M The namespace the feature belongs to
      *
      * @see clearOverride
@@ -207,7 +207,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @param feature The feature flag to clear the override for
      * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
-     * @param C The type of the context used for evaluation
+     * @param C The type of the contextFn used for evaluation
      * @param M The namespace the feature belongs to
      *
      * @see setOverride
@@ -239,7 +239,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @return true if an override is set, false otherwise
      * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
-     * @param C The type of the context used for evaluation
+     * @param C The type of the contextFn used for evaluation
      * @param M The namespace the feature belongs to
      *
      * @see setOverride
@@ -255,7 +255,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @return The override value, or null if no override is set
      * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
-     * @param C The type of the context used for evaluation
+     * @param C The type of the contextFn used for evaluation
      * @param M The namespace the feature belongs to
      *
      * @see setOverride

@@ -4,11 +4,11 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.TestNamespace
+import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.features.evaluate
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.test
+import io.amichne.konditional.fixtures.core.test
 import org.junit.jupiter.api.Test
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
@@ -146,7 +146,7 @@ class ConcurrencyAttacksTest {
         assertTrue(errors.isEmpty(), "Concurrent evaluation caused errors: $errors")
         assertEquals(1000, results.size, "Some evaluations were lost")
 
-        // Verify determinism: same context always gives same result
+        // Verify determinism: same contextFn always gives same result
         val context1 = Context(
             locale = AppLocale.UNITED_STATES,
             platform = Platform.ANDROID,
@@ -392,12 +392,12 @@ class ConcurrencyAttacksTest {
     @Test
     fun `ATTACK - mutating context during evaluation if mutable implementation used`() {
         /*
-         * ATTACK: Use mutable context and modify during evaluation
-         * RESULT: TestNamespace if evaluation assumes immutable context
-         * DANGER: Changing context mid-evaluation could break matching
+         * ATTACK: Use mutable contextFn and modify during evaluation
+         * RESULT: TestNamespace if evaluation assumes immutable contextFn
+         * DANGER: Changing contextFn mid-evaluation could break matching
          */
 
-        // Create mutable context implementation (violates Context contract)
+        // Create mutable contextFn implementation (violates Context contract)
         data class MutableContext(
             override var locale: AppLocale,
             override var platform: Platform,
@@ -424,7 +424,7 @@ class ConcurrencyAttacksTest {
             stableId = StableId.of("12345678901234567890123456789012")
         )
 
-        // Evaluate while mutating context from another thread
+        // Evaluate while mutating contextFn from another thread
         val executor = Executors.newFixedThreadPool(2)
         val results = ConcurrentHashMap<Int, Boolean>()
 
@@ -446,7 +446,7 @@ class ConcurrencyAttacksTest {
 
         /*
          * IMPACT:
-         * If evaluation doesn't defensively copy context,
+         * If evaluation doesn't defensively copy contextFn,
          * mutations during evaluation could cause:
          * 1. Inconsistent rule matching
          * 2. Wrong bucket calculation
@@ -541,7 +541,7 @@ class ConcurrencyAttacksTest {
      *    - ConcurrentModificationException risk
      *
      * 6. CONTEXT MUTATION
-     *    - Mutable context violates implicit contract
+     *    - Mutable contextFn violates implicit contract
      *    - Could cause non-deterministic evaluation
      *
      * 7. ITERATION DURING MODIFICATION

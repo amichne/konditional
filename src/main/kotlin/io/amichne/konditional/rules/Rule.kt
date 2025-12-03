@@ -26,7 +26,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  *
  * This design enables flexible composition:
  * ```
- * Rule.matches(context) = baseEvaluable.matches(context) && extension.matches(context)
+ * Rule.matches(contextFn) = baseEvaluable.matches(contextFn) && extension.matches(contextFn)
  * Rule.specificity() = baseEvaluable.specificity() + extension.specificity()
  * ```
  *
@@ -47,13 +47,13 @@ import io.amichne.konditional.rules.versions.VersionRange
  * Rule(
  *     rollout {  Rollout.of(100.0) }
  *     extension = object : Evaluable<MyContext>() {
- *         override fun matches(context: MyContext) = context.isPremiumUser
+ *         override fun matches(contextFn: MyContext) = contextFn.isPremiumUser
  *         override fun specificity() = 1
  *     }
  * )
  * ```
  *
- * @param C The context type that this rule evaluates against
+ * @param C The contextFn type that this rule evaluates against
  * @property rollout The percentage of users (0-100) that should match this rule after all criteria are met
  * @property note Optional note or description for this rule
  * @property baseEvaluable Evaluator for standard client targeting (locale, platform, version)
@@ -79,7 +79,7 @@ data class Rule<C : Context> internal constructor(
     ) : this(rollout, note, BaseEvaluable(locales, platforms, versionRange), extension)
 
     /**
-     * Determines if this rule matches the given context by evaluating both composed evaluators.
+     * Determines if this rule matches the given contextFn by evaluating both composed evaluators.
      *
      * Matching requires BOTH evaluators to match:
      * - Base matching: locale, platform, and version constraints from [baseEvaluable]
@@ -87,8 +87,8 @@ data class Rule<C : Context> internal constructor(
      *
      * Note: This does not check rollout eligibility - that is handled separately during flag evaluation.
      *
-     * @param context The context to evaluate against
-     * @return true if both [baseEvaluable] and [extension] match the context
+     * @param context The contextFn to evaluate against
+     * @return true if both [baseEvaluable] and [extension] match the contextFn
      */
     override fun matches(context: C): Boolean =
         baseEvaluable.matches(context) && extension.matches(context)

@@ -27,7 +27,7 @@ object PaymentFeatures : FeatureContainer<Namespace.Payments>(
 ) {
     val APPLE_PAY by boolean<Context>(default = false)
     val GOOGLE_PAY by boolean<Context>(default = false)
-    val MAX_CARDS by int<Context>(default = 5)
+    val MAX_CARDS by integer<Context>(default = 5)
     val API_ENDPOINT by string<Context>(default = "https://api.example.com")
     val TRANSACTION_FEE by double<Context>(default = 0.029)
 }
@@ -78,7 +78,7 @@ val API_ENDPOINT by string<Context>(default = "https://api.prod.com") {
 Creates an Int feature flag.
 
 ```kotlin
-val MAX_RETRIES by int<Context>(default = 3) {
+val MAX_RETRIES by integer<Context>(default = 3) {
     rule {
         platforms(Platform.ANDROID)
         rollout = Rollout.of(50.0)
@@ -193,8 +193,8 @@ object AppConfig : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val LOG_LEVEL by string<Context>(default = "INFO")
 
     // Numeric configuration
-    val MAX_RETRIES by int<Context>(default = 3)
-    val TIMEOUT_SECONDS by int<Context>(default = 30)
+    val MAX_RETRIES by integer<Context>(default = 3)
+    val TIMEOUT_SECONDS by integer<Context>(default = 30)
     val TRANSACTION_FEE by double<Context>(default = 0.029)
 }
 
@@ -572,7 +572,7 @@ object PaymentFeatures : FeatureContainer<Namespace.Payments>(
 ) {
     val APPLE_PAY by boolean<Context>(default = false)
     val GOOGLE_PAY by boolean<Context>(default = false)
-    val MAX_TRANSACTION by int<Context>(default = 10000)
+    val MAX_TRANSACTION by integer<Context>(default = 10000)
 }
 
 object MessagingFeatures : FeatureContainer<Namespace.Messaging>(
@@ -580,7 +580,7 @@ object MessagingFeatures : FeatureContainer<Namespace.Messaging>(
 ) {
     val PUSH_NOTIFICATIONS by boolean<Context>(default = true)
     val EMAIL_ENABLED by boolean<Context>(default = true)
-    val MAX_MESSAGE_LENGTH by int<Context>(default = 500)
+    val MAX_MESSAGE_LENGTH by integer<Context>(default = 500)
 }
 ```
 
@@ -609,7 +609,7 @@ object FraudDetectionFeatures : FeatureContainer<Namespace.Payments>(
     Namespace.Payments
 ) {
     val RISK_SCORING by boolean<Context>(default = true)
-    val MANUAL_REVIEW_THRESHOLD by int<Context>(default = 1000)
+    val MANUAL_REVIEW_THRESHOLD by integer<Context>(default = 1000)
 }
 ```
 
@@ -658,7 +658,7 @@ For new projects and features, prefer `FeatureContainer` over enum pattern:
 object MyFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val FEATURE_A by boolean<Context>(default = false)
     val CONFIG_B by string<Context>(default = "default")
-    val LIMIT_C by int<Context>(default = 100)
+    val LIMIT_C by integer<Context>(default = 100)
 }
 
 // ⚠️  Alternative: Enum pattern (more boilerplate)
@@ -716,14 +716,14 @@ object AuthFeatures : FeatureContainer<Namespace.Authentication>(
 ) {
     val SSO_ENABLED by boolean<Context>(default = false)
     val MFA_REQUIRED by boolean<Context>(default = false)
-    val PASSWORD_MIN_LENGTH by int<Context>(default = 8)
+    val PASSWORD_MIN_LENGTH by integer<Context>(default = 8)
 }
 
 object PaymentFeatures : FeatureContainer<Namespace.Payments>(
     Namespace.Payments
 ) {
     val APPLE_PAY by boolean<Context>(default = false)
-    val MAX_TRANSACTION by int<Context>(default = 10000)
+    val MAX_TRANSACTION by integer<Context>(default = 10000)
 }
 
 // ❌ Avoid: Unrelated features mixed together
@@ -877,7 +877,7 @@ object PaymentFeatures : FeatureContainer<Namespace.Payments>(
     }
 
     // Numeric limits
-    val MAX_TRANSACTION by int<Context>(default = 10000) {
+    val MAX_TRANSACTION by integer<Context>(default = 10000) {
         rule {
             locales(AppLocale.UNITED_STATES)
         } returns 50000
@@ -1007,7 +1007,7 @@ object EnterpriseFeatures : FeatureContainer<Namespace.Global>(Namespace.Global)
         } returns true
     }
 
-    val API_RATE_LIMIT by int<EnterpriseContext>(default = 100) {
+    val API_RATE_LIMIT by integer<EnterpriseContext>(default = 100) {
         rule {
             custom { ctx -> ctx.subscriptionTier == SubscriptionTier.ENTERPRISE }
         } returns 10000

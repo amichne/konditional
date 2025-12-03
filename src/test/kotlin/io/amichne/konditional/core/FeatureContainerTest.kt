@@ -21,13 +21,13 @@ import org.junit.jupiter.api.Test
  */
 class FeatureContainerTest {
 
-    // TestNamespace container with mixed feature types
+    // TestNamespace features with mixed feature types
     object TestFeatures : FeatureContainer<Namespace.Payments>(
         Namespace.Payments
     ) {
         val testBoolean by boolean<Context>(default = false)
         val testString by string<Context>(default = "default")
-        val testInt by int<Context>(default = 0)
+        val testInt by integer<Context>(default = 0)
         val testDouble by double<Context>(default = 0.0)
     }
 
@@ -79,7 +79,7 @@ class FeatureContainerTest {
 
     @Test
     fun `features are lazily initialized`() {
-        // Create a new container that hasn't been accessed yet
+        // Create a new features that hasn't been accessed yet
         with(object : FeatureContainer<Namespace.Payments>(
             Namespace.Payments
         ) {
@@ -104,13 +104,13 @@ class FeatureContainerTest {
 
     @Test
     fun `features can be evaluated with context`() {
-        // Create a test container with configured features
+        // Create a test features with configured features
         val testFeatures = object : FeatureContainer<Namespace.Payments>(
             Namespace.Payments
         ) {
             val configuredBoolean by boolean<Context>(default = true)
             val configuredString by string<Context>("test-value") {}
-            val configuredInt by int<Context>(100)
+            val configuredInt by integer<Context>(100)
         }
 
         val context = Context(

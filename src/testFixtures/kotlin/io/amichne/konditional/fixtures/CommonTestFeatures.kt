@@ -69,13 +69,13 @@ object CommonTestFeatures : FeatureContainer<Namespace.Global>(Namespace.Global)
 
     // Integer features
     /** Maximum connections configuration */
-    val maxConnections by int<Context>(default = 100)
+    val maxConnections by integer<Context>(default = 100)
 
     /** Timeout configuration in milliseconds */
-    val timeout by int<Context>(default = 5000)
+    val timeout by integer<Context>(default = 5000)
 
     /** Retry count configuration */
-    val retryCount by int<Context>(default = 3)
+    val retryCount by integer<Context>(default = 3)
 
     // Double features
     /** Threshold configuration */

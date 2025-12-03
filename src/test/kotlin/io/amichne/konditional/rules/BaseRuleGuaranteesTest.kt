@@ -6,7 +6,7 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.id.TestStableId
+import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.evaluable.Evaluable.Companion.factory
 import io.amichne.konditional.rules.versions.LeftBound
@@ -35,8 +35,8 @@ import kotlin.test.assertTrue
  * ) : Rule<C>(rollout, locales, platforms) {
  *
  *     // Override to add custom matching logic
- *     override fun matches(context: C): Boolean {
- *         return requiredTier == null || context.subscriptionTier == requiredTier
+ *     override fun matches(contextFn: C): Boolean {
+ *         return requiredTier == null || contextFn.subscriptionTier == requiredTier
  *     }
  *
  *     // Override to add custom specificity
@@ -59,7 +59,7 @@ class RuleGuaranteesTest {
     )
 
     /**
-     * Custom context for testing additional attributes.
+     * Custom contextFn for testing additional attributes.
      */
     interface CustomContext : Context {
         val subscriptionTier: String
@@ -70,7 +70,7 @@ class RuleGuaranteesTest {
         override val locale = AppLocale.UNITED_STATES
         override val platform = Platform.ANDROID
         override val appVersion = Version(1, 0, 0)
-        override val stableId = StableId.of("22222222222222222222222222222222")
+        override val stableId = TestStableId
         override val subscriptionTier = "premium"
         override val userRole = "admin"
     }
@@ -162,7 +162,7 @@ class RuleGuaranteesTest {
         // All criteria match
         assertTrue(rule.matches(customContext))
 
-        // Create context with wrong tier
+        // Create contextFn with wrong tier
         val basicContext = object : CustomContext {
             override val locale = AppLocale.UNITED_STATES
             override val platform = Platform.ANDROID

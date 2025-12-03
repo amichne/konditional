@@ -26,7 +26,7 @@ import io.amichne.konditional.rules.evaluable.Evaluable
  * }
  * ```
  *
- * @param C The context type the rule evaluates against
+ * @param C The contextFn type the rule evaluates against
  * @since 0.0.2
  */
 @KonditionalDsl
@@ -73,7 +73,7 @@ interface RuleScope<C : Context> {
      * Example:
      * ```kotlin
      * extension { object : Evaluable<MyContext>() {
-     *     override fun matches(context: MyContext) = context.organizationId == "enterprise"
+     *     override fun matches(contextFn: MyContext) = contextFn.organizationId == "enterprise"
      * }}
      * ```
      *

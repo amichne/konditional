@@ -2,6 +2,7 @@ import java.time.Duration
 
 plugins {
     kotlin("jvm") version "2.2.20"
+    `java-library`
     `java-test-fixtures`
     `maven-publish`
     signing
@@ -33,6 +34,16 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    testFixturesApi(kotlin("test"))
+}
+
+sourceSets {
+    main.configure {
+        java.srcDir("src/main/kotlin")
+    }
+    testFixtures.configure {
+        java.include { true }
+    }
 }
 
 tasks.test {
@@ -59,10 +70,13 @@ tasks.withType<JavaCompile> {
     options.isFork = true
     options.isIncremental = true // avoid re-compilation of unchanged modules
     options.compilerArgs.add("-parameters") // https://github.com/spring-projects/spring-framework/issues/31643
+
 }
 
 publishing {
+
     publications {
+
         create<MavenPublication>("maven") {
             from(components["java"])
 
@@ -98,6 +112,7 @@ publishing {
                 }
             }
         }
+
     }
 
     repositories {
@@ -117,7 +132,7 @@ publishing {
 signing {
     // Only require signing if publishing to Maven Central
     isRequired = gradle.taskGraph.hasTask("publishToSonatype") ||
-        gradle.taskGraph.hasTask("publishToMavenCentral")
+                 gradle.taskGraph.hasTask("publishToMavenCentral")
 
     // Use in-memory key from environment (CI) or gpg agent (local)
     val signingKey = System.getenv("SIGNING_KEY")
