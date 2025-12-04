@@ -1,10 +1,11 @@
 package io.amichne.konditional.context
 
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.Namespace.Authentication.flag
+import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.features.FeatureAware
 import io.amichne.konditional.core.features.FeatureContainer
-import io.amichne.konditional.core.features.evaluate
 import io.amichne.konditional.core.types.EncodableValue
 
 @Deprecated("Use ContextAware instead", ReplaceWith("ContextAware<C>"))
@@ -28,14 +29,14 @@ inline fun <reified C : Context, reified M : Namespace, O> FeatureContainer<M>.c
 
 inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context, M : Namespace, D> D.feature(
     block: D.() -> Feature<S, T, C, M>,
-): T where D : ContextAware<C>, D : FeatureAware<M> = block().evaluate(context)
+): T where D : ContextAware<C>, D : FeatureAware<M> = flag(block()).evaluate(context)
 
 inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context, D> D.feature(
-    context: () -> C,
+    @KonditionalDsl context: () -> C,
     block: ContextAware<C>.() -> Feature<S, T, C, *>,
 ): T where D : ContextAware<C>, D : FeatureAware<*> = feature(context(), block)
 
 inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context, D> D.feature(
     context: C,
-    block: ContextAware<C>.() -> Feature<S, T, C, *>,
-): T where D : ContextAware<C>, D : FeatureAware<*> = block().evaluate(context)
+    @KonditionalDsl block: D.() -> Feature<S, T, C, *>,
+): T where D : FeatureAware<*>, D : ContextAware<*> = flag(block()).evaluate(context)

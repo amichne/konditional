@@ -1,7 +1,7 @@
 package io.amichne.konditional.core.dsl
 
-import io.amichne.konditional.core.types.JsonSchema
-import io.amichne.konditional.core.types.JsonValue
+import io.amichne.konditional.core.types.json.JsonSchema
+import io.amichne.konditional.core.types.json.JsonValue
 
 /**
  * DSL marker for JSON schema builders.

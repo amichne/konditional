@@ -5,9 +5,9 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.context.feature
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.result.getOrThrow
+import io.amichne.konditional.fixtures.core.OverridingScope.Companion.setupTest
 import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.fixtures.core.clearAllOverrides
 import io.amichne.konditional.fixtures.core.clearOverride
@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.shadow.com.univocity.parsers.conversions.Conversions.string
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -52,6 +51,10 @@ class TestNamespaceOverridesTest {
         val testNamespace = TestNamespace.test("basic-override")
         val TestFeatures = object : FeatureContainer<TestNamespace>(testNamespace) {
             val myFlag by boolean<Context>(default = false)
+        }
+
+        setupTest(TestFeatures) {
+
         }
 
         // Without override, returns default

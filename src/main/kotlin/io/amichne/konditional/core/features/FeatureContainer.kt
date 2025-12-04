@@ -4,7 +4,12 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.registry.NamespaceRegistry.Companion.updateDefinition
+import io.amichne.konditional.core.types.BooleanEncodeable
+import io.amichne.konditional.core.types.DecimalEncodeable
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.core.types.EnumEncodeable
+import io.amichne.konditional.core.types.IntEncodeable
+import io.amichne.konditional.core.types.StringEncodeable
 import io.amichne.konditional.internal.builders.FlagBuilder
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
@@ -110,7 +115,7 @@ abstract class FeatureContainer<M : Namespace>(
      */
     protected fun <C : Context> boolean(
         default: Boolean,
-        flagScope: FlagScope<EncodableValue.BooleanEncodeable, Boolean, C, M>.() -> Unit = {},
+        flagScope: FlagScope<BooleanEncodeable, Boolean, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, BooleanFeature<C, M>> =
         ContainerFeaturePropertyDelegate(default, flagScope) { BooleanFeature(it, namespace) }
 
@@ -139,7 +144,7 @@ abstract class FeatureContainer<M : Namespace>(
      */
     protected fun <C : Context> string(
         default: String,
-        stringScope: FlagScope<EncodableValue.StringEncodeable, String, C, M>.() -> Unit = {},
+        stringScope: FlagScope<StringEncodeable, String, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, StringFeature<C, M>> =
         ContainerFeaturePropertyDelegate(default, stringScope) { StringFeature.Companion(it, namespace) }
 
@@ -168,7 +173,7 @@ abstract class FeatureContainer<M : Namespace>(
      */
     protected fun <C : Context> integer(
         default: Int,
-        integerScope: FlagScope<EncodableValue.IntEncodeable, Int, C, M>.() -> Unit = {},
+        integerScope: FlagScope<IntEncodeable, Int, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<C, M>> =
         ContainerFeaturePropertyDelegate(default, integerScope) {
             IntFeature.Companion(it, namespace)
@@ -200,7 +205,7 @@ abstract class FeatureContainer<M : Namespace>(
     @Deprecated("Use integer() instead", ReplaceWith("integer(default) ({ integerScope })"))
     protected fun <C : Context> int(
         default: Int,
-        integerScope: FlagScope<EncodableValue.IntEncodeable, Int, C, M>.() -> Unit = {},
+        integerScope: FlagScope<IntEncodeable, Int, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<C, M>> =
         ContainerFeaturePropertyDelegate(default, integerScope) {
             IntFeature.Companion(it, namespace)
@@ -231,7 +236,7 @@ abstract class FeatureContainer<M : Namespace>(
      */
     protected fun <C : Context> double(
         default: Double,
-        decimalScope: FlagScope<EncodableValue.DecimalEncodeable, Double, C, M>.() -> Unit = {},
+        decimalScope: FlagScope<DecimalEncodeable, Double, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, DoubleFeature<C, M>> =
         ContainerFeaturePropertyDelegate(default, decimalScope) { DoubleFeature(it, namespace) }
 
@@ -263,7 +268,7 @@ abstract class FeatureContainer<M : Namespace>(
      */
     protected fun <E : Enum<E>, C : Context> enum(
         default: E,
-        enumScope: FlagScope<EncodableValue.EnumEncodeable<E>, E, C, M>.() -> Unit = {},
+        enumScope: FlagScope<EnumEncodeable<E>, E, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, EnumFeature<E, C, M>> =
         ContainerFeaturePropertyDelegate(default, enumScope) { EnumFeature(it, namespace) }
 
