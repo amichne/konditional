@@ -16,6 +16,7 @@ import kotlin.reflect.KClass
  * - Enum (user-defined enum types)
  * - JsonObject (structured JSON objects with typed fields)
  * - JsonArray (homogeneous arrays)
+ * - DataClass (user-defined data classes implementing DataClassWithSchema)
  *
  * This enforces compile-time type safety by making Conditional and FeatureFlag
  * only accept EncodableValue subtypes, preventing unsupported types entirely.
@@ -33,7 +34,8 @@ sealed interface EncodableValue<T : Any> {
         DECIMAL(Double::class),
         ENUM(Enum::class),
         JSON_OBJECT(JsonValue.JsonObject::class),
-        JSON_ARRAY(JsonValue.JsonArray::class);
+        JSON_ARRAY(JsonValue.JsonArray::class),
+        DATA_CLASS(DataClassWithSchema::class);
 
         companion object {
             /**
@@ -56,6 +58,11 @@ sealed interface EncodableValue<T : Any> {
                     }
                     JSON_OBJECT -> JsonObjectEncodeable(value as JsonValue.JsonObject, requireNotNull(value.schema))
                     JSON_ARRAY -> JsonArrayEncodeable(value as JsonValue.JsonArray, requireNotNull(value.elementSchema))
+                    DATA_CLASS -> {
+                        // For data class types, get the schema from the instance
+                        val dataClassWithSchema = value as DataClassWithSchema
+                        DataClassEncodeable(dataClassWithSchema, dataClassWithSchema.schema)
+                    }
                 } as EncodableValue<T>
             }
         }

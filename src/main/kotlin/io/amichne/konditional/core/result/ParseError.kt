@@ -50,7 +50,7 @@ sealed interface ParseError {
      * Failed to deserialize JSON into a snapshot.
      */
     @ConsistentCopyVisibility
-    data class InvalidSnapshot internal constructor(val reason: String) : ParseError {
+    data class InvalidSnapshot(val reason: String) : ParseError {
         override val message: String get() = "Invalid snapshot: $reason"
     }
 

@@ -300,23 +300,28 @@ val enabled = context.evaluateOrDefault(MyFeatures.MY_FLAG, false)
 
 **Canary Deployments**: Test risky changes with 5% of users before full rollout.
 
+## vs LaunchDarkly / Split
+
+| Feature | LaunchDarkly/Split | Konditional |
+|---------|-------------------|-------------|
+| **Type Safety** | Runtime strings | Compile-time properties |
+| **Evaluation** | Server-side (network) | Offline-first (local) |
+| **Cost** | SaaS fees scale with MAU | Free (self-hosted) |
+| **Context** | HashMap attributes | Typed data classes |
+| **Performance** | Network latency | Zero-allocation, O(n) |
+| **Version Control** | Dashboard configs | Code-based, Git-tracked |
+| **Errors** | Silent failures | Parse-don't-validate Results |
+
+**Migrating?** See the [Migration Guide](docs/02-migration.md) for concept mapping and adoption patterns.
+
 ## Documentation
 
-### Getting Started
-- **[Quick Start](docs/QuickStart.md)** - Get your first flag running in 5 minutes
-- **[Overview](docs/index.md)** - Complete API overview and core concepts
-
-### Core Concepts
-- **[Features](docs/Features.md)** - All feature definition patterns
-- **[Context](docs/Context.md)** - Evaluation contexts and custom extensions
-- **[Evaluation](docs/Evaluation.md)** - Deep dive into flag evaluation
-- **[Rules](docs/Rules.md)** - Advanced targeting and rollouts
-
-### Advanced
-- **[Configuration](docs/Configuration.md)** - Complete DSL reference
-- **[Serialization](docs/Serialization.md)** - Export/import configurations as JSON
-- **[Registry](docs/Registry.md)** - Namespace and registry management
-- **[Results](docs/Results.md)** - Error handling with EvaluationResult
+- **[Getting Started](docs/01-getting-started.md)** - Type-safe flags in 5 minutes
+- **[Migration Guide](docs/02-migration.md)** - Switch from LaunchDarkly/Split
+- **[Core Concepts](docs/03-core-concepts.md)** - Features, Context, Namespaces
+- **[Targeting & Rollouts](docs/04-targeting-rollouts.md)** - Rules and gradual deployment
+- **[Evaluation](docs/05-evaluation.md)** - Evaluation methods and error handling
+- **[Remote Configuration](docs/06-remote-config.md)** - JSON serialization and dynamic updates
 
 ## Key Principles
 
@@ -340,6 +345,8 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-**Start here**: [Quick Start Guide](docs/QuickStart.md)
+**Start here**: [Getting Started](docs/01-getting-started.md)
+
+**Migrating from LaunchDarkly/Split?** See [Migration Guide](docs/02-migration.md)
 
 **Questions?** Open an issue at [github.com/amichne/konditional](https://github.com/amichne/konditional)

@@ -9,8 +9,9 @@ import io.amichne.konditional.core.dsl.RuleScope
 import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.Rule
-import io.amichne.konditional.rules.evaluable.Placeholder
 import io.amichne.konditional.rules.evaluable.Evaluable
+import io.amichne.konditional.rules.evaluable.Evaluable.Companion.factory
+import io.amichne.konditional.rules.evaluable.Placeholder
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
@@ -62,6 +63,10 @@ internal data class RuleBuilder<C : Context>(
      */
     override fun extension(function: () -> Evaluable<C>) {
         extension = function()
+    }
+
+    override fun extension(block: (C) -> Boolean) {
+        extension = factory { block(it) }
     }
 
     /**

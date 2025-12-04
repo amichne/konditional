@@ -2,6 +2,8 @@ package io.amichne.konditional.internal.serialization.models
 
 import com.squareup.moshi.JsonClass
 import io.amichne.konditional.core.ValueType
+import io.amichne.konditional.core.types.toJsonValue
+import io.amichne.konditional.core.types.toPrimitiveValue
 
 /**
  * Type-safe representation of flag values that replaces the type-erased SerializableValue.
@@ -59,6 +61,22 @@ internal sealed class FlagValue<out T : Any> {
         override fun toValueType() = ValueType.ENUM
     }
 
+    /**
+     * Represents a data class value.
+     * Stores the data class as a map of field name to value along with the fully qualified class name
+     * to enable proper deserialization.
+     *
+     * The fields map contains the primitive representation of the data class,
+     * which can be serialized to JSON and later reconstructed.
+     */
+    @JsonClass(generateAdapter = true)
+    data class DataClassValue(
+        override val value: Map<String, Any?>,
+        val dataClassName: String
+    ) : FlagValue<Map<String, Any?>>() {
+        override fun toValueType() = ValueType.DATA_CLASS
+    }
+
     companion object {
         /**
          * Creates a FlagValue from an untyped value by inferring its type.
@@ -73,9 +91,17 @@ internal sealed class FlagValue<out T : Any> {
                 value = value.name,
                 enumClassName = value.javaClass.name
             )
+            is io.amichne.konditional.core.types.DataClassWithSchema -> {
+                // Convert data class to map representation
+                val jsonValue = value.toJsonValue()
+                DataClassValue(
+                    value = jsonValue.fields.mapValues { (_, v) -> v.toPrimitiveValue() },
+                    dataClassName = value::class.java.name
+                )
+            }
             else -> throw IllegalArgumentException(
                 "Unsupported value type: ${value::class.simpleName}. " +
-                "Supported types: Boolean, String, Int, Double, Enum."
+                "Supported types: Boolean, String, Int, Double, Enum, DataClassWithSchema."
             )
         }
     }

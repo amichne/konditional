@@ -13,7 +13,7 @@ import java.lang.reflect.Type
  * Serializes FlagValue subclasses with their type discriminator for type-safe deserialization.
  * Parse-don't-validate: Deserialization constructs typed domain objects at the boundary.
  *
- * Supports primitive types and user-defined types: Boolean, String, Int, Double, Enum
+ * Supports primitive types and user-defined types: Boolean, String, Int, Double, Enum, DataClass
  */
 internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
 
@@ -46,6 +46,13 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
                 writer.name("value").value(value.value)
                 writer.name("enumClassName").value(value.enumClassName)
             }
+            is FlagValue.DataClassValue -> {
+                writer.name("type").value("DATA_CLASS")
+                writer.name("dataClassName").value(value.dataClassName)
+                writer.name("value")
+                // Serialize the map as JSON object
+                serializeMap(writer, value.value)
+            }
         }
         writer.endObject()
     }
@@ -57,6 +64,8 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
         var intValue: Int? = null
         var doubleValue: Double? = null
         var enumClassName: String? = null
+        var dataClassName: String? = null
+        var dataClassFields: Map<String, Any?>? = null
 
         reader.beginObject()
         while (reader.hasNext()) {
@@ -75,10 +84,15 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
                                 else -> intValue = numStr.toInt()
                             }
                         }
+                        JsonReader.Token.BEGIN_OBJECT -> {
+                            // For data class values, deserialize the map
+                            dataClassFields = deserializeMap(reader)
+                        }
                         else -> reader.skipValue()
                     }
                 }
                 "enumClassName" -> enumClassName = reader.nextString()
+                "dataClassName" -> dataClassName = reader.nextString()
                 else -> reader.skipValue()
             }
         }
@@ -103,8 +117,101 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
                 }
                 FlagValue.EnumValue(stringValue, enumClassName)
             }
+            "DATA_CLASS" -> {
+                if (dataClassFields == null) {
+                    throw JsonDataException("DATA_CLASS type requires object value")
+                }
+                if (dataClassName == null) {
+                    throw JsonDataException("DATA_CLASS type requires dataClassName field")
+                }
+                FlagValue.DataClassValue(dataClassFields, dataClassName)
+            }
             null -> throw JsonDataException("Missing required 'type' field")
             else -> throw JsonDataException("Unknown FlagValue type: $type")
+        }
+    }
+
+    /**
+     * Serializes a map to JSON object.
+     */
+    private fun serializeMap(writer: JsonWriter, map: Map<String, Any?>) {
+        writer.beginObject()
+        map.forEach { (key, value) ->
+            writer.name(key)
+            serializeValue(writer, value)
+        }
+        writer.endObject()
+    }
+
+    /**
+     * Serializes any value to JSON.
+     */
+    private fun serializeValue(writer: JsonWriter, value: Any?) {
+        when (value) {
+            null -> writer.nullValue()
+            is Boolean -> writer.value(value)
+            is String -> writer.value(value)
+            is Number -> writer.value(value)
+            is Map<*, *> -> {
+                @Suppress("UNCHECKED_CAST")
+                serializeMap(writer, value as Map<String, Any?>)
+            }
+            is List<*> -> {
+                writer.beginArray()
+                value.forEach { serializeValue(writer, it) }
+                writer.endArray()
+            }
+            else -> throw JsonDataException("Unsupported value type: ${value::class.simpleName}")
+        }
+    }
+
+    /**
+     * Deserializes a JSON object to a map.
+     */
+    private fun deserializeMap(reader: JsonReader): Map<String, Any?> {
+        val map = mutableMapOf<String, Any?>()
+        reader.beginObject()
+        while (reader.hasNext()) {
+            val key = reader.nextName()
+            val value = deserializeValue(reader)
+            map[key] = value
+        }
+        reader.endObject()
+        return map
+    }
+
+    /**
+     * Deserializes any JSON value.
+     */
+    private fun deserializeValue(reader: JsonReader): Any? {
+        return when (reader.peek()) {
+            JsonReader.Token.NULL -> {
+                reader.nextNull<Any?>()
+                null
+            }
+            JsonReader.Token.BOOLEAN -> reader.nextBoolean()
+            JsonReader.Token.STRING -> reader.nextString()
+            JsonReader.Token.NUMBER -> {
+                val numStr = reader.nextString()
+                when {
+                    numStr.contains('.') -> numStr.toDouble()
+                    else -> numStr.toInt()
+                }
+            }
+            JsonReader.Token.BEGIN_OBJECT -> deserializeMap(reader)
+            JsonReader.Token.BEGIN_ARRAY -> {
+                val list = mutableListOf<Any?>()
+                reader.beginArray()
+                while (reader.hasNext()) {
+                    list.add(deserializeValue(reader))
+                }
+                reader.endArray()
+                list
+            }
+            else -> {
+                reader.skipValue()
+                null
+            }
         }
     }
 
