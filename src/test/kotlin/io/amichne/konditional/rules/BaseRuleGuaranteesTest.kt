@@ -3,7 +3,7 @@ package io.amichne.konditional.rules
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Rollout
+import io.amichne.konditional.context.Rampup
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.core.id.TestStableId
@@ -28,7 +28,7 @@ import kotlin.test.assertTrue
  *
  * ```kotlin
  * class SubscriptionRule<C : CustomContext>(
- *     rollout: Rollout,
+ *     rollout: Rampup,
  *     locales: Set<AppLocale> = emptySet(),
  *     platforms: Set<Platform> = emptySet(),
  *     val requiredTier: String? = null,
@@ -85,7 +85,7 @@ class RuleGuaranteesTest {
     @Test
     fun `base rule with no restrictions matches any context`() {
         val rule = Rule<Context>(
-            rollout = Rollout.of(100.0)
+            rollout = Rampup.of(100.0)
         )
 
         assertTrue(rule.matches(defaultContext))
@@ -94,7 +94,7 @@ class RuleGuaranteesTest {
     @Test
     fun `base rule locale restriction is always enforced`() {
         val rule = Rule<Context>(
-            rollout = Rollout.of(100.0),
+            rollout = Rampup.of(100.0),
             locales = setOf(AppLocale.CANADA)
         )
 
@@ -105,7 +105,7 @@ class RuleGuaranteesTest {
     @Test
     fun `base rule platform restriction is always enforced`() {
         val rule = Rule<Context>(
-            rollout = Rollout.of(100.0),
+            rollout = Rampup.of(100.0),
             platforms = setOf(Platform.IOS)
         )
 
@@ -116,7 +116,7 @@ class RuleGuaranteesTest {
     @Test
     fun `base rule version restriction is always enforced`() {
         val rule = Rule<Context>(
-            rollout = Rollout.of(100.0),
+            rollout = Rampup.of(100.0),
             versionRange = LeftBound(Version(2, 0, 0))
         )
 
@@ -129,7 +129,7 @@ class RuleGuaranteesTest {
         // Even though the custom rule matches the subscription tier,
         // the base locale restriction prevents a match
         val rule = Rule(
-            rollout = Rollout.of(100.0),
+            rollout = Rampup.of(100.0),
             locales = setOf(AppLocale.MEXICO),
             extension = SubscriptionRule(
                 requiredTier = "premium"

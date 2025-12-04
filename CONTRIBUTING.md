@@ -73,7 +73,7 @@ konditional/
 - `Platform.kt`: Enum (IOS, ANDROID, WEB, DESKTOP)
 - `AppLocale.kt`: Supported locales (UNITED_STATES, FRANCE, DE_DE, etc.)
 - `Version.kt`: Semantic versioning with comparison
-- `Rollout.kt`: Value class enforcing 0-100% rollout with SHA-256 bucketing
+- `Rampup.kt`: Value class enforcing 0-100% rollout with SHA-256 bucketing
 
 #### **core/** - Core Framework
 
@@ -624,7 +624,7 @@ Features now evaluate against their namespace's registry by default:
 
 ```kotlin
 // Evaluation uses the feature's namespace automatically
-val value = context.evaluate(PaymentFeatures.APPLE_PAY)
+val value = feature { PaymentFeatures.APPLE_PAY }
 // Internally: PaymentFeatures.APPLE_PAY.namespace.registry
 
 // For testing, pass registry explicitly

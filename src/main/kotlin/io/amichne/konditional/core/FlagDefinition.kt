@@ -1,7 +1,7 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Rollout
+import io.amichne.konditional.context.Rampup
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.types.EncodableValue
@@ -96,7 +96,7 @@ data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Names
         flagKey: String,
         id: HexId,
         salt: String,
-        rollout: Rollout,
+        rollout: Rampup,
     ): Boolean =
         when {
             rollout <= 0.0 -> false

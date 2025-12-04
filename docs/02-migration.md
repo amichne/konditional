@@ -1,33 +1,39 @@
 # Migration Guide
 
-Switch from LaunchDarkly/Split with confidence. This guide maps concepts and shows adoption patterns.
+Switch from string-based feature flags to compile-time safety. This guide maps concepts and shows adoption patterns.
 
 ---
 
 ## Concept Mapping
 
-### LaunchDarkly → Konditional
+### String-Based Systems → Konditional
 
-| LaunchDarkly                          | Konditional                       | Key Difference                          |
-|---------------------------------------|-----------------------------------|-----------------------------------------|
-| `client.boolVariation("flag", false)` | `context.evaluate(Features.FLAG)` | Compile-time property vs runtime string |
-| `LDContext` with attributes           | `Context` data class              | Typed fields vs HashMap                 |
-| Targeting rules (dashboard)           | `rule { }` DSL (code)             | Version-controlled vs UI-only           |
-| Rollout percentage                    | `rollout { 50.0 }`                | Same concept, local computation         |
-| Segments                              | Custom `extension { }` logic      | Type-safe predicates                    |
-| Projects/Environments                 | `Namespace`                       | Compile-time isolated                   |
-| Flag variations                       | `rule {...} returns value`        | Type-safe values                        |
+| Common Pattern (LaunchDarkly/Statsig/Custom)  | Konditional                       | Key Difference                          |
+|-----------------------------------------------|-----------------------------------|-----------------------------------------|
+| `getFlag("flag-name")` or `client.boolVariation("flag", false)` | `feature { Features.FLAG }` | Compile-time property vs runtime string |
+| Context with `Map<String, Any>` attributes    | `Context` data class              | Typed fields vs HashMap                 |
+| Rules in dashboard or config files            | `rule { }` DSL (code)             | Version-controlled in code              |
+| Percentage rollouts                           | `rollout { 50.0 }`                | Same concept, local computation         |
+| Segments/audiences/conditions                 | Custom `extension { }` logic      | Type-safe predicates                    |
+| Projects/environments/namespaces              | `Namespace`                       | Compile-time isolated                   |
+| Flag variations/treatments                    | `rule {...} returns value`        | Type-safe values                        |
 
-### Split → Konditional
+### Specific Service Mappings
 
-| Split                         | Konditional                                 | Key Difference                          |
-|-------------------------------|---------------------------------------------|-----------------------------------------|
-| `client.getTreatment("flag")` | `context.evaluate(Features.FLAG)`           | Compile-time property vs runtime string |
-| `SplitClient` with attributes | `Context` data class                        | Typed fields vs key-value pairs         |
-| Split definitions (dashboard) | `rule { }` DSL (code)                       | Version-controlled in code              |
-| Traffic allocation            | `rollout { }`                               | Local SHA-256 bucketing                 |
-| Conditions/matchers           | `platforms()`, `locales()`, `extension { }` | Type-safe targeting                     |
-| Treatments                    | Rule return values                          | Type-safe (not just strings)            |
+**LaunchDarkly:**
+- `LDClient.boolVariation()` → `feature { Feature }`
+- `LDContext` → `Context` data class
+- Segments → `extension { Evaluable.factory { ... } }`
+
+**Statsig:**
+- `statsig.getConfig()` → `feature { Feature }`
+- Dynamic Config → String/Int/Double features with rules
+- Feature Gates → Boolean features
+
+**Custom String-Based:**
+- `featureFlags["flag"]` → `feature { Features.FLAG }`
+- String keys → Property delegation
+- Type casting → Compiler-enforced types
 
 ---
 
@@ -35,7 +41,7 @@ Switch from LaunchDarkly/Split with confidence. This guide maps concepts and sho
 
 ### Boolean Flag
 
-**LaunchDarkly:**
+**String-Based (LaunchDarkly example):**
 
 ```kotlin
 val client = LDClient(sdkKey)
@@ -44,6 +50,16 @@ val context = LDContext.builder("user-123")
     .build()
 
 val enabled = client.boolVariation("dark-mode", context, false)
+```
+
+**String-Based (Statsig example):**
+
+```kotlin
+val statsig = Statsig.initialize(sdkKey)
+val user = StatsigUser("user-123")
+    .setCustom(mapOf("platform" to "ios"))
+
+val enabled = statsig.checkGate(user, "dark_mode")
 ```
 
 **Konditional:**
@@ -60,32 +76,34 @@ val context = Context(
     stableId = StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
 )
 
-val enabled = context.evaluateOrDefault(Features.DARK_MODE, false)
+val enabled = feature { Features.DARK_MODE }
 ```
 
 **Key differences:**
 
-- No SDK key needed (offline-first)
+- No SDK key or network needed (offline-first)
 - StableId requires hex format (deterministic bucketing)
 - Property access with IDE autocomplete
 - Type safety: compiler knows `enabled` is `Boolean`
 
 ### String Configuration
 
-**Split:**
+**String-Based (Custom implementation):**
 
 ```kotlin
-val client = SplitFactoryBuilder()
-    .setApiKey(apiKey)
-    .build()
-    .client()
-
-val treatment = client.getTreatment("api-endpoint", emptyMap())
-val endpoint = when (treatment) {
+val config = ConfigManager.getInstance()
+val endpoint = when (config.getString("api-endpoint-variant")) {
     "ios" -> "https://api-ios.example.com"
     "android" -> "https://api-android.example.com"
     else -> "https://api.example.com"
 }
+```
+
+**String-Based (Statsig Dynamic Config):**
+
+```kotlin
+val config = statsig.getConfig(user, "api_config")
+val endpoint = config.getString("endpoint", "https://api.example.com")
 ```
 
 **Konditional:**
@@ -98,7 +116,7 @@ object Config : FeatureContainer<Namespace.Global>(Namespace.Global) {
     }
 }
 
-val endpoint = context.evaluate(Config.API_ENDPOINT)  // Type: String, never null
+val endpoint = feature { Config.API_ENDPOINT }  // Type: String, never null
 ```
 
 **Key differences:**
@@ -109,15 +127,25 @@ val endpoint = context.evaluate(Config.API_ENDPOINT)  // Type: String, never nul
 
 ### Custom Attributes / Context Fields
 
-**LaunchDarkly:**
+**String-Based (LaunchDarkly example):**
 
 ```kotlin
 val context = LDContext.builder("user-123")
-    .set("tier", "enterprise")
+    .set("tier", "enterprise")  // String value, no validation
     .set("organization", "acme-corp")
     .build()
 
-// In LaunchDarkly dashboard: target users where tier == "enterprise"
+// In dashboard: target users where tier == "enterprise"
+```
+
+**String-Based (Statsig example):**
+
+```kotlin
+val user = StatsigUser("user-123")
+    .setCustom(mapOf(
+        "tier" to "enterprise",  // String value, no validation
+        "organization" to "acme-corp"
+    ))
 ```
 
 **Konditional:**
@@ -145,7 +173,7 @@ object PremiumFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
 }
 
 val ctx = EnterpriseContext(..., subscriptionTier = SubscriptionTier.ENTERPRISE, ...)
-val enabled = ctx.evaluate(PremiumFeatures.ADVANCED_ANALYTICS)
+val enabled = feature { PremiumFeatures.ADVANCED_ANALYTICS }
 ```
 
 **Key differences:**
@@ -160,34 +188,36 @@ val enabled = ctx.evaluate(PremiumFeatures.ADVANCED_ANALYTICS)
 
 ### Pattern 1: Gradual (Recommended)
 
-Run Konditional alongside LaunchDarkly/Split, migrate flag-by-flag.
+Run Konditional alongside your existing system, migrate flag-by-flag.
 
 **Steps:**
 
 1. Add Konditional dependency
-2. Define one flag in Konditional (mirror LaunchDarkly config)
+2. Define one flag in Konditional (mirror existing config)
 3. Evaluate both systems, log differences
 4. Once confident, switch to Konditional for that flag
 5. Repeat for remaining flags
-6. Remove LaunchDarkly/Split dependency
+6. Remove old system dependency
 
 **Example dual evaluation:**
 
 ```kotlin
 // Wrapper to compare both systems
 fun isEnabled(flagName: String, context: Context): Boolean {
-    val ldResult = ldClient.boolVariation(flagName, context.toLD(), false)
+    // Existing system (LaunchDarkly example)
+    val oldResult = featureFlagClient.getBoolean(flagName, false)
 
-    val kdResult = when (flagName) {
-        "dark_mode" -> context.evaluateOrDefault(Features.DARK_MODE, false)
+    // Konditional
+    val newResult = when (flagName) {
+        "dark_mode" -> feature { Features.DARK_MODE }
         else -> null
     }
 
-    if (kdResult != null && ldResult != kdResult) {
-        logger.warn("Mismatch for $flagName: LD=$ldResult, KD=$kdResult")
+    if (newResult != null && oldResult != newResult) {
+        logger.warn("Mismatch for $flagName: Old=$oldResult, New=$newResult")
     }
 
-    return ldResult  // Use LaunchDarkly until validated
+    return oldResult  // Use old system until validated
 }
 ```
 
@@ -197,7 +227,7 @@ Migrate all flags at once.
 
 **Steps:**
 
-1. Export all LaunchDarkly/Split flags
+1. Export all existing flags (from dashboard, config files, or database)
 2. Define equivalent Konditional features
 3. Test thoroughly in staging
 4. Deploy and monitor closely
@@ -207,13 +237,13 @@ Migrate all flags at once.
 
 ### Pattern 3: New Features Only
 
-Keep existing flags in LaunchDarkly/Split, use Konditional for new flags.
+Keep existing flags in your current system, use Konditional for new flags.
 
 **Steps:**
 
 1. Add Konditional for new features
 2. Gradually migrate old flags as time permits
-3. Eventually deprecate LaunchDarkly/Split
+3. Eventually deprecate old system
 
 **Use when:** Migration isn't urgent, want to learn Konditional gradually.
 
@@ -223,7 +253,7 @@ Keep existing flags in LaunchDarkly/Split, use Konditional for new flags.
 
 ### Challenge 1: StableId Format
 
-**LaunchDarkly/Split:** User IDs can be any string (`"user-123"`, `"alice@example.com"`)
+**String-based systems:** User IDs can be any string (`"user-123"`, `"alice@example.com"`)
 
 **Konditional:** `StableId` must be valid hexadecimal (32+ characters)
 
@@ -242,7 +272,7 @@ val stableId = userIdToStableId("user-123")
 
 ### Challenge 2: Dynamic Attributes
 
-**LaunchDarkly/Split:** Attributes set at runtime (`context.set("key", value)`)
+**String-based systems:** Attributes set at runtime (`context.set("key", value)` or `Map<String, Any>`)
 
 **Konditional:** Context fields must be defined at compile time
 
@@ -262,11 +292,11 @@ data class AppContext(
 
 ### Challenge 3: Remote Configuration
 
-**LaunchDarkly/Split:** Flags configured via dashboard, updated instantly
+**String-based systems:** Flags configured via dashboard/API, updated instantly
 
-**Konditional:** Flags defined in code, but can load rules from JSON
+**Konditional:** Flags defined in code, rules updated via UI or JSON
 
-**Solution:** Use serialization for remote updates:
+**Solution:** Use UI with RBAC or JSON serialization for remote updates:
 
 ```kotlin
 // Define flags in code with defaults
@@ -284,14 +314,14 @@ when (val result = SnapshotSerializer.fromJson(remoteJson)) {
 
 ### Challenge 4: Rollout Redistribution
 
-**Issue:** Users in 50% rollout in LaunchDarkly won't match 50% in Konditional (different bucketing)
+**Issue:** Users in 50% rollout in your old system won't match 50% in Konditional (different bucketing algorithms)
 
 **Solution:** Accept redistribution or use salt to align:
 
-- Accept: Users may see different experience temporarily
-- Align: Adjust Konditional salt until distribution matches (trial-and-error)
+- **Accept:** Users may see different experience temporarily (most teams do this)
+- **Align:** Adjust Konditional salt until distribution matches (trial-and-error, not recommended)
 
-Most teams accept redistribution since rollouts are temporary.
+Most teams accept redistribution since rollouts are temporary anyway.
 
 ---
 
@@ -299,55 +329,54 @@ Most teams accept redistribution since rollouts are temporary.
 
 ### 1. Eliminate Runtime Errors
 
-**LaunchDarkly/Split:**
+**String-based:**
 
 ```kotlin
-client.boolVariation("dark-mod", false)  // Typo! Returns default silently
+getFlag("dark-mod")  // Typo! Returns null or default silently
 ```
 
 **Konditional:**
 
 ```kotlin
-context.evaluate(Features.DARK_MOD)  // Compile error: unresolved reference
+feature { Features.DARK_MOD }  // Compile error: unresolved reference
 ```
 
 ### 2. Reduce Infrastructure Costs
 
-**LaunchDarkly/Split:** Monthly SaaS fees scale with MAU (monthly active users)
+**SaaS systems (LaunchDarkly/Statsig):** Monthly fees scale with MAU/seat count
 
 **Konditional:** Zero infrastructure cost (runs locally)
 
 ### 3. Improve Performance
 
-**LaunchDarkly/Split:** Network latency (even with caching)
+**String-based:** Network latency or cache lookup overhead, type casting
 
-**Konditional:** Zero network calls, O(n) local evaluation where n < 10
+**Konditional:** Zero network calls, O(n) local evaluation where n < 10, zero allocation
 
 ### 4. Version Control Everything
 
-**LaunchDarkly/Split:** Flag rules live in dashboard (hard to audit/review)
+**Dashboard-based systems:** Flag rules live in UI (audit log separate from code)
 
-**Konditional:** Everything in code (Git history, code review, rollback)
+**Konditional:** Flags defined in code (Git history + UI with RBAC for rule updates)
 
 ### 5. Type Safety
 
-**LaunchDarkly/Split:** `client.intVariation()` vs `client.stringVariation()` — must remember type
+**String-based:** `getInt("flag")` vs `getString("flag")` — must remember type, can typo
 
-**Konditional:** Compiler knows the type, autocomplete works
+**Konditional:** Compiler knows the type, IDE autocomplete works, typos impossible
 
 ---
 
 ## Decision Matrix
 
-| Factor                   | Stick with LaunchDarkly/Split           | Migrate to Konditional             |
-|--------------------------|-----------------------------------------|------------------------------------|
-| **Team size**            | Large teams, need UI for non-engineers  | Engineering-first teams            |
-| **Audit requirements**   | Need LaunchDarkly audit log             | Git provides audit trail           |
-| **Budget**               | Cost not a concern                      | Want to eliminate SaaS fees        |
-| **Update frequency**     | Need instant flag updates in production | Can deploy code to update flags    |
-| **Tech stack**           | Multi-language (Java, Go, Python, etc.) | Kotlin/JVM only                    |
-| **Type safety priority** | Low                                     | High (critical for correctness)    |
-| **Offline support**      | Not needed                              | Essential (mobile, edge computing) |
+| Factor                   | Stick with Current System                              | Migrate to Konditional             |
+|--------------------------|--------------------------------------------------------|------------------------------------|
+| **Budget**               | SaaS cost not a concern                                | Want to eliminate SaaS fees        |
+| **Tech stack**           | Multi-language (Java, Go, Python, Ruby, etc.)          | Kotlin/JVM only                    |
+| **Type safety priority** | Low (runtime errors acceptable)                        | High (critical for correctness)    |
+| **Offline support**      | Not needed (always connected)                          | Essential (mobile, edge computing) |
+| **Integration effort**   | Already integrated, working well                       | Willing to invest migration time   |
+| **Control & Compliance** | Prefer SaaS management                                 | Need self-hosted with RBAC control |
 
 ---
 
@@ -355,8 +384,7 @@ context.evaluate(Features.DARK_MOD)  // Compile error: unresolved reference
 
 **Ready to migrate?** Start with [Getting Started](01-getting-started.md) to run your first Konditional flag.
 
-**Need feature parity?** See [Targeting & Rollouts](04-targeting-rollouts.md) for advanced rules matching LaunchDarkly's
-capabilities.
+**Need feature parity?** See [Targeting & Rollouts](04-targeting-rollouts.md) for advanced rules matching most feature flag systems.
 
 **Want to understand the model?** See [Core Concepts](03-core-concepts.md) for deep dive into Features, Context, and
 Namespaces.

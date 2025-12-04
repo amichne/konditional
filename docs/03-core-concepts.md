@@ -22,8 +22,8 @@ object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
 }
 
 // Property access, not method calls
-val enabled = context.evaluate(AppFeatures.DARK_MODE)  // Type: Boolean
-val endpoint = context.evaluate(AppFeatures.API_ENDPOINT)  // Type: String
+val enabled = feature { AppFeatures.DARK_MODE }  // Type: Boolean
+val endpoint = feature { AppFeatures.API_ENDPOINT }  // Type: String
 ```
 
 **What you get:**
@@ -57,7 +57,7 @@ object AppConfig : FeatureContainer<Namespace.Global>(Namespace.Global) {
 }
 
 // Type-safe evaluation
-val level: LogLevel = context.evaluate(AppConfig.LOG_LEVEL)
+val level: LogLevel = feature { AppConfig.LOG_LEVEL }
 ```
 
 **vs string-based systems:**
@@ -71,7 +71,7 @@ when (level) {
 }
 
 // Konditional - compiler validates
-val level = context.evaluate(AppConfig.LOG_LEVEL)
+val level = feature { AppConfig.LOG_LEVEL }
 when (level) {
     LogLevel.DEBUG -> ...
     LogLevel.DEUBG -> ...  // Compile error
@@ -240,7 +240,7 @@ val ctx = EnterpriseContext(
     employeeCount = 500
 )
 
-val enabled = ctx.evaluate(PremiumFeatures.ADVANCED_ANALYTICS)  // true
+val enabled = feature { PremiumFeatures.ADVANCED_ANALYTICS }  // true
 ```
 
 ### Multi-Tenant Example
@@ -410,7 +410,7 @@ processWithRetries(retries)  // Type error at runtime
 object Config : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val MAX_RETRIES by int(default = 3)
 }
-val retries = context.evaluate(Config.MAX_RETRIES)  // Type: Int, guaranteed
+val retries = feature { Config.MAX_RETRIES }  // Type: Int, guaranteed
 ```
 
 ### Impossible Context Mismatches
@@ -418,12 +418,12 @@ val retries = context.evaluate(Config.MAX_RETRIES)  // Type: Int, guaranteed
 ```kotlin
 // Wrong context type
 val basicContext: Context = Context(...)
-basicContext.evaluate(PremiumFeatures.ADVANCED_ANALYTICS)  // Compile error!
+feature { PremiumFeatures.ADVANCED_ANALYTICS }  // Compile error!
 // Required: EnterpriseContext, Found: Context
 
 // Correct
 val enterpriseContext: EnterpriseContext = EnterpriseContext(...)
-enterpriseContext.evaluate(PremiumFeatures.ADVANCED_ANALYTICS)  // ✓
+feature { PremiumFeatures.ADVANCED_ANALYTICS }  // ✓
 ```
 
 ### Impossible Namespace Collisions

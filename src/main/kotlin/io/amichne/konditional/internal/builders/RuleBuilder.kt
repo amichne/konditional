@@ -3,7 +3,7 @@ package io.amichne.konditional.internal.builders
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Rollout
+import io.amichne.konditional.context.Rampup
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.RuleScope
 import io.amichne.konditional.core.dsl.VersionRangeScope
@@ -33,7 +33,7 @@ internal data class RuleBuilder<C : Context>(
     private var range: VersionRange = Unbounded(),
     private val platforms: LinkedHashSet<Platform> = linkedSetOf(),
     private val locales: LinkedHashSet<AppLocale> = linkedSetOf(),
-    private var rollout: Rollout? = null,
+    private var rollout: Rampup? = null,
 ) : RuleScope<C> {
 
     /**
@@ -77,7 +77,7 @@ internal data class RuleBuilder<C : Context>(
     }
 
     override fun rollout(function: () -> Number) {
-        this.rollout = Rollout.of(function().toDouble())
+        this.rollout = Rampup.of(function().toDouble())
     }
 
     /**
@@ -88,7 +88,7 @@ internal data class RuleBuilder<C : Context>(
      */
     internal fun build(): Rule<C> =
         Rule(
-            rollout = rollout ?: Rollout.default,
+            rollout = rollout ?: Rampup.default,
             locales = locales,
             platforms = platforms,
             versionRange = range,

@@ -3,10 +3,10 @@ package io.amichne.konditional.rules
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Rollout
-import io.amichne.konditional.rules.evaluable.Placeholder
+import io.amichne.konditional.context.Rampup
 import io.amichne.konditional.rules.evaluable.BaseEvaluable
 import io.amichne.konditional.rules.evaluable.Evaluable
+import io.amichne.konditional.rules.evaluable.Placeholder
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
@@ -35,7 +35,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * Basic rule with standard targeting:
  * ```kotlin
  * Rule(
- *     rollout {  Rollout.of(50.0) }
+ *     rollout {  Rampup.of(50.0) }
  *     locales = setOf(AppLocale.UNITED_STATES),
  *     platforms = setOf(Platform.IOS),
  *     versionRange = LeftBound(Version(2, 0, 0))
@@ -45,7 +45,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * Rule with custom extension logic:
  * ```kotlin
  * Rule(
- *     rollout {  Rollout.of(100.0) }
+ *     rollout {  Rampup.of(100.0) }
  *     extension = object : Evaluable<MyContext>() {
  *         override fun matches(contextFn: MyContext) = contextFn.isPremiumUser
  *         override fun specificity() = 1
@@ -64,13 +64,13 @@ import io.amichne.konditional.rules.versions.VersionRange
  */
 @ConsistentCopyVisibility
 data class Rule<C : Context> internal constructor(
-    val rollout: Rollout = Rollout.default,
+    val rollout: Rampup = Rampup.default,
     val note: String? = null,
     internal val baseEvaluable: BaseEvaluable<C> = BaseEvaluable(),
     val extension: Evaluable<C> = Placeholder,
 ) : Evaluable<C> {
     internal constructor(
-        rollout: Rollout =  Rollout.default,
+        rollout: Rampup =  Rampup.default,
         note: String? = null,
         locales: Set<AppLocale> = emptySet(),
         platforms: Set<Platform> = emptySet(),

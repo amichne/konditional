@@ -4,18 +4,24 @@ Type-safe flags in 5 minutes. If it compiles, it works—no runtime errors, no n
 
 ## Why Konditional?
 
-Unlike LaunchDarkly/Split's runtime string-based flags, Konditional gives you compile-time guarantees.
+Most feature flag systems use runtime strings. Konditional uses compile-time properties instead.
 
-| Feature          | LaunchDarkly/Split                                    | Konditional                                               |
-|------------------|-------------------------------------------------------|-----------------------------------------------------------|
-| **Type Safety**  | Runtime strings `client.boolVariation("flag", false)` | Compile-time properties `context.evaluate(Features.FLAG)` |
-| **Evaluation**   | Server-side (network required)                        | Offline-first (local, zero-allocation)                    |
-| **Context**      | `HashMap<String, Any>`                                | Typed data classes with IDE autocomplete                  |
-| **Performance**  | Network latency + serialization                       | O(n) local evaluation (n < 10 rules typically)            |
-| **Organization** | Tags/projects (runtime only)                          | Namespaces (compile-time isolated)                        |
-| **Errors**       | Silent failures or runtime exceptions                 | Parse-don't-validate Result types                         |
+| Feature          | String-Based (Custom)                                                       | Konditional                                                                                   |
+|------------------|-----------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
+| **Type Safety**  | Exclusively booleans, drives branching explosion in reality                 | Compile-time safety allows runtime usage without risk `feature { Features.FLAG }`             |
+| **Evaluation**   | Hardcoded via boolean flows                                                 | Dynamic and generic, maintaining rigor of type-checking                                       |
+| **Context**      | Enum class with string keys                                                 | Typed data classes with IDE autocomplete                                                      |
+| **Performance**  | Shared module forces full-rebuild at compile-time, unable to leverage cache | Module changes to flags are not invalidating of task-graph for parent                         |
+| **Organization** | Prefixing, shared single source by all                                      | Namespaces (compile-time isolated), with type-enforced boundaries, infitinitely divisible     |
+| **Errors**       | Silent failures, null checks, type casting                                  | Guarnteed valid startup config,<br/> Update failures emerge **before** update, during parsing |
 
-**Core benefit:** Typos become compile errors. Type mismatches are impossible. Your IDE knows everything.
+**Core benefits:** 
+* No more invalid configurations, instead, compile errors.
+* First-class Gradle caching support
+* Modules own the feature flags they are concerned with
+* Unified, single-source, for all flagging
+* Your IDE knows everything.
+* Built to scale to multi-tenancy, seamlessly
 
 ---
 
@@ -57,16 +63,16 @@ val context = Context(
 )
 
 // Evaluate - returns Boolean, never null
-val enabled: Boolean = context.evaluateOrDefault(AppFeatures.DARK_MODE, default = false)
+val enabled: Boolean = feature { AppFeatures.DARK_MODE }
 ```
 
-**vs LaunchDarkly:**
+**vs String-Based Systems:**
 ```kotlin
-// LaunchDarkly - runtime string, can typo
-val enabled = client.boolVariation("dark-mode", false)  // No IDE help
+// String-based - runtime lookup, can typo, type unknown
+val enabled = featureFlags.getBoolean("dark-mode", false)  // No IDE help, typos fail silently
 
 // Konditional - compile-time property, autocomplete works
-val enabled = context.evaluateOrDefault(AppFeatures.DARK_MODE, false)  // IDE knows it's Boolean
+val enabled = feature { AppFeatures.DARK_MODE }  // IDE knows it's Boolean
 ```
 
 ---
@@ -133,27 +139,11 @@ val RECOMMENDATION_ALGO by string(default = "collaborative") {
 
 ## Evaluation Methods
 
-Choose based on your error handling:
-
 ```kotlin
-// Recommended: Explicit error handling
-when (val result = context.evaluateSafe(AppFeatures.DARK_MODE)) {
-    is EvaluationResult.Success -> use(result.value)
-    is EvaluationResult.FlagNotFound -> logWarning()
-    is EvaluationResult.EvaluationError -> logError(result.error)
-}
+// Simple evaluation with default
+val enabled = feature { AppFeatures.DARK_MODE }
 
-// Quick: Returns default on any error
-val enabled = context.evaluateOrDefault(AppFeatures.DARK_MODE, false)
-
-// Nullable: Returns null on error
-val enabled = context.evaluateOrNull(AppFeatures.DARK_MODE)
-
-// Throws: Use only for development
-val enabled = context.evaluateOrThrow(AppFeatures.DARK_MODE)
 ```
-
-Most production code should use `evaluateOrDefault` for simplicity or `evaluateSafe` for robust error handling.
 
 ---
 
@@ -185,29 +175,29 @@ object PaymentFeatures : FeatureContainer<Namespace.Payments>(
 ## Key Differentiators
 
 ### 1. Compile-Time Safety
-LaunchDarkly/Split: `client.boolVariation("flag-name", false)` — Typos fail at runtime
-**Konditional:** `context.evaluate(Features.DARK_MODE)` — Typos fail at compile time
+String-based: `getFlag("flag-name")` — Typos fail at runtime (or silently return defaults)
+**Konditional:** `feature { Features.DARK_MODE }` — Typos fail at compile time
 
 ### 2. Offline-First Architecture
-LaunchDarkly/Split: Network call required for evaluation (with caching)
+String-based (LaunchDarkly/Statsig): Network call or cache required for evaluation
 **Konditional:** All evaluation happens locally. Zero network dependency.
 
 ### 3. Zero-Allocation Evaluation
-LaunchDarkly/Split: Creates objects for each evaluation
+String-based: HashMap lookups, type casting, object creation per evaluation
 **Konditional:** Immutable data structures, lock-free reads, no GC pressure
 
 ### 4. Type-Safe Contexts
-LaunchDarkly/Split: `context.set("tier", "enterprise")` — String-based attributes
+String-based: `context.put("tier", "enterprise")` — String keys, Any values, no validation
 **Konditional:**
 ```kotlin
 data class EnterpriseContext(
     // ... standard fields ...
-    val subscriptionTier: SubscriptionTier  // Compile-time validated
+    val subscriptionTier: SubscriptionTier  // Enum, not string - compile-time validated
 ) : Context
 ```
 
 ### 5. Deterministic Rollouts
-Both use hashing, but Konditional's SHA-256 bucketing is:
+Most systems use hashing, but Konditional's SHA-256 bucketing is:
 - Platform-stable (same buckets on JVM, Android, iOS, Web)
 - Independent per flag (user in 50% of Flag A ≠ in 50% of Flag B)
 - Salt-controllable (change salt to redistribute users)
@@ -222,7 +212,7 @@ Both use hashing, but Konditional's SHA-256 bucketing is:
 
 **Want custom contexts?** See **[Core Concepts](03-core-concepts.md)** for extending Context with business data.
 
-**Migrating from LaunchDarkly/Split?** See **[Migration Guide](02-migration.md)** for concept mapping and adoption patterns.
+**Migrating from another system?** See **[Migration Guide](02-migration.md)** for concept mapping and adoption patterns.
 
 **Loading remote configs?** See **[Remote Configuration](06-remote-config.md)** for JSON serialization.
 
@@ -242,7 +232,7 @@ object Features : FeatureContainer<Namespace.Global>(Namespace.Global) {
 val ctx = Context(locale, platform, version, stableId)
 
 // 3. Evaluate
-val value = ctx.evaluateOrDefault(Features.FLAG, false)
+val value = feature { Features.FLAG }
 ```
 
 That's it. Type-safe feature flags in 3 steps.

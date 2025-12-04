@@ -466,7 +466,7 @@ fun `50 percent rollout distributes correctly`() {
     val sampleSize = 1000
     val enabled = (0 until sampleSize).count { i ->
         val ctx = Context(..., stableId = StableId.of("user-$i"))
-        ctx.evaluateOrDefault(Features.ROLLOUT_FLAG, false)
+        feature { Features.ROLLOUT_FLAG }
     }
 
     val percentage = (enabled.toDouble() / sampleSize) * 100

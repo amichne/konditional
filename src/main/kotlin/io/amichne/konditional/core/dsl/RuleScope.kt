@@ -21,8 +21,8 @@ import io.amichne.konditional.rules.evaluable.Evaluable
  *         min(1, 2, 0)
  *         max(2, 0, 0)
  *     }
- *     rollout {  Rollout.of(50.0) }
- *     note("Rollout to mobile users only")
+ *     rollout {  Rampup.of(50.0) }
+ *     note("Rampup to mobile users only")
  * }
  * ```
  *

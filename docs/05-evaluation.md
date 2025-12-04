@@ -8,12 +8,30 @@ Predictable results, graceful errors. This guide covers evaluation methods, eval
 
 Choose based on your error handling needs.
 
-### evaluateSafe() - Recommended
+### feature { } - Recommended
+
+Simple evaluation within a ContextAware scope:
+
+```kotlin
+// Within a ContextAware + FeatureAware scope
+val darkMode = feature { Features.DARK_MODE }
+applyDarkMode(darkMode)  // Always non-null
+```
+
+**Use when:**
+
+- You have sensible defaults
+- Error details don't matter
+- You want the most concise API
+
+**Most common choice for production code.**
+
+### featureSafe { } - Explicit Error Handling
 
 Returns explicit result type with all failure modes:
 
 ```kotlin
-when (val result = context.evaluateSafe(Features.DARK_MODE)) {
+when (val result = featureSafe { Features.DARK_MODE }) {
     is EvaluationResult.Success -> {
         val value: Boolean = result.value
         applyDarkMode(value)
@@ -34,66 +52,6 @@ when (val result = context.evaluateSafe(Features.DARK_MODE)) {
 - You need robust error handling
 - Different failures require different actions
 - Production systems with logging/monitoring
-
-### evaluateOrDefault() - Quick
-
-Returns default on any failure:
-
-```kotlin
-val darkMode = context.evaluateOrDefault(Features.DARK_MODE, default = false)
-applyDarkMode(darkMode)  // Always non-null
-```
-
-**Use when:**
-
-- You have sensible defaults
-- Error details don't matter
-- You want the most concise API
-
-**Most common choice for production code.**
-
-### evaluateOrNull() - Nullable
-
-Returns null on failure:
-
-```kotlin
-val darkMode = context.evaluateOrNull(Features.DARK_MODE)
-if (darkMode != null) {
-    applyDarkMode(darkMode)
-} else {
-    // Flag not found or evaluation failed
-    applyDarkMode(false)
-}
-```
-
-**Use when:**
-
-- Null is acceptable fallback
-- Working in nullable-friendly contexts
-- You don't need to distinguish error types
-
-### evaluateOrThrow() - Exceptions
-
-Throws on failure:
-
-```kotlin
-try {
-    val darkMode = context.evaluateOrThrow(Features.DARK_MODE)
-    applyDarkMode(darkMode)
-} catch (e: FlagNotFoundException) {
-    logError("Flag not registered", e)
-} catch (e: FlagEvaluationException) {
-    logError("Evaluation failed", e)
-}
-```
-
-**Use sparingly!** Only when flag not existing is a programmer error.
-
-**Use when:**
-
-- Development/testing
-- Fail-fast behavior desired
-- Legacy exception-based codebase
 
 ---
 
@@ -295,8 +253,8 @@ Typical flags have 1-5 rules, so evaluation is effectively O(1).
 
 ```kotlin
 // Multiple threads evaluating concurrently
-thread1: context.evaluate(Features.DARK_MODE)  // No lock
-thread2: context.evaluate(Features.DARK_MODE)  // No lock
+thread1: feature { Features.DARK_MODE }  // No lock
+thread2: feature { Features.DARK_MODE }  // No lock
 ```
 
 **Atomic updates:** Registry uses `AtomicReference` for configuration snapshots.
@@ -319,7 +277,7 @@ Namespace.Global.load(newConfig)  // Atomic swap
 val threads = (1..100).map {
     thread {
         repeat(1000) {
-            val value = context.evaluate(Features.DARK_MODE)
+            val value = feature { Features.DARK_MODE }
             processValue(value)
         }
     }
@@ -339,7 +297,7 @@ val threads = (1..100).map {
 Namespace.Global.load(newConfig)
 
 // Thread 2: Reading during update
-val value = context.evaluate(Features.DARK_MODE)
+val value = feature { Features.DARK_MODE }
 // Sees old OR new, never mixed
 ```
 
@@ -365,7 +323,7 @@ fun `iOS users in US get dark mode`() {
         stableId = StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
     )
 
-    val result = context.evaluateSafe(Features.DARK_MODE)
+    val result = featureSafe { Features.DARK_MODE }
     assertTrue(result is EvaluationResult.Success && result.value)
 }
 ```
@@ -378,7 +336,7 @@ fun `evaluation is deterministic`() {
     val context = Context(...)
 
     val results = (1..100).map {
-        context.evaluate(Features.DARK_MODE)
+        feature { Features.DARK_MODE }
     }
 
     assertTrue(results.distinct().size == 1, "Non-deterministic!")
@@ -396,7 +354,7 @@ fun `50 percent rollout distributes correctly`() {
             ...
             stableId = StableId.of("user-$i")
         )
-        ctx.evaluate(Features.ROLLOUT_FLAG)
+        feature { Features.ROLLOUT_FLAG }
     }
 
     val percentage = (enabled.toDouble() / sampleSize) * 100
@@ -408,24 +366,19 @@ fun `50 percent rollout distributes correctly`() {
 
 ## Best Practices
 
-### 1. Prefer evaluateOrDefault
+### 1. Prefer feature { }
 
 For most production code:
 
 ```kotlin
-// Good - simple, clear fallback
-val enabled = context.evaluateOrDefault(Features.DARK_MODE, false)
+// Good - simple, clear
+val enabled = feature { Features.DARK_MODE }
 
 // Good - when error handling matters
-when (val result = context.evaluateSafe(Features.DARK_MODE)) {
+when (val result = featureSafe { Features.DARK_MODE }) {
     is EvaluationResult.Success -> use(result.value)
     else -> logAndFallback()
 }
-
-// Avoid - exceptions for control flow
-try {
-    val enabled = context.evaluateOrThrow(Features.DARK_MODE)
-} catch (e: Exception) { ... }
 ```
 
 ### 2. Cache Contexts
@@ -435,13 +388,12 @@ Create once, reuse for multiple evaluations:
 ```kotlin
 // Good
 val context = createUserContext(user)
-val darkMode = context.evaluate(Features.DARK_MODE)
-val apiEndpoint = context.evaluate(Config.API_ENDPOINT)
-val maxRetries = context.evaluate(Config.MAX_RETRIES)
+val darkMode = feature { Features.DARK_MODE }
+val apiEndpoint = feature { Config.API_ENDPOINT }
+val maxRetries = feature { Config.MAX_RETRIES }
 
 // Avoid
-createUserContext(user).evaluate(Features.DARK_MODE)
-createUserContext(user).evaluate(Config.API_ENDPOINT)
+createUserContext(user) // then evaluate elsewhere
 ```
 
 ### 3. Test with Specific Contexts
@@ -464,10 +416,10 @@ fun testContext(
 @Test
 fun testTargeting() {
     val iosContext = testContext(platform = Platform.IOS)
-    assertTrue(iosContext.evaluate(Features.IOS_ONLY))
+    assertTrue(feature { Features.IOS_ONLY })
 
     val androidContext = testContext(platform = Platform.ANDROID)
-    assertFalse(androidContext.evaluate(Features.IOS_ONLY))
+    assertFalse(feature { Features.IOS_ONLY })
 }
 ```
 

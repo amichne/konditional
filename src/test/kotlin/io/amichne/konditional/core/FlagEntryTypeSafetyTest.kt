@@ -4,7 +4,7 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Rollout.Companion.MAX
+import io.amichne.konditional.context.Rampup.Companion.MAX
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace.Global
 import io.amichne.konditional.core.features.FeatureContainer

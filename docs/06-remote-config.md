@@ -1,12 +1,12 @@
 # Remote Configuration
 
-Update flags without redeployment. Load configurations from JSON for dynamic rule updates.
+Update flags without redeployment. Konditional provides UI-based management with RBAC or JSON-based configuration for dynamic rule updates.
 
 ---
 
 ## Why Remote Configuration?
 
-Konditional flags are defined in code, but **rules can be loaded from JSON** for dynamic updates:
+Konditional flags are defined in code (type-safe), but **rules can be updated via UI or JSON** for dynamic updates:
 
 ```kotlin
 // Flags defined in code (type-safe, version-controlled)
@@ -25,8 +25,8 @@ when (val result = SnapshotSerializer.fromJson(remoteJson)) {
 
 **Key distinction:**
 
-- Flag **definitions** live in code (compile-time safety)
-- Flag **rules** can be loaded from JSON (runtime flexibility)
+- Flag **definitions** live in code (compile-time safety, version-controlled)
+- Flag **rules** can be updated via UI (RBAC-controlled) or JSON (runtime flexibility)
 
 ---
 

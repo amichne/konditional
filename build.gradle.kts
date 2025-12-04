@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.time.Duration
 
 plugins {
@@ -182,4 +183,8 @@ tasks.register("prepareRelease") {
         println("Version validated: $version")
         println("Ready to release")
     }
+}
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.compilerOptions {
+//    freeCompilerArgs.set(listOf("-XXLanguage:+NestedTypeAliases"))
 }

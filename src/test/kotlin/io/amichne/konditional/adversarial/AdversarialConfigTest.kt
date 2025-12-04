@@ -3,7 +3,7 @@ package io.amichne.konditional.adversarial
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Rollout
+import io.amichne.konditional.context.Rampup
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.fixtures.core.TestNamespace
@@ -27,34 +27,34 @@ import kotlin.test.assertEquals
 class AdversarialConfigTest {
 
     // ============================================
-    // ATTACK VECTOR 1: Rollout Validation Edge Cases
+    // ATTACK VECTOR 1: Rampup Validation Edge Cases
     // ============================================
 
     @Test
     fun `rollout accepts exact boundary value 0_0 - users never see feature`() {
         // This compiles and is "valid" but means 0% rollout
         // Possible user error: thinking 0.0 means "no limit"
-        val rollout = Rollout.of(0.0)
+        val rollout = Rampup.of(0.0)
         assertEquals(0.0, rollout.value)
     }
 
     @Test
     fun `rollout accepts exact boundary value 100_0`() {
-        val rollout = Rollout.of(100.0)
+        val rollout = Rampup.of(100.0)
         assertEquals(100.0, rollout.value)
     }
 
     @Test
     fun `rollout rejects negative values`() {
         assertThrows<IllegalArgumentException> {
-            Rollout.of(-0.001)
+            Rampup.of(-0.001)
         }
     }
 
     @Test
     fun `rollout rejects values above 100`() {
         assertThrows<IllegalArgumentException> {
-            Rollout.of(100.001)
+            Rampup.of(100.001)
         }
     }
 
@@ -62,14 +62,14 @@ class AdversarialConfigTest {
     fun `rollout accepts very small positive value - almost impossible to trigger`() {
         // Compiles fine but 0.001% rollout is 1 in 100,000 users
         // User might think this is 0.1% (which would be 10x higher)
-        val rollout = Rollout.of(0.001)
+        val rollout = Rampup.of(0.001)
         assertEquals(0.001, rollout.value)
     }
 
     @Test
     fun `rollout from string can parse but may have precision issues`() {
         // Floating point representation might not be exact
-        val rollout = Rollout.of("33.333333333333333")
+        val rollout = Rampup.of("33.333333333333333")
         // This compiles but the value might be slightly different
         assertEquals(33.333333333333333, rollout.value)
     }
@@ -77,7 +77,7 @@ class AdversarialConfigTest {
     @Test
     fun `rollout from int autoconverts to double - possible confusion`() {
         // User might not realize they're getting a Double
-        val rollout = Rollout.of(50)
+        val rollout = Rampup.of(50)
         assertEquals(50.0, rollout.value)
     }
 
@@ -375,7 +375,7 @@ class AdversarialConfigTest {
     }
 
     // ============================================
-    // ATTACK VECTOR 7: Rollout Bucketing Manipulation
+    // ATTACK VECTOR 7: Rampup Bucketing Manipulation
     // ============================================
 
     @Test
@@ -660,7 +660,7 @@ class AdversarialConfigTest {
     }
 
     // ============================================
-    // ATTACK VECTOR 13: Rollout + Matching Interaction
+    // ATTACK VECTOR 13: Rampup + Matching Interaction
     // ============================================
 
     @Test

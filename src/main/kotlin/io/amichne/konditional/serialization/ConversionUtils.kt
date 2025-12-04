@@ -3,7 +3,7 @@ package io.amichne.konditional.serialization
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Rollout
+import io.amichne.konditional.context.Rampup
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.FlagDefinition
@@ -145,7 +145,7 @@ private fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Seriali
  */
 private fun <C : Context> SerializableRule.toRule(): Rule<C> {
     return Rule(
-        rollout = Rollout.of(rampUp),
+        rollout = Rampup.of(rampUp),
         note = note,
         locales = locales.map { AppLocale.valueOf(it) }.toSet(),
         platforms = platforms.map { Platform.valueOf(it) }.toSet(),

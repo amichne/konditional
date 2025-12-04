@@ -45,9 +45,9 @@ val context = Context(
 )
 
 // Type-safe, null-safe, guaranteed to work
-val isDarkMode: Boolean = context.evaluate(AppFeatures.darkMode)
-val timeout: Double = context.evaluate(AppFeatures.timeout, 30.0)
-val retries: Int = context.evaluate(AppFeatures.retries, 3)
+val isDarkMode: Boolean = feature { AppFeatures.darkMode }
+val timeout: Double = feature { AppFeatures.timeout }
+val retries: Int = feature { AppFeatures.retries }
 ```
 
 **What just happened?**
@@ -129,7 +129,7 @@ object EnterpriseFeatures : FeatureContainer<Namespace.Global>(Namespace.Global)
 
 // Compile-time guarantee: this context works with these features
 val ctx = EnterpriseContext(/* ... */)
-val enabled = ctx.evaluateOrDefault(EnterpriseFeatures.ADVANCED_ANALYTICS, false)
+val enabled = feature { EnterpriseFeatures.ADVANCED_ANALYTICS }
 ```
 
 ## Targeting Made Simple
@@ -283,7 +283,7 @@ val context = Context(
     stableId = StableId.of("user-id")
 )
 
-val enabled = context.evaluateOrDefault(MyFeatures.MY_FLAG, false)
+val enabled = feature { MyFeatures.MY_FLAG }
 ```
 
 ## Use Cases
@@ -300,17 +300,18 @@ val enabled = context.evaluateOrDefault(MyFeatures.MY_FLAG, false)
 
 **Canary Deployments**: Test risky changes with 5% of users before full rollout.
 
-## vs LaunchDarkly / Split
+## vs String-Based Systems
 
-| Feature | LaunchDarkly/Split | Konditional |
-|---------|-------------------|-------------|
-| **Type Safety** | Runtime strings | Compile-time properties |
-| **Evaluation** | Server-side (network) | Offline-first (local) |
-| **Cost** | SaaS fees scale with MAU | Free (self-hosted) |
-| **Context** | HashMap attributes | Typed data classes |
-| **Performance** | Network latency | Zero-allocation, O(n) |
-| **Version Control** | Dashboard configs | Code-based, Git-tracked |
-| **Errors** | Silent failures | Parse-don't-validate Results |
+| Feature | String-Based (LaunchDarkly/Statsig/Custom) | Konditional |
+|---------|-------------------------------------------|-------------|
+| **Type Safety** | Runtime strings, type casting | Compile-time properties |
+| **Evaluation** | Server-side or cached (network dependency) | Offline-first (local) |
+| **Cost** | SaaS fees scale with MAU/seats | Free (self-hosted) |
+| **Context** | `Map<String, Any>` attributes | Typed data classes |
+| **Performance** | Network latency + cache overhead | Zero-allocation, O(n) |
+| **Version Control** | Dashboard/API configs | Code-based definitions, Git-tracked |
+| **Management** | SaaS dashboard only | UI with RBAC + code definitions |
+| **Errors** | Silent failures, null checks | Parse-don't-validate Results |
 
 **Migrating?** See the [Migration Guide](docs/02-migration.md) for concept mapping and adoption patterns.
 
@@ -347,6 +348,6 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 **Start here**: [Getting Started](docs/01-getting-started.md)
 
-**Migrating from LaunchDarkly/Split?** See [Migration Guide](docs/02-migration.md)
+**Migrating from another system?** See [Migration Guide](docs/02-migration.md)
 
 **Questions?** Open an issue at [github.com/amichne/konditional](https://github.com/amichne/konditional)
