@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://amichne.github.io/konditional/</loc>
-         <lastmod>2025-12-04</lastmod>
-    </url>
-    <url>
          <loc>https://amichne.github.io/konditional/01-getting-started/</loc>
          <lastmod>2025-12-04</lastmod>
     </url>
@@ -26,42 +22,6 @@
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/06-remote-config/</loc>
-         <lastmod>2025-12-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/Configuration/</loc>
-         <lastmod>2025-12-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/Context/</loc>
-         <lastmod>2025-12-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/Evaluation/</loc>
-         <lastmod>2025-12-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/Features/</loc>
-         <lastmod>2025-12-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/QuickStart/</loc>
-         <lastmod>2025-12-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/Registry/</loc>
-         <lastmod>2025-12-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/Results/</loc>
-         <lastmod>2025-12-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/Rules/</loc>
-         <lastmod>2025-12-04</lastmod>
-    </url>
-    <url>
-         <loc>https://amichne.github.io/konditional/Serialization/</loc>
          <lastmod>2025-12-04</lastmod>
     </url>
     <url>

@@ -946,49 +946,55 @@
 <h1 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h1>
 <p>Type-safe flags in 5 minutes. If it compiles, it works—no runtime errors, no null checks, no string typos.</p>
 <h2 id="why-konditional">Why Konditional?<a class="headerlink" href="#why-konditional" title="Permanent link">&para;</a></h2>
-<p>Unlike LaunchDarkly/Split's runtime string-based flags, Konditional gives you compile-time guarantees.</p>
+<p>Most feature flag systems use runtime strings. Konditional uses compile-time properties instead.</p>
 <table>
 <thead>
 <tr>
 <th>Feature</th>
-<th>LaunchDarkly/Split</th>
+<th>String-Based (Custom)</th>
 <th>Konditional</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><strong>Type Safety</strong></td>
-<td>Runtime strings <code>client.boolVariation("flag", false)</code></td>
-<td>Compile-time properties <code>context.evaluate(Features.FLAG)</code></td>
+<td>Exclusively booleans, drives branching explosion in reality</td>
+<td>Compile-time safety allows runtime usage without risk <code>feature { Features.FLAG }</code></td>
 </tr>
 <tr>
 <td><strong>Evaluation</strong></td>
-<td>Server-side (network required)</td>
-<td>Offline-first (local, zero-allocation)</td>
+<td>Hardcoded via boolean flows</td>
+<td>Dynamic and generic, maintaining rigor of type-checking</td>
 </tr>
 <tr>
 <td><strong>Context</strong></td>
-<td><code>HashMap&lt;String, Any&gt;</code></td>
+<td>Enum class with string keys</td>
 <td>Typed data classes with IDE autocomplete</td>
 </tr>
 <tr>
 <td><strong>Performance</strong></td>
-<td>Network latency + serialization</td>
-<td>O(n) local evaluation (n &lt; 10 rules typically)</td>
+<td>Shared module forces full-rebuild at compile-time, unable to leverage cache</td>
+<td>Module changes to flags are not invalidating of task-graph for parent</td>
 </tr>
 <tr>
 <td><strong>Organization</strong></td>
-<td>Tags/projects (runtime only)</td>
-<td>Namespaces (compile-time isolated)</td>
+<td>Prefixing, shared single source by all</td>
+<td>Namespaces (compile-time isolated), with type-enforced boundaries, infitinitely divisible</td>
 </tr>
 <tr>
 <td><strong>Errors</strong></td>
-<td>Silent failures or runtime exceptions</td>
-<td>Parse-don't-validate Result types</td>
+<td>Silent failures, null checks, type casting</td>
+<td>Guarnteed valid startup config,<br/> Update failures emerge <strong>before</strong> update, during parsing</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Core benefit:</strong> Typos become compile errors. Type mismatches are impossible. Your IDE knows everything.</p>
+<p><strong>Core benefits:</strong> 
+* No more invalid configurations, instead, compile errors.
+* First-class Gradle caching support
+* Modules own the feature flags they are concerned with
+* Unified, single-source, for all flagging
+* Your IDE knows everything.
+* Built to scale to multi-tenancy, seamlessly</p>
 <hr />
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// build.gradle.kts</span>
@@ -1021,14 +1027,14 @@
 </span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="p">)</span>
 </span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>
 </span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="c1">// Evaluate - returns Boolean, never null</span>
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">evaluateOrDefault</span><span class="p">(</span><span class="n">AppFeatures</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="p">,</span><span class="w"> </span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">AppFeatures</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<p><strong>vs LaunchDarkly:</strong>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1">// LaunchDarkly - runtime string, can typo</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="na">boolVariation</span><span class="p">(</span><span class="s">&quot;dark-mode&quot;</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w">  </span><span class="c1">// No IDE help</span>
+<p><strong>vs String-Based Systems:</strong>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1">// String-based - runtime lookup, can typo, type unknown</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">featureFlags</span><span class="p">.</span><span class="na">getBoolean</span><span class="p">(</span><span class="s">&quot;dark-mode&quot;</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w">  </span><span class="c1">// No IDE help, typos fail silently</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1">// Konditional - compile-time property, autocomplete works</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">evaluateOrDefault</span><span class="p">(</span><span class="n">AppFeatures</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w">  </span><span class="c1">// IDE knows it&#39;s Boolean</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">AppFeatures</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="p">}</span><span class="w">  </span><span class="c1">// IDE knows it&#39;s Boolean</span>
 </span></code></pre></div></p>
 <hr />
 <h2 id="multiple-types">Multiple Types<a class="headerlink" href="#multiple-types" title="Permanent link">&para;</a></h2>
@@ -1072,24 +1078,9 @@
 </span></code></pre></div>
 <hr />
 <h2 id="evaluation-methods">Evaluation Methods<a class="headerlink" href="#evaluation-methods" title="Permanent link">&para;</a></h2>
-<p>Choose based on your error handling:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1">// Recommended: Explicit error handling</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="kd">val</span><span class="w"> </span><span class="nv">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">evaluateSafe</span><span class="p">(</span><span class="n">AppFeatures</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="k">is</span><span class="w"> </span><span class="n">EvaluationResult</span><span class="p">.</span><span class="na">Success</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">use</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="na">value</span><span class="p">)</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="k">is</span><span class="w"> </span><span class="n">EvaluationResult</span><span class="p">.</span><span class="na">FlagNotFound</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">logWarning</span><span class="p">()</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="k">is</span><span class="w"> </span><span class="n">EvaluationResult</span><span class="p">.</span><span class="na">EvaluationError</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">logError</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="na">error</span><span class="p">)</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">}</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="c1">// Quick: Returns default on any error</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">evaluateOrDefault</span><span class="p">(</span><span class="n">AppFeatures</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="c1">// Nullable: Returns null on error</span>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">evaluateOrNull</span><span class="p">(</span><span class="n">AppFeatures</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="p">)</span>
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>
-</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="c1">// Throws: Use only for development</span>
-</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">evaluateOrThrow</span><span class="p">(</span><span class="n">AppFeatures</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="p">)</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1">// Simple evaluation with default</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">AppFeatures</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<p>Most production code should use <code>evaluateOrDefault</code> for simplicity or <code>evaluateSafe</code> for robust error handling.</p>
 <hr />
 <h2 id="organizing-by-teamdomain">Organizing by Team/Domain<a class="headerlink" href="#organizing-by-teamdomain" title="Permanent link">&para;</a></h2>
 <p>Use namespaces to isolate features:</p>
@@ -1112,24 +1103,24 @@
 <hr />
 <h2 id="key-differentiators">Key Differentiators<a class="headerlink" href="#key-differentiators" title="Permanent link">&para;</a></h2>
 <h3 id="1-compile-time-safety">1. Compile-Time Safety<a class="headerlink" href="#1-compile-time-safety" title="Permanent link">&para;</a></h3>
-<p>LaunchDarkly/Split: <code>client.boolVariation("flag-name", false)</code> — Typos fail at runtime
-<strong>Konditional:</strong> <code>context.evaluate(Features.DARK_MODE)</code> — Typos fail at compile time</p>
+<p>String-based: <code>getFlag("flag-name")</code> — Typos fail at runtime (or silently return defaults)
+<strong>Konditional:</strong> <code>feature { Features.DARK_MODE }</code> — Typos fail at compile time</p>
 <h3 id="2-offline-first-architecture">2. Offline-First Architecture<a class="headerlink" href="#2-offline-first-architecture" title="Permanent link">&para;</a></h3>
-<p>LaunchDarkly/Split: Network call required for evaluation (with caching)
+<p>String-based (LaunchDarkly/Statsig): Network call or cache required for evaluation
 <strong>Konditional:</strong> All evaluation happens locally. Zero network dependency.</p>
 <h3 id="3-zero-allocation-evaluation">3. Zero-Allocation Evaluation<a class="headerlink" href="#3-zero-allocation-evaluation" title="Permanent link">&para;</a></h3>
-<p>LaunchDarkly/Split: Creates objects for each evaluation
+<p>String-based: HashMap lookups, type casting, object creation per evaluation
 <strong>Konditional:</strong> Immutable data structures, lock-free reads, no GC pressure</p>
 <h3 id="4-type-safe-contexts">4. Type-Safe Contexts<a class="headerlink" href="#4-type-safe-contexts" title="Permanent link">&para;</a></h3>
-<p>LaunchDarkly/Split: <code>context.set("tier", "enterprise")</code> — String-based attributes
+<p>String-based: <code>context.put("tier", "enterprise")</code> — String keys, Any values, no validation
 <strong>Konditional:</strong>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">EnterpriseContext</span><span class="p">(</span>
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="c1">// ... standard fields ...</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">subscriptionTier</span><span class="p">:</span><span class="w"> </span><span class="n">SubscriptionTier</span><span class="w">  </span><span class="c1">// Compile-time validated</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">subscriptionTier</span><span class="p">:</span><span class="w"> </span><span class="n">SubscriptionTier</span><span class="w">  </span><span class="c1">// Enum, not string - compile-time validated</span>
 </span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Context</span>
 </span></code></pre></div></p>
 <h3 id="5-deterministic-rollouts">5. Deterministic Rollouts<a class="headerlink" href="#5-deterministic-rollouts" title="Permanent link">&para;</a></h3>
-<p>Both use hashing, but Konditional's SHA-256 bucketing is:
+<p>Most systems use hashing, but Konditional's SHA-256 bucketing is:
 - Platform-stable (same buckets on JVM, Android, iOS, Web)
 - Independent per flag (user in 50% of Flag A ≠ in 50% of Flag B)
 - Salt-controllable (change salt to redistribute users)</p>
@@ -1138,7 +1129,7 @@
 <p><strong>Just getting started?</strong> You're done! Start adding flags to your code.</p>
 <p><strong>Need advanced targeting?</strong> See <strong><a href="../04-targeting-rollouts/">Targeting &amp; Rollouts</a></strong> for rules, specificity, and custom logic.</p>
 <p><strong>Want custom contexts?</strong> See <strong><a href="../03-core-concepts/">Core Concepts</a></strong> for extending Context with business data.</p>
-<p><strong>Migrating from LaunchDarkly/Split?</strong> See <strong><a href="../02-migration/">Migration Guide</a></strong> for concept mapping and adoption patterns.</p>
+<p><strong>Migrating from another system?</strong> See <strong><a href="../02-migration/">Migration Guide</a></strong> for concept mapping and adoption patterns.</p>
 <p><strong>Loading remote configs?</strong> See <strong><a href="../06-remote-config/">Remote Configuration</a></strong> for JSON serialization.</p>
 <hr />
 <h2 id="quick-reference">Quick Reference<a class="headerlink" href="#quick-reference" title="Permanent link">&para;</a></h2>
@@ -1153,7 +1144,7 @@
 </span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="kd">val</span><span class="w"> </span><span class="nv">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span><span class="n">locale</span><span class="p">,</span><span class="w"> </span><span class="n">platform</span><span class="p">,</span><span class="w"> </span><span class="n">version</span><span class="p">,</span><span class="w"> </span><span class="n">stableId</span><span class="p">)</span>
 </span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>
 </span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="c1">// 3. Evaluate</span>
-</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="kd">val</span><span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="p">.</span><span class="na">evaluateOrDefault</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">FLAG</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="kd">val</span><span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">FLAG</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
 <p>That's it. Type-safe feature flags in 3 steps.</p>
 

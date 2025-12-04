@@ -1190,10 +1190,10 @@
 
 
 <h1 id="remote-configuration">Remote Configuration<a class="headerlink" href="#remote-configuration" title="Permanent link">&para;</a></h1>
-<p>Update flags without redeployment. Load configurations from JSON for dynamic rule updates.</p>
+<p>Update flags without redeployment. Konditional provides UI-based management with RBAC or JSON-based configuration for dynamic rule updates.</p>
 <hr />
 <h2 id="why-remote-configuration">Why Remote Configuration?<a class="headerlink" href="#why-remote-configuration" title="Permanent link">&para;</a></h2>
-<p>Konditional flags are defined in code, but <strong>rules can be loaded from JSON</strong> for dynamic updates:</p>
+<p>Konditional flags are defined in code (type-safe), but <strong>rules can be updated via UI or JSON</strong> for dynamic updates:</p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// Flags defined in code (type-safe, version-controlled)</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kd">object</span><span class="w"> </span><span class="nc">Features</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">DARK_MODE</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
@@ -1209,8 +1209,8 @@
 </span></code></pre></div>
 <p><strong>Key distinction:</strong></p>
 <ul>
-<li>Flag <strong>definitions</strong> live in code (compile-time safety)</li>
-<li>Flag <strong>rules</strong> can be loaded from JSON (runtime flexibility)</li>
+<li>Flag <strong>definitions</strong> live in code (compile-time safety, version-controlled)</li>
+<li>Flag <strong>rules</strong> can be updated via UI (RBAC-controlled) or JSON (runtime flexibility)</li>
 </ul>
 <hr />
 <h2 id="json-serialization">JSON Serialization<a class="headerlink" href="#json-serialization" title="Permanent link">&para;</a></h2>

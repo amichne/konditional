@@ -467,18 +467,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#launchdarkly-konditional" class="md-nav__link">
+  <a href="#string-based-systems-konditional" class="md-nav__link">
     <span class="md-ellipsis">
-      LaunchDarkly → Konditional
+      String-Based Systems → Konditional
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#split-konditional" class="md-nav__link">
+  <a href="#specific-service-mappings" class="md-nav__link">
     <span class="md-ellipsis">
-      Split → Konditional
+      Specific Service Mappings
     </span>
   </a>
   
@@ -835,18 +835,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#launchdarkly-konditional" class="md-nav__link">
+  <a href="#string-based-systems-konditional" class="md-nav__link">
     <span class="md-ellipsis">
-      LaunchDarkly → Konditional
+      String-Based Systems → Konditional
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#split-konditional" class="md-nav__link">
+  <a href="#specific-service-mappings" class="md-nav__link">
     <span class="md-ellipsis">
-      Split → Konditional
+      Specific Service Mappings
     </span>
   </a>
   
@@ -1090,102 +1090,73 @@
 
 
 <h1 id="migration-guide">Migration Guide<a class="headerlink" href="#migration-guide" title="Permanent link">&para;</a></h1>
-<p>Switch from LaunchDarkly/Split with confidence. This guide maps concepts and shows adoption patterns.</p>
+<p>Switch from string-based feature flags to compile-time safety. This guide maps concepts and shows adoption patterns.</p>
 <hr />
 <h2 id="concept-mapping">Concept Mapping<a class="headerlink" href="#concept-mapping" title="Permanent link">&para;</a></h2>
-<h3 id="launchdarkly-konditional">LaunchDarkly → Konditional<a class="headerlink" href="#launchdarkly-konditional" title="Permanent link">&para;</a></h3>
+<h3 id="string-based-systems-konditional">String-Based Systems → Konditional<a class="headerlink" href="#string-based-systems-konditional" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>LaunchDarkly</th>
+<th>Common Pattern (LaunchDarkly/Statsig/Custom)</th>
 <th>Konditional</th>
 <th>Key Difference</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>client.boolVariation("flag", false)</code></td>
-<td><code>context.evaluate(Features.FLAG)</code></td>
+<td><code>getFlag("flag-name")</code> or <code>client.boolVariation("flag", false)</code></td>
+<td><code>feature { Features.FLAG }</code></td>
 <td>Compile-time property vs runtime string</td>
 </tr>
 <tr>
-<td><code>LDContext</code> with attributes</td>
+<td>Context with <code>Map&lt;String, Any&gt;</code> attributes</td>
 <td><code>Context</code> data class</td>
 <td>Typed fields vs HashMap</td>
 </tr>
 <tr>
-<td>Targeting rules (dashboard)</td>
+<td>Rules in dashboard or config files</td>
 <td><code>rule { }</code> DSL (code)</td>
-<td>Version-controlled vs UI-only</td>
+<td>Version-controlled in code</td>
 </tr>
 <tr>
-<td>Rollout percentage</td>
+<td>Percentage rollouts</td>
 <td><code>rollout { 50.0 }</code></td>
 <td>Same concept, local computation</td>
 </tr>
 <tr>
-<td>Segments</td>
+<td>Segments/audiences/conditions</td>
 <td>Custom <code>extension { }</code> logic</td>
 <td>Type-safe predicates</td>
 </tr>
 <tr>
-<td>Projects/Environments</td>
+<td>Projects/environments/namespaces</td>
 <td><code>Namespace</code></td>
 <td>Compile-time isolated</td>
 </tr>
 <tr>
-<td>Flag variations</td>
+<td>Flag variations/treatments</td>
 <td><code>rule {...} returns value</code></td>
 <td>Type-safe values</td>
 </tr>
 </tbody>
 </table>
-<h3 id="split-konditional">Split → Konditional<a class="headerlink" href="#split-konditional" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Split</th>
-<th>Konditional</th>
-<th>Key Difference</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>client.getTreatment("flag")</code></td>
-<td><code>context.evaluate(Features.FLAG)</code></td>
-<td>Compile-time property vs runtime string</td>
-</tr>
-<tr>
-<td><code>SplitClient</code> with attributes</td>
-<td><code>Context</code> data class</td>
-<td>Typed fields vs key-value pairs</td>
-</tr>
-<tr>
-<td>Split definitions (dashboard)</td>
-<td><code>rule { }</code> DSL (code)</td>
-<td>Version-controlled in code</td>
-</tr>
-<tr>
-<td>Traffic allocation</td>
-<td><code>rollout { }</code></td>
-<td>Local SHA-256 bucketing</td>
-</tr>
-<tr>
-<td>Conditions/matchers</td>
-<td><code>platforms()</code>, <code>locales()</code>, <code>extension { }</code></td>
-<td>Type-safe targeting</td>
-</tr>
-<tr>
-<td>Treatments</td>
-<td>Rule return values</td>
-<td>Type-safe (not just strings)</td>
-</tr>
-</tbody>
-</table>
+<h3 id="specific-service-mappings">Specific Service Mappings<a class="headerlink" href="#specific-service-mappings" title="Permanent link">&para;</a></h3>
+<p><strong>LaunchDarkly:</strong>
+- <code>LDClient.boolVariation()</code> → <code>feature { Feature }</code>
+- <code>LDContext</code> → <code>Context</code> data class
+- Segments → <code>extension { Evaluable.factory { ... } }</code></p>
+<p><strong>Statsig:</strong>
+- <code>statsig.getConfig()</code> → <code>feature { Feature }</code>
+- Dynamic Config → String/Int/Double features with rules
+- Feature Gates → Boolean features</p>
+<p><strong>Custom String-Based:</strong>
+- <code>featureFlags["flag"]</code> → <code>feature { Features.FLAG }</code>
+- String keys → Property delegation
+- Type casting → Compiler-enforced types</p>
 <hr />
 <h2 id="code-comparison">Code Comparison<a class="headerlink" href="#code-comparison" title="Permanent link">&para;</a></h2>
 <h3 id="boolean-flag">Boolean Flag<a class="headerlink" href="#boolean-flag" title="Permanent link">&para;</a></h3>
-<p><strong>LaunchDarkly:</strong></p>
+<p><strong>String-Based (LaunchDarkly example):</strong></p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LDClient</span><span class="p">(</span><span class="n">sdkKey</span><span class="p">)</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LDContext</span><span class="p">.</span><span class="na">builder</span><span class="p">(</span><span class="s">&quot;user-123&quot;</span><span class="p">)</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="p">.</span><span class="na">set</span><span class="p">(</span><span class="s">&quot;platform&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;ios&quot;</span><span class="p">)</span>
@@ -1193,50 +1164,56 @@
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="na">boolVariation</span><span class="p">(</span><span class="s">&quot;dark-mode&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
 </span></code></pre></div>
-<p><strong>Konditional:</strong></p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kd">object</span><span class="w"> </span><span class="nc">Features</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">DARK_MODE</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="p">}</span>
+<p><strong>String-Based (Statsig example):</strong></p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">statsig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Statsig</span><span class="p">.</span><span class="na">initialize</span><span class="p">(</span><span class="n">sdkKey</span><span class="p">)</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StatsigUser</span><span class="p">(</span><span class="s">&quot;user-123&quot;</span><span class="p">)</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="p">.</span><span class="na">setCustom</span><span class="p">(</span><span class="n">mapOf</span><span class="p">(</span><span class="s">&quot;platform&quot;</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="s">&quot;ios&quot;</span><span class="p">))</span>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">    </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">.</span><span class="na">parse</span><span class="p">(</span><span class="s">&quot;1.0.0&quot;</span><span class="p">),</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">    </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6&quot;</span><span class="p">)</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="p">)</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">evaluateOrDefault</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">statsig</span><span class="p">.</span><span class="na">checkGate</span><span class="p">(</span><span class="n">user</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;dark_mode&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<p><strong>Konditional:</strong></p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kd">object</span><span class="w"> </span><span class="nc">Features</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">DARK_MODE</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="p">}</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">.</span><span class="na">parse</span><span class="p">(</span><span class="s">&quot;1.0.0&quot;</span><span class="p">),</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6&quot;</span><span class="p">)</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="p">)</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
 <p><strong>Key differences:</strong></p>
 <ul>
-<li>No SDK key needed (offline-first)</li>
+<li>No SDK key or network needed (offline-first)</li>
 <li>StableId requires hex format (deterministic bucketing)</li>
 <li>Property access with IDE autocomplete</li>
 <li>Type safety: compiler knows <code>enabled</code> is <code>Boolean</code></li>
 </ul>
 <h3 id="string-configuration">String Configuration<a class="headerlink" href="#string-configuration" title="Permanent link">&para;</a></h3>
-<p><strong>Split:</strong></p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SplitFactoryBuilder</span><span class="p">()</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="p">.</span><span class="na">setApiKey</span><span class="p">(</span><span class="n">apiKey</span><span class="p">)</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="p">.</span><span class="na">build</span><span class="p">()</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="p">.</span><span class="na">client</span><span class="p">()</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="kd">val</span><span class="w"> </span><span class="nv">treatment</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="na">getTreatment</span><span class="p">(</span><span class="s">&quot;api-endpoint&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">emptyMap</span><span class="p">())</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="kd">val</span><span class="w"> </span><span class="nv">endpoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="n">treatment</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="s">&quot;ios&quot;</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s">&quot;https://api-ios.example.com&quot;</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="s">&quot;android&quot;</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s">&quot;https://api-android.example.com&quot;</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s">&quot;https://api.example.com&quot;</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">}</span>
+<p><strong>String-Based (Custom implementation):</strong></p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigManager</span><span class="p">.</span><span class="na">getInstance</span><span class="p">()</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">endpoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="n">config</span><span class="p">.</span><span class="na">getString</span><span class="p">(</span><span class="s">&quot;api-endpoint-variant&quot;</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="s">&quot;ios&quot;</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s">&quot;https://api-ios.example.com&quot;</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="s">&quot;android&quot;</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s">&quot;https://api-android.example.com&quot;</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s">&quot;https://api.example.com&quot;</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="p">}</span>
+</span></code></pre></div>
+<p><strong>String-Based (Statsig Dynamic Config):</strong></p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">statsig</span><span class="p">.</span><span class="na">getConfig</span><span class="p">(</span><span class="n">user</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;api_config&quot;</span><span class="p">)</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">endpoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="na">getString</span><span class="p">(</span><span class="s">&quot;endpoint&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;https://api.example.com&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 <p><strong>Konditional:</strong></p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">object</span><span class="w"> </span><span class="nc">Config</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">API_ENDPOINT</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://api.example.com&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">&quot;https://api-ios.example.com&quot;</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">&quot;https://api-android.example.com&quot;</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="p">}</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="kd">val</span><span class="w"> </span><span class="nv">endpoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">Config</span><span class="p">.</span><span class="na">API_ENDPOINT</span><span class="p">)</span><span class="w">  </span><span class="c1">// Type: String, never null</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kd">object</span><span class="w"> </span><span class="nc">Config</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">API_ENDPOINT</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://api.example.com&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">&quot;https://api-ios.example.com&quot;</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">&quot;https://api-android.example.com&quot;</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="p">}</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="kd">val</span><span class="w"> </span><span class="nv">endpoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Config</span><span class="p">.</span><span class="na">API_ENDPOINT</span><span class="w"> </span><span class="p">}</span><span class="w">  </span><span class="c1">// Type: String, never null</span>
 </span></code></pre></div>
 <p><strong>Key differences:</strong></p>
 <ul>
@@ -1245,38 +1222,45 @@
 <li>Returns actual config value, not treatment name</li>
 </ul>
 <h3 id="custom-attributes-context-fields">Custom Attributes / Context Fields<a class="headerlink" href="#custom-attributes-context-fields" title="Permanent link">&para;</a></h3>
-<p><strong>LaunchDarkly:</strong></p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LDContext</span><span class="p">.</span><span class="na">builder</span><span class="p">(</span><span class="s">&quot;user-123&quot;</span><span class="p">)</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="p">.</span><span class="na">set</span><span class="p">(</span><span class="s">&quot;tier&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;enterprise&quot;</span><span class="p">)</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="p">.</span><span class="na">set</span><span class="p">(</span><span class="s">&quot;organization&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;acme-corp&quot;</span><span class="p">)</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="p">.</span><span class="na">build</span><span class="p">()</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="c1">// In LaunchDarkly dashboard: target users where tier == &quot;enterprise&quot;</span>
+<p><strong>String-Based (LaunchDarkly example):</strong></p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LDContext</span><span class="p">.</span><span class="na">builder</span><span class="p">(</span><span class="s">&quot;user-123&quot;</span><span class="p">)</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="p">.</span><span class="na">set</span><span class="p">(</span><span class="s">&quot;tier&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;enterprise&quot;</span><span class="p">)</span><span class="w">  </span><span class="c1">// String value, no validation</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="p">.</span><span class="na">set</span><span class="p">(</span><span class="s">&quot;organization&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;acme-corp&quot;</span><span class="p">)</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="p">.</span><span class="na">build</span><span class="p">()</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="c1">// In dashboard: target users where tier == &quot;enterprise&quot;</span>
+</span></code></pre></div>
+<p><strong>String-Based (Statsig example):</strong></p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StatsigUser</span><span class="p">(</span><span class="s">&quot;user-123&quot;</span><span class="p">)</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="p">.</span><span class="na">setCustom</span><span class="p">(</span><span class="n">mapOf</span><span class="p">(</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">        </span><span class="s">&quot;tier&quot;</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="s">&quot;enterprise&quot;</span><span class="p">,</span><span class="w">  </span><span class="c1">// String value, no validation</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">        </span><span class="s">&quot;organization&quot;</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="s">&quot;acme-corp&quot;</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="p">))</span>
 </span></code></pre></div>
 <p><strong>Konditional:</strong></p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">EnterpriseContext</span><span class="p">(</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">locale</span><span class="p">:</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">,</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">platform</span><span class="p">:</span><span class="w"> </span><span class="n">Platform</span><span class="p">,</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">appVersion</span><span class="p">:</span><span class="w"> </span><span class="n">Version</span><span class="p">,</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">stableId</span><span class="p">:</span><span class="w"> </span><span class="n">StableId</span><span class="p">,</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">subscriptionTier</span><span class="p">:</span><span class="w"> </span><span class="n">SubscriptionTier</span><span class="p">,</span><span class="w">  </span><span class="c1">// Typed, not string</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">organizationId</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Context</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="kd">object</span><span class="w"> </span><span class="nc">PremiumFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">ADVANCED_ANALYTICS</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">            </span><span class="n">extension</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">                </span><span class="n">Evaluable</span><span class="p">.</span><span class="na">factory</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ctx</span><span class="p">:</span><span class="w"> </span><span class="n">EnterpriseContext</span><span class="w"> </span><span class="o">-&gt;</span>
-</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">                    </span><span class="n">ctx</span><span class="p">.</span><span class="na">subscriptionTier</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SubscriptionTier</span><span class="p">.</span><span class="na">ENTERPRISE</span>
-</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">                </span><span class="p">}</span>
-</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">            </span><span class="p">}</span>
-</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="p">}</span>
-</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>
-</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="kd">val</span><span class="w"> </span><span class="nv">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">EnterpriseContext</span><span class="p">(...,</span><span class="w"> </span><span class="n">subscriptionTier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SubscriptionTier</span><span class="p">.</span><span class="na">ENTERPRISE</span><span class="p">,</span><span class="w"> </span><span class="p">...)</span>
-</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">PremiumFeatures</span><span class="p">.</span><span class="na">ADVANCED_ANALYTICS</span><span class="p">)</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">EnterpriseContext</span><span class="p">(</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">locale</span><span class="p">:</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">,</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">platform</span><span class="p">:</span><span class="w"> </span><span class="n">Platform</span><span class="p">,</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">appVersion</span><span class="p">:</span><span class="w"> </span><span class="n">Version</span><span class="p">,</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">stableId</span><span class="p">:</span><span class="w"> </span><span class="n">StableId</span><span class="p">,</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">subscriptionTier</span><span class="p">:</span><span class="w"> </span><span class="n">SubscriptionTier</span><span class="p">,</span><span class="w">  </span><span class="c1">// Typed, not string</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">organizationId</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Context</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="kd">object</span><span class="w"> </span><span class="nc">PremiumFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">ADVANCED_ANALYTICS</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="w">            </span><span class="n">extension</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="w">                </span><span class="n">Evaluable</span><span class="p">.</span><span class="na">factory</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ctx</span><span class="p">:</span><span class="w"> </span><span class="n">EnterpriseContext</span><span class="w"> </span><span class="o">-&gt;</span>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="w">                    </span><span class="n">ctx</span><span class="p">.</span><span class="na">subscriptionTier</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SubscriptionTier</span><span class="p">.</span><span class="na">ENTERPRISE</span>
+</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="w">                </span><span class="p">}</span>
+</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="w">            </span><span class="p">}</span>
+</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
+</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a><span class="p">}</span>
+</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>
+</span><span id="__span-8-22"><a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a><span class="kd">val</span><span class="w"> </span><span class="nv">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">EnterpriseContext</span><span class="p">(...,</span><span class="w"> </span><span class="n">subscriptionTier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SubscriptionTier</span><span class="p">.</span><span class="na">ENTERPRISE</span><span class="p">,</span><span class="w"> </span><span class="p">...)</span>
+</span><span id="__span-8-23"><a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">PremiumFeatures</span><span class="p">.</span><span class="na">ADVANCED_ANALYTICS</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
 <p><strong>Key differences:</strong></p>
 <ul>
@@ -1287,38 +1271,40 @@
 <hr />
 <h2 id="adoption-patterns">Adoption Patterns<a class="headerlink" href="#adoption-patterns" title="Permanent link">&para;</a></h2>
 <h3 id="pattern-1-gradual-recommended">Pattern 1: Gradual (Recommended)<a class="headerlink" href="#pattern-1-gradual-recommended" title="Permanent link">&para;</a></h3>
-<p>Run Konditional alongside LaunchDarkly/Split, migrate flag-by-flag.</p>
+<p>Run Konditional alongside your existing system, migrate flag-by-flag.</p>
 <p><strong>Steps:</strong></p>
 <ol>
 <li>Add Konditional dependency</li>
-<li>Define one flag in Konditional (mirror LaunchDarkly config)</li>
+<li>Define one flag in Konditional (mirror existing config)</li>
 <li>Evaluate both systems, log differences</li>
 <li>Once confident, switch to Konditional for that flag</li>
 <li>Repeat for remaining flags</li>
-<li>Remove LaunchDarkly/Split dependency</li>
+<li>Remove old system dependency</li>
 </ol>
 <p><strong>Example dual evaluation:</strong></p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1">// Wrapper to compare both systems</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">isEnabled</span><span class="p">(</span><span class="n">flagName</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">:</span><span class="w"> </span><span class="n">Context</span><span class="p">):</span><span class="w"> </span><span class="kt">Boolean</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">ldResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ldClient</span><span class="p">.</span><span class="na">boolVariation</span><span class="p">(</span><span class="n">flagName</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">toLD</span><span class="p">(),</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">kdResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="n">flagName</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">        </span><span class="s">&quot;dark_mode&quot;</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">evaluateOrDefault</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">null</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">kdResult</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">ldResult</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">kdResult</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">        </span><span class="n">logger</span><span class="p">.</span><span class="na">warn</span><span class="p">(</span><span class="s">&quot;Mismatch for </span><span class="si">$</span><span class="n">flagName</span><span class="s">: LD=</span><span class="si">$</span><span class="n">ldResult</span><span class="s">, KD=</span><span class="si">$</span><span class="n">kdResult</span><span class="s">&quot;</span><span class="p">)</span>
-</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>
-</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">ldResult</span><span class="w">  </span><span class="c1">// Use LaunchDarkly until validated</span>
-</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="p">}</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1">// Wrapper to compare both systems</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">isEnabled</span><span class="p">(</span><span class="n">flagName</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">:</span><span class="w"> </span><span class="n">Context</span><span class="p">):</span><span class="w"> </span><span class="kt">Boolean</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="c1">// Existing system (LaunchDarkly example)</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">oldResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">featureFlagClient</span><span class="p">.</span><span class="na">getBoolean</span><span class="p">(</span><span class="n">flagName</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="c1">// Konditional</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">newResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="n">flagName</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">        </span><span class="s">&quot;dark_mode&quot;</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">null</span>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">newResult</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">oldResult</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">newResult</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">        </span><span class="n">logger</span><span class="p">.</span><span class="na">warn</span><span class="p">(</span><span class="s">&quot;Mismatch for </span><span class="si">$</span><span class="n">flagName</span><span class="s">: Old=</span><span class="si">$</span><span class="n">oldResult</span><span class="s">, New=</span><span class="si">$</span><span class="n">newResult</span><span class="s">&quot;</span><span class="p">)</span>
+</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>
+</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">oldResult</span><span class="w">  </span><span class="c1">// Use old system until validated</span>
+</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="p">}</span>
 </span></code></pre></div>
 <h3 id="pattern-2-big-bang-faster-higher-risk">Pattern 2: Big-Bang (Faster, Higher Risk)<a class="headerlink" href="#pattern-2-big-bang-faster-higher-risk" title="Permanent link">&para;</a></h3>
 <p>Migrate all flags at once.</p>
 <p><strong>Steps:</strong></p>
 <ol>
-<li>Export all LaunchDarkly/Split flags</li>
+<li>Export all existing flags (from dashboard, config files, or database)</li>
 <li>Define equivalent Konditional features</li>
 <li>Test thoroughly in staging</li>
 <li>Deploy and monitor closely</li>
@@ -1326,141 +1312,135 @@
 </ol>
 <p><strong>Use when:</strong> You have comprehensive tests and can tolerate brief outages.</p>
 <h3 id="pattern-3-new-features-only">Pattern 3: New Features Only<a class="headerlink" href="#pattern-3-new-features-only" title="Permanent link">&para;</a></h3>
-<p>Keep existing flags in LaunchDarkly/Split, use Konditional for new flags.</p>
+<p>Keep existing flags in your current system, use Konditional for new flags.</p>
 <p><strong>Steps:</strong></p>
 <ol>
 <li>Add Konditional for new features</li>
 <li>Gradually migrate old flags as time permits</li>
-<li>Eventually deprecate LaunchDarkly/Split</li>
+<li>Eventually deprecate old system</li>
 </ol>
 <p><strong>Use when:</strong> Migration isn't urgent, want to learn Konditional gradually.</p>
 <hr />
 <h2 id="common-migration-challenges">Common Migration Challenges<a class="headerlink" href="#common-migration-challenges" title="Permanent link">&para;</a></h2>
 <h3 id="challenge-1-stableid-format">Challenge 1: StableId Format<a class="headerlink" href="#challenge-1-stableid-format" title="Permanent link">&para;</a></h3>
-<p><strong>LaunchDarkly/Split:</strong> User IDs can be any string (<code>"user-123"</code>, <code>"alice@example.com"</code>)</p>
+<p><strong>String-based systems:</strong> User IDs can be any string (<code>"user-123"</code>, <code>"alice@example.com"</code>)</p>
 <p><strong>Konditional:</strong> <code>StableId</code> must be valid hexadecimal (32+ characters)</p>
 <p><strong>Solution:</strong> Hash your existing IDs:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">userIdToStableId</span><span class="p">(</span><span class="n">userId</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">):</span><span class="w"> </span><span class="n">StableId</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">hash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MessageDigest</span><span class="p">.</span><span class="na">getInstance</span><span class="p">(</span><span class="s">&quot;SHA-256&quot;</span><span class="p">)</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">        </span><span class="p">.</span><span class="na">digest</span><span class="p">(</span><span class="n">userId</span><span class="p">.</span><span class="na">toByteArray</span><span class="p">())</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">        </span><span class="p">.</span><span class="na">joinToString</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;%02x&quot;</span><span class="p">.</span><span class="na">format</span><span class="p">(</span><span class="nb">it</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">hash</span><span class="p">)</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">}</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="kd">val</span><span class="w"> </span><span class="nv">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">userIdToStableId</span><span class="p">(</span><span class="s">&quot;user-123&quot;</span><span class="p">)</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">userIdToStableId</span><span class="p">(</span><span class="n">userId</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">):</span><span class="w"> </span><span class="n">StableId</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">hash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MessageDigest</span><span class="p">.</span><span class="na">getInstance</span><span class="p">(</span><span class="s">&quot;SHA-256&quot;</span><span class="p">)</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">        </span><span class="p">.</span><span class="na">digest</span><span class="p">(</span><span class="n">userId</span><span class="p">.</span><span class="na">toByteArray</span><span class="p">())</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">        </span><span class="p">.</span><span class="na">joinToString</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;%02x&quot;</span><span class="p">.</span><span class="na">format</span><span class="p">(</span><span class="nb">it</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">hash</span><span class="p">)</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="p">}</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="kd">val</span><span class="w"> </span><span class="nv">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">userIdToStableId</span><span class="p">(</span><span class="s">&quot;user-123&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 <h3 id="challenge-2-dynamic-attributes">Challenge 2: Dynamic Attributes<a class="headerlink" href="#challenge-2-dynamic-attributes" title="Permanent link">&para;</a></h3>
-<p><strong>LaunchDarkly/Split:</strong> Attributes set at runtime (<code>context.set("key", value)</code>)</p>
+<p><strong>String-based systems:</strong> Attributes set at runtime (<code>context.set("key", value)</code> or <code>Map&lt;String, Any&gt;</code>)</p>
 <p><strong>Konditional:</strong> Context fields must be defined at compile time</p>
 <p><strong>Solution:</strong> Create custom context with all possible fields:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">AppContext</span><span class="p">(</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">locale</span><span class="p">:</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">,</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">platform</span><span class="p">:</span><span class="w"> </span><span class="n">Platform</span><span class="p">,</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">appVersion</span><span class="p">:</span><span class="w"> </span><span class="n">Version</span><span class="p">,</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">stableId</span><span class="p">:</span><span class="w"> </span><span class="n">StableId</span><span class="p">,</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">subscriptionTier</span><span class="p">:</span><span class="w"> </span><span class="n">SubscriptionTier?,</span><span class="w">  </span><span class="c1">// Nullable if optional</span>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">betaTester</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="p">,</span>
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">organizationId</span><span class="p">:</span><span class="w"> </span><span class="kt">String?</span>
-</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Context</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">AppContext</span><span class="p">(</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">locale</span><span class="p">:</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">,</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">platform</span><span class="p">:</span><span class="w"> </span><span class="n">Platform</span><span class="p">,</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">appVersion</span><span class="p">:</span><span class="w"> </span><span class="n">Version</span><span class="p">,</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">stableId</span><span class="p">:</span><span class="w"> </span><span class="n">StableId</span><span class="p">,</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">subscriptionTier</span><span class="p">:</span><span class="w"> </span><span class="n">SubscriptionTier?,</span><span class="w">  </span><span class="c1">// Nullable if optional</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">betaTester</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="p">,</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">organizationId</span><span class="p">:</span><span class="w"> </span><span class="kt">String?</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Context</span>
 </span></code></pre></div>
 <h3 id="challenge-3-remote-configuration">Challenge 3: Remote Configuration<a class="headerlink" href="#challenge-3-remote-configuration" title="Permanent link">&para;</a></h3>
-<p><strong>LaunchDarkly/Split:</strong> Flags configured via dashboard, updated instantly</p>
-<p><strong>Konditional:</strong> Flags defined in code, but can load rules from JSON</p>
-<p><strong>Solution:</strong> Use serialization for remote updates:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1">// Define flags in code with defaults</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kd">object</span><span class="w"> </span><span class="nc">Features</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">DARK_MODE</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="p">}</span>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="c1">// Load remote rules (doesn&#39;t change code, just rule configuration)</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="kd">val</span><span class="w"> </span><span class="nv">remoteJson</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fetchFromServer</span><span class="p">(</span><span class="s">&quot;/flags.json&quot;</span><span class="p">)</span>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="kd">val</span><span class="w"> </span><span class="nv">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">fromJson</span><span class="p">(</span><span class="n">remoteJson</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">    </span><span class="k">is</span><span class="w"> </span><span class="n">ParseResult</span><span class="p">.</span><span class="na">Success</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="na">value</span><span class="p">)</span>
-</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">    </span><span class="k">is</span><span class="w"> </span><span class="n">ParseResult</span><span class="p">.</span><span class="na">Failure</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">logger</span><span class="p">.</span><span class="na">error</span><span class="p">(</span><span class="s">&quot;Failed to load config&quot;</span><span class="p">)</span>
-</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="p">}</span>
+<p><strong>String-based systems:</strong> Flags configured via dashboard/API, updated instantly</p>
+<p><strong>Konditional:</strong> Flags defined in code, rules updated via UI or JSON</p>
+<p><strong>Solution:</strong> Use UI with RBAC or JSON serialization for remote updates:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1">// Define flags in code with defaults</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kd">object</span><span class="w"> </span><span class="nc">Features</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">DARK_MODE</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="p">}</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="c1">// Load remote rules (doesn&#39;t change code, just rule configuration)</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="kd">val</span><span class="w"> </span><span class="nv">remoteJson</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fetchFromServer</span><span class="p">(</span><span class="s">&quot;/flags.json&quot;</span><span class="p">)</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="kd">val</span><span class="w"> </span><span class="nv">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">fromJson</span><span class="p">(</span><span class="n">remoteJson</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="w">    </span><span class="k">is</span><span class="w"> </span><span class="n">ParseResult</span><span class="p">.</span><span class="na">Success</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="na">value</span><span class="p">)</span>
+</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="w">    </span><span class="k">is</span><span class="w"> </span><span class="n">ParseResult</span><span class="p">.</span><span class="na">Failure</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">logger</span><span class="p">.</span><span class="na">error</span><span class="p">(</span><span class="s">&quot;Failed to load config&quot;</span><span class="p">)</span>
+</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="p">}</span>
 </span></code></pre></div>
 <h3 id="challenge-4-rollout-redistribution">Challenge 4: Rollout Redistribution<a class="headerlink" href="#challenge-4-rollout-redistribution" title="Permanent link">&para;</a></h3>
-<p><strong>Issue:</strong> Users in 50% rollout in LaunchDarkly won't match 50% in Konditional (different bucketing)</p>
+<p><strong>Issue:</strong> Users in 50% rollout in your old system won't match 50% in Konditional (different bucketing algorithms)</p>
 <p><strong>Solution:</strong> Accept redistribution or use salt to align:</p>
 <ul>
-<li>Accept: Users may see different experience temporarily</li>
-<li>Align: Adjust Konditional salt until distribution matches (trial-and-error)</li>
+<li><strong>Accept:</strong> Users may see different experience temporarily (most teams do this)</li>
+<li><strong>Align:</strong> Adjust Konditional salt until distribution matches (trial-and-error, not recommended)</li>
 </ul>
-<p>Most teams accept redistribution since rollouts are temporary.</p>
+<p>Most teams accept redistribution since rollouts are temporary anyway.</p>
 <hr />
 <h2 id="why-migrate">Why Migrate?<a class="headerlink" href="#why-migrate" title="Permanent link">&para;</a></h2>
 <h3 id="1-eliminate-runtime-errors">1. Eliminate Runtime Errors<a class="headerlink" href="#1-eliminate-runtime-errors" title="Permanent link">&para;</a></h3>
-<p><strong>LaunchDarkly/Split:</strong></p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">client</span><span class="p">.</span><span class="na">boolVariation</span><span class="p">(</span><span class="s">&quot;dark-mod&quot;</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w">  </span><span class="c1">// Typo! Returns default silently</span>
+<p><strong>String-based:</strong></p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">getFlag</span><span class="p">(</span><span class="s">&quot;dark-mod&quot;</span><span class="p">)</span><span class="w">  </span><span class="c1">// Typo! Returns null or default silently</span>
 </span></code></pre></div>
 <p><strong>Konditional:</strong></p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">context</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">DARK_MOD</span><span class="p">)</span><span class="w">  </span><span class="c1">// Compile error: unresolved reference</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">DARK_MOD</span><span class="w"> </span><span class="p">}</span><span class="w">  </span><span class="c1">// Compile error: unresolved reference</span>
 </span></code></pre></div>
 <h3 id="2-reduce-infrastructure-costs">2. Reduce Infrastructure Costs<a class="headerlink" href="#2-reduce-infrastructure-costs" title="Permanent link">&para;</a></h3>
-<p><strong>LaunchDarkly/Split:</strong> Monthly SaaS fees scale with MAU (monthly active users)</p>
+<p><strong>SaaS systems (LaunchDarkly/Statsig):</strong> Monthly fees scale with MAU/seat count</p>
 <p><strong>Konditional:</strong> Zero infrastructure cost (runs locally)</p>
 <h3 id="3-improve-performance">3. Improve Performance<a class="headerlink" href="#3-improve-performance" title="Permanent link">&para;</a></h3>
-<p><strong>LaunchDarkly/Split:</strong> Network latency (even with caching)</p>
-<p><strong>Konditional:</strong> Zero network calls, O(n) local evaluation where n &lt; 10</p>
+<p><strong>String-based:</strong> Network latency or cache lookup overhead, type casting</p>
+<p><strong>Konditional:</strong> Zero network calls, O(n) local evaluation where n &lt; 10, zero allocation</p>
 <h3 id="4-version-control-everything">4. Version Control Everything<a class="headerlink" href="#4-version-control-everything" title="Permanent link">&para;</a></h3>
-<p><strong>LaunchDarkly/Split:</strong> Flag rules live in dashboard (hard to audit/review)</p>
-<p><strong>Konditional:</strong> Everything in code (Git history, code review, rollback)</p>
+<p><strong>Dashboard-based systems:</strong> Flag rules live in UI (audit log separate from code)</p>
+<p><strong>Konditional:</strong> Flags defined in code (Git history + UI with RBAC for rule updates)</p>
 <h3 id="5-type-safety">5. Type Safety<a class="headerlink" href="#5-type-safety" title="Permanent link">&para;</a></h3>
-<p><strong>LaunchDarkly/Split:</strong> <code>client.intVariation()</code> vs <code>client.stringVariation()</code> — must remember type</p>
-<p><strong>Konditional:</strong> Compiler knows the type, autocomplete works</p>
+<p><strong>String-based:</strong> <code>getInt("flag")</code> vs <code>getString("flag")</code> — must remember type, can typo</p>
+<p><strong>Konditional:</strong> Compiler knows the type, IDE autocomplete works, typos impossible</p>
 <hr />
 <h2 id="decision-matrix">Decision Matrix<a class="headerlink" href="#decision-matrix" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
 <th>Factor</th>
-<th>Stick with LaunchDarkly/Split</th>
+<th>Stick with Current System</th>
 <th>Migrate to Konditional</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Team size</strong></td>
-<td>Large teams, need UI for non-engineers</td>
-<td>Engineering-first teams</td>
-</tr>
-<tr>
-<td><strong>Audit requirements</strong></td>
-<td>Need LaunchDarkly audit log</td>
-<td>Git provides audit trail</td>
-</tr>
-<tr>
 <td><strong>Budget</strong></td>
-<td>Cost not a concern</td>
+<td>SaaS cost not a concern</td>
 <td>Want to eliminate SaaS fees</td>
 </tr>
 <tr>
-<td><strong>Update frequency</strong></td>
-<td>Need instant flag updates in production</td>
-<td>Can deploy code to update flags</td>
-</tr>
-<tr>
 <td><strong>Tech stack</strong></td>
-<td>Multi-language (Java, Go, Python, etc.)</td>
+<td>Multi-language (Java, Go, Python, Ruby, etc.)</td>
 <td>Kotlin/JVM only</td>
 </tr>
 <tr>
 <td><strong>Type safety priority</strong></td>
-<td>Low</td>
+<td>Low (runtime errors acceptable)</td>
 <td>High (critical for correctness)</td>
 </tr>
 <tr>
 <td><strong>Offline support</strong></td>
-<td>Not needed</td>
+<td>Not needed (always connected)</td>
 <td>Essential (mobile, edge computing)</td>
+</tr>
+<tr>
+<td><strong>Integration effort</strong></td>
+<td>Already integrated, working well</td>
+<td>Willing to invest migration time</td>
+</tr>
+<tr>
+<td><strong>Control &amp; Compliance</strong></td>
+<td>Prefer SaaS management</td>
+<td>Need self-hosted with RBAC control</td>
 </tr>
 </tbody>
 </table>
 <hr />
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <p><strong>Ready to migrate?</strong> Start with <a href="../01-getting-started/">Getting Started</a> to run your first Konditional flag.</p>
-<p><strong>Need feature parity?</strong> See <a href="../04-targeting-rollouts/">Targeting &amp; Rollouts</a> for advanced rules matching LaunchDarkly's
-capabilities.</p>
+<p><strong>Need feature parity?</strong> See <a href="../04-targeting-rollouts/">Targeting &amp; Rollouts</a> for advanced rules matching most feature flag systems.</p>
 <p><strong>Want to understand the model?</strong> See <a href="../03-core-concepts/">Core Concepts</a> for deep dive into Features, Context, and
 Namespaces.</p>
 
