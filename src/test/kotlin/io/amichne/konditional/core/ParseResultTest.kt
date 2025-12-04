@@ -272,10 +272,10 @@ class ParseResultTest {
 
     @Test
     fun `ParseException contains original ParseError`() {
-        val error = ParseError.InvalidRollout(150.0, "Rollout must be 0-100")
+        val error = ParseError.InvalidRollout(150.0, "Rampup must be 0-100")
         val exception = ParseException(error)
 
-        assertEquals("Rollout must be 0-100", exception.message)
+        assertEquals("Rampup must be 0-100", exception.message)
         assertIs<ParseError.InvalidRollout>(exception.error)
     }
 

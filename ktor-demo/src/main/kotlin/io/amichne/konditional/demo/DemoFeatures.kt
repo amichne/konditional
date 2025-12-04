@@ -5,7 +5,6 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.FeatureContainer
-import io.amichne.konditional.rules.evaluable.Evaluable.Companion.factory
 
 /**
  * Demo features features showcasing different value types using FeatureContainer delegation.
@@ -131,22 +130,19 @@ object EnterpriseFeatures : FeatureContainer<Namespace.Global>(Namespace.Global)
     // Enterprise Boolean Features
     val SSO_ENABLED by boolean<EnterpriseContext>(true) {
         rule {
-            extension {
-                factory { ctx ->
-                    ctx.subscriptionTier == SubscriptionTier.ENTERPRISE ||
-                    ctx.subscriptionTier == SubscriptionTier.PROFESSIONAL
-                }
+            extension { ctx ->
+                ctx.subscriptionTier == SubscriptionTier.ENTERPRISE ||
+                ctx.subscriptionTier == SubscriptionTier.PROFESSIONAL
+
             }
         } returns true
 
     }
     val ADVANCED_ANALYTICS by boolean<EnterpriseContext>(false) {
         rule {
-            extension {
-                factory { ctx ->
-                    ctx.subscriptionTier == SubscriptionTier.ENTERPRISE &&
-                    ctx.employeeCount > 100
-                }
+            extension { ctx ->
+                ctx.subscriptionTier == SubscriptionTier.ENTERPRISE &&
+                ctx.employeeCount > 100
             }
         } returns true
     }

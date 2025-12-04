@@ -2,6 +2,7 @@ package io.amichne.konditional.fixtures.core
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.features.FeatureAware
 import io.amichne.konditional.core.features.FeatureContainer
@@ -257,6 +258,7 @@ data class OverridingScope<M : Namespace, F : FeatureAware<M>> @PublishedApi int
     }
 
     companion object {
+        @KonditionalDsl
         inline fun <reified M : Namespace, reified T> setupTest(
             container: T,
             features: T.(OverridingScope<M, T>) -> Unit,

@@ -13,4 +13,5 @@ enum class ValueType {
     ENUM,
     JSON_OBJECT,
     JSON_ARRAY,
+    DATA_CLASS,
 }

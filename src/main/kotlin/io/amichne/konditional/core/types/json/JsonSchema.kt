@@ -1,4 +1,4 @@
-package io.amichne.konditional.core.types
+package io.amichne.konditional.core.types.json
 
 import kotlin.reflect.KClass
 

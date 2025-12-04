@@ -63,19 +63,12 @@ plugins:
 
 
 nav:
-  - Home: index.md
-  - Getting Started:
-    - Quick Start: QuickStart.md
-    - Features: Features.md
-  - Core Concepts:
-    - Evaluation: Evaluation.md
-    - Results: Results.md
-  - Guides:
-    - Configuration: Configuration.md
-    - Context System: Context.md
-    - Rules Engine: Rules.md
-    - Registry: Registry.md
-    - Serialization: Serialization.md
+  - Getting Started: 01-getting-started.md
+  - Migration Guide: 02-migration.md
+  - Core Concepts: 03-core-concepts.md
+  - Targeting & Rollouts: 04-targeting-rollouts.md
+  - Evaluation: 05-evaluation.md
+  - Remote Configuration: 06-remote-config.md
 
 extra:
   social:

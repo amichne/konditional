@@ -4,7 +4,14 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.registry.NamespaceRegistry.Companion.updateDefinition
+import io.amichne.konditional.core.types.BooleanEncodeable
+import io.amichne.konditional.core.types.DataClassEncodeable
+import io.amichne.konditional.core.types.DataClassWithSchema
+import io.amichne.konditional.core.types.DecimalEncodeable
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.core.types.EnumEncodeable
+import io.amichne.konditional.core.types.IntEncodeable
+import io.amichne.konditional.core.types.StringEncodeable
 import io.amichne.konditional.internal.builders.FlagBuilder
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
@@ -110,7 +117,7 @@ abstract class FeatureContainer<M : Namespace>(
      */
     protected fun <C : Context> boolean(
         default: Boolean,
-        flagScope: FlagScope<EncodableValue.BooleanEncodeable, Boolean, C, M>.() -> Unit = {},
+        flagScope: FlagScope<BooleanEncodeable, Boolean, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, BooleanFeature<C, M>> =
         ContainerFeaturePropertyDelegate(default, flagScope) { BooleanFeature(it, namespace) }
 
@@ -139,7 +146,7 @@ abstract class FeatureContainer<M : Namespace>(
      */
     protected fun <C : Context> string(
         default: String,
-        stringScope: FlagScope<EncodableValue.StringEncodeable, String, C, M>.() -> Unit = {},
+        stringScope: FlagScope<StringEncodeable, String, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, StringFeature<C, M>> =
         ContainerFeaturePropertyDelegate(default, stringScope) { StringFeature.Companion(it, namespace) }
 
@@ -168,7 +175,7 @@ abstract class FeatureContainer<M : Namespace>(
      */
     protected fun <C : Context> integer(
         default: Int,
-        integerScope: FlagScope<EncodableValue.IntEncodeable, Int, C, M>.() -> Unit = {},
+        integerScope: FlagScope<IntEncodeable, Int, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<C, M>> =
         ContainerFeaturePropertyDelegate(default, integerScope) {
             IntFeature.Companion(it, namespace)
@@ -200,7 +207,7 @@ abstract class FeatureContainer<M : Namespace>(
     @Deprecated("Use integer() instead", ReplaceWith("integer(default) ({ integerScope })"))
     protected fun <C : Context> int(
         default: Int,
-        integerScope: FlagScope<EncodableValue.IntEncodeable, Int, C, M>.() -> Unit = {},
+        integerScope: FlagScope<IntEncodeable, Int, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<C, M>> =
         ContainerFeaturePropertyDelegate(default, integerScope) {
             IntFeature.Companion(it, namespace)
@@ -231,7 +238,7 @@ abstract class FeatureContainer<M : Namespace>(
      */
     protected fun <C : Context> double(
         default: Double,
-        decimalScope: FlagScope<EncodableValue.DecimalEncodeable, Double, C, M>.() -> Unit = {},
+        decimalScope: FlagScope<DecimalEncodeable, Double, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, DoubleFeature<C, M>> =
         ContainerFeaturePropertyDelegate(default, decimalScope) { DoubleFeature(it, namespace) }
 
@@ -263,9 +270,49 @@ abstract class FeatureContainer<M : Namespace>(
      */
     protected fun <E : Enum<E>, C : Context> enum(
         default: E,
-        enumScope: FlagScope<EncodableValue.EnumEncodeable<E>, E, C, M>.() -> Unit = {},
+        enumScope: FlagScope<EnumEncodeable<E>, E, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, EnumFeature<E, C, M>> =
         ContainerFeaturePropertyDelegate(default, enumScope) { EnumFeature(it, namespace) }
+
+    /**
+     * Creates a DataClass feature with automatic registration and configuration.
+     *
+     * The feature is configured using a DSL scope that provides type-safe access to
+     * data class-specific configuration options like rules, defaults, and targeting.
+     * Configuration is automatically applied to the namespace when the feature is first accessed.
+     *
+     * The data class must implement [DataClassWithSchema] and be annotated with [@ConfigDataClass][io.amichne.konditional.core.dsl.ConfigDataClass]
+     * for compile-time schema generation.
+     *
+     * **Example:**
+     * ```kotlin
+     * @ConfigDataClass
+     * data class PaymentConfig(
+     *     val maxRetries: Int = 3,
+     *     val timeout: Double = 30.0,
+     *     val enabled: Boolean = true
+     * ) : DataClassWithSchema
+     *
+     * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
+     *     val PAYMENT_CONFIG by dataClass(default = PaymentConfig()) {
+     *         rule {
+     *             environments(Environment.PRODUCTION)
+     *         } returns PaymentConfig(maxRetries = 5, timeout = 60.0)
+     *     }
+     * }
+     * ```
+     *
+     * @param T The data class type implementing DataClassWithSchema
+     * @param C The context type used for evaluation
+     * @param default The default value for this feature (required)
+     * @param dataClassScope DSL scope for configuring the data class feature
+     * @return A delegated property that returns a [DataClassFeature]
+     */
+    protected inline fun <reified T : DataClassWithSchema, C : Context> dataClass(
+        default: T,
+        noinline dataClassScope: FlagScope<DataClassEncodeable<T>, T, C, M>.() -> Unit = {},
+    ): ReadOnlyProperty<FeatureContainer<M>, DataClassFeature<T, C, M>> =
+        ContainerFeaturePropertyDelegate(default, dataClassScope) { DataClassFeature(it, namespace) }
 
     /**
      * Internal delegate factory that handles feature creation, configuration, and registration.

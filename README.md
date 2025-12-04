@@ -45,9 +45,9 @@ val context = Context(
 )
 
 // Type-safe, null-safe, guaranteed to work
-val isDarkMode: Boolean = context.evaluate(AppFeatures.darkMode)
-val timeout: Double = context.evaluate(AppFeatures.timeout, 30.0)
-val retries: Int = context.evaluate(AppFeatures.retries, 3)
+val isDarkMode: Boolean = feature { AppFeatures.darkMode }
+val timeout: Double = feature { AppFeatures.timeout }
+val retries: Int = feature { AppFeatures.retries }
 ```
 
 **What just happened?**
@@ -129,7 +129,7 @@ object EnterpriseFeatures : FeatureContainer<Namespace.Global>(Namespace.Global)
 
 // Compile-time guarantee: this context works with these features
 val ctx = EnterpriseContext(/* ... */)
-val enabled = ctx.evaluateOrDefault(EnterpriseFeatures.ADVANCED_ANALYTICS, false)
+val enabled = feature { EnterpriseFeatures.ADVANCED_ANALYTICS }
 ```
 
 ## Targeting Made Simple
@@ -283,7 +283,7 @@ val context = Context(
     stableId = StableId.of("user-id")
 )
 
-val enabled = context.evaluateOrDefault(MyFeatures.MY_FLAG, false)
+val enabled = feature { MyFeatures.MY_FLAG }
 ```
 
 ## Use Cases
@@ -300,23 +300,29 @@ val enabled = context.evaluateOrDefault(MyFeatures.MY_FLAG, false)
 
 **Canary Deployments**: Test risky changes with 5% of users before full rollout.
 
+## vs String-Based Systems
+
+| Feature | String-Based (LaunchDarkly/Statsig/Custom) | Konditional |
+|---------|-------------------------------------------|-------------|
+| **Type Safety** | Runtime strings, type casting | Compile-time properties |
+| **Evaluation** | Server-side or cached (network dependency) | Offline-first (local) |
+| **Cost** | SaaS fees scale with MAU/seats | Free (self-hosted) |
+| **Context** | `Map<String, Any>` attributes | Typed data classes |
+| **Performance** | Network latency + cache overhead | Zero-allocation, O(n) |
+| **Version Control** | Dashboard/API configs | Code-based definitions, Git-tracked |
+| **Management** | SaaS dashboard only | UI with RBAC + code definitions |
+| **Errors** | Silent failures, null checks | Parse-don't-validate Results |
+
+**Migrating?** See the [Migration Guide](docs/02-migration.md) for concept mapping and adoption patterns.
+
 ## Documentation
 
-### Getting Started
-- **[Quick Start](docs/QuickStart.md)** - Get your first flag running in 5 minutes
-- **[Overview](docs/index.md)** - Complete API overview and core concepts
-
-### Core Concepts
-- **[Features](docs/Features.md)** - All feature definition patterns
-- **[Context](docs/Context.md)** - Evaluation contexts and custom extensions
-- **[Evaluation](docs/Evaluation.md)** - Deep dive into flag evaluation
-- **[Rules](docs/Rules.md)** - Advanced targeting and rollouts
-
-### Advanced
-- **[Configuration](docs/Configuration.md)** - Complete DSL reference
-- **[Serialization](docs/Serialization.md)** - Export/import configurations as JSON
-- **[Registry](docs/Registry.md)** - Namespace and registry management
-- **[Results](docs/Results.md)** - Error handling with EvaluationResult
+- **[Getting Started](docs/01-getting-started.md)** - Type-safe flags in 5 minutes
+- **[Migration Guide](docs/02-migration.md)** - Switch from LaunchDarkly/Split
+- **[Core Concepts](docs/03-core-concepts.md)** - Features, Context, Namespaces
+- **[Targeting & Rollouts](docs/04-targeting-rollouts.md)** - Rules and gradual deployment
+- **[Evaluation](docs/05-evaluation.md)** - Evaluation methods and error handling
+- **[Remote Configuration](docs/06-remote-config.md)** - JSON serialization and dynamic updates
 
 ## Key Principles
 
@@ -340,6 +346,8 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-**Start here**: [Quick Start Guide](docs/QuickStart.md)
+**Start here**: [Getting Started](docs/01-getting-started.md)
+
+**Migrating from another system?** See [Migration Guide](docs/02-migration.md)
 
 **Questions?** Open an issue at [github.com/amichne/konditional](https://github.com/amichne/konditional)

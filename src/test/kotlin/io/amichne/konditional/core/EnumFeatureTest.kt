@@ -11,6 +11,7 @@ import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.utils.evaluateOrDefault
 import io.amichne.konditional.core.types.EncodableEvidence
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.core.types.EnumEncodeable
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -122,7 +123,7 @@ class EnumFeatureTest {
     @Test
     fun `enum encodeable can be created from enum value`() {
         val logLevel = LogLevel.INFO
-        val encodeable = EncodableValue.EnumEncodeable.of(logLevel)
+        val encodeable = EnumEncodeable.of(logLevel)
 
         assertEquals(LogLevel.INFO, encodeable.value)
         assertEquals(LogLevel::class, encodeable.enumClass)
@@ -131,7 +132,7 @@ class EnumFeatureTest {
 
     @Test
     fun `enum encodeable can decode from string`() {
-        val encodeable = EncodableValue.EnumEncodeable.fromString("DEBUG", LogLevel::class)
+        val encodeable = EnumEncodeable.fromString("DEBUG", LogLevel::class)
 
         assertEquals(LogLevel.DEBUG, encodeable.value)
         assertEquals(LogLevel::class, encodeable.enumClass)
@@ -139,7 +140,7 @@ class EnumFeatureTest {
 
     @Test
     fun `enum encodeable encoding type is ENUM`() {
-        val encodeable = EncodableValue.EnumEncodeable.of(LogLevel.WARN)
+        val encodeable = EnumEncodeable.of(LogLevel.WARN)
         assertEquals(EncodableValue.Encoding.ENUM, encodeable.encoding)
     }
 

@@ -4,13 +4,15 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Rollout.Companion.MAX
+import io.amichne.konditional.context.Rampup.Companion.MAX
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace.Global
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Configuration
-import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.core.types.BooleanEncodeable
+import io.amichne.konditional.core.types.IntEncodeable
+import io.amichne.konditional.core.types.StringEncodeable
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
@@ -86,7 +88,7 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded(),
         )
 
-        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context, Global> = FlagDefinition(
+        val boolFlag: FlagDefinition<BooleanEncodeable, Boolean, Context, Global> = FlagDefinition(
             feature = Features.featureB,
             values = listOf(rule.targetedBy(true)),
             defaultValue = false,
@@ -121,19 +123,19 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded(),
         )
 
-        val boolFlag: FlagDefinition<EncodableValue.BooleanEncodeable, Boolean, Context, Global> = FlagDefinition(
+        val boolFlag: FlagDefinition<BooleanEncodeable, Boolean, Context, Global> = FlagDefinition(
             feature = Features.featureA,
             values = listOf(boolRule.targetedBy(true)),
             defaultValue = false,
         )
 
-        val stringFlag: FlagDefinition<EncodableValue.StringEncodeable, String, Context, Global> = FlagDefinition(
+        val stringFlag: FlagDefinition<StringEncodeable, String, Context, Global> = FlagDefinition(
             feature = Features.configA,
             values = listOf(stringRule.targetedBy("value")),
             defaultValue = "default",
         )
 
-        val intFlag: FlagDefinition<EncodableValue.IntEncodeable, Int, Context, Global> = FlagDefinition(
+        val intFlag: FlagDefinition<IntEncodeable, Int, Context, Global> = FlagDefinition(
             feature = Features.timeout,
             values = listOf(intRule.targetedBy(30)),
             defaultValue = 10,

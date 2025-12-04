@@ -21,8 +21,8 @@ import io.amichne.konditional.rules.evaluable.Evaluable
  *         min(1, 2, 0)
  *         max(2, 0, 0)
  *     }
- *     rollout {  Rollout.of(50.0) }
- *     note("Rollout to mobile users only")
+ *     rollout {  Rampup.of(50.0) }
+ *     note("Rampup to mobile users only")
  * }
  * ```
  *
@@ -79,7 +79,10 @@ interface RuleScope<C : Context> {
      *
      * @param function Factory function that creates the Evaluable
      */
+    @Deprecated("Use other extension")
     fun extension(function: () -> Evaluable<C>)
+
+    fun extension(block: (C) -> Boolean)
 
     /**
      * Adds a human-readable note to document the rule's purpose.

@@ -2,7 +2,7 @@ package io.amichne.konditional.core.features
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.core.types.EnumEncodeable
 
 /**
  * Feature type for user-defined enum values.
@@ -13,7 +13,7 @@ import io.amichne.konditional.core.types.EncodableValue
  * @param M The namespace type for isolation
  */
 sealed interface EnumFeature<E : Enum<E>, C : Context, M : Namespace> :
-    Feature<EncodableValue.EnumEncodeable<E>, E, C, M> {
+    Feature<EnumEncodeable<E>, E, C, M> {
 
     companion object {
         internal operator fun <E : Enum<E>, C : Context, M : Namespace> invoke(

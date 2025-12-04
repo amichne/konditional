@@ -3,7 +3,7 @@ package io.amichne.konditional.serialization
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Rollout
+import io.amichne.konditional.context.Rampup
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
@@ -134,7 +134,7 @@ class SnapshotSerializerTest {
     @Test
     fun `Given Konfig with complex rules, When serialized, Then includes all rule attributes`() {
         val rule = Rule<Context>(
-            rollout = Rollout.of(50.0),
+            rollout = Rampup.of(50.0),
             note = "TestNamespace rule",
             locales = setOf(AppLocale.UNITED_STATES, AppLocale.FRANCE),
             platforms = setOf(Platform.IOS, Platform.ANDROID),
@@ -466,7 +466,7 @@ class SnapshotSerializerTest {
     @Test
     fun `Given flag with complex rules, When round-tripped, Then all rule attributes are preserved`() {
         val rule = Rule<Context>(
-            rollout = Rollout.of(75.0),
+            rollout = Rampup.of(75.0),
             note = "Complex rule",
             locales = setOf(AppLocale.UNITED_STATES, AppLocale.UNITED_STATES),
             platforms = setOf(Platform.WEB),

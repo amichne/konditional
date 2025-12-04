@@ -19,7 +19,7 @@ import io.amichne.konditional.rules.Rule
  *     salt("v2")
  *     rule {
  *         platforms(Platform.IOS)
- *         rollout {  Rollout.of(50.0) }
+ *         rollout {  Rampup.of(50.0) }
  *     }.returns(false)
  * }
  * ```
@@ -63,7 +63,7 @@ interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> 
      * rule {
      *     platforms(Platform.IOS)
      *     locales(AppLocale.UNITED_STATES)
-     *     rollout {  Rollout.of(50.0) }
+     *     rollout {  Rampup.of(50.0) }
      * }.returns(true)
      * ```
      *
