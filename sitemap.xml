@@ -2,74 +2,98 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://amichne.github.io/konditional/</loc>
-         <lastmod>2025-11-18</lastmod>
+         <lastmod>2025-12-04</lastmod>
+    </url>
+    <url>
+         <loc>https://amichne.github.io/konditional/01-getting-started/</loc>
+         <lastmod>2025-12-04</lastmod>
+    </url>
+    <url>
+         <loc>https://amichne.github.io/konditional/02-migration/</loc>
+         <lastmod>2025-12-04</lastmod>
+    </url>
+    <url>
+         <loc>https://amichne.github.io/konditional/03-core-concepts/</loc>
+         <lastmod>2025-12-04</lastmod>
+    </url>
+    <url>
+         <loc>https://amichne.github.io/konditional/04-targeting-rollouts/</loc>
+         <lastmod>2025-12-04</lastmod>
+    </url>
+    <url>
+         <loc>https://amichne.github.io/konditional/05-evaluation/</loc>
+         <lastmod>2025-12-04</lastmod>
+    </url>
+    <url>
+         <loc>https://amichne.github.io/konditional/06-remote-config/</loc>
+         <lastmod>2025-12-04</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/Configuration/</loc>
-         <lastmod>2025-11-18</lastmod>
+         <lastmod>2025-12-04</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/Context/</loc>
-         <lastmod>2025-11-18</lastmod>
+         <lastmod>2025-12-04</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/Evaluation/</loc>
-         <lastmod>2025-11-18</lastmod>
+         <lastmod>2025-12-04</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/Features/</loc>
-         <lastmod>2025-11-18</lastmod>
+         <lastmod>2025-12-04</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/QuickStart/</loc>
-         <lastmod>2025-11-18</lastmod>
+         <lastmod>2025-12-04</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/Registry/</loc>
-         <lastmod>2025-11-18</lastmod>
+         <lastmod>2025-12-04</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/Results/</loc>
-         <lastmod>2025-11-18</lastmod>
+         <lastmod>2025-12-04</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/Rules/</loc>
-         <lastmod>2025-11-18</lastmod>
+         <lastmod>2025-12-04</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/Serialization/</loc>
-         <lastmod>2025-11-18</lastmod>
+         <lastmod>2025-12-04</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/venv/lib/python3.14/site-packages/backrefs-5.9.dist-info/licenses/LICENSE/</loc>
-         <lastmod>2025-11-18</lastmod>
+         <lastmod>2025-12-04</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/venv/lib/python3.14/site-packages/idna-3.11.dist-info/licenses/LICENSE/</loc>
-         <lastmod>2025-11-18</lastmod>
+         <lastmod>2025-12-04</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/venv/lib/python3.14/site-packages/markdown-3.9.dist-info/licenses/LICENSE/</loc>
-         <lastmod>2025-11-18</lastmod>
+         <lastmod>2025-12-04</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/venv/lib/python3.14/site-packages/mkdocs_get_deps-0.2.0.dist-info/licenses/LICENSE/</loc>
-         <lastmod>2025-11-18</lastmod>
+         <lastmod>2025-12-04</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/venv/lib/python3.14/site-packages/mkdocs_material_extensions-1.3.1.dist-info/licenses/LICENSE/</loc>
-         <lastmod>2025-11-18</lastmod>
+         <lastmod>2025-12-04</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/venv/lib/python3.14/site-packages/pip-25.2.dist-info/licenses/src/pip/_vendor/idna/LICENSE/</loc>
-         <lastmod>2025-11-18</lastmod>
+         <lastmod>2025-12-04</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/venv/lib/python3.14/site-packages/pymdown_extensions-10.16.1.dist-info/licenses/LICENSE/</loc>
-         <lastmod>2025-11-18</lastmod>
+         <lastmod>2025-12-04</lastmod>
     </url>
     <url>
          <loc>https://amichne.github.io/konditional/venv/lib/python3.14/site-packages/soupsieve-2.8.dist-info/licenses/LICENSE/</loc>
-         <lastmod>2025-11-18</lastmod>
+         <lastmod>2025-12-04</lastmod>
     </url>
 </urlset>

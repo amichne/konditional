@@ -7,11 +7,9 @@
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <meta content="Type-safe, deterministic feature flags for Kotlin" name="description"/>
 <link href="https://amichne.github.io/konditional/Rules/" rel="canonical"/>
-<link href="../Context/" rel="prev"/>
-<link href="../Registry/" rel="next"/>
 <link href="../assets/images/favicon.png" rel="icon"/>
 <meta content="mkdocs-1.6.1, mkdocs-material-9.6.22" name="generator"/>
-<title>Rules Engine - Konditional</title>
+<title>Rules: Advanced Targeting and Rollouts - Konditional</title>
 <link href="../assets/stylesheets/main.84d31ad4.min.css" rel="stylesheet"/>
 <link href="../assets/stylesheets/palette.06af60db.min.css" rel="stylesheet"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -48,7 +46,7 @@
 <div class="md-header__topic" data-md-component="header-topic">
 <span class="md-ellipsis">
             
-              Rules Engine
+              Rules: Advanced Targeting and Rollouts
             
           </span>
 </div>
@@ -113,42 +111,70 @@
 <div class="md-grid">
 <ul class="md-tabs__list">
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="..">
+<a class="md-tabs__link" href="../01-getting-started/">
         
   
   
     
   
-  Home
+  Getting Started
 
       </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../QuickStart/">
-          
+<a class="md-tabs__link" href="../02-migration/">
+        
   
   
-  Getting Started
+    
+  
+  Migration Guide
 
-        </a>
+      </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../Evaluation/">
-          
+<a class="md-tabs__link" href="../03-core-concepts/">
+        
   
+  
+    
   
   Core Concepts
 
-        </a>
+      </a>
 </li>
-<li class="md-tabs__item md-tabs__item--active">
-<a class="md-tabs__link" href="../Configuration/">
-          
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../04-targeting-rollouts/">
+        
   
   
-  Guides
+    
+  
+  Targeting &amp; Rollouts
 
-        </a>
+      </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../05-evaluation/">
+        
+  
+  
+    
+  
+  Evaluation
+
+      </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../06-remote-config/">
+        
+  
+  
+    
+  
+  Remote Configuration
+
+      </a>
 </li>
 </ul>
 </div>
@@ -177,64 +203,39 @@
 </div>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="..">
-<span class="md-ellipsis">
-    Home
-    
-  </span>
-</a>
-</li>
-<li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_2" type="checkbox"/>
-<label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+<a class="md-nav__link" href="../01-getting-started/">
 <span class="md-ellipsis">
     Getting Started
     
   </span>
-<span class="md-nav__icon md-icon"></span>
-</label>
-<nav aria-expanded="false" aria-labelledby="__nav_2_label" class="md-nav" data-md-level="1">
-<label class="md-nav__title" for="__nav_2">
-<span class="md-nav__icon md-icon"></span>
-            Getting Started
-          </label>
-<ul class="md-nav__list" data-md-scrollfix="">
+</a>
+</li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../QuickStart/">
+<a class="md-nav__link" href="../02-migration/">
 <span class="md-ellipsis">
-    Quick Start
+    Migration Guide
     
   </span>
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../Features/">
-<span class="md-ellipsis">
-    Features
-    
-  </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_3" type="checkbox"/>
-<label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+<a class="md-nav__link" href="../03-core-concepts/">
 <span class="md-ellipsis">
     Core Concepts
     
   </span>
-<span class="md-nav__icon md-icon"></span>
-</label>
-<nav aria-expanded="false" aria-labelledby="__nav_3_label" class="md-nav" data-md-level="1">
-<label class="md-nav__title" for="__nav_3">
-<span class="md-nav__icon md-icon"></span>
-            Core Concepts
-          </label>
-<ul class="md-nav__list" data-md-scrollfix="">
+</a>
+</li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../Evaluation/">
+<a class="md-nav__link" href="../04-targeting-rollouts/">
+<span class="md-ellipsis">
+    Targeting &amp; Rollouts
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../05-evaluation/">
 <span class="md-ellipsis">
     Evaluation
     
@@ -242,472 +243,12 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../Results/">
+<a class="md-nav__link" href="../06-remote-config/">
 <span class="md-ellipsis">
-    Results
+    Remote Configuration
     
   </span>
 </a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-<input checked="" class="md-nav__toggle md-toggle" id="__nav_4" type="checkbox"/>
-<label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
-<span class="md-ellipsis">
-    Guides
-    
-  </span>
-<span class="md-nav__icon md-icon"></span>
-</label>
-<nav aria-expanded="true" aria-labelledby="__nav_4_label" class="md-nav" data-md-level="1">
-<label class="md-nav__title" for="__nav_4">
-<span class="md-nav__icon md-icon"></span>
-            Guides
-          </label>
-<ul class="md-nav__list" data-md-scrollfix="">
-<li class="md-nav__item">
-<a class="md-nav__link" href="../Configuration/">
-<span class="md-ellipsis">
-    Configuration
-    
-  </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../Context/">
-<span class="md-ellipsis">
-    Context System
-    
-  </span>
-</a>
-</li>
-<li class="md-nav__item md-nav__item--active">
-<input class="md-nav__toggle md-toggle" id="__toc" type="checkbox"/>
-<label class="md-nav__link md-nav__link--active" for="__toc">
-<span class="md-ellipsis">
-    Rules Engine
-    
-  </span>
-<span class="md-nav__icon md-icon"></span>
-</label>
-<a class="md-nav__link md-nav__link--active" href="./">
-<span class="md-ellipsis">
-    Rules Engine
-    
-  </span>
-</a>
-<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
-<label class="md-nav__title" for="__toc">
-<span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#table-of-contents">
-<span class="md-ellipsis">
-      Table of Contents
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#rule-fundamentals">
-<span class="md-ellipsis">
-      Rule Fundamentals
-    </span>
-</a>
-<nav aria-label="Rule Fundamentals" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#what-are-rules">
-<span class="md-ellipsis">
-      What Are Rules?
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#how-rules-work">
-<span class="md-ellipsis">
-      How Rules Work
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#rulescope-dsl">
-<span class="md-ellipsis">
-      RuleScope DSL
-    </span>
-</a>
-<nav aria-label="RuleScope DSL" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#available-methods">
-<span class="md-ellipsis">
-      Available Methods
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#basic-rule-structure">
-<span class="md-ellipsis">
-      Basic Rule Structure
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#basic-targeting">
-<span class="md-ellipsis">
-      Basic Targeting
-    </span>
-</a>
-<nav aria-label="Basic Targeting" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#platform-targeting">
-<span class="md-ellipsis">
-      Platform Targeting
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#locale-targeting">
-<span class="md-ellipsis">
-      Locale Targeting
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#combined-targeting">
-<span class="md-ellipsis">
-      Combined Targeting
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#version-targeting">
-<span class="md-ellipsis">
-      Version Targeting
-    </span>
-</a>
-<nav aria-label="Version Targeting" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#versionrangescope-methods">
-<span class="md-ellipsis">
-      VersionRangeScope Methods
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#version-ranges">
-<span class="md-ellipsis">
-      Version Ranges
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#version-range-types">
-<span class="md-ellipsis">
-      Version Range Types
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#rollout-strategies">
-<span class="md-ellipsis">
-      Rollout Strategies
-    </span>
-</a>
-<nav aria-label="Rollout Strategies" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#setting-rollout-percentage">
-<span class="md-ellipsis">
-      Setting Rollout Percentage
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#rollout-bucketing">
-<span class="md-ellipsis">
-      Rollout Bucketing
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#gradual-rollout-pattern">
-<span class="md-ellipsis">
-      Gradual Rollout Pattern
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#segmented-rollout-pattern">
-<span class="md-ellipsis">
-      Segmented Rollout Pattern
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#changing-salt-for-redistribution">
-<span class="md-ellipsis">
-      Changing Salt for Redistribution
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#specificity-and-ordering">
-<span class="md-ellipsis">
-      Specificity and Ordering
-    </span>
-</a>
-<nav aria-label="Specificity and Ordering" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#specificity-calculation">
-<span class="md-ellipsis">
-      Specificity Calculation
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#specificity-examples">
-<span class="md-ellipsis">
-      Specificity Examples
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#evaluation-order-example">
-<span class="md-ellipsis">
-      Evaluation Order Example
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#tie-breaking">
-<span class="md-ellipsis">
-      Tie-Breaking
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#custom-evaluables">
-<span class="md-ellipsis">
-      Custom Evaluables
-    </span>
-</a>
-<nav aria-label="Custom Evaluables" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#evaluable-interface">
-<span class="md-ellipsis">
-      Evaluable Interface
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#pattern-1-factory-function-simplest">
-<span class="md-ellipsis">
-      Pattern 1: Factory Function (Simplest)
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#pattern-2-object-expression">
-<span class="md-ellipsis">
-      Pattern 2: Object Expression
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#pattern-3-reusable-classes">
-<span class="md-ellipsis">
-      Pattern 3: Reusable Classes
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#specificity-best-practices">
-<span class="md-ellipsis">
-      Specificity Best Practices
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#rule-composition">
-<span class="md-ellipsis">
-      Rule Composition
-    </span>
-</a>
-<nav aria-label="Rule Composition" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#composition-architecture">
-<span class="md-ellipsis">
-      Composition Architecture
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#composition-example">
-<span class="md-ellipsis">
-      Composition Example
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#best-practices">
-<span class="md-ellipsis">
-      Best Practices
-    </span>
-</a>
-<nav aria-label="Best Practices" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#1-design-rules-from-specific-to-general">
-<span class="md-ellipsis">
-      1. Design Rules from Specific to General
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#2-separate-technical-and-business-concerns">
-<span class="md-ellipsis">
-      2. Separate Technical and Business Concerns
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#3-document-non-obvious-logic">
-<span class="md-ellipsis">
-      3. Document Non-Obvious Logic
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#4-use-type-safe-custom-contexts">
-<span class="md-ellipsis">
-      4. Use Type-Safe Custom Contexts
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#5-match-specificity-to-constraint-count">
-<span class="md-ellipsis">
-      5. Match Specificity to Constraint Count
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#6-test-rollout-distribution">
-<span class="md-ellipsis">
-      6. Test Rollout Distribution
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#testing-rules">
-<span class="md-ellipsis">
-      Testing Rules
-    </span>
-</a>
-<nav aria-label="Testing Rules" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#test-rule-matching">
-<span class="md-ellipsis">
-      Test Rule Matching
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#test-specificity-ordering">
-<span class="md-ellipsis">
-      Test Specificity Ordering
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#test-rollout-determinism">
-<span class="md-ellipsis">
-      Test Rollout Determinism
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#test-custom-evaluables">
-<span class="md-ellipsis">
-      Test Custom Evaluables
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#summary-rule-system-guarantees">
-<span class="md-ellipsis">
-      Summary: Rule System Guarantees
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#next-steps">
-<span class="md-ellipsis">
-      Next Steps
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../Registry/">
-<span class="md-ellipsis">
-    Registry
-    
-  </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../Serialization/">
-<span class="md-ellipsis">
-    Serialization
-    
-  </span>
-</a>
-</li>
-</ul>
-</nav>
 </li>
 </ul>
 </nav>
@@ -1188,7 +729,7 @@
 <h3 id="basic-rule-structure">Basic Rule Structure<a class="headerlink" href="#basic-rule-structure" title="Permanent link">¶</a></h3>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-2-2"><a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a><span class="w">    </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span>
-</span><span id="__span-2-3"><a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">,</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_CA</span><span class="p">)</span>
+</span><span id="__span-2-3"><a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">CANADA</span><span class="p">)</span>
 </span><span id="__span-2-4"><a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a><span class="w">    </span><span class="n">versions</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-2-5"><a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a><span class="w">        </span><span class="n">min</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span>
 </span><span id="__span-2-6"><a href="#__codelineno-2-6" id="__codelineno-2-6" name="__codelineno-2-6"></a><span class="w">        </span><span class="n">max</span><span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span>
@@ -1226,22 +767,22 @@
 <p>Target users by language and region using <code>locales()</code>:</p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="c1">// Single locale</span>
 </span><span id="__span-4-2"><a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-4-3"><a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">)</span>
+</span><span id="__span-4-3"><a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">)</span>
 </span><span id="__span-4-4"><a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"us-english"</span>
 </span><span id="__span-4-5"><a href="#__codelineno-4-5" id="__codelineno-4-5" name="__codelineno-4-5"></a>
 </span><span id="__span-4-6"><a href="#__codelineno-4-6" id="__codelineno-4-6" name="__codelineno-4-6"></a><span class="c1">// Multiple locales</span>
 </span><span id="__span-4-7"><a href="#__codelineno-4-7" id="__codelineno-4-7" name="__codelineno-4-7"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-4-8"><a href="#__codelineno-4-8" id="__codelineno-4-8" name="__codelineno-4-8"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">,</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_CA</span><span class="p">,</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_GB</span><span class="p">)</span>
+</span><span id="__span-4-8"><a href="#__codelineno-4-8" id="__codelineno-4-8" name="__codelineno-4-8"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">CANADA</span><span class="p">,</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_KINGDOM</span><span class="p">)</span>
 </span><span id="__span-4-9"><a href="#__codelineno-4-9" id="__codelineno-4-9" name="__codelineno-4-9"></a><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"english-value"</span>
 </span></code></pre></div>
 <p><strong>Available locales:</strong>
-<code>EN_US</code>, <code>EN_CA</code>, <code>EN_GB</code>, <code>FR_FR</code>, <code>DE_DE</code>, <code>ES_US</code>, <code>ES_ES</code>, <code>IT_IT</code>, <code>PT_BR</code>, <code>JA_JP</code>, <code>ZH_CN</code>, <code>KO_KR</code>, <code>HI_IN</code>, <code>AR_SA</code>, <code>RU_RU</code>, <code>NL_NL</code>, <code>SV_SE</code>, <code>PL_PL</code>, <code>TR_TR</code>, <code>TH_TH</code></p>
+<code>UNITED_STATES</code>, <code>CANADA</code>, <code>UNITED_KINGDOM</code>, <code>FRANCE</code>, <code>DE_DE</code>, <code>UNITED_STATES</code>, <code>ES_ES</code>, <code>IT_IT</code>, <code>PT_BR</code>, <code>JA_JP</code>, <code>ZH_CN</code>, <code>KO_KR</code>, <code>INDIA</code>, <code>AR_SA</code>, <code>RU_RU</code>, <code>NL_NL</code>, <code>SV_SE</code>, <code>PL_PL</code>, <code>TR_TR</code>, <code>TH_TH</code></p>
 <p><strong>Empty means all</strong>: Omitting <code>locales()</code> matches all locales.</p>
 <h3 id="combined-targeting">Combined Targeting<a class="headerlink" href="#combined-targeting" title="Permanent link">¶</a></h3>
 <p>Combine multiple criteria - <strong>all must match</strong>:</p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-5-1"><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-5-2"><a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a><span class="w">    </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span><span class="w">  </span><span class="c1">// Must be iOS or Android</span>
-</span><span id="__span-5-3"><a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">)</span><span class="w">                   </span><span class="c1">// AND must be US English</span>
+</span><span id="__span-5-3"><a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">)</span><span class="w">                   </span><span class="c1">// AND must be US English</span>
 </span><span id="__span-5-4"><a href="#__codelineno-5-4" id="__codelineno-5-4" name="__codelineno-5-4"></a><span class="w">    </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">50.0</span><span class="w"> </span><span class="p">}</span><span class="w">                           </span><span class="c1">// AND must be in 50% bucket</span>
 </span><span id="__span-5-5"><a href="#__codelineno-5-5" id="__codelineno-5-5" name="__codelineno-5-5"></a><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="n">value</span>
 </span></code></pre></div>
@@ -1473,7 +1014,7 @@
     subgraph "Specificity Rankings"
         S0["Specificity 0&lt;br/&gt;rule { } returns value"]
         S1["Specificity 1&lt;br/&gt;platforms(IOS)"]
-        S2["Specificity 2&lt;br/&gt;platforms(IOS) + locales(EN_US)"]
+        S2["Specificity 2&lt;br/&gt;platforms(IOS) + locales(UNITED_STATES)"]
         S3["Specificity 3&lt;br/&gt;platforms + locales + versions"]
         S4["Specificity 4+&lt;br/&gt;All base + extension"]
     end
@@ -1501,20 +1042,20 @@
 </span><span id="__span-13-10"><a href="#__codelineno-13-10" id="__codelineno-13-10" name="__codelineno-13-10"></a><span class="c1">// Specificity = 2 (two constraints)</span>
 </span><span id="__span-13-11"><a href="#__codelineno-13-11" id="__codelineno-13-11" name="__codelineno-13-11"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-13-12"><a href="#__codelineno-13-12" id="__codelineno-13-12" name="__codelineno-13-12"></a><span class="w">    </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
-</span><span id="__span-13-13"><a href="#__codelineno-13-13" id="__codelineno-13-13" name="__codelineno-13-13"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">)</span>
+</span><span id="__span-13-13"><a href="#__codelineno-13-13" id="__codelineno-13-13" name="__codelineno-13-13"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">)</span>
 </span><span id="__span-13-14"><a href="#__codelineno-13-14" id="__codelineno-13-14" name="__codelineno-13-14"></a><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"ios-us-value"</span>
 </span><span id="__span-13-15"><a href="#__codelineno-13-15" id="__codelineno-13-15" name="__codelineno-13-15"></a>
 </span><span id="__span-13-16"><a href="#__codelineno-13-16" id="__codelineno-13-16" name="__codelineno-13-16"></a><span class="c1">// Specificity = 3 (three constraints)</span>
 </span><span id="__span-13-17"><a href="#__codelineno-13-17" id="__codelineno-13-17" name="__codelineno-13-17"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-13-18"><a href="#__codelineno-13-18" id="__codelineno-13-18" name="__codelineno-13-18"></a><span class="w">    </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
-</span><span id="__span-13-19"><a href="#__codelineno-13-19" id="__codelineno-13-19" name="__codelineno-13-19"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">)</span>
+</span><span id="__span-13-19"><a href="#__codelineno-13-19" id="__codelineno-13-19" name="__codelineno-13-19"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">)</span>
 </span><span id="__span-13-20"><a href="#__codelineno-13-20" id="__codelineno-13-20" name="__codelineno-13-20"></a><span class="w">    </span><span class="n">versions</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">min</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
 </span><span id="__span-13-21"><a href="#__codelineno-13-21" id="__codelineno-13-21" name="__codelineno-13-21"></a><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"ios-us-v2-value"</span>
 </span><span id="__span-13-22"><a href="#__codelineno-13-22" id="__codelineno-13-22" name="__codelineno-13-22"></a>
 </span><span id="__span-13-23"><a href="#__codelineno-13-23" id="__codelineno-13-23" name="__codelineno-13-23"></a><span class="c1">// Specificity = 4 (base + extension)</span>
 </span><span id="__span-13-24"><a href="#__codelineno-13-24" id="__codelineno-13-24" name="__codelineno-13-24"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-13-25"><a href="#__codelineno-13-25" id="__codelineno-13-25" name="__codelineno-13-25"></a><span class="w">    </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
-</span><span id="__span-13-26"><a href="#__codelineno-13-26" id="__codelineno-13-26" name="__codelineno-13-26"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">)</span>
+</span><span id="__span-13-26"><a href="#__codelineno-13-26" id="__codelineno-13-26" name="__codelineno-13-26"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">)</span>
 </span><span id="__span-13-27"><a href="#__codelineno-13-27" id="__codelineno-13-27" name="__codelineno-13-27"></a><span class="w">    </span><span class="n">versions</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">min</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
 </span><span id="__span-13-28"><a href="#__codelineno-13-28" id="__codelineno-13-28" name="__codelineno-13-28"></a><span class="w">    </span><span class="n">extension</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-13-29"><a href="#__codelineno-13-29" id="__codelineno-13-29" name="__codelineno-13-29"></a><span class="w">        </span><span class="k">object</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nc">Evaluable</span><span class="o">&lt;</span><span class="n">EnterpriseContext</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
@@ -1530,7 +1071,7 @@
 </span><span id="__span-14-2"><a href="#__codelineno-14-2" id="__codelineno-14-2" name="__codelineno-14-2"></a><span class="w">    </span><span class="c1">// Specificity = 2, evaluated FIRST</span>
 </span><span id="__span-14-3"><a href="#__codelineno-14-3" id="__codelineno-14-3" name="__codelineno-14-3"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-14-4"><a href="#__codelineno-14-4" id="__codelineno-14-4" name="__codelineno-14-4"></a><span class="w">        </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
-</span><span id="__span-14-5"><a href="#__codelineno-14-5" id="__codelineno-14-5" name="__codelineno-14-5"></a><span class="w">        </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">)</span>
+</span><span id="__span-14-5"><a href="#__codelineno-14-5" id="__codelineno-14-5" name="__codelineno-14-5"></a><span class="w">        </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">)</span>
 </span><span id="__span-14-6"><a href="#__codelineno-14-6" id="__codelineno-14-6" name="__codelineno-14-6"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"dark-us-ios"</span>
 </span><span id="__span-14-7"><a href="#__codelineno-14-7" id="__codelineno-14-7" name="__codelineno-14-7"></a>
 </span><span id="__span-14-8"><a href="#__codelineno-14-8" id="__codelineno-14-8" name="__codelineno-14-8"></a><span class="w">    </span><span class="c1">// Specificity = 1, evaluated SECOND</span>
@@ -1539,12 +1080,12 @@
 </span><span id="__span-14-11"><a href="#__codelineno-14-11" id="__codelineno-14-11" name="__codelineno-14-11"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"dark-ios"</span>
 </span><span id="__span-14-12"><a href="#__codelineno-14-12" id="__codelineno-14-12" name="__codelineno-14-12"></a><span class="p">}</span>
 </span><span id="__span-14-13"><a href="#__codelineno-14-13" id="__codelineno-14-13" name="__codelineno-14-13"></a>
-</span><span id="__span-14-14"><a href="#__codelineno-14-14" id="__codelineno-14-14" name="__codelineno-14-14"></a><span class="c1">// iOS + EN_US → "dark-us-ios" (most specific wins)</span>
-</span><span id="__span-14-15"><a href="#__codelineno-14-15" id="__codelineno-14-15" name="__codelineno-14-15"></a><span class="c1">// iOS + FR_FR → "dark-ios" (only second rule matches)</span>
+</span><span id="__span-14-14"><a href="#__codelineno-14-14" id="__codelineno-14-14" name="__codelineno-14-14"></a><span class="c1">// iOS + UNITED_STATES → "dark-us-ios" (most specific wins)</span>
+</span><span id="__span-14-15"><a href="#__codelineno-14-15" id="__codelineno-14-15" name="__codelineno-14-15"></a><span class="c1">// iOS + FRANCE → "dark-ios" (only second rule matches)</span>
 </span><span id="__span-14-16"><a href="#__codelineno-14-16" id="__codelineno-14-16" name="__codelineno-14-16"></a><span class="c1">// Android + * → "light" (default, no rules match)</span>
 </span></code></pre></div>
 <h3 id="tie-breaking">Tie-Breaking<a class="headerlink" href="#tie-breaking" title="Permanent link">¶</a></h3>
-<p>When multiple rules have the same specificity, rules are sorted by <code>note</code> text alphabetically:</p>
+<p>When multiple rules have the same specificity, rules are sorted by insertion order:</p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-15-1"><a href="#__codelineno-15-1" id="__codelineno-15-1" name="__codelineno-15-1"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-15-2"><a href="#__codelineno-15-2" id="__codelineno-15-2" name="__codelineno-15-2"></a><span class="w">    </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
 </span><span id="__span-15-3"><a href="#__codelineno-15-3" id="__codelineno-15-3" name="__codelineno-15-3"></a><span class="w">    </span><span class="n">note</span><span class="p">(</span><span class="s">"A - First rule"</span><span class="p">)</span>
@@ -1555,7 +1096,7 @@
 </span><span id="__span-15-8"><a href="#__codelineno-15-8" id="__codelineno-15-8" name="__codelineno-15-8"></a><span class="w">    </span><span class="n">note</span><span class="p">(</span><span class="s">"B - Second rule"</span><span class="p">)</span>
 </span><span id="__span-15-9"><a href="#__codelineno-15-9" id="__codelineno-15-9" name="__codelineno-15-9"></a><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="n">value2</span>
 </span><span id="__span-15-10"><a href="#__codelineno-15-10" id="__codelineno-15-10" name="__codelineno-15-10"></a>
-</span><span id="__span-15-11"><a href="#__codelineno-15-11" id="__codelineno-15-11" name="__codelineno-15-11"></a><span class="c1">// Both have specificity 1, sorted by note: "A" before "B"</span>
+</span><span id="__span-15-11"><a href="#__codelineno-15-11" id="__codelineno-15-11" name="__codelineno-15-11"></a><span class="c1">// Both have specificity 1, sorted by insertion order: "A" before "B"</span>
 </span></code></pre></div>
 <hr/>
 <h2 id="custom-evaluables">Custom Evaluables<a class="headerlink" href="#custom-evaluables" title="Permanent link">¶</a></h2>
@@ -1693,7 +1234,7 @@
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-23-1"><a href="#__codelineno-23-1" id="__codelineno-23-1" name="__codelineno-23-1"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-23-2"><a href="#__codelineno-23-2" id="__codelineno-23-2" name="__codelineno-23-2"></a><span class="w">    </span><span class="c1">// Base targeting (specificity = 2)</span>
 </span><span id="__span-23-3"><a href="#__codelineno-23-3" id="__codelineno-23-3" name="__codelineno-23-3"></a><span class="w">    </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">WEB</span><span class="p">)</span>
-</span><span id="__span-23-4"><a href="#__codelineno-23-4" id="__codelineno-23-4" name="__codelineno-23-4"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">)</span>
+</span><span id="__span-23-4"><a href="#__codelineno-23-4" id="__codelineno-23-4" name="__codelineno-23-4"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">)</span>
 </span><span id="__span-23-5"><a href="#__codelineno-23-5" id="__codelineno-23-5" name="__codelineno-23-5"></a>
 </span><span id="__span-23-6"><a href="#__codelineno-23-6" id="__codelineno-23-6" name="__codelineno-23-6"></a><span class="w">    </span><span class="c1">// Custom extension (specificity = 1)</span>
 </span><span id="__span-23-7"><a href="#__codelineno-23-7" id="__codelineno-23-7" name="__codelineno-23-7"></a><span class="w">    </span><span class="n">extension</span><span class="w"> </span><span class="p">{</span>
@@ -1711,7 +1252,7 @@
 </span></code></pre></div>
 <p>This rule matches only when:
 1. Platform is WEB <strong>AND</strong>
-2. Locale is EN_US <strong>AND</strong>
+2. Locale is UNITED_STATES <strong>AND</strong>
 3. Organization ID starts with "ent-" <strong>AND</strong>
 4. User is in the 50% rollout bucket</p>
 <hr/>
@@ -1821,7 +1362,7 @@
 </span><span id="__span-29-2"><a href="#__codelineno-29-2" id="__codelineno-29-2" name="__codelineno-29-2"></a><span class="kd">fun</span><span class="w"> </span><span class="err">`50 </span><span class="nf">percent</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="n">distributes</span><span class="w"> </span><span class="n">approximately</span><span class="w"> </span><span class="n">evenly</span><span class="err">`</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-29-3"><a href="#__codelineno-29-3" id="__codelineno-29-3" name="__codelineno-29-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="m">1.</span><span class="p">.</span><span class="m">1000</span><span class="p">).</span><span class="na">count</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">-&gt;</span>
 </span><span id="__span-29-4"><a href="#__codelineno-29-4" id="__codelineno-29-4" name="__codelineno-29-4"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
-</span><span id="__span-29-5"><a href="#__codelineno-29-5" id="__codelineno-29-5" name="__codelineno-29-5"></a><span class="w">            </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">,</span>
+</span><span id="__span-29-5"><a href="#__codelineno-29-5" id="__codelineno-29-5" name="__codelineno-29-5"></a><span class="w">            </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
 </span><span id="__span-29-6"><a href="#__codelineno-29-6" id="__codelineno-29-6" name="__codelineno-29-6"></a><span class="w">            </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span>
 </span><span id="__span-29-7"><a href="#__codelineno-29-7" id="__codelineno-29-7" name="__codelineno-29-7"></a><span class="w">            </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">),</span>
 </span><span id="__span-29-8"><a href="#__codelineno-29-8" id="__codelineno-29-8" name="__codelineno-29-8"></a><span class="w">            </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"user-</span><span class="si">$</span><span class="n">i</span><span class="s">"</span><span class="p">)</span>
@@ -1856,7 +1397,7 @@
 </span><span id="__span-31-2"><a href="#__codelineno-31-2" id="__codelineno-31-2" name="__codelineno-31-2"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">`most specific rule wins when multiple match`</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-31-3"><a href="#__codelineno-31-3" id="__codelineno-31-3" name="__codelineno-31-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
 </span><span id="__span-31-4"><a href="#__codelineno-31-4" id="__codelineno-31-4" name="__codelineno-31-4"></a><span class="w">        </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span>
-</span><span id="__span-31-5"><a href="#__codelineno-31-5" id="__codelineno-31-5" name="__codelineno-31-5"></a><span class="w">        </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">,</span>
+</span><span id="__span-31-5"><a href="#__codelineno-31-5" id="__codelineno-31-5" name="__codelineno-31-5"></a><span class="w">        </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
 </span><span id="__span-31-6"><a href="#__codelineno-31-6" id="__codelineno-31-6" name="__codelineno-31-6"></a><span class="w">        </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">),</span>
 </span><span id="__span-31-7"><a href="#__codelineno-31-7" id="__codelineno-31-7" name="__codelineno-31-7"></a><span class="w">        </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"test-user"</span><span class="p">)</span>
 </span><span id="__span-31-8"><a href="#__codelineno-31-8" id="__codelineno-31-8" name="__codelineno-31-8"></a><span class="w">    </span><span class="p">)</span>
@@ -1872,7 +1413,7 @@
 </span><span id="__span-32-2"><a href="#__codelineno-32-2" id="__codelineno-32-2" name="__codelineno-32-2"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">`rollout is deterministic for same user`</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-32-3"><a href="#__codelineno-32-3" id="__codelineno-32-3" name="__codelineno-32-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
 </span><span id="__span-32-4"><a href="#__codelineno-32-4" id="__codelineno-32-4" name="__codelineno-32-4"></a><span class="w">        </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span>
-</span><span id="__span-32-5"><a href="#__codelineno-32-5" id="__codelineno-32-5" name="__codelineno-32-5"></a><span class="w">        </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">,</span>
+</span><span id="__span-32-5"><a href="#__codelineno-32-5" id="__codelineno-32-5" name="__codelineno-32-5"></a><span class="w">        </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
 </span><span id="__span-32-6"><a href="#__codelineno-32-6" id="__codelineno-32-6" name="__codelineno-32-6"></a><span class="w">        </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">),</span>
 </span><span id="__span-32-7"><a href="#__codelineno-32-7" id="__codelineno-32-7" name="__codelineno-32-7"></a><span class="w">        </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"user-123"</span><span class="p">)</span>
 </span><span id="__span-32-8"><a href="#__codelineno-32-8" id="__codelineno-32-8" name="__codelineno-32-8"></a><span class="w">    </span><span class="p">)</span>

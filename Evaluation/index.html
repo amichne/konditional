@@ -7,11 +7,9 @@
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <meta content="Type-safe, deterministic feature flags for Kotlin" name="description"/>
 <link href="https://amichne.github.io/konditional/Evaluation/" rel="canonical"/>
-<link href="../Features/" rel="prev"/>
-<link href="../Results/" rel="next"/>
 <link href="../assets/images/favicon.png" rel="icon"/>
 <meta content="mkdocs-1.6.1, mkdocs-material-9.6.22" name="generator"/>
-<title>Evaluation - Konditional</title>
+<title>Evaluation: Flag Evaluation Mechanics - Konditional</title>
 <link href="../assets/stylesheets/main.84d31ad4.min.css" rel="stylesheet"/>
 <link href="../assets/stylesheets/palette.06af60db.min.css" rel="stylesheet"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -48,7 +46,7 @@
 <div class="md-header__topic" data-md-component="header-topic">
 <span class="md-ellipsis">
             
-              Evaluation
+              Evaluation: Flag Evaluation Mechanics
             
           </span>
 </div>
@@ -113,42 +111,70 @@
 <div class="md-grid">
 <ul class="md-tabs__list">
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="..">
+<a class="md-tabs__link" href="../01-getting-started/">
         
   
   
     
   
-  Home
+  Getting Started
 
       </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../QuickStart/">
-          
+<a class="md-tabs__link" href="../02-migration/">
+        
   
   
-  Getting Started
+    
+  
+  Migration Guide
 
-        </a>
+      </a>
 </li>
-<li class="md-tabs__item md-tabs__item--active">
-<a class="md-tabs__link" href="./">
-          
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../03-core-concepts/">
+        
   
+  
+    
   
   Core Concepts
 
-        </a>
+      </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../Configuration/">
-          
+<a class="md-tabs__link" href="../04-targeting-rollouts/">
+        
   
   
-  Guides
+    
+  
+  Targeting &amp; Rollouts
 
-        </a>
+      </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../05-evaluation/">
+        
+  
+  
+    
+  
+  Evaluation
+
+      </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../06-remote-config/">
+        
+  
+  
+    
+  
+  Remote Configuration
+
+      </a>
 </li>
 </ul>
 </div>
@@ -177,562 +203,52 @@
 </div>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="..">
-<span class="md-ellipsis">
-    Home
-    
-  </span>
-</a>
-</li>
-<li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_2" type="checkbox"/>
-<label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+<a class="md-nav__link" href="../01-getting-started/">
 <span class="md-ellipsis">
     Getting Started
     
   </span>
-<span class="md-nav__icon md-icon"></span>
-</label>
-<nav aria-expanded="false" aria-labelledby="__nav_2_label" class="md-nav" data-md-level="1">
-<label class="md-nav__title" for="__nav_2">
-<span class="md-nav__icon md-icon"></span>
-            Getting Started
-          </label>
-<ul class="md-nav__list" data-md-scrollfix="">
+</a>
+</li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../QuickStart/">
+<a class="md-nav__link" href="../02-migration/">
 <span class="md-ellipsis">
-    Quick Start
+    Migration Guide
     
   </span>
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../Features/">
-<span class="md-ellipsis">
-    Features
-    
-  </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-<input checked="" class="md-nav__toggle md-toggle" id="__nav_3" type="checkbox"/>
-<label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+<a class="md-nav__link" href="../03-core-concepts/">
 <span class="md-ellipsis">
     Core Concepts
     
   </span>
-<span class="md-nav__icon md-icon"></span>
-</label>
-<nav aria-expanded="true" aria-labelledby="__nav_3_label" class="md-nav" data-md-level="1">
-<label class="md-nav__title" for="__nav_3">
-<span class="md-nav__icon md-icon"></span>
-            Core Concepts
-          </label>
-<ul class="md-nav__list" data-md-scrollfix="">
-<li class="md-nav__item md-nav__item--active">
-<input class="md-nav__toggle md-toggle" id="__toc" type="checkbox"/>
-<label class="md-nav__link md-nav__link--active" for="__toc">
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../04-targeting-rollouts/">
 <span class="md-ellipsis">
-    Evaluation
+    Targeting &amp; Rollouts
     
   </span>
-<span class="md-nav__icon md-icon"></span>
-</label>
-<a class="md-nav__link md-nav__link--active" href="./">
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../05-evaluation/">
 <span class="md-ellipsis">
     Evaluation
     
   </span>
 </a>
-<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
-<label class="md-nav__title" for="__toc">
-<span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#overview">
-<span class="md-ellipsis">
-      Overview
-    </span>
-</a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#evaluation-methods">
+<a class="md-nav__link" href="../06-remote-config/">
 <span class="md-ellipsis">
-      Evaluation Methods
-    </span>
-</a>
-<nav aria-label="Evaluation Methods" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#evaluatesafe-explicit-error-handling">
-<span class="md-ellipsis">
-      evaluateSafe() - Explicit Error Handling
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#evaluateornull-nullable-fallback">
-<span class="md-ellipsis">
-      evaluateOrNull() - Nullable Fallback
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#evaluateordefault-default-value-fallback">
-<span class="md-ellipsis">
-      evaluateOrDefault() - Default Value Fallback
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#evaluateorthrow-exception-based">
-<span class="md-ellipsis">
-      evaluateOrThrow() - Exception-Based
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#evaluation-flow">
-<span class="md-ellipsis">
-      Evaluation Flow
-    </span>
-</a>
-<nav aria-label="Evaluation Flow" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#step-by-step-breakdown">
-<span class="md-ellipsis">
-      Step-by-Step Breakdown
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#rule-matching-logic">
-<span class="md-ellipsis">
-      Rule Matching Logic
-    </span>
-</a>
-<nav aria-label="Rule Matching Logic" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#base-matching">
-<span class="md-ellipsis">
-      Base Matching
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#extension-matching">
-<span class="md-ellipsis">
-      Extension Matching
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#rollout-matching">
-<span class="md-ellipsis">
-      Rollout Matching
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#specificity-ordering">
-<span class="md-ellipsis">
-      Specificity Ordering
-    </span>
-</a>
-<nav aria-label="Specificity Ordering" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#specificity-calculation">
-<span class="md-ellipsis">
-      Specificity Calculation
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#specificity-examples">
-<span class="md-ellipsis">
-      Specificity Examples
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#evaluation-order-visualization">
-<span class="md-ellipsis">
-      Evaluation Order Visualization
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#rollout-bucketing-algorithm">
-<span class="md-ellipsis">
-      Rollout Bucketing Algorithm
-    </span>
-</a>
-<nav aria-label="Rollout Bucketing Algorithm" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#algorithm">
-<span class="md-ellipsis">
-      Algorithm
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#bucketing-properties">
-<span class="md-ellipsis">
-      Bucketing Properties
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#granularity">
-<span class="md-ellipsis">
-      Granularity
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#edge-cases">
-<span class="md-ellipsis">
-      Edge Cases
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#type-safety-guarantees">
-<span class="md-ellipsis">
-      Type Safety Guarantees
-    </span>
-</a>
-<nav aria-label="Type Safety Guarantees" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#compile-time-type-safety">
-<span class="md-ellipsis">
-      Compile-Time Type Safety
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#runtime-type-safety">
-<span class="md-ellipsis">
-      Runtime Type Safety
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#performance-characteristics">
-<span class="md-ellipsis">
-      Performance Characteristics
-    </span>
-</a>
-<nav aria-label="Performance Characteristics" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#time-complexity">
-<span class="md-ellipsis">
-      Time Complexity
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#space-complexity">
-<span class="md-ellipsis">
-      Space Complexity
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#concurrency-performance">
-<span class="md-ellipsis">
-      Concurrency Performance
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#thread-safety">
-<span class="md-ellipsis">
-      Thread Safety
-    </span>
-</a>
-<nav aria-label="Thread Safety" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#lock-free-reads">
-<span class="md-ellipsis">
-      Lock-Free Reads
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#atomic-updates">
-<span class="md-ellipsis">
-      Atomic Updates
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#independent-evaluations">
-<span class="md-ellipsis">
-      Independent Evaluations
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#testing-evaluation">
-<span class="md-ellipsis">
-      Testing Evaluation
-    </span>
-</a>
-<nav aria-label="Testing Evaluation" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#unit-testing-rules">
-<span class="md-ellipsis">
-      Unit Testing Rules
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#testing-rollouts">
-<span class="md-ellipsis">
-      Testing Rollouts
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#testing-determinism">
-<span class="md-ellipsis">
-      Testing Determinism
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#testing-specificity-order">
-<span class="md-ellipsis">
-      Testing Specificity Order
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#best-practices">
-<span class="md-ellipsis">
-      Best Practices
-    </span>
-</a>
-<nav aria-label="Best Practices" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#choose-the-right-evaluation-method">
-<span class="md-ellipsis">
-      Choose the Right Evaluation Method
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#keep-rule-count-low">
-<span class="md-ellipsis">
-      Keep Rule Count Low
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#use-specificity-to-your-advantage">
-<span class="md-ellipsis">
-      Use Specificity to Your Advantage
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#cache-contexts-when-possible">
-<span class="md-ellipsis">
-      Cache Contexts When Possible
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#test-rollout-distributions">
-<span class="md-ellipsis">
-      Test Rollout Distributions
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#document-complex-rules">
-<span class="md-ellipsis">
-      Document Complex Rules
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#examples">
-<span class="md-ellipsis">
-      Examples
-    </span>
-</a>
-<nav aria-label="Examples" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#example-1-simple-boolean-flag">
-<span class="md-ellipsis">
-      Example 1: Simple Boolean Flag
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#example-2-multi-rule-configuration">
-<span class="md-ellipsis">
-      Example 2: Multi-Rule Configuration
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#example-3-gradual-rollout-strategy">
-<span class="md-ellipsis">
-      Example 3: Gradual Rollout Strategy
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#example-4-custom-context-extension">
-<span class="md-ellipsis">
-      Example 4: Custom Context Extension
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#example-5-ab-testing">
-<span class="md-ellipsis">
-      Example 5: A/B Testing
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#summary-evaluation-guarantees">
-<span class="md-ellipsis">
-      Summary: Evaluation Guarantees
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#next-steps">
-<span class="md-ellipsis">
-      Next Steps
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../Results/">
-<span class="md-ellipsis">
-    Results
+    Remote Configuration
     
   </span>
 </a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_4" type="checkbox"/>
-<label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
-<span class="md-ellipsis">
-    Guides
-    
-  </span>
-<span class="md-nav__icon md-icon"></span>
-</label>
-<nav aria-expanded="false" aria-labelledby="__nav_4_label" class="md-nav" data-md-level="1">
-<label class="md-nav__title" for="__nav_4">
-<span class="md-nav__icon md-icon"></span>
-            Guides
-          </label>
-<ul class="md-nav__list" data-md-scrollfix="">
-<li class="md-nav__item">
-<a class="md-nav__link" href="../Configuration/">
-<span class="md-ellipsis">
-    Configuration
-    
-  </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../Context/">
-<span class="md-ellipsis">
-    Context System
-    
-  </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../Rules/">
-<span class="md-ellipsis">
-    Rules Engine
-    
-  </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../Registry/">
-<span class="md-ellipsis">
-    Registry
-    
-  </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../Serialization/">
-<span class="md-ellipsis">
-    Serialization
-    
-  </span>
-</a>
-</li>
-</ul>
-</nav>
 </li>
 </ul>
 </nav>
@@ -1350,7 +866,7 @@
 <p>Standard targeting criteria from <code>BaseEvaluable</code>:</p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-10-1"><a href="#__codelineno-10-1" id="__codelineno-10-1" name="__codelineno-10-1"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-10-2"><a href="#__codelineno-10-2" id="__codelineno-10-2" name="__codelineno-10-2"></a><span class="w">    </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span><span class="w">  </span><span class="c1">// Must be iOS OR Android</span>
-</span><span id="__span-10-3"><a href="#__codelineno-10-3" id="__codelineno-10-3" name="__codelineno-10-3"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">,</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_CA</span><span class="p">)</span><span class="w">  </span><span class="c1">// AND English (US or Canada)</span>
+</span><span id="__span-10-3"><a href="#__codelineno-10-3" id="__codelineno-10-3" name="__codelineno-10-3"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">CANADA</span><span class="p">)</span><span class="w">  </span><span class="c1">// AND English (US or Canada)</span>
 </span><span id="__span-10-4"><a href="#__codelineno-10-4" id="__codelineno-10-4" name="__codelineno-10-4"></a><span class="w">    </span><span class="n">versions</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-10-5"><a href="#__codelineno-10-5" id="__codelineno-10-5" name="__codelineno-10-5"></a><span class="w">        </span><span class="n">min</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w">  </span><span class="c1">// AND version &gt;= 2.0.0</span>
 </span><span id="__span-10-6"><a href="#__codelineno-10-6" id="__codelineno-10-6" name="__codelineno-10-6"></a><span class="w">    </span><span class="p">}</span>
@@ -1380,7 +896,7 @@
 <p>After all criteria match, rollout determines final eligibility:</p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-12-1"><a href="#__codelineno-12-1" id="__codelineno-12-1" name="__codelineno-12-1"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-12-2"><a href="#__codelineno-12-2" id="__codelineno-12-2" name="__codelineno-12-2"></a><span class="w">    </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span><span class="w">  </span><span class="c1">// Must match</span>
-</span><span id="__span-12-3"><a href="#__codelineno-12-3" id="__codelineno-12-3" name="__codelineno-12-3"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">)</span><span class="w"> </span><span class="c1">// Must match</span>
+</span><span id="__span-12-3"><a href="#__codelineno-12-3" id="__codelineno-12-3" name="__codelineno-12-3"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">)</span><span class="w"> </span><span class="c1">// Must match</span>
 </span><span id="__span-12-4"><a href="#__codelineno-12-4" id="__codelineno-12-4" name="__codelineno-12-4"></a><span class="w">    </span><span class="n">rollout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Rollout</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="m">25.0</span><span class="p">)</span><span class="w">  </span><span class="c1">// AND must be in 25% bucket</span>
 </span><span id="__span-12-5"><a href="#__codelineno-12-5" id="__codelineno-12-5" name="__codelineno-12-5"></a><span class="p">}.</span><span class="na">returns</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span>
 </span></code></pre></div>
@@ -1410,20 +926,20 @@
 </span><span id="__span-14-11"><a href="#__codelineno-14-11" id="__codelineno-14-11" name="__codelineno-14-11"></a><span class="c1">// Specificity = 2 (platform + locale)</span>
 </span><span id="__span-14-12"><a href="#__codelineno-14-12" id="__codelineno-14-12" name="__codelineno-14-12"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-14-13"><a href="#__codelineno-14-13" id="__codelineno-14-13" name="__codelineno-14-13"></a><span class="w">    </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
-</span><span id="__span-14-14"><a href="#__codelineno-14-14" id="__codelineno-14-14" name="__codelineno-14-14"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">)</span>
+</span><span id="__span-14-14"><a href="#__codelineno-14-14" id="__codelineno-14-14" name="__codelineno-14-14"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">)</span>
 </span><span id="__span-14-15"><a href="#__codelineno-14-15" id="__codelineno-14-15" name="__codelineno-14-15"></a><span class="p">}.</span><span class="na">returns</span><span class="p">(</span><span class="n">iosEnglishValue</span><span class="p">)</span>
 </span><span id="__span-14-16"><a href="#__codelineno-14-16" id="__codelineno-14-16" name="__codelineno-14-16"></a>
 </span><span id="__span-14-17"><a href="#__codelineno-14-17" id="__codelineno-14-17" name="__codelineno-14-17"></a><span class="c1">// Specificity = 3 (platform + locale + version)</span>
 </span><span id="__span-14-18"><a href="#__codelineno-14-18" id="__codelineno-14-18" name="__codelineno-14-18"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-14-19"><a href="#__codelineno-14-19" id="__codelineno-14-19" name="__codelineno-14-19"></a><span class="w">    </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
-</span><span id="__span-14-20"><a href="#__codelineno-14-20" id="__codelineno-14-20" name="__codelineno-14-20"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">)</span>
+</span><span id="__span-14-20"><a href="#__codelineno-14-20" id="__codelineno-14-20" name="__codelineno-14-20"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">)</span>
 </span><span id="__span-14-21"><a href="#__codelineno-14-21" id="__codelineno-14-21" name="__codelineno-14-21"></a><span class="w">    </span><span class="n">versions</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">min</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
 </span><span id="__span-14-22"><a href="#__codelineno-14-22" id="__codelineno-14-22" name="__codelineno-14-22"></a><span class="p">}.</span><span class="na">returns</span><span class="p">(</span><span class="n">iosEnglishV2Value</span><span class="p">)</span>
 </span><span id="__span-14-23"><a href="#__codelineno-14-23" id="__codelineno-14-23" name="__codelineno-14-23"></a>
 </span><span id="__span-14-24"><a href="#__codelineno-14-24" id="__codelineno-14-24" name="__codelineno-14-24"></a><span class="c1">// Specificity = 4 (platform + locale + version + extension)</span>
 </span><span id="__span-14-25"><a href="#__codelineno-14-25" id="__codelineno-14-25" name="__codelineno-14-25"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-14-26"><a href="#__codelineno-14-26" id="__codelineno-14-26" name="__codelineno-14-26"></a><span class="w">    </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
-</span><span id="__span-14-27"><a href="#__codelineno-14-27" id="__codelineno-14-27" name="__codelineno-14-27"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">)</span>
+</span><span id="__span-14-27"><a href="#__codelineno-14-27" id="__codelineno-14-27" name="__codelineno-14-27"></a><span class="w">    </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">)</span>
 </span><span id="__span-14-28"><a href="#__codelineno-14-28" id="__codelineno-14-28" name="__codelineno-14-28"></a><span class="w">    </span><span class="n">versions</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">min</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
 </span><span id="__span-14-29"><a href="#__codelineno-14-29" id="__codelineno-14-29" name="__codelineno-14-29"></a><span class="w">    </span><span class="n">extension</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-14-30"><a href="#__codelineno-14-30" id="__codelineno-14-30" name="__codelineno-14-30"></a><span class="w">        </span><span class="k">object</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nc">Evaluable</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
@@ -1435,13 +951,13 @@
 </span></code></pre></div>
 <h3 id="evaluation-order-visualization">Evaluation Order Visualization<a class="headerlink" href="#evaluation-order-visualization" title="Permanent link">¶</a></h3>
 <pre class="mermaid"><code>flowchart TD
-    Context[Context: iOS, EN_US, v2.1.0] --&gt; Eval[Evaluation]
+    Context[Context: iOS, UNITED_STATES, v2.1.0] --&gt; Eval[Evaluation]
 
-    Eval --&gt; Rule1["Rule 1: Specificity = 3&lt;br/&gt;platforms(IOS)&lt;br/&gt;locales(EN_US)&lt;br/&gt;versions &gt;= 2.0.0&lt;br/&gt;→ 'specific'"]
+    Eval --&gt; Rule1["Rule 1: Specificity = 3&lt;br/&gt;platforms(IOS)&lt;br/&gt;locales(UNITED_STATES)&lt;br/&gt;versions &gt;= 2.0.0&lt;br/&gt;→ 'specific'"]
 
     Rule1 --&gt;|Matches| Return1[Return 'specific']
 
-    Rule1 --&gt;|Doesn't Match| Rule2["Rule 2: Specificity = 2&lt;br/&gt;platforms(IOS)&lt;br/&gt;locales(EN_US)&lt;br/&gt;→ 'medium'"]
+    Rule1 --&gt;|Doesn't Match| Rule2["Rule 2: Specificity = 2&lt;br/&gt;platforms(IOS)&lt;br/&gt;locales(UNITED_STATES)&lt;br/&gt;→ 'medium'"]
 
     Rule2 --&gt;|Matches| Return2[Return 'medium']
 
@@ -1689,10 +1205,10 @@
 <h3 id="unit-testing-rules">Unit Testing Rules<a class="headerlink" href="#unit-testing-rules" title="Permanent link">¶</a></h3>
 <p>Test that rules evaluate correctly for different contexts:</p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-33-1"><a href="#__codelineno-33-1" id="__codelineno-33-1" name="__codelineno-33-1"></a><span class="nd">@Test</span>
-</span><span id="__span-33-2"><a href="#__codelineno-33-2" id="__codelineno-33-2" name="__codelineno-33-2"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">`iOS users in EN_US locale get dark mode`</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-33-2"><a href="#__codelineno-33-2" id="__codelineno-33-2" name="__codelineno-33-2"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">`iOS users in UNITED_STATES locale get dark mode`</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-33-3"><a href="#__codelineno-33-3" id="__codelineno-33-3" name="__codelineno-33-3"></a><span class="w">    </span><span class="c1">// Arrange</span>
 </span><span id="__span-33-4"><a href="#__codelineno-33-4" id="__codelineno-33-4" name="__codelineno-33-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
-</span><span id="__span-33-5"><a href="#__codelineno-33-5" id="__codelineno-33-5" name="__codelineno-33-5"></a><span class="w">        </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">,</span>
+</span><span id="__span-33-5"><a href="#__codelineno-33-5" id="__codelineno-33-5" name="__codelineno-33-5"></a><span class="w">        </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
 </span><span id="__span-33-6"><a href="#__codelineno-33-6" id="__codelineno-33-6" name="__codelineno-33-6"></a><span class="w">        </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span>
 </span><span id="__span-33-7"><a href="#__codelineno-33-7" id="__codelineno-33-7" name="__codelineno-33-7"></a><span class="w">        </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">.</span><span class="na">parse</span><span class="p">(</span><span class="s">"2.1.0"</span><span class="p">),</span>
 </span><span id="__span-33-8"><a href="#__codelineno-33-8" id="__codelineno-33-8" name="__codelineno-33-8"></a><span class="w">        </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"test-user"</span><span class="p">)</span>
@@ -1708,7 +1224,7 @@
 </span><span id="__span-33-18"><a href="#__codelineno-33-18" id="__codelineno-33-18" name="__codelineno-33-18"></a><span class="nd">@Test</span>
 </span><span id="__span-33-19"><a href="#__codelineno-33-19" id="__codelineno-33-19" name="__codelineno-33-19"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">`Android users get default value`</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-33-20"><a href="#__codelineno-33-20" id="__codelineno-33-20" name="__codelineno-33-20"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
-</span><span id="__span-33-21"><a href="#__codelineno-33-21" id="__codelineno-33-21" name="__codelineno-33-21"></a><span class="w">        </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">,</span>
+</span><span id="__span-33-21"><a href="#__codelineno-33-21" id="__codelineno-33-21" name="__codelineno-33-21"></a><span class="w">        </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
 </span><span id="__span-33-22"><a href="#__codelineno-33-22" id="__codelineno-33-22" name="__codelineno-33-22"></a><span class="w">        </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">,</span>
 </span><span id="__span-33-23"><a href="#__codelineno-33-23" id="__codelineno-33-23" name="__codelineno-33-23"></a><span class="w">        </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">.</span><span class="na">parse</span><span class="p">(</span><span class="s">"2.1.0"</span><span class="p">),</span>
 </span><span id="__span-33-24"><a href="#__codelineno-33-24" id="__codelineno-33-24" name="__codelineno-33-24"></a><span class="w">        </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"test-user"</span><span class="p">)</span>
@@ -1727,7 +1243,7 @@
 </span><span id="__span-34-4"><a href="#__codelineno-34-4" id="__codelineno-34-4" name="__codelineno-34-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">sampleSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="n">_000</span>
 </span><span id="__span-34-5"><a href="#__codelineno-34-5" id="__codelineno-34-5" name="__codelineno-34-5"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">enabledCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="m">0</span><span class="w"> </span><span class="n">until</span><span class="w"> </span><span class="n">sampleSize</span><span class="p">).</span><span class="na">count</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">-&gt;</span>
 </span><span id="__span-34-6"><a href="#__codelineno-34-6" id="__codelineno-34-6" name="__codelineno-34-6"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
-</span><span id="__span-34-7"><a href="#__codelineno-34-7" id="__codelineno-34-7" name="__codelineno-34-7"></a><span class="w">            </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">,</span>
+</span><span id="__span-34-7"><a href="#__codelineno-34-7" id="__codelineno-34-7" name="__codelineno-34-7"></a><span class="w">            </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
 </span><span id="__span-34-8"><a href="#__codelineno-34-8" id="__codelineno-34-8" name="__codelineno-34-8"></a><span class="w">            </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span>
 </span><span id="__span-34-9"><a href="#__codelineno-34-9" id="__codelineno-34-9" name="__codelineno-34-9"></a><span class="w">            </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">.</span><span class="na">parse</span><span class="p">(</span><span class="s">"1.0.0"</span><span class="p">),</span>
 </span><span id="__span-34-10"><a href="#__codelineno-34-10" id="__codelineno-34-10" name="__codelineno-34-10"></a><span class="w">            </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"user-</span><span class="si">$</span><span class="n">i</span><span class="s">"</span><span class="p">)</span>
@@ -1745,7 +1261,7 @@
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-35-1"><a href="#__codelineno-35-1" id="__codelineno-35-1" name="__codelineno-35-1"></a><span class="nd">@Test</span>
 </span><span id="__span-35-2"><a href="#__codelineno-35-2" id="__codelineno-35-2" name="__codelineno-35-2"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">`evaluation is deterministic`</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-35-3"><a href="#__codelineno-35-3" id="__codelineno-35-3" name="__codelineno-35-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
-</span><span id="__span-35-4"><a href="#__codelineno-35-4" id="__codelineno-35-4" name="__codelineno-35-4"></a><span class="w">        </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">,</span>
+</span><span id="__span-35-4"><a href="#__codelineno-35-4" id="__codelineno-35-4" name="__codelineno-35-4"></a><span class="w">        </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
 </span><span id="__span-35-5"><a href="#__codelineno-35-5" id="__codelineno-35-5" name="__codelineno-35-5"></a><span class="w">        </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span>
 </span><span id="__span-35-6"><a href="#__codelineno-35-6" id="__codelineno-35-6" name="__codelineno-35-6"></a><span class="w">        </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">.</span><span class="na">parse</span><span class="p">(</span><span class="s">"2.1.0"</span><span class="p">),</span>
 </span><span id="__span-35-7"><a href="#__codelineno-35-7" id="__codelineno-35-7" name="__codelineno-35-7"></a><span class="w">        </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"user-123"</span><span class="p">)</span>
@@ -1764,7 +1280,7 @@
 <p>Verify higher specificity rules take precedence:</p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-36-1"><a href="#__codelineno-36-1" id="__codelineno-36-1" name="__codelineno-36-1"></a><span class="nd">@Test</span>
 </span><span id="__span-36-2"><a href="#__codelineno-36-2" id="__codelineno-36-2" name="__codelineno-36-2"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">`more specific rules override general rules`</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-36-3"><a href="#__codelineno-36-3" id="__codelineno-36-3" name="__codelineno-36-3"></a><span class="w">    </span><span class="kd">object</span><span class="w"> </span><span class="nc">TestFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-36-3"><a href="#__codelineno-36-3" id="__codelineno-36-3" name="__codelineno-36-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">TestFeatures</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">object</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nc">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-36-4"><a href="#__codelineno-36-4" id="__codelineno-36-4" name="__codelineno-36-4"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">VALUE</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"default"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-36-5"><a href="#__codelineno-36-5" id="__codelineno-36-5" name="__codelineno-36-5"></a><span class="w">            </span><span class="c1">// Specificity = 1 (general)</span>
 </span><span id="__span-36-6"><a href="#__codelineno-36-6" id="__codelineno-36-6" name="__codelineno-36-6"></a><span class="w">            </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
@@ -1774,14 +1290,14 @@
 </span><span id="__span-36-10"><a href="#__codelineno-36-10" id="__codelineno-36-10" name="__codelineno-36-10"></a><span class="w">            </span><span class="c1">// Specificity = 2 (specific)</span>
 </span><span id="__span-36-11"><a href="#__codelineno-36-11" id="__codelineno-36-11" name="__codelineno-36-11"></a><span class="w">            </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-36-12"><a href="#__codelineno-36-12" id="__codelineno-36-12" name="__codelineno-36-12"></a><span class="w">                </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
-</span><span id="__span-36-13"><a href="#__codelineno-36-13" id="__codelineno-36-13" name="__codelineno-36-13"></a><span class="w">                </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">)</span>
+</span><span id="__span-36-13"><a href="#__codelineno-36-13" id="__codelineno-36-13" name="__codelineno-36-13"></a><span class="w">                </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">)</span>
 </span><span id="__span-36-14"><a href="#__codelineno-36-14" id="__codelineno-36-14" name="__codelineno-36-14"></a><span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"ios-english-specific"</span>
 </span><span id="__span-36-15"><a href="#__codelineno-36-15" id="__codelineno-36-15" name="__codelineno-36-15"></a><span class="w">        </span><span class="p">}</span>
 </span><span id="__span-36-16"><a href="#__codelineno-36-16" id="__codelineno-36-16" name="__codelineno-36-16"></a><span class="w">    </span><span class="p">}</span>
 </span><span id="__span-36-17"><a href="#__codelineno-36-17" id="__codelineno-36-17" name="__codelineno-36-17"></a>
 </span><span id="__span-36-18"><a href="#__codelineno-36-18" id="__codelineno-36-18" name="__codelineno-36-18"></a><span class="w">    </span><span class="c1">// Context matches both rules</span>
 </span><span id="__span-36-19"><a href="#__codelineno-36-19" id="__codelineno-36-19" name="__codelineno-36-19"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
-</span><span id="__span-36-20"><a href="#__codelineno-36-20" id="__codelineno-36-20" name="__codelineno-36-20"></a><span class="w">        </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">,</span>
+</span><span id="__span-36-20"><a href="#__codelineno-36-20" id="__codelineno-36-20" name="__codelineno-36-20"></a><span class="w">        </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
 </span><span id="__span-36-21"><a href="#__codelineno-36-21" id="__codelineno-36-21" name="__codelineno-36-21"></a><span class="w">        </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span>
 </span><span id="__span-36-22"><a href="#__codelineno-36-22" id="__codelineno-36-22" name="__codelineno-36-22"></a><span class="w">        </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">.</span><span class="na">parse</span><span class="p">(</span><span class="s">"1.0.0"</span><span class="p">),</span>
 </span><span id="__span-36-23"><a href="#__codelineno-36-23" id="__codelineno-36-23" name="__codelineno-36-23"></a><span class="w">        </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"user-123"</span><span class="p">)</span>
@@ -1828,7 +1344,7 @@
 </span><span id="__span-40-2"><a href="#__codelineno-40-2" id="__codelineno-40-2" name="__codelineno-40-2"></a><span class="w">    </span><span class="c1">// Most specific (evaluated first)</span>
 </span><span id="__span-40-3"><a href="#__codelineno-40-3" id="__codelineno-40-3" name="__codelineno-40-3"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-40-4"><a href="#__codelineno-40-4" id="__codelineno-40-4" name="__codelineno-40-4"></a><span class="w">        </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
-</span><span id="__span-40-5"><a href="#__codelineno-40-5" id="__codelineno-40-5" name="__codelineno-40-5"></a><span class="w">        </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">)</span>
+</span><span id="__span-40-5"><a href="#__codelineno-40-5" id="__codelineno-40-5" name="__codelineno-40-5"></a><span class="w">        </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">)</span>
 </span><span id="__span-40-6"><a href="#__codelineno-40-6" id="__codelineno-40-6" name="__codelineno-40-6"></a><span class="w">        </span><span class="n">versions</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">min</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
 </span><span id="__span-40-7"><a href="#__codelineno-40-7" id="__codelineno-40-7" name="__codelineno-40-7"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"ios-en-v2"</span>
 </span><span id="__span-40-8"><a href="#__codelineno-40-8" id="__codelineno-40-8" name="__codelineno-40-8"></a>
@@ -1858,7 +1374,7 @@
 </span><span id="__span-42-3"><a href="#__codelineno-42-3" id="__codelineno-42-3" name="__codelineno-42-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">sampleSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">5000</span>
 </span><span id="__span-42-4"><a href="#__codelineno-42-4" id="__codelineno-42-4" name="__codelineno-42-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">enabledCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="m">0</span><span class="w"> </span><span class="n">until</span><span class="w"> </span><span class="n">sampleSize</span><span class="p">).</span><span class="na">count</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">-&gt;</span>
 </span><span id="__span-42-5"><a href="#__codelineno-42-5" id="__codelineno-42-5" name="__codelineno-42-5"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
-</span><span id="__span-42-6"><a href="#__codelineno-42-6" id="__codelineno-42-6" name="__codelineno-42-6"></a><span class="w">            </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">,</span>
+</span><span id="__span-42-6"><a href="#__codelineno-42-6" id="__codelineno-42-6" name="__codelineno-42-6"></a><span class="w">            </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
 </span><span id="__span-42-7"><a href="#__codelineno-42-7" id="__codelineno-42-7" name="__codelineno-42-7"></a><span class="w">            </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span>
 </span><span id="__span-42-8"><a href="#__codelineno-42-8" id="__codelineno-42-8" name="__codelineno-42-8"></a><span class="w">            </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">.</span><span class="na">parse</span><span class="p">(</span><span class="s">"1.0.0"</span><span class="p">),</span>
 </span><span id="__span-42-9"><a href="#__codelineno-42-9" id="__codelineno-42-9" name="__codelineno-42-9"></a><span class="w">            </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"user-</span><span class="si">$</span><span class="n">i</span><span class="s">"</span><span class="p">)</span>
@@ -1894,7 +1410,7 @@
 </span><span id="__span-44-9"><a href="#__codelineno-44-9" id="__codelineno-44-9" name="__codelineno-44-9"></a>
 </span><span id="__span-44-10"><a href="#__codelineno-44-10" id="__codelineno-44-10" name="__codelineno-44-10"></a><span class="c1">// Evaluation</span>
 </span><span id="__span-44-11"><a href="#__codelineno-44-11" id="__codelineno-44-11" name="__codelineno-44-11"></a><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
-</span><span id="__span-44-12"><a href="#__codelineno-44-12" id="__codelineno-44-12" name="__codelineno-44-12"></a><span class="w">    </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">,</span>
+</span><span id="__span-44-12"><a href="#__codelineno-44-12" id="__codelineno-44-12" name="__codelineno-44-12"></a><span class="w">    </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
 </span><span id="__span-44-13"><a href="#__codelineno-44-13" id="__codelineno-44-13" name="__codelineno-44-13"></a><span class="w">    </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span>
 </span><span id="__span-44-14"><a href="#__codelineno-44-14" id="__codelineno-44-14" name="__codelineno-44-14"></a><span class="w">    </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">.</span><span class="na">parse</span><span class="p">(</span><span class="s">"2.1.0"</span><span class="p">),</span>
 </span><span id="__span-44-15"><a href="#__codelineno-44-15" id="__codelineno-44-15" name="__codelineno-44-15"></a><span class="w">    </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"user-abc123"</span><span class="p">)</span>
@@ -1997,7 +1513,7 @@
 </span><span id="__span-47-29"><a href="#__codelineno-47-29" id="__codelineno-47-29" name="__codelineno-47-29"></a>
 </span><span id="__span-47-30"><a href="#__codelineno-47-30" id="__codelineno-47-30" name="__codelineno-47-30"></a><span class="c1">// Evaluation</span>
 </span><span id="__span-47-31"><a href="#__codelineno-47-31" id="__codelineno-47-31" name="__codelineno-47-31"></a><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">EnterpriseContext</span><span class="p">(</span>
-</span><span id="__span-47-32"><a href="#__codelineno-47-32" id="__codelineno-47-32" name="__codelineno-47-32"></a><span class="w">    </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">EN_US</span><span class="p">,</span>
+</span><span id="__span-47-32"><a href="#__codelineno-47-32" id="__codelineno-47-32" name="__codelineno-47-32"></a><span class="w">    </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
 </span><span id="__span-47-33"><a href="#__codelineno-47-33" id="__codelineno-47-33" name="__codelineno-47-33"></a><span class="w">    </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">WEB</span><span class="p">,</span>
 </span><span id="__span-47-34"><a href="#__codelineno-47-34" id="__codelineno-47-34" name="__codelineno-47-34"></a><span class="w">    </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">.</span><span class="na">parse</span><span class="p">(</span><span class="s">"1.0.0"</span><span class="p">),</span>
 </span><span id="__span-47-35"><a href="#__codelineno-47-35" id="__codelineno-47-35" name="__codelineno-47-35"></a><span class="w">    </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"user-123"</span><span class="p">),</span>
