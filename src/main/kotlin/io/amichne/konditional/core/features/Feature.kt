@@ -1,8 +1,10 @@
 package io.amichne.konditional.core.features
 
-import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.kontext.DoublyAware
+import io.amichne.konditional.kontext.Kontext
+import kotlin.reflect.KProperty
 
 /**
  * Represents a feature flag that can be used to enable or disable specific functionality
@@ -22,7 +24,7 @@ import io.amichne.konditional.core.types.EncodableValue
  *
  * ```kotlin
  * enum class PaymentFeatures(override val key: String)
- *     : Feature<BoolEncodeable, Boolean, Context, Namespace.Payments> {
+ *     : Feature<BoolEncodeable, Boolean, Kontext, Namespace.Payments> {
  *     APPLE_PAY("apple_pay");
  *     override val namespace = Namespace.Payments
  * }
@@ -30,10 +32,20 @@ import io.amichne.konditional.core.types.EncodableValue
  *
  * @param S The EncodableValue type wrapping the actual value.
  * @param T The actual value type.
- * @param C The type of the contextFn that the feature flag evaluates against.
+ * @param C The type of the kontextFn that the feature flag evaluates against.
  * @param M The namespace this feature belongs to (compile-time binding).
  */
-sealed interface Feature<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> {
+sealed interface Feature<S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace> {
     val key: String
     val namespace: M
+
+    /**
+     * Retrieves the default value of the feature flag.
+     *
+     * @return The default value of type S.
+     */
+    operator fun getValue(
+        konstrained: DoublyAware<C, M>,
+        property: KProperty<*>,
+    ) = this
 }

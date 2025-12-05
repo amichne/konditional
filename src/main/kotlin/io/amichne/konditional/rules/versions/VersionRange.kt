@@ -1,6 +1,6 @@
 package io.amichne.konditional.rules.versions
 
-import io.amichne.konditional.context.Version
+import io.amichne.konditional.kontext.Version
 import kotlin.math.pow
 
 sealed class VersionRange(

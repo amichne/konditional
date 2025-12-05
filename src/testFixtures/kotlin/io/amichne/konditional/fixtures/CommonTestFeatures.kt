@@ -1,9 +1,9 @@
 package io.amichne.konditional.fixtures
 
-import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.features.FeatureContainer
-import io.amichne.konditional.fixtures.CommonTestFeatures.allFeatures
+import io.amichne.konditional.fixtures.core.TestKontext
+import io.amichne.konditional.fixtures.core.TestNamespace
+import io.amichne.konditional.kontext.DoublyAware
+import io.amichne.konditional.kontext.Konstrained
 
 /**
  * Common test features demonstrating mixed-type capabilities of FeatureContainer.
@@ -21,66 +21,70 @@ import io.amichne.konditional.fixtures.CommonTestFeatures.allFeatures
  * - Feature properties use camelCase following Kotlin best practices
  * - Feature keys match property names automatically for consistency and discoverability
  */
-object CommonTestFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
-
+abstract class CommonTestFeatures : DoublyAware<TestKontext, TestNamespace> {
     // Boolean features
     /** General-purpose test feature flag */
-    val testFeature by boolean<Context>(default = false)
+    val testFeature by boolean(default = false)
 
     /** Always-enabled feature for testing true state */
-    val alwaysTrue by boolean<Context>(default = true)
+    val alwaysTrue by boolean(default = true)
 
     /** Feature flag for testing enabled state */
-    val enabledFeature by boolean<Context>(default = true)
+    val enabledFeature by boolean(default = true)
 
     /** Feature flag for testing disabled state */
-    val disabledFeature by boolean<Context>(default = false)
+    val disabledFeature by boolean(default = false)
 
-    /** Feature flag for testing rollout percentages */
-    val rolloutFeature by boolean<Context>(default = false)
+    /** Feature flag for testing rampUp percentages */
+    val rolloutFeature by boolean(default = false)
 
     /** Feature flag for testing platform targeting */
-    val platformFeature by boolean<Context>(default = false)
+    val platformFeature by boolean(default = false)
 
     /** Feature flag for testing locale targeting */
-    val localeFeature by boolean<Context>(default = false)
+    val localeFeature by boolean(default = false)
 
     /** Feature flag for testing version ranges */
-    val versionFeature by boolean<Context>(default = false)
+    val versionFeature by boolean(default = false)
 
     // String features
     /** API endpoint configuration */
-    val apiEndpoint by string<Context>(default = "https://api.example.com")
+    val apiEndpoint by string(default = "https://api.example.com")
 
     /** Theme configuration */
-    val theme by string<Context>(default = "light")
+    val theme by string(default = "light")
 
     /** Welcome message configuration */
-    val welcomeMessage by string<Context>(default = "Welcome!")
+    val welcomeMessage by string(default = "Welcome!")
 
     /** General-purpose test string flag */
-    val testString by string<Context>(default = "default")
+    val testString by string(default = "default")
 
     /** Registered flag for testing found scenarios */
-    val registeredFlag by string<Context>(default = "test")
+    val registeredFlag by string(default = "test")
 
     /** Unregistered flag for testing not-found scenarios */
-    val unregisteredFlag by string<Context>(default = "")
+    val unregisteredFlag by string(default = "")
 
     // Integer features
     /** Maximum connections configuration */
-    val maxConnections by integer<Context>(default = 100)
+    val maxConnections by integer(default = 100)
 
     /** Timeout configuration in milliseconds */
-    val timeout by integer<Context>(default = 5000)
+    val timeout by integer(default = 5000)
 
     /** Retry count configuration */
-    val retryCount by integer<Context>(default = 3)
+    val retryCount by integer(default = 3)
 
     // Double features
     /** Threshold configuration */
-    val threshold by double<Context>(default = 0.5)
+    val threshold by double(default = 0.5)
 
     /** Rate limit configuration */
-    val rateLimit by double<Context>(default = 100.0)
+    val rateLimit by double(default = 100.0)
+}
+
+data class Sample : CommonTestFeatures() {
+    override fun factory(): TestKontext = Konstrained.kontext()
+
 }

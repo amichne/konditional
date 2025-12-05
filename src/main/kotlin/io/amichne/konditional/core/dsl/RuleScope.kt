@@ -1,9 +1,8 @@
 package io.amichne.konditional.core.dsl
 
-import io.amichne.konditional.context.AppLocale
-import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Platform
-import io.amichne.konditional.rules.evaluable.Evaluable
+import io.amichne.konditional.kontext.AppLocale
+import io.amichne.konditional.kontext.Kontext
+import io.amichne.konditional.kontext.Platform
 
 /**
  * DSL scope for rule configuration.
@@ -21,20 +20,20 @@ import io.amichne.konditional.rules.evaluable.Evaluable
  *         min(1, 2, 0)
  *         max(2, 0, 0)
  *     }
- *     rollout {  Rampup.of(50.0) }
+ *     rampUp {  Rampup.of(50.0) }
  *     note("Rampup to mobile users only")
  * }
  * ```
  *
- * @param C The contextFn type the rule evaluates against
+ * @param C The kontextFn type the rule evaluates against
  * @since 0.0.2
  */
 @KonditionalDsl
-interface RuleScope<C : Context> {
+interface RuleScope<C : Kontext<*>> {
     /**
      * Specifies which locales this rule applies to.
      *
-     * The rule will only match contexts with one of the specified locales.
+     * The rule will only match kontexts with one of the specified locales.
      *
      * @param appLocales The locales to target
      */
@@ -43,11 +42,16 @@ interface RuleScope<C : Context> {
     /**
      * Specifies which platforms this rule applies to.
      *
-     * The rule will only match contexts with one of the specified platforms.
+     * The rule will only match kontexts with one of the specified platforms.
      *
      * @param ps The platforms to target
      */
+    @Deprecated("Use platforms() instead", ReplaceWith("platforms(*ps)"))
     fun platforms(vararg ps: Platform)
+
+    fun ios()
+
+    fun android()
 
     /**
      * Specifies the version range this rule applies to.
@@ -72,17 +76,18 @@ interface RuleScope<C : Context> {
      *
      * Example:
      * ```kotlin
-     * extension { object : Evaluable<MyContext>() {
-     *     override fun matches(contextFn: MyContext) = contextFn.organizationId == "enterprise"
-     * }}
+     *  rule {
+     *       extension {
+     *           subscriptionTier == SubscriptionTier.ENTERPRISE ||
+     *           subscriptionTier == SubscriptionTier.PROFESSIONAL
+     *       }
+     *   } returns true
      * ```
      *
      * @param function Factory function that creates the Evaluable
      */
-    @Deprecated("Use other extension")
-    fun extension(function: () -> Evaluable<C>)
 
-    fun extension(block: (C) -> Boolean)
+    fun extension(block: C.() -> Boolean)
 
     /**
      * Adds a human-readable note to document the rule's purpose.
@@ -95,16 +100,16 @@ interface RuleScope<C : Context> {
     fun note(text: String)
 
     /**
-     * Sets the rollout percentage for this rule.
+     * Sets the rampUp percentage for this rule.
      *
      * When set, only the specified percentage of users matching this rule
-     * will receive the associated value. The rollout is stable and deterministic
+     * will receive the associated value. The rampUp is stable and deterministic
      * based on the user's stable ID.
      *
      * Example:
      * ```kotlin
-     * rollout {  50.0  // 50% of matching users }
+     * rampUp {  50.0  // 50% of matching users }
      * ```
      */
-    fun rollout(function: () -> Number)
+    fun rampUp(function: () -> Number)
 }

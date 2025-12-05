@@ -15,7 +15,7 @@ import io.amichne.konditional.core.result.utils.evaluateOrDefault
 // ============================================================================
 
 //enum class PaymentFeaturesEnum(override val key: String)
-//    : BooleanFeature<Context, Namespace.Payments> {
+//    : BooleanFeature<Kontext, Namespace.Payments> {
 //    APPLE_PAY("apple_pay"),
 //    GOOGLE_PAY("google_pay"),
 //    CARD_ON_FILE("card_on_file");
@@ -26,7 +26,7 @@ import io.amichne.konditional.core.result.utils.evaluateOrDefault
 //
 // ❌ Problem 1: Can't mix types in enums
 // This won't compile - enums can't have different return types per entry
-// enum class MixedFeaturesEnum : Feature<???, ???, Context, Namespace.Payments>
+// enum class MixedFeaturesEnum : Feature<???, ???, Kontext, Namespace.Payments>
 
 // ❌ Problem 2: No automatic enumeration
 // Have to manually maintain list of all features
@@ -44,13 +44,13 @@ object PaymentFeatures : FeatureContainer<Namespace.Payments>(
     Namespace.Payments
 ) {
     // ✅ Ergonomic: Clean delegation syntax
-    val apple_pay by boolean<Context>(default = false)
-    val google_pay by boolean<Context>(default = false)
-    val card_on_file by boolean<Context>(default = false)
+    val apple_pay by boolean<`Context<T : Namespace>`>(default = false)
+    val google_pay by boolean<`Context<T : Namespace>`>(default = false)
+    val card_on_file by boolean<`Context<T : Namespace>`>(default = false)
 
     // ✅ Mixed types: Can combine different feature types
     val max_cards by integer<Context>(default = 5)
-    val payment_provider by string<Context>(default = "stripe")
+    val payment_provider by string<`Context<T : Namespace>`>(default = "stripe")
 
     // ✅ No boilerplate: Module declared once at features level
     // ✅ Auto-registration: All features automatically tracked
@@ -59,9 +59,9 @@ object PaymentFeatures : FeatureContainer<Namespace.Payments>(
 object OrderFeatures : FeatureContainer<Namespace.Payments>(
     Namespace.Payments
 ) {
-    val fast_checkout by boolean<Context>(default = false)
-    val order_limit by integer<Context>(default = 1000)
-    val discount_code by string<Context>(default = "")
+    val fast_checkout by boolean<`Context<T : Namespace>`>(default = false)
+    val order_limit by integer<`Context<T : Namespace>`>(default = 1000)
+    val discount_code by string<`Context<T : Namespace>`>(default = "")
 }
 
 // ============================================================================
@@ -85,13 +85,13 @@ object FeatureContainerValueDemo {
     }
 
     // ✅ BENEFIT 2: Type safety preserved
-    fun typeSafetyDemo(context: Context) {
+    fun typeSafetyDemo(context: Context<T : Namespace>) {
         // Boolean feature
-        val applePay: BooleanFeature<Context, Namespace.Payments> =
+        val applePay: BooleanFeature<`Context<T : Namespace>`, Namespace.Payments> =
             PaymentFeatures.apple_pay
 
         // Int feature
-        val maxCards: IntFeature<Context, Namespace.Payments> =
+        val maxCards: IntFeature<`Context<T : Namespace>`, Namespace.Payments> =
             PaymentFeatures.max_cards
 
         // Type inference works
@@ -122,7 +122,7 @@ object FeatureContainerValueDemo {
     }
 
 //    // ✅ BENEFIT 4: Testing - can easily get all features for comprehensive testing
-//    fun <C : Context> testAllFeatures(contextFn: C) {
+//    fun <C : Kontext> testAllFeatures(contextFn: C) {
 //        PaymentFeatures.allFeatures().filter { it }.forEach { feature ->
 //            // Type-erased, but we can still evaluate safely
 //            when (val result = contextFn.evaluate()) {

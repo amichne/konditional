@@ -1,10 +1,10 @@
 package io.amichne.konditional.serialization
 
-import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.kontext.Kontext
 
 /**
  * Registry for mapping flag keys to their Feature instances.
@@ -42,7 +42,7 @@ object FeatureRegistry {
      * @param conditional The conditional to register
      * @throws IllegalStateException if a different conditional is already registered with the same key
      */
-    fun <S : EncodableValue<T>, T : Any, C : Context> register(conditional: Feature<S, T, C, *>) {
+    fun <S : EncodableValue<T>, T : Any, C : Kontext<*>> register(conditional: Feature<S, T, C, *>) {
         registry[conditional.key] = conditional
     }
 

@@ -1,12 +1,8 @@
 package io.amichne.konditional.serialization
 
-import io.amichne.konditional.context.AppLocale
-import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Rampup
-import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.FlagDefinition
+import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.instance.ConfigurationPatch
 import io.amichne.konditional.core.result.ParseError
@@ -17,6 +13,10 @@ import io.amichne.konditional.internal.serialization.models.SerializableFlag
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
 import io.amichne.konditional.internal.serialization.models.SerializableRule
 import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
+import io.amichne.konditional.kontext.AppLocale
+import io.amichne.konditional.kontext.Kontext
+import io.amichne.konditional.kontext.Platform
+import io.amichne.konditional.kontext.Rampup
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
@@ -35,7 +35,7 @@ internal fun Configuration.toSerializable(): SerializableSnapshot {
 /**
  * Converts a FlagDefinition to a SerializableFlag.
  */
-private fun <S : EncodableValue<T>, T : Any, C : Context> FlagDefinition<S, T, C, *>.toSerializable(
+private fun <S : EncodableValue<T>, T : Any, C : Kontext<*>> FlagDefinition<S, T, C, *>.toSerializable(
     flagKey: String
 ): SerializableFlag {
     return SerializableFlag(
@@ -50,7 +50,7 @@ private fun <S : EncodableValue<T>, T : Any, C : Context> FlagDefinition<S, T, C
 /**
  * Converts a ConditionalValue to a SerializableRule.
  */
-private fun <S : EncodableValue<T>, T : Any, C : Context> ConditionalValue<S, T, C, *>.toSerializable(): SerializableRule {
+private fun <S : EncodableValue<T>, T : Any, C : Kontext<*>> ConditionalValue<S, T, C, *>.toSerializable(): SerializableRule {
     return SerializableRule(
         value = FlagValue.from(value),
         rampUp = rule.rollout.value,
@@ -106,7 +106,7 @@ private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Feature<*, *, *, *>,
  * Type-safe: no casting required thanks to FlagValue sealed class.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> SerializableFlag.toFlagDefinition(
+private fun <S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace> SerializableFlag.toFlagDefinition(
     conditional: Feature<S, T, C, M>
 ): FlagDefinition<S, T, C, M> {
     // Extract typed value from FlagValue (type-safe extraction)
@@ -133,7 +133,7 @@ private fun <T : Any> FlagValue<*>.extractValue(): T = this.value as T
  * Converts a SerializableRule to a ConditionalValue.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> SerializableRule.toValue(): ConditionalValue<S, T, C, M> {
+private fun <S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace> SerializableRule.toValue(): ConditionalValue<S, T, C, M> {
     val typedValue = value.extractValue<T>()
     val rule = toRule<C>()
     return rule.targetedBy(typedValue)
@@ -143,7 +143,7 @@ private fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Seriali
  * Converts a SerializableRule to a Rule.
  * Simplified: VersionRange is already the domain type.
  */
-private fun <C : Context> SerializableRule.toRule(): Rule<C> {
+private fun <C : Kontext<*>> SerializableRule.toRule(): Rule<C> {
     return Rule(
         rollout = Rampup.of(rampUp),
         note = note,

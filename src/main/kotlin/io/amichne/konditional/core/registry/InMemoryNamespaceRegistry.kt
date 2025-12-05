@@ -1,12 +1,12 @@
 package io.amichne.konditional.core.registry
 
-import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.instance.ConfigurationPatch
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.kontext.Kontext
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 
@@ -52,7 +52,7 @@ import java.util.concurrent.atomic.AtomicReference
  *     // Set override - flag will always return this value
  *     testNamespace.registry.setOverride(MyFlags.FEATURE_A, true)
  *
- *     val result = contextFn.evaluate(MyFlags.FEATURE_A)
+ *     val result = kontextFn.evaluate(MyFlags.FEATURE_A)
  *     assertEquals(true, result)
  *
  *     // Clean up
@@ -96,20 +96,20 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * Retrieves a specific flag definition from the registry, applying any test overrides.
      *
      * If a test override is set for this flag, returns a special FlagDefinition that
-     * always evaluates to the override value, bypassing all rules and rollout logic.
+     * always evaluates to the override value, bypassing all rules and rampUp logic.
      *
      * This override of the [NamespaceRegistry.flag] method ensures that test overrides
-     * are transparently applied when flags are evaluated via `contextFn.evaluate(feature)`.
+     * are transparently applied when flags are evaluated via `kontextFn.evaluate(feature)`.
      *
      * @param key The [Feature] key for the flag
      * @return The [FlagDefinition] (potentially wrapped with override logic)
      * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
-     * @param C The type of the contextFn used for evaluation
+     * @param C The type of the kontextFn used for evaluation
      * @param M The namespace the feature belongs to
      */
     @Suppress("UNCHECKED_CAST")
-    override fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> flag(
+    override fun <S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace> flag(
         key: Feature<S, T, C, M>
     ): FlagDefinition<S, T, C, M> {
         val override = getOverride(key)
@@ -158,9 +158,9 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      *
      * @param definition The [io.amichne.konditional.core.FlagDefinition] to update
      * @param S The type of the flag's value
-     * @param C The type of the contextFn used for evaluation
+     * @param C The type of the kontextFn used for evaluation
      */
-    internal fun <S : EncodableValue<T>, T : Any, C : Context> updateDefinition(definition: FlagDefinition<S, T, C, *>) {
+    internal fun <S : EncodableValue<T>, T : Any, C : Kontext<*>> updateDefinition(definition: FlagDefinition<S, T, C, *>) {
         current.updateAndGet { currentSnapshot ->
             val mutableFlags = currentSnapshot.flags.toMutableMap()
             mutableFlags[definition.feature] = definition
@@ -172,7 +172,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * Sets a test-scoped override for a specific feature flag.
      *
      * When an override is set, the flag will always return the override value
-     * regardless of rules, contextFn, or rollout configuration. This is useful
+     * regardless of rules, kontextFn, or rampUp configuration. This is useful
      * for testing specific scenarios without modifying flag definitions.
      *
      * **Thread Safety**: This method is thread-safe and can be called from
@@ -183,7 +183,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @param value The value to return for this flag
      * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
-     * @param C The type of the contextFn used for evaluation
+     * @param C The type of the kontextFn used for evaluation
      * @param M The namespace the feature belongs to
      *
      * @see clearOverride
@@ -191,7 +191,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @see hasOverride
      */
     @PublishedApi
-    internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> setOverride(
+    internal fun <S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace> setOverride(
         feature: Feature<S, T, C, M>,
         value: T
     ) {
@@ -207,13 +207,13 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @param feature The feature flag to clear the override for
      * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
-     * @param C The type of the contextFn used for evaluation
+     * @param C The type of the kontextFn used for evaluation
      * @param M The namespace the feature belongs to
      *
      * @see setOverride
      * @see clearAllOverrides
      */
-    internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> clearOverride(
+    internal fun <S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace> clearOverride(
         feature: Feature<S, T, C, M>
     ) {
         overrides.remove(feature)
@@ -239,12 +239,12 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @return true if an override is set, false otherwise
      * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
-     * @param C The type of the contextFn used for evaluation
+     * @param C The type of the kontextFn used for evaluation
      * @param M The namespace the feature belongs to
      *
      * @see setOverride
      */
-    internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> hasOverride(
+    internal fun <S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace> hasOverride(
         feature: Feature<S, T, C, M>
     ): Boolean = overrides.containsKey(feature)
 
@@ -255,13 +255,13 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @return The override value, or null if no override is set
      * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
-     * @param C The type of the contextFn used for evaluation
+     * @param C The type of the kontextFn used for evaluation
      * @param M The namespace the feature belongs to
      *
      * @see setOverride
      */
     @Suppress("UNCHECKED_CAST")
-    internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> getOverride(
+    internal fun <S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace> getOverride(
         feature: Feature<S, T, C, M>
     ): T? = overrides[feature] as? T
 }

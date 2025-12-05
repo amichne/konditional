@@ -1,4 +1,4 @@
-package io.amichne.konditional.context
+package io.amichne.konditional.kontext
 
 /**
  * Locale and Market enums (examples only)

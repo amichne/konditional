@@ -1,10 +1,10 @@
-package io.amichne.konditional.context
+package io.amichne.konditional.kontext
 
 /**
- * Represents a rollout percentage (0-100) for gradual feature flag deployment.
- * This value class ensures type-safe rollout percentages across the feature flag system.
+ * Represents a rampUp percentage (0-100) for gradual feature flag deployment.
+ * This value class ensures type-safe rampUp percentages across the feature flag system.
  *
- * @property value The rollout percentage (0.0 to 100.0)
+ * @property value The rampUp percentage (0.0 to 100.0)
  */
 @JvmInline
 value class Rampup private constructor(

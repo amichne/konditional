@@ -1,12 +1,13 @@
 package io.amichne.konditional.rules
 
-import io.amichne.konditional.context.AppLocale
-import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Rampup
-import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.fixtures.core.id.TestStableId
+import io.amichne.konditional.kontext.AppLocale
+import io.amichne.konditional.kontext.Kontext
+import io.amichne.konditional.kontext.Platform
+import io.amichne.konditional.kontext.Rampup
+import io.amichne.konditional.kontext.Version
 import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.evaluable.Evaluable.Companion.factory
 import io.amichne.konditional.rules.versions.LeftBound
@@ -28,11 +29,11 @@ import kotlin.test.assertTrue
  *
  * ```kotlin
  * class SubscriptionRule<C : CustomContext>(
- *     rollout: Rampup,
+ *     rampUp: Rampup,
  *     locales: Set<AppLocale> = emptySet(),
  *     platforms: Set<Platform> = emptySet(),
  *     val requiredTier: String? = null,
- * ) : Rule<C>(rollout, locales, platforms) {
+ * ) : Rule<C>(rampUp, locales, platforms) {
  *
  *     // Override to add custom matching logic
  *     override fun matches(contextFn: C): Boolean {
@@ -51,7 +52,7 @@ import kotlin.test.assertTrue
  * in `matches()` is only called after base attributes have matched.
  */
 class RuleGuaranteesTest {
-    private val defaultContext = Context(
+    private val defaultContext = Kontext.Core(
         locale = AppLocale.UNITED_STATES,
         platform = Platform.ANDROID,
         appVersion = Version(1, 0, 0),
@@ -61,7 +62,7 @@ class RuleGuaranteesTest {
     /**
      * Custom contextFn for testing additional attributes.
      */
-    interface CustomContext : Context {
+    interface CustomContext : Kontext<TestNamespace> {
         val subscriptionTier: String
         val userRole: String
     }
@@ -84,7 +85,7 @@ class RuleGuaranteesTest {
 
     @Test
     fun `base rule with no restrictions matches any context`() {
-        val rule = Rule<Context>(
+        val rule = Rule<Kontext.Core>(
             rollout = Rampup.of(100.0)
         )
 
@@ -93,34 +94,34 @@ class RuleGuaranteesTest {
 
     @Test
     fun `base rule locale restriction is always enforced`() {
-        val rule = Rule<Context>(
+        val rule = Rule<Kontext.Core>(
             rollout = Rampup.of(100.0),
             locales = setOf(AppLocale.CANADA)
         )
 
-        // Context has UNITED_STATES locale, rule requires UNITED_STATES
+        // Kontext has UNITED_STATES locale, rule requires UNITED_STATES
         assertFalse(rule.matches(defaultContext))
     }
 
     @Test
     fun `base rule platform restriction is always enforced`() {
-        val rule = Rule<Context>(
+        val rule = Rule<Kontext.Core>(
             rollout = Rampup.of(100.0),
             platforms = setOf(Platform.IOS)
         )
 
-        // Context has ANDROID platform, rule requires IOS
+        // Kontext has ANDROID platform, rule requires IOS
         assertFalse(rule.matches(defaultContext))
     }
 
     @Test
     fun `base rule version restriction is always enforced`() {
-        val rule = Rule<Context>(
+        val rule = Rule<Kontext.Core>(
             rollout = Rampup.of(100.0),
             versionRange = LeftBound(Version(2, 0, 0))
         )
 
-        // Context has version 1.0.0, rule requires 2.0.0+
+        // Kontext has version 1.0.0, rule requires 2.0.0+
         assertFalse(rule.matches(defaultContext))
     }
 
@@ -136,7 +137,7 @@ class RuleGuaranteesTest {
             )
         )
 
-        // Context has premium tier (custom match) but UNITED_STATES locale (base mismatch)
+        // Kontext has premium tier (custom match) but UNITED_STATES locale (base mismatch)
         assertFalse(rule.matches(customContext))
     }
 
@@ -149,7 +150,7 @@ class RuleGuaranteesTest {
             )
         )
 
-        // Context has premium tier (custom match) but ANDROID platform (base mismatch)
+        // Kontext has premium tier (custom match) but ANDROID platform (base mismatch)
         assertFalse(rule.matches(customContext))
     }
 

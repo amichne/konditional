@@ -1,11 +1,6 @@
 package io.amichne.konditional.core
 
-import io.amichne.konditional.context.AppLocale
-import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.features.update
-import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.EvaluationResult
 import io.amichne.konditional.core.result.FlagEvaluationException
 import io.amichne.konditional.core.result.FlagNotFoundException
@@ -22,6 +17,11 @@ import io.amichne.konditional.core.result.utils.isSuccess
 import io.amichne.konditional.core.result.utils.map
 import io.amichne.konditional.core.result.utils.toResult
 import io.amichne.konditional.fixtures.CommonTestFeatures
+import io.amichne.konditional.fixtures.core.TestKontext
+import io.amichne.konditional.fixtures.core.id.TestStableId
+import io.amichne.konditional.kontext.AppLocale
+import io.amichne.konditional.kontext.Platform
+import io.amichne.konditional.kontext.Version
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -50,14 +50,12 @@ class EvaluationResultTest {
 
     data class MyError(val reason: String)
 
-    private val testContext = Context(
-        AppLocale.UNITED_STATES,
-        Platform.IOS,
-        Version.parseUnsafe("1.0.0"),
-        StableId.of("11111111111111111111111111111111")
+    private val testContext = TestKontext(
+        locale = AppLocale.UNITED_STATES,
+        platform = Platform.ANDROID,
+        appVersion = Version(1, 0, 0),
+        stableId = TestStableId
     )
-
-
 
     init {
         // Register a normal flag
@@ -76,7 +74,6 @@ class EvaluationResultTest {
         assertIs<EvaluationResult.Success<String>>(result)
         assertEquals("test-value", result.value)
     }
-
 
     @Test
     fun `evaluateSafe returns EvaluationError when evaluation throws`() {
@@ -104,7 +101,6 @@ class EvaluationResultTest {
         assertEquals("success: test-value", result)
     }
 
-
     @Test
     fun `fold transforms EvaluationError to target type`() {
         val errorResult: EvaluationResult<String> = EvaluationResult.EvaluationError(
@@ -129,7 +125,6 @@ class EvaluationResultTest {
         assertIs<EvaluationResult.Success<String>>(result)
         assertEquals("TEST-VALUE", result.value)
     }
-
 
     @Test
     fun `map preserves EvaluationError`() {
@@ -164,7 +159,6 @@ class EvaluationResultTest {
         assertEquals("test-value", result.getOrDefault("fallback"))
     }
 
-
     @Test
     fun `getOrDefault returns default on EvaluationError`() {
         val errorResult: EvaluationResult<String> = EvaluationResult.EvaluationError(
@@ -181,7 +175,6 @@ class EvaluationResultTest {
 
         assertEquals("test-value", result)
     }
-
 
     @Test
     fun `getOrElse computes default on EvaluationError`() {
@@ -206,7 +199,6 @@ class EvaluationResultTest {
         assertTrue(result.isSuccess())
     }
 
-
     @Test
     fun `isSuccess returns false for EvaluationError`() {
         val errorResult: EvaluationResult<String> = EvaluationResult.EvaluationError("test", IllegalStateException())
@@ -218,7 +210,6 @@ class EvaluationResultTest {
         val result = testContext.evaluateSafe(CommonTestFeatures.registeredFlag)
         assertFalse(result.isFailure())
     }
-
 
     @Test
     fun `isFailure returns true for EvaluationError`() {
@@ -232,20 +223,17 @@ class EvaluationResultTest {
         assertEquals("test-value", value)
     }
 
-
     @Test
     fun `evaluateOrDefault returns value when flag exists`() {
         val value = testContext.evaluateOrDefault(CommonTestFeatures.registeredFlag, "default")
         assertEquals("test-value", value)
     }
 
-
     @Test
     fun `evaluateOrThrow returns value when flag exists`() {
         val value = testContext.evaluateOrThrow(CommonTestFeatures.registeredFlag)
         assertEquals("test-value", value)
     }
-
 
     @Test
     fun `evaluateOrThrow throws FlagEvaluationException when evaluation throws`() {
@@ -275,7 +263,6 @@ class EvaluationResultTest {
         assertEquals("test-value", result.getOrNull())
     }
 
-
     @Test
     fun `toResult converts EvaluationError to Result failure`() {
         val errorResult: EvaluationResult<String> = EvaluationResult.EvaluationError(
@@ -301,7 +288,6 @@ class EvaluationResultTest {
         assertIs<TestOutcome.Success<String>>(adapted)
         assertEquals("test-value", adapted.value)
     }
-
 
     @Test
     fun `fold adapts EvaluationError to custom Outcome type`() {
@@ -351,5 +337,4 @@ class EvaluationResultTest {
         assertTrue(validNotFound.isFailure())
         assertTrue(validError.isFailure())
     }
-
 }

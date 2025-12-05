@@ -3,6 +3,7 @@ package io.amichne.konditional.serialization
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
+import io.amichne.konditional.context.PlatformI
 import io.amichne.konditional.context.Rampup
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.FlagDefinition
@@ -33,10 +34,10 @@ import kotlin.test.assertTrue
 class SnapshotSerializerTest {
 
     private val TestFeatures = object : FeatureContainer<Namespace.Global>(Namespace.Global) {
-        val boolFlag by boolean<Context>(default = false)
-        val stringFlag by string<Context>(default = "default")
-        val intFlag by integer<Context>(default = 0)
-        val doubleFlag by double<Context>(default = 0.0)
+        val boolFlag by boolean<`Context<T : Namespace>`>(default = false)
+        val stringFlag by string<`Context<T : Namespace>`>(default = "default")
+        val intFlag by integer<`Context<T : Namespace>`>(default = 0)
+        val doubleFlag by double<`Context<T : Namespace>`>(default = 0.0)
     }
 
     @BeforeEach
@@ -133,7 +134,7 @@ class SnapshotSerializerTest {
 
     @Test
     fun `Given Konfig with complex rules, When serialized, Then includes all rule attributes`() {
-        val rule = Rule<Context>(
+        val rule = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.of(50.0),
             note = "TestNamespace rule",
             locales = setOf(AppLocale.UNITED_STATES, AppLocale.FRANCE),
@@ -465,11 +466,11 @@ class SnapshotSerializerTest {
 
     @Test
     fun `Given flag with complex rules, When round-tripped, Then all rule attributes are preserved`() {
-        val rule = Rule<Context>(
+        val rule = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.of(75.0),
             note = "Complex rule",
             locales = setOf(AppLocale.UNITED_STATES, AppLocale.UNITED_STATES),
-            platforms = setOf(Platform.WEB),
+            platforms = setOf(Platform.IOS),
             versionRange = FullyBound(Version(2, 0, 0), Version(3, 0, 0)),
         )
 
@@ -492,7 +493,7 @@ class SnapshotSerializerTest {
         assertEquals(75.0, deserializedRule.rollout.value)
         assertEquals("Complex rule", deserializedRule.note)
         assertEquals(setOf(AppLocale.UNITED_STATES, AppLocale.UNITED_STATES), deserializedRule.baseEvaluable.locales)
-        assertEquals(setOf(Platform.WEB), deserializedRule.baseEvaluable.platforms)
+        assertEquals(setOf(Platform.IOS), deserializedRule.baseEvaluable.platforms)
 
         val versionRange = deserializedRule.baseEvaluable.versionRange
         assertIs<FullyBound>(versionRange)

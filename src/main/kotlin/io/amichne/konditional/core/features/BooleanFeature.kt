@@ -1,19 +1,18 @@
 package io.amichne.konditional.core.features
 
-import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.types.BooleanEncodeable
+import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.kontext.Kontext
 
-sealed interface BooleanFeature<C : Context, M : Namespace> : Feature<BooleanEncodeable, Boolean, C, M> {
+sealed interface BooleanFeature<C : Kontext<M>, M : Namespace> : Feature<EncodableValue<Boolean>, Boolean, C, M> {
     companion object {
-        internal operator fun <C : Context, M : Namespace> invoke(
+        internal operator fun <C : Kontext<M>, M : Namespace> invoke(
             key: String,
             module: M,
-        ): BooleanFeature<C, M> =
-            BooleanFeatureImpl(key, module)
+        ): Feature<EncodableValue<Boolean>, Boolean, C, M> = BooleanFeatureImpl(key, module)
 
         @PublishedApi
-        internal data class BooleanFeatureImpl<C : Context, M : Namespace>(
+        internal data class BooleanFeatureImpl<C : Kontext<M>, M : Namespace>(
             override val key: String,
             override val namespace: M,
         ) : BooleanFeature<C, M>

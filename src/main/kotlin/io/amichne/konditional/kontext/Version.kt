@@ -1,4 +1,4 @@
-package io.amichne.konditional.context
+package io.amichne.konditional.kontext
 
 import com.squareup.moshi.JsonClass
 import io.amichne.konditional.core.result.ParseError

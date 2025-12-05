@@ -1,9 +1,9 @@
 package io.amichne.konditional.rules
 
-import io.amichne.konditional.context.AppLocale
-import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Rampup
+import io.amichne.konditional.kontext.AppLocale
+import io.amichne.konditional.kontext.Kontext
+import io.amichne.konditional.kontext.Platform
+import io.amichne.konditional.kontext.Rampup
 import io.amichne.konditional.rules.evaluable.BaseEvaluable
 import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.evaluable.Placeholder
@@ -26,7 +26,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  *
  * This design enables flexible composition:
  * ```
- * Rule.matches(contextFn) = baseEvaluable.matches(contextFn) && extension.matches(contextFn)
+ * Rule.matches(kontextFn) = baseEvaluable.matches(kontextFn) && extension.matches(kontextFn)
  * Rule.specificity() = baseEvaluable.specificity() + extension.specificity()
  * ```
  *
@@ -35,7 +35,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * Basic rule with standard targeting:
  * ```kotlin
  * Rule(
- *     rollout {  Rampup.of(50.0) }
+ *     rampUp {  Rampup.of(50.0) }
  *     locales = setOf(AppLocale.UNITED_STATES),
  *     platforms = setOf(Platform.IOS),
  *     versionRange = LeftBound(Version(2, 0, 0))
@@ -45,15 +45,15 @@ import io.amichne.konditional.rules.versions.VersionRange
  * Rule with custom extension logic:
  * ```kotlin
  * Rule(
- *     rollout {  Rampup.of(100.0) }
+ *     rampUp {  Rampup.of(100.0) }
  *     extension = object : Evaluable<MyContext>() {
- *         override fun matches(contextFn: MyContext) = contextFn.isPremiumUser
+ *         override fun matches(kontextFn: MyContext) = kontextFn.isPremiumUser
  *         override fun specificity() = 1
  *     }
  * )
  * ```
  *
- * @param C The contextFn type that this rule evaluates against
+ * @param C The kontextFn type that this rule evaluates against
  * @property rollout The percentage of users (0-100) that should match this rule after all criteria are met
  * @property note Optional note or description for this rule
  * @property baseEvaluable Evaluator for standard client targeting (locale, platform, version)
@@ -63,7 +63,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * @see io.amichne.konditional.rules.evaluable.BaseEvaluable
  */
 @ConsistentCopyVisibility
-data class Rule<C : Context> internal constructor(
+data class Rule<C : Kontext<*>> internal constructor(
     val rollout: Rampup = Rampup.default,
     val note: String? = null,
     internal val baseEvaluable: BaseEvaluable<C> = BaseEvaluable(),
@@ -79,19 +79,19 @@ data class Rule<C : Context> internal constructor(
     ) : this(rollout, note, BaseEvaluable(locales, platforms, versionRange), extension)
 
     /**
-     * Determines if this rule matches the given contextFn by evaluating both composed evaluators.
+     * Determines if this rule matches the given kontextFn by evaluating both composed evaluators.
      *
      * Matching requires BOTH evaluators to match:
      * - Base matching: locale, platform, and version constraints from [baseEvaluable]
      * - Extension matching: any custom logic from [extension]
      *
-     * Note: This does not check rollout eligibility - that is handled separately during flag evaluation.
+     * Note: This does not check rampUp eligibility - that is handled separately during flag evaluation.
      *
-     * @param context The contextFn to evaluate against
-     * @return true if both [baseEvaluable] and [extension] match the contextFn
+     * @param kontext The kontextFn to evaluate against
+     * @return true if both [baseEvaluable] and [extension] match the kontextFn
      */
-    override fun matches(context: C): Boolean =
-        baseEvaluable.matches(context) && extension.matches(context)
+    override fun matches(kontext: C): Boolean =
+        baseEvaluable.matches(kontext) && extension.matches(kontext)
 
     /**
      * Calculates the total specificity of this rule by summing composed evaluators.

@@ -233,7 +233,7 @@ class DataClassWithSchemaIntegrationTest {
 
     // Test feature container with data class feature
     object TestFeatures : FeatureContainer<TestNamespace>(test("data-class-features-test")) {
-        val USER_SETTINGS by dataClass<UserSettings, Context>(
+        val USER_SETTINGS by dataClass<UserSettings, `Context<T : Namespace>`>(
             default = UserSettings()
         )
 

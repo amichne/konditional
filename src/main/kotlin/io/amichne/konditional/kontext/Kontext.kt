@@ -1,0 +1,66 @@
+package io.amichne.konditional.kontext
+
+import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.id.StableId
+
+/**
+ * Represents the execution kontextFn for feature flag evaluation.
+ *
+ * This interface defines the base kontextual information required for evaluating
+ * feature flags. It provides the standard targeting dimensions (locale, platform, version)
+ * and a stable identifier for deterministic rampUp bucketing.
+ *
+ * You can extend this interface to add custom fields for domain-specific targeting:
+ * ```kotlin
+ * data class EnterpriseContext(
+ *     override val locale: AppLocale,
+ *     override val platform: Platform,
+ *     override val appVersion: Version,
+ *     override val stableId: StableId,
+ *     val organizationId: String,
+ *     val subscriptionTier: SubscriptionTier,
+ * ) : Kontext
+ * ```
+ *
+ * @property locale The application locale for this kontextFn
+ * @property platform The platform (iOS, Android, Web, etc.) for this kontextFn
+ * @property appVersion The semantic version of the application
+ * @property stableId A stable, unique identifier used for deterministic bucketing in rollouts
+ *
+ * @see io.amichne.konditional.rules.Rule
+ */
+interface Kontext<T : Namespace> {
+    val locale: AppLocale
+    val platform: Platform
+    val appVersion: Version
+    val stableId: StableId
+
+    data class Core(
+        override val locale: AppLocale,
+        override val platform: Platform,
+        override val appVersion: Version,
+        override val stableId: StableId,
+    ) : Kontext<Namespace.Global>
+
+    companion object {
+
+        /**
+         * Creates a basic Kontext instance with the specified properties.
+         *
+         * This factory method provides a convenient way to create Kontext instances
+         * without defining a custom implementation class.
+         *
+         * @param locale The application locale
+         * @param platform The platform (iOS, Android, Web, etc.)
+         * @param appVersion The semantic version of the application
+         * @param stableId A stable, unique identifier for deterministic bucketing
+         * @return A Kontext instance with the specified properties
+         */
+        operator fun invoke(
+            locale: AppLocale,
+            platform: Platform,
+            appVersion: Version,
+            stableId: StableId,
+        ): Core = Core(locale, platform, appVersion, stableId)
+    }
+}

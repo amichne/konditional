@@ -2,7 +2,7 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Context.Companion.evaluate
+import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.features.EnumFeature
@@ -38,14 +38,14 @@ class EnumFeatureTest {
     object EnumFeatures : FeatureContainer<Namespace.Payments>(
         Namespace.Payments
     ) {
-        val logLevel by enum<LogLevel, Context>(default = LogLevel.INFO) {
+        val logLevel by enum<LogLevel, `Context<T : Namespace>`>(default = LogLevel.INFO) {
             rule {
-                platforms(Platform.WEB)
+                platforms(Platform.IOS)
             } returns LogLevel.DEBUG
         }
 
-        val theme by enum<Theme, Context>(default = Theme.AUTO)
-        val environment by enum<Environment, Context>(default = Environment.PRODUCTION)
+        val theme by enum<Theme, `Context<T : Namespace>`>(default = Theme.AUTO)
+        val environment by enum<Environment, `Context<T : Namespace>`>(default = Environment.PRODUCTION)
     }
 
     @Test
@@ -74,7 +74,7 @@ class EnumFeatureTest {
 
     @Test
     fun `enum features return default values`() {
-        val context = Context(
+        val context = `Context<T : Namespace>`(
             locale = AppLocale.UNITED_STATES,
             platform = Platform.IOS,
             appVersion = Version(1, 0, 0),
@@ -92,9 +92,9 @@ class EnumFeatureTest {
 
     @Test
     fun `enum features evaluate with rules`() {
-        val webContext = Context(
+        val webContext = `Context<T : Namespace>`(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.IOS,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
         )
@@ -148,9 +148,9 @@ class EnumFeatureTest {
     fun `multiple enum types can coexist in feature container`() {
         // Create a container with multiple enum types
         val mixedFeatures = object : FeatureContainer<Namespace.Messaging>(Namespace.Messaging) {
-            val level by enum<LogLevel, Context>(default = LogLevel.INFO)
-            val themePreference by enum<Theme, Context>(default = Theme.LIGHT)
-            val env by enum<Environment, Context>(default = Environment.DEVELOPMENT)
+            val level by enum<LogLevel, `Context<T : Namespace>`>(default = LogLevel.INFO)
+            val themePreference by enum<Theme, `Context<T : Namespace>`>(default = Theme.LIGHT)
+            val env by enum<Environment, `Context<T : Namespace>`>(default = Environment.DEVELOPMENT)
         }
 
         // Access properties to trigger registration
@@ -167,9 +167,9 @@ class EnumFeatureTest {
     @Test
     fun `enum features work alongside primitive types in container`() {
         val mixedTypeFeatures = object : FeatureContainer<Namespace.Authentication>(Namespace.Authentication) {
-            val enableLogging by boolean<Context>(default = true)
-            val logLevel by enum<LogLevel, Context>(default = LogLevel.INFO)
-            val maxLogSize by integer<Context>(default = 1000)
+            val enableLogging by boolean<`Context<T : Namespace>`>(default = true)
+            val logLevel by enum<LogLevel, `Context<T : Namespace>`>(default = LogLevel.INFO)
+            val maxLogSize by integer<`Context<T : Namespace>`>(default = 1000)
             val logPrefix by string<Context>(default = "[LOG]")
         }
 
@@ -185,10 +185,10 @@ class EnumFeatureTest {
     @Test
     fun `enum features maintain type safety through container`() {
         // Type inference works correctly
-        val logLevelFeature: EnumFeature<LogLevel, Context, Namespace.Payments> =
+        val logLevelFeature: EnumFeature<LogLevel, `Context<T : Namespace>`, Namespace.Payments> =
             EnumFeatures.logLevel
 
-        val themeFeature: EnumFeature<Theme, Context, Namespace.Payments> =
+        val themeFeature: EnumFeature<Theme, `Context<T : Namespace>`, Namespace.Payments> =
             EnumFeatures.theme
 
         // Verify types are preserved
@@ -199,9 +199,9 @@ class EnumFeatureTest {
     @Test
     fun `enum features can have complex rule configurations`() {
         val complexFeatures = object : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
-            val environment by enum<Environment, Context>(default = Environment.PRODUCTION) {
+            val environment by enum<Environment, `Context<T : Namespace>`>(default = Environment.PRODUCTION) {
                 rule {
-                    platforms(Platform.WEB)
+                    platforms(Platform.IOS)
                     locales(AppLocale.UNITED_STATES)
                 } returns Environment.DEVELOPMENT
 
@@ -211,21 +211,21 @@ class EnumFeatureTest {
             }
         }
 
-        val webUSContext = Context(
+        val webUSContext = `Context<T : Namespace>`(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.IOS,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
         )
 
-        val iosContext = Context(
+        val iosContext = `Context<T : Namespace>`(
             locale = AppLocale.CANADA,
             platform = Platform.IOS,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
         )
 
-        val androidContext = Context(
+        val androidContext = `Context<T : Namespace>`(
             locale = AppLocale.UNITED_KINGDOM,
             platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
@@ -251,9 +251,9 @@ class EnumFeatureTest {
             val single by enum<SingleValue, Context>(default = SingleValue.ONLY_VALUE)
         }
 
-        val context = Context(
+        val context = `Context<T : Namespace>`(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.IOS,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
         )

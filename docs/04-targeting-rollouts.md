@@ -73,7 +73,7 @@ val PREMIUM_FEATURE by boolean(default = false) {
         platforms(Platform.IOS, Platform.ANDROID)  // Must be mobile
         locales(AppLocale.UNITED_STATES)          // AND US locale
         versions { min(2, 0, 0) }                  // AND version >= 2.0.0
-        rollout { 50.0 }                           // AND in 50% bucket
+        rampUp { 50.0 }                           // AND in 50% bucket
     } returns true
 }
 ```
@@ -109,17 +109,17 @@ Start small, expand over time:
 ```kotlin
 // Day 1: 10% of users
 val NEW_CHECKOUT by boolean(default = false) {
-    rule { rollout { 10.0 } } returns true
+    rule { rampUp { 10.0 } } returns true
 }
 
 // Day 3: 50% (includes original 10%)
 val NEW_CHECKOUT by boolean(default = false) {
-    rule { rollout { 50.0 } } returns true
+    rule { rampUp { 50.0 } } returns true
 }
 
 // Day 7: 100% (everyone)
 val NEW_CHECKOUT by boolean(default = false) {
-    rule { rollout { 100.0 } } returns true
+    rule { rampUp { 100.0 } } returns true
 }
 ```
 
@@ -145,11 +145,11 @@ val BETA_FEATURE by boolean<EnterpriseContext>(default = false) {
                 ctx.subscriptionTier == SubscriptionTier.ENTERPRISE
             }
         }
-        rollout { 50.0 }
+        rampUp { 50.0 }
     } returns true
 
     // 10% for everyone else
-    rule { rollout { 10.0 } } returns true
+    rule { rampUp { 10.0 } } returns true
 }
 ```
 
@@ -161,12 +161,12 @@ Roll out to platforms independently:
 val NEW_FEATURE by boolean(default = false) {
     rule {
         platforms(Platform.ANDROID)
-        rollout { 100.0 }  // 100% Android
+        rampUp { 100.0 }  // 100% Android
     } returns true
 
     rule {
         platforms(Platform.IOS)
-        rollout { 25.0 }  // 25% iOS (testing)
+        rampUp { 25.0 }  // 25% iOS (testing)
     } returns true
 }
 ```
@@ -230,13 +230,13 @@ Change salt to redistribute users:
 // Original
 val EXPERIMENT by boolean(default = false) {
     salt("v1")
-    rule { rollout { 50.0 } } returns true
+    rule { rampUp { 50.0 } } returns true
 }
 
 // New bucketing (different 50% of users)
 val EXPERIMENT by boolean(default = false) {
     salt("v2")  // Changed!
-    rule { rollout { 50.0 } } returns true
+    rule { rampUp { 50.0 } } returns true
 }
 ```
 
@@ -404,13 +404,13 @@ Begin with 10%, monitor metrics, then expand:
 
 ```kotlin
 // Phase 1: Canary
-rule { rollout { 10.0 } } returns true
+rule { rampUp { 10.0 } } returns true
 
 // Phase 2: Expand (if metrics look good)
-rule { rollout { 50.0 } } returns true
+rule { rampUp { 50.0 } } returns true
 
 // Phase 3: Full rollout
-rule { rollout { 100.0 } } returns true
+rule { rampUp { 100.0 } } returns true
 ```
 
 ### 2. Use Specificity to Your Advantage
@@ -437,7 +437,7 @@ Use `note()` for complex targeting:
 rule {
     platforms(Platform.ANDROID)
     versions { min(1, 9, 0); max(2, 1, 0) }
-    rollout { 15.0 }
+    rampUp { 15.0 }
     note("Workaround for Android bug #1234 - affects v1.9.0-2.0.x")
 } returns workaroundValue
 ```
@@ -494,7 +494,7 @@ Split users 50/50:
 ```kotlin
 val RECOMMENDATION_ALGO by string(default = "collaborative") {
     salt("experiment-2024-q1")
-    rule { rollout { 50.0 } } returns "content-based"
+    rule { rampUp { 50.0 } } returns "content-based"
 }
 ```
 

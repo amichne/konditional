@@ -19,7 +19,7 @@ import org.jetbrains.annotations.TestOnly
  * The [Global] namespace contains shared flags accessible to all teams:
  * ```kotlin
  * enum class CoreFeatures(override val key: String)
- *     : Feature<BoolEncodeable, Boolean, Context, Namespace.Global> {
+ *     : Feature<BoolEncodeable, Boolean, Kontext, Namespace.Global> {
  *     KILL_SWITCH("kill_switch");
  *     override val namespace = Namespace.Global
  * }
@@ -29,7 +29,7 @@ import org.jetbrains.annotations.TestOnly
  * Domain modules provide isolated namespaces for functional areas:
  * ```kotlin
  * enum class PaymentFeatures(override val key: String)
- *     : Feature<BoolEncodeable, Boolean, Context, Namespace.Payments> {
+ *     : Feature<BoolEncodeable, Boolean, Kontext, Namespace.Payments> {
  *     APPLE_PAY("apple_pay");
  *     override val namespace = Namespace.Payments
  * }

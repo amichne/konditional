@@ -1,9 +1,9 @@
 package io.amichne.konditional.rules.evaluable
 
-import io.amichne.konditional.context.Context
+import io.amichne.konditional.kontext.Kontext
 
-object Placeholder : Evaluable<Context> {
-    override fun matches(context: Context): Boolean = true
+object Placeholder : Evaluable<Kontext<*>> {
+    override fun matches(kontext: Kontext<*>): Boolean = true
 
     override fun specificity(): Int = 0
 }

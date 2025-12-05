@@ -1,4 +1,4 @@
-package io.amichne.konditional.context
+package io.amichne.konditional.kontext
 
 /**
  * Platform

@@ -19,7 +19,7 @@ sealed interface ParseError {
     data class InvalidHexId internal constructor(val input: String, override val message: String) : ParseError
 
     /**
-     * Invalid rollout percentage (must be 0.0-100.0).
+     * Invalid rampUp percentage (must be 0.0-100.0).
      */
     @ConsistentCopyVisibility
     data class InvalidRollout internal constructor(val value: Double, override val message: String) : ParseError

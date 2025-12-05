@@ -3,6 +3,7 @@ package io.amichne.konditional.core
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
+import io.amichne.konditional.context.PlatformI
 import io.amichne.konditional.context.Rampup
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.features.FeatureContainer
@@ -21,7 +22,7 @@ import kotlin.test.assertTrue
 class ConditionEvaluationTest {
 
     object TestFlags : FeatureContainer<Namespace.Global>(Namespace.Global) {
-        val TEST_FLAG by string<Context>(default = "default")
+        val TEST_FLAG by string<`Context<T : Namespace>`>(default = "default")
     }
 
     private fun ctx(
@@ -29,7 +30,7 @@ class ConditionEvaluationTest {
         locale: AppLocale = AppLocale.UNITED_STATES,
         platform: Platform = Platform.IOS,
         version: String = "1.0.0",
-    ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
+    ) = `Context<T : Namespace>`(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
 
     @Test
     fun `Given condition with no matching rules, When evaluating, Then returns default value`() {
@@ -45,7 +46,7 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given condition with one matching rule, When evaluating, Then returns rule value`() {
-        val rule = Rule<Context>(
+        val rule = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = setOf(AppLocale.UNITED_STATES),
             platforms = emptySet(),
@@ -67,21 +68,21 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given multiple rules, When evaluating, Then most specific rule wins`() {
-        val generalRule = Rule<Context>(
+        val generalRule = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded(),
         )
 
-        val platformRule = Rule<Context>(
+        val platformRule = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded(),
         )
 
-        val platformAndLocaleRule = Rule<Context>(
+        val platformAndLocaleRule = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = setOf(AppLocale.MEXICO),
             platforms = setOf(Platform.IOS),
@@ -127,7 +128,7 @@ class ConditionEvaluationTest {
             note = "rule-a",
         )
 
-        val ruleB = Rule<Context>(
+        val ruleB = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = setOf(AppLocale.UNITED_STATES),
             platforms = setOf(Platform.IOS),
@@ -160,7 +161,7 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given rule with 0 percent ramp-up, When evaluating, Then never matches`() {
-        val rule = Rule<Context>(
+        val rule = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.of(0.0),
             locales = emptySet(),
             platforms = emptySet(),
@@ -177,13 +178,13 @@ class ConditionEvaluationTest {
         repeat(100) { i ->
             val id = "%032x".format(i)
             val result = condition.evaluate(ctx(id))
-            assertEquals("disabled", result, "User $id should not be in 0% rollout")
+            assertEquals("disabled", result, "User $id should not be in 0% rampUp")
         }
     }
 
     @Test
     fun `Given rule with 100 percent ramp-up, When evaluating, Then always matches`() {
-        val rule = Rule<Context>(
+        val rule = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.of(100.0),
             locales = emptySet(),
             platforms = emptySet(),
@@ -200,13 +201,13 @@ class ConditionEvaluationTest {
         repeat(100) { i ->
             val id = "%032x".format(i)
             val result = condition.evaluate(ctx(id))
-            assertEquals("enabled", result, "User $id should be in 100% rollout")
+            assertEquals("enabled", result, "User $id should be in 100% rampUp")
         }
     }
 
     @Test
     fun `Given rule with 50 percent ramp-up, When evaluating many users, Then approximately half match`() {
-        val rule = Rule<Context>(
+        val rule = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.of(50.0),
             locales = emptySet(),
             platforms = emptySet(),
@@ -258,7 +259,7 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given different salts, When evaluating same user, Then bucketing is independent`() {
-        val rule = Rule<Context>(
+        val rule = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.of(50.0),
             locales = emptySet(),
             platforms = emptySet(),
@@ -298,14 +299,14 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given rule not matching context constraints, When evaluating, Then skips to next rule regardless of ramp-up`() {
-        val iosOnlyRule = Rule<Context>(
+        val iosOnlyRule = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded(),
         )
 
-        val androidOnlyRule = Rule<Context>(
+        val androidOnlyRule = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.ANDROID),
@@ -327,20 +328,20 @@ class ConditionEvaluationTest {
         val androidResult = condition.evaluate(ctx("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", platform = Platform.ANDROID))
         assertEquals("android-value", androidResult)
 
-        val webResult = condition.evaluate(ctx("cccccccccccccccccccccccccccccccc", platform = Platform.WEB))
+        val webResult = condition.evaluate(ctx("cccccccccccccccccccccccccccccccc", platform = Platform.IOS))
         assertEquals("default", webResult)
     }
 
     @Test
     fun `Given rule matching but user not in bucket, When evaluating, Then continues to next rule`() {
-        val highSpecificityLowRampup = Rule<Context>(
+        val highSpecificityLowRampup = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.of(1.0), // Very low ramp-up
             locales = setOf(AppLocale.UNITED_STATES),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded(),
         )
 
-        val lowSpecificityHighRampup = Rule<Context>(
+        val lowSpecificityHighRampup = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
@@ -381,7 +382,7 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given sorted surjections by specificity, When initializing condition, Then surjections are properly ordered`() {
-        val general = Rule<Context>(
+        val general = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = emptySet(),
             platforms = emptySet(),
@@ -389,7 +390,7 @@ class ConditionEvaluationTest {
             note = "general",
         )
 
-        val specific = Rule<Context>(
+        val specific = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = setOf(AppLocale.UNITED_STATES),
             platforms = setOf(Platform.IOS),

@@ -19,7 +19,7 @@ import io.amichne.konditional.core.Namespace
  *     val testNamespace = Namespace.test("my-test")
  *
  *     val TestFeatures = object : FeatureContainer<Namespace.TestNamespace>(testNamespace) {
- *         val myFlag by boolean<Context>(default = false) {
+ *         val myFlag by boolean<Kontext>(default = false) {
  *             rule { platforms(Platform.IOS) } returns true
  *         }
  *     }

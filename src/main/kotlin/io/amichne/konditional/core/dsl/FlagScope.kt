@@ -1,9 +1,10 @@
 package io.amichne.konditional.core.dsl
 
-import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.kontext.Kontext
 import io.amichne.konditional.rules.Rule
+import kotlin.experimental.ExperimentalTypeInference
 
 /**
  * DSL scope for flag configuration.
@@ -19,25 +20,26 @@ import io.amichne.konditional.rules.Rule
  *     salt("v2")
  *     rule {
  *         platforms(Platform.IOS)
- *         rollout {  Rampup.of(50.0) }
+ *         rampUp {  Rampup.of(50.0) }
  *     }.returns(false)
  * }
  * ```
  *
  * @param S The EncodableValue type wrapping the actual value
  * @param T The actual value type
- * @param C The contextFn type the flag evaluates against
+ * @param C The kontextFn type the flag evaluates against
  * @since 0.0.2
  */
+@OptIn(ExperimentalTypeInference::class)
 @KonditionalDsl
-interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> {
+interface FlagScope<S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace> {
 
     fun active(block: () -> Boolean): Unit
 
     /**
      * Sets the default value for the flag.
      *
-     * This value is returned when no rules match the current contextFn.
+     * This value is returned when no rules match the current kontextFn.
      *
      * @param value The default value to assign to the flag
      */
@@ -46,8 +48,8 @@ interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> 
     /**
      * Sets the salt value for the flag.
      *
-     * Salt is used in hash-based rollout calculations. Changing the salt
-     * will redistribute users across rollout percentages.
+     * Salt is used in hash-based rampUp calculations. Changing the salt
+     * will redistribute users across rampUp percentages.
      *
      * @param value The salt value (default is "v1")
      */
@@ -56,14 +58,14 @@ interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> 
     /**
      * Defines a targeting rule for this flag.
      *
-     * Rules determine which users receive which values based on contextFn properties.
+     * Rules determine which users receive which values based on kontextFn properties.
      *
      * Example:
      * ```kotlin
      * rule {
      *     platforms(Platform.IOS)
      *     locales(AppLocale.UNITED_STATES)
-     *     rollout {  Rampup.of(50.0) }
+     *     rampUp {  Rampup.of(50.0) }
      * }.returns(true)
      * ```
      *
@@ -75,7 +77,7 @@ interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> 
     /**
      * Associates a rule with a specific value.
      *
-     * When the rule matches the contextFn, the flag will return this value.
+     * When the rule matches the kontextFn, the flag will return this value.
      *
      * Example:
      * ```kotlin
@@ -85,4 +87,30 @@ interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> 
      * @param value The value to return when the rule matches
      */
     infix fun Rule<C>.returns(value: T)
+}
+
+interface EncodableFlagScope<S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace> :
+    FlagScope<S, T, C, M> {
+    /**
+     * Sets the default value for the flag using an EncodableValue.
+     *
+     * This value is returned when no rules match the current kontextFn.
+     *
+     * @param value The default EncodableValue to assign to the flag
+     */
+    fun default(value: S)
+
+    /**
+     * Associates a rule with a specific EncodableValue.
+     *
+     * When the rule matches the kontextFn, the flag will return this value.
+     *
+     * Example:
+     * ```kotlin
+     * rule { platforms(Platform.IOS) }.returns(BooleanEncodableValue(true))
+     * ```
+     *
+     * @param value The EncodableValue to return when the rule matches
+     */
+    infix fun Rule<C>.returns(value: S)
 }

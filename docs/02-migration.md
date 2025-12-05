@@ -13,7 +13,7 @@ Switch from string-based feature flags to compile-time safety. This guide maps c
 | `getFlag("flag-name")` or `client.boolVariation("flag", false)` | `feature { Features.FLAG }` | Compile-time property vs runtime string |
 | Context with `Map<String, Any>` attributes    | `Context` data class              | Typed fields vs HashMap                 |
 | Rules in dashboard or config files            | `rule { }` DSL (code)             | Version-controlled in code              |
-| Percentage rollouts                           | `rollout { 50.0 }`                | Same concept, local computation         |
+| Percentage rollouts                           | `rampUp { 50.0 }`                | Same concept, local computation         |
 | Segments/audiences/conditions                 | Custom `extension { }` logic      | Type-safe predicates                    |
 | Projects/environments/namespaces              | `Namespace`                       | Compile-time isolated                   |
 | Flag variations/treatments                    | `rule {...} returns value`        | Type-safe values                        |

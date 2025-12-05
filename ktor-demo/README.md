@@ -329,11 +329,11 @@ implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:1.10.1")
 val DARK_MODE by boolean<Context>(false) {
     rule {
         platforms(Platform.IOS, Platform.ANDROID)
-        rollout { 50.0 }
+        rampUp { 50.0 }
     } returns true
     rule {
         platforms(Platform.WEB)
-        rollout { 75.0 }
+        rampUp { 75.0 }
     } returns true
 }
 ```

@@ -49,7 +49,7 @@ object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val DARK_MODE by boolean(default = false) {
         rule {
             platforms(Platform.IOS)
-            rollout { 50.0 }
+            rampUp { 50.0 }
         } returns true
     }
 }
@@ -104,7 +104,7 @@ Ship to 10% of users, then expand:
 val NEW_CHECKOUT by boolean(default = false) {
     rule {
         platforms(Platform.ANDROID)
-        rollout { 10.0 }  // Start small
+        rampUp { 10.0 }  // Start small
     } returns true
 }
 
@@ -130,7 +130,7 @@ Split traffic 50/50:
 
 ```kotlin
 val RECOMMENDATION_ALGO by string(default = "collaborative") {
-    rule { rollout { 50.0 } } returns "content-based"
+    rule { rampUp { 50.0 } } returns "content-based"
 }
 // Same user always gets same variant (deterministic)
 ```
@@ -224,7 +224,7 @@ Most systems use hashing, but Konditional's SHA-256 bucketing is:
 // 1. Define features
 object Features : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val FLAG by boolean(default = false) {
-        rule { platforms(Platform.IOS); rollout { 50.0 } } returns true
+        rule { platforms(Platform.IOS); rampUp { 50.0 } } returns true
     }
 }
 

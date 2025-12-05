@@ -10,7 +10,11 @@ import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.features.evaluate
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.fixtures.CommonTestFeatures.integer
 import io.amichne.konditional.fixtures.core.test
+import io.amichne.konditional.kontext.DoublyAware
+import io.amichne.konditional.kontext.Konstrained
+import io.amichne.konditional.kontext.Kontext
 import io.amichne.konditional.rules.versions.FullyBound
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -32,7 +36,7 @@ class AdversarialConfigTest {
 
     @Test
     fun `rollout accepts exact boundary value 0_0 - users never see feature`() {
-        // This compiles and is "valid" but means 0% rollout
+        // This compiles and is "valid" but means 0% rampUp
         // Possible user error: thinking 0.0 means "no limit"
         val rollout = Rampup.of(0.0)
         assertEquals(0.0, rollout.value)
@@ -60,7 +64,7 @@ class AdversarialConfigTest {
 
     @Test
     fun `rollout accepts very small positive value - almost impossible to trigger`() {
-        // Compiles fine but 0.001% rollout is 1 in 100,000 users
+        // Compiles fine but 0.001% rampUp is 1 in 100,000 users
         // User might think this is 0.1% (which would be 10x higher)
         val rollout = Rampup.of(0.001)
         assertEquals(0.001, rollout.value)
@@ -153,7 +157,7 @@ class AdversarialConfigTest {
         // Both rules match their respective platforms but have same specificity
         // The sorting is stable but relies on note comparison as tiebreaker
         // If notes are null, order is implementation-dependent
-        val androidContext = Context(
+        val androidContext = `Context<T : Namespace>`(
             locale = AppLocale.UNITED_STATES,
             platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
@@ -161,14 +165,14 @@ class AdversarialConfigTest {
         )
 
         val result = TestNamespaceFeatures.ambiguousFlag.evaluate(androidContext)
-        // Result depends on rule order and rollout bucket
+        // Result depends on rule order and rampUp bucket
         assertEquals(true, result)
     }
 
     @Test
     fun `overlapping rules - more specific rule shadows less specific`() {
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
-            val shadowedFlag by boolean<Context>(default = false) {
+            val shadowedFlag by boolean<`Context<T : Namespace>`>(default = false) {
                 // Specificity 3: platform + locale + version
                 rule {
                     platforms(Platform.ANDROID)
@@ -187,7 +191,7 @@ class AdversarialConfigTest {
             }
         }
 
-        val context = Context(
+        val context = `Context<T : Namespace>`(
             locale = AppLocale.UNITED_STATES,
             platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
@@ -241,15 +245,16 @@ class AdversarialConfigTest {
     @Test
     fun `double values accept NaN - compiles but semantically invalid`() {
         // NaN compiles fine in Double contextFn
-        val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
-            val nanFlag by double<Context>(default = Double.NaN) {
+        val TestNamespaceFeatures = object : DoublyAware<, TestNamespace>(test()) {
+            val nanFlag by double<`Context<T : Namespace>`>(default = Double.NaN) {
                 // This compiles! But NaN != NaN by IEEE 754
             }
         }
+        Konstrained.kontext()
 
-        val context = Context(
+        val context = `Context<T : Namespace>`(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.IOS,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
         )
@@ -262,9 +267,9 @@ class AdversarialConfigTest {
     @Test
     fun `double values accept infinity - compiles but questionable semantics`() {
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
-            val infinityFlag by double<Context>(default = Double.POSITIVE_INFINITY) {
+            val infinityFlag by double<`Context<T : Namespace>`>(default = Double.POSITIVE_INFINITY) {
                 rule {
-                    platforms(Platform.WEB)
+                    platforms(Platform.IOS)
                 } returns Double.NEGATIVE_INFINITY
             }
         }
@@ -276,9 +281,9 @@ class AdversarialConfigTest {
     @Test
     fun `int values at MAX_VALUE - potential overflow in calculations`() {
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
-            val maxIntFlag by integer<Context>(default = Int.MAX_VALUE) {
+            val maxIntFlag by integer<`Context<T : Namespace>`>(default = Int.MAX_VALUE) {
                 rule {
-                    platforms(Platform.WEB)
+                    platforms(Platform.IOS)
                 } returns Int.MIN_VALUE
             }
         }
@@ -293,7 +298,7 @@ class AdversarialConfigTest {
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
             val emptyStringFlag by string<Context>(default = "") {
                 rule {
-                    platforms(Platform.WEB)
+                    platforms(Platform.IOS)
                 } returns "   " // Whitespace-only also valid
             }
         }
@@ -306,7 +311,7 @@ class AdversarialConfigTest {
     fun `string values can be extremely long - no length validation`() {
         val longString = "x".repeat(1_000_000) // 1 MB string
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
-            val hugeStringFlag by string<Context>(default = longString)
+            val hugeStringFlag by string<`Context<T : Namespace>`>(default = longString)
         }
 
         val hugeStringDef = TestNamespaceFeatures.namespace.flag(TestNamespaceFeatures.hugeStringFlag)
@@ -316,7 +321,7 @@ class AdversarialConfigTest {
     @Test
     fun `string values can contain special characters and newlines`() {
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
-            val specialCharsFlag by string<Context>(
+            val specialCharsFlag by string<`Context<T : Namespace>`>(
                 default = "Line1\nLine2\tTab\u0000Null\r\nCRLF"
             )
         }
@@ -333,11 +338,11 @@ class AdversarialConfigTest {
     @Test
     fun `salt defaults to v1 but can be any string`() {
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
-            val defaultSaltFlag by boolean<Context>(default = false) {
+            val defaultSaltFlag by boolean<`Context<T : Namespace>`>(default = false) {
                 // Salt defaults to "v1"
             }
 
-            val customSaltFlag by boolean<Context>(default = false) {
+            val customSaltFlag by boolean<`Context<T : Namespace>`>(default = false) {
                 salt("custom-salt-value")
             }
         }
@@ -351,7 +356,7 @@ class AdversarialConfigTest {
     @Test
     fun `salt can be empty string - affects bucketing determinism`() {
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
-            val emptySaltFlag by boolean<Context>(default = false) {
+            val emptySaltFlag by boolean<`Context<T : Namespace>`>(default = false) {
                 salt("") // Empty salt compiles fine
             }
         }
@@ -383,22 +388,22 @@ class AdversarialConfigTest {
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
             val tinyRolloutFlag by boolean<Context>(default = false) {
                 rule {
-                    platforms(Platform.WEB)
-                    rollout { 0.01 } // User might think this is 1%, but it's 0.01%
+                    platforms(Platform.IOS)
+                    rampUp { 0.01 } // User might think this is 1%, but it's 0.01%
                 } returns true
             }
         }
 
         // Bucketing is deterministic, so specific users always get same result
-        val context = Context(
+        val context = `Context<T : Namespace>`(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.IOS,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
         )
 
         // This user might or might not be in the 0.01% bucket
-        // But the rollout is so small it's almost never true
+        // But the rampUp is so small it's almost never true
         val result = TestNamespaceFeatures.tinyRolloutFlag.evaluate(context)
         // Assertion depends on hash bucket for this specific ID
         // We're just verifying this compiles and executes without error
@@ -407,32 +412,32 @@ class AdversarialConfigTest {
 
     @Test
     fun `changing salt completely re-randomizes user bucketing`() {
-        val context = Context(
+        val context = (
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.IOS,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("ABCDEF1234567890ABCDEF1234567890")
         )
 
         val testNamespaceFeatures1 = object : FeatureContainer<TestNamespace>(test()) {
-            val flag by boolean<Context>(default = false) {
+            val flag by boolean<`Context<T : Namespace>`>(default = false) {
                 salt("v1")
                 rule {
-                    rollout { 50.0 }
+                    rampUp { 50.0 }
                 } returns true
             }
         }
 
         val testNamespaceFeatures2 = object : FeatureContainer<TestNamespace>(test()) {
-            val flag by boolean<Context>(default = false) {
+            val flag by boolean<`Context<T : Namespace>`>(default = false) {
                 salt("v2") // Different salt
                 rule {
-                    rollout { 50.0 }
+                    rampUp { 50.0 }
                 } returns true
             }
         }
 
-        // Same user, same rollout %, but different salts
+        // Same user, same rampUp %, but different salts
         // Could get different results (bucket assignment changes)
         val result1 = testNamespaceFeatures1.flag.evaluate(context)
         val result2 = testNamespaceFeatures2.flag.evaluate(context)
@@ -446,10 +451,10 @@ class AdversarialConfigTest {
     @Test
     fun `empty locale sets match all locales - potential over-targeting`() {
         val featureContainer = object : FeatureContainer<TestNamespace>(test()) {
-            val noLocaleFlag by boolean<Context>(default = false) {
+            val noLocaleFlag by boolean<`Context<T : Namespace>`>(default = false) {
                 rule {
                     // No locale specified = matches ALL locales
-                    platforms(Platform.WEB)
+                    platforms(Platform.IOS)
                 } returns true
             }
         }
@@ -460,9 +465,9 @@ class AdversarialConfigTest {
             AppLocale.FRANCE,
             AppLocale.INDIA
         ).map { locale ->
-            Context(
+            `Context<T : Namespace>`(
                 locale = locale,
-                platform = Platform.WEB,
+                platform = Platform.IOS,
                 appVersion = Version(1, 0, 0),
                 stableId = StableId.of("12345678901234567890123456789012")
             )
@@ -481,7 +486,7 @@ class AdversarialConfigTest {
     @Test
     fun `version range boundaries - inclusive min, exclusive max`() {
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
-            val boundedFlag by boolean<Context>(default = false) {
+            val boundedFlag by boolean<`Context<T : Namespace>`>(default = false) {
                 rule {
                     versions {
                         min(1, 0, 0)
@@ -498,9 +503,9 @@ class AdversarialConfigTest {
             Version(2, 0, 0) to true,   // At max (inclusive based on RightBound implementation)
             Version(2, 0, 1) to false   // Above max
         ).map { (version, expected) ->
-            Context(
+            `Context<T : Namespace>`(
                 locale = AppLocale.UNITED_STATES,
-                platform = Platform.WEB,
+                platform = Platform.IOS,
                 appVersion = version,
                 stableId = StableId.of("12345678901234567890123456789012")
             ) to expected
@@ -515,7 +520,7 @@ class AdversarialConfigTest {
     @Test
     fun `version range with same min and max - single version targeting`() {
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
-            val exactVersionFlag by boolean<Context>(default = false) {
+            val exactVersionFlag by boolean<`Context<T : Namespace>`>(default = false) {
                 rule {
                     versions {
                         min(1, 0, 0)
@@ -525,9 +530,9 @@ class AdversarialConfigTest {
             }
         }
 
-        val exactContext = Context.Core(
+        val exactContext = `Context<T : Namespace>`.Core(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.IOS,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
         )
@@ -562,7 +567,7 @@ class AdversarialConfigTest {
         }
 
         val features2 = object : FeatureContainer<Namespace.Authentication>(Namespace.Authentication) {
-            val duplicateKey by boolean<Context>(default = false)
+            val duplicateKey by boolean<`Context<T : Namespace>`>(default = false)
         }
 
         // Same key, different namespaces, different defaults
@@ -580,7 +585,7 @@ class AdversarialConfigTest {
     fun `features register lazily - accessing key triggers registration`() {
         val container = object : FeatureContainer<TestNamespace>(test()) {
             val lazy1 by boolean<Context>(default = true)
-            val lazy2 by boolean<Context>(default = false)
+            val lazy2 by boolean<`Context<T : Namespace>`>(default = false)
         }
 
         // Before accessing, allFeatures returns empty
@@ -602,23 +607,23 @@ class AdversarialConfigTest {
     @Test
     fun `inactive flag always returns default regardless of rules`() {
         val featureContainer = object : FeatureContainer<TestNamespace>(test()) {
-            val inactiveFlag by boolean<Context>(default = false) {
+            val inactiveFlag by boolean<`Context<T : Namespace>`>(default = false) {
                 active { false } // Flag is turned off
                 rule {
-                    platforms(Platform.WEB)
-                    rollout { 100.0 }
+                    platforms(Platform.IOS)
+                    rampUp { 100.0 }
                 } returns true
             }
         }
 
         val context = Context(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.IOS,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
         )
 
-        // Even though rule matches and rollout is 100%, flag is inactive
+        // Even though rule matches and rampUp is 100%, flag is inactive
         assertEquals(false, featureContainer.inactiveFlag.evaluate(context))
         val inactiveDef = featureContainer.namespace.flag(featureContainer.inactiveFlag)
         assertEquals(false, inactiveDef?.isActive)
@@ -631,7 +636,7 @@ class AdversarialConfigTest {
     @Test
     fun `rule with no constraints has specificity 0 - lowest priority`() {
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
-            val catchAllFlag by boolean<Context>(default = false) {
+            val catchAllFlag by boolean<`Context<T : Namespace>`>(default = false) {
                 // Specific rule: specificity = 1
                 rule {
                     platforms(Platform.ANDROID)
@@ -644,7 +649,7 @@ class AdversarialConfigTest {
             }
         }
 
-        val androidContext = Context(
+        val androidContext = `Context<T : Namespace>`(
             locale = AppLocale.UNITED_STATES,
             platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
@@ -666,28 +671,28 @@ class AdversarialConfigTest {
     @Test
     fun `rule matches but rollout excludes - falls through to next rule or default`() {
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
-            val rolloutBlockedFlag by boolean<Context>(default = false) {
+            val rolloutBlockedFlag by boolean<`Context<T : Namespace>`>(default = false) {
                 rule {
-                    platforms(Platform.WEB)
-                    rollout { 0.0 } // 0% rollout - no one gets this
+                    platforms(Platform.IOS)
+                    rampUp { 0.0 } // 0% rampUp - no one gets this
                 } returns true
 
                 rule {
-                    platforms(Platform.WEB)
-                    rollout { 100.0 } // Everyone gets this
+                    platforms(Platform.IOS)
+                    rampUp { 100.0 } // Everyone gets this
                 } returns false
             }
         }
 
-        val context = Context(
+        val context = `Context<T : Namespace>`(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.IOS,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
         )
 
-        // First rule matches platform but rollout is 0%, so skip to second rule
-        // Second rule matches and has 100% rollout
+        // First rule matches platform but rampUp is 0%, so skip to second rule
+        // Second rule matches and has 100% rampUp
         assertEquals(false, TestNamespaceFeatures.rolloutBlockedFlag.evaluate(context))
     }
 

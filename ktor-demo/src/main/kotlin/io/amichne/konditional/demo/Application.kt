@@ -1,23 +1,11 @@
 package io.amichne.konditional.demo
 
 import io.amichne.konditional.context.AppLocale
-import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.context.contextualize
-import io.amichne.konditional.context.feature
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.getOrThrow
-import io.amichne.konditional.demo.DemoFeatures.ANALYTICS_ENABLED
-import io.amichne.konditional.demo.DemoFeatures.API_RATE_LIMIT
-import io.amichne.konditional.demo.DemoFeatures.BETA_FEATURES
-import io.amichne.konditional.demo.DemoFeatures.CACHE_TTL_SECONDS
-import io.amichne.konditional.demo.DemoFeatures.DARK_MODE
-import io.amichne.konditional.demo.DemoFeatures.DISCOUNT_PERCENTAGE
-import io.amichne.konditional.demo.DemoFeatures.MAX_ITEMS_PER_PAGE
-import io.amichne.konditional.demo.DemoFeatures.THEME_COLOR
-import io.amichne.konditional.demo.DemoFeatures.WELCOME_MESSAGE
 import io.amichne.konditional.serialization.SnapshotSerializer
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
@@ -70,7 +58,7 @@ private val Platform.displayName: String
     get() = when (this) {
         Platform.IOS -> "iOS"
         Platform.ANDROID -> "Android"
-        Platform.WEB -> "Web"
+        Platform.IOS -> "Web"
     }
 
 private val SubscriptionTier.displayName: String
@@ -252,7 +240,7 @@ private fun evaluateEnterpriseContext(params: Parameters): String {
 private fun buildEvaluationJson(context: DemoContext): String {
     val results = mutableMapOf<String, Any>()
 
-    // Evaluate all demo features using Context.evaluate()
+    // Evaluate all demo features using Kontext.evaluate()
     results["darkMode"] = context.evaluate(DemoFeatures.DARK_MODE)
     results["betaFeatures"] = context.evaluate(DemoFeatures.BETA_FEATURES)
     results["analyticsEnabled"] = context.evaluate(DemoFeatures.ANALYTICS_ENABLED)
@@ -538,18 +526,18 @@ private fun HTML.renderMainPage() {
                     form {
                         id = "contextForm"
                         div("form-group") {
-                            label { +"Context Type" }
+                            label { +"Kontext Type" }
                             select {
                                 id = "contextType"
                                 name = "contextType"
                                 option {
                                     value = "base"
                                     selected = true
-                                    +"Base Context"
+                                    +"Base Kontext"
                                 }
                                 option {
                                     value = "enterprise"
-                                    +"Enterprise Context (Extended)"
+                                    +"Enterprise Kontext (Extended)"
                                 }
                             }
                         }
@@ -575,7 +563,7 @@ private fun HTML.renderMainPage() {
                                 Platform.entries.forEach { platform ->
                                     option {
                                         value = platform.name
-                                        if (platform == Platform.WEB) selected = true
+                                        if (platform == Platform.IOS) selected = true
                                         +platform.displayName
                                     }
                                 }

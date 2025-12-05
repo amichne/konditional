@@ -2,7 +2,6 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rampup.Companion.MAX
 import io.amichne.konditional.context.Version
@@ -30,27 +29,27 @@ class FlagEntryTypeSafetyTest {
         locale: AppLocale = AppLocale.UNITED_STATES,
         platform: Platform = Platform.IOS,
         version: String = "1.0.0",
-    ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
+    ) = `Context<T : Namespace>`(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
 
     private object Features : FeatureContainer<Global>(Global) {
-        val featureA by boolean<Context>(default = false) {
+        val featureA by boolean<`Context<T : Namespace>`>(default = false) {
             rule {
                 platforms(Platform.IOS)
             } returns true
         }
-        val featureB by boolean<Context>(default = true)
-        val configA by string<Context>(default = "default") {
+        val featureB by boolean<`Context<T : Namespace>`>(default = true)
+        val configA by string<`Context<T : Namespace>`>(default = "default") {
             rule {
                 platforms(Platform.ANDROID)
             } returns "android-value"
         }
 
-        val configB by string<Context>(default = "config-b-default") {
+        val configB by string<`Context<T : Namespace>`>(default = "config-b-default") {
             rule {
                 locales(AppLocale.UNITED_STATES)
             } returns "en-us-value"
         }
-        val timeout by integer<Context>(default = 10) {
+        val timeout by integer<`Context<T : Namespace>`>(default = 10) {
             rule {
                 versions {
                     min(2, 0)
@@ -61,7 +60,7 @@ class FlagEntryTypeSafetyTest {
 
     @Test
     fun `Given FlagDefinition, When created, Then maintains type information correctly`() {
-        val rule = Rule<Context>(
+        val rule = Rule<`Context<T : Namespace>`>(
             rollout = MAX,
             locales = emptySet(),
             platforms = emptySet(),
@@ -81,14 +80,14 @@ class FlagEntryTypeSafetyTest {
 
     @Test
     fun `Given ContextualFlagDefinition, When evaluating, Then returns correct value type`() {
-        val rule = Rule<Context>(
+        val rule = Rule<`Context<T : Namespace>`>(
             rollout = MAX,
             locales = setOf(AppLocale.UNITED_STATES),
             platforms = emptySet(),
             versionRange = Unbounded(),
         )
 
-        val boolFlag: FlagDefinition<BooleanEncodeable, Boolean, Context, Global> = FlagDefinition(
+        val boolFlag: FlagDefinition<BooleanEncodeable, Boolean, `Context<T : Namespace>`, Global> = FlagDefinition(
             feature = Features.featureB,
             values = listOf(rule.targetedBy(true)),
             defaultValue = false,
@@ -102,14 +101,14 @@ class FlagEntryTypeSafetyTest {
 
     @Test
     fun `Given ContextualFlagDefinition with different value types, When evaluating, Then each returns correct type`() {
-        val boolRule = Rule<Context>(
+        val boolRule = Rule<`Context<T : Namespace>`>(
             rollout = MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded(),
         )
 
-        val stringRule = Rule<Context>(
+        val stringRule = Rule<`Context<T : Namespace>`>(
             rollout = MAX,
             locales = emptySet(),
             platforms = emptySet(),
@@ -123,19 +122,19 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded(),
         )
 
-        val boolFlag: FlagDefinition<BooleanEncodeable, Boolean, Context, Global> = FlagDefinition(
+        val boolFlag: FlagDefinition<BooleanEncodeable, Boolean, `Context<T : Namespace>`, Global> = FlagDefinition(
             feature = Features.featureA,
             values = listOf(boolRule.targetedBy(true)),
             defaultValue = false,
         )
 
-        val stringFlag: FlagDefinition<StringEncodeable, String, Context, Global> = FlagDefinition(
+        val stringFlag: FlagDefinition<StringEncodeable, String, `Context<T : Namespace>`, Global> = FlagDefinition(
             feature = Features.configA,
             values = listOf(stringRule.targetedBy("value")),
             defaultValue = "default",
         )
 
-        val intFlag: FlagDefinition<IntEncodeable, Int, Context, Global> = FlagDefinition(
+        val intFlag: FlagDefinition<IntEncodeable, Int, `Context<T : Namespace>`, Global> = FlagDefinition(
             feature = Features.timeout,
             values = listOf(intRule.targetedBy(30)),
             defaultValue = 10,
@@ -154,14 +153,14 @@ class FlagEntryTypeSafetyTest {
 
     @Test
     fun `Given Snapshot with ContextualFlagDefinition instances, When loading, Then all flags are accessible`() {
-        val boolRule = Rule<Context>(
+        val boolRule = Rule<`Context<T : Namespace>`>(
             rollout = MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded(),
         )
 
-        val stringRule = Rule<Context>(
+        val stringRule = Rule<`Context<T : Namespace>`>(
             rollout = MAX,
             locales = emptySet(),
             platforms = emptySet(),
@@ -253,7 +252,7 @@ class FlagEntryTypeSafetyTest {
 //            override val appVersion: Version,
 //            override val stableId: StableId,
 //            val customField: String,
-//        ) : Context
+//        ) : Kontext
 //
 //        data class CustomIntFlag(override val key: String = "custom_int") :
 //            IntFeature<CustomContext, Namespace.Global> {
@@ -263,7 +262,7 @@ class FlagEntryTypeSafetyTest {
 //        val customIntFlag = CustomIntFlag()
 //
 //        val rule = Rule<CustomContext>(
-//            rollout { MAX }
+//            rampUp { MAX }
 //            locales = emptySet(),
 //            platforms = emptySet(),
 //            versionRange = Unbounded(),

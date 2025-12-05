@@ -3,6 +3,7 @@ package io.amichne.konditional.rules
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
+import io.amichne.konditional.context.PlatformI
 import io.amichne.konditional.context.Rampup
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
@@ -24,11 +25,11 @@ class RuleMatchingTest {
         platform: Platform = Platform.IOS,
         version: String = "1.0.0",
         idHex: String = TestStableId.id,
-    ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
+    ) = `Context<T : Namespace>`(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
 
     @Test
     fun `Given rule with no constraints, When matching, Then all contexts match`() {
-        val rule = Rule<Context>(
+        val rule = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = emptySet(),
             platforms = emptySet(),
@@ -43,7 +44,7 @@ class RuleMatchingTest {
 
     @Test
     fun `Given rule with single platform, When matching, Then only that platform matches`() {
-        val rule = Rule<Context>(
+        val rule = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
@@ -52,12 +53,12 @@ class RuleMatchingTest {
 
         assertTrue(rule.matches(ctx(platform = Platform.IOS)))
         assertFalse(rule.matches(ctx(platform = Platform.ANDROID)))
-        assertFalse(rule.matches(ctx(platform = Platform.WEB)))
+        assertFalse(rule.matches(ctx(platform = Platform.IOS)))
     }
 
     @Test
     fun `Given rule with multiple platforms, When matching, Then any of those platforms match`() {
-        val rule = Rule<Context>(
+        val rule = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS, Platform.ANDROID),
@@ -66,12 +67,12 @@ class RuleMatchingTest {
 
         assertTrue(rule.matches(ctx(platform = Platform.IOS)))
         assertTrue(rule.matches(ctx(platform = Platform.ANDROID)))
-        assertFalse(rule.matches(ctx(platform = Platform.WEB)))
+        assertFalse(rule.matches(ctx(platform = Platform.IOS)))
     }
 
     @Test
     fun `Given rule with single locale, When matching, Then only that locale matches`() {
-        val rule = Rule<Context>(
+        val rule = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = setOf(AppLocale.UNITED_STATES),
             platforms = emptySet(),
@@ -85,7 +86,7 @@ class RuleMatchingTest {
 
     @Test
     fun `Given rule with multiple locales, When matching, Then any of those locales match`() {
-        val rule = Rule<Context>(
+        val rule = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = setOf(AppLocale.UNITED_STATES, AppLocale.CANADA),
             platforms = emptySet(),
@@ -99,7 +100,7 @@ class RuleMatchingTest {
 
     @Test
     fun `Given rule with version range, When matching, Then only versions in range match`() {
-        val rule = Rule<Context>(
+        val rule = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = emptySet(),
             platforms = emptySet(),
@@ -118,7 +119,7 @@ class RuleMatchingTest {
 
     @Test
     fun `Given rule with combined constraints, When matching, Then all constraints must match`() {
-        val rule = Rule<Context>(
+        val rule = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = setOf(AppLocale.UNITED_STATES, AppLocale.CANADA),
             platforms = setOf(Platform.IOS),
@@ -143,42 +144,42 @@ class RuleMatchingTest {
 
     @Test
     fun `Given rules with different specificity, When calculating specificity, Then more specific rules have higher scores`() {
-        val ruleEmpty = Rule<Context>(
+        val ruleEmpty = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = Unbounded(),
         )
 
-        val rulePlatform = Rule<Context>(
+        val rulePlatform = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded(),
         )
 
-        val ruleLocale = Rule<Context>(
+        val ruleLocale = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = setOf(AppLocale.UNITED_STATES),
             platforms = emptySet(),
             versionRange = Unbounded(),
         )
 
-        val ruleVersion = Rule<Context>(
+        val ruleVersion = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = emptySet(),
             platforms = emptySet(),
             versionRange = FullyBound(Version(1, 0, 0), Version(2, 0, 0)),
         )
 
-        val rulePlatformAndLocale = Rule<Context>(
+        val rulePlatformAndLocale = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = setOf(AppLocale.UNITED_STATES),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded(),
         )
 
-        val ruleAll = Rule<Context>(
+        val ruleAll = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = setOf(AppLocale.UNITED_STATES, AppLocale.CANADA),
             platforms = setOf(Platform.IOS, Platform.ANDROID),
@@ -204,28 +205,28 @@ class RuleMatchingTest {
 
     @Test
     fun `Given multiple locales or platforms, When calculating specificity, Then specificity counts presence not quantity`() {
-        val ruleOnePlatform = Rule<Context>(
+        val ruleOnePlatform = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded(),
         )
 
-        val ruleTwoPlatforms = Rule<Context>(
+        val ruleTwoPlatforms = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS, Platform.ANDROID),
             versionRange = Unbounded(),
         )
 
-        val ruleOneLocale = Rule<Context>(
+        val ruleOneLocale = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = setOf(AppLocale.UNITED_STATES),
             platforms = emptySet(),
             versionRange = Unbounded(),
         )
 
-        val ruleTwoLocales = Rule<Context>(
+        val ruleTwoLocales = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = setOf(AppLocale.UNITED_STATES, AppLocale.CANADA),
             platforms = emptySet(),
@@ -243,7 +244,7 @@ class RuleMatchingTest {
 
     @Test
     fun `Given rules with notes, When comparing specificity, Then notes serve as tiebreaker`() {
-        val ruleA = Rule<Context>(
+        val ruleA = Rule<`Context<T : Namespace>`>(
             rollout = Rampup.MAX,
             locales = setOf(AppLocale.UNITED_STATES),
             platforms = setOf(Platform.IOS),
@@ -264,7 +265,7 @@ class RuleMatchingTest {
 
         // Notes can be used as tiebreaker in sorting (alphabetically)
         val sorted = listOf(ruleB, ruleA).sortedWith(
-            compareByDescending<Rule<Context>> { it.specificity() }.thenBy { it.note ?: "" }
+            compareByDescending<Rule<`Context<T : Namespace>`>> { it.specificity() }.thenBy { it.note ?: "" }
         )
 
         assertEquals("Rule A", sorted[0].note)
