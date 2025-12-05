@@ -1,9 +1,7 @@
 package io.amichne.konditional.kontext
 
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.Namespace.Authentication.flag
 import io.amichne.konditional.core.dsl.FlagScope
-import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.features.BooleanFeature
 import io.amichne.konditional.core.features.DataClassFeature
 import io.amichne.konditional.core.features.DoubleFeature
@@ -23,6 +21,7 @@ import io.amichne.konditional.core.types.StringEncodeable
 import io.amichne.konditional.internal.builders.FlagBuilder
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KCallable
 import kotlin.reflect.KProperty
 
 interface DoublyAware<C : Kontext<M>, M : Namespace> : KontextAware<C, M>, FeatureAware<M> {
@@ -35,29 +34,25 @@ interface DoublyAware<C : Kontext<M>, M : Namespace> : KontextAware<C, M>, Featu
 //        override fun factory(): C = factory()
 //    } as O
 
-    fun <S : EncodableValue<T>, T : Any> feature(
-        block: DoublyAware<C, M>.() -> Feature<S, T, C, M>,
-    ): T = flag(block()).evaluate(kontext)
-
-
-    fun <S : EncodableValue<T>, T : Any> feature(
-        @KonditionalDsl kontext: () -> C,
-        block: KontextAware<C, M>.() -> Feature<S, T, C, M>,
-    ): T = flag(block()).evaluate(kontext())
-
-    fun <S : EncodableValue<T>, T : Any> feature(
-        @KonditionalDsl kontext: C,
-        block: KontextAware<C, M>.() -> Feature<S, T, C, M>,
-    ): T = flag(block()).evaluate(kontext)
-
+//    fun <S : EncodableValue<T>, T : Any> feature(
+//        block: DoublyAware<C, M>.() -> Feature<S, T, C, M>,
+//    ): T = flag(block()).evaluate(kontext)
+//
+//    fun <S : EncodableValue<T>, T : Any> feature(
+//        @KonditionalDsl kontext: () -> C,
+//        block: KontextAware<C, M>.() -> Feature<S, T, C, M>,
+//    ): T = flag(block()).evaluate(kontext())
+//
+//    fun <S : EncodableValue<T>, T : Any> feature(
+//        @KonditionalDsl kontext: C,
+//        block: KontextAware<C, M>.() -> Feature<S, T, C, M>,
+//    ): T = flag(block()).evaluate(kontext)
 
     fun <C : Kontext<M>> boolean(
         default: Boolean,
         flagScope: FlagScope<EncodableValue<Boolean>, Boolean, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<DoublyAware<C, M>, Feature<EncodableValue<Boolean>, Boolean, C, M>> =
-        ContainerFeaturePropertyDelegate(namespace, default, flagScope) { BooleanFeature.Companion(it, namespace) }.let {
-            it.provideDelegate(this, this::)
-        }
+    ): ContainerFeaturePropertyDelegate<EncodableValue<Boolean>, Boolean, C, M> =
+        ContainerFeaturePropertyDelegate(namespace, default, flagScope) { BooleanFeature.Companion(it, namespace) }
 
     /**
      * Creates a String feature with automatic registration and configuration.
@@ -80,13 +75,12 @@ interface DoublyAware<C : Kontext<M>, M : Namespace> : KontextAware<C, M>, Featu
      * @param C The kontextFn type used for evaluation
      * @param default The default value for this feature (required)
      * @param stringScope DSL scope for configuring the string feature
-     * @return A delegated property that returns a [io.amichne.konditional.core.features.StringFeature]
+     * @return A delegated property that returns a [StringFeature]
      */
     fun <C : Kontext<M>> string(
         default: String,
         stringScope: FlagScope<StringEncodeable, String, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<DoublyAware<C, M>, StringFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(namespace, default, stringScope) { StringFeature.Companion(it, namespace) }
+    ) = ContainerFeaturePropertyDelegate(namespace, default, stringScope) { StringFeature.Companion(it, namespace) }
 
     /**
      * Creates an Int feature with automatic registration and configuration.
@@ -109,13 +103,12 @@ interface DoublyAware<C : Kontext<M>, M : Namespace> : KontextAware<C, M>, Featu
      * @param C The kontextFn type used for evaluation
      * @param default The default value for this feature (required)
      * @param integerScope DSL scope for configuring the integer feature
-     * @return A delegated property that returns an [io.amichne.konditional.core.features.IntFeature]
+     * @return A delegated property that returns an [IntFeature]
      */
     fun <C : Kontext<M>> integer(
         default: Int,
         integerScope: FlagScope<IntEncodeable, Int, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<DoublyAware<C, M>, IntFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(namespace, default, integerScope) { IntFeature.Companion(it, namespace) }
+    ) = ContainerFeaturePropertyDelegate(namespace, default, integerScope) { IntFeature.Companion(it, namespace) }
 
     /**
      * Creates a Double feature with automatic registration and configuration.
@@ -143,7 +136,7 @@ interface DoublyAware<C : Kontext<M>, M : Namespace> : KontextAware<C, M>, Featu
     fun <C : Kontext<M>> double(
         default: Double,
         decimalScope: FlagScope<DecimalEncodeable, Double, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<DoublyAware<C, M>, DoubleFeature<C, M>> =
+    ): ContainerFeaturePropertyDelegate<DecimalEncodeable, Double, C, M> =
         ContainerFeaturePropertyDelegate(namespace, default, decimalScope) { DoubleFeature(it, namespace) }
 
     /**
@@ -176,7 +169,7 @@ interface DoublyAware<C : Kontext<M>, M : Namespace> : KontextAware<C, M>, Featu
         default: E,
         enumScope: FlagScope<EnumEncodeable<E>, E, C, M>.() -> Unit =
             {},
-    ): ReadOnlyProperty<DoublyAware<C, M>, EnumFeature<E, C, M>> =
+    ): ContainerFeaturePropertyDelegate<EnumEncodeable<E>, E, C, M> =
         ContainerFeaturePropertyDelegate(namespace, default, enumScope) { EnumFeature(it, namespace) }
 
     /**
@@ -202,7 +195,7 @@ interface DoublyAware<C : Kontext<M>, M : Namespace> : KontextAware<C, M>, Featu
      *     val PAYMENT_CONFIG by dataClass(default = PaymentConfig()) {
      *         rule {
      *             environments(Environment.PRODUCTION)
-     *         } returns PaymentConfig(maxRetries = 5, timeout = 60.0)
+     *         } returns PaymentConfig(maxRetries = 5, time= 60.0)
      *     }
      * }
      * ```
@@ -216,9 +209,8 @@ interface DoublyAware<C : Kontext<M>, M : Namespace> : KontextAware<C, M>, Featu
     fun <T : DataClassWithSchema, C : Kontext<M>> dataClass(
         default: T,
         dataClassScope: FlagScope<DataClassEncodeable<T>, T, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<DoublyAware<C, M>, DataClassFeature<T, C, M>> =
-        ContainerFeaturePropertyDelegate(namespace, default, dataClassScope)
-        { DataClassFeature(it, namespace) }
+    ): ContainerFeaturePropertyDelegate<DataClassEncodeable<T>, T, C, M> =
+        ContainerFeaturePropertyDelegate(namespace, default, dataClassScope) { DataClassFeature(it, namespace) }
 
     /**
      * Internal delegate factory that handles feature creation, configuration, and registration.
@@ -246,15 +238,15 @@ interface DoublyAware<C : Kontext<M>, M : Namespace> : KontextAware<C, M>, Featu
      * @param factory A function that creates the feature given the namespace and property name
      */
     @Suppress("UNCHECKED_CAST")
-    class ContainerFeaturePropertyDelegate<F : Feature<S, T, C, M>, S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace>(
+    class ContainerFeaturePropertyDelegate<S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace>(
         private val namespace: M,
         private val default: T,
         private val configScope: FlagScope<S, T, C, M>.() -> Unit,
-        private val factory: M.(String) -> F,
-    ) : ReadOnlyProperty<DoublyAware<C, M>, F>, PropertyDelegateProvider<DoublyAware<C, M>, F> {
+        private val factory: M.(String) -> Feature<S, T, C, M>,
+    ) {
         lateinit var name: String
 
-        private val feature: F by lazy {
+        private val feature: Feature<S, T, C, M> by lazy {
             factory(namespace, name).also { createdFeature ->
                 // Execute the DSL configuration block and update the namespace
                 val flagDefinition = FlagBuilder(createdFeature).apply(configScope).apply { default(default) }.build()
@@ -262,14 +254,14 @@ interface DoublyAware<C : Kontext<M>, M : Namespace> : KontextAware<C, M>, Featu
             }
         }
 
-        override fun getValue(
+        operator fun getValue(
             thisRef: DoublyAware<C, M>,
             property: KProperty<*>,
-        ): F = provideDelegate(thisRef, property)
+        ): Feature<S, T, C, M> = provideDelegate(thisRef, property)
 
-        override fun provideDelegate(
+        operator fun provideDelegate(
             thisRef: DoublyAware<C, M>,
-            property: KProperty<*>,
-        ): F = run { name = property.name }.let { feature }
+            property: KCallable<*>,
+        ): Feature<S, T, C, M> = run { name = property.name }.let { feature }
     }
 }

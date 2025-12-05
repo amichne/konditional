@@ -2,7 +2,9 @@ package io.amichne.konditional.core.features
 
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.kontext.DoublyAware
 import io.amichne.konditional.kontext.Kontext
+import kotlin.reflect.KProperty
 
 /**
  * Represents a feature flag that can be used to enable or disable specific functionality
@@ -36,4 +38,14 @@ import io.amichne.konditional.kontext.Kontext
 sealed interface Feature<out S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace> {
     val key: String
     val namespace: M
+
+    /**
+     * Retrieves the default value of the feature flag.
+     *
+     * @return The default value of type S.
+     */
+    operator fun getValue(
+        konstrained: DoublyAware<C, M>,
+        property: KProperty<*>,
+    ) = this
 }
