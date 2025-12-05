@@ -2,8 +2,9 @@ package io.amichne.konditional.serialization
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Context.Companion.evaluate
+import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
+import io.amichne.konditional.context.PlatformI
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.FeatureContainer
@@ -27,8 +28,8 @@ import kotlin.test.assertTrue
 class NamespaceSnapshotSerializerTest {
 
     private val TestFeatures = object : FeatureContainer<Namespace.Global>(Namespace.Global) {
-        val boolFlag by boolean<Context>(default = false)
-        val stringFlag by string<Context>(default = "default")
+        val boolFlag by boolean<`Context<T : Namespace>`>(default = false)
+        val stringFlag by string<`Context<T : Namespace>`>(default = "default")
     }
 
     @BeforeEach
@@ -47,7 +48,7 @@ class NamespaceSnapshotSerializerTest {
         locale: AppLocale = AppLocale.UNITED_STATES,
         platform: Platform = Platform.IOS,
         version: String = "1.0.0",
-    ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
+    ) = `Context<T : Namespace>`(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
 
     @Test
     fun `Given namespace with no flags, When serialized, Then produces JSON with empty flags array`() {
@@ -202,12 +203,12 @@ class NamespaceSnapshotSerializerTest {
     fun `Given different taxonomies, When serialized separately, Then each has only its own flags`() {
         // Domain.Payments features
         val PaymentsFeatures = object : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
-            val paymentEnabled by boolean<Context>(default = true)
+            val paymentEnabled by boolean<`Context<T : Namespace>`>(default = true)
         }
 
         // Domain.Search features
         val SearchFeatures = object : FeatureContainer<Namespace.Search>(Namespace.Search) {
-            val searchEnabled by boolean<Context>(default = false)
+            val searchEnabled by boolean<`Context<T : Namespace>`>(default = false)
         }
 
         // Register features

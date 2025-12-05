@@ -1,6 +1,6 @@
 package io.amichne.konditional.internal.builders.versions
 
-import io.amichne.konditional.context.Version
+import io.amichne.konditional.kontext.Version
 import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.rules.versions.LeftBound

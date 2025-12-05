@@ -23,7 +23,7 @@ import kotlin.reflect.KClass
  *
  * Parse, don't validate: The type system makes illegal states unrepresentable.
  */
-sealed interface EncodableValue<T : Any> {
+sealed interface EncodableValue<T> {
     val value: T
     val encoding: Encoding
 

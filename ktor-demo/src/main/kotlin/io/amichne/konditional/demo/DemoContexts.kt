@@ -2,10 +2,8 @@ package io.amichne.konditional.demo
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Platform
+import io.amichne.konditional.context.PlatformI
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.features.FeatureAware
 import io.amichne.konditional.core.id.StableId
 
 /**
@@ -16,7 +14,7 @@ data class DemoContext(
     override val platform: Platform,
     override val appVersion: Version,
     override val stableId: StableId,
-) : Context
+) : Context<T : Namespace>
 
 /**
  * Extended contextFn with additional enterprise features

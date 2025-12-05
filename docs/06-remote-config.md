@@ -326,7 +326,7 @@ val FLAG by boolean(default = false) {
         platforms(Platform.IOS)
         locales(AppLocale.UNITED_STATES)
         versions { min(2, 0, 0) }
-        rollout { 50.0 }
+        rampUp { 50.0 }
         note("iOS US users, v2+, 50%")
     } returns true
 }

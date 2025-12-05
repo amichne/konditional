@@ -1,6 +1,5 @@
 package io.amichne.konditional.internal.builders
 
-import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.FlagScope
@@ -8,6 +7,7 @@ import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.RuleScope
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.kontext.Kontext
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
@@ -21,13 +21,13 @@ import io.amichne.konditional.rules.Rule
  *
  * @param S The EncodableValue type wrapping the actual value.
  * @param T The actual value type.
- * @param C The type of the contextFn that the feature flag evaluates against.
+ * @param C The type of the kontextFn that the feature flag evaluates against.
  * @property feature The feature flag key used to uniquely identify the flag.
  * @constructor Internal constructor - users cannot instantiate this class directly.
  */
 @KonditionalDsl
 @PublishedApi
-internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M : Namespace>(
+internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace>(
     private val feature: Feature<S, T, C, M>,
 ) : FlagScope<S, T, C, M> {
     private val conditionalValues = mutableListOf<ConditionalValue<S, T, C, M>>()
@@ -73,7 +73,7 @@ internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M :
     }
 
     /**
-     * Builds and returns a `FlagDefinition` instance of type `S` with contextFn type `C`.
+     * Builds and returns a `FlagDefinition` instance of type `S` with kontextFn type `C`.
      * Internal method - not intended for direct use.
      *
      * @return A `FlagDefinition` instance constructed based on the current configuration.

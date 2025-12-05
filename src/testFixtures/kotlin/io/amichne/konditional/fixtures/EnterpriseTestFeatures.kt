@@ -38,7 +38,7 @@ data class EnterpriseContext(
     val organizationId: String,
     val subscriptionTier: SubscriptionTier,
     val userRole: UserRole,
-) : Context
+) : Context<T : Namespace>
 
 /**
  * Experiment contextFn for A/B testing scenarios.
@@ -50,7 +50,7 @@ data class ExperimentContext(
     override val stableId: StableId,
     val experimentGroups: Set<String>,
     val sessionId: String,
-) : Context
+) : Context<T : Namespace>
 
 // ========== Enterprise Feature Flags ==========
 

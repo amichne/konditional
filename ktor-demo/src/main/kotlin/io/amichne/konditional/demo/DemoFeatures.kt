@@ -17,35 +17,35 @@ import io.amichne.konditional.core.features.FeatureContainer
  */
 object DemoFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     // Boolean Features
-    val DARK_MODE by boolean<Context>(false) {
+    val DARK_MODE by boolean<`Context<T : Namespace>`>(false) {
         rule {
             platforms(Platform.IOS, Platform.ANDROID)
-            rollout { 50.0 }
+            rampUp { 50.0 }
         } returns true
         rule {
-            platforms(Platform.WEB)
-            rollout { 75.0 }
+            platforms(Platform.IOS)
+            rampUp { 75.0 }
         } returns true
     }
 
-    val BETA_FEATURES by boolean<Context>(false) {
+    val BETA_FEATURES by boolean<`Context<T : Namespace>`>(false) {
         default(false)
         rule {
             versions {
                 max(3)
                 min(2)
             }
-            rollout { 25.0 }
+            rampUp { 25.0 }
         } returns true
         rule {
             versions { max(3) }
-            rollout { 100.0 }
+            rampUp { 100.0 }
         } returns true
     }
-    val ANALYTICS_ENABLED by boolean<Context>(true) { }
+    val ANALYTICS_ENABLED by boolean<`Context<T : Namespace>`>(true) { }
 
     // String Features
-    val WELCOME_MESSAGE by string<Context>("Hello!") {
+    val WELCOME_MESSAGE by string<`Context<T : Namespace>`>("Hello!") {
         default("Welcome!")
         rule {
             locales(AppLocale.UNITED_STATES, AppLocale.CANADA)
@@ -55,63 +55,63 @@ object DemoFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
         } returns "Bienvenue dans Konditional Demo!"
 
     }
-    val THEME_COLOR by string<Context>("blue") {
+    val THEME_COLOR by string<`Context<T : Namespace>`>("blue") {
         default("#3B82F6") // Blue
         rule {
             platforms(Platform.IOS)
-            rollout { 50.0 }
+            rampUp { 50.0 }
         } returns "#10B981" // Green
         rule {
             platforms(Platform.ANDROID)
         } returns "#8B5CF6" // Purple
         rule {
-            platforms(Platform.WEB)
+            platforms(Platform.IOS)
         } returns "#F59E0B" // Amber
     }
 
     // Integer Features
-    val MAX_ITEMS_PER_PAGE by integer<Context>(10) {
+    val MAX_ITEMS_PER_PAGE by integer<`Context<T : Namespace>`>(10) {
         default(10)
         rule {
-            platforms(Platform.WEB)
+            platforms(Platform.IOS)
         } returns 25
         rule {
             platforms(Platform.IOS, Platform.ANDROID)
         } returns 15
     }
 
-    val CACHE_TTL_SECONDS by integer<Context>(60) {
+    val CACHE_TTL_SECONDS by integer<`Context<T : Namespace>`>(60) {
         default(300) // 5 minutes
         rule {
             versions { min(2) }
         } returns 600 // 10 minutes for v2+
         rule {
-            platforms(Platform.WEB)
+            platforms(Platform.IOS)
         } returns 900 // 15 minutes for web
 
     }
 
     // Double Features
-    val DISCOUNT_PERCENTAGE by double<Context>(15.0) {
+    val DISCOUNT_PERCENTAGE by double<`Context<T : Namespace>`>(15.0) {
         default(0.0)
         rule {
             platforms(Platform.IOS)
-            rollout { 30.0 }
+            rampUp { 30.0 }
         } returns 10.0
         rule {
             platforms(Platform.ANDROID)
-            rollout { 20.0 }
+            rampUp { 20.0 }
         } returns 15.0
         rule {
             versions { min(2, 5) }
-            rollout { 50.0 }
+            rampUp { 50.0 }
         } returns 20.0
 
     }
-    val API_RATE_LIMIT by double<Context>(100.5) {
+    val API_RATE_LIMIT by double<`Context<T : Namespace>`>(100.5) {
         default(100.0)
         rule {
-            platforms(Platform.WEB)
+            platforms(Platform.IOS)
         } returns 200.0
         rule {
             versions { min(3) }
@@ -130,19 +130,18 @@ object EnterpriseFeatures : FeatureContainer<Namespace.Global>(Namespace.Global)
     // Enterprise Boolean Features
     val SSO_ENABLED by boolean<EnterpriseContext>(true) {
         rule {
-            extension { ctx ->
-                ctx.subscriptionTier == SubscriptionTier.ENTERPRISE ||
-                ctx.subscriptionTier == SubscriptionTier.PROFESSIONAL
-
+            extension {
+                subscriptionTier == SubscriptionTier.ENTERPRISE ||
+                subscriptionTier == SubscriptionTier.PROFESSIONAL
             }
         } returns true
 
     }
     val ADVANCED_ANALYTICS by boolean<EnterpriseContext>(false) {
         rule {
-            extension { ctx ->
-                ctx.subscriptionTier == SubscriptionTier.ENTERPRISE &&
-                ctx.employeeCount > 100
+            extension {
+                subscriptionTier == SubscriptionTier.ENTERPRISE &&
+                employeeCount > 100
             }
         } returns true
     }

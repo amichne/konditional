@@ -1,9 +1,9 @@
 package io.amichne.konditional.core.features
 
-import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.types.DataClassEncodeable
 import io.amichne.konditional.core.types.DataClassWithSchema
+import io.amichne.konditional.kontext.Kontext
 
 /**
  * Sealed interface for data class-based feature flags.
@@ -32,10 +32,10 @@ import io.amichne.konditional.core.types.DataClassWithSchema
  * ```
  *
  * @param T The data class type implementing DataClassWithSchema
- * @param C The context type used for evaluation
+ * @param C The kontext type used for evaluation
  * @param M The namespace this feature belongs to
  */
-sealed interface DataClassFeature<T : DataClassWithSchema, C : Context, M : Namespace> :
+sealed interface DataClassFeature<T : DataClassWithSchema, C : Kontext<M>, M : Namespace> :
     Feature<DataClassEncodeable<T>, T, C, M> {
 
     companion object {
@@ -46,14 +46,14 @@ sealed interface DataClassFeature<T : DataClassWithSchema, C : Context, M : Name
          * @param module The namespace this feature belongs to
          * @return A DataClassFeature instance
          */
-        operator fun <T : DataClassWithSchema, C : Context, M : Namespace> invoke(
+        operator fun <T : DataClassWithSchema, C : Kontext<M>, M : Namespace> invoke(
             key: String,
             module: M,
         ): DataClassFeature<T, C, M> =
             DataClassFeatureImpl(key, module)
 
         @PublishedApi
-        internal data class DataClassFeatureImpl<T : DataClassWithSchema, C : Context, M : Namespace>(
+        internal data class DataClassFeatureImpl<T : DataClassWithSchema, C : Kontext<M>, M : Namespace>(
             override val key: String,
             override val namespace: M,
         ) : DataClassFeature<T, C, M>

@@ -50,7 +50,7 @@ class EvaluationResultTest {
 
     data class MyError(val reason: String)
 
-    private val testContext = Context(
+    private val testContext = `Context<T : Namespace>`(
         AppLocale.UNITED_STATES,
         Platform.IOS,
         Version.parseUnsafe("1.0.0"),

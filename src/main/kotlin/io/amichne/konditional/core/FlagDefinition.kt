@@ -1,25 +1,25 @@
 package io.amichne.konditional.core
 
-import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Rampup
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.kontext.Kontext
+import io.amichne.konditional.kontext.Rampup
 import io.amichne.konditional.rules.ConditionalValue
 import java.security.MessageDigest
 import kotlin.math.roundToInt
 
 /**
- * Represents a flag definition that can be evaluated within a specific contextFn.
+ * Represents a flag definition that can be evaluated within a specific kontextFn.
  *
  * This sealed class provides the minimal API surface for feature flag evaluation,
- * hiding implementation details like rollout strategies, targeting rules, and bucketing algorithms.
+ * hiding implementation details like rampUp strategies, targeting rules, and bucketing algorithms.
  *
  * Type S is constrained to EncodableValue subtypes at compile time.
  *
  * @param S The EncodableValue type wrapping the actual value (Boolean, String, Int, or Double).
  * @param T The actual value type.
- * @param C The type of contextFn used for evaluation.
+ * @param C The type of kontextFn used for evaluation.
  *
  * @property defaultValue The default value returned when no targeting rules match or the flag is inactive.
  * @property feature The feature that defines the flag's key and evaluation rules.
@@ -30,7 +30,7 @@ import kotlin.math.roundToInt
  */
 
 @ConsistentCopyVisibility
-data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> internal constructor(
+data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace> internal constructor(
     /**
      * The default value returned when no targeting rules match or the flag is inactive.
      */
@@ -48,7 +48,7 @@ data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Names
         /**
          * Creates a FlagDefinition instance.
          */
-        operator fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> invoke(
+        operator fun <S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace> invoke(
             feature: Feature<S, T, C, M>,
             bounds: List<ConditionalValue<S, T, C, M>>,
             defaultValue: T,
@@ -64,19 +64,19 @@ data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Names
     }
 
     /**
-     * Evaluates the current flag based on the provided contextFn and returns a result of type `T`.
+     * Evaluates the current flag based on the provided kontextFn and returns a result of type `T`.
      *
-     * @param context The contextFn in which the flag evaluation is performed.
+     * @param kontext The kontextFn in which the flag evaluation is performed.
      * @return The result of the evaluation, of type `T`. If the flag is not active, returns the defaultValue.
      */
-    fun evaluate(context: C): T {
+    fun evaluate(kontext: C): T {
         if (!isActive) return defaultValue
 
         return conditionalValues.firstOrNull {
-            it.rule.matches(context) &&
+            it.rule.matches(kontext) &&
                 isInEligibleSegment(
                     flagKey = feature.key,
-                    id = context.stableId.hexId,
+                    id = kontext.stableId.hexId,
                     salt = salt,
                     rollout = it.rule.rollout
                 )
@@ -84,13 +84,13 @@ data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Names
     }
 
     /**
-     * Determines if the current contextFn belongs to an ineligible segment.
+     * Determines if the current kontextFn belongs to an ineligible segment.
      *
      * This function evaluates specific conditions to check whether the
-     * current contextFn or entity falls under a segment that is considered
+     * current kontextFn or entity falls under a segment that is considered
      * ineligible for a particular operation or feature.
      *
-     * @return `true` if the contextFn is in an ineligible segment, `false` otherwise.
+     * @return `true` if the kontextFn is in an ineligible segment, `false` otherwise.
      */
     private fun isInEligibleSegment(
         flagKey: String,

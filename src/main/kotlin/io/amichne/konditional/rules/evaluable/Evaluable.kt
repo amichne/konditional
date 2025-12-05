@@ -1,6 +1,6 @@
 package io.amichne.konditional.rules.evaluable
 
-import io.amichne.konditional.context.Context
+import io.amichne.konditional.kontext.Kontext
 
 /**
  * Base abstraction for composable rule evaluation logic.
@@ -14,24 +14,24 @@ import io.amichne.konditional.context.Context
  * - Specificity values can be summed to determine rule precedence
  * - Matching logic can be chained (all must match for composition to match)
  *
- * @param C The contextFn type that this evaluable evaluates against
+ * @param C The kontextFn type that this evaluable evaluates against
  *
  * @see io.amichne.konditional.rules.Rule
  * @see BaseEvaluable
  */
-fun interface Evaluable<in C : Context> : Specifier {
+fun interface Evaluable<in C : Kontext<*>> : Specifier {
     /**
-     * Determines if this evaluable matches the given contextFn.
+     * Determines if this evaluable matches the given kontextFn.
      *
      * The default implementation always returns true, allowing implementations
      * to selectively override only when they need custom matching logic.
      *
-     * @param context The contextFn to evaluate against
-     * @return true if the contextFn matches this evaluable's criteria, false otherwise
+     * @param kontext The kontextFn to evaluate against
+     * @return true if the kontextFn matches this evaluable's criteria, false otherwise
      */
-    fun matches(context: C): Boolean
+    fun matches(kontext: C): Boolean
 
     companion object {
-        fun <C : Context> factory(matcher: (C) -> Boolean): Evaluable<C> = Evaluable { context -> matcher(context) }
+        fun <C : Kontext<*>> factory(matcher: (C) -> Boolean): Evaluable<C> = Evaluable { kontext -> matcher(kontext) }
     }
 }

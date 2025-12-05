@@ -4,10 +4,10 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.features.evaluate
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.fixtures.core.test
 import org.junit.jupiter.api.Test
 import java.util.concurrent.ConcurrentHashMap
@@ -44,8 +44,8 @@ class ConcurrencyAttacksTest {
          */
 
         val container = object : FeatureContainer<TestNamespace>(test()) {
-            val concurrentFeature1 by boolean<Context>(default = true)
-            val concurrentFeature2 by boolean<Context>(default = false)
+            val concurrentFeature1 by boolean<`Context<T : Namespace>`>(default = true)
+            val concurrentFeature2 by boolean<`Context<T : Namespace>`>(default = false)
             val concurrentFeature3 by string<Context>(default = "test")
         }
 
@@ -101,15 +101,15 @@ class ConcurrencyAttacksTest {
          */
 
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
-            val highContentionFlag by boolean<Context>(default = false) {
+            val highContentionFlag by boolean<`Context<T : Namespace>`>(default = false) {
                 rule {
                     platforms(Platform.ANDROID)
-                    rollout { 50.0 }
+                    rampUp { 50.0 }
                 } returns true
 
                 rule {
                     platforms(Platform.IOS)
-                    rollout { 30.0 }
+                    rampUp { 30.0 }
                 } returns true
             }
         }
@@ -123,7 +123,7 @@ class ConcurrencyAttacksTest {
         repeat(1000) { i ->
             executor.submit {
                 try {
-                    val context = Context(
+                    val context = `Context<T : Namespace>`(
                         locale = AppLocale.UNITED_STATES,
                         platform = if (i % 2 == 0) Platform.ANDROID else Platform.IOS,
                         appVersion = Version(1, 0, 0),
@@ -147,7 +147,7 @@ class ConcurrencyAttacksTest {
         assertEquals(1000, results.size, "Some evaluations were lost")
 
         // Verify determinism: same contextFn always gives same result
-        val context1 = Context(
+        val context1 = `Context<T : Namespace>`(
             locale = AppLocale.UNITED_STATES,
             platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
@@ -179,13 +179,13 @@ class ConcurrencyAttacksTest {
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
             // Create many flags to stress digest usage
             val flag1 by boolean<Context>(default = false) {
-                rule { rollout { 50.0 } } returns true
+                rule { rampUp { 50.0 } } returns true
             }
-            val flag2 by boolean<Context>(default = false) {
-                rule { rollout { 50.0 } } returns true
+            val flag2 by boolean<`Context<T : Namespace>`>(default = false) {
+                rule { rampUp { 50.0 } } returns true
             }
-            val flag3 by boolean<Context>(default = false) {
-                rule { rollout { 50.0 } } returns true
+            val flag3 by boolean<`Context<T : Namespace>`>(default = false) {
+                rule { rampUp { 50.0 } } returns true
             }
         }
 
@@ -197,9 +197,9 @@ class ConcurrencyAttacksTest {
         repeat(5000) { i ->
             executor.submit {
                 try {
-                    val context = Context(
+                    val context = `Context<T : Namespace>`(
                         locale = AppLocale.UNITED_STATES,
-                        platform = Platform.WEB,
+                        platform = Platform.IOS,
                         appVersion = Version(1, 0, 0),
                         stableId = StableId.of(String.format("%032d", i))
                     )
@@ -252,7 +252,7 @@ class ConcurrencyAttacksTest {
         // Create multiple containers in same namespace
         val containers = (1..10).map { i ->
             object : FeatureContainer<TestNamespace>(test()) {
-                val feature by boolean<Context>(default = i % 2 == 0)
+                val feature by boolean<`Context<T : Namespace>`>(default = i % 2 == 0)
             }
         }
 
@@ -295,7 +295,7 @@ class ConcurrencyAttacksTest {
          */
 
         val container = object : FeatureContainer<TestNamespace>(test()) {
-            val visibilityTest by boolean<Context>(default = true)
+            val visibilityTest by boolean<`Context<T : Namespace>`>(default = true)
         }
 
         val writerThread = Thread {
@@ -339,15 +339,15 @@ class ConcurrencyAttacksTest {
          */
 
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
-            val manyRulesFlag by boolean<Context>(default = false) {
+            val manyRulesFlag by boolean<`Context<T : Namespace>`>(default = false) {
                 // Create many rules to increase iteration time
                 repeat(100) { i ->
                     rule {
                         note("rule-$i")
                         if (i % 3 == 0) platforms(Platform.ANDROID)
                         if (i % 3 == 1) platforms(Platform.IOS)
-                        if (i % 3 == 2) platforms(Platform.WEB)
-                        rollout { (i % 100).toDouble() }
+                        if (i % 3 == 2) platforms(Platform.IOS)
+                        rampUp { (i % 100).toDouble() }
                     } returns (i % 2 == 0)
                 }
             }
@@ -386,7 +386,7 @@ class ConcurrencyAttacksTest {
     }
 
     // ============================================
-    // ATTACK 7: Context Mutation During Evaluation
+    // ATTACK 7: Kontext Mutation During Evaluation
     // ============================================
 
     @Test
@@ -397,7 +397,7 @@ class ConcurrencyAttacksTest {
          * DANGER: Changing contextFn mid-evaluation could break matching
          */
 
-        // Create mutable contextFn implementation (violates Context contract)
+        // Create mutable contextFn implementation (violates Kontext contract)
         data class MutableContext(
             override var locale: AppLocale,
             override var platform: Platform,
@@ -406,7 +406,7 @@ class ConcurrencyAttacksTest {
         ) : Context
 
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
-            val contextDependentFlag by boolean<Context>(default = false) {
+            val contextDependentFlag by boolean<`Context<T : Namespace>`>(default = false) {
                 rule {
                     platforms(Platform.ANDROID)
                 } returns true
@@ -470,10 +470,10 @@ class ConcurrencyAttacksTest {
 
         val container = object : FeatureContainer<TestNamespace>(test()) {
             val f1 by boolean<Context>(default = true)
-            val f2 by boolean<Context>(default = true)
+            val f2 by boolean<`Context<T : Namespace>`>(default = true)
             val f3 by boolean<Context>(default = true)
-            val f4 by boolean<Context>(default = true)
-            val f5 by boolean<Context>(default = true)
+            val f4 by boolean<`Context<T : Namespace>`>(default = true)
+            val f5 by boolean<`Context<T : Namespace>`>(default = true)
         }
 
         val executor = Executors.newFixedThreadPool(10)

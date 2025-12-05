@@ -1,9 +1,9 @@
 package io.amichne.konditional.core.instance
 
-import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.kontext.Kontext
 
 /**
  * Represents an incremental update to a [Configuration].
@@ -58,7 +58,7 @@ data class ConfigurationPatch internal constructor(
          *
          * @param entry Pair of Feature key and its flag definition
          */
-        fun <S : EncodableValue<T>, T : Any, C : Context> add(
+        fun <S : EncodableValue<T>, T : Any, C : Kontext<*>> add(
             entry: FlagDefinition<S, T, C, *>
         ) {
             flags[entry.feature] = entry

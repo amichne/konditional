@@ -1,12 +1,12 @@
 package io.amichne.konditional.core.result.utils
 
-import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.result.EvaluationResult
 import io.amichne.konditional.core.result.FlagEvaluationException
 import io.amichne.konditional.core.result.FlagNotFoundException
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.kontext.Kontext
 
 /**
  * Evaluate a flag with explicit error handling that never throws.
@@ -20,7 +20,7 @@ import io.amichne.konditional.core.types.EncodableValue
  *
  * Usage:
  * ```kotlin
- * when (val result = contextFn.evaluateSafe(MY_FLAG)) {
+ * when (val result = kontextFn.evaluateSafe(MY_FLAG)) {
  *     is EvaluationResult.Success -> handleValue(result.value)
  *     is EvaluationResult.FlagNotFound -> handleMissingFlag(result.key)
  *     is EvaluationResult.EvaluationError -> handleError(result.key, result.error)
@@ -29,7 +29,7 @@ import io.amichne.konditional.core.types.EncodableValue
  *
  * Or adapt to your error type:
  * ```kotlin
- * contextFn.evaluateSafe(MY_FLAG).fold(
+ * kontextFn.evaluateSafe(MY_FLAG).fold(
  *     onSuccess = { Outcome.Success(it) },
  *     onFlagNotFound = { Outcome.Failure(MyError.FlagNotFound(it)) },
  *     onEvaluationError = { key, err -> Outcome.Failure(MyError.Failed(key, err)) }
@@ -39,16 +39,16 @@ import io.amichne.konditional.core.types.EncodableValue
  * @param key the conditional key identifying the flag
  * @return typed result that never throws
  */
-fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> C.evaluateSafe(
+fun <S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace> C.evaluateSafe(
     key: Feature<S, T, C, M>
 ): EvaluationResult<T> =
-    key.namespace.flag(key)?.let { flag ->
+    key.namespace.flag(key).let { flag ->
         runCatching { flag.evaluate(this) }
             .fold(
                 onSuccess = { EvaluationResult.Success(it) },
                 onFailure = { EvaluationResult.EvaluationError(key.key, it) }
             )
-    } ?: EvaluationResult.FlagNotFound(key.key)
+    }
 
 /**
  * Evaluate a flag, returning null if not found or evaluation fails.
@@ -56,20 +56,20 @@ fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> C.evaluateSafe(
  * Use this when:
  * - You don't need to distinguish between FlagNotFound and EvaluationError
  * - Null is an acceptable fallback
- * - You're in a contextFn where nullable types work well
+ * - You're in a kontextFn where nullable types work well
  *
  * If you need to distinguish error cases, use `evaluateSafe()` instead.
  *
  * The feature's namespace registry is automatically used.
  *
  * ```kotlin
- * val feature: String? = contextFn.evaluateOrNull(MY_FLAG)
+ * val feature: String? = kontextFn.evaluateOrNull(MY_FLAG)
  * if (feature != null) {
  *     // use feature
  * }
  * ```
  */
-fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> C.evaluateOrNull(
+fun <S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace> C.evaluateOrNull(
     key: Feature<S, T, C, M>
 ): T? = evaluateSafe(key).getOrNull()
 
@@ -86,10 +86,10 @@ fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> C.evaluateOrNul
  * The feature's namespace registry is automatically used.
  *
  * ```kotlin
- * val feature: String = contextFn.evaluateOrDefault(MY_FLAG, default = "off")
+ * val feature: String = kontextFn.evaluateOrDefault(MY_FLAG, default = "off")
  * ```
  */
-fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> C.evaluateOrDefault(
+fun <S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace> C.evaluateOrDefault(
     key: Feature<S, T, C, M>,
     default: T
 ): T = evaluateSafe(key).getOrDefault(default)
@@ -101,19 +101,19 @@ fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> C.evaluateOrDef
  *
  * Only use this when:
  * - The flag not existing is truly an exceptional (programmer error) case
- * - You're in a contextFn that already uses exceptions
+ * - You're in a kontextFn that already uses exceptions
  * - You want fail-fast behavior
  *
  * The feature's namespace registry is automatically used.
  *
  * ```kotlin
- * val feature: String = contextFn.evaluateOrThrow(MY_FLAG)
+ * val feature: String = kontextFn.evaluateOrThrow(MY_FLAG)
  * ```
  *
  * @throws FlagNotFoundException if the flag is not registered
  * @throws FlagEvaluationException if evaluation throws an exception
  */
-fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> C.evaluateOrThrow(
+fun <S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace> C.evaluateOrThrow(
     key: Feature<S, T, C, M>
 ): T = evaluateSafe(key).fold(
     onSuccess = { it },

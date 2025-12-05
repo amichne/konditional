@@ -1,11 +1,11 @@
 package io.amichne.konditional.core.registry
 
-import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.kontext.Kontext
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicReference
  * }
  *
  * // Evaluate features
- * val isEnabled = contextFn.evaluate(PaymentFeatures.APPLE_PAY)
+ * val isEnabled = kontextFn.evaluate(PaymentFeatures.APPLE_PAY)
  * ```
  *
  * ## Direct Registry Operations
@@ -58,7 +58,7 @@ import java.util.concurrent.atomic.AtomicReference
  *     testRegistry.load(testConfig)
  *
  *     withRegistry(testRegistry) {
- *         val value = contextFn.evaluate(MY_FLAG)
+ *         val value = kontextFn.evaluate(MY_FLAG)
  *         assertEquals(expected, value)
  *     }
  * }
@@ -104,11 +104,11 @@ interface NamespaceRegistry {
      * @return The [io.amichne.konditional.core.FlagDefinition] which is known to exist via structural guarantee
      * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
-     * @param C The type of the contextFn used for evaluation
+     * @param C The type of the kontextFn used for evaluation
      * @param M The namespace the feature belongs to
      */
     @Suppress("UNCHECKED_CAST")
-    fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> flag(
+    fun <S : EncodableValue<T>, T : Any, C : Kontext<M>, M : Namespace> flag(
         key: Feature<S, T, C, M>
     ): FlagDefinition<S, T, C, M> =
         configuration.flags[key] as FlagDefinition<S, T, C, M>
@@ -163,9 +163,9 @@ interface NamespaceRegistry {
          * @param definition The [FlagDefinition] to update
          * @param S The EncodableValue type wrapping the actual value
          * @param T The actual value type
-         * @param C The type of the contextFn used for evaluation
+         * @param C The type of the kontextFn used for evaluation
          */
-        internal fun <S : EncodableValue<T>, T : Any, C : Context> NamespaceRegistry.updateDefinition(
+        internal fun <S : EncodableValue<T>, T : Any, C : Kontext<*>> NamespaceRegistry.updateDefinition(
             definition: FlagDefinition<S, T, C, *>
         ) {
             when (this) {

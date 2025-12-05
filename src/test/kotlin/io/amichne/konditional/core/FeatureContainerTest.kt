@@ -2,7 +2,7 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Context.Companion.evaluate
+import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.features.BooleanFeature
@@ -26,9 +26,9 @@ class FeatureContainerTest {
         Namespace.Payments
     ) {
         val testBoolean by boolean<Context>(default = false)
-        val testString by string<Context>(default = "default")
-        val testInt by integer<Context>(default = 0)
-        val testDouble by double<Context>(default = 0.0)
+        val testString by string<`Context<T : Namespace>`>(default = "default")
+        val testInt by integer<`Context<T : Namespace>`>(default = 0)
+        val testDouble by double<`Context<T : Namespace>`>(default = 0.0)
     }
 
 //    object Invalid {
@@ -84,7 +84,7 @@ class FeatureContainerTest {
             Namespace.Payments
         ) {
             val lazyA by boolean<Context>(default = true)
-            val lazyB by boolean<Context>(default = true)
+            val lazyB by boolean<`Context<T : Namespace>`>(default = true)
         }) {
 
             // allFeatures() should return empty before any feature is accessed
@@ -108,14 +108,14 @@ class FeatureContainerTest {
         val testFeatures = object : FeatureContainer<Namespace.Payments>(
             Namespace.Payments
         ) {
-            val configuredBoolean by boolean<Context>(default = true)
-            val configuredString by string<Context>("test-value") {}
-            val configuredInt by integer<Context>(100)
+            val configuredBoolean by boolean<`Context<T : Namespace>`>(default = true)
+            val configuredString by string<`Context<T : Namespace>`>("test-value") {}
+            val configuredInt by integer<`Context<T : Namespace>`>(100)
         }
 
-        val context = Context(
+        val context = `Context<T : Namespace>`(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.IOS,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
         )
@@ -131,14 +131,14 @@ class FeatureContainerTest {
         val first = object : FeatureContainer<Namespace.Payments>(
             Namespace.Payments
         ) {
-            val a1 by boolean<Context>(default = true)
+            val a1 by boolean<`Context<T : Namespace>`>(default = true)
             val a2 by boolean<Context>(default = true)
         }
 
         val second = object : FeatureContainer<Namespace.Messaging>(Namespace.Messaging) {
             val b1 by boolean<Context>(default = true)
-            val b2 by boolean<Context>(default = true)
-            val b3 by boolean<Context>(default = true)
+            val b2 by boolean<`Context<T : Namespace>`>(default = true)
+            val b3 by boolean<`Context<T : Namespace>`>(default = true)
         }
 
         // Access properties to trigger registration
@@ -177,10 +177,10 @@ class FeatureContainerTest {
         val booleanFeature: BooleanFeature<Context, Namespace.Payments> =
             TestFeatures.testBoolean
 
-        val stringFeature: StringFeature<Context, Namespace.Payments> =
+        val stringFeature: StringFeature<`Context<T : Namespace>`, Namespace.Payments> =
             TestFeatures.testString
 
-        val intFeature: IntFeature<Context, Namespace.Payments> =
+        val intFeature: IntFeature<`Context<T : Namespace>`, Namespace.Payments> =
             TestFeatures.testInt
 
         // Verify types are preserved

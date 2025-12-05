@@ -14,7 +14,7 @@ object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val darkMode by boolean(default = false) {
         rule {
             platforms(Platform.IOS)
-            rollout { 50.0 }
+            rampUp { 50.0 }
             versions {
                 max(4, 1, 3)
                 min(1, 9, 4)
@@ -89,7 +89,7 @@ val API_ENDPOINT by string(default = "https://api.prod.example.com") {
 // Numbers: Thresholds, timeouts, limits
 val RATE_LIMIT by int(default = 100) {
     rule {
-        rollout { 10.0 }
+        rampUp { 10.0 }
     } returns 500
 }
 
@@ -144,7 +144,7 @@ val PREMIUM_FEATURE by boolean(default = false) {
         versions {
             min(2, 0, 0)                           // Version >= 2.0.0
         }
-        rollout { 50.0 }                           // 50% of matching users
+        rampUp { 50.0 }                           // 50% of matching users
     } returns true
 }
 ```
@@ -171,7 +171,7 @@ Gradual rollouts use SHA-256 bucketing. Same user always gets the same result:
 ```kotlin
 val NEW_CHECKOUT by boolean(default = false) {
     rule {
-        rollout { 25.0 }  // 25% of users
+        rampUp { 25.0 }  // 25% of users
     } returns true
 }
 ```
@@ -186,7 +186,7 @@ val NEW_CHECKOUT by boolean(default = false) {
 val EXPERIMENT by boolean(default = false) {
     salt("v2")  // New salt = new bucketing
     rule {
-        rollout { 50.0 }
+        rampUp { 50.0 }
     } returns true
 }
 ```
@@ -269,7 +269,7 @@ object MyFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
 val MY_FLAG by boolean(default = false) {
     rule {
         platforms(Platform.IOS)
-        rollout { 50.0 }
+        rampUp { 50.0 }
     } returns true
 }
 ```

@@ -1,6 +1,5 @@
 package io.amichne.konditional.context
 
-import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.update
 import io.amichne.konditional.core.id.StableId
@@ -12,6 +11,7 @@ import io.amichne.konditional.fixtures.ExperimentFeatures
 import io.amichne.konditional.fixtures.SubscriptionTier
 import io.amichne.konditional.fixtures.UserRole
 import io.amichne.konditional.fixtures.core.id.TestStableId
+import io.amichne.konditional.kontext.AppLocale
 import io.amichne.konditional.serialization.SnapshotSerializer
 import org.junit.jupiter.api.BeforeEach
 import kotlin.test.Test
@@ -20,8 +20,8 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * Tests for Context polymorphism and extensibility.
- * Validates that custom Context implementations can be used with the feature flag system.
+ * Tests for Kontext polymorphism and extensibility.
+ * Validates that custom Kontext implementations can be used with the feature flag system.
  */
 class ContextPolymorphismTest {
     @BeforeEach
@@ -48,9 +48,9 @@ class ContextPolymorphismTest {
         // Configure using .update() for test-specific configuration
         EnterpriseFeatures.advanced_analytics.update {
             default(false)
-            // This demonstrates that the rule can access base Context properties
+            // This demonstrates that the rule can access base Kontext properties
             rule {
-                platforms(Platform.WEB)
+                platforms(Platform.IOS)
                 versions {
                     min(2, 0)
                 }
@@ -59,7 +59,7 @@ class ContextPolymorphismTest {
 
         val ctx = EnterpriseContext(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.IOS,
             appVersion = Version(2, 5, 0),
             stableId = TestStableId,
             organizationId = "org-123",
@@ -79,7 +79,7 @@ class ContextPolymorphismTest {
                 platforms(Platform.IOS, Platform.ANDROID)
             } returns "variant-a"
             rule {
-                platforms(Platform.WEB)
+                platforms(Platform.IOS)
             } returns "variant-b"
         }
 
@@ -94,7 +94,7 @@ class ContextPolymorphismTest {
 
         val webCtx = ExperimentContext(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.IOS,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("33333333333333333333333333333333"),
             experimentGroups = setOf("exp-001"),
@@ -122,7 +122,7 @@ class ContextPolymorphismTest {
         }
         val enterpriseCtx1 = EnterpriseContext(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.IOS,
             appVersion = Version(1, 0, 0),
             stableId = TestStableId.newInstance(),
             organizationId = "org-456",
@@ -151,17 +151,17 @@ class ContextPolymorphismTest {
         EnterpriseFeatures.api_access.update {
             default(false)
             rule {
-                platforms(Platform.WEB)
-                rollout { 100 }
+                platforms(Platform.IOS)
+                rampUp { 100 }
 
-                extension { context -> EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN).matches(context) }
+                extension(EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN)::matches)
 
             } returns true
         }
 
         val enterpriseAdmin = EnterpriseContext(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.IOS,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"),
             organizationId = "org-ent",
@@ -171,7 +171,7 @@ class ContextPolymorphismTest {
 
         val premiumEditor = EnterpriseContext(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.IOS,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("cccccccccccccccccccccccccccccccc"),
             organizationId = "org-prem",

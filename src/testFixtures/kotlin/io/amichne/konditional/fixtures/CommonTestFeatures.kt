@@ -25,61 +25,61 @@ object CommonTestFeatures : FeatureContainer<Namespace.Global>(Namespace.Global)
 
     // Boolean features
     /** General-purpose test feature flag */
-    val testFeature by boolean<Context>(default = false)
+    val testFeature by boolean<`Context<T : Namespace>`>(default = false)
 
     /** Always-enabled feature for testing true state */
-    val alwaysTrue by boolean<Context>(default = true)
+    val alwaysTrue by boolean<`Context<T : Namespace>`>(default = true)
 
     /** Feature flag for testing enabled state */
-    val enabledFeature by boolean<Context>(default = true)
+    val enabledFeature by boolean<`Context<T : Namespace>`>(default = true)
 
     /** Feature flag for testing disabled state */
-    val disabledFeature by boolean<Context>(default = false)
+    val disabledFeature by boolean<`Context<T : Namespace>`>(default = false)
 
-    /** Feature flag for testing rollout percentages */
-    val rolloutFeature by boolean<Context>(default = false)
+    /** Feature flag for testing rampUp percentages */
+    val rolloutFeature by boolean<`Context<T : Namespace>`>(default = false)
 
     /** Feature flag for testing platform targeting */
-    val platformFeature by boolean<Context>(default = false)
+    val platformFeature by boolean<`Context<T : Namespace>`>(default = false)
 
     /** Feature flag for testing locale targeting */
-    val localeFeature by boolean<Context>(default = false)
+    val localeFeature by boolean<`Context<T : Namespace>`>(default = false)
 
     /** Feature flag for testing version ranges */
-    val versionFeature by boolean<Context>(default = false)
+    val versionFeature by boolean<`Context<T : Namespace>`>(default = false)
 
     // String features
     /** API endpoint configuration */
-    val apiEndpoint by string<Context>(default = "https://api.example.com")
+    val apiEndpoint by string<`Context<T : Namespace>`>(default = "https://api.example.com")
 
     /** Theme configuration */
-    val theme by string<Context>(default = "light")
+    val theme by string<`Context<T : Namespace>`>(default = "light")
 
     /** Welcome message configuration */
-    val welcomeMessage by string<Context>(default = "Welcome!")
+    val welcomeMessage by string<`Context<T : Namespace>`>(default = "Welcome!")
 
     /** General-purpose test string flag */
     val testString by string<Context>(default = "default")
 
     /** Registered flag for testing found scenarios */
-    val registeredFlag by string<Context>(default = "test")
+    val registeredFlag by string<`Context<T : Namespace>`>(default = "test")
 
     /** Unregistered flag for testing not-found scenarios */
-    val unregisteredFlag by string<Context>(default = "")
+    val unregisteredFlag by string<`Context<T : Namespace>`>(default = "")
 
     // Integer features
     /** Maximum connections configuration */
-    val maxConnections by integer<Context>(default = 100)
+    val maxConnections by integer<`Context<T : Namespace>`>(default = 100)
 
     /** Timeout configuration in milliseconds */
-    val timeout by integer<Context>(default = 5000)
+    val timeout by integer<`Context<T : Namespace>`>(default = 5000)
 
     /** Retry count configuration */
-    val retryCount by integer<Context>(default = 3)
+    val retryCount by integer<`Context<T : Namespace>`>(default = 3)
 
     // Double features
     /** Threshold configuration */
-    val threshold by double<Context>(default = 0.5)
+    val threshold by double<`Context<T : Namespace>`>(default = 0.5)
 
     /** Rate limit configuration */
     val rateLimit by double<Context>(default = 100.0)

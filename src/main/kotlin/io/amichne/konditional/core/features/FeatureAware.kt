@@ -6,13 +6,14 @@ import io.amichne.konditional.core.Namespace
 typealias Featurized<M> = FeatureAware<M>
 
 interface FeatureAware<M : Namespace> {
-    val container: FeatureContainer<M>
+    val namespace: M
+//    val container: FeatureContainer<M>
 
     companion object {
-        inline operator fun <reified M : Namespace> invoke(
-            container: FeatureContainer<M>,
-        ): FeatureAware<M> = object : FeatureAware<M> {
-            override val container: FeatureContainer<M> = container
-        }
+//        inline operator fun <reified M : Namespace> invoke(
+//            container: FeatureContainer<M>,
+//        ): FeatureAware<M> = object : FeatureAware<M> {
+//            override val container: FeatureContainer<M> = container
+//        }
     }
 }
