@@ -1,0 +1,3 @@
+[submodule ".llm-docs"]
+	path = .llm-docs
+	url = https://github.com/amichne/llm-docs.git

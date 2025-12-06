@@ -1,0 +1,760 @@
+diff --git a/src/main/kotlin/io/amichne/konditional/core/FlagDefinition.kt b/src/main/kotlin/io/amichne/konditional/core/FlagDefinition.kt
+index 32c851f..298b8f9 100644
+--- a/src/main/kotlin/io/amichne/konditional/core/FlagDefinition.kt
++++ b/src/main/kotlin/io/amichne/konditional/core/FlagDefinition.kt
+@@ -4,57 +4,51 @@ import io.amichne.konditional.context.Context
+ import io.amichne.konditional.context.Rampup
+ import io.amichne.konditional.core.features.Feature
+ import io.amichne.konditional.core.id.HexId
+-import io.amichne.konditional.core.types.EncodableValue
+ import io.amichne.konditional.rules.ConditionalValue
+ import java.security.MessageDigest
+ import kotlin.math.roundToInt
+ 
+ /**
+- * Represents a flag definition that can be evaluated within a specific contextFn.
++ * Represents a flag definition that can be evaluated within a specific context.
+  *
+- * This sealed class provides the minimal API surface for feature flag evaluation,
++ * This data class provides the minimal API surface for feature flag evaluation,
+  * hiding implementation details like rollout strategies, targeting rules, and bucketing algorithms.
+  *
+- * Type S is constrained to EncodableValue subtypes at compile time.
+- *
+- * @param S The EncodableValue type wrapping the actual value (Boolean, String, Int, or Double).
+- * @param T The actual value type.
+- * @param C The type of contextFn used for evaluation.
++ * @param T The actual value type (Boolean, String, Int, Double, Enum, DataClass).
++ * @param C The type of context used for evaluation.
++ * @param M The namespace type for isolation.
+  *
+  * @property defaultValue The default value returned when no targeting rules match or the flag is inactive.
+  * @property feature The feature that defines the flag's key and evaluation rules.
+  * @property isActive Indicates whether this flag is currently active. Inactive flags always return the default value.
+  * @property values List of conditional values that define the flag's behavior.
+  * @property salt Optional salt string used for hashing and bucketing.
+- *
+  */
+-
+ @ConsistentCopyVisibility
+-data class FlagDefinition<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> internal constructor(
++data class FlagDefinition<T : Any, C : Context, M : Namespace> internal constructor(
+     /**
+      * The default value returned when no targeting rules match or the flag is inactive.
+      */
+     val defaultValue: T,
+-    val feature: Feature<S, T, C, M>,
+-    internal val values: List<ConditionalValue<S, T, C, M>> = listOf(),
++    val feature: Feature<T, M>,
++    internal val values: List<ConditionalValue<T, C, M>> = listOf(),
+     val isActive: Boolean = true,
+     val salt: String = "v1"
+ ) {
+-    private val conditionalValues: List<ConditionalValue<S, T, C, M>> =
+-        values.sortedWith(compareByDescending<ConditionalValue<S, T, C, M>> { it.rule.specificity() })
++    private val conditionalValues: List<ConditionalValue<T, C, M>> =
++        values.sortedWith(compareByDescending<ConditionalValue<T, C, M>> { it.rule.specificity() })
+ 
+     internal companion object {
+-
+         /**
+          * Creates a FlagDefinition instance.
+          */
+-        operator fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> invoke(
+-            feature: Feature<S, T, C, M>,
+-            bounds: List<ConditionalValue<S, T, C, M>>,
++        operator fun <T : Any, C : Context, M : Namespace> invoke(
++            feature: Feature<T, M>,
++            bounds: List<ConditionalValue<T, C, M>>,
+             defaultValue: T,
+             salt: String = "v1",
+             isActive: Boolean = true,
+-        ): FlagDefinition<S, T, C, M> = FlagDefinition(
++        ): FlagDefinition<T, C, M> = FlagDefinition(
+             defaultValue = defaultValue,
+             feature = feature,
+             values = bounds,
+diff --git a/src/main/kotlin/io/amichne/konditional/core/dsl/FlagScope.kt b/src/main/kotlin/io/amichne/konditional/core/dsl/FlagScope.kt
+index ac5147f..dd2eaba 100644
+--- a/src/main/kotlin/io/amichne/konditional/core/dsl/FlagScope.kt
++++ b/src/main/kotlin/io/amichne/konditional/core/dsl/FlagScope.kt
+@@ -2,7 +2,6 @@ package io.amichne.konditional.core.dsl
+ 
+ import io.amichne.konditional.context.Context
+ import io.amichne.konditional.core.Namespace
+-import io.amichne.konditional.core.types.EncodableValue
+ import io.amichne.konditional.rules.Rule
+ 
+ /**
+@@ -14,23 +13,24 @@ import io.amichne.konditional.rules.Rule
+  *
+  * Example usage:
+  * ```kotlin
+- * MyFeature.FEATURE_A with {
+- *     default(true)
+- *     salt("v2")
+- *     rule {
+- *         platforms(Platform.IOS)
+- *         rollout {  Rampup.of(50.0) }
+- *     }.returns(false)
++ * object MyFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
++ *     val FEATURE_A by boolean(default = true) {
++ *         salt("v2")
++ *         rule {
++ *             platforms(Platform.IOS)
++ *             rollout { 50.0 }
++ *         } returns false
++ *     }
+  * }
+  * ```
+  *
+- * @param S The EncodableValue type wrapping the actual value
+- * @param T The actual value type
+- * @param C The contextFn type the flag evaluates against
++ * @param T The actual value type (Boolean, String, Int, Double, Enum, DataClass)
++ * @param C The context type the flag evaluates against
++ * @param M The namespace type for isolation
+  * @since 0.0.2
+  */
+ @KonditionalDsl
+-interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> {
++interface FlagScope<T : Any, C : Context, M : Namespace> {
+ 
+     fun active(block: () -> Boolean): Unit
+ 
+diff --git a/src/main/kotlin/io/amichne/konditional/core/features/BooleanFeature.kt b/src/main/kotlin/io/amichne/konditional/core/features/BooleanFeature.kt
+index dd70fb3..3f807e2 100644
+--- a/src/main/kotlin/io/amichne/konditional/core/features/BooleanFeature.kt
++++ b/src/main/kotlin/io/amichne/konditional/core/features/BooleanFeature.kt
+@@ -1,21 +1,19 @@
+ package io.amichne.konditional.core.features
+ 
+-import io.amichne.konditional.context.Context
+ import io.amichne.konditional.core.Namespace
+-import io.amichne.konditional.core.types.BooleanEncodeable
+ 
+-sealed interface BooleanFeature<C : Context, M : Namespace> : Feature<BooleanEncodeable, Boolean, C, M> {
++sealed interface BooleanFeature<M : Namespace> : Feature<Boolean, M> {
+     companion object {
+-        internal operator fun <C : Context, M : Namespace> invoke(
++        internal operator fun <M : Namespace> invoke(
+             key: String,
+             module: M,
+-        ): BooleanFeature<C, M> =
++        ): BooleanFeature<M> =
+             BooleanFeatureImpl(key, module)
+ 
+         @PublishedApi
+-        internal data class BooleanFeatureImpl<C : Context, M : Namespace>(
++        internal data class BooleanFeatureImpl<M : Namespace>(
+             override val key: String,
+             override val namespace: M,
+-        ) : BooleanFeature<C, M>
++        ) : BooleanFeature<M>
+     }
+ }
+diff --git a/src/main/kotlin/io/amichne/konditional/core/features/DataClassFeature.kt b/src/main/kotlin/io/amichne/konditional/core/features/DataClassFeature.kt
+index 806a3cb..58e8da9 100644
+--- a/src/main/kotlin/io/amichne/konditional/core/features/DataClassFeature.kt
++++ b/src/main/kotlin/io/amichne/konditional/core/features/DataClassFeature.kt
+@@ -1,8 +1,6 @@
+ package io.amichne.konditional.core.features
+ 
+-import io.amichne.konditional.context.Context
+ import io.amichne.konditional.core.Namespace
+-import io.amichne.konditional.core.types.DataClassEncodeable
+ import io.amichne.konditional.core.types.DataClassWithSchema
+ 
+ /**
+@@ -32,12 +30,9 @@ import io.amichne.konditional.core.types.DataClassWithSchema
+  * ```
+  *
+  * @param T The data class type implementing DataClassWithSchema
+- * @param C The context type used for evaluation
+  * @param M The namespace this feature belongs to
+  */
+-sealed interface DataClassFeature<T : DataClassWithSchema, C : Context, M : Namespace> :
+-    Feature<DataClassEncodeable<T>, T, C, M> {
+-
++sealed interface DataClassFeature<T : DataClassWithSchema, M : Namespace> : Feature<T, M> {
+     companion object {
+         /**
+          * Factory function for creating DataClassFeature instances.
+@@ -46,16 +41,16 @@ sealed interface DataClassFeature<T : DataClassWithSchema, C : Context, M : Name
+          * @param module The namespace this feature belongs to
+          * @return A DataClassFeature instance
+          */
+-        operator fun <T : DataClassWithSchema, C : Context, M : Namespace> invoke(
++        operator fun <T : DataClassWithSchema, M : Namespace> invoke(
+             key: String,
+             module: M,
+-        ): DataClassFeature<T, C, M> =
++        ): DataClassFeature<T, M> =
+             DataClassFeatureImpl(key, module)
+ 
+         @PublishedApi
+-        internal data class DataClassFeatureImpl<T : DataClassWithSchema, C : Context, M : Namespace>(
++        internal data class DataClassFeatureImpl<T : DataClassWithSchema, M : Namespace>(
+             override val key: String,
+             override val namespace: M,
+-        ) : DataClassFeature<T, C, M>
++        ) : DataClassFeature<T, M>
+     }
+ }
+diff --git a/src/main/kotlin/io/amichne/konditional/core/features/DoubleFeature.kt b/src/main/kotlin/io/amichne/konditional/core/features/DoubleFeature.kt
+index f2af687..0c2e0c9 100644
+--- a/src/main/kotlin/io/amichne/konditional/core/features/DoubleFeature.kt
++++ b/src/main/kotlin/io/amichne/konditional/core/features/DoubleFeature.kt
+@@ -1,23 +1,19 @@
+ package io.amichne.konditional.core.features
+ 
+-import io.amichne.konditional.context.Context
+ import io.amichne.konditional.core.Namespace
+-import io.amichne.konditional.core.types.DecimalEncodeable
+-
+-sealed interface DoubleFeature<C : Context, M : Namespace> :
+-    Feature<DecimalEncodeable, Double, C, M> {
+ 
++sealed interface DoubleFeature<M : Namespace> : Feature<Double, M> {
+     companion object {
+-        internal operator fun <C : Context, M : Namespace> invoke(
++        internal operator fun <M : Namespace> invoke(
+             key: String,
+             module: M,
+-        ): DoubleFeature<C, M> =
++        ): DoubleFeature<M> =
+             DoubleFeatureImpl(key, module)
+ 
+         @PublishedApi
+-        internal data class DoubleFeatureImpl<C : Context, M : Namespace>(
++        internal data class DoubleFeatureImpl<M : Namespace>(
+             override val key: String,
+             override val namespace: M,
+-        ) : DoubleFeature<C, M>
++        ) : DoubleFeature<M>
+     }
+ }
+diff --git a/src/main/kotlin/io/amichne/konditional/core/features/EnumFeature.kt b/src/main/kotlin/io/amichne/konditional/core/features/EnumFeature.kt
+index c22a528..3112188 100644
+--- a/src/main/kotlin/io/amichne/konditional/core/features/EnumFeature.kt
++++ b/src/main/kotlin/io/amichne/konditional/core/features/EnumFeature.kt
+@@ -1,31 +1,26 @@
+ package io.amichne.konditional.core.features
+ 
+-import io.amichne.konditional.context.Context
+ import io.amichne.konditional.core.Namespace
+-import io.amichne.konditional.core.types.EnumEncodeable
+ 
+ /**
+  * Feature type for user-defined enum values.
+  * Provides compile-time type safety for enum-typed feature flags.
+  *
+  * @param E The specific enum type
+- * @param C The context type for evaluation
+  * @param M The namespace type for isolation
+  */
+-sealed interface EnumFeature<E : Enum<E>, C : Context, M : Namespace> :
+-    Feature<EnumEncodeable<E>, E, C, M> {
+-
++sealed interface EnumFeature<E : Enum<E>, M : Namespace> : Feature<E, M> {
+     companion object {
+-        internal operator fun <E : Enum<E>, C : Context, M : Namespace> invoke(
++        internal operator fun <E : Enum<E>, M : Namespace> invoke(
+             key: String,
+             module: M,
+-        ): EnumFeature<E, C, M> =
++        ): EnumFeature<E, M> =
+             EnumFeatureImpl(key, module)
+ 
+         @PublishedApi
+-        internal data class EnumFeatureImpl<E : Enum<E>, C : Context, M : Namespace>(
++        internal data class EnumFeatureImpl<E : Enum<E>, M : Namespace>(
+             override val key: String,
+             override val namespace: M,
+-        ) : EnumFeature<E, C, M>
++        ) : EnumFeature<E, M>
+     }
+ }
+diff --git a/src/main/kotlin/io/amichne/konditional/core/features/Feature.kt b/src/main/kotlin/io/amichne/konditional/core/features/Feature.kt
+index a456631..c227f48 100644
+--- a/src/main/kotlin/io/amichne/konditional/core/features/Feature.kt
++++ b/src/main/kotlin/io/amichne/konditional/core/features/Feature.kt
+@@ -1,8 +1,6 @@
+ package io.amichne.konditional.core.features
+ 
+-import io.amichne.konditional.context.Context
+ import io.amichne.konditional.core.Namespace
+-import io.amichne.konditional.core.types.EncodableValue
+ 
+ /**
+  * Represents a feature flag that can be used to enable or disable specific functionality
+@@ -11,29 +9,26 @@ import io.amichne.konditional.core.types.EncodableValue
+  * Features are **type-bound** to their [io.amichne.konditional.core.Namespace], providing compile-time isolation between teams.
+  * Each feature can only be defined and configured within its designated namespace.
+  *
+- * Type S is constrained to EncodableValue subtypes at compile time, ensuring type safety.
+- *
+  * Supports:
+  * - Primitives: Boolean, String, Int, Double
+- * - JSON Objects: Complex data classes and structures
+- * - Custom Wrappers: Extension types that wrap primitives (DateTime, UUID, etc.)
++ * - Enums: Type-safe enum values
++ * - Data Classes: Structured configuration with schema validation
++ * - JSON Objects: Complex data structures
+  *
+  * ## Example
+  *
+  * ```kotlin
+- * enum class PaymentFeatures(override val key: String)
+- *     : Feature<BoolEncodeable, Boolean, Context, Namespace.Payments> {
+- *     APPLE_PAY("apple_pay");
+- *     override val namespace = Namespace.Payments
++ * object PaymentFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
++ *     val APPLE_PAY by boolean(default = false) {
++ *         rule { platforms(Platform.IOS) } returns true
++ *     }
+  * }
+  * ```
+  *
+- * @param S The EncodableValue type wrapping the actual value.
+- * @param T The actual value type.
+- * @param C The type of the contextFn that the feature flag evaluates against.
++ * @param T The value type (Boolean, String, Int, Double, Enum, DataClass).
+  * @param M The namespace this feature belongs to (compile-time binding).
+  */
+-sealed interface Feature<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> {
++sealed interface Feature<T : Any, M : Namespace> {
+     val key: String
+     val namespace: M
+ }
+diff --git a/src/main/kotlin/io/amichne/konditional/core/features/FeatureContainer.kt b/src/main/kotlin/io/amichne/konditional/core/features/FeatureContainer.kt
+index f868b62..f115895 100644
+--- a/src/main/kotlin/io/amichne/konditional/core/features/FeatureContainer.kt
++++ b/src/main/kotlin/io/amichne/konditional/core/features/FeatureContainer.kt
+@@ -4,14 +4,7 @@ import io.amichne.konditional.context.Context
+ import io.amichne.konditional.core.Namespace
+ import io.amichne.konditional.core.dsl.FlagScope
+ import io.amichne.konditional.core.registry.NamespaceRegistry.Companion.updateDefinition
+-import io.amichne.konditional.core.types.BooleanEncodeable
+-import io.amichne.konditional.core.types.DataClassEncodeable
+ import io.amichne.konditional.core.types.DataClassWithSchema
+-import io.amichne.konditional.core.types.DecimalEncodeable
+-import io.amichne.konditional.core.types.EncodableValue
+-import io.amichne.konditional.core.types.EnumEncodeable
+-import io.amichne.konditional.core.types.IntEncodeable
+-import io.amichne.konditional.core.types.StringEncodeable
+ import io.amichne.konditional.internal.builders.FlagBuilder
+ import kotlin.properties.PropertyDelegateProvider
+ import kotlin.properties.ReadOnlyProperty
+@@ -68,10 +61,10 @@ abstract class FeatureContainer<M : Namespace>(
+     override val container: FeatureContainer<M>
+         get() = this
+ 
+-    private val _features = mutableListOf<Feature<*, *, *, M>>()
++    private val _features = mutableListOf<Feature<*, M>>()
+ 
+     /**
+-     * Returns all features declared in this features.
++     * Returns all features declared in this container.
+      *
+      * Features are registered lazily when first accessed through property delegation.
+      * This method returns a snapshot of all features that have been accessed at least once.
+@@ -84,13 +77,13 @@ abstract class FeatureContainer<M : Namespace>(
+      * ```kotlin
+      * val features = PaymentFeatures.allFeatures()
+      * features.forEach { feature ->
+-     *     println("Feature: ${feature.name}")
++     *     println("Feature: ${feature.key}")
+      * }
+      * ```
+      *
+-     * @return An immutable list of all registered features in this features
++     * @return An immutable list of all registered features in this container
+      */
+-    fun allFeatures(): List<Feature<*, *, *, M>> = _features.toList()
++    fun allFeatures(): List<Feature<*, M>> = _features.toList()
+ 
+     /**
+      * Creates a Boolean feature with automatic registration and configuration.
+@@ -110,15 +103,15 @@ abstract class FeatureContainer<M : Namespace>(
+      * }
+      * ```
+      *
+-     * @param C The contextFn type used for evaluation
++     * @param C The context type used for evaluation (defaults to base Context)
+      * @param default The default value for this feature (required)
+      * @param flagScope DSL scope for configuring the boolean feature
+      * @return A delegated property that returns a [BooleanFeature]
+      */
+     protected fun <C : Context> boolean(
+         default: Boolean,
+-        flagScope: FlagScope<BooleanEncodeable, Boolean, C, M>.() -> Unit = {},
+-    ): ReadOnlyProperty<FeatureContainer<M>, BooleanFeature<C, M>> =
++        flagScope: FlagScope<Boolean, C, M>.() -> Unit = {},
++    ): ReadOnlyProperty<FeatureContainer<M>, BooleanFeature<M>> =
+         ContainerFeaturePropertyDelegate(default, flagScope) { BooleanFeature(it, namespace) }
+ 
+     /**
+@@ -139,15 +132,15 @@ abstract class FeatureContainer<M : Namespace>(
+      * }
+      * ```
+      *
+-     * @param C The contextFn type used for evaluation
++     * @param C The context type used for evaluation (defaults to base Context)
+      * @param default The default value for this feature (required)
+      * @param stringScope DSL scope for configuring the string feature
+      * @return A delegated property that returns a [StringFeature]
+      */
+     protected fun <C : Context> string(
+         default: String,
+-        stringScope: FlagScope<StringEncodeable, String, C, M>.() -> Unit = {},
+-    ): ReadOnlyProperty<FeatureContainer<M>, StringFeature<C, M>> =
++        stringScope: FlagScope<String, C, M>.() -> Unit = {},
++    ): ReadOnlyProperty<FeatureContainer<M>, StringFeature<M>> =
+         ContainerFeaturePropertyDelegate(default, stringScope) { StringFeature.Companion(it, namespace) }
+ 
+     /**
+@@ -160,7 +153,7 @@ abstract class FeatureContainer<M : Namespace>(
+      * **Example:**
+      * ```kotlin
+      * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
+-     *     val MAX_RETRY_COUNT by int(default = 3) {
++     *     val MAX_RETRY_COUNT by integer(default = 3) {
+      *         rule {
+      *             platforms(Platform.IOS)
+      *         } returns 5
+@@ -168,15 +161,15 @@ abstract class FeatureContainer<M : Namespace>(
+      * }
+      * ```
+      *
+-     * @param C The contextFn type used for evaluation
++     * @param C The context type used for evaluation (defaults to base Context)
+      * @param default The default value for this feature (required)
+      * @param integerScope DSL scope for configuring the integer feature
+      * @return A delegated property that returns an [IntFeature]
+      */
+     protected fun <C : Context> integer(
+         default: Int,
+-        integerScope: FlagScope<IntEncodeable, Int, C, M>.() -> Unit = {},
+-    ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<C, M>> =
++        integerScope: FlagScope<Int, C, M>.() -> Unit = {},
++    ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<M>> =
+         ContainerFeaturePropertyDelegate(default, integerScope) {
+             IntFeature.Companion(it, namespace)
+         }
+@@ -207,8 +200,8 @@ abstract class FeatureContainer<M : Namespace>(
+     @Deprecated("Use integer() instead", ReplaceWith("integer(default) ({ integerScope })"))
+     protected fun <C : Context> int(
+         default: Int,
+-        integerScope: FlagScope<IntEncodeable, Int, C, M>.() -> Unit = {},
+-    ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<C, M>> =
++        integerScope: FlagScope<Int, C, M>.() -> Unit = {},
++    ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<M>> =
+         ContainerFeaturePropertyDelegate(default, integerScope) {
+             IntFeature.Companion(it, namespace)
+         }
+@@ -231,15 +224,15 @@ abstract class FeatureContainer<M : Namespace>(
+      * }
+      * ```
+      *
+-     * @param C The contextFn type used for evaluation
++     * @param C The context type used for evaluation (defaults to base Context)
+      * @param default The default value for this feature (required)
+      * @param decimalScope DSL scope for configuring the double feature
+      * @return A delegated property that returns a [DoubleFeature]
+      */
+     protected fun <C : Context> double(
+         default: Double,
+-        decimalScope: FlagScope<DecimalEncodeable, Double, C, M>.() -> Unit = {},
+-    ): ReadOnlyProperty<FeatureContainer<M>, DoubleFeature<C, M>> =
++        decimalScope: FlagScope<Double, C, M>.() -> Unit = {},
++    ): ReadOnlyProperty<FeatureContainer<M>, DoubleFeature<M>> =
+         ContainerFeaturePropertyDelegate(default, decimalScope) { DoubleFeature(it, namespace) }
+ 
+     /**
+@@ -263,15 +256,15 @@ abstract class FeatureContainer<M : Namespace>(
+      * ```
+      *
+      * @param E The enum type
+-     * @param C The context type used for evaluation
++     * @param C The context type used for evaluation (defaults to base Context)
+      * @param default The default enum value for this feature (required)
+      * @param enumScope DSL scope for configuring the enum feature
+      * @return A delegated property that returns an [EnumFeature]
+      */
+     protected fun <E : Enum<E>, C : Context> enum(
+         default: E,
+-        enumScope: FlagScope<EnumEncodeable<E>, E, C, M>.() -> Unit = {},
+-    ): ReadOnlyProperty<FeatureContainer<M>, EnumFeature<E, C, M>> =
++        enumScope: FlagScope<E, C, M>.() -> Unit = {},
++    ): ReadOnlyProperty<FeatureContainer<M>, EnumFeature<E, M>> =
+         ContainerFeaturePropertyDelegate(default, enumScope) { EnumFeature(it, namespace) }
+ 
+     /**
+@@ -303,15 +296,15 @@ abstract class FeatureContainer<M : Namespace>(
+      * ```
+      *
+      * @param T The data class type implementing DataClassWithSchema
+-     * @param C The context type used for evaluation
++     * @param C The context type used for evaluation (defaults to base Context)
+      * @param default The default value for this feature (required)
+      * @param dataClassScope DSL scope for configuring the data class feature
+      * @return A delegated property that returns a [DataClassFeature]
+      */
+     protected inline fun <reified T : DataClassWithSchema, C : Context> dataClass(
+         default: T,
+-        noinline dataClassScope: FlagScope<DataClassEncodeable<T>, T, C, M>.() -> Unit = {},
+-    ): ReadOnlyProperty<FeatureContainer<M>, DataClassFeature<T, C, M>> =
++        noinline dataClassScope: FlagScope<T, C, M>.() -> Unit = {},
++    ): ReadOnlyProperty<FeatureContainer<M>, DataClassFeature<T, M>> =
+         ContainerFeaturePropertyDelegate(default, dataClassScope) { DataClassFeature(it, namespace) }
+ 
+     /**
+@@ -323,26 +316,25 @@ abstract class FeatureContainer<M : Namespace>(
+      * 1. **Captures property name**: When the property is delegated, captures the property name
+      *    to use as the feature key
+      * 2. **Lazy initialization**: Creates the feature only on first access
+-     * 3. **Automatic registration**: Adds the feature to the features's feature list
++     * 3. **Automatic registration**: Adds the feature to the container's feature list
+      * 4. **Automatic configuration**: Executes the DSL configuration block and updates the namespace
+      *
+      * **Implementation details:**
+      * - The `factory` function is responsible for creating the feature instance
+      * - The feature is created using the property name as the feature key
+      * - The DSL configuration block is executed and applied to the namespace
+-     * - All features in the features share the same namespace
++     * - All features in the container share the same namespace
+      *
+      * @param F The feature type (BooleanFeature, StringFeature, etc.)
+-     * @param S The EncodableValue type wrapping the actual value
+      * @param T The value type (Boolean, String, Int, etc.)
+-     * @param C The contextFn type used for evaluation
++     * @param C The context type used for evaluation
+      * @param configScope The DSL configuration block to execute
+      * @param factory A function that creates the feature given the namespace and property name
+      */
+     @Suppress("UNCHECKED_CAST")
+-    inner class ContainerFeaturePropertyDelegate<F : Feature<S, T, C, M>, S : EncodableValue<T>, T : Any, C : Context>(
++    inner class ContainerFeaturePropertyDelegate<F : Feature<T, M>, T : Any, C : Context>(
+         private val default: T,
+-        private val configScope: FlagScope<S, T, C, M>.() -> Unit,
++        private val configScope: FlagScope<T, C, M>.() -> Unit,
+         private val factory: M.(String) -> F,
+     ) : ReadOnlyProperty<FeatureContainer<M>, F>, PropertyDelegateProvider<FeatureContainer<M>, F> {
+         lateinit var name: String
+diff --git a/src/main/kotlin/io/amichne/konditional/core/features/IntFeature.kt b/src/main/kotlin/io/amichne/konditional/core/features/IntFeature.kt
+index 98edaba..d61bd19 100644
+--- a/src/main/kotlin/io/amichne/konditional/core/features/IntFeature.kt
++++ b/src/main/kotlin/io/amichne/konditional/core/features/IntFeature.kt
+@@ -1,21 +1,19 @@
+ package io.amichne.konditional.core.features
+ 
+-import io.amichne.konditional.context.Context
+ import io.amichne.konditional.core.Namespace
+-import io.amichne.konditional.core.types.IntEncodeable
+ 
+-sealed interface IntFeature<C : Context, M : Namespace> : Feature<IntEncodeable, Int, C, M> {
++sealed interface IntFeature<M : Namespace> : Feature<Int, M> {
+     companion object {
+-        internal operator fun <C : Context, M : Namespace> invoke(
++        internal operator fun <M : Namespace> invoke(
+             key: String,
+             module: M,
+-        ): IntFeature<C, M> =
++        ): IntFeature<M> =
+             IntFeatureImpl(key, module)
+ 
+         @PublishedApi
+-        internal data class IntFeatureImpl<C : Context, M : Namespace>(
++        internal data class IntFeatureImpl<M : Namespace>(
+             override val key: String,
+             override val namespace: M,
+-        ) : IntFeature<C, M>
++        ) : IntFeature<M>
+     }
+ }
+diff --git a/src/main/kotlin/io/amichne/konditional/core/features/StringFeature.kt b/src/main/kotlin/io/amichne/konditional/core/features/StringFeature.kt
+index 799c659..3826dcb 100644
+--- a/src/main/kotlin/io/amichne/konditional/core/features/StringFeature.kt
++++ b/src/main/kotlin/io/amichne/konditional/core/features/StringFeature.kt
+@@ -1,21 +1,19 @@
+ package io.amichne.konditional.core.features
+ 
+-import io.amichne.konditional.context.Context
+ import io.amichne.konditional.core.Namespace
+-import io.amichne.konditional.core.types.StringEncodeable
+ 
+-sealed interface StringFeature<C : Context, M : Namespace> : Feature<StringEncodeable, String, C, M> {
++sealed interface StringFeature<M : Namespace> : Feature<String, M> {
+     companion object {
+-        internal operator fun <C : Context, M : Namespace> invoke(
++        internal operator fun <M : Namespace> invoke(
+             key: String,
+             module: M,
+-        ): StringFeature<C, M> =
++        ): StringFeature<M> =
+             StringFeatureImpl(key, module)
+ 
+         @PublishedApi
+-        internal data class StringFeatureImpl<C : Context, M : Namespace>(
++        internal data class StringFeatureImpl<M : Namespace>(
+             override val key: String,
+             override val namespace: M,
+-        ) : StringFeature<C, M>
++        ) : StringFeature<M>
+     }
+ }
+diff --git a/src/main/kotlin/io/amichne/konditional/core/instance/Configuration.kt b/src/main/kotlin/io/amichne/konditional/core/instance/Configuration.kt
+index 1332816..466de30 100644
+--- a/src/main/kotlin/io/amichne/konditional/core/instance/Configuration.kt
++++ b/src/main/kotlin/io/amichne/konditional/core/instance/Configuration.kt
+@@ -4,4 +4,4 @@ import io.amichne.konditional.core.FlagDefinition
+ import io.amichne.konditional.core.features.Feature
+ 
+ @ConsistentCopyVisibility
+-data class Configuration internal constructor(val flags: Map<Feature<*, *, *, *>, FlagDefinition<*, *, *, *>>)
++data class Configuration internal constructor(val flags: Map<Feature<*, *>, FlagDefinition<*, *, *>>)
+diff --git a/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt b/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt
+index b2049d8..5a8be57 100644
+--- a/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt
++++ b/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt
+@@ -5,7 +5,6 @@ import io.amichne.konditional.core.FlagDefinition
+ import io.amichne.konditional.core.Namespace
+ import io.amichne.konditional.core.features.Feature
+ import io.amichne.konditional.core.instance.Configuration
+-import io.amichne.konditional.core.types.EncodableValue
+ import java.util.concurrent.atomic.AtomicReference
+ 
+ /**
+@@ -102,23 +101,22 @@ interface NamespaceRegistry {
+      *
+      * @param key The [Feature] key for the flag
+      * @return The [io.amichne.konditional.core.FlagDefinition] which is known to exist via structural guarantee
+-     * @param S The EncodableValue type wrapping the actual value
+      * @param T The actual value type
+-     * @param C The type of the contextFn used for evaluation
++     * @param C The type of the context used for evaluation
+      * @param M The namespace the feature belongs to
+      */
+     @Suppress("UNCHECKED_CAST")
+-    fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> flag(
+-        key: Feature<S, T, C, M>
+-    ): FlagDefinition<S, T, C, M> =
+-        configuration.flags[key] as FlagDefinition<S, T, C, M>
++    fun <T : Any, C : Context, M : Namespace> flag(
++        key: Feature<T, M>
++    ): FlagDefinition<T, C, M>? =
++        configuration.flags[key] as? FlagDefinition<T, C, M>
+ 
+     /**
+      * Retrieves all flags from the registry.
+      *
+      * @return Map of all [Feature] keys to their [FlagDefinition] definitions
+      */
+-    fun allFlags(): Map<Feature<*, *, *, *>, FlagDefinition<*, *, *, *>> =
++    fun allFlags(): Map<Feature<*, *>, FlagDefinition<*, *, *>> =
+         configuration.flags
+ 
+     companion object {
+@@ -161,12 +159,11 @@ interface NamespaceRegistry {
+          * called directly. Configuration updates are handled automatically through delegation.
+          *
+          * @param definition The [FlagDefinition] to update
+-         * @param S The EncodableValue type wrapping the actual value
+          * @param T The actual value type
+-         * @param C The type of the contextFn used for evaluation
++         * @param C The type of the context used for evaluation
+          */
+-        internal fun <S : EncodableValue<T>, T : Any, C : Context> NamespaceRegistry.updateDefinition(
+-            definition: FlagDefinition<S, T, C, *>
++        internal fun <T : Any, C : Context> NamespaceRegistry.updateDefinition(
++            definition: FlagDefinition<T, C, *>
+         ) {
+             when (this) {
+                 is InMemoryNamespaceRegistry -> updateDefinition(definition)
+diff --git a/src/main/kotlin/io/amichne/konditional/internal/builders/FlagBuilder.kt b/src/main/kotlin/io/amichne/konditional/internal/builders/FlagBuilder.kt
+index d7da96b..1bd5440 100644
+--- a/src/main/kotlin/io/amichne/konditional/internal/builders/FlagBuilder.kt
++++ b/src/main/kotlin/io/amichne/konditional/internal/builders/FlagBuilder.kt
+@@ -7,7 +7,6 @@ import io.amichne.konditional.core.dsl.FlagScope
+ import io.amichne.konditional.core.dsl.KonditionalDsl
+ import io.amichne.konditional.core.dsl.RuleScope
+ import io.amichne.konditional.core.features.Feature
+-import io.amichne.konditional.core.types.EncodableValue
+ import io.amichne.konditional.rules.ConditionalValue
+ import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
+ import io.amichne.konditional.rules.Rule
+@@ -19,18 +18,18 @@ import io.amichne.konditional.rules.Rule
+  * Users interact with the public [FlagScope] interface,
+  * not this implementation directly.
+  *
+- * @param S The EncodableValue type wrapping the actual value.
+  * @param T The actual value type.
+- * @param C The type of the contextFn that the feature flag evaluates against.
++ * @param C The type of the context that the feature flag evaluates against.
++ * @param M The namespace type for isolation.
+  * @property feature The feature flag key used to uniquely identify the flag.
+  * @constructor Internal constructor - users cannot instantiate this class directly.
+  */
+ @KonditionalDsl
+ @PublishedApi
+-internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M : Namespace>(
+-    private val feature: Feature<S, T, C, M>,
+-) : FlagScope<S, T, C, M> {
+-    private val conditionalValues = mutableListOf<ConditionalValue<S, T, C, M>>()
++internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
++    private val feature: Feature<T, M>,
++) : FlagScope<T, C, M> {
++    private val conditionalValues = mutableListOf<ConditionalValue<T, C, M>>()
+     private var defaultValue: T? = null
+     private var salt: String = "v1"
+     private var isActive: Boolean = true
+@@ -73,13 +72,13 @@ internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M :
+     }
+ 
+     /**
+-     * Builds and returns a `FlagDefinition` instance of type `S` with contextFn type `C`.
++     * Builds and returns a `FlagDefinition` instance with context type `C`.
+      * Internal method - not intended for direct use.
+      *
+      * @return A `FlagDefinition` instance constructed based on the current configuration.
+      */
+     @PublishedApi
+-    internal fun build(): FlagDefinition<S, T, C, M> {
++    internal fun build(): FlagDefinition<T, C, M> {
+         requireNotNull(defaultValue) { "Default value must be set" }
+         return FlagDefinition(
+             feature = feature,
+diff --git a/src/main/kotlin/io/amichne/konditional/rules/ConditionalValue.kt b/src/main/kotlin/io/amichne/konditional/rules/ConditionalValue.kt
+index 5004d19..dce78ef 100644
+--- a/src/main/kotlin/io/amichne/konditional/rules/ConditionalValue.kt
++++ b/src/main/kotlin/io/amichne/konditional/rules/ConditionalValue.kt
+@@ -2,23 +2,22 @@ package io.amichne.konditional.rules
+ 
+ import io.amichne.konditional.context.Context
+ import io.amichne.konditional.core.Namespace
+-import io.amichne.konditional.core.types.EncodableValue
+ 
+ /**
+  * Represents a rule paired with its target value.
+- * When the rule matches a contextFn, the paired value is returned.
++ * When the rule matches a context, the paired value is returned.
+  *
+- * @param S The EncodableValue type wrapping the actual value
+  * @param T The actual value type
+- * @param C The contextFn type used for rule evaluation
++ * @param C The context type used for rule evaluation
++ * @param M The namespace type for isolation
+  */
+ @ConsistentCopyVisibility
+-internal data class ConditionalValue<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> private constructor(
++internal data class ConditionalValue<T : Any, C : Context, M : Namespace> private constructor(
+     val rule: Rule<C>,
+     val value: T
+ ) {
+     companion object {
+-        internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Rule<C>.targetedBy(value: T): ConditionalValue<S, T, C, M> =
++        internal fun <T : Any, C : Context, M : Namespace> Rule<C>.targetedBy(value: T): ConditionalValue<T, C, M> =
+             ConditionalValue(this, value)
+     }
+ }
