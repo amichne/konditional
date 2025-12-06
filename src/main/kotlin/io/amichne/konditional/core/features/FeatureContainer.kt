@@ -4,14 +4,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.registry.NamespaceRegistry.Companion.updateDefinition
-import io.amichne.konditional.core.types.BooleanEncodeable
-import io.amichne.konditional.core.types.DataClassEncodeable
 import io.amichne.konditional.core.types.DataClassWithSchema
-import io.amichne.konditional.core.types.DecimalEncodeable
-import io.amichne.konditional.core.types.EncodableValue
-import io.amichne.konditional.core.types.EnumEncodeable
-import io.amichne.konditional.core.types.IntEncodeable
-import io.amichne.konditional.core.types.StringEncodeable
 import io.amichne.konditional.internal.builders.FlagBuilder
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
@@ -68,10 +61,10 @@ abstract class FeatureContainer<M : Namespace>(
     override val container: FeatureContainer<M>
         get() = this
 
-    private val _features = mutableListOf<Feature<*, *, *, M>>()
+    private val _features = mutableListOf<Feature<*, M>>()
 
     /**
-     * Returns all features declared in this features.
+     * Returns all features declared in this container.
      *
      * Features are registered lazily when first accessed through property delegation.
      * This method returns a snapshot of all features that have been accessed at least once.
@@ -84,13 +77,13 @@ abstract class FeatureContainer<M : Namespace>(
      * ```kotlin
      * val features = PaymentFeatures.allFeatures()
      * features.forEach { feature ->
-     *     println("Feature: ${feature.name}")
+     *     println("Feature: ${feature.key}")
      * }
      * ```
      *
-     * @return An immutable list of all registered features in this features
+     * @return An immutable list of all registered features in this container
      */
-    fun allFeatures(): List<Feature<*, *, *, M>> = _features.toList()
+    fun allFeatures(): List<Feature<*, M>> = _features.toList()
 
     /**
      * Creates a Boolean feature with automatic registration and configuration.
@@ -110,15 +103,15 @@ abstract class FeatureContainer<M : Namespace>(
      * }
      * ```
      *
-     * @param C The contextFn type used for evaluation
+     * @param C The context type used for evaluation (defaults to base Context)
      * @param default The default value for this feature (required)
      * @param flagScope DSL scope for configuring the boolean feature
      * @return A delegated property that returns a [BooleanFeature]
      */
     protected fun <C : Context> boolean(
         default: Boolean,
-        flagScope: FlagScope<BooleanEncodeable, Boolean, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<FeatureContainer<M>, BooleanFeature<C, M>> =
+        flagScope: FlagScope<Boolean, C, M>.() -> Unit = {},
+    ): ReadOnlyProperty<FeatureContainer<M>, BooleanFeature<M>> =
         ContainerFeaturePropertyDelegate(default, flagScope) { BooleanFeature(it, namespace) }
 
     /**
@@ -139,15 +132,15 @@ abstract class FeatureContainer<M : Namespace>(
      * }
      * ```
      *
-     * @param C The contextFn type used for evaluation
+     * @param C The context type used for evaluation (defaults to base Context)
      * @param default The default value for this feature (required)
      * @param stringScope DSL scope for configuring the string feature
      * @return A delegated property that returns a [StringFeature]
      */
     protected fun <C : Context> string(
         default: String,
-        stringScope: FlagScope<StringEncodeable, String, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<FeatureContainer<M>, StringFeature<C, M>> =
+        stringScope: FlagScope<String, C, M>.() -> Unit = {},
+    ): ReadOnlyProperty<FeatureContainer<M>, StringFeature<M>> =
         ContainerFeaturePropertyDelegate(default, stringScope) { StringFeature.Companion(it, namespace) }
 
     /**
@@ -160,7 +153,7 @@ abstract class FeatureContainer<M : Namespace>(
      * **Example:**
      * ```kotlin
      * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
-     *     val MAX_RETRY_COUNT by int(default = 3) {
+     *     val MAX_RETRY_COUNT by integer(default = 3) {
      *         rule {
      *             platforms(Platform.IOS)
      *         } returns 5
@@ -168,15 +161,15 @@ abstract class FeatureContainer<M : Namespace>(
      * }
      * ```
      *
-     * @param C The contextFn type used for evaluation
+     * @param C The context type used for evaluation (defaults to base Context)
      * @param default The default value for this feature (required)
      * @param integerScope DSL scope for configuring the integer feature
      * @return A delegated property that returns an [IntFeature]
      */
     protected fun <C : Context> integer(
         default: Int,
-        integerScope: FlagScope<IntEncodeable, Int, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<C, M>> =
+        integerScope: FlagScope<Int, C, M>.() -> Unit = {},
+    ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<M>> =
         ContainerFeaturePropertyDelegate(default, integerScope) {
             IntFeature.Companion(it, namespace)
         }
@@ -207,8 +200,8 @@ abstract class FeatureContainer<M : Namespace>(
     @Deprecated("Use integer() instead", ReplaceWith("integer(default) ({ integerScope })"))
     protected fun <C : Context> int(
         default: Int,
-        integerScope: FlagScope<IntEncodeable, Int, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<C, M>> =
+        integerScope: FlagScope<Int, C, M>.() -> Unit = {},
+    ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<M>> =
         ContainerFeaturePropertyDelegate(default, integerScope) {
             IntFeature.Companion(it, namespace)
         }
@@ -231,15 +224,15 @@ abstract class FeatureContainer<M : Namespace>(
      * }
      * ```
      *
-     * @param C The contextFn type used for evaluation
+     * @param C The context type used for evaluation (defaults to base Context)
      * @param default The default value for this feature (required)
      * @param decimalScope DSL scope for configuring the double feature
      * @return A delegated property that returns a [DoubleFeature]
      */
     protected fun <C : Context> double(
         default: Double,
-        decimalScope: FlagScope<DecimalEncodeable, Double, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<FeatureContainer<M>, DoubleFeature<C, M>> =
+        decimalScope: FlagScope<Double, C, M>.() -> Unit = {},
+    ): ReadOnlyProperty<FeatureContainer<M>, DoubleFeature<M>> =
         ContainerFeaturePropertyDelegate(default, decimalScope) { DoubleFeature(it, namespace) }
 
     /**
@@ -263,15 +256,15 @@ abstract class FeatureContainer<M : Namespace>(
      * ```
      *
      * @param E The enum type
-     * @param C The context type used for evaluation
+     * @param C The context type used for evaluation (defaults to base Context)
      * @param default The default enum value for this feature (required)
      * @param enumScope DSL scope for configuring the enum feature
      * @return A delegated property that returns an [EnumFeature]
      */
     protected fun <E : Enum<E>, C : Context> enum(
         default: E,
-        enumScope: FlagScope<EnumEncodeable<E>, E, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<FeatureContainer<M>, EnumFeature<E, C, M>> =
+        enumScope: FlagScope<E, C, M>.() -> Unit = {},
+    ): ReadOnlyProperty<FeatureContainer<M>, EnumFeature<E, M>> =
         ContainerFeaturePropertyDelegate(default, enumScope) { EnumFeature(it, namespace) }
 
     /**
@@ -303,15 +296,15 @@ abstract class FeatureContainer<M : Namespace>(
      * ```
      *
      * @param T The data class type implementing DataClassWithSchema
-     * @param C The context type used for evaluation
+     * @param C The context type used for evaluation (defaults to base Context)
      * @param default The default value for this feature (required)
      * @param dataClassScope DSL scope for configuring the data class feature
      * @return A delegated property that returns a [DataClassFeature]
      */
     protected inline fun <reified T : DataClassWithSchema, C : Context> dataClass(
         default: T,
-        noinline dataClassScope: FlagScope<DataClassEncodeable<T>, T, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<FeatureContainer<M>, DataClassFeature<T, C, M>> =
+        noinline dataClassScope: FlagScope<T, C, M>.() -> Unit = {},
+    ): ReadOnlyProperty<FeatureContainer<M>, DataClassFeature<T, M>> =
         ContainerFeaturePropertyDelegate(default, dataClassScope) { DataClassFeature(it, namespace) }
 
     /**
@@ -323,26 +316,25 @@ abstract class FeatureContainer<M : Namespace>(
      * 1. **Captures property name**: When the property is delegated, captures the property name
      *    to use as the feature key
      * 2. **Lazy initialization**: Creates the feature only on first access
-     * 3. **Automatic registration**: Adds the feature to the features's feature list
+     * 3. **Automatic registration**: Adds the feature to the container's feature list
      * 4. **Automatic configuration**: Executes the DSL configuration block and updates the namespace
      *
      * **Implementation details:**
      * - The `factory` function is responsible for creating the feature instance
      * - The feature is created using the property name as the feature key
      * - The DSL configuration block is executed and applied to the namespace
-     * - All features in the features share the same namespace
+     * - All features in the container share the same namespace
      *
      * @param F The feature type (BooleanFeature, StringFeature, etc.)
-     * @param S The EncodableValue type wrapping the actual value
      * @param T The value type (Boolean, String, Int, etc.)
-     * @param C The contextFn type used for evaluation
+     * @param C The context type used for evaluation
      * @param configScope The DSL configuration block to execute
      * @param factory A function that creates the feature given the namespace and property name
      */
     @Suppress("UNCHECKED_CAST")
-    inner class ContainerFeaturePropertyDelegate<F : Feature<S, T, C, M>, S : EncodableValue<T>, T : Any, C : Context>(
+    inner class ContainerFeaturePropertyDelegate<F : Feature<T, M>, T : Any, C : Context>(
         private val default: T,
-        private val configScope: FlagScope<S, T, C, M>.() -> Unit,
+        private val configScope: FlagScope<T, C, M>.() -> Unit,
         private val factory: M.(String) -> F,
     ) : ReadOnlyProperty<FeatureContainer<M>, F>, PropertyDelegateProvider<FeatureContainer<M>, F> {
         lateinit var name: String

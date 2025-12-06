@@ -7,7 +7,6 @@ import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.RuleScope
 import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
@@ -19,18 +18,18 @@ import io.amichne.konditional.rules.Rule
  * Users interact with the public [FlagScope] interface,
  * not this implementation directly.
  *
- * @param S The EncodableValue type wrapping the actual value.
  * @param T The actual value type.
- * @param C The type of the contextFn that the feature flag evaluates against.
+ * @param C The type of the context that the feature flag evaluates against.
+ * @param M The namespace type for isolation.
  * @property feature The feature flag key used to uniquely identify the flag.
  * @constructor Internal constructor - users cannot instantiate this class directly.
  */
 @KonditionalDsl
 @PublishedApi
-internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M : Namespace>(
-    private val feature: Feature<S, T, C, M>,
-) : FlagScope<S, T, C, M> {
-    private val conditionalValues = mutableListOf<ConditionalValue<S, T, C, M>>()
+internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
+    private val feature: Feature<T, M>,
+) : FlagScope<T, C, M> {
+    private val conditionalValues = mutableListOf<ConditionalValue<T, C, M>>()
     private var defaultValue: T? = null
     private var salt: String = "v1"
     private var isActive: Boolean = true
@@ -73,13 +72,13 @@ internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M :
     }
 
     /**
-     * Builds and returns a `FlagDefinition` instance of type `S` with contextFn type `C`.
+     * Builds and returns a `FlagDefinition` instance with context type `C`.
      * Internal method - not intended for direct use.
      *
      * @return A `FlagDefinition` instance constructed based on the current configuration.
      */
     @PublishedApi
-    internal fun build(): FlagDefinition<S, T, C, M> {
+    internal fun build(): FlagDefinition<T, C, M> {
         requireNotNull(defaultValue) { "Default value must be set" }
         return FlagDefinition(
             feature = feature,

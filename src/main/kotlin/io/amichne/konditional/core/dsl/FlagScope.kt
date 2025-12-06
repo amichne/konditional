@@ -2,7 +2,6 @@ package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.Rule
 
 /**
@@ -14,23 +13,24 @@ import io.amichne.konditional.rules.Rule
  *
  * Example usage:
  * ```kotlin
- * MyFeature.FEATURE_A with {
- *     default(true)
- *     salt("v2")
- *     rule {
- *         platforms(Platform.IOS)
- *         rollout {  Rampup.of(50.0) }
- *     }.returns(false)
+ * object MyFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
+ *     val FEATURE_A by boolean(default = true) {
+ *         salt("v2")
+ *         rule {
+ *             platforms(Platform.IOS)
+ *             rollout { 50.0 }
+ *         } returns false
+ *     }
  * }
  * ```
  *
- * @param S The EncodableValue type wrapping the actual value
- * @param T The actual value type
- * @param C The contextFn type the flag evaluates against
+ * @param T The actual value type (Boolean, String, Int, Double, Enum, DataClass)
+ * @param C The context type the flag evaluates against
+ * @param M The namespace type for isolation
  * @since 0.0.2
  */
 @KonditionalDsl
-interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> {
+interface FlagScope<T : Any, C : Context, M : Namespace> {
 
     fun active(block: () -> Boolean): Unit
 

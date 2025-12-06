@@ -1,8 +1,6 @@
 package io.amichne.konditional.core.features
 
-import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.types.EncodableValue
 
 /**
  * Represents a feature flag that can be used to enable or disable specific functionality
@@ -11,29 +9,26 @@ import io.amichne.konditional.core.types.EncodableValue
  * Features are **type-bound** to their [io.amichne.konditional.core.Namespace], providing compile-time isolation between teams.
  * Each feature can only be defined and configured within its designated namespace.
  *
- * Type S is constrained to EncodableValue subtypes at compile time, ensuring type safety.
- *
  * Supports:
  * - Primitives: Boolean, String, Int, Double
- * - JSON Objects: Complex data classes and structures
- * - Custom Wrappers: Extension types that wrap primitives (DateTime, UUID, etc.)
+ * - Enums: Type-safe enum values
+ * - Data Classes: Structured configuration with schema validation
+ * - JSON Objects: Complex data structures
  *
  * ## Example
  *
  * ```kotlin
- * enum class PaymentFeatures(override val key: String)
- *     : Feature<BoolEncodeable, Boolean, Context, Namespace.Payments> {
- *     APPLE_PAY("apple_pay");
- *     override val namespace = Namespace.Payments
+ * object PaymentFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
+ *     val APPLE_PAY by boolean(default = false) {
+ *         rule { platforms(Platform.IOS) } returns true
+ *     }
  * }
  * ```
  *
- * @param S The EncodableValue type wrapping the actual value.
- * @param T The actual value type.
- * @param C The type of the contextFn that the feature flag evaluates against.
+ * @param T The value type (Boolean, String, Int, Double, Enum, DataClass).
  * @param M The namespace this feature belongs to (compile-time binding).
  */
-sealed interface Feature<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> {
+sealed interface Feature<T : Any, M : Namespace> {
     val key: String
     val namespace: M
 }
