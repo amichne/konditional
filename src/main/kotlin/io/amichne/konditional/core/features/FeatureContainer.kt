@@ -342,7 +342,9 @@ abstract class FeatureContainer<M : Namespace>(
         private val feature: F by lazy {
             factory(namespace, name).also { _features.add(it) }.also { createdFeature ->
                 // Execute the DSL configuration block and update the namespace
-                val flagDefinition = FlagBuilder(createdFeature).apply(configScope).apply { default(default) }.build()
+                val flagDefinition = FlagBuilder<T, C, M>(createdFeature).apply(configScope)
+                    .apply { default(default) }
+                    .build()
                 namespace.updateDefinition(flagDefinition)
             }
         }

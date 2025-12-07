@@ -64,10 +64,10 @@ class NamespaceSnapshotSerializerTest {
 
     @Test
     fun `Given namespace with configured flags, When serialized, Then includes all flags`() {
-        TestFeatures.boolFlag.update {
+        TestFeatures.boolFlag.update<Context> {
             default(true)
         }
-        TestFeatures.stringFlag.update {
+        TestFeatures.stringFlag.update<Context> {
             default("test-value")
         }
 
@@ -152,13 +152,13 @@ class NamespaceSnapshotSerializerTest {
     @Test
     fun `Given namespace, When round-tripped, Then configuration is preserved`() {
         // Configure flags
-        TestFeatures.boolFlag.update {
+        TestFeatures.boolFlag.update<Context> {
             default(true)
             rule {
                 platforms(Platform.IOS)
             } returns false
         }
-        TestFeatures.stringFlag.update {
+        TestFeatures.stringFlag.update<Context> {
             default("original")
             rule {
                 locales(AppLocale.FRANCE)
@@ -187,7 +187,7 @@ class NamespaceSnapshotSerializerTest {
 
     @Test
     fun `Given forModule factory, When created, Then works same as constructor`() {
-        TestFeatures.boolFlag.update {
+        TestFeatures.boolFlag.update<Context> {
             default(true)
         }
 

@@ -6,7 +6,6 @@ import io.amichne.konditional.core.features.update
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.EnterpriseContext
 import io.amichne.konditional.fixtures.EnterpriseFeatures
-import io.amichne.konditional.fixtures.EnterpriseRule
 import io.amichne.konditional.fixtures.ExperimentContext
 import io.amichne.konditional.fixtures.ExperimentFeatures
 import io.amichne.konditional.fixtures.SubscriptionTier
@@ -14,6 +13,7 @@ import io.amichne.konditional.fixtures.UserRole
 import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.serialization.SnapshotSerializer
 import org.junit.jupiter.api.BeforeEach
+import java.util.regex.Pattern.matches
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -46,7 +46,7 @@ class ContextPolymorphismTest {
     @Test
     fun `Given EnterpriseContext, When evaluating flags, Then context-specific properties are accessible`() {
         // Configure using .update() for test-specific configuration
-        EnterpriseFeatures.advanced_analytics.update {
+        EnterpriseFeatures.advanced_analytics.update<Boolean, EnterpriseContext, Namespace.Global> {
             default(false)
             // This demonstrates that the rule can access base Context properties
             rule {
@@ -73,7 +73,7 @@ class ContextPolymorphismTest {
     @Test
     fun `Given ExperimentContext, When evaluating flags, Then experiment-specific properties are accessible`() {
         // Configure using .update() for test-specific configuration
-        ExperimentFeatures.homepage_variant.update {
+        ExperimentFeatures.homepage_variant.update<String, ExperimentContext, Namespace.Global> {
             default("control")
             rule {
                 platforms(Platform.IOS, Platform.ANDROID)
@@ -110,12 +110,12 @@ class ContextPolymorphismTest {
     fun `Given multiple custom contexts, When using different flags, Then contexts are independent`() {
         // Configure using .update() for test-specific configuration
         // Each contextFn can be evaluated independently with its own flags
-        EnterpriseFeatures.api_access.update {
+        EnterpriseFeatures.api_access.update<Boolean, EnterpriseContext, Namespace.Global> {
             default(false)
             rule {
             } returns true
         }
-        ExperimentFeatures.onboarding_style.update {
+        ExperimentFeatures.onboarding_style.update<String, EnterpriseContext, Namespace.Global> {
             default("classic")
             rule {
             } returns "modern"
@@ -154,7 +154,9 @@ class ContextPolymorphismTest {
                 platforms(Platform.WEB)
                 rollout { 100 }
 
-                extension { context -> EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN).matches(context) }
+                extension { ctx ->
+                    ctx.
+                }
 
             } returns true
         }

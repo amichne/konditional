@@ -74,7 +74,7 @@ class SnapshotSerializerTest {
 
     @Test
     fun `Given Konfig with boolean flag, When serialized, Then includes flag with correct type`() {
-            TestFeatures.boolFlag.update {
+            TestFeatures.boolFlag.update<Boolean, Context, Namespace.Global> {
                 default(true)
             }
 
@@ -88,7 +88,7 @@ class SnapshotSerializerTest {
 
     @Test
     fun `Given Konfig with string flag, When serialized, Then includes flag with correct type`() {
-        val flag = FlagDefinition(
+        val flag = FlagDefinition<String, Context, Namespace.Global>(
             feature = TestFeatures.stringFlag,
             defaultValue = "test-value",
         )
@@ -104,7 +104,7 @@ class SnapshotSerializerTest {
 
     @Test
     fun `Given Konfig with int flag, When serialized, Then includes flag with correct type`() {
-        TestFeatures.intFlag.update {
+        TestFeatures.intFlag.update<Int, Context, Namespace.Global> {
             default(42)
         }
         val json = SnapshotSerializer.serialize(Namespace.Global.configuration)
@@ -119,7 +119,7 @@ class SnapshotSerializerTest {
 
     @Test
     fun `Given Konfig with double flag, When serialized, Then includes flag with correct type`() {
-        TestFeatures.doubleFlag.update {
+        TestFeatures.doubleFlag.update<Double, Context, Namespace.Global> {
             default(3.14)
         }
 
@@ -162,9 +162,9 @@ class SnapshotSerializerTest {
 
     @Test
     fun `Given Konfig with multiple flags, When serialized, Then includes all flags`() {
-        val boolFlag = FlagDefinition(feature = TestFeatures.boolFlag, defaultValue = true)
-        val stringFlag = FlagDefinition(feature = TestFeatures.stringFlag, defaultValue = "test")
-        val intFlag = FlagDefinition(feature = TestFeatures.intFlag, defaultValue = 10)
+        val boolFlag = FlagDefinition<Boolean, Context, Namespace.Global>(feature = TestFeatures.boolFlag, defaultValue = true)
+        val stringFlag = FlagDefinition<String, Context, Namespace.Global>(feature = TestFeatures.stringFlag, defaultValue = "test")
+        val intFlag = FlagDefinition<Int, Context, Namespace.Global>(feature = TestFeatures.intFlag, defaultValue = 10)
 
         val configuration = Configuration(
             mapOf(

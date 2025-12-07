@@ -2,7 +2,6 @@ package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.types.EnumEncodeable
 
 /**
  * DSL scope for enum-typed feature flags.
@@ -14,4 +13,4 @@ import io.amichne.konditional.core.types.EnumEncodeable
  */
 @KonditionalDsl
 interface EnumScope<E : Enum<E>, C : Context, M : Namespace> :
-    FlagScope<EnumEncodeable<E>, E, C, M>
+    FlagScope< E, C, M>

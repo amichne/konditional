@@ -41,13 +41,13 @@ internal data class BaseEvaluable<C : Context>(
      *
      * All non-empty constraints must match for this method to return true.
      *
-     * @param context The contextFn to evaluate against
+     * @param this@matches The contextFn to evaluate against
      * @return true if contextFn matches all specified constraints, false otherwise
      */
     override fun matches(context: C): Boolean =
         (locales.isEmpty() || context.locale in locales) &&
-            (platforms.isEmpty() || context.platform in platforms) &&
-            (!versionRange.hasBounds() || versionRange.contains(context.appVersion))
+        (platforms.isEmpty() || context.platform in platforms) &&
+        (!versionRange.hasBounds() || versionRange.contains(context.appVersion))
 
     /**
      * Calculates specificity as the count of specified constraints.

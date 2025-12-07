@@ -6,7 +6,6 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.instance.ConfigurationPatch
-import io.amichne.konditional.core.types.EncodableValue
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 
@@ -71,7 +70,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * Maps feature keys to their override values.
      * These overrides take precedence over normal flag evaluation.
      */
-    private val overrides = ConcurrentHashMap<Feature<*, *, *, *>, Any>()
+    private val overrides = ConcurrentHashMap<Feature<*, *>, Any>()
 
     /**
      * Loads the flag values from the provided [config] snapshot.
@@ -109,14 +108,13 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @param M The namespace the feature belongs to
      */
     @Suppress("UNCHECKED_CAST")
-    override fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> flag(
-        key: Feature<S, T, C, M>
-    ): FlagDefinition<S, T, C, M> {
+    override fun <T : Any, M : Namespace> flag(
+        key: Feature<T, M>,
+    ): FlagDefinition<T, Context, M> {
         val override = getOverride(key)
         return if (override != null) {
             // Create a FlagDefinition that always returns the override value
-            val originalDefinition = configuration.flags[key] as? FlagDefinition<S, T, C, M>
-            originalDefinition?.let { original ->
+            (configuration.flags[key] as? FlagDefinition<T, Context, M>)?.let { original ->
                 FlagDefinition(
                     feature = original.feature,
                     bounds = emptyList(), // No rules needed - override takes precedence
@@ -126,8 +124,8 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
                 )
             } ?: throw IllegalStateException("Flag not found in configuration: ${key.key}")
         } else {
-            configuration.flags[key] as? FlagDefinition<S, T, C, M>
-                ?: throw IllegalStateException("Flag not found in configuration: ${key.key}")
+            configuration.flags[key] as? FlagDefinition<T, Context, M>
+            ?: throw IllegalStateException("Flag not found in configuration: ${key.key}")
         }
     }
 
@@ -160,7 +158,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @param S The type of the flag's value
      * @param C The type of the contextFn used for evaluation
      */
-    internal fun <S : EncodableValue<T>, T : Any, C : Context> updateDefinition(definition: FlagDefinition<S, T, C, *>) {
+    internal fun <T : Any, C : Context, M : Namespace> updateDefinition(definition: FlagDefinition<T, C, M>) {
         current.updateAndGet { currentSnapshot ->
             val mutableFlags = currentSnapshot.flags.toMutableMap()
             mutableFlags[definition.feature] = definition
@@ -191,9 +189,9 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @see hasOverride
      */
     @PublishedApi
-    internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> setOverride(
-        feature: Feature<S, T, C, M>,
-        value: T
+    internal fun <T : Any, M : Namespace> setOverride(
+        feature: Feature<T, M>,
+        value: T,
     ) {
         overrides[feature] = value as Any
     }
@@ -213,8 +211,8 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @see setOverride
      * @see clearAllOverrides
      */
-    internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> clearOverride(
-        feature: Feature<S, T, C, M>
+    internal fun <T : Any, M : Namespace> clearOverride(
+        feature: Feature<T, M>,
     ) {
         overrides.remove(feature)
     }
@@ -244,8 +242,8 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      *
      * @see setOverride
      */
-    internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> hasOverride(
-        feature: Feature<S, T, C, M>
+    internal fun <T : Any, M : Namespace> hasOverride(
+        feature: Feature<T, M>,
     ): Boolean = overrides.containsKey(feature)
 
     /**
@@ -261,7 +259,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @see setOverride
      */
     @Suppress("UNCHECKED_CAST")
-    internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> getOverride(
-        feature: Feature<S, T, C, M>
+    internal fun <T : Any, M : Namespace> getOverride(
+        feature: Feature<T, M>,
     ): T? = overrides[feature] as? T
 }

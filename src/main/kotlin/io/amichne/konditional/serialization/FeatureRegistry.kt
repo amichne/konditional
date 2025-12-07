@@ -1,10 +1,8 @@
 package io.amichne.konditional.serialization
 
-import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.core.types.EncodableValue
 
 /**
  * Registry for mapping flag keys to their Feature instances.
@@ -34,7 +32,7 @@ import io.amichne.konditional.core.types.EncodableValue
  * @see SnapshotSerializer
  */
 object FeatureRegistry {
-    private val registry = mutableMapOf<String, Feature<*, *, *, *>>()
+    private val registry = mutableMapOf<String, Feature<*, *>>()
 
     /**
      * Registers a Feature instance with its key.
@@ -42,7 +40,7 @@ object FeatureRegistry {
      * @param conditional The conditional to register
      * @throws IllegalStateException if a different conditional is already registered with the same key
      */
-    fun <S : EncodableValue<T>, T : Any, C : Context> register(conditional: Feature<S, T, C, *>) {
+    fun < T : Any> register(conditional: Feature<T, *>) {
         registry[conditional.key] = conditional
     }
 
@@ -52,7 +50,7 @@ object FeatureRegistry {
      * @param key The string key of the conditional
      * @return ParseResult with the registered Feature or an error
      */
-    fun get(key: String): ParseResult<Feature<*, *, *, *>> {
+    fun get(key: String): ParseResult<Feature< *, *>> {
         return registry[key]?.let { ParseResult.Success(it) }
                ?: ParseResult.Failure(ParseError.FeatureNotFound(key))
     }

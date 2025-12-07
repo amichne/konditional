@@ -6,7 +6,6 @@ import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.features.FeatureAware
 import io.amichne.konditional.core.features.FeatureContainer
-import io.amichne.konditional.core.types.EncodableValue
 
 @Deprecated("Use ContextAware instead", ReplaceWith("ContextAware<C>"))
 typealias Contextualized<C> = ContextAware<C>
@@ -27,16 +26,16 @@ inline fun <reified C : Context, reified M : Namespace, O> FeatureContainer<M>.c
     override fun factory(): C = factory()
 } as O
 
-inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context, M : Namespace, D> D.feature(
-    block: D.() -> Feature<S, T, C, M>,
-): T where D : ContextAware<C>, D : FeatureAware<M> = flag(block()).evaluate(context)
+inline fun <reified T : Any, reified C : Context, M : Namespace, D> D.feature(
+    block: D.() -> Feature<T, M>,
+): T where D : ContextAware<C>, D : FeatureAware<M> = flag<T, M>(block()).evaluate(context)
 
-inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context, D> D.feature(
+inline fun <reified T : Any, reified C : Context, D : FeatureAware<M>, M : Namespace> D.feature(
     @KonditionalDsl context: () -> C,
-    block: ContextAware<C>.() -> Feature<S, T, C, *>,
-): T where D : ContextAware<C>, D : FeatureAware<*> = feature(context(), block)
+    block: D.() -> Feature<T, M>,
+): T = feature(context(), block)
 
-inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context, D> D.feature(
+inline fun <reified T : Any, reified C : Context, D : FeatureAware<M>, M : Namespace> D.feature(
     context: C,
-    @KonditionalDsl block: D.() -> Feature<S, T, C, *>,
-): T where D : FeatureAware<*>, D : ContextAware<*> = flag(block()).evaluate(context)
+    @KonditionalDsl block: D.() -> Feature<T, M>,
+): T = flag<T, M>(block()).evaluate(context)

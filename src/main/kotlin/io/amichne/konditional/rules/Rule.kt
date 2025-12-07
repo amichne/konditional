@@ -67,7 +67,7 @@ data class Rule<C : Context> internal constructor(
     val rollout: Rampup = Rampup.default,
     val note: String? = null,
     internal val baseEvaluable: BaseEvaluable<C> = BaseEvaluable(),
-    val extension: Evaluable<C> = Placeholder,
+    val extension: Evaluable<C> = Placeholder(),
 ) : Evaluable<C> {
     internal constructor(
         rollout: Rampup =  Rampup.default,
@@ -75,7 +75,7 @@ data class Rule<C : Context> internal constructor(
         locales: Set<AppLocale> = emptySet(),
         platforms: Set<Platform> = emptySet(),
         versionRange: VersionRange = Unbounded(),
-        extension: Evaluable<C> = Placeholder,
+        extension: Evaluable<C> = Placeholder(),
     ) : this(rollout, note, BaseEvaluable(locales, platforms, versionRange), extension)
 
     /**
@@ -87,11 +87,11 @@ data class Rule<C : Context> internal constructor(
      *
      * Note: This does not check rollout eligibility - that is handled separately during flag evaluation.
      *
-     * @param context The contextFn to evaluate against
+     * @param this@matches The contextFn to evaluate against
      * @return true if both [baseEvaluable] and [extension] match the contextFn
      */
     override fun matches(context: C): Boolean =
-        baseEvaluable.matches(context) && extension.matches(context)
+        matches(context) && matches(context)
 
     /**
      * Calculates the total specificity of this rule by summing composed evaluators.

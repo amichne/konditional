@@ -4,14 +4,13 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rampup
-import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.FlagDefinition
+import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.instance.ConfigurationPatch
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.internal.serialization.models.FlagValue
 import io.amichne.konditional.internal.serialization.models.SerializableFlag
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
@@ -35,8 +34,8 @@ internal fun Configuration.toSerializable(): SerializableSnapshot {
 /**
  * Converts a FlagDefinition to a SerializableFlag.
  */
-private fun <S : EncodableValue<T>, T : Any, C : Context> FlagDefinition<S, T, C, *>.toSerializable(
-    flagKey: String
+private fun <T : Any, C : Context> FlagDefinition<T, C, *>.toSerializable(
+    flagKey: String,
 ): SerializableFlag {
     return SerializableFlag(
         key = flagKey,
@@ -50,7 +49,7 @@ private fun <S : EncodableValue<T>, T : Any, C : Context> FlagDefinition<S, T, C
 /**
  * Converts a ConditionalValue to a SerializableRule.
  */
-private fun <S : EncodableValue<T>, T : Any, C : Context> ConditionalValue<S, T, C, *>.toSerializable(): SerializableRule {
+private fun <T : Any, C : Context> ConditionalValue<T, C, *>.toSerializable(): SerializableRule {
     return SerializableRule(
         value = FlagValue.from(value),
         rampUp = rule.rollout.value,
@@ -77,7 +76,7 @@ internal fun SerializableSnapshot.toSnapshot(): ParseResult<Configuration> {
 
         // Extract successful values
         val flagMap = flagResults
-            .filterIsInstance<ParseResult.Success<Pair<Feature<*, *, *, *>, FlagDefinition<*, *, *, *>>>>()
+            .filterIsInstance<ParseResult.Success<Pair<Feature<*, *>, FlagDefinition<*, *, *>>>>()
             .associate { it.value }
 
         ParseResult.Success(Configuration(flagMap))
@@ -89,13 +88,15 @@ internal fun SerializableSnapshot.toSnapshot(): ParseResult<Configuration> {
 /**
  * Converts a SerializableFlag to a Map.Entry of Feature to FlagDefinition.
  * Returns ParseResult for type-safe error handling.
+ * Note: Deserialized flags always use base Context since context type is not serialized.
  */
-private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Feature<*, *, *, *>, FlagDefinition<*, *, *, *>>> {
+@Suppress("UNCHECKED_CAST")
+private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Feature<*, *>, FlagDefinition<*, *, *>>> {
     return when (val conditionalResult = FeatureRegistry.get(key)) {
         is ParseResult.Success -> {
-            val conditional = conditionalResult.value
-            val definition = toFlagDefinition(conditional)
-            ParseResult.Success(conditional to definition)
+            val feature = conditionalResult.value
+            val flagDefinition = toFlagDefinition(feature as Feature<Any, Namespace>)
+            ParseResult.Success(feature to flagDefinition)
         }
         is ParseResult.Failure -> ParseResult.Failure(conditionalResult.error)
     }
@@ -104,16 +105,17 @@ private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Feature<*, *, *, *>,
 /**
  * Converts a SerializableFlag to a FlagDefinitionImpl.
  * Type-safe: no casting required thanks to FlagValue sealed class.
+ * Note: Deserialized flags always use base Context since context type is not serialized.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> SerializableFlag.toFlagDefinition(
-    conditional: Feature<S, T, C, M>
-): FlagDefinition<S, T, C, M> {
+private fun <T : Any, M : Namespace> SerializableFlag.toFlagDefinition(
+    conditional: Feature<T, M>,
+): FlagDefinition<T, Context, M> {
     // Extract typed value from FlagValue (type-safe extraction)
     val typedDefaultValue = defaultValue.extractValue<T>()
-    val values = rules.map { it.toValue<S, T, C, M>() }
+    val values = rules.map { it.toValue<T, Context, M>() }
 
-    return FlagDefinition(
+    return FlagDefinition<T, Context, M>(
         feature = conditional,
         bounds = values,
         defaultValue = typedDefaultValue,
@@ -131,12 +133,12 @@ private fun <T : Any> FlagValue<*>.extractValue(): T = this.value as T
 
 /**
  * Converts a SerializableRule to a ConditionalValue.
+ * Note: Always uses base Context since context type is not serialized.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> SerializableRule.toValue(): ConditionalValue<S, T, C, M> {
+private fun <T : Any, C : Context, M : Namespace> SerializableRule.toValue(): ConditionalValue<T, C, M> {
     val typedValue = value.extractValue<T>()
-    val rule = toRule<C>()
-    return rule.targetedBy(typedValue)
+    return toRule<C>().targetedBy(typedValue)
 }
 
 /**
@@ -180,7 +182,7 @@ internal fun SerializablePatch.toPatch(): ParseResult<ConfigurationPatch> {
 
         // Extract successful values
         val flagMap = flagResults
-            .filterIsInstance<ParseResult.Success<Pair<Feature<*, *, *, *>, FlagDefinition<*, *, *, *>>>>()
+            .filterIsInstance<ParseResult.Success<Pair<Feature<*, *>, FlagDefinition<*, *, *>>>>()
             .associate { it.value }
 
         // For removeKeys, skip keys that aren't registered (they may have been removed)

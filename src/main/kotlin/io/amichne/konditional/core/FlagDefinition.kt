@@ -33,7 +33,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
     val feature: Feature<T, M>,
     internal val values: List<ConditionalValue<T, C, M>> = listOf(),
     val isActive: Boolean = true,
-    val salt: String = "v1"
+    val salt: String = "v1",
 ) {
     private val conditionalValues: List<ConditionalValue<T, C, M>> =
         values.sortedWith(compareByDescending<ConditionalValue<T, C, M>> { it.rule.specificity() })
@@ -68,12 +68,12 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
 
         return conditionalValues.firstOrNull {
             it.rule.matches(context) &&
-                isInEligibleSegment(
-                    flagKey = feature.key,
-                    id = context.stableId.hexId,
-                    salt = salt,
-                    rollout = it.rule.rollout
-                )
+            isInEligibleSegment(
+                flagKey = feature.key,
+                id = context.stableId.hexId,
+                salt = salt,
+                rollout = it.rule.rollout
+            )
         }?.value ?: defaultValue
     }
 
@@ -115,8 +115,8 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
                         (get(1).toInt() and 0xFF shl 16) or
                         (get(2).toInt() and 0xFF shl 8) or
                         (get(3).toInt() and 0xFF)
-                    ).toLong() and 0xFFFF_FFFFL
-                ).mod(10_000L).toInt()
+                ).toLong() and 0xFFFF_FFFFL
+            ).mod(10_000L).toInt()
         }
     }
 }

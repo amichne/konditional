@@ -3,7 +3,6 @@ package io.amichne.konditional.context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.types.EncodableValue
 
 /**
  * Represents the execution contextFn for feature flag evaluation.
@@ -80,8 +79,8 @@ interface Context {
          * @param M The namespace the feature belongs to
          */
         @Deprecated("Use the evaluate function with explicit registry parameter", ReplaceWith("feature { key }"))
-        fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> C.evaluate(
-            key: Feature<S, T, C, M>,
-        ): T = key.namespace.flag(key).evaluate(this)
+        fun <T : Any, C : Context, M : Namespace> C.evaluate(
+            key: Feature<T, M>,
+        ): T = key.namespace.flag<T, M>(key).evaluate(this)
     }
 }

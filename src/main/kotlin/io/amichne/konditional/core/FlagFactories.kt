@@ -4,7 +4,6 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.internal.builders.FlagBuilder
 
 /**
@@ -29,6 +28,6 @@ import io.amichne.konditional.internal.builders.FlagBuilder
  * @return A configured FlagDefinition instance
  */
 @KonditionalDsl
-inline fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Feature<S, T, C, M>.flag(
-    flagBuilder: FlagScope<S, T, C, M>.() -> Unit = {},
-): FlagDefinition<S, T, C, M> = FlagBuilder(this).apply(flagBuilder).build()
+inline fun <T : Any, C : Context, M : Namespace> Feature<T, M>.flag(
+    flagBuilder: FlagScope<T, C, M>.() -> Unit = {},
+): FlagDefinition<T, C, M> = FlagBuilder<T, C, M>(this).apply(flagBuilder).build()

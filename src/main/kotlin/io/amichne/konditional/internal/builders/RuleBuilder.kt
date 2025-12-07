@@ -28,7 +28,7 @@ import io.amichne.konditional.rules.versions.VersionRange
 @KonditionalDsl
 @PublishedApi
 internal data class RuleBuilder<C : Context>(
-    private var extension: Evaluable<C> = Placeholder,
+    private var extension: Evaluable<C>? = null,
     private var note: String? = null,
     private var range: VersionRange = Unbounded(),
     private val platforms: LinkedHashSet<Platform> = linkedSetOf(),
@@ -93,6 +93,6 @@ internal data class RuleBuilder<C : Context>(
             platforms = platforms,
             versionRange = range,
             note = note,
-            extension = extension,
+            extension = extension ?: Placeholder(),
         )
 }

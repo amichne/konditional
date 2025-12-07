@@ -102,14 +102,13 @@ interface NamespaceRegistry {
      * @param key The [Feature] key for the flag
      * @return The [io.amichne.konditional.core.FlagDefinition] which is known to exist via structural guarantee
      * @param T The actual value type
-     * @param C The type of the context used for evaluation
      * @param M The namespace the feature belongs to
+     * Note: Returns FlagDefinition with Context as the evaluation context type.
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T : Any, C : Context, M : Namespace> flag(
+    fun <T : Any, M : Namespace> flag(
         key: Feature<T, M>
-    ): FlagDefinition<T, C, M>? =
-        configuration.flags[key] as? FlagDefinition<T, C, M>
+    ): FlagDefinition<T, Context, M> = configuration.flags[key] as FlagDefinition<T, Context, M>
 
     /**
      * Retrieves all flags from the registry.
@@ -162,8 +161,8 @@ interface NamespaceRegistry {
          * @param T The actual value type
          * @param C The type of the context used for evaluation
          */
-        internal fun <T : Any, C : Context> NamespaceRegistry.updateDefinition(
-            definition: FlagDefinition<T, C, *>
+        internal fun <T : Any, C : Context, M : Namespace> NamespaceRegistry.updateDefinition(
+            definition: FlagDefinition<T, C, M>
         ) {
             when (this) {
                 is InMemoryNamespaceRegistry -> updateDefinition(definition)

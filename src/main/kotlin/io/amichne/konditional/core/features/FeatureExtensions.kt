@@ -6,7 +6,6 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.registry.NamespaceRegistry
 import io.amichne.konditional.core.registry.NamespaceRegistry.Companion.updateDefinition
-import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.internal.builders.FlagBuilder
 
 /**
@@ -19,10 +18,10 @@ import io.amichne.konditional.internal.builders.FlagBuilder
  * @param registry The registry to use (defaults to the feature's namespace)
  * @return The evaluated value, or null if the feature is not registered
  */
-fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Feature<S, T, C, M>.evaluate(
-    context: C,
-    registry: NamespaceRegistry = namespace
-): T = registry.flag(this).evaluate(context)
+inline fun <T : Any, M : Namespace> Feature<T, M>.evaluate(
+    context: Context,
+    registry: NamespaceRegistry = namespace,
+): T = registry.flag<T, M>(this).evaluate(context)
 
 /**
  * Updates this feature using a DSL configuration block.
@@ -32,9 +31,9 @@ fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Feature<S, T, C
  *
  * @param function The DSL configuration block
  */
-internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Feature<S, T, C, M>.update(
-    function: FlagScope<S, T, C, M>.() -> Unit
-): Unit = namespace.updateDefinition(FlagBuilder(this).apply(function).build())
+internal fun <T : Any, C : Context, M : Namespace> Feature<T, M>.update(
+    function: FlagScope<T, C, M>.() -> Unit,
+): Unit = namespace.updateDefinition(FlagBuilder<T, C, M>(this).apply(function).build())
 
 /**
  * Updates this feature's definition in the namespace.
@@ -44,6 +43,6 @@ internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Featur
  *
  * @param definition The flag definition to update
  */
-internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Feature<S, T, C, M>.update(
-    definition: FlagDefinition<S, T, C, M>
+internal fun <T : Any, C : Context, M : Namespace> Feature<T, M>.update(
+    definition: FlagDefinition<T, C, M>,
 ): Unit = namespace.updateDefinition(definition)

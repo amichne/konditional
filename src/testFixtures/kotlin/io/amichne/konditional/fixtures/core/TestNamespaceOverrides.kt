@@ -7,7 +7,6 @@ import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.features.FeatureAware
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
-import io.amichne.konditional.core.types.EncodableValue
 
 /**
  * Extension functions for [io.amichne.konditional.core.Namespace] that provide convenient test-scoped override functionality.
@@ -104,15 +103,14 @@ import io.amichne.konditional.core.types.EncodableValue
  *
  * @param feature The feature flag to override
  * @param value The value to return for this flag
- * @param S The EncodableValue type wrapping the actual value
  * @param T The actual value type
- * @param C The type of the contextFn used for evaluation
+ * @param M The namespace type
  *
  * @see clearOverride
  * @see withOverride
  */
-fun <S : EncodableValue<T>, T : Any, C : Context> Namespace.setOverride(
-    feature: Feature<S, T, C, *>,
+fun <T : Any, M : Namespace> Namespace.setOverride(
+    feature: Feature<T, M>,
     value: T,
 ) {
     (registry as InMemoryNamespaceRegistry).setOverride(feature, value)
@@ -125,15 +123,14 @@ fun <S : EncodableValue<T>, T : Any, C : Context> Namespace.setOverride(
  * its rules and configuration.
  *
  * @param feature The feature flag to clear the override for
- * @param S The EncodableValue type wrapping the actual value
  * @param T The actual value type
- * @param C The type of the contextFn used for evaluation
+ * @param M The namespace type
  *
  * @see setOverride
  * @see clearAllOverrides
  */
-fun <S : EncodableValue<T>, T : Any, C : Context> Namespace.clearOverride(
-    feature: Feature<S, T, C, *>,
+fun <T : Any, M : Namespace> Namespace.clearOverride(
+    feature: Feature<T, M>,
 ) {
     (registry as InMemoryNamespaceRegistry).clearOverride(feature)
 }
@@ -156,14 +153,13 @@ fun Namespace.clearAllOverrides() {
  *
  * @param feature The feature flag to check
  * @return true if an override is set, false otherwise
- * @param S The EncodableValue type wrapping the actual value
  * @param T The actual value type
- * @param C The type of the contextFn used for evaluation
+ * @param M The namespace type
  *
  * @see setOverride
  */
-fun <S : EncodableValue<T>, T : Any, C : Context> Namespace.hasOverride(
-    feature: Feature<S, T, C, *>,
+fun <T : Any, M : Namespace> Namespace.hasOverride(
+    feature: Feature<T, M>,
 ): Boolean = (registry as InMemoryNamespaceRegistry).hasOverride(feature)
 
 /**
@@ -175,16 +171,15 @@ fun <S : EncodableValue<T>, T : Any, C : Context> Namespace.hasOverride(
  * @param value The value to return for this flag
  * @param block The code to execute with the override in place
  * @return The result of the block
- * @param S The EncodableValue type wrapping the actual value
  * @param T The actual value type
- * @param C The type of the contextFn used for evaluation
+ * @param M The namespace type
  * @param R The return type of the block
  *
  * @see setOverride
  * @see withOverrides
  */
-inline fun <S : EncodableValue<T>, T : Any, C : Context, R> Namespace.withOverride(
-    feature: Feature<S, T, C, *>,
+inline fun <T : Any, M : Namespace, R> Namespace.withOverride(
+    feature: Feature<T, M>,
     value: T,
     block: () -> R,
 ): R {
@@ -210,14 +205,14 @@ inline fun <S : EncodableValue<T>, T : Any, C : Context, R> Namespace.withOverri
  * @see withOverride
  */
 fun <M : Namespace, F : FeatureContainer<M>> F.withOverrides(
-    vararg overrides: Pair<Feature<*, *, *, *>, Any>,
+    vararg overrides: Pair<Feature<*, *>, Any>,
     block: F.() -> Unit,
 ): Unit {
     // Set all configure
     overrides.forEach { (feature, value) ->
         @Suppress("UNCHECKED_CAST")
         (namespace.registry as InMemoryNamespaceRegistry).setOverride(
-            feature as Feature<EncodableValue<Any>, Any, Context, *>,
+            feature as Feature<Any, M>,
             value
         )
     }
@@ -228,7 +223,7 @@ fun <M : Namespace, F : FeatureContainer<M>> F.withOverrides(
         overrides.forEach { (feature, _) ->
             @Suppress("UNCHECKED_CAST")
             (namespace.registry as InMemoryNamespaceRegistry).clearOverride(
-                feature as Feature<EncodableValue<Any>, Any, Context, *>
+                feature as Feature<Any, M>
             )
         }
     }
@@ -250,8 +245,8 @@ interface AtomicTestScope {
 data class OverridingScope<M : Namespace, F : FeatureAware<M>> @PublishedApi internal constructor(
     private val features: F,
 ) : FeatureAware<M> by features {
-    inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context> update(
-        feature: Feature<S, T, C, *>,
+    inline fun <reified T : Any> update(
+        feature: Feature<T, M>,
         value: T,
     ) {
         container.namespace.setOverride(feature, value)

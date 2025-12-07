@@ -7,6 +7,7 @@ import io.amichne.konditional.context.Rampup
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.core.id.TestStableId
+import io.amichne.konditional.rules.evaluable.Evaluable.matches
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.rules.versions.Unbounded
 import kotlin.test.Test
@@ -35,10 +36,10 @@ class RuleMatchingTest {
             versionRange = Unbounded(),
         )
 
-        assertTrue(rule.matches(ctx()))
-        assertTrue(rule.matches(ctx(locale = AppLocale.UNITED_STATES)))
-        assertTrue(rule.matches(ctx(platform = Platform.ANDROID)))
-        assertTrue(rule.matches(ctx(version = "99.99.99")))
+        assertTrue(ctx().matches())
+        assertTrue(ctx(locale = AppLocale.UNITED_STATES).matches())
+        assertTrue(ctx(platform = Platform.ANDROID).matches())
+        assertTrue(ctx(version = "99.99.99").matches())
     }
 
     @Test
@@ -50,9 +51,9 @@ class RuleMatchingTest {
             versionRange = Unbounded(),
         )
 
-        assertTrue(rule.matches(ctx(platform = Platform.IOS)))
-        assertFalse(rule.matches(ctx(platform = Platform.ANDROID)))
-        assertFalse(rule.matches(ctx(platform = Platform.WEB)))
+        assertTrue(ctx(platform = Platform.IOS).matches())
+        assertFalse(ctx(platform = Platform.ANDROID).matches())
+        assertFalse(ctx(platform = Platform.WEB).matches())
     }
 
     @Test
@@ -64,9 +65,9 @@ class RuleMatchingTest {
             versionRange = Unbounded(),
         )
 
-        assertTrue(rule.matches(ctx(platform = Platform.IOS)))
-        assertTrue(rule.matches(ctx(platform = Platform.ANDROID)))
-        assertFalse(rule.matches(ctx(platform = Platform.WEB)))
+        assertTrue(ctx(platform = Platform.IOS).matches())
+        assertTrue(ctx(platform = Platform.ANDROID).matches())
+        assertFalse(ctx(platform = Platform.WEB).matches())
     }
 
     @Test
@@ -78,9 +79,9 @@ class RuleMatchingTest {
             versionRange = Unbounded(),
         )
 
-        assertTrue(rule.matches(ctx(locale = AppLocale.UNITED_STATES)))
-        assertFalse(rule.matches(ctx(locale = AppLocale.MEXICO)))
-        assertFalse(rule.matches(ctx(locale = AppLocale.INDIA)))
+        assertTrue(ctx(locale = AppLocale.UNITED_STATES).matches())
+        assertFalse(ctx(locale = AppLocale.MEXICO).matches())
+        assertFalse(ctx(locale = AppLocale.INDIA).matches())
     }
 
     @Test
@@ -92,9 +93,9 @@ class RuleMatchingTest {
             versionRange = Unbounded(),
         )
 
-        assertTrue(rule.matches(ctx(locale = AppLocale.UNITED_STATES)))
-        assertTrue(rule.matches(ctx(locale = AppLocale.CANADA)))
-        assertFalse(rule.matches(ctx(locale = AppLocale.MEXICO)))
+        assertTrue(ctx(locale = AppLocale.UNITED_STATES).matches())
+        assertTrue(ctx(locale = AppLocale.CANADA).matches())
+        assertFalse(ctx(locale = AppLocale.MEXICO).matches())
     }
 
     @Test
@@ -109,11 +110,11 @@ class RuleMatchingTest {
             ),
         )
 
-        assertFalse(rule.matches(ctx(version = "0.9.9")))
-        assertTrue(rule.matches(ctx(version = "1.0.0")))
-        assertTrue(rule.matches(ctx(version = "1.5.0")))
-        assertTrue(rule.matches(ctx(version = "2.0.0")))
-        assertFalse(rule.matches(ctx(version = "2.0.1")))
+        assertFalse(ctx(version = "0.9.9").matches())
+        assertTrue(ctx(version = "1.0.0").matches())
+        assertTrue(ctx(version = "1.5.0").matches())
+        assertTrue(ctx(version = "2.0.0").matches())
+        assertFalse(ctx(version = "2.0.1").matches())
     }
 
     @Test
@@ -129,16 +130,16 @@ class RuleMatchingTest {
         )
 
         // All constraints match
-        assertTrue(rule.matches(ctx(locale = AppLocale.UNITED_STATES, platform = Platform.IOS, version = "2.5.0")))
+        assertTrue(ctx(locale = AppLocale.UNITED_STATES, platform = Platform.IOS, version = "2.5.0").matches())
 
         // Wrong locale
-        assertFalse(rule.matches(ctx(locale = AppLocale.MEXICO, platform = Platform.IOS, version = "2.5.0")))
+        assertFalse(ctx(locale = AppLocale.MEXICO, platform = Platform.IOS, version = "2.5.0").matches())
 
         // Wrong platform
-        assertFalse(rule.matches(ctx(locale = AppLocale.UNITED_STATES, platform = Platform.ANDROID, version = "2.5.0")))
+        assertFalse(ctx(locale = AppLocale.UNITED_STATES, platform = Platform.ANDROID, version = "2.5.0").matches())
 
         // Wrong version
-        assertFalse(rule.matches(ctx(locale = AppLocale.UNITED_STATES, platform = Platform.IOS, version = "1.5.0")))
+        assertFalse(ctx(locale = AppLocale.UNITED_STATES, platform = Platform.IOS, version = "1.5.0").matches())
     }
 
     @Test

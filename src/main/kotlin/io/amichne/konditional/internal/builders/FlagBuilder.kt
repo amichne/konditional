@@ -68,7 +68,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
      */
     @KonditionalDsl
     override infix fun Rule<C>.returns(value: T) {
-        conditionalValues += targetedBy(value)
+        conditionalValues.add(targetedBy(value))
     }
 
     /**

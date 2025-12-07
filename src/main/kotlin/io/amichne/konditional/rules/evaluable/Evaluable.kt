@@ -19,19 +19,21 @@ import io.amichne.konditional.context.Context
  * @see io.amichne.konditional.rules.Rule
  * @see BaseEvaluable
  */
-fun interface Evaluable<in C : Context> : Specifier {
+interface Evaluable<C : Context> : Specifier {
     /**
      * Determines if this evaluable matches the given contextFn.
      *
      * The default implementation always returns true, allowing implementations
      * to selectively override only when they need custom matching logic.
      *
-     * @param context The contextFn to evaluate against
+     * @param this@matches The contextFn to evaluate against
      * @return true if the contextFn matches this evaluable's criteria, false otherwise
      */
     fun matches(context: C): Boolean
 
     companion object {
-        fun <C : Context> factory(matcher: (C) -> Boolean): Evaluable<C> = Evaluable { context -> matcher(context) }
+        fun <C : Context> factory(matcher: (C) -> Boolean): Evaluable<C> = object  : Evaluable<C> {
+            override fun matches(context: C): Boolean = matcher(context)
+        }
     }
 }

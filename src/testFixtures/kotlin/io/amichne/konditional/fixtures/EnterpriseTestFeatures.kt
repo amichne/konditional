@@ -90,7 +90,7 @@ data class EnterpriseRule(
     val requiredTier: SubscriptionTier? = null,
     val requiredRole: UserRole? = null,
 ) : Evaluable<EnterpriseContext> {
-    override fun matches(context: EnterpriseContext): Boolean =
-        (requiredTier == null || context.subscriptionTier >= requiredTier) &&
-            (requiredRole == null || context.userRole >= requiredRole)
+    override fun matches(c: EnterpriseContext): Boolean =
+        (requiredTier == null || c.subscriptionTier >= requiredTier) &&
+        (requiredRole == null || c.userRole >= requiredRole)
 }

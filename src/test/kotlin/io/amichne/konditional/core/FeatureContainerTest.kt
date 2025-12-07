@@ -32,7 +32,7 @@ class FeatureContainerTest {
     }
 
 //    object Invalid {
-//        val x by double()
+//        val x by double<Context>()
 //    }
 
     @Test
