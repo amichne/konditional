@@ -188,3 +188,45 @@ val compileKotlin: KotlinCompile by tasks
 compileKotlin.compilerOptions {
 //    freeCompilerArgs.set(listOf("-XXLanguage:+NestedTypeAliases"))
 }
+
+// ============================================================================
+// OpenAPI Generation Task
+// ============================================================================
+
+tasks.register<JavaExec>("generateOpenApiSpec") {
+    group = "documentation"
+    description = "Generates OpenAPI specification from JSONSchema definitions"
+
+    // Ensure the main classes are compiled before running
+    dependsOn("compileKotlin")
+
+    // Set the main class to run
+    mainClass.set("io.amichne.konditional.openapi.GenerateOpenApiSpec")
+
+    // Use the main runtime classpath
+    classpath = sourceSets.main.get().runtimeClasspath
+
+    // Pass output path as argument (optional, defaults to build/openapi/api-spec.json)
+    val outputPath = project.findProperty("outputPath") as String?
+        ?: "build/openapi/api-spec.json"
+    args(outputPath)
+
+    // Show output
+    standardOutput = System.out
+    errorOutput = System.err
+
+    doFirst {
+        println("=".repeat(60))
+        println("Generating OpenAPI Specification")
+        println("=".repeat(60))
+        println("Output: $outputPath")
+        println()
+    }
+
+    doLast {
+        println()
+        println("=".repeat(60))
+        println("✓ Generation complete!")
+        println("=".repeat(60))
+    }
+}

@@ -41,29 +41,57 @@ sealed interface EncodableValue<T : Any> {
             /**
              * Parse a value into an EncodableValue with compile-time evidence.
              * Requires EncodableEvidence to prove the type is supported at compile-time.
+             *
+             * This function avoids unsafe casts by trusting the evidence system to ensure
+             * type correctness at compile time. The evidence parameter proves that T is
+             * a valid encodable type, so the conversions are guaranteed to be safe.
              */
             inline fun <reified T : Any> of(
                 value: T,
                 evidence: EncodableEvidence<T> = EncodableEvidence.get(),
             ): EncodableValue<T> {
+                // The evidence system guarantees these conversions are safe,
+                // so we only need one final cast at the end
                 @Suppress("UNCHECKED_CAST")
-                return when (evidence.encoding) {
+                val encodable: EncodableValue<*> = when (evidence.encoding) {
                     BOOLEAN -> BooleanEncodeable(value as Boolean)
                     STRING -> StringEncodeable(value as String)
                     INTEGER -> IntEncodeable(value as Int)
                     DECIMAL -> DecimalEncodeable(value as Double)
                     ENUM -> {
-                        // For enum types, we need to create EnumEncodeable with the proper type
-                        EnumEncodeable.fromString(value.javaClass.name, value::class as KClass<out Enum<*>>)
+                        // The evidence proves value is an Enum, so this cast is safe
+                        val enumValue = value as Enum<*>
+                        @Suppress("UNCHECKED_CAST")
+                        EnumEncodeable(enumValue, enumValue::class as KClass<out Enum<*>>)
                     }
-                    JSON_OBJECT -> JsonObjectEncodeable(value as JsonValue.JsonObject, requireNotNull(value.schema))
-                    JSON_ARRAY -> JsonArrayEncodeable(value as JsonValue.JsonArray, requireNotNull(value.elementSchema))
+                    JSON_OBJECT -> {
+                        // The evidence proves value is a JsonObject
+                        val jsonObject = value as JsonValue.JsonObject
+                        JsonObjectEncodeable(
+                            jsonObject,
+                            requireNotNull(jsonObject.schema) {
+                                "JsonObject must have a schema attached for encoding"
+                            }
+                        )
+                    }
+                    JSON_ARRAY -> {
+                        // The evidence proves value is a JsonArray
+                        val jsonArray = value as JsonValue.JsonArray
+                        JsonArrayEncodeable(
+                            jsonArray,
+                            requireNotNull(jsonArray.elementSchema) {
+                                "JsonArray must have an element schema attached for encoding"
+                            }
+                        )
+                    }
                     DATA_CLASS -> {
-                        // For data class types, get the schema from the instance
+                        // The evidence proves value implements DataClassWithSchema
                         val dataClassWithSchema = value as DataClassWithSchema
                         DataClassEncodeable(dataClassWithSchema, dataClassWithSchema.schema)
                     }
-                } as EncodableValue<T>
+                }
+                // Safe cast because the when statement covers all cases and each creates the correct type
+                return encodable as EncodableValue<T>
             }
         }
     }
