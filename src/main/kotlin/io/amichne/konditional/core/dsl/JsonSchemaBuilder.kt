@@ -51,6 +51,34 @@ class JsonObjectSchemaBuilder {
     }
 
     /**
+     * Adds a required field to the object schema.
+     * Convenience method for field(name, required = true, schemaBuilder).
+     *
+     * @param name The field name
+     * @param schemaBuilder Lambda to build the field's schema
+     */
+    fun requiredField(
+        name: String,
+        schemaBuilder: JsonFieldSchemaBuilder.() -> JsonSchema
+    ) {
+        field(name, required = true, schemaBuilder = schemaBuilder)
+    }
+
+    /**
+     * Adds an optional field to the object schema.
+     * Convenience method for field(name, required = false, schemaBuilder).
+     *
+     * @param name The field name
+     * @param schemaBuilder Lambda to build the field's schema
+     */
+    fun optionalField(
+        name: String,
+        schemaBuilder: JsonFieldSchemaBuilder.() -> JsonSchema
+    ) {
+        field(name, required = false, schemaBuilder = schemaBuilder)
+    }
+
+    /**
      * Builds the final ObjectSchema.
      */
     fun build(): JsonSchema.ObjectSchema = JsonSchema.ObjectSchema(fields.toMap())
@@ -204,13 +232,20 @@ fun buildJsonObject(
     return JsonObjectBuilder(schema).apply(builder).build()
 }
 
+/**
+ * Builds an empty JSON array with a specified element schema.
+ *
+ * Example:
+ * ```kotlin
+ * val emptyStringArray = buildJsonArray { string() }
+ * val emptyIntArray = buildJsonArray { int() }
+ * ```
+ */
 fun buildJsonArray(
-    builder: JsonFieldSchemaBuilder.() -> JsonSchema
+    elementSchemaBuilder: JsonFieldSchemaBuilder.() -> JsonSchema
 ): JsonValue.JsonArray {
-    return JsonValue.JsonArray(
-        emptyList(),
-        JsonSchema.ArraySchema(JsonFieldSchemaBuilder().array { builder() })
-    )
+    val elementSchema = JsonFieldSchemaBuilder().elementSchemaBuilder()
+    return JsonValue.JsonArray(emptyList(), elementSchema)
 }
 
 /**
@@ -252,4 +287,67 @@ fun buildJsonArray(vararg ints: Int): JsonValue.JsonArray {
  */
 fun buildJsonArray(vararg booleans: Boolean): JsonValue.JsonArray {
     return JsonValue.JsonArray(booleans.map { JsonValue.JsonBoolean(it) }, JsonSchema.BooleanSchema)
+}
+
+/**
+ * Builds a JSON array of doubles.
+ */
+fun buildJsonArray(vararg doubles: Double): JsonValue.JsonArray {
+    return JsonValue.JsonArray(doubles.map { JsonValue.JsonNumber(it) }, JsonSchema.DoubleSchema)
+}
+
+/**
+ * Builds a JSON array of objects with a shared schema.
+ *
+ * Example:
+ * ```kotlin
+ * val userSchema = jsonObject {
+ *     field("id") { int() }
+ *     field("name") { string() }
+ * }
+ *
+ * val users = buildJsonObjectArray(schema = userSchema) {
+ *     add {
+ *         "id" to 1
+ *         "name" to "Alice"
+ *     }
+ *     add {
+ *         "id" to 2
+ *         "name" to "Bob"
+ *     }
+ * }
+ * ```
+ */
+fun buildJsonObjectArray(
+    schema: JsonSchema.ObjectSchema,
+    builder: JsonObjectArrayBuilder.() -> Unit
+): JsonValue.JsonArray {
+    return JsonObjectArrayBuilder(schema).apply(builder).build()
+}
+
+/**
+ * Builder for creating arrays of JSON objects with a shared schema.
+ */
+@JsonSchemaDsl
+class JsonObjectArrayBuilder(private val schema: JsonSchema.ObjectSchema) {
+    private val objects = mutableListOf<JsonValue.JsonObject>()
+
+    /**
+     * Adds a JSON object to the array using a builder DSL.
+     */
+    fun add(builder: JsonObjectBuilder.() -> Unit) {
+        objects.add(buildJsonObject(schema, builder))
+    }
+
+    /**
+     * Adds a pre-built JSON object to the array.
+     */
+    fun add(obj: JsonValue.JsonObject) {
+        objects.add(obj)
+    }
+
+    /**
+     * Builds the final JSON array.
+     */
+    fun build(): JsonValue.JsonArray = JsonValue.JsonArray(objects.toList(), schema)
 }

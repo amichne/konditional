@@ -12,6 +12,10 @@ import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.core.types.EnumEncodeable
 import io.amichne.konditional.core.types.IntEncodeable
 import io.amichne.konditional.core.types.StringEncodeable
+import io.amichne.konditional.core.types.json.JsonArrayEncodeable
+import io.amichne.konditional.core.types.json.JsonObjectEncodeable
+import io.amichne.konditional.core.types.json.JsonSchema
+import io.amichne.konditional.core.types.json.JsonValue
 import io.amichne.konditional.internal.builders.FlagBuilder
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
@@ -313,6 +317,96 @@ abstract class FeatureContainer<M : Namespace>(
         noinline dataClassScope: FlagScope<DataClassEncodeable<T>, T, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, DataClassFeature<T, C, M>> =
         ContainerFeaturePropertyDelegate(default, dataClassScope) { DataClassFeature(it, namespace) }
+
+    /**
+     * Creates a JSON object feature with automatic registration and configuration.
+     *
+     * The feature is configured using a DSL scope that provides type-safe access to
+     * JSON object-specific configuration options like rules, defaults, and targeting.
+     * Configuration is automatically applied to the namespace when the feature is first accessed.
+     *
+     * The default value must have a schema attached, which is used for runtime validation.
+     * All values (default and rule returns) are validated against the schema to ensure type safety.
+     *
+     * **Example:**
+     * ```kotlin
+     * val userSchema = jsonObject {
+     *     field("id", required = true) { int() }
+     *     field("name", required = true) { string() }
+     *     field("email") { string() }
+     * }
+     *
+     * val defaultUser = buildJsonObject(schema = userSchema) {
+     *     "id" to 1
+     *     "name" to "Default User"
+     *     "email" to "default@example.com"
+     * }
+     *
+     * object MyFeatures : FeatureContainer<Namespace.Users>(Namespace.Users) {
+     *     val USER_CONFIG by jsonObject(default = defaultUser) {
+     *         rule {
+     *             environments(Environment.PRODUCTION)
+     *         } returns buildJsonObject(schema = userSchema) {
+     *             "id" to 999
+     *             "name" to "Production User"
+     *             "email" to "prod@example.com"
+     *         }
+     *     }
+     * }
+     * ```
+     *
+     * @param C The context type used for evaluation
+     * @param default The default JSON object value for this feature (must have schema)
+     * @param jsonObjectScope DSL scope for configuring the JSON object feature
+     * @return A delegated property that returns a [JsonObjectFeature]
+     */
+    protected fun <C : Context> jsonObject(
+        default: JsonValue.JsonObject,
+        jsonObjectScope: FlagScope<JsonObjectEncodeable, JsonValue.JsonObject, C, M>.() -> Unit = {},
+    ): ReadOnlyProperty<FeatureContainer<M>, JsonObjectFeature<C, M>> {
+        requireNotNull(default.schema) {
+            "Default JsonObject must have a schema attached. Use buildJsonObject(schema = ...) or JsonValue.JsonObject(..., schema = ...)"
+        }
+        return ContainerFeaturePropertyDelegate(default, jsonObjectScope) { JsonObjectFeature(it, namespace) }
+    }
+
+    /**
+     * Creates a JSON array feature with automatic registration and configuration.
+     *
+     * The feature is configured using a DSL scope that provides type-safe access to
+     * JSON array-specific configuration options like rules, defaults, and targeting.
+     * Configuration is automatically applied to the namespace when the feature is first accessed.
+     *
+     * The default value must have an element schema attached, which is used for runtime validation.
+     * All values (default and rule returns) are validated against the element schema to ensure type safety.
+     *
+     * **Example:**
+     * ```kotlin
+     * val defaultTags = buildJsonArray("feature-a", "enabled", "production")
+     *
+     * object MyFeatures : FeatureContainer<Namespace.Config>(Namespace.Config) {
+     *     val FEATURE_TAGS by jsonArray(default = defaultTags) {
+     *         rule {
+     *             environments(Environment.DEVELOPMENT)
+     *         } returns buildJsonArray("feature-a", "enabled", "development", "debug")
+     *     }
+     * }
+     * ```
+     *
+     * @param C The context type used for evaluation
+     * @param default The default JSON array value for this feature (must have element schema)
+     * @param jsonArrayScope DSL scope for configuring the JSON array feature
+     * @return A delegated property that returns a [JsonArrayFeature]
+     */
+    protected fun <C : Context> jsonArray(
+        default: JsonValue.JsonArray,
+        jsonArrayScope: FlagScope<JsonArrayEncodeable, JsonValue.JsonArray, C, M>.() -> Unit = {},
+    ): ReadOnlyProperty<FeatureContainer<M>, JsonArrayFeature<C, M>> {
+        requireNotNull(default.elementSchema) {
+            "Default JsonArray must have an element schema attached. Use buildJsonArray(...) with typed elements"
+        }
+        return ContainerFeaturePropertyDelegate(default, jsonArrayScope) { JsonArrayFeature(it, namespace) }
+    }
 
     /**
      * Internal delegate factory that handles feature creation, configuration, and registration.
