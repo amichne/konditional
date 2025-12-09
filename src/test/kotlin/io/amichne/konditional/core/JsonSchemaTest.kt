@@ -1,8 +1,8 @@
 package io.amichne.konditional.core
 
-import io.amichne.konditional.core.dsl.buildJsonArray
-import io.amichne.konditional.core.dsl.buildJsonObject
-import io.amichne.konditional.core.dsl.jsonObject
+import io.amichne.konditional.core.dsl.json.buildJsonArray
+import io.amichne.konditional.core.dsl.json.buildJsonObject
+import io.amichne.konditional.core.dsl.json.jsonObject
 import io.amichne.konditional.core.types.json.JsonSchema
 import io.amichne.konditional.core.types.json.JsonValue
 import org.junit.jupiter.api.Assertions.assertEquals

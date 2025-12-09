@@ -1,5 +1,6 @@
 package io.amichne.konditional.core.types.json
 
+import jdk.jpackage.internal.MacDmgBundler.required
 import kotlin.reflect.KClass
 
 /**
@@ -51,7 +52,7 @@ sealed class JsonSchema {
      * @param enumClass The KClass of the enum for runtime type checking
      */
     data class EnumSchema<E : Enum<E>>(
-        val enumClass: KClass<E>
+        val enumClass: KClass<E>,
     ) : JsonSchema() {
         override fun toString() = "EnumSchema(${enumClass.simpleName})"
     }
@@ -70,7 +71,7 @@ sealed class JsonSchema {
      * @param required Set of required field names
      */
     data class ObjectSchema(
-        val fields: Map<String, FieldSchema>
+        val fields: Map<String, FieldSchema>,
     ) : JsonSchema() {
         val required: Set<String> = fields.filter { it.value.required }.keys
 
@@ -95,7 +96,7 @@ sealed class JsonSchema {
      * @param elementSchema The schema for all elements in the array
      */
     data class ArraySchema(
-        val elementSchema: JsonSchema
+        val elementSchema: JsonSchema,
     ) : JsonSchema() {
         override fun toString() = "ArraySchema($elementSchema)"
     }

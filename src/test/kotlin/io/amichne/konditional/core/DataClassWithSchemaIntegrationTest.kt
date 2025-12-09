@@ -1,11 +1,14 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.dsl.jsonObject
+import io.amichne.konditional.core.dsl.json.jsonObject
+import io.amichne.konditional.core.dsl.json.of
+import io.amichne.konditional.core.dsl.json.schema
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.DataClassEncodeable
 import io.amichne.konditional.core.types.DataClassWithSchema
+import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.core.types.json.JsonSchema
 import io.amichne.konditional.core.types.json.JsonValue
 import io.amichne.konditional.core.types.parseAs
@@ -14,6 +17,7 @@ import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.fixtures.core.test
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 /**
@@ -33,17 +37,13 @@ class DataClassWithSchemaIntegrationTest {
         val theme: String = "light",
         val notificationsEnabled: Boolean = true,
         val maxRetries: Int = 3,
-        val timeout: Double = 30.0
+        val timeout: Double = 30.0,
     ) : DataClassWithSchema {
-        override val schema = Companion.schema
+        override val schema: JsonSchema.ObjectSchema = jsonObject {
+            ::theme of { default("light") }
 
-        companion object {
-            val schema: JsonSchema.ObjectSchema = jsonObject {
-                field("theme", required = true, default = "light") { string() }
-                field("notificationsEnabled", required = true, default = true) { boolean() }
-                field("maxRetries", required = true, default = 3) { int() }
-                field("timeout", required = true, default = 30.0) { double() }
-            }
+            ::maxRetries of { default(3) }
+            ::timeout of { default(30.0) }
         }
     }
 
@@ -51,20 +51,23 @@ class DataClassWithSchemaIntegrationTest {
     data class PaymentConfig(
         val maxAmount: Double = 1000.0,
         val currency: String = "USD",
-        val settings: UserSettings = UserSettings()
+        val settings: UserSettings = UserSettings(),
     ) : DataClassWithSchema {
-        override val schema = Companion.schema
+        override val schema: JsonSchema.ObjectSchema = jsonObject {
+            ::maxAmount of { default(1000.0) }
+            ::currency of { default("USD") }
+            ::settings of {
 
-        companion object {
-            val schema: JsonSchema.ObjectSchema = jsonObject {
-                field("maxAmount", required = true, default = 1000.0) { double() }
-                field("currency", required = true, default = "USD") { string() }
-                field("settings", required = true) { jsonObject {
-                    field("theme", required = true, default = "light") { string() }
-                    field("notificationsEnabled", required = true, default = true) { boolean() }
-                    field("maxRetries", required = true, default = 3) { int() }
-                    field("timeout", required = true, default = 30.0) { double() }
-                } }
+//                field("maxAmount", required = true, default = 1000.0) { double() }
+//                field("currency", required = true, default = "USD") { string() }
+//                field("settings", required = true) {
+//                    jsonObject {
+//                        field("theme", required = true, default = "light") { string() }
+//                        field("notificationsEnabled", required = true, default = true) { boolean() }
+//                        field("maxRetries", required = true, default = 3) { int() }
+//                        field("timeout", required = true, default = 30.0) { double() }
+//                    }
+//                }
             }
         }
     }
@@ -72,7 +75,7 @@ class DataClassWithSchemaIntegrationTest {
     @Test
     fun `toJsonValue converts data class to JsonObject`() {
         // Given
-        val settings = UserSettings(
+        val settings = DataClassWithSchemaIntegrationTest.UserSettings(
             theme = "dark",
             notificationsEnabled = false,
             maxRetries = 5,
@@ -100,7 +103,7 @@ class DataClassWithSchemaIntegrationTest {
                 "maxRetries" to JsonValue.JsonNumber(5.0),
                 "timeout" to JsonValue.JsonNumber(60.0)
             ),
-            schema = UserSettings.schema
+//            schema = UserSettings::schema
         )
 
         // When
@@ -164,7 +167,7 @@ class DataClassWithSchemaIntegrationTest {
         // Then
         assertEquals(settings, encodeable.value)
         assertEquals(schema, encodeable.schema)
-        assertEquals(io.amichne.konditional.core.types.EncodableValue.Encoding.DATA_CLASS, encodeable.encoding)
+        assertEquals(EncodableValue.Encoding.DATA_CLASS, encodeable.encoding)
     }
 
     @Test
@@ -206,7 +209,7 @@ class DataClassWithSchemaIntegrationTest {
     }
 
     @Test
-    @org.junit.jupiter.api.Disabled("Nested data class support needs additional work")
+    @Disabled("Nested data class support needs additional work")
     fun `nested data classes are supported`() {
         // Given
         val config = PaymentConfig(
