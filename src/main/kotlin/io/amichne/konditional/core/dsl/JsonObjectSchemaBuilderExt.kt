@@ -1,6 +1,8 @@
 package io.amichne.konditional.core.dsl
 
+import io.amichne.konditional.core.types.DataClassWithSchema
 import io.amichne.konditional.core.types.json.JsonSchema
+import io.amichne.konditional.internal.serialization.models.FlagValue
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty0
 
@@ -85,7 +87,7 @@ import kotlin.reflect.KProperty0
 //    }
 //}
 
-@Deprecated("Use TypedFieldBuilder with 'typed' extension function instead", ReplaceWith("TypedFieldBuilder"))
+@Deprecated("Use TypedFieldBuilder with 'typed' custom function instead", ReplaceWith("TypedFieldBuilder"))
 open class FieldBuilder {
     var required: Boolean = false
     open var default: Any? = null
@@ -103,8 +105,30 @@ class TypedFieldBuilder<V : Any>(
     val klass: KClass<out V>,
     val property: KProperty0<V>,
 ) {
-    val isNullable: Boolean = property.returnType.isMarkedNullable
     var schemaBuilder: (JsonFieldSchemaBuilder.() -> JsonSchema)? = null
+
+    init {
+        schemaBuilder = when (klass) {
+            Int::class -> {
+                { int() }
+            }
+            Double::class -> {
+                { double() }
+            }
+            Boolean::class -> {
+                { boolean() }
+            }
+            String::class -> {
+                { string() }
+            }
+//            DataClassWithSchema::class -> {
+//                { io.amichne.konditional.core.dsl.jsonObject(schemaBuilder()) }
+//            }
+            else -> null // For custom/nested types, user must specify
+        }
+    }
+
+    val isNullable: Boolean = property.returnType.isMarkedNullable
 
     var default: V? = null
 
@@ -130,5 +154,4 @@ inline infix fun <reified V : Any> KProperty0<V>.on(block: TypedFieldBuilder<V>.
     return builder.field(name) {
         dsl.invoke(this)
     }
-
 }

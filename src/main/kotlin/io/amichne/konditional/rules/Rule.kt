@@ -26,8 +26,8 @@ import io.amichne.konditional.rules.versions.VersionRange
  *
  * This design enables flexible composition:
  * ```
- * Rule.matches(contextFn) = baseEvaluable.matches(contextFn) && extension.matches(contextFn)
- * Rule.specificity() = baseEvaluable.specificity() + extension.specificity()
+ * Rule.matches(contextFn) = baseEvaluable.matches(contextFn) && custom.matches(contextFn)
+ * Rule.specificity() = baseEvaluable.specificity() + custom.specificity()
  * ```
  *
  * ## Usage Examples
@@ -42,11 +42,11 @@ import io.amichne.konditional.rules.versions.VersionRange
  * )
  * ```
  *
- * Rule with custom extension logic:
+ * Rule with custom custom logic:
  * ```kotlin
  * Rule(
  *     rollout {  Rampup.of(100.0) }
- *     extension = object : Evaluable<MyContext>() {
+ *     custom = object : Evaluable<MyContext>() {
  *         override fun matches(contextFn: MyContext) = contextFn.isPremiumUser
  *         override fun specificity() = 1
  *     }
@@ -99,7 +99,7 @@ data class Rule<C : Context> internal constructor(
      * Specificity determines rule precedence - higher values are evaluated first.
      * The total specificity is the sum of:
      * - [baseEvaluable] specificity (0-3 based on locale/platform/version constraints)
-     * - [extension] specificity (custom value from extension logic)
+     * - [extension] specificity (custom value from custom logic)
      *
      * @return The total specificity value (higher is more specific)
      */

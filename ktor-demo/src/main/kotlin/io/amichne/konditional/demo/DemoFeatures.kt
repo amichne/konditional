@@ -130,7 +130,7 @@ object EnterpriseFeatures : FeatureContainer<Namespace.Global>(Namespace.Global)
     // Enterprise Boolean Features
     val SSO_ENABLED by boolean<EnterpriseContext>(true) {
         rule {
-            extension { ctx ->
+            custom { ctx ->
                 ctx.subscriptionTier == SubscriptionTier.ENTERPRISE ||
                 ctx.subscriptionTier == SubscriptionTier.PROFESSIONAL
 
@@ -140,7 +140,7 @@ object EnterpriseFeatures : FeatureContainer<Namespace.Global>(Namespace.Global)
     }
     val ADVANCED_ANALYTICS by boolean<EnterpriseContext>(false) {
         rule {
-            extension { ctx ->
+            custom { ctx ->
                 ctx.subscriptionTier == SubscriptionTier.ENTERPRISE &&
                 ctx.employeeCount > 100
             }

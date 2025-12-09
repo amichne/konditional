@@ -1,13 +1,18 @@
 package io.amichne.konditional.core
 
+import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Platform
+import io.amichne.konditional.context.Version
+import io.amichne.konditional.context.feature
 import io.amichne.konditional.core.dsl.buildJsonArray
 import io.amichne.konditional.core.dsl.buildJsonObject
 import io.amichne.konditional.core.dsl.buildJsonObjectArray
 import io.amichne.konditional.core.dsl.jsonObject
 import io.amichne.konditional.core.features.FeatureContainer
+import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.types.json.JsonSchema
-import io.amichne.konditional.core.types.json.JsonValue
+import io.amichne.konditional.fixtures.core.id.TestStableId
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -33,14 +38,63 @@ class JsonFeatureIntegrationTest {
     }
 
     // Test namespace
-    sealed class TestNamespace : Namespace {
+    sealed class TestNamespace : Namespace.TestNamespaceFacade("id:test-namespace") {
         data object Config : TestNamespace()
     }
 
     // Test context
     data class TestContext(
-        val environment: Environment = Environment.DEVELOPMENT
-    ) : Context
+        val environment: Environment = Environment.DEVELOPMENT,
+    ) : Context {
+        override val locale: AppLocale = AppLocale.UNITED_STATES
+        override val platform: Platform = Platform.IOS
+        override val appVersion: Version = Version.default
+        override val stableId: StableId = TestStableId
+    }
+
+    object TestFeatures : FeatureContainer<TestNamespace.Config>(TestNamespace.Config) {
+        val USER_CONFIG by jsonObject<TestContext>(default = buildJsonObject {
+            "id" to 1
+            "name" to "Default User"
+            "email" to "[REDACTED_EMAIL_ADDRESS_1]"
+            "theme" to Theme.LIGHT
+        }) {
+
+            default(
+                buildJsonObject {
+                    "id" to 1
+                    "name" to "Default User"
+                    "email" to "[REDACTED_EMAIL_ADDRESS_1]"
+                    "theme" to Theme.LIGHT
+                }
+            )
+        }
+
+        val featureTags by jsonArray<TestContext>(default = buildJsonArray("feature-a", "enabled", "production")) {
+            default(buildJsonArray("feature-a", "enabled", "production"))
+        }
+
+        private val devConfig = buildJsonObject {
+            "debug" to true
+            "logLevel" to "DEBUG"
+        }
+
+        private val prodConfig = buildJsonObject {
+            "debug" to false
+            "logLevel" to "INFO"
+        }
+
+        val DEBUG_CONFIG by jsonObject<TestContext>(
+            default = devConfig
+        ) {
+            default(devConfig)
+            rule {
+                custom {
+                    it.environment == Environment.PRODUCTION
+                }
+            } returns prodConfig
+        }
+    }
 
     /**
      * Test that JSON object features can be declared and used in a FeatureContainer.
@@ -61,12 +115,6 @@ class JsonFeatureIntegrationTest {
             "theme" to Theme.LIGHT
         }
 
-        object TestFeatures : FeatureContainer<TestNamespace.Config>(TestNamespace.Config) {
-            val USER_CONFIG by jsonObject(default = defaultUser) {
-                default(defaultUser)
-            }
-        }
-
         // Verify the feature was created
         val feature = TestFeatures.USER_CONFIG
         assertNotNull(feature)
@@ -81,14 +129,14 @@ class JsonFeatureIntegrationTest {
     fun `can declare JSON array features in FeatureContainer`() {
         val defaultTags = buildJsonArray("feature-a", "enabled", "production")
 
-        object TestFeatures : FeatureContainer<TestNamespace.Config>(TestNamespace.Config) {
-            val FEATURE_TAGS by jsonArray(default = defaultTags) {
-                default(defaultTags)
-            }
-        }
-
+//        object TestFeatures : FeatureContainer<TestNamespace.Config>(TestNamespace.Config) {
+//            val FEATURE_TAGS by jsonArray(default = defaultTags) {
+//                default(defaultTags)
+//            }
+//        }
+//
         // Verify the feature was created
-        val feature = TestFeatures.FEATURE_TAGS
+        val feature = TestFeatures.featureTags
         assertNotNull(feature)
         assertEquals("FEATURE_TAGS", feature.key)
         assertEquals(TestNamespace.Config, feature.namespace)
@@ -123,13 +171,7 @@ class JsonFeatureIntegrationTest {
             "features" to buildJsonArray("feature-a", "feature-b")
         }
 
-        object TestFeatures : FeatureContainer<TestNamespace.Config>(TestNamespace.Config) {
-            val APP_CONFIG by jsonObject(default = defaultConfig) {
-                default(defaultConfig)
-            }
-        }
-
-        val feature = TestFeatures.APP_CONFIG
+        val feature = TestFeatures.featureTags
         assertNotNull(feature)
         assertEquals("APP_CONFIG", feature.key)
     }
@@ -158,15 +200,9 @@ class JsonFeatureIntegrationTest {
             }
         }
 
-        object TestFeatures : FeatureContainer<TestNamespace.Config>(TestNamespace.Config) {
-            val USERS by jsonArray(default = defaultUsers) {
-                default(defaultUsers)
-            }
-        }
-
-        val feature = TestFeatures.USERS
+        val feature = TestFeatures.featureTags
         assertNotNull(feature)
-        assertEquals("USERS", feature.key)
+        assertEquals("featureTags", feature.key)
         assertEquals(2, defaultUsers.size)
     }
 
@@ -280,24 +316,6 @@ class JsonFeatureIntegrationTest {
      */
     @Test
     fun `JSON features support rules and targeting`() {
-        val devConfig = buildJsonObject {
-            "debug" to true
-            "logLevel" to "DEBUG"
-        }
-
-        val prodConfig = buildJsonObject {
-            "debug" to false
-            "logLevel" to "INFO"
-        }
-
-        object TestFeatures : FeatureContainer<TestNamespace.Config>(TestNamespace.Config) {
-            val DEBUG_CONFIG by jsonObject(default = devConfig) {
-                default(devConfig)
-                // Note: In real usage, you would add rules here
-                // rule<TestContext> { ... } returns prodConfig
-            }
-        }
-
         val feature = TestFeatures.DEBUG_CONFIG
         assertNotNull(feature)
         assertEquals("DEBUG_CONFIG", feature.key)

@@ -59,13 +59,13 @@ internal data class RuleBuilder<C : Context>(
     }
 
     /**
-     * Implementation of [RuleScope.extension].
+     * Implementation of [RuleScope.custom].
      */
     override fun extension(function: () -> Evaluable<C>) {
         extension = function()
     }
 
-    override fun extension(block: (C) -> Boolean) {
+    override fun custom(block: (C) -> Boolean) {
         extension = factory { block(it) }
     }
 

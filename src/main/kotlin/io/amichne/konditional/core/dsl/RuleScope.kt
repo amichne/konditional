@@ -65,14 +65,14 @@ interface RuleScope<C : Context> {
     fun versions(build: VersionRangeScope.() -> Unit)
 
     /**
-     * Adds a custom targeting extension using an Evaluable.
+     * Adds a custom targeting custom using an Evaluable.
      *
      * Extensions allow for domain-specific targeting beyond the standard
      * platform, locale, and version criteria.
      *
      * Example:
      * ```kotlin
-     * extension { object : Evaluable<MyContext>() {
+     * custom { object : Evaluable<MyContext>() {
      *     override fun matches(contextFn: MyContext) = contextFn.organizationId == "enterprise"
      * }}
      * ```
@@ -82,7 +82,7 @@ interface RuleScope<C : Context> {
     @Deprecated("Use other extension")
     fun extension(function: () -> Evaluable<C>)
 
-    fun extension(block: (C) -> Boolean)
+    fun custom(block: (C) -> Boolean)
 
     /**
      * Adds a human-readable note to document the rule's purpose.

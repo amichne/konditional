@@ -68,7 +68,7 @@ interface Context {
         /**
          * Evaluates a specific feature flag in the contextFn of this [Context].
          *
-         * This extension function provides convenient access to flag evaluation.
+         * This custom function provides convenient access to flag evaluation.
          * The feature's namespace registry is automatically used.
          *
          * @param key The feature flag to evaluate

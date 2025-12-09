@@ -41,7 +41,6 @@ class DataClassWithSchemaIntegrationTest {
     ) : DataClassWithSchema {
         override val schema: JsonSchema.ObjectSchema = jsonObject {
             ::theme of { default("light") }
-
             ::maxRetries of { default(3) }
             ::timeout of { default(30.0) }
         }
