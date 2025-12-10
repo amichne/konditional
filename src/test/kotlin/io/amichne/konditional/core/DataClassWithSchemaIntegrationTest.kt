@@ -1,14 +1,15 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.core.dsl.jsonObject
-import io.amichne.konditional.core.dsl.of
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.DataClassEncodeable
 import io.amichne.konditional.core.types.DataClassWithSchema
 import io.amichne.konditional.core.types.json.JsonSchema
 import io.amichne.konditional.core.types.json.JsonSchema.Companion.double
+import io.amichne.konditional.core.types.json.JsonSchema.Companion.int
 import io.amichne.konditional.core.types.json.JsonValue
+import io.amichne.konditional.core.types.json.jsonSchema
 import io.amichne.konditional.core.types.parseAs
 import io.amichne.konditional.core.types.toJsonValue
 import io.amichne.konditional.fixtures.EnterpriseContext
@@ -39,14 +40,27 @@ class DataClassWithSchemaIntegrationTest {
         val maxRetries: Int = 3,
         val timeout: Double = 30.0,
     ) : DataClassWithSchema {
-        override val schema = Companion.schema
+        override val schema = jsonObject {
+            ::theme of jsonSchema {
+                string {
+                    default = "light"
+                }
+            }
+            ::notificationsEnabled of jsonSchema {
+                boolean {
+                    default = true
+                }
+            }
+            ::maxRetries of { int() }
+            ::timeout of { double() }
+        }
 
         companion object {
             val schema: JsonSchema.ObjectSchema = jsonObject {
-                field("theme", required = true, default = "light") { string() }
-                field("notificationsEnabled", required = true, default = true) { boolean() }
-                field("maxRetries", required = true, default = 3) { int() }
-                field("timeout", required = true, default = 30.0) { double() }
+//                field("theme", required = true, default = "light") { string() }
+//                field("notificationsEnabled", required = true, default = true) { boolean() }
+//                field("maxRetries", required = true, default = 3) { int() }
+//                field("timeout", required = true, default = 30.0) { double() }
             }
         }
     }
@@ -58,22 +72,27 @@ class DataClassWithSchemaIntegrationTest {
         val settings: UserSettings = UserSettings(),
     ) : DataClassWithSchema {
         override val schema = jsonObject {
-            ::maxAmount of { double() }
+            ::maxAmount of {
+                double()
+
+            }
+            ::currency.of { string() }
+            ::settings.of { UserSettings.schema }
         }
 
         companion object {
 
             val schema: JsonSchema.ObjectSchema = jsonObject {
-                field("maxAmount", required = true, default = 1000.0) { double() }
-                field("currency", required = true, default = "USD") { string() }
-                field("settings", required = true) {
-                    jsonObject {
-                        field("theme", required = true, default = "light") { string() }
-                        field("notificationsEnabled", required = true, default = true) { boolean() }
-                        field("maxRetries", required = true, default = 3) { int() }
-                        field("timeout", required = true, default = 30.0) { double() }
-                    }
-                }
+//                field("maxAmount", required = true) { double() }
+//                field("currency", required = true, default = "USD") { string() }
+//                field("settings", required = true) {
+//                    jsonObject {
+//                        field("theme", required = true, default = "light") { string() }
+//                        field("notificationsEnabled", required = true, default = true) { boolean() }
+//                        field("maxRetries", required = true, default = 3) { int() }
+//                        field("timeout", required = true, default = 30.0) { double() }
+//                    }
+//                }
             }
         }
     }

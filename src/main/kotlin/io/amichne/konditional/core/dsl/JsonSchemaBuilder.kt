@@ -1,8 +1,8 @@
 package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.core.types.json.JsonSchema
+import io.amichne.konditional.core.types.json.JsonSchemaBuilder
 import io.amichne.konditional.core.types.json.JsonValue
-import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty0
 
 /**
@@ -32,7 +32,8 @@ annotation class JsonSchemaDsl
  */
 @JsonSchemaDsl
 class JsonObjectSchemaBuilder {
-    private val fields = mutableMapOf<String, JsonSchema.FieldSchema>()
+    @PublishedApi
+    internal val fields = mutableMapOf<String, JsonSchema.FieldSchema>()
 
     /**
      * Adds a field to the object schema.
@@ -45,11 +46,22 @@ class JsonObjectSchemaBuilder {
     fun field(
         name: String,
         required: Boolean = false,
-        default: Any? = null,
-        schemaBuilder: JsonFieldSchemaBuilder.() -> JsonSchema,
+        schemaBuilder: JsonSchemaBuilder.() -> JsonSchema,
     ) {
-        val schema = JsonFieldSchemaBuilder().schemaBuilder()
-        fields[name] = JsonSchema.FieldSchema(schema, required, default)
+        val schema = JsonSchemaBuilder().schemaBuilder()
+        fields[name] = JsonSchema.FieldSchema(schema, required, schema.default)
+    }
+
+    /**
+     * Adds a field to the object schema using a property reference.
+     *
+     * @param V The property type
+     * @param block Lambda to build the field's schema
+     */
+    inline infix fun <reified V : Any> KProperty0<V>.of(
+        block: JsonSchema,
+    ) {
+        fields[this.name] = JsonSchema.FieldSchema(block, false, block.default, block.description, block.deprecated)
     }
 
     /**
@@ -67,33 +79,35 @@ class JsonFieldSchemaBuilder {
     /**
      * Creates a boolean schema.
      */
-    fun boolean(): JsonSchema.BooleanSchema = JsonSchema.BooleanSchema
+    fun boolean(): JsonSchema.BooleanSchema = JsonSchema.BooleanSchema()
 
     /**
      * Creates a string schema.
      */
-    fun string(): JsonSchema.StringSchema = JsonSchema.StringSchema
+    fun string(
+        block: JsonSchema.StringSchema.() -> Unit = {},
+    ): JsonSchema.StringSchema = JsonSchema.StringSchema()
 
     /**
      * Creates an integer schema.
      */
-    fun int(): JsonSchema.IntSchema = JsonSchema.IntSchema
+    fun int(): JsonSchema.IntSchema = JsonSchema.IntSchema()
 
     /**
      * Creates a double schema.
      */
-    fun double(): JsonSchema.DoubleSchema = JsonSchema.DoubleSchema
+    fun double(): JsonSchema.DoubleSchema = JsonSchema.DoubleSchema()
 
     /**
      * Creates an enum schema.
      */
     inline fun <reified E : Enum<E>> enum(): JsonSchema.EnumSchema<E> =
-        JsonSchema.EnumSchema(E::class)
+        JsonSchema.EnumSchema(enumClass = E::class, values = enumValues<E>().toList())
 
     /**
      * Creates a null schema.
      */
-    fun nullSchema(): JsonSchema.NullSchema = JsonSchema.NullSchema
+    fun nullSchema(): JsonSchema.NullSchema = JsonSchema.NullSchema()
 
     /**
      * Creates a nested object schema.
@@ -239,46 +253,46 @@ fun buildJsonArray(
  * Builds a JSON array of strings.
  */
 fun buildJsonArray(vararg strings: String): JsonValue.JsonArray {
-    return JsonValue.JsonArray(strings.map { JsonValue.JsonString(it) }, JsonSchema.StringSchema)
+    return JsonValue.JsonArray(strings.map { JsonValue.JsonString(it) }, JsonSchema.StringSchema())
 }
 
 /**
  * Builds a JSON array of integers.
  */
 fun buildJsonArray(vararg ints: Int): JsonValue.JsonArray {
-    return JsonValue.JsonArray(ints.map { JsonValue.JsonNumber(it.toDouble()) }, JsonSchema.IntSchema)
+    return JsonValue.JsonArray(ints.map { JsonValue.JsonNumber(it.toDouble()) }, JsonSchema.IntSchema())
 }
 
 /**
  * Builds a JSON array of booleans.
  */
 fun buildJsonArray(vararg booleans: Boolean): JsonValue.JsonArray {
-    return JsonValue.JsonArray(booleans.map { JsonValue.JsonBoolean(it) }, JsonSchema.BooleanSchema)
+    return JsonValue.JsonArray(booleans.map { JsonValue.JsonBoolean(it) }, JsonSchema.BooleanSchema())
 }
 
-class TypedFieldBuilder<V : Any>(
-    val property: KProperty0<V>,
-) {
-    val isNullable: Boolean = property.returnType.isMarkedNullable
-    lateinit var schema: JsonSchema
-
-    var default: V? = null
-
-    fun default(value: V) {
-        default = value
-    }
-}
-
-context(builder: JsonObjectSchemaBuilder)
-inline infix fun <reified V : Any> KProperty0<V>.of(crossinline block: TypedFieldBuilder<V>.() -> Unit): Unit =
-    builder.field(name) { TypedFieldBuilder<V>(this@of).apply<TypedFieldBuilder<V>>(block).schema }
-
-inline fun <reified T : JsonSchema> KProperty<*>.toJsonType(): T {
-    return when (returnType) {
-        Int::class -> JsonSchema.IntSchema
-        Double::class -> JsonSchema.DoubleSchema
-        Boolean::class -> JsonSchema.BooleanSchema
-        String::class -> JsonSchema.StringSchema
-        else -> error("Shouldn't be hittable")
-    } as T
-}
+//class TypedFieldBuilder<V : Any>(
+//    val property: KProperty0<V>,
+//) {
+//    val isNullable: Boolean = property.returnType.isMarkedNullable
+//    lateinit var schema: JsonSchema
+//
+//    var default: V? = null
+//
+//    fun default(value: V) {
+//        default = value
+//    }
+//}
+//
+//context(builder: JsonObjectSchemaBuilder)
+//inline infix fun <reified V : Any> KProperty0<V>.of(crossinline block: TypedFieldBuilder<V>.() -> Unit): Unit =
+//    builder.field(name) { TypedFieldBuilder<V>(this@of).apply<TypedFieldBuilder<V>>(block).schema }
+//
+//inline fun <reified T : JsonSchema> KProperty<*>.toJsonType(): T {
+//    return when (returnType) {
+//        Int::class -> JsonSchema.IntSchema
+//        Double::class -> JsonSchema.DoubleSchema
+//        Boolean::class -> JsonSchema.BooleanSchema
+//        String::class -> JsonSchema.StringSchema
+//        else -> error("Shouldn't be hittable")
+//    } as T
+//}

@@ -3,55 +3,114 @@ package io.amichne.konditional.core.types.json
 import kotlin.reflect.KClass
 
 /**
- * Sealed class representing compile-time schema definitions for JSON values.
- *
- * JsonSchema provides type safety by defining the expected structure of JSON data
- * at compile time. Schemas can be composed to create complex nested structures.
- *
- * Supported schema types:
- * - Primitives: Boolean, String, Int, Double
- * - Enums: User-defined enum types
- * - Objects: Structured JSON objects with typed fields
- * - Arrays: Homogeneous arrays of a single element type
+ * Base interface for OpenAPI-esque properties.
  */
-sealed class JsonSchema {
+interface OpenApiProps {
+    val title: String?
+    val description: String?
+    val default: Any?
+    val nullable: Boolean
+    val example: Any?
+    val deprecated: Boolean
+}
+
+/**
+ * Sealed class representing compile-time schema definitions for JSON values, with OpenAPI-esque properties.
+ */
+sealed class JsonSchema : OpenApiProps {
+    override val title: String? = null
+    override val description: String? = null
+    override val default: Any? = null
+    override val nullable: Boolean = false
+    override val example: Any? = null
+    override val deprecated: Boolean = false
 
     /**
      * Schema for boolean values.
      */
-    object BooleanSchema : JsonSchema() {
+    data class BooleanSchema(
+        override val title: String? = null,
+        override val description: String? = null,
+        override val default: Any? = null,
+        override val nullable: Boolean = false,
+        override val example: Any? = null,
+        override val deprecated: Boolean = false
+    ) : JsonSchema() {
         override fun toString() = "BooleanSchema"
     }
 
     /**
      * Schema for string values.
+     * Supports OpenAPI string constraints.
      */
-    object StringSchema : JsonSchema() {
+    data class StringSchema(
+        override val title: String? = null,
+        override val description: String? = null,
+        override val default: Any? = null,
+        override val nullable: Boolean = false,
+        override val example: Any? = null,
+        override val deprecated: Boolean = false,
+        val minLength: Int? = null,
+        val maxLength: Int? = null,
+        val pattern: String? = null,
+        val format: String? = null,
+        val enum: List<String>? = null
+    ) : JsonSchema() {
         override fun toString() = "StringSchema"
     }
 
     /**
      * Schema for integer values.
+     * Supports OpenAPI numeric constraints.
      */
-    object IntSchema : JsonSchema() {
+    data class IntSchema(
+        override val title: String? = null,
+        override val description: String? = null,
+        override val default: Any? = null,
+        override val nullable: Boolean = false,
+        override val example: Any? = null,
+        override val deprecated: Boolean = false,
+        val minimum: Int? = null,
+        val maximum: Int? = null,
+        val enum: List<Int>? = null
+    ) : JsonSchema() {
         override fun toString() = "IntSchema"
     }
 
     /**
      * Schema for double/decimal values.
+     * Supports OpenAPI numeric constraints.
      */
-    object DoubleSchema : JsonSchema() {
+    data class DoubleSchema(
+        override val title: String? = null,
+        override val description: String? = null,
+        override val default: Any? = null,
+        override val nullable: Boolean = false,
+        override val example: Any? = null,
+        override val deprecated: Boolean = false,
+        val minimum: Double? = null,
+        val maximum: Double? = null,
+        val enum: List<Double>? = null,
+        val format: String? = null
+    ) : JsonSchema() {
         override fun toString() = "DoubleSchema"
     }
 
     /**
      * Schema for enum values.
-     *
      * @param E The enum type
      * @param enumClass The KClass of the enum for runtime type checking
+     * @param values The allowed enum values
      */
     data class EnumSchema<E : Enum<E>>(
-        val enumClass: KClass<E>
+        val enumClass: KClass<E>,
+        val values: List<E>,
+        override val title: String? = null,
+        override val description: String? = null,
+        override val default: Any? = null,
+        override val nullable: Boolean = false,
+        override val example: Any? = null,
+        override val deprecated: Boolean = false
     ) : JsonSchema() {
         override fun toString() = "EnumSchema(${enumClass.simpleName})"
     }
@@ -59,50 +118,67 @@ sealed class JsonSchema {
     /**
      * Schema for null values.
      */
-    object NullSchema : JsonSchema() {
+    data class NullSchema(
+        override val title: String? = null,
+        override val description: String? = null,
+        override val default: Any? = null,
+        override val nullable: Boolean = true,
+        override val example: Any? = null,
+        override val deprecated: Boolean = false
+    ) : JsonSchema() {
         override fun toString() = "NullSchema"
     }
 
     /**
      * Schema for JSON objects with typed fields.
-     *
      * @param fields Map of field names to their schemas
-     * @param required Set of required field names
      */
     data class ObjectSchema(
-        val fields: Map<String, FieldSchema>
+        val fields: Map<String, FieldSchema>,
+        override val title: String? = null,
+        override val description: String? = null,
+        override val default: Any? = null,
+        override val nullable: Boolean = false,
+        override val example: Any? = null,
+        override val deprecated: Boolean = false,
+        val required: Set<String>? = null
     ) : JsonSchema() {
-        val required: Set<String> = fields.filter { it.value.required }.keys
-
         /**
          * Validates that all required fields are present.
          */
         fun validateRequiredFields(fieldNames: Set<String>): ValidationResult {
-            val missing = required - fieldNames
+            val req = required ?: fields.filter { it.value.required }.keys
+            val missing = req - fieldNames
             return if (missing.isEmpty()) {
                 ValidationResult.Valid
             } else {
                 ValidationResult.Invalid("Missing required fields: $missing")
             }
         }
-
         override fun toString() = "ObjectSchema(fields=${fields.keys})"
     }
 
     /**
      * Schema for homogeneous arrays.
-     *
      * @param elementSchema The schema for all elements in the array
      */
     data class ArraySchema(
-        val elementSchema: JsonSchema
+        val elementSchema: JsonSchema,
+        override val title: String? = null,
+        override val description: String? = null,
+        override val default: Any? = null,
+        override val nullable: Boolean = false,
+        override val example: Any? = null,
+        override val deprecated: Boolean = false,
+        val minItems: Int? = null,
+        val maxItems: Int? = null,
+        val uniqueItems: Boolean = false
     ) : JsonSchema() {
         override fun toString() = "ArraySchema($elementSchema)"
     }
 
     /**
      * Schema for a single field in an object.
-     *
      * @param schema The schema for this field's value
      * @param required Whether this field is required (default: false)
      * @param defaultValue Optional default value if field is missing
@@ -110,7 +186,9 @@ sealed class JsonSchema {
     data class FieldSchema(
         val schema: JsonSchema,
         val required: Boolean = false,
-        val defaultValue: Any? = null
+        val defaultValue: Any? = null,
+        val description: String? = null,
+        val deprecated: Boolean = false
     ) {
         override fun toString() = "FieldSchema($schema, required=$required)"
     }
@@ -132,44 +210,94 @@ sealed class JsonSchema {
     }
 
     companion object {
-        /**
-         * Creates a boolean schema.
-         */
-        fun boolean() = BooleanSchema
+        fun boolean(
+            title: String? = null,
+            description: String? = null,
+            default: Any? = null,
+            nullable: Boolean = false,
+            example: Any? = null,
+            deprecated: Boolean = false
+        ) = BooleanSchema(title, description, default, nullable, example, deprecated)
 
-        /**
-         * Creates a string schema.
-         */
-        fun string() = StringSchema
+        fun string(
+            title: String? = null,
+            description: String? = null,
+            default: Any? = null,
+            nullable: Boolean = false,
+            example: Any? = null,
+            deprecated: Boolean = false,
+            minLength: Int? = null,
+            maxLength: Int? = null,
+            pattern: String? = null,
+            format: String? = null,
+            enum: List<String>? = null
+        ): StringSchema = StringSchema(title, description, default, nullable, example, deprecated, minLength, maxLength, pattern, format, enum)
 
-        /**
-         * Creates an integer schema.
-         */
-        fun int() = IntSchema
+        fun int(
+            title: String? = null,
+            description: String? = null,
+            default: Any? = null,
+            nullable: Boolean = false,
+            example: Any? = null,
+            deprecated: Boolean = false,
+            minimum: Int? = null,
+            maximum: Int? = null,
+            enum: List<Int>? = null
+        ) = IntSchema(title, description, default, nullable, example, deprecated, minimum, maximum, enum)
 
-        /**
-         * Creates a double schema.
-         */
-        fun double() = DoubleSchema
+        fun double(
+            title: String? = null,
+            description: String? = null,
+            default: Any? = null,
+            nullable: Boolean = false,
+            example: Any? = null,
+            deprecated: Boolean = false,
+            minimum: Double? = null,
+            maximum: Double? = null,
+            enum: List<Double>? = null,
+            format: String? = null
+        ) = DoubleSchema(title, description, default, nullable, example, deprecated, minimum, maximum, enum, format)
 
-        /**
-         * Creates an enum schema.
-         */
-        inline fun <reified E : Enum<E>> enum() = EnumSchema(E::class)
+        inline fun <reified E : Enum<E>> enum(
+            values: List<E>,
+            title: String? = null,
+            description: String? = null,
+            default: Any? = null,
+            nullable: Boolean = false,
+            example: Any? = null,
+            deprecated: Boolean = false
+        ) = EnumSchema(E::class, values, title, description, default, nullable, example, deprecated)
 
-        /**
-         * Creates a null schema.
-         */
-        fun nullSchema() = NullSchema
+        fun nullSchema(
+            title: String? = null,
+            description: String? = null,
+            default: Any? = null,
+            example: Any? = null,
+            deprecated: Boolean = false
+        ) = NullSchema(title, description, default, true, example, deprecated)
 
-        /**
-         * Creates an array schema.
-         */
-        fun array(elementSchema: JsonSchema) = ArraySchema(elementSchema)
+        fun array(
+            elementSchema: JsonSchema,
+            title: String? = null,
+            description: String? = null,
+            default: Any? = null,
+            nullable: Boolean = false,
+            example: Any? = null,
+            deprecated: Boolean = false,
+            minItems: Int? = null,
+            maxItems: Int? = null,
+            uniqueItems: Boolean = false
+        ) = ArraySchema(elementSchema, title, description, default, nullable, example, deprecated, minItems, maxItems, uniqueItems)
 
-        /**
-         * Creates an object schema.
-         */
-        fun obj(fields: Map<String, FieldSchema>) = ObjectSchema(fields)
+        fun obj(
+            fields: Map<String, FieldSchema>,
+            title: String? = null,
+            description: String? = null,
+            default: Any? = null,
+            nullable: Boolean = false,
+            example: Any? = null,
+            deprecated: Boolean = false,
+            required: Set<String>? = null
+        ) = ObjectSchema(fields, title, description, default, nullable, example, deprecated, required)
     }
 }
