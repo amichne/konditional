@@ -5,6 +5,7 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.registry.NamespaceRegistry.Companion.updateDefinition
 import io.amichne.konditional.core.types.BooleanEncodeable
+import io.amichne.konditional.core.types.CustomEncodeable
 import io.amichne.konditional.core.types.DataClassEncodeable
 import io.amichne.konditional.core.types.DataClassWithSchema
 import io.amichne.konditional.core.types.DecimalEncodeable
@@ -12,6 +13,7 @@ import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.core.types.EnumEncodeable
 import io.amichne.konditional.core.types.IntEncodeable
 import io.amichne.konditional.core.types.StringEncodeable
+import io.amichne.konditional.core.types.json.JsonSchema
 import io.amichne.konditional.internal.builders.FlagBuilder
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
@@ -315,7 +317,7 @@ abstract class FeatureContainer<M : Namespace>(
      * @param customScope DSL scope for configuring the custom feature
      * @return A delegated property that returns a [DataClassFeature]
      */
-    protected inline fun <reified T : CustomEncodeable<io.amichne.konditional.core.types.json.JsonSchema.ObjectSchema>, C : Context> custom(
+    protected inline fun <reified T : CustomEncodeable<JsonSchema.ObjectSchema>, C : Context> custom(
         default: T,
         noinline customScope: FlagScope<DataClassEncodeable<T>, T, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, DataClassFeature<T, C, M>> =

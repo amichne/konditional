@@ -52,7 +52,7 @@ internal fun Any?.toJsonValue(): JsonValue = when (this) {
         (this as CustomEncodeable<JsonSchema.ObjectSchema>).toJsonValue()
     }
     is JsonValue -> this
-    is List<*> -> JsonValue.JsonArray( map { it.toJsonValue() }, null )
+    is List<*> -> JsonValue.JsonArray(map { it.toJsonValue() }, null)
     else -> throw IllegalArgumentException(
         "Unsupported type for JSON conversion: ${this::class.simpleName}"
     )
@@ -71,9 +71,9 @@ inline fun <reified T : CustomEncodeable<JsonSchema.ObjectSchema>> JsonValue.Jso
     return try {
         val kClass = T::class
         val constructor = kClass.primaryConstructor
-            ?: return ParseResult.Failure(
-                ParseError.InvalidSnapshot("Custom type ${kClass.simpleName} must have a primary constructor")
-            )
+                          ?: return ParseResult.Failure(
+                              ParseError.InvalidSnapshot("Custom type ${kClass.simpleName} must have a primary constructor")
+                          )
 
         // Validate against schema if present
         this.schema?.let { schema ->
@@ -93,18 +93,12 @@ inline fun <reified T : CustomEncodeable<JsonSchema.ObjectSchema>> JsonValue.Jso
             )
 
             val jsonValue = this.fields[fieldName]
-            val value = if (jsonValue != null) {
-                jsonValue.toKotlinValue(param.type.classifier as? KClass<*>)
-            } else {
-                // Use default value if available
-                if (param.isOptional) {
-                    null // Will use default
-                } else {
+            val value = if (jsonValue != null) jsonValue.toKotlinValue(param.type.classifier as? KClass<*>) else
+                if (param.isOptional) null else {
                     return ParseResult.Failure(
                         ParseError.InvalidSnapshot("Required field '$fieldName' is missing")
                     )
                 }
-            }
 
             if (value != null) {
                 parameterMap[param] = value

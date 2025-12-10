@@ -2,6 +2,8 @@ package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.core.types.json.JsonSchema
 import io.amichne.konditional.core.types.json.JsonValue
+import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty0
 
 /**
  * DSL marker for JSON schema builders.
@@ -44,7 +46,7 @@ class JsonObjectSchemaBuilder {
         name: String,
         required: Boolean = false,
         default: Any? = null,
-        schemaBuilder: JsonFieldSchemaBuilder.() -> JsonSchema
+        schemaBuilder: JsonFieldSchemaBuilder.() -> JsonSchema,
     ) {
         val schema = JsonFieldSchemaBuilder().schemaBuilder()
         fields[name] = JsonSchema.FieldSchema(schema, required, default)
@@ -199,13 +201,13 @@ class JsonObjectBuilder(private val schema: JsonSchema.ObjectSchema? = null) {
  */
 fun buildJsonObject(
     schema: JsonSchema.ObjectSchema? = null,
-    builder: JsonObjectBuilder.() -> Unit
+    builder: JsonObjectBuilder.() -> Unit,
 ): JsonValue.JsonObject {
     return JsonObjectBuilder(schema).apply(builder).build()
 }
 
 fun buildJsonArray(
-    builder: JsonFieldSchemaBuilder.() -> JsonSchema
+    builder: JsonFieldSchemaBuilder.() -> JsonSchema,
 ): JsonValue.JsonArray {
     return JsonValue.JsonArray(
         emptyList(),
@@ -218,7 +220,7 @@ fun buildJsonArray(
  */
 fun buildJsonArray(
     vararg elements: JsonValue,
-    elementSchema: JsonSchema? = null
+    elementSchema: JsonSchema? = null,
 ): JsonValue.JsonArray {
     return JsonValue.JsonArray(elements.toList(), elementSchema)
 }
@@ -228,7 +230,7 @@ fun buildJsonArray(
  */
 fun buildJsonArray(
     elements: List<JsonValue>,
-    elementSchema: JsonSchema? = null
+    elementSchema: JsonSchema? = null,
 ): JsonValue.JsonArray {
     return JsonValue.JsonArray(elements, elementSchema)
 }
@@ -252,4 +254,31 @@ fun buildJsonArray(vararg ints: Int): JsonValue.JsonArray {
  */
 fun buildJsonArray(vararg booleans: Boolean): JsonValue.JsonArray {
     return JsonValue.JsonArray(booleans.map { JsonValue.JsonBoolean(it) }, JsonSchema.BooleanSchema)
+}
+
+class TypedFieldBuilder<V : Any>(
+    val property: KProperty0<V>,
+) {
+    val isNullable: Boolean = property.returnType.isMarkedNullable
+    lateinit var schema: JsonSchema
+
+    var default: V? = null
+
+    fun default(value: V) {
+        default = value
+    }
+}
+
+context(builder: JsonObjectSchemaBuilder)
+inline infix fun <reified V : Any> KProperty0<V>.of(crossinline block: TypedFieldBuilder<V>.() -> Unit): Unit =
+    builder.field(name) { TypedFieldBuilder<V>(this@of).apply<TypedFieldBuilder<V>>(block).schema }
+
+inline fun <reified T : JsonSchema> KProperty<*>.toJsonType(): T {
+    return when (returnType) {
+        Int::class -> JsonSchema.IntSchema
+        Double::class -> JsonSchema.DoubleSchema
+        Boolean::class -> JsonSchema.BooleanSchema
+        String::class -> JsonSchema.StringSchema
+        else -> error("Shouldn't be hittable")
+    } as T
 }

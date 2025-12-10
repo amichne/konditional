@@ -79,10 +79,12 @@ interface RuleScope<C : Context> {
      *
      * @param function Factory function that creates the Evaluable
      */
-    @Deprecated("Use other extension")
-    fun extension(function: () -> Evaluable<C>)
+//    @Deprecated("Use other extension")
+//    fun extension(function: () -> Evaluable<C>)
 
-    fun extension(block: (C) -> Boolean)
+//    fun extension(block: (C) -> Boolean)
+
+    fun extension(block: C.() -> Boolean)
 
     /**
      * Adds a human-readable note to document the rule's purpose.

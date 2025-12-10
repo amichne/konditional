@@ -1,17 +1,21 @@
 package io.amichne.konditional.core
 
-import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.dsl.jsonObject
+import io.amichne.konditional.core.dsl.of
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.DataClassEncodeable
 import io.amichne.konditional.core.types.DataClassWithSchema
 import io.amichne.konditional.core.types.json.JsonSchema
+import io.amichne.konditional.core.types.json.JsonSchema.Companion.double
 import io.amichne.konditional.core.types.json.JsonValue
 import io.amichne.konditional.core.types.parseAs
 import io.amichne.konditional.core.types.toJsonValue
+import io.amichne.konditional.fixtures.EnterpriseContext
+import io.amichne.konditional.fixtures.SubscriptionTier
 import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.fixtures.core.test
+import io.amichne.konditional.rules.RuleGuaranteesTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -33,7 +37,7 @@ class DataClassWithSchemaIntegrationTest {
         val theme: String = "light",
         val notificationsEnabled: Boolean = true,
         val maxRetries: Int = 3,
-        val timeout: Double = 30.0
+        val timeout: Double = 30.0,
     ) : DataClassWithSchema {
         override val schema = Companion.schema
 
@@ -51,20 +55,25 @@ class DataClassWithSchemaIntegrationTest {
     data class PaymentConfig(
         val maxAmount: Double = 1000.0,
         val currency: String = "USD",
-        val settings: UserSettings = UserSettings()
+        val settings: UserSettings = UserSettings(),
     ) : DataClassWithSchema {
-        override val schema = Companion.schema
+        override val schema = jsonObject {
+            ::maxAmount of { double() }
+        }
 
         companion object {
+
             val schema: JsonSchema.ObjectSchema = jsonObject {
                 field("maxAmount", required = true, default = 1000.0) { double() }
                 field("currency", required = true, default = "USD") { string() }
-                field("settings", required = true) { jsonObject {
-                    field("theme", required = true, default = "light") { string() }
-                    field("notificationsEnabled", required = true, default = true) { boolean() }
-                    field("maxRetries", required = true, default = 3) { int() }
-                    field("timeout", required = true, default = 30.0) { double() }
-                } }
+                field("settings", required = true) {
+                    jsonObject {
+                        field("theme", required = true, default = "light") { string() }
+                        field("notificationsEnabled", required = true, default = true) { boolean() }
+                        field("maxRetries", required = true, default = 3) { int() }
+                        field("timeout", required = true, default = 30.0) { double() }
+                    }
+                }
             }
         }
     }
@@ -233,20 +242,30 @@ class DataClassWithSchemaIntegrationTest {
 
     // Test feature container with data class feature
     object TestFeatures : FeatureContainer<TestNamespace>(test("data-class-features-test")) {
-        val USER_SETTINGS by dataClass<UserSettings, Context>(
+        val USER_SETTINGS by custom<UserSettings, EnterpriseContext>(
             default = UserSettings()
-        )
+        ) {
+            rule {
+                extension {
+                    organizationId == "org-123"
+                }
+            }
+        }
 
-        val PAYMENT_CONFIG by dataClass<PaymentConfig, Context>(
+        val PAYMENT_CONFIG by custom<PaymentConfig, RuleGuaranteesTest.CustomContext>(
             default = PaymentConfig()
         ) {
-            // Can configure rules here
-            default(
-                PaymentConfig(
-                    maxAmount = 10000.0,
-                    currency = "USD"
-                )
+
+            rule {
+                extension {
+                    subscriptionTier == SubscriptionTier.PREMIUM.name
+                }
+            } returns PaymentConfig(
+                maxAmount = 20000.0,
+                currency = "USD",
+                settings = UserSettings(theme = "dark")
             )
+
         }
     }
 
