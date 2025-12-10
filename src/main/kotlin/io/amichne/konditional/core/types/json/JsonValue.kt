@@ -1,7 +1,5 @@
 package io.amichne.konditional.core.types.json
 
-import kotlin.collections.iterator
-
 /**
  * Sealed class representing runtime JSON values.
  *
@@ -219,7 +217,7 @@ sealed class JsonValue {
         }
 
         override fun validate(schema: JsonSchema): JsonSchema.ValidationResult {
-            if (schema !is JsonSchema.ArraySchema) {
+            if (schema !is JsonSchema.ArraySchema<*>) {
                 return JsonSchema.ValidationResult.Invalid(
                     "Expected ${schema}, but got JsonArray"
                 )

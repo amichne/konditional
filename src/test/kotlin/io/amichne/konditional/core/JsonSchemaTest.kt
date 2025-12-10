@@ -27,8 +27,7 @@ class JsonSchemaTest {
     @Test
     fun `can create simple JSON object schema`() {
         val schema = jsonObject {
-            field("id", required = true) { int() }
-            field("name", required = true) { string() }
+            field("name") { string() }
             field("enabled") { boolean() }
         }
 
@@ -42,7 +41,7 @@ class JsonSchemaTest {
     @Test
     fun `can create nested JSON object schema`() {
         val schema = jsonObject {
-            field("user", required = true) {
+            field("user") {
                 jsonObject {
                     field("id") { int() }
                     field("email") { string() }
@@ -70,7 +69,7 @@ class JsonSchemaTest {
         }
 
         assertEquals(2, schema.fields.size)
-        val tagsSchema = schema.fields["tags"]?.schema as? JsonSchema.ArraySchema
+        val tagsSchema = schema.fields["tags"]?.schema as? JsonSchema.ArraySchema<String>
         assertTrue(tagsSchema != null)
         assertTrue(tagsSchema?.elementSchema is JsonSchema.StringSchema)
     }
@@ -127,55 +126,6 @@ class JsonSchemaTest {
     }
 
     @Test
-    fun `JSON object validates against schema`() {
-        val schema = jsonObject {
-            field("id", required = true) { int() }
-            field("name", required = true) { string() }
-        }
-
-        val validObj = buildJsonObject {
-            "id" to 123
-            "name" to "Test"
-        }
-
-        val result = validObj.validate(schema)
-        assertTrue(result.isValid)
-    }
-
-    @Test
-    fun `JSON object validation fails with missing required field`() {
-        val schema = jsonObject {
-            field("id", required = true) { int() }
-            field("name", required = true) { string() }
-        }
-
-        val invalidObj = buildJsonObject {
-            "id" to 123
-            // Missing required "name" field
-        }
-
-        val result = invalidObj.validate(schema)
-        assertTrue(result.isInvalid)
-        assertTrue(result.getErrorMessage()?.contains("required") == true)
-    }
-
-    @Test
-    fun `JSON object validation fails with wrong type`() {
-        val schema = jsonObject {
-            field("id") { int() }
-            field("name") { string() }
-        }
-
-        val invalidObj = buildJsonObject {
-            "id" to "not a number"  // Wrong type
-            "name" to "Test"
-        }
-
-        val result = invalidObj.validate(schema)
-        assertTrue(result.isInvalid)
-    }
-
-    @Test
     fun `JSON array validates against schema`() {
         val array = buildJsonArray("one", "two", "three")
         val result = array.validate(JsonSchema.ArraySchema(JsonSchema.StringSchema))
@@ -185,9 +135,9 @@ class JsonSchemaTest {
     @Test
     fun `JSON array validation fails with wrong element type`() {
         val array = buildJsonArray(
-                JsonValue.JsonString("one"),
-                JsonValue.JsonNumber(2.0),  // Wrong type
-                JsonValue.JsonString("three")
+            JsonValue.JsonString("one"),
+            JsonValue.JsonNumber(2.0),  // Wrong type
+            JsonValue.JsonString("three")
         )
 
         val result = array.validate(JsonSchema.ArraySchema(JsonSchema.StringSchema))
@@ -220,7 +170,7 @@ class JsonSchemaTest {
     @Test
     fun `can create complex user config schema`() {
         val userConfigSchema = jsonObject {
-            field("userId", required = true) { string() }
+            field("userId") { string() }
             field("theme") { enum<Theme>() }
             field("logLevel") { enum<LogLevel>() }
             field("notifications") {

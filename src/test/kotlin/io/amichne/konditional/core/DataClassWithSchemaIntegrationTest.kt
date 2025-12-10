@@ -3,7 +3,6 @@ package io.amichne.konditional.core
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.dsl.json.jsonObject
 import io.amichne.konditional.core.dsl.json.of
-import io.amichne.konditional.core.dsl.json.schema
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.DataClassEncodeable
@@ -40,8 +39,9 @@ class DataClassWithSchemaIntegrationTest {
         val timeout: Double = 30.0,
     ) : DataClassWithSchema {
         override val schema: JsonSchema.ObjectSchema = jsonObject {
-            ::theme of { default("light") }
-
+            ::theme.of {
+                default("light")
+            }
             ::maxRetries of { default(3) }
             ::timeout of { default(30.0) }
         }
@@ -56,19 +56,6 @@ class DataClassWithSchemaIntegrationTest {
         override val schema: JsonSchema.ObjectSchema = jsonObject {
             ::maxAmount of { default(1000.0) }
             ::currency of { default("USD") }
-            ::settings of {
-
-//                field("maxAmount", required = true, default = 1000.0) { double() }
-//                field("currency", required = true, default = "USD") { string() }
-//                field("settings", required = true) {
-//                    jsonObject {
-//                        field("theme", required = true, default = "light") { string() }
-//                        field("notificationsEnabled", required = true, default = true) { boolean() }
-//                        field("maxRetries", required = true, default = 3) { int() }
-//                        field("timeout", required = true, default = 30.0) { double() }
-//                    }
-//                }
-            }
         }
     }
 
@@ -128,7 +115,7 @@ class DataClassWithSchemaIntegrationTest {
                 "maxRetries" to JsonValue.JsonNumber(5.0),
                 "timeout" to JsonValue.JsonNumber(60.0)
             ),
-            schema = UserSettings.schema
+            schema = UserSettings().schema
         )
 
         // When
@@ -147,7 +134,7 @@ class DataClassWithSchemaIntegrationTest {
         val schema = settings.schema
 
         // Then
-        assertEquals(UserSettings.schema, schema)
+        assertEquals(UserSettings().schema, schema)
         assertEquals(4, schema.fields.size)
         assertTrue(schema.fields.containsKey("theme"))
         assertTrue(schema.fields.containsKey("notificationsEnabled"))
@@ -159,7 +146,7 @@ class DataClassWithSchemaIntegrationTest {
     fun `DataClassEncodeable wraps data class with schema`() {
         // Given
         val settings = UserSettings(theme = "dark")
-        val schema = UserSettings.schema
+        val schema = UserSettings().schema
 
         // When
         val encodeable = DataClassEncodeable(settings, schema)
@@ -174,7 +161,7 @@ class DataClassWithSchemaIntegrationTest {
     fun `DataClassEncodeable converts to JsonValue`() {
         // Given
         val settings = UserSettings(theme = "dark", maxRetries = 5)
-        val encodeable = DataClassEncodeable(settings, UserSettings.schema)
+        val encodeable = DataClassEncodeable(settings, UserSettings().schema)
 
         // When
         val jsonValue = encodeable.toJsonValue()

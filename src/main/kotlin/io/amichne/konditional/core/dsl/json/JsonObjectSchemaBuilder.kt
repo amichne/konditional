@@ -23,7 +23,7 @@ import io.amichne.konditional.core.types.json.JsonSchema
  */
 @JsonSchemaDsl
 class JsonObjectSchemaBuilder {
-    private val fields = mutableMapOf<String, JsonFieldSchemaBuilder.() -> JsonSchema.FieldSchema>()
+    private val fields = mutableMapOf<String, JsonFieldSchemaBuilder.() -> JsonSchema.FieldSchema<*>>()
 
     /**
      * Adds a field to the object schema.
@@ -33,12 +33,22 @@ class JsonObjectSchemaBuilder {
      * @param default Default value for the field
      * @param schema Lambda to build the field's schema
      */
-    fun field(
+    inline fun <reified S : JsonSchema> field(
         name: String,
-        schema: JsonFieldSchemaBuilder.() -> JsonSchema.FieldSchema,
+        crossinline schema: JsonFieldSchemaBuilder.() -> JsonSchema.FieldSchema<S>,
     ) {
-        fields[name] = schema
+        updateFieldMap(name,) { schema() }
     }
+
+    @PublishedApi
+    internal fun updateFieldMap(
+        name: String,
+        schemaBuilder: JsonFieldSchemaBuilder.() -> JsonSchema.FieldSchema<*>
+    ) {
+        fields[name] = schemaBuilder
+    }
+
+
 
     /**
      * Builds the final ObjectSchema.

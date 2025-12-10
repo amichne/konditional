@@ -1,6 +1,5 @@
 package io.amichne.konditional.core.types.json
 
-import jdk.jpackage.internal.MacDmgBundler.required
 import kotlin.reflect.KClass
 
 /**
@@ -15,33 +14,33 @@ import kotlin.reflect.KClass
  * - Objects: Structured JSON objects with typed fields
  * - Arrays: Homogeneous arrays of a single element type
  */
-sealed class JsonSchema {
+sealed interface JsonSchema {
 
     /**
      * Schema for boolean values.
      */
-    object BooleanSchema : JsonSchema() {
+    object BooleanSchema : JsonSchema {
         override fun toString() = "BooleanSchema"
     }
 
     /**
      * Schema for string values.
      */
-    object StringSchema : JsonSchema() {
+    object StringSchema : JsonSchema {
         override fun toString() = "StringSchema"
     }
 
     /**
      * Schema for integer values.
      */
-    object IntSchema : JsonSchema() {
+    object IntSchema : JsonSchema {
         override fun toString() = "IntSchema"
     }
 
     /**
      * Schema for double/decimal values.
      */
-    object DoubleSchema : JsonSchema() {
+    object DoubleSchema : JsonSchema {
         override fun toString() = "DoubleSchema"
     }
 
@@ -53,14 +52,14 @@ sealed class JsonSchema {
      */
     data class EnumSchema<E : Enum<E>>(
         val enumClass: KClass<E>,
-    ) : JsonSchema() {
+    ) : JsonSchema {
         override fun toString() = "EnumSchema(${enumClass.simpleName})"
     }
 
     /**
      * Schema for null values.
      */
-    object NullSchema : JsonSchema() {
+    object NullSchema : JsonSchema {
         override fun toString() = "NullSchema"
     }
 
@@ -71,8 +70,8 @@ sealed class JsonSchema {
      * @param required Set of required field names
      */
     data class ObjectSchema(
-        val fields: Map<String, FieldSchema>,
-    ) : JsonSchema() {
+        val fields: Map<String, FieldSchema<*>>,
+    ) : JsonSchema {
         val required: Set<String> = fields.filter { it.value.required }.keys
 
         /**
@@ -95,9 +94,9 @@ sealed class JsonSchema {
      *
      * @param elementSchema The schema for all elements in the array
      */
-    data class ArraySchema(
-        val elementSchema: JsonSchema,
-    ) : JsonSchema() {
+    data class ArraySchema<out S : JsonSchema>(
+        val elementSchema: S,
+    ) : JsonSchema {
         override fun toString() = "ArraySchema($elementSchema)"
     }
 
@@ -108,9 +107,9 @@ sealed class JsonSchema {
      * @param required Whether this field is required (default: false)
      * @param defaultValue Optional default value if field is missing
      */
-    data class FieldSchema(
-        val schema: JsonSchema,
-        val required: Boolean = false,
+    data class FieldSchema<out S : JsonSchema>(
+        val schema: S,
+        val required: Boolean,
         val defaultValue: Any? = null
     ) {
         override fun toString() = "FieldSchema($schema, required=$required)"
@@ -171,6 +170,6 @@ sealed class JsonSchema {
         /**
          * Creates an object schema.
          */
-        fun obj(fields: Map<String, FieldSchema>) = ObjectSchema(fields)
+        fun obj(fields: Map<String, FieldSchema<*>>) = ObjectSchema(fields)
     }
 }

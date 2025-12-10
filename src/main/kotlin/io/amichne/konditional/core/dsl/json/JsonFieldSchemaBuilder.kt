@@ -1,7 +1,6 @@
 package io.amichne.konditional.core.dsl.json
 
 import io.amichne.konditional.core.types.json.JsonSchema
-import kotlin.reflect.KClass
 
 /**
  * Builder for creating field schemas within a JSON object.
@@ -50,7 +49,7 @@ class JsonFieldSchemaBuilder {
     /**
      * Creates an array schema.
      */
-    fun array(elementBuilder: JsonFieldSchemaBuilder.() -> JsonSchema): JsonSchema.ArraySchema {
+    fun <S : JsonSchema> array(elementBuilder: JsonFieldSchemaBuilder.() -> S): JsonSchema.ArraySchema<S> {
         val elementSchema = JsonFieldSchemaBuilder().elementBuilder()
         return JsonSchema.ArraySchema(elementSchema)
     }
