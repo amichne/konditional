@@ -41,6 +41,7 @@ interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> 
      *
      * @param value The default value to assign to the flag
      */
+    @Deprecated("Defaults must be declared in the FeatureContainer delegate, not inside flag scopes")
     fun default(value: T)
 
     /**

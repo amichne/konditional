@@ -3,12 +3,12 @@ package io.amichne.konditional.core.types.json
 import kotlin.reflect.KClass
 
 /**
- * Sealed class representing compile-time schema definitions for JSON values.
+ * Sealed class representing compile-time definition definitions for JSON values.
  *
  * JsonSchema provides type safety by defining the expected structure of JSON data
  * at compile time. Schemas can be composed to create complex nested structures.
  *
- * Supported schema types:
+ * Supported definition types:
  * - Primitives: Boolean, String, Int, Double
  * - Enums: User-defined enum types
  * - Objects: Structured JSON objects with typed fields
@@ -92,7 +92,7 @@ sealed interface JsonSchema {
     /**
      * Schema for homogeneous arrays.
      *
-     * @param elementSchema The schema for all elements in the array
+     * @param elementSchema The definition for all elements in the array
      */
     data class ArraySchema<out S : JsonSchema>(
         val elementSchema: S,
@@ -103,7 +103,7 @@ sealed interface JsonSchema {
     /**
      * Schema for a single field in an object.
      *
-     * @param schema The schema for this field's value
+     * @param schema The definition for this field's value
      * @param required Whether this field is required (default: false)
      * @param defaultValue Optional default value if field is missing
      */
@@ -116,7 +116,7 @@ sealed interface JsonSchema {
     }
 
     /**
-     * Result of schema validation.
+     * Result of definition validation.
      */
     sealed class ValidationResult {
         object Valid : ValidationResult()
@@ -133,42 +133,42 @@ sealed interface JsonSchema {
 
     companion object {
         /**
-         * Creates a boolean schema.
+         * Creates a boolean definition.
          */
         fun boolean() = BooleanSchema
 
         /**
-         * Creates a string schema.
+         * Creates a string definition.
          */
         fun string() = StringSchema
 
         /**
-         * Creates an integer schema.
+         * Creates an integer definition.
          */
         fun int() = IntSchema
 
         /**
-         * Creates a double schema.
+         * Creates a double definition.
          */
         fun double() = DoubleSchema
 
         /**
-         * Creates an enum schema.
+         * Creates an enum definition.
          */
         inline fun <reified E : Enum<E>> enum() = EnumSchema(E::class)
 
         /**
-         * Creates a null schema.
+         * Creates a null definition.
          */
         fun nullSchema() = NullSchema
 
         /**
-         * Creates an array schema.
+         * Creates an array definition.
          */
         fun array(elementSchema: JsonSchema) = ArraySchema(elementSchema)
 
         /**
-         * Creates an object schema.
+         * Creates an object definition.
          */
         fun obj(fields: Map<String, FieldSchema<*>>) = ObjectSchema(fields)
     }

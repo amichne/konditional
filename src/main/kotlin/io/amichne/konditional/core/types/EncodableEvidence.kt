@@ -6,7 +6,7 @@ import io.amichne.konditional.core.types.json.JsonValue
  * Type witness that provides evidence a type T can be encoded.
  * This is used to constrain Conditional and FeatureFlag to only work with supported types.
  *
- * Supported types: Boolean, String, Int, Double, Enum<E>, JsonValue.JsonObject, JsonValue.JsonArray, DataClassWithSchema
+ * Supported types: Boolean, String, Int, Double, Enum<E>, JsonValue.JsonObject, JsonValue.JsonArray, SchemaDefined
  *
  * This enforces the "parse, don't validate" principle by making illegal states (unsupported types)
  * unrepresentable at compile time.
@@ -36,13 +36,13 @@ sealed interface EncodableEvidence<T : Any> {
                     if (T::class.java.isEnum) {
                         EnumEvidence<T>() as EncodableEvidence<T>
                     }
-                    // Check if T implements DataClassWithSchema
-                    else if (DataClassWithSchema::class.java.isAssignableFrom(T::class.java)) {
+                    // Check if T implements SchemaDefined
+                    else if (Defined::class.java.isAssignableFrom(T::class.java)) {
                         DataClassEvidence<T>() as EncodableEvidence<T>
                     } else {
                         throw IllegalArgumentException(
                             "Type ${T::class.qualifiedName} is not encodable. " +
-                                "Supported types: Boolean, String, Int, Double, Enum, JsonObject, JsonArray, DataClassWithSchema"
+                                "Supported types: Boolean, String, Int, Double, Enum, JsonObject, JsonArray, SchemaDefined"
                         )
                     }
                 }
@@ -57,7 +57,7 @@ sealed interface EncodableEvidence<T : Any> {
             return when (T::class) {
                 Boolean::class, String::class, Int::class, Double::class,
                 JsonValue.JsonObject::class, JsonValue.JsonArray::class -> true
-                else -> T::class.java.isEnum || DataClassWithSchema::class.java.isAssignableFrom(T::class.java)
+                else -> T::class.java.isEnum || Defined::class.java.isAssignableFrom(T::class.java)
             }
         }
     }

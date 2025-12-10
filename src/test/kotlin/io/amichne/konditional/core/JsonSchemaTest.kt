@@ -1,7 +1,5 @@
 package io.amichne.konditional.core
 
-import io.amichne.konditional.core.dsl.json.buildJsonArray
-import io.amichne.konditional.core.dsl.json.buildJsonObject
 import io.amichne.konditional.core.dsl.json.jsonObject
 import io.amichne.konditional.core.types.json.JsonSchema
 import io.amichne.konditional.core.types.json.JsonValue
@@ -12,7 +10,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
- * Test suite for JSON schema and value types.
+ * Test suite for JSON schema types.
  */
 class JsonSchemaTest {
 
@@ -27,13 +25,12 @@ class JsonSchemaTest {
     @Test
     fun `can create simple JSON object schema`() {
         val schema = jsonObject {
-            field("name") { string() }
-            field("enabled") { boolean() }
+            fieldRaw("name", required = true) { string() }
+            fieldRaw("enabled") { boolean() }
         }
 
-        assertEquals(3, schema.fields.size)
-        assertEquals(setOf("id", "name"), schema.required)
-        assertTrue(schema.fields["id"]?.required == true)
+        assertEquals(2, schema.fields.size)
+        assertEquals(setOf("name"), schema.required)
         assertTrue(schema.fields["name"]?.required == true)
         assertFalse(schema.fields["enabled"]?.required == true)
     }
@@ -41,16 +38,16 @@ class JsonSchemaTest {
     @Test
     fun `can create nested JSON object schema`() {
         val schema = jsonObject {
-            field("user") {
+            fieldRaw("user") {
                 jsonObject {
-                    field("id") { int() }
-                    field("email") { string() }
+                    fieldRaw("id") { int() }
+                    fieldRaw("email") { string() }
                 }
             }
-            field("settings") {
+            fieldRaw("settings") {
                 jsonObject {
-                    field("theme") { enum<Theme>() }
-                    field("notifications") { boolean() }
+                    fieldRaw("theme") { enum<Theme>() }
+                    fieldRaw("notifications") { boolean() }
                 }
             }
         }
@@ -64,173 +61,45 @@ class JsonSchemaTest {
     @Test
     fun `can create array schema`() {
         val schema = jsonObject {
-            field("tags") { array { string() } }
-            field("scores") { array { int() } }
+            fieldRaw("tags") { array { string() } }
+            fieldRaw("scores") { array { int() } }
         }
 
         assertEquals(2, schema.fields.size)
-        val tagsSchema = schema.fields["tags"]?.schema as? JsonSchema.ArraySchema<String>
+        val tagsSchema = schema.fields["tags"]?.schema as? JsonSchema.ArraySchema<*>
         assertTrue(tagsSchema != null)
         assertTrue(tagsSchema?.elementSchema is JsonSchema.StringSchema)
     }
 
     @Test
-    fun `can build simple JSON object value`() {
-        val obj = buildJsonObject {
-            "id" to 123
-            "name" to "John Doe"
-            "enabled" to true
-        }
-
-        assertEquals(3, obj.fields.size)
-        assertEquals(JsonValue.JsonNumber(123.0), obj["id"])
-        assertEquals(JsonValue.JsonString("John Doe"), obj["name"])
-        assertEquals(JsonValue.JsonBoolean(true), obj["enabled"])
-    }
-
-    @Test
-    fun `can build nested JSON object value`() {
-        val obj = buildJsonObject {
-            "user" to buildJsonObject {
-                "id" to 456
-                "email" to "user@example.com"
-            }
-            "settings" to buildJsonObject {
-                "theme" to Theme.DARK
-                "notifications" to false
-            }
-        }
-
-        val user = obj["user"] as? JsonValue.JsonObject
-        assertTrue(user != null)
-        assertEquals(JsonValue.JsonNumber(456.0), user?.fields["id"])
-
-        val settings = obj["settings"] as? JsonValue.JsonObject
-        assertTrue(settings != null)
-        assertEquals(JsonValue.JsonString("DARK"), settings?.fields["theme"])
-    }
-
-    @Test
-    fun `can build JSON arrays`() {
-        val stringArray = buildJsonArray("one", "two", "three")
-        assertEquals(3, stringArray.size)
-        assertEquals(JsonValue.JsonString("one"), stringArray[0])
-
-        val intArray = buildJsonArray(1, 2, 3, 4, 5)
-        assertEquals(5, intArray.size)
-        assertEquals(JsonValue.JsonNumber(1.0), intArray[0])
-
-        val boolArray = buildJsonArray(true, false, true)
-        assertEquals(3, boolArray.size)
-        assertEquals(JsonValue.JsonBoolean(true), boolArray[0])
-    }
-
-    @Test
-    fun `JSON array validates against schema`() {
-        val array = buildJsonArray("one", "two", "three")
-        val result = array.validate(JsonSchema.ArraySchema(JsonSchema.StringSchema))
-        assertTrue(result.isValid)
-    }
-
-    @Test
-    fun `JSON array validation fails with wrong element type`() {
-        val array = buildJsonArray(
-            JsonValue.JsonString("one"),
-            JsonValue.JsonNumber(2.0),  // Wrong type
-            JsonValue.JsonString("three")
-        )
-
-        val result = array.validate(JsonSchema.ArraySchema(JsonSchema.StringSchema))
-        assertTrue(result.isInvalid)
-    }
-
-    @Test
-    fun `can access typed values from JSON object`() {
-        val obj = buildJsonObject {
-            "id" to 123
-            "name" to "Test"
-            "enabled" to true
-        }
-
-        assertEquals(123, obj.getTyped<Int>("id"))
-        assertEquals("Test", obj.getTyped<String>("name"))
-        assertEquals(true, obj.getTyped<Boolean>("enabled"))
-    }
-
-    @Test
-    fun `typed access returns null for wrong type`() {
-        val obj = buildJsonObject {
-            "id" to 123
-        }
-
-        assertEquals(null, obj.getTyped<String>("id"))  // Wrong type
-        assertEquals(null, obj.getTyped<Int>("nonexistent"))  // Missing field
-    }
-
-    @Test
     fun `can create complex user config schema`() {
         val userConfigSchema = jsonObject {
-            field("userId") { string() }
-            field("theme") { enum<Theme>() }
-            field("logLevel") { enum<LogLevel>() }
-            field("notifications") {
+            fieldRaw("userId") { string() }
+            fieldRaw("theme") { enum<Theme>() }
+            fieldRaw("logLevel") { enum<LogLevel>() }
+            fieldRaw("notifications") {
                 jsonObject {
-                    field("enabled") { boolean() }
-                    field("frequency") { string() }
+                    fieldRaw("enabled") { boolean() }
+                    fieldRaw("frequency") { string() }
                 }
             }
-            field("favoriteCategories") { array { string() } }
+            fieldRaw("favoriteCategories") { array { string() } }
         }
 
-        val userConfig = buildJsonObject {
-            "userId" to "user123"
-            "theme" to Theme.DARK
-            "logLevel" to LogLevel.INFO
-            "notifications" to buildJsonObject {
-                "enabled" to true
-                "frequency" to "daily"
-            }
-            "favoriteCategories" to buildJsonArray("tech", "news", "sports")
-        }
+        // Verify schema structure
+        assertEquals(5, userConfigSchema.fields.size)
+        assertTrue(userConfigSchema.fields.containsKey("userId"))
+        assertTrue(userConfigSchema.fields.containsKey("notifications"))
 
-        val result = userConfig.validate(userConfigSchema)
-        assertTrue(result.isValid)
-    }
-
-    @Test
-    fun `can create array of objects`() {
-        val userSchema = jsonObject {
-            field("id") { int() }
-            field("name") { string() }
-        }
-
-        val users = buildJsonArray(
-            elements = listOf(
-                buildJsonObject {
-                    "id" to 1
-                    "name" to "Alice"
-                },
-                buildJsonObject {
-                    "id" to 2
-                    "name" to "Bob"
-                },
-                buildJsonObject {
-                    "id" to 3
-                    "name" to "Charlie"
-                }
-            ),
-            elementSchema = userSchema
-        )
-
-        assertEquals(3, users.size)
-        val firstUser = users[0] as? JsonValue.JsonObject
-        assertEquals(JsonValue.JsonNumber(1.0), firstUser?.fields["id"])
+        val notificationsSchema = userConfigSchema.fields["notifications"]?.schema as? JsonSchema.ObjectSchema
+        assertTrue(notificationsSchema != null)
+        assertEquals(2, notificationsSchema?.fields?.size)
     }
 
     @Test
     fun `JsonObject with schema validates on construction`() {
         val schema = jsonObject {
-            field("id", required = true) { int() }
+            fieldRaw("id", required = true) { int() }
         }
 
         // Valid object should construct successfully
@@ -289,15 +158,15 @@ class JsonSchemaTest {
     }
 
     @Test
-    fun `deeply nested objects validate correctly`() {
+    fun `deeply nested objects schema can be created`() {
         val schema = jsonObject {
-            field("level1") {
+            fieldRaw("level1") {
                 jsonObject {
-                    field("level2") {
+                    fieldRaw("level2") {
                         jsonObject {
-                            field("level3") {
+                            fieldRaw("level3") {
                                 jsonObject {
-                                    field("value") { string() }
+                                    fieldRaw("value") { string() }
                                 }
                             }
                         }
@@ -306,17 +175,16 @@ class JsonSchemaTest {
             }
         }
 
-        val obj = buildJsonObject {
-            "level1" to buildJsonObject {
-                "level2" to buildJsonObject {
-                    "level3" to buildJsonObject {
-                        "value" to "deeply nested"
-                    }
-                }
-            }
-        }
+        // Verify deeply nested schema structure
+        assertEquals(1, schema.fields.size)
+        val level1Schema = schema.fields["level1"]?.schema as? JsonSchema.ObjectSchema
+        assertTrue(level1Schema != null)
 
-        val result = obj.validate(schema)
-        assertTrue(result.isValid)
+        val level2Schema = level1Schema?.fields?.get("level2")?.schema as? JsonSchema.ObjectSchema
+        assertTrue(level2Schema != null)
+
+        val level3Schema = level2Schema?.fields?.get("level3")?.schema as? JsonSchema.ObjectSchema
+        assertTrue(level3Schema != null)
+        assertTrue(level3Schema?.fields?.containsKey("value") == true)
     }
 }

@@ -6,12 +6,13 @@ import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.registry.NamespaceRegistry.Companion.updateDefinition
 import io.amichne.konditional.core.types.BooleanEncodeable
 import io.amichne.konditional.core.types.DataClassEncodeable
-import io.amichne.konditional.core.types.DataClassWithSchema
 import io.amichne.konditional.core.types.DecimalEncodeable
+import io.amichne.konditional.core.types.Defined
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.core.types.EnumEncodeable
 import io.amichne.konditional.core.types.IntEncodeable
 import io.amichne.konditional.core.types.StringEncodeable
+import io.amichne.konditional.core.types.json.JsonSchema
 import io.amichne.konditional.internal.builders.FlagBuilder
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
@@ -281,8 +282,8 @@ abstract class FeatureContainer<M : Namespace>(
      * data class-specific configuration options like rules, defaults, and targeting.
      * Configuration is automatically applied to the namespace when the feature is first accessed.
      *
-     * The data class must implement [DataClassWithSchema] and be annotated with [@ConfigDataClass][io.amichne.konditional.core.dsl.ConfigDataClass]
-     * for compile-time schema generation.
+     * The data class must implement [SchemaDefined] and be annotated with [@ConfigDataClass][io.amichne.konditional.core.dsl.ConfigDataClass]
+     * for compile-time definition generation.
      *
      * **Example:**
      * ```kotlin
@@ -291,7 +292,7 @@ abstract class FeatureContainer<M : Namespace>(
      *     val maxRetries: Int = 3,
      *     val timeout: Double = 30.0,
      *     val enabled: Boolean = true
-     * ) : DataClassWithSchema
+     * ) : SchemaDefined
      *
      * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
      *     val PAYMENT_CONFIG by dataClass(default = PaymentConfig()) {
@@ -302,13 +303,13 @@ abstract class FeatureContainer<M : Namespace>(
      * }
      * ```
      *
-     * @param T The data class type implementing DataClassWithSchema
+     * @param T The data class type implementing SchemaDefined
      * @param C The context type used for evaluation
      * @param default The default value for this feature (required)
      * @param dataClassScope DSL scope for configuring the data class feature
      * @return A delegated property that returns a [DataClassFeature]
      */
-    protected inline fun <reified T : DataClassWithSchema, C : Context> dataClass(
+    protected inline fun <reified T : Defined<JsonSchema.ObjectSchema>, C : Context> dataClass(
         default: T,
         noinline dataClassScope: FlagScope<DataClassEncodeable<T>, T, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, DataClassFeature<T, C, M>> =

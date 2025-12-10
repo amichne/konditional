@@ -26,18 +26,36 @@ class JsonObjectSchemaBuilder {
     private val fields = mutableMapOf<String, JsonFieldSchemaBuilder.() -> JsonSchema.FieldSchema<*>>()
 
     /**
-     * Adds a field to the object schema.
+     * Adds a field to the object definition.
      *
      * @param name The field name
-     * @param required Whether the field is required (default: false)
-     * @param default Default value for the field
-     * @param schema Lambda to build the field's schema
+     * @param schema Lambda to build the field's definition
      */
-    inline fun <reified S : JsonSchema> field(
+    internal inline fun <reified S : JsonSchema> field(
         name: String,
         crossinline schema: JsonFieldSchemaBuilder.() -> JsonSchema.FieldSchema<S>,
     ) {
         updateFieldMap(name,) { schema() }
+    }
+
+    /**
+     * Adds a field to the object definition (convenience overload for raw schemas).
+     *
+     * @param name The field name
+     * @param required Whether the field is required (default: false)
+     * @param default Default value for the field
+     * @param schema Lambda to build the field's definition
+     */
+    @JvmName("fieldWithDefaults")
+    inline fun <reified S : JsonSchema> fieldRaw(
+        name: String,
+        required: Boolean = false,
+        default: Any? = null,
+        crossinline schema: JsonFieldSchemaBuilder.() -> S,
+    ) {
+        updateFieldMap(name) {
+            JsonSchema.FieldSchema(schema(), required, default)
+        }
     }
 
     @PublishedApi

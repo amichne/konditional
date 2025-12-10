@@ -2,6 +2,9 @@ package io.amichne.konditional.internal.serialization.models
 
 import com.squareup.moshi.JsonClass
 import io.amichne.konditional.core.ValueType
+import io.amichne.konditional.core.types.Defined
+import io.amichne.konditional.core.types.json.JsonSchema
+import io.amichne.konditional.core.types.json.JsonValue
 import io.amichne.konditional.core.types.toJsonValue
 import io.amichne.konditional.core.types.toPrimitiveValue
 
@@ -91,9 +94,9 @@ internal sealed class FlagValue<out T : Any> {
                 value = value.name,
                 enumClassName = value.javaClass.name
             )
-            is io.amichne.konditional.core.types.DataClassWithSchema -> {
+            is Defined<*> -> {
                 // Convert data class to map representation
-                val jsonValue = value.toJsonValue()
+                val jsonValue = value.toJsonValue() as JsonValue.JsonObject
                 DataClassValue(
                     value = jsonValue.fields.mapValues { (_, v) -> v.toPrimitiveValue() },
                     dataClassName = value::class.java.name
@@ -101,7 +104,7 @@ internal sealed class FlagValue<out T : Any> {
             }
             else -> throw IllegalArgumentException(
                 "Unsupported value type: ${value::class.simpleName}. " +
-                "Supported types: Boolean, String, Int, Double, Enum, DataClassWithSchema."
+                "Supported types: Boolean, String, Int, Double, Enum, SchemaDefined."
             )
         }
     }

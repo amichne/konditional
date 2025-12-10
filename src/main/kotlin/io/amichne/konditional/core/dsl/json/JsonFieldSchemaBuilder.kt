@@ -9,45 +9,45 @@ import io.amichne.konditional.core.types.json.JsonSchema
 class JsonFieldSchemaBuilder {
 
     /**
-     * Creates a boolean schema.
+     * Creates a boolean definition.
      */
     fun boolean(): JsonSchema.BooleanSchema = JsonSchema.BooleanSchema
 
     /**
-     * Creates a string schema.
+     * Creates a string definition.
      */
     fun string(): JsonSchema.StringSchema = JsonSchema.StringSchema
 
     /**
-     * Creates an integer schema.
+     * Creates an integer definition.
      */
     fun int(): JsonSchema.IntSchema = JsonSchema.IntSchema
 
     /**
-     * Creates a double schema.
+     * Creates a double definition.
      */
     fun double(): JsonSchema.DoubleSchema = JsonSchema.DoubleSchema
 
     /**
-     * Creates an enum schema.
+     * Creates an enum definition.
      */
     inline fun <reified E : Enum<E>> enum(): JsonSchema.EnumSchema<E> =
         JsonSchema.EnumSchema(E::class)
 
     /**
-     * Creates a null schema.
+     * Creates a null definition.
      */
     fun nullSchema(): JsonSchema.NullSchema = JsonSchema.NullSchema
 
     /**
-     * Creates a nested object schema.
+     * Creates a nested object definition.
      */
     fun jsonObject(builder: JsonObjectSchemaBuilder.() -> Unit): JsonSchema.ObjectSchema {
         return JsonObjectSchemaBuilder().apply(builder).build()
     }
 
     /**
-     * Creates an array schema.
+     * Creates an array definition.
      */
     fun <S : JsonSchema> array(elementBuilder: JsonFieldSchemaBuilder.() -> S): JsonSchema.ArraySchema<S> {
         val elementSchema = JsonFieldSchemaBuilder().elementBuilder()

@@ -14,7 +14,7 @@ package io.amichne.konditional.core.types.json
 sealed class JsonValue {
 
     /**
-     * Validates this value against a schema.
+     * Validates this value against a definition.
      */
     abstract fun validate(schema: JsonSchema): JsonSchema.ValidationResult
 
@@ -113,7 +113,7 @@ sealed class JsonValue {
      * JSON object value with typed fields.
      *
      * @param fields Map of field names to their values
-     * @param schema Optional schema for validation
+     * @param schema Optional definition for validation
      */
     data class JsonObject(
         val fields: Map<String, JsonValue>,
@@ -121,12 +121,12 @@ sealed class JsonValue {
     ) : JsonValue() {
 
         init {
-            // Validate against schema if provided
+            // Validate against definition if provided
             schema?.let { s ->
                 val result = validate(s)
                 if (result.isInvalid) {
                     throw IllegalArgumentException(
-                        "JsonObject does not match schema: ${result.getErrorMessage()}"
+                        "JsonObject does not match definition: ${result.getErrorMessage()}"
                     )
                 }
             }
@@ -205,12 +205,12 @@ sealed class JsonValue {
     ) : JsonValue() {
 
         init {
-            // Validate all elements against schema if provided
+            // Validate all elements against definition if provided
             elementSchema?.let { schema ->
                 val result = validate(JsonSchema.ArraySchema(schema))
                 if (result.isInvalid) {
                     throw IllegalArgumentException(
-                        "JsonArray does not match schema: ${result.getErrorMessage()}"
+                        "JsonArray does not match definition: ${result.getErrorMessage()}"
                     )
                 }
             }

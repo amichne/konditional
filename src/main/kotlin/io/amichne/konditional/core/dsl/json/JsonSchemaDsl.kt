@@ -1,7 +1,7 @@
 package io.amichne.konditional.core.dsl.json
 
 /**
- * DSL marker for JSON schema builders.
+ * DSL marker for JSON definition builders.
  */
 @DslMarker
-annotation class JsonSchemaDsl
+internal annotation class JsonSchemaDsl

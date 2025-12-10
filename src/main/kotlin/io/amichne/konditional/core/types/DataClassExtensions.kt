@@ -15,17 +15,17 @@ import kotlin.reflect.full.primaryConstructor
  * This function uses reflection to extract all properties from the data class
  * and convert them to JsonValue instances based on their types.
  *
- * @param schema The schema to validate against (optional, defaults to the data class's schema)
+ * @param schema The definition to validate against (optional, defaults to the data class's definition)
  * @return JsonValue.JsonObject representation of this data class
  */
-fun DataClassWithSchema.toJsonValue(schema: JsonSchema.ObjectSchema? = null): JsonValue.JsonObject {
-    val actualSchema = schema ?: this.schema
+fun Defined<JsonSchema.ObjectSchema>.toJsonValue(schema: JsonSchema.ObjectSchema? = null): JsonValue.JsonObject {
+    val actualSchema = schema ?: this.definition
     val fields = mutableMapOf<String, JsonValue>()
 
     // Get all properties from the data class using reflection
-    // Exclude the 'schema' property itself from serialization
+    // Exclude the 'definition' property itself from serialization
     this::class.memberProperties.forEach { property ->
-        if (property.name != "schema") {
+        if (property.name != "definition") {
             val value = property.call(this)
             val jsonValue = value.toJsonValue()
             fields[property.name] = jsonValue
@@ -47,7 +47,7 @@ internal fun Any?.toJsonValue(): JsonValue = when (this) {
     is Int -> JsonValue.JsonNumber(this.toDouble())
     is Double -> JsonValue.JsonNumber(this)
     is Enum<*> -> JsonValue.JsonString(this.name)
-    is DataClassWithSchema -> toJsonValue()
+    is Defined<*> -> toJsonValue()
     is JsonValue -> this
     is List<*> -> JsonValue.JsonArray( map { it.toJsonValue() }, null )
     else -> throw IllegalArgumentException(
@@ -59,12 +59,12 @@ internal fun Any?.toJsonValue(): JsonValue = when (this) {
  * Parses a JsonValue.JsonObject into a data class instance.
  *
  * This function uses reflection to instantiate the data class with values
- * extracted from the JsonObject, validating against the schema if present.
+ * extracted from the JsonObject, validating against the definition if present.
  *
  * @param T The data class type to parse into
  * @return ParseResult containing either the data class instance or an error
  */
-inline fun <reified T : DataClassWithSchema> JsonValue.JsonObject.parseAs(): ParseResult<T> {
+inline fun <reified T : Defined<JsonSchema.ObjectSchema>> JsonValue.JsonObject.parseAs(): ParseResult<T> {
     return try {
         val kClass = T::class
         val constructor = kClass.primaryConstructor
@@ -72,7 +72,7 @@ inline fun <reified T : DataClassWithSchema> JsonValue.JsonObject.parseAs(): Par
                 ParseError.InvalidSnapshot("Data class ${kClass.simpleName} must have a primary constructor")
             )
 
-        // Validate against schema if present
+        // Validate against definition if present
         this.schema?.let { schema ->
             val validationResult = this.validate(schema)
             if (validationResult is JsonSchema.ValidationResult.Invalid) {

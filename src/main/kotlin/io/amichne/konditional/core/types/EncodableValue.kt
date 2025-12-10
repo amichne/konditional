@@ -2,6 +2,7 @@ package io.amichne.konditional.core.types
 
 import io.amichne.konditional.core.types.json.JsonArrayEncodeable
 import io.amichne.konditional.core.types.json.JsonObjectEncodeable
+import io.amichne.konditional.core.types.json.JsonSchema
 import io.amichne.konditional.core.types.json.JsonValue
 import kotlin.reflect.KClass
 
@@ -16,7 +17,7 @@ import kotlin.reflect.KClass
  * - Enum (user-defined enum types)
  * - JsonObject (structured JSON objects with typed fields)
  * - JsonArray (homogeneous arrays)
- * - DataClass (user-defined data classes implementing DataClassWithSchema)
+ * - DataClass (user-defined data classes implementing SchemaDefined)
  *
  * This enforces compile-time type safety by making Conditional and FeatureFlag
  * only accept EncodableValue subtypes, preventing unsupported types entirely.
@@ -35,7 +36,7 @@ sealed interface EncodableValue<T : Any> {
         ENUM(Enum::class),
         JSON_OBJECT(JsonValue.JsonObject::class),
         JSON_ARRAY(JsonValue.JsonArray::class),
-        DATA_CLASS(DataClassWithSchema::class);
+        DATA_CLASS(Defined::class);
 
         companion object {
             /**
@@ -59,9 +60,9 @@ sealed interface EncodableValue<T : Any> {
                     JSON_OBJECT -> JsonObjectEncodeable(value as JsonValue.JsonObject, requireNotNull(value.schema))
                     JSON_ARRAY -> JsonArrayEncodeable(value as JsonValue.JsonArray, requireNotNull(value.elementSchema))
                     DATA_CLASS -> {
-                        // For data class types, get the schema from the instance
-                        val dataClassWithSchema = value as DataClassWithSchema
-                        DataClassEncodeable(dataClassWithSchema, dataClassWithSchema.schema)
+                        // For data class types, get the definition from the instance
+                        val dataClassWithSchema = value as Defined<JsonSchema.ObjectSchema>
+                        DataClassEncodeable(dataClassWithSchema, dataClassWithSchema.definition)
                     }
                 } as EncodableValue<T>
             }
