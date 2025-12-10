@@ -275,13 +275,14 @@ abstract class FeatureContainer<M : Namespace>(
         ContainerFeaturePropertyDelegate(default, enumScope) { EnumFeature(it, namespace) }
 
     /**
-     * Creates a DataClass feature with automatic registration and configuration.
+     * Creates a custom encodeable feature with automatic registration and configuration.
      *
      * The feature is configured using a DSL scope that provides type-safe access to
-     * data class-specific configuration options like rules, defaults, and targeting.
+     * custom type configuration options like rules, defaults, and targeting.
      * Configuration is automatically applied to the namespace when the feature is first accessed.
      *
-     * The data class must implement [DataClassWithSchema] and be annotated with [@ConfigDataClass][io.amichne.konditional.core.dsl.ConfigDataClass]
+     * The custom type must implement [CustomEncodeable]<[io.amichne.konditional.core.types.json.JsonSchema.ObjectSchema]>
+     * and be annotated with [@ConfigDataClass][io.amichne.konditional.core.dsl.ConfigDataClass]
      * for compile-time schema generation.
      *
      * **Example:**
@@ -291,10 +292,16 @@ abstract class FeatureContainer<M : Namespace>(
      *     val maxRetries: Int = 3,
      *     val timeout: Double = 30.0,
      *     val enabled: Boolean = true
-     * ) : DataClassWithSchema
+     * ) : CustomEncodeable<JsonSchema.ObjectSchema> {
+     *     override val schema = jsonObject {
+     *         field("maxRetries", required = true, default = 3) { int() }
+     *         field("timeout", required = true, default = 30.0) { double() }
+     *         field("enabled", required = true, default = true) { boolean() }
+     *     }
+     * }
      *
      * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
-     *     val PAYMENT_CONFIG by dataClass(default = PaymentConfig()) {
+     *     val PAYMENT_CONFIG by custom(default = PaymentConfig()) {
      *         rule {
      *             environments(Environment.PRODUCTION)
      *         } returns PaymentConfig(maxRetries = 5, timeout = 60.0)
@@ -302,17 +309,36 @@ abstract class FeatureContainer<M : Namespace>(
      * }
      * ```
      *
-     * @param T The data class type implementing DataClassWithSchema
+     * @param T The custom type implementing [CustomEncodeable]<[io.amichne.konditional.core.types.json.JsonSchema.ObjectSchema]>
      * @param C The context type used for evaluation
      * @param default The default value for this feature (required)
-     * @param dataClassScope DSL scope for configuring the data class feature
+     * @param customScope DSL scope for configuring the custom feature
      * @return A delegated property that returns a [DataClassFeature]
      */
+    protected inline fun <reified T : CustomEncodeable<io.amichne.konditional.core.types.json.JsonSchema.ObjectSchema>, C : Context> custom(
+        default: T,
+        noinline customScope: FlagScope<DataClassEncodeable<T>, T, C, M>.() -> Unit = {},
+    ): ReadOnlyProperty<FeatureContainer<M>, DataClassFeature<T, C, M>> =
+        ContainerFeaturePropertyDelegate(default, customScope) { DataClassFeature(it, namespace) }
+
+    /**
+     * Creates a data class feature with automatic registration and configuration.
+     *
+     * **Note:** This is an alias for [custom] provided for backwards compatibility.
+     * Prefer using [custom] for new code.
+     *
+     * @see custom
+     */
+    @Deprecated(
+        "Use custom() instead for clearer naming that matches the type system",
+        ReplaceWith("custom(default, dataClassScope)"),
+        level = DeprecationLevel.WARNING
+    )
     protected inline fun <reified T : DataClassWithSchema, C : Context> dataClass(
         default: T,
         noinline dataClassScope: FlagScope<DataClassEncodeable<T>, T, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, DataClassFeature<T, C, M>> =
-        ContainerFeaturePropertyDelegate(default, dataClassScope) { DataClassFeature(it, namespace) }
+        custom(default, dataClassScope)
 
     /**
      * Internal delegate factory that handles feature creation, configuration, and registration.

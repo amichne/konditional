@@ -10,15 +10,15 @@ import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 
 /**
- * Converts a data class instance to a JsonValue.JsonObject.
+ * Converts a custom encodeable instance to a JsonValue.JsonObject.
  *
- * This function uses reflection to extract all properties from the data class
+ * This function uses reflection to extract all properties from the custom type
  * and convert them to JsonValue instances based on their types.
  *
- * @param schema The schema to validate against (optional, defaults to the data class's schema)
- * @return JsonValue.JsonObject representation of this data class
+ * @param schema The schema to validate against (optional, defaults to the instance's schema)
+ * @return JsonValue.JsonObject representation of this custom encodeable type
  */
-fun DataClassWithSchema.toJsonValue(schema: JsonSchema.ObjectSchema? = null): JsonValue.JsonObject {
+fun CustomEncodeable<JsonSchema.ObjectSchema>.toJsonValue(schema: JsonSchema.ObjectSchema? = null): JsonValue.JsonObject {
     val actualSchema = schema ?: this.schema
     val fields = mutableMapOf<String, JsonValue>()
 
@@ -47,7 +47,10 @@ internal fun Any?.toJsonValue(): JsonValue = when (this) {
     is Int -> JsonValue.JsonNumber(this.toDouble())
     is Double -> JsonValue.JsonNumber(this)
     is Enum<*> -> JsonValue.JsonString(this.name)
-    is DataClassWithSchema -> toJsonValue()
+    is CustomEncodeable<*> -> {
+        @Suppress("UNCHECKED_CAST")
+        (this as CustomEncodeable<JsonSchema.ObjectSchema>).toJsonValue()
+    }
     is JsonValue -> this
     is List<*> -> JsonValue.JsonArray( map { it.toJsonValue() }, null )
     else -> throw IllegalArgumentException(
@@ -56,20 +59,20 @@ internal fun Any?.toJsonValue(): JsonValue = when (this) {
 }
 
 /**
- * Parses a JsonValue.JsonObject into a data class instance.
+ * Parses a JsonValue.JsonObject into a custom encodeable instance.
  *
- * This function uses reflection to instantiate the data class with values
+ * This function uses reflection to instantiate the custom type with values
  * extracted from the JsonObject, validating against the schema if present.
  *
- * @param T The data class type to parse into
- * @return ParseResult containing either the data class instance or an error
+ * @param T The custom encodeable type to parse into
+ * @return ParseResult containing either the custom type instance or an error
  */
-inline fun <reified T : DataClassWithSchema> JsonValue.JsonObject.parseAs(): ParseResult<T> {
+inline fun <reified T : CustomEncodeable<JsonSchema.ObjectSchema>> JsonValue.JsonObject.parseAs(): ParseResult<T> {
     return try {
         val kClass = T::class
         val constructor = kClass.primaryConstructor
             ?: return ParseResult.Failure(
-                ParseError.InvalidSnapshot("Data class ${kClass.simpleName} must have a primary constructor")
+                ParseError.InvalidSnapshot("Custom type ${kClass.simpleName} must have a primary constructor")
             )
 
         // Validate against schema if present
@@ -108,12 +111,12 @@ inline fun <reified T : DataClassWithSchema> JsonValue.JsonObject.parseAs(): Par
             }
         }
 
-        // Instantiate the data class
+        // Instantiate the custom type
         val instance = constructor.callBy(parameterMap)
         ParseResult.Success(instance)
     } catch (e: Exception) {
         ParseResult.Failure(
-            ParseError.InvalidSnapshot("Failed to parse data class: ${e.message}")
+            ParseError.InvalidSnapshot("Failed to parse custom type: ${e.message}")
         )
     }
 }

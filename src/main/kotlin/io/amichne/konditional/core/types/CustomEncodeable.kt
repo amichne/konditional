@@ -3,15 +3,24 @@ package io.amichne.konditional.core.types
 import io.amichne.konditional.core.types.json.JsonSchema
 
 /**
- * Interface for data classes that can be used as configuration values.
+ * Interface for custom types that can be encoded with schema validation.
  *
- * Data classes implementing this interface can be used as feature flag values,
+ * This interface follows the Encodeable pattern used throughout the type system
+ * (BooleanEncodeable, StringEncodeable, etc.) and enables type-safe encoding
+ * of user-defined types with compile-time schema validation.
+ *
+ * The generic type parameter [S] allows for different schema types, though
+ * [JsonSchema.ObjectSchema] is the most common use case for data classes.
+ *
+ * ## Usage with Data Classes
+ *
+ * Custom types implementing this interface can be used as feature flag values,
  * providing structured, type-safe configuration with full schema validation.
  *
- * Requirements for data classes implementing this interface:
+ * Requirements:
  * - Must provide a schema property defining the structure
- * - All properties must have default values
- * - Properties must be of supported types (primitives, enums, JsonValue, nested DataClassWithSchema)
+ * - All properties should have default values
+ * - Properties must be of supported types (primitives, enums, JsonValue, nested CustomEncodeable)
  *
  * Example:
  * ```kotlin
@@ -19,7 +28,7 @@ import io.amichne.konditional.core.types.json.JsonSchema
  *     val theme: String = "light",
  *     val notificationsEnabled: Boolean = true,
  *     val maxRetries: Int = 3
- * ) : DataClassWithSchema {
+ * ) : CustomEncodeable<JsonSchema.ObjectSchema> {
  *     override val schema = jsonObject {
  *         field("theme", required = true, default = "light") { string() }
  *         field("notificationsEnabled", required = true, default = true) { boolean() }
@@ -34,7 +43,7 @@ import io.amichne.konditional.core.types.json.JsonSchema
  *     val theme: String = "light",
  *     val notificationsEnabled: Boolean = true,
  *     val maxRetries: Int = 3
- * ) : DataClassWithSchema {
+ * ) : CustomEncodeable<JsonSchema.ObjectSchema> {
  *     override val schema = Companion.schema
  *
  *     companion object {
@@ -46,11 +55,18 @@ import io.amichne.konditional.core.types.json.JsonSchema
  *     }
  * }
  * ```
+ *
+ * @param S The schema type used for validation (typically [JsonSchema.ObjectSchema])
  */
-interface DataClassWithSchema {
+interface CustomEncodeable<out S : JsonSchema> {
     /**
-     * The JSON schema defining the structure of this data class.
-     * Must be an ObjectSchema that defines all fields and their types.
+     * The schema defining the structure and validation rules for this custom type.
      */
-    val schema: JsonSchema.ObjectSchema
+    val schema: S
 }
+
+/**
+ * Type alias for the common case of custom data classes with object schemas.
+ * This provides backwards compatibility and ergonomic usage for the most common pattern.
+ */
+typealias DataClassWithSchema = CustomEncodeable<JsonSchema.ObjectSchema>

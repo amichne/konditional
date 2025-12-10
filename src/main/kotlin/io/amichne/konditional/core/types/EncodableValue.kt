@@ -16,7 +16,7 @@ import kotlin.reflect.KClass
  * - Enum (user-defined enum types)
  * - JsonObject (structured JSON objects with typed fields)
  * - JsonArray (homogeneous arrays)
- * - DataClass (user-defined data classes implementing DataClassWithSchema)
+ * - Custom (user-defined types implementing [CustomEncodeable], typically data classes)
  *
  * This enforces compile-time type safety by making Conditional and FeatureFlag
  * only accept EncodableValue subtypes, preventing unsupported types entirely.
@@ -35,7 +35,13 @@ sealed interface EncodableValue<T : Any> {
         ENUM(Enum::class),
         JSON_OBJECT(JsonValue.JsonObject::class),
         JSON_ARRAY(JsonValue.JsonArray::class),
-        DATA_CLASS(DataClassWithSchema::class);
+        CUSTOM(CustomEncodeable::class),
+        @Deprecated(
+            "Use CUSTOM instead",
+            ReplaceWith("CUSTOM"),
+            level = DeprecationLevel.WARNING
+        )
+        DATA_CLASS(CustomEncodeable::class);
 
         companion object {
             /**
@@ -58,10 +64,14 @@ sealed interface EncodableValue<T : Any> {
                     }
                     JSON_OBJECT -> JsonObjectEncodeable(value as JsonValue.JsonObject, requireNotNull(value.schema))
                     JSON_ARRAY -> JsonArrayEncodeable(value as JsonValue.JsonArray, requireNotNull(value.elementSchema))
-                    DATA_CLASS -> {
-                        // For data class types, get the schema from the instance
-                        val dataClassWithSchema = value as DataClassWithSchema
-                        DataClassEncodeable(dataClassWithSchema, dataClassWithSchema.schema)
+                    CUSTOM, DATA_CLASS -> {
+                        // For custom encodeable types, get the schema from the instance
+                        val customEncodeable = value as CustomEncodeable<*>
+                        @Suppress("UNCHECKED_CAST")
+                        DataClassEncodeable(
+                            customEncodeable as CustomEncodeable<io.amichne.konditional.core.types.json.JsonSchema.ObjectSchema>,
+                            customEncodeable.schema
+                        )
                     }
                 } as EncodableValue<T>
             }
