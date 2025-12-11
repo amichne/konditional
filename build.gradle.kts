@@ -27,6 +27,9 @@ repositories {
 }
 
 dependencies {
+    // Kontracts: Type-safe JSON Schema DSL
+    implementation(project(":kontracts"))
+
     // Moshi for JSON serialization
     implementation("com.squareup.moshi:moshi:1.15.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.15.0")

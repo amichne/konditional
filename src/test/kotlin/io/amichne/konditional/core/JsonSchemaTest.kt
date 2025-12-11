@@ -1,15 +1,14 @@
 package io.amichne.konditional.core
 
-import io.amichne.konditional.core.dsl.buildJsonArray
-import io.amichne.konditional.core.dsl.buildJsonObject
-import io.amichne.konditional.core.dsl.jsonObject
-import io.amichne.konditional.core.types.json.JsonSchema
-import io.amichne.konditional.core.types.json.JsonValue
-import org.junit.jupiter.api.Assertions.assertEquals
+import io.amichne.kontracts.dsl.*
+import io.amichne.konditional.core.types.JsonSchemaClass
+import io.amichne.kontracts.schema.JsonSchema
+import io.amichne.kontracts.value.JsonValue
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import kotlin.test.assertEquals
 
 /**
  * Test suite for JSON schema and value types.
@@ -33,7 +32,6 @@ class JsonSchemaTest {
         }
 
         assertEquals(3, schema.fields.size)
-        assertEquals(setOf("id", "name"), schema.required)
         assertTrue(schema.fields["id"]?.required == true)
         assertTrue(schema.fields["name"]?.required == true)
         assertFalse(schema.fields["enabled"]?.required == true)
@@ -178,19 +176,19 @@ class JsonSchemaTest {
     @Test
     fun `JSON array validates against schema`() {
         val array = buildJsonArray("one", "two", "three")
-        val result = array.validate(JsonSchema.ArraySchema(JsonSchema.StringSchema))
+        val result = array.validate(JsonSchema.ArraySchema(JsonSchema.StringSchema()))
         assertTrue(result.isValid)
     }
 
     @Test
     fun `JSON array validation fails with wrong element type`() {
         val array = buildJsonArray(
-                JsonValue.JsonString("one"),
-                JsonValue.JsonNumber(2.0),  // Wrong type
-                JsonValue.JsonString("three")
+            JsonValue.JsonString("one"),
+            JsonValue.JsonNumber(2.0),  // Wrong type
+            JsonValue.JsonString("three")
         )
 
-        val result = array.validate(JsonSchema.ArraySchema(JsonSchema.StringSchema))
+        val result = array.validate(JsonSchema.ArraySchema(JsonSchema.StringSchema()))
         assertTrue(result.isInvalid)
     }
 
@@ -291,7 +289,7 @@ class JsonSchemaTest {
         assertEquals(JsonValue.JsonNumber(123.0), validObj["id"])
 
         // Invalid object should throw on construction
-        assertThrows(IllegalArgumentException::class.java) {
+        assertThrows<IllegalArgumentException> {
             JsonValue.JsonObject(
                 mapOf("name" to JsonValue.JsonString("test")),  // Missing required "id"
                 schema
@@ -301,7 +299,7 @@ class JsonSchemaTest {
 
     @Test
     fun `JsonArray with schema validates on construction`() {
-        val elementSchema = JsonSchema.StringSchema
+        val elementSchema = JsonSchema.StringSchema()
 
         // Valid array should construct successfully
         val validArray = JsonValue.JsonArray(
@@ -314,7 +312,7 @@ class JsonSchemaTest {
         assertEquals(2, validArray.size)
 
         // Invalid array should throw on construction
-        assertThrows(IllegalArgumentException::class.java) {
+        assertThrows<IllegalArgumentException> {
             JsonValue.JsonArray(
                 listOf(
                     JsonValue.JsonString("one"),
@@ -327,7 +325,7 @@ class JsonSchemaTest {
 
     @Test
     fun `enum schema validates string representation`() {
-        val schema = JsonSchema.enum<Theme>()
+        val schema = JsonSchema.EnumSchema(enumClass = Theme::class, values = Theme.values().toList())
 
         // Valid enum value
         val validResult = JsonValue.JsonString("DARK").validate(schema)

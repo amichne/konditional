@@ -2,14 +2,18 @@ package io.amichne.konditional.core.features
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.konditional.core.types.DataClassEncodeable
-import io.amichne.konditional.core.types.DataClassWithSchema
+import io.amichne.kontracts.schema.JsonSchema
 
 /**
- * Sealed interface for data class-based feature flags.
+ * Sealed interface for custom encodeable feature flags.
  *
- * DataClassFeature allows using custom data classes as feature flag values,
+ * DataClassFeature (despite its name) allows using any custom encodeable type as feature flag values,
  * providing structured, type-safe configuration with full schema validation.
+ *
+ * **Note:** This interface name is retained for backwards compatibility but works with
+ * [KotlinEncodeable] types. Consider using the term "custom feature" in new documentation.
  *
  * Example:
  * ```kotlin
@@ -18,10 +22,16 @@ import io.amichne.konditional.core.types.DataClassWithSchema
  *     val maxRetries: Int = 3,
  *     val timeout: Double = 30.0,
  *     val enabled: Boolean = true
- * ) : DataClassWithSchema
+ * ) : KotlinEncodeable<JsonSchema.ObjectSchema> {
+ *     override val schema = jsonObject {
+ *         field("maxRetries", required = true, default = 3) { int() }
+ *         field("timeout", required = true, default = 30.0) { double() }
+ *         field("enabled", required = true, default = true) { boolean() }
+ *     }
+ * }
  *
  * object PaymentFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
- *     val PAYMENT_CONFIG by dataClass(
+ *     val PAYMENT_CONFIG by custom(
  *         default = PaymentConfig()
  *     ) {
  *         rule {
@@ -31,11 +41,11 @@ import io.amichne.konditional.core.types.DataClassWithSchema
  * }
  * ```
  *
- * @param T The data class type implementing DataClassWithSchema
+ * @param T The custom type implementing [KotlinEncodeable]<[JsonSchema.ObjectSchema]>
  * @param C The context type used for evaluation
  * @param M The namespace this feature belongs to
  */
-sealed interface DataClassFeature<T : DataClassWithSchema, C : Context, M : Namespace> :
+sealed interface DataClassFeature<T : KotlinEncodeable<JsonSchema.ObjectSchema>, C : Context, M : Namespace> :
     Feature<DataClassEncodeable<T>, T, C, M> {
 
     companion object {
@@ -46,14 +56,14 @@ sealed interface DataClassFeature<T : DataClassWithSchema, C : Context, M : Name
          * @param module The namespace this feature belongs to
          * @return A DataClassFeature instance
          */
-        operator fun <T : DataClassWithSchema, C : Context, M : Namespace> invoke(
+        operator fun <T : KotlinEncodeable<JsonSchema.ObjectSchema>, C : Context, M : Namespace> invoke(
             key: String,
             module: M,
         ): DataClassFeature<T, C, M> =
             DataClassFeatureImpl(key, module)
 
         @PublishedApi
-        internal data class DataClassFeatureImpl<T : DataClassWithSchema, C : Context, M : Namespace>(
+        internal data class DataClassFeatureImpl<T : KotlinEncodeable<JsonSchema.ObjectSchema>, C : Context, M : Namespace>(
             override val key: String,
             override val namespace: M,
         ) : DataClassFeature<T, C, M>
