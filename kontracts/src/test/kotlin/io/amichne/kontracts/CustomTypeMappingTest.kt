@@ -1,9 +1,11 @@
-package io.amichne.konditional.core
+package io.amichne.kontracts
 
-import io.amichne.konditional.core.types.JsonSchemaClass
+import io.amichne.kontracts.dsl.asDouble
+import io.amichne.kontracts.dsl.asInt
+import io.amichne.kontracts.dsl.asString
+import io.amichne.kontracts.dsl.of
+import io.amichne.kontracts.dsl.schemaRoot
 import io.amichne.kontracts.schema.JsonSchema
-import io.amichne.kontracts.dsl.*
-import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
@@ -28,7 +30,7 @@ class CustomTypeMappingTest {
         val loginAttempts: Count,
         val completionRate: Percentage,
         val nickname: String,
-    ) : JsonSchemaClass {
+    ) : Json {
         override val schema = schemaRoot {
             // Custom type mapped to String with validation rules
             ::userId asString {

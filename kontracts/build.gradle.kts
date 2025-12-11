@@ -23,4 +23,7 @@ java {
 dependencies {
     // Zero dependencies except Kotlin stdlib
     testImplementation(kotlin("test"))
+
+    testImplementation(kotlin("test"))
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
 }

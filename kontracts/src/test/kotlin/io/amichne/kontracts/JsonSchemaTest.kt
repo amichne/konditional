@@ -1,12 +1,13 @@
-package io.amichne.konditional.core
+package io.amichne.kontracts
 
-import io.amichne.kontracts.dsl.*
-import io.amichne.konditional.core.types.JsonSchemaClass
+import io.amichne.kontracts.dsl.buildJsonArray
+import io.amichne.kontracts.dsl.buildJsonObject
+import io.amichne.kontracts.dsl.jsonObject
 import io.amichne.kontracts.schema.JsonSchema
 import io.amichne.kontracts.value.JsonValue
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertEquals
 
