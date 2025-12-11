@@ -336,6 +336,25 @@ val enabled = feature { MyFeatures.MY_FLAG }
 
 **Extensible**: Custom contexts, custom rules, custom value types—extend everything.
 
+## Project Structure
+
+Konditional is organized as a multi-module project:
+
+### Core Module (`konditional`)
+The main library providing type-safe feature flags with compile-time guarantees. Includes contexts, rules, evaluation, serialization, and the complete feature flag API.
+
+### Kontracts Module (`kontracts`)
+**NEW**: Type-safe JSON Schema DSL extracted as a standalone submodule. Kontracts provides compile-time type-safe contract specification with a powerful DSL for defining JSON schemas. While currently part of this project, it's designed to eventually be published as an independent library.
+
+Key features:
+- Type-inferred DSL with automatic schema type detection
+- Custom type mapping for domain types
+- Runtime validation with detailed error messages
+- OpenAPI 3.1 compatible schemas
+- Zero dependencies (Kotlin stdlib only)
+
+See [`kontracts/README.md`](kontracts/README.md) for detailed documentation and usage examples.
+
 ## Contributing
 
 Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.

@@ -41,6 +41,7 @@ interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> 
      *
      * @param value The default value to assign to the flag
      */
+    @Deprecated("Use the constructor parameter instead")
     fun default(value: T)
 
     /**

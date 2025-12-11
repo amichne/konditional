@@ -154,7 +154,7 @@ class ContextPolymorphismTest {
                 platforms(Platform.WEB)
                 rollout { 100 }
 
-                extension { context -> EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN).matches(context) }
+                extension { EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN).matches(this) }
 
             } returns true
         }

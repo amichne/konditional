@@ -2,6 +2,8 @@ package io.amichne.konditional.core.types.json
 
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.core.types.JsonEncodeable
+import io.amichne.kontracts.schema.JsonSchema
+import io.amichne.kontracts.value.JsonValue
 
 /**
  * Encodeable wrapper for JSON array types.
