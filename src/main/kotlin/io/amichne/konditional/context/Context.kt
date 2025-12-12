@@ -102,9 +102,4 @@ interface Context {
             key: Feature<S, T, C, M>,
         ): T = key.namespace.flag(key).evaluate(this)
     }
-
-//    @Suppress("UNCHECKED_CAST")
 }
-
-inline fun <reified T : DimensionKey, reified C : Context> C.dimension(axis: Dimension<T>): T? =
-    getDimension(axis.id) as? T

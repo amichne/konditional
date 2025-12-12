@@ -17,16 +17,16 @@ interface DimensionScope {
     /**
      * Set a dimension value for a given axis.
      */
-    fun <T : DimensionKey> set(
+    fun <T> set(
         axis: Dimension<T>,
         value: T,
-    )
+    ) where T : DimensionKey, T : Enum<T>
 
     /**
      * Optional setter – skips when [value] is null.
      */
-    fun <T : DimensionKey> setIfNotNull(
+    fun <T> setIfNotNull(
         axis: Dimension<T>,
         value: T?,
-    )
+    ) where T : DimensionKey, T : Enum<T>
 }

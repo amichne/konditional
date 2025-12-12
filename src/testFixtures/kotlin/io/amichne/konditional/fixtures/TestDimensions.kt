@@ -36,13 +36,9 @@ enum class TestTenant(override val id: String) : DimensionKey {
  */
 object TestAxes {
 
-    object Environment : Dimension<TestEnvironment> {
-        override val id: String = "env"
-    }
+    object Environment : Dimension<TestEnvironment> by Dimension("env")
 
-    object Tenant : Dimension<TestTenant> {
-        override val id: String = "tenant"
-    }
+    object Tenant : Dimension<TestTenant> by Dimension("tenant")
 }
 
 /**

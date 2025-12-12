@@ -74,10 +74,10 @@ internal data class RuleBuilder<C : Context>(
         DimensionBuilder().apply(block).build()
     }
 
-    override fun <T : DimensionKey> dimension(
+    override fun <T> dimension(
         axis: Dimension<T>,
         vararg values: T,
-    ) {
+    ) where T : DimensionKey, T : Enum<T>  {
         val allowedIds = values.mapTo(linkedSetOf()) { it.id }
         val idx = dimensionConstraints.indexOfFirst { it.axisId == axis.id }
         if (idx >= 0) {

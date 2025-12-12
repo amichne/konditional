@@ -19,20 +19,10 @@ class Dimensions internal constructor(
      * Strongly-typed access by dimension descriptor.
      */
     @Suppress("UNCHECKED_CAST")
-    operator fun <T : DimensionKey> get(axis: Dimension<T>): T? =
+    operator fun <T> get(axis: Dimension<T>): T? where T : DimensionKey, T : Enum<T> =
         values[axis.id] as? T
 
     companion object {
         val EMPTY = Dimensions(emptyMap())
     }
-}
-
-/**
- * Describes a dimension axis, e.g. "env", "region", "tenant".
- *
- * The type parameter T is the *consumer-defined* enum or class that
- * implements DimensionKey.
- */
-interface Dimension<out T : DimensionKey> {
-    val id: String   // axis ID, e.g. "env", "region"
 }

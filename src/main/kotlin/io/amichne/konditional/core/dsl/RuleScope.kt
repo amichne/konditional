@@ -83,10 +83,10 @@ interface RuleScope<C : Context> {
      * @param axis
      * @param values
      */
-    fun <T : DimensionKey> dimension(
+    fun <T> dimension(
         axis: Dimension<T>,
         vararg values: T,
-    )
+    ) where T : DimensionKey, T : Enum<T>
 
     /**
      * Adds a custom targeting extension using an Evaluable.

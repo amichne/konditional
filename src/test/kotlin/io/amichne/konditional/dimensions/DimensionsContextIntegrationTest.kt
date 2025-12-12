@@ -11,6 +11,7 @@ import io.amichne.konditional.fixtures.environment
 import io.amichne.konditional.fixtures.tenant
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import kotlin.test.assertNull
 
 /**
  * Unit tests for Context + dimensions integration.
@@ -43,13 +44,8 @@ class DimensionsContextIntegrationTest {
         }
         val ctx = TestContext(dimensions = dims)
 
-        val unknownAxis = object : Dimension<TestEnvironment> {
-            override val id: String = "unknown-axis"
-        }
+        val unknownAxis = object : Dimension<TestEnvironment> by Dimension("unknown") {}
 
-        Assertions.assertNull(
-            ctx.dimension(unknownAxis),
-            "Unknown axis should return null",
-        )
+        assertNull(ctx.dimension(unknownAxis), "Unknown axis should return null")
     }
 }
