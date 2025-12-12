@@ -1,0 +1,38 @@
+package io.amichne.konditional.context
+
+/**
+ * Strongly-typed wrapper for a set of dimension values.
+ *
+ * Implements type-safe access to dimension values by their axis descriptors. Under the hood,
+ * it stores a map of axis IDs to dimension keys. This class is immutable and intended to be
+ * constructed via builders.
+ */
+class Dimensions internal constructor(
+    private val values: Map<String, DimensionKey>,
+) {
+    /**
+     * Low-level access by axis id (used internally by rules).
+     */
+    operator fun get(axisId: String): DimensionKey? = values[axisId]
+
+    /**
+     * Strongly-typed access by dimension descriptor.
+     */
+    @Suppress("UNCHECKED_CAST")
+    operator fun <T : DimensionKey> get(axis: Dimension<T>): T? =
+        values[axis.id] as? T
+
+    companion object {
+        val EMPTY = Dimensions(emptyMap())
+    }
+}
+
+/**
+ * Describes a dimension axis, e.g. "env", "region", "tenant".
+ *
+ * The type parameter T is the *consumer-defined* enum or class that
+ * implements DimensionKey.
+ */
+interface Dimension<out T : DimensionKey> {
+    val id: String   // axis ID, e.g. "env", "region"
+}

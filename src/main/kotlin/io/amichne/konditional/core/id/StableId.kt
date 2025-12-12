@@ -16,20 +16,25 @@ sealed interface StableId {
 
     companion object {
         /**
-         * The sole creator for [StableId]. Requires a valid string identifier.
+         * Creates a StableId from an arbitrary string by hex-encoding its bytes.
+         *
+         * This is useful when migrating from systems whose identifiers are not hex-encoded.
+         * The mapping is deterministic and stable across processes.
          *
          * @param id The string representation of the stable identifier.
          * @return A [StableId] instance with the provided identifier.
-         *
-         * @throws IllegalArgumentException if the provided id is not a valid hexadecimal string.
          */
-        fun of(id: String): StableId = Factory.Instance(HexId(id.lowercase()))
-    }
-
-    private object Factory {
-        data class Instance(override val hexId: HexId) : StableId {
-            override val id: String
-                get() = hexId.id
+        fun of(input: String): StableId = require(input.isNotBlank()) { "StableId input must not be blank" }
+            .run { Factory.Instance(
+                HexId(input.lowercase().encodeToByteArray().joinToString(separator = "") { "%02x".format(it) })
+            )
         }
-    } 
+    }
+}
+
+private object Factory {
+    data class Instance(override val hexId: HexId) : StableId {
+        override val id: String
+            get() = hexId.id
+    }
 }

@@ -199,25 +199,6 @@ class AdversarialConfigTest {
         assertEquals(true, result)
     }
 
-    // ============================================
-    // ATTACK VECTOR 4: HexId Validation
-    // ============================================
-
-    @Test
-    fun `hexId must be valid hex string - enforced at construction`() {
-        assertThrows<IllegalArgumentException> {
-            StableId.of("not-valid-hex!")
-        }
-    }
-
-    @Test
-    fun `hexId must be even length for valid hex encoding`() {
-        // Odd-length hex strings should fail
-        assertThrows<IllegalArgumentException> {
-            StableId.of("abc") // 3 chars = odd
-        }
-    }
-
     @Test
     fun `hexId accepts empty string in theory but validation should catch it`() {
         // Empty string is technically "valid" hex but semantically wrong
@@ -230,7 +211,7 @@ class AdversarialConfigTest {
     fun `hexId is case insensitive in validation`() {
         val id1 = StableId.of("ABCDEF1234567890ABCDEF1234567890")
         val id2 = StableId.of("abcdef1234567890abcdef1234567890")
-        // These are different IDs after normalization
+        // These should be the same hexidecimal IDs after normalization
         assertEquals(id1.hexId.id, id2.hexId.id)
     }
 

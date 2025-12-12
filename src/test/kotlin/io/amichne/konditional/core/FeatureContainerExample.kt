@@ -4,7 +4,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.features.BooleanFeature
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.features.IntFeature
-import io.amichne.konditional.core.result.utils.evaluateOrDefault
+import io.amichne.konditional.core.features.evaluate
 
 /**
  * Example comparing current enum approach vs FeatureContainer approach
@@ -95,8 +95,8 @@ object FeatureContainerValueDemo {
             PaymentFeatures.max_cards
 
         // Type inference works
-        val enabled = context.evaluateOrDefault(PaymentFeatures.apple_pay, false)
-        val limit = context.evaluateOrDefault(PaymentFeatures.max_cards, 5)
+        val enabled = PaymentFeatures.apple_pay.evaluate(context)
+        val limit = PaymentFeatures.max_cards.evaluate(context)
 
         // Compile-time type safety
         // val x: Int = PaymentFeatures.apple_pay // ❌ Type mismatch

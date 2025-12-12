@@ -35,6 +35,8 @@ internal data class BaseEvaluable<C : Context>(
     val locales: Set<AppLocale> = emptySet(),
     val platforms: Set<Platform> = emptySet(),
     val versionRange: VersionRange = Unbounded(),
+    val dimensionConstraints: List<DimensionConstraint> = emptyList(),
+
 ) : Evaluable<C> {
     /**
      * Determines if the contextFn matches all specified constraints.
@@ -46,15 +48,18 @@ internal data class BaseEvaluable<C : Context>(
      */
     override fun matches(context: C): Boolean =
         (locales.isEmpty() || context.locale in locales) &&
-            (platforms.isEmpty() || context.platform in platforms) &&
-            (!versionRange.hasBounds() || versionRange.contains(context.appVersion))
+        (platforms.isEmpty() || context.platform in platforms) &&
+        (!versionRange.hasBounds() || versionRange.contains(context.appVersion)) &&
+        dimensionConstraints.all { (context.getDimension(it.axisId) ?: return false).id in it.allowedIds }
 
     /**
      * Calculates specificity as the count of specified constraints.
      *
      * @return Specificity value between 0 (no constraints) and 3 (all constraints)
      */
-    override fun specificity(): Int = (if (locales.isNotEmpty()) 1 else 0) +
+    override fun specificity(): Int =
+        (if (locales.isNotEmpty()) 1 else 0) +
         (if (platforms.isNotEmpty()) 1 else 0) +
-        (if (versionRange.hasBounds()) 1 else 0)
+        (if (versionRange.hasBounds()) 1 else 0) +
+        dimensionConstraints.size
 }

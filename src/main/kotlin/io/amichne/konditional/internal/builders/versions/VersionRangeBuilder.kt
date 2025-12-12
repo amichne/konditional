@@ -17,7 +17,6 @@ import io.amichne.konditional.rules.versions.VersionRange
  *
  * @constructor Internal constructor - users cannot instantiate this class directly.
  */
-@ConsistentCopyVisibility
 @PublishedApi
 internal data class VersionRangeBuilder(
     private var leftBound: Version = Version.default,

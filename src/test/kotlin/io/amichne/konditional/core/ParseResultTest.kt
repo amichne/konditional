@@ -139,9 +139,7 @@ class ParseResultTest {
 
     @Test
     fun `getOrElse returns value on Success`() {
-        val result = successResult.getOrElse { error ->
-            -1
-        }
+        val result = successResult.getOrElse { _ -> -1 }
         assertEquals(42, result)
     }
 

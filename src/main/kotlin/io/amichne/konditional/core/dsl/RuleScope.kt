@@ -2,8 +2,9 @@ package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Dimension
+import io.amichne.konditional.context.DimensionKey
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.rules.evaluable.Evaluable
 
 /**
  * DSL scope for rule configuration.
@@ -65,6 +66,29 @@ interface RuleScope<C : Context> {
     fun versions(build: VersionRangeScope.() -> Unit)
 
     /**
+     * Specifies custom [Dimension] targeting for this rule.
+     *
+     * Example:
+     * ```kotlin
+     * dimension(Environment) {
+     *    Environment.PRODUCTION,
+     *    Environment.STAGING
+     * }
+     * ```
+     *
+     * Adds targeting criteria based on custom dimensions defined in the context,
+     * allowing for more granular control over rule applicability based on consumer-defined axes.
+     *
+     * @param T
+     * @param axis
+     * @param values
+     */
+    fun <T : DimensionKey> dimension(
+        axis: Dimension<T>,
+        vararg values: T,
+    )
+
+    /**
      * Adds a custom targeting extension using an Evaluable.
      *
      * Extensions allow for domain-specific targeting beyond the standard
@@ -72,18 +96,13 @@ interface RuleScope<C : Context> {
      *
      * Example:
      * ```kotlin
-     * extension { object : Evaluable<MyContext>() {
-     *     override fun matches(contextFn: MyContext) = contextFn.organizationId == "enterprise"
-     * }}
+     * extension {
+     *     organizationId == "enterprise"
+     * }
      * ```
      *
-     * @param function Factory function that creates the Evaluable
+     * @param block The extension logic as a lambda
      */
-//    @Deprecated("Use other extension")
-//    fun extension(function: () -> Evaluable<C>)
-
-//    fun extension(block: (C) -> Boolean)
-
     fun extension(block: C.() -> Boolean)
 
     /**
