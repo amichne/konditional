@@ -2,7 +2,6 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.features.FeatureContainer
@@ -76,7 +75,7 @@ class TestNamespaceOverridesTest {
         val TestFeatures = object : FeatureContainer<TestNamespace>(testNamespace) {
             val myFlag by boolean<Context>(default = false) {
                 // Rule that would normally make this true for WEB platform
-                rule { platforms(Platform.WEB) } returns true
+                rule(true) { platforms(Platform.WEB) }
             }
         }
 

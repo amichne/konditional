@@ -3,7 +3,6 @@ package io.amichne.konditional.core.dsl
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.types.EncodableValue
-import io.amichne.konditional.rules.Rule
 
 /**
  * DSL scope for flag configuration.
@@ -17,10 +16,10 @@ import io.amichne.konditional.rules.Rule
  * MyFeature.FEATURE_A with {
  *     default(true)
  *     salt("v2")
- *     rule {
+ *     rule(false) {
  *         platforms(Platform.IOS)
- *         rollout {  Rampup.of(50.0) }
- *     }.returns(false)
+ *         rollout { 50.0 }
+ *     }
  * }
  * ```
  *
@@ -46,35 +45,23 @@ interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> 
     fun salt(value: String)
 
     /**
-     * Defines a targeting rule for this flag.
+     * Defines a targeting rule with an associated return value.
      *
-     * Rules determine which users receive which values based on contextFn properties.
+     * Rules determine which users receive which values based on context properties.
+     * The value is required, ensuring every rule has an associated return value
+     * at compile time.
      *
      * Example:
      * ```kotlin
-     * rule {
+     * rule(true) {
      *     platforms(Platform.IOS)
      *     locales(AppLocale.UNITED_STATES)
-     *     rollout {  Rampup.of(50.0) }
-     * }.returns(true)
+     *     rollout { 50.0 }
+     * }
      * ```
      *
-     * @param build DSL block for configuring the rule
-     * @return A Rule object that can be associated with a value using `returns`
+     * @param value The value to return when this rule matches
+     * @param build DSL block for configuring the rule's targeting criteria
      */
-    fun rule(build: RuleScope<C>.() -> Unit): Rule<C>
-
-    /**
-     * Associates a rule with a specific value.
-     *
-     * When the rule matches the contextFn, the flag will return this value.
-     *
-     * Example:
-     * ```kotlin
-     * rule { platforms(Platform.IOS) }.returns(true)
-     * ```
-     *
-     * @param value The value to return when the rule matches
-     */
-    infix fun Rule<C>.returns(value: T)
+    fun rule(value: T, build: RuleScope<C>.() -> Unit = {})
 }
