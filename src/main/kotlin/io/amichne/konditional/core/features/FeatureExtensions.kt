@@ -1,12 +1,16 @@
 package io.amichne.konditional.core.features
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Dimensions
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.DimensionScope
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.registry.NamespaceRegistry
 import io.amichne.konditional.core.registry.NamespaceRegistry.Companion.updateDefinition
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.core.types.toJsonValue
+import io.amichne.konditional.internal.builders.DimensionBuilder
 import io.amichne.konditional.internal.builders.FlagBuilder
 
 /**
@@ -21,7 +25,7 @@ import io.amichne.konditional.internal.builders.FlagBuilder
  */
 fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Feature<S, T, C, M>.evaluate(
     context: C,
-    registry: NamespaceRegistry = namespace
+    registry: NamespaceRegistry = namespace,
 ): T = registry.flag(this).evaluate(context)
 
 /**
@@ -33,8 +37,9 @@ fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Feature<S, T, C
  * @param function The DSL configuration block
  */
 internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Feature<S, T, C, M>.update(
-    function: FlagScope<S, T, C, M>.() -> Unit
-): Unit = namespace.updateDefinition(FlagBuilder(this).apply(function).build())
+    default: T,
+    function: FlagScope<S, T, C, M>.() -> Unit,
+): Unit = namespace.updateDefinition(FlagBuilder(default, this).apply(function).build())
 
 /**
  * Updates this feature's definition in the namespace.
@@ -45,5 +50,17 @@ internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Featur
  * @param definition The flag definition to update
  */
 internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Feature<S, T, C, M>.update(
-    definition: FlagDefinition<S, T, C, M>
+    definition: FlagDefinition<S, T, C, M>,
 ): Unit = namespace.updateDefinition(definition)
+
+/**
+ * Top-level DSL function to create [Dimensions].
+ *
+ * Example:
+ *   val dims = dimensions {
+ *       environment(Environment.PROD)
+ *       tenant(Tenant.SME)
+ *   }
+ */
+fun dimensions(block: DimensionScope.() -> Unit): Dimensions =
+    DimensionBuilder().apply(block).build()

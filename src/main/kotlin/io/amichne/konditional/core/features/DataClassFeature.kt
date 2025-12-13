@@ -4,7 +4,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.konditional.core.types.DataClassEncodeable
-import io.amichne.kontracts.schema.JsonSchema
+import io.amichne.kontracts.schema.ObjectSchema
 
 /**
  * Sealed interface for custom encodeable feature flags.
@@ -41,11 +41,11 @@ import io.amichne.kontracts.schema.JsonSchema
  * }
  * ```
  *
- * @param T The custom type implementing [KotlinEncodeable]<[JsonSchema.ObjectSchema]>
+ * @param T The custom type implementing [KotlinEncodeable]<[ObjectSchema]>
  * @param C The context type used for evaluation
  * @param M The namespace this feature belongs to
  */
-sealed interface DataClassFeature<T : KotlinEncodeable<JsonSchema.ObjectSchema>, C : Context, M : Namespace> :
+sealed interface DataClassFeature<T : KotlinEncodeable<ObjectSchema>, C : Context, M : Namespace> :
     Feature<DataClassEncodeable<T>, T, C, M> {
 
     companion object {
@@ -56,14 +56,14 @@ sealed interface DataClassFeature<T : KotlinEncodeable<JsonSchema.ObjectSchema>,
          * @param module The namespace this feature belongs to
          * @return A DataClassFeature instance
          */
-        operator fun <T : KotlinEncodeable<JsonSchema.ObjectSchema>, C : Context, M : Namespace> invoke(
+        operator fun <T : KotlinEncodeable<ObjectSchema>, C : Context, M : Namespace> invoke(
             key: String,
             module: M,
         ): DataClassFeature<T, C, M> =
             DataClassFeatureImpl(key, module)
 
         @PublishedApi
-        internal data class DataClassFeatureImpl<T : KotlinEncodeable<JsonSchema.ObjectSchema>, C : Context, M : Namespace>(
+        internal data class DataClassFeatureImpl<T : KotlinEncodeable<ObjectSchema>, C : Context, M : Namespace>(
             override val key: String,
             override val namespace: M,
         ) : DataClassFeature<T, C, M>

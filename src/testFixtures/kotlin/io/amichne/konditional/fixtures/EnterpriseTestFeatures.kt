@@ -40,6 +40,12 @@ data class EnterpriseContext(
     val userRole: UserRole,
 ) : Context
 
+data class CompositeContext(
+    val context: Context,
+    val experimentGroups: Set<String>,
+    val sessionId: String,
+) : Context by context
+
 /**
  * Experiment contextFn for A/B testing scenarios.
  */
@@ -62,7 +68,7 @@ object EnterpriseFeatures : FeatureContainer<Namespace.Global>(Namespace.Global)
     val advanced_analytics by boolean<EnterpriseContext>(default = false)
 
     /** Custom branding feature */
-    val custom_branding by boolean<EnterpriseContext>(default = false)
+    val custom_branding by boolean<CompositeContext>(default = false)
 
     /** API access feature */
     val api_access by boolean<EnterpriseContext>(default = false)
@@ -92,5 +98,5 @@ data class EnterpriseRule(
 ) : Evaluable<EnterpriseContext> {
     override fun matches(context: EnterpriseContext): Boolean =
         (requiredTier == null || context.subscriptionTier >= requiredTier) &&
-            (requiredRole == null || context.userRole >= requiredRole)
+        (requiredRole == null || context.userRole >= requiredRole)
 }

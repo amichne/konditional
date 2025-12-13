@@ -10,8 +10,8 @@ import io.amichne.konditional.core.features.DoubleFeature
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.features.IntFeature
 import io.amichne.konditional.core.features.StringFeature
+import io.amichne.konditional.core.features.evaluate
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.result.utils.evaluateOrDefault
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -122,8 +122,8 @@ class FeatureContainerTest {
 
         // Evaluate features - configuration is automatic through delegation
         assertEquals(true, context.evaluate(testFeatures.configuredBoolean))
-        assertEquals("test-value", context.evaluateOrDefault(testFeatures.configuredString, ""))
-        assertEquals(100, context.evaluateOrDefault(testFeatures.configuredInt, 0))
+        assertEquals("test-value", testFeatures.configuredString.evaluate(context))
+        assertEquals(100, testFeatures.configuredInt.evaluate(context))
     }
 
     @Test

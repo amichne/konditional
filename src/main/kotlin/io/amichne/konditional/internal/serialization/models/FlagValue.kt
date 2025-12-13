@@ -4,6 +4,7 @@ import com.squareup.moshi.JsonClass
 import io.amichne.konditional.core.ValueType
 import io.amichne.konditional.core.types.toJsonValue
 import io.amichne.konditional.core.types.toPrimitiveValue
+import io.amichne.kontracts.schema.ObjectSchema
 
 /**
  * Type-safe representation of flag values that replaces the type-erased SerializableValue.
@@ -94,7 +95,7 @@ internal sealed class FlagValue<out T : Any> {
             is io.amichne.konditional.core.types.KotlinEncodeable<*> -> {
                 // Convert custom encodeable to map representation
                 @Suppress("UNCHECKED_CAST")
-                val customEncodeable = value as io.amichne.konditional.core.types.KotlinEncodeable<io.amichne.kontracts.schema.JsonSchema.ObjectSchema>
+                val customEncodeable = value as io.amichne.konditional.core.types.KotlinEncodeable<ObjectSchema>
                 val jsonValue = customEncodeable.toJsonValue()
                 DataClassValue(
                     value = jsonValue.fields.mapValues { (_, v) -> v.toPrimitiveValue() },

@@ -7,8 +7,8 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.features.EnumFeature
 import io.amichne.konditional.core.features.FeatureContainer
+import io.amichne.konditional.core.features.evaluate
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.result.utils.evaluateOrDefault
 import io.amichne.konditional.core.types.EncodableEvidence
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.core.types.EnumEncodeable
@@ -35,7 +35,7 @@ class EnumFeatureTest {
     }
 
     // Test features with enum types
-    object EnumFeatures : FeatureContainer<Namespace.Payments>(
+    private object EnumFeatures : FeatureContainer<Namespace.Payments>(
         Namespace.Payments
     ) {
         val logLevel by enum<LogLevel, Context>(default = LogLevel.INFO) {
@@ -82,11 +82,11 @@ class EnumFeatureTest {
         )
 
         // Should return defaults when no rules match
-        assertEquals(LogLevel.INFO, context.evaluateOrDefault(EnumFeatures.logLevel, LogLevel.ERROR))
-        assertEquals(Theme.AUTO, context.evaluateOrDefault(EnumFeatures.theme, Theme.LIGHT))
+        assertEquals(LogLevel.INFO, EnumFeatures.logLevel.evaluate(context))
+        assertEquals(Theme.AUTO, EnumFeatures.theme.evaluate(context))
         assertEquals(
             Environment.PRODUCTION,
-            context.evaluateOrDefault(EnumFeatures.environment, Environment.DEVELOPMENT)
+            EnumFeatures.environment.evaluate(context)
         )
     }
 
@@ -236,7 +236,7 @@ class EnumFeatureTest {
         assertEquals(Environment.STAGING, iosContext.evaluate(complexFeatures.environment))
         assertEquals(
             Environment.PRODUCTION,
-            androidContext.evaluateOrDefault(complexFeatures.environment, Environment.DEVELOPMENT)
+            complexFeatures.environment.evaluate(androidContext)
         )
     }
 

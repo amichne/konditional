@@ -2,7 +2,9 @@ package io.amichne.konditional.core.types
 
 import io.amichne.konditional.core.types.json.JsonArrayEncodeable
 import io.amichne.konditional.core.types.json.JsonObjectEncodeable
-import io.amichne.kontracts.value.JsonValue
+import io.amichne.kontracts.schema.ObjectSchema
+import io.amichne.kontracts.value.JsonArray
+import io.amichne.kontracts.value.JsonObject
 import kotlin.reflect.KClass
 
 /**
@@ -33,8 +35,8 @@ sealed interface EncodableValue<T : Any> {
         INTEGER(Int::class),
         DECIMAL(Double::class),
         ENUM(Enum::class),
-        JSON_OBJECT(JsonValue.JsonObject::class),
-        JSON_ARRAY(JsonValue.JsonArray::class),
+        JSON_OBJECT(JsonObject::class),
+        JSON_ARRAY(JsonArray::class),
         CUSTOM(KotlinEncodeable::class),
         @Deprecated(
             "Use CUSTOM instead",
@@ -62,14 +64,14 @@ sealed interface EncodableValue<T : Any> {
                         // For enum types, we need to create EnumEncodeable with the proper type
                         EnumEncodeable.fromString(value.javaClass.name, value::class as KClass<out Enum<*>>)
                     }
-                    JSON_OBJECT -> JsonObjectEncodeable(value as JsonValue.JsonObject, requireNotNull(value.schema))
-                    JSON_ARRAY -> JsonArrayEncodeable(value as JsonValue.JsonArray, requireNotNull(value.elementSchema))
+                    JSON_OBJECT -> JsonObjectEncodeable(value as JsonObject, requireNotNull(value.schema))
+                    JSON_ARRAY -> JsonArrayEncodeable(value as JsonArray, requireNotNull(value.elementSchema))
                     CUSTOM, DATA_CLASS -> {
                         // For custom encodeable types, get the schema from the instance
                         val customEncodeable = value as KotlinEncodeable<*>
                         @Suppress("UNCHECKED_CAST")
                         DataClassEncodeable(
-                            customEncodeable as KotlinEncodeable<io.amichne.kontracts.schema.JsonSchema.ObjectSchema>,
+                            customEncodeable as KotlinEncodeable<ObjectSchema>,
                             customEncodeable.schema
                         )
                     }

@@ -14,7 +14,7 @@ import io.amichne.konditional.core.types.JsonSchemaClass
 import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.konditional.core.types.StringEncodeable
 import io.amichne.konditional.internal.builders.FlagBuilder
-import io.amichne.kontracts.schema.JsonSchema
+import io.amichne.kontracts.schema.ObjectSchema
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -283,7 +283,7 @@ abstract class FeatureContainer<M : Namespace>(
      * custom type configuration options like rules, defaults, and targeting.
      * Configuration is automatically applied to the namespace when the feature is first accessed.
      *
-     * The custom type must implement [KotlinEncodeable]<[io.amichne.kontracts.schema.JsonSchema.ObjectSchema]>
+     * The custom type must implement [KotlinEncodeable]<[ObjectSchema]>
      * and be annotated with [@ConfigDataClass][io.amichne.konditional.core.dsl.ConfigDataClass]
      * for compile-time schema generation.
      *
@@ -311,13 +311,13 @@ abstract class FeatureContainer<M : Namespace>(
      * }
      * ```
      *
-     * @param T The custom type implementing [KotlinEncodeable]<[io.amichne.kontracts.schema.JsonSchema.ObjectSchema]>
+     * @param T The custom type implementing [KotlinEncodeable]<[ObjectSchema]>
      * @param C The context type used for evaluation
      * @param default The default value for this feature (required)
      * @param customScope DSL scope for configuring the custom feature
      * @return A delegated property that returns a [DataClassFeature]
      */
-    protected inline fun <reified T : KotlinEncodeable<JsonSchema.ObjectSchema>, C : Context> custom(
+    protected inline fun <reified T : KotlinEncodeable<ObjectSchema>, C : Context> custom(
         default: T,
         noinline customScope: FlagScope<DataClassEncodeable<T>, T, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, DataClassFeature<T, C, M>> =
@@ -376,10 +376,8 @@ abstract class FeatureContainer<M : Namespace>(
         lateinit var name: String
 
         private val feature: F by lazy {
-            factory(namespace, name).also { _features.add(it) }.also { createdFeature ->
-                // Execute the DSL configuration block and update the namespace
-                val flagDefinition = FlagBuilder(createdFeature).apply(configScope).apply { default(default) }.build()
-                namespace.updateDefinition(flagDefinition)
+            factory(namespace, name).also { _features.add(it) }.also {
+                namespace.updateDefinition(FlagBuilder(default, it).apply<FlagBuilder<S, T, C, M>>(configScope).build())
             }
         }
 

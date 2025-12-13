@@ -64,11 +64,9 @@ class NamespaceSnapshotSerializerTest {
 
     @Test
     fun `Given namespace with configured flags, When serialized, Then includes all flags`() {
-        TestFeatures.boolFlag.update {
-            default(true)
+        TestFeatures.boolFlag.update(true) {
         }
-        TestFeatures.stringFlag.update {
-            default("test-value")
+        TestFeatures.stringFlag.update("test-value") {
         }
 
         val serializer = NamespaceSnapshotSerializer(Namespace.Global)
@@ -152,14 +150,12 @@ class NamespaceSnapshotSerializerTest {
     @Test
     fun `Given namespace, When round-tripped, Then configuration is preserved`() {
         // Configure flags
-        TestFeatures.boolFlag.update {
-            default(true)
+        TestFeatures.boolFlag.update(true) {
             rule {
                 platforms(Platform.IOS)
             } returns false
         }
-        TestFeatures.stringFlag.update {
-            default("original")
+        TestFeatures.stringFlag.update("original") {
             rule {
                 locales(AppLocale.FRANCE)
             } returns "french"
@@ -187,9 +183,7 @@ class NamespaceSnapshotSerializerTest {
 
     @Test
     fun `Given forModule factory, When created, Then works same as constructor`() {
-        TestFeatures.boolFlag.update {
-            default(true)
-        }
+        TestFeatures.boolFlag.update(true) {}
 
         val serializer = NamespaceSnapshotSerializer.forModule(Namespace.Global)
         val json = serializer.toJson()

@@ -1,6 +1,8 @@
 package io.amichne.kontracts.dsl
 
+import io.amichne.kontracts.schema.FieldSchema
 import io.amichne.kontracts.schema.JsonSchema
+import io.amichne.kontracts.schema.ObjectSchema
 
 /**
  * Builder for creating JSON object schemas using a type-safe DSL.
@@ -24,7 +26,7 @@ import io.amichne.kontracts.schema.JsonSchema
 @JsonSchemaDsl
 class JsonObjectSchemaBuilder {
     @PublishedApi
-    internal val fields = mutableMapOf<String, JsonSchema.FieldSchema>()
+    internal val fields = mutableMapOf<String, FieldSchema>()
 
     /**
      * Adds a field to the object schema.
@@ -40,11 +42,11 @@ class JsonObjectSchemaBuilder {
         schemaBuilder: JsonFieldSchemaBuilder.() -> JsonSchema,
     ) {
         val schema = JsonFieldSchemaBuilder().schemaBuilder()
-        fields[name] = JsonSchema.FieldSchema(schema, required, schema.default)
+        fields[name] = FieldSchema(schema, required, schema.default)
     }
 
     /**
      * Builds the final ObjectSchema.
      */
-    fun build(): JsonSchema.ObjectSchema = JsonSchema.ObjectSchema(fields.toMap())
+    fun build(): ObjectSchema = ObjectSchema(fields.toMap())
 }

@@ -74,9 +74,7 @@ class SnapshotSerializerTest {
 
     @Test
     fun `Given Konfig with boolean flag, When serialized, Then includes flag with correct type`() {
-            TestFeatures.boolFlag.update {
-                default(true)
-            }
+            TestFeatures.boolFlag.update(true) {}
 
             val json = SnapshotSerializer.serialize(Namespace.Global.configuration)
 
@@ -104,9 +102,7 @@ class SnapshotSerializerTest {
 
     @Test
     fun `Given Konfig with int flag, When serialized, Then includes flag with correct type`() {
-        TestFeatures.intFlag.update {
-            default(42)
-        }
+        TestFeatures.intFlag.update(42) {}
         val json = SnapshotSerializer.serialize(Namespace.Global.configuration)
 
 
@@ -119,9 +115,7 @@ class SnapshotSerializerTest {
 
     @Test
     fun `Given Konfig with double flag, When serialized, Then includes flag with correct type`() {
-        TestFeatures.doubleFlag.update {
-            default(3.14)
-        }
+        TestFeatures.doubleFlag.update(3.14) {}
 
         val json = SnapshotSerializer.serialize(Namespace.Global.configuration)
 

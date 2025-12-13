@@ -2,13 +2,17 @@ package io.amichne.konditional.internal.builders
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Dimension
+import io.amichne.konditional.context.DimensionKey
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rampup
+import io.amichne.konditional.core.dsl.DimensionScope
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.RuleScope
 import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.Rule
+import io.amichne.konditional.rules.evaluable.DimensionConstraint
 import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.evaluable.Evaluable.Companion.factory
 import io.amichne.konditional.rules.evaluable.Placeholder
@@ -32,6 +36,7 @@ internal data class RuleBuilder<C : Context>(
     private var note: String? = null,
     private var range: VersionRange = Unbounded(),
     private val platforms: LinkedHashSet<Platform> = linkedSetOf(),
+    private val dimensionConstraints: MutableList<DimensionConstraint> = mutableListOf(),
     private val locales: LinkedHashSet<AppLocale> = linkedSetOf(),
     private var rollout: Rampup? = null,
 ) : RuleScope<C> {
@@ -65,6 +70,26 @@ internal data class RuleBuilder<C : Context>(
         extension = factory { block(it) }
     }
 
+    fun dimensions(block: DimensionScope.() -> Unit) {
+        DimensionBuilder().apply(block).build()
+    }
+
+    override fun <T> dimension(
+        axis: Dimension<T>,
+        vararg values: T,
+    ) where T : DimensionKey, T : Enum<T>  {
+        val allowedIds = values.mapTo(linkedSetOf()) { it.id }
+        val idx = dimensionConstraints.indexOfFirst { it.axisId == axis.id }
+        if (idx >= 0) {
+            val existing = dimensionConstraints[idx]
+            dimensionConstraints[idx] = existing.copy(
+                allowedIds = existing.allowedIds + allowedIds
+            )
+        } else {
+            dimensionConstraints += DimensionConstraint(axis.id, allowedIds)
+        }
+    }
+
     /**
      * Implementation of [RuleScope.note].
      */
@@ -88,6 +113,7 @@ internal data class RuleBuilder<C : Context>(
             locales = locales,
             platforms = platforms,
             versionRange = range,
+            dimensionConstraints = dimensionConstraints.toList(),
             note = note,
             extension = extension,
         )

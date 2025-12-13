@@ -2,7 +2,14 @@ package io.amichne.konditional.core.types
 
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.kontracts.schema.JsonSchema
+import io.amichne.kontracts.schema.ObjectSchema
+import io.amichne.kontracts.schema.ValidationResult
+import io.amichne.kontracts.value.JsonArray
+import io.amichne.kontracts.value.JsonBoolean
+import io.amichne.kontracts.value.JsonNull
+import io.amichne.kontracts.value.JsonNumber
+import io.amichne.kontracts.value.JsonObject
+import io.amichne.kontracts.value.JsonString
 import io.amichne.kontracts.value.JsonValue
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
@@ -18,7 +25,7 @@ import kotlin.reflect.full.primaryConstructor
  * @param schema The schema to validate against (optional, defaults to the instance's schema)
  * @return JsonValue.JsonObject representation of this custom encodeable type
  */
-fun KotlinEncodeable<JsonSchema.ObjectSchema>.toJsonValue(schema: JsonSchema.ObjectSchema? = null): JsonValue.JsonObject {
+fun KotlinEncodeable<ObjectSchema>.toJsonValue(schema: ObjectSchema? = null): JsonObject {
     val actualSchema = schema ?: this.schema
     val fields = mutableMapOf<String, JsonValue>()
 
@@ -32,7 +39,7 @@ fun KotlinEncodeable<JsonSchema.ObjectSchema>.toJsonValue(schema: JsonSchema.Obj
         }
     }
 
-    return JsonValue.JsonObject(fields, actualSchema)
+    return JsonObject(fields, actualSchema)
 }
 
 /**
@@ -41,18 +48,18 @@ fun KotlinEncodeable<JsonSchema.ObjectSchema>.toJsonValue(schema: JsonSchema.Obj
  * This is a helper function that converts Kotlin types to their JsonValue equivalents.
  */
 internal fun Any?.toJsonValue(): JsonValue = when (this) {
-    null -> JsonValue.JsonNull
-    is Boolean -> JsonValue.JsonBoolean(this)
-    is String -> JsonValue.JsonString(this)
-    is Int -> JsonValue.JsonNumber(this.toDouble())
-    is Double -> JsonValue.JsonNumber(this)
-    is Enum<*> -> JsonValue.JsonString(this.name)
+    null -> JsonNull
+    is Boolean -> JsonBoolean(this)
+    is String -> JsonString(this)
+    is Int -> JsonNumber(this.toDouble())
+    is Double -> JsonNumber(this)
+    is Enum<*> -> JsonString(this.name)
     is KotlinEncodeable<*> -> {
         @Suppress("UNCHECKED_CAST")
-        (this as KotlinEncodeable<JsonSchema.ObjectSchema>).toJsonValue()
+        (this as KotlinEncodeable<ObjectSchema>).toJsonValue()
     }
     is JsonValue -> this
-    is List<*> -> JsonValue.JsonArray(map { it.toJsonValue() }, null)
+    is List<*> -> JsonArray(map { it.toJsonValue() }, null)
     else -> throw IllegalArgumentException(
         "Unsupported type for JSON conversion: ${this::class.simpleName}"
     )
@@ -67,7 +74,7 @@ internal fun Any?.toJsonValue(): JsonValue = when (this) {
  * @param T The custom encodeable type to parse into
  * @return ParseResult containing either the custom type instance or an error
  */
-inline fun <reified T : KotlinEncodeable<JsonSchema.ObjectSchema>> JsonValue.JsonObject.parseAs(): ParseResult<T> {
+inline fun <reified T : KotlinEncodeable<ObjectSchema>> JsonObject.parseAs(): ParseResult<T> {
     return try {
         val kClass = T::class
         val constructor = kClass.primaryConstructor
@@ -78,7 +85,7 @@ inline fun <reified T : KotlinEncodeable<JsonSchema.ObjectSchema>> JsonValue.Jso
         // Validate against schema if present
         this.schema?.let { schema ->
             val validationResult = this.validate(schema)
-            if (validationResult is JsonSchema.ValidationResult.Invalid) {
+            if (validationResult is ValidationResult.Invalid) {
                 return ParseResult.Failure(
                     ParseError.InvalidSnapshot("Schema validation failed: ${validationResult.message}")
                 )
@@ -120,16 +127,16 @@ inline fun <reified T : KotlinEncodeable<JsonSchema.ObjectSchema>> JsonValue.Jso
  */
 @PublishedApi
 internal fun JsonValue.toKotlinValue(targetClass: KClass<*>?): Any? = when (this) {
-    is JsonValue.JsonNull -> null
-    is JsonValue.JsonBoolean -> this.value
-    is JsonValue.JsonString -> this.value
-    is JsonValue.JsonNumber -> when (targetClass) {
+    is JsonNull -> null
+    is JsonBoolean -> this.value
+    is JsonString -> this.value
+    is JsonNumber -> when (targetClass) {
         Int::class -> this.toInt()
         Double::class -> this.toDouble()
         else -> this.toDouble()
     }
-    is JsonValue.JsonObject -> this
-    is JsonValue.JsonArray -> this.elements
+    is JsonObject -> this
+    is JsonArray -> this.elements
     else -> throw IllegalArgumentException("Unsupported JsonValue type: ${this::class.simpleName}")
 }
 
@@ -139,10 +146,10 @@ internal fun JsonValue.toKotlinValue(targetClass: KClass<*>?): Any? = when (this
  * This is used when converting JsonObjects to Maps for FlagValue serialization.
  */
 fun JsonValue.toPrimitiveValue(): Any? = when (this) {
-    is JsonValue.JsonNull -> null
-    is JsonValue.JsonBoolean -> this.value
-    is JsonValue.JsonString -> this.value
-    is JsonValue.JsonNumber -> this.value
-    is JsonValue.JsonObject -> this.fields.mapValues { (_, v) -> v.toPrimitiveValue() }
-    is JsonValue.JsonArray -> this.elements.map { it.toPrimitiveValue() }
+    is JsonNull -> null
+    is JsonBoolean -> this.value
+    is JsonString -> this.value
+    is JsonNumber -> this.value
+    is JsonObject -> this.fields.mapValues { (_, v) -> v.toPrimitiveValue() }
+    is JsonArray -> this.elements.map { it.toPrimitiveValue() }
 }

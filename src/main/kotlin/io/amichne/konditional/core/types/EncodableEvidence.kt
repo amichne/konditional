@@ -1,6 +1,7 @@
 package io.amichne.konditional.core.types
 
-import io.amichne.kontracts.value.JsonValue
+import io.amichne.kontracts.value.JsonArray
+import io.amichne.kontracts.value.JsonObject
 
 /**
  * Type witness that provides evidence a type T can be encoded.
@@ -29,8 +30,8 @@ sealed interface EncodableEvidence<T : Any> {
                 String::class -> StringEvidence as EncodableEvidence<T>
                 Int::class -> IntEvidence as EncodableEvidence<T>
                 Double::class -> DoubleEvidence as EncodableEvidence<T>
-                JsonValue.JsonObject::class -> JsonObjectEvidence as EncodableEvidence<T>
-                JsonValue.JsonArray::class -> JsonArrayEvidence as EncodableEvidence<T>
+                JsonObject::class -> JsonObjectEvidence as EncodableEvidence<T>
+                JsonArray::class -> JsonArrayEvidence as EncodableEvidence<T>
                 else -> {
                     // Check if T is an enum type
                     if (T::class.java.isEnum) {
@@ -56,7 +57,7 @@ sealed interface EncodableEvidence<T : Any> {
         inline fun <reified T : Any> isEncodable(): Boolean {
             return when (T::class) {
                 Boolean::class, String::class, Int::class, Double::class,
-                JsonValue.JsonObject::class, JsonValue.JsonArray::class -> true
+                JsonObject::class, JsonArray::class -> true
                 else -> T::class.java.isEnum || KotlinEncodeable::class.java.isAssignableFrom(T::class.java)
             }
         }
@@ -89,14 +90,14 @@ sealed interface EncodableEvidence<T : Any> {
     /**
      * Evidence for JsonObject type.
      */
-    object JsonObjectEvidence : EncodableEvidence<JsonValue.JsonObject> {
+    object JsonObjectEvidence : EncodableEvidence<JsonObject> {
         override val encoding: EncodableValue.Encoding = EncodableValue.Encoding.JSON_OBJECT
     }
 
     /**
      * Evidence for JsonArray type.
      */
-    object JsonArrayEvidence : EncodableEvidence<JsonValue.JsonArray> {
+    object JsonArrayEvidence : EncodableEvidence<JsonArray> {
         override val encoding: EncodableValue.Encoding = EncodableValue.Encoding.JSON_ARRAY
     }
 

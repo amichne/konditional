@@ -37,6 +37,24 @@ interface Context {
     val appVersion: Version
     val stableId: StableId
 
+    /**
+     * Additional dimensions (env, region, tenant, etc.).
+     *
+     * Defaults to [Dimensions.EMPTY] so simple contexts don’t have to care.
+     */
+    val dimensions: Dimensions
+        get() = Dimensions.EMPTY
+
+    /**
+     * Generic access to additional dimensions (env, region, tenant, etc.).
+     *
+     * Implementations *may* store these in a map, but callers never see that.
+     * Consumers should not use this directly; instead they use typed axes
+     * via the `dimension(axis)` extension (see below).
+     */
+    fun getDimension(axisId: String): DimensionKey? =
+        dimensions[axisId]
+
     data class Core(
         override val locale: AppLocale,
         override val platform: Platform,

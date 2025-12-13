@@ -67,7 +67,7 @@ import io.amichne.konditional.core.types.EncodableValue
  *         val flagC by integer<Context>(default = 0)
  *     }
  *
- *     Namespace.withOverrides(
+ *     Namespace.testScoped(
  *         TestFeatures.flagA to true,
  *         TestFeatures.flagB to "override",
  *         TestFeatures.flagC to 42
@@ -87,7 +87,7 @@ import io.amichne.konditional.core.types.EncodableValue
  *
  * ## Best Practices
  *
- * - Use `withOverride` or `withOverrides` for automatic cleanup
+ * - Use `withOverride` or `testScoped` for automatic cleanup
  * - If using `setOverride`, always pair with `clearOverride` (preferably in a try-finally)
  * - Create a fresh Namespace instance for each test
  * - Don't share Namespace instances between tests
@@ -181,7 +181,7 @@ fun <S : EncodableValue<T>, T : Any, C : Context> Namespace.hasOverride(
  * @param R The return type of the block
  *
  * @see setOverride
- * @see withOverrides
+ * @see testScoped
  */
 inline fun <S : EncodableValue<T>, T : Any, C : Context, R> Namespace.withOverride(
     feature: Feature<S, T, C, *>,
@@ -209,7 +209,7 @@ inline fun <S : EncodableValue<T>, T : Any, C : Context, R> Namespace.withOverri
  * @see setOverride
  * @see withOverride
  */
-fun <M : Namespace, F : FeatureContainer<M>> F.withOverrides(
+fun <M : Namespace, F : FeatureContainer<M>> F.testScoped(
     vararg overrides: Pair<Feature<*, *, *, *>, Any>,
     block: F.() -> Unit,
 ): Unit {
@@ -259,6 +259,10 @@ data class OverridingScope<M : Namespace, F : FeatureAware<M>> @PublishedApi int
 
     companion object {
         @KonditionalDsl
+        @Deprecated(
+            "Use the top-level setupTest function instead",
+            ReplaceWith("setupTest(container, features)")
+        )
         inline fun <reified M : Namespace, reified T> setupTest(
             container: T,
             features: T.(OverridingScope<M, T>) -> Unit,
@@ -266,3 +270,10 @@ data class OverridingScope<M : Namespace, F : FeatureAware<M>> @PublishedApi int
             AtomicTestScope(OverridingScope(container).apply { features(container, this) })
     }
 }
+
+@KonditionalDsl
+inline fun <reified M : Namespace, reified T> setupTest(
+    container: T,
+    features: T.(OverridingScope<M, T>) -> Unit,
+): AtomicTestScope where T : FeatureAware<M> =
+    AtomicTestScope(OverridingScope(container).apply { features(container, this) })
