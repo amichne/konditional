@@ -52,7 +52,7 @@ import java.util.concurrent.atomic.AtomicReference
  *     // Set override - flag will always return this value
  *     testNamespace.registry.setOverride(MyFlags.FEATURE_A, true)
  *
- *     val result = contextFn.evaluate(MyFlags.FEATURE_A)
+ *     val result = MyFlags.FEATURE_A.evaluate(contextFn)
  *     assertEquals(true, result)
  *
  *     // Clean up

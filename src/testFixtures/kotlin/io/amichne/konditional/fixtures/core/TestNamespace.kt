@@ -20,11 +20,11 @@ import io.amichne.konditional.core.Namespace
  *
  *     val TestFeatures = object : FeatureContainer<Namespace.TestNamespace>(testNamespace) {
  *         val myFlag by boolean<Context>(default = false) {
- *             rule { platforms(Platform.IOS) } returns true
+ *             rule(true) { platforms(Platform.IOS) }
  *         }
  *     }
  *
- *     val result = contextFn.evaluate(TestFeatures.myFlag)
+ *     val result = TestFeatures.myFlag.evaluate(contextFn)
  *     assertEquals(true, result)
  * }
  * ```

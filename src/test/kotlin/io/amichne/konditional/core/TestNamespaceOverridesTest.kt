@@ -2,10 +2,10 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.features.FeatureContainer
+import io.amichne.konditional.core.features.evaluate
 import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.fixtures.core.clearAllOverrides
@@ -14,8 +14,8 @@ import io.amichne.konditional.fixtures.core.hasOverride
 import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.fixtures.core.setOverride
 import io.amichne.konditional.fixtures.core.setupTest
-import io.amichne.konditional.fixtures.core.withOverride
 import io.amichne.konditional.fixtures.core.testScoped
+import io.amichne.konditional.fixtures.core.withOverride
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -55,19 +55,18 @@ class TestNamespaceOverridesTest {
 
         setupTest(TestFeatures) {
 
-
         }
 
         // Without override, returns default
-        assertEquals(false, testContext.evaluate(TestFeatures.myFlag))
+        assertEquals(false, TestFeatures.myFlag.evaluate(testContext))
 
         // Set override
         testNamespace.setOverride(TestFeatures.myFlag, true)
-        assertEquals(true, testContext.evaluate(TestFeatures.myFlag))
+        assertEquals(true, TestFeatures.myFlag.evaluate(testContext))
 
         // Clear override
         testNamespace.clearOverride(TestFeatures.myFlag)
-        assertEquals(false, testContext.evaluate(TestFeatures.myFlag))
+        assertEquals(false, TestFeatures.myFlag.evaluate(testContext))
     }
 
     @Test
@@ -76,20 +75,20 @@ class TestNamespaceOverridesTest {
         val TestFeatures = object : FeatureContainer<TestNamespace>(testNamespace) {
             val myFlag by boolean<Context>(default = false) {
                 // Rule that would normally make this true for WEB platform
-                rule { platforms(Platform.WEB) } returns true
+                rule(true) { platforms(Platform.WEB) }
             }
         }
 
         // Normal evaluation follows rule - returns true for WEB
-        assertEquals(true, testContext.evaluate(TestFeatures.myFlag))
+        assertEquals(true, TestFeatures.myFlag.evaluate(testContext))
 
         // Override to false - bypasses rule
         testNamespace.setOverride(TestFeatures.myFlag, false)
-        assertEquals(false, testContext.evaluate(TestFeatures.myFlag))
+        assertEquals(false, TestFeatures.myFlag.evaluate(testContext))
 
         // Clear override - rule applies again
         testNamespace.clearOverride(TestFeatures.myFlag)
-        assertEquals(true, testContext.evaluate(TestFeatures.myFlag))
+        assertEquals(true, TestFeatures.myFlag.evaluate(testContext))
     }
 
     @Test
@@ -100,17 +99,17 @@ class TestNamespaceOverridesTest {
         }
 
         // Before override
-        assertEquals(false, testContext.evaluate(TestFeatures.myFlag))
+        assertEquals(false, TestFeatures.myFlag.evaluate(testContext))
 
         // Within scope - override is active
         val result = testNamespace.withOverride(TestFeatures.myFlag, true) {
-            assertEquals(true, testContext.evaluate(TestFeatures.myFlag))
+            assertEquals(true, TestFeatures.myFlag.evaluate(testContext))
             "success"
         }
         assertEquals("success", result)
 
         // After scope - override is cleared
-        assertEquals(false, testContext.evaluate(TestFeatures.myFlag))
+        assertEquals(false, TestFeatures.myFlag.evaluate(testContext))
     }
 
     @Test
@@ -121,18 +120,18 @@ class TestNamespaceOverridesTest {
         }
 
         // Before override
-        assertEquals(false, testContext.evaluate(TestFeatures.myFlag))
+        assertEquals(false, TestFeatures.myFlag.evaluate(testContext))
 
         // Exception thrown in scope
         assertThrows(RuntimeException::class.java) {
             testNamespace.withOverride(TestFeatures.myFlag, true) {
-                assertEquals(true, testContext.evaluate(TestFeatures.myFlag))
+                assertEquals(true, TestFeatures.myFlag.evaluate(testContext))
                 throw RuntimeException("Test exception")
             }
         }
 
         // Override is still cleared despite exception
-        assertEquals(false, testContext.evaluate(TestFeatures.myFlag))
+        assertEquals(false, TestFeatures.myFlag.evaluate(testContext))
     }
 
     @Test
@@ -152,24 +151,24 @@ class TestNamespaceOverridesTest {
         testNamespace.setOverride(TestFeatures.doubleFlag, 3.14)
 
         // All configure are active
-        assertEquals(true, testContext.evaluate(TestFeatures.boolFlag))
-        assertEquals("override", testContext.evaluate(TestFeatures.stringFlag))
-        assertEquals(42, testContext.evaluate(TestFeatures.intFlag))
-        assertEquals(3.14, testContext.evaluate(TestFeatures.doubleFlag))
+        assertEquals(true, TestFeatures.boolFlag.evaluate(testContext))
+        assertEquals("override", TestFeatures.stringFlag.evaluate(testContext))
+        assertEquals(42, TestFeatures.intFlag.evaluate(testContext))
+        assertEquals(3.14, TestFeatures.doubleFlag.evaluate(testContext))
 
         // Clear one override - others remain
         testNamespace.clearOverride(TestFeatures.boolFlag)
-        assertEquals(false, testContext.evaluate(TestFeatures.boolFlag))
-        assertEquals("override", testContext.evaluate(TestFeatures.stringFlag))
-        assertEquals(42, testContext.evaluate(TestFeatures.intFlag))
-        assertEquals(3.14, testContext.evaluate(TestFeatures.doubleFlag))
+        assertEquals(false, TestFeatures.boolFlag.evaluate(testContext))
+        assertEquals("override", TestFeatures.stringFlag.evaluate(testContext))
+        assertEquals(42, TestFeatures.intFlag.evaluate(testContext))
+        assertEquals(3.14, TestFeatures.doubleFlag.evaluate(testContext))
 
         // Clear all configure
         testNamespace.clearAllOverrides()
-        assertEquals(false, testContext.evaluate(TestFeatures.boolFlag))
-        assertEquals("default", testContext.evaluate(TestFeatures.stringFlag))
-        assertEquals(0, testContext.evaluate(TestFeatures.intFlag))
-        assertEquals(0.0, testContext.evaluate(TestFeatures.doubleFlag))
+        assertEquals(false, TestFeatures.boolFlag.evaluate(testContext))
+        assertEquals("default", TestFeatures.stringFlag.evaluate(testContext))
+        assertEquals(0, TestFeatures.intFlag.evaluate(testContext))
+        assertEquals(0.0, TestFeatures.doubleFlag.evaluate(testContext))
     }
 
     @Test
@@ -186,15 +185,15 @@ class TestNamespaceOverridesTest {
             TestFeatures.flagB to "test",
             TestFeatures.flagC to 100
         ) {
-            assertEquals(true, testContext.evaluate(TestFeatures.flagA))
-            assertEquals("test", testContext.evaluate(TestFeatures.flagB))
-            assertEquals(100, testContext.evaluate(TestFeatures.flagC))
+            assertEquals(true, TestFeatures.flagA.evaluate(testContext))
+            assertEquals("test", TestFeatures.flagB.evaluate(testContext))
+            assertEquals(100, TestFeatures.flagC.evaluate(testContext))
         }
 
         // All configure cleared after block
-        assertEquals(false, testContext.evaluate(TestFeatures.flagA))
-        assertEquals("default", testContext.evaluate(TestFeatures.flagB))
-        assertEquals(0, testContext.evaluate(TestFeatures.flagC))
+        assertEquals(false, TestFeatures.flagA.evaluate(testContext))
+        assertEquals("default", TestFeatures.flagB.evaluate(testContext))
+        assertEquals(0, TestFeatures.flagC.evaluate(testContext))
     }
 
     @Test
@@ -233,13 +232,13 @@ class TestNamespaceOverridesTest {
         namespace1.setOverride(Features1.myFlag, true)
 
         // namespace1 has override, namespace2 doesn't
-        assertEquals(true, testContext.evaluate(Features1.myFlag))
-        assertEquals(false, testContext.evaluate(Features2.myFlag))
+        assertEquals(true, Features1.myFlag.evaluate(testContext))
+        assertEquals(false, Features2.myFlag.evaluate(testContext))
 
         // Clear doesn't affect other namespace
         namespace1.clearOverride(Features1.myFlag)
-        assertEquals(false, testContext.evaluate(Features1.myFlag))
-        assertEquals(false, testContext.evaluate(Features2.myFlag))
+        assertEquals(false, Features1.myFlag.evaluate(testContext))
+        assertEquals(false, Features2.myFlag.evaluate(testContext))
     }
 
     @Test
@@ -249,29 +248,29 @@ class TestNamespaceOverridesTest {
             val apiEndpoint by string<Context>(default = "https://api.default.com")
         }
 
-        assertEquals("https://api.default.com", testContext.evaluate(TestFeatures.apiEndpoint))
+        assertEquals("https://api.default.com", TestFeatures.apiEndpoint.evaluate(testContext))
 
         testNamespace.setOverride(TestFeatures.apiEndpoint, "https://api.test.com")
-        assertEquals("https://api.test.com", testContext.evaluate(TestFeatures.apiEndpoint))
+        assertEquals("https://api.test.com", TestFeatures.apiEndpoint.evaluate(testContext))
 
         testNamespace.clearOverride(TestFeatures.apiEndpoint)
-        assertEquals("https://api.default.com", testContext.evaluate(TestFeatures.apiEndpoint))
+        assertEquals("https://api.default.com", TestFeatures.apiEndpoint.evaluate(testContext))
     }
 
     @Test
     fun `overrides work with int flags`() {
         val testNamespace = TestNamespace.test("int-override")
         val TestFeatures = object : FeatureContainer<TestNamespace>(testNamespace) {
-            val maxRetries by int<Context>(default = 3)
+            val maxRetries by integer<Context>(default = 3)
         }
 
-        assertEquals(3, testContext.evaluate(TestFeatures.maxRetries))
+        assertEquals(3, TestFeatures.maxRetries.evaluate(testContext))
 
         testNamespace.setOverride(TestFeatures.maxRetries, 10)
-        assertEquals(10, testContext.evaluate(TestFeatures.maxRetries))
+        assertEquals(10, TestFeatures.maxRetries.evaluate(testContext))
 
         testNamespace.clearOverride(TestFeatures.maxRetries)
-        assertEquals(3, testContext.evaluate(TestFeatures.maxRetries))
+        assertEquals(3, TestFeatures.maxRetries.evaluate(testContext))
     }
 
     @Test
@@ -281,33 +280,33 @@ class TestNamespaceOverridesTest {
             val priceMultiplier by double<Context>(default = 1.0)
         }
 
-        assertEquals(1.0, testContext.evaluate(TestFeatures.priceMultiplier))
+        assertEquals(1.0, TestFeatures.priceMultiplier.evaluate(testContext))
 
         testNamespace.setOverride(TestFeatures.priceMultiplier, 1.5)
-        assertEquals(1.5, testContext.evaluate(TestFeatures.priceMultiplier))
+        assertEquals(1.5, TestFeatures.priceMultiplier.evaluate(testContext))
 
         testNamespace.clearOverride(TestFeatures.priceMultiplier)
-        assertEquals(1.0, testContext.evaluate(TestFeatures.priceMultiplier))
+        assertEquals(1.0, TestFeatures.priceMultiplier.evaluate(testContext))
     }
 
     @Test
     fun `overrides can be changed without clearing first`() {
         val testNamespace = TestNamespace.test("change-override")
         val TestFeatures = object : FeatureContainer<TestNamespace>(testNamespace) {
-            val counter by int<Context>(default = 0)
+            val counter by integer<Context>(default = 0)
         }
 
         testNamespace.setOverride(TestFeatures.counter, 1)
-        assertEquals(1, testContext.evaluate(TestFeatures.counter))
+        assertEquals(1, TestFeatures.counter.evaluate(testContext))
 
         testNamespace.setOverride(TestFeatures.counter, 2)
-        assertEquals(2, testContext.evaluate(TestFeatures.counter))
+        assertEquals(2, TestFeatures.counter.evaluate(testContext))
 
         testNamespace.setOverride(TestFeatures.counter, 3)
-        assertEquals(3, testContext.evaluate(TestFeatures.counter))
+        assertEquals(3, TestFeatures.counter.evaluate(testContext))
 
         testNamespace.clearOverride(TestFeatures.counter)
-        assertEquals(0, testContext.evaluate(TestFeatures.counter))
+        assertEquals(0, TestFeatures.counter.evaluate(testContext))
     }
 
     @Test
@@ -322,14 +321,14 @@ class TestNamespaceOverridesTest {
                     // Each test gets its own namespace
                     val testNamespace = TestNamespace.test("parallel-test-$i")
                     val TestFeatures = object : FeatureContainer<TestNamespace>(testNamespace) {
-                        val myFlag by int<Context>(default = 0)
+                        val myFlag by integer<Context>(default = 0)
                     }
 
                     // Set override to unique value per test
                     testNamespace.setOverride(TestFeatures.myFlag, i)
 
                     // Verify we get the correct value
-                    val result = testContext.evaluate(TestFeatures.myFlag)
+                    val result = TestFeatures.myFlag.evaluate(testContext)
                     if (result == i) {
                         successCount.incrementAndGet()
                     }
@@ -357,14 +356,14 @@ class TestNamespaceOverridesTest {
 
         // Multiple evaluations should all return the override value
         repeat(5) {
-            assertEquals(true, testContext.evaluate(TestFeatures.myFlag))
+            assertEquals(true, TestFeatures.myFlag.evaluate(testContext))
         }
 
         testNamespace.clearOverride(TestFeatures.myFlag)
 
         // After clearing, all evaluations return default
         repeat(5) {
-            assertEquals(false, testContext.evaluate(TestFeatures.myFlag))
+            assertEquals(false, TestFeatures.myFlag.evaluate(testContext))
         }
     }
 
@@ -396,9 +395,9 @@ class TestNamespaceOverridesTest {
         assertFalse(testNamespace.hasOverride(TestFeatures.flag3))
 
         // Verify values are back to defaults
-        assertEquals(false, testContext.evaluate(TestFeatures.flag1))
-        assertEquals("default", testContext.evaluate(TestFeatures.flag2))
-        assertEquals(0, testContext.evaluate(TestFeatures.flag3))
+        assertEquals(false, TestFeatures.flag1.evaluate(testContext))
+        assertEquals("default", TestFeatures.flag2.evaluate(testContext))
+        assertEquals(0, TestFeatures.flag3.evaluate(testContext))
     }
 
     @Test
@@ -410,21 +409,21 @@ class TestNamespaceOverridesTest {
         }
 
         testNamespace.withOverride(TestFeatures.outerFlag, true) {
-            assertEquals(true, testContext.evaluate(TestFeatures.outerFlag))
-            assertEquals("default", testContext.evaluate(TestFeatures.innerFlag))
+            assertEquals(true, TestFeatures.outerFlag.evaluate(testContext))
+            assertEquals("default", TestFeatures.innerFlag.evaluate(testContext))
 
             testNamespace.withOverride(TestFeatures.innerFlag, "nested") {
-                assertEquals(true, testContext.evaluate(TestFeatures.outerFlag))
-                assertEquals("nested", testContext.evaluate(TestFeatures.innerFlag))
+                assertEquals(true, TestFeatures.outerFlag.evaluate(testContext))
+                assertEquals("nested", TestFeatures.innerFlag.evaluate(testContext))
             }
 
             // Inner override cleared
-            assertEquals(true, testContext.evaluate(TestFeatures.outerFlag))
-            assertEquals("default", testContext.evaluate(TestFeatures.innerFlag))
+            assertEquals(true, TestFeatures.outerFlag.evaluate(testContext))
+            assertEquals("default", TestFeatures.innerFlag.evaluate(testContext))
         }
 
         // Both configure cleared
-        assertEquals(false, testContext.evaluate(TestFeatures.outerFlag))
-        assertEquals("default", testContext.evaluate(TestFeatures.innerFlag))
+        assertEquals(false, TestFeatures.outerFlag.evaluate(testContext))
+        assertEquals("default", TestFeatures.innerFlag.evaluate(testContext))
     }
 }

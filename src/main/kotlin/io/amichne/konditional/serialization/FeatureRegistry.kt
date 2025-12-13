@@ -49,10 +49,12 @@ object FeatureRegistry {
     /**
      * Retrieves a Feature by its key, returning ParseResult for type-safe error handling.
      *
+     * Internal: Used by serialization infrastructure for deserialization.
+     *
      * @param key The string key of the conditional
      * @return ParseResult with the registered Feature or an error
      */
-    fun get(key: String): ParseResult<Feature<*, *, *, *>> {
+    internal fun get(key: String): ParseResult<Feature<*, *, *, *>> {
         return registry[key]?.let { ParseResult.Success(it) }
                ?: ParseResult.Failure(ParseError.FeatureNotFound(key))
     }
@@ -60,18 +62,21 @@ object FeatureRegistry {
     /**
      * Checks if a key is registered.
      *
+     * Internal: Used for validation during deserialization.
+     *
      * @param key The string key to check
      * @return true if the key is registered, false otherwise
      */
-    fun contains(key: String): Boolean = registry.containsKey(key)
+    internal fun contains(key: String): Boolean = registry.containsKey(key)
 
     /**
      * Clears all registrations.
      *
-     * This is primarily useful for testing to ensure a clean state between tests.
+     * Internal: For testing to ensure a clean state between tests.
      * Should not be called in production code.
      */
-    fun clear() {
+    @org.jetbrains.annotations.TestOnly
+    internal fun clear() {
         registry.clear()
     }
 }

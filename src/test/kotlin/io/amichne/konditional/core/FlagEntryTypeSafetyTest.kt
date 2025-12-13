@@ -2,12 +2,12 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rampup.Companion.MAX
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace.Global
 import io.amichne.konditional.core.features.FeatureContainer
+import io.amichne.konditional.core.features.evaluate
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.types.BooleanEncodeable
@@ -34,28 +34,28 @@ class FlagEntryTypeSafetyTest {
 
     private object Features : FeatureContainer<Global>(Global) {
         val featureA by boolean<Context>(default = false) {
-            rule {
+            rule(true) {
                 platforms(Platform.IOS)
-            } returns true
+            }
         }
         val featureB by boolean<Context>(default = true)
         val configA by string<Context>(default = "default") {
-            rule {
+            rule("android-value") {
                 platforms(Platform.ANDROID)
-            } returns "android-value"
+            }
         }
 
         val configB by string<Context>(default = "config-b-default") {
-            rule {
+            rule("en-us-value") {
                 locales(AppLocale.UNITED_STATES)
-            } returns "en-us-value"
+            }
         }
         val timeout by integer<Context>(default = 10) {
-            rule {
+            rule(30) {
                 versions {
                     min(2, 0)
                 }
-            } returns 30
+            }
         }
     }
 
@@ -190,8 +190,8 @@ class FlagEntryTypeSafetyTest {
         Global.load(configuration)
 
         val context = ctx("33333333333333333333333333333333")
-        val boolResult = context.evaluate(Features.featureA)
-        val stringResult = context.evaluate(Features.configA)
+        val boolResult = Features.featureA.evaluate(context)
+        val stringResult = Features.configA.evaluate(context)
 
 
 
@@ -209,17 +209,17 @@ class FlagEntryTypeSafetyTest {
 //        val newVersionCtx = ctx("66666666666666666666666666666666", version = "2.5.0")
 //
 //        // Boolean flags
-//        assertTrue(iosCtx.evaluate(BoolFlags.FEATURE_A))
-//        assertTrue(iosCtx.evaluate(BoolFlags.FEATURE_B))
+//        assertTrue(BoolFlags.FEATURE_A.evaluate(iosCtx))
+//        assertTrue(BoolFlags.FEATURE_B.evaluate(iosCtx))
 //
 //        // String flags
-//        assertEquals("default", iosCtx.evaluate(StringFlags.CONFIG_A))
-//        assertEquals("android-value", androidCtx.evaluate(StringFlags.CONFIG_A))
-//        assertEquals("en-us-value", iosCtx.evaluate(StringFlags.CONFIG_B))
+//        assertEquals("default", StringFlags.CONFIG_A.evaluate(iosCtx))
+//        assertEquals("android-value", StringFlags.CONFIG_A.evaluate(androidCtx))
+//        assertEquals("en-us-value", StringFlags.CONFIG_B.evaluate(iosCtx))
 //
 //        // Int flags
-//        assertEquals(10, iosCtx.evaluate(IntFlags.TIMEOUT))
-//        assertEquals(30, newVersionCtx.evaluate(IntFlags.TIMEOUT))
+//        assertEquals(10, IntFlags.TIMEOUT.evaluate(iosCtx))
+//        assertEquals(30, IntFlags.TIMEOUT.evaluate(newVersionCtx))
 //    }
 //
 //    @TestNamespace
@@ -239,8 +239,8 @@ class FlagEntryTypeSafetyTest {
 //
 //        // The evaluate() method internally retrieves FlagDefinition from the map
 //        // and casts it, maintaining type safety
-//        contextFn.evaluate(BoolFlags.FEATURE_A)
-//        contextFn.evaluate(StringFlags.CONFIG_A)
+//        BoolFlags.FEATURE_A.evaluate(contextFn)
+//        StringFlags.CONFIG_A.evaluate(contextFn)
 //
 //        // Type safety is maintained - we get the correct types back
 //    }
@@ -307,7 +307,7 @@ class FlagEntryTypeSafetyTest {
 //
 //        // This call should not require any @Suppress annotation
 //        // The FlagEntry wrapper maintains type safety internally
-//        val result: Boolean = contextFn.evaluate(BoolFlags.FEATURE_A)
+//        val result: Boolean = BoolFlags.FEATURE_A.evaluate(contextFn)
 //
 //        assertEquals(true, result)
 //    }

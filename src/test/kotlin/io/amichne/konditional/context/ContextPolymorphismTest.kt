@@ -1,8 +1,5 @@
 package io.amichne.konditional.context
 
-import io.amichne.konditional.context.Context.Companion.evaluate
-import io.amichne.konditional.context.feature
-import io.amichne.konditional.core.FeatureContainerTest
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.evaluate
 import io.amichne.konditional.core.features.update
@@ -17,7 +14,6 @@ import io.amichne.konditional.fixtures.ExperimentFeatures
 import io.amichne.konditional.fixtures.SubscriptionTier
 import io.amichne.konditional.fixtures.UserRole
 import io.amichne.konditional.fixtures.core.id.TestStableId
-import io.amichne.konditional.fixtures.core.testScoped
 import io.amichne.konditional.serialization.SnapshotSerializer
 import org.junit.jupiter.api.BeforeEach
 import kotlin.test.Test
@@ -54,12 +50,12 @@ class ContextPolymorphismTest {
         // Configure using .update() for test-specific configuration
         EnterpriseFeatures.advanced_analytics.update(default = false) {
             // This demonstrates that the rule can access base Context properties
-            rule {
+            rule(true) {
                 platforms(Platform.WEB)
                 versions {
                     min(2, 0)
                 }
-            } returns true
+            }
         }
 
         val ctx = EnterpriseContext(
@@ -79,12 +75,12 @@ class ContextPolymorphismTest {
     fun `Given ExperimentContext, When evaluating flags, Then experiment-specific properties are accessible`() {
         // Configure using .update() for test-specific configuration
         ExperimentFeatures.homepage_variant.update("control") {
-            rule {
+            rule("variant-a") {
                 platforms(Platform.IOS, Platform.ANDROID)
-            } returns "variant-a"
-            rule {
+            }
+            rule("variant-b") {
                 platforms(Platform.WEB)
-            } returns "variant-b"
+            }
         }
 
         val mobileCtx = ExperimentContext(
@@ -115,12 +111,12 @@ class ContextPolymorphismTest {
         // Configure using .update() for test-specific configuration
         // Each contextFn can be evaluated independently with its own flags
         EnterpriseFeatures.api_access.update(false) {
-            rule {
-            } returns true
+            rule(true) {
+            }
         }
         ExperimentFeatures.onboarding_style.update("classic") {
-            rule {
-            } returns "modern"
+            rule("modern") {
+            }
         }
         val enterpriseCtx1 = EnterpriseContext(
             locale = AppLocale.UNITED_STATES,
@@ -140,8 +136,8 @@ class ContextPolymorphismTest {
             sessionId = "session-123",
         )
         // Each context can be evaluated independently with its own flags
-        val apiAccess1 = enterpriseCtx1.evaluate(EnterpriseFeatures.api_access)
-        val onboardingStyle1 = experimentCtx1.evaluate(ExperimentFeatures.onboarding_style)
+        val apiAccess1 = EnterpriseFeatures.api_access.evaluate(enterpriseCtx1)
+        val onboardingStyle1 = ExperimentFeatures.onboarding_style.evaluate(experimentCtx1)
         assertTrue(apiAccess1 is Boolean)
         // Each contextFn can be evaluated independently with its own flags
         assertTrue(onboardingStyle1 is String)
@@ -151,13 +147,12 @@ class ContextPolymorphismTest {
     fun `Given custom EnterpriseRule, When matching with business logic, Then custom properties are enforced`() {
         // Configure using .update() for test-specific configuration
         EnterpriseFeatures.api_access.update(false) {
-            rule {
+            rule(true) {
                 platforms(Platform.WEB)
                 rollout { 100 }
 
                 extension { EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN).matches(this) }
-
-            } returns true
+            }
         }
 
         val enterpriseAdmin = EnterpriseContext(
@@ -180,17 +175,18 @@ class ContextPolymorphismTest {
             userRole = UserRole.EDITOR,
         )
 
-        assertFalse(premiumEditor.evaluate(EnterpriseFeatures.api_access))
-        assertTrue(enterpriseAdmin.evaluate(EnterpriseFeatures.api_access))
+        assertFalse(EnterpriseFeatures.api_access.evaluate(premiumEditor))
+        assertTrue(EnterpriseFeatures.api_access.evaluate(enterpriseAdmin))
+
     }
 
     @Test
     fun `Given CompositeContext, When evaluating flags, Then delegated properties are accessible`() {
         // Configure using .update() for test-specific configuration
         EnterpriseFeatures.custom_branding.update(default = false) {
-            rule {
+            rule(true) {
                 rollout { 100 }
-            } returns true
+            }
         }
 
         val baseContext = Context(
@@ -206,6 +202,6 @@ class ContextPolymorphismTest {
             sessionId = "session-composite",
         )
 
-        assertTrue(compositeCtx.evaluate(EnterpriseFeatures.custom_branding))
+        assertTrue(EnterpriseFeatures.custom_branding.evaluate(compositeCtx))
     }
 }

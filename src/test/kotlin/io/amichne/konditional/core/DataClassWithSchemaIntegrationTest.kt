@@ -3,10 +3,10 @@ package io.amichne.konditional.core
 import com.squareup.moshi.Moshi
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.features.FeatureContainer
+import io.amichne.konditional.core.features.evaluate
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.JsonSchemaClass
 import io.amichne.konditional.core.types.parseAs
@@ -148,14 +148,14 @@ class DataClassWithSchemaIntegrationTest {
             stableId = TestStableId
         )
         val Features = object : FeatureContainer<TestNamespace>(testNamespace) {
-            val userSettings by dataClass<UserSettings, Context>(default = UserSettings()) {}
+            val userSettings by custom<UserSettings, Context>(default = UserSettings()) {}
         }
         // Default value
-        assertEquals(UserSettings(), context.evaluate(Features.userSettings))
+        assertEquals(UserSettings(), Features.userSettings.evaluate(context))
         // Override
         val override = UserSettings(theme = "dark", notificationsEnabled = false, maxRetries = 1, timeout = 10.0)
         testNamespace.withOverride(Features.userSettings, override) {
-            assertEquals(override, context.evaluate(Features.userSettings))
+            assertEquals(override, Features.userSettings.evaluate(context))
         }
     }
 }

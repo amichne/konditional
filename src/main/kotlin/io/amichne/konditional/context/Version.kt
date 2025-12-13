@@ -32,11 +32,8 @@ data class Version(
         fun parse(raw: String): ParseResult<Version> = runCatching { parseUnsafe(raw) }.map { ParseResult.Success(it) }
             .getOrElse { ParseResult.Failure(ParseError.InvalidVersion(raw, "Failed to parse version from: $raw")) }
 
-        @Deprecated(
-            message = "Should not be used as throwing risk",
-            replaceWith = ReplaceWith("Version.parse(raw).getOrThrow()")
-        )
-        fun parseUnsafe(raw: String): Version = with(raw.split('.')) {
+        @PublishedApi
+        internal fun parseUnsafe(raw: String): Version = with(raw.split('.')) {
             require(isNotEmpty() && size <= 3) { "Bad versions: $raw" }
             forEachIndexed { index, string ->
                 require(string.isNotBlank()) { "Got a blank value at index $index" }

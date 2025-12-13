@@ -2,7 +2,6 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.features.BooleanFeature
@@ -121,7 +120,7 @@ class FeatureContainerTest {
         )
 
         // Evaluate features - configuration is automatic through delegation
-        assertEquals(true, context.evaluate(testFeatures.configuredBoolean))
+        assertEquals(true, testFeatures.configuredBoolean.evaluate(context))
         assertEquals("test-value", testFeatures.configuredString.evaluate(context))
         assertEquals(100, testFeatures.configuredInt.evaluate(context))
     }

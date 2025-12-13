@@ -2,11 +2,11 @@ package io.amichne.konditional.serialization
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.FeatureContainer
+import io.amichne.konditional.core.features.evaluate
 import io.amichne.konditional.core.features.update
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.ParseError
@@ -105,7 +105,7 @@ class NamespaceSnapshotSerializerTest {
 
         // Verify the flag was loaded into the namespace
         val context = ctx("11111111111111111111111111111111")
-        val flagValue = context.evaluate(TestFeatures.boolFlag)
+        val flagValue = TestFeatures.boolFlag.evaluate(context)
         assertEquals(true, flagValue)
     }
 
@@ -151,14 +151,14 @@ class NamespaceSnapshotSerializerTest {
     fun `Given namespace, When round-tripped, Then configuration is preserved`() {
         // Configure flags
         TestFeatures.boolFlag.update(true) {
-            rule {
+            rule(false) {
                 platforms(Platform.IOS)
-            } returns false
+            }
         }
         TestFeatures.stringFlag.update("original") {
-            rule {
+            rule("french") {
                 locales(AppLocale.FRANCE)
-            } returns "french"
+            }
         }
 
         // Serialize
@@ -175,10 +175,10 @@ class NamespaceSnapshotSerializerTest {
         val androidContext = ctx("22222222222222222222222222222222", platform = Platform.ANDROID)
         val frenchContext = ctx("33333333333333333333333333333333", locale = AppLocale.FRANCE)
 
-        assertEquals(false, iosContext.evaluate(TestFeatures.boolFlag))
-        assertEquals(true, androidContext.evaluate(TestFeatures.boolFlag))
-        assertEquals("french", frenchContext.evaluate(TestFeatures.stringFlag))
-        assertEquals("original", iosContext.evaluate(TestFeatures.stringFlag))
+        assertEquals(false, TestFeatures.boolFlag.evaluate(iosContext))
+        assertEquals(true, TestFeatures.boolFlag.evaluate(androidContext))
+        assertEquals("french", TestFeatures.stringFlag.evaluate(frenchContext))
+        assertEquals("original", TestFeatures.stringFlag.evaluate(iosContext))
     }
 
     @Test

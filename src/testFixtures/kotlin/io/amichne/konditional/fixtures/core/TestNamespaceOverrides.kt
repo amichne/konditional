@@ -31,7 +31,7 @@ import io.amichne.konditional.core.types.EncodableValue
  *     // Override the flag to return true
  *     Namespace.setOverride(TestFeatures.myFlag, true)
  *
- *     val result = contextFn.evaluate(TestFeatures.myFlag)
+ *     val result = TestFeatures.myFlag.evaluate(contextFn)
  *     assertEquals(true, result)
  *
  *     // Clean up
@@ -49,7 +49,7 @@ import io.amichne.konditional.core.types.EncodableValue
  *     }
  *
  *     Namespace.withOverride(TestFeatures.myFlag, true) {
- *         val result = contextFn.evaluate(TestFeatures.myFlag)
+ *         val result = TestFeatures.myFlag.evaluate(contextFn)
  *         assertEquals(true, result)
  *     }
  *     // Override automatically cleared after block
@@ -72,9 +72,9 @@ import io.amichne.konditional.core.types.EncodableValue
  *         TestFeatures.flagB to "override",
  *         TestFeatures.flagC to 42
  *     ) {
- *         assertEquals(true, contextFn.evaluate(TestFeatures.flagA))
- *         assertEquals("override", contextFn.evaluate(TestFeatures.flagB))
- *         assertEquals(42, contextFn.evaluate(TestFeatures.flagC))
+ *         assertEquals(true, TestFeatures.flagA.evaluate(contextFn))
+ *         assertEquals("override", TestFeatures.flagB.evaluate(contextFn))
+ *         assertEquals(42, TestFeatures.flagC.evaluate(contextFn))
  *     }
  *     // All configure automatically cleared
  * }

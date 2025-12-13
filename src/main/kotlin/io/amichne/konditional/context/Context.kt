@@ -1,9 +1,6 @@
 package io.amichne.konditional.context
 
-import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.types.EncodableValue
 
 /**
  * Represents the execution contextFn for feature flag evaluation.
@@ -82,24 +79,5 @@ interface Context {
             appVersion: Version,
             stableId: StableId,
         ): Core = Core(locale, platform, appVersion, stableId)
-
-        /**
-         * Evaluates a specific feature flag in the contextFn of this [Context].
-         *
-         * This extension function provides convenient access to flag evaluation.
-         * The feature's namespace registry is automatically used.
-         *
-         * @param key The feature flag to evaluate
-         * @return The evaluated value of type [T]
-         * @throws IllegalStateException if the flag is not found in the registry
-         * @param S The EncodableValue type wrapping the actual value
-         * @param T The actual value type
-         * @param C The type of the contextFn
-         * @param M The namespace the feature belongs to
-         */
-        @Deprecated("Use the evaluate function with explicit registry parameter", ReplaceWith("feature { key }"))
-        fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> C.evaluate(
-            key: Feature<S, T, C, M>,
-        ): T = key.namespace.flag(key).evaluate(this)
     }
 }

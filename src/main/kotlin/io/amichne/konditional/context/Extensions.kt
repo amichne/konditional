@@ -31,18 +31,6 @@ inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context,
     block: D.() -> Feature<S, T, C, M>,
 ): T where D : ContextAware<C>, D : FeatureAware<out M> = block().evaluate(context)
 
-///**
-// * Lazily obtain a context from a lambda, then evaluate the feature in that context.
-// */
-//inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context, D> D.feature(
-//    @KonditionalDsl crossinline context: () -> C,
-//    block: ContextAware<C>.() -> Feature<S, T, C, *>,
-//): T where D : ContextAware<C>, D : FeatureAware<*> {
-//
-//    @Suppress("UNCHECKED_CAST")
-//    return ContextAware { context() }.block().evaluate(context())
-//}
-
 /**
  * Evaluate with an explicit context instance.
  */
@@ -53,14 +41,16 @@ inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context,
 
 /**
  * Axis-centric getter: Axes.Environment.valueIn(ctx)
+ * Internal convenience wrapper - prefer using ctx.dimension(axis) instead.
  */
-fun <T> Dimension<T>.valueIn(ctx: Context): T? where T : DimensionKey, T : Enum<T> =
+internal fun <T> Dimension<T>.valueIn(ctx: Context): T? where T : DimensionKey, T : Enum<T> =
     ctx.dimensions[this]
 
 /**
  * Axis-centric setter: Axes.Environment.setIn(builder, Environment.PROD)
+ * Internal convenience wrapper - prefer using builder.set(axis, value) instead.
  */
-fun <T> Dimension<T>.setIn(
+internal fun <T> Dimension<T>.setIn(
     builder: DimensionScope,
     value: T,
 ) where T : DimensionKey, T : Enum<T> {
@@ -70,12 +60,17 @@ fun <T> Dimension<T>.setIn(
 /**
  * Operator sugar:
  *   val env: Environment? = Axes.Environment(ctx)
- *   Axes.Environment(builder, Environment.PROD)
+ * Internal convenience wrapper - prefer using ctx.dimension(axis) instead.
  */
-operator fun <T> Dimension<T>.invoke(ctx: Context): T? where T : DimensionKey, T : Enum<T> =
+internal operator fun <T> Dimension<T>.invoke(ctx: Context): T? where T : DimensionKey, T : Enum<T> =
     valueIn(ctx)
 
-operator fun <T> Dimension<T>.invoke(
+/**
+ * Operator sugar:
+ *   Axes.Environment(builder, Environment.PROD)
+ * Internal convenience wrapper - prefer using builder.set(axis, value) instead.
+ */
+internal operator fun <T> Dimension<T>.invoke(
     builder: DimensionScope,
     value: T,
 ) where T : DimensionKey, T : Enum<T> {

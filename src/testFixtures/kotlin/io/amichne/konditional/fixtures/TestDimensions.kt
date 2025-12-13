@@ -83,9 +83,9 @@ object DimensionsTestFeatures :
      * Enabled only when environment == PROD.
      */
     val ENV_SCOPED_FLAG by boolean<TestContext>(default = false) {
-        rule {
+        rule(true) {
             dimension(TestAxes.Environment, TestEnvironment.PROD)
-        } returns true
+        }
     }
 
     /**
@@ -94,10 +94,10 @@ object DimensionsTestFeatures :
      *   AND tenant == ENTERPRISE
      */
     val ENV_AND_TENANT_SCOPED_FLAG by boolean<TestContext>(default = false) {
-        rule {
+        rule(true) {
             dimension(TestAxes.Environment, TestEnvironment.STAGE, TestEnvironment.PROD)
             dimension(TestAxes.Tenant, TestTenant.ENTERPRISE)
-        } returns true
+        }
     }
 
     /**
@@ -108,16 +108,16 @@ object DimensionsTestFeatures :
      *  - Otherwise: default (false)
      */
     val FALLBACK_RULE_FLAG by boolean<TestContext>(default = false) {
-        rule {
+        rule(true) {
             dimension(TestAxes.Environment, TestEnvironment.PROD)
             dimension(TestAxes.Tenant, TestTenant.ENTERPRISE)
-        } returns true
+        }
 
-        rule {
+        rule(true) {
             versions {
                 min(2, 0, 0)
             }
-        } returns true
+        }
     }
 
     /**
@@ -125,10 +125,10 @@ object DimensionsTestFeatures :
      * accumulating allowed values.
      */
     val MULTI_CALL_DIM_FLAG by boolean<TestContext>(default = false) {
-        rule {
+        rule(true) {
             dimension(TestAxes.Environment, TestEnvironment.DEV)
             dimension(TestAxes.Environment, TestEnvironment.STAGE)
-        } returns true
+        }
     }
 }
 

@@ -284,7 +284,7 @@ object AuthFeatures : FeatureContainer<Namespace.Authentication>(Namespace.Authe
 }
 
 // ✅ Compiles
-context.evaluate(PaymentFeatures.APPLE_PAY)
+PaymentFeatures.APPLE_PAY.evaluate(context)
 
 // ❌ Won't compile - type mismatch
 val mixed: List<Feature<Boolean, Namespace.Payments>> = listOf(
