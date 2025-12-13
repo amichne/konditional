@@ -102,15 +102,15 @@ class ConcurrencyAttacksTest {
 
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
             val highContentionFlag by boolean<Context>(default = false) {
-                rule {
+                rule(true) {
                     platforms(Platform.ANDROID)
                     rollout { 50.0 }
-                } returns true
+                }
 
-                rule {
+                rule(true) {
                     platforms(Platform.IOS)
                     rollout { 30.0 }
-                } returns true
+                }
             }
         }
 
@@ -179,13 +179,13 @@ class ConcurrencyAttacksTest {
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
             // Create many flags to stress digest usage
             val flag1 by boolean<Context>(default = false) {
-                rule { rollout { 50.0 } } returns true
+                rule(true) { rollout { 50.0 } }
             }
             val flag2 by boolean<Context>(default = false) {
-                rule { rollout { 50.0 } } returns true
+                rule(true) { rollout { 50.0 } }
             }
             val flag3 by boolean<Context>(default = false) {
-                rule { rollout { 50.0 } } returns true
+                rule(true) { rollout { 50.0 } }
             }
         }
 
@@ -342,13 +342,13 @@ class ConcurrencyAttacksTest {
             val manyRulesFlag by boolean<Context>(default = false) {
                 // Create many rules to increase iteration time
                 repeat(100) { i ->
-                    rule {
+                    rule(i % 2 == 0) {
                         note("rule-$i")
                         if (i % 3 == 0) platforms(Platform.ANDROID)
                         if (i % 3 == 1) platforms(Platform.IOS)
                         if (i % 3 == 2) platforms(Platform.WEB)
                         rollout { (i % 100).toDouble() }
-                    } returns (i % 2 == 0)
+                    }
                 }
             }
         }
@@ -407,13 +407,13 @@ class ConcurrencyAttacksTest {
 
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
             val contextDependentFlag by boolean<Context>(default = false) {
-                rule {
+                rule(true) {
                     platforms(Platform.ANDROID)
-                } returns true
+                }
 
-                rule {
+                rule(false) {
                     platforms(Platform.IOS)
-                } returns false
+                }
             }
         }
 

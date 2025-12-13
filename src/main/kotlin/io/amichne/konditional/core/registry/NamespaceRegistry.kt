@@ -24,14 +24,13 @@ import java.util.concurrent.atomic.AtomicReference
  * object PaymentFeatures : FeatureContainer<Namespace.Payments>(
  *     Namespace.Payments
  * ) {
- *     val APPLE_PAY by boolean {
- *         default(false)
- *         rule { platforms(Platform.IOS) } returns true
+ *     val APPLE_PAY by boolean(default = false) {
+ *         rule(true) { platforms(Platform.IOS) }
  *     }
  * }
  *
  * // Evaluate features
- * val isEnabled = contextFn.evaluate(PaymentFeatures.APPLE_PAY)
+ * val isEnabled = PaymentFeatures.APPLE_PAY.evaluate(context)
  * ```
  *
  * ## Direct Registry Operations

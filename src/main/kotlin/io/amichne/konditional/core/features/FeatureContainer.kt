@@ -10,7 +10,6 @@ import io.amichne.konditional.core.types.DecimalEncodeable
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.core.types.EnumEncodeable
 import io.amichne.konditional.core.types.IntEncodeable
-import io.amichne.konditional.core.types.JsonSchemaClass
 import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.konditional.core.types.StringEncodeable
 import io.amichne.konditional.internal.builders.FlagBuilder
@@ -39,18 +38,16 @@ import kotlin.reflect.KProperty
  * object PaymentFeatures : FeatureContainer<Namespace.Payments>(
  *     Namespace.Payments
  * ) {
- *     val APPLE_PAY by boolean {
- *         default(false)
- *         rule {
+ *     val APPLE_PAY by boolean(default = false) {
+ *         rule(true) {
  *             platforms(Platform.IOS)
- *         } returns true
+ *         }
  *     }
  *
- *     val CARD_LIMIT by int {
- *         default(5000)
- *         rule {
+ *     val CARD_LIMIT by integer(default = 5000) {
+ *         rule(10000) {
  *             platforms(Platform.WEB)
- *         } returns 10000
+ *         }
  *     }
  * }
  *
@@ -58,7 +55,7 @@ import kotlin.reflect.KProperty
  * val all = PaymentFeatures.allFeatures()
  *
  * // Usage (same as standard API)
- * contextFn.evaluateSafe(PaymentFeatures.APPLE_PAY)
+ * PaymentFeatures.APPLE_PAY.evaluate(context)
  * ```
  *
  * @param M The namespace type this features belongs to (e.g., Namespace.Payments)
@@ -105,9 +102,9 @@ abstract class FeatureContainer<M : Namespace>(
      * ```kotlin
      * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
      *     val DARK_MODE by boolean(default = false) {
-     *         rule {
+     *         rule(true) {
      *             platforms(Platform.IOS)
-     *         } returns true
+     *         }
      *     }
      * }
      * ```
@@ -134,9 +131,9 @@ abstract class FeatureContainer<M : Namespace>(
      * ```kotlin
      * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
      *     val API_ENDPOINT by string(default = "https://api.example.com") {
-     *         rule {
+     *         rule("https://api-android.example.com") {
      *             platforms(Platform.ANDROID)
-     *         } returns "https://api-android.example.com"
+     *         }
      *     }
      * }
      * ```
@@ -162,10 +159,10 @@ abstract class FeatureContainer<M : Namespace>(
      * **Example:**
      * ```kotlin
      * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
-     *     val MAX_RETRY_COUNT by int(default = 3) {
-     *         rule {
+     *     val MAX_RETRY_COUNT by integer(default = 3) {
+     *         rule(5) {
      *             platforms(Platform.IOS)
-     *         } returns 5
+     *         }
      *     }
      * }
      * ```
@@ -183,37 +180,6 @@ abstract class FeatureContainer<M : Namespace>(
             IntFeature.Companion(it, namespace)
         }
 
-    /**
-     * Creates an Int feature with automatic registration and configuration.
-     *
-     * The feature is configured using a DSL scope that provides type-safe access to
-     * integer-specific configuration options like rules, defaults, and targeting.
-     * Configuration is automatically applied to the namespace when the feature is first accessed.
-     *
-     * **Example:**
-     * ```kotlin
-     * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
-     *     val MAX_RETRY_COUNT by int(default = 3) {
-     *         rule {
-     *             platforms(Platform.IOS)
-     *         } returns 5
-     *     }
-     * }
-     * ```
-     *
-     * @param C The contextFn type used for evaluation
-     * @param default The default value for this feature (required)
-     * @param integerScope DSL scope for configuring the integer feature
-     * @return A delegated property that returns an [IntFeature]
-     */
-    @Deprecated("Use integer() instead", ReplaceWith("integer(default) ({ integerScope })"))
-    protected fun <C : Context> int(
-        default: Int,
-        integerScope: FlagScope<IntEncodeable, Int, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(default, integerScope) {
-            IntFeature.Companion(it, namespace)
-        }
 
     /**
      * Creates a Double feature with automatic registration and configuration.
@@ -226,9 +192,9 @@ abstract class FeatureContainer<M : Namespace>(
      * ```kotlin
      * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
      *     val TRANSACTION_FEE by double(default = 0.029) {
-     *         rule {
+     *         rule(0.019) {
      *             platforms(Platform.WEB)
-     *         } returns 0.019
+     *         }
      *     }
      * }
      * ```
@@ -257,9 +223,9 @@ abstract class FeatureContainer<M : Namespace>(
      *
      * object MyFeatures : FeatureContainer<Namespace.Logging>(Namespace.Logging) {
      *     val LOG_LEVEL by enum(default = LogLevel.INFO) {
-     *         rule {
-     *             environments(Environment.DEVELOPMENT)
-     *         } returns LogLevel.DEBUG
+     *         rule(LogLevel.DEBUG) {
+     *             dimension(Environment, Environment.DEVELOPMENT)
+     *         }
      *     }
      * }
      * ```
@@ -304,9 +270,9 @@ abstract class FeatureContainer<M : Namespace>(
      *
      * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
      *     val PAYMENT_CONFIG by custom(default = PaymentConfig()) {
-     *         rule {
-     *             environments(Environment.PRODUCTION)
-     *         } returns PaymentConfig(maxRetries = 5, timeout = 60.0)
+     *         rule(PaymentConfig(maxRetries = 5, timeout = 60.0)) {
+     *             dimension(Environment, Environment.PRODUCTION)
+     *         }
      *     }
      * }
      * ```
@@ -323,24 +289,6 @@ abstract class FeatureContainer<M : Namespace>(
     ): ReadOnlyProperty<FeatureContainer<M>, DataClassFeature<T, C, M>> =
         ContainerFeaturePropertyDelegate(default, customScope) { DataClassFeature(it, namespace) }
 
-    /**
-     * Creates a data class feature with automatic registration and configuration.
-     *
-     * **Note:** This is an alias for [custom] provided for backwards compatibility.
-     * Prefer using [custom] for new code.
-     *
-     * @see custom
-     */
-    @Deprecated(
-        "Use custom() instead for clearer naming that matches the type system",
-        ReplaceWith("custom(default, dataClassScope)"),
-        level = DeprecationLevel.WARNING
-    )
-    protected inline fun <reified T : JsonSchemaClass, C : Context> dataClass(
-        default: T,
-        noinline dataClassScope: FlagScope<DataClassEncodeable<T>, T, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<FeatureContainer<M>, DataClassFeature<T, C, M>> =
-        custom(default, dataClassScope)
 
     /**
      * Internal delegate factory that handles feature creation, configuration, and registration.

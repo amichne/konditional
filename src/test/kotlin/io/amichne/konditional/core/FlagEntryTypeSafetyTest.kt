@@ -2,12 +2,12 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rampup.Companion.MAX
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace.Global
 import io.amichne.konditional.core.features.FeatureContainer
+import io.amichne.konditional.core.features.evaluate
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.types.BooleanEncodeable
@@ -34,28 +34,28 @@ class FlagEntryTypeSafetyTest {
 
     private object Features : FeatureContainer<Global>(Global) {
         val featureA by boolean<Context>(default = false) {
-            rule {
+            rule(true) {
                 platforms(Platform.IOS)
-            } returns true
+            }
         }
         val featureB by boolean<Context>(default = true)
         val configA by string<Context>(default = "default") {
-            rule {
+            rule("android-value") {
                 platforms(Platform.ANDROID)
-            } returns "android-value"
+            }
         }
 
         val configB by string<Context>(default = "config-b-default") {
-            rule {
+            rule("en-us-value") {
                 locales(AppLocale.UNITED_STATES)
-            } returns "en-us-value"
+            }
         }
         val timeout by integer<Context>(default = 10) {
-            rule {
+            rule(30) {
                 versions {
                     min(2, 0)
                 }
-            } returns 30
+            }
         }
     }
 
@@ -190,8 +190,8 @@ class FlagEntryTypeSafetyTest {
         Global.load(configuration)
 
         val context = ctx("33333333333333333333333333333333")
-        val boolResult = context.evaluate(Features.featureA)
-        val stringResult = context.evaluate(Features.configA)
+        val boolResult = Features.featureA.evaluate(context)
+        val stringResult = Features.configA.evaluate(context)
 
 
 

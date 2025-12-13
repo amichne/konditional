@@ -10,7 +10,6 @@ import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
-import io.amichne.konditional.rules.Rule
 
 /**
  * Internal implementation of [FlagScope].
@@ -33,7 +32,6 @@ internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M :
 ) : FlagScope<S, T, C, M> {
     private val conditionalValues = mutableListOf<ConditionalValue<S, T, C, M>>()
 
-    //    override val default: T
     private var salt: String = "v1"
     private var isActive: Boolean = true
 
@@ -55,16 +53,12 @@ internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M :
     }
 
     /**
-     * Implementation of [FlagScope.rule] that delegates to [RuleBuilder].
+     * Implementation of [FlagScope.rule] that creates a rule and associates it with a value.
+     * The value-first design ensures every rule has an associated return value at compile time.
      */
-    override fun rule(build: RuleScope<C>.() -> Unit): Rule<C> = RuleBuilder<C>().apply(build).build()
-
-    /**
-     * Implementation of [FlagScope.returns].
-     */
-    @KonditionalDsl
-    override infix fun Rule<C>.returns(value: T) {
-        conditionalValues += targetedBy(value)
+    override fun rule(value: T, build: RuleScope<C>.() -> Unit) {
+        val rule = RuleBuilder<C>().apply(build).build()
+        conditionalValues += rule.targetedBy(value)
     }
 
     /**

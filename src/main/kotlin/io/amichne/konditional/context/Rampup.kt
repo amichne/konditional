@@ -32,5 +32,3 @@ value class Rampup private constructor(
     override fun compareTo(other: Number): Int = value.compareTo(other.toDouble())
 }
 
-@Deprecated("Use Rampup", ReplaceWith("Rampup"))
-typealias Rollout = Rampup

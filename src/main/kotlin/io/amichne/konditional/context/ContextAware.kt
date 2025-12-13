@@ -1,12 +1,21 @@
 package io.amichne.konditional.context
 
-//import io.amichne.konditional.core.Namespace.Authentication.flag
-
+/**
+ * Provides a factory for creating [Context] instances.
+ *
+ * This fun interface enables lazy context creation in feature evaluation expressions,
+ * allowing deferred context construction when evaluating feature flags.
+ *
+ * @param C The type of context this aware instance produces
+ */
 fun interface ContextAware<out C : Context> {
+    /**
+     * Creates a new context instance.
+     */
     fun factory(): C
-    val context: C get() = factory()
 
-    fun interface Factory<out C : Context> {
-        fun context(): C
-    }
+    /**
+     * The context produced by this factory.
+     */
+    val context: C get() = factory()
 }

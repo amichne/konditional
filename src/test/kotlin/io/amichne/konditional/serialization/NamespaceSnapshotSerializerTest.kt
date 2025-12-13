@@ -2,7 +2,6 @@ package io.amichne.konditional.serialization
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
@@ -151,14 +150,14 @@ class NamespaceSnapshotSerializerTest {
     fun `Given namespace, When round-tripped, Then configuration is preserved`() {
         // Configure flags
         TestFeatures.boolFlag.update(true) {
-            rule {
+            rule(false) {
                 platforms(Platform.IOS)
-            } returns false
+            }
         }
         TestFeatures.stringFlag.update("original") {
-            rule {
+            rule("french") {
                 locales(AppLocale.FRANCE)
-            } returns "french"
+            }
         }
 
         // Serialize

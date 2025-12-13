@@ -2,7 +2,6 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.features.EnumFeature
@@ -39,9 +38,9 @@ class EnumFeatureTest {
         Namespace.Payments
     ) {
         val logLevel by enum<LogLevel, Context>(default = LogLevel.INFO) {
-            rule {
+            rule(LogLevel.DEBUG) {
                 platforms(Platform.WEB)
-            } returns LogLevel.DEBUG
+            }
         }
 
         val theme by enum<Theme, Context>(default = Theme.AUTO)
@@ -100,7 +99,7 @@ class EnumFeatureTest {
         )
 
         // Should return DEBUG for WEB platform based on rule
-        assertEquals(LogLevel.DEBUG, webContext.evaluate(EnumFeatures.logLevel))
+        assertEquals(LogLevel.DEBUG, EnumFeatures.logLevel.evaluate(webContext))
     }
 
     @Test
@@ -200,14 +199,14 @@ class EnumFeatureTest {
     fun `enum features can have complex rule configurations`() {
         val complexFeatures = object : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
             val environment by enum<Environment, Context>(default = Environment.PRODUCTION) {
-                rule {
+                rule(Environment.DEVELOPMENT) {
                     platforms(Platform.WEB)
                     locales(AppLocale.UNITED_STATES)
-                } returns Environment.DEVELOPMENT
+                }
 
-                rule {
+                rule(Environment.STAGING) {
                     platforms(Platform.IOS)
-                } returns Environment.STAGING
+                }
             }
         }
 
@@ -232,8 +231,8 @@ class EnumFeatureTest {
             stableId = StableId.of("12345678901234567890123456789012")
         )
 
-        assertEquals(Environment.DEVELOPMENT, webUSContext.evaluate(complexFeatures.environment))
-        assertEquals(Environment.STAGING, iosContext.evaluate(complexFeatures.environment))
+        assertEquals(Environment.DEVELOPMENT, complexFeatures.environment.evaluate(webUSContext))
+        assertEquals(Environment.STAGING, complexFeatures.environment.evaluate(iosContext))
         assertEquals(
             Environment.PRODUCTION,
             complexFeatures.environment.evaluate(androidContext)
@@ -258,6 +257,6 @@ class EnumFeatureTest {
             stableId = StableId.of("12345678901234567890123456789012")
         )
 
-        assertEquals(SingleValue.ONLY_VALUE, context.evaluate(singleEnumFeature.single))
+        assertEquals(SingleValue.ONLY_VALUE, singleEnumFeature.single.evaluate(context))
     }
 }
