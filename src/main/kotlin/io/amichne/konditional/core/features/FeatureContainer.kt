@@ -10,7 +10,6 @@ import io.amichne.konditional.core.types.DecimalEncodeable
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.core.types.EnumEncodeable
 import io.amichne.konditional.core.types.IntEncodeable
-import io.amichne.konditional.core.types.JsonSchemaClass
 import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.konditional.core.types.StringEncodeable
 import io.amichne.konditional.internal.builders.FlagBuilder
@@ -183,37 +182,6 @@ abstract class FeatureContainer<M : Namespace>(
             IntFeature.Companion(it, namespace)
         }
 
-    /**
-     * Creates an Int feature with automatic registration and configuration.
-     *
-     * The feature is configured using a DSL scope that provides type-safe access to
-     * integer-specific configuration options like rules, defaults, and targeting.
-     * Configuration is automatically applied to the namespace when the feature is first accessed.
-     *
-     * **Example:**
-     * ```kotlin
-     * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
-     *     val MAX_RETRY_COUNT by int(default = 3) {
-     *         rule {
-     *             platforms(Platform.IOS)
-     *         } returns 5
-     *     }
-     * }
-     * ```
-     *
-     * @param C The contextFn type used for evaluation
-     * @param default The default value for this feature (required)
-     * @param integerScope DSL scope for configuring the integer feature
-     * @return A delegated property that returns an [IntFeature]
-     */
-    @Deprecated("Use integer() instead", ReplaceWith("integer(default) ({ integerScope })"))
-    protected fun <C : Context> int(
-        default: Int,
-        integerScope: FlagScope<IntEncodeable, Int, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(default, integerScope) {
-            IntFeature.Companion(it, namespace)
-        }
 
     /**
      * Creates a Double feature with automatic registration and configuration.
@@ -323,24 +291,6 @@ abstract class FeatureContainer<M : Namespace>(
     ): ReadOnlyProperty<FeatureContainer<M>, DataClassFeature<T, C, M>> =
         ContainerFeaturePropertyDelegate(default, customScope) { DataClassFeature(it, namespace) }
 
-    /**
-     * Creates a data class feature with automatic registration and configuration.
-     *
-     * **Note:** This is an alias for [custom] provided for backwards compatibility.
-     * Prefer using [custom] for new code.
-     *
-     * @see custom
-     */
-    @Deprecated(
-        "Use custom() instead for clearer naming that matches the type system",
-        ReplaceWith("custom(default, dataClassScope)"),
-        level = DeprecationLevel.WARNING
-    )
-    protected inline fun <reified T : JsonSchemaClass, C : Context> dataClass(
-        default: T,
-        noinline dataClassScope: FlagScope<DataClassEncodeable<T>, T, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<FeatureContainer<M>, DataClassFeature<T, C, M>> =
-        custom(default, dataClassScope)
 
     /**
      * Internal delegate factory that handles feature creation, configuration, and registration.

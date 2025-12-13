@@ -110,17 +110,4 @@ sealed interface EncodableEvidence<T : Any> {
     class CustomEvidence<T : Any> : EncodableEvidence<T> {
         override val encoding: EncodableValue.Encoding = EncodableValue.Encoding.CUSTOM
     }
-
-    /**
-     * @deprecated Use CustomEvidence instead
-     */
-    @Deprecated(
-        "Use CustomEvidence instead",
-        ReplaceWith("CustomEvidence", "io.amichne.konditional.core.types.EncodableEvidence.CustomEvidence"),
-        level = DeprecationLevel.WARNING
-    )
-    @Suppress("DEPRECATION")
-    class DataClassEvidence<T : Any> : EncodableEvidence<T> {
-        override val encoding: EncodableValue.Encoding = EncodableValue.Encoding.DATA_CLASS
-    }
 }

@@ -26,7 +26,7 @@ data class DataClassEncodeable<T : KotlinEncodeable<ObjectSchema>>(
     override val value: T,
     val schema: ObjectSchema
 ) : EncodableValue<T> {
-    override val encoding: EncodableValue.Encoding = EncodableValue.Encoding.DATA_CLASS
+    override val encoding: EncodableValue.Encoding = EncodableValue.Encoding.CUSTOM
 
     /**
      * Converts this data class instance to a JsonValue.JsonObject for serialization.
