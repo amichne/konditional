@@ -10,7 +10,8 @@ import kotlin.reflect.KClass
  *
  * This powers the reified `dimension<T>()` accessors.
  */
-object DimensionRegistry {
+@PublishedApi
+internal object DimensionRegistry {
 
     private val byType: MutableMap<KClass<out DimensionKey>, Dimension<*>> =
         ConcurrentHashMap()

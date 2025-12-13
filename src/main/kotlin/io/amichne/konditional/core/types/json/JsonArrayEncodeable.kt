@@ -2,8 +2,9 @@ package io.amichne.konditional.core.types.json
 
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.core.types.JsonEncodeable
+import io.amichne.kontracts.schema.ArraySchema
 import io.amichne.kontracts.schema.JsonSchema
-import io.amichne.kontracts.value.JsonValue
+import io.amichne.kontracts.value.JsonArray
 
 /**
  * Encodeable wrapper for JSON array types.
@@ -13,9 +14,9 @@ import io.amichne.kontracts.value.JsonValue
  * @param elementSchema The schema defining the type of array elements
  */
 data class JsonArrayEncodeable(
-    override val value: JsonValue.JsonArray,
+    override val value: JsonArray,
     val elementSchema: JsonSchema,
-) : JsonEncodeable<JsonValue.JsonArray> {
+) : JsonEncodeable<JsonArray> {
     override val encoding: EncodableValue.Encoding = EncodableValue.Encoding.JSON_ARRAY
 
     companion object {
@@ -23,11 +24,11 @@ data class JsonArrayEncodeable(
          * Creates a JsonArrayEncodeable with schema validation.
          */
         fun of(
-            value: JsonValue.JsonArray,
+            value: JsonArray,
             elementSchema: JsonSchema,
         ): JsonArrayEncodeable {
             // Validate the value against the schema
-            val result = value.validate(JsonSchema.ArraySchema(elementSchema))
+            val result = value.validate(ArraySchema(elementSchema))
             if (result.isInvalid) {
                 throw IllegalArgumentException(
                     "JsonArray does not match schema: ${result.getErrorMessage()}"

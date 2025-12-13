@@ -31,18 +31,9 @@ import io.amichne.konditional.rules.Rule
  */
 @KonditionalDsl
 interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> {
+    val default: T
 
     fun active(block: () -> Boolean): Unit
-
-    /**
-     * Sets the default value for the flag.
-     *
-     * This value is returned when no rules match the current contextFn.
-     *
-     * @param value The default value to assign to the flag
-     */
-    @Deprecated("Use the constructor parameter instead")
-    fun default(value: T)
 
     /**
      * Sets the salt value for the flag.

@@ -28,10 +28,12 @@ import io.amichne.konditional.rules.Rule
 @KonditionalDsl
 @PublishedApi
 internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M : Namespace>(
+    override val default: T,
     private val feature: Feature<S, T, C, M>,
 ) : FlagScope<S, T, C, M> {
     private val conditionalValues = mutableListOf<ConditionalValue<S, T, C, M>>()
-    private var defaultValue: T? = null
+
+    //    override val default: T
     private var salt: String = "v1"
     private var isActive: Boolean = true
 
@@ -43,13 +45,6 @@ internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M :
      */
     override fun active(block: () -> Boolean) {
         isActive = block()
-    }
-
-    /**
-     * Implementation of [FlagScope.default].
-     */
-    override fun default(value: T) {
-        defaultValue = value
     }
 
     /**
@@ -79,14 +74,11 @@ internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M :
      * @return A `FlagDefinition` instance constructed based on the current configuration.
      */
     @PublishedApi
-    internal fun build(): FlagDefinition<S, T, C, M> {
-        requireNotNull(defaultValue) { "Default value must be set" }
-        return FlagDefinition(
-            feature = feature,
-            bounds = conditionalValues.toList(),
-            defaultValue = defaultValue!!,
-            salt = salt,
-            isActive = isActive
-        )
-    }
+    internal fun build(): FlagDefinition<S, T, C, M> = FlagDefinition(
+        feature = feature,
+        bounds = conditionalValues.toList(),
+        defaultValue = default,
+        salt = salt,
+        isActive = isActive
+    )
 }

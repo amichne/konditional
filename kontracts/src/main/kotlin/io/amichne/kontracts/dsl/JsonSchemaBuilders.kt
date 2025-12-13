@@ -1,6 +1,15 @@
 package io.amichne.kontracts.dsl
 
+import io.amichne.kontracts.schema.ArraySchema
+import io.amichne.kontracts.schema.BooleanSchema
+import io.amichne.kontracts.schema.DoubleSchema
+import io.amichne.kontracts.schema.EnumSchema
+import io.amichne.kontracts.schema.FieldSchema
+import io.amichne.kontracts.schema.IntSchema
 import io.amichne.kontracts.schema.JsonSchema
+import io.amichne.kontracts.schema.NullSchema
+import io.amichne.kontracts.schema.ObjectSchema
+import io.amichne.kontracts.schema.StringSchema
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty0
 
@@ -17,7 +26,7 @@ open class BooleanSchemaBuilder : JsonSchemaApi {
     var nullable: Boolean = false
     var example: Any? = null
     var deprecated: Boolean = false
-    fun build() = JsonSchema.BooleanSchema(title, description, default, nullable, example, deprecated)
+    fun build() = BooleanSchema(title, description, default, nullable, example, deprecated)
 }
 
 @JsonSchemaBuilderDsl
@@ -33,7 +42,7 @@ open class StringSchemaBuilder : JsonSchemaApi {
     var pattern: String? = null
     var format: String? = null
     var enum: List<String>? = null
-    fun build() = JsonSchema.StringSchema(
+    fun build() = StringSchema(
         title,
         description,
         default,
@@ -60,7 +69,7 @@ open class IntSchemaBuilder : JsonSchemaApi {
     var maximum: Int? = null
     var enum: List<Int>? = null
     fun build() =
-        JsonSchema.IntSchema(title, description, default, nullable, example, deprecated, minimum, maximum, enum)
+        IntSchema(title, description, default, nullable, example, deprecated, minimum, maximum, enum)
 }
 
 @JsonSchemaBuilderDsl
@@ -75,7 +84,7 @@ open class DoubleSchemaBuilder : JsonSchemaApi {
     var maximum: Double? = null
     var enum: List<Double>? = null
     var format: String? = null
-    fun build() = JsonSchema.DoubleSchema(
+    fun build() = DoubleSchema(
         title,
         description,
         default,
@@ -98,7 +107,7 @@ class EnumSchemaBuilder<E : Enum<E>>(private val enumClass: KClass<E>) : JsonSch
     var example: Any? = null
     var deprecated: Boolean = false
     var values: List<E> = enumClass.java.enumConstants.toList()
-    fun build() = JsonSchema.EnumSchema(enumClass, values, title, description, default, nullable, example, deprecated)
+    fun build() = EnumSchema(enumClass, values, title, description, default, nullable, example, deprecated)
 }
 
 @JsonSchemaBuilderDsl
@@ -108,7 +117,7 @@ class NullSchemaBuilder {
     var default: Any? = null
     var example: Any? = null
     var deprecated: Boolean = false
-    fun build() = JsonSchema.NullSchema(title, description, default, true, example, deprecated)
+    fun build() = NullSchema(title, description, default, true, example, deprecated)
 }
 
 @JsonSchemaBuilderDsl
@@ -127,7 +136,7 @@ class ArraySchemaBuilder : JsonSchemaApi {
         elementSchema = JsonSchemaRootBuilder().apply(builder).build()
     }
 
-    fun build() = JsonSchema.ArraySchema(
+    fun build() = ArraySchema(
         elementSchema,
         title,
         description,
@@ -150,7 +159,7 @@ class ObjectSchemaBuilder : JsonSchemaApi {
     var example: Any? = null
     var deprecated: Boolean = false
     var required: Set<String>? = null
-    private val fields = mutableMapOf<String, JsonSchema.FieldSchema>()
+    private val fields = mutableMapOf<String, FieldSchema>()
 
     fun field(
         name: String,
@@ -160,7 +169,7 @@ class ObjectSchemaBuilder : JsonSchemaApi {
         deprecated: Boolean = false,
         builder: JsonObjectSchemaBuilder.() -> Unit,
     ) {
-        fields[name] = JsonSchema.FieldSchema(
+        fields[name] = FieldSchema(
             JsonObjectSchemaBuilder().apply(builder).build(),
             required,
             defaultValue,
@@ -169,20 +178,20 @@ class ObjectSchemaBuilder : JsonSchemaApi {
         )
     }
 
-    fun build() = JsonSchema.ObjectSchema(fields, title, description, default, nullable, example, deprecated, required)
+    fun build() = ObjectSchema(fields, title, description, default, nullable, example, deprecated, required)
 }
 
 @JsonSchemaBuilderDsl
 class JsonSchemaRootBuilder {
     @PublishedApi
-    internal val fields: MutableMap<String, JsonSchema.FieldSchema> = mutableMapOf()
+    internal val fields: MutableMap<String, FieldSchema> = mutableMapOf()
 
     @PublishedApi
     internal var schema: JsonSchema? = null
 
-    fun build(): JsonSchema.ObjectSchema = when (val builtSchema = schema) {
-        is JsonSchema.ObjectSchema -> builtSchema
-        null -> JsonSchema.ObjectSchema(fields.toMap())
+    fun build(): ObjectSchema = when (val builtSchema = schema) {
+        is ObjectSchema -> builtSchema
+        null -> ObjectSchema(fields.toMap())
         else -> throw IllegalStateException("Top-level schema must be an ObjectSchema")
     }
 }
@@ -200,7 +209,7 @@ inline infix fun KProperty0<String>.of(
     builder: StringSchemaBuilder.() -> Unit = {},
 ) {
     val schema = StringSchemaBuilder().apply(builder).build()
-    root.fields[name] = JsonSchema.FieldSchema(
+    root.fields[name] = FieldSchema(
         schema,
         required = !returnType.isMarkedNullable,
         defaultValue = schema.default,
@@ -221,7 +230,7 @@ inline infix fun KProperty0<String?>.of(
         nullable = true
         builder()
     }.build()
-    root.fields[name] = JsonSchema.FieldSchema(
+    root.fields[name] = FieldSchema(
         schema,
         required = false,
         defaultValue = schema.default,
@@ -239,7 +248,7 @@ inline infix fun KProperty0<Boolean>.of(
     builder: BooleanSchemaBuilder.() -> Unit = {},
 ) {
     val schema = BooleanSchemaBuilder().apply(builder).build()
-    root.fields[name] = JsonSchema.FieldSchema(
+    root.fields[name] = FieldSchema(
         schema,
         required = !returnType.isMarkedNullable,
         defaultValue = schema.default,
@@ -260,7 +269,7 @@ inline infix fun KProperty0<Boolean?>.of(
         nullable = true
         builder()
     }.build()
-    root.fields[name] = JsonSchema.FieldSchema(
+    root.fields[name] = FieldSchema(
         schema,
         required = false,
         defaultValue = schema.default,
@@ -278,7 +287,7 @@ inline infix fun KProperty0<Int>.of(
     builder: IntSchemaBuilder.() -> Unit = {},
 ) {
     val schema = IntSchemaBuilder().apply(builder).build()
-    root.fields[name] = JsonSchema.FieldSchema(
+    root.fields[name] = FieldSchema(
         schema,
         required = !returnType.isMarkedNullable,
         defaultValue = schema.default,
@@ -299,7 +308,7 @@ inline infix fun KProperty0<Int?>.of(
         nullable = true
         builder()
     }.build()
-    root.fields[name] = JsonSchema.FieldSchema(
+    root.fields[name] = FieldSchema(
         schema,
         required = false,
         defaultValue = schema.default,
@@ -317,7 +326,7 @@ inline infix fun KProperty0<Double>.of(
     builder: DoubleSchemaBuilder.() -> Unit = {},
 ) {
     val schema = DoubleSchemaBuilder().apply(builder).build()
-    root.fields[name] = JsonSchema.FieldSchema(
+    root.fields[name] = FieldSchema(
         schema,
         required = !returnType.isMarkedNullable,
         defaultValue = schema.default,
@@ -338,7 +347,7 @@ inline infix fun KProperty0<Double?>.of(
         nullable = true
         builder()
     }.build()
-    root.fields[name] = JsonSchema.FieldSchema(
+    root.fields[name] = FieldSchema(
         schema,
         required = false,
         defaultValue = schema.default,
@@ -357,7 +366,7 @@ inline infix fun <reified V : Any> KProperty0<V>.of(
     builder: ObjectSchemaBuilder.() -> Unit,
 ) {
     root.fields[name] = with(ObjectSchemaBuilder().apply { builder() }.build()) {
-        JsonSchema.FieldSchema(
+        FieldSchema(
             this,
             returnType.isMarkedNullable,
             default,
@@ -428,7 +437,7 @@ inline infix fun <reified V : Any> KProperty0<V>.asString(
 ) {
     val schemaBuilder = CustomStringSchemaBuilder<V>().apply(builder)
     val schema = schemaBuilder.build()
-    root.fields[name] = JsonSchema.FieldSchema(
+    root.fields[name] = FieldSchema(
         schema,
         required = !returnType.isMarkedNullable,
         defaultValue = schema.default,
@@ -450,7 +459,7 @@ inline infix fun <reified V : Any> KProperty0<V?>.asString(
         builder()
     }
     val schema = schemaBuilder.build()
-    root.fields[name] = JsonSchema.FieldSchema(
+    root.fields[name] = FieldSchema(
         schema,
         required = false,
         defaultValue = schema.default,
@@ -480,7 +489,7 @@ inline infix fun <reified V : Any> KProperty0<V>.asInt(
 ) {
     val schemaBuilder = CustomIntSchemaBuilder<V>().apply(builder)
     val schema = schemaBuilder.build()
-    root.fields[name] = JsonSchema.FieldSchema(
+    root.fields[name] = FieldSchema(
         schema,
         required = !returnType.isMarkedNullable,
         defaultValue = schema.default,
@@ -502,7 +511,7 @@ inline infix fun <reified V : Any> KProperty0<V?>.asInt(
         builder()
     }
     val schema = schemaBuilder.build()
-    root.fields[name] = JsonSchema.FieldSchema(
+    root.fields[name] = FieldSchema(
         schema,
         required = false,
         defaultValue = schema.default,
@@ -531,7 +540,7 @@ inline infix fun <reified V : Any> KProperty0<V>.asBoolean(
 ) {
     val schemaBuilder = CustomBooleanSchemaBuilder<V>().apply(builder)
     val schema = schemaBuilder.build()
-    root.fields[name] = JsonSchema.FieldSchema(
+    root.fields[name] = FieldSchema(
         schema,
         required = !returnType.isMarkedNullable,
         defaultValue = schema.default,
@@ -553,7 +562,7 @@ inline infix fun <reified V : Any> KProperty0<V?>.asBoolean(
         builder()
     }
     val schema = schemaBuilder.build()
-    root.fields[name] = JsonSchema.FieldSchema(
+    root.fields[name] = FieldSchema(
         schema,
         required = false,
         defaultValue = schema.default,
@@ -584,7 +593,7 @@ inline infix fun <reified V : Any> KProperty0<V>.asDouble(
 ) {
     val schemaBuilder = CustomDoubleSchemaBuilder<V>().apply(builder)
     val schema = schemaBuilder.build()
-    root.fields[name] = JsonSchema.FieldSchema(
+    root.fields[name] = FieldSchema(
         schema,
         required = !returnType.isMarkedNullable,
         defaultValue = schema.default,
@@ -606,7 +615,7 @@ inline infix fun <reified V : Any> KProperty0<V?>.asDouble(
         builder()
     }
     val schema = schemaBuilder.build()
-    root.fields[name] = JsonSchema.FieldSchema(
+    root.fields[name] = FieldSchema(
         schema,
         required = false,
         defaultValue = schema.default,

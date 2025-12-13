@@ -9,8 +9,7 @@ sealed interface IntFeature<C : Context, M : Namespace> : Feature<IntEncodeable,
         internal operator fun <C : Context, M : Namespace> invoke(
             key: String,
             module: M,
-        ): IntFeature<C, M> =
-            IntFeatureImpl(key, module)
+        ): IntFeature<C, M> = IntFeatureImpl(key, module)
 
         @PublishedApi
         internal data class IntFeatureImpl<C : Context, M : Namespace>(

@@ -2,8 +2,8 @@ package io.amichne.konditional.core.types.json
 
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.core.types.JsonEncodeable
-import io.amichne.kontracts.schema.JsonSchema
-import io.amichne.kontracts.value.JsonValue
+import io.amichne.kontracts.schema.ObjectSchema
+import io.amichne.kontracts.value.JsonObject
 
 /**
  * Encodeable wrapper for JSON object types.
@@ -13,9 +13,9 @@ import io.amichne.kontracts.value.JsonValue
  * @param schema The schema defining the structure and types of this object
  */
 data class JsonObjectEncodeable(
-    override val value: JsonValue.JsonObject,
-    val schema: JsonSchema.ObjectSchema,
-) : JsonEncodeable<JsonValue.JsonObject> {
+    override val value: JsonObject,
+    val schema: ObjectSchema,
+) : JsonEncodeable<JsonObject> {
     override val encoding: EncodableValue.Encoding = EncodableValue.Encoding.JSON_OBJECT
 
     companion object {
@@ -23,8 +23,8 @@ data class JsonObjectEncodeable(
          * Creates a JsonObjectEncodeable with schema validation.
          */
         fun of(
-            value: JsonValue.JsonObject,
-            schema: JsonSchema.ObjectSchema,
+            value: JsonObject,
+            schema: ObjectSchema,
         ): JsonObjectEncodeable {
             // Validate the value against the schema
             val result = value.validate(schema)

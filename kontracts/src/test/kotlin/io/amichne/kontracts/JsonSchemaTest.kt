@@ -3,8 +3,15 @@ package io.amichne.kontracts
 import io.amichne.kontracts.dsl.buildJsonArray
 import io.amichne.kontracts.dsl.buildJsonObject
 import io.amichne.kontracts.dsl.jsonObject
-import io.amichne.kontracts.schema.JsonSchema
-import io.amichne.kontracts.value.JsonValue
+import io.amichne.kontracts.schema.ArraySchema
+import io.amichne.kontracts.schema.EnumSchema
+import io.amichne.kontracts.schema.ObjectSchema
+import io.amichne.kontracts.schema.StringSchema
+import io.amichne.kontracts.value.JsonArray
+import io.amichne.kontracts.value.JsonBoolean
+import io.amichne.kontracts.value.JsonNumber
+import io.amichne.kontracts.value.JsonObject
+import io.amichne.kontracts.value.JsonString
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -56,7 +63,7 @@ class JsonSchemaTest {
         }
 
         assertEquals(2, schema.fields.size)
-        val userSchema = schema.fields["user"]?.schema as? JsonSchema.ObjectSchema
+        val userSchema = schema.fields["user"]?.schema as? ObjectSchema
         assertTrue(userSchema != null)
         assertEquals(2, userSchema?.fields?.size)
     }
@@ -69,9 +76,9 @@ class JsonSchemaTest {
         }
 
         assertEquals(2, schema.fields.size)
-        val tagsSchema = schema.fields["tags"]?.schema as? JsonSchema.ArraySchema
+        val tagsSchema = schema.fields["tags"]?.schema as? ArraySchema
         assertTrue(tagsSchema != null)
-        assertTrue(tagsSchema?.elementSchema is JsonSchema.StringSchema)
+        assertTrue(tagsSchema?.elementSchema is StringSchema)
     }
 
     @Test
@@ -83,9 +90,9 @@ class JsonSchemaTest {
         }
 
         assertEquals(3, obj.fields.size)
-        assertEquals(JsonValue.JsonNumber(123.0), obj["id"])
-        assertEquals(JsonValue.JsonString("John Doe"), obj["name"])
-        assertEquals(JsonValue.JsonBoolean(true), obj["enabled"])
+        assertEquals(JsonNumber(123.0), obj["id"])
+        assertEquals(JsonString("John Doe"), obj["name"])
+        assertEquals(JsonBoolean(true), obj["enabled"])
     }
 
     @Test
@@ -101,28 +108,28 @@ class JsonSchemaTest {
             }
         }
 
-        val user = obj["user"] as? JsonValue.JsonObject
+        val user = obj["user"] as? JsonObject
         assertTrue(user != null)
-        assertEquals(JsonValue.JsonNumber(456.0), user?.fields["id"])
+        assertEquals(JsonNumber(456.0), user?.fields["id"])
 
-        val settings = obj["settings"] as? JsonValue.JsonObject
+        val settings = obj["settings"] as? JsonObject
         assertTrue(settings != null)
-        assertEquals(JsonValue.JsonString("DARK"), settings?.fields["theme"])
+        assertEquals(JsonString("DARK"), settings?.fields["theme"])
     }
 
     @Test
     fun `can build JSON arrays`() {
         val stringArray = buildJsonArray("one", "two", "three")
         assertEquals(3, stringArray.size)
-        assertEquals(JsonValue.JsonString("one"), stringArray[0])
+        assertEquals(JsonString("one"), stringArray[0])
 
         val intArray = buildJsonArray(1, 2, 3, 4, 5)
         assertEquals(5, intArray.size)
-        assertEquals(JsonValue.JsonNumber(1.0), intArray[0])
+        assertEquals(JsonNumber(1.0), intArray[0])
 
         val boolArray = buildJsonArray(true, false, true)
         assertEquals(3, boolArray.size)
-        assertEquals(JsonValue.JsonBoolean(true), boolArray[0])
+        assertEquals(JsonBoolean(true), boolArray[0])
     }
 
     @Test
@@ -177,19 +184,19 @@ class JsonSchemaTest {
     @Test
     fun `JSON array validates against schema`() {
         val array = buildJsonArray("one", "two", "three")
-        val result = array.validate(JsonSchema.ArraySchema(JsonSchema.StringSchema()))
+        val result = array.validate(ArraySchema(StringSchema()))
         assertTrue(result.isValid)
     }
 
     @Test
     fun `JSON array validation fails with wrong element type`() {
         val array = buildJsonArray(
-            JsonValue.JsonString("one"),
-            JsonValue.JsonNumber(2.0),  // Wrong type
-            JsonValue.JsonString("three")
+            JsonString("one"),
+            JsonNumber(2.0),  // Wrong type
+            JsonString("three")
         )
 
-        val result = array.validate(JsonSchema.ArraySchema(JsonSchema.StringSchema()))
+        val result = array.validate(ArraySchema(StringSchema()))
         assertTrue(result.isInvalid)
     }
 
@@ -272,8 +279,8 @@ class JsonSchemaTest {
         )
 
         assertEquals(3, users.size)
-        val firstUser = users[0] as? JsonValue.JsonObject
-        assertEquals(JsonValue.JsonNumber(1.0), firstUser?.fields["id"])
+        val firstUser = users[0] as? JsonObject
+        assertEquals(JsonNumber(1.0), firstUser?.fields["id"])
     }
 
     @Test
@@ -283,16 +290,16 @@ class JsonSchemaTest {
         }
 
         // Valid object should construct successfully
-        val validObj = JsonValue.JsonObject(
-            mapOf("id" to JsonValue.JsonNumber(123.0)),
+        val validObj = JsonObject(
+            mapOf("id" to JsonNumber(123.0)),
             schema
         )
-        assertEquals(JsonValue.JsonNumber(123.0), validObj["id"])
+        assertEquals(JsonNumber(123.0), validObj["id"])
 
         // Invalid object should throw on construction
         assertThrows<IllegalArgumentException> {
-            JsonValue.JsonObject(
-                mapOf("name" to JsonValue.JsonString("test")),  // Missing required "id"
+            JsonObject(
+                mapOf("name" to JsonString("test")),  // Missing required "id"
                 schema
             )
         }
@@ -300,13 +307,13 @@ class JsonSchemaTest {
 
     @Test
     fun `JsonArray with schema validates on construction`() {
-        val elementSchema = JsonSchema.StringSchema()
+        val elementSchema = StringSchema()
 
         // Valid array should construct successfully
-        val validArray = JsonValue.JsonArray(
+        val validArray = JsonArray(
             listOf(
-                JsonValue.JsonString("one"),
-                JsonValue.JsonString("two")
+                JsonString("one"),
+                JsonString("two")
             ),
             elementSchema
         )
@@ -314,10 +321,10 @@ class JsonSchemaTest {
 
         // Invalid array should throw on construction
         assertThrows<IllegalArgumentException> {
-            JsonValue.JsonArray(
+            JsonArray(
                 listOf(
-                    JsonValue.JsonString("one"),
-                    JsonValue.JsonNumber(2.0)  // Wrong type
+                    JsonString("one"),
+                    JsonNumber(2.0)  // Wrong type
                 ),
                 elementSchema
             )
@@ -326,14 +333,14 @@ class JsonSchemaTest {
 
     @Test
     fun `enum schema validates string representation`() {
-        val schema = JsonSchema.EnumSchema(enumClass = Theme::class, values = Theme.values().toList())
+        val schema = EnumSchema(enumClass = Theme::class, values = Theme.values().toList())
 
         // Valid enum value
-        val validResult = JsonValue.JsonString("DARK").validate(schema)
+        val validResult = JsonString("DARK").validate(schema)
         assertTrue(validResult.isValid)
 
         // Invalid enum value
-        val invalidResult = JsonValue.JsonString("INVALID_THEME").validate(schema)
+        val invalidResult = JsonString("INVALID_THEME").validate(schema)
         assertTrue(invalidResult.isInvalid)
     }
 

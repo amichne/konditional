@@ -1,6 +1,7 @@
 package io.amichne.konditional.core.types
 
 import io.amichne.kontracts.schema.JsonSchema
+import io.amichne.kontracts.schema.ObjectSchema
 
 /**
  * Interface for custom types that can be encoded with schema validation.
@@ -10,7 +11,7 @@ import io.amichne.kontracts.schema.JsonSchema
  * of user-defined types with compile-time schema validation.
  *
  * The generic type parameter [S] allows for different schema types, though
- * [JsonSchema.ObjectSchema] is the most common use case for data classes.
+ * [ObjectSchema] is the most common use case for data classes.
  *
  * ## Usage with Data Classes
  *
@@ -56,7 +57,7 @@ import io.amichne.kontracts.schema.JsonSchema
  * }
  * ```
  *
- * @param S The schema type used for validation (typically [JsonSchema.ObjectSchema])
+ * @param S The schema type used for validation (typically [ObjectSchema])
  */
 interface KotlinEncodeable<out S : JsonSchema> {
     /**
@@ -69,4 +70,4 @@ interface KotlinEncodeable<out S : JsonSchema> {
  * Type alias for the common case of custom data classes with object schemas.
  * This provides backwards compatibility and ergonomic usage for the most common pattern.
  */
-typealias JsonSchemaClass = KotlinEncodeable<JsonSchema.ObjectSchema>
+typealias JsonSchemaClass = KotlinEncodeable<ObjectSchema>

@@ -15,6 +15,11 @@ sealed interface StableId {
     val hexId: HexId
 
     companion object {
+        private data class Instance(override val hexId: HexId) : StableId {
+            override val id: String
+                get() = hexId.id
+        }
+
         /**
          * Creates a StableId from an arbitrary string by hex-encoding its bytes.
          *
@@ -25,16 +30,10 @@ sealed interface StableId {
          * @return A [StableId] instance with the provided identifier.
          */
         fun of(input: String): StableId = require(input.isNotBlank()) { "StableId input must not be blank" }
-            .run { Factory.Instance(
-                HexId(input.lowercase().encodeToByteArray().joinToString(separator = "") { "%02x".format(it) })
-            )
-        }
-    }
-}
-
-private object Factory {
-    data class Instance(override val hexId: HexId) : StableId {
-        override val id: String
-            get() = hexId.id
+            .run {
+                Instance(
+                    HexId(input.lowercase().encodeToByteArray().joinToString(separator = "") { "%02x".format(it) })
+                )
+            }
     }
 }

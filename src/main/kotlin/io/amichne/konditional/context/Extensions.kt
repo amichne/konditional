@@ -29,20 +29,19 @@ inline fun <reified T> dimensionAxis(id: String): Dimension<T> where T : Dimensi
 
 inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context, M : Namespace, D> D.feature(
     block: D.() -> Feature<S, T, C, M>,
-): T where D : ContextAware<C>, D : FeatureAware<M> =
-    block().evaluate(context)
+): T where D : ContextAware<C>, D : FeatureAware<out M> = block().evaluate(context)
 
-/**
- * Lazily obtain a context from a lambda, then evaluate the feature in that context.
- */
-inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context, D> D.feature(
-    @KonditionalDsl crossinline context: () -> C,
-    block: ContextAware<C>.() -> Feature<S, T, C, *>,
-): T where D : ContextAware<C>, D : FeatureAware<*> {
-
-    @Suppress("UNCHECKED_CAST")
-    return ContextAware { context() }.block().evaluate(context())
-}
+///**
+// * Lazily obtain a context from a lambda, then evaluate the feature in that context.
+// */
+//inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context, D> D.feature(
+//    @KonditionalDsl crossinline context: () -> C,
+//    block: ContextAware<C>.() -> Feature<S, T, C, *>,
+//): T where D : ContextAware<C>, D : FeatureAware<*> {
+//
+//    @Suppress("UNCHECKED_CAST")
+//    return ContextAware { context() }.block().evaluate(context())
+//}
 
 /**
  * Evaluate with an explicit context instance.

@@ -1,6 +1,11 @@
 package io.amichne.kontracts.dsl
 
-import io.amichne.kontracts.schema.JsonSchema
+import io.amichne.kontracts.schema.ObjectSchema
+import io.amichne.kontracts.value.JsonBoolean
+import io.amichne.kontracts.value.JsonNull
+import io.amichne.kontracts.value.JsonNumber
+import io.amichne.kontracts.value.JsonObject
+import io.amichne.kontracts.value.JsonString
 import io.amichne.kontracts.value.JsonValue
 
 /**
@@ -21,42 +26,42 @@ import io.amichne.kontracts.value.JsonValue
  * ```
  */
 @JsonSchemaDsl
-class JsonObjectBuilder(private val schema: JsonSchema.ObjectSchema? = null) {
+class JsonObjectBuilder(private val schema: ObjectSchema? = null) {
     private val fields = mutableMapOf<String, JsonValue>()
 
     /**
      * Adds a boolean field.
      */
     infix fun String.to(value: Boolean) {
-        fields[this] = JsonValue.JsonBoolean(value)
+        fields[this] = JsonBoolean(value)
     }
 
     /**
      * Adds a string field.
      */
     infix fun String.to(value: String) {
-        fields[this] = JsonValue.JsonString(value)
+        fields[this] = JsonString(value)
     }
 
     /**
      * Adds an integer field.
      */
     infix fun String.to(value: Int) {
-        fields[this] = JsonValue.JsonNumber(value.toDouble())
+        fields[this] = JsonNumber(value.toDouble())
     }
 
     /**
      * Adds a double field.
      */
     infix fun String.to(value: Double) {
-        fields[this] = JsonValue.JsonNumber(value)
+        fields[this] = JsonNumber(value)
     }
 
     /**
      * Adds an enum field.
      */
     infix fun <E : Enum<E>> String.to(value: E) {
-        fields[this] = JsonValue.JsonString(value.name)
+        fields[this] = JsonString(value.name)
     }
 
     /**
@@ -70,11 +75,11 @@ class JsonObjectBuilder(private val schema: JsonSchema.ObjectSchema? = null) {
      * Adds a null field.
      */
     infix fun String.toNull(@Suppress("UNUSED_PARAMETER") unit: Unit) {
-        fields[this] = JsonValue.JsonNull
+        fields[this] = JsonNull
     }
 
     /**
      * Builds the final JsonObject.
      */
-    fun build(): JsonValue.JsonObject = JsonValue.JsonObject(fields.toMap(), schema)
+    fun build(): JsonObject = JsonObject(fields.toMap(), schema)
 }

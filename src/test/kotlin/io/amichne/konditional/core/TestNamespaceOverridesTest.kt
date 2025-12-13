@@ -7,15 +7,15 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.result.getOrThrow
-import io.amichne.konditional.fixtures.core.OverridingScope.Companion.setupTest
 import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.fixtures.core.clearAllOverrides
 import io.amichne.konditional.fixtures.core.clearOverride
 import io.amichne.konditional.fixtures.core.hasOverride
 import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.fixtures.core.setOverride
+import io.amichne.konditional.fixtures.core.setupTest
 import io.amichne.konditional.fixtures.core.withOverride
-import io.amichne.konditional.fixtures.core.withOverrides
+import io.amichne.konditional.fixtures.core.testScoped
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -54,6 +54,7 @@ class TestNamespaceOverridesTest {
         }
 
         setupTest(TestFeatures) {
+
 
         }
 
@@ -180,7 +181,7 @@ class TestNamespaceOverridesTest {
             val flagC by integer<Context>(default = 0)
         }
 
-        TestFeatures.withOverrides(
+        TestFeatures.testScoped(
             TestFeatures.flagA to true,
             TestFeatures.flagB to "test",
             TestFeatures.flagC to 100
