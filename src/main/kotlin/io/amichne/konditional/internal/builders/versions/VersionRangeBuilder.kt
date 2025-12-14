@@ -20,20 +20,28 @@ import io.amichne.konditional.rules.versions.VersionRange
 @PublishedApi
 internal data class VersionRangeBuilder(
     private var leftBound: Version = Version.default,
-    private var rightBound: Version = Version.default
+    private var rightBound: Version = Version.default,
 ) : VersionRangeScope {
 
     /**
      * Implementation of [VersionRangeScope.min].
      */
-    override fun min(major: Int, minor: Int, patch: Int) {
+    override fun min(
+        major: Int,
+        minor: Int,
+        patch: Int,
+    ) {
         leftBound = Version(major, minor, patch)
     }
 
     /**
      * Implementation of [VersionRangeScope.max].
      */
-    override fun max(major: Int, minor: Int, patch: Int) {
+    override fun max(
+        major: Int,
+        minor: Int,
+        patch: Int,
+    ) {
         rightBound = Version(major, minor, patch)
     }
 

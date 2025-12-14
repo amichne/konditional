@@ -212,7 +212,7 @@ inline fun <S : EncodableValue<T>, T : Any, C : Context, R> Namespace.withOverri
 fun <M : Namespace, F : FeatureContainer<M>> F.testScoped(
     vararg overrides: Pair<Feature<*, *, *, *>, Any>,
     block: F.() -> Unit,
-): Unit {
+) {
     // Set all configure
     overrides.forEach { (feature, value) ->
         @Suppress("UNCHECKED_CAST")
@@ -240,10 +240,8 @@ interface AtomicTestScope {
             overridingScope: OverridingScope<M, F>,
         ): AtomicTestScope = object : AtomicTestScope {}
 
-
         infix fun AtomicTestScope.runTest(testBlock: () -> Unit) = testBlock()
     }
-
 }
 
 @ConsistentCopyVisibility

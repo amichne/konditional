@@ -2,7 +2,7 @@
 
 * Primary concerns:
 
-    * Context & targeting dimensions (`context` package).
+    * Context & targeting axes (`context` package).
     * Feature definition/evaluation (`core.features`, `core`, `rules`).
     * Configuration storage & atomics (`core.instance`, `core.registry`).
     * Encoding & supported value types (`core.types`).
@@ -21,8 +21,8 @@
 * Evaluation flow (high-level):
 
     1. Consumer defines features via `FeatureContainer<M>`.
-    2. Container delegates register flags into a `Namespace`’s `NamespaceRegistry`.
-    3. Runtime builds a `Context` value (app + dimensions).
+    2. Container delegates register flags into a `Namespace`'s `NamespaceRegistry`.
+    3. Runtime builds a `Context` value (app + axis values).
     4. Evaluation: `feature.evaluate(context)` → `NamespaceRegistry.flag(feature)` → `FlagDefinition.evaluate(context)` → `Rule.matches(context)` + rollout bucketing.
 
 ## II. PACKAGE: `io.amichne.konditional.context`
@@ -88,45 +88,48 @@
 * `compareTo(other: Number)` → `value.compareTo(other.toDouble())`.
 * Deprecated alias: `typealias Rollout = Rampup`.
 
-### 5. `DimensionKey` & `Dimension<T>`
+### 5. `AxisValue` & `Axis<T>`
 
-* `DimensionKey`
+* `AxisValue`
 
-    * FQN: `io.amichne.konditional.context.DimensionKey`
+    * FQN: `io.amichne.konditional.context.axis.AxisValue`
     * Interface: `val id: String`
-    * Intended for consumer enums: e.g. `enum class Environment(override val id: String) : DimensionKey { … }`.
-* `Dimension<T>`
+    * Intended for consumer enums: e.g. `enum class Environment(override val id: String) : AxisValue { … }`.
+* `Axis<T>`
 
-    * FQN: `io.amichne.konditional.context.Dimension`
-    * Constraints: `T : DimensionKey`, `T : Enum<out T>`
+    * FQN: `io.amichne.konditional.context.axis.Axis`
+    * Constraints: `T : AxisValue`, `T : Enum<T>`
+    * Abstract class: `abstract class Axis<T>(val id: String) where T : AxisValue, T : Enum<T>`
     * Fields:
 
         * `val id: String` (axis id, e.g. `"env"`, `"region"`).
-        * `val valueClass: KClass<out T>` (enum type).
-    * Companion:
+        * `val valueClass: KClass<out T>` (enum type, extracted via reflection).
+    * Auto-registration:
 
-        * Inline factory: `operator fun <reified T> invoke(id: String): Dimension<T>` where `T : DimensionKey, T : Enum<T>`.
+        * `init` block automatically registers the axis in `AxisRegistry` on creation.
+        * Ensures type-to-axis mapping is always available.
     * Semantics:
 
-        * Describes a *dimension axis* (e.g. "env", "region") with a concrete enum type.
+        * Describes an *axis* (e.g. "environment", "tenant") with a concrete enum type.
+        * Subclasses are typically defined as objects: `object Environment : Axis<TestEnvironment>("environment")`.
 
-### 6. `Dimensions` (strongly typed dimension set)
+### 6. `AxisValues` (strongly typed axis value set)
 
-* FQN: `io.amichne.konditional.context.Dimensions`
+* FQN: `io.amichne.konditional.context.axis.AxisValues`
 * Structure:
 
-    * `class Dimensions internal constructor(private val values: Map<String, DimensionKey>)`
+    * `class AxisValues internal constructor(private val values: Map<String, AxisValue>)`
 * Access:
 
-    * `operator fun get(axisId: String): DimensionKey?`
-    * `operator fun <T> get(axis: Dimension<T>): T? where T : DimensionKey, T : Enum<T> = values[axis.id] as? T`
+    * `internal operator fun get(axisId: String): AxisValue?`
+    * `operator fun <T> get(axis: Axis<T>): T? where T : AxisValue, T : Enum<T> = values[axis.id] as? T`
 * Companion:
 
-    * `val EMPTY = Dimensions(emptyMap())`.
+    * `val EMPTY = AxisValues(emptyMap())`.
 * Semantics:
 
-    * Immutable map of axisId → concrete `DimensionKey`, with strongly-typed access via `Dimension<T>` descriptors.
-    * Typically built via DSL `dimensions { … }` (see `DimensionBuilder`).
+    * Immutable map of axisId → concrete `AxisValue`, with strongly-typed access via `Axis<T>` descriptors.
+    * Typically built via DSL `axisValues { … }` (see `AxisValuesBuilder`).
 
 ### 7. `Context`
 
@@ -139,12 +142,12 @@
         * `val platform: Platform`
         * `val appVersion: Version`
         * `val stableId: StableId`
-    * Optional dimensions:
+    * Optional axis values:
 
-        * `val dimensions: Dimensions get() = Dimensions.EMPTY` (default).
-    * Dynamic dimension access:
+        * `val axisValues: AxisValues get() = AxisValues.EMPTY` (default).
+    * Dynamic axis access:
 
-        * `fun getDimension(axisId: String): DimensionKey? = dimensions[axisId]`
+        * Companion method: `fun getAxisValue(axisId: String): AxisValue? = axisValues[axisId]`
 * Nested:
 
     * `data class Core(...) : Context`
@@ -155,7 +158,7 @@
 * Semantics:
 
     * Canonical evaluation input; all rules and rollouts depend on `Context`.
-    * `dimensions` enables consumer-defined axes (env, region, tenant) through `Dimensions` and `DimensionKey`.
+    * `axisValues` enables consumer-defined axes (env, region, tenant) through `AxisValues` and `AxisValue`.
 
 ### 8. `ContextAware`
 
@@ -169,34 +172,25 @@
 
     * Utility for tying a *feature evaluation caller* to a context factory, used in DSL convenience functions.
 
-### 9. Dimension extensions & axis registration
+### 9. Axis extensions
 
-* File: `context/Extensions.kt`
+* File: `api/Extensions.kt`
 
 * Key items:
 
-    1. `inline fun <reified T, reified C : Context> C.dimension(axis: Dimension<T>): T?`
+    1. Type-based getter (primary API):
 
-        * Reads via `getDimension(axis.id) as? T`.
-    2. Type-based getter:
+        * `inline fun <reified T> Context.axis(): T? where T : AxisValue, T : Enum<T>`
 
-        * `inline fun <reified T> Context.dimension(): T? where T : DimensionKey, T : Enum<T>`
+            * Uses `AxisRegistry.axisFor(T::class)` to resolve `Axis<T>`, then `axisValues[axis]`.
+            * Enables convenient syntax: `context.axis<TestEnvironment>()`.
+    2. Explicit axis getter:
 
-            * Uses `DimensionRegistry.axisFor(T::class)` to resolve `Dimension<T>`, then `dimensions[axis]`.
-    3. `inline fun <reified T> dimensionAxis(id: String): Dimension<T>`
+        * `inline fun <reified T> Context.axis(axis: Axis<T>): T? where T : AxisValue, T : Enum<T>`
 
-        * Returns `object : RegisteredDimension<T>(id, T::class) {}`
-        * Registers axis in `DimensionRegistry` via `RegisteredDimension` init.
-    4. Feature evaluation helpers (`feature(...)`) coupling `ContextAware` + `FeatureAware`.
-
-* Axis-centric helpers for ergonomics:
-
-    * `fun <T> Dimension<T>.valueIn(ctx: Context): T?`
-    * `fun <T> Dimension<T>.setIn(builder: DimensionScope, value: T)`
-    * Operator overloads:
-
-        * `operator fun <T> Dimension<T>.invoke(ctx: Context): T?`
-        * `operator fun <T> Dimension<T>.invoke(builder: DimensionScope, value: T)`
+            * Directly accesses `axisValues[axis]`.
+            * Enables syntax: `context.axis(TestAxes.Environment)`.
+    3. Feature evaluation helpers (`feature(...)`) coupling `ContextAware` + `FeatureAware`.
 
 ## III. PACKAGE: `io.amichne.konditional.core`
 
@@ -283,14 +277,14 @@
 
 * `@DslMarker` to isolate DSL scopes.
 
-### 2. `DimensionScope`
+### 2. `AxisValuesScope`
 
-* FQN: `io.amichne.konditional.core.dsl.DimensionScope`
+* FQN: `io.amichne.konditional.core.dsl.AxisValuesScope`
 * Methods:
 
-    * `fun <T> set(axis: Dimension<T>, value: T) where T : DimensionKey, T : Enum<T>`
-    * `fun <T> setIfNotNull(axis: Dimension<T>, value: T?)`
-* Implemented by `DimensionBuilder`.
+    * `fun <T> set(axis: Axis<T>, value: T) where T : AxisValue, T : Enum<T>`
+    * `fun <T> setIfNotNull(axis: Axis<T>, value: T?)`
+* Implemented by `AxisValuesBuilder`.
 
 ### 3. `FlagScope<S, T, C, M>`
 
@@ -312,13 +306,19 @@
     * `fun locales(vararg appLocales: AppLocale)`
     * `fun platforms(vararg ps: Platform)`
     * `fun versions(build: VersionRangeScope.() -> Unit)`
-    * `fun <T> dimension(axis: Dimension<T>, vararg values: T) where T : DimensionKey, T : Enum<T>`
+    * `fun <T> axis(axis: Axis<T>, vararg values: T) where T : AxisValue, T : Enum<T>`
+
+        * Explicit axis targeting: `axis(TestAxes.Environment, TestEnvironment.PROD, TestEnvironment.STAGE)`.
+    * Type-based axis targeting (via extension function):
+
+        * `inline fun <reified T> axis(vararg values: T) where T : AxisValue, T : Enum<T>`
+        * Primary API: `axis(TestEnvironment.PROD)` infers axis from type via `AxisRegistry`.
     * `fun extension(block: C.() -> Boolean)`
     * `fun note(text: String)`
     * `fun rollout(function: () -> Number)`
 * Semantics:
 
-    * Accumulates base constraints (locale, platform, versions, custom dimensions) + extension predicate + rollout percentage + note.
+    * Accumulates base constraints (locale, platform, versions, custom axes) + extension predicate + rollout percentage + note.
 
 ### 5. `VersionRangeScope`
 
@@ -384,9 +384,9 @@
 
     * `registry.flag(this).evaluate(context)`.
 * Internal `update(...)` overloads on `Feature` to reconfigure definitions.
-* Top-level `fun dimensions(block: DimensionScope.() -> Unit): Dimensions`
+* Top-level `fun axisValues(block: AxisValuesScope.() -> Unit): AxisValues`
 
-    * Creates `DimensionBuilder().apply(block).build()`.
+    * Creates `AxisValuesBuilder().apply(block).build()`.
 
 ### 4. `FeatureAware<M>`
 
@@ -445,23 +445,26 @@
         * `hasOverride(feature)`
         * `getOverride(feature)`
 
-### 3. `DimensionRegistry`
+### 3. `AxisRegistry`
 
-* FQN: `io.amichne.konditional.core.registry.DimensionRegistry`
+* FQN: `io.amichne.konditional.core.registry.AxisRegistry`
 * Internal `object` mapping:
 
-    * `byType: MutableMap<KClass<out DimensionKey>, Dimension<*>>`
+    * `byType: MutableMap<KClass<out AxisValue>, Axis<*>>`
 * API:
 
-    * `fun <T> register(axis: Dimension<T>)`
+    * `fun <T> register(axis: Axis<T>) where T : AxisValue, T : Enum<T>`
 
         * Ensures either new or same axis for that type; else require fails.
-    * `fun <T> axisFor(type: KClass<T>): Dimension<T>? where T : DimensionKey, T : Enum<T>`
+        * Called automatically by `Axis<T>` init block.
+    * `fun <T> axisFor(type: KClass<T>): Axis<T>? where T : AxisValue, T : Enum<T>`
+
+        * Looks up axis by value type.
 * Used by:
 
-    * `RegisteredDimension<T>`
-    * `Context.dimension<T>()` extension.
-    * `DimensionBuilder.dimension<T>()`.
+    * `Axis<T>` init block for auto-registration.
+    * `Context.axis<T>()` extension.
+    * `RuleBuilder.axis<T>()` extension.
 
 ## VII. PACKAGE: `io.amichne.konditional.core.instance`
 
@@ -610,7 +613,7 @@
     * `val extension: Evaluable<C>`
 * Secondary constructor (used by builder):
 
-    * Accepts `locales`, `platforms`, `versionRange`, `dimensionConstraints`, `extension`.
+    * Accepts `locales`, `platforms`, `versionRange`, `axisConstraints`, `extension`.
 * Behavior:
 
     * `override fun matches(context: C): Boolean = baseEvaluable.matches(context) && extension.matches(context)`
@@ -630,24 +633,24 @@
     * `val locales: Set<AppLocale>`
     * `val platforms: Set<Platform>`
     * `val versionRange: VersionRange`
-    * `val dimensionConstraints: List<DimensionConstraint>`
+    * `val axisConstraints: List<AxisConstraint>`
 * `matches(context)`:
 
     * `locales.isEmpty() || context.locale in locales`
     * `platforms.isEmpty() || context.platform in platforms`
     * `!versionRange.hasBounds() || versionRange.contains(context.appVersion)`
-    * `dimensionConstraints.all { (context.getDimension(it.axisId) ?: return false).id in it.allowedIds }`
+    * `axisConstraints.all { (Context.getAxisValue(it.axisId) ?: return false).id in it.allowedIds }`
 * `specificity()`:
 
     * 1 for non-empty locales.
     * 1 for non-empty platforms.
     * 1 if version has bounds.
-    * +1 per `DimensionConstraint`.
+    * +1 per `AxisConstraint`.
 
-### 4. `DimensionConstraint`
+### 4. `AxisConstraint`
 
-* `internal data class DimensionConstraint(val axisId: String, val allowedIds: Set<String>)`
-* Used by `BaseEvaluable` to check custom dimension rules.
+* `internal data class AxisConstraint(val axisId: String, val allowedIds: Set<String>)`
+* Used by `BaseEvaluable` to check custom axis targeting rules.
 
 ### 5. `Evaluable<C : Context>`
 
@@ -685,22 +688,22 @@
 
 ## XI. PACKAGE: `io.amichne.konditional.internal.builders`
 
-### 1. `DimensionBuilder`
+### 1. `AxisValuesBuilder`
 
-* Implements `DimensionScope`.
-* State: `private val values = mutableMapOf<String, DimensionKey>()`.
+* Implements `AxisValuesScope`.
+* State: `private val values = mutableMapOf<String, AxisValue>()`.
 * Implementation:
 
     * `set(axis, value)` → `values[axis.id] = value`.
     * `setIfNotNull(axis, value)` → `set` when not null.
-    * Inline helper:
+    * Operator overload:
 
-        * `inline fun <reified T> DimensionBuilder.dimension(value: T)` (type-based setter)
+        * `operator fun <T> set(axis: Axis<T>, value: T) where T : AxisValue, T : Enum<T>`
 
-            * Looks up axis via `DimensionRegistry.axisFor(T::class)` and calls `set(axis, value)`.
-* `build(): Dimensions`:
+            * Enables syntax: `builder[TestAxes.Environment] = TestEnvironment.PROD`.
+* `build(): AxisValues`:
 
-    * If empty → `Dimensions.EMPTY`, else new `Dimensions(values.toMap())`.
+    * If empty → `AxisValues.EMPTY`, else new `AxisValues(values.toMap())`.
 
 ### 2. `FlagBuilder<S, T, C, M>`
 
@@ -731,7 +734,7 @@
     * `note: String?`
     * `range: VersionRange = Unbounded()`
     * `platforms: LinkedHashSet<Platform>`
-    * `dimensionConstraints: MutableList<DimensionConstraint>`
+    * `axisConstraints: MutableList<AxisConstraint>`
     * `locales: LinkedHashSet<AppLocale>`
     * `rollout: Rampup?`
 * Methods:
@@ -739,15 +742,19 @@
     * `locales(vararg appLocales)`, `platforms(vararg ps)`.
     * `versions(build)` → `VersionRangeBuilder`.
     * `extension(block: C.() -> Boolean)` → `Evaluable.factory(block)`.
-    * DSL `dimensions(block: DimensionScope.() -> Unit)` (currently builds and discards `Dimensions`; targeting is via `dimension(...)` below).
-    * `dimension(axis, vararg values)`:
+    * `axis(axis, vararg values)`:
 
-        * Creates/merges `DimensionConstraint` per axisId, unioning `allowedIds`.
+        * Creates/merges `AxisConstraint` per axisId, unioning `allowedIds`.
+    * Type-based extension (via extension function):
+
+        * `inline fun <reified T> axis(vararg values: T)`:
+
+            * Looks up axis via `AxisRegistry.axisFor(T::class)` and delegates to `axis(axis, *values)`.
     * `note(text)`
     * `rollout(function)` → `Rampup.of(number.toDouble())`.
 * `build(): Rule<C>`:
 
-    * Instantiates `Rule` with `range`, `locales`, `platforms`, `dimensionConstraints`, `extension`, `rollout`.
+    * Instantiates `Rule` with `range`, `locales`, `platforms`, `axisConstraints`, `extension`, `rollout`.
 
 ### 4. `VersionRangeBuilder`
 
@@ -934,13 +941,19 @@
 
     * Consumer builds a `Context` implementation:
 
-        * Either `Context.Core(locale, platform, appVersion, stableId)`, or custom data class implementing `Context` with its own dimensions override.
-    * For custom dimensions:
+        * Either `Context.Core(locale, platform, appVersion, stableId)`, or custom data class implementing `Context` with its own `axisValues` override.
+    * For custom axes:
 
-        * Consumer defines enums implementing `DimensionKey`.
-        * Creates axes via `dimensionAxis<MyEnum>("axis-id")` or custom `RegisteredDimension<MyEnum>("axis-id", MyEnum::class)`.
-        * Uses `dimensions { axis(this, MyEnum.VALUE) }` or `axis(builder, MyEnum.VALUE)` or type-based `DimensionBuilder.dimension(MyEnum.VALUE)` to populate `Dimensions`.
-        * Implements `Context.dimensions` to return this `Dimensions`.
+        * Consumer defines enums implementing `AxisValue`.
+        * Creates axes by extending `Axis<T>`:
+
+            * Example: `object Environment : Axis<MyEnvironment>("environment")`
+            * Auto-registers in `AxisRegistry` on creation.
+        * Uses `axisValues { ... }` DSL to populate `AxisValues`:
+
+            * Via builder extensions: `environment(MyEnvironment.PROD)`
+            * Or directly: `set(MyAxes.Environment, MyEnvironment.PROD)`
+        * Implements `Context.axisValues` to return this `AxisValues`.
 
 4. **Rule matching**
 
@@ -949,7 +962,7 @@
 
         * `Rule.matches(context)`:
 
-            * `BaseEvaluable.matches(...)` checks locales, platforms, versionRange, dimensionConstraints.
+            * `BaseEvaluable.matches(...)` checks locales, platforms, versionRange, axisConstraints.
             * `extension.matches(context)` for custom predicate.
         * If matches:
 

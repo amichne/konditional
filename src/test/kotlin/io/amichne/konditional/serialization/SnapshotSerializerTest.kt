@@ -8,11 +8,11 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.FeatureContainer
-import io.amichne.konditional.fix.update
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.fixtures.utilities.update
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
@@ -74,14 +74,14 @@ class SnapshotSerializerTest {
 
     @Test
     fun `Given Konfig with boolean flag, When serialized, Then includes flag with correct type`() {
-            TestFeatures.boolFlag.update(true) {}
+        TestFeatures.boolFlag.update(true) {}
 
-            val json = SnapshotSerializer.serialize(Namespace.Global.configuration)
+        val json = SnapshotSerializer.serialize(Namespace.Global.configuration)
 
-            assertNotNull(json)
-            assertTrue(json.contains("\"key\": \"${TestFeatures.boolFlag.key}\""))
-            assertTrue(json.contains("\"type\": \"BOOLEAN\""))
-            assertTrue(json.contains("\"value\": true"))
+        assertNotNull(json)
+        assertTrue(json.contains("\"key\": \"${TestFeatures.boolFlag.key}\""))
+        assertTrue(json.contains("\"type\": \"BOOLEAN\""))
+        assertTrue(json.contains("\"value\": true"))
     }
 
     @Test

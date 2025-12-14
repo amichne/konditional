@@ -4,8 +4,8 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rampup
+import io.amichne.konditional.rules.evaluable.AxisConstraint
 import io.amichne.konditional.rules.evaluable.BaseEvaluable
-import io.amichne.konditional.rules.evaluable.DimensionConstraint
 import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.evaluable.Placeholder
 import io.amichne.konditional.rules.versions.Unbounded
@@ -76,12 +76,12 @@ data class Rule<C : Context> internal constructor(
         locales: Set<AppLocale> = emptySet(),
         platforms: Set<Platform> = emptySet(),
         versionRange: VersionRange = Unbounded(),
-        dimensionConstraints: List<DimensionConstraint> = emptyList(),
+        axisConstraints: List<AxisConstraint> = emptyList(),
         extension: Evaluable<C> = Placeholder,
     ) : this(
         rollout,
         note,
-        BaseEvaluable(locales, platforms, versionRange, dimensionConstraints),
+        BaseEvaluable(locales, platforms, versionRange, axisConstraints),
         extension,
     )
 

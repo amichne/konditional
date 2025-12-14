@@ -43,7 +43,7 @@ sealed interface EncodableEvidence<T : Any> {
                     } else {
                         throw IllegalArgumentException(
                             "Type ${T::class.qualifiedName} is not encodable. " +
-                                "Supported types: Boolean, String, Int, Double, Enum, JsonObject, JsonArray, KotlinEncodeable"
+                            "Supported types: Boolean, String, Int, Double, Enum, JsonObject, JsonArray, KotlinEncodeable"
                         )
                     }
                 }
@@ -57,7 +57,8 @@ sealed interface EncodableEvidence<T : Any> {
         inline fun <reified T : Any> isEncodable(): Boolean {
             return when (T::class) {
                 Boolean::class, String::class, Int::class, Double::class,
-                JsonObject::class, JsonArray::class -> true
+                JsonObject::class, JsonArray::class,
+                    -> true
                 else -> T::class.java.isEnum || KotlinEncodeable::class.java.isAssignableFrom(T::class.java)
             }
         }

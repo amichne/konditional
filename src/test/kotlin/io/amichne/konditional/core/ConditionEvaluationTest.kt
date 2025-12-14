@@ -58,7 +58,12 @@ class ConditionEvaluationTest {
             defaultValue = "default",
         )
 
-        val matchingResult = condition.evaluate(ctx("22222222222222222222222222222222", locale = AppLocale.UNITED_STATES))
+        val matchingResult = condition.evaluate(
+            ctx(
+                "22222222222222222222222222222222",
+                locale = AppLocale.UNITED_STATES
+            )
+        )
         assertEquals("en-us-value", matchingResult)
 
         val nonMatchingResult = condition.evaluate(ctx("33333333333333333333333333333333", locale = AppLocale.FRANCE))

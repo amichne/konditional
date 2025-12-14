@@ -4,9 +4,9 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rampup
-import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.FlagDefinition
+import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.instance.ConfigurationPatch
 import io.amichne.konditional.core.result.ParseError
@@ -36,7 +36,7 @@ internal fun Configuration.toSerializable(): SerializableSnapshot {
  * Converts a FlagDefinition to a SerializableFlag.
  */
 private fun <S : EncodableValue<T>, T : Any, C : Context> FlagDefinition<S, T, C, *>.toSerializable(
-    flagKey: String
+    flagKey: String,
 ): SerializableFlag {
     return SerializableFlag(
         key = flagKey,
@@ -107,7 +107,7 @@ private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Feature<*, *, *, *>,
  */
 @Suppress("UNCHECKED_CAST")
 private fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> SerializableFlag.toFlagDefinition(
-    conditional: Feature<S, T, C, M>
+    conditional: Feature<S, T, C, M>,
 ): FlagDefinition<S, T, C, M> {
     // Extract typed value from FlagValue (type-safe extraction)
     val typedDefaultValue = defaultValue.extractValue<T>()

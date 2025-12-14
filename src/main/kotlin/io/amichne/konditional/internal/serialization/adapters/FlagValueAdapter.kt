@@ -17,7 +17,10 @@ import java.lang.reflect.Type
  */
 internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
 
-    override fun toJson(writer: JsonWriter, value: FlagValue<*>?) {
+    override fun toJson(
+        writer: JsonWriter,
+        value: FlagValue<*>?,
+    ) {
         if (value == null) {
             writer.nullValue()
             return
@@ -101,13 +104,13 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
         // Parse at the boundary: construct typed domain objects with validation
         return when (type) {
             "BOOLEAN" -> boolValue?.let { FlagValue.BooleanValue(it) }
-                ?: throw JsonDataException("BOOLEAN type requires boolean value")
+                         ?: throw JsonDataException("BOOLEAN type requires boolean value")
             "STRING" -> stringValue?.let { FlagValue.StringValue(it) }
-                ?: throw JsonDataException("STRING type requires string value")
+                        ?: throw JsonDataException("STRING type requires string value")
             "INT" -> intValue?.let { FlagValue.IntValue(it) }
-                ?: throw JsonDataException("INT type requires int value")
+                     ?: throw JsonDataException("INT type requires int value")
             "DOUBLE" -> doubleValue?.let { FlagValue.DoubleValue(it) }
-                ?: throw JsonDataException("DOUBLE type requires double value")
+                        ?: throw JsonDataException("DOUBLE type requires double value")
             "ENUM" -> {
                 if (stringValue == null) {
                     throw JsonDataException("ENUM type requires string value (enum name)")
@@ -134,7 +137,10 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
     /**
      * Serializes a map to JSON object.
      */
-    private fun serializeMap(writer: JsonWriter, map: Map<String, Any?>) {
+    private fun serializeMap(
+        writer: JsonWriter,
+        map: Map<String, Any?>,
+    ) {
         writer.beginObject()
         map.forEach { (key, value) ->
             writer.name(key)
@@ -146,7 +152,10 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
     /**
      * Serializes any value to JSON.
      */
-    private fun serializeValue(writer: JsonWriter, value: Any?) {
+    private fun serializeValue(
+        writer: JsonWriter,
+        value: Any?,
+    ) {
         when (value) {
             null -> writer.nullValue()
             is Boolean -> writer.value(value)
@@ -217,6 +226,7 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
 
     companion object {
         private val flagValueAdapter = FlagValueAdapter()
+
         /**
          * Factory for creating FlagValueAdapter instances.
          * This ensures the adapter is properly registered with Moshi for the FlagValue type.

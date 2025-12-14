@@ -4,10 +4,10 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.features.evaluate
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.fixtures.core.test
 import org.junit.jupiter.api.Test
 import java.util.concurrent.ConcurrentHashMap
@@ -402,7 +402,7 @@ class ConcurrencyAttacksTest {
             override var locale: AppLocale,
             override var platform: Platform,
             override var appVersion: Version,
-            override val stableId: StableId
+            override val stableId: StableId,
         ) : Context
 
         val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {

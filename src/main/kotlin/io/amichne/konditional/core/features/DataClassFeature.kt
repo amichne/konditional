@@ -2,8 +2,8 @@ package io.amichne.konditional.core.features
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.konditional.core.types.DataClassEncodeable
+import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.kontracts.schema.ObjectSchema
 
 /**

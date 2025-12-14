@@ -41,8 +41,8 @@ data class Version(
             }
 
             val major = this[0].toInt()
-            val minor = this.getOrElse(1, { "0" } ).toInt()
-            val patch = this.getOrElse(2, { "0" } ).toInt()
+            val minor = this.getOrElse(1, { "0" }).toInt()
+            val patch = this.getOrElse(2, { "0" }).toInt()
             Version(major, minor, patch)
         }
 

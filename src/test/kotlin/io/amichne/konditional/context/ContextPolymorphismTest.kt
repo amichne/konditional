@@ -2,7 +2,6 @@ package io.amichne.konditional.context
 
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.evaluate
-import io.amichne.konditional.fix.update
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.CompositeContext
 import io.amichne.konditional.fixtures.EnterpriseContext
@@ -14,6 +13,7 @@ import io.amichne.konditional.fixtures.ExperimentFeatures
 import io.amichne.konditional.fixtures.SubscriptionTier
 import io.amichne.konditional.fixtures.UserRole
 import io.amichne.konditional.fixtures.core.id.TestStableId
+import io.amichne.konditional.fixtures.utilities.update
 import io.amichne.konditional.serialization.SnapshotSerializer
 import org.junit.jupiter.api.BeforeEach
 import kotlin.test.Test
@@ -177,7 +177,6 @@ class ContextPolymorphismTest {
 
         assertFalse(EnterpriseFeatures.api_access.evaluate(premiumEditor))
         assertTrue(EnterpriseFeatures.api_access.evaluate(enterpriseAdmin))
-
     }
 
     @Test

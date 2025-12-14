@@ -2,9 +2,9 @@ package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.dimension.Dimension
-import io.amichne.konditional.context.dimension.DimensionKey
 import io.amichne.konditional.context.Platform
+import io.amichne.konditional.context.axis.Axis
+import io.amichne.konditional.context.axis.AxisValue
 
 /**
  * DSL scope for rule configuration.
@@ -66,27 +66,26 @@ interface RuleScope<C : Context> {
     fun versions(build: VersionRangeScope.() -> Unit)
 
     /**
-     * Specifies custom [Dimension] targeting for this rule.
+     * Specifies axis targeting for this rule.
      *
      * Example:
      * ```kotlin
-     * dimension(Environment) {
-     *    Environment.PRODUCTION,
-     *    Environment.STAGING
-     * }
+     * axis(Axes.Environment, Environment.PROD, Environment.STAGE)
+     * axis(Axes.Tenant, Tenant.ENTERPRISE)
      * ```
      *
-     * Adds targeting criteria based on custom dimensions defined in the context,
-     * allowing for more granular control over rule applicability based on consumer-defined axes.
+     * Adds targeting criteria based on custom axes defined in the context,
+     * allowing for more granular control over rule applicability beyond
+     * standard locale, platform, and version criteria.
      *
-     * @param T
-     * @param axis
-     * @param values
+     * @param T The axis value type
+     * @param axis The axis descriptor
+     * @param values The values to allow for this axis
      */
-    fun <T> dimension(
-        axis: Dimension<T>,
+    fun <T> axis(
+        axis: Axis<T>,
         vararg values: T,
-    ) where T : DimensionKey, T : Enum<T>
+    ) where T : AxisValue, T : Enum<T>
 
     /**
      * Adds a custom targeting extension using an Evaluable.

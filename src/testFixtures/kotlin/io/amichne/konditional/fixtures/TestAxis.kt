@@ -4,61 +4,57 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.context.dimension.Dimension
-import io.amichne.konditional.context.dimension.DimensionKey
-import io.amichne.konditional.context.dimension.Dimensions
+import io.amichne.konditional.context.axis.Axis
+import io.amichne.konditional.context.axis.AxisValue
+import io.amichne.konditional.context.axis.AxisValues
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.dsl.DimensionScope
+import io.amichne.konditional.core.dsl.AxisValuesScope
 import io.amichne.konditional.core.dsl.RuleScope
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.registry.DimensionRegistry.register
 import io.amichne.konditional.core.result.getOrThrow
 
 /**
- * Test-only enums representing domain-specific dimension values.
+ * Test-only enums representing domain-specific axis values.
  */
-enum class TestEnvironment(override val id: String) : DimensionKey {
+enum class TestEnvironment(override val id: String) : AxisValue {
     DEV("dev"),
     STAGE("stage"),
     PROD("prod"),
 }
 
-enum class TestTenant(override val id: String) : DimensionKey {
+enum class TestTenant(override val id: String) : AxisValue {
     CONSUMER("consumer"),
     SME("sme"),
     ENTERPRISE("enterprise")
 }
 
 /**
- * Test-only axes for the above dimensions.
+ * Test-only axes for the above values.
  *
  * These mirror what an application would define in its own codebase.
+ * Axes auto-register on object initialization.
  */
 object TestAxes {
-
-    object Environment : Dimension<TestEnvironment> {
-
-    }
-
-    object Tenant : Dimension<TestTenant> by register("tenant")
+    object Environment : Axis<TestEnvironment>("environment")
+    object Tenant : Axis<TestTenant>("tenant")
 }
 
 /**
- * Convenience helpers to make the ContextDimensionsBuilder DSL feel native.
+ * Convenience helpers to make the AxisValuesScope DSL feel native.
  *
  * These would normally live in your application module.
  */
-fun DimensionScope.environment(env: TestEnvironment) {
+fun AxisValuesScope.environment(env: TestEnvironment) {
     set(TestAxes.Environment, env)
 }
 
-fun DimensionScope.tenant(tenant: TestTenant) {
+fun AxisValuesScope.tenant(tenant: TestTenant) {
     set(TestAxes.Tenant, tenant)
 }
 
 /**
- * Test-only context implementation wiring dimensions into Konditional's Context.
+ * Test-only context implementation wiring axis values into Konditional's Context.
  */
 data class TestContext(
     override val locale: AppLocale = AppLocale.UNITED_STATES,
@@ -66,7 +62,7 @@ data class TestContext(
     override val appVersion: Version =
         Version.parse("1.0.0").getOrThrow(),
     override val stableId: StableId = StableId.of("deadbeef"),
-    override val dimensions: Dimensions = Dimensions.EMPTY,
+    override val axisValues: AxisValues = AxisValues.EMPTY,
 ) : Context
 
 /**
@@ -79,15 +75,16 @@ object DimensionsTestNamespace : Namespace.TestNamespaceFacade("dimensions-test"
 /**
  * Test-only feature container exercising the dimension-based DSL.
  */
-object DimensionsTestFeatures :
+object FeaturesWithAxis :
     FeatureContainer<Namespace.TestNamespaceFacade>(DimensionsTestNamespace) {
 
     /**
      * Enabled only when environment == PROD.
+     * Uses the new axis API.
      */
     val ENV_SCOPED_FLAG by boolean<TestContext>(default = false) {
         rule(true) {
-            dimension(TestAxes.Environment, TestEnvironment.PROD)
+            axis(TestAxes.Environment, TestEnvironment.PROD)
         }
     }
 
@@ -95,11 +92,12 @@ object DimensionsTestFeatures :
      * Enabled only when:
      *   environment ∈ { STAGE, PROD }
      *   AND tenant == ENTERPRISE
+     * Uses the new axis API.
      */
     val ENV_AND_TENANT_SCOPED_FLAG by boolean<TestContext>(default = false) {
         rule(true) {
-            dimension(TestAxes.Environment, TestEnvironment.STAGE, TestEnvironment.PROD)
-            dimension(TestAxes.Tenant, TestTenant.ENTERPRISE)
+            axis(TestAxes.Environment, TestEnvironment.STAGE, TestEnvironment.PROD)
+            axis(TestAxes.Tenant, TestTenant.ENTERPRISE)
         }
     }
 
@@ -112,8 +110,8 @@ object DimensionsTestFeatures :
      */
     val FALLBACK_RULE_FLAG by boolean<TestContext>(default = false) {
         rule(true) {
-            dimension(TestAxes.Environment, TestEnvironment.PROD)
-            dimension(TestAxes.Tenant, TestTenant.ENTERPRISE)
+            axis(TestAxes.Environment, TestEnvironment.PROD)
+            axis(TestAxes.Tenant, TestTenant.ENTERPRISE)
         }
 
         rule(true) {
@@ -124,13 +122,13 @@ object DimensionsTestFeatures :
     }
 
     /**
-     * Demonstrates multiple calls to dimension(...) for the same axis
+     * Demonstrates multiple calls to axis(...) for the same axis
      * accumulating allowed values.
      */
     val MULTI_CALL_DIM_FLAG by boolean<TestContext>(default = false) {
         rule(true) {
-            dimension(TestAxes.Environment, TestEnvironment.DEV)
-            dimension(TestAxes.Environment, TestEnvironment.STAGE)
+            axis(TestAxes.Environment, TestEnvironment.DEV)
+            axis(TestAxes.Environment, TestEnvironment.STAGE)
         }
     }
 }
@@ -139,11 +137,13 @@ object DimensionsTestFeatures :
  * App-specific helpers to make the rule DSL read naturally.
  *
  * These would typically live alongside your feature containers.
+ * Note: With the new axis API, these helpers are less necessary since
+ * you can use axis(TestEnvironment.PROD) directly.
  */
 fun <C : Context> RuleScope<C>.environments(vararg envs: TestEnvironment) {
-    dimension(TestAxes.Environment, *envs)
+    axis(TestAxes.Environment, *envs)  // Explicit axis API
 }
 
 fun <C : Context> RuleScope<C>.tenants(vararg tenants: TestTenant) {
-    dimension(TestAxes.Tenant, *tenants)
+    axis(TestAxes.Tenant, *tenants)  // Explicit axis API
 }

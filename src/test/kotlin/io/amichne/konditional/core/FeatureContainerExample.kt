@@ -87,16 +87,14 @@ object FeatureContainerValueDemo {
     // ✅ BENEFIT 2: Type safety preserved
     fun typeSafetyDemo(context: Context) {
         // Boolean feature
-        val applePay: BooleanFeature<Context, Namespace.Payments> =
-            PaymentFeatures.apple_pay
+        PaymentFeatures.apple_pay
 
         // Int feature
-        val maxCards: IntFeature<Context, Namespace.Payments> =
-            PaymentFeatures.max_cards
+        PaymentFeatures.max_cards
 
         // Type inference works
-        val enabled = PaymentFeatures.apple_pay.evaluate(context)
-        val limit = PaymentFeatures.max_cards.evaluate(context)
+        PaymentFeatures.apple_pay.evaluate(context)
+        PaymentFeatures.max_cards.evaluate(context)
 
         // Compile-time type safety
         // val x: Int = PaymentFeatures.apple_pay // ❌ Type mismatch

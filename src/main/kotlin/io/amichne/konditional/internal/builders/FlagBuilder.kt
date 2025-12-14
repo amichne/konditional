@@ -56,7 +56,10 @@ internal data class FlagBuilder<S : EncodableValue<T>, T : Any, C : Context, M :
      * Implementation of [FlagScope.rule] that creates a rule and associates it with a value.
      * The value-first design ensures every rule has an associated return value at compile time.
      */
-    override fun rule(value: T, build: RuleScope<C>.() -> Unit) {
+    override fun rule(
+        value: T,
+        build: RuleScope<C>.() -> Unit,
+    ) {
         val rule = RuleBuilder<C>().apply(build).build()
         conditionalValues += rule.targetedBy(value)
     }

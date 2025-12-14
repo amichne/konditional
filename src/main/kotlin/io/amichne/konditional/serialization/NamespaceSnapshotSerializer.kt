@@ -61,7 +61,7 @@ import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
  */
 class NamespaceSnapshotSerializer<M : Namespace>(
     private val module: M,
-    private val moshi: Moshi = SnapshotSerializer.defaultMoshi()
+    private val moshi: Moshi = SnapshotSerializer.defaultMoshi(),
 ) : Serializer<Configuration> {
 
     private val snapshotAdapter = moshi.adapter(SerializableSnapshot::class.java).indent("  ")
@@ -104,9 +104,9 @@ class NamespaceSnapshotSerializer<M : Namespace>(
     override fun fromJson(json: String): ParseResult<Configuration> {
         return try {
             val serializable = snapshotAdapter.fromJson(json)
-                ?: return ParseResult.Failure(
-                    ParseError.InvalidJson("Failed to parseUnsafe JSON for namespace '${module.id}': null result")
-                )
+                               ?: return ParseResult.Failure(
+                                   ParseError.InvalidJson("Failed to parseUnsafe JSON for namespace '${module.id}': null result")
+                               )
 
             // Parse the serializable snapshot into a Configuration
             when (val parseResult = serializable.toSnapshot()) {

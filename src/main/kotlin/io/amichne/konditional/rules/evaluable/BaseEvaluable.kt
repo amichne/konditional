@@ -2,7 +2,7 @@ package io.amichne.konditional.rules.evaluable
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Context.Companion.getDimension
+import io.amichne.konditional.context.Context.Companion.getAxisValue
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
@@ -36,8 +36,7 @@ internal data class BaseEvaluable<C : Context>(
     val locales: Set<AppLocale> = emptySet(),
     val platforms: Set<Platform> = emptySet(),
     val versionRange: VersionRange = Unbounded(),
-    val dimensionConstraints: List<DimensionConstraint> = emptyList(),
-
+    val axisConstraints: List<AxisConstraint> = emptyList(),
 ) : Evaluable<C> {
     /**
      * Determines if the contextFn matches all specified constraints.
@@ -51,7 +50,7 @@ internal data class BaseEvaluable<C : Context>(
         (locales.isEmpty() || context.locale in locales) &&
         (platforms.isEmpty() || context.platform in platforms) &&
         (!versionRange.hasBounds() || versionRange.contains(context.appVersion)) &&
-        dimensionConstraints.all { (context.getDimension(it.axisId) ?: return false).id in it.allowedIds }
+        axisConstraints.all { (context.getAxisValue(it.axisId) ?: return false).id in it.allowedIds }
 
     /**
      * Calculates specificity as the count of specified constraints.
@@ -62,5 +61,5 @@ internal data class BaseEvaluable<C : Context>(
         (if (locales.isNotEmpty()) 1 else 0) +
         (if (platforms.isNotEmpty()) 1 else 0) +
         (if (versionRange.hasBounds()) 1 else 0) +
-        dimensionConstraints.size
+        axisConstraints.size
 }

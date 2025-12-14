@@ -32,7 +32,7 @@ import io.amichne.konditional.core.types.EncodableValue
 interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> {
     val default: T
 
-    fun active(block: () -> Boolean): Unit
+    fun active(block: () -> Boolean)
 
     /**
      * Sets the salt value for the flag.
@@ -63,5 +63,8 @@ interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> 
      * @param value The value to return when this rule matches
      * @param build DSL block for configuring the rule's targeting criteria
      */
-    fun rule(value: T, build: RuleScope<C>.() -> Unit = {})
+    fun rule(
+        value: T,
+        build: RuleScope<C>.() -> Unit = {},
+    )
 }

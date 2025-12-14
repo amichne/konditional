@@ -2,17 +2,17 @@ package io.amichne.konditional.internal.builders
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.dimension.Dimension
-import io.amichne.konditional.context.dimension.DimensionKey
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rampup
-import io.amichne.konditional.core.dsl.DimensionScope
+import io.amichne.konditional.context.axis.Axis
+import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.RuleScope
 import io.amichne.konditional.core.dsl.VersionRangeScope
+import io.amichne.konditional.core.registry.AxisRegistry
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.Rule
-import io.amichne.konditional.rules.evaluable.DimensionConstraint
+import io.amichne.konditional.rules.evaluable.AxisConstraint
 import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.evaluable.Evaluable.Companion.factory
 import io.amichne.konditional.rules.evaluable.Placeholder
@@ -36,7 +36,7 @@ internal data class RuleBuilder<C : Context>(
     private var note: String? = null,
     private var range: VersionRange = Unbounded(),
     private val platforms: LinkedHashSet<Platform> = linkedSetOf(),
-    private val dimensionConstraints: MutableList<DimensionConstraint> = mutableListOf(),
+    private val axisConstraints: MutableList<AxisConstraint> = mutableListOf(),
     private val locales: LinkedHashSet<AppLocale> = linkedSetOf(),
     private var rollout: Rampup? = null,
 ) : RuleScope<C> {
@@ -70,40 +70,22 @@ internal data class RuleBuilder<C : Context>(
         extension = factory { block(it) }
     }
 
-    fun dimensions(block: DimensionScope.() -> Unit) {
-        val builder = DimensionBuilder().apply(block)
-        // Extract dimension values and convert to constraints
-        val values = builder.getValues()
-        if (values.isEmpty()) {
-            error("BUG: dimensions block executed but no values were set!")
-        }
-        values.forEach { (axisId, dimensionKey) ->
-            val allowedIds = setOf(dimensionKey.id)
-            val idx = dimensionConstraints.indexOfFirst { it.axisId == axisId }
-            if (idx >= 0) {
-                val existing = dimensionConstraints[idx]
-                dimensionConstraints[idx] = existing.copy(
-                    allowedIds = existing.allowedIds + allowedIds
-                )
-            } else {
-                dimensionConstraints += DimensionConstraint(axisId, allowedIds)
-            }
-        }
-    }
-
-    override fun <T> dimension(
-        axis: Dimension<T>,
+    /**
+     * Implementation of [RuleScope.axis].
+     */
+    override fun <T> axis(
+        axis: Axis<T>,
         vararg values: T,
-    ) where T : DimensionKey, T : Enum<T>  {
+    ) where T : AxisValue, T : Enum<T> {
         val allowedIds = values.mapTo(linkedSetOf()) { it.id }
-        val idx = dimensionConstraints.indexOfFirst { it.axisId == axis.id }
+        val idx = axisConstraints.indexOfFirst { it.axisId == axis.id }
         if (idx >= 0) {
-            val existing = dimensionConstraints[idx]
-            dimensionConstraints[idx] = existing.copy(
+            val existing = axisConstraints[idx]
+            axisConstraints[idx] = existing.copy(
                 allowedIds = existing.allowedIds + allowedIds
             )
         } else {
-            dimensionConstraints += DimensionConstraint(axis.id, allowedIds)
+            axisConstraints += AxisConstraint(axis.id, allowedIds)
         }
     }
 
@@ -130,8 +112,36 @@ internal data class RuleBuilder<C : Context>(
             locales = locales,
             platforms = platforms,
             versionRange = range,
-            dimensionConstraints = dimensionConstraints.toList(),
+            axisConstraints = axisConstraints.toList(),
             note = note,
             extension = extension,
         )
+}
+
+/**
+ * Type-based axis targeting (primary API).
+ *
+ * This is the recommended way to add axis constraints. The axis is inferred from the
+ * value type using the [AxisRegistry].
+ *
+ * Example:
+ * ```kotlin
+ * rule {
+ *     axis(Environment.PROD, Environment.STAGE)  // Axis inferred from type
+ *     axis(Tenant.ENTERPRISE)
+ * }
+ * ```
+ *
+ * Multiple calls to the same axis accumulate allowed values (OR semantics).
+ * Multiple different axes create AND semantics.
+ *
+ * @param T The axis value type (must be registered)
+ * @param values The values to allow for this axis
+ * @throws IllegalStateException if no axis is registered for type T
+ */
+@PublishedApi
+internal inline fun <reified T, C : Context> RuleBuilder<C>.axis(vararg values: T) where T : AxisValue, T : Enum<T> {
+    val axisDescriptor = AxisRegistry.axisFor(T::class)
+                         ?: error("No Axis registered for type ${T::class.simpleName}")
+    axis(axisDescriptor, *values)
 }

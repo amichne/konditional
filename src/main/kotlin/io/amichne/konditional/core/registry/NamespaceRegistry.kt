@@ -108,7 +108,7 @@ interface NamespaceRegistry {
      */
     @Suppress("UNCHECKED_CAST")
     fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> flag(
-        key: Feature<S, T, C, M>
+        key: Feature<S, T, C, M>,
     ): FlagDefinition<S, T, C, M> =
         configuration.flags[key] as FlagDefinition<S, T, C, M>
 
@@ -146,9 +146,10 @@ interface NamespaceRegistry {
          * @return A new [InMemoryNamespaceRegistry] instance
          * @since 0.0.2
          */
-        operator fun invoke(configuration: Configuration = Configuration(emptyMap())): NamespaceRegistry = InMemoryNamespaceRegistry().apply {
-            load(configuration)
-        }
+        operator fun invoke(configuration: Configuration = Configuration(emptyMap())): NamespaceRegistry =
+            InMemoryNamespaceRegistry().apply {
+                load(configuration)
+            }
 
         /**
          * Updates a single flag definition in the current configuration.
@@ -165,7 +166,7 @@ interface NamespaceRegistry {
          * @param C The type of the contextFn used for evaluation
          */
         internal fun <S : EncodableValue<T>, T : Any, C : Context> NamespaceRegistry.updateDefinition(
-            definition: FlagDefinition<S, T, C, *>
+            definition: FlagDefinition<S, T, C, *>,
         ) {
             when (this) {
                 is InMemoryNamespaceRegistry -> updateDefinition(definition)

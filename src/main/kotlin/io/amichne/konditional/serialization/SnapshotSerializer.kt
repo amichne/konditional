@@ -77,7 +77,7 @@ object SnapshotSerializer {
     fun fromJson(json: String): ParseResult<Configuration> {
         return try {
             val serializable = snapshotAdapter.fromJson(json)
-                ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parseUnsafe JSON: null result"))
+                               ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parseUnsafe JSON: null result"))
             serializable.toSnapshot()
         } catch (e: Exception) {
             ParseResult.Failure(ParseError.InvalidJson(e.message ?: "Unknown JSON parsing error"))
@@ -103,7 +103,7 @@ object SnapshotSerializer {
     internal fun fromJsonPatch(json: String): ParseResult<SerializablePatch> {
         return try {
             val patch = patchAdapter.fromJson(json)
-                ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parseUnsafe patch JSON: null result"))
+                        ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parseUnsafe patch JSON: null result"))
             ParseResult.Success(patch)
         } catch (e: Exception) {
             ParseResult.Failure(ParseError.InvalidJson(e.message ?: "Unknown JSON parsing error"))
@@ -117,7 +117,10 @@ object SnapshotSerializer {
      * @param patch The patch to apply
      * @return ParseResult containing either the new Configuration with the patch applied or an error
      */
-    internal fun applyPatch(currentConfiguration: Configuration, patch: SerializablePatch): ParseResult<Configuration> {
+    internal fun applyPatch(
+        currentConfiguration: Configuration,
+        patch: SerializablePatch,
+    ): ParseResult<Configuration> {
         return try {
             // Convert current snapshot to serializable form
             val currentSerializable = currentConfiguration.toSerializable()
@@ -150,7 +153,10 @@ object SnapshotSerializer {
      * @param patchJson The JSON string containing the patch
      * @return ParseResult containing either the new Configuration with the patch applied or an error
      */
-    fun applyPatchJson(currentConfiguration: Configuration, patchJson: String): ParseResult<Configuration> {
+    fun applyPatchJson(
+        currentConfiguration: Configuration,
+        patchJson: String,
+    ): ParseResult<Configuration> {
         return when (val patchResult = fromJsonPatch(patchJson)) {
             is ParseResult.Success -> applyPatch(currentConfiguration, patchResult.value)
             is ParseResult.Failure -> ParseResult.Failure(patchResult.error)

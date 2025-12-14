@@ -31,7 +31,11 @@ interface VersionRangeScope {
      * @param minor The minor version number (default 0)
      * @param patch The patch version number (default 0)
      */
-    fun min(major: Int, minor: Int = 0, patch: Int = 0)
+    fun min(
+        major: Int,
+        minor: Int = 0,
+        patch: Int = 0,
+    )
 
     /**
      * Sets the maximum version (exclusive) for this range.
@@ -45,5 +49,9 @@ interface VersionRangeScope {
      * @param minor The minor version number (default 0)
      * @param patch The patch version number (default 0)
      */
-    fun max(major: Int, minor: Int = 0, patch: Int = 0)
+    fun max(
+        major: Int,
+        minor: Int = 0,
+        patch: Int = 0,
+    )
 }

@@ -1,7 +1,7 @@
 package io.amichne.konditional.context
 
-import io.amichne.konditional.context.dimension.DimensionKey
-import io.amichne.konditional.context.dimension.Dimensions
+import io.amichne.konditional.context.axis.AxisValue
+import io.amichne.konditional.context.axis.AxisValues
 import io.amichne.konditional.core.id.StableId
 
 /**
@@ -37,12 +37,15 @@ interface Context {
     val stableId: StableId
 
     /**
-     * Additional dimensions (env, region, tenant, etc.).
+     * Axis values for this context (environment, region, tenant, etc.).
      *
-     * Defaults to [io.amichne.konditional.context.dimension.Dimensions.EMPTY] so simple contexts don’t have to care.
+     * Provides access to dimensional values for more granular rule targeting
+     * beyond the standard locale, platform, and version criteria.
+     *
+     * Defaults to [AxisValues.EMPTY] for simple contexts that don't use axis values.
      */
-    val dimensions: Dimensions
-        get() = Dimensions.EMPTY
+    val axisValues: AxisValues
+        get() = AxisValues.EMPTY
 
     data class Core(
         override val locale: AppLocale,
@@ -73,14 +76,16 @@ interface Context {
         ): Core = Core(locale, platform, appVersion, stableId)
 
         /**
-         * Generic access to additional dimensions (env, region, tenant, etc.).
+         * Generic access to axis values by axis ID.
          *
-         * Implementations *may* store these in a map, but callers never see that.
-         * Consumers should not use this directly; instead they use typed axes
-         * via the `dimension(axis)` extension (see below).
+         * Consumers should prefer the type-safe extension functions like
+         * `context.axis<Environment>()` rather than calling this directly.
+         *
+         * @param axisId The unique identifier of the axis
+         * @return The value for that axis, or null if not present
          */
         @PublishedApi
-        internal fun Context.getDimension(axisId: String): DimensionKey? =
-            dimensions[axisId]
+        internal fun Context.getAxisValue(axisId: String): AxisValue? =
+            axisValues[axisId]
     }
 }

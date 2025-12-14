@@ -6,10 +6,10 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rampup
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.features.evaluate
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.fixtures.core.test
 import io.amichne.konditional.rules.versions.FullyBound
 import org.junit.jupiter.api.Test
@@ -90,7 +90,7 @@ class AdversarialConfigTest {
         // Negative versions don't make sense semantically but parseUnsafe successfully
         assertThrows<IllegalArgumentException> {
 
-            val version = Version(-1, -1, -1)
+            Version(-1, -1, -1)
         }
     }
 
@@ -132,7 +132,6 @@ class AdversarialConfigTest {
             Version.parseUnsafe("")
         }
     }
-
 
     @Test
     fun `multiple rules with same specificity - order determines winner`() {
@@ -524,7 +523,7 @@ class AdversarialConfigTest {
     fun `version range inverted (max less than min) creates impossible condition`() {
         // This compiles but creates a range that matches nothing
         assertThrows<IllegalArgumentException> {
-            val invalidRange = FullyBound(
+            FullyBound(
                 min = Version(2, 0, 0),
                 max = Version(1, 0, 0) // max < min!
             )

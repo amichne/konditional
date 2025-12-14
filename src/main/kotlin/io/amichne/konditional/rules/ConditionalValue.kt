@@ -15,7 +15,7 @@ import io.amichne.konditional.core.types.EncodableValue
 @ConsistentCopyVisibility
 internal data class ConditionalValue<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> private constructor(
     val rule: Rule<C>,
-    val value: T
+    val value: T,
 ) {
     companion object {
         internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Rule<C>.targetedBy(value: T): ConditionalValue<S, T, C, M> =

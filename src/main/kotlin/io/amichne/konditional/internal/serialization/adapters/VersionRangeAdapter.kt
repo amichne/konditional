@@ -45,9 +45,9 @@ internal class VersionRangeAdapter(moshi: Moshi) {
         return when (type) {
             "UNBOUNDED" -> Unbounded()
             "MIN_BOUND" -> min?.let { LeftBound(it) }
-                ?: throw JsonDataException("MIN_BOUND requires 'min' field")
+                           ?: throw JsonDataException("MIN_BOUND requires 'min' field")
             "MAX_BOUND" -> max?.let { RightBound(it) }
-                ?: throw JsonDataException("MAX_BOUND requires 'max' field")
+                           ?: throw JsonDataException("MAX_BOUND requires 'max' field")
             "MIN_AND_MAX_BOUND" -> {
                 if (min != null && max != null) {
                     FullyBound(min, max)

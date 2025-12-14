@@ -1,36 +1,38 @@
 package io.amichne.konditional.api
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Context.Companion.getDimension
+import io.amichne.konditional.context.Context.Companion.getAxisValue
 import io.amichne.konditional.context.ContextAware
-import io.amichne.konditional.context.dimension.Dimension
-import io.amichne.konditional.context.dimension.DimensionKey
+import io.amichne.konditional.context.axis.Axis
+import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.features.FeatureAware
 import io.amichne.konditional.core.features.evaluate
-import io.amichne.konditional.core.registry.DimensionRegistry
+import io.amichne.konditional.core.registry.AxisRegistry
 import io.amichne.konditional.core.types.EncodableValue
 
-inline fun <reified T, reified C : Context> C.dimension(axis: Dimension<T>): T? where T : DimensionKey, T : Enum<T> =
-    getDimension(axis.id) as? T
-
 /**
- * Type-based dimension getter.
+ * Type-based axis value getter.
  *
  * Example:
- *   val env: Environment? = ctx.dimension<Environment>()
+ *   val env: Environment? = ctx.axis<Environment>()
  */
-inline fun <reified T> Context.dimension(): T? where T : DimensionKey, T : Enum<T> {
-    val axis = DimensionRegistry.axisFor(T::class) ?: return null
+inline fun <reified T> Context.axis(): T? where T : AxisValue, T : Enum<T> {
+    val axisDescriptor = AxisRegistry.axisFor(T::class) ?: return null
     @Suppress("UNCHECKED_CAST")
-    return dimensions[axis]
+    return axisValues[axisDescriptor]
 }
 
-
-
-inline fun <reified T> dimensionAxis(id: String): Dimension<T> where T : DimensionKey, T : Enum<T> = Dimension<T>(id)
+/**
+ * Axis-based value getter.
+ *
+ * Example:
+ *   val env = ctx.axis(Axes.Environment)
+ */
+inline fun <reified T, reified C : Context> C.axis(axis: Axis<T>): T? where T : AxisValue, T : Enum<T> =
+    getAxisValue(axis.id) as? T
 
 inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context, M : Namespace, D> D.feature(
     block: D.() -> Feature<S, T, C, M>,

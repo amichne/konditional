@@ -18,7 +18,7 @@ import io.amichne.konditional.core.result.ParseResult
  */
 inline fun <T, R> ParseResult<T>.fold(
     onSuccess: (T) -> R,
-    onFailure: (ParseError) -> R
+    onFailure: (ParseError) -> R,
 ): R = when (this) {
     is ParseResult.Success -> onSuccess(value)
     is ParseResult.Failure -> onFailure(error)

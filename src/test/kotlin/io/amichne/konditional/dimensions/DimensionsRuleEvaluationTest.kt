@@ -1,23 +1,20 @@
 package io.amichne.konditional.dimensions
 
-import io.amichne.konditional.context.AppLocale
-import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.features.evaluate
-import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.getOrThrow
-import io.amichne.konditional.fix.dimensions
-import io.amichne.konditional.fixtures.DimensionsTestFeatures
+import io.amichne.konditional.fixtures.FeaturesWithAxis
 import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
 import io.amichne.konditional.fixtures.environment
+import io.amichne.konditional.fixtures.utilities.axisValues
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 /**
- * Unit tests for dimension-based rule evaluation via FeatureContainer & Feature.evaluate.
+ * Unit tests for axis-based rule evaluation via FeatureContainer & Feature.evaluate.
  */
 class DimensionsRuleEvaluationTest {
 
@@ -26,7 +23,7 @@ class DimensionsRuleEvaluationTest {
         tenant: TestTenant? = null,
         version: String = "1.0.0",
     ): TestContext {
-        val dims = dimensions {
+        val values = axisValues {
             if (env != null) environment(env)
             if (tenant != null) {
                 this[TestAxes.Tenant] = tenant
@@ -34,11 +31,8 @@ class DimensionsRuleEvaluationTest {
         }
 
         return TestContext(
-            locale = AppLocale.UNITED_STATES,
-            platform = Platform.ANDROID,
             appVersion = Version.parse(version).getOrThrow(),
-            stableId = StableId.of("deadbeef"),
-            dimensions = dims,
+            axisValues = values,
         )
     }
 
@@ -50,19 +44,19 @@ class DimensionsRuleEvaluationTest {
         val noEnvCtx = contextFor(env = null)
 
         Assertions.assertTrue(
-            DimensionsTestFeatures.ENV_SCOPED_FLAG.evaluate(prodCtx),
+            FeaturesWithAxis.ENV_SCOPED_FLAG.evaluate(prodCtx),
             "Flag should be true when environment is PROD",
         )
         Assertions.assertFalse(
-            DimensionsTestFeatures.ENV_SCOPED_FLAG.evaluate(stageCtx),
+            FeaturesWithAxis.ENV_SCOPED_FLAG.evaluate(stageCtx),
             "Flag should be false when environment is STAGE",
         )
         Assertions.assertFalse(
-            DimensionsTestFeatures.ENV_SCOPED_FLAG.evaluate(devCtx),
+            FeaturesWithAxis.ENV_SCOPED_FLAG.evaluate(devCtx),
             "Flag should be false when environment is DEV",
         )
         Assertions.assertFalse(
-            DimensionsTestFeatures.ENV_SCOPED_FLAG.evaluate(noEnvCtx),
+            FeaturesWithAxis.ENV_SCOPED_FLAG.evaluate(noEnvCtx),
             "Flag should be false when environment dimension is missing",
         )
     }
@@ -87,19 +81,19 @@ class DimensionsRuleEvaluationTest {
         )
 
         Assertions.assertTrue(
-            DimensionsTestFeatures.ENV_AND_TENANT_SCOPED_FLAG.evaluate(prodEnterprise),
+            FeaturesWithAxis.ENV_AND_TENANT_SCOPED_FLAG.evaluate(prodEnterprise),
             "Flag should be true for PROD + ENTERPRISE",
         )
         Assertions.assertTrue(
-            DimensionsTestFeatures.ENV_AND_TENANT_SCOPED_FLAG.evaluate(stageEnterprise),
+            FeaturesWithAxis.ENV_AND_TENANT_SCOPED_FLAG.evaluate(stageEnterprise),
             "Flag should be true for STAGE + ENTERPRISE",
         )
         Assertions.assertFalse(
-            DimensionsTestFeatures.ENV_AND_TENANT_SCOPED_FLAG.evaluate(prodConsumer),
+            FeaturesWithAxis.ENV_AND_TENANT_SCOPED_FLAG.evaluate(prodConsumer),
             "Flag should be false when tenant is not ENTERPRISE",
         )
         Assertions.assertFalse(
-            DimensionsTestFeatures.ENV_AND_TENANT_SCOPED_FLAG.evaluate(devEnterprise),
+            FeaturesWithAxis.ENV_AND_TENANT_SCOPED_FLAG.evaluate(devEnterprise),
             "Flag should be false when environment is not STAGE or PROD",
         )
     }
@@ -126,19 +120,19 @@ class DimensionsRuleEvaluationTest {
 
         // Rule #1 should match regardless of version
         Assertions.assertTrue(
-            DimensionsTestFeatures.FALLBACK_RULE_FLAG.evaluate(prodEnterpriseV1),
+            FeaturesWithAxis.FALLBACK_RULE_FLAG.evaluate(prodEnterpriseV1),
             "Specific env+tenant rule should match first",
         )
 
         // Rule #1 fails (tenant != ENTERPRISE); Rule #2 should match by version
         Assertions.assertTrue(
-            DimensionsTestFeatures.FALLBACK_RULE_FLAG.evaluate(prodConsumerV3),
+            FeaturesWithAxis.FALLBACK_RULE_FLAG.evaluate(prodConsumerV3),
             "Fallback version-based rule should match when version >= 2.0.0",
         )
 
         // Neither rule matches; default should be returned (false)
         Assertions.assertFalse(
-            DimensionsTestFeatures.FALLBACK_RULE_FLAG.evaluate(devconsumerv15),
+            FeaturesWithAxis.FALLBACK_RULE_FLAG.evaluate(devconsumerv15),
             "No rules should match for DEV + version < 2.0.0",
         )
     }
@@ -150,15 +144,15 @@ class DimensionsRuleEvaluationTest {
         val prodCtx = contextFor(env = TestEnvironment.PROD)
 
         Assertions.assertTrue(
-            DimensionsTestFeatures.MULTI_CALL_DIM_FLAG.evaluate(devCtx),
+            FeaturesWithAxis.MULTI_CALL_DIM_FLAG.evaluate(devCtx),
             "Flag should be true when env == DEV",
         )
         Assertions.assertTrue(
-            DimensionsTestFeatures.MULTI_CALL_DIM_FLAG.evaluate(stageCtx),
+            FeaturesWithAxis.MULTI_CALL_DIM_FLAG.evaluate(stageCtx),
             "Flag should be true when env == STAGE",
         )
         Assertions.assertFalse(
-            DimensionsTestFeatures.MULTI_CALL_DIM_FLAG.evaluate(prodCtx),
+            FeaturesWithAxis.MULTI_CALL_DIM_FLAG.evaluate(prodCtx),
             "Flag should be false when env == PROD",
         )
     }

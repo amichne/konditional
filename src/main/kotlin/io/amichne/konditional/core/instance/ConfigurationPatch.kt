@@ -42,7 +42,7 @@ data class ConfigurationPatch internal constructor(
         fun empty(): ConfigurationPatch = ConfigurationPatch(emptyMap(), emptySet())
 
         fun patch(
-            builder: PatchBuilder.() -> Unit
+            builder: PatchBuilder.() -> Unit,
         ): ConfigurationPatch = PatchBuilder().apply(builder).build()
     }
 
@@ -59,7 +59,7 @@ data class ConfigurationPatch internal constructor(
          * @param entry Pair of Feature key and its flag definition
          */
         fun <S : EncodableValue<T>, T : Any, C : Context> add(
-            entry: FlagDefinition<S, T, C, *>
+            entry: FlagDefinition<S, T, C, *>,
         ) {
             flags[entry.feature] = entry
             // If we're adding a flag, ensure it's not also in removeKeys

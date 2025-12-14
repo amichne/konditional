@@ -24,7 +24,7 @@ import io.amichne.kontracts.value.JsonObject
  */
 data class DataClassEncodeable<T : KotlinEncodeable<ObjectSchema>>(
     override val value: T,
-    val schema: ObjectSchema
+    val schema: ObjectSchema,
 ) : EncodableValue<T> {
     override val encoding: EncodableValue.Encoding = EncodableValue.Encoding.CUSTOM
 
@@ -45,7 +45,7 @@ data class DataClassEncodeable<T : KotlinEncodeable<ObjectSchema>>(
          */
         inline fun <reified T : KotlinEncodeable<ObjectSchema>> fromJsonValue(
             jsonObject: JsonObject,
-            schema: ObjectSchema
+            schema: ObjectSchema,
         ): ParseResult<DataClassEncodeable<T>> {
             return jsonObject.parseAs<T>().map { instance ->
                 DataClassEncodeable(instance, schema)

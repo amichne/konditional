@@ -38,6 +38,7 @@ sealed interface EncodableValue<T : Any> {
         JSON_OBJECT(JsonObject::class),
         JSON_ARRAY(JsonArray::class),
         CUSTOM(KotlinEncodeable::class),
+
         @Deprecated(
             "Use CUSTOM instead",
             ReplaceWith("CUSTOM"),

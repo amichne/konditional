@@ -16,19 +16,28 @@ sealed interface ParseError {
      * Failed to parseUnsafe a hexadecimal identifier.
      */
     @ConsistentCopyVisibility
-    data class InvalidHexId internal constructor(val input: String, override val message: String) : ParseError
+    data class InvalidHexId internal constructor(
+        val input: String,
+        override val message: String,
+    ) : ParseError
 
     /**
      * Invalid rollout percentage (must be 0.0-100.0).
      */
     @ConsistentCopyVisibility
-    data class InvalidRollout internal constructor(val value: Double, override val message: String) : ParseError
+    data class InvalidRollout internal constructor(
+        val value: Double,
+        override val message: String,
+    ) : ParseError
 
     /**
      * Failed to parseUnsafe a semantic version string.
      */
     @ConsistentCopyVisibility
-    data class InvalidVersion internal constructor(val input: String, override val message: String) : ParseError
+    data class InvalidVersion internal constructor(
+        val input: String,
+        override val message: String,
+    ) : ParseError
 
     /**
      * Feature key not found in registry.

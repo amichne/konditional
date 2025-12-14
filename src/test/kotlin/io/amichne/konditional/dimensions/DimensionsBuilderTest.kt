@@ -1,61 +1,61 @@
 package io.amichne.konditional.dimensions
 
-import io.amichne.konditional.context.dimension.Dimensions
-import io.amichne.konditional.fix.dimensions
+import io.amichne.konditional.context.axis.AxisValues
 import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
 import io.amichne.konditional.fixtures.environment
 import io.amichne.konditional.fixtures.tenant
-import io.amichne.konditional.internal.builders.DimensionBuilder
+import io.amichne.konditional.fixtures.utilities.axisValues
+import io.amichne.konditional.internal.builders.AxisValuesBuilder
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 /**
- * Unit tests for Dimensions & ContextDimensionsBuilder.
+ * Unit tests for AxisValues & AxisValuesBuilder (and legacy Dimensions).
  */
 class DimensionsBuilderTest {
 
+    // Old Dimension tests removed - TestAxes now use Axis<T> instead of Dimension<T>
+    // The new Axis API tests below provide equivalent coverage
+
+    // ===== New Axis API Tests =====
+
     @Test
-    fun `dimensions builder returns EMPTY when no values set`() {
-        val dims = dimensions { }
+    fun `axisValues builder returns EMPTY when no values set`() {
+        val values = axisValues { }
 
         Assertions.assertSame(
-            Dimensions.EMPTY,
-            dims,
+            AxisValues.EMPTY,
+            values,
             "Empty builder should return the shared EMPTY instance",
         )
-        Assertions.assertNull(dims[TestAxes.Environment], "No environment should be present")
-        Assertions.assertNull(dims[TestAxes.Tenant], "No tenant should be present")
-        Assertions.assertNull(dims["env"], "Axis ID lookup should also be empty")
+        Assertions.assertNull(values[TestAxes.Environment], "No environment should be present")
+        Assertions.assertNull(values[TestAxes.Tenant], "No tenant should be present")
     }
 
     @Test
-    fun `dimensions builder stores and retrieves typed values`() {
-        val dims = dimensions {
+    fun `axisValues builder stores and retrieves typed values`() {
+        val values = axisValues {
             environment(TestEnvironment.DEV)
             tenant(TestTenant.SME)
         }
 
         Assertions.assertEquals(
             TestEnvironment.DEV,
-            dims[TestAxes.Environment],
+            values[TestAxes.Environment],
             "Typed axis lookup should return environment value",
         )
         Assertions.assertEquals(
             TestTenant.SME,
-            dims[TestAxes.Tenant],
+            values[TestAxes.Tenant],
             "Typed axis lookup should return tenant value",
         )
-
-        val envById = dims["env"]
-        Assertions.assertNotNull(envById)
-        Assertions.assertEquals("dev", envById!!.id)
     }
 
     @Test
-    fun `dimensions builder overrides previous value for same axis`() {
-        val dims = dimensions {
+    fun `axisValues builder overrides previous value for same axis`() {
+        val values = axisValues {
             environment(TestEnvironment.DEV)
             environment(TestEnvironment.PROD)   // override
             tenant(TestTenant.CONSUMER)
@@ -64,30 +64,30 @@ class DimensionsBuilderTest {
 
         Assertions.assertEquals(
             TestEnvironment.PROD,
-            dims[TestAxes.Environment],
+            values[TestAxes.Environment],
             "Last value for Environment axis must win",
         )
         Assertions.assertEquals(
             TestTenant.ENTERPRISE,
-            dims[TestAxes.Tenant],
+            values[TestAxes.Tenant],
             "Last value for Tenant axis must win",
         )
     }
 
     @Test
-    fun `setIfNotNull skips null values`() {
-        val builder = DimensionBuilder()
+    fun `axisValues setIfNotNull skips null values`() {
+        val builder = AxisValuesBuilder()
         builder[TestAxes.Environment] = TestEnvironment.STAGE
         builder.setIfNotNull(TestAxes.Tenant, null)
 
-        val dims = builder.build()
+        val values = builder.build()
 
         Assertions.assertEquals(
             TestEnvironment.STAGE,
-            dims[TestAxes.Environment],
+            values[TestAxes.Environment],
         )
         Assertions.assertNull(
-            dims[TestAxes.Tenant],
+            values[TestAxes.Tenant],
             "Tenant should not be present when null is passed to setIfNotNull",
         )
     }

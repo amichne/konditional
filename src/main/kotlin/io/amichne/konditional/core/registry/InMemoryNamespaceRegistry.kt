@@ -110,7 +110,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      */
     @Suppress("UNCHECKED_CAST")
     override fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> flag(
-        key: Feature<S, T, C, M>
+        key: Feature<S, T, C, M>,
     ): FlagDefinition<S, T, C, M> {
         val override = getOverride(key)
         return if (override != null) {
@@ -127,7 +127,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
             } ?: throw IllegalStateException("Flag not found in configuration: ${key.key}")
         } else {
             configuration.flags[key] as? FlagDefinition<S, T, C, M>
-                ?: throw IllegalStateException("Flag not found in configuration: ${key.key}")
+            ?: throw IllegalStateException("Flag not found in configuration: ${key.key}")
         }
     }
 
@@ -193,7 +193,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
     @PublishedApi
     internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> setOverride(
         feature: Feature<S, T, C, M>,
-        value: T
+        value: T,
     ) {
         overrides[feature] = value as Any
     }
@@ -214,7 +214,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @see clearAllOverrides
      */
     internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> clearOverride(
-        feature: Feature<S, T, C, M>
+        feature: Feature<S, T, C, M>,
     ) {
         overrides.remove(feature)
     }
@@ -245,7 +245,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @see setOverride
      */
     internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> hasOverride(
-        feature: Feature<S, T, C, M>
+        feature: Feature<S, T, C, M>,
     ): Boolean = overrides.containsKey(feature)
 
     /**
@@ -262,6 +262,6 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      */
     @Suppress("UNCHECKED_CAST")
     internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> getOverride(
-        feature: Feature<S, T, C, M>
+        feature: Feature<S, T, C, M>,
     ): T? = overrides[feature] as? T
 }

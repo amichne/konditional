@@ -95,8 +95,8 @@ class FeatureContainerTest {
             assertEquals(0, features.size)
 
             // Accessing individual features doesn't change count
-            val featureA = lazyA
-            val featureB = lazyB
+            lazyA
+            lazyB
             assertEquals(2, allFeatures().size)
         }
     }

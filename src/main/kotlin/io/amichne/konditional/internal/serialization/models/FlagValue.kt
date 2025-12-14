@@ -57,7 +57,7 @@ internal sealed class FlagValue<out T : Any> {
     @JsonClass(generateAdapter = true)
     data class EnumValue(
         override val value: String,
-        val enumClassName: String
+        val enumClassName: String,
     ) : FlagValue<String>() {
         override fun toValueType() = ValueType.ENUM
     }
@@ -73,7 +73,7 @@ internal sealed class FlagValue<out T : Any> {
     @JsonClass(generateAdapter = true)
     data class DataClassValue(
         override val value: Map<String, Any?>,
-        val dataClassName: String
+        val dataClassName: String,
     ) : FlagValue<Map<String, Any?>>() {
         override fun toValueType() = ValueType.DATA_CLASS
     }

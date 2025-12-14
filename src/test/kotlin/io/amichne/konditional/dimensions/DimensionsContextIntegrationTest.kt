@@ -1,52 +1,71 @@
 package io.amichne.konditional.dimensions
 
-import io.amichne.konditional.api.dimension
-import io.amichne.konditional.context.dimension.Dimension
-import io.amichne.konditional.fix.dimensions
+import io.amichne.konditional.api.axis
 import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
 import io.amichne.konditional.fixtures.environment
 import io.amichne.konditional.fixtures.tenant
+import io.amichne.konditional.fixtures.utilities.axisValues
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNull
 
 /**
- * Unit tests for Context + dimensions integration.
+ * Unit tests for Context + axis values integration.
  */
 class DimensionsContextIntegrationTest {
 
+    // Old Dimension tests removed - TestAxes now use Axis<T> instead of Dimension<T>
+
     @Test
-    fun `context dimension extension returns typed values`() {
-        val dims = dimensions {
+    fun `context axis extension returns typed values`() {
+        val values = axisValues {
             environment(TestEnvironment.STAGE)
             tenant(TestTenant.ENTERPRISE)
         }
 
-        val ctx = TestContext(dimensions = dims)
+        val ctx = TestContext(axisValues = values)
 
         Assertions.assertEquals(
             TestEnvironment.STAGE,
-            ctx.dimension(TestAxes.Environment),
+            ctx.axis(TestAxes.Environment),
         )
         Assertions.assertEquals(
             TestTenant.ENTERPRISE,
-            ctx.dimension(TestAxes.Tenant),
+            ctx.axis(TestAxes.Tenant),
         )
     }
 
     @Test
-    fun `context dimension extension returns null for unknown axis`() {
-        val dims = dimensions {
+    fun `context axis type-based extension returns typed values`() {
+        val values = axisValues {
+            environment(TestEnvironment.STAGE)
+            tenant(TestTenant.ENTERPRISE)
+        }
+
+        val ctx = TestContext(axisValues = values)
+
+        // Type-based access
+        Assertions.assertEquals(
+            TestEnvironment.STAGE,
+            ctx.axis<TestEnvironment>(),
+        )
+        Assertions.assertEquals(
+            TestTenant.ENTERPRISE,
+            ctx.axis<TestTenant>(),
+        )
+    }
+
+    @Test
+    fun `context axis extension returns null for missing axis`() {
+        val values = axisValues {
             environment(TestEnvironment.PROD)
         }
-        val ctx = TestContext(dimensions = dims)
+        val ctx = TestContext(axisValues = values)
 
-//        val unknownAxis: Dimension<TestEnvironment> =  Dimension<TestEnvironment>("unknown")
-        ctx.dimension()
-
-        assertNull(ctx.dimension(unknownAxis), "Unknown axis should return null")
+        assertNull(ctx.axis(TestAxes.Tenant), "Tenant should be null when not set")
+        assertNull(ctx.axis<TestTenant>(), "Type-based access should also return null")
     }
 }

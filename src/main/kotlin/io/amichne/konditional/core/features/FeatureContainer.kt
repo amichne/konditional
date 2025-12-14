@@ -180,7 +180,6 @@ abstract class FeatureContainer<M : Namespace>(
             IntFeature.Companion(it, namespace)
         }
 
-
     /**
      * Creates a Double feature with automatic registration and configuration.
      *
@@ -288,7 +287,6 @@ abstract class FeatureContainer<M : Namespace>(
         noinline customScope: FlagScope<DataClassEncodeable<T>, T, C, M>.() -> Unit = {},
     ): ReadOnlyProperty<FeatureContainer<M>, DataClassFeature<T, C, M>> =
         ContainerFeaturePropertyDelegate(default, customScope) { DataClassFeature(it, namespace) }
-
 
     /**
      * Internal delegate factory that handles feature creation, configuration, and registration.
