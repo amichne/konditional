@@ -2,16 +2,17 @@ package io.amichne.konditional.fixtures
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Dimension
-import io.amichne.konditional.context.DimensionKey
-import io.amichne.konditional.context.Dimensions
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.context.dimension.Dimension
+import io.amichne.konditional.context.dimension.DimensionKey
+import io.amichne.konditional.context.dimension.Dimensions
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.DimensionScope
 import io.amichne.konditional.core.dsl.RuleScope
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.registry.DimensionRegistry.register
 import io.amichne.konditional.core.result.getOrThrow
 
 /**
@@ -36,9 +37,11 @@ enum class TestTenant(override val id: String) : DimensionKey {
  */
 object TestAxes {
 
-    object Environment : Dimension<TestEnvironment> by Dimension("env")
+    object Environment : Dimension<TestEnvironment> {
 
-    object Tenant : Dimension<TestTenant> by Dimension("tenant")
+    }
+
+    object Tenant : Dimension<TestTenant> by register("tenant")
 }
 
 /**

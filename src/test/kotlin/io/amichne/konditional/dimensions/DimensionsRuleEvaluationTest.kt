@@ -3,16 +3,16 @@ package io.amichne.konditional.dimensions
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.features.dimensions
 import io.amichne.konditional.core.features.evaluate
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.getOrThrow
+import io.amichne.konditional.fix.dimensions
 import io.amichne.konditional.fixtures.DimensionsTestFeatures
+import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
 import io.amichne.konditional.fixtures.environment
-import io.amichne.konditional.fixtures.tenant
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -28,7 +28,9 @@ class DimensionsRuleEvaluationTest {
     ): TestContext {
         val dims = dimensions {
             if (env != null) environment(env)
-            if (tenant != null) tenant(tenant)
+            if (tenant != null) {
+                this[TestAxes.Tenant] = tenant
+            }
         }
 
         return TestContext(

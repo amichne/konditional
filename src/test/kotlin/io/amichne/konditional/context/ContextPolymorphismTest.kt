@@ -2,7 +2,7 @@ package io.amichne.konditional.context
 
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.evaluate
-import io.amichne.konditional.core.features.update
+import io.amichne.konditional.fix.update
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.CompositeContext
 import io.amichne.konditional.fixtures.EnterpriseContext
@@ -48,7 +48,7 @@ class ContextPolymorphismTest {
     @Test
     fun `Given EnterpriseContext, When evaluating flags, Then context-specific properties are accessible`() {
         // Configure using .update() for test-specific configuration
-        EnterpriseFeatures.advanced_analytics.update(default = false) {
+        advanced_analytics.update(default = false) {
             // This demonstrates that the rule can access base Context properties
             rule(true) {
                 platforms(Platform.WEB)

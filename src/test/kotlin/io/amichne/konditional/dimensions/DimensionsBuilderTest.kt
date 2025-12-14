@@ -1,7 +1,7 @@
 package io.amichne.konditional.dimensions
 
-import io.amichne.konditional.context.Dimensions
-import io.amichne.konditional.core.features.dimensions
+import io.amichne.konditional.context.dimension.Dimensions
+import io.amichne.konditional.fix.dimensions
 import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
@@ -77,7 +77,7 @@ class DimensionsBuilderTest {
     @Test
     fun `setIfNotNull skips null values`() {
         val builder = DimensionBuilder()
-        builder.set(TestAxes.Environment, TestEnvironment.STAGE)
+        builder[TestAxes.Environment] = TestEnvironment.STAGE
         builder.setIfNotNull(TestAxes.Tenant, null)
 
         val dims = builder.build()

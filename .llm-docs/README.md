@@ -198,16 +198,6 @@
         * `operator fun <T> Dimension<T>.invoke(ctx: Context): T?`
         * `operator fun <T> Dimension<T>.invoke(builder: DimensionScope, value: T)`
 
-### 10. `RegisteredDimension<T>`
-
-* FQN: `io.amichne.konditional.context.RegisteredDimension`
-* Abstract class implementing `Dimension<T>`, performing registration:
-
-    * `init { DimensionRegistry.register(this) }` (with `@Suppress("LeakingThis")`).
-* Semantics:
-
-    * Base class for axes that should auto-register with the type registry.
-
 ## III. PACKAGE: `io.amichne.konditional.core`
 
 ### 1. `Namespace`

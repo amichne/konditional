@@ -1,8 +1,8 @@
 package io.amichne.konditional.internal.builders
 
-import io.amichne.konditional.context.Dimension
-import io.amichne.konditional.context.DimensionKey
-import io.amichne.konditional.context.Dimensions
+import io.amichne.konditional.context.dimension.Dimension
+import io.amichne.konditional.context.dimension.DimensionKey
+import io.amichne.konditional.context.dimension.Dimensions
 import io.amichne.konditional.core.dsl.DimensionScope
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.registry.DimensionRegistry
@@ -10,6 +10,11 @@ import io.amichne.konditional.core.registry.DimensionRegistry
 @KonditionalDsl
 internal class DimensionBuilder : DimensionScope {
     private val values = mutableMapOf<String, DimensionKey>()
+
+    /**
+     * Internal accessor for extracting dimension values (used by RuleBuilder).
+     */
+    internal fun getValues(): Map<String, DimensionKey> = values.toMap()
 
     /**
      * Set a dimension value for a given axis.

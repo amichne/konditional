@@ -1,5 +1,7 @@
 package io.amichne.konditional.context
 
+import io.amichne.konditional.context.dimension.DimensionKey
+import io.amichne.konditional.context.dimension.Dimensions
 import io.amichne.konditional.core.id.StableId
 
 /**
@@ -37,20 +39,10 @@ interface Context {
     /**
      * Additional dimensions (env, region, tenant, etc.).
      *
-     * Defaults to [Dimensions.EMPTY] so simple contexts don’t have to care.
+     * Defaults to [io.amichne.konditional.context.dimension.Dimensions.EMPTY] so simple contexts don’t have to care.
      */
     val dimensions: Dimensions
         get() = Dimensions.EMPTY
-
-    /**
-     * Generic access to additional dimensions (env, region, tenant, etc.).
-     *
-     * Implementations *may* store these in a map, but callers never see that.
-     * Consumers should not use this directly; instead they use typed axes
-     * via the `dimension(axis)` extension (see below).
-     */
-    fun getDimension(axisId: String): DimensionKey? =
-        dimensions[axisId]
 
     data class Core(
         override val locale: AppLocale,
@@ -79,5 +71,16 @@ interface Context {
             appVersion: Version,
             stableId: StableId,
         ): Core = Core(locale, platform, appVersion, stableId)
+
+        /**
+         * Generic access to additional dimensions (env, region, tenant, etc.).
+         *
+         * Implementations *may* store these in a map, but callers never see that.
+         * Consumers should not use this directly; instead they use typed axes
+         * via the `dimension(axis)` extension (see below).
+         */
+        @PublishedApi
+        internal fun Context.getDimension(axisId: String): DimensionKey? =
+            dimensions[axisId]
     }
 }

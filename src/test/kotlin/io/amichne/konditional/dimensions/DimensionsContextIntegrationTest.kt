@@ -1,8 +1,8 @@
 package io.amichne.konditional.dimensions
 
-import io.amichne.konditional.context.Dimension
-import io.amichne.konditional.context.dimension
-import io.amichne.konditional.core.features.dimensions
+import io.amichne.konditional.api.dimension
+import io.amichne.konditional.context.dimension.Dimension
+import io.amichne.konditional.fix.dimensions
 import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
@@ -44,7 +44,8 @@ class DimensionsContextIntegrationTest {
         }
         val ctx = TestContext(dimensions = dims)
 
-        val unknownAxis = object : Dimension<TestEnvironment> by Dimension("unknown") {}
+//        val unknownAxis: Dimension<TestEnvironment> =  Dimension<TestEnvironment>("unknown")
+        ctx.dimension()
 
         assertNull(ctx.dimension(unknownAxis), "Unknown axis should return null")
     }

@@ -2,6 +2,7 @@ package io.amichne.konditional.rules.evaluable
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Context.Companion.getDimension
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange

@@ -1,4 +1,4 @@
-package io.amichne.konditional.context
+package io.amichne.konditional.context.dimension
 
 /**
  * Strongly-typed wrapper for a set of dimension values.
@@ -13,7 +13,7 @@ class Dimensions internal constructor(
     /**
      * Low-level access by axis id (used internally by rules).
      */
-    operator fun get(axisId: String): DimensionKey? = values[axisId]
+    internal operator fun get(axisId: String): DimensionKey? = values[axisId]
 
     /**
      * Strongly-typed access by dimension descriptor.

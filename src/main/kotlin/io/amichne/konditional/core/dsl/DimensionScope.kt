@@ -1,8 +1,8 @@
 package io.amichne.konditional.core.dsl
 
-import io.amichne.konditional.context.Dimensions
-import io.amichne.konditional.context.Dimension
-import io.amichne.konditional.context.DimensionKey
+import io.amichne.konditional.context.dimension.Dimension
+import io.amichne.konditional.context.dimension.DimensionKey
+import io.amichne.konditional.context.dimension.Dimensions
 
 /**
  * DSL scope for configuring [Dimensions].
@@ -17,7 +17,7 @@ interface DimensionScope {
     /**
      * Set a dimension value for a given axis.
      */
-    fun <T> set(
+    operator fun <T> set(
         axis: Dimension<T>,
         value: T,
     ) where T : DimensionKey, T : Enum<T>

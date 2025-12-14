@@ -8,7 +8,7 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.FeatureContainer
-import io.amichne.konditional.core.features.update
+import io.amichne.konditional.fix.update
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.result.ParseError

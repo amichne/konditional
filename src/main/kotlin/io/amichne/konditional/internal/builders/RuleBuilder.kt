@@ -2,8 +2,8 @@ package io.amichne.konditional.internal.builders
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Dimension
-import io.amichne.konditional.context.DimensionKey
+import io.amichne.konditional.context.dimension.Dimension
+import io.amichne.konditional.context.dimension.DimensionKey
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rampup
 import io.amichne.konditional.core.dsl.DimensionScope
@@ -71,7 +71,24 @@ internal data class RuleBuilder<C : Context>(
     }
 
     fun dimensions(block: DimensionScope.() -> Unit) {
-        DimensionBuilder().apply(block).build()
+        val builder = DimensionBuilder().apply(block)
+        // Extract dimension values and convert to constraints
+        val values = builder.getValues()
+        if (values.isEmpty()) {
+            error("BUG: dimensions block executed but no values were set!")
+        }
+        values.forEach { (axisId, dimensionKey) ->
+            val allowedIds = setOf(dimensionKey.id)
+            val idx = dimensionConstraints.indexOfFirst { it.axisId == axisId }
+            if (idx >= 0) {
+                val existing = dimensionConstraints[idx]
+                dimensionConstraints[idx] = existing.copy(
+                    allowedIds = existing.allowedIds + allowedIds
+                )
+            } else {
+                dimensionConstraints += DimensionConstraint(axisId, allowedIds)
+            }
+        }
     }
 
     override fun <T> dimension(
