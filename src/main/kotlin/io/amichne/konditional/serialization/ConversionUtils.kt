@@ -27,7 +27,7 @@ import io.amichne.konditional.rules.versions.Unbounded
  */
 internal fun Configuration.toSerializable(): SerializableSnapshot {
     val serializableFlags = flags.map { (conditional, flag) ->
-        flag.toSerializable(conditional.key)
+        flag.toSerializable(conditional.id)
     }
     return SerializableSnapshot(serializableFlags)
 }
@@ -158,9 +158,9 @@ private fun <C : Context> SerializableRule.toRule(): Rule<C> {
  */
 internal fun ConfigurationPatch.toSerializable(): SerializablePatch {
     val serializableFlags = flags.map { (conditional, flag) ->
-        flag.toSerializable(conditional.key)
+        flag.toSerializable(conditional.id)
     }
-    val removeKeyStrings = removeKeys.map { it.key }
+    val removeKeyStrings = removeKeys.map { it.id }
     return SerializablePatch(serializableFlags, removeKeyStrings)
 }
 

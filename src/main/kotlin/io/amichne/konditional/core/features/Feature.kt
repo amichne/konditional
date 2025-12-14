@@ -33,7 +33,15 @@ import io.amichne.konditional.core.types.EncodableValue
  * @param C The type of the contextFn that the feature flag evaluates against.
  * @param M The namespace this feature belongs to (compile-time binding).
  */
-sealed interface Feature<S : EncodableValue<T>, T : Any, C : Context, out M : Namespace> {
+sealed interface Feature<S : EncodableValue<T>, T : Any, C : Context, out M : Namespace> : Identifiable {
     val key: String
     val namespace: M
+
+    override val id: String
+//        get() = TODO("Not yet implemented")
+
+    //    companion object {
+//        internal val <C : Context, S : EncodableValue<T>, T : Any> Feature<S, T, C, *>.featureKey: String
+//            get() =
+//    }
 }

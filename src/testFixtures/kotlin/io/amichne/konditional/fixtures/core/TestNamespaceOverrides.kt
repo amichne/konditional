@@ -246,9 +246,15 @@ interface AtomicTestScope {
 
 @ConsistentCopyVisibility
 data class OverridingScope<M : Namespace, F : FeatureAware<M>> @PublishedApi internal constructor(
-    private val features: F,
+    @PublishedApi internal var features: F,
 ) : FeatureAware<M> by features {
-    inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context> update(
+    inline fun  <reified Q : F> override(
+        value: Q,
+    ) {
+        features = value
+    }
+
+    inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context> override(
         feature: Feature<S, T, C, *>,
         value: T,
     ) {

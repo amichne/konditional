@@ -41,7 +41,7 @@ class EnumSerializationTest {
 
     @Test
     fun `FlagValue from handles all enum values`() {
-        LogLevel.values().forEach { level ->
+        LogLevel.entries.forEach { level ->
             val flagValue = FlagValue.from(level)
             assert(flagValue is FlagValue.EnumValue)
             flagValue as FlagValue.EnumValue

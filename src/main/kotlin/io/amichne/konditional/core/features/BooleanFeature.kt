@@ -16,6 +16,6 @@ sealed interface BooleanFeature<C : Context, M : Namespace> : Feature<BooleanEnc
         internal data class BooleanFeatureImpl<C : Context, M : Namespace>(
             override val key: String,
             override val namespace: M,
-        ) : BooleanFeature<C, M>
+        ) : BooleanFeature<C, M>, Identifiable by Identifiable(key, namespace)
     }
 }

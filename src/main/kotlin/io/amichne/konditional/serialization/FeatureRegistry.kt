@@ -39,11 +39,11 @@ object FeatureRegistry {
     /**
      * Registers a Feature instance with its key.
      *
-     * @param conditional The conditional to register
+     * @param feature The feature to register
      * @throws IllegalStateException if a different conditional is already registered with the same key
      */
-    fun <S : EncodableValue<T>, T : Any, C : Context> register(conditional: Feature<S, T, C, *>) {
-        registry[conditional.key] = conditional
+    fun <S : EncodableValue<T>, T : Any, C : Context> register(feature: Feature<S, T, C, *>) {
+        registry[feature.id] = feature
     }
 
     /**

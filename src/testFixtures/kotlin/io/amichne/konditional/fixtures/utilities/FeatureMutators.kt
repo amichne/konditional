@@ -31,7 +31,7 @@ internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Featur
  * **Internal API**: This method is used internally and should not be called directly.
  * When using FeatureContainer, configuration is handled automatically through delegation.
  *
- * @param definition The flag definition to update
+ * @param definition The flag definition to override
  */
 internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Feature<S, T, C, M>.update(
     definition: FlagDefinition<S, T, C, M>,

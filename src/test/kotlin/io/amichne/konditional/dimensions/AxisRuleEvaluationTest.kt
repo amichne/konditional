@@ -1,7 +1,7 @@
 package io.amichne.konditional.dimensions
 
-import io.amichne.konditional.context.Version
 import io.amichne.konditional.api.evaluate
+import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.fixtures.FeaturesWithAxis
 import io.amichne.konditional.fixtures.TestAxes
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test
 /**
  * Unit tests for axis-based rule evaluation via FeatureContainer & Feature.evaluate.
  */
-class DimensionsRuleEvaluationTest {
+class AxisRuleEvaluationTest {
 
     private fun contextFor(
         env: TestEnvironment? = null,

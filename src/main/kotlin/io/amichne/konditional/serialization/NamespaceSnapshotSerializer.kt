@@ -74,11 +74,7 @@ class NamespaceSnapshotSerializer<M : Namespace>(
      *
      * @return JSON string representation of the namespace's configuration
      */
-    override fun toJson(): String {
-        val konfig = module.configuration
-        val serializable = konfig.toSerializable()
-        return snapshotAdapter.toJson(serializable)
-    }
+    override fun toJson(): String = snapshotAdapter.toJson(module.configuration.toSerializable())
 
     /**
      * Deserializes JSON into a Configuration and loads it into the namespace.

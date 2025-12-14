@@ -47,7 +47,7 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given EnterpriseContext, When evaluating flags, Then context-specific properties are accessible`() {
-        // Configure using .update() for test-specific configuration
+        // Configure using .override() for test-specific configuration
         advanced_analytics.update(default = false) {
             // This demonstrates that the rule can access base Context properties
             rule(true) {
@@ -73,7 +73,7 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given ExperimentContext, When evaluating flags, Then experiment-specific properties are accessible`() {
-        // Configure using .update() for test-specific configuration
+        // Configure using .override() for test-specific configuration
         ExperimentFeatures.homepage_variant.update("control") {
             rule("variant-a") {
                 platforms(Platform.IOS, Platform.ANDROID)
@@ -108,7 +108,7 @@ class ContextPolymorphismTest {
     @Suppress("USELESS_IS_CHECK")
     @Test
     fun `Given multiple custom contexts, When using different flags, Then contexts are independent`() {
-        // Configure using .update() for test-specific configuration
+        // Configure using .override() for test-specific configuration
         // Each contextFn can be evaluated independently with its own flags
         EnterpriseFeatures.api_access.update(false) {
             rule(true) {
@@ -145,7 +145,7 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given custom EnterpriseRule, When matching with business logic, Then custom properties are enforced`() {
-        // Configure using .update() for test-specific configuration
+        // Configure using .override() for test-specific configuration
         EnterpriseFeatures.api_access.update(false) {
             rule(true) {
                 platforms(Platform.WEB)
@@ -181,7 +181,7 @@ class ContextPolymorphismTest {
 
     @Test
     fun `Given CompositeContext, When evaluating flags, Then delegated properties are accessible`() {
-        // Configure using .update() for test-specific configuration
+        // Configure using .override() for test-specific configuration
         EnterpriseFeatures.custom_branding.update(default = false) {
             rule(true) {
                 rollout { 100 }

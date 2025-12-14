@@ -64,6 +64,6 @@ sealed interface KotlinClassFeature<T : KotlinEncodeable<ObjectSchema>, C : Cont
         internal data class KotlinClassFeatureImpl<T : KotlinEncodeable<ObjectSchema>, C : Context, M : Namespace>(
             override val key: String,
             override val namespace: M,
-        ) : KotlinClassFeature<T, C, M>
+        ) : KotlinClassFeature<T, C, M>, Identifiable by Identifiable(key, namespace)
     }
 }
