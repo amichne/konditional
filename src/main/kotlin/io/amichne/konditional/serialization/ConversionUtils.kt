@@ -21,6 +21,7 @@ import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
+import io.amichne.konditional.values.Identifier
 
 /**
  * Converts a Configuration to a SerializableSnapshot.
@@ -36,7 +37,7 @@ internal fun Configuration.toSerializable(): SerializableSnapshot {
  * Converts a FlagDefinition to a SerializableFlag.
  */
 private fun <S : EncodableValue<T>, T : Any, C : Context> FlagDefinition<S, T, C, *>.toSerializable(
-    flagKey: String,
+    flagKey: Identifier,
 ): SerializableFlag {
     return SerializableFlag(
         key = flagKey,

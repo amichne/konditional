@@ -1,12 +1,12 @@
 package io.amichne.konditional.serialization
 
+import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.FeatureContainer
-import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
@@ -73,8 +73,8 @@ class NamespaceSnapshotSerializerTest {
         val json = serializer.toJson()
 
         assertNotNull(json)
-        assertTrue(json.contains(TestFeatures.boolFlag.key))
-        assertTrue(json.contains(TestFeatures.stringFlag.key))
+        assertTrue(json.contains(TestFeatures.boolFlag.id.toString()))
+        assertTrue(json.contains(TestFeatures.stringFlag.id.toString()))
         assertTrue(json.contains("\"value\": true"))
         assertTrue(json.contains("\"value\": \"test-value\""))
     }
@@ -85,7 +85,7 @@ class NamespaceSnapshotSerializerTest {
             {
               "flags" : [
                 {
-                  "key" : "${TestFeatures.boolFlag.key}",
+                  "key" : "${TestFeatures.boolFlag.id}",
                   "defaultValue" : {
                     "type" : "BOOLEAN",
                     "value" : true
@@ -189,7 +189,7 @@ class NamespaceSnapshotSerializerTest {
         val json = serializer.toJson()
 
         assertNotNull(json)
-        assertTrue(json.contains(TestFeatures.boolFlag.key))
+        assertTrue(json.contains(TestFeatures.boolFlag.id.toString()))
     }
 
     @Test
@@ -216,10 +216,10 @@ class NamespaceSnapshotSerializerTest {
         val searchJson = searchSerializer.toJson()
 
         // Verify separation
-        assertTrue(paymentsJson.contains(PaymentsFeatures.paymentEnabled.key))
-        assertTrue(!paymentsJson.contains(SearchFeatures.searchEnabled.key))
+        assertTrue(paymentsJson.contains(PaymentsFeatures.paymentEnabled.id.toString()))
+        assertTrue(!paymentsJson.contains(SearchFeatures.searchEnabled.id.toString()))
 
-        assertTrue(searchJson.contains(SearchFeatures.searchEnabled.key))
-        assertTrue(!searchJson.contains(PaymentsFeatures.paymentEnabled.key))
+        assertTrue(searchJson.contains(SearchFeatures.searchEnabled.id.toString()))
+        assertTrue(!searchJson.contains(PaymentsFeatures.paymentEnabled.id.toString()))
     }
 }

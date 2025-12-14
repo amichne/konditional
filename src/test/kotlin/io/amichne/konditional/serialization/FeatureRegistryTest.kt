@@ -6,6 +6,7 @@ import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.values.Identifier
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -38,7 +39,7 @@ class FeatureRegistryTest {
     fun `Given feature, When registered, Then can be retrieved by key`() {
         FeatureRegistry.register(TestFeatures.feature1)
 
-        val result = FeatureRegistry.get(TestFeatures.feature1.key)
+        val result = FeatureRegistry.get(TestFeatures.feature1.id)
 
         assertIs<ParseResult.Success<*>>(result)
         assertEquals(TestFeatures.feature1, result.value)
@@ -50,9 +51,9 @@ class FeatureRegistryTest {
         FeatureRegistry.register(TestFeatures.feature2)
         FeatureRegistry.register(TestFeatures.feature3)
 
-        val result1 = FeatureRegistry.get(TestFeatures.feature1.key)
-        val result2 = FeatureRegistry.get(TestFeatures.feature2.key)
-        val result3 = FeatureRegistry.get(TestFeatures.feature3.key)
+        val result1 = FeatureRegistry.get(TestFeatures.feature1.id)
+        val result2 = FeatureRegistry.get(TestFeatures.feature2.id)
+        val result3 = FeatureRegistry.get(TestFeatures.feature3.id)
 
         assertIs<ParseResult.Success<*>>(result1)
         assertIs<ParseResult.Success<*>>(result2)
@@ -68,7 +69,7 @@ class FeatureRegistryTest {
         FeatureRegistry.register(TestFeatures.feature1)
         FeatureRegistry.register(TestFeatures.feature1) // Register again
 
-        val result = FeatureRegistry.get(TestFeatures.feature1.key)
+        val result = FeatureRegistry.get(TestFeatures.feature1.id)
 
         assertIs<ParseResult.Success<*>>(result)
         assertEquals(TestFeatures.feature1, result.value)
@@ -78,25 +79,25 @@ class FeatureRegistryTest {
 
     @Test
     fun `Given unregistered key, When retrieved, Then returns FeatureNotFound error`() {
-        val result = FeatureRegistry.get("nonexistent_key")
+        val result = FeatureRegistry.get(Identifier("nonexistent_key"))
 
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.FeatureNotFound>(result.error)
-        assertEquals("nonexistent_key", (result.error as ParseError.FeatureNotFound).key)
+        assertEquals(Identifier("nonexistent_key"), (result.error as ParseError.FeatureNotFound).key)
     }
 
     @Test
     fun `Given registered feature, When contains checked, Then returns true`() {
         FeatureRegistry.register(TestFeatures.feature1)
 
-        val result = FeatureRegistry.contains(TestFeatures.feature1.key)
+        val result = FeatureRegistry.contains(TestFeatures.feature1.id)
 
         assertTrue(result)
     }
 
     @Test
     fun `Given unregistered feature, When contains checked, Then returns false`() {
-        val result = FeatureRegistry.contains("nonexistent_key")
+        val result = FeatureRegistry.contains(Identifier("nonexistent_key"))
 
         assertFalse(result)
     }
@@ -110,8 +111,8 @@ class FeatureRegistryTest {
 
         FeatureRegistry.clear()
 
-        val result1 = FeatureRegistry.get(TestFeatures.feature1.key)
-        val result2 = FeatureRegistry.get(TestFeatures.feature2.key)
+        val result1 = FeatureRegistry.get(TestFeatures.feature1.id)
+        val result2 = FeatureRegistry.get(TestFeatures.feature2.id)
 
         assertIs<ParseResult.Failure>(result1)
         assertIs<ParseResult.Failure>(result2)
@@ -122,7 +123,7 @@ class FeatureRegistryTest {
         // Should not throw
         FeatureRegistry.clear()
 
-        val result = FeatureRegistry.get("any_key")
+        val result = FeatureRegistry.get(Identifier("any_key"))
         assertIs<ParseResult.Failure>(result)
     }
 
@@ -137,8 +138,8 @@ class FeatureRegistryTest {
         FeatureRegistry.register(TestFeatures.feature1)
         FeatureRegistry.register(AnotherContainer.differentFeature)
 
-        val result1 = FeatureRegistry.get(TestFeatures.feature1.key)
-        val result2 = FeatureRegistry.get(AnotherContainer.differentFeature.key)
+        val result1 = FeatureRegistry.get(TestFeatures.feature1.id)
+        val result2 = FeatureRegistry.get(AnotherContainer.differentFeature.id)
 
         assertIs<ParseResult.Success<*>>(result1)
         assertIs<ParseResult.Success<*>>(result2)
@@ -153,7 +154,7 @@ class FeatureRegistryTest {
     fun `Given boolean feature, When retrieved, Then maintains type information`() {
         FeatureRegistry.register(TestFeatures.feature1)
 
-        val result = FeatureRegistry.get(TestFeatures.feature1.key)
+        val result = FeatureRegistry.get(TestFeatures.feature1.id)
 
         assertIs<ParseResult.Success<Feature<*, *, *, *>>>(result)
         val feature = result.value
@@ -164,7 +165,7 @@ class FeatureRegistryTest {
     fun `Given string feature, When retrieved, Then maintains type information`() {
         FeatureRegistry.register(TestFeatures.feature2)
 
-        val result = FeatureRegistry.get(TestFeatures.feature2.key)
+        val result = FeatureRegistry.get(TestFeatures.feature2.id)
 
         assertIs<ParseResult.Success<Feature<*, *, *, *>>>(result)
         val feature = result.value
@@ -175,7 +176,7 @@ class FeatureRegistryTest {
     fun `Given int feature, When retrieved, Then maintains type information`() {
         FeatureRegistry.register(TestFeatures.feature3)
 
-        val result = FeatureRegistry.get(TestFeatures.feature3.key)
+        val result = FeatureRegistry.get(TestFeatures.feature3.id)
 
         assertIs<ParseResult.Success<Feature<*, *, *, *>>>(result)
         val feature = result.value

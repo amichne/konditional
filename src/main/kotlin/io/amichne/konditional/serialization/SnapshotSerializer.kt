@@ -15,6 +15,7 @@ import io.amichne.konditional.rules.versions.LeftBound
 import io.amichne.konditional.rules.versions.RightBound
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
+import io.amichne.konditional.values.adapter.ValueClassJsonAdapter
 
 /**
  * Main serialization object for Configuration configurations.
@@ -188,7 +189,8 @@ object SnapshotSerializer {
                     .withSubtype(LeftBound::class.java, VersionRange.Type.MIN_BOUND.name)
                     .withSubtype(RightBound::class.java, VersionRange.Type.MAX_BOUND.name)
             )
-            .add(KotlinJsonAdapterFactory())
+            .addLast(KotlinJsonAdapterFactory())
+            .add(ValueClassJsonAdapter.Factory)
             .build()
     }
 }

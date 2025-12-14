@@ -2,6 +2,7 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.core.registry.NamespaceRegistry
 import org.jetbrains.annotations.TestOnly
+import java.util.UUID
 
 /**
  * Represents a feature flag namespace with isolated configuration and runtime isolation.
@@ -71,6 +72,7 @@ sealed class Namespace(
     @PublishedApi internal val registry: NamespaceRegistry = NamespaceRegistry(),
 
     ) : NamespaceRegistry by registry {
+    internal val uuid: UUID = UUID.randomUUID()
 
     /**
      * Global namespace containing shared flags accessible to all teams.

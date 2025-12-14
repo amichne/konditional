@@ -3,6 +3,7 @@ package io.amichne.konditional.core.features
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.values.Identifier
 
 /**
  * Represents a feature flag that can be used to enable or disable specific functionality
@@ -37,11 +38,5 @@ sealed interface Feature<S : EncodableValue<T>, T : Any, C : Context, out M : Na
     val key: String
     val namespace: M
 
-    override val id: String
-//        get() = TODO("Not yet implemented")
-
-    //    companion object {
-//        internal val <C : Context, S : EncodableValue<T>, T : Any> Feature<S, T, C, *>.featureKey: String
-//            get() =
-//    }
+    override val id: Identifier
 }

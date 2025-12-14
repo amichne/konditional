@@ -204,7 +204,8 @@ inline fun <S : EncodableValue<T>, T : Any, C : Context, R> Namespace.withOverri
  * @param overrides Pairs of features to their override values
  * @param block The code to execute with the configure in place
  * @return The result of the block
- * @param R The return type of the block
+ * @param M The namespace type
+ * @param F The feature container type
  *
  * @see setOverride
  * @see withOverride
@@ -248,7 +249,7 @@ interface AtomicTestScope {
 data class OverridingScope<M : Namespace, F : FeatureAware<M>> @PublishedApi internal constructor(
     @PublishedApi internal var features: F,
 ) : FeatureAware<M> by features {
-    inline fun  <reified Q : F> override(
+    inline fun <reified Q : F> override(
         value: Q,
     ) {
         features = value
