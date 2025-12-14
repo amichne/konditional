@@ -51,7 +51,7 @@ sealed interface BooleanFeature<M : Namespace>
 - `IntFeature.kt` - `IntFeature<M>`
 - `DoubleFeature.kt` - `DoubleFeature<M>`
 - `EnumFeature.kt` - `EnumFeature<E : Enum<E>, M>`
-- `DataClassFeature.kt` - `DataClassFeature<T : DataClassWithSchema, M>`
+- `KotlinClassFeature.kt` - `DataClassFeature<T : DataClassWithSchema, M>`
 
 #### FlagDefinition
 **Before**:

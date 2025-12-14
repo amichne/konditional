@@ -16,13 +16,13 @@ import io.amichne.kontracts.value.JsonObject
  *
  * ## Type Constraint
  * [T] is constrained to [KotlinEncodeable]<[ObjectSchema]>, which is aliased as
- * [JsonSchemaClass] for backwards compatibility and ergonomic usage.
+ * [KotlinEncodeable<ObjectSchema>] for backwards compatibility and ergonomic usage.
  *
  * @param T The data class type, must implement [KotlinEncodeable]<[ObjectSchema]>
  * @property value The data class instance
  * @property schema The JSON schema for validation (generated at compile-time)
  */
-data class DataClassEncodeable<T : KotlinEncodeable<ObjectSchema>>(
+data class KotlinClassEncodeable<T : KotlinEncodeable<ObjectSchema>>(
     override val value: T,
     val schema: ObjectSchema,
 ) : EncodableValue<T> {
@@ -37,7 +37,7 @@ data class DataClassEncodeable<T : KotlinEncodeable<ObjectSchema>>(
 
     companion object {
         /**
-         * Creates a DataClassEncodeable from a JsonValue.JsonObject.
+         * Creates a KotlinClassEncodeable from a JsonValue.JsonObject.
          *
          * @param jsonObject The JSON object to parse
          * @param schema The schema to validate against
@@ -46,9 +46,9 @@ data class DataClassEncodeable<T : KotlinEncodeable<ObjectSchema>>(
         inline fun <reified T : KotlinEncodeable<ObjectSchema>> fromJsonValue(
             jsonObject: JsonObject,
             schema: ObjectSchema,
-        ): ParseResult<DataClassEncodeable<T>> {
+        ): ParseResult<KotlinClassEncodeable<T>> {
             return jsonObject.parseAs<T>().map { instance ->
-                DataClassEncodeable(instance, schema)
+                KotlinClassEncodeable(instance, schema)
             }
         }
     }

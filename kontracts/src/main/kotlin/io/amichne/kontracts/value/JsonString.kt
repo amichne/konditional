@@ -12,7 +12,6 @@ data class JsonString(val value: String) : JsonValue() {
     override fun validate(schema: JsonSchema): ValidationResult {
         return when (schema) {
             is StringSchema -> {
-                // Validate string constraints
                 if (schema.minLength != null && value.length < schema.minLength) {
                     return ValidationResult.Invalid(
                         "String length ${value.length} is less than minimum length ${schema.minLength}"

@@ -3,7 +3,6 @@ package io.amichne.kontracts.value
 import io.amichne.kontracts.schema.JsonSchema
 import io.amichne.kontracts.schema.ObjectSchema
 import io.amichne.kontracts.schema.ValidationResult
-import kotlin.collections.iterator
 
 /**
  * JSON object value with typed fields.
@@ -13,11 +12,10 @@ import kotlin.collections.iterator
  */
 data class JsonObject(
     val fields: Map<String, JsonValue>,
-    val schema: ObjectSchema? = null
+    val schema: ObjectSchema? = null,
 ) : JsonValue() {
 
     init {
-        // Validate against schema if provided
         schema?.let { s ->
             val result = validate(s)
             if (result.isInvalid) {
@@ -35,18 +33,12 @@ data class JsonObject(
             )
         }
 
-        // Check required fields
         val requiredValidation = schema.validateRequiredFields(fields.keys)
         if (requiredValidation.isInvalid) {
             return requiredValidation
         }
-
-        // Validate each field
         for ((key, value) in fields) {
-            val fieldSchema = schema.fields[key]
-                ?: return ValidationResult.Invalid(
-                    "Unknown field '$key' in object"
-                )
+            val fieldSchema = schema.fields[key] ?: return ValidationResult.Invalid("Unknown field '$key' in object")
 
             val fieldValidation = value.validate(fieldSchema.schema)
             if (fieldValidation.isInvalid) {

@@ -65,9 +65,3 @@ interface KotlinEncodeable<out S : JsonSchema> {
      */
     val schema: S
 }
-
-/**
- * Type alias for the common case of custom data classes with object schemas.
- * This provides backwards compatibility and ergonomic usage for the most common pattern.
- */
-typealias JsonSchemaClass = KotlinEncodeable<ObjectSchema>

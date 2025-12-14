@@ -1,5 +1,7 @@
 package io.amichne.konditional.context.axis
 
+import java.util.function.IntFunction
+
 /**
  * Strongly-typed container for a set of axis values.
  *
@@ -31,7 +33,7 @@ package io.amichne.konditional.context.axis
  */
 class AxisValues internal constructor(
     private val values: Map<String, AxisValue>,
-) {
+) : Set<AxisValue> by values.values.toSet() {
     /**
      * Low-level access by axis ID.
      *
@@ -66,6 +68,9 @@ class AxisValues internal constructor(
     override fun toString(): String {
         return "AxisValues(${values.entries.joinToString { "${it.key}=${it.value.id}" }})"
     }
+
+    @Deprecated("Use toTypedArray or toList for type safety", ReplaceWith("toSet()"))
+    override fun <T> toArray(generator: IntFunction<Array<out T?>?>): Array<out T?>? = super.toArray(generator)
 
     companion object {
         /**

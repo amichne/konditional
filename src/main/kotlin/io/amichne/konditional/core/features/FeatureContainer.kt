@@ -5,7 +5,7 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.registry.NamespaceRegistry.Companion.updateDefinition
 import io.amichne.konditional.core.types.BooleanEncodeable
-import io.amichne.konditional.core.types.DataClassEncodeable
+import io.amichne.konditional.core.types.KotlinClassEncodeable
 import io.amichne.konditional.core.types.DecimalEncodeable
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.core.types.EnumEncodeable
@@ -280,13 +280,13 @@ abstract class FeatureContainer<M : Namespace>(
      * @param C The context type used for evaluation
      * @param default The default value for this feature (required)
      * @param customScope DSL scope for configuring the custom feature
-     * @return A delegated property that returns a [DataClassFeature]
+     * @return A delegated property that returns a [KotlinClassFeature]
      */
     protected inline fun <reified T : KotlinEncodeable<ObjectSchema>, C : Context> custom(
         default: T,
-        noinline customScope: FlagScope<DataClassEncodeable<T>, T, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<FeatureContainer<M>, DataClassFeature<T, C, M>> =
-        ContainerFeaturePropertyDelegate(default, customScope) { DataClassFeature(it, namespace) }
+        noinline customScope: FlagScope<KotlinClassEncodeable<T>, T, C, M>.() -> Unit = {},
+    ): ReadOnlyProperty<FeatureContainer<M>, KotlinClassFeature<T, C, M>> =
+        ContainerFeaturePropertyDelegate(default, customScope) { KotlinClassFeature(it, namespace) }
 
     /**
      * Internal delegate factory that handles feature creation, configuration, and registration.

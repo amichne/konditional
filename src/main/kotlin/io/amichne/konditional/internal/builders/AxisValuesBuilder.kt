@@ -71,10 +71,7 @@ internal class AxisValuesBuilder : AxisValuesScope {
      * @throws IllegalStateException if no axis is registered for type T
      */
     inline fun <reified T> AxisValuesBuilder.axis(value: T) where T : AxisValue, T : Enum<T> {
-        val axisDescriptor = AxisRegistry.axisFor(T::class)
-                             ?: error("No Axis registered for type ${T::class.simpleName}")
-        @Suppress("UNCHECKED_CAST")
-        set(axisDescriptor, value)
+        AxisRegistry.axisFor(T::class)?.let { set(it, value) } ?: error("No Axis registered for type ${T::class.simpleName}")
     }
 
     /**
@@ -83,6 +80,5 @@ internal class AxisValuesBuilder : AxisValuesScope {
      * @return AxisValues.EMPTY if no values were set, otherwise a new AxisValues instance
      */
     internal fun build(): AxisValues =
-        if (values.isEmpty()) AxisValues.EMPTY
-        else AxisValues(values.toMap())
+        if (values.isEmpty()) AxisValues.EMPTY else AxisValues(values.toMap())
 }

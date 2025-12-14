@@ -12,35 +12,25 @@ import io.amichne.kontracts.schema.ValidationResult
  */
 data class JsonArray(
     val elements: List<JsonValue>,
-    val elementSchema: JsonSchema? = null
+    val elementSchema: JsonSchema? = null,
 ) : JsonValue() {
 
     init {
-        // Validate all elements against schema if provided
-        elementSchema?.let { schema ->
-            val result = validate(ArraySchema(schema))
-            if (result.isInvalid) {
-                throw IllegalArgumentException(
-                    "JsonArray does not match schema: ${result.getErrorMessage()}"
-                )
+        elementSchema?.let {
+            with(validate(ArraySchema(it))) {
+                if (isInvalid) throw IllegalArgumentException("JsonArray does not match schema: ${getErrorMessage()}")
             }
         }
     }
 
     override fun validate(schema: JsonSchema): ValidationResult {
         if (schema !is ArraySchema) {
-            return ValidationResult.Invalid(
-                "Expected ${schema}, but got JsonArray"
-            )
+            return ValidationResult.Invalid("Expected ${schema}, but got JsonArray")
         }
 
-        // Validate each element
-        for ((index, element) in elements.withIndex()) {
-            val elementValidation = element.validate(schema.elementSchema)
-            if (elementValidation.isInvalid) {
-                return ValidationResult.Invalid(
-                    "Element at index $index: ${elementValidation.getErrorMessage()}"
-                )
+        elements.forEachIndexed { index, element ->
+            with(element.validate(schema.elementSchema)) {
+                if (isInvalid) return ValidationResult.Invalid("Element at index $index: ${getErrorMessage()}")
             }
         }
 

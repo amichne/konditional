@@ -1,9 +1,25 @@
-package io.amichne.konditional.core.features
+package io.amichne.konditional.api
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.ContextAware
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.KonditionalDsl
+import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.core.features.FeatureAware
 import io.amichne.konditional.core.registry.NamespaceRegistry
 import io.amichne.konditional.core.types.EncodableValue
+
+inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context, M : Namespace, D> D.feature(
+    block: D.() -> Feature<S, T, C, M>,
+): T where D : ContextAware<C>, D : FeatureAware<out M> = block().evaluate(context)
+
+/**
+ * Evaluate with an explicit context instance.
+ */
+inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context, D> D.feature(
+    context: C,
+    @KonditionalDsl block: D.() -> Feature<S, T, C, *>,
+): T where D : FeatureAware<*>, D : ContextAware<*> = block().evaluate(context)
 
 /**
  * Evaluates this feature for the given contextFn.

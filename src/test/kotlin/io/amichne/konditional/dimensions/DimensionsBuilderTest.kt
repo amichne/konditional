@@ -16,11 +16,6 @@ import org.junit.jupiter.api.Test
  */
 class DimensionsBuilderTest {
 
-    // Old Dimension tests removed - TestAxes now use Axis<T> instead of Dimension<T>
-    // The new Axis API tests below provide equivalent coverage
-
-    // ===== New Axis API Tests =====
-
     @Test
     fun `axisValues builder returns EMPTY when no values set`() {
         val values = axisValues { }

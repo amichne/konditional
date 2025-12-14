@@ -22,10 +22,6 @@ sealed class JsonValue {
      */
     abstract fun validate(schema: JsonSchema): ValidationResult
 
-    // ========== Primitive Values ==========
-
-    // ========== Complex Values ==========
-
     companion object {
         /**
          * Creates a JsonBoolean from a Boolean.

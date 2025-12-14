@@ -1,7 +1,7 @@
 package io.amichne.konditional.dimensions
 
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.features.evaluate
+import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.fixtures.FeaturesWithAxis
 import io.amichne.konditional.fixtures.TestAxes

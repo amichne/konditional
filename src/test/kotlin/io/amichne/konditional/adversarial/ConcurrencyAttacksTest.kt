@@ -5,7 +5,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.features.FeatureContainer
-import io.amichne.konditional.core.features.evaluate
+import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.fixtures.core.test

@@ -4,7 +4,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.features.BooleanFeature
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.features.IntFeature
-import io.amichne.konditional.core.features.evaluate
+import io.amichne.konditional.api.evaluate
 
 /**
  * Example comparing current enum approach vs FeatureContainer approach

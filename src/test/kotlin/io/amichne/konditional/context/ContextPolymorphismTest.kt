@@ -1,7 +1,7 @@
 package io.amichne.konditional.context
 
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.features.evaluate
+import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.CompositeContext
 import io.amichne.konditional.fixtures.EnterpriseContext

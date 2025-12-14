@@ -7,7 +7,7 @@ import io.amichne.konditional.context.Rampup.Companion.MAX
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace.Global
 import io.amichne.konditional.core.features.FeatureContainer
-import io.amichne.konditional.core.features.evaluate
+import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.types.BooleanEncodeable

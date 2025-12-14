@@ -67,7 +67,7 @@ flowchart LR
         R --> L[Locale Targeting]
         R --> P[Platform Targeting]
         R --> V[Version Ranges]
-        R --> D[Custom axis']
+        R --> D[Custom axis]
         R --> RO[Rollout %]
     end
 
@@ -75,7 +75,7 @@ flowchart LR
         CTX[Context]
         CTX --> A[App Properties]
         CTX --> U[User StableId]
-        CTX --> CD[Custom axis']
+        CTX --> CD[Custom axis]
     end
 
     subgraph Eval["4️⃣ EVALUATE"]
@@ -115,7 +115,7 @@ graph TB
 
     subgraph Rules["Targeting Strategy"]
         F1 --> R1[Platform: iOS<br/>Version: 2.0.0+<br/>Rollout: 25%]
-        F2 --> R2[Dimension: region=US<br/>Rollout: 100%]
+        F2 --> R2[Axis: region=US<br/>Rollout: 100%]
         F3 --> R3[Extension: isPremium<br/>Rollout: 50%]
         F4 --> R4[Locale: en_US<br/>Platform: Mobile]
     end
@@ -150,11 +150,11 @@ stateDiagram-v2
     ConfigureRules --> ConfigureRollout: Set Rollout %
 
     ConfigureRollout --> ImplementContext: Create Context Factory
-    ImplementContext --> Addaxis': Add Custom axis'?
+    ImplementContext --> Addaxis: Add Custom axis?
 
-    Addaxis' --> Registeraxis': Yes - Register Axes
-    Addaxis' --> Evaluate: No - Use Core Context
-    Registeraxis' --> Evaluate
+    Addaxis --> Registeraxis: Yes - Register Axes
+    Addaxis --> Evaluate: No - Use Core Context
+    Registeraxis --> Evaluate
 
     Evaluate --> Serialize: Need Remote Config?
     Serialize --> RemoteConfig: Yes - Export/Import JSON
@@ -169,7 +169,7 @@ stateDiagram-v2
     end note
 
     note right of ConfigureRules
-        ✓ Multi-dimensional targeting
+        ✓ Multi-axisal targeting
         ✓ Specificity-based matching
     end note
 
@@ -196,7 +196,7 @@ mindmap
         Flexible Targeting
             Locale + Platform
             Version ranges
-            Custom axis'
+            Custom axis
             Extension predicates
         Deterministic
             Stable bucketing
@@ -215,8 +215,8 @@ mindmap
 ## Sample Code: Complete Example
 
 ```kotlin
-// 1. Define custom dimension
-enum class Environment(override val id: String) : DimensionKey {
+// 1. Define custom axis
+enum class Environment(override val id: String) : AxisValue {
     PRODUCTION("prod"),
     STAGING("staging")
 }
@@ -241,7 +241,7 @@ val context = Context(
     platform = Platform.IOS,
     appVersion = Version(2, 1, 0),
     stableId = StableId.of(userId)
-).withaxis' {
+).withaxis {
     set(ENV_AXIS, Environment.PRODUCTION)
 }
 
@@ -253,7 +253,7 @@ val useNewCheckout: Boolean = PaymentFeatures.newCheckoutFlow.evaluate(context)
 
 1. **Choose your namespace** - Use built-in (Global, Authentication, Payments, etc.) or create custom
 2. **Define features** - Extend `FeatureContainer<M>` with your flags
-3. **Configure targeting** - Add rules with locale, platform, version, axis'
+3. **Configure targeting** - Add rules with locale, platform, version, axis
 4. **Build context factory** - Create context from request/user data
 5. **Evaluate** - Call `feature.evaluate(context)` to get type-safe results
 6. **(Optional) Serialize** - Export to JSON for remote configuration

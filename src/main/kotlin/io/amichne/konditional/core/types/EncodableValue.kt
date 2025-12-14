@@ -71,7 +71,7 @@ sealed interface EncodableValue<T : Any> {
                         // For custom encodeable types, get the schema from the instance
                         val customEncodeable = value as KotlinEncodeable<*>
                         @Suppress("UNCHECKED_CAST")
-                        DataClassEncodeable(
+                        KotlinClassEncodeable(
                             customEncodeable as KotlinEncodeable<ObjectSchema>,
                             customEncodeable.schema
                         )

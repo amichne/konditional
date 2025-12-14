@@ -1,14 +1,14 @@
 package io.amichne.konditional.core
 
 import com.squareup.moshi.Moshi
+import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.features.FeatureContainer
-import io.amichne.konditional.core.features.evaluate
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.core.types.JsonSchemaClass
+import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.konditional.core.types.parseAs
 import io.amichne.konditional.core.types.toJsonValue
 import io.amichne.konditional.fixtures.core.TestNamespace
@@ -16,6 +16,7 @@ import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.fixtures.core.withOverride
 import io.amichne.kontracts.dsl.of
 import io.amichne.kontracts.dsl.schemaRoot
+import io.amichne.kontracts.schema.ObjectSchema
 import io.amichne.kontracts.value.JsonBoolean
 import io.amichne.kontracts.value.JsonNumber
 import io.amichne.kontracts.value.JsonObject
@@ -26,7 +27,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
- * Comprehensive integration tests for JsonSchemaClass support.
+ * Comprehensive integration tests for KotlinEncodeable<ObjectSchema> support.
  *
  * These tests validate:
  * - Data class to JsonValue conversion
@@ -42,7 +43,7 @@ class DataClassWithSchemaIntegrationTest {
         val notificationsEnabled: Boolean = true,
         val maxRetries: Int = 3,
         val timeout: Double = 30.0,
-    ) : JsonSchemaClass {
+    ) : KotlinEncodeable<ObjectSchema> {
         override val schema = schemaRoot {
             // Type-inferred DSL: no need to call string(), the property type determines the schema
             ::theme of {

@@ -9,7 +9,7 @@ import io.amichne.konditional.core.features.DoubleFeature
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.features.IntFeature
 import io.amichne.konditional.core.features.StringFeature
-import io.amichne.konditional.core.features.evaluate
+import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.core.id.StableId
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
