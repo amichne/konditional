@@ -1,4 +1,4 @@
-package io.amichne.konditional.values.adapter
+package io.amichne.konditional.internal.serialization.adapters
 
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.JsonAdapter
