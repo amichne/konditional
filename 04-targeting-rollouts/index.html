@@ -178,6 +178,17 @@
 
       </a>
 </li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../07-theory/">
+        
+  
+  
+    
+  
+  Theory
+
+      </a>
+</li>
 </ul>
 </div>
 </nav>
@@ -250,31 +261,45 @@
     </label>
 <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="#basic-targeting">
+<a class="md-nav__link" href="#criteria-you-can-combine">
 <span class="md-ellipsis">
-      Basic Targeting
+      Criteria you can combine
     </span>
 </a>
-<nav aria-label="Basic Targeting" class="md-nav">
+<nav aria-label="Criteria you can combine" class="md-nav">
 <ul class="md-nav__list">
 <li class="md-nav__item">
-<a class="md-nav__link" href="#platform-targeting">
+<a class="md-nav__link" href="#platform">
 <span class="md-ellipsis">
-      Platform Targeting
+      Platform
     </span>
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#locale-targeting">
+<a class="md-nav__link" href="#locale">
 <span class="md-ellipsis">
-      Locale Targeting
+      Locale
     </span>
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#version-targeting">
+<a class="md-nav__link" href="#version-ranges">
 <span class="md-ellipsis">
-      Version Targeting
+      Version ranges
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#percentage-rollout">
+<span class="md-ellipsis">
+      Percentage rollout
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#custom-predicates-via-extension">
+<span class="md-ellipsis">
+      Custom predicates via extension { }
     </span>
 </a>
 </li>
@@ -282,215 +307,30 @@
 </nav>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#combining-criteria">
+<a class="md-nav__link" href="#and-semantics-inside-a-rule">
 <span class="md-ellipsis">
-      Combining Criteria
+      AND semantics inside a rule
     </span>
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#rollout-strategies">
+<a class="md-nav__link" href="#specificity-which-rule-wins">
 <span class="md-ellipsis">
-      Rollout Strategies
-    </span>
-</a>
-<nav aria-label="Rollout Strategies" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#gradual-rollout">
-<span class="md-ellipsis">
-      Gradual Rollout
+      Specificity: which rule wins
     </span>
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#segmented-rollout">
+<a class="md-nav__link" href="#deterministic-rollout-bucketing-sha-256">
 <span class="md-ellipsis">
-      Segmented Rollout
+      Deterministic rollout bucketing (SHA-256)
     </span>
 </a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#platform-specific-rollout">
-<span class="md-ellipsis">
-      Platform-Specific Rollout
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#rollout-bucketing">
-<span class="md-ellipsis">
-      Rollout Bucketing
-    </span>
-</a>
-<nav aria-label="Rollout Bucketing" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#how-it-works">
-<span class="md-ellipsis">
-      How It Works
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#bucketing-properties">
-<span class="md-ellipsis">
-      Bucketing Properties
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#salt-based-redistribution">
-<span class="md-ellipsis">
-      Salt-Based Redistribution
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#specificity-rule-ordering">
-<span class="md-ellipsis">
-      Specificity &amp; Rule Ordering
-    </span>
-</a>
-<nav aria-label="Specificity &amp; Rule Ordering" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#specificity-calculation">
-<span class="md-ellipsis">
-      Specificity Calculation
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#examples">
-<span class="md-ellipsis">
-      Examples
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#custom-targeting-logic">
-<span class="md-ellipsis">
-      Custom Targeting Logic
-    </span>
-</a>
-<nav aria-label="Custom Targeting Logic" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#simple-extension">
-<span class="md-ellipsis">
-      Simple Extension
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#complex-extension">
-<span class="md-ellipsis">
-      Complex Extension
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#reusable-evaluables">
-<span class="md-ellipsis">
-      Reusable Evaluables
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#best-practices">
-<span class="md-ellipsis">
-      Best Practices
-    </span>
-</a>
-<nav aria-label="Best Practices" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#1-start-with-small-rollouts">
-<span class="md-ellipsis">
-      1. Start with Small Rollouts
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#2-use-specificity-to-your-advantage">
-<span class="md-ellipsis">
-      2. Use Specificity to Your Advantage
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#3-document-non-obvious-rules">
-<span class="md-ellipsis">
-      3. Document Non-Obvious Rules
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#4-keep-rule-count-low">
-<span class="md-ellipsis">
-      4. Keep Rule Count Low
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#5-test-rollout-distribution">
-<span class="md-ellipsis">
-      5. Test Rollout Distribution
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#common-patterns">
-<span class="md-ellipsis">
-      Common Patterns
-    </span>
-</a>
-<nav aria-label="Common Patterns" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#pattern-1-kill-switch">
-<span class="md-ellipsis">
-      Pattern 1: Kill Switch
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#pattern-2-ab-test">
-<span class="md-ellipsis">
-      Pattern 2: A/B Test
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#pattern-3-beta-program">
-<span class="md-ellipsis">
-      Pattern 3: Beta Program
-    </span>
-</a>
-</li>
-</ul>
-</nav>
 </li>
 <li class="md-nav__item">
 <a class="md-nav__link" href="#next-steps">
 <span class="md-ellipsis">
-      Next Steps
+      Next steps
     </span>
 </a>
 </li>
@@ -513,6 +353,14 @@
   </span>
 </a>
 </li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../07-theory/">
+<span class="md-ellipsis">
+    Theory
+    
+  </span>
+</a>
+</li>
 </ul>
 </nav>
 </div>
@@ -528,31 +376,45 @@
     </label>
 <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="#basic-targeting">
+<a class="md-nav__link" href="#criteria-you-can-combine">
 <span class="md-ellipsis">
-      Basic Targeting
+      Criteria you can combine
     </span>
 </a>
-<nav aria-label="Basic Targeting" class="md-nav">
+<nav aria-label="Criteria you can combine" class="md-nav">
 <ul class="md-nav__list">
 <li class="md-nav__item">
-<a class="md-nav__link" href="#platform-targeting">
+<a class="md-nav__link" href="#platform">
 <span class="md-ellipsis">
-      Platform Targeting
+      Platform
     </span>
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#locale-targeting">
+<a class="md-nav__link" href="#locale">
 <span class="md-ellipsis">
-      Locale Targeting
+      Locale
     </span>
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#version-targeting">
+<a class="md-nav__link" href="#version-ranges">
 <span class="md-ellipsis">
-      Version Targeting
+      Version ranges
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#percentage-rollout">
+<span class="md-ellipsis">
+      Percentage rollout
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#custom-predicates-via-extension">
+<span class="md-ellipsis">
+      Custom predicates via extension { }
     </span>
 </a>
 </li>
@@ -560,215 +422,30 @@
 </nav>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#combining-criteria">
+<a class="md-nav__link" href="#and-semantics-inside-a-rule">
 <span class="md-ellipsis">
-      Combining Criteria
+      AND semantics inside a rule
     </span>
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#rollout-strategies">
+<a class="md-nav__link" href="#specificity-which-rule-wins">
 <span class="md-ellipsis">
-      Rollout Strategies
-    </span>
-</a>
-<nav aria-label="Rollout Strategies" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#gradual-rollout">
-<span class="md-ellipsis">
-      Gradual Rollout
+      Specificity: which rule wins
     </span>
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#segmented-rollout">
+<a class="md-nav__link" href="#deterministic-rollout-bucketing-sha-256">
 <span class="md-ellipsis">
-      Segmented Rollout
+      Deterministic rollout bucketing (SHA-256)
     </span>
 </a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#platform-specific-rollout">
-<span class="md-ellipsis">
-      Platform-Specific Rollout
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#rollout-bucketing">
-<span class="md-ellipsis">
-      Rollout Bucketing
-    </span>
-</a>
-<nav aria-label="Rollout Bucketing" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#how-it-works">
-<span class="md-ellipsis">
-      How It Works
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#bucketing-properties">
-<span class="md-ellipsis">
-      Bucketing Properties
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#salt-based-redistribution">
-<span class="md-ellipsis">
-      Salt-Based Redistribution
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#specificity-rule-ordering">
-<span class="md-ellipsis">
-      Specificity &amp; Rule Ordering
-    </span>
-</a>
-<nav aria-label="Specificity &amp; Rule Ordering" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#specificity-calculation">
-<span class="md-ellipsis">
-      Specificity Calculation
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#examples">
-<span class="md-ellipsis">
-      Examples
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#custom-targeting-logic">
-<span class="md-ellipsis">
-      Custom Targeting Logic
-    </span>
-</a>
-<nav aria-label="Custom Targeting Logic" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#simple-extension">
-<span class="md-ellipsis">
-      Simple Extension
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#complex-extension">
-<span class="md-ellipsis">
-      Complex Extension
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#reusable-evaluables">
-<span class="md-ellipsis">
-      Reusable Evaluables
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#best-practices">
-<span class="md-ellipsis">
-      Best Practices
-    </span>
-</a>
-<nav aria-label="Best Practices" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#1-start-with-small-rollouts">
-<span class="md-ellipsis">
-      1. Start with Small Rollouts
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#2-use-specificity-to-your-advantage">
-<span class="md-ellipsis">
-      2. Use Specificity to Your Advantage
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#3-document-non-obvious-rules">
-<span class="md-ellipsis">
-      3. Document Non-Obvious Rules
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#4-keep-rule-count-low">
-<span class="md-ellipsis">
-      4. Keep Rule Count Low
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#5-test-rollout-distribution">
-<span class="md-ellipsis">
-      5. Test Rollout Distribution
-    </span>
-</a>
-</li>
-</ul>
-</nav>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#common-patterns">
-<span class="md-ellipsis">
-      Common Patterns
-    </span>
-</a>
-<nav aria-label="Common Patterns" class="md-nav">
-<ul class="md-nav__list">
-<li class="md-nav__item">
-<a class="md-nav__link" href="#pattern-1-kill-switch">
-<span class="md-ellipsis">
-      Pattern 1: Kill Switch
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#pattern-2-ab-test">
-<span class="md-ellipsis">
-      Pattern 2: A/B Test
-    </span>
-</a>
-</li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#pattern-3-beta-program">
-<span class="md-ellipsis">
-      Pattern 3: Beta Program
-    </span>
-</a>
-</li>
-</ul>
-</nav>
 </li>
 <li class="md-nav__item">
 <a class="md-nav__link" href="#next-steps">
 <span class="md-ellipsis">
-      Next Steps
+      Next steps
     </span>
 </a>
 </li>
@@ -780,421 +457,128 @@
 <div class="md-content" data-md-component="content">
 <article class="md-content__inner md-typeset">
 <h1 id="targeting-rollouts">Targeting &amp; Rollouts<a class="headerlink" href="#targeting-rollouts" title="Permanent link">¶</a></h1>
-<p>Ship safely with precise control. Rules let you target specific users and roll out features gradually.</p>
+<p>Rules let you target specific contexts and roll out behavior safely. A rule is a typed mapping:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a>criteria(context) -&gt; returns value
+</span></code></pre></div>
+<p>Two properties define how rules behave:
+- <strong>AND semantics within a rule</strong>: all specified criteria must match.
+- <strong>Specificity ordering across rules</strong>: the most specific matching rule wins.</p>
 <hr/>
-<h2 id="basic-targeting">Basic Targeting<a class="headerlink" href="#basic-targeting" title="Permanent link">¶</a></h2>
-<p>Target users by platform, locale, or version using simple, readable criteria.</p>
-<h3 id="platform-targeting">Platform Targeting<a class="headerlink" href="#platform-targeting" title="Permanent link">¶</a></h3>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">API_ENDPOINT</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"https://api.example.com"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-2"><a href="#__codelineno-0-2" id="__codelineno-0-2" name="__codelineno-0-2"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"https://api-ios.example.com"</span>
-</span><span id="__span-0-3"><a href="#__codelineno-0-3" id="__codelineno-0-3" name="__codelineno-0-3"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"https://api-android.example.com"</span>
-</span><span id="__span-0-4"><a href="#__codelineno-0-4" id="__codelineno-0-4" name="__codelineno-0-4"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">WEB</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"https://api-web.example.com"</span>
-</span><span id="__span-0-5"><a href="#__codelineno-0-5" id="__codelineno-0-5" name="__codelineno-0-5"></a><span class="p">}</span>
+<h2 id="criteria-you-can-combine">Criteria you can combine<a class="headerlink" href="#criteria-you-can-combine" title="Permanent link">¶</a></h2>
+<h3 id="platform">Platform<a class="headerlink" href="#platform" title="Permanent link">¶</a></h3>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">API_ENDPOINT</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"https://api.example.com"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-2"><a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"https://api-ios.example.com"</span>
+</span><span id="__span-1-3"><a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"https://api-android.example.com"</span>
+</span><span id="__span-1-4"><a href="#__codelineno-1-4" id="__codelineno-1-4" name="__codelineno-1-4"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">WEB</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"https://api-web.example.com"</span>
+</span><span id="__span-1-5"><a href="#__codelineno-1-5" id="__codelineno-1-5" name="__codelineno-1-5"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>Multiple platforms (OR logic):</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"mobile value"</span>
+<p>Multiple platforms combine as OR:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"mobile value"</span>
 </span></code></pre></div>
-<h3 id="locale-targeting">Locale Targeting<a class="headerlink" href="#locale-targeting" title="Permanent link">¶</a></h3>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">WELCOME_MESSAGE</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Hello!"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-2"><a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">CANADA</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"Welcome!"</span>
-</span><span id="__span-2-3"><a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">FRANCE</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"Bienvenue!"</span>
-</span><span id="__span-2-4"><a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">JAPAN</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"ようこそ!"</span>
-</span><span id="__span-2-5"><a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a><span class="p">}</span>
-</span></code></pre></div>
-<h3 id="version-targeting">Version Targeting<a class="headerlink" href="#version-targeting" title="Permanent link">¶</a></h3>
-<p>Target users on specific version ranges:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">NEW_UI</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-2"><a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-3"><a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a><span class="w">        </span><span class="n">versions</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">min</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w">  </span><span class="c1">// Version &gt;= 2.0.0</span>
-</span><span id="__span-3-4"><a href="#__codelineno-3-4" id="__codelineno-3-4" name="__codelineno-3-4"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
+<h3 id="locale">Locale<a class="headerlink" href="#locale" title="Permanent link">¶</a></h3>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">WELCOME_MESSAGE</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Hello!"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-2"><a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">CANADA</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"Welcome!"</span>
+</span><span id="__span-3-3"><a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">FRANCE</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"Bienvenue!"</span>
+</span><span id="__span-3-4"><a href="#__codelineno-3-4" id="__codelineno-3-4" name="__codelineno-3-4"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">JAPAN</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"ようこそ!"</span>
 </span><span id="__span-3-5"><a href="#__codelineno-3-5" id="__codelineno-3-5" name="__codelineno-3-5"></a><span class="p">}</span>
-</span><span id="__span-3-6"><a href="#__codelineno-3-6" id="__codelineno-3-6" name="__codelineno-3-6"></a>
-</span><span id="__span-3-7"><a href="#__codelineno-3-7" id="__codelineno-3-7" name="__codelineno-3-7"></a><span class="kd">val</span><span class="w"> </span><span class="nv">LEGACY_SUPPORT</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-8"><a href="#__codelineno-3-8" id="__codelineno-3-8" name="__codelineno-3-8"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-9"><a href="#__codelineno-3-9" id="__codelineno-3-9" name="__codelineno-3-9"></a><span class="w">        </span><span class="n">versions</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">max</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w">  </span><span class="c1">// Version &lt; 2.0.0</span>
-</span><span id="__span-3-10"><a href="#__codelineno-3-10" id="__codelineno-3-10" name="__codelineno-3-10"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-3-11"><a href="#__codelineno-3-11" id="__codelineno-3-11" name="__codelineno-3-11"></a><span class="p">}</span>
-</span><span id="__span-3-12"><a href="#__codelineno-3-12" id="__codelineno-3-12" name="__codelineno-3-12"></a>
-</span><span id="__span-3-13"><a href="#__codelineno-3-13" id="__codelineno-3-13" name="__codelineno-3-13"></a><span class="kd">val</span><span class="w"> </span><span class="nv">TRANSITION_FEATURE</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-14"><a href="#__codelineno-3-14" id="__codelineno-3-14" name="__codelineno-3-14"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-15"><a href="#__codelineno-3-15" id="__codelineno-3-15" name="__codelineno-3-15"></a><span class="w">        </span><span class="n">versions</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-16"><a href="#__codelineno-3-16" id="__codelineno-3-16" name="__codelineno-3-16"></a><span class="w">            </span><span class="n">min</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">5</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w">  </span><span class="c1">// &gt;= 1.5.0</span>
-</span><span id="__span-3-17"><a href="#__codelineno-3-17" id="__codelineno-3-17" name="__codelineno-3-17"></a><span class="w">            </span><span class="n">max</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w">  </span><span class="c1">// &lt; 2.0.0</span>
-</span><span id="__span-3-18"><a href="#__codelineno-3-18" id="__codelineno-3-18" name="__codelineno-3-18"></a><span class="w">        </span><span class="p">}</span>
-</span><span id="__span-3-19"><a href="#__codelineno-3-19" id="__codelineno-3-19" name="__codelineno-3-19"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-3-20"><a href="#__codelineno-3-20" id="__codelineno-3-20" name="__codelineno-3-20"></a><span class="p">}</span>
 </span></code></pre></div>
-<hr/>
-<h2 id="combining-criteria">Combining Criteria<a class="headerlink" href="#combining-criteria" title="Permanent link">¶</a></h2>
-<p>All criteria must match (AND logic):</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">PREMIUM_FEATURE</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-4-2"><a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-4-3"><a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a><span class="w">        </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span><span class="w">  </span><span class="c1">// Must be mobile</span>
-</span><span id="__span-4-4"><a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a><span class="w">        </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">)</span><span class="w">          </span><span class="c1">// AND US locale</span>
-</span><span id="__span-4-5"><a href="#__codelineno-4-5" id="__codelineno-4-5" name="__codelineno-4-5"></a><span class="w">        </span><span class="n">versions</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">min</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w">                  </span><span class="c1">// AND version &gt;= 2.0.0</span>
-</span><span id="__span-4-6"><a href="#__codelineno-4-6" id="__codelineno-4-6" name="__codelineno-4-6"></a><span class="w">        </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">50.0</span><span class="w"> </span><span class="p">}</span><span class="w">                           </span><span class="c1">// AND in 50% bucket</span>
-</span><span id="__span-4-7"><a href="#__codelineno-4-7" id="__codelineno-4-7" name="__codelineno-4-7"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-4-8"><a href="#__codelineno-4-8" id="__codelineno-4-8" name="__codelineno-4-8"></a><span class="p">}</span>
+<h3 id="version-ranges">Version ranges<a class="headerlink" href="#version-ranges" title="Permanent link">¶</a></h3>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">NEW_UI</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-2"><a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">versions</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">min</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
+</span><span id="__span-4-3"><a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a><span class="p">}</span>
 </span></code></pre></div>
-<p><strong>Flow:</strong></p>
-<pre class="mermaid"><code>flowchart LR
-    Context[User Context] --&gt; Platform{Platform&lt;br/&gt;iOS or Android?}
-    Platform --&gt;|No| Skip[Skip rule]
-    Platform --&gt;|Yes| Locale{Locale&lt;br/&gt;US?}
-    Locale --&gt;|No| Skip
-    Locale --&gt;|Yes| Version{Version&lt;br/&gt; &gt;= 2.0.0?}
-    Version --&gt;|No| Skip
-    Version --&gt;|Yes| Rollout{In 50%&lt;br/&gt;bucket?}
-    Rollout --&gt;|No| Skip
-    Rollout --&gt;|Yes| Match[Rule matches!]
-
-    style Match fill:#c8e6c9
-    style Skip fill:#ffcdd2</code></pre>
-<hr/>
-<h2 id="rollout-strategies">Rollout Strategies<a class="headerlink" href="#rollout-strategies" title="Permanent link">¶</a></h2>
-<p>Deploy features incrementally using deterministic percentage-based rollouts.</p>
-<h3 id="gradual-rollout">Gradual Rollout<a class="headerlink" href="#gradual-rollout" title="Permanent link">¶</a></h3>
-<p>Start small, expand over time:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-5-1"><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a><span class="c1">// Day 1: 10% of users</span>
-</span><span id="__span-5-2"><a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">NEW_CHECKOUT</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-3"><a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">10.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-5-4"><a href="#__codelineno-5-4" id="__codelineno-5-4" name="__codelineno-5-4"></a><span class="p">}</span>
-</span><span id="__span-5-5"><a href="#__codelineno-5-5" id="__codelineno-5-5" name="__codelineno-5-5"></a>
-</span><span id="__span-5-6"><a href="#__codelineno-5-6" id="__codelineno-5-6" name="__codelineno-5-6"></a><span class="c1">// Day 3: 50% (includes original 10%)</span>
-</span><span id="__span-5-7"><a href="#__codelineno-5-7" id="__codelineno-5-7" name="__codelineno-5-7"></a><span class="kd">val</span><span class="w"> </span><span class="nv">NEW_CHECKOUT</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-8"><a href="#__codelineno-5-8" id="__codelineno-5-8" name="__codelineno-5-8"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">50.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-5-9"><a href="#__codelineno-5-9" id="__codelineno-5-9" name="__codelineno-5-9"></a><span class="p">}</span>
-</span><span id="__span-5-10"><a href="#__codelineno-5-10" id="__codelineno-5-10" name="__codelineno-5-10"></a>
-</span><span id="__span-5-11"><a href="#__codelineno-5-11" id="__codelineno-5-11" name="__codelineno-5-11"></a><span class="c1">// Day 7: 100% (everyone)</span>
-</span><span id="__span-5-12"><a href="#__codelineno-5-12" id="__codelineno-5-12" name="__codelineno-5-12"></a><span class="kd">val</span><span class="w"> </span><span class="nv">NEW_CHECKOUT</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-13"><a href="#__codelineno-5-13" id="__codelineno-5-13" name="__codelineno-5-13"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">100.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-5-14"><a href="#__codelineno-5-14" id="__codelineno-5-14" name="__codelineno-5-14"></a><span class="p">}</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-5-1"><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">LEGACY_SUPPORT</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-2"><a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">versions</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">max</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
+</span><span id="__span-5-3"><a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a><span class="p">}</span>
 </span></code></pre></div>
-<p><strong>Key property:</strong> Same users stay enabled (deterministic bucketing).</p>
-<h3 id="segmented-rollout">Segmented Rollout<a class="headerlink" href="#segmented-rollout" title="Permanent link">¶</a></h3>
-<p>Different percentages for different segments:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-6-1"><a href="#__codelineno-6-1" id="__codelineno-6-1" name="__codelineno-6-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">BETA_FEATURE</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">EnterpriseContext</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-6-2"><a href="#__codelineno-6-2" id="__codelineno-6-2" name="__codelineno-6-2"></a><span class="w">    </span><span class="c1">// 100% for internal users</span>
-</span><span id="__span-6-3"><a href="#__codelineno-6-3" id="__codelineno-6-3" name="__codelineno-6-3"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-6-4"><a href="#__codelineno-6-4" id="__codelineno-6-4" name="__codelineno-6-4"></a><span class="w">        </span><span class="n">extension</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-6-5"><a href="#__codelineno-6-5" id="__codelineno-6-5" name="__codelineno-6-5"></a><span class="w">            </span><span class="n">Evaluable</span><span class="p">.</span><span class="na">factory</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">ctx</span><span class="p">.</span><span class="na">organizationId</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">"internal"</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-6-6"><a href="#__codelineno-6-6" id="__codelineno-6-6" name="__codelineno-6-6"></a><span class="w">        </span><span class="p">}</span>
-</span><span id="__span-6-7"><a href="#__codelineno-6-7" id="__codelineno-6-7" name="__codelineno-6-7"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-6-8"><a href="#__codelineno-6-8" id="__codelineno-6-8" name="__codelineno-6-8"></a>
-</span><span id="__span-6-9"><a href="#__codelineno-6-9" id="__codelineno-6-9" name="__codelineno-6-9"></a><span class="w">    </span><span class="c1">// 50% for enterprise customers</span>
-</span><span id="__span-6-10"><a href="#__codelineno-6-10" id="__codelineno-6-10" name="__codelineno-6-10"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-6-11"><a href="#__codelineno-6-11" id="__codelineno-6-11" name="__codelineno-6-11"></a><span class="w">        </span><span class="n">extension</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-6-12"><a href="#__codelineno-6-12" id="__codelineno-6-12" name="__codelineno-6-12"></a><span class="w">            </span><span class="n">Evaluable</span><span class="p">.</span><span class="na">factory</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="o">-&gt;</span>
-</span><span id="__span-6-13"><a href="#__codelineno-6-13" id="__codelineno-6-13" name="__codelineno-6-13"></a><span class="w">                </span><span class="n">ctx</span><span class="p">.</span><span class="na">subscriptionTier</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SubscriptionTier</span><span class="p">.</span><span class="na">ENTERPRISE</span>
-</span><span id="__span-6-14"><a href="#__codelineno-6-14" id="__codelineno-6-14" name="__codelineno-6-14"></a><span class="w">            </span><span class="p">}</span>
-</span><span id="__span-6-15"><a href="#__codelineno-6-15" id="__codelineno-6-15" name="__codelineno-6-15"></a><span class="w">        </span><span class="p">}</span>
-</span><span id="__span-6-16"><a href="#__codelineno-6-16" id="__codelineno-6-16" name="__codelineno-6-16"></a><span class="w">        </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">50.0</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-6-17"><a href="#__codelineno-6-17" id="__codelineno-6-17" name="__codelineno-6-17"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-6-18"><a href="#__codelineno-6-18" id="__codelineno-6-18" name="__codelineno-6-18"></a>
-</span><span id="__span-6-19"><a href="#__codelineno-6-19" id="__codelineno-6-19" name="__codelineno-6-19"></a><span class="w">    </span><span class="c1">// 10% for everyone else</span>
-</span><span id="__span-6-20"><a href="#__codelineno-6-20" id="__codelineno-6-20" name="__codelineno-6-20"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">10.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-6-21"><a href="#__codelineno-6-21" id="__codelineno-6-21" name="__codelineno-6-21"></a><span class="p">}</span>
+<h3 id="percentage-rollout">Percentage rollout<a class="headerlink" href="#percentage-rollout" title="Permanent link">¶</a></h3>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-6-1"><a href="#__codelineno-6-1" id="__codelineno-6-1" name="__codelineno-6-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">NEW_CHECKOUT</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-2"><a href="#__codelineno-6-2" id="__codelineno-6-2" name="__codelineno-6-2"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">10.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
+</span><span id="__span-6-3"><a href="#__codelineno-6-3" id="__codelineno-6-3" name="__codelineno-6-3"></a><span class="p">}</span>
 </span></code></pre></div>
-<h3 id="platform-specific-rollout">Platform-Specific Rollout<a class="headerlink" href="#platform-specific-rollout" title="Permanent link">¶</a></h3>
-<p>Roll out to platforms independently:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-7-1"><a href="#__codelineno-7-1" id="__codelineno-7-1" name="__codelineno-7-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">NEW_FEATURE</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<p>Rollouts are deterministic: the same <code>(stableId, flagKey, salt)</code> produces the same bucket assignment.</p>
+<h3 id="custom-predicates-via-extension">Custom predicates via <code>extension { }</code><a class="headerlink" href="#custom-predicates-via-extension" title="Permanent link">¶</a></h3>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-7-1"><a href="#__codelineno-7-1" id="__codelineno-7-1" name="__codelineno-7-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">ADVANCED_ANALYTICS</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">EnterpriseContext</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-7-2"><a href="#__codelineno-7-2" id="__codelineno-7-2" name="__codelineno-7-2"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-7-3"><a href="#__codelineno-7-3" id="__codelineno-7-3" name="__codelineno-7-3"></a><span class="w">        </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span>
-</span><span id="__span-7-4"><a href="#__codelineno-7-4" id="__codelineno-7-4" name="__codelineno-7-4"></a><span class="w">        </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">100.0</span><span class="w"> </span><span class="p">}</span><span class="w">  </span><span class="c1">// 100% Android</span>
-</span><span id="__span-7-5"><a href="#__codelineno-7-5" id="__codelineno-7-5" name="__codelineno-7-5"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-7-6"><a href="#__codelineno-7-6" id="__codelineno-7-6" name="__codelineno-7-6"></a>
-</span><span id="__span-7-7"><a href="#__codelineno-7-7" id="__codelineno-7-7" name="__codelineno-7-7"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-7-8"><a href="#__codelineno-7-8" id="__codelineno-7-8" name="__codelineno-7-8"></a><span class="w">        </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
-</span><span id="__span-7-9"><a href="#__codelineno-7-9" id="__codelineno-7-9" name="__codelineno-7-9"></a><span class="w">        </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">25.0</span><span class="w"> </span><span class="p">}</span><span class="w">  </span><span class="c1">// 25% iOS (testing)</span>
-</span><span id="__span-7-10"><a href="#__codelineno-7-10" id="__codelineno-7-10" name="__codelineno-7-10"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-7-11"><a href="#__codelineno-7-11" id="__codelineno-7-11" name="__codelineno-7-11"></a><span class="p">}</span>
+</span><span id="__span-7-3"><a href="#__codelineno-7-3" id="__codelineno-7-3" name="__codelineno-7-3"></a><span class="w">        </span><span class="n">extension</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-7-4"><a href="#__codelineno-7-4" id="__codelineno-7-4" name="__codelineno-7-4"></a><span class="w">            </span><span class="n">Evaluable</span><span class="p">.</span><span class="na">factory</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="o">-&gt;</span>
+</span><span id="__span-7-5"><a href="#__codelineno-7-5" id="__codelineno-7-5" name="__codelineno-7-5"></a><span class="w">                </span><span class="n">ctx</span><span class="p">.</span><span class="na">subscriptionTier</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SubscriptionTier</span><span class="p">.</span><span class="na">ENTERPRISE</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+</span><span id="__span-7-6"><a href="#__codelineno-7-6" id="__codelineno-7-6" name="__codelineno-7-6"></a><span class="w">                    </span><span class="n">ctx</span><span class="p">.</span><span class="na">employeeCount</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">100</span>
+</span><span id="__span-7-7"><a href="#__codelineno-7-7" id="__codelineno-7-7" name="__codelineno-7-7"></a><span class="w">            </span><span class="p">}</span>
+</span><span id="__span-7-8"><a href="#__codelineno-7-8" id="__codelineno-7-8" name="__codelineno-7-8"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-7-9"><a href="#__codelineno-7-9" id="__codelineno-7-9" name="__codelineno-7-9"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
+</span><span id="__span-7-10"><a href="#__codelineno-7-10" id="__codelineno-7-10" name="__codelineno-7-10"></a><span class="p">}</span>
 </span></code></pre></div>
 <hr/>
-<h2 id="rollout-bucketing">Rollout Bucketing<a class="headerlink" href="#rollout-bucketing" title="Permanent link">¶</a></h2>
-<p>Konditional uses SHA-256 hashing for deterministic user bucketing.</p>
-<h3 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">¶</a></h3>
+<h2 id="and-semantics-inside-a-rule">AND semantics inside a rule<a class="headerlink" href="#and-semantics-inside-a-rule" title="Permanent link">¶</a></h2>
+<p>All criteria in a rule must match:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-8-1"><a href="#__codelineno-8-1" id="__codelineno-8-1" name="__codelineno-8-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">PREMIUM_FEATURE</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-8-2"><a href="#__codelineno-8-2" id="__codelineno-8-2" name="__codelineno-8-2"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-8-3"><a href="#__codelineno-8-3" id="__codelineno-8-3" name="__codelineno-8-3"></a><span class="w">        </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span>
+</span><span id="__span-8-4"><a href="#__codelineno-8-4" id="__codelineno-8-4" name="__codelineno-8-4"></a><span class="w">        </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">)</span>
+</span><span id="__span-8-5"><a href="#__codelineno-8-5" id="__codelineno-8-5" name="__codelineno-8-5"></a><span class="w">        </span><span class="n">versions</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">min</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-8-6"><a href="#__codelineno-8-6" id="__codelineno-8-6" name="__codelineno-8-6"></a><span class="w">        </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">50.0</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-8-7"><a href="#__codelineno-8-7" id="__codelineno-8-7" name="__codelineno-8-7"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
+</span><span id="__span-8-8"><a href="#__codelineno-8-8" id="__codelineno-8-8" name="__codelineno-8-8"></a><span class="p">}</span>
+</span></code></pre></div>
 <pre class="mermaid"><code>flowchart LR
-    Salt[Salt: 'v1'] --&gt; Hash
-    Key[Flag Key] --&gt; Hash
-    StableId[User StableId] --&gt; Hash
-
-    Hash[SHA-256 Hash] --&gt; Mod[Modulo 10,000]
-    Mod --&gt; Bucket[Bucket: 0-9999]
-    Bucket --&gt; Compare{Bucket &lt;&lt;br/&gt;threshold?}
-
-    Compare --&gt;|Yes| Enabled[User Enabled]
-    Compare --&gt;|No| Disabled[User Disabled]
-
-    style Enabled fill:#c8e6c9
-    style Disabled fill:#ffcdd2</code></pre>
-<p><strong>Algorithm:</strong></p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-8-1"><a href="#__codelineno-8-1" id="__codelineno-8-1" name="__codelineno-8-1"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">bucket</span><span class="p">(</span><span class="n">flagKey</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="n">stableId</span><span class="p">:</span><span class="w"> </span><span class="n">StableId</span><span class="p">,</span><span class="w"> </span><span class="n">salt</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">):</span><span class="w"> </span><span class="kt">Int</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-8-2"><a href="#__codelineno-8-2" id="__codelineno-8-2" name="__codelineno-8-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"</span><span class="si">$</span><span class="n">salt</span><span class="s">:</span><span class="si">$</span><span class="n">flagKey</span><span class="s">:</span><span class="si">${</span><span class="n">stableId</span><span class="p">.</span><span class="na">id</span><span class="si">}</span><span class="s">"</span>
-</span><span id="__span-8-3"><a href="#__codelineno-8-3" id="__codelineno-8-3" name="__codelineno-8-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">hash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SHA256</span><span class="p">(</span><span class="n">input</span><span class="p">)</span>
-</span><span id="__span-8-4"><a href="#__codelineno-8-4" id="__codelineno-8-4" name="__codelineno-8-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">intValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hash</span><span class="p">.</span><span class="na">take</span><span class="p">(</span><span class="m">4</span><span class="p">).</span><span class="na">toInt</span><span class="p">()</span>
-</span><span id="__span-8-5"><a href="#__codelineno-8-5" id="__codelineno-8-5" name="__codelineno-8-5"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">intValue</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="m">10</span><span class="n">_000</span><span class="w">  </span><span class="c1">// 0-9999 (0.01% granularity)</span>
-</span><span id="__span-8-6"><a href="#__codelineno-8-6" id="__codelineno-8-6" name="__codelineno-8-6"></a><span class="p">}</span>
-</span><span id="__span-8-7"><a href="#__codelineno-8-7" id="__codelineno-8-7" name="__codelineno-8-7"></a>
-</span><span id="__span-8-8"><a href="#__codelineno-8-8" id="__codelineno-8-8" name="__codelineno-8-8"></a><span class="c1">// Check if user is in rollout</span>
-</span><span id="__span-8-9"><a href="#__codelineno-8-9" id="__codelineno-8-9" name="__codelineno-8-9"></a><span class="kd">val</span><span class="w"> </span><span class="nv">threshold</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">rollout</span><span class="p">.</span><span class="na">value</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="m">100</span><span class="p">).</span><span class="na">toInt</span><span class="p">()</span><span class="w">  </span><span class="c1">// 50.0 → 5000</span>
-</span><span id="__span-8-10"><a href="#__codelineno-8-10" id="__codelineno-8-10" name="__codelineno-8-10"></a><span class="kd">val</span><span class="w"> </span><span class="nv">userBucket</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bucket</span><span class="p">(</span><span class="s">"dark_mode"</span><span class="p">,</span><span class="w"> </span><span class="n">user</span><span class="p">.</span><span class="na">stableId</span><span class="p">,</span><span class="w"> </span><span class="s">"v1"</span><span class="p">)</span>
-</span><span id="__span-8-11"><a href="#__codelineno-8-11" id="__codelineno-8-11" name="__codelineno-8-11"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">userBucket</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">threshold</span>
+  Ctx["Context"] --&gt; P{Platform match?}
+  P --&gt;|No| Skip["Rule fails"]
+  P --&gt;|Yes| L{Locale match?}
+  L --&gt;|No| Skip
+  L --&gt;|Yes| V{Version match?}
+  V --&gt;|No| Skip
+  V --&gt;|Yes| R{Rollout bucket in range?}
+  R --&gt;|No| Skip
+  R --&gt;|Yes| Win["Rule matches"]
+  style Win fill:#c8e6c9
+  style Skip fill:#ffcdd2</code></pre>
+<hr/>
+<h2 id="specificity-which-rule-wins">Specificity: which rule wins<a class="headerlink" href="#specificity-which-rule-wins" title="Permanent link">¶</a></h2>
+<p>Konditional orders rules by <strong>specificity</strong> before evaluating them. Specificity is the count of criteria present on a rule:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a href="#__codelineno-9-1" id="__codelineno-9-1" name="__codelineno-9-1"></a>specificity(rule):
+</span><span id="__span-9-2"><a href="#__codelineno-9-2" id="__codelineno-9-2" name="__codelineno-9-2"></a>  +1 if platforms is set
+</span><span id="__span-9-3"><a href="#__codelineno-9-3" id="__codelineno-9-3" name="__codelineno-9-3"></a>  +1 if locales is set
+</span><span id="__span-9-4"><a href="#__codelineno-9-4" id="__codelineno-9-4" name="__codelineno-9-4"></a>  +1 if versions has bounds
+</span><span id="__span-9-5"><a href="#__codelineno-9-5" id="__codelineno-9-5" name="__codelineno-9-5"></a>  +1 if rollout is set
 </span></code></pre></div>
-<h3 id="bucketing-properties">Bucketing Properties<a class="headerlink" href="#bucketing-properties" title="Permanent link">¶</a></h3>
-<table>
-<thead>
-<tr>
-<th>Property</th>
-<th>Benefit</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Deterministic</strong></td>
-<td>Same user always gets same bucket</td>
-</tr>
-<tr>
-<td><strong>Independent</strong></td>
-<td>Each flag has separate bucketing (user in 50% of Flag A ≠ 50% of Flag B)</td>
-</tr>
-<tr>
-<td><strong>Platform-stable</strong></td>
-<td>Same bucket on JVM, Android, iOS, Web</td>
-</tr>
-<tr>
-<td><strong>Redistributable</strong></td>
-<td>Change salt to reassign buckets</td>
-</tr>
-<tr>
-<td><strong>Fine-grained</strong></td>
-<td>0.01% granularity (10,000 buckets)</td>
-</tr>
-</tbody>
-</table>
-<h3 id="salt-based-redistribution">Salt-Based Redistribution<a class="headerlink" href="#salt-based-redistribution" title="Permanent link">¶</a></h3>
-<p>Change salt to redistribute users:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-9-1"><a href="#__codelineno-9-1" id="__codelineno-9-1" name="__codelineno-9-1"></a><span class="c1">// Original</span>
-</span><span id="__span-9-2"><a href="#__codelineno-9-2" id="__codelineno-9-2" name="__codelineno-9-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">EXPERIMENT</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-9-3"><a href="#__codelineno-9-3" id="__codelineno-9-3" name="__codelineno-9-3"></a><span class="w">    </span><span class="n">salt</span><span class="p">(</span><span class="s">"v1"</span><span class="p">)</span>
-</span><span id="__span-9-4"><a href="#__codelineno-9-4" id="__codelineno-9-4" name="__codelineno-9-4"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">50.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-9-5"><a href="#__codelineno-9-5" id="__codelineno-9-5" name="__codelineno-9-5"></a><span class="p">}</span>
-</span><span id="__span-9-6"><a href="#__codelineno-9-6" id="__codelineno-9-6" name="__codelineno-9-6"></a>
-</span><span id="__span-9-7"><a href="#__codelineno-9-7" id="__codelineno-9-7" name="__codelineno-9-7"></a><span class="c1">// New bucketing (different 50% of users)</span>
-</span><span id="__span-9-8"><a href="#__codelineno-9-8" id="__codelineno-9-8" name="__codelineno-9-8"></a><span class="kd">val</span><span class="w"> </span><span class="nv">EXPERIMENT</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-9-9"><a href="#__codelineno-9-9" id="__codelineno-9-9" name="__codelineno-9-9"></a><span class="w">    </span><span class="n">salt</span><span class="p">(</span><span class="s">"v2"</span><span class="p">)</span><span class="w">  </span><span class="c1">// Changed!</span>
-</span><span id="__span-9-10"><a href="#__codelineno-9-10" id="__codelineno-9-10" name="__codelineno-9-10"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">50.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-9-11"><a href="#__codelineno-9-11" id="__codelineno-9-11" name="__codelineno-9-11"></a><span class="p">}</span>
+<p>Rules are evaluated in descending specificity; the first rule whose criteria all match determines the value. If no rules match, the default is returned.</p>
+<pre class="mermaid"><code>flowchart TD
+  Rules["Rule set"] --&gt; Sort["Sort by specificity (desc)"]
+  Sort --&gt; Loop["Evaluate rules in order"]
+  Loop --&gt;|First match| Value["Return rule value"]
+  Loop --&gt;|No match| Default["Return default"]
+  style Value fill:#c8e6c9
+  style Default fill:#fff3cd</code></pre>
+<hr/>
+<h2 id="deterministic-rollout-bucketing-sha-256">Deterministic rollout bucketing (SHA-256)<a class="headerlink" href="#deterministic-rollout-bucketing-sha-256" title="Permanent link">¶</a></h2>
+<p>Rollouts are computed locally. The bucketing input is stable and per-flag:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a href="#__codelineno-10-1" id="__codelineno-10-1" name="__codelineno-10-1"></a>input = "$stableId:$flagKey:$salt"
+</span><span id="__span-10-2"><a href="#__codelineno-10-2" id="__codelineno-10-2" name="__codelineno-10-2"></a>hash = SHA256(input)
+</span><span id="__span-10-3"><a href="#__codelineno-10-3" id="__codelineno-10-3" name="__codelineno-10-3"></a>percentage = (hash % 10000) / 100.0   // ["0.00, 100.00)
 </span></code></pre></div>
-<p><strong>Use cases:</strong></p>
+<p>This yields three operational properties:
+- <strong>Deterministic</strong>: same inputs → same bucket
+- <strong>Per-flag isolation</strong>: changing one flag does not affect other flags’ buckets
+- <strong>Salt-controlled redistribution</strong>: changing <code>salt</code> re-buckets users for that flag</p>
+<pre class="mermaid"><code>flowchart LR
+  Id[stableId"] --&gt; In["stableId:flagKey:salt"]
+  Key["flagKey"] --&gt; In
+  Salt["salt"] --&gt; In
+  In --&gt; H["SHA-256"]
+  H --&gt; M["mod 10,000"]
+  M --&gt; P["percentage 0.00..99.99"]
+  P --&gt; T{&lt; rollout % ?}
+  T --&gt;|Yes| Enabled["In rollout"]
+  T --&gt;|No| Disabled["Out of rollout"]
+  style Enabled fill:#c8e6c9
+  style Disabled fill:#ffcdd2</code></pre>
+<hr/>
+<h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">¶</a></h2>
 <ul>
-<li>Reset A/B test for new experiment</li>
-<li>Fix skewed distribution</li>
-<li>Run same flag with different user sample</li>
+<li>Understand evaluation flow and performance: <a href="../05-evaluation/">"Evaluation"</a></li>
+<li>Understand the compile-time vs runtime boundary: <a href="../07-theory/">"Theory"</a></li>
 </ul>
-<hr/>
-<h2 id="specificity-rule-ordering">Specificity &amp; Rule Ordering<a class="headerlink" href="#specificity-rule-ordering" title="Permanent link">¶</a></h2>
-<p>When multiple rules match, the most specific rule wins. Rules are auto-sorted by specificity (highest first).</p>
-<h3 id="specificity-calculation">Specificity Calculation<a class="headerlink" href="#specificity-calculation" title="Permanent link">¶</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a href="#__codelineno-10-1" id="__codelineno-10-1" name="__codelineno-10-1"></a>specificity = (platforms specified? 1 : 0)
-</span><span id="__span-10-2"><a href="#__codelineno-10-2" id="__codelineno-10-2" name="__codelineno-10-2"></a>            + (locales specified? 1 : 0)
-</span><span id="__span-10-3"><a href="#__codelineno-10-3" id="__codelineno-10-3" name="__codelineno-10-3"></a>            + (versions specified? 1 : 0)
-</span><span id="__span-10-4"><a href="#__codelineno-10-4" id="__codelineno-10-4" name="__codelineno-10-4"></a>            + extension.specificity()
-</span></code></pre></div>
-<h3 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">¶</a></h3>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-11-1"><a href="#__codelineno-11-1" id="__codelineno-11-1" name="__codelineno-11-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">VALUE</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"default"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-11-2"><a href="#__codelineno-11-2" id="__codelineno-11-2" name="__codelineno-11-2"></a><span class="w">    </span><span class="c1">// Specificity = 3 (platform + locale + version)</span>
-</span><span id="__span-11-3"><a href="#__codelineno-11-3" id="__codelineno-11-3" name="__codelineno-11-3"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-11-4"><a href="#__codelineno-11-4" id="__codelineno-11-4" name="__codelineno-11-4"></a><span class="w">        </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
-</span><span id="__span-11-5"><a href="#__codelineno-11-5" id="__codelineno-11-5" name="__codelineno-11-5"></a><span class="w">        </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">)</span>
-</span><span id="__span-11-6"><a href="#__codelineno-11-6" id="__codelineno-11-6" name="__codelineno-11-6"></a><span class="w">        </span><span class="n">versions</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">min</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-11-7"><a href="#__codelineno-11-7" id="__codelineno-11-7" name="__codelineno-11-7"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"very-specific"</span>
-</span><span id="__span-11-8"><a href="#__codelineno-11-8" id="__codelineno-11-8" name="__codelineno-11-8"></a>
-</span><span id="__span-11-9"><a href="#__codelineno-11-9" id="__codelineno-11-9" name="__codelineno-11-9"></a><span class="w">    </span><span class="c1">// Specificity = 2 (platform + locale)</span>
-</span><span id="__span-11-10"><a href="#__codelineno-11-10" id="__codelineno-11-10" name="__codelineno-11-10"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-11-11"><a href="#__codelineno-11-11" id="__codelineno-11-11" name="__codelineno-11-11"></a><span class="w">        </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
-</span><span id="__span-11-12"><a href="#__codelineno-11-12" id="__codelineno-11-12" name="__codelineno-11-12"></a><span class="w">        </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">)</span>
-</span><span id="__span-11-13"><a href="#__codelineno-11-13" id="__codelineno-11-13" name="__codelineno-11-13"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"medium-specific"</span>
-</span><span id="__span-11-14"><a href="#__codelineno-11-14" id="__codelineno-11-14" name="__codelineno-11-14"></a>
-</span><span id="__span-11-15"><a href="#__codelineno-11-15" id="__codelineno-11-15" name="__codelineno-11-15"></a><span class="w">    </span><span class="c1">// Specificity = 1 (platform only)</span>
-</span><span id="__span-11-16"><a href="#__codelineno-11-16" id="__codelineno-11-16" name="__codelineno-11-16"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-11-17"><a href="#__codelineno-11-17" id="__codelineno-11-17" name="__codelineno-11-17"></a><span class="w">        </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
-</span><span id="__span-11-18"><a href="#__codelineno-11-18" id="__codelineno-11-18" name="__codelineno-11-18"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"general"</span>
-</span><span id="__span-11-19"><a href="#__codelineno-11-19" id="__codelineno-11-19" name="__codelineno-11-19"></a>
-</span><span id="__span-11-20"><a href="#__codelineno-11-20" id="__codelineno-11-20" name="__codelineno-11-20"></a><span class="w">    </span><span class="c1">// Specificity = 0 (no constraints)</span>
-</span><span id="__span-11-21"><a href="#__codelineno-11-21" id="__codelineno-11-21" name="__codelineno-11-21"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"catch-all"</span>
-</span><span id="__span-11-22"><a href="#__codelineno-11-22" id="__codelineno-11-22" name="__codelineno-11-22"></a><span class="p">}</span>
-</span></code></pre></div>
-<p><strong>Evaluation order:</strong></p>
-<pre class="mermaid"><code>graph TD
-    Start[User: iOS, US, v2.1.0] --&gt; S3["Specificity 3:&lt;br/&gt;iOS + US + v2.0+&lt;br/&gt;→ 'very-specific'"]
-
-    S3 --&gt;|Matches| Return3[Return 'very-specific']
-    S3 --&gt;|Doesn't match| S2["Specificity 2:&lt;br/&gt;iOS + US&lt;br/&gt;→ 'medium-specific'"]
-
-    S2 --&gt;|Matches| Return2[Return 'medium-specific']
-    S2 --&gt;|Doesn't match| S1["Specificity 1:&lt;br/&gt;iOS&lt;br/&gt;→ 'general'"]
-
-    S1 --&gt;|Matches| Return1[Return 'general']
-    S1 --&gt;|Doesn't match| S0["Specificity 0:&lt;br/&gt;(no constraints)&lt;br/&gt;→ 'catch-all'"]
-
-    S0 --&gt; Default[Return 'catch-all']
-
-    style S3 fill:#4caf50
-    style Return3 fill:#c8e6c9</code></pre>
-<p><strong>Key insight:</strong> More specific rules override general rules automatically.</p>
-<hr/>
-<h2 id="custom-targeting-logic">Custom Targeting Logic<a class="headerlink" href="#custom-targeting-logic" title="Permanent link">¶</a></h2>
-<p>Use <code>extension { }</code> for business logic beyond platform/locale/version.</p>
-<h3 id="simple-extension">Simple Extension<a class="headerlink" href="#simple-extension" title="Permanent link">¶</a></h3>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-12-1"><a href="#__codelineno-12-1" id="__codelineno-12-1" name="__codelineno-12-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">PREMIUM_FEATURE</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">EnterpriseContext</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-12-2"><a href="#__codelineno-12-2" id="__codelineno-12-2" name="__codelineno-12-2"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-12-3"><a href="#__codelineno-12-3" id="__codelineno-12-3" name="__codelineno-12-3"></a><span class="w">        </span><span class="n">extension</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-12-4"><a href="#__codelineno-12-4" id="__codelineno-12-4" name="__codelineno-12-4"></a><span class="w">            </span><span class="n">Evaluable</span><span class="p">.</span><span class="na">factory</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="o">-&gt;</span>
-</span><span id="__span-12-5"><a href="#__codelineno-12-5" id="__codelineno-12-5" name="__codelineno-12-5"></a><span class="w">                </span><span class="n">ctx</span><span class="p">.</span><span class="na">subscriptionTier</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SubscriptionTier</span><span class="p">.</span><span class="na">ENTERPRISE</span>
-</span><span id="__span-12-6"><a href="#__codelineno-12-6" id="__codelineno-12-6" name="__codelineno-12-6"></a><span class="w">            </span><span class="p">}</span>
-</span><span id="__span-12-7"><a href="#__codelineno-12-7" id="__codelineno-12-7" name="__codelineno-12-7"></a><span class="w">        </span><span class="p">}</span>
-</span><span id="__span-12-8"><a href="#__codelineno-12-8" id="__codelineno-12-8" name="__codelineno-12-8"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-12-9"><a href="#__codelineno-12-9" id="__codelineno-12-9" name="__codelineno-12-9"></a><span class="p">}</span>
-</span></code></pre></div>
-<h3 id="complex-extension">Complex Extension<a class="headerlink" href="#complex-extension" title="Permanent link">¶</a></h3>
-<p>Combine multiple business conditions:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-13-1"><a href="#__codelineno-13-1" id="__codelineno-13-1" name="__codelineno-13-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">ADVANCED_ANALYTICS</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">EnterpriseContext</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-13-2"><a href="#__codelineno-13-2" id="__codelineno-13-2" name="__codelineno-13-2"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-13-3"><a href="#__codelineno-13-3" id="__codelineno-13-3" name="__codelineno-13-3"></a><span class="w">        </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">WEB</span><span class="p">)</span><span class="w">  </span><span class="c1">// Technical constraint</span>
-</span><span id="__span-13-4"><a href="#__codelineno-13-4" id="__codelineno-13-4" name="__codelineno-13-4"></a><span class="w">        </span><span class="n">extension</span><span class="w"> </span><span class="p">{</span><span class="w">              </span><span class="c1">// Business logic</span>
-</span><span id="__span-13-5"><a href="#__codelineno-13-5" id="__codelineno-13-5" name="__codelineno-13-5"></a><span class="w">            </span><span class="k">object</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nc">Evaluable</span><span class="o">&lt;</span><span class="n">EnterpriseContext</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-13-6"><a href="#__codelineno-13-6" id="__codelineno-13-6" name="__codelineno-13-6"></a><span class="w">                </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span><span class="w"> </span><span class="n">EnterpriseContext</span><span class="p">)</span><span class="w"> </span><span class="o">=</span>
-</span><span id="__span-13-7"><a href="#__codelineno-13-7" id="__codelineno-13-7" name="__codelineno-13-7"></a><span class="w">                    </span><span class="n">ctx</span><span class="p">.</span><span class="na">subscriptionTier</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SubscriptionTier</span><span class="p">.</span><span class="na">ENTERPRISE</span><span class="w"> </span><span class="o">&amp;&amp;</span>
-</span><span id="__span-13-8"><a href="#__codelineno-13-8" id="__codelineno-13-8" name="__codelineno-13-8"></a><span class="w">                    </span><span class="n">ctx</span><span class="p">.</span><span class="na">employeeCount</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="o">&amp;&amp;</span>
-</span><span id="__span-13-9"><a href="#__codelineno-13-9" id="__codelineno-13-9" name="__codelineno-13-9"></a><span class="w">                    </span><span class="n">ctx</span><span class="p">.</span><span class="na">userRole</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">UserRole</span><span class="p">.</span><span class="na">ADMIN</span>
-</span><span id="__span-13-10"><a href="#__codelineno-13-10" id="__codelineno-13-10" name="__codelineno-13-10"></a>
-</span><span id="__span-13-11"><a href="#__codelineno-13-11" id="__codelineno-13-11" name="__codelineno-13-11"></a><span class="w">                </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">specificity</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="w">  </span><span class="c1">// Three conditions</span>
-</span><span id="__span-13-12"><a href="#__codelineno-13-12" id="__codelineno-13-12" name="__codelineno-13-12"></a><span class="w">            </span><span class="p">}</span>
-</span><span id="__span-13-13"><a href="#__codelineno-13-13" id="__codelineno-13-13" name="__codelineno-13-13"></a><span class="w">        </span><span class="p">}</span>
-</span><span id="__span-13-14"><a href="#__codelineno-13-14" id="__codelineno-13-14" name="__codelineno-13-14"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-13-15"><a href="#__codelineno-13-15" id="__codelineno-13-15" name="__codelineno-13-15"></a><span class="p">}</span>
-</span></code></pre></div>
-<p><strong>Extension specificity adds to total:</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a href="#__codelineno-14-1" id="__codelineno-14-1" name="__codelineno-14-1"></a>Total = platform (1) + extension (3) = 4
-</span></code></pre></div>
-<h3 id="reusable-evaluables">Reusable Evaluables<a class="headerlink" href="#reusable-evaluables" title="Permanent link">¶</a></h3>
-<p>Create evaluable classes for common patterns:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-15-1"><a href="#__codelineno-15-1" id="__codelineno-15-1" name="__codelineno-15-1"></a><span class="kd">class</span><span class="w"> </span><span class="nc">SubscriptionTierEvaluable</span><span class="p">(</span>
-</span><span id="__span-15-2"><a href="#__codelineno-15-2" id="__codelineno-15-2" name="__codelineno-15-2"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">allowedTiers</span><span class="p">:</span><span class="w"> </span><span class="n">Set</span><span class="o">&lt;</span><span class="n">SubscriptionTier</span><span class="o">&gt;</span>
-</span><span id="__span-15-3"><a href="#__codelineno-15-3" id="__codelineno-15-3" name="__codelineno-15-3"></a><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Evaluable</span><span class="o">&lt;</span><span class="n">EnterpriseContext</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-15-4"><a href="#__codelineno-15-4" id="__codelineno-15-4" name="__codelineno-15-4"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span><span class="w"> </span><span class="n">EnterpriseContext</span><span class="p">)</span><span class="w"> </span><span class="o">=</span>
-</span><span id="__span-15-5"><a href="#__codelineno-15-5" id="__codelineno-15-5" name="__codelineno-15-5"></a><span class="w">        </span><span class="n">ctx</span><span class="p">.</span><span class="na">subscriptionTier</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">allowedTiers</span>
-</span><span id="__span-15-6"><a href="#__codelineno-15-6" id="__codelineno-15-6" name="__codelineno-15-6"></a>
-</span><span id="__span-15-7"><a href="#__codelineno-15-7" id="__codelineno-15-7" name="__codelineno-15-7"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">specificity</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span>
-</span><span id="__span-15-8"><a href="#__codelineno-15-8" id="__codelineno-15-8" name="__codelineno-15-8"></a><span class="p">}</span>
-</span><span id="__span-15-9"><a href="#__codelineno-15-9" id="__codelineno-15-9" name="__codelineno-15-9"></a>
-</span><span id="__span-15-10"><a href="#__codelineno-15-10" id="__codelineno-15-10" name="__codelineno-15-10"></a><span class="c1">// Reuse across features</span>
-</span><span id="__span-15-11"><a href="#__codelineno-15-11" id="__codelineno-15-11" name="__codelineno-15-11"></a><span class="kd">val</span><span class="w"> </span><span class="nv">FEATURE_A</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">EnterpriseContext</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-15-12"><a href="#__codelineno-15-12" id="__codelineno-15-12" name="__codelineno-15-12"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-15-13"><a href="#__codelineno-15-13" id="__codelineno-15-13" name="__codelineno-15-13"></a><span class="w">        </span><span class="n">extension</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-15-14"><a href="#__codelineno-15-14" id="__codelineno-15-14" name="__codelineno-15-14"></a><span class="w">            </span><span class="n">SubscriptionTierEvaluable</span><span class="p">(</span><span class="n">setOf</span><span class="p">(</span><span class="n">SubscriptionTier</span><span class="p">.</span><span class="na">ENTERPRISE</span><span class="p">))</span>
-</span><span id="__span-15-15"><a href="#__codelineno-15-15" id="__codelineno-15-15" name="__codelineno-15-15"></a><span class="w">        </span><span class="p">}</span>
-</span><span id="__span-15-16"><a href="#__codelineno-15-16" id="__codelineno-15-16" name="__codelineno-15-16"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-15-17"><a href="#__codelineno-15-17" id="__codelineno-15-17" name="__codelineno-15-17"></a><span class="p">}</span>
-</span><span id="__span-15-18"><a href="#__codelineno-15-18" id="__codelineno-15-18" name="__codelineno-15-18"></a>
-</span><span id="__span-15-19"><a href="#__codelineno-15-19" id="__codelineno-15-19" name="__codelineno-15-19"></a><span class="kd">val</span><span class="w"> </span><span class="nv">FEATURE_B</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">EnterpriseContext</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-15-20"><a href="#__codelineno-15-20" id="__codelineno-15-20" name="__codelineno-15-20"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-15-21"><a href="#__codelineno-15-21" id="__codelineno-15-21" name="__codelineno-15-21"></a><span class="w">        </span><span class="n">extension</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-15-22"><a href="#__codelineno-15-22" id="__codelineno-15-22" name="__codelineno-15-22"></a><span class="w">            </span><span class="n">SubscriptionTierEvaluable</span><span class="p">(</span><span class="n">setOf</span><span class="p">(</span>
-</span><span id="__span-15-23"><a href="#__codelineno-15-23" id="__codelineno-15-23" name="__codelineno-15-23"></a><span class="w">                </span><span class="n">SubscriptionTier</span><span class="p">.</span><span class="na">PRO</span><span class="p">,</span>
-</span><span id="__span-15-24"><a href="#__codelineno-15-24" id="__codelineno-15-24" name="__codelineno-15-24"></a><span class="w">                </span><span class="n">SubscriptionTier</span><span class="p">.</span><span class="na">ENTERPRISE</span>
-</span><span id="__span-15-25"><a href="#__codelineno-15-25" id="__codelineno-15-25" name="__codelineno-15-25"></a><span class="w">            </span><span class="p">))</span>
-</span><span id="__span-15-26"><a href="#__codelineno-15-26" id="__codelineno-15-26" name="__codelineno-15-26"></a><span class="w">        </span><span class="p">}</span>
-</span><span id="__span-15-27"><a href="#__codelineno-15-27" id="__codelineno-15-27" name="__codelineno-15-27"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-15-28"><a href="#__codelineno-15-28" id="__codelineno-15-28" name="__codelineno-15-28"></a><span class="p">}</span>
-</span></code></pre></div>
-<hr/>
-<h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">¶</a></h2>
-<h3 id="1-start-with-small-rollouts">1. Start with Small Rollouts<a class="headerlink" href="#1-start-with-small-rollouts" title="Permanent link">¶</a></h3>
-<p>Begin with 10%, monitor metrics, then expand:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-16-1"><a href="#__codelineno-16-1" id="__codelineno-16-1" name="__codelineno-16-1"></a><span class="c1">// Phase 1: Canary</span>
-</span><span id="__span-16-2"><a href="#__codelineno-16-2" id="__codelineno-16-2" name="__codelineno-16-2"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">10.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-16-3"><a href="#__codelineno-16-3" id="__codelineno-16-3" name="__codelineno-16-3"></a>
-</span><span id="__span-16-4"><a href="#__codelineno-16-4" id="__codelineno-16-4" name="__codelineno-16-4"></a><span class="c1">// Phase 2: Expand (if metrics look good)</span>
-</span><span id="__span-16-5"><a href="#__codelineno-16-5" id="__codelineno-16-5" name="__codelineno-16-5"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">50.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-16-6"><a href="#__codelineno-16-6" id="__codelineno-16-6" name="__codelineno-16-6"></a>
-</span><span id="__span-16-7"><a href="#__codelineno-16-7" id="__codelineno-16-7" name="__codelineno-16-7"></a><span class="c1">// Phase 3: Full rollout</span>
-</span><span id="__span-16-8"><a href="#__codelineno-16-8" id="__codelineno-16-8" name="__codelineno-16-8"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">100.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span></code></pre></div>
-<h3 id="2-use-specificity-to-your-advantage">2. Use Specificity to Your Advantage<a class="headerlink" href="#2-use-specificity-to-your-advantage" title="Permanent link">¶</a></h3>
-<p>Write rules from most to least specific:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-17-1"><a href="#__codelineno-17-1" id="__codelineno-17-1" name="__codelineno-17-1"></a><span class="c1">// Good - clear intent</span>
-</span><span id="__span-17-2"><a href="#__codelineno-17-2" id="__codelineno-17-2" name="__codelineno-17-2"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">);</span><span class="w"> </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"ios-us"</span>
-</span><span id="__span-17-3"><a href="#__codelineno-17-3" id="__codelineno-17-3" name="__codelineno-17-3"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"ios-all"</span>
-</span><span id="__span-17-4"><a href="#__codelineno-17-4" id="__codelineno-17-4" name="__codelineno-17-4"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"default"</span>
-</span><span id="__span-17-5"><a href="#__codelineno-17-5" id="__codelineno-17-5" name="__codelineno-17-5"></a>
-</span><span id="__span-17-6"><a href="#__codelineno-17-6" id="__codelineno-17-6" name="__codelineno-17-6"></a><span class="c1">// Also works, but less clear</span>
-</span><span id="__span-17-7"><a href="#__codelineno-17-7" id="__codelineno-17-7" name="__codelineno-17-7"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"default"</span>
-</span><span id="__span-17-8"><a href="#__codelineno-17-8" id="__codelineno-17-8" name="__codelineno-17-8"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"ios-all"</span>
-</span><span id="__span-17-9"><a href="#__codelineno-17-9" id="__codelineno-17-9" name="__codelineno-17-9"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">);</span><span class="w"> </span><span class="n">locales</span><span class="p">(</span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"ios-us"</span>
-</span></code></pre></div>
-<h3 id="3-document-non-obvious-rules">3. Document Non-Obvious Rules<a class="headerlink" href="#3-document-non-obvious-rules" title="Permanent link">¶</a></h3>
-<p>Use <code>note()</code> for complex targeting:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-18-1"><a href="#__codelineno-18-1" id="__codelineno-18-1" name="__codelineno-18-1"></a><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-18-2"><a href="#__codelineno-18-2" id="__codelineno-18-2" name="__codelineno-18-2"></a><span class="w">    </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span>
-</span><span id="__span-18-3"><a href="#__codelineno-18-3" id="__codelineno-18-3" name="__codelineno-18-3"></a><span class="w">    </span><span class="n">versions</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">min</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">9</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">);</span><span class="w"> </span><span class="n">max</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-18-4"><a href="#__codelineno-18-4" id="__codelineno-18-4" name="__codelineno-18-4"></a><span class="w">    </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">15.0</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-18-5"><a href="#__codelineno-18-5" id="__codelineno-18-5" name="__codelineno-18-5"></a><span class="w">    </span><span class="n">note</span><span class="p">(</span><span class="s">"Workaround for Android bug #1234 - affects v1.9.0-2.0.x"</span><span class="p">)</span>
-</span><span id="__span-18-6"><a href="#__codelineno-18-6" id="__codelineno-18-6" name="__codelineno-18-6"></a><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="n">workaroundValue</span>
-</span></code></pre></div>
-<h3 id="4-keep-rule-count-low">4. Keep Rule Count Low<a class="headerlink" href="#4-keep-rule-count-low" title="Permanent link">¶</a></h3>
-<p>Fewer rules = faster evaluation:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-19-1"><a href="#__codelineno-19-1" id="__codelineno-19-1" name="__codelineno-19-1"></a><span class="c1">// Good: 2-3 rules</span>
-</span><span id="__span-19-2"><a href="#__codelineno-19-2" id="__codelineno-19-2" name="__codelineno-19-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">FEATURE</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-19-3"><a href="#__codelineno-19-3" id="__codelineno-19-3" name="__codelineno-19-3"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-19-4"><a href="#__codelineno-19-4" id="__codelineno-19-4" name="__codelineno-19-4"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">versions</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">min</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-19-5"><a href="#__codelineno-19-5" id="__codelineno-19-5" name="__codelineno-19-5"></a><span class="p">}</span>
-</span><span id="__span-19-6"><a href="#__codelineno-19-6" id="__codelineno-19-6" name="__codelineno-19-6"></a>
-</span><span id="__span-19-7"><a href="#__codelineno-19-7" id="__codelineno-19-7" name="__codelineno-19-7"></a><span class="c1">// Avoid: 20+ rules (consider redesigning with custom context)</span>
-</span></code></pre></div>
-<h3 id="5-test-rollout-distribution">5. Test Rollout Distribution<a class="headerlink" href="#5-test-rollout-distribution" title="Permanent link">¶</a></h3>
-<p>Verify rollouts distribute evenly:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-20-1"><a href="#__codelineno-20-1" id="__codelineno-20-1" name="__codelineno-20-1"></a><span class="nd">@Test</span>
-</span><span id="__span-20-2"><a href="#__codelineno-20-2" id="__codelineno-20-2" name="__codelineno-20-2"></a><span class="kd">fun</span><span class="w"> </span><span class="err">`50 </span><span class="nf">percent</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="n">distributes</span><span class="w"> </span><span class="n">correctly</span><span class="err">`</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-20-3"><a href="#__codelineno-20-3" id="__codelineno-20-3" name="__codelineno-20-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">sampleSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1000</span>
-</span><span id="__span-20-4"><a href="#__codelineno-20-4" id="__codelineno-20-4" name="__codelineno-20-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="m">0</span><span class="w"> </span><span class="n">until</span><span class="w"> </span><span class="n">sampleSize</span><span class="p">).</span><span class="na">count</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">-&gt;</span>
-</span><span id="__span-20-5"><a href="#__codelineno-20-5" id="__codelineno-20-5" name="__codelineno-20-5"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(...,</span><span class="w"> </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"user-</span><span class="si">$</span><span class="n">i</span><span class="s">"</span><span class="p">))</span>
-</span><span id="__span-20-6"><a href="#__codelineno-20-6" id="__codelineno-20-6" name="__codelineno-20-6"></a><span class="w">        </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">ROLLOUT_FLAG</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-20-7"><a href="#__codelineno-20-7" id="__codelineno-20-7" name="__codelineno-20-7"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-20-8"><a href="#__codelineno-20-8" id="__codelineno-20-8" name="__codelineno-20-8"></a>
-</span><span id="__span-20-9"><a href="#__codelineno-20-9" id="__codelineno-20-9" name="__codelineno-20-9"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">percentage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">enabled</span><span class="p">.</span><span class="na">toDouble</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">sampleSize</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="m">100</span>
-</span><span id="__span-20-10"><a href="#__codelineno-20-10" id="__codelineno-20-10" name="__codelineno-20-10"></a><span class="w">    </span><span class="n">assertTrue</span><span class="p">(</span><span class="n">percentage</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="m">48.0</span><span class="p">..</span><span class="m">52.0</span><span class="p">)</span><span class="w">  </span><span class="c1">// ±2% variance</span>
-</span><span id="__span-20-11"><a href="#__codelineno-20-11" id="__codelineno-20-11" name="__codelineno-20-11"></a><span class="p">}</span>
-</span></code></pre></div>
-<hr/>
-<h2 id="common-patterns">Common Patterns<a class="headerlink" href="#common-patterns" title="Permanent link">¶</a></h2>
-<h3 id="pattern-1-kill-switch">Pattern 1: Kill Switch<a class="headerlink" href="#pattern-1-kill-switch" title="Permanent link">¶</a></h3>
-<p>Emergency disable without deployment:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-21-1"><a href="#__codelineno-21-1" id="__codelineno-21-1" name="__codelineno-21-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">PAYMENT_PROCESSING</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
-</span><span id="__span-21-2"><a href="#__codelineno-21-2" id="__codelineno-21-2" name="__codelineno-21-2"></a><span class="c1">// Can be set to false via remote JSON update</span>
-</span></code></pre></div>
-<h3 id="pattern-2-ab-test">Pattern 2: A/B Test<a class="headerlink" href="#pattern-2-ab-test" title="Permanent link">¶</a></h3>
-<p>Split users 50/50:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-22-1"><a href="#__codelineno-22-1" id="__codelineno-22-1" name="__codelineno-22-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">RECOMMENDATION_ALGO</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"collaborative"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-22-2"><a href="#__codelineno-22-2" id="__codelineno-22-2" name="__codelineno-22-2"></a><span class="w">    </span><span class="n">salt</span><span class="p">(</span><span class="s">"experiment-2024-q1"</span><span class="p">)</span>
-</span><span id="__span-22-3"><a href="#__codelineno-22-3" id="__codelineno-22-3" name="__codelineno-22-3"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">50.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"content-based"</span>
-</span><span id="__span-22-4"><a href="#__codelineno-22-4" id="__codelineno-22-4" name="__codelineno-22-4"></a><span class="p">}</span>
-</span></code></pre></div>
-<h3 id="pattern-3-beta-program">Pattern 3: Beta Program<a class="headerlink" href="#pattern-3-beta-program" title="Permanent link">¶</a></h3>
-<p>100% for beta users, 0% for others:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-23-1"><a href="#__codelineno-23-1" id="__codelineno-23-1" name="__codelineno-23-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">BETA_FEATURE</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">AppContext</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-23-2"><a href="#__codelineno-23-2" id="__codelineno-23-2" name="__codelineno-23-2"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-23-3"><a href="#__codelineno-23-3" id="__codelineno-23-3" name="__codelineno-23-3"></a><span class="w">        </span><span class="n">extension</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-23-4"><a href="#__codelineno-23-4" id="__codelineno-23-4" name="__codelineno-23-4"></a><span class="w">            </span><span class="n">Evaluable</span><span class="p">.</span><span class="na">factory</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">ctx</span><span class="p">.</span><span class="na">betaTester</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-23-5"><a href="#__codelineno-23-5" id="__codelineno-23-5" name="__codelineno-23-5"></a><span class="w">        </span><span class="p">}</span>
-</span><span id="__span-23-6"><a href="#__codelineno-23-6" id="__codelineno-23-6" name="__codelineno-23-6"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-23-7"><a href="#__codelineno-23-7" id="__codelineno-23-7" name="__codelineno-23-7"></a><span class="p">}</span>
-</span></code></pre></div>
-<hr/>
-<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">¶</a></h2>
-<p><strong>Need to evaluate flags?</strong> See <a href="../05-evaluation/">Evaluation</a> for evaluation methods and flow.</p>
-<p><strong>Want remote updates?</strong> See <a href="../06-remote-config/">Remote Configuration</a> for JSON serialization.</p>
-<p><strong>Understanding the basics?</strong> See <a href="../03-core-concepts/">Core Concepts</a> for Features, Context, and Namespaces.</p>
 </article>
 </div>
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>

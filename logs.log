@@ -28,7 +28,7 @@ WARNING -  Doc file 'Context.md' contains a link 'Architecture.md', but the targ
 WARNING -  Doc file 'Features.md' contains a link 'Builders.md', but the target is not found among documentation files.
 WARNING -  Doc file 'Registry.md' contains a link './Flags.md', but the target 'Flags.md' is not found among documentation files.
 WARNING -  Doc file 'Registry.md' contains a link './CoreConcepts.md', but the target 'CoreConcepts.md' is not found among documentation files.
-INFO    -  MERMAID2  - Found superfences config: {'custom_fences': [{'name': 'mermaid', 'class': 'mermaid', 'format': <function fence_code_format at 0x103d51590>}]}
+INFO    -  MERMAID2  - Found superfences config: {'custom_fences': ["{'name': 'mermaid', 'class': 'mermaid', 'format': <function fence_code_format at 0x103d51590>}"]}
 INFO    -  Doc file 'Context.md' contains a link 'Evaluation.md#rollout-bucketing', but the doc 'Evaluation.md' does not contain an anchor '#rollout-bucketing'.
 INFO    -  Documentation built in 3.22 seconds
 INFO    -  Building documentation...
@@ -61,11 +61,11 @@ WARNING -  Doc file 'Context.md' contains a link 'Architecture.md', but the targ
 WARNING -  Doc file 'Features.md' contains a link 'Builders.md', but the target is not found among documentation files.
 WARNING -  Doc file 'Registry.md' contains a link './Flags.md', but the target 'Flags.md' is not found among documentation files.
 WARNING -  Doc file 'Registry.md' contains a link './CoreConcepts.md', but the target 'CoreConcepts.md' is not found among documentation files.
-INFO    -  MERMAID2  - Found superfences config: {'custom_fences': [{'name': 'mermaid', 'class': 'mermaid', 'format': <function fence_code_format at 0x102539fe0>}]}
+INFO    -  MERMAID2  - Found superfences config: {'custom_fences': ["{'name': 'mermaid', 'class': 'mermaid', 'format': <function fence_code_format at 0x102539fe0>}"]}
 INFO    -  Doc file 'Context.md' contains a link 'Evaluation.md#rollout-bucketing', but the doc 'Evaluation.md' does not contain an anchor '#rollout-bucketing'.
 INFO    -  Documentation built in 2.26 seconds
-INFO    -  [16:28:39] Serving on http://127.0.0.1:8000/konditional/
-WARNING -  [16:28:44] "GET /konditional/WhyTypeSafety.md HTTP/1.1" code 404
-WARNING -  [16:28:45] "GET /konditional/CoreConcepts.md HTTP/1.1" code 404
-WARNING -  [16:28:46] "GET /konditional/Builders.md HTTP/1.1" code 404
-WARNING -  [16:28:56] "GET /konditional/Migration.md HTTP/1.1" code 404
+INFO    -  ["16:28:39"] Serving on http://127.0.0.1:8000/konditional/
+WARNING -  ["16:28:44"] "GET /konditional/WhyTypeSafety.md HTTP/1.1" code 404
+WARNING -  ["16:28:45"] "GET /konditional/CoreConcepts.md HTTP/1.1" code 404
+WARNING -  ["16:28:46"] "GET /konditional/Builders.md HTTP/1.1" code 404
+WARNING -  ["16:28:56"] "GET /konditional/Migration.md HTTP/1.1" code 404
