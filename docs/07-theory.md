@@ -10,20 +10,21 @@ We leverage a combination
 Fundamentally, at the end of the theory, we are left with a few incredibly valuable traits:
 * Compile-time structure owns all structural constraints
   * This includes any bounds on permitted values
-* Runtime data, within said structure, is flexible and dynamic
+* Runtime data is dynamic, but guaranteed to with inside the bounds defined by the compile-time structure
 * 
 
 ---
 
 ## Metaschema Influence (and Metaschema as Type Safety)
 
-Konditional treats your compiled flag definitions as a **metaschema**: a rigorous description of what *can* exist at
-runtime.
+Konditional treats your compiled flag definitions as a **metaschema**: a rigorous specification, which serves as the 
+basis for enumerating all permitted states.
 
 This is similar in spirit to:
 
 - JSON Schema: a schema describing valid JSON documents
-- OpenAPI 3.1+: a schema describing an API surface, including JSON Schema shapes
+- RPC: an interface description language describing valid remote calls
+  - But instead of valid calls, this describes valid states of a system
 - Hyperschema-style thinking: a “superstructure” that describes not only shape, but how to interpret and act on data
 
 In Konditional, that “superstructure” includes:

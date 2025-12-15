@@ -557,21 +557,13 @@ class AdversarialConfigTest {
     }
 
     @Test
-    fun `features register lazily - accessing key triggers registration`() {
+    fun `features register eagerly - container initialization triggers registration`() {
         val container = object : FeatureContainer<TestNamespace>(test()) {
             val lazy1 by boolean<Context>(default = true)
             val lazy2 by boolean<Context>(default = false)
         }
 
-        // Before accessing, allFeatures returns empty
-        assertEquals(0, container.allFeatures().size)
-
-        // Access one feature
-        container.lazy1
-        assertEquals(1, container.allFeatures().size)
-
-        // Access second feature
-        container.lazy2
+        // Registration happens at initialization (t0), not on first access
         assertEquals(2, container.allFeatures().size)
     }
 

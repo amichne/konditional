@@ -33,14 +33,11 @@ class ConcurrencyAttacksTest {
     // ============================================
 
     @Test
-    fun `ATTACK - concurrent access to lazy feature registration`() {
+    fun `ATTACK - concurrent access to eagerly registered features`() {
         /*
-         * ATTACK: Access features concurrently before they're registered
-         * RESULT: TestNamespace if lazy registration is thread-safe
-         * DANGER: Race condition during first access could cause:
-         *         - Multiple registrations
-         *         - Partial initialization
-         *         - Inconsistent state
+         * ATTACK: Hammer feature access concurrently.
+         * EXPECTATION: Features are registered at container initialization (t0),
+         *              so concurrent reads should be safe and should not trigger any registration races.
          */
 
         val container = object : FeatureContainer<TestNamespace>(test()) {
@@ -81,7 +78,7 @@ class ConcurrencyAttacksTest {
 
         assertTrue(errors.isEmpty(), "Concurrent registration caused errors: $errors")
 
-        // Verify all features registered exactly once
+        // Verify all features were registered at t0
         assertEquals(3, container.allFeatures().size)
     }
 
@@ -287,21 +284,17 @@ class ConcurrencyAttacksTest {
     var readerSawFeature = false
 
     @Test
-    fun `ATTACK - memory visibility of lazy initialization without volatile`() {
+    fun `ATTACK - memory visibility of eager initialization across threads`() {
         /*
-         * ATTACK: TestNamespace if changes are visible across threads
-         * RESULT: Without proper memory barriers, threads might see stale data
-         * DANGER: Thread A registers feature, Thread B might not see it
+         * ATTACK: Ensure container initialization publishes registered features across threads.
+         * EXPECTATION: Registration happens at container initialization (t0), and is visible to readers.
          */
 
         val container = object : FeatureContainer<TestNamespace>(test()) {
             val visibilityTest by boolean<Context>(default = true)
         }
 
-        val writerThread = Thread {
-            // Writer thread registers the feature
-            container.visibilityTest
-        }
+        val writerThread = Thread { /* no-op: registration happens at t0 */ }
 
         val readerThread = Thread {
             // Reader thread tries to see the registration
@@ -321,8 +314,8 @@ class ConcurrencyAttacksTest {
         )
 
         /*
-         * If this fails, it indicates lack of proper synchronization
-         * in the lazy registration mechanism
+         * If this fails, it indicates lack of proper publication/synchronization
+         * around container initialization visibility.
          */
     }
 
@@ -463,9 +456,9 @@ class ConcurrencyAttacksTest {
     @Test
     fun `ATTACK - concurrent calls to allFeatures() during registration`() {
         /*
-         * ATTACK: Call allFeatures() while features are being registered
-         * RESULT: TestNamespace if iteration is safe during modification
-         * DANGER: ConcurrentModificationException or inconsistent results
+         * ATTACK: Call allFeatures() concurrently with feature reads.
+         * EXPECTATION: Features are registered at container initialization (t0),
+         *              so allFeatures() is read-only and should be safe to call concurrently.
          */
 
         val container = object : FeatureContainer<TestNamespace>(test()) {
@@ -509,8 +502,8 @@ class ConcurrencyAttacksTest {
         )
 
         println("Observed sizes during concurrent registration: $sizes")
-        // Sizes might be 0,1,2,3,4,5 depending on timing
         assertTrue(sizes.max() <= 5, "Saw more features than expected")
+        assertTrue(sizes.min() >= 5, "Saw fewer features than expected")
     }
 
     // ============================================
@@ -519,9 +512,9 @@ class ConcurrencyAttacksTest {
     /*
      * CONCURRENCY VULNERABILITIES TESTED:
      *
-     * 1. LAZY REGISTRATION RACE CONDITION
-     *    - Multiple threads accessing unregistered features simultaneously
-     *    - Tests if delegation is thread-safe
+     * 1. FEATURE ACCESS CONCURRENCY
+     *    - Multiple threads accessing features and allFeatures() concurrently
+     *    - Ensures eager registration avoids registration races
      *
      * 2. SHA-256 DIGEST THREAD-SAFETY (CRITICAL)
      *    - MessageDigest is NOT thread-safe by Java spec

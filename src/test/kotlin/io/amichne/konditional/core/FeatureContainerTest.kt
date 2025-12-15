@@ -77,8 +77,8 @@ class FeatureContainerTest {
     }
 
     @Test
-    fun `features are lazily initialized`() {
-        // Create a new features that hasn't been accessed yet
+    fun `features are eagerly initialized at container creation`() {
+        // Create a new container and verify registration happens at initialization time (t0)
         with(object : FeatureContainer<Namespace.Payments>(
             Namespace.Payments
         ) {
@@ -86,17 +86,8 @@ class FeatureContainerTest {
             val lazyB by boolean<Context>(default = true)
         }) {
 
-            // allFeatures() should return empty before any feature is accessed
-            // Note: In current implementation, accessing allFeatures() triggers initialization
-            // This is fine - features register on first access (either directly or via allFeatures)
-
-            // After calling allFeatures(), all features should be registered
             val features = allFeatures()
-            assertEquals(0, features.size)
-
-            // Accessing individual features doesn't change count
-            lazyA
-            lazyB
+            assertEquals(2, features.size)
             assertEquals(2, allFeatures().size)
         }
     }
