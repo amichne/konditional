@@ -1,5 +1,6 @@
 package io.amichne.konditional.adversarial
 
+import io.amichne.konditional.TestDomains
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
@@ -541,7 +542,7 @@ class AdversarialConfigTest {
             val duplicateKey by boolean<Context>(default = true)
         }
 
-        val features2 = object : FeatureContainer<Namespace.Authentication>(Namespace.Authentication) {
+        val features2 = object : FeatureContainer<TestDomains.Authentication>(TestDomains.Authentication) {
             val duplicateKey by boolean<Context>(default = false)
         }
 
@@ -549,7 +550,7 @@ class AdversarialConfigTest {
         assertEquals("duplicateKey", features1.duplicateKey.key)
         assertEquals("duplicateKey", features2.duplicateKey.key)
         assertEquals(testNamespace, features1.duplicateKey.namespace)
-        assertEquals(Namespace.Authentication, features2.duplicateKey.namespace)
+        assertEquals(TestDomains.Authentication, features2.duplicateKey.namespace)
         val def1 = features1.namespace.flag(features1.duplicateKey)
         val def2 = features2.namespace.flag(features2.duplicateKey)
         assertEquals(true, def1?.defaultValue)

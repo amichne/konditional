@@ -21,7 +21,8 @@ import io.amichne.konditional.core.result.ParseResult
  * ## Usage Example
  *
  * ```kotlin
- * val serializer: Serializer<Configuration> = NamespaceSnapshotSerializer(Namespace.Payments)
+ * object Payments : Namespace("payments")
+ * val serializer: Serializer<Configuration> = NamespaceSnapshotSerializer(Payments)
  *
  * // Serialize to JSON
  * val json = serializer.toJson()

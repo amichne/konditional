@@ -37,8 +37,10 @@ import kotlin.reflect.KProperty
  *
  * **Example:**
  * ```kotlin
- * object PaymentFeatures : FeatureContainer<Namespace.Payments>(
- *     Namespace.Payments
+ * object Payments : Namespace("payments")
+ *
+ * object PaymentFeatures : FeatureContainer<Payments>(
+ *     Payments
  * ) {
  *     val APPLE_PAY by boolean(default = false) {
  *         rule(true) {
@@ -60,7 +62,7 @@ import kotlin.reflect.KProperty
  * PaymentFeatures.APPLE_PAY.evaluate(context)
  * ```
  *
- * @param M The namespace type this features belongs to (e.g., Namespace.Payments)
+ * @param M The namespace type this features belongs to (e.g., [io.amichne.konditional.core.Namespace.Global] or a consumer-defined namespace)
  */
 abstract class FeatureContainer<M : Namespace>(
     @PublishedApi
@@ -105,7 +107,8 @@ abstract class FeatureContainer<M : Namespace>(
      *
      * **Example:**
      * ```kotlin
-     * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
+     * object Payments : Namespace("payments")
+     * object MyFeatures : FeatureContainer<Payments>(Payments) {
      *     val DARK_MODE by boolean(default = false) {
      *         rule(true) {
      *             platforms(Platform.IOS)
@@ -134,7 +137,8 @@ abstract class FeatureContainer<M : Namespace>(
      *
      * **Example:**
      * ```kotlin
-     * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
+     * object Payments : Namespace("payments")
+     * object MyFeatures : FeatureContainer<Payments>(Payments) {
      *     val API_ENDPOINT by string(default = "https://api.example.com") {
      *         rule("https://api-android.example.com") {
      *             platforms(Platform.ANDROID)
@@ -163,7 +167,8 @@ abstract class FeatureContainer<M : Namespace>(
      *
      * **Example:**
      * ```kotlin
-     * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
+     * object Payments : Namespace("payments")
+     * object MyFeatures : FeatureContainer<Payments>(Payments) {
      *     val MAX_RETRY_COUNT by integer(default = 3) {
      *         rule(5) {
      *             platforms(Platform.IOS)
@@ -192,7 +197,8 @@ abstract class FeatureContainer<M : Namespace>(
      *
      * **Example:**
      * ```kotlin
-     * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
+     * object Payments : Namespace("payments")
+     * object MyFeatures : FeatureContainer<Payments>(Payments) {
      *     val TRANSACTION_FEE by double(default = 0.029) {
      *         rule(0.019) {
      *             platforms(Platform.WEB)
@@ -223,7 +229,8 @@ abstract class FeatureContainer<M : Namespace>(
      * ```kotlin
      * enum class LogLevel { DEBUG, INFO, WARN, ERROR }
      *
-     * object MyFeatures : FeatureContainer<Namespace.Logging>(Namespace.Logging) {
+     * object Logging : Namespace("logging")
+     * object MyFeatures : FeatureContainer<Logging>(Logging) {
      *     val LOG_LEVEL by enum(default = LogLevel.INFO) {
      *         rule(LogLevel.DEBUG) {
      *             dimension(Environment, Environment.DEVELOPMENT)
@@ -270,7 +277,8 @@ abstract class FeatureContainer<M : Namespace>(
      *     }
      * }
      *
-     * object MyFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
+     * object Payments : Namespace("payments")
+     * object MyFeatures : FeatureContainer<Payments>(Payments) {
      *     val PAYMENT_CONFIG by custom(default = PaymentConfig()) {
      *         rule(PaymentConfig(maxRetries = 5, timeout = 60.0)) {
      *             dimension(Environment, Environment.PRODUCTION)

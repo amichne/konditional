@@ -1,5 +1,6 @@
 package io.amichne.konditional.context
 
+import io.amichne.konditional.TestDomains
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.core.id.StableId
@@ -36,12 +37,12 @@ class ContextPolymorphismTest {
 
         println("Payments")
         println("--------")
-        println(SnapshotSerializer.serialize(Namespace.Payments.configuration))
+        println(SnapshotSerializer.serialize(TestDomains.Payments.configuration))
         println("--------")
 
         println("Search")
         println("--------")
-        println(SnapshotSerializer.serialize(Namespace.Search.configuration))
+        println(SnapshotSerializer.serialize(TestDomains.Search.configuration))
         println("--------")
     }
 

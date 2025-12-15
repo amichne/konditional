@@ -20,7 +20,8 @@ import java.util.UUID
  * ## Namespace Types
  *
  * ### Global Namespace
- * The [Global] namespace contains shared flags accessible to all teams:
+ * The [Global] namespace is the only namespace shipped by Konditional. It is intended for shared flags that are
+ * broadly accessible across the application:
  * ```kotlin
  * enum class CoreFeatures(override val key: String)
  *     : Feature<BoolEncodeable, Boolean, Context, Namespace.Global> {
@@ -29,14 +30,11 @@ import java.util.UUID
  * }
  * ```
  *
- * ### Domain Modules
- * Domain modules provide isolated namespaces for functional areas:
+ * ### Consumer-defined namespaces
+ * If you need isolation boundaries beyond [Global], define namespaces in your own codebase.
+ * A namespace is just a [Namespace] instance, typically modeled as an `object`:
  * ```kotlin
- * enum class PaymentFeatures(override val key: String)
- *     : Feature<BoolEncodeable, Boolean, Context, Namespace.Payments> {
- *     APPLE_PAY("apple_pay");
- *     override val namespace = Namespace.Payments
- * }
+ * object Payments : Namespace("payments")
  * ```
  *
  * ## Adding New Modules
@@ -87,7 +85,7 @@ open class Namespace(
 ) : NamespaceRegistry by registry {
 
     /**
-     * Global namespace containing shared flags accessible to all teams.
+     * Global namespace containing shared flags accessible across the application.
      *
      * Use this namespace for:
      * - System-wide kill switches
@@ -104,50 +102,19 @@ open class Namespace(
      */
     data object Global : Namespace("global")
 
-    /** Authentication and authorization features */
-    data object Authentication : Namespace("auth")
-
-    /** Payment processing and checkout features */
-    data object Payments : Namespace("payments")
-
-    /** Messaging, chat, and notification features */
-    data object Messaging : Namespace("messaging")
-
-    /** Search functionality and algorithms */
-    data object Search : Namespace("search")
-
-    /** Recommendation engine and personalization */
-    data object Recommendations : Namespace("recommendations")
-
     /**
-     * Domain modules providing isolated namespaces for functional areas.
+     * Consumer-defined namespaces.
      *
-     * Each team namespace:
-     * - Has its own registry instance (runtime isolation)
-     * - Is type-bound to its features (compile-time isolation)
-     * - Can be serialized/deployed independently
-     * - Cannot access other teams' flags
+     * Konditional only provides [Global]. Consumers define any additional namespaces in their own codebase by
+     * extending [Namespace].
      *
-     * ## Governance
-     *
-     * New team modules are added here via PR. This ensures:
-     * - Central visibility of all modules
-     * - No duplicate namespace IDs
-     * - Clear ownership tracking
-     *
-     * ## Example Teams
-     *
-     * The modules below represent example functional areas. In a real system,
-     * you would add your organization's actual team modules:
-     *
-     * - **Authentication**: Login, SSO, MFA flags
-     * - **Payments**: Payment methods, checkout features
-     * - **Messaging**: Chat, notifications, email features
-     * - **Search**: Search algorithms, ranking experiments
-     * - **Recommendations**: Recommendation engine flags
+     * Example:
+     * ```kotlin
+     * object Payments : Namespace("payments")
+     * object Auth : Namespace("auth")
+     * ```
      */
-    sealed class Domain(id: String) : Namespace(id) {
-    }
+    // Intentionally no additional built-in namespaces.
 
     @TestOnly
     abstract class TestNamespaceFacade(id: String) : Namespace(

@@ -1,5 +1,6 @@
 package io.amichne.konditional.core
 
+import io.amichne.konditional.TestDomains
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
@@ -21,8 +22,8 @@ import org.junit.jupiter.api.Test
 class FeatureContainerTest {
 
     // TestNamespace features with mixed feature types
-    object TestFeatures : FeatureContainer<Namespace.Payments>(
-        Namespace.Payments
+    private object TestFeatures : FeatureContainer<TestDomains.Payments>(
+        TestDomains.Payments
     ) {
         val testBoolean by boolean<Context>(default = false)
         val testString by string<Context>(default = "default")
@@ -53,7 +54,7 @@ class FeatureContainerTest {
 
     @Test
     fun `features have correct module`() {
-        val expectedModule = Namespace.Payments
+        val expectedModule = TestDomains.Payments
 
         assertEquals(expectedModule, TestFeatures.testBoolean.namespace)
         assertEquals(expectedModule, TestFeatures.testString.namespace)
@@ -79,8 +80,8 @@ class FeatureContainerTest {
     @Test
     fun `features are eagerly initialized at container creation`() {
         // Create a new container and verify registration happens at initialization time (t0)
-        with(object : FeatureContainer<Namespace.Payments>(
-            Namespace.Payments
+        with(object : FeatureContainer<TestDomains.Payments>(
+            TestDomains.Payments
         ) {
             val lazyA by boolean<Context>(default = true)
             val lazyB by boolean<Context>(default = true)
@@ -95,8 +96,8 @@ class FeatureContainerTest {
     @Test
     fun `features can be evaluated with context`() {
         // Create a test features with configured features
-        val testFeatures = object : FeatureContainer<Namespace.Payments>(
-            Namespace.Payments
+        val testFeatures = object : FeatureContainer<TestDomains.Payments>(
+            TestDomains.Payments
         ) {
             val configuredBoolean by boolean<Context>(default = true)
             val configuredString by string<Context>("test-value") {}
@@ -118,14 +119,14 @@ class FeatureContainerTest {
 
     @Test
     fun `multiple containers maintain independent feature lists`() {
-        val first = object : FeatureContainer<Namespace.Payments>(
-            Namespace.Payments
+        val first = object : FeatureContainer<TestDomains.Payments>(
+            TestDomains.Payments
         ) {
             val a1 by boolean<Context>(default = true)
             val a2 by boolean<Context>(default = true)
         }
 
-        val second = object : FeatureContainer<Namespace.Messaging>(Namespace.Messaging) {
+        val second = object : FeatureContainer<TestDomains.Messaging>(TestDomains.Messaging) {
             val b1 by boolean<Context>(default = true)
             val b2 by boolean<Context>(default = true)
             val b3 by boolean<Context>(default = true)
@@ -164,13 +165,13 @@ class FeatureContainerTest {
     @Test
     fun `features maintain type safety through container`() {
         // Type inference works correctly
-        val booleanFeature: BooleanFeature<Context, Namespace.Payments> =
+        val booleanFeature: BooleanFeature<Context, TestDomains.Payments> =
             TestFeatures.testBoolean
 
-        val stringFeature: StringFeature<Context, Namespace.Payments> =
+        val stringFeature: StringFeature<Context, TestDomains.Payments> =
             TestFeatures.testString
 
-        val intFeature: IntFeature<Context, Namespace.Payments> =
+        val intFeature: IntFeature<Context, TestDomains.Payments> =
             TestFeatures.testInt
 
         // Verify types are preserved

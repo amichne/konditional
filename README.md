@@ -72,7 +72,7 @@ Every flag evaluation in Konditional is:
 
 **Thread-safe**: Read flags from any thread, any time. Lock-free reads mean zero contention. Update configurations atomically without blocking readers.
 
-**Isolated**: Organize flags by team or domain using Namespaces. `Namespace.Global`, `Namespace.Payments`, `Namespace.Authentication`—each with its own registry, zero collision risk.
+**Isolated**: Organize flags by team or domain using Namespaces. Konditional ships `Namespace.Global`; additional namespaces are consumer-defined (e.g., `object Payments : Namespace("payments")`), each with its own registry and zero collision risk.
 
 ## Beyond Booleans
 
@@ -219,16 +219,17 @@ when (val result = SnapshotSerializer.applyPatchJson(currentConfig, patchJson)) 
 Use Namespaces to isolate features by team or business domain:
 
 ```kotlin
-object AuthFeatures : FeatureContainer<Namespace.Authentication>(
-    Namespace.Authentication
-) {
+sealed class AppDomain(id: String) : Namespace(id) {
+    data object Auth : AppDomain("auth")
+    data object Payments : AppDomain("payments")
+}
+
+object AuthFeatures : FeatureContainer<AppDomain.Auth>(AppDomain.Auth) {
     val SOCIAL_LOGIN by boolean(default = false)
     val TWO_FACTOR_AUTH by boolean(default = true)
 }
 
-object PaymentFeatures : FeatureContainer<Namespace.Payments>(
-    Namespace.Payments
-) {
+object PaymentFeatures : FeatureContainer<AppDomain.Payments>(AppDomain.Payments) {
     val APPLE_PAY by boolean(default = false)
     val GOOGLE_PAY by boolean(default = false)
 }

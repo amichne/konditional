@@ -1,5 +1,6 @@
 package io.amichne.konditional.core
 
+import io.amichne.konditional.TestDomains
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
@@ -34,8 +35,8 @@ class EnumFeatureTest {
     }
 
     // Test features with enum types
-    private object EnumFeatures : FeatureContainer<Namespace.Payments>(
-        Namespace.Payments
+    private object EnumFeatures : FeatureContainer<TestDomains.Payments>(
+        TestDomains.Payments
     ) {
         val logLevel by enum<LogLevel, Context>(default = LogLevel.INFO) {
             rule(LogLevel.DEBUG) {
@@ -64,7 +65,7 @@ class EnumFeatureTest {
 
     @Test
     fun `enum features have correct namespace`() {
-        val expectedNamespace = Namespace.Payments
+        val expectedNamespace = TestDomains.Payments
 
         assertEquals(expectedNamespace, EnumFeatures.logLevel.namespace)
         assertEquals(expectedNamespace, EnumFeatures.theme.namespace)
@@ -146,7 +147,7 @@ class EnumFeatureTest {
     @Test
     fun `multiple enum types can coexist in feature container`() {
         // Create a container with multiple enum types
-        val mixedFeatures = object : FeatureContainer<Namespace.Messaging>(Namespace.Messaging) {
+        val mixedFeatures = object : FeatureContainer<TestDomains.Messaging>(TestDomains.Messaging) {
             val level by enum<LogLevel, Context>(default = LogLevel.INFO)
             val themePreference by enum<Theme, Context>(default = Theme.LIGHT)
             val env by enum<Environment, Context>(default = Environment.DEVELOPMENT)
@@ -165,7 +166,7 @@ class EnumFeatureTest {
 
     @Test
     fun `enum features work alongside primitive types in container`() {
-        val mixedTypeFeatures = object : FeatureContainer<Namespace.Authentication>(Namespace.Authentication) {
+        val mixedTypeFeatures = object : FeatureContainer<TestDomains.Authentication>(TestDomains.Authentication) {
             val enableLogging by boolean<Context>(default = true)
             val logLevel by enum<LogLevel, Context>(default = LogLevel.INFO)
             val maxLogSize by integer<Context>(default = 1000)
@@ -184,10 +185,10 @@ class EnumFeatureTest {
     @Test
     fun `enum features maintain type safety through container`() {
         // Type inference works correctly
-        val logLevelFeature: EnumFeature<LogLevel, Context, Namespace.Payments> =
+        val logLevelFeature: EnumFeature<LogLevel, Context, TestDomains.Payments> =
             EnumFeatures.logLevel
 
-        val themeFeature: EnumFeature<Theme, Context, Namespace.Payments> =
+        val themeFeature: EnumFeature<Theme, Context, TestDomains.Payments> =
             EnumFeatures.theme
 
         // Verify types are preserved
@@ -197,7 +198,7 @@ class EnumFeatureTest {
 
     @Test
     fun `enum features can have complex rule configurations`() {
-        val complexFeatures = object : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
+        val complexFeatures = object : FeatureContainer<TestDomains.Payments>(TestDomains.Payments) {
             val environment by enum<Environment, Context>(default = Environment.PRODUCTION) {
                 rule(Environment.DEVELOPMENT) {
                     platforms(Platform.WEB)
@@ -246,7 +247,7 @@ class EnumFeatureTest {
     @Test
     fun `enum with single value works correctly`() {
 
-        val singleEnumFeature = object : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
+        val singleEnumFeature = object : FeatureContainer<TestDomains.Payments>(TestDomains.Payments) {
             val single by enum<SingleValue, Context>(default = SingleValue.ONLY_VALUE)
         }
 

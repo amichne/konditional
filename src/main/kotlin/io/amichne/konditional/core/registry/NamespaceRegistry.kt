@@ -20,9 +20,11 @@ import java.util.concurrent.atomic.AtomicReference
  *
  * Most users interact with registries through [io.amichne.konditional.core.Namespace] instances and [io.amichne.konditional.core.features.FeatureContainer]:
  * ```kotlin
+ * object Payments : Namespace("payments")
+ *
  * // Define features using FeatureContainer (recommended)
- * object PaymentFeatures : FeatureContainer<Namespace.Payments>(
- *     Namespace.Payments
+ * object PaymentFeatures : FeatureContainer<Payments>(
+ *     Payments
  * ) {
  *     val APPLE_PAY by boolean(default = false) {
  *         rule(true) { platforms(Platform.IOS) }
