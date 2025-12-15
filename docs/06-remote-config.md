@@ -137,3 +137,4 @@ Konditional uses Kontracts (a standalone, zero-dependency JSON Schema DSL) for s
 
 - Understand the “if it compiles” claim boundary: ["Theory"](07-theory.md)
 - Understand bucketing determinism inputs: ["Targeting & Rollouts"](04-targeting-rollouts.md)
+- See the concrete snapshot/patch payload shapes: ["Persistence & Storage Format"](08-persistence-format.md)

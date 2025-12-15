@@ -1,373 +1,339 @@
 # Konditional
 
-✨ **Feature flags that can't fail at runtime.** ✨
+**Type-safe feature flags for Kotlin that won't break in production.**
 
-Konditional makes configuration errors impossible. Not unlikely—impossible. If your code compiles, your flags work. Period.
-
-## The Core Idea
-
-Configuration should be code, not strings. When you define a feature flag, the compiler should know its type, validate its rules, and ensure every evaluation is safe. No exceptions. No null checks. No runtime surprises.
+Konditional prevents the entire class of runtime errors that come from stringly-typed feature flag systems: typos that ship to production, type coercion failures, inconsistent rollout logic, and configuration drift.
 
 ```kotlin
-// Define features as properties, and register keys using the property names via delegation
-object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
-    val darkMode by boolean(default = false) {
-        rule {
-            platforms(Platform.IOS)
-            rollout { 50.0 }
-            versions {
-                max(4, 1, 3)
-                min(1, 9, 4)
-            }
-        } returns true
-    }
-
-    val timeout by double(default = 30.0) {
-        rule {
-            platforms(Platform.ANDROID)
-            versions { max(4) }
-        } returns 45.0
-    }
-
-    val retries by int(default = 3) {
-        rule {
-            versions { min(2, 0, 0) }
-        } returns 5
+object AppFlags : FeatureContainer() {
+    val checkoutVersion by string(default = "classic") {
+        rule { platforms(Platform.MOBILE) } returns "optimized"
+        rule { rollout { 50.0 } } returns "experimental"
     }
 }
 
-// Evaluate with context
-val context = Context(
-    locale = AppLocale.UNITED_STATES,
-    platform = Platform.IOS,
-    appVersion = Version.parse("2.1.0"),
-    stableId = StableId.of("user-123")
-)
-
-// Type-safe, null-safe, guaranteed to work
-val isDarkMode: Boolean = feature { AppFeatures.darkMode }
-val timeout: Double = feature { AppFeatures.timeout }
-val retries: Int = feature { AppFeatures.retries }
+// Typos don't compile. Types are guaranteed. Rollouts are deterministic.
+val version: String = AppFlags.checkoutVersion.evaluate(ctx)
 ```
 
-**What just happened?**
+---
 
-- No string keys means no typos can sneak by
-- No type casting means no runtime type failure
-- No null checks means certainty on data present
-- No runtime configuration errors
-- IDE autocomplete on every flag
-- Refactoring renames everything correctly
-- If it compiles, it works
+## Why Konditional?
 
-## Why This Matters
-
-Every flag evaluation in Konditional is:
-
-**Type-safe**: The compiler enforces that `DARK_MODE` returns `Boolean`, `API_TIMEOUT` returns `Double`, and `MAX_RETRIES` returns `Int`. Wrong type? Won't compile.
-
-**Deterministic**: Same user, same flag, same result. Every time. SHA-256 bucketing ensures identical inputs always produce identical outputs.
-
-**Non-null**: Default values are required. Every evaluation has a fallback. Null pointer exceptions don't exist here.
-
-**Thread-safe**: Read flags from any thread, any time. Lock-free reads mean zero contention. Update configurations atomically without blocking readers.
-
-**Isolated**: Organize flags by team or domain using Namespaces. Konditional ships `Namespace.Global`; additional namespaces are consumer-defined (e.g., `object Payments : Namespace("payments")`), each with its own registry and zero collision risk.
-
-## Beyond Booleans
-
-Flags can return any type you need:
+Traditional feature flag SDKs use string keys:
 
 ```kotlin
-// Strings: API endpoints, feature variants
-val API_ENDPOINT by string(default = "https://api.prod.example.com") {
-    rule {
-        platforms(Platform.WEB)
-    } returns "https://api-staging.example.com"
-}
-
-// Numbers: Thresholds, timeouts, limits
-val RATE_LIMIT by int(default = 100) {
-    rule {
-        rollout { 10.0 }
-    } returns 500
-}
-
-// Complex types: Configuration objects
-data class ThemeConfig(
-    val primaryColor: String,
-    val fontSize: Int,
-    val darkMode: Boolean
-)
-
-val APP_THEME by jsonObject(
-    default = ThemeConfig("#FFFFFF", 14, false)
-) {
-    rule {
-        platforms(Platform.IOS)
-    } returns ThemeConfig("#000000", 16, true)
-}
+val enabled = flagClient.getBool("new_onboaring_flow", false)  // typo ships to production
 ```
 
-## Your Domain, Your Context
+This compiles. It deploys. Your experiment silently fails. You discover it weeks later.
 
-Extend `Context` with business-specific fields. The type system ensures your custom context flows through every evaluation:
+**Konditional makes flags compile-time correct:**
 
 ```kotlin
-data class EnterpriseContext(
-    override val locale: AppLocale,
-    override val platform: Platform,
-    override val appVersion: Version,
-    override val stableId: StableId,
-    val organizationId: String,
-    val subscriptionTier: SubscriptionTier
-) : Context
-
-object EnterpriseFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
-    val ADVANCED_ANALYTICS by boolean(default = false)
-}
-
-// Compile-time guarantee: this context works with these features
-val ctx = EnterpriseContext(/* ... */)
-val enabled = feature { EnterpriseFeatures.ADVANCED_ANALYTICS }
+val enabled = AppFlags.newOnboardingFlow.evaluate(ctx)  // typos are compile errors
 ```
 
-## Targeting Made Simple
+Beyond typo safety, Konditional gives you:
 
-Rules compose naturally. All criteria must match for a rule to apply:
+- **Typed values** — not just booleans, but strings, ints, doubles, enums, and custom types
+- **Deterministic rollouts** — SHA-256 bucketing ensures same user → same bucket, always
+- **Unified evaluation** — one rule DSL across your entire codebase, not per-domain evaluators
+- **Explicit boundaries** — parse JSON configuration with validation; reject invalid updates before they affect production
 
-```kotlin
-val PREMIUM_FEATURE by boolean(default = false) {
-    rule {
-        platforms(Platform.IOS, Platform.ANDROID)  // Mobile only
-        locales(AppLocale.UNITED_STATES)                   // English US
-        versions {
-            min(2, 0, 0)                           // Version >= 2.0.0
-        }
-        rollout { 50.0 }                           // 50% of matching users
-    } returns true
-}
-```
+Read the full argument: [Why Konditional Exists](docs/09-why-konditional.md)
 
-Rules are automatically sorted by specificity—more specific rules win:
-
-```kotlin
-// Specificity = 2 (platform + locale) → evaluated first
-rule {
-    platforms(Platform.IOS)
-    locales(AppLocale.UNITED_STATES)
-} returns "specific"
-
-// Specificity = 1 (platform only) → evaluated second
-rule {
-    platforms(Platform.IOS)
-} returns "general"
-```
-
-## Deterministic Rollouts
-
-Gradual rollouts use SHA-256 bucketing. Same user always gets the same result:
-
-```kotlin
-val NEW_CHECKOUT by boolean(default = false) {
-    rule {
-        rollout { 25.0 }  // 25% of users
-    } returns true
-}
-```
-
-**Properties**:
-- Same user, same bucket, always
-- Independent per flag (no cross-contamination)
-- Platform-stable (JVM, Android, iOS, Web)
-- Reproducible (change salt to redistribute)
-
-```kotlin
-val EXPERIMENT by boolean(default = false) {
-    salt("v2")  // New salt = new bucketing
-    rule {
-        rollout { 50.0 }
-    } returns true
-}
-```
-
-## Remote Configuration
-
-Export configurations to JSON, update remotely, reload atomically:
-
-```kotlin
-// Export current configuration
-val json = SnapshotSerializer.serialize(Namespace.Global.configuration())
-File("flags.json").writeText(json)
-
-// Load from JSON
-val json = File("flags.json").readText()
-when (val result = SnapshotSerializer.fromJson(json)) {
-    is ParseResult.Success -> Namespace.Global.load(result.value)
-    is ParseResult.Failure -> logError("Parse failed: ${result.error}")
-}
-
-// Apply incremental patches
-when (val result = SnapshotSerializer.applyPatchJson(currentConfig, patchJson)) {
-    is ParseResult.Success -> Namespace.Global.load(result.value)
-    is ParseResult.Failure -> logError("Patch failed: ${result.error}")
-}
-```
-
-## Organize by Domain
-
-Use Namespaces to isolate features by team or business domain:
-
-```kotlin
-sealed class AppDomain(id: String) : Namespace(id) {
-    data object Auth : AppDomain("auth")
-    data object Payments : AppDomain("payments")
-}
-
-object AuthFeatures : FeatureContainer<AppDomain.Auth>(AppDomain.Auth) {
-    val SOCIAL_LOGIN by boolean(default = false)
-    val TWO_FACTOR_AUTH by boolean(default = true)
-}
-
-object PaymentFeatures : FeatureContainer<AppDomain.Payments>(AppDomain.Payments) {
-    val APPLE_PAY by boolean(default = false)
-    val GOOGLE_PAY by boolean(default = false)
-}
-```
-
-**Benefits**:
-- Compile-time isolation (features type-bound to namespace)
-- Runtime isolation (each namespace has separate registry)
-- Clear ownership boundaries
-- Zero collision risk
-
-## Zero Dependencies
-
-Pure Kotlin. No reflection. No code generation. No DI framework required.
-
-Only external dependency: Moshi for JSON serialization (and only if you use it).
+---
 
 ## Installation
 
 ```kotlin
-// build.gradle.kts
 dependencies {
-    implementation("io.amichne:konditional:0.0.1")
+    implementation("io.github.amichne:konditional:0.0.1")
 }
 ```
-
-## Get Started
-
-**1. Define features**:
-```kotlin
-object MyFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
-    val MY_FLAG by boolean(default = false)
-}
-```
-
-**2. Configure rules (optional)**:
-```kotlin
-val MY_FLAG by boolean(default = false) {
-    rule {
-        platforms(Platform.IOS)
-        rollout { 50.0 }
-    } returns true
-}
-```
-
-**3. Evaluate**:
-```kotlin
-val context = Context(
-    locale = AppLocale.UNITED_STATES,
-    platform = Platform.IOS,
-    appVersion = Version.parse("1.0.0"),
-    stableId = StableId.of("user-id")
-)
-
-val enabled = feature { MyFeatures.MY_FLAG }
-```
-
-## Use Cases
-
-**Gradual Rollouts**: Deploy features to 10%, monitor, increase to 50%, then 100%. Deterministic bucketing ensures stability.
-
-**A/B Testing**: Split traffic 50/50 for experiments. Each flag has independent bucketing—no cross-contamination.
-
-**Configuration Management**: Environment-specific config (API endpoints, timeouts, limits) that varies by platform, locale, or version.
-
-**Kill Switches**: Disable features instantly by updating remote configuration.
-
-**Multi-tenancy**: Different feature sets per organization, subscription tier, or user role using custom contexts.
-
-**Canary Deployments**: Test risky changes with 5% of users before full rollout.
-
-## vs String-Based Systems
-
-| Feature | String-Based (LaunchDarkly/Statsig/Custom) | Konditional |
-|---------|-------------------------------------------|-------------|
-| **Type Safety** | Runtime strings, type casting | Compile-time properties |
-| **Evaluation** | Server-side or cached (network dependency) | Offline-first (local) |
-| **Cost** | SaaS fees scale with MAU/seats | Free (self-hosted) |
-| **Context** | `Map<String, Any>` attributes | Typed data classes |
-| **Performance** | Network latency + cache overhead | Zero-allocation, O(n) |
-| **Version Control** | Dashboard/API configs | Code-based definitions, Git-tracked |
-| **Management** | SaaS dashboard only | UI with RBAC + code definitions |
-| **Errors** | Silent failures, null checks | Parse-don't-validate Results |
-
-**Migrating?** See the [Migration Guide](docs/02-migration.md) for concept mapping and adoption patterns.
-
-## Documentation
-
-- **[Getting Started](docs/01-getting-started.md)** - Type-safe flags in 5 minutes
-- **[Migration Guide](docs/02-migration.md)** - Switch from LaunchDarkly/Split
-- **[Core Concepts](docs/03-core-concepts.md)** - Features, Context, Namespaces
-- **[Targeting & Rollouts](docs/04-targeting-rollouts.md)** - Rules and gradual deployment
-- **[Evaluation](docs/05-evaluation.md)** - Evaluation methods and error handling
-- **[Remote Configuration](docs/06-remote-config.md)** - JSON serialization and dynamic updates
-
-## Key Principles
-
-**Type Safety First**: Generic type parameters eliminate runtime type errors. If it compiles, the types are correct.
-
-**Deterministic**: Same inputs always produce same outputs. No random behavior, no surprises.
-
-**Thread-Safe**: Lock-free reads with atomic updates. Read from any thread without blocking.
-
-**Zero Dependencies**: Pure Kotlin. Easy to integrate anywhere.
-
-**Extensible**: Custom contexts, custom rules, custom value types—extend everything.
-
-## Project Structure
-
-Konditional is organized as a multi-module project:
-
-### Core Module (`konditional`)
-The main library providing type-safe feature flags with compile-time guarantees. Includes contexts, rules, evaluation, serialization, and the complete feature flag API.
-
-### Kontracts Module (`kontracts`)
-**NEW**: Type-safe JSON Schema DSL extracted as a standalone submodule. Kontracts provides compile-time type-safe contract specification with a powerful DSL for defining JSON schemas. While currently part of this project, it's designed to eventually be published as an independent library.
-
-Key features:
-- Type-inferred DSL with automatic schema type detection
-- Custom type mapping for domain types
-- Runtime validation with detailed error messages
-- OpenAPI 3.1 compatible schemas
-- Zero dependencies (Kotlin stdlib only)
-
-See [`kontracts/README.md`](kontracts/README.md) for detailed documentation and usage examples.
-
-## Contributing
-
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
-
-## License
-
-MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-**Start here**: [Getting Started](docs/01-getting-started.md)
+## Quick Start
 
-**Migrating from another system?** See [Migration Guide](docs/02-migration.md)
+### Define flags as properties
 
-**Questions?** Open an issue at [github.com/amichne/konditional](https://github.com/amichne/konditional)
+```kotlin
+object AppFeatures : FeatureContainer() {
+    val darkMode by boolean(default = false) {
+        rule { platforms(Platform.IOS) } returns true
+        rule { rollout { 50.0 } } returns true
+    }
+
+    val apiEndpoint by string(default = "https://api.example.com") {
+        rule { platforms(Platform.WEB) } returns "https://api-web.example.com"
+    }
+
+    val maxRetries by int(default = 3) {
+        rule { versions { min(2, 0, 0) } } returns 5
+    }
+}
+```
+
+### Evaluate with context
+
+```kotlin
+val ctx = Context(
+    locale = AppLocale.UNITED_STATES,
+    platform = Platform.IOS,
+    appVersion = Version.of(2, 1, 0),
+    stableId = StableId.of("user-123")
+)
+
+val enabled: Boolean = AppFeatures.darkMode.evaluate(ctx)
+val endpoint: String = AppFeatures.apiEndpoint.evaluate(ctx)
+val retries: Int = AppFeatures.maxRetries.evaluate(ctx)
+```
+
+**Evaluation is total:** if no rule matches, the default is returned. No nulls, no exceptions.
+
+---
+
+## Beyond Booleans: Typed Values
+
+### Stop encoding variants as multiple booleans
+
+**Before (boolean explosion):**
+```kotlin
+if (isEnabled(CHECKOUT_V1) && !isEnabled(CHECKOUT_V2)) {
+    // v1 logic
+} else if (isEnabled(CHECKOUT_V2) && !isEnabled(CHECKOUT_FAST_PATH)) {
+    // v2 without fast path
+} else if (isEnabled(CHECKOUT_V3) || isEnabled(CHECKOUT_FAST_PATH)) {
+    // which logic wins?
+}
+```
+
+**After (typed values):**
+```kotlin
+val checkoutVersion by string(default = "v1") {
+    rule { rollout { 33.0 } } returns "v2"
+    rule { rollout { 66.0 } } returns "v3"
+}
+
+when (AppFlags.checkoutVersion.evaluate(ctx)) {
+    "v1" -> v1Checkout()
+    "v2" -> v2Checkout()
+    "v3" -> v3Checkout()
+}
+```
+
+### Enums
+
+```kotlin
+enum class Theme { LIGHT, DARK, AUTO }
+
+val theme by enum(default = Theme.LIGHT) {
+    rule { platforms(Platform.IOS) } returns Theme.DARK
+}
+```
+
+### Custom structured values
+
+```kotlin
+@ConfigDataClass
+data class RetryPolicy(
+    val maxAttempts: Int = 3,
+    val backoffMs: Double = 1000.0,
+    val enabled: Boolean = true
+) : KotlinEncodeable<ObjectSchema> {
+    override val schema = schemaRoot {
+        ::maxAttempts of { minimum = 1.0 }
+        ::backoffMs of { minimum = 0.0 }
+        ::enabled of {}
+    }
+}
+
+val retryPolicy by custom(default = RetryPolicy()) {
+    rule { platforms(Platform.WEB) } returns RetryPolicy(maxAttempts = 5, backoffMs = 2000.0)
+}
+```
+
+---
+
+## Deterministic Rollouts
+
+Rollouts use SHA-256 bucketing for consistent, reproducible results:
+
+```kotlin
+val newFeature by boolean(default = false) {
+    rule { rollout { 25.0 } } returns true
+}
+```
+
+**Guarantees:**
+- Same user + same flag + same percentage → same bucket
+- Changing 10% → 20% doesn't reshuffle existing users
+- Rollout decisions are reproducible from logs (`stableId` + flag key → deterministic bucket)
+
+No random number generators. No modulo edge cases. No per-team rollout implementations with subtle differences.
+
+---
+
+## Remote Configuration
+
+### Load configuration from JSON
+
+```kotlin
+val json = fetchRemoteConfig()
+
+when (val result = SnapshotSerializer.fromJson(json)) {
+    is ParseResult.Success -> Namespace.Global.load(result.value)
+    is ParseResult.Failure -> {
+        // Invalid JSON rejected, last-known-good remains active
+        logError("Config parse failed: ${result.error.message}")
+    }
+}
+```
+
+**The boundary is explicit:** Parse failures don't crash your app or silently corrupt evaluation. Bad config is rejected; the previous working config stays active.
+
+### Serialize current configuration
+
+```kotlin
+val snapshot = SnapshotSerializer.serialize(Namespace.Global.configuration)
+persistToStorage(snapshot)
+```
+
+### Incremental updates (patches)
+
+```kotlin
+val patchJson = fetchPatch()
+
+when (val result = SnapshotSerializer.applyPatchJson(currentConfig, patchJson)) {
+    is ParseResult.Success -> Namespace.Global.load(result.value)
+    is ParseResult.Failure -> logError("Patch failed: ${result.error.message}")
+}
+```
+
+See [docs/06-remote-config.md](docs/06-remote-config.md) and [docs/08-persistence-format.md](docs/08-persistence-format.md) for details.
+
+---
+
+## Thread Safety
+
+- **Atomic updates:** `Namespace.load()` swaps configuration atomically
+- **Lock-free reads:** Evaluation reads a snapshot without blocking writers
+- **No races:** Multiple threads can evaluate flags concurrently while configuration updates happen in the background
+
+---
+
+## Namespaces (Optional Isolation)
+
+By default, all flags live in `Namespace.Global`. If you need isolated registries (e.g., per-team, per-domain), define your own:
+
+```kotlin
+sealed class AppDomain(id: String) : Namespace(id) {
+    data object Account : AppDomain("account")
+    data object Payments : AppDomain("payments")
+}
+
+object AccountFlags : FeatureContainer<AppDomain.Account>(AppDomain.Account) {
+    val creditCheck by boolean(default = false)
+}
+
+object PaymentFlags : FeatureContainer<AppDomain.Payments>(AppDomain.Payments) {
+    val stripeEnabled by boolean(default = true)
+}
+```
+
+Each namespace has independent configuration lifecycle, registry, and serialization.
+
+---
+
+## Core Concepts
+
+- **Namespace:** Isolation boundary with its own registry and configuration lifecycle
+- **FeatureContainer:** Declares flags as delegated properties bound to a namespace
+- **Context:** Runtime inputs for evaluation (`locale`, `platform`, `appVersion`, `stableId`)
+- **Rules:** Typed criteria-to-value mappings (`platforms/locales/versions/rollout/extension`)
+- **Snapshot/Patch:** JSON formats for persistence and incremental updates
+- **Total evaluation:** No nulls—every flag returns its default if no rule matches
+
+---
+
+## Documentation
+
+**Getting started:**
+- [Quick Start Guide](docs/01-getting-started.md)
+- [Core Concepts](docs/03-core-concepts.md)
+
+**Features:**
+- [Targeting & Rollouts](docs/04-targeting-rollouts.md)
+- [Evaluation Semantics](docs/05-evaluation.md)
+- [Remote Configuration](docs/06-remote-config.md)
+- [Persistence Format](docs/08-persistence-format.md)
+
+**Why Konditional:**
+- [Why Konditional Exists](docs/09-why-konditional.md) — The compelling argument
+- [Engineer Pitch Deck](docs/onboarding-flow.md)
+- [vs. Enum/Boolean Capabilities](docs/onboarding-flow-legacy-enums.md)
+
+---
+
+## What Konditional Prevents
+
+**Typos that ship to production:**
+```kotlin
+flagClient.getBool("new_onboaring_flow", false)  // compiles, deploys, fails silently
+AppFlags.newOnboaringFlow                        // compile error
+```
+
+**Type coercion incidents:**
+```kotlin
+// JSON: {"max_retries": "disabled"}
+flagClient.getInt("max_retries", 3)  // returns 0, service fails immediately
+AppFlags.maxRetries                  // parse fails at boundary, last-known-good stays active
+```
+
+**Boolean explosion:**
+```kotlin
+// Before: 5 boolean flags → 2^5 = 32 test cases, most undefined
+// After: 1 typed enum flag → 5 explicit variants, all defined
+```
+
+**Inconsistent rollout logic:**
+```kotlin
+// Before: Account team uses modulo, Payments team uses random(), different bucketing
+// After: All flags use SHA-256 bucketing, same user → same bucket across all flags
+```
+
+Read more: [Real Problems Konditional Prevents](docs/09-why-konditional.md#real-problems-konditional-prevents)
+
+---
+
+## When to Use Konditional
+
+**Choose Konditional when:**
+- You want compile-time correctness for flag definitions and callsites
+- You need typed values beyond booleans (variants, thresholds, structured config)
+- You run experiments and need deterministic, reproducible rollouts
+- You value consistency over bespoke per-domain solutions
+- You have remote configuration and want explicit validation boundaries
+
+**Konditional might not fit if:**
+- You need vendor-hosted dashboards more than compile-time safety
+- Your flags are fully dynamic with zero static definitions
+- You're okay with process/tooling to prevent string key drift
+
+---
+
+## Examples
+
+See the [ktor-demo](ktor-demo/) directory for a working example of Konditional in a Ktor application with:
+- Custom context types
+- Remote configuration loading
+- Namespace isolation
+- API integration
+
+---
+
+## License
+
+MIT. See [LICENSE](LICENSE).

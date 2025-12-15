@@ -97,7 +97,7 @@ val PREMIUM_FEATURE by boolean(default = false) {
 ```
 
 ```mermaid
-flowchart LR
+flowchart TD
   Ctx["Context"] --> P{Platform match?}
   P -->|No| Skip["Rule fails"]
   P -->|Yes| L{Locale match?}
@@ -143,10 +143,10 @@ flowchart TD
 
 Rollouts are computed locally. The bucketing input is stable and per-flag:
 
-```
+```kotlin
 input = "$stableId:$flagKey:$salt"
-hash = SHA256(input)
-percentage = (hash % 10000) / 100.0   // ["0.00, 100.00)
+hash = input.sha256()
+percentage = (hash.mapToPercentage() % 10000) / 100.0   // ["0.00, 100.00)
 ```
 
 This yields three operational properties:
@@ -155,14 +155,14 @@ This yields three operational properties:
 - **Salt-controlled redistribution**: changing `salt` re-buckets users for that flag
 
 ```mermaid
-flowchart LR
-  Id[stableId"] --> In["stableId:flagKey:salt"]
+flowchart TD
+  Id["stableId"] --> In["stableId:flagKey:salt"]
   Key["flagKey"] --> In
   Salt["salt"] --> In
   In --> H["SHA-256"]
   H --> M["mod 10,000"]
   M --> P["percentage 0.00..99.99"]
-  P --> T{< rollout % ?}
+  P --> T{"< rollout % ?"}
   T -->|Yes| Enabled["In rollout"]
   T -->|No| Disabled["Out of rollout"]
   style Enabled fill:#c8e6c9
