@@ -23,8 +23,10 @@ import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
  * ## Usage Example
  *
  * ```kotlin
+ * object Payments : Namespace("payments")
+ *
  * // Serialize a namespace's configuration
- * val serializer = NamespaceSnapshotSerializer(Namespace.Payments)
+ * val serializer = NamespaceSnapshotSerializer(Payments)
  * val json = serializer.toJson()
  *
  * // Save to your storage backend
@@ -131,7 +133,8 @@ class NamespaceSnapshotSerializer<M : Namespace>(
          *
          * Example:
          * ```kotlin
-         * val serializer = NamespaceSnapshotSerializer.forModule(Namespace.Payments)
+         * object Payments : Namespace("payments")
+         * val serializer = NamespaceSnapshotSerializer.forModule(Payments)
          * val json = serializer.toJson()
          * ```
          *

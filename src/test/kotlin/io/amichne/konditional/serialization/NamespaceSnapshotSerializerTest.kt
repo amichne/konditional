@@ -1,5 +1,6 @@
 package io.amichne.konditional.serialization
 
+import io.amichne.konditional.TestDomains
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
@@ -195,12 +196,12 @@ class NamespaceSnapshotSerializerTest {
     @Test
     fun `Given different taxonomies, When serialized separately, Then each has only its own flags`() {
         // Domain.Payments features
-        val PaymentsFeatures = object : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
+        val PaymentsFeatures = object : FeatureContainer<TestDomains.Payments>(TestDomains.Payments) {
             val paymentEnabled by boolean<Context>(default = true)
         }
 
         // Domain.Search features
-        val SearchFeatures = object : FeatureContainer<Namespace.Search>(Namespace.Search) {
+        val SearchFeatures = object : FeatureContainer<TestDomains.Search>(TestDomains.Search) {
             val searchEnabled by boolean<Context>(default = false)
         }
 
@@ -209,8 +210,8 @@ class NamespaceSnapshotSerializerTest {
         FeatureRegistry.register(SearchFeatures.searchEnabled)
 
         // Serialize each namespace
-        val paymentsSerializer = NamespaceSnapshotSerializer(Namespace.Payments)
-        val searchSerializer = NamespaceSnapshotSerializer(Namespace.Search)
+        val paymentsSerializer = NamespaceSnapshotSerializer(TestDomains.Payments)
+        val searchSerializer = NamespaceSnapshotSerializer(TestDomains.Search)
 
         val paymentsJson = paymentsSerializer.toJson()
         val searchJson = searchSerializer.toJson()

@@ -30,7 +30,8 @@ import io.amichne.kontracts.schema.ObjectSchema
  *     }
  * }
  *
- * object PaymentFeatures : FeatureContainer<Namespace.Payments>(Namespace.Payments) {
+ * object Payments : Namespace("payments")
+ * object PaymentFeatures : FeatureContainer<Payments>(Payments) {
  *     val PAYMENT_CONFIG by custom(default = PaymentConfig()) {
  *         rule(PaymentConfig(maxRetries = 5, timeout = 60.0)) {
  *             dimension(Environment, Environment.PRODUCTION)

@@ -1,154 +1,78 @@
 # Migration Guide
 
-Switch from string-based feature flags to compile-time safety. This guide maps concepts and shows adoption patterns.
+This guide maps the conceptual shift from string-based flags to Konditional’s typed, property-based model.
+It focuses on what changes at the definition site, at the call site, and at the trust boundary (runtime JSON).
 
 ---
 
-## Concept Mapping
+## The core mapping
 
-### String-Based Systems → Konditional
+String-based flag systems typically have:
+- a **string key** (`"dark-mode"`)
+- a **typed getter** chosen by the caller (`getBoolean`, `getString`, …)
+- an **untyped context** (often string keys and `Any` values)
 
-| Common Pattern (LaunchDarkly/Statsig/Custom)  | Konditional                       | Key Difference                          |
-|-----------------------------------------------|-----------------------------------|-----------------------------------------|
-| `getFlag("flag-name")` or `client.boolVariation("flag", false)` | `feature { Features.FLAG }` | Compile-time property vs runtime string |
-| Context with `Map<String, Any>` attributes    | `Context` data class              | Typed fields vs HashMap                 |
-| Rules in dashboard or config files            | `rule { }` DSL (code)             | Version-controlled in code              |
-| Percentage rollouts                           | `rollout { 50.0 }`                | Same concept, local computation         |
-| Segments/audiences/conditions                 | Custom `extension { }` logic      | Type-safe predicates                    |
-| Projects/environments/namespaces              | `Namespace`                       | Compile-time isolated                   |
-| Flag variations/treatments                    | `rule {...} returns value`        | Type-safe values                        |
+Konditional replaces those with:
+- a **property** (the property name becomes the key)
+- a **declared type** (from the delegate: `boolean`, `string`, `int`, `double`, `enum`)
+- a **typed `Context`** (and optionally domain-specific context data classes)
 
-### Specific Service Mappings
-
-**LaunchDarkly:**
-- `LDClient.boolVariation()` → `feature { Feature }`
-- `LDContext` → `Context` data class
-- Segments → `extension { Evaluable.factory { ... } }`
-
-**Statsig:**
-- `statsig.getConfig()` → `feature { Feature }`
-- Dynamic Config → String/Int/Double features with rules
-- Feature Gates → Boolean features
-
-**Custom String-Based:**
-- `featureFlags["flag"]` → `feature { Features.FLAG }`
-- String keys → Property delegation
-- Type casting → Compiler-enforced types
+```mermaid
+flowchart LR
+  A["String key"] --> B["Property name"]
+  C["Typed getter"] --> D["Type flows from definition"]
+  E["Untyped context map"] --> F["Typed Context data"]
+```
 
 ---
 
-## Code Comparison
+## Step-by-step adoption (incremental)
 
-### Boolean Flag
-
-**String-Based (LaunchDarkly example):**
-
-```kotlin
-val client = LDClient(sdkKey)
-val context = LDContext.builder("user-123")
-    .set("platform", "ios")
-    .build()
-
-val enabled = client.boolVariation("dark-mode", context, false)
-```
-
-**String-Based (Statsig example):**
-
-```kotlin
-val statsig = Statsig.initialize(sdkKey)
-val user = StatsigUser("user-123")
-    .setCustom(mapOf("platform" to "ios"))
-
-val enabled = statsig.checkGate(user, "dark_mode")
-```
-
-**Konditional:**
+### 0. Start with one container
 
 ```kotlin
 object Features : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val DARK_MODE by boolean(default = false)
 }
+```
 
+### 1. Replace call sites first (value safety)
+
+```kotlin
+val enabled: Boolean = feature { Features.DARK_MODE }
+```
+
+What you gain immediately:
+- key typos are eliminated at the call site (there is no string key)
+- return type is concrete (no cast; `Boolean` is enforced)
+- evaluation is non-null (default is required)
+
+### 2. Introduce typed context (targeting + rollouts)
+
+```kotlin
 val context = Context(
     locale = AppLocale.UNITED_STATES,
     platform = Platform.IOS,
-    appVersion = Version.parse("1.0.0"),
+    appVersion = Version.parse("2.1.0"),
     stableId = StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
 )
-
-val enabled = feature { Features.DARK_MODE }
 ```
 
-**Key differences:**
+`stableId` is the stable input used for deterministic rollout bucketing (see ["Targeting & Rollouts"](04-targeting-rollouts.md)).
 
-- No SDK key or network needed (offline-first)
-- StableId requires hex format (deterministic bucketing)
-- Property access with IDE autocomplete
-- Type safety: compiler knows `enabled` is `Boolean`
-
-### String Configuration
-
-**String-Based (Custom implementation):**
+### 3. Add rules after defaults exist (behavior safety)
 
 ```kotlin
-val config = ConfigManager.getInstance()
-val endpoint = when (config.getString("api-endpoint-variant")) {
-    "ios" -> "https://api-ios.example.com"
-    "android" -> "https://api-android.example.com"
-    else -> "https://api.example.com"
+val API_ENDPOINT by string(default = "https://api.example.com") {
+    rule { platforms(Platform.IOS) } returns "https://api-ios.example.com"
 }
 ```
 
-**String-Based (Statsig Dynamic Config):**
+---
 
-```kotlin
-val config = statsig.getConfig(user, "api_config")
-val endpoint = config.getString("endpoint", "https://api.example.com")
-```
+## Migrating “context maps” to typed contexts
 
-**Konditional:**
-
-```kotlin
-object Config : FeatureContainer<Namespace.Global>(Namespace.Global) {
-    val API_ENDPOINT by string(default = "https://api.example.com") {
-        rule { platforms(Platform.IOS) } returns "https://api-ios.example.com"
-        rule { platforms(Platform.ANDROID) } returns "https://api-android.example.com"
-    }
-}
-
-val endpoint = feature { Config.API_ENDPOINT }  // Type: String, never null
-```
-
-**Key differences:**
-
-- No treatment-to-value mapping (direct type-safe values)
-- Rules defined in code (version-controlled)
-- Returns actual config value, not treatment name
-
-### Custom Attributes / Context Fields
-
-**String-Based (LaunchDarkly example):**
-
-```kotlin
-val context = LDContext.builder("user-123")
-    .set("tier", "enterprise")  // String value, no validation
-    .set("organization", "acme-corp")
-    .build()
-
-// In dashboard: target users where tier == "enterprise"
-```
-
-**String-Based (Statsig example):**
-
-```kotlin
-val user = StatsigUser("user-123")
-    .setCustom(mapOf(
-        "tier" to "enterprise",  // String value, no validation
-        "organization" to "acme-corp"
-    ))
-```
-
-**Konditional:**
+If your current system uses string keys (`"tier"`, `"role"`, …), move that information into a custom context:
 
 ```kotlin
 data class EnterpriseContext(
@@ -156,235 +80,69 @@ data class EnterpriseContext(
     override val platform: Platform,
     override val appVersion: Version,
     override val stableId: StableId,
-    val subscriptionTier: SubscriptionTier,  // Typed, not string
-    val organizationId: String
+    val subscriptionTier: SubscriptionTier,
+    val employeeCount: Int
 ) : Context
 
-object PremiumFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
-    val ADVANCED_ANALYTICS by boolean(default = false) {
-        rule {
-            extension {
-                Evaluable.factory { ctx: EnterpriseContext ->
-                    ctx.subscriptionTier == SubscriptionTier.ENTERPRISE
-                }
+enum class SubscriptionTier { FREE, PRO, ENTERPRISE }
+
+val ADVANCED_ANALYTICS by boolean<EnterpriseContext>(default = false) {
+    rule {
+        extension {
+            Evaluable.factory { ctx ->
+                ctx.subscriptionTier == SubscriptionTier.ENTERPRISE &&
+                    ctx.employeeCount > 100
             }
-        } returns true
-    }
+        }
+    } returns true
 }
-
-val ctx = EnterpriseContext(..., subscriptionTier = SubscriptionTier.ENTERPRISE, ...)
-val enabled = feature { PremiumFeatures.ADVANCED_ANALYTICS }
 ```
 
-**Key differences:**
-
-- Type-safe enum `SubscriptionTier` vs string "enterprise"
-- Custom fields defined as properties (compiler-validated)
-- Business logic in code (testable, refactorable)
+Result: business targeting logic becomes type-checked and refactor-safe.
 
 ---
 
-## Adoption Patterns
+## Namespaces replace prefixes
 
-### Pattern 1: Gradual (Recommended)
-
-Run Konditional alongside your existing system, migrate flag-by-flag.
-
-**Steps:**
-
-1. Add Konditional dependency
-2. Define one flag in Konditional (mirror existing config)
-3. Evaluate both systems, log differences
-4. Once confident, switch to Konditional for that flag
-5. Repeat for remaining flags
-6. Remove old system dependency
-
-**Example dual evaluation:**
+Instead of `"auth.dark-mode"` / `"payments.dark-mode"` style prefixes, use namespace isolation:
 
 ```kotlin
-// Wrapper to compare both systems
-fun isEnabled(flagName: String, context: Context): Boolean {
-    // Existing system (LaunchDarkly example)
-    val oldResult = featureFlagClient.getBoolean(flagName, false)
+sealed class AppDomain(id: String) : Namespace(id) {
+    data object Auth : AppDomain("auth")
+    data object Payments : AppDomain("payments")
+}
 
-    // Konditional
-    val newResult = when (flagName) {
-        "dark_mode" -> feature { Features.DARK_MODE }
-        else -> null
-    }
+object AuthFeatures : FeatureContainer<AppDomain.Auth>(AppDomain.Auth) {
+    val SOCIAL_LOGIN by boolean(default = false)
+}
 
-    if (newResult != null && oldResult != newResult) {
-        logger.warn("Mismatch for $flagName: Old=$oldResult, New=$newResult")
-    }
-
-    return oldResult  // Use old system until validated
+object PaymentFeatures : FeatureContainer<AppDomain.Payments>(AppDomain.Payments) {
+    val APPLE_PAY by boolean(default = false)
 }
 ```
 
-### Pattern 2: Big-Bang (Faster, Higher Risk)
-
-Migrate all flags at once.
-
-**Steps:**
-
-1. Export all existing flags (from dashboard, config files, or database)
-2. Define equivalent Konditional features
-3. Test thoroughly in staging
-4. Deploy and monitor closely
-5. Roll back if issues arise
-
-**Use when:** You have comprehensive tests and can tolerate brief outages.
-
-### Pattern 3: New Features Only
-
-Keep existing flags in your current system, use Konditional for new flags.
-
-**Steps:**
-
-1. Add Konditional for new features
-2. Gradually migrate old flags as time permits
-3. Eventually deprecate old system
-
-**Use when:** Migration isn't urgent, want to learn Konditional gradually.
+Each namespace has its own registry and independent configuration lifecycle.
 
 ---
 
-## Common Migration Challenges
+## When you need runtime configuration (remote JSON)
 
-### Challenge 1: StableId Format
-
-**String-based systems:** User IDs can be any string (`"user-123"`, `"alice@example.com"`)
-
-**Konditional:** `StableId` must be valid hexadecimal (32+ characters)
-
-**Solution:** Hash your existing IDs:
+Konditional supports JSON configuration as a validated boundary:
 
 ```kotlin
-fun userIdToStableId(userId: String): StableId {
-    val hash = MessageDigest.getInstance("SHA-256")
-        .digest(userId.toByteArray())
-        .joinToString("") { "%02x".format(it) }
-    return StableId.of(hash)
-}
-
-val stableId = userIdToStableId("user-123")
-```
-
-### Challenge 2: Dynamic Attributes
-
-**String-based systems:** Attributes set at runtime (`context.set("key", value)` or `Map<String, Any>`)
-
-**Konditional:** Context fields must be defined at compile time
-
-**Solution:** Create custom context with all possible fields:
-
-```kotlin
-data class AppContext(
-    override val locale: AppLocale,
-    override val platform: Platform,
-    override val appVersion: Version,
-    override val stableId: StableId,
-    val subscriptionTier: SubscriptionTier?,  // Nullable if optional
-    val betaTester: Boolean,
-    val organizationId: String?
-) : Context
-```
-
-### Challenge 3: Remote Configuration
-
-**String-based systems:** Flags configured via dashboard/API, updated instantly
-
-**Konditional:** Flags defined in code, rules updated via UI or JSON
-
-**Solution:** Use UI with RBAC or JSON serialization for remote updates:
-
-```kotlin
-// Define flags in code with defaults
-object Features : FeatureContainer<Namespace.Global>(Namespace.Global) {
-    val DARK_MODE by boolean(default = false)
-}
-
-// Load remote rules (doesn't change code, just rule configuration)
-val remoteJson = fetchFromServer("/flags.json")
-when (val result = SnapshotSerializer.fromJson(remoteJson)) {
+val json = File("flags.json").readText()
+when (val result = SnapshotSerializer.fromJson(json)) {
     is ParseResult.Success -> Namespace.Global.load(result.value)
-    is ParseResult.Failure -> logger.error("Failed to load config")
+    is ParseResult.Failure -> logError("Parse failed: ${result.error}")
 }
 ```
 
-### Challenge 4: Rollout Redistribution
-
-**Issue:** Users in 50% rollout in your old system won't match 50% in Konditional (different bucketing algorithms)
-
-**Solution:** Accept redistribution or use salt to align:
-
-- **Accept:** Users may see different experience temporarily (most teams do this)
-- **Align:** Adjust Konditional salt until distribution matches (trial-and-error, not recommended)
-
-Most teams accept redistribution since rollouts are temporary anyway.
+The guarantee is intentionally qualified: JSON is not “always safe”; instead, invalid JSON is rejected before it can affect evaluation.
 
 ---
 
-## Why Migrate?
+## Next steps
 
-### 1. Eliminate Runtime Errors
-
-**String-based:**
-
-```kotlin
-getFlag("dark-mod")  // Typo! Returns null or default silently
-```
-
-**Konditional:**
-
-```kotlin
-feature { Features.DARK_MOD }  // Compile error: unresolved reference
-```
-
-### 2. Reduce Infrastructure Costs
-
-**SaaS systems (LaunchDarkly/Statsig):** Monthly fees scale with MAU/seat count
-
-**Konditional:** Zero infrastructure cost (runs locally)
-
-### 3. Improve Performance
-
-**String-based:** Network latency or cache lookup overhead, type casting
-
-**Konditional:** Zero network calls, O(n) local evaluation where n < 10, zero allocation
-
-### 4. Version Control Everything
-
-**Dashboard-based systems:** Flag rules live in UI (audit log separate from code)
-
-**Konditional:** Flags defined in code (Git history + UI with RBAC for rule updates)
-
-### 5. Type Safety
-
-**String-based:** `getInt("flag")` vs `getString("flag")` — must remember type, can typo
-
-**Konditional:** Compiler knows the type, IDE autocomplete works, typos impossible
-
----
-
-## Decision Matrix
-
-| Factor                   | Stick with Current System                              | Migrate to Konditional             |
-|--------------------------|--------------------------------------------------------|------------------------------------|
-| **Budget**               | SaaS cost not a concern                                | Want to eliminate SaaS fees        |
-| **Tech stack**           | Multi-language (Java, Go, Python, Ruby, etc.)          | Kotlin/JVM only                    |
-| **Type safety priority** | Low (runtime errors acceptable)                        | High (critical for correctness)    |
-| **Offline support**      | Not needed (always connected)                          | Essential (mobile, edge computing) |
-| **Integration effort**   | Already integrated, working well                       | Willing to invest migration time   |
-| **Control & Compliance** | Prefer SaaS management                                 | Need self-hosted with RBAC control |
-
----
-
-## Next Steps
-
-**Ready to migrate?** Start with [Getting Started](01-getting-started.md) to run your first Konditional flag.
-
-**Need feature parity?** See [Targeting & Rollouts](04-targeting-rollouts.md) for advanced rules matching most feature flag systems.
-
-**Want to understand the model?** See [Core Concepts](03-core-concepts.md) for deep dive into Features, Context, and
-Namespaces.
+- Learn the primitives: ["Core Concepts"](03-core-concepts.md)
+- Understand rule evaluation and determinism: ["Evaluation"](05-evaluation.md)
+- Operate remote config safely: ["Remote Configuration"](06-remote-config.md)

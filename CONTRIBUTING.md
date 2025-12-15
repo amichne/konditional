@@ -612,11 +612,15 @@ enum class StringFlag : Feature<BooleanEncodeable, String, Context, FeatureModul
 Each `Namespace` has its own registry:
 
 ```kotlin
+sealed class AppDomain(id: String) : Namespace(id) {
+    data object Payments : AppDomain("payments")
+}
+
 // ✅ Correct - same namespace
 Namespace.Global.flag(CoreFeature.FLAG)
 
 // ❌ Wrong - different namespaces, won't compile (type error)
-Namespace.Payments.flag(CoreFeature.FLAG)
+AppDomain.Payments.flag(CoreFeature.FLAG)
 ```
 
 **Note on Registry Evaluation (v0.0.2):**

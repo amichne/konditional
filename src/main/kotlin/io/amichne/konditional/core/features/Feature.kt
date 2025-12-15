@@ -22,10 +22,12 @@ import io.amichne.konditional.values.Identifier
  * ## Example
  *
  * ```kotlin
+ * object Payments : Namespace("payments")
+ *
  * enum class PaymentFeatures(override val key: String)
- *     : Feature<BoolEncodeable, Boolean, Context, Namespace.Payments> {
+ *     : Feature<BoolEncodeable, Boolean, Context, Payments> {
  *     APPLE_PAY("apple_pay");
- *     override val namespace = Namespace.Payments
+ *     override val namespace = Payments
  * }
  * ```
  *

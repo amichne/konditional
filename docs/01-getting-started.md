@@ -1,27 +1,31 @@
 # Getting Started
 
-Type-safe flags in 5 minutes. If it compiles, it works—no runtime errors, no null checks, no string typos.
+Konditional is a Kotlin feature-flag DSL designed to make configuration *typed*, *deterministic*, and *non-null*.
+The core claim is precise: statically-defined flags have compile-time type correctness, and evaluation is total (you always get a value back).
 
-## Why Konditional?
+---
 
-Most feature flag systems use runtime strings. Konditional uses compile-time properties instead.
+## Why Konditional (and what it actually guarantees)
 
-| Feature          | String-Based (Custom)                                                       | Konditional                                                                                   |
-|------------------|-----------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
-| **Type Safety**  | Exclusively booleans, drives branching explosion in reality                 | Compile-time safety allows runtime usage without risk `feature { Features.FLAG }`             |
-| **Evaluation**   | Hardcoded via boolean flows                                                 | Dynamic and generic, maintaining rigor of type-checking                                       |
-| **Context**      | Enum class with string keys                                                 | Typed data classes with IDE autocomplete                                                      |
-| **Performance**  | Shared module forces full-rebuild at compile-time, unable to leverage cache | Module changes to flags are not invalidating of task-graph for parent                         |
-| **Organization** | Prefixing, shared single source by all                                      | Namespaces (compile-time isolated), with type-enforced boundaries, infitinitely divisible     |
-| **Errors**       | Silent failures, null checks, type casting                                  | Guarnteed valid startup config,<br/> Update failures emerge **before** update, during parsing |
+Most flag systems are stringly-typed: a string key selects a value and the caller chooses a “typed getter”.
+That architecture creates three failure modes that are syntactically valid but semantically wrong at runtime: key typos, type mismatches, and null propagation.
 
-**Core benefits:** 
-* No more invalid configurations, instead, compile errors.
-* First-class Gradle caching support
-* Modules own the feature flags they are concerned with
-* Unified, single-source, for all flagging
-* Your IDE knows everything.
-* Built to scale to multi-tenancy, seamlessly
+Konditional changes the failure surface by binding identity and type at definition time via Kotlin properties:
+
+- **No string keys at call sites**: flags are accessed as properties (typos become compile errors).
+- **No casts at call sites**: the return type flows from the flag definition (mismatched types become compile errors).
+- **No nulls from evaluation**: defaults are required, so evaluation has a total return path.
+
+```mermaid
+flowchart LR
+  Def["Flag defined as a property"] --> Bound["Key + type bound at compile-time"]
+  Bound --> Eval["Evaluation"]
+  Eval -->|Rule matches| Value["Rule value"]
+  Eval -->|No match| Default["Declared default"]
+  style Bound fill:#e1f5ff
+  style Default fill:#fff3cd
+  style Value fill:#c8e6c9
+```
 
 ---
 
@@ -36,13 +40,13 @@ dependencies {
 
 ---
 
-## Your First Flag
+## Your first flag
 
-Define flags as properties. The compiler enforces types:
+Define a flag as a delegated property in a `FeatureContainer` bound to a `Namespace`:
 
 ```kotlin
-import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.context.*
 
 object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
@@ -54,7 +58,6 @@ object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     }
 }
 
-// Create context (required for evaluation)
 val context = Context(
     locale = AppLocale.UNITED_STATES,
     platform = Platform.IOS,
@@ -62,59 +65,45 @@ val context = Context(
     stableId = StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
 )
 
-// Evaluate - returns Boolean, never null
 val enabled: Boolean = feature { AppFeatures.DARK_MODE }
 ```
 
-**vs String-Based Systems:**
-```kotlin
-// String-based - runtime lookup, can typo, type unknown
-val enabled = featureFlags.getBoolean("dark-mode", false)  // No IDE help, typos fail silently
-
-// Konditional - compile-time property, autocomplete works
-val enabled = feature { AppFeatures.DARK_MODE }  // IDE knows it's Boolean
-```
+Notes:
+- Konditional models evaluation as context-dependent; examples assume you are evaluating within a context-aware scope.
+- `feature { ... }` returns the flag’s declared Kotlin type and never returns null.
 
 ---
 
-## Multiple Types
+## A small API surface, intentionally
 
-All primitives work out of the box:
+Supported value types (out of the box):
 
-```kotlin
-object AppConfig : FeatureContainer<Namespace.Global>(Namespace.Global) {
-    val DARK_MODE by boolean(default = false)
-    val API_ENDPOINT by string(default = "https://api.example.com")
-    val MAX_RETRIES by int(default = 3)
-    val TIMEOUT by double(default = 30.0)
-}
-```
-
-Each flag is typed—you can't accidentally treat a string as a boolean.
+| Type    | DSL Method  | Kotlin Type   | Example Default |
+|---------|-------------|---------------|-----------------|
+| Boolean | `boolean()` | `Boolean`     | `false`         |
+| String  | `string()`  | `String`      | `"production"`  |
+| Integer | `int()`     | `Int`         | `42`            |
+| Decimal | `double()`  | `Double`      | `3.14`          |
+| Enum    | `enum<E>()` | `E : Enum<E>` | `LogLevel.INFO` |
 
 ---
 
-## Common Patterns
+## Common patterns
 
-### Pattern 1: Gradual Rollout
-
-Ship to 10% of users, then expand:
+### Gradual rollout (deterministic)
 
 ```kotlin
 val NEW_CHECKOUT by boolean(default = false) {
     rule {
         platforms(Platform.ANDROID)
-        rollout { 10.0 }  // Start small
+        rollout { 10.0 }
     } returns true
 }
-
-// Later: increase to 50%
-// Same users stay enabled (deterministic SHA-256 bucketing)
 ```
 
-### Pattern 2: Platform-Specific Config
+Konditional’s rollouts are deterministic: the same `(stableId, flagKey, salt)` yields the same bucket assignment.
 
-Different values per platform:
+### Platform-specific configuration
 
 ```kotlin
 val API_ENDPOINT by string(default = "https://api.example.com") {
@@ -124,115 +113,41 @@ val API_ENDPOINT by string(default = "https://api.example.com") {
 }
 ```
 
-### Pattern 3: A/B Testing
-
-Split traffic 50/50:
+### Variants via enums (not strings)
 
 ```kotlin
-val RECOMMENDATION_ALGO by string(default = "collaborative") {
-    rule { rollout { 50.0 } } returns "content-based"
+enum class Theme { LIGHT, DARK }
+
+val THEME by enum<Theme, Context>(default = Theme.LIGHT)
+```
+
+---
+
+## Namespaces scale ownership, not prefixes
+
+Konditional provides `Namespace.Global`. If you need isolation boundaries beyond global, define your own namespaces in your codebase (consumer-defined), then bind `FeatureContainer`s to them.
+
+```kotlin
+sealed class AppDomain(id: String) : Namespace(id) {
+    data object Auth : AppDomain("auth")
+    data object Payments : AppDomain("payments")
 }
-// Same user always gets same variant (deterministic)
-```
 
----
-
-## Evaluation Methods
-
-```kotlin
-// Simple evaluation with default
-val enabled = feature { AppFeatures.DARK_MODE }
-
-```
-
----
-
-## Organizing by Team/Domain
-
-Use namespaces to isolate features:
-
-```kotlin
-object AuthFeatures : FeatureContainer<Namespace.Authentication>(
-    Namespace.Authentication
-) {
+object AuthFeatures : FeatureContainer<AppDomain.Auth>(AppDomain.Auth) {
     val SOCIAL_LOGIN by boolean(default = false)
 }
 
-object PaymentFeatures : FeatureContainer<Namespace.Payments>(
-    Namespace.Payments
-) {
+object PaymentFeatures : FeatureContainer<AppDomain.Payments>(AppDomain.Payments) {
     val APPLE_PAY by boolean(default = false)
 }
 ```
 
-**Benefits:**
-- Features can't collide across namespaces
-- Each team owns their namespace
-- Type system prevents cross-namespace access mistakes
-
 ---
 
-## Key Differentiators
+## Next steps
 
-### 1. Compile-Time Safety
-String-based: `getFlag("flag-name")` — Typos fail at runtime (or silently return defaults)
-**Konditional:** `feature { Features.DARK_MODE }` — Typos fail at compile time
-
-### 2. Offline-First Architecture
-String-based (LaunchDarkly/Statsig): Network call or cache required for evaluation
-**Konditional:** All evaluation happens locally. Zero network dependency.
-
-### 3. Zero-Allocation Evaluation
-String-based: HashMap lookups, type casting, object creation per evaluation
-**Konditional:** Immutable data structures, lock-free reads, no GC pressure
-
-### 4. Type-Safe Contexts
-String-based: `context.put("tier", "enterprise")` — String keys, Any values, no validation
-**Konditional:**
-```kotlin
-data class EnterpriseContext(
-    // ... standard fields ...
-    val subscriptionTier: SubscriptionTier  // Enum, not string - compile-time validated
-) : Context
-```
-
-### 5. Deterministic Rollouts
-Most systems use hashing, but Konditional's SHA-256 bucketing is:
-- Platform-stable (same buckets on JVM, Android, iOS, Web)
-- Independent per flag (user in 50% of Flag A ≠ in 50% of Flag B)
-- Salt-controllable (change salt to redistribute users)
-
----
-
-## Next Steps
-
-**Just getting started?** You're done! Start adding flags to your code.
-
-**Need advanced targeting?** See **[Targeting & Rollouts](04-targeting-rollouts.md)** for rules, specificity, and custom logic.
-
-**Want custom contexts?** See **[Core Concepts](03-core-concepts.md)** for extending Context with business data.
-
-**Migrating from another system?** See **[Migration Guide](02-migration.md)** for concept mapping and adoption patterns.
-
-**Loading remote configs?** See **[Remote Configuration](06-remote-config.md)** for JSON serialization.
-
----
-
-## Quick Reference
-
-```kotlin
-// 1. Define features
-object Features : FeatureContainer<Namespace.Global>(Namespace.Global) {
-    val FLAG by boolean(default = false) {
-        rule { platforms(Platform.IOS); rollout { 50.0 } } returns true
-    }
-}
-
-// 2. Create context
-val ctx = Context(locale, platform, version, stableId)
-
-// 3. Evaluate
-val value = feature { Features.FLAG }
-```
-
-That's it. Type-safe feature flags in 3 steps.
+- Learn the building blocks: ["Core Concepts"](03-core-concepts.md)
+- Write targeting rules and understand rollouts: ["Targeting & Rollouts"](04-targeting-rollouts.md)
+- Understand evaluation order and determinism: ["Evaluation"](05-evaluation.md)
+- Add runtime-validated JSON configuration: ["Remote Configuration"](06-remote-config.md)
+- Understand the exact trust boundary: ["Theory"](07-theory.md)
