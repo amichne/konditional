@@ -198,6 +198,7 @@ This library is currently part of the Konditional project but is designed to be 
 classDiagram
     direction LR
     class JsonSchema {
+        <<sealed>>
         String description
         Object default
         Boolean deprecated
@@ -207,10 +208,9 @@ classDiagram
     }
     class ObjectTraits {
         <<Interface>>
-        + validateRequiredFields(Set<String>) ValidationResult
-        + validateRequiredFields(Set<String>) ValidationResult
-        Map<String, FieldSchema>> fields
-        Set<String> required
+        + validateRequiredFields(Set~String~) ValidationResult
+        Map~String, FieldSchema~ fields
+        Set~String~ required
     }
     class OpenApiProps {
         <<Interface>>
@@ -222,149 +222,160 @@ classDiagram
         Object example
     }
     class Valid {
+        <<sealed>>
         Boolean valid
     }
 
     class ValidationResult {
+        <<sealed>>
         Boolean valid
         Boolean invalid
         String errorMessage
     }
 
-    class data arraySchema {
-String description
-Int maxItems
-Object default
-Boolean deprecated
-Boolean uniqueItems
-String title
-Object example
-JsonSchema elementSchema
-Int minItems
-Boolean nullable
- }
+    class ArraySchema {
+        <<data>>
+        String description
+        Int maxItems
+        Object default
+        Boolean deprecated
+        Boolean uniqueItems
+        String title
+        Object example
+        JsonSchema elementSchema
+        Int minItems
+        Boolean nullable
+    }
 
-class data  BooleanSchema {
-String description
-Object default
-Boolean deprecated
-String title
-Boolean nullable
-Object example
-}
-class data  DoubleSchema {
-String description
-Object default
-Boolean deprecated
-String format
-String title
-Object example
-Double maximum
-Double minimum
-List<Double> enum
-Boolean nullable
-}
-class data  EnumSchema<E> {
-String description
-Object default
-Boolean deprecated
-KClass<E> enumClass
-String title
-Object example
-Boolean nullable
-List<E> values
- }
-class data  FieldSchema {
-String description
-Boolean deprecated
-Boolean required
-JsonSchema schema
-Object defaultValue
-}
-class data  IntSchema {
-String description
-Object default
-Boolean deprecated
-String title
-Int maximum
-Object example
-List<Int> enum
-Int minimum
-Boolean nullable
- }
-class data  Invalid {
-String message
-}
-class data  NullSchema {
-String description
-Object default
-Boolean deprecated
-String title
-Boolean nullable
-Object example
-}
-class data  ObjectSchema {
-String description
-Object default
-Boolean deprecated
-String title
-Set<String> required
-Object example
-Map<String, FieldSchema> fields
-Boolean nullable
-}
-class data  RootObjectSchema {
-String description
-Object default
-Boolean deprecated
-String title
-Set<String> required
-Object example
-Map<String, FieldSchema> fields
-Boolean nullable
-}
-class data  StringSchema {
-String description
-Int minLength
-Object default
-Boolean deprecated
-String format
-String title
-Int maxLength
-Object example
-List<String> enum
-Boolean nullable
-String pattern
-}
+    class BooleanSchema {
+        <<data>>
+        String description
+        Object default
+        Boolean deprecated
+        String title
+        Boolean nullable
+        Object example
+    }
 
-JsonSchema  ..>  OpenApiProps
-JsonSchema  -->  ObjectTraits
-ValidationResult  -->  Valid
-Valid  -->  ValidationResult
-JsonSchema  -->  ValidationResult
-data  ArraySchema  -->  JsonSchema
-JsonSchema  -->  data  ArraySchema
-data  BooleanSchema  -->  JsonSchema
-JsonSchema  -->  data  BooleanSchema
-JsonSchema  -->  data  DoubleSchema
-data  DoubleSchema  -->  JsonSchema
-JsonSchema  -->  data  EnumSchema<E>
-data  EnumSchema<E>  -->  JsonSchema
-JsonSchema  -->  data  FieldSchema
-JsonSchema  -->  data  IntSchema
-data  IntSchema  -->  JsonSchema
-data  Invalid  -->  ValidationResult
-ValidationResult  -->  data  Invalid
-JsonSchema  -->  data  NullSchema
-data  NullSchema  -->  JsonSchema
-JsonSchema  -->  data  ObjectSchema
-data  ObjectSchema  -->  JsonSchema
-data  ObjectSchema  ..>  ObjectTraits
-JsonSchema  -->  data  RootObjectSchema
-data  RootObjectSchema  -->  JsonSchema
-data  RootObjectSchema  ..>  ObjectTraits
-JsonSchema  -->  data  StringSchema
-data  StringSchema  -->  JsonSchema
+    class DoubleSchema {
+        <<data>>
+        String description
+        Object default
+        Boolean deprecated
+        String format
+        String title
+        Object example
+        Double maximum
+        Double minimum
+        List~Double~ enum
+        Boolean nullable
+    }
+
+    class EnumSchema {
+        <<data>>
+        String description
+        Object default
+        Boolean deprecated
+        KClass enumClass
+        String title
+        Object example
+        Boolean nullable
+        List values
+    }
+
+    class FieldSchema {
+        <<data>>
+        String description
+        Boolean deprecated
+        Boolean required
+        JsonSchema schema
+        Object defaultValue
+    }
+
+    class IntSchema {
+        <<data>>
+        String description
+        Object default
+        Boolean deprecated
+        String title
+        Int maximum
+        Object example
+        List~Int~ enum
+        Int minimum
+        Boolean nullable
+    }
+
+    class Invalid {
+        <<data>>
+        String message
+    }
+
+    class NullSchema {
+        <<data>>
+        String description
+        Object default
+        Boolean deprecated
+        String title
+        Boolean nullable
+        Object example
+    }
+
+    class ObjectSchema {
+        <<data>>
+        String description
+        Object default
+        Boolean deprecated
+        String title
+        Set~String~ required
+        Object example
+        Map~String, FieldSchema~ fields
+        Boolean nullable
+    }
+
+    class RootObjectSchema {
+        <<data>>
+        String description
+        Object default
+        Boolean deprecated
+        String title
+        Set~String~ required
+        Object example
+        Map~String, FieldSchema~ fields
+        Boolean nullable
+    }
+
+    class StringSchema {
+        <<data>>
+        String description
+        Int minLength
+        Object default
+        Boolean deprecated
+        String format
+        String title
+        Int maxLength
+        Object example
+        List~String~ enum
+        Boolean nullable
+        String pattern
+    }
+
+    JsonSchema ..|> OpenApiProps
+    ValidationResult ..|> Valid
+
+    ArraySchema --|> JsonSchema
+    BooleanSchema --|> JsonSchema
+    DoubleSchema --|> JsonSchema
+    EnumSchema --|> JsonSchema
+    IntSchema --|> JsonSchema
+    NullSchema --|> JsonSchema
+    ObjectSchema --|> JsonSchema
+    RootObjectSchema --|> JsonSchema
+    StringSchema --|> JsonSchema
+
+    ObjectSchema ..|> ObjectTraits
+    RootObjectSchema ..|> ObjectTraits
+
+    Invalid --|> ValidationResult
 
 
 ```

@@ -22,6 +22,9 @@ import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.values.Identifier
+import kotlin.reflect.KClass
+import kotlin.reflect.KParameter
+import kotlin.reflect.full.primaryConstructor
 
 /**
  * Converts a Configuration to a SerializableSnapshot.
@@ -125,10 +128,103 @@ private fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Seriali
 
 /**
  * Extracts the value from a FlagValue with type safety.
- * The unchecked cast is safe because FlagValue guarantees type correspondence.
+ *
+ * This performs boundary decoding for types that are serialized in a tagged representation:
+ * - Enums: stored as (enumClassName, enumConstantName)
+ * - KotlinEncodeable/data classes: stored as (dataClassName, primitive field map)
  */
 @Suppress("UNCHECKED_CAST")
-private fun <T : Any> FlagValue<*>.extractValue(): T = this.value as T
+private fun <T : Any> FlagValue<*>.extractValue(): T =
+    when (this) {
+        is FlagValue.EnumValue -> decodeEnum(enumClassName, value) as T
+        is FlagValue.DataClassValue -> decodeDataClass(dataClassName, value) as T
+        else -> value as T
+    }
+
+private fun decodeEnum(
+    enumClassName: String,
+    enumConstantName: String,
+): Enum<*> {
+    val enumClass = runCatching { Class.forName(enumClassName).asSubclass(Enum::class.java) }
+        .getOrElse { throw IllegalArgumentException("Failed to load enum class '$enumClassName': ${it.message}") }
+
+    @Suppress("UNCHECKED_CAST")
+    return java.lang.Enum.valueOf(enumClass as Class<out Enum<*>>, enumConstantName)
+}
+
+private fun decodeDataClass(
+    dataClassName: String,
+    fields: Map<String, Any?>,
+): Any {
+    val kClass = runCatching { Class.forName(dataClassName).kotlin }
+        .getOrElse { throw IllegalArgumentException("Failed to load data class '$dataClassName': ${it.message}") }
+
+    val constructor = kClass.primaryConstructor
+                      ?: throw IllegalArgumentException("Custom type '${kClass.simpleName}' must have a primary constructor")
+
+    val args = constructor.parameters
+        .associateWith { param -> resolveConstructorArg(fields, param) }
+        .filterValues { it != Unset }
+        .mapValues { (_, v) -> if (v === NullValue) null else v }
+
+    return constructor.callBy(args)
+}
+
+private object Unset
+private object NullValue
+
+private fun resolveConstructorArg(
+    fields: Map<String, Any?>,
+    param: KParameter,
+): Any {
+    val name = param.name ?: throw IllegalArgumentException("Constructor parameter has no name")
+
+    if (!fields.containsKey(name)) {
+        return if (param.isOptional) Unset else throw IllegalArgumentException("Required field '$name' is missing")
+    }
+
+    val raw = fields[name]
+    if (raw == null) return NullValue
+
+    val target = param.type.classifier as? KClass<*>
+    return coerceValue(raw, target)
+}
+
+private fun coerceValue(
+    value: Any,
+    target: KClass<*>?,
+): Any = when {
+    target == null -> value
+    target == String::class -> value.toString()
+    target == Boolean::class -> when (value) {
+        is Boolean -> value
+        is String -> value.toBooleanStrictOrNull() ?: error("Cannot coerce '$value' to Boolean")
+        else -> error("Cannot coerce ${value::class.simpleName} to Boolean")
+    }
+    target == Int::class -> when (value) {
+        is Int -> value
+        is Double -> value.toInt()
+        is Number -> value.toInt()
+        is String -> value.toInt()
+        else -> error("Cannot coerce ${value::class.simpleName} to Int")
+    }
+    target == Double::class -> when (value) {
+        is Double -> value
+        is Int -> value.toDouble()
+        is Number -> value.toDouble()
+        is String -> value.toDouble()
+        else -> error("Cannot coerce ${value::class.simpleName} to Double")
+    }
+    target.java.isEnum -> {
+        val enumConstantName = value as? String ?: error("Enum values must be strings, got ${value::class.simpleName}")
+        decodeEnum(target.java.name, enumConstantName)
+    }
+    value is Map<*, *> -> {
+        @Suppress("UNCHECKED_CAST")
+        decodeDataClass(target.java.name, value as Map<String, Any?>)
+    }
+    else -> value
+}
 
 /**
  * Converts a SerializableRule to a ConditionalValue.
