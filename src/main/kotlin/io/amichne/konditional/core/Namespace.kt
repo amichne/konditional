@@ -11,7 +11,7 @@ import java.util.UUID
 /**
  * Represents a feature flag namespace with isolated configuration and runtime isolation.
  *
- * Taxonomies provide:
+ * Namespaces provide:
  * - **Compile-time isolation**: Features are type-bound to their namespace
  * - **Runtime isolation**: Each namespace has its own flag registry
  * - **Type safety**: Namespace identity is encoded in the type system
@@ -41,7 +41,7 @@ import java.util.UUID
  *
  * ## Adding New Modules
  *
- * Define a namespace in your module, and have it own its feature containers:
+ * Define a namespace in your module, and have it own its [io.amichne.konditional.core.features.FeatureContainer]:
  *
  * ```kotlin
  * object Payments : Namespace("payments") {
@@ -58,7 +58,7 @@ import java.util.UUID
  *
  * ## Direct Registry Operations
  *
- * Taxonomies implement [NamespaceRegistry], so you can call registry methods directly:
+ * [Namespace] implements [NamespaceRegistry] via delegation, so you can call registry methods directly:
  * ```kotlin
  * // Load configuration
  * Namespace.Global.load(configuration)
@@ -147,9 +147,6 @@ open class Namespace(
      * - **Recommendations**: Recommendation engine flags
      */
     sealed class Domain(id: String) : Namespace(id) {
-
-        // Add your organization's team modules here:
-        // data object YourTeam : Domain("your-team")
     }
 
     @TestOnly
@@ -158,29 +155,6 @@ open class Namespace(
         registry = NamespaceRegistry(),
         identifierSeed = UUID.randomUUID().toString(),
     )
-
-    /**
-     * Sets a test-scoped override for a feature flag.
-     * Internal API used by test utilities.
-     */
-    @PublishedApi
-    internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> setOverride(
-        feature: Feature<S, T, C, M>,
-        value: T,
-    ) {
-        (registry as InMemoryNamespaceRegistry).setOverride(feature, value)
-    }
-
-    /**
-     * Clears a test-scoped override for a feature flag.
-     * Internal API used by test utilities.
-     */
-    @PublishedApi
-    internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> clearOverride(
-        feature: Feature<S, T, C, M>,
-    ) {
-        (registry as InMemoryNamespaceRegistry).clearOverride(feature)
-    }
 
     /**
      * Sets a test-scoped override for a feature flag.
