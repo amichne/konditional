@@ -182,6 +182,29 @@ open class Namespace(
         (registry as InMemoryNamespaceRegistry).clearOverride(feature)
     }
 
+    /**
+     * Sets a test-scoped override for a feature flag.
+     * Internal API used by test utilities.
+     */
+    @PublishedApi
+    internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> setOverride(
+        feature: Feature<S, T, C, M>,
+        value: T,
+    ) {
+        (registry as InMemoryNamespaceRegistry).setOverride(feature, value)
+    }
+
+    /**
+     * Clears a test-scoped override for a feature flag.
+     * Internal API used by test utilities.
+     */
+    @PublishedApi
+    internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> clearOverride(
+        feature: Feature<S, T, C, M>,
+    ) {
+        (registry as InMemoryNamespaceRegistry).clearOverride(feature)
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Namespace) return false

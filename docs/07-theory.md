@@ -11,7 +11,6 @@ Fundamentally, at the end of the theory, we are left with a few incredibly valua
 * Compile-time structure owns all structural constraints
   * This includes any bounds on permitted values
 * Runtime data is dynamic, but guaranteed to with inside the bounds defined by the compile-time structure
-* 
 
 ---
 
