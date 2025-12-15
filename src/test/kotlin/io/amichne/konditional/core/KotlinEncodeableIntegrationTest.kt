@@ -6,6 +6,7 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.core.ConditionEvaluationTest.TestFlags.toJson
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.result.utils.onSuccess
@@ -14,7 +15,8 @@ import io.amichne.konditional.core.types.parseAs
 import io.amichne.konditional.core.types.toJsonValue
 import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.fixtures.core.id.TestStableId
-import io.amichne.konditional.fixtures.core.setupTest
+import io.amichne.konditional.fixtures.core.withOverride
+import io.amichne.konditional.serialization.SnapshotSerializer.fromJson
 import io.amichne.konditional.serialization.SnapshotSerializer.serialize
 import io.amichne.kontracts.dsl.of
 import io.amichne.kontracts.dsl.schemaRoot
@@ -157,18 +159,13 @@ class KotlinEncodeableIntegrationTest {
         assertEquals(UserSettings(), Features.userSettings.evaluate(context))
         // Override
         val override = UserSettings(theme = "dark", notificationsEnabled = false, maxRetries = 1, timeout = 10.0)
-        setupTest(Features) {
-            it.override(
-                userSettings,
-                UserSettings(theme = "dark", notificationsEnabled = false, maxRetries = 1, timeout = 10.0)
-            )
-            assertEquals(override, userSettings.evaluate(context))
-            println(serialize(namespace.configuration))
-            println(
-                fromJson(toJson()).onSuccess {
-                    it.flags.forEach { (_, definition) -> println(definition.feature.key + definition.values.toJsonValue()) }
-                }
-            )
+        testNamespace.withOverride(Features.userSettings, override) {
+            assertEquals(override, Features.userSettings.evaluate(context))
+            println(serialize(testNamespace.configuration))
+            // Verify round-trip serialization works
+            fromJson(toJson()).onSuccess { config ->
+                println("Successfully deserialized ${config.flags.size} flags")
+            }
         }
     }
 }

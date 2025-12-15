@@ -317,6 +317,18 @@ graph TD
 
 Use `extension { }` for business logic beyond platform/locale/version.
 
+### Context-Parameterized Evaluation
+
+`extension { }` runs as part of rule matching and receives the **same context** used for evaluation.
+
+Crucially, the context type is **parameterized by the flag**:
+
+- `boolean<Context>(...)` (or `boolean(...)`) → `ctx` is a `Context`
+- `boolean<EnterpriseContext>(...)` → `ctx` is an `EnterpriseContext`
+
+That means your custom rule logic is fully type-safe: you can only access fields that exist on that flag’s context, and
+the compiler prevents mixing unrelated contexts.
+
 ### Simple Extension
 
 ```kotlin
@@ -358,6 +370,14 @@ val ADVANCED_ANALYTICS by boolean<EnterpriseContext>(default = false) {
 ```
 Total = platform (1) + extension (3) = 4
 ```
+
+### Specificity Guidelines
+
+`Evaluable.specificity()` feeds into rule ordering. Keep it:
+
+- **Deterministic**: same value every time
+- **Comparable**: higher means “more constrained / more specific”
+- **Aligned**: roughly reflects how many independent checks you’re performing
 
 ### Reusable Evaluables
 

@@ -1,12 +1,13 @@
 # Evaluation
 
-Predictable results, graceful errors. This guide covers evaluation methods, evaluation flow, and error handling.
+Predictable results, deterministic behavior. This guide covers evaluation methods and evaluation flow.
 
 ---
 
 ## Evaluation Methods
 
-Choose based on your error handling needs.
+Evaluation is a total function: if it compiles, you always get a value back (either from a matching rule or the flag’s
+default).
 
 ### feature { } - Recommended
 
@@ -26,33 +27,6 @@ applyDarkMode(darkMode)  // Always non-null
 
 **Most common choice for production code.**
 
-### featureSafe { } - Explicit Error Handling
-
-Returns explicit result type with all failure modes:
-
-```kotlin
-when (val result = featureSafe { Features.DARK_MODE }) {
-    is EvaluationResult.Success -> {
-        val value: Boolean = result.value
-        applyDarkMode(value)
-    }
-    is EvaluationResult.FlagNotFound -> {
-        logWarning("Flag ${result.key} not registered")
-        applyDarkMode(false)  // Fallback
-    }
-    is EvaluationResult.EvaluationError -> {
-        logError("Evaluation failed", result.error)
-        applyDarkMode(false)  // Fallback
-    }
-}
-```
-
-**Use when:**
-
-- You need robust error handling
-- Different failures require different actions
-- Production systems with logging/monitoring
-
 ---
 
 ## Evaluation Flow
@@ -64,9 +38,7 @@ Understanding how evaluation works helps debug unexpected behavior.
 ```mermaid
 flowchart TD
     Start[Context Created] --> Lookup[Registry Lookup]
-    Lookup --> Found{Flag Found?}
-    Found -->|No| NotFound[Return FlagNotFound]
-    Found -->|Yes| Active{Flag Active?}
+    Lookup --> Active{Flag Active?}
     Active -->|No| Default1[Return Default]
     Active -->|Yes| Rules[Get Rules<br/>Sorted by Specificity]
 
@@ -84,19 +56,16 @@ flowchart TD
     style ReturnValue fill:#c8e6c9
     style Default1 fill:#fff3cd
     style Default2 fill:#fff3cd
-    style NotFound fill:#f8d7da
 ```
 
 ### 1. Registry Lookup
 
 ```kotlin
 val flag = namespace.featureFlag(Features.DARK_MODE)
-if (flag == null) {
-    return EvaluationResult.FlagNotFound(key)
-}
 ```
 
-Flag must be registered in namespace. Cross-namespace lookups fail.
+You can’t reference an undefined flag: flags are defined in code and accessed via properties, so the compiler guarantees
+you can only evaluate known flags in the correct namespace.
 
 ### 2. Flag Activity Check
 
@@ -148,6 +117,25 @@ if (!rule.extension.matches(context)) {
 
 Empty constraint sets match everything (no platforms = all platforms).
 
+#### Custom Extensions
+
+Custom rule logic is evaluated via `extension { }` and receives the flag’s context type.
+
+```kotlin
+val ADVANCED_ANALYTICS by boolean<EnterpriseContext>(default = false) {
+    rule {
+        extension {
+            Evaluable.factory { ctx ->
+                ctx.subscriptionTier == SubscriptionTier.ENTERPRISE &&
+                ctx.employeeCount > 100
+            }
+        }
+    } returns true
+}
+```
+
+Because the flag is parameterized with `EnterpriseContext`, `ctx` is strongly typed in this scope.
+
 ### 5. Rollout Bucketing
 
 Finally, check if user is in rollout bucket:
@@ -163,68 +151,6 @@ if (bucket >= threshold) {
 ### 6. Value Resolution
 
 If all checks pass, return rule's value. Otherwise, continue to next rule or return default.
-
----
-
-## Error Handling
-
-Konditional follows "parse, don't validate" principle—errors are values, not exceptions.
-
-### EvaluationResult
-
-Sealed interface with three cases:
-
-```kotlin
-sealed interface EvaluationResult<out T> {
-    data class Success<T>(val value: T) : EvaluationResult<T>
-    data class FlagNotFound(val key: String) : EvaluationResult<Nothing>
-    data class EvaluationError(val key: String, val error: Throwable) : EvaluationResult<Nothing>
-}
-```
-
-### Utility Methods
-
-```kotlin
-// Transform success value
-result.map { value -> value.toString() }
-
-// Fold to single type
-result.fold(
-    onSuccess = { value -> "Value: $value" },
-    onFlagNotFound = { "Not found: $it" },
-    onEvaluationError = { key, error -> "Error in $key: ${error.message}" }
-)
-
-// Get or else
-result.getOrElse { fallback }
-result.getOrNull()
-result.getOrDefault(fallback)
-```
-
-### ParseResult
-
-For parsing operations (Version, JSON):
-
-```kotlin
-sealed interface ParseResult<out T> {
-    data class Success<T>(val value: T) : ParseResult<T>
-    data class Failure(val error: ParseError) : ParseResult<Nothing>
-}
-
-sealed class ParseError {
-    data class InvalidVersion(val raw: String, val message: String) : ParseError()
-    // ... other parse errors
-}
-```
-
-**Example:**
-
-```kotlin
-when (val result = Version.parse("2.1.0")) {
-    is ParseResult.Success -> use(result.value)
-    is ParseResult.Failure -> logError(result.error.toString())
-}
-```
 
 ---
 
@@ -323,8 +249,8 @@ fun `iOS users in US get dark mode`() {
         stableId = StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
     )
 
-    val result = featureSafe { Features.DARK_MODE }
-    assertTrue(result is EvaluationResult.Success && result.value)
+    val enabled = feature { Features.DARK_MODE }
+    assertTrue(enabled)
 }
 ```
 
@@ -352,7 +278,7 @@ fun `50 percent rollout distributes correctly`() {
     val enabled = (0 until sampleSize).count { i ->
         val ctx = Context(
             ...
-            stableId = StableId.of("user-$i")
+            stableId = StableId.of(i.toString(16).padStart(32, '0'))
         )
         feature { Features.ROLLOUT_FLAG }
     }
@@ -373,12 +299,6 @@ For most production code:
 ```kotlin
 // Good - simple, clear
 val enabled = feature { Features.DARK_MODE }
-
-// Good - when error handling matters
-when (val result = featureSafe { Features.DARK_MODE }) {
-    is EvaluationResult.Success -> use(result.value)
-    else -> logAndFallback()
-}
 ```
 
 ### 2. Cache Contexts
@@ -433,9 +353,9 @@ fun testTargeting() {
 | **Determinism**   | Same inputs always produce same outputs            |
 | **Specificity**   | Most specific matching rule always wins            |
 | **Bucketing**     | SHA-256 ensures independent, stable buckets        |
-| **Performance**   | O(n) where n = rules per flag (< 10)               |
+| **Performance**   | O(n) where n = rules per flag                      |
 | **Thread safety** | Lock-free reads, immutable data                    |
-| **Null safety**   | Never returns null (with OrDefault methods)        |
+| **Null safety**   | Never returns null                                 |
 
 **Core principle:** If it compiles, evaluation is correct and deterministic.
 

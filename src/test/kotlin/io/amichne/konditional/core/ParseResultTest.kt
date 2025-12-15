@@ -196,13 +196,13 @@ class ParseResultTest {
     @Test
     fun `ParseError FeatureNotFound generates message`() {
         val error = ParseError.FeatureNotFound(Identifier("test-key"))
-        assertEquals("Feature not found: id::test-key", error.message)
+        assertEquals("Feature not found: value::test-key", error.message)
     }
 
     @Test
     fun `ParseError FlagNotFound generates message`() {
         val error = ParseError.FlagNotFound(Identifier("test-flag"))
-        assertEquals("Flag not found: id::test-flag", error.message)
+        assertEquals("Flag not found: value::test-flag", error.message)
     }
 
     @Test

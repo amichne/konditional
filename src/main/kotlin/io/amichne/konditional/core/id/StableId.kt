@@ -8,7 +8,7 @@ package io.amichne.konditional.core.id
  * @property hexId The normalized, hexadecimal representation of the stable identifier.
  * @property id The string representation of the stable identifier.
  *
- * @constructor Create empty Stable id
+ * @constructor Create empty Stable value
  */
 sealed interface StableId {
     val id: String

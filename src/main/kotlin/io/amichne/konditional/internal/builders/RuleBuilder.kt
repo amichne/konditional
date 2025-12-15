@@ -141,6 +141,7 @@ internal data class RuleBuilder<C : Context>(
  */
 @PublishedApi
 internal inline fun <reified T, C : Context> RuleBuilder<C>.axis(vararg values: T) where T : AxisValue, T : Enum<T> {
+
     val axisDescriptor = AxisRegistry.axisFor(T::class)
                          ?: error("No Axis registered for type ${T::class.simpleName}")
     axis(axisDescriptor, *values)

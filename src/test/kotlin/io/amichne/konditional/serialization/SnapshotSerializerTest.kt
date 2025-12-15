@@ -378,7 +378,7 @@ class SnapshotSerializerTest {
             {
               "flags" : [
                 {
-                  "key" : "id::unregistered_feature",
+                  "key" : "value::unregistered_feature",
                   "defaultValue" : {
                     "type" : "BOOLEAN",
                     "value" : true
@@ -688,7 +688,7 @@ class SnapshotSerializerTest {
         val patchJson = """
             {
               "flags" : [],
-              "removeKeys" : ["id::test_key"]
+              "removeKeys" : ["value::test_key"]
             }
         """.trimIndent()
 

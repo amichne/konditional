@@ -14,5 +14,5 @@ value class Identifier private constructor(private val string: String) : Compara
     override fun toString(): String = string
 }
 
-private const val PREFIX = "id::"
+private const val PREFIX = "value::"
 private const val SEPARATOR = "::"

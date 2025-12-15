@@ -1,6 +1,10 @@
 package io.amichne.konditional.core
 
+import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
 import io.amichne.konditional.core.registry.NamespaceRegistry
+import io.amichne.konditional.core.types.EncodableValue
 import org.jetbrains.annotations.TestOnly
 import java.util.UUID
 
@@ -40,7 +44,7 @@ import java.util.UUID
  *
  * To add a new team namespace, add an object to the [Domain] sealed class:
  * ```kotlin
- * sealed class Domain(id: String) : Namespace(id) {
+ * sealed class Domain(value: String) : Namespace(value) {
  *     // ... existing teams ...
  *     data object NewTeam : Domain("new-team")
  * }
@@ -142,6 +146,29 @@ sealed class Namespace(
 
     @TestOnly
     abstract class TestNamespaceFacade(id: String) : Namespace(id)
+
+    /**
+     * Sets a test-scoped override for a feature flag.
+     * Internal API used by test utilities.
+     */
+    @PublishedApi
+    internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> setOverride(
+        feature: Feature<S, T, C, M>,
+        value: T,
+    ) {
+        (registry as InMemoryNamespaceRegistry).setOverride(feature, value)
+    }
+
+    /**
+     * Clears a test-scoped override for a feature flag.
+     * Internal API used by test utilities.
+     */
+    @PublishedApi
+    internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> clearOverride(
+        feature: Feature<S, T, C, M>,
+    ) {
+        (registry as InMemoryNamespaceRegistry).clearOverride(feature)
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

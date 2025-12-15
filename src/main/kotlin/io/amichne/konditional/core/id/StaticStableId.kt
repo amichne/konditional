@@ -7,7 +7,7 @@ import org.jetbrains.annotations.TestOnly
  *
  * @property hexId The normalized, hexadecimal representation of the stable identifier.
  *
- * @constructor Create empty Static stable id
+ * @constructor Create empty Static stable value
  */
 @TestOnly
 internal interface StaticStableId : StableId

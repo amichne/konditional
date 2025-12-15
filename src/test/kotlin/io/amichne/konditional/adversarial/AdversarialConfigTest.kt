@@ -348,7 +348,7 @@ class AdversarialConfigTest {
             }
         }
 
-        // Colons are used as delimiters in hash input: "$salt:$flagKey:$id"
+        // Colons are used as delimiters in hash input: "$salt:$flagKey:$value"
         // This could cause unexpected bucket distributions
         val specialSaltDef = TestNamespaceFeatures.namespace.flag(TestNamespaceFeatures.specialSaltFlag)
         assert(specialSaltDef.salt?.contains(":") == true)
