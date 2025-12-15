@@ -5,14 +5,16 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.registry.NamespaceRegistry.Companion.updateDefinition
 import io.amichne.konditional.core.types.BooleanEncodeable
-import io.amichne.konditional.core.types.KotlinClassEncodeable
 import io.amichne.konditional.core.types.DecimalEncodeable
 import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.core.types.EnumEncodeable
 import io.amichne.konditional.core.types.IntEncodeable
+import io.amichne.konditional.core.types.KotlinClassEncodeable
 import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.konditional.core.types.StringEncodeable
 import io.amichne.konditional.internal.builders.FlagBuilder
+import io.amichne.konditional.serialization.FeatureRegistry
+import io.amichne.konditional.serialization.NamespaceSnapshotSerializer
 import io.amichne.kontracts.schema.ObjectSchema
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
@@ -68,6 +70,10 @@ abstract class FeatureContainer<M : Namespace>(
         get() = this
 
     private val _features = mutableListOf<Feature<*, *, *, M>>()
+
+    fun toJson(): String = NamespaceSnapshotSerializer(namespace).toJson()
+
+    fun fromJson(json: String) = NamespaceSnapshotSerializer(namespace).fromJson(json)
 
     /**
      * Returns all features declared in this features.
@@ -324,7 +330,7 @@ abstract class FeatureContainer<M : Namespace>(
         private val feature: F by lazy {
             factory(namespace, name).also { _features.add(it) }.also {
                 namespace.updateDefinition(FlagBuilder(default, it).apply<FlagBuilder<S, T, C, M>>(configScope).build())
-            }
+            }.also { FeatureRegistry.register(it) }
         }
 
         override fun getValue(

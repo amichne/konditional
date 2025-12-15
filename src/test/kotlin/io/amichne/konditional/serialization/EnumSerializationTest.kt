@@ -23,7 +23,7 @@ class EnumSerializationTest {
     }
 
     private val moshi = Moshi.Builder()
-        .add(FlagValueAdapter.FACTORY)
+        .add(FlagValueAdapter.Factory)
         .build()
 
     private val adapter = moshi.adapter(FlagValue::class.java)
@@ -41,7 +41,7 @@ class EnumSerializationTest {
 
     @Test
     fun `FlagValue from handles all enum values`() {
-        LogLevel.values().forEach { level ->
+        LogLevel.entries.forEach { level ->
             val flagValue = FlagValue.from(level)
             assert(flagValue is FlagValue.EnumValue)
             flagValue as FlagValue.EnumValue

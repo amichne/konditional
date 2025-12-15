@@ -68,10 +68,11 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
 
     /**
      * Thread-safe storage for test overrides.
-     * Maps feature keys to their override values.
+     * Maps features to a stack of override values to support nested overrides.
+     * The top of each stack is the currently active override.
      * These overrides take precedence over normal flag evaluation.
      */
-    private val overrides = ConcurrentHashMap<Feature<*, *, *, *>, Any>()
+    private val overrides = ConcurrentHashMap<Feature<*, *, *, *>, ArrayDeque<Any>>()
 
     /**
      * Loads the flag values from the provided [config] snapshot.
@@ -195,14 +196,19 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
         feature: Feature<S, T, C, M>,
         value: T,
     ) {
-        overrides[feature] = value as Any
+        overrides.compute(feature) { _, stack ->
+            val deque = stack ?: ArrayDeque()
+            deque.addLast(value as Any)
+            deque
+        }
     }
 
     /**
-     * Clears the test override for a specific feature flag.
+     * Clears the most recent test override for a specific feature flag.
      *
-     * After clearing, the flag will resume normal evaluation based on
-     * its rules and configuration.
+     * If multiple nested overrides exist for the same feature, this pops the
+     * top value from the stack and restores the previous override. Only when
+     * all overrides are cleared will the flag resume normal evaluation.
      *
      * @param feature The feature flag to clear the override for
      * @param S The EncodableValue type wrapping the actual value
@@ -213,10 +219,18 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @see setOverride
      * @see clearAllOverrides
      */
+    @PublishedApi
     internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> clearOverride(
         feature: Feature<S, T, C, M>,
     ) {
-        overrides.remove(feature)
+        overrides.compute(feature) { _, stack ->
+            if (stack.isNullOrEmpty()) {
+                null
+            } else {
+                stack.removeLast()
+                if (stack.isEmpty()) null else stack
+            }
+        }
     }
 
     /**
@@ -246,10 +260,12 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      */
     internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> hasOverride(
         feature: Feature<S, T, C, M>,
-    ): Boolean = overrides.containsKey(feature)
+    ): Boolean = overrides[feature]?.isNotEmpty() == true
 
     /**
-     * Gets the override value for a specific feature flag, if one exists.
+     * Gets the current override value for a specific feature flag, if one exists.
+     *
+     * If multiple nested overrides exist, returns the most recent (top of stack).
      *
      * @param feature The feature flag to get the override for
      * @return The override value, or null if no override is set
@@ -263,5 +279,5 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
     @Suppress("UNCHECKED_CAST")
     internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> getOverride(
         feature: Feature<S, T, C, M>,
-    ): T? = overrides[feature] as? T
+    ): T? = overrides[feature]?.lastOrNull() as? T
 }

@@ -26,6 +26,6 @@ sealed interface EnumFeature<E : Enum<E>, C : Context, M : Namespace> :
         internal data class EnumFeatureImpl<E : Enum<E>, C : Context, M : Namespace>(
             override val key: String,
             override val namespace: M,
-        ) : EnumFeature<E, C, M>
+        ) : EnumFeature<E, C, M>, Identifiable by Identifiable(key, namespace)
     }
 }

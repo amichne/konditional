@@ -7,6 +7,7 @@ import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.internal.serialization.adapters.FlagValueAdapter
+import io.amichne.konditional.internal.serialization.adapters.ValueClassJsonAdapter
 import io.amichne.konditional.internal.serialization.adapters.VersionRangeAdapter
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
 import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
@@ -167,14 +168,14 @@ object SnapshotSerializer {
      * Creates the default Moshi instance with all necessary adapters.
      * Registers custom adapters for domain types like VersionRange and FlagValue.
      *
-     * Note: Custom adapters (FlagValueAdapter.FACTORY, VersionRangeAdapter) must be added before
+     * Note: Custom adapters (FlagValueAdapter.Factory, VersionRangeAdapter) must be added before
      * KotlinJsonAdapterFactory to take precedence over reflection-based serialization.
      */
     fun defaultMoshi(): Moshi {
         // Build Moshi with custom adapters registered BEFORE KotlinJsonAdapterFactory
         // This ensures our custom adapters take precedence over reflection-based serialization
         return Moshi.Builder()
-            .add(FlagValueAdapter.FACTORY)
+            .add(FlagValueAdapter.Factory)
             .add(
                 VersionRangeAdapter(
                     // Create a minimal Moshi for VersionRangeAdapter to use for Version
@@ -188,7 +189,8 @@ object SnapshotSerializer {
                     .withSubtype(LeftBound::class.java, VersionRange.Type.MIN_BOUND.name)
                     .withSubtype(RightBound::class.java, VersionRange.Type.MAX_BOUND.name)
             )
-            .add(KotlinJsonAdapterFactory())
+            .addLast(KotlinJsonAdapterFactory())
+            .add(ValueClassJsonAdapter.Factory)
             .build()
     }
 }

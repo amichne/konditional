@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test
 /**
  * Unit tests for AxisValues & AxisValuesBuilder (and legacy Dimensions).
  */
-class DimensionsBuilderTest {
+class AxisBuilderTest {
 
     @Test
     fun `axisValues builder returns EMPTY when no values set`() {

@@ -15,7 +15,7 @@ import kotlin.test.assertNull
 /**
  * Unit tests for Context + axis values integration.
  */
-class DimensionsContextIntegrationTest {
+class AxisContextIntegrationTest {
 
     // Old Dimension tests removed - TestAxes now use Axis<T> instead of Dimension<T>
 

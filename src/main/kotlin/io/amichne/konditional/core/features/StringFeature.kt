@@ -16,6 +16,6 @@ sealed interface StringFeature<C : Context, M : Namespace> : Feature<StringEncod
         internal data class StringFeatureImpl<C : Context, M : Namespace>(
             override val key: String,
             override val namespace: M,
-        ) : StringFeature<C, M>
+        ) : StringFeature<C, M>, Identifiable by Identifiable(key, namespace)
     }
 }

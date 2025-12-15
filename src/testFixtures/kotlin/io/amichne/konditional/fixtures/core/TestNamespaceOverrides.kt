@@ -2,186 +2,138 @@ package io.amichne.konditional.fixtures.core
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.core.features.FeatureAware
-import io.amichne.konditional.core.features.FeatureContainer
-import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
 import io.amichne.konditional.core.types.EncodableValue
 
 /**
- * Extension functions for [io.amichne.konditional.core.Namespace] that provide convenient test-scoped override functionality.
+ * Test utilities for namespace-scoped feature flag overrides.
  *
- * These extensions allow tests to temporarily override flag values without affecting:
- * - Other tests running in parallel
- * - The actual flag definitions
- * - Other test namespaces
+ * Provides a simple, consistent API for temporarily overriding flag values during tests
+ * with automatic cleanup and thread safety guarantees.
  *
- * ## Usage Examples
+ * ## Design Principles
  *
- * ### Basic Override
+ * 1. **Automatic Cleanup**: All overrides are scoped and cleaned up automatically
+ * 2. **Thread Safety**: Each test namespace is isolated with its own override storage
+ * 3. **Single Pattern**: One clear way to configure overrides (no manual management)
+ * 4. **Parallel Safe**: Tests can run in parallel without interference
+ *
+ * ## API Overview
+ *
+ * Use [withOverride] for a single flag:
  * ```kotlin
- * @Test
- * fun `test with flag enabled`() {
- *     val Namespace = Namespace.test("my-test")
- *     val TestFeatures = object : FeatureContainer<Namespace>(Namespace) {
- *         val myFlag by boolean<Context>(default = false)
- *     }
- *
- *     // Override the flag to return true
- *     Namespace.setOverride(TestFeatures.myFlag, true)
- *
- *     val result = TestFeatures.myFlag.evaluate(contextFn)
- *     assertEquals(true, result)
- *
- *     // Clean up
- *     Namespace.clearOverride(TestFeatures.myFlag)
+ * namespace.withOverride(Features.darkMode, true) {
+ *     // darkMode returns true within this scope
+ *     assertEquals(true, Features.darkMode.evaluate(ctx))
  * }
+ * // darkMode automatically reverts after the block
  * ```
  *
- * ### Scoped Override with Automatic Cleanup
+ * Use [withOverrides] for multiple flags:
  * ```kotlin
- * @Test
- * fun `test with scoped override`() {
- *     val Namespace = Namespace.test("my-test")
- *     val TestFeatures = object : FeatureContainer<Namespace>(Namespace) {
- *         val myFlag by boolean<Context>(default = false)
- *     }
- *
- *     Namespace.withOverride(TestFeatures.myFlag, true) {
- *         val result = TestFeatures.myFlag.evaluate(contextFn)
- *         assertEquals(true, result)
- *     }
- *     // Override automatically cleared after block
+ * namespace.withOverrides(
+ *     Features.darkMode to true,
+ *     Features.theme to "midnight",
+ *     Features.fontSize to 16
+ * ) {
+ *     // All overrides active within this scope
+ *     assertEquals(true, Features.darkMode.evaluate(ctx))
+ *     assertEquals("midnight", Features.theme.evaluate(ctx))
+ *     assertEquals(16, Features.fontSize.evaluate(ctx))
  * }
+ * // All overrides automatically cleared after the block
  * ```
  *
- * ### Multiple Overrides
+ * ## Thread Safety & Isolation
+ *
+ * Create a fresh namespace instance for each test to ensure complete isolation:
  * ```kotlin
  * @Test
- * fun `test with multiple configure`() {
- *     val Namespace = Namespace.test("my-test")
- *     val TestFeatures = object : FeatureContainer<Namespace>(Namespace) {
- *         val flagA by boolean<Context>(default = false)
- *         val flagB by string<Context>(default = "default")
- *         val flagC by integer<Context>(default = 0)
+ * fun `test feature A`() {
+ *     val testNamespace = Namespace.test("test-feature-a")
+ *     testNamespace.withOverride(Features.featureA, true) {
+ *         // Test code
  *     }
+ * }
  *
- *     Namespace.testScoped(
- *         TestFeatures.flagA to true,
- *         TestFeatures.flagB to "override",
- *         TestFeatures.flagC to 42
- *     ) {
- *         assertEquals(true, TestFeatures.flagA.evaluate(contextFn))
- *         assertEquals("override", TestFeatures.flagB.evaluate(contextFn))
- *         assertEquals(42, TestFeatures.flagC.evaluate(contextFn))
+ * @Test
+ * fun `test feature B`() {
+ *     val testNamespace = Namespace.test("test-feature-b")
+ *     testNamespace.withOverride(Features.featureB, true) {
+ *         // Runs in parallel without interference
  *     }
- *     // All configure automatically cleared
  * }
  * ```
- *
- * ## Thread Safety
- *
- * Each Namespace instance has its own isolated registry, so configure are naturally
- * isolated between tests. Multiple tests can run in parallel without interference.
  *
  * ## Best Practices
  *
- * - Use `withOverride` or `testScoped` for automatic cleanup
- * - If using `setOverride`, always pair with `clearOverride` (preferably in a try-finally)
- * - Create a fresh Namespace instance for each test
- * - Don't share Namespace instances between tests
+ * - **Do**: Use scoped override functions (withOverride, withOverrides)
+ * - **Do**: Create a fresh namespace per test for isolation
+ * - **Do**: Override at the narrowest scope needed
+ * - **Don't**: Share namespace instances between tests
+ * - **Don't**: Try to manually manage override lifecycle
+ *
+ * ## Exception Safety
+ *
+ * Overrides are cleaned up even if the block throws an exception:
+ * ```kotlin
+ * namespace.withOverride(Features.flag, true) {
+ *     performRiskyOperation() // May throw
+ * }
+ * // Override is cleared even if performRiskyOperation() threw
+ * ```
  */
 
 /**
- * Sets a test-scoped override for a specific feature flag.
+ * Executes a block with a single feature override, automatically cleaning up afterward.
  *
- * When an override is set, the flag will always return the override value
- * regardless of rules, contextFn, or rollout configuration.
+ * This is the recommended way to override a single flag value during tests.
+ * The override is scoped to the block and automatically cleared when the block exits,
+ * even if an exception is thrown.
  *
- * **Important**: Remember to call [clearOverride] when done, or use [withOverride]
- * for automatic cleanup.
+ * ## Example
+ *
+ * ```kotlin
+ * @Test
+ * fun `feature enabled changes behavior`() {
+ *     val namespace = Namespace.test("my-test")
+ *
+ *     namespace.withOverride(Features.newUI, true) {
+ *         val result = renderUI(ctx)
+ *         assertTrue(result.usesNewUI)
+ *     }
+ *
+ *     // newUI override automatically cleared here
+ *     val result = renderUI(ctx)
+ *     assertFalse(result.usesNewUI) // Back to normal evaluation
+ * }
+ * ```
+ *
+ * ## Nested Overrides
+ *
+ * You can nest overrides for the same or different features:
+ * ```kotlin
+ * namespace.withOverride(Features.theme, "light") {
+ *     assertEquals("light", Features.theme.evaluate(ctx))
+ *
+ *     namespace.withOverride(Features.theme, "dark") {
+ *         assertEquals("dark", Features.theme.evaluate(ctx)) // Inner override takes precedence
+ *     }
+ *
+ *     assertEquals("light", Features.theme.evaluate(ctx)) // Outer override restored
+ * }
+ * ```
  *
  * @param feature The feature flag to override
- * @param value The value to return for this flag
+ * @param value The value to return for this feature within the block
+ * @param block The code to execute with the override active
+ * @return The result of executing the block
  * @param S The EncodableValue type wrapping the actual value
  * @param T The actual value type
- * @param C The type of the contextFn used for evaluation
- *
- * @see clearOverride
- * @see withOverride
- */
-fun <S : EncodableValue<T>, T : Any, C : Context> Namespace.setOverride(
-    feature: Feature<S, T, C, *>,
-    value: T,
-) {
-    (registry as InMemoryNamespaceRegistry).setOverride(feature, value)
-}
-
-/**
- * Clears the test override for a specific feature flag.
- *
- * After clearing, the flag will resume normal evaluation based on
- * its rules and configuration.
- *
- * @param feature The feature flag to clear the override for
- * @param S The EncodableValue type wrapping the actual value
- * @param T The actual value type
- * @param C The type of the contextFn used for evaluation
- *
- * @see setOverride
- * @see clearAllOverrides
- */
-fun <S : EncodableValue<T>, T : Any, C : Context> Namespace.clearOverride(
-    feature: Feature<S, T, C, *>,
-) {
-    (registry as InMemoryNamespaceRegistry).clearOverride(feature)
-}
-
-/**
- * Clears all test configure in this namespace.
- *
- * After clearing, all flags will resume normal evaluation based on
- * their rules and configuration.
- *
- * @see setOverride
- * @see clearOverride
- */
-fun Namespace.clearAllOverrides() {
-    (registry as InMemoryNamespaceRegistry).clearAllOverrides()
-}
-
-/**
- * Checks if a test override is currently set for a specific feature flag.
- *
- * @param feature The feature flag to check
- * @return true if an override is set, false otherwise
- * @param S The EncodableValue type wrapping the actual value
- * @param T The actual value type
- * @param C The type of the contextFn used for evaluation
- *
- * @see setOverride
- */
-fun <S : EncodableValue<T>, T : Any, C : Context> Namespace.hasOverride(
-    feature: Feature<S, T, C, *>,
-): Boolean = (registry as InMemoryNamespaceRegistry).hasOverride(feature)
-
-/**
- * Executes a block of code with a test-scoped override, automatically clearing it afterward.
- *
- * This is the recommended way to use configure as it ensures cleanup even if the block throws.
- *
- * @param feature The feature flag to override
- * @param value The value to return for this flag
- * @param block The code to execute with the override in place
- * @return The result of the block
- * @param S The EncodableValue type wrapping the actual value
- * @param T The actual value type
- * @param C The type of the contextFn used for evaluation
+ * @param C The context type for evaluation
  * @param R The return type of the block
  *
- * @see setOverride
- * @see testScoped
+ * @see withOverrides for overriding multiple features at once
  */
 inline fun <S : EncodableValue<T>, T : Any, C : Context, R> Namespace.withOverride(
     feature: Feature<S, T, C, *>,
@@ -197,81 +149,91 @@ inline fun <S : EncodableValue<T>, T : Any, C : Context, R> Namespace.withOverri
 }
 
 /**
- * Executes a block of code with multiple test-scoped configure, automatically clearing them afterward.
+ * Executes a block with multiple feature overrides, automatically cleaning up afterward.
  *
- * This is the recommended way to use multiple configure as it ensures cleanup even if the block throws.
+ * This is the recommended way to override multiple flag values during tests.
+ * All overrides are scoped to the block and automatically cleared when the block exits,
+ * even if an exception is thrown.
+ *
+ * ## Example
+ *
+ * ```kotlin
+ * @Test
+ * fun `premium user sees enhanced features`() {
+ *     val namespace = Namespace.test("premium-test")
+ *
+ *     namespace.withOverrides(
+ *         Features.isPremium to true,
+ *         Features.maxFileSize to 100_000_000,
+ *         Features.adFree to true,
+ *         Features.supportTier to "priority"
+ *     ) {
+ *         val user = createUser(ctx)
+ *         assertTrue(user.isPremium)
+ *         assertEquals(100_000_000, user.maxFileSize)
+ *         assertTrue(user.adFree)
+ *         assertEquals("priority", user.supportTier)
+ *     }
+ *
+ *     // All overrides automatically cleared here
+ * }
+ * ```
+ *
+ * ## Override Order
+ *
+ * Overrides are applied in the order specified and cleared in reverse order:
+ * ```kotlin
+ * namespace.withOverrides(
+ *     Features.a to "first",   // Applied first
+ *     Features.b to "second",  // Applied second
+ *     Features.c to "third"    // Applied third
+ * ) {
+ *     // All three active
+ * }
+ * // Cleared: c, then b, then a
+ * ```
+ *
+ * ## Type Safety
+ *
+ * The type of each value is validated against the feature's type at compile time:
+ * ```kotlin
+ * namespace.withOverrides(
+ *     Features.boolFlag to true,      // ✓ Boolean matches
+ *     Features.stringFlag to "text",  // ✓ String matches
+ *     Features.intFlag to 42          // ✓ Int matches
+ *     // Features.boolFlag to "oops"  // ✗ Compile error: type mismatch
+ * ) { ... }
+ * ```
  *
  * @param overrides Pairs of features to their override values
- * @param block The code to execute with the configure in place
- * @return The result of the block
+ * @param block The code to execute with all overrides active
+ * @return The result of executing the block
  * @param R The return type of the block
  *
- * @see setOverride
- * @see withOverride
+ * @see withOverride for overriding a single feature
  */
-fun <M : Namespace, F : FeatureContainer<M>> F.testScoped(
+inline fun <R> Namespace.withOverrides(
     vararg overrides: Pair<Feature<*, *, *, *>, Any>,
-    block: F.() -> Unit,
-) {
-    // Set all configure
+    block: () -> R,
+): R {
+    // Apply all overrides
     overrides.forEach { (feature, value) ->
         @Suppress("UNCHECKED_CAST")
-        (namespace.registry as InMemoryNamespaceRegistry).setOverride(
+        setOverride(
             feature as Feature<EncodableValue<Any>, Any, Context, *>,
             value
         )
     }
+
     return try {
         block()
     } finally {
-        // Clear all configure
-        overrides.forEach { (feature, _) ->
+        // Clear all overrides in reverse order (LIFO)
+        overrides.reversed().forEach { (feature, _) ->
             @Suppress("UNCHECKED_CAST")
-            (namespace.registry as InMemoryNamespaceRegistry).clearOverride(
+            clearOverride(
                 feature as Feature<EncodableValue<Any>, Any, Context, *>
             )
         }
     }
 }
-
-interface AtomicTestScope {
-    companion object {
-        operator fun <M : Namespace, F : FeatureAware<M>> invoke(
-            overridingScope: OverridingScope<M, F>,
-        ): AtomicTestScope = object : AtomicTestScope {}
-
-        infix fun AtomicTestScope.runTest(testBlock: () -> Unit) = testBlock()
-    }
-}
-
-@ConsistentCopyVisibility
-data class OverridingScope<M : Namespace, F : FeatureAware<M>> @PublishedApi internal constructor(
-    private val features: F,
-) : FeatureAware<M> by features {
-    inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context> update(
-        feature: Feature<S, T, C, *>,
-        value: T,
-    ) {
-        container.namespace.setOverride(feature, value)
-    }
-
-    companion object {
-        @KonditionalDsl
-        @Deprecated(
-            "Use the top-level setupTest function instead",
-            ReplaceWith("setupTest(container, features)")
-        )
-        inline fun <reified M : Namespace, reified T> setupTest(
-            container: T,
-            features: T.(OverridingScope<M, T>) -> Unit,
-        ): AtomicTestScope where T : FeatureAware<M> =
-            AtomicTestScope(OverridingScope(container).apply { features(container, this) })
-    }
-}
-
-@KonditionalDsl
-inline fun <reified M : Namespace, reified T> setupTest(
-    container: T,
-    features: T.(OverridingScope<M, T>) -> Unit,
-): AtomicTestScope where T : FeatureAware<M> =
-    AtomicTestScope(OverridingScope(container).apply { features(container, this) })

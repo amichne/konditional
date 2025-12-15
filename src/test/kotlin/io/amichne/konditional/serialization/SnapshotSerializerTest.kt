@@ -17,6 +17,7 @@ import io.amichne.konditional.internal.serialization.models.SerializablePatch
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.FullyBound
+import io.amichne.konditional.values.Identifier
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -79,7 +80,7 @@ class SnapshotSerializerTest {
         val json = SnapshotSerializer.serialize(Namespace.Global.configuration)
 
         assertNotNull(json)
-        assertTrue(json.contains("\"key\": \"${TestFeatures.boolFlag.key}\""))
+        assertTrue(json.contains("\"key\": \"${TestFeatures.boolFlag.id}\""))
         assertTrue(json.contains("\"type\": \"BOOLEAN\""))
         assertTrue(json.contains("\"value\": true"))
     }
@@ -95,7 +96,7 @@ class SnapshotSerializerTest {
         val json = SnapshotSerializer.serialize(configuration)
 
         assertNotNull(json)
-        assertTrue(json.contains("\"key\": \"${TestFeatures.stringFlag.key}\""))
+        assertTrue(json.contains("\"key\": \"${TestFeatures.stringFlag.id}\""))
         assertTrue(json.contains("\"type\": \"STRING\""))
         assertTrue(json.contains("\"value\": \"test-value\""))
     }
@@ -108,7 +109,7 @@ class SnapshotSerializerTest {
 
         assertNotNull(json)
         println(json)
-        assertTrue(json.contains("\"key\": \"${TestFeatures.intFlag.key}\""))
+        assertTrue(json.contains("\"key\": \"${TestFeatures.intFlag.id}\""))
         assertTrue(json.contains("\"type\": \"INT\""))
         assertTrue(json.contains("\"value\": 42"))
     }
@@ -120,7 +121,7 @@ class SnapshotSerializerTest {
         val json = SnapshotSerializer.serialize(Namespace.Global.configuration)
 
         assertNotNull(json)
-        assertTrue(json.contains("\"key\": \"${TestFeatures.doubleFlag.key}\""))
+        assertTrue(json.contains("\"key\": \"${TestFeatures.doubleFlag.id}\""))
         assertTrue(json.contains("\"type\": \"DOUBLE\""))
         assertTrue(json.contains("\"value\": 3.14"))
     }
@@ -171,9 +172,9 @@ class SnapshotSerializerTest {
         val json = SnapshotSerializer.serialize(configuration)
 
         assertNotNull(json)
-        assertTrue(json.contains(TestFeatures.boolFlag.key))
-        assertTrue(json.contains(TestFeatures.stringFlag.key))
-        assertTrue(json.contains(TestFeatures.intFlag.key))
+        assertTrue(json.contains(TestFeatures.boolFlag.id.toString()))
+        assertTrue(json.contains(TestFeatures.stringFlag.id.toString()))
+        assertTrue(json.contains(TestFeatures.intFlag.id.toString()))
     }
 
     // ========== Deserialization Tests ==========
@@ -198,7 +199,7 @@ class SnapshotSerializerTest {
             {
               "flags" : [
                 {
-                  "key" : "${TestFeatures.boolFlag.key}",
+                  "key" : "${TestFeatures.boolFlag.id}",
                   "defaultValue" : {
                     "type" : "BOOLEAN",
                     "value" : true
@@ -228,7 +229,7 @@ class SnapshotSerializerTest {
             {
               "flags" : [
                 {
-                  "key" : "${TestFeatures.stringFlag.key}",
+                  "key" : "${TestFeatures.stringFlag.id}",
                   "defaultValue" : {
                     "type" : "STRING",
                     "value" : "test-value"
@@ -255,7 +256,7 @@ class SnapshotSerializerTest {
             {
               "flags" : [
                 {
-                  "key" : "${TestFeatures.intFlag.key}",
+                  "key" : "${TestFeatures.intFlag.id}",
                   "defaultValue" : {
                     "type" : "INT",
                     "value" : 42
@@ -282,7 +283,7 @@ class SnapshotSerializerTest {
             {
               "flags" : [
                 {
-                  "key" : "${TestFeatures.doubleFlag.key}",
+                  "key" : "${TestFeatures.doubleFlag.id}",
                   "defaultValue" : {
                     "type" : "DOUBLE",
                     "value" : 3.14
@@ -309,7 +310,7 @@ class SnapshotSerializerTest {
             {
               "flags" : [
                 {
-                  "key" : "${TestFeatures.boolFlag.key}",
+                  "key" : "${TestFeatures.boolFlag.id}",
                   "defaultValue" : {
                     "type" : "BOOLEAN",
                     "value" : false
@@ -377,7 +378,7 @@ class SnapshotSerializerTest {
             {
               "flags" : [
                 {
-                  "key" : "unregistered_feature",
+                  "key" : "value::unregistered_feature",
                   "defaultValue" : {
                     "type" : "BOOLEAN",
                     "value" : true
@@ -394,7 +395,7 @@ class SnapshotSerializerTest {
 
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.FeatureNotFound>(result.error)
-        assertEquals("unregistered_feature", result.error.key)
+        assertEquals(Identifier("unregistered_feature"), result.error.key)
     }
 
     // ========== Round-Trip Tests ==========
@@ -531,7 +532,7 @@ class SnapshotSerializerTest {
 
         val newFlagJson = """
             {
-              "key" : "${TestFeatures.boolFlag.key}",
+              "key" : "${TestFeatures.boolFlag.id}",
               "defaultValue" : {
                 "type" : "BOOLEAN",
                 "value" : true
@@ -564,7 +565,7 @@ class SnapshotSerializerTest {
 
         val updatedFlagJson = """
             {
-              "key" : "${TestFeatures.boolFlag.key}",
+              "key" : "${TestFeatures.boolFlag.id}",
               "defaultValue" : {
                 "type" : "BOOLEAN",
                 "value" : true
@@ -599,7 +600,7 @@ class SnapshotSerializerTest {
         val patchJson = """
             {
               "flags" : [],
-              "removeKeys" : ["${TestFeatures.boolFlag.key}"]
+              "removeKeys" : ["${TestFeatures.boolFlag.id}"]
             }
         """.trimIndent()
 
@@ -625,7 +626,7 @@ class SnapshotSerializerTest {
             {
               "flags" : [
                 {
-                  "key" : "${TestFeatures.boolFlag.key}",
+                  "key" : "${TestFeatures.boolFlag.id}",
                   "defaultValue" : {
                     "type" : "BOOLEAN",
                     "value" : true
@@ -635,7 +636,7 @@ class SnapshotSerializerTest {
                   "rules" : []
                 },
                 {
-                  "key" : "${TestFeatures.intFlag.key}",
+                  "key" : "${TestFeatures.intFlag.id}",
                   "defaultValue" : {
                     "type" : "INT",
                     "value" : 100
@@ -645,7 +646,7 @@ class SnapshotSerializerTest {
                   "rules" : []
                 }
               ],
-              "removeKeys" : ["${TestFeatures.stringFlag.key}"]
+              "removeKeys" : ["${TestFeatures.stringFlag.id}"]
             }
         """.trimIndent()
 
@@ -687,7 +688,7 @@ class SnapshotSerializerTest {
         val patchJson = """
             {
               "flags" : [],
-              "removeKeys" : ["test_key"]
+              "removeKeys" : ["value::test_key"]
             }
         """.trimIndent()
 
@@ -695,7 +696,7 @@ class SnapshotSerializerTest {
 
         assertIs<ParseResult.Success<SerializablePatch>>(result)
         assertEquals(0, result.value.flags.size)
-        assertEquals(listOf("test_key"), result.value.removeKeys)
+        assertEquals(listOf(Identifier( "test_key")), result.value.removeKeys)
     }
 
     @Test

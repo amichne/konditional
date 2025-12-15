@@ -5,6 +5,7 @@ import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.EncodableValue
+import io.amichne.konditional.values.Identifier
 
 /**
  * Registry for mapping flag keys to their Feature instances.
@@ -34,16 +35,16 @@ import io.amichne.konditional.core.types.EncodableValue
  * @see SnapshotSerializer
  */
 object FeatureRegistry {
-    private val registry = mutableMapOf<String, Feature<*, *, *, *>>()
+    private val registry = mutableMapOf<Identifier, Feature<*, *, *, *>>()
 
     /**
      * Registers a Feature instance with its key.
      *
-     * @param conditional The conditional to register
+     * @param feature The feature to register
      * @throws IllegalStateException if a different conditional is already registered with the same key
      */
-    fun <S : EncodableValue<T>, T : Any, C : Context> register(conditional: Feature<S, T, C, *>) {
-        registry[conditional.key] = conditional
+    fun <S : EncodableValue<T>, T : Any, C : Context> register(feature: Feature<S, T, C, *>) {
+        registry[feature.id] = feature
     }
 
     /**
@@ -54,7 +55,7 @@ object FeatureRegistry {
      * @param key The string key of the conditional
      * @return ParseResult with the registered Feature or an error
      */
-    internal fun get(key: String): ParseResult<Feature<*, *, *, *>> {
+    internal fun get(key: Identifier): ParseResult<Feature<*, *, *, *>> {
         return registry[key]?.let { ParseResult.Success(it) }
                ?: ParseResult.Failure(ParseError.FeatureNotFound(key))
     }
@@ -67,7 +68,7 @@ object FeatureRegistry {
      * @param key The string key to check
      * @return true if the key is registered, false otherwise
      */
-    internal fun contains(key: String): Boolean = registry.containsKey(key)
+    internal fun contains(key: Identifier): Boolean = registry.containsKey(key)
 
     /**
      * Clears all registrations.

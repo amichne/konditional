@@ -1,5 +1,7 @@
 package io.amichne.konditional.core.result
 
+import io.amichne.konditional.values.Identifier
+
 /**
  * Domain-specific parseUnsafe errors that make failure reasons explicit and type-safe.
  *
@@ -43,7 +45,7 @@ sealed interface ParseError {
      * Feature key not found in registry.
      */
     @ConsistentCopyVisibility
-    data class FeatureNotFound internal constructor(val key: String) : ParseError {
+    data class FeatureNotFound internal constructor(val key: Identifier) : ParseError {
         override val message: String get() = "Feature not found: $key"
     }
 
@@ -51,7 +53,7 @@ sealed interface ParseError {
      * Feature flag not found in registry.
      */
     @ConsistentCopyVisibility
-    data class FlagNotFound internal constructor(val key: String) : ParseError {
+    data class FlagNotFound internal constructor(val key: Identifier) : ParseError {
         override val message: String get() = "Flag not found: $key"
     }
 

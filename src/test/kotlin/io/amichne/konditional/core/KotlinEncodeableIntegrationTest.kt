@@ -6,14 +6,18 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.core.ConditionEvaluationTest.TestFlags.toJson
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.core.result.utils.onSuccess
 import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.konditional.core.types.parseAs
 import io.amichne.konditional.core.types.toJsonValue
 import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.fixtures.core.withOverride
+import io.amichne.konditional.serialization.SnapshotSerializer.fromJson
+import io.amichne.konditional.serialization.SnapshotSerializer.serialize
 import io.amichne.kontracts.dsl.of
 import io.amichne.kontracts.dsl.schemaRoot
 import io.amichne.kontracts.schema.ObjectSchema
@@ -36,7 +40,7 @@ import org.junit.jupiter.api.Test
  * - Serialization with Moshi
  * - Feature flag integration
  */
-class DataClassWithSchemaIntegrationTest {
+class KotlinEncodeableIntegrationTest {
     // Test data class with manually defined schema
     data class UserSettings(
         val theme: String = "light",
@@ -133,7 +137,7 @@ class DataClassWithSchemaIntegrationTest {
         val moshi = Moshi.Builder().add(com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory()).build()
         val adapter = moshi.adapter(UserSettings::class.java)
         val original = UserSettings(theme = "auto", notificationsEnabled = false, maxRetries = 5, timeout = 42.5)
-        val json = adapter.toJson(original)
+        val json = adapter.toJson(original).also { println(it) }
         val deserialized = adapter.fromJson(json)
         assertNotNull(deserialized)
         assertEquals(original, deserialized)
@@ -157,6 +161,11 @@ class DataClassWithSchemaIntegrationTest {
         val override = UserSettings(theme = "dark", notificationsEnabled = false, maxRetries = 1, timeout = 10.0)
         testNamespace.withOverride(Features.userSettings, override) {
             assertEquals(override, Features.userSettings.evaluate(context))
+            println(serialize(testNamespace.configuration))
+            // Verify round-trip serialization works
+            fromJson(toJson()).onSuccess { config ->
+                println("Successfully deserialized ${config.flags.size} flags")
+            }
         }
     }
 }

@@ -4,7 +4,9 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.JsonWriter
+import com.squareup.moshi.Moshi
 import io.amichne.konditional.internal.serialization.models.FlagValue
+import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
 /**
@@ -224,31 +226,18 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
         }
     }
 
-    companion object {
+    object Factory : JsonAdapter.Factory {
         private val flagValueAdapter = FlagValueAdapter()
 
-        /**
-         * Factory for creating FlagValueAdapter instances.
-         * This ensures the adapter is properly registered with Moshi for the FlagValue type.
-         */
-        val FACTORY: Factory = Factory { type, _, _ ->
-            if (Types.getRawType(type) == FlagValue::class.java) {
-                flagValueAdapter
-            } else {
-                null
-            }
-        }
-    }
-}
+        override fun create(
+            type: Type,
+            annotations: Set<Annotation?>,
+            moshi: Moshi,
+        ): JsonAdapter<*>? = flagValueAdapter.takeIf { getRawType(type) == FlagValue::class.java }
 
-/**
- * Helper object for type operations.
- */
-private object Types {
-    fun getRawType(type: Type): Class<*> {
-        return when (type) {
+        private fun getRawType(type: Type): Class<*> = when (type) {
             is Class<*> -> type
-            is java.lang.reflect.ParameterizedType -> getRawType(type.rawType)
+            is ParameterizedType -> getRawType(type.rawType)
             else -> Any::class.java
         }
     }

@@ -21,13 +21,14 @@ import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
+import io.amichne.konditional.values.Identifier
 
 /**
  * Converts a Configuration to a SerializableSnapshot.
  */
 internal fun Configuration.toSerializable(): SerializableSnapshot {
     val serializableFlags = flags.map { (conditional, flag) ->
-        flag.toSerializable(conditional.key)
+        flag.toSerializable(conditional.id)
     }
     return SerializableSnapshot(serializableFlags)
 }
@@ -36,7 +37,7 @@ internal fun Configuration.toSerializable(): SerializableSnapshot {
  * Converts a FlagDefinition to a SerializableFlag.
  */
 private fun <S : EncodableValue<T>, T : Any, C : Context> FlagDefinition<S, T, C, *>.toSerializable(
-    flagKey: String,
+    flagKey: Identifier,
 ): SerializableFlag {
     return SerializableFlag(
         key = flagKey,
@@ -158,9 +159,9 @@ private fun <C : Context> SerializableRule.toRule(): Rule<C> {
  */
 internal fun ConfigurationPatch.toSerializable(): SerializablePatch {
     val serializableFlags = flags.map { (conditional, flag) ->
-        flag.toSerializable(conditional.key)
+        flag.toSerializable(conditional.id)
     }
-    val removeKeyStrings = removeKeys.map { it.key }
+    val removeKeyStrings = removeKeys.map { it.id }
     return SerializablePatch(serializableFlags, removeKeyStrings)
 }
 

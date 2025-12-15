@@ -1,6 +1,7 @@
 package io.amichne.konditional.internal.serialization.models
 
 import com.squareup.moshi.JsonClass
+import io.amichne.konditional.values.Identifier
 
 /**
  * Serializable representation of a single flag configuration.
@@ -10,7 +11,7 @@ import com.squareup.moshi.JsonClass
  */
 @JsonClass(generateAdapter = true)
 internal data class SerializableFlag(
-    val key: String,
+    val key: Identifier,
     val defaultValue: FlagValue<*>,
     val salt: String = "v1",
     val isActive: Boolean = true,
