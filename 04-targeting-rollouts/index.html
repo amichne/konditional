@@ -124,6 +124,17 @@
       </a>
 </li>
 <li class="md-tabs__item">
+<a class="md-tabs__link" href="../09-why-konditional/">
+        
+  
+  
+    
+  
+  Why Konditional
+
+      </a>
+</li>
+<li class="md-tabs__item">
 <a class="md-tabs__link" href="../02-migration/">
         
   
@@ -189,6 +200,17 @@
 
       </a>
 </li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../08-persistence-format/">
+        
+  
+  
+    
+  
+  Persistence Format
+
+      </a>
+</li>
 </ul>
 </div>
 </nav>
@@ -219,6 +241,14 @@
 <a class="md-nav__link" href="../01-getting-started/">
 <span class="md-ellipsis">
     Getting Started
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../09-why-konditional/">
+<span class="md-ellipsis">
+    Why Konditional
     
   </span>
 </a>
@@ -357,6 +387,14 @@
 <a class="md-nav__link" href="../07-theory/">
 <span class="md-ellipsis">
     Theory
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../08-persistence-format/">
+<span class="md-ellipsis">
+    Persistence Format
     
   </span>
 </a>
@@ -521,7 +559,7 @@
 </span><span id="__span-8-7"><a href="#__codelineno-8-7" id="__codelineno-8-7" name="__codelineno-8-7"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
 </span><span id="__span-8-8"><a href="#__codelineno-8-8" id="__codelineno-8-8" name="__codelineno-8-8"></a><span class="p">}</span>
 </span></code></pre></div>
-<pre class="mermaid"><code>flowchart LR
+<pre class="mermaid"><code>flowchart TD
   Ctx["Context"] --&gt; P{Platform match?}
   P --&gt;|No| Skip["Rule fails"]
   P --&gt;|Yes| L{Locale match?}
@@ -553,22 +591,22 @@
 <hr/>
 <h2 id="deterministic-rollout-bucketing-sha-256">Deterministic rollout bucketing (SHA-256)<a class="headerlink" href="#deterministic-rollout-bucketing-sha-256" title="Permanent link">¶</a></h2>
 <p>Rollouts are computed locally. The bucketing input is stable and per-flag:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a href="#__codelineno-10-1" id="__codelineno-10-1" name="__codelineno-10-1"></a>input = "$stableId:$flagKey:$salt"
-</span><span id="__span-10-2"><a href="#__codelineno-10-2" id="__codelineno-10-2" name="__codelineno-10-2"></a>hash = SHA256(input)
-</span><span id="__span-10-3"><a href="#__codelineno-10-3" id="__codelineno-10-3" name="__codelineno-10-3"></a>percentage = (hash % 10000) / 100.0   // ["0.00, 100.00)
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-10-1"><a href="#__codelineno-10-1" id="__codelineno-10-1" name="__codelineno-10-1"></a><span class="n">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"</span><span class="si">$</span><span class="n">stableId</span><span class="s">:</span><span class="si">$</span><span class="n">flagKey</span><span class="s">:</span><span class="si">$</span><span class="n">salt</span><span class="s">"</span>
+</span><span id="__span-10-2"><a href="#__codelineno-10-2" id="__codelineno-10-2" name="__codelineno-10-2"></a><span class="n">hash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input</span><span class="p">.</span><span class="na">sha256</span><span class="p">()</span>
+</span><span id="__span-10-3"><a href="#__codelineno-10-3" id="__codelineno-10-3" name="__codelineno-10-3"></a><span class="n">percentage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">hash</span><span class="p">.</span><span class="na">mapToPercentage</span><span class="p">()</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="m">10000</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="m">100.0</span><span class="w">   </span><span class="c1">// ["0.00, 100.00)</span>
 </span></code></pre></div>
 <p>This yields three operational properties:
 - <strong>Deterministic</strong>: same inputs → same bucket
 - <strong>Per-flag isolation</strong>: changing one flag does not affect other flags’ buckets
 - <strong>Salt-controlled redistribution</strong>: changing <code>salt</code> re-buckets users for that flag</p>
-<pre class="mermaid"><code>flowchart LR
-  Id[stableId"] --&gt; In["stableId:flagKey:salt"]
+<pre class="mermaid"><code>flowchart TD
+  Id["stableId"] --&gt; In["stableId:flagKey:salt"]
   Key["flagKey"] --&gt; In
   Salt["salt"] --&gt; In
   In --&gt; H["SHA-256"]
   H --&gt; M["mod 10,000"]
   M --&gt; P["percentage 0.00..99.99"]
-  P --&gt; T{&lt; rollout % ?}
+  P --&gt; T{"&lt; rollout % ?"}
   T --&gt;|Yes| Enabled["In rollout"]
   T --&gt;|No| Disabled["Out of rollout"]
   style Enabled fill:#c8e6c9
