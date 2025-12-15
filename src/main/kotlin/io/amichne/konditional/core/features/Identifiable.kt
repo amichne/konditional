@@ -11,7 +11,7 @@ interface Identifiable {
             key: String,
             namespace: M,
         ): Identifiable = object : Identifiable {
-            override val id: Identifier = Identifier(namespace.uuid.toString(), key)
+            override val id: Identifier = Identifier(namespace.identifierSeed, key)
         }
     }
 }

@@ -78,12 +78,11 @@ abstract class FeatureContainer<M : Namespace>(
     /**
      * Returns all features declared in this features.
      *
-     * Features are registered lazily when first accessed through property delegation.
-     * This method returns a snapshot of all features that have been accessed at least once.
+     * Features are registered eagerly during container initialization (t0) through property delegation.
+     * This method returns a snapshot of all features declared in this container.
      *
-     * **Note**: Features are only added to this list when their delegated property is
-     * accessed for the first time. If you need to ensure all features are registered,
-     * access each property at least once (e.g., during initialization).
+     * **Note**: If you want to ensure the container is initialized at application startup,
+     * make the owning namespace reference its containers in its `init {}` block.
      *
      * **Example:**
      * ```kotlin
@@ -123,8 +122,8 @@ abstract class FeatureContainer<M : Namespace>(
     protected fun <C : Context> boolean(
         default: Boolean,
         flagScope: FlagScope<BooleanEncodeable, Boolean, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<FeatureContainer<M>, BooleanFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(default, flagScope) { BooleanFeature(it, namespace) }
+    ): ContainerFeaturePropertyDelegate<BooleanFeature<C, M>, BooleanEncodeable, Boolean, C> =
+        ContainerFeaturePropertyDelegate(default, flagScope) { BooleanFeature(it, this) }
 
     /**
      * Creates a String feature with automatic registration and configuration.
@@ -152,8 +151,8 @@ abstract class FeatureContainer<M : Namespace>(
     protected fun <C : Context> string(
         default: String,
         stringScope: FlagScope<StringEncodeable, String, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<FeatureContainer<M>, StringFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(default, stringScope) { StringFeature.Companion(it, namespace) }
+    ): ContainerFeaturePropertyDelegate<StringFeature<C, M>, StringEncodeable, String, C> =
+        ContainerFeaturePropertyDelegate(default, stringScope) { StringFeature.Companion(it, this) }
 
     /**
      * Creates an Int feature with automatic registration and configuration.
@@ -181,10 +180,8 @@ abstract class FeatureContainer<M : Namespace>(
     protected fun <C : Context> integer(
         default: Int,
         integerScope: FlagScope<IntEncodeable, Int, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<FeatureContainer<M>, IntFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(default, integerScope) {
-            IntFeature.Companion(it, namespace)
-        }
+    ): ContainerFeaturePropertyDelegate<IntFeature<C, M>, IntEncodeable, Int, C> =
+        ContainerFeaturePropertyDelegate(default, integerScope) { IntFeature.Companion(it, this) }
 
     /**
      * Creates a Double feature with automatic registration and configuration.
@@ -212,8 +209,8 @@ abstract class FeatureContainer<M : Namespace>(
     protected fun <C : Context> double(
         default: Double,
         decimalScope: FlagScope<DecimalEncodeable, Double, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<FeatureContainer<M>, DoubleFeature<C, M>> =
-        ContainerFeaturePropertyDelegate(default, decimalScope) { DoubleFeature(it, namespace) }
+    ): ContainerFeaturePropertyDelegate<DoubleFeature<C, M>, DecimalEncodeable, Double, C> =
+        ContainerFeaturePropertyDelegate(default, decimalScope) { DoubleFeature(it, this) }
 
     /**
      * Creates an Enum feature with automatic registration and configuration.
@@ -244,8 +241,8 @@ abstract class FeatureContainer<M : Namespace>(
     protected fun <E : Enum<E>, C : Context> enum(
         default: E,
         enumScope: FlagScope<EnumEncodeable<E>, E, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<FeatureContainer<M>, EnumFeature<E, C, M>> =
-        ContainerFeaturePropertyDelegate(default, enumScope) { EnumFeature(it, namespace) }
+    ): ContainerFeaturePropertyDelegate<EnumFeature<E, C, M>, EnumEncodeable<E>, E, C> =
+        ContainerFeaturePropertyDelegate(default, enumScope) { EnumFeature(it, this) }
 
     /**
      * Creates a custom encodeable feature with automatic registration and configuration.
@@ -291,18 +288,18 @@ abstract class FeatureContainer<M : Namespace>(
     protected inline fun <reified T : KotlinEncodeable<ObjectSchema>, C : Context> custom(
         default: T,
         noinline customScope: FlagScope<KotlinClassEncodeable<T>, T, C, M>.() -> Unit = {},
-    ): ReadOnlyProperty<FeatureContainer<M>, KotlinClassFeature<T, C, M>> =
-        ContainerFeaturePropertyDelegate(default, customScope) { KotlinClassFeature(it, namespace) }
+    ): ContainerFeaturePropertyDelegate<KotlinClassFeature<T, C, M>, KotlinClassEncodeable<T>, T, C> =
+        ContainerFeaturePropertyDelegate(default, customScope) { KotlinClassFeature(it, this) }
 
     /**
      * Internal delegate factory that handles feature creation, configuration, and registration.
      *
      * This class implements both [ReadOnlyProperty] and [PropertyDelegateProvider] to enable
-     * Kotlin's property delegation pattern with lazy initialization. It performs the following:
+     * Kotlin's property delegation pattern with eager initialization. It performs the following:
      *
      * 1. **Captures property name**: When the property is delegated, captures the property name
      *    to use as the feature key
-     * 2. **Lazy initialization**: Creates the feature only on first access
+     * 2. **Eager initialization**: Creates the feature during container initialization (t0)
      * 3. **Automatic registration**: Adds the feature to the features's feature list
      * 4. **Automatic configuration**: Executes the DSL configuration block and updates the namespace
      *
@@ -324,23 +321,27 @@ abstract class FeatureContainer<M : Namespace>(
         private val default: T,
         private val configScope: FlagScope<S, T, C, M>.() -> Unit,
         private val factory: M.(String) -> F,
-    ) : ReadOnlyProperty<FeatureContainer<M>, F>, PropertyDelegateProvider<FeatureContainer<M>, F> {
-        lateinit var name: String
+    ) : ReadOnlyProperty<FeatureContainer<M>, F>,
+        PropertyDelegateProvider<FeatureContainer<M>, ContainerFeaturePropertyDelegate<F, S, T, C>> {
+        private lateinit var feature: F
 
-        private val feature: F by lazy {
-            factory(namespace, name).also { _features.add(it) }.also {
-                namespace.updateDefinition(FlagBuilder(default, it).apply<FlagBuilder<S, T, C, M>>(configScope).build())
+        override fun provideDelegate(
+            thisRef: FeatureContainer<M>,
+            property: KProperty<*>,
+        ): ContainerFeaturePropertyDelegate<F, S, T, C> {
+            feature = factory(namespace, property.name).also { _features.add(it) }.also {
+                namespace.updateDefinition(
+                    FlagBuilder(default, it)
+                        .apply<FlagBuilder<S, T, C, M>>(configScope)
+                        .build()
+                )
             }.also { FeatureRegistry.register(it) }
+            return this
         }
 
         override fun getValue(
             thisRef: FeatureContainer<M>,
             property: KProperty<*>,
-        ): F = provideDelegate(thisRef, property)
-
-        override fun provideDelegate(
-            thisRef: FeatureContainer<M>,
-            property: KProperty<*>,
-        ): F = run { name = property.name }.let { feature }
+        ): F = feature
     }
 }

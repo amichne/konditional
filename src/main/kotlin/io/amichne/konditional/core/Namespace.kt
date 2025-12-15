@@ -11,10 +11,9 @@ import java.util.UUID
 /**
  * Represents a feature flag namespace with isolated configuration and runtime isolation.
  *
- * Taxonomies provide:
+ * Namespaces provide:
  * - **Compile-time isolation**: Features are type-bound to their namespace
  * - **Runtime isolation**: Each namespace has its own flag registry
- * - **Governance**: All modules enumerated in one sealed hierarchy
  * - **Type safety**: Namespace identity is encoded in the type system
  * - **Direct registry operations**: Taxonomies implement [NamespaceRegistry], eliminating the need for `.registry` access
  *
@@ -42,22 +41,24 @@ import java.util.UUID
  *
  * ## Adding New Modules
  *
- * To add a new team namespace, add an object to the [Domain] sealed class:
+ * Define a namespace in your module, and have it own its [io.amichne.konditional.core.features.FeatureContainer]:
+ *
  * ```kotlin
- * sealed class Domain(value: String) : Namespace(value) {
- *     // ... existing teams ...
- *     data object NewTeam : Domain("new-team")
+ * object Payments : Namespace("payments") {
+ *     object Features : FeatureContainer<Payments>(this) {
+ *         val APPLE_PAY by boolean<Context>(default = false)
+ *     }
+ *
+ *     init {
+ *         // Ensure the container initializes at t0
+ *         Features
+ *     }
  * }
  * ```
  *
- * The sealed hierarchy ensures:
- * - No namespace ID collisions at compile time
- * - Exhaustive when-expressions
- * - IDE autocomplete for all modules
- *
  * ## Direct Registry Operations
  *
- * Taxonomies implement [NamespaceRegistry], so you can call registry methods directly:
+ * [Namespace] implements [NamespaceRegistry] via delegation, so you can call registry methods directly:
  * ```kotlin
  * // Load configuration
  * Namespace.Global.load(configuration)
@@ -71,12 +72,19 @@ import java.util.UUID
  *
  * @property id Unique identifier for this namespace
  */
-sealed class Namespace(
+open class Namespace(
     val id: String,
     @PublishedApi internal val registry: NamespaceRegistry = NamespaceRegistry(),
-
-    ) : NamespaceRegistry by registry {
-    internal val uuid: UUID = UUID.randomUUID()
+    /**
+     * Seed used to construct stable [io.amichne.konditional.values.Identifier] values for features.
+     *
+     * By default this is the namespace [id], which is appropriate for "real" namespaces that are intended
+     * to be federated and stable within an application.
+     *
+     * Test-only/ephemeral namespaces should provide a per-instance unique seed to avoid collisions.
+     */
+    @PublishedApi internal val identifierSeed: String = id,
+) : NamespaceRegistry by registry {
 
     /**
      * Global namespace containing shared flags accessible to all teams.
@@ -139,13 +147,14 @@ sealed class Namespace(
      * - **Recommendations**: Recommendation engine flags
      */
     sealed class Domain(id: String) : Namespace(id) {
-
-        // Add your organization's team modules here:
-        // data object YourTeam : Domain("your-team")
     }
 
     @TestOnly
-    abstract class TestNamespaceFacade(id: String) : Namespace(id)
+    abstract class TestNamespaceFacade(id: String) : Namespace(
+        id = id,
+        registry = NamespaceRegistry(),
+        identifierSeed = UUID.randomUUID().toString(),
+    )
 
     /**
      * Sets a test-scoped override for a feature flag.
