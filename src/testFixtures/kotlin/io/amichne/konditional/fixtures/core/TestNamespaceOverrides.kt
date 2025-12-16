@@ -3,7 +3,6 @@ package io.amichne.konditional.fixtures.core
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.core.types.EncodableValue
 
 /**
  * Test utilities for namespace-scoped feature flag overrides.
@@ -128,15 +127,14 @@ import io.amichne.konditional.core.types.EncodableValue
  * @param value The value to return for this feature within the block
  * @param block The code to execute with the override active
  * @return The result of executing the block
- * @param S The EncodableValue type wrapping the actual value
  * @param T The actual value type
  * @param C The context type for evaluation
  * @param R The return type of the block
  *
  * @see withOverrides for overriding multiple features at once
  */
-inline fun <S : EncodableValue<T>, T : Any, C : Context, R> Namespace.withOverride(
-    feature: Feature<S, T, C, *>,
+inline fun <T : Any, C : Context, R> Namespace.withOverride(
+    feature: Feature<T, C, *>,
     value: T,
     block: () -> R,
 ): R {
@@ -213,14 +211,14 @@ inline fun <S : EncodableValue<T>, T : Any, C : Context, R> Namespace.withOverri
  * @see withOverride for overriding a single feature
  */
 inline fun <R> Namespace.withOverrides(
-    vararg overrides: Pair<Feature<*, *, *, *>, Any>,
+    vararg overrides: Pair<Feature<*, *, *>, Any>,
     block: () -> R,
 ): R {
     // Apply all overrides
     overrides.forEach { (feature, value) ->
         @Suppress("UNCHECKED_CAST")
         setOverride(
-            feature as Feature<EncodableValue<Any>, Any, Context, *>,
+            feature as Feature<Any, Context, *>,
             value
         )
     }
@@ -232,7 +230,7 @@ inline fun <R> Namespace.withOverrides(
         overrides.reversed().forEach { (feature, _) ->
             @Suppress("UNCHECKED_CAST")
             clearOverride(
-                feature as Feature<EncodableValue<Any>, Any, Context, *>
+                feature as Feature<Any, Context, *>
             )
         }
     }

@@ -12,6 +12,7 @@ import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.fixtures.utilities.update
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
@@ -33,7 +34,8 @@ import kotlin.test.assertTrue
  */
 class SnapshotSerializerTest {
 
-    private val TestFeatures = object : FeatureContainer<Namespace.Global>(Namespace.Global) {
+    private val testNamespace = TestNamespace.test("snapshot-serializer")
+    private val TestFeatures = object : FeatureContainer<TestNamespace>(testNamespace) {
         val boolFlag by boolean<Context>(default = false)
         val stringFlag by string<Context>(default = "default")
         val intFlag by integer<Context>(default = 0)
@@ -42,9 +44,9 @@ class SnapshotSerializerTest {
 
     @BeforeEach
     fun setup() {
-        // Clear both FeatureRegistry and Namespace.Global registry before each test
+        // Clear both FeatureRegistry and the namespace registry before each test
         FeatureRegistry.clear()
-        Namespace.Global.load(Configuration(emptyMap()))
+        testNamespace.load(Configuration(emptyMap()))
 
         // Register test features
         FeatureRegistry.register(TestFeatures.boolFlag)
@@ -77,7 +79,7 @@ class SnapshotSerializerTest {
     fun `Given Konfig with boolean flag, When serialized, Then includes flag with correct type`() {
         TestFeatures.boolFlag.update(true) {}
 
-        val json = SnapshotSerializer.serialize(Namespace.Global.configuration)
+        val json = SnapshotSerializer.serialize(testNamespace.configuration)
 
         assertNotNull(json)
         assertTrue(json.contains("\"key\": \"${TestFeatures.boolFlag.id}\""))
@@ -104,7 +106,7 @@ class SnapshotSerializerTest {
     @Test
     fun `Given Konfig with int flag, When serialized, Then includes flag with correct type`() {
         TestFeatures.intFlag.update(42) {}
-        val json = SnapshotSerializer.serialize(Namespace.Global.configuration)
+        val json = SnapshotSerializer.serialize(testNamespace.configuration)
 
 
         assertNotNull(json)
@@ -118,7 +120,7 @@ class SnapshotSerializerTest {
     fun `Given Konfig with double flag, When serialized, Then includes flag with correct type`() {
         TestFeatures.doubleFlag.update(3.14) {}
 
-        val json = SnapshotSerializer.serialize(Namespace.Global.configuration)
+        val json = SnapshotSerializer.serialize(testNamespace.configuration)
 
         assertNotNull(json)
         assertTrue(json.contains("\"key\": \"${TestFeatures.doubleFlag.id}\""))

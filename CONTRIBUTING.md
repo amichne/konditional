@@ -163,41 +163,36 @@ The project uses GitHub Actions with 3 workflows:
 
 ### Type System
 
-Konditional enforces type safety through sealed class hierarchies:
+Konditional enforces type safety through sealed feature variants and a DSL that only constructs supported value types:
 
 ```kotlin
-EncodableValue<T>
-├── BooleanEncodeable         (Boolean)
-├── StringEncodeable          (String)
-├── IntEncodeable            (Int)
-├── DecimalEncodeable        (Double)
-├── JsonObjectEncodeable<T>  (complex data classes)
-└── CustomEncodeable<T, P>   (wrapper types like DateTime, UUID)
+Feature<T, C, M>
+├── BooleanFeature<C, M>           (Boolean)
+├── StringFeature<C, M>            (String)
+├── IntFeature<C, M>               (Int)
+├── DoubleFeature<C, M>            (Double)
+├── EnumFeature<E, C, M>           (E : Enum<E>)
+└── KotlinClassFeature<T, C, M>    (T : KotlinEncodeable<ObjectSchema>)
 ```
 
-**Key Principle**: All value types must extend `EncodableValue<T>` to ensure compile-time type safety.
+**Key Principle**: Consumers define flags via `FeatureContainer` builders (`boolean`, `string`, `int`, `double`, `enum`, `custom`). Unsupported flag value types are not constructible through the public DSL.
 
-### Module Isolation
+### Namespace Isolation
 
-Each `FeatureModule` provides compile-time and runtime isolation:
+Each `Namespace` provides compile-time and runtime isolation:
 
 ```kotlin
-sealed class FeatureModule {
-    object Core : FeatureModule()
-
-    sealed class Team : FeatureModule() {
-        object Authentication : Team()
-        object Payments : Team()
-        object Messaging : Team()
-        // Add new teams here
-    }
+sealed class AppDomain(id: String) : Namespace(id) {
+    data object Authentication : AppDomain("auth")
+    data object Payments : AppDomain("payments")
+    data object Messaging : AppDomain("messaging")
 }
 ```
 
 **Benefits**:
 
-- Each module has its own `ModuleRegistry` instance
-- Feature type binding prevents cross-module pollution
+- Each namespace has its own `NamespaceRegistry` instance
+- Feature type binding prevents cross-namespace pollution
 - Independent configuration and deployment
 
 ### Evaluation Pipeline
@@ -216,12 +211,12 @@ Context → Rule.matches() → specificity() → rollout bucketing → value
 
 ### Design Patterns
 
-1. **Sealed Hierarchies**: For exhaustive type checking (FeatureModule, EncodableValue, Context)
+1. **Sealed Hierarchies**: For exhaustive type checking (Feature variants, Context)
 2. **DSL Builder Pattern**: Fluent configuration with ConfigBuilder, FlagBuilder
 3. **TypeState Pattern**: Builders enforce valid state transitions at compile time
 4. **Composition Over Inheritance**: Rule composes BaseEvaluable + extension Evaluable
 5. **Lock-free Reads**: AtomicReference with atomic updates only (no locks on read path)
-6. **Parse, Don't Validate**: EncodableValue restricts valid types at compile time
+6. **Parse, Don't Validate**: Parsing produces typed domain objects or structured errors
 
 ---
 
@@ -235,21 +230,20 @@ Context → Rule.matches() → specificity() → rollout bucketing → value
     - Classes: PascalCase
     - Functions: camelCase
     - Constants: SCREAMING_SNAKE_CASE
-    - Type parameters: Single uppercase letter (S, T, C, M)
+    - Type parameters: Single uppercase letter (T, C, M)
 
 ### Type Parameters
 
 Consistent naming across the codebase:
 
-- `S`: EncodableValue type (wraps T)
 - `T`: Actual value type (Boolean, String, Int, etc.)
 - `C`: Context type (extends Context)
-- `M`: FeatureModule type
+- `M`: Namespace type
 
 **Example**:
 
 ```kotlin
-sealed interface Feature<S : EncodableValue<T>, T : Any, C : Context, M : FeatureModule>
+sealed interface Feature<T : Any, C : Context, out M : Namespace>
 ```
 
 ### Documentation
@@ -515,24 +509,9 @@ git push origin v1.0.0
    }
    ```
 
-### Extending EncodableValue
+### Custom Structured Types
 
-For custom value types:
-
-```kotlin
-// 1. Define the custom encoder
-val dateTimeEncoder = EncodableValue.customString<DateTime> { dateTime ->
-    dateTime.toIso8601()
-}
-
-// 2. Use in feature configuration
-FeatureModule.Core.config {
-    MyFeatures.TIMESTAMP with {
-        default(DateTime.now())
-        encoder = dateTimeEncoder
-    }
-}
-```
+For complex configuration values, implement `KotlinEncodeable<ObjectSchema>` and use `custom(default = ...)` flags.
 
 ---
 
@@ -595,17 +574,9 @@ FlagDefinition(
 )
 ```
 
-### 5. EncodableValue Type Safety
+### 5. Flag Value Type Safety
 
-**Compile-time enforcement**:
-
-```kotlin
-// ✅ Correct
-enum class StringFlag : Feature<StringEncodeable, String, Context, FeatureModule.Core>
-
-// ❌ Won't compile - type mismatch
-enum class StringFlag : Feature<BooleanEncodeable, String, Context, FeatureModule.Core>
-```
+Flag value types are selected at definition time (e.g., `boolean`, `string`, `enum<E>()`, `custom<T>()`). Evaluation always returns the declared Kotlin type and never returns null.
 
 ### 6. Namespace Registry Isolation
 

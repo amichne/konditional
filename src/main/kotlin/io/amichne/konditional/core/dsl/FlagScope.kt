@@ -1,8 +1,6 @@
 package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.types.EncodableValue
 
 /**
  * DSL scope for flag configuration.
@@ -23,13 +21,12 @@ import io.amichne.konditional.core.types.EncodableValue
  * }
  * ```
  *
- * @param S The EncodableValue type wrapping the actual value
  * @param T The actual value type
  * @param C The contextFn type the flag evaluates against
  * @since 0.0.2
  */
 @KonditionalDsl
-interface FlagScope<S : EncodableValue<T>, T : Any, C : Context, M : Namespace> {
+interface FlagScope<T : Any, C : Context> {
     val default: T
 
     fun active(block: () -> Boolean)

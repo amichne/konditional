@@ -5,14 +5,11 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rampup.Companion.MAX
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Namespace.Global
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Configuration
-import io.amichne.konditional.core.types.BooleanEncodeable
-import io.amichne.konditional.core.types.IntEncodeable
-import io.amichne.konditional.core.types.StringEncodeable
+import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
@@ -32,7 +29,8 @@ class FlagEntryTypeSafetyTest {
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
 
-    private object Features : FeatureContainer<Global>(Global) {
+    private val namespace = TestNamespace.test("flag-entry-type-safety")
+    private val Features = object : FeatureContainer<TestNamespace>(namespace) {
         val featureA by boolean<Context>(default = false) {
             rule(true) {
                 platforms(Platform.IOS)
@@ -88,7 +86,7 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded(),
         )
 
-        val boolFlag: FlagDefinition<BooleanEncodeable, Boolean, Context, Global> = FlagDefinition(
+        val boolFlag: FlagDefinition<Boolean, Context, TestNamespace> = FlagDefinition(
             feature = Features.featureB,
             values = listOf(rule.targetedBy(true)),
             defaultValue = false,
@@ -123,19 +121,19 @@ class FlagEntryTypeSafetyTest {
             versionRange = Unbounded(),
         )
 
-        val boolFlag: FlagDefinition<BooleanEncodeable, Boolean, Context, Global> = FlagDefinition(
+        val boolFlag: FlagDefinition<Boolean, Context, TestNamespace> = FlagDefinition(
             feature = Features.featureA,
             values = listOf(boolRule.targetedBy(true)),
             defaultValue = false,
         )
 
-        val stringFlag: FlagDefinition<StringEncodeable, String, Context, Global> = FlagDefinition(
+        val stringFlag: FlagDefinition<String, Context, TestNamespace> = FlagDefinition(
             feature = Features.configA,
             values = listOf(stringRule.targetedBy("value")),
             defaultValue = "default",
         )
 
-        val intFlag: FlagDefinition<IntEncodeable, Int, Context, Global> = FlagDefinition(
+        val intFlag: FlagDefinition<Int, Context, TestNamespace> = FlagDefinition(
             feature = Features.timeout,
             values = listOf(intRule.targetedBy(30)),
             defaultValue = 10,
@@ -187,7 +185,7 @@ class FlagEntryTypeSafetyTest {
             )
         )
 
-        Global.load(configuration)
+        namespace.load(configuration)
 
         val context = ctx("33333333333333333333333333333333")
         val boolResult = Features.featureA.evaluate(context)

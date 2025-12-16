@@ -4,7 +4,6 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
 import io.amichne.konditional.core.registry.NamespaceRegistry
-import io.amichne.konditional.core.types.EncodableValue
 import org.jetbrains.annotations.TestOnly
 import java.util.UUID
 
@@ -23,10 +22,8 @@ import java.util.UUID
  * The [Global] namespace is the only namespace shipped by Konditional. It is intended for shared flags that are
  * broadly accessible across the application:
  * ```kotlin
- * enum class CoreFeatures(override val key: String)
- *     : Feature<BoolEncodeable, Boolean, Context, Namespace.Global> {
- *     KILL_SWITCH("kill_switch");
- *     override val namespace = Namespace.Global
+ * object CoreFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
+ *     val KILL_SWITCH by boolean<Context>(default = false)
  * }
  * ```
  *
@@ -62,7 +59,7 @@ import java.util.UUID
  * Namespace.Global.load(configuration)
  *
  * // Get current state
- * val snapshot = Namespace.Global.configuration()
+ * val snapshot = Namespace.Global.configuration
  *
  * // Query flags
  * val flag = Namespace.Global.flag(MY_FLAG)
@@ -128,8 +125,8 @@ open class Namespace(
      * Internal API used by test utilities.
      */
     @PublishedApi
-    internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> setOverride(
-        feature: Feature<S, T, C, M>,
+    internal fun <T : Any, C : Context, M : Namespace> setOverride(
+        feature: Feature<T, C, M>,
         value: T,
     ) {
         (registry as InMemoryNamespaceRegistry).setOverride(feature, value)
@@ -140,8 +137,8 @@ open class Namespace(
      * Internal API used by test utilities.
      */
     @PublishedApi
-    internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> clearOverride(
-        feature: Feature<S, T, C, M>,
+    internal fun <T : Any, C : Context, M : Namespace> clearOverride(
+        feature: Feature<T, C, M>,
     ) {
         (registry as InMemoryNamespaceRegistry).clearOverride(feature)
     }

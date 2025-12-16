@@ -1,6 +1,5 @@
 package io.amichne.konditional.core
 
-import io.amichne.konditional.TestDomains
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
@@ -9,9 +8,8 @@ import io.amichne.konditional.core.features.EnumFeature
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.types.EncodableEvidence
-import io.amichne.konditional.core.types.EncodableValue
-import io.amichne.konditional.core.types.EnumEncodeable
+import io.amichne.konditional.core.instance.Configuration
+import io.amichne.konditional.fixtures.core.TestNamespace
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -34,10 +32,10 @@ class EnumFeatureTest {
         DEVELOPMENT, STAGING, PRODUCTION
     }
 
+    private val namespace = TestNamespace.test("enum-features")
+
     // Test features with enum types
-    private object EnumFeatures : FeatureContainer<TestDomains.Payments>(
-        TestDomains.Payments
-    ) {
+    private val EnumFeatures = object : FeatureContainer<TestNamespace>(namespace) {
         val logLevel by enum<LogLevel, Context>(default = LogLevel.INFO) {
             rule(LogLevel.DEBUG) {
                 platforms(Platform.WEB)
@@ -65,11 +63,9 @@ class EnumFeatureTest {
 
     @Test
     fun `enum features have correct namespace`() {
-        val expectedNamespace = TestDomains.Payments
-
-        assertEquals(expectedNamespace, EnumFeatures.logLevel.namespace)
-        assertEquals(expectedNamespace, EnumFeatures.theme.namespace)
-        assertEquals(expectedNamespace, EnumFeatures.environment.namespace)
+        assertEquals(namespace, EnumFeatures.logLevel.namespace)
+        assertEquals(namespace, EnumFeatures.theme.namespace)
+        assertEquals(namespace, EnumFeatures.environment.namespace)
     }
 
     @Test
@@ -104,50 +100,10 @@ class EnumFeatureTest {
     }
 
     @Test
-    fun `enum evidence is properly created`() {
-        // EncodableEvidence should recognize enum types
-        val logLevelEvidence = EncodableEvidence.get<LogLevel>()
-        assertEquals(EncodableValue.Encoding.ENUM, logLevelEvidence.encoding)
-
-        val themeEvidence = EncodableEvidence.get<Theme>()
-        assertEquals(EncodableValue.Encoding.ENUM, themeEvidence.encoding)
-    }
-
-    @Test
-    fun `enum evidence can check if type is encodable`() {
-        assertTrue(EncodableEvidence.isEncodable<LogLevel>())
-        assertTrue(EncodableEvidence.isEncodable<Theme>())
-        assertTrue(EncodableEvidence.isEncodable<Environment>())
-    }
-
-    @Test
-    fun `enum encodeable can be created from enum value`() {
-        val logLevel = LogLevel.INFO
-        val encodeable = EnumEncodeable.of(logLevel)
-
-        assertEquals(LogLevel.INFO, encodeable.value)
-        assertEquals(LogLevel::class, encodeable.enumClass)
-        assertEquals("INFO", encodeable.toEncodedString())
-    }
-
-    @Test
-    fun `enum encodeable can decode from string`() {
-        val encodeable = EnumEncodeable.fromString("DEBUG", LogLevel::class)
-
-        assertEquals(LogLevel.DEBUG, encodeable.value)
-        assertEquals(LogLevel::class, encodeable.enumClass)
-    }
-
-    @Test
-    fun `enum encodeable encoding type is ENUM`() {
-        val encodeable = EnumEncodeable.of(LogLevel.WARN)
-        assertEquals(EncodableValue.Encoding.ENUM, encodeable.encoding)
-    }
-
-    @Test
     fun `multiple enum types can coexist in feature container`() {
         // Create a container with multiple enum types
-        val mixedFeatures = object : FeatureContainer<TestDomains.Messaging>(TestDomains.Messaging) {
+        val mixedNamespace = TestNamespace.test("mixed-enums")
+        val mixedFeatures = object : FeatureContainer<TestNamespace>(mixedNamespace) {
             val level by enum<LogLevel, Context>(default = LogLevel.INFO)
             val themePreference by enum<Theme, Context>(default = Theme.LIGHT)
             val env by enum<Environment, Context>(default = Environment.DEVELOPMENT)
@@ -166,7 +122,8 @@ class EnumFeatureTest {
 
     @Test
     fun `enum features work alongside primitive types in container`() {
-        val mixedTypeFeatures = object : FeatureContainer<TestDomains.Authentication>(TestDomains.Authentication) {
+        val mixedNamespace = TestNamespace.test("mixed-types")
+        val mixedTypeFeatures = object : FeatureContainer<TestNamespace>(mixedNamespace) {
             val enableLogging by boolean<Context>(default = true)
             val logLevel by enum<LogLevel, Context>(default = LogLevel.INFO)
             val maxLogSize by integer<Context>(default = 1000)
@@ -185,10 +142,10 @@ class EnumFeatureTest {
     @Test
     fun `enum features maintain type safety through container`() {
         // Type inference works correctly
-        val logLevelFeature: EnumFeature<LogLevel, Context, TestDomains.Payments> =
+        val logLevelFeature: EnumFeature<LogLevel, Context, TestNamespace> =
             EnumFeatures.logLevel
 
-        val themeFeature: EnumFeature<Theme, Context, TestDomains.Payments> =
+        val themeFeature: EnumFeature<Theme, Context, TestNamespace> =
             EnumFeatures.theme
 
         // Verify types are preserved
@@ -198,7 +155,8 @@ class EnumFeatureTest {
 
     @Test
     fun `enum features can have complex rule configurations`() {
-        val complexFeatures = object : FeatureContainer<TestDomains.Payments>(TestDomains.Payments) {
+        val complexNamespace = TestNamespace.test("complex-enum-rules")
+        val complexFeatures = object : FeatureContainer<TestNamespace>(complexNamespace) {
             val environment by enum<Environment, Context>(default = Environment.PRODUCTION) {
                 rule(Environment.DEVELOPMENT) {
                     platforms(Platform.WEB)
@@ -246,8 +204,8 @@ class EnumFeatureTest {
 
     @Test
     fun `enum with single value works correctly`() {
-
-        val singleEnumFeature = object : FeatureContainer<TestDomains.Payments>(TestDomains.Payments) {
+        val singleNamespace = TestNamespace.test("single-enum")
+        val singleEnumFeature = object : FeatureContainer<TestNamespace>(singleNamespace) {
             val single by enum<SingleValue, Context>(default = SingleValue.ONLY_VALUE)
         }
 
@@ -259,5 +217,30 @@ class EnumFeatureTest {
         )
 
         assertEquals(SingleValue.ONLY_VALUE, singleEnumFeature.single.evaluate(context))
+    }
+
+    @Test
+    fun `enum values survive namespace snapshot roundtrip`() {
+        val namespace = Namespace("enum-roundtrip")
+        val features = object : FeatureContainer<Namespace>(namespace) {
+            val logLevel by enum<LogLevel, Context>(default = LogLevel.INFO) {
+                rule(LogLevel.DEBUG) { platforms(Platform.WEB) }
+            }
+        }
+
+        val webContext = Context(
+            locale = AppLocale.UNITED_STATES,
+            platform = Platform.WEB,
+            appVersion = Version(1, 0, 0),
+            stableId = StableId.of("12345678901234567890123456789012")
+        )
+
+        val json = features.toJson()
+        namespace.load(Configuration(emptyMap()))
+
+        val reloadResult = features.fromJson(json)
+        assertTrue(reloadResult is io.amichne.konditional.core.result.ParseResult.Success)
+
+        assertEquals(LogLevel.DEBUG, features.logLevel.evaluate(webContext))
     }
 }
