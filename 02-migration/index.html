@@ -113,6 +113,17 @@
 <div class="md-grid">
 <ul class="md-tabs__list">
 <li class="md-tabs__item">
+<a class="md-tabs__link" href="..">
+        
+  
+  
+    
+  
+  Konditional
+
+      </a>
+</li>
+<li class="md-tabs__item">
 <a class="md-tabs__link" href="../01-getting-started/">
         
   
@@ -238,6 +249,14 @@
 </div>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
+<a class="md-nav__link" href="..">
+<span class="md-ellipsis">
+    Konditional
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="../01-getting-started/">
 <span class="md-ellipsis">
     Getting Started
@@ -338,6 +357,13 @@
 <a class="md-nav__link" href="#when-you-need-runtime-configuration-remote-json">
 <span class="md-ellipsis">
       When you need runtime configuration (remote JSON)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#shadow-evaluation-parallel-migration">
+<span class="md-ellipsis">
+      Shadow evaluation (parallel migration)
     </span>
 </a>
 </li>
@@ -481,6 +507,13 @@
 </a>
 </li>
 <li class="md-nav__item">
+<a class="md-nav__link" href="#shadow-evaluation-parallel-migration">
+<span class="md-ellipsis">
+      Shadow evaluation (parallel migration)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="#next-steps">
 <span class="md-ellipsis">
       Next steps
@@ -592,6 +625,18 @@ It focuses on what changes at the definition site, at the call site, and at the 
 </span><span id="__span-6-5"><a href="#__codelineno-6-5" id="__codelineno-6-5" name="__codelineno-6-5"></a><span class="p">}</span>
 </span></code></pre></div>
 <p>The guarantee is intentionally qualified: JSON is not “always safe”; instead, invalid JSON is rejected before it can affect evaluation.</p>
+<hr/>
+<h2 id="shadow-evaluation-parallel-migration">Shadow evaluation (parallel migration)<a class="headerlink" href="#shadow-evaluation-parallel-migration" title="Permanent link">¶</a></h2>
+<p>For gradual migrations, you can evaluate against a baseline registry and shadow-evaluate against a candidate:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-7-1"><a href="#__codelineno-7-1" id="__codelineno-7-1" name="__codelineno-7-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="p">.</span><span class="na">evaluateWithShadow</span><span class="p">(</span>
+</span><span id="__span-7-2"><a href="#__codelineno-7-2" id="__codelineno-7-2" name="__codelineno-7-2"></a><span class="w">    </span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">,</span>
+</span><span id="__span-7-3"><a href="#__codelineno-7-3" id="__codelineno-7-3" name="__codelineno-7-3"></a><span class="w">    </span><span class="n">candidateRegistry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">candidateRegistry</span><span class="p">,</span>
+</span><span id="__span-7-4"><a href="#__codelineno-7-4" id="__codelineno-7-4" name="__codelineno-7-4"></a><span class="w">    </span><span class="n">onMismatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">mismatch</span><span class="w"> </span><span class="o">-&gt;</span>
+</span><span id="__span-7-5"><a href="#__codelineno-7-5" id="__codelineno-7-5" name="__codelineno-7-5"></a><span class="w">        </span><span class="n">log</span><span class="p">.</span><span class="na">warn</span><span class="p">(</span><span class="s">"Mismatch: </span><span class="si">${</span><span class="n">mismatch</span><span class="p">.</span><span class="na">kinds</span><span class="si">}</span><span class="s"> baseline=</span><span class="si">${</span><span class="n">mismatch</span><span class="p">.</span><span class="na">baseline</span><span class="p">.</span><span class="na">value</span><span class="si">}</span><span class="s"> candidate=</span><span class="si">${</span><span class="n">mismatch</span><span class="p">.</span><span class="na">candidate</span><span class="p">.</span><span class="na">value</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
+</span><span id="__span-7-6"><a href="#__codelineno-7-6" id="__codelineno-7-6" name="__codelineno-7-6"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-7-7"><a href="#__codelineno-7-7" id="__codelineno-7-7" name="__codelineno-7-7"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>This keeps behavior pinned to the baseline value while generating comparison telemetry for the candidate path.</p>
 <hr/>
 <h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">¶</a></h2>
 <ul>
