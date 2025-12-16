@@ -1,10 +1,10 @@
 # Evaluation
 
-Konditional evaluation is designed to be predictable:
-- **Total**: evaluation always returns a value (rule value or default).
-- **Deterministic**: the same inputs produce the same outputs.
-- **Non-null**: defaults are required, so evaluation does not return `T?`.
+### Konditional evaluation is designed to be predictable
 
+- **Total** — Evaluation always returns a value (rule value or default).
+- **Deterministic** — The same inputs produce the same outputs.
+- **Non-null** — Defaults are required, so evaluation does not return `T?`.
 ---
 
 ## `feature { }` (recommended)
@@ -22,7 +22,7 @@ Use this when:
 
 ---
 
-## Evaluation flow (what happens)
+## Evaluation flow
 
 ```mermaid
 flowchart TD
@@ -115,7 +115,7 @@ fun `iOS users in US get dark mode`() {
 ```kotlin
 @Test
 fun `evaluation is deterministic`() {
-    val context = Context(...)
+    val context = Context(/*...*/)
     val results = (1..100).map { feature { Features.DARK_MODE } }
     assertTrue(results.distinct().size == 1, "Non-deterministic!")
 }
@@ -128,9 +128,8 @@ fun `evaluation is deterministic`() {
 fun `50 percent rollout distributes correctly`() {
     val sampleSize = 10_000
     val enabled = (0 until sampleSize).count { i ->
-        val ctx = Context(
-            ...,
-            stableId = StableId.of(i.toString(16).padStart(32, '0'))
+        val ctx = Context(/*..., */
+                          stableId = StableId.of(i.toString(16).padStart(32, '0'))
         )
         feature { Features.ROLLOUT_FLAG }
     }
@@ -144,12 +143,12 @@ fun `50 percent rollout distributes correctly`() {
 
 ## Guarantees (and boundaries)
 
-| Aspect | Guarantee | Boundary |
-|---|---|---|
-| Type safety | return type matches definition | compile-time for statically-defined flags |
-| Non-null | evaluation never returns null | relies on required defaults |
-| Determinism | same inputs → same outputs | excludes malformed runtime JSON (see remote config) |
-| Updates | atomic swap of configuration | correctness depends on using `Namespace.load` |
+| Aspect      | Guarantee                      | Boundary                                            |
+|-------------|--------------------------------|-----------------------------------------------------|
+| Type safety | return type matches definition | compile-time for statically-defined flags           |
+| Non-null    | evaluation never returns null  | relies on required defaults                         |
+| Determinism | same inputs → same outputs     | excludes malformed runtime JSON (see remote config) |
+| Updates     | atomic swap of configuration   | correctness depends on using `Namespace.load`       |
 
 ---
 

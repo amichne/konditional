@@ -61,9 +61,8 @@ plugins:
   - search
   - mermaid2
 
-
-
 nav:
+  - Konditional: index.md
   - Getting Started: 01-getting-started.md
   - Why Konditional: 09-why-konditional.md
   - Migration Guide: 02-migration.md
