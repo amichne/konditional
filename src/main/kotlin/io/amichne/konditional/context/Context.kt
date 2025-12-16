@@ -5,7 +5,7 @@ import io.amichne.konditional.context.axis.AxisValues
 import io.amichne.konditional.core.id.StableId
 
 /**
- * Represents the execution contextFn for feature flag evaluation.
+ * Represents the execution context for feature flag evaluation.
  *
  * This interface defines the base contextual information required for evaluating
  * feature flags. It provides the standard targeting dimensions (locale, platform, version)
@@ -23,8 +23,8 @@ import io.amichne.konditional.core.id.StableId
  * ) : Context
  * ```
  *
- * @property locale The application locale for this contextFn
- * @property platform The platform (iOS, Android, Web, etc.) for this contextFn
+ * @property locale The application locale for this context
+ * @property platform The platform (iOS, Android, Web, etc.) for this context
  * @property appVersion The semantic version of the application
  * @property stableId A stable, unique identifier used for deterministic bucketing in rollouts
  *

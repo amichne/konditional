@@ -8,5 +8,6 @@ import com.squareup.moshi.JsonClass
  */
 @JsonClass(generateAdapter = true)
 internal data class SerializableSnapshot(
+    val meta: SerializableSnapshotMetadata? = null,
     val flags: List<SerializableFlag>,
 )

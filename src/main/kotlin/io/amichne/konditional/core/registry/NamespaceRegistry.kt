@@ -5,6 +5,8 @@ import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.instance.Configuration
+import io.amichne.konditional.core.instance.ConfigurationMetadata
+import io.amichne.konditional.core.ops.RegistryHooks
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -79,6 +81,13 @@ import java.util.concurrent.atomic.AtomicReference
  */
 interface NamespaceRegistry {
     /**
+     * The owning namespace identifier for this registry instance.
+     *
+     * This is used for observability (logging/metrics) and operational tooling.
+     */
+    val namespaceId: String
+
+    /**
      * Loads a complete flag configuration from the provided snapshot.
      *
      * This operation replaces the entire current configuration atomically.
@@ -96,6 +105,50 @@ interface NamespaceRegistry {
      * @return The current [Configuration]
      */
     val configuration: Configuration
+
+    /**
+     * Operational hooks for logging/metrics.
+     *
+     * Hooks are evaluated on the hot path; keep implementations lightweight.
+     */
+    val hooks: RegistryHooks
+
+    /**
+     * Updates operational hooks for this registry.
+     */
+    fun setHooks(hooks: RegistryHooks)
+
+    /**
+     * Emergency kill switch: when enabled, all flag evaluations return their declared defaults.
+     *
+     * This is namespace-scoped (per registry), not global across the JVM.
+     */
+    val isAllDisabled: Boolean
+
+    fun disableAll()
+
+    fun enableAll()
+
+    /**
+     * A bounded history of prior configurations (most recent last).
+     *
+     * This is intended for operational rollback and audit tooling.
+     */
+    val history: List<Configuration>
+
+    /**
+     * Convenience view over [history] metadata.
+     */
+    val historyMetadata: List<ConfigurationMetadata>
+        get() = history.map { it.metadata }
+
+    /**
+     * Rolls back to a prior configuration if available.
+     *
+     * @param steps How many history entries to rewind (1 = previous configuration)
+     * @return true if rollback succeeded, false otherwise
+     */
+    fun rollback(steps: Int = 1): Boolean
 
     /**
      * Retrieves a specific flag definition from the registry.
@@ -146,10 +199,17 @@ interface NamespaceRegistry {
          * @return A new [InMemoryNamespaceRegistry] instance
          * @since 0.0.2
          */
-        operator fun invoke(configuration: Configuration = Configuration(emptyMap())): NamespaceRegistry =
-            InMemoryNamespaceRegistry().apply {
-                load(configuration)
-            }
+        operator fun invoke(
+            configuration: Configuration = Configuration(emptyMap()),
+            namespaceId: String = "anonymous",
+            hooks: RegistryHooks = RegistryHooks.None,
+            historyLimit: Int = InMemoryNamespaceRegistry.DEFAULT_HISTORY_LIMIT,
+        ): NamespaceRegistry =
+            InMemoryNamespaceRegistry(
+                namespaceId = namespaceId,
+                hooks = hooks,
+                historyLimit = historyLimit,
+            ).apply { load(configuration) }
 
         /**
          * Updates a single flag definition in the current configuration.

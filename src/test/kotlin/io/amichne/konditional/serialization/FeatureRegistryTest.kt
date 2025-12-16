@@ -1,7 +1,6 @@
 package io.amichne.konditional.serialization
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.result.ParseError

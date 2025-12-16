@@ -44,19 +44,19 @@ class AxisRuleEvaluationTest {
         val noEnvCtx = contextFor(env = null)
 
         Assertions.assertTrue(
-            FeaturesWithAxis.ENV_SCOPED_FLAG.evaluate(prodCtx),
+            FeaturesWithAxis.envScopedFlag.evaluate(prodCtx),
             "Flag should be true when environment is PROD",
         )
         Assertions.assertFalse(
-            FeaturesWithAxis.ENV_SCOPED_FLAG.evaluate(stageCtx),
+            FeaturesWithAxis.envScopedFlag.evaluate(stageCtx),
             "Flag should be false when environment is STAGE",
         )
         Assertions.assertFalse(
-            FeaturesWithAxis.ENV_SCOPED_FLAG.evaluate(devCtx),
+            FeaturesWithAxis.envScopedFlag.evaluate(devCtx),
             "Flag should be false when environment is DEV",
         )
         Assertions.assertFalse(
-            FeaturesWithAxis.ENV_SCOPED_FLAG.evaluate(noEnvCtx),
+            FeaturesWithAxis.envScopedFlag.evaluate(noEnvCtx),
             "Flag should be false when environment dimension is missing",
         )
     }
@@ -81,19 +81,19 @@ class AxisRuleEvaluationTest {
         )
 
         Assertions.assertTrue(
-            FeaturesWithAxis.ENV_AND_TENANT_SCOPED_FLAG.evaluate(prodEnterprise),
+            FeaturesWithAxis.envAndTenantScopedFlag.evaluate(prodEnterprise),
             "Flag should be true for PROD + ENTERPRISE",
         )
         Assertions.assertTrue(
-            FeaturesWithAxis.ENV_AND_TENANT_SCOPED_FLAG.evaluate(stageEnterprise),
+            FeaturesWithAxis.envAndTenantScopedFlag.evaluate(stageEnterprise),
             "Flag should be true for STAGE + ENTERPRISE",
         )
         Assertions.assertFalse(
-            FeaturesWithAxis.ENV_AND_TENANT_SCOPED_FLAG.evaluate(prodConsumer),
+            FeaturesWithAxis.envAndTenantScopedFlag.evaluate(prodConsumer),
             "Flag should be false when tenant is not ENTERPRISE",
         )
         Assertions.assertFalse(
-            FeaturesWithAxis.ENV_AND_TENANT_SCOPED_FLAG.evaluate(devEnterprise),
+            FeaturesWithAxis.envAndTenantScopedFlag.evaluate(devEnterprise),
             "Flag should be false when environment is not STAGE or PROD",
         )
     }
@@ -120,19 +120,19 @@ class AxisRuleEvaluationTest {
 
         // Rule #1 should match regardless of version
         Assertions.assertTrue(
-            FeaturesWithAxis.FALLBACK_RULE_FLAG.evaluate(prodEnterpriseV1),
+            FeaturesWithAxis.fallbackRuleFlag.evaluate(prodEnterpriseV1),
             "Specific env+tenant rule should match first",
         )
 
         // Rule #1 fails (tenant != ENTERPRISE); Rule #2 should match by version
         Assertions.assertTrue(
-            FeaturesWithAxis.FALLBACK_RULE_FLAG.evaluate(prodConsumerV3),
+            FeaturesWithAxis.fallbackRuleFlag.evaluate(prodConsumerV3),
             "Fallback version-based rule should match when version >= 2.0.0",
         )
 
         // Neither rule matches; default should be returned (false)
         Assertions.assertFalse(
-            FeaturesWithAxis.FALLBACK_RULE_FLAG.evaluate(devconsumerv15),
+            FeaturesWithAxis.fallbackRuleFlag.evaluate(devconsumerv15),
             "No rules should match for DEV + version < 2.0.0",
         )
     }
@@ -144,15 +144,15 @@ class AxisRuleEvaluationTest {
         val prodCtx = contextFor(env = TestEnvironment.PROD)
 
         Assertions.assertTrue(
-            FeaturesWithAxis.MULTI_CALL_DIM_FLAG.evaluate(devCtx),
+            FeaturesWithAxis.repeatedAxisFlag.evaluate(devCtx),
             "Flag should be true when env == DEV",
         )
         Assertions.assertTrue(
-            FeaturesWithAxis.MULTI_CALL_DIM_FLAG.evaluate(stageCtx),
+            FeaturesWithAxis.repeatedAxisFlag.evaluate(stageCtx),
             "Flag should be true when env == STAGE",
         )
         Assertions.assertFalse(
-            FeaturesWithAxis.MULTI_CALL_DIM_FLAG.evaluate(prodCtx),
+            FeaturesWithAxis.repeatedAxisFlag.evaluate(prodCtx),
             "Flag should be false when env == PROD",
         )
     }

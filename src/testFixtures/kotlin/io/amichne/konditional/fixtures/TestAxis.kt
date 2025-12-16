@@ -82,7 +82,7 @@ object FeaturesWithAxis :
      * Enabled only when environment == PROD.
      * Uses the new axis API.
      */
-    val ENV_SCOPED_FLAG by boolean<TestContext>(default = false) {
+    val envScopedFlag by boolean<TestContext>(default = false) {
         rule(true) {
             axis(TestAxes.Environment, TestEnvironment.PROD)
         }
@@ -94,7 +94,7 @@ object FeaturesWithAxis :
      *   AND tenant == ENTERPRISE
      * Uses the new axis API.
      */
-    val ENV_AND_TENANT_SCOPED_FLAG by boolean<TestContext>(default = false) {
+    val envAndTenantScopedFlag by boolean<TestContext>(default = false) {
         rule(true) {
             axis(TestAxes.Environment, TestEnvironment.STAGE, TestEnvironment.PROD)
             axis(TestAxes.Tenant, TestTenant.ENTERPRISE)
@@ -108,7 +108,7 @@ object FeaturesWithAxis :
      *  - Rule #2: appVersion >= 2.0.0                  => true
      *  - Otherwise: default (false)
      */
-    val FALLBACK_RULE_FLAG by boolean<TestContext>(default = false) {
+    val fallbackRuleFlag by boolean<TestContext>(default = false) {
         rule(true) {
             axis(TestAxes.Environment, TestEnvironment.PROD)
             axis(TestAxes.Tenant, TestTenant.ENTERPRISE)
@@ -125,7 +125,7 @@ object FeaturesWithAxis :
      * Demonstrates multiple calls to axis(...) for the same axis
      * accumulating allowed values.
      */
-    val MULTI_CALL_DIM_FLAG by boolean<TestContext>(default = false) {
+    val repeatedAxisFlag by boolean<TestContext>(default = false) {
         rule(true) {
             axis(TestAxes.Environment, TestEnvironment.DEV)
             axis(TestAxes.Environment, TestEnvironment.STAGE)

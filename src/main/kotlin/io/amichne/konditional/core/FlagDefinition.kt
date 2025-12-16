@@ -1,12 +1,9 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Rampup
+import io.amichne.konditional.core.evaluation.Bucketing
 import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.rules.ConditionalValue
-import java.security.MessageDigest
-import kotlin.math.roundToInt
 
 /**
  * Represents a flag definition that can be evaluated within a specific contextFn.
@@ -36,7 +33,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
     val isActive: Boolean = true,
     val salt: String = "v1",
 ) {
-    private val conditionalValues: List<ConditionalValue<T, C>> =
+    internal val valuesByPrecedence: List<ConditionalValue<T, C>> =
         values.sortedWith(compareByDescending<ConditionalValue<T, C>> { it.rule.specificity() })
 
     internal companion object {
@@ -65,60 +62,59 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
      * @param context The contextFn in which the flag evaluation is performed.
      * @return The result of the evaluation, of type `T`. If the flag is not active, returns the defaultValue.
      */
-    fun evaluate(context: C): T {
+    internal fun evaluate(context: C): T {
         if (!isActive) return defaultValue
 
-        return conditionalValues.firstOrNull {
-            it.rule.matches(context) &&
-            isInEligibleSegment(
-                flagKey = feature.key,
-                id = context.stableId.hexId,
-                salt = salt,
-                rollout = it.rule.rollout
-            )
-        }?.value ?: defaultValue
+        return evaluateTrace(context).value
     }
 
-    /**
-     * Determines if the current contextFn belongs to an ineligible segment.
-     *
-     * This function evaluates specific conditions to check whether the
-     * current contextFn or entity falls under a segment that is considered
-     * ineligible for a particular operation or feature.
-     *
-     * @return `true` if the contextFn is in an ineligible segment, `false` otherwise.
-     */
-    private fun isInEligibleSegment(
-        flagKey: String,
-        id: HexId,
-        salt: String,
-        rollout: Rampup,
-    ): Boolean =
-        when {
-            rollout <= 0.0 -> false
-            rollout >= 100.0 -> true
-            else -> stableBucket(flagKey, id, salt) < (rollout.value * 100).roundToInt()
+    internal data class Trace<T : Any, C : Context> internal constructor(
+        val value: T,
+        val bucket: Int?,
+        val matched: ConditionalValue<T, C>?,
+        val skippedByRollout: ConditionalValue<T, C>?,
+    )
+
+    internal fun evaluateTrace(context: C): Trace<T, C> {
+        if (!isActive) {
+            return Trace(
+                value = defaultValue,
+                bucket = null,
+                matched = null,
+                skippedByRollout = null,
+            )
         }
 
-    /**
-     * Create a new MessageDigest instance per call to ensure thread-safety
-     * MessageDigest is NOT thread-safe and cannot be shared across concurrent evaluations
-     */
-    private fun stableBucket(
-        flagKey: String,
-        id: HexId,
-        salt: String,
-    ): Int {
-        val digest = MessageDigest.getInstance("SHA-256")
-        return with(digest.digest("$salt:$flagKey:${id.id}".toByteArray(Charsets.UTF_8))) {
-            (
-                (
-                    get(0).toInt() and 0xFF shl 24 or
-                        (get(1).toInt() and 0xFF shl 16) or
-                        (get(2).toInt() and 0xFF shl 8) or
-                        (get(3).toInt() and 0xFF)
-                ).toLong() and 0xFFFF_FFFFL
-            ).mod(10_000L).toInt()
+        var bucket: Int? = null
+        var skippedByRollout: ConditionalValue<T, C>? = null
+
+        val stableId = context.stableId.hexId
+        for (candidate in valuesByPrecedence) {
+            if (!candidate.rule.matches(context)) continue
+
+            val computedBucket = bucket ?: Bucketing.stableBucket(
+                salt = salt,
+                flagKey = feature.key,
+                stableId = stableId,
+            ).also { bucket = it }
+
+            if (Bucketing.isInRollout(candidate.rule.rollout, computedBucket)) {
+                return Trace(
+                    value = candidate.value,
+                    bucket = computedBucket,
+                    matched = candidate,
+                    skippedByRollout = skippedByRollout,
+                )
+            }
+
+            if (skippedByRollout == null) skippedByRollout = candidate
         }
+
+        return Trace(
+            value = defaultValue,
+            bucket = bucket,
+            matched = null,
+            skippedByRollout = skippedByRollout,
+        )
     }
 }

@@ -17,4 +17,5 @@ internal data class SerializableRule(
     val locales: Set<String> = emptySet(),
     val platforms: Set<String> = emptySet(),
     val versionRange: VersionRange? = null,
+    val axes: Map<String, Set<String>> = emptyMap(),
 )

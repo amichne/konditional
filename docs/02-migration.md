@@ -141,6 +141,24 @@ The guarantee is intentionally qualified: JSON is not “always safe”; instead
 
 ---
 
+## Shadow evaluation (parallel migration)
+
+For gradual migrations, you can evaluate against a baseline registry and shadow-evaluate against a candidate:
+
+```kotlin
+val value = Features.DARK_MODE.evaluateWithShadow(
+    context = context,
+    candidateRegistry = candidateRegistry,
+    onMismatch = { mismatch ->
+        log.warn("Mismatch: ${mismatch.kinds} baseline=${mismatch.baseline.value} candidate=${mismatch.candidate.value}")
+    }
+)
+```
+
+This keeps behavior pinned to the baseline value while generating comparison telemetry for the candidate path.
+
+---
+
 ## Next steps
 
 - Learn the primitives: ["Core Concepts"](03-core-concepts.md)

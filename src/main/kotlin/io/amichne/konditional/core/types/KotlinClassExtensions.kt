@@ -25,22 +25,15 @@ import kotlin.reflect.full.primaryConstructor
  * @param schema The schema to validate against (optional, defaults to the instance's schema)
  * @return JsonValue.JsonObject representation of this custom encodeable type
  */
-fun KotlinEncodeable<ObjectSchema>.toJsonValue(schema: ObjectSchema? = null): JsonObject {
-    val actualSchema = schema ?: this.schema
-    val fields = mutableMapOf<String, JsonValue>()
-
-    // Get all properties from the data class using reflection
-    // Exclude the 'schema' property itself from serialization
-    this::class.memberProperties.forEach { property ->
-        if (property.name != "schema") {
-            val value = property.call(this)
-            val jsonValue = value.toJsonValue()
-            fields[property.name] = jsonValue
+fun KotlinEncodeable<ObjectSchema>.toJsonValue(schema: ObjectSchema? = null): JsonObject = JsonObject(let {
+    buildMap {
+        it::class.memberProperties.forEach { property ->
+            if (property.name != "schema") {
+                put(property.name, property.call(it).toJsonValue())
+            }
         }
     }
-
-    return JsonObject(fields, actualSchema)
-}
+}, schema ?: this.schema)
 
 /**
  * Converts any value to a JsonValue.
@@ -77,8 +70,7 @@ internal fun Any?.toJsonValue(): JsonValue = when (this) {
 inline fun <reified T : KotlinEncodeable<ObjectSchema>> JsonObject.parseAs(): ParseResult<T> {
     return try {
         val kClass = T::class
-        val constructor = kClass.primaryConstructor
-                          ?: return ParseResult.Failure(
+        val constructor = kClass.primaryConstructor ?: return ParseResult.Failure(
                               ParseError.InvalidSnapshot("Custom type ${kClass.simpleName} must have a primary constructor")
                           )
 
@@ -128,16 +120,15 @@ inline fun <reified T : KotlinEncodeable<ObjectSchema>> JsonObject.parseAs(): Pa
 @PublishedApi
 internal fun JsonValue.toKotlinValue(targetClass: KClass<*>?): Any? = when (this) {
     is JsonNull -> null
-    is JsonBoolean -> this.value
-    is JsonString -> this.value
+    is JsonBoolean -> value
+    is JsonString -> value
     is JsonNumber -> when (targetClass) {
-        Int::class -> this.toInt()
-        Double::class -> this.toDouble()
-        else -> this.toDouble()
+        Int::class -> toInt()
+        Double::class -> toDouble()
+        else -> toDouble()
     }
     is JsonObject -> this
-    is JsonArray -> this.elements
-    else -> throw IllegalArgumentException("Unsupported JsonValue type: ${this::class.simpleName}")
+    is JsonArray -> elements
 }
 
 /**
@@ -147,9 +138,9 @@ internal fun JsonValue.toKotlinValue(targetClass: KClass<*>?): Any? = when (this
  */
 fun JsonValue.toPrimitiveValue(): Any? = when (this) {
     is JsonNull -> null
-    is JsonBoolean -> this.value
-    is JsonString -> this.value
-    is JsonNumber -> this.value
-    is JsonObject -> this.fields.mapValues { (_, v) -> v.toPrimitiveValue() }
-    is JsonArray -> this.elements.map { it.toPrimitiveValue() }
+    is JsonBoolean -> value
+    is JsonString -> value
+    is JsonNumber -> value
+    is JsonObject -> fields.mapValues { (_, v) -> v.toPrimitiveValue() }
+    is JsonArray -> elements.map { it.toPrimitiveValue() }
 }

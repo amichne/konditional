@@ -9,6 +9,7 @@ import io.amichne.konditional.values.Identifier
  */
 @JsonClass(generateAdapter = true)
 internal data class SerializablePatch(
+    val meta: SerializableSnapshotMetadata? = null,
     val flags: List<SerializableFlag>,
     val removeKeys: List<Identifier> = emptyList(),
 )

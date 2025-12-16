@@ -7,10 +7,10 @@ class DiagnosticTest {
 
     @Test
     fun `check FALLBACK_RULE_FLAG definition`() {
-        val flag = FeaturesWithAxis.FALLBACK_RULE_FLAG
+        val flag = FeaturesWithAxis.fallbackRuleFlag
         val definition = FeaturesWithAxis.namespace.flag(flag)
 
-        println("=== FALLBACK_RULE_FLAG Definition ===")
+        println("=== fallbackRuleFlag Definition ===")
         println("Default value: ${definition.defaultValue}")
         println("Is active: ${definition.isActive}")
         println("Number of conditional values: ${definition.values.size}")

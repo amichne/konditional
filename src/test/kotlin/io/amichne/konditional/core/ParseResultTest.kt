@@ -282,7 +282,7 @@ class ParseResultTest {
     @Test
     fun `Success and Failure are distinct types`() {
         val success: ParseResult<String> = ParseResult.Success("value")
-        val failure: ParseResult<String> = ParseResult.Failure(ParseError.FlagNotFound(Identifier( "key")))
+        val failure: ParseResult<String> = ParseResult.Failure(ParseError.FlagNotFound(Identifier("key")))
 
         // Type system enforces exhaustive when
         val result = when (success) {

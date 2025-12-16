@@ -30,7 +30,7 @@ data class ConfigurationPatch internal constructor(
      */
     fun applyTo(configuration: Configuration): Configuration = configuration.flags.toMutableMap().let { map ->
         removeKeys.forEach { map.remove(it) }
-        Configuration(map.also { it.putAll(flags) })
+        Configuration(map.also { it.putAll(flags) }, configuration.metadata)
     }
 
     companion object {

@@ -14,7 +14,7 @@ import java.util.UUID
  * - **Compile-time isolation**: Features are type-bound to their namespace
  * - **Runtime isolation**: Each namespace has its own flag registry
  * - **Type safety**: Namespace identity is encoded in the type system
- * - **Direct registry operations**: Taxonomies implement [NamespaceRegistry], eliminating the need for `.registry` access
+ * - **Direct registry operations**: Namespaces implement [NamespaceRegistry], eliminating the need for `.registry` access
  *
  * ## Namespace Types
  *
@@ -69,9 +69,9 @@ import java.util.UUID
  */
 open class Namespace(
     val id: String,
-    @PublishedApi internal val registry: NamespaceRegistry = NamespaceRegistry(),
+    @PublishedApi internal val registry: NamespaceRegistry = NamespaceRegistry(namespaceId = id),
     /**
-     * Seed used to construct stable [io.amichne.konditional.values.Identifier] values for features.
+     * Seed used to construct stable [io.amichne.konditional.values.FeatureId] values for features.
      *
      * By default this is the namespace [id], which is appropriate for "real" namespaces that are intended
      * to be federated and stable within an application.
@@ -116,7 +116,7 @@ open class Namespace(
     @TestOnly
     abstract class TestNamespaceFacade(id: String) : Namespace(
         id = id,
-        registry = NamespaceRegistry(),
+        registry = NamespaceRegistry(namespaceId = id),
         identifierSeed = UUID.randomUUID().toString(),
     )
 

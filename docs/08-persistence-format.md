@@ -17,6 +17,7 @@ At persistence time, the library serializes a list of **flag definitions**:
 ```mermaid
 flowchart LR
     Snap[Snapshot JSON] --> Flags["flags: List{SerializableFlag}"]
+    Snap --> Meta["meta: SerializableSnapshotMetadata?"]
     Flags --> Flag["SerializableFlag"]
     Flag --> Key["key: Identifier"]
     Flag --> Default["defaultValue: FlagValue"]
@@ -30,6 +31,7 @@ flowchart LR
     Rule --> Loc["locales: Set{String}"]
     Rule --> Plat["platforms: Set{String}"]
     Rule --> Vr["versionRange: VersionRange?"]
+    Rule --> Axes["axes: Map{String, Set{String}}"]
 
 ```
 
@@ -118,6 +120,11 @@ Valid `type` values:
 ```kotlin
 val snapshotJson = """
 {
+  "meta": {
+    "version": "${optionalVersionOrNull}",
+    "generatedAtEpochMillis": ${optionalEpochMillisOrNull},
+    "source": "${optionalSourceOrNull}"
+  },
   "flags": [
     {
       "key": "value::${namespaceSeed}::${featureKey}",
@@ -139,6 +146,9 @@ val snapshotJson = """
           "note": "${optionalNoteOrNull}",
           "locales": ["${APP_LOCALE_ENUM_NAME}", "..."],
           "platforms": ["${PLATFORM_ENUM_NAME}", "..."],
+          "axes": {
+            "${axisId}": ["${axisValueId}", "..."]
+          },
           "versionRange": {
             "type": "${UNBOUNDED|MIN_BOUND|MAX_BOUND|MIN_AND_MAX_BOUND}",
             "min": { "major": ${minMajor}, "minor": ${minMinor}, "patch": ${minPatch} },
@@ -157,6 +167,11 @@ val snapshotJson = """
 ```kotlin
 val patchJson = """
 {
+  "meta": {
+    "version": "${optionalVersionOrNull}",
+    "generatedAtEpochMillis": ${optionalEpochMillisOrNull},
+    "source": "${optionalSourceOrNull}"
+  },
   "flags": [
     { "...": "SerializableFlag objects (same shape as snapshot)" }
   ],
@@ -178,6 +193,23 @@ Deserialization reconstructs configurations by looking up each `key` in an inter
 - JSON syntax/shape errors fail with `ParseError.InvalidJson` / `ParseError.InvalidSnapshot`.
 
 Operationally: treat parse failures as “reject update, keep last-known-good”.
+
+---
+
+## Snapshot metadata (`meta`)
+
+Snapshots and patches may include an optional `meta` object:
+
+```json
+{
+  "meta": {
+    "version": "rev-123",
+    "generatedAtEpochMillis": 1700000000000,
+    "source": "s3://configs/global.json"
+  },
+  "flags": []
+}
+```
 
 ---
 

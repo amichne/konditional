@@ -60,7 +60,6 @@ sealed interface ParseError {
     /**
      * Failed to deserialize JSON into a snapshot.
      */
-    @ConsistentCopyVisibility
     data class InvalidSnapshot(val reason: String) : ParseError {
         override val message: String get() = "Invalid snapshot: $reason"
     }

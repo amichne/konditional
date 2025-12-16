@@ -8,6 +8,7 @@ import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.instance.Configuration
+import io.amichne.konditional.core.instance.ConfigurationMetadata
 import io.amichne.konditional.core.instance.ConfigurationPatch
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
@@ -16,9 +17,11 @@ import io.amichne.konditional.internal.serialization.models.SerializableFlag
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
 import io.amichne.konditional.internal.serialization.models.SerializableRule
 import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
+import io.amichne.konditional.internal.serialization.models.SerializableSnapshotMetadata
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
+import io.amichne.konditional.rules.evaluable.AxisConstraint
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.values.Identifier
 import kotlin.reflect.KClass
@@ -32,8 +35,28 @@ internal fun Configuration.toSerializable(): SerializableSnapshot {
     val serializableFlags = flags.map { (conditional, flag) ->
         flag.toSerializable(conditional.id)
     }
-    return SerializableSnapshot(serializableFlags)
+    return SerializableSnapshot(
+        meta = metadata.toSerializable(),
+        flags = serializableFlags,
+    )
 }
+
+private fun ConfigurationMetadata.toSerializable(): SerializableSnapshotMetadata? =
+    if (version == null && generatedAtEpochMillis == null && source == null) null else
+        SerializableSnapshotMetadata(
+            version = version,
+            generatedAtEpochMillis = generatedAtEpochMillis,
+            source = source,
+        )
+
+private fun SerializableSnapshotMetadata?.toDomain(): ConfigurationMetadata =
+    this?.let {
+        ConfigurationMetadata.of(
+            version = it.version,
+            generatedAtEpochMillis = it.generatedAtEpochMillis,
+            source = it.source,
+        )
+    } ?: ConfigurationMetadata.of()
 
 /**
  * Converts a FlagDefinition to a SerializableFlag.
@@ -60,7 +83,8 @@ private fun <T : Any, C : Context> ConditionalValue<T, C>.toSerializable(): Seri
         note = rule.note,
         locales = rule.baseEvaluable.locales.map { it.name }.toSet(),
         platforms = rule.baseEvaluable.platforms.map { it.name }.toSet(),
-        versionRange = rule.baseEvaluable.versionRange
+        versionRange = rule.baseEvaluable.versionRange,
+        axes = rule.baseEvaluable.axisConstraints.associate { it.axisId to it.allowedIds },
     )
 }
 
@@ -69,25 +93,31 @@ private fun <T : Any, C : Context> ConditionalValue<T, C>.toSerializable(): Seri
  * Returns ParseResult for type-safe error handling.
  */
 internal fun SerializableSnapshot.toSnapshot(): ParseResult<Configuration> {
-    return try {
-        val flagResults = flags.map { it.toFlagPair() }
+    return toSnapshot(SnapshotLoadOptions.strict())
+}
 
-        // Check for any failures
-        val failures = flagResults.filterIsInstance<ParseResult.Failure>()
-        if (failures.isNotEmpty()) {
-            return ParseResult.Failure(failures.first().error)
+internal fun SerializableSnapshot.toSnapshot(options: SnapshotLoadOptions): ParseResult<Configuration> =
+    try {
+        val flagMap = buildMap<Feature<*, *, *>, FlagDefinition<*, *, *>> {
+            flags.forEach { serializableFlag ->
+                when (val pairResult = serializableFlag.toFlagPair()) {
+                    is ParseResult.Success -> put(pairResult.value.first, pairResult.value.second)
+                    is ParseResult.Failure -> {
+                        val error = pairResult.error
+                        if (error is ParseError.FeatureNotFound && options.unknownFeatureKeyStrategy is UnknownFeatureKeyStrategy.Skip) {
+                            options.onWarning(SnapshotWarning.unknownFeatureKey(error.key))
+                            return@forEach
+                        }
+                        return ParseResult.Failure(error)
+                    }
+                }
+            }
         }
 
-        // Extract successful values
-        val flagMap = flagResults
-            .filterIsInstance<ParseResult.Success<Pair<Feature<*, *, *>, FlagDefinition<*, *, *>>>>()
-            .associate { it.value }
-
-        ParseResult.Success(Configuration(flagMap))
+        ParseResult.Success(Configuration(flagMap, meta.toDomain()))
     } catch (e: Exception) {
         ParseResult.Failure(ParseError.InvalidSnapshot(e.message ?: "Unknown error"))
     }
-}
 
 /**
  * Converts a SerializableFlag to a Map.Entry of Feature to FlagDefinition.
@@ -245,7 +275,8 @@ private fun <C : Context> SerializableRule.toRule(): Rule<C> {
         note = note,
         locales = locales.map { AppLocale.valueOf(it) }.toSet(),
         platforms = platforms.map { Platform.valueOf(it) }.toSet(),
-        versionRange = (versionRange ?: Unbounded())
+        versionRange = (versionRange ?: Unbounded()),
+        axisConstraints = axes.map { (axisId, allowedIds) -> AxisConstraint(axisId, allowedIds) }
     )
 }
 
@@ -257,7 +288,10 @@ internal fun ConfigurationPatch.toSerializable(): SerializablePatch {
         flag.toSerializable(conditional.id)
     }
     val removeKeyStrings = removeKeys.map { it.id }
-    return SerializablePatch(serializableFlags, removeKeyStrings)
+    return SerializablePatch(
+        flags = serializableFlags,
+        removeKeys = removeKeyStrings,
+    )
 }
 
 /**
