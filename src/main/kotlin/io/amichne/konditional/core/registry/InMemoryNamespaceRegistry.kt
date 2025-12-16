@@ -197,7 +197,7 @@ internal class InMemoryNamespaceRegistry(
             } ?: throw IllegalStateException("Flag not found in configuration: ${key.key}")
         } else {
             configuration.flags[key] as? FlagDefinition<T, C, M>
-            ?: throw IllegalStateException("Flag not found in configuration: ${key.key}")
+                ?: throw IllegalStateException("Flag not found in configuration: ${key.key}")
         }
     }
 

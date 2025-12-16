@@ -33,7 +33,19 @@ sealed class JsonSchema : OpenApiProps {
             pattern: String? = null,
             format: String? = null,
             enum: List<String>? = null
-        ): StringSchema = StringSchema(title, description, default, nullable, example, deprecated, minLength, maxLength, pattern, format, enum)
+        ): StringSchema = StringSchema(
+            title,
+            description,
+            default,
+            nullable,
+            example,
+            deprecated,
+            minLength,
+            maxLength,
+            pattern,
+            format,
+            enum
+        )
 
         fun int(
             title: String? = null,
@@ -89,7 +101,18 @@ sealed class JsonSchema : OpenApiProps {
             minItems: Int? = null,
             maxItems: Int? = null,
             uniqueItems: Boolean = false
-        ) = ArraySchema(elementSchema, title, description, default, nullable, example, deprecated, minItems, maxItems, uniqueItems)
+        ) = ArraySchema(
+            elementSchema,
+            title,
+            description,
+            default,
+            nullable,
+            example,
+            deprecated,
+            minItems,
+            maxItems,
+            uniqueItems
+        )
 
         fun obj(
             fields: Map<String, FieldSchema>,

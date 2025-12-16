@@ -1,6 +1,7 @@
 # Konditional LLM Documentation System
 
-This directory contains domain-specific prompts for LLM-assisted development, documentation, and code review of the Konditional feature flag library.
+This directory contains domain-specific prompts for LLM-assisted development, documentation, and code review of the
+Konditional feature flag library.
 
 ## Quick Start
 
@@ -11,15 +12,15 @@ This directory contains domain-specific prompts for LLM-assisted development, do
 
 ## Domain Map
 
-| Domain | Use When... | File |
-|--------|-------------|------|
-| **Public API** | Documenting user-facing DSL, writing examples, getting-started guides, API reference | [`01-public-api.md`](domains/01-public-api.md) |
-| **Internal Semantics** | Explaining evaluation logic, bucketing algorithms, rule matching, specificity | [`02-internal-semantics.md`](domains/02-internal-semantics.md) |
-| **Type Safety Theory** | Justifying compile-time guarantees, writing technical briefs, addressing skeptics | [`03-type-safety-theory.md`](domains/03-type-safety-theory.md) |
-| **Reliability Guarantees** | Documenting thread-safety, determinism, atomicity, invariants | [`04-reliability-guarantees.md`](domains/04-reliability-guarantees.md) |
-| **Configuration Integrity** | Remote config lifecycle, JSON serialization, validation, hot-reload | [`05-configuration-integrity.md`](domains/05-configuration-integrity.md) |
-| **Kontracts** | JSON Schema DSL submodule documentation | [`06-kontracts.md`](domains/06-kontracts.md) |
-| **Critical Evaluation** | Production-readiness assessment, complexity audit, migration due diligence | [`07-critical-evaluation.md`](domains/07-critical-evaluation.md) |
+| Domain                      | Use When...                                                                          | File                                                                     |
+|-----------------------------|--------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
+| **Public API**              | Documenting user-facing DSL, writing examples, getting-started guides, API reference | [`01-public-api.md`](domains/01-public-api.md)                           |
+| **Internal Semantics**      | Explaining evaluation logic, bucketing algorithms, rule matching, specificity        | [`02-internal-semantics.md`](domains/02-internal-semantics.md)           |
+| **Type Safety Theory**      | Justifying compile-time guarantees, writing technical briefs, addressing skeptics    | [`03-type-safety-theory.md`](domains/03-type-safety-theory.md)           |
+| **Reliability Guarantees**  | Documenting thread-safety, determinism, atomicity, invariants                        | [`04-reliability-guarantees.md`](domains/04-reliability-guarantees.md)   |
+| **Configuration Integrity** | Remote config lifecycle, JSON serialization, validation, hot-reload                  | [`05-configuration-integrity.md`](domains/05-configuration-integrity.md) |
+| **Kontracts**               | JSON Schema DSL submodule documentation                                              | [`06-kontracts.md`](domains/06-kontracts.md)                             |
+| **Critical Evaluation**     | Production-readiness assessment, complexity audit, migration due diligence           | [`07-critical-evaluation.md`](domains/07-critical-evaluation.md)         |
 
 ## Reading Order
 
@@ -69,27 +70,6 @@ When core types or APIs change, regenerate context files:
 ```bash
 ./scripts/extract-llm-context.sh
 ```
-
-## Tool Integration
-
-### Claude (claude.ai, API, Claude Code)
-
-Reference domain prompts directly in conversation:
-
-> "Using the prompt from `.llm-docs/domains/03-type-safety-theory.md`, write a technical brief on..."
-
-### Cursor
-
-Add to `.cursorrules`:
-
-```
-When documenting Konditional, read the appropriate prompt from .llm-docs/domains/ first.
-Domain selection: API usage → 01, internals → 02, type safety → 03, reliability → 04, remote config → 05, kontracts → 06.
-```
-
-### GitHub Copilot / Other Tools
-
-Include the relevant prompt as a code comment or in a separate context file that the tool can reference.
 
 ## Contributing New Prompts
 

@@ -15,6 +15,7 @@ data class SnapshotLoadOptions(
 ) {
     companion object {
         fun strict(): SnapshotLoadOptions = SnapshotLoadOptions(UnknownFeatureKeyStrategy.Fail)
+
         fun skipUnknownKeys(onWarning: (SnapshotWarning) -> Unit = {}): SnapshotLoadOptions =
             SnapshotLoadOptions(UnknownFeatureKeyStrategy.Skip, onWarning)
     }
@@ -22,6 +23,7 @@ data class SnapshotLoadOptions(
 
 sealed interface UnknownFeatureKeyStrategy {
     data object Fail : UnknownFeatureKeyStrategy
+
     data object Skip : UnknownFeatureKeyStrategy
 }
 
@@ -36,10 +38,11 @@ data class SnapshotWarning internal constructor(
     }
 
     companion object {
-        fun unknownFeatureKey(key: Identifier): SnapshotWarning = SnapshotWarning(
-            kind = Kind.UNKNOWN_FEATURE_KEY,
-            key = key,
-            message = "Unknown feature key encountered during deserialization: $key",
-        )
+        fun unknownFeatureKey(key: Identifier): SnapshotWarning =
+            SnapshotWarning(
+                kind = Kind.UNKNOWN_FEATURE_KEY,
+                key = key,
+                message = "Unknown feature key encountered during deserialization: $key",
+            )
     }
 }

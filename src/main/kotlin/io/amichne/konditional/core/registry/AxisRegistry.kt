@@ -45,7 +45,7 @@ internal object AxisRegistry {
         val existing = byType.putIfAbsent(axis.valueClass, axis)
         require(existing == null || existing === axis) {
             "Axis already registered for type ${axis.valueClass.simpleName}: " +
-            "existing=$existing, attempted=$axis"
+                "existing=$existing, attempted=$axis"
         }
     }
 

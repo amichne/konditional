@@ -180,8 +180,8 @@ class RuleGuaranteesTest {
     fun `custom rule specificity includes both base and additional specificity`() {
         val ruleWithLocaleAndTier = Rule(
             locales = setOf(AppLocale.UNITED_STATES), extension = SubscriptionRule(
-            requiredTier = "premium"
-        )
+                requiredTier = "premium"
+            )
         )
 
         // Base specificity: 1 (locale)

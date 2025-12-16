@@ -714,7 +714,8 @@ class SnapshotSerializerTest {
         val patchResult = SnapshotSerializer.fromJsonPatch(patchJson)
         assertIs<ParseResult.Success<SerializablePatch>>(patchResult)
 
-        val result = SnapshotSerializer.applyPatch(originalConfiguration, patchResult.value, SnapshotLoadOptions.strict())
+        val result =
+            SnapshotSerializer.applyPatch(originalConfiguration, patchResult.value, SnapshotLoadOptions.strict())
 
         assertIs<ParseResult.Success<Configuration>>(result)
     }

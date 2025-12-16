@@ -207,16 +207,23 @@ class ConsumerConfigurationLifecycleTest {
             }
         """.trimIndent()
 
-        val patchedConfig = when (val patched = SnapshotSerializer.applyPatchJson(namespaceV2.configuration, patchJson)) {
-            is ParseResult.Success -> patched.value
-            is ParseResult.Failure -> error("Failed to apply patch: ${patched.error.message}")
-        }
+        val patchedConfig =
+            when (val patched = SnapshotSerializer.applyPatchJson(namespaceV2.configuration, patchJson)) {
+                is ParseResult.Success -> patched.value
+                is ParseResult.Failure -> error("Failed to apply patch: ${patched.error.message}")
+            }
 
         namespaceV2.load(patchedConfig)
 
         assertFalse(featuresV2.darkMode.evaluate(ios), "inactive flag returns default regardless of rules")
         assertEquals(7, featuresV2.maxRetries.evaluate(v2), "default updated via patch")
-        assertEquals(11, featuresV2.maxRetries.evaluate(ctx(platform = Platform.ANDROID, version = Version.of(3, 0, 0))))
-        assertFalse(namespaceV2.configuration.flags.containsKey(featuresV2.apiEndpoint), "flag removed via patch is absent from configuration")
+        assertEquals(
+            11,
+            featuresV2.maxRetries.evaluate(ctx(platform = Platform.ANDROID, version = Version.of(3, 0, 0)))
+        )
+        assertFalse(
+            namespaceV2.configuration.flags.containsKey(featuresV2.apiEndpoint),
+            "flag removed via patch is absent from configuration"
+        )
     }
 }

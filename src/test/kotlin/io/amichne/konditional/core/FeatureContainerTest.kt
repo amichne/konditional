@@ -1,6 +1,7 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.TestDomains
+import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
@@ -10,7 +11,6 @@ import io.amichne.konditional.core.features.DoubleFeature
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.features.IntFeature
 import io.amichne.konditional.core.features.StringFeature
-import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.core.id.StableId
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
