@@ -127,6 +127,9 @@ class ConsumerConfigurationLifecycleTest {
         assertTrue(dumpedJson.contains(featuresV1.userSettings.id.toString()))
         println(dumpedJson)
 
+        // Simulate a fresh process (FeatureRegistry is process-global).
+        FeatureRegistry.clear()
+
         val namespaceV2 = Namespace(namespaceId)
         val featuresV2 = object : FeatureContainer<Namespace>(namespaceV2) {
             val darkMode by boolean<Context>(default = true) {

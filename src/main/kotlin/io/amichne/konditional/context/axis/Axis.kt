@@ -23,7 +23,7 @@ import kotlin.reflect.KClass
  * }
  *
  * object Axes {
- *     object Environment : Axis<Environment>("environment")
+ *     object Environment : Axis<Environment>("environment", Environment::class)
  * }
  * ```
  *
@@ -41,29 +41,14 @@ import kotlin.reflect.KClass
  */
 abstract class Axis<T>(
     final override val id: String,
-) : AxisValue where T : AxisValue, T : Enum<T> {
-
     /**
-     * The runtime class of the value type T.
+     * The runtime class of the value type [T].
      *
-     * This is extracted via reflection on the class's supertypes to find the
-     * type argument to Axis<T>.
+     * This is intentionally passed explicitly to avoid fragile reflection-based extraction
+     * from generic supertypes.
      */
-    @Suppress("UNCHECKED_CAST")
-    val valueClass: KClass<out T> = run {
-        // Find the Axis<T> supertype and extract T
-        val axisSupertype = this::class.supertypes
-            .first { type ->
-                (type.classifier as? KClass<*>)?.qualifiedName ==
-                    "io.amichne.konditional.context.axis.Axis"
-            }
-
-        // Extract the type argument T from Axis<T>
-        val typeArgument = axisSupertype.arguments.firstOrNull()?.type
-                           ?: error("Could not extract type argument from Axis<T> for ${this::class}")
-
-        typeArgument.classifier as KClass<out T>
-    }
+    val valueClass: KClass<T>,
+) : AxisValue where T : AxisValue, T : Enum<T> {
 
     init {
         // Auto-register this axis upon creation

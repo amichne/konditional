@@ -2,10 +2,9 @@ package io.amichne.konditional.core.features
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.types.DecimalEncodeable
 
 sealed interface DoubleFeature<C : Context, M : Namespace> :
-    Feature<DecimalEncodeable, Double, C, M> {
+    Feature<Double, C, M> {
 
     companion object {
         internal operator fun <C : Context, M : Namespace> invoke(

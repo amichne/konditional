@@ -5,7 +5,6 @@ import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.instance.Configuration
-import io.amichne.konditional.core.types.EncodableValue
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -103,23 +102,22 @@ interface NamespaceRegistry {
      *
      * @param key The [Feature] key for the flag
      * @return The [io.amichne.konditional.core.FlagDefinition] which is known to exist via structural guarantee
-     * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
      * @param C The type of the contextFn used for evaluation
      * @param M The namespace the feature belongs to
      */
     @Suppress("UNCHECKED_CAST")
-    fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> flag(
-        key: Feature<S, T, C, M>,
-    ): FlagDefinition<S, T, C, M> =
-        configuration.flags[key] as FlagDefinition<S, T, C, M>
+    fun <T : Any, C : Context, M : Namespace> flag(
+        key: Feature<T, C, M>,
+    ): FlagDefinition<T, C, M> =
+        configuration.flags[key] as FlagDefinition<T, C, M>
 
     /**
      * Retrieves all flags from the registry.
      *
      * @return Map of all [Feature] keys to their [FlagDefinition] definitions
      */
-    fun allFlags(): Map<Feature<*, *, *, *>, FlagDefinition<*, *, *, *>> =
+    fun allFlags(): Map<Feature<*, *, *>, FlagDefinition<*, *, *>> =
         configuration.flags
 
     companion object {
@@ -163,12 +161,11 @@ interface NamespaceRegistry {
          * called directly. Configuration updates are handled automatically through delegation.
          *
          * @param definition The [FlagDefinition] to update
-         * @param S The EncodableValue type wrapping the actual value
          * @param T The actual value type
          * @param C The type of the contextFn used for evaluation
          */
-        internal fun <S : EncodableValue<T>, T : Any, C : Context> NamespaceRegistry.updateDefinition(
-            definition: FlagDefinition<S, T, C, *>,
+        internal fun <T : Any, C : Context> NamespaceRegistry.updateDefinition(
+            definition: FlagDefinition<T, C, *>,
         ) {
             when (this) {
                 is InMemoryNamespaceRegistry -> updateDefinition(definition)

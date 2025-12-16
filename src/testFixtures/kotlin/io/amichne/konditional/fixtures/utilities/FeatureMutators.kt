@@ -1,15 +1,11 @@
 package io.amichne.konditional.fixtures.utilities
 
 import io.amichne.konditional.context.Context
-
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
-
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.registry.NamespaceRegistry.Companion.updateDefinition
-import io.amichne.konditional.core.types.EncodableValue
-
 import io.amichne.konditional.internal.builders.FlagBuilder
 
 /**
@@ -20,9 +16,9 @@ import io.amichne.konditional.internal.builders.FlagBuilder
  *
  * @param function The DSL configuration block
  */
-internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Feature<S, T, C, M>.update(
+internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.update(
     default: T,
-    function: FlagScope<S, T, C, M>.() -> Unit,
+    function: FlagScope<T, C>.() -> Unit,
 ): Unit = namespace.updateDefinition(FlagBuilder(default, this).apply(function).build())
 
 /**
@@ -33,6 +29,6 @@ internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Featur
  *
  * @param definition The flag definition to override
  */
-internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Feature<S, T, C, M>.update(
-    definition: FlagDefinition<S, T, C, M>,
+internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.update(
+    definition: FlagDefinition<T, C, M>,
 ): Unit = namespace.updateDefinition(definition)

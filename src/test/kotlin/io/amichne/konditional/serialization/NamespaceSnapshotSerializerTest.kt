@@ -11,6 +11,7 @@ import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.fixtures.utilities.update
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -27,16 +28,17 @@ import kotlin.test.assertTrue
  */
 class NamespaceSnapshotSerializerTest {
 
-    private val TestFeatures = object : FeatureContainer<Namespace.Global>(Namespace.Global) {
+    private val testNamespace = TestNamespace.test("namespace-snapshot-serializer")
+    private val TestFeatures = object : FeatureContainer<TestNamespace>(testNamespace) {
         val boolFlag by boolean<Context>(default = false)
         val stringFlag by string<Context>(default = "default")
     }
 
     @BeforeEach
     fun setup() {
-        // Clear both FeatureRegistry and Namespace.Global registry before each test
+        // Clear both FeatureRegistry and the namespace registry before each test
         FeatureRegistry.clear()
-        Namespace.Global.load(io.amichne.konditional.core.instance.Configuration(emptyMap()))
+        testNamespace.load(io.amichne.konditional.core.instance.Configuration(emptyMap()))
 
         // Register test features
         FeatureRegistry.register(TestFeatures.boolFlag)
@@ -53,9 +55,9 @@ class NamespaceSnapshotSerializerTest {
     @Test
     fun `Given namespace with no flags, When serialized, Then produces JSON with empty flags array`() {
         // Start with empty namespace
-        Namespace.Global.load(io.amichne.konditional.core.instance.Configuration(emptyMap()))
+        testNamespace.load(io.amichne.konditional.core.instance.Configuration(emptyMap()))
 
-        val serializer = NamespaceSnapshotSerializer(Namespace.Global)
+        val serializer = NamespaceSnapshotSerializer(testNamespace)
         val json = serializer.toJson()
 
         assertNotNull(json)
@@ -70,7 +72,7 @@ class NamespaceSnapshotSerializerTest {
         TestFeatures.stringFlag.update("test-value") {
         }
 
-        val serializer = NamespaceSnapshotSerializer(Namespace.Global)
+        val serializer = NamespaceSnapshotSerializer(testNamespace)
         val json = serializer.toJson()
 
         assertNotNull(json)
@@ -99,7 +101,7 @@ class NamespaceSnapshotSerializerTest {
             }
         """.trimIndent()
 
-        val serializer = NamespaceSnapshotSerializer(Namespace.Global)
+        val serializer = NamespaceSnapshotSerializer(testNamespace)
         val result = serializer.fromJson(json)
 
         assertIs<ParseResult.Success<io.amichne.konditional.core.instance.Configuration>>(result)
@@ -114,12 +116,12 @@ class NamespaceSnapshotSerializerTest {
     fun `Given invalid JSON, When deserialized, Then returns failure without loading`() {
         val invalidJson = "not valid json"
 
-        val serializer = NamespaceSnapshotSerializer(Namespace.Global)
+        val serializer = NamespaceSnapshotSerializer(testNamespace)
         val result = serializer.fromJson(invalidJson)
 
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.InvalidJson>(result.error)
-        assertTrue((result.error as ParseError.InvalidJson).message.contains("global"))
+        assertTrue((result.error as ParseError.InvalidJson).message.contains(testNamespace.id))
     }
 
     @Test
@@ -141,7 +143,7 @@ class NamespaceSnapshotSerializerTest {
             }
         """.trimIndent()
 
-        val serializer = NamespaceSnapshotSerializer(Namespace.Global)
+        val serializer = NamespaceSnapshotSerializer(testNamespace)
         val result = serializer.fromJson(json)
 
         assertIs<ParseResult.Failure>(result)
@@ -163,11 +165,11 @@ class NamespaceSnapshotSerializerTest {
         }
 
         // Serialize
-        val serializer = NamespaceSnapshotSerializer(Namespace.Global)
+        val serializer = NamespaceSnapshotSerializer(testNamespace)
         val json = serializer.toJson()
 
         // Clear and deserialize
-        Namespace.Global.load(io.amichne.konditional.core.instance.Configuration(emptyMap()))
+        testNamespace.load(io.amichne.konditional.core.instance.Configuration(emptyMap()))
         val result = serializer.fromJson(json)
         assertIs<ParseResult.Success<io.amichne.konditional.core.instance.Configuration>>(result)
 
@@ -186,7 +188,7 @@ class NamespaceSnapshotSerializerTest {
     fun `Given forModule factory, When created, Then works same as constructor`() {
         TestFeatures.boolFlag.update(true) {}
 
-        val serializer = NamespaceSnapshotSerializer.forModule(Namespace.Global)
+        val serializer = NamespaceSnapshotSerializer.forModule(testNamespace)
         val json = serializer.toJson()
 
         assertNotNull(json)

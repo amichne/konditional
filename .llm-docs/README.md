@@ -19,6 +19,7 @@ This directory contains domain-specific prompts for LLM-assisted development, do
 | **Reliability Guarantees** | Documenting thread-safety, determinism, atomicity, invariants | [`04-reliability-guarantees.md`](domains/04-reliability-guarantees.md) |
 | **Configuration Integrity** | Remote config lifecycle, JSON serialization, validation, hot-reload | [`05-configuration-integrity.md`](domains/05-configuration-integrity.md) |
 | **Kontracts** | JSON Schema DSL submodule documentation | [`06-kontracts.md`](domains/06-kontracts.md) |
+| **Critical Evaluation** | Production-readiness assessment, complexity audit, migration due diligence | [`07-critical-evaluation.md`](domains/07-critical-evaluation.md) |
 
 ## Reading Order
 
@@ -36,6 +37,9 @@ For comprehensive understanding, domains are numbered by conceptual dependency:
 05 Configuration       → "How do updates work safely?"
        ↓
 06 Kontracts           → "How does the schema DSL work?"
+
+07 Critical Evaluation → "Should we bet production on this?"
+   (standalone assessment prompt—does not depend on others)
 ```
 
 ## Directory Structure
@@ -68,7 +72,7 @@ When core types or APIs change, regenerate context files:
 
 ## Tool Integration
 
-### Agentic System (Claude Code, Cursor, etc.)
+### Claude (claude.ai, API, Claude Code)
 
 Reference domain prompts directly in conversation:
 

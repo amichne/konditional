@@ -6,7 +6,6 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.instance.ConfigurationPatch
-import io.amichne.konditional.core.types.EncodableValue
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 
@@ -72,7 +71,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * The top of each stack is the currently active override.
      * These overrides take precedence over normal flag evaluation.
      */
-    private val overrides = ConcurrentHashMap<Feature<*, *, *, *>, ArrayDeque<Any>>()
+    private val overrides = ConcurrentHashMap<Feature<*, *, *>, ArrayDeque<Any>>()
 
     /**
      * Loads the flag values from the provided [config] snapshot.
@@ -104,19 +103,18 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      *
      * @param key The [Feature] key for the flag
      * @return The [FlagDefinition] (potentially wrapped with override logic)
-     * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
      * @param C The type of the contextFn used for evaluation
      * @param M The namespace the feature belongs to
      */
     @Suppress("UNCHECKED_CAST")
-    override fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> flag(
-        key: Feature<S, T, C, M>,
-    ): FlagDefinition<S, T, C, M> {
+    override fun <T : Any, C : Context, M : Namespace> flag(
+        key: Feature<T, C, M>,
+    ): FlagDefinition<T, C, M> {
         val override = getOverride(key)
         return if (override != null) {
             // Create a FlagDefinition that always returns the override value
-            val originalDefinition = configuration.flags[key] as? FlagDefinition<S, T, C, M>
+            val originalDefinition = configuration.flags[key] as? FlagDefinition<T, C, M>
             originalDefinition?.let { original ->
                 FlagDefinition(
                     feature = original.feature,
@@ -127,7 +125,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
                 )
             } ?: throw IllegalStateException("Flag not found in configuration: ${key.key}")
         } else {
-            configuration.flags[key] as? FlagDefinition<S, T, C, M>
+            configuration.flags[key] as? FlagDefinition<T, C, M>
             ?: throw IllegalStateException("Flag not found in configuration: ${key.key}")
         }
     }
@@ -161,7 +159,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @param S The type of the flag's value
      * @param C The type of the contextFn used for evaluation
      */
-    internal fun <S : EncodableValue<T>, T : Any, C : Context> updateDefinition(definition: FlagDefinition<S, T, C, *>) {
+    internal fun <T : Any, C : Context> updateDefinition(definition: FlagDefinition<T, C, *>) {
         current.updateAndGet { currentSnapshot ->
             val mutableFlags = currentSnapshot.flags.toMutableMap()
             mutableFlags[definition.feature] = definition
@@ -182,7 +180,6 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      *
      * @param feature The feature flag to override
      * @param value The value to return for this flag
-     * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
      * @param C The type of the contextFn used for evaluation
      * @param M The namespace the feature belongs to
@@ -192,8 +189,8 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @see hasOverride
      */
     @PublishedApi
-    internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> setOverride(
-        feature: Feature<S, T, C, M>,
+    internal fun <T : Any, C : Context, M : Namespace> setOverride(
+        feature: Feature<T, C, M>,
         value: T,
     ) {
         overrides.compute(feature) { _, stack ->
@@ -211,7 +208,6 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * all overrides are cleared will the flag resume normal evaluation.
      *
      * @param feature The feature flag to clear the override for
-     * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
      * @param C The type of the contextFn used for evaluation
      * @param M The namespace the feature belongs to
@@ -220,8 +216,8 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @see clearAllOverrides
      */
     @PublishedApi
-    internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> clearOverride(
-        feature: Feature<S, T, C, M>,
+    internal fun <T : Any, C : Context, M : Namespace> clearOverride(
+        feature: Feature<T, C, M>,
     ) {
         overrides.compute(feature) { _, stack ->
             if (stack.isNullOrEmpty()) {
@@ -251,15 +247,14 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      *
      * @param feature The feature flag to check
      * @return true if an override is set, false otherwise
-     * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
      * @param C The type of the contextFn used for evaluation
      * @param M The namespace the feature belongs to
      *
      * @see setOverride
      */
-    internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> hasOverride(
-        feature: Feature<S, T, C, M>,
+    internal fun <T : Any, C : Context, M : Namespace> hasOverride(
+        feature: Feature<T, C, M>,
     ): Boolean = overrides[feature]?.isNotEmpty() == true
 
     /**
@@ -269,7 +264,6 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      *
      * @param feature The feature flag to get the override for
      * @return The override value, or null if no override is set
-     * @param S The EncodableValue type wrapping the actual value
      * @param T The actual value type
      * @param C The type of the contextFn used for evaluation
      * @param M The namespace the feature belongs to
@@ -277,7 +271,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @see setOverride
      */
     @Suppress("UNCHECKED_CAST")
-    internal fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> getOverride(
-        feature: Feature<S, T, C, M>,
+    internal fun <T : Any, C : Context, M : Namespace> getOverride(
+        feature: Feature<T, C, M>,
     ): T? = overrides[feature]?.lastOrNull() as? T
 }

@@ -6,9 +6,8 @@ import io.amichne.kontracts.schema.ObjectSchema
 /**
  * Interface for custom types that can be encoded with schema validation.
  *
- * This interface follows the Encodeable pattern used throughout the type system
- * (BooleanEncodeable, StringEncodeable, etc.) and enables type-safe encoding
- * of user-defined types with compile-time schema validation.
+ * Implement this interface to use a custom structured type as a feature flag value.
+ * The schema is used for validation and JSON conversion at the library boundary.
  *
  * The generic type parameter [S] allows for different schema types, though
  * [ObjectSchema] is the most common use case for data classes.

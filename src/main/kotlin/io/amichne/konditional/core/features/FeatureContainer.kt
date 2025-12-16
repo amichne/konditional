@@ -4,14 +4,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.registry.NamespaceRegistry.Companion.updateDefinition
-import io.amichne.konditional.core.types.BooleanEncodeable
-import io.amichne.konditional.core.types.DecimalEncodeable
-import io.amichne.konditional.core.types.EncodableValue
-import io.amichne.konditional.core.types.EnumEncodeable
-import io.amichne.konditional.core.types.IntEncodeable
-import io.amichne.konditional.core.types.KotlinClassEncodeable
 import io.amichne.konditional.core.types.KotlinEncodeable
-import io.amichne.konditional.core.types.StringEncodeable
 import io.amichne.konditional.internal.builders.FlagBuilder
 import io.amichne.konditional.serialization.FeatureRegistry
 import io.amichne.konditional.serialization.NamespaceSnapshotSerializer
@@ -24,8 +17,8 @@ import kotlin.reflect.KProperty
  * Base class for organizing and auto-registering feature flags with type-safe delegation.
  *
  * FeatureContainer provides a declarative way to define feature flags using Kotlin's
- * property delegation pattern. Features are automatically registered on first access
- * and can be enumerated at runtime using [allFeatures].
+ * property delegation pattern. Features are created and registered during container
+ * initialization (t0) and can be enumerated at runtime using [allFeatures].
  *
  * **Benefits over enum-based features:**
  * - **Complete enumeration**: `allFeatures()` provides all features at runtime
@@ -33,7 +26,7 @@ import kotlin.reflect.KProperty
  * - **Single namespace declaration**: No need to repeat namespace on every feature
  * - **Mixed types**: Combine Boolean, String, Int, Double, and Enum features in one container
  * - **Type safety**: Full type inference and compile-time checking
- * - **Lazy registration**: Features are created and registered only when first accessed
+ * - **Deterministic registration**: Features are created and registered at container initialization (t0)
  *
  * **Example:**
  * ```kotlin
@@ -71,7 +64,7 @@ abstract class FeatureContainer<M : Namespace>(
     override val container: FeatureContainer<M>
         get() = this
 
-    private val _features = mutableListOf<Feature<*, *, *, M>>()
+    private val _features = mutableListOf<Feature<*, *, M>>()
 
     fun toJson(): String = NamespaceSnapshotSerializer(namespace).toJson()
 
@@ -96,14 +89,14 @@ abstract class FeatureContainer<M : Namespace>(
      *
      * @return An immutable list of all registered features in this features
      */
-    fun allFeatures(): List<Feature<*, *, *, M>> = _features.toList()
+    fun allFeatures(): List<Feature<*, *, M>> = _features.toList()
 
     /**
      * Creates a Boolean feature with automatic registration and configuration.
      *
      * The feature is configured using a DSL scope that provides type-safe access to
      * boolean-specific configuration options like rules, defaults, and targeting.
-     * Configuration is automatically applied to the namespace when the feature is first accessed.
+     * Configuration is automatically applied to the namespace during container initialization.
      *
      * **Example:**
      * ```kotlin
@@ -124,8 +117,8 @@ abstract class FeatureContainer<M : Namespace>(
      */
     protected fun <C : Context> boolean(
         default: Boolean,
-        flagScope: FlagScope<BooleanEncodeable, Boolean, C, M>.() -> Unit = {},
-    ): ContainerFeaturePropertyDelegate<BooleanFeature<C, M>, BooleanEncodeable, Boolean, C> =
+        flagScope: FlagScope<Boolean, C>.() -> Unit = {},
+    ): ContainerFeaturePropertyDelegate<BooleanFeature<C, M>, Boolean, C> =
         ContainerFeaturePropertyDelegate(default, flagScope) { BooleanFeature(it, this) }
 
     /**
@@ -133,7 +126,7 @@ abstract class FeatureContainer<M : Namespace>(
      *
      * The feature is configured using a DSL scope that provides type-safe access to
      * string-specific configuration options like rules, defaults, and targeting.
-     * Configuration is automatically applied to the namespace when the feature is first accessed.
+     * Configuration is automatically applied to the namespace during container initialization.
      *
      * **Example:**
      * ```kotlin
@@ -154,8 +147,8 @@ abstract class FeatureContainer<M : Namespace>(
      */
     protected fun <C : Context> string(
         default: String,
-        stringScope: FlagScope<StringEncodeable, String, C, M>.() -> Unit = {},
-    ): ContainerFeaturePropertyDelegate<StringFeature<C, M>, StringEncodeable, String, C> =
+        stringScope: FlagScope<String, C>.() -> Unit = {},
+    ): ContainerFeaturePropertyDelegate<StringFeature<C, M>, String, C> =
         ContainerFeaturePropertyDelegate(default, stringScope) { StringFeature.Companion(it, this) }
 
     /**
@@ -163,7 +156,7 @@ abstract class FeatureContainer<M : Namespace>(
      *
      * The feature is configured using a DSL scope that provides type-safe access to
      * integer-specific configuration options like rules, defaults, and targeting.
-     * Configuration is automatically applied to the namespace when the feature is first accessed.
+     * Configuration is automatically applied to the namespace during container initialization.
      *
      * **Example:**
      * ```kotlin
@@ -184,8 +177,8 @@ abstract class FeatureContainer<M : Namespace>(
      */
     protected fun <C : Context> integer(
         default: Int,
-        integerScope: FlagScope<IntEncodeable, Int, C, M>.() -> Unit = {},
-    ): ContainerFeaturePropertyDelegate<IntFeature<C, M>, IntEncodeable, Int, C> =
+        integerScope: FlagScope<Int, C>.() -> Unit = {},
+    ): ContainerFeaturePropertyDelegate<IntFeature<C, M>, Int, C> =
         ContainerFeaturePropertyDelegate(default, integerScope) { IntFeature.Companion(it, this) }
 
     /**
@@ -193,7 +186,7 @@ abstract class FeatureContainer<M : Namespace>(
      *
      * The feature is configured using a DSL scope that provides type-safe access to
      * decimal-specific configuration options like rules, defaults, and targeting.
-     * Configuration is automatically applied to the namespace when the feature is first accessed.
+     * Configuration is automatically applied to the namespace during container initialization.
      *
      * **Example:**
      * ```kotlin
@@ -214,8 +207,8 @@ abstract class FeatureContainer<M : Namespace>(
      */
     protected fun <C : Context> double(
         default: Double,
-        decimalScope: FlagScope<DecimalEncodeable, Double, C, M>.() -> Unit = {},
-    ): ContainerFeaturePropertyDelegate<DoubleFeature<C, M>, DecimalEncodeable, Double, C> =
+        decimalScope: FlagScope<Double, C>.() -> Unit = {},
+    ): ContainerFeaturePropertyDelegate<DoubleFeature<C, M>, Double, C> =
         ContainerFeaturePropertyDelegate(default, decimalScope) { DoubleFeature(it, this) }
 
     /**
@@ -223,7 +216,7 @@ abstract class FeatureContainer<M : Namespace>(
      *
      * The feature is configured using a DSL scope that provides type-safe access to
      * enum-specific configuration options like rules, defaults, and targeting.
-     * Configuration is automatically applied to the namespace when the feature is first accessed.
+     * Configuration is automatically applied to the namespace during container initialization.
      *
      * **Example:**
      * ```kotlin
@@ -247,8 +240,8 @@ abstract class FeatureContainer<M : Namespace>(
      */
     protected fun <E : Enum<E>, C : Context> enum(
         default: E,
-        enumScope: FlagScope<EnumEncodeable<E>, E, C, M>.() -> Unit = {},
-    ): ContainerFeaturePropertyDelegate<EnumFeature<E, C, M>, EnumEncodeable<E>, E, C> =
+        enumScope: FlagScope<E, C>.() -> Unit = {},
+    ): ContainerFeaturePropertyDelegate<EnumFeature<E, C, M>, E, C> =
         ContainerFeaturePropertyDelegate(default, enumScope) { EnumFeature(it, this) }
 
     /**
@@ -256,7 +249,7 @@ abstract class FeatureContainer<M : Namespace>(
      *
      * The feature is configured using a DSL scope that provides type-safe access to
      * custom type configuration options like rules, defaults, and targeting.
-     * Configuration is automatically applied to the namespace when the feature is first accessed.
+     * Configuration is automatically applied to the namespace during container initialization.
      *
      * The custom type must implement [KotlinEncodeable]<[ObjectSchema]>
      * and be annotated with [@ConfigDataClass][io.amichne.konditional.core.dsl.ConfigDataClass]
@@ -295,8 +288,8 @@ abstract class FeatureContainer<M : Namespace>(
      */
     protected inline fun <reified T : KotlinEncodeable<ObjectSchema>, C : Context> custom(
         default: T,
-        noinline customScope: FlagScope<KotlinClassEncodeable<T>, T, C, M>.() -> Unit = {},
-    ): ContainerFeaturePropertyDelegate<KotlinClassFeature<T, C, M>, KotlinClassEncodeable<T>, T, C> =
+        noinline customScope: FlagScope<T, C>.() -> Unit = {},
+    ): ContainerFeaturePropertyDelegate<KotlinClassFeature<T, C, M>, T, C> =
         ContainerFeaturePropertyDelegate(default, customScope) { KotlinClassFeature(it, this) }
 
     /**
@@ -318,29 +311,28 @@ abstract class FeatureContainer<M : Namespace>(
      * - All features in the features share the same namespace
      *
      * @param F The feature type (BooleanFeature, StringFeature, etc.)
-     * @param S The EncodableValue type wrapping the actual value
      * @param T The value type (Boolean, String, Int, etc.)
      * @param C The contextFn type used for evaluation
      * @param configScope The DSL configuration block to execute
      * @param factory A function that creates the feature given the namespace and property name
      */
     @Suppress("UNCHECKED_CAST")
-    inner class ContainerFeaturePropertyDelegate<F : Feature<S, T, C, M>, S : EncodableValue<T>, T : Any, C : Context>(
+    inner class ContainerFeaturePropertyDelegate<F : Feature<T, C, M>, T : Any, C : Context>(
         private val default: T,
-        private val configScope: FlagScope<S, T, C, M>.() -> Unit,
+        private val configScope: FlagScope<T, C>.() -> Unit,
         private val factory: M.(String) -> F,
     ) : ReadOnlyProperty<FeatureContainer<M>, F>,
-        PropertyDelegateProvider<FeatureContainer<M>, ContainerFeaturePropertyDelegate<F, S, T, C>> {
+        PropertyDelegateProvider<FeatureContainer<M>, ContainerFeaturePropertyDelegate<F, T, C>> {
         private lateinit var feature: F
 
         override fun provideDelegate(
             thisRef: FeatureContainer<M>,
             property: KProperty<*>,
-        ): ContainerFeaturePropertyDelegate<F, S, T, C> {
+        ): ContainerFeaturePropertyDelegate<F, T, C> {
             feature = factory(namespace, property.name).also { _features.add(it) }.also {
                 namespace.updateDefinition(
                     FlagBuilder(default, it)
-                        .apply<FlagBuilder<S, T, C, M>>(configScope)
+                        .apply(configScope)
                         .build()
                 )
             }.also { FeatureRegistry.register(it) }

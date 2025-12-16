@@ -4,8 +4,8 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.values.Identifier
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Registry for mapping flag keys to their Feature instances.
@@ -29,22 +29,26 @@ import io.amichne.konditional.values.Identifier
  *
  * ## Thread Safety
  *
- * This registry is NOT thread-safe. Registration should happen during application initialization
- * before any concurrent access.
+ * The underlying storage is thread-safe and supports concurrent registration and reads.
+ * The only semantic requirement is ordering: callers must ensure that any feature they expect
+ * to deserialize has been registered before deserialization begins.
  *
  * @see SnapshotSerializer
  */
-object FeatureRegistry {
-    private val registry = mutableMapOf<Identifier, Feature<*, *, *, *>>()
+internal object FeatureRegistry {
+    private val registry = ConcurrentHashMap<Identifier, Feature<*, *, *>>()
 
     /**
      * Registers a Feature instance with its key.
      *
      * @param feature The feature to register
-     * @throws IllegalStateException if a different conditional is already registered with the same key
+     * @throws IllegalStateException if a different feature is already registered with the same key
      */
-    fun <S : EncodableValue<T>, T : Any, C : Context> register(feature: Feature<S, T, C, *>) {
-        registry[feature.id] = feature
+    fun <T : Any, C : Context> register(feature: Feature<T, C, *>) {
+        val existing = registry.putIfAbsent(feature.id, feature)
+        check(existing == null || existing === feature) {
+            "Feature already registered for id='${feature.id}' (key='${feature.key}'): existing=$existing, attempted=$feature"
+        }
     }
 
     /**
@@ -55,7 +59,7 @@ object FeatureRegistry {
      * @param key The string key of the conditional
      * @return ParseResult with the registered Feature or an error
      */
-    internal fun get(key: Identifier): ParseResult<Feature<*, *, *, *>> {
+    internal fun get(key: Identifier): ParseResult<Feature<*, *, *>> {
         return registry[key]?.let { ParseResult.Success(it) }
                ?: ParseResult.Failure(ParseError.FeatureNotFound(key))
     }

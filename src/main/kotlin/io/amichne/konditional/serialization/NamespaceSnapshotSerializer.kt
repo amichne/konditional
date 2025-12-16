@@ -83,12 +83,12 @@ class NamespaceSnapshotSerializer<M : Namespace>(
      *
      * Returns ParseResult for type-safe error handling following parseUnsafe-don't-validate principles.
      *
-     * ## Error Handling
-     *
-     * Returns [ParseResult.Failure] with structured error if:
-     * - JSON is malformed
-     * - Required features are not registered in [FeatureRegistry]
-     * - Type mismatches occur
+ * ## Error Handling
+ *
+ * Returns [ParseResult.Failure] with structured error if:
+ * - JSON is malformed
+ * - Required features are not registered (containers not initialized)
+ * - Type mismatches occur
      *
      * ## Side Effects
      *

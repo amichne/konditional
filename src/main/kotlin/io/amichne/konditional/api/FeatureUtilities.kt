@@ -7,18 +7,17 @@ import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.features.FeatureAware
 import io.amichne.konditional.core.registry.NamespaceRegistry
-import io.amichne.konditional.core.types.EncodableValue
 
-inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context, M : Namespace, D> D.feature(
-    block: D.() -> Feature<S, T, C, M>,
+inline fun <reified T : Any, reified C : Context, M : Namespace, D> D.feature(
+    block: D.() -> Feature<T, C, M>,
 ): T where D : ContextAware<C>, D : FeatureAware<out M> = block().evaluate(context)
 
 /**
  * Evaluate with an explicit context instance.
  */
-inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context, D> D.feature(
+inline fun <reified T : Any, reified C : Context, D> D.feature(
     context: C,
-    @KonditionalDsl block: D.() -> Feature<S, T, C, *>,
+    @KonditionalDsl block: D.() -> Feature<T, C, *>,
 ): T where D : FeatureAware<*>, D : ContextAware<*> = block().evaluate(context)
 
 /**
@@ -31,7 +30,7 @@ inline fun <reified S : EncodableValue<T>, reified T : Any, reified C : Context,
  * @param registry The registry to use (defaults to the feature's namespace)
  * @return The evaluated value, or null if the feature is not registered
  */
-fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> Feature<S, T, C, M>.evaluate(
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
     context: C,
     registry: NamespaceRegistry = namespace,
 ): T = registry.flag(this).evaluate(context)

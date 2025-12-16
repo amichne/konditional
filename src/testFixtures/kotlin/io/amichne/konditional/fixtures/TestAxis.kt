@@ -36,8 +36,8 @@ enum class TestTenant(override val id: String) : AxisValue {
  * Axes auto-register on object initialization.
  */
 object TestAxes {
-    object Environment : Axis<TestEnvironment>("environment")
-    object Tenant : Axis<TestTenant>("tenant")
+    object Environment : Axis<TestEnvironment>("environment", TestEnvironment::class)
+    object Tenant : Axis<TestTenant>("tenant", TestTenant::class)
 }
 
 /**

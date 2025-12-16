@@ -11,7 +11,6 @@ import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.instance.ConfigurationPatch
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.internal.serialization.models.FlagValue
 import io.amichne.konditional.internal.serialization.models.SerializableFlag
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
@@ -39,7 +38,7 @@ internal fun Configuration.toSerializable(): SerializableSnapshot {
 /**
  * Converts a FlagDefinition to a SerializableFlag.
  */
-private fun <S : EncodableValue<T>, T : Any, C : Context> FlagDefinition<S, T, C, *>.toSerializable(
+private fun <T : Any, C : Context> FlagDefinition<T, C, *>.toSerializable(
     flagKey: Identifier,
 ): SerializableFlag {
     return SerializableFlag(
@@ -54,7 +53,7 @@ private fun <S : EncodableValue<T>, T : Any, C : Context> FlagDefinition<S, T, C
 /**
  * Converts a ConditionalValue to a SerializableRule.
  */
-private fun <S : EncodableValue<T>, T : Any, C : Context> ConditionalValue<S, T, C, *>.toSerializable(): SerializableRule {
+private fun <T : Any, C : Context> ConditionalValue<T, C>.toSerializable(): SerializableRule {
     return SerializableRule(
         value = FlagValue.from(value),
         rampUp = rule.rollout.value,
@@ -81,7 +80,7 @@ internal fun SerializableSnapshot.toSnapshot(): ParseResult<Configuration> {
 
         // Extract successful values
         val flagMap = flagResults
-            .filterIsInstance<ParseResult.Success<Pair<Feature<*, *, *, *>, FlagDefinition<*, *, *, *>>>>()
+            .filterIsInstance<ParseResult.Success<Pair<Feature<*, *, *>, FlagDefinition<*, *, *>>>>()
             .associate { it.value }
 
         ParseResult.Success(Configuration(flagMap))
@@ -94,7 +93,7 @@ internal fun SerializableSnapshot.toSnapshot(): ParseResult<Configuration> {
  * Converts a SerializableFlag to a Map.Entry of Feature to FlagDefinition.
  * Returns ParseResult for type-safe error handling.
  */
-private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Feature<*, *, *, *>, FlagDefinition<*, *, *, *>>> {
+private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Feature<*, *, *>, FlagDefinition<*, *, *>>> {
     return when (val conditionalResult = FeatureRegistry.get(key)) {
         is ParseResult.Success -> {
             val conditional = conditionalResult.value
@@ -110,12 +109,12 @@ private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Feature<*, *, *, *>,
  * Type-safe: no casting required thanks to FlagValue sealed class.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> SerializableFlag.toFlagDefinition(
-    conditional: Feature<S, T, C, M>,
-): FlagDefinition<S, T, C, M> {
+private fun <T : Any, C : Context, M : Namespace> SerializableFlag.toFlagDefinition(
+    conditional: Feature<T, C, M>,
+): FlagDefinition<T, C, M> {
     // Extract typed value from FlagValue (type-safe extraction)
     val typedDefaultValue = defaultValue.extractValue<T>()
-    val values = rules.map { it.toValue<S, T, C, M>() }
+    val values = rules.map { it.toValue<T, C>() }
 
     return FlagDefinition(
         feature = conditional,
@@ -230,7 +229,7 @@ private fun coerceValue(
  * Converts a SerializableRule to a ConditionalValue.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <S : EncodableValue<T>, T : Any, C : Context, M : Namespace> SerializableRule.toValue(): ConditionalValue<S, T, C, M> {
+private fun <T : Any, C : Context> SerializableRule.toValue(): ConditionalValue<T, C> {
     val typedValue = value.extractValue<T>()
     val rule = toRule<C>()
     return rule.targetedBy(typedValue)
@@ -277,7 +276,7 @@ internal fun SerializablePatch.toPatch(): ParseResult<ConfigurationPatch> {
 
         // Extract successful values
         val flagMap = flagResults
-            .filterIsInstance<ParseResult.Success<Pair<Feature<*, *, *, *>, FlagDefinition<*, *, *, *>>>>()
+            .filterIsInstance<ParseResult.Success<Pair<Feature<*, *, *>, FlagDefinition<*, *, *>>>>()
             .associate { it.value }
 
         // For removeKeys, skip keys that aren't registered (they may have been removed)

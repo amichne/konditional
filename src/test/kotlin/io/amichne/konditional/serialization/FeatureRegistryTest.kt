@@ -6,6 +6,7 @@ import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.values.Identifier
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -21,7 +22,8 @@ import kotlin.test.assertTrue
  */
 class FeatureRegistryTest {
 
-    private val TestFeatures = object : FeatureContainer<Namespace.Global>(Namespace.Global) {
+    private val testNamespace = TestNamespace.test("feature-registry")
+    private val TestFeatures = object : FeatureContainer<TestNamespace>(testNamespace) {
         val feature1 by boolean<Context>(default = false)
         val feature2 by string<Context>(default = "default")
         val feature3 by integer<Context>(default = 0)
@@ -65,7 +67,7 @@ class FeatureRegistryTest {
     }
 
     @Test
-    fun `Given feature, When registered twice, Then second registration overwrites first`() {
+    fun `Given feature, When registered twice, Then registration is idempotent`() {
         FeatureRegistry.register(TestFeatures.feature1)
         FeatureRegistry.register(TestFeatures.feature1) // Register again
 
@@ -131,7 +133,7 @@ class FeatureRegistryTest {
 
     @Test
     fun `Given features with different keys, When registered, Then both are stored separately`() {
-        val AnotherContainer = object : FeatureContainer<Namespace.Global>(Namespace.Global) {
+        val AnotherContainer = object : FeatureContainer<TestNamespace>(testNamespace) {
             val differentFeature by boolean<Context>(default = false)
         }
 
@@ -156,7 +158,7 @@ class FeatureRegistryTest {
 
         val result = FeatureRegistry.get(TestFeatures.feature1.id)
 
-        assertIs<ParseResult.Success<Feature<*, *, *, *>>>(result)
+        assertIs<ParseResult.Success<Feature<*, *, *>>>(result)
         val feature = result.value
         assertEquals(TestFeatures.feature1.key, feature.key)
     }
@@ -167,7 +169,7 @@ class FeatureRegistryTest {
 
         val result = FeatureRegistry.get(TestFeatures.feature2.id)
 
-        assertIs<ParseResult.Success<Feature<*, *, *, *>>>(result)
+        assertIs<ParseResult.Success<Feature<*, *, *>>>(result)
         val feature = result.value
         assertEquals(TestFeatures.feature2.key, feature.key)
     }
@@ -178,7 +180,7 @@ class FeatureRegistryTest {
 
         val result = FeatureRegistry.get(TestFeatures.feature3.id)
 
-        assertIs<ParseResult.Success<Feature<*, *, *, *>>>(result)
+        assertIs<ParseResult.Success<Feature<*, *, *>>>(result)
         val feature = result.value
         assertEquals(TestFeatures.feature3.key, feature.key)
     }

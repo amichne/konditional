@@ -2,7 +2,6 @@ package io.amichne.konditional.core.features
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.types.EncodableValue
 import io.amichne.konditional.values.Identifier
 
 /**
@@ -12,31 +11,29 @@ import io.amichne.konditional.values.Identifier
  * Features are **type-bound** to their [io.amichne.konditional.core.Namespace], providing compile-time isolation between teams.
  * Each feature can only be defined and configured within its designated namespace.
  *
- * Type S is constrained to EncodableValue subtypes at compile time, ensuring type safety.
- *
  * Supports:
  * - Primitives: Boolean, String, Int, Double
- * - JSON Objects: Complex data classes and structures
- * - Custom Wrappers: Extension types that wrap primitives (DateTime, UUID, etc.)
+ * - Enums: `E : Enum<E>`
+ * - Custom structured types: [io.amichne.konditional.core.types.KotlinEncodeable]
  *
  * ## Example
  *
  * ```kotlin
  * object Payments : Namespace("payments")
  *
- * enum class PaymentFeatures(override val key: String)
- *     : Feature<BoolEncodeable, Boolean, Context, Payments> {
- *     APPLE_PAY("apple_pay");
- *     override val namespace = Payments
+ * object PaymentFeatures : FeatureContainer<Payments>(Payments) {
+ *     val APPLE_PAY by boolean<Context>(default = false)
  * }
  * ```
  *
- * @param S The EncodableValue type wrapping the actual value.
+ * Note: [Feature] is a sealed API. Consumer code defines flags via [FeatureContainer] rather than
+ * implementing [Feature] directly.
+ *
  * @param T The actual value type.
- * @param C The type of the contextFn that the feature flag evaluates against.
+ * @param C The type of the context that the feature evaluates against.
  * @param M The namespace this feature belongs to (compile-time binding).
  */
-sealed interface Feature<S : EncodableValue<T>, T : Any, C : Context, out M : Namespace> : Identifiable {
+sealed interface Feature<T : Any, C : Context, out M : Namespace> : Identifiable {
     val key: String
     val namespace: M
 

@@ -2,7 +2,6 @@ package io.amichne.konditional.core.features
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.types.KotlinClassEncodeable
 import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.kontracts.schema.ObjectSchema
 
@@ -45,7 +44,7 @@ import io.amichne.kontracts.schema.ObjectSchema
  * @param M The namespace this feature belongs to
  */
 sealed interface KotlinClassFeature<T : KotlinEncodeable<ObjectSchema>, C : Context, M : Namespace> :
-    Feature<KotlinClassEncodeable<T>, T, C, M> {
+    Feature<T, C, M> {
 
     companion object {
         /**

@@ -2,9 +2,8 @@ package io.amichne.konditional.core.features
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.types.IntEncodeable
 
-sealed interface IntFeature<C : Context, M : Namespace> : Feature<IntEncodeable, Int, C, M> {
+sealed interface IntFeature<C : Context, M : Namespace> : Feature<Int, C, M> {
     companion object {
         internal operator fun <C : Context, M : Namespace> invoke(
             key: String,
