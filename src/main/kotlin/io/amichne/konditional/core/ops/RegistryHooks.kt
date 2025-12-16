@@ -21,7 +21,6 @@ data class RegistryHooks internal constructor(
     }
 }
 
-
 @ConsistentCopyVisibility
 data class EvaluationMetric internal constructor(
     val namespaceId: String,

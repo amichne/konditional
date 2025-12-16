@@ -2,6 +2,8 @@
 # Extracted: 2025-12-15T22:28:51-05:00
 # Source: src/main/kotlin/io/amichne/konditional/
 
+```kotlin
+
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/context/Context.kt:33:interface Context {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/context/ContextAware.kt:11:fun interface ContextAware<out C : Context> {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/context/Version.kt:9:data class Version(
@@ -118,3 +120,5 @@
 /Users/amichne/code/konditional/kontracts/src/main/kotlin/io/amichne/kontracts/dsl/custom/CustomIntSchemaBuilder.kt:10:class CustomIntSchemaBuilder<V : Any> : IntSchemaBuilder() {
 /Users/amichne/code/konditional/kontracts/src/main/kotlin/io/amichne/kontracts/dsl/ObjectSchemaBuilder.kt:7:class ObjectSchemaBuilder : JsonSchemaBuilder {
 /Users/amichne/code/konditional/kontracts/src/main/kotlin/io/amichne/kontracts/dsl/ArraySchemaBuilder.kt:7:class ArraySchemaBuilder : JsonSchemaBuilder {
+
+```

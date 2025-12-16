@@ -71,8 +71,8 @@ inline fun <reified T : KotlinEncodeable<ObjectSchema>> JsonObject.parseAs(): Pa
     return try {
         val kClass = T::class
         val constructor = kClass.primaryConstructor ?: return ParseResult.Failure(
-                              ParseError.InvalidSnapshot("Custom type ${kClass.simpleName} must have a primary constructor")
-                          )
+            ParseError.InvalidSnapshot("Custom type ${kClass.simpleName} must have a primary constructor")
+        )
 
         // Validate against schema if present
         this.schema?.let { schema ->

@@ -4,6 +4,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.ContextAware
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.KonditionalDsl
+import io.amichne.konditional.core.evaluation.Bucketing.isInRollout
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.features.FeatureAware
 import io.amichne.konditional.core.ops.EvaluationMetric
@@ -36,9 +37,7 @@ inline fun <reified T : Any, reified C : Context, D> D.feature(
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
     context: C,
     registry: NamespaceRegistry = namespace,
-): T {
-    return evaluateInternal(context, registry, mode = EvaluationMetric.EvaluationMode.NORMAL).value
-}
+): T = evaluateInternal(context, registry, mode = EvaluationMetric.EvaluationMode.NORMAL).value
 
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithReason(
     context: C,
@@ -54,55 +53,66 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
     val definition = registry.flag(this)
     lateinit var result: EvaluationResult<T>
 
-    val nanos = measureNanoTime {
-        result = when {
-            registry.isAllDisabled -> EvaluationResult(
-                namespaceId = registry.namespaceId,
-                featureKey = key,
-                configVersion = registry.configuration.metadata.version,
-                mode = mode,
-                durationNanos = 0L,
-                value = definition.defaultValue,
-                decision = EvaluationResult.Decision.RegistryDisabled,
-            )
-            !definition.isActive -> EvaluationResult(
-                namespaceId = registry.namespaceId,
-                featureKey = key,
-                configVersion = registry.configuration.metadata.version,
-                mode = mode,
-                durationNanos = 0L,
-                value = definition.defaultValue,
-                decision = EvaluationResult.Decision.Inactive,
-            )
-            else -> {
-                val trace = definition.evaluateTrace(context)
+    val nanos =
+        measureNanoTime {
+            result =
+                when {
+                    registry.isAllDisabled -> {
+                        EvaluationResult(
+                            namespaceId = registry.namespaceId,
+                            featureKey = key,
+                            configVersion = registry.configuration.metadata.version,
+                            mode = mode,
+                            durationNanos = 0L,
+                            value = definition.defaultValue,
+                            decision = EvaluationResult.Decision.RegistryDisabled,
+                        )
+                    }
 
-                val skipped = trace.skippedByRollout?.toRuleMatch(
-                    bucket = trace.bucket,
-                    featureKey = key,
-                    salt = definition.salt,
-                )
+                    !definition.isActive -> {
+                        EvaluationResult(
+                            namespaceId = registry.namespaceId,
+                            featureKey = key,
+                            configVersion = registry.configuration.metadata.version,
+                            mode = mode,
+                            durationNanos = 0L,
+                            value = definition.defaultValue,
+                            decision = EvaluationResult.Decision.Inactive,
+                        )
+                    }
 
-                val decision = trace.matched?.toRuleMatch(
-                    bucket = trace.bucket,
-                    featureKey = key,
-                    salt = definition.salt,
-                )?.let { matched ->
-                    EvaluationResult.Decision.Rule(matched = matched, skippedByRollout = skipped)
-                } ?: EvaluationResult.Decision.Default(skippedByRollout = skipped)
+                    else -> {
+                        val trace = definition.evaluateTrace(context)
 
-                EvaluationResult(
-                    namespaceId = registry.namespaceId,
-                    featureKey = key,
-                    configVersion = registry.configuration.metadata.version,
-                    mode = mode,
-                    durationNanos = 0L,
-                    value = trace.value,
-                    decision = decision,
-                )
-            }
+                        val skipped =
+                            trace.skippedByRollout?.toRuleMatch(
+                                bucket = trace.bucket,
+                                featureKey = key,
+                                salt = definition.salt,
+                            )
+
+                        val decision =
+                            trace.matched
+                                ?.toRuleMatch(
+                                    bucket = trace.bucket,
+                                    featureKey = key,
+                                    salt = definition.salt,
+                                )?.let { matched ->
+                                    EvaluationResult.Decision.Rule(matched = matched, skippedByRollout = skipped)
+                                } ?: EvaluationResult.Decision.Default(skippedByRollout = skipped)
+
+                        EvaluationResult(
+                            namespaceId = registry.namespaceId,
+                            featureKey = key,
+                            configVersion = registry.configuration.metadata.version,
+                            mode = mode,
+                            durationNanos = 0L,
+                            value = trace.value,
+                            decision = decision,
+                        )
+                    }
+                }
         }
-    }
 
     result = result.copy(durationNanos = nanos)
 
@@ -118,20 +128,32 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
             featureKey = key,
             mode = mode,
             durationNanos = nanos,
-            decision = when (val decision = result.decision) {
-                is EvaluationResult.Decision.RegistryDisabled -> EvaluationMetric.DecisionKind.REGISTRY_DISABLED
-                is EvaluationResult.Decision.Inactive -> EvaluationMetric.DecisionKind.INACTIVE
-                is EvaluationResult.Decision.Rule -> EvaluationMetric.DecisionKind.RULE
-                is EvaluationResult.Decision.Default -> EvaluationMetric.DecisionKind.DEFAULT
-            },
+            decision =
+                when (result.decision) {
+                    is EvaluationResult.Decision.RegistryDisabled -> EvaluationMetric.DecisionKind.REGISTRY_DISABLED
+                    is EvaluationResult.Decision.Inactive -> EvaluationMetric.DecisionKind.INACTIVE
+                    is EvaluationResult.Decision.Rule -> EvaluationMetric.DecisionKind.RULE
+                    is EvaluationResult.Decision.Default -> EvaluationMetric.DecisionKind.DEFAULT
+                },
             configVersion = result.configVersion,
-            bucket = when (val decision = result.decision) {
-                is EvaluationResult.Decision.Rule -> decision.matched.bucket.bucket
-                is EvaluationResult.Decision.Default -> decision.skippedByRollout?.bucket?.bucket
-                else -> null
-            },
+            bucket =
+                when (result.decision) {
+                    is EvaluationResult.Decision.Rule -> {
+                        result.decision.matched.bucket.bucket
+                    }
+
+                    is EvaluationResult.Decision.Default -> {
+                        result.decision.skippedByRollout
+                            ?.bucket
+                            ?.bucket
+                    }
+
+                    else -> {
+                        null
+                    }
+                },
             matchedRuleSpecificity = (result.decision as? EvaluationResult.Decision.Rule)?.matched?.rule?.totalSpecificity,
-        )
+        ),
     )
 
     return result
@@ -146,23 +168,28 @@ private fun <T : Any, C : Context> io.amichne.konditional.rules.ConditionalValue
     val explanation = rule.toExplanation()
     return EvaluationResult.RuleMatch(
         rule = explanation,
-        bucket = BucketInfo(
-            featureKey = featureKey,
-            salt = salt,
-            bucket = bucket,
-            rollout = explanation.rollout,
-            thresholdBasisPoints = io.amichne.konditional.core.evaluation.Bucketing.rolloutThresholdBasisPoints(explanation.rollout),
-            inRollout = io.amichne.konditional.core.evaluation.Bucketing.isInRollout(explanation.rollout, bucket),
-        ),
+        bucket =
+            BucketInfo(
+                featureKey = featureKey,
+                salt = salt,
+                bucket = bucket,
+                rollout = explanation.rollout,
+                thresholdBasisPoints =
+                    io.amichne.konditional.core.evaluation.Bucketing.rolloutThresholdBasisPoints(
+                        explanation.rollout,
+                    ),
+                inRollout = isInRollout(explanation.rollout, bucket),
+            ),
     )
 }
 
 private fun <C : Context> Rule<C>.toExplanation(): EvaluationResult.RuleExplanation {
     val base = baseEvaluable
-    val extensionClassName = when (extension) {
-        io.amichne.konditional.rules.evaluable.Placeholder -> null
-        else -> extension::class.qualifiedName
-    }
+    val extensionClassName =
+        when (extension) {
+            io.amichne.konditional.rules.evaluable.Placeholder -> null
+            else -> extension::class.qualifiedName
+        }
 
     val baseSpecificity =
         (if (base.locales.isNotEmpty()) 1 else 0) +

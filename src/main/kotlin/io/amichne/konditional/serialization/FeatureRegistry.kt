@@ -59,10 +59,9 @@ internal object FeatureRegistry {
      * @param key The string key of the conditional
      * @return ParseResult with the registered Feature or an error
      */
-    internal fun get(key: Identifier): ParseResult<Feature<*, *, *>> {
-        return registry[key]?.let { ParseResult.Success(it) }
-               ?: ParseResult.Failure(ParseError.FeatureNotFound(key))
-    }
+    internal fun get(key: Identifier): ParseResult<Feature<*, *, *>> =
+        registry[key]?.let { ParseResult.Success(it) }
+            ?: ParseResult.Failure(ParseError.FeatureNotFound(key))
 
     /**
      * Checks if a key is registered.

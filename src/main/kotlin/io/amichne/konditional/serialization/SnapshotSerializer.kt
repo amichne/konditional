@@ -84,7 +84,7 @@ object SnapshotSerializer {
     ): ParseResult<Configuration> =
         try {
             val serializable = snapshotAdapter.fromJson(json)
-                               ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parseUnsafe JSON: null result"))
+                ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parseUnsafe JSON: null result"))
             serializable.toSnapshot(options)
         } catch (e: Exception) {
             ParseResult.Failure(ParseError.InvalidJson(e.message ?: "Unknown JSON parsing error"))
@@ -109,7 +109,7 @@ object SnapshotSerializer {
     internal fun fromJsonPatch(json: String): ParseResult<SerializablePatch> {
         return try {
             val patch = patchAdapter.fromJson(json)
-                        ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parseUnsafe patch JSON: null result"))
+                ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parseUnsafe patch JSON: null result"))
             ParseResult.Success(patch)
         } catch (e: Exception) {
             ParseResult.Failure(ParseError.InvalidJson(e.message ?: "Unknown JSON parsing error"))

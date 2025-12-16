@@ -98,5 +98,5 @@ data class EnterpriseRule(
 ) : Evaluable<EnterpriseContext> {
     override fun matches(context: EnterpriseContext): Boolean =
         (requiredTier == null || context.subscriptionTier >= requiredTier) &&
-        (requiredRole == null || context.userRole >= requiredRole)
+            (requiredRole == null || context.userRole >= requiredRole)
 }

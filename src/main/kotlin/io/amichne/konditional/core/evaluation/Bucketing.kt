@@ -40,10 +40,10 @@ internal object Bucketing {
     fun isInRollout(
         rollout: Rampup,
         bucket: Int,
-    ): Boolean = when {
-        rollout <= 0.0 -> false
-        rollout >= 100.0 -> true
-        else -> bucket < rolloutThresholdBasisPoints(rollout)
-    }
+    ): Boolean =
+        when {
+            rollout <= 0.0 -> false
+            rollout >= 100.0 -> true
+            else -> bucket < rolloutThresholdBasisPoints(rollout)
+        }
 }
-

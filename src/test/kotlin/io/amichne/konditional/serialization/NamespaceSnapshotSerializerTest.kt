@@ -26,22 +26,25 @@ import kotlin.test.assertTrue
  * including automatic loading into the namespace registry.
  */
 class NamespaceSnapshotSerializerTest {
-
     private val testNamespace = TestNamespace.test("namespace-snapshot-serializer")
-    private val TestFeatures = object : FeatureContainer<TestNamespace>(testNamespace) {
-        val boolFlag by boolean<Context>(default = false)
-        val stringFlag by string<Context>(default = "default")
-    }
+    private val testFeatures =
+        object : FeatureContainer<TestNamespace>(testNamespace) {
+            val boolFlag by boolean<Context>(default = false)
+            val stringFlag by string<Context>(default = "default")
+        }
 
     @BeforeEach
     fun setup() {
         // Clear both FeatureRegistry and the namespace registry before each test
         FeatureRegistry.clear()
-        testNamespace.load(io.amichne.konditional.core.instance.Configuration(emptyMap()))
+        testNamespace.load(
+            io.amichne.konditional.core.instance
+                .Configuration(emptyMap()),
+        )
 
         // Register test features
-        FeatureRegistry.register(TestFeatures.boolFlag)
-        FeatureRegistry.register(TestFeatures.stringFlag)
+        FeatureRegistry.register(testFeatures.boolFlag)
+        FeatureRegistry.register(testFeatures.stringFlag)
     }
 
     private fun ctx(
@@ -54,7 +57,10 @@ class NamespaceSnapshotSerializerTest {
     @Test
     fun `Given namespace with no flags, When serialized, Then produces JSON with empty flags array`() {
         // Start with empty namespace
-        testNamespace.load(io.amichne.konditional.core.instance.Configuration(emptyMap()))
+        testNamespace.load(
+            io.amichne.konditional.core.instance
+                .Configuration(emptyMap()),
+        )
 
         val serializer = NamespaceSnapshotSerializer(testNamespace)
         val json = serializer.toJson()
@@ -66,28 +72,29 @@ class NamespaceSnapshotSerializerTest {
 
     @Test
     fun `Given namespace with configured flags, When serialized, Then includes all flags`() {
-        TestFeatures.boolFlag.update(true) {
+        testFeatures.boolFlag.update(true) {
         }
-        TestFeatures.stringFlag.update("test-value") {
+        testFeatures.stringFlag.update("test-value") {
         }
 
         val serializer = NamespaceSnapshotSerializer(testNamespace)
         val json = serializer.toJson()
 
         assertNotNull(json)
-        assertTrue(json.contains(TestFeatures.boolFlag.id.toString()))
-        assertTrue(json.contains(TestFeatures.stringFlag.id.toString()))
+        assertTrue(json.contains(testFeatures.boolFlag.id.toString()))
+        assertTrue(json.contains(testFeatures.stringFlag.id.toString()))
         assertTrue(json.contains("\"value\": true"))
         assertTrue(json.contains("\"value\": \"test-value\""))
     }
 
     @Test
     fun `Given valid JSON, When deserialized, Then loads into namespace and returns success`() {
-        val json = """
+        val json =
+            """
             {
               "flags" : [
                 {
-                  "key" : "${TestFeatures.boolFlag.id}",
+                  "key" : "${testFeatures.boolFlag.id}",
                   "defaultValue" : {
                     "type" : "BOOLEAN",
                     "value" : true
@@ -98,7 +105,7 @@ class NamespaceSnapshotSerializerTest {
                 }
               ]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val serializer = NamespaceSnapshotSerializer(testNamespace)
         val result = serializer.fromJson(json)
@@ -107,7 +114,7 @@ class NamespaceSnapshotSerializerTest {
 
         // Verify the flag was loaded into the namespace
         val context = ctx("11111111111111111111111111111111")
-        val flagValue = TestFeatures.boolFlag.evaluate(context)
+        val flagValue = testFeatures.boolFlag.evaluate(context)
         assertEquals(true, flagValue)
     }
 
@@ -125,7 +132,8 @@ class NamespaceSnapshotSerializerTest {
 
     @Test
     fun `Given JSON with unregistered feature, When deserialized, Then returns failure`() {
-        val json = """
+        val json =
+            """
             {
               "flags" : [
                 {
@@ -140,7 +148,7 @@ class NamespaceSnapshotSerializerTest {
                 }
               ]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val serializer = NamespaceSnapshotSerializer(testNamespace)
         val result = serializer.fromJson(json)
@@ -152,12 +160,12 @@ class NamespaceSnapshotSerializerTest {
     @Test
     fun `Given namespace, When round-tripped, Then configuration is preserved`() {
         // Configure flags
-        TestFeatures.boolFlag.update(true) {
+        testFeatures.boolFlag.update(true) {
             rule(false) {
                 platforms(Platform.IOS)
             }
         }
-        TestFeatures.stringFlag.update("original") {
+        testFeatures.stringFlag.update("original") {
             rule("french") {
                 locales(AppLocale.FRANCE)
             }
@@ -168,7 +176,10 @@ class NamespaceSnapshotSerializerTest {
         val json = serializer.toJson()
 
         // Clear and deserialize
-        testNamespace.load(io.amichne.konditional.core.instance.Configuration(emptyMap()))
+        testNamespace.load(
+            io.amichne.konditional.core.instance
+                .Configuration(emptyMap()),
+        )
         val result = serializer.fromJson(json)
         assertIs<ParseResult.Success<io.amichne.konditional.core.instance.Configuration>>(result)
 
@@ -177,38 +188,40 @@ class NamespaceSnapshotSerializerTest {
         val androidContext = ctx("22222222222222222222222222222222", platform = Platform.ANDROID)
         val frenchContext = ctx("33333333333333333333333333333333", locale = AppLocale.FRANCE)
 
-        assertEquals(false, TestFeatures.boolFlag.evaluate(iosContext))
-        assertEquals(true, TestFeatures.boolFlag.evaluate(androidContext))
-        assertEquals("french", TestFeatures.stringFlag.evaluate(frenchContext))
-        assertEquals("original", TestFeatures.stringFlag.evaluate(iosContext))
+        assertEquals(false, testFeatures.boolFlag.evaluate(iosContext))
+        assertEquals(true, testFeatures.boolFlag.evaluate(androidContext))
+        assertEquals("french", testFeatures.stringFlag.evaluate(frenchContext))
+        assertEquals("original", testFeatures.stringFlag.evaluate(iosContext))
     }
 
     @Test
     fun `Given forModule factory, When created, Then works same as constructor`() {
-        TestFeatures.boolFlag.update(true) {}
+        testFeatures.boolFlag.update(true) {}
 
         val serializer = NamespaceSnapshotSerializer.forModule(testNamespace)
         val json = serializer.toJson()
 
         assertNotNull(json)
-        assertTrue(json.contains(TestFeatures.boolFlag.id.toString()))
+        assertTrue(json.contains(testFeatures.boolFlag.id.toString()))
     }
 
     @Test
     fun `Given different containers, When serialized separately, Then each has only its own flags`() {
         // Domain.Payments features
-        val PaymentsFeatures = object : FeatureContainer<TestDomains.Payments>(TestDomains.Payments) {
-            val paymentEnabled by boolean<Context>(default = true)
-        }
+        val paymentsFeatures =
+            object : FeatureContainer<TestDomains.Payments>(TestDomains.Payments) {
+                val paymentEnabled by boolean<Context>(default = true)
+            }
 
         // Domain.Search features
-        val SearchFeatures = object : FeatureContainer<TestDomains.Search>(TestDomains.Search) {
-            val searchEnabled by boolean<Context>(default = false)
-        }
+        val searchFeatures =
+            object : FeatureContainer<TestDomains.Search>(TestDomains.Search) {
+                val searchEnabled by boolean<Context>(default = false)
+            }
 
         // Register features
-        FeatureRegistry.register(PaymentsFeatures.paymentEnabled)
-        FeatureRegistry.register(SearchFeatures.searchEnabled)
+        FeatureRegistry.register(paymentsFeatures.paymentEnabled)
+        FeatureRegistry.register(searchFeatures.searchEnabled)
 
         // Serialize each namespace
         val paymentsSerializer = NamespaceSnapshotSerializer(TestDomains.Payments)
@@ -218,10 +231,10 @@ class NamespaceSnapshotSerializerTest {
         val searchJson = searchSerializer.toJson()
 
         // Verify separation
-        assertTrue(paymentsJson.contains(PaymentsFeatures.paymentEnabled.id.toString()))
-        assertTrue(!paymentsJson.contains(SearchFeatures.searchEnabled.id.toString()))
+        assertTrue(paymentsJson.contains(paymentsFeatures.paymentEnabled.id.toString()))
+        assertTrue(!paymentsJson.contains(searchFeatures.searchEnabled.id.toString()))
 
-        assertTrue(searchJson.contains(SearchFeatures.searchEnabled.id.toString()))
-        assertTrue(!searchJson.contains(PaymentsFeatures.paymentEnabled.id.toString()))
+        assertTrue(searchJson.contains(searchFeatures.searchEnabled.id.toString()))
+        assertTrue(!searchJson.contains(paymentsFeatures.paymentEnabled.id.toString()))
     }
 }
