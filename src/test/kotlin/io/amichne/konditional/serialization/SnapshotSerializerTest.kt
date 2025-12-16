@@ -6,7 +6,6 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rampup
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.FlagDefinition
-import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Configuration
@@ -698,7 +697,7 @@ class SnapshotSerializerTest {
 
         assertIs<ParseResult.Success<SerializablePatch>>(result)
         assertEquals(0, result.value.flags.size)
-        assertEquals(listOf(Identifier( "test_key")), result.value.removeKeys)
+        assertEquals(listOf(Identifier("test_key")), result.value.removeKeys)
     }
 
     @Test
@@ -715,7 +714,7 @@ class SnapshotSerializerTest {
         val patchResult = SnapshotSerializer.fromJsonPatch(patchJson)
         assertIs<ParseResult.Success<SerializablePatch>>(patchResult)
 
-        val result = SnapshotSerializer.applyPatch(originalConfiguration, patchResult.value)
+        val result = SnapshotSerializer.applyPatch(originalConfiguration, patchResult.value, SnapshotLoadOptions.strict())
 
         assertIs<ParseResult.Success<Configuration>>(result)
     }

@@ -25,7 +25,7 @@ flowchart LR
 ## Exporting configuration
 
 ```kotlin
-val json = SnapshotSerializer.serialize(Namespace.Global.configuration())
+val json = SnapshotSerializer.serialize(Namespace.Global.configuration)
 ```
 
 Use this when you want to externalize a namespace’s current configuration state into JSON for storage or transport.
@@ -83,6 +83,43 @@ Operationally, treat failures as non-fatal: keep last-known-good configuration, 
 - readers never see a partially-applied configuration
 
 This aligns with the evaluation model documented in ["Evaluation"](05-evaluation.md).
+
+---
+
+## Lenient deserialization (forward compatibility)
+
+During migrations, you may prefer to skip unknown keys instead of failing the entire snapshot:
+
+```kotlin
+val options = SnapshotLoadOptions.skipUnknownKeys { warning ->
+    log.warn("Skipping unknown key: ${warning.key}")
+}
+
+when (val result = SnapshotSerializer.fromJson(json, options)) {
+    is ParseResult.Success -> Namespace.Global.load(result.value)
+    is ParseResult.Failure -> handleError(result.error)
+}
+```
+
+This preserves strict correctness by default while enabling operationally-safe forward compatibility when needed.
+
+---
+
+## Versioning metadata (audit + rollback)
+
+Snapshots optionally carry `meta` fields (version, timestamp, source). You can also attach metadata after parsing:
+
+```kotlin
+when (val result = SnapshotSerializer.fromJson(json)) {
+    is ParseResult.Success -> Namespace.Global.load(
+        result.value.withMetadata(
+            version = "rev-123",
+            source = "s3://configs/global.json",
+        )
+    )
+    is ParseResult.Failure -> handleError(result.error)
+}
+```
 
 ---
 

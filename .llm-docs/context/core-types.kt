@@ -1,5 +1,5 @@
 # Core Type Signatures
-# Extracted: 2025-12-15T20:14:25-05:00
+# Extracted: 2025-12-15T22:28:51-05:00
 # Source: src/main/kotlin/io/amichne/konditional/
 
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/context/Context.kt:33:interface Context {
@@ -31,10 +31,23 @@
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/features/Feature.kt:36:sealed interface Feature<T : Any, C : Context, out M : Namespace> : Identifiable {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/features/IntFeature.kt:6:sealed interface IntFeature<C : Context, M : Namespace> : Feature<Int, C, M> {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/Namespace.kt:70:open class Namespace(
-/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/FlagDefinition.kt:29:data class FlagDefinition<T : Any, C : Context, M : Namespace> internal constructor(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/FlagDefinition.kt:26:data class FlagDefinition<T : Any, C : Context, M : Namespace> internal constructor(
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/instance/ConfigurationPatch.kt:21:data class ConfigurationPatch internal constructor(
-/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/instance/Configuration.kt:7:data class Configuration internal constructor(val flags: Map<Feature<*, *, *>, FlagDefinition<*, *, *>>)
-/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt:80:interface NamespaceRegistry {
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/instance/Configuration.kt:7:data class Configuration internal constructor(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/instance/ConfigurationMetadata.kt:18:data class ConfigurationMetadata internal constructor(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/instance/ConfigurationDiff.kt:19:data class ConfigurationDiff internal constructor(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/instance/ConfigurationDiff.kt:53:data class FlagChange internal constructor(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/instance/ConfigurationDiff.kt:61:data class FlagSnapshot internal constructor(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/instance/ConfigurationDiff.kt:71:data class RuleValueSnapshot internal constructor(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/instance/ConfigurationDiff.kt:77:data class RuleSnapshot internal constructor(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/instance/ConfigurationDiff.kt:90:sealed interface ConfigValue {
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt:82:interface NamespaceRegistry {
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/ops/RegistryHooks.kt:11:data class RegistryHooks internal constructor(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/ops/RegistryHooks.kt:24:interface KonditionalLogger {
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/ops/RegistryHooks.kt:33:interface MetricsCollector {
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/ops/RegistryHooks.kt:44:data class EvaluationMetric internal constructor(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/ops/RegistryHooks.kt:58:data class ConfigLoadMetric internal constructor(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/ops/RegistryHooks.kt:70:data class ConfigRollbackMetric internal constructor(
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/id/StableId.kt:13:sealed interface StableId {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/dsl/VersionRangeScope.kt:21:interface VersionRangeScope {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/dsl/RuleScope.kt:34:interface RuleScope<C : Context> {
@@ -42,6 +55,9 @@
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/dsl/AxisValuesScope.kt:38:interface AxisValuesScope {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/serialization/Serializer.kt:54:interface Serializer<T> {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/serialization/SnapshotSerializer.kt:44:object SnapshotSerializer {
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/serialization/SnapshotLoadOptions.kt:12:data class SnapshotLoadOptions(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/serialization/SnapshotLoadOptions.kt:23:sealed interface UnknownFeatureKeyStrategy {
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/serialization/SnapshotLoadOptions.kt:29:data class SnapshotWarning internal constructor(
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/serialization/NamespaceSnapshotSerializer.kt:64:class NamespaceSnapshotSerializer<M : Namespace>(
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/rules/Rule.kt:67:data class Rule<C : Context> internal constructor(
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/rules/versions/RightBound.kt:5:data class RightBound(
@@ -52,7 +68,15 @@
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/rules/evaluable/Specifier.kt:3:interface Specifier {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/rules/evaluable/Placeholder.kt:5:object Placeholder : Evaluable<Context> {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/rules/evaluable/Evaluable.kt:22:fun interface Evaluable<in C : Context> : Specifier {
-/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/api/FeatureUtilities.kt:33:fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/api/FeatureUtilities.kt:37:fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/api/FeatureUtilities.kt:44:fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithReason(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/api/ShadowEvaluation.kt:9:data class ShadowOptions internal constructor(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/api/ShadowEvaluation.kt:22:data class ShadowMismatch<T : Any> internal constructor(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/api/ShadowEvaluation.kt:40:fun <T : Any, C : Context, M : Namespace> io.amichne.konditional.core.features.Feature<T, C, M>.evaluateWithShadow(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/api/ShadowEvaluation.kt:87:fun <T : Any, C : Context, M : Namespace> io.amichne.konditional.core.features.Feature<T, C, M>.evaluateShadow(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/api/RolloutBucketing.kt:8:data class BucketInfo internal constructor(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/api/RolloutBucketing.kt:23:object RolloutBucketing {
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/api/EvaluationResult.kt:17:data class EvaluationResult<T : Any> internal constructor(
 
 # --- End of extraction ---
 

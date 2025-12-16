@@ -75,15 +75,20 @@ object SnapshotSerializer {
      * @param json The JSON string to deserialize
      * @return ParseResult containing either the deserialized Configuration or a structured error
      */
-    fun fromJson(json: String): ParseResult<Configuration> {
-        return try {
+    fun fromJson(json: String): ParseResult<Configuration> =
+        fromJson(json, SnapshotLoadOptions.strict())
+
+    fun fromJson(
+        json: String,
+        options: SnapshotLoadOptions,
+    ): ParseResult<Configuration> =
+        try {
             val serializable = snapshotAdapter.fromJson(json)
                                ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parseUnsafe JSON: null result"))
-            serializable.toSnapshot()
+            serializable.toSnapshot(options)
         } catch (e: Exception) {
             ParseResult.Failure(ParseError.InvalidJson(e.message ?: "Unknown JSON parsing error"))
         }
-    }
 
     /**
      * Serializes a ConfigurationPatch to a JSON string.
@@ -121,6 +126,7 @@ object SnapshotSerializer {
     internal fun applyPatch(
         currentConfiguration: Configuration,
         patch: SerializablePatch,
+        options: SnapshotLoadOptions,
     ): ParseResult<Configuration> {
         return try {
             // Convert current snapshot to serializable form
@@ -140,8 +146,11 @@ object SnapshotSerializer {
             }
 
             // Convert back to snapshot
-            val patchedSerializable = SerializableSnapshot(flagMap.values.toList())
-            patchedSerializable.toSnapshot()
+            val patchedSerializable = SerializableSnapshot(
+                meta = patch.meta ?: currentSerializable.meta,
+                flags = flagMap.values.toList(),
+            )
+            patchedSerializable.toSnapshot(options)
         } catch (e: Exception) {
             ParseResult.Failure(ParseError.InvalidSnapshot("Failed to apply patch: ${e.message}"))
         }
@@ -158,11 +167,18 @@ object SnapshotSerializer {
         currentConfiguration: Configuration,
         patchJson: String,
     ): ParseResult<Configuration> {
-        return when (val patchResult = fromJsonPatch(patchJson)) {
-            is ParseResult.Success -> applyPatch(currentConfiguration, patchResult.value)
+        return applyPatchJson(currentConfiguration, patchJson, SnapshotLoadOptions.strict())
+    }
+
+    fun applyPatchJson(
+        currentConfiguration: Configuration,
+        patchJson: String,
+        options: SnapshotLoadOptions,
+    ): ParseResult<Configuration> =
+        when (val patchResult = fromJsonPatch(patchJson)) {
+            is ParseResult.Success -> applyPatch(currentConfiguration, patchResult.value, options)
             is ParseResult.Failure -> ParseResult.Failure(patchResult.error)
         }
-    }
 
     /**
      * Creates the default Moshi instance with all necessary adapters.

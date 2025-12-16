@@ -1,5 +1,5 @@
 # Public API Surface Summary
-# Extracted: 2025-12-15T20:14:25-05:00
+# Extracted: 2025-12-15T22:28:51-05:00
 
 ## From 01-getting-started.md
 
@@ -393,11 +393,11 @@ AppDomain.Auth.load(paymentConfig) // Compile error (type mismatch)
 
 # Evaluation
 
-Konditional evaluation is designed to be predictable:
-- **Total**: evaluation always returns a value (rule value or default).
-- **Deterministic**: the same inputs produce the same outputs.
-- **Non-null**: defaults are required, so evaluation does not return `T?`.
+### Konditional evaluation is designed to be predictable
 
+- **Total** — Evaluation always returns a value (rule value or default).
+- **Deterministic** — The same inputs produce the same outputs.
+- **Non-null** — Defaults are required, so evaluation does not return `T?`.
 ---
 
 ## `feature { }` (recommended)
@@ -415,7 +415,23 @@ Use this when:
 
 ---
 
-## Evaluation flow (what happens)
+## Explain / trace (operational debugging)
+
+When you need to diagnose a specific user’s outcome, evaluate with a structured reason:
+
+```kotlin
+val result = Features.DARK_MODE.evaluateWithReason(context)
+println(result.decision)
+```
+
+`EvaluationResult` includes:
+- decision kind (rule/default/inactive/disabled)
+- matched rule constraints + specificity
+- deterministic rollout bucket information
+
+---
+
+## Evaluation flow
 
 ```mermaid
 flowchart TD
@@ -433,6 +449,30 @@ flowchart TD
   style Default1 fill:#fff3cd
   style Default2 fill:#fff3cd
   style Value fill:#c8e6c9
+```
+
+---
+
+## Emergency kill switch (namespace-scoped)
+
+```kotlin
+Namespace.Global.disableAll()
+// ... all evaluations in this namespace return declared defaults ...
+Namespace.Global.enableAll()
+```
+
+---
+
+## Bucketing utility (rollout debugging)
+
+```kotlin
+val info = RolloutBucketing.explain(
+    stableId = context.stableId,
+    featureKey = Features.DARK_MODE.key,
+    salt = Namespace.Global.flag(Features.DARK_MODE).salt,
+    rollout = Rampup.of(10.0),
+)
+println(info)
 ```
 
 ### Rule matching (AND semantics)
@@ -508,7 +548,7 @@ fun `iOS users in US get dark mode`() {
 ```kotlin
 @Test
 fun `evaluation is deterministic`() {
-    val context = Context(...)
+    val context = Context(/*...*/)
     val results = (1..100).map { feature { Features.DARK_MODE } }
     assertTrue(results.distinct().size == 1, "Non-deterministic!")
 }
@@ -521,9 +561,8 @@ fun `evaluation is deterministic`() {
 fun `50 percent rollout distributes correctly`() {
     val sampleSize = 10_000
     val enabled = (0 until sampleSize).count { i ->
-        val ctx = Context(
-            ...,
-            stableId = StableId.of(i.toString(16).padStart(32, '0'))
+        val ctx = Context(/*..., */
+                          stableId = StableId.of(i.toString(16).padStart(32, '0'))
         )
         feature { Features.ROLLOUT_FLAG }
     }
@@ -537,12 +576,12 @@ fun `50 percent rollout distributes correctly`() {
 
 ## Guarantees (and boundaries)
 
-| Aspect | Guarantee | Boundary |
-|---|---|---|
-| Type safety | return type matches definition | compile-time for statically-defined flags |
-| Non-null | evaluation never returns null | relies on required defaults |
-| Determinism | same inputs → same outputs | excludes malformed runtime JSON (see remote config) |
-| Updates | atomic swap of configuration | correctness depends on using `Namespace.load` |
+| Aspect      | Guarantee                      | Boundary                                            |
+|-------------|--------------------------------|-----------------------------------------------------|
+| Type safety | return type matches definition | compile-time for statically-defined flags           |
+| Non-null    | evaluation never returns null  | relies on required defaults                         |
+| Determinism | same inputs → same outputs     | excludes malformed runtime JSON (see remote config) |
+| Updates     | atomic swap of configuration   | correctness depends on using `Namespace.load`       |
 
 ---
 

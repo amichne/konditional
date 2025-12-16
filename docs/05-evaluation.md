@@ -22,6 +22,22 @@ Use this when:
 
 ---
 
+## Explain / trace (operational debugging)
+
+When you need to diagnose a specific user’s outcome, evaluate with a structured reason:
+
+```kotlin
+val result = Features.DARK_MODE.evaluateWithReason(context)
+println(result.decision)
+```
+
+`EvaluationResult` includes:
+- decision kind (rule/default/inactive/disabled)
+- matched rule constraints + specificity
+- deterministic rollout bucket information
+
+---
+
 ## Evaluation flow
 
 ```mermaid
@@ -40,6 +56,30 @@ flowchart TD
   style Default1 fill:#fff3cd
   style Default2 fill:#fff3cd
   style Value fill:#c8e6c9
+```
+
+---
+
+## Emergency kill switch (namespace-scoped)
+
+```kotlin
+Namespace.Global.disableAll()
+// ... all evaluations in this namespace return declared defaults ...
+Namespace.Global.enableAll()
+```
+
+---
+
+## Bucketing utility (rollout debugging)
+
+```kotlin
+val info = RolloutBucketing.explain(
+    stableId = context.stableId,
+    featureKey = Features.DARK_MODE.key,
+    salt = Namespace.Global.flag(Features.DARK_MODE).salt,
+    rollout = Rampup.of(10.0),
+)
+println(info)
 ```
 
 ### Rule matching (AND semantics)

@@ -6,7 +6,6 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.ParseError
@@ -196,7 +195,7 @@ class NamespaceSnapshotSerializerTest {
     }
 
     @Test
-    fun `Given different taxonomies, When serialized separately, Then each has only its own flags`() {
+    fun `Given different containers, When serialized separately, Then each has only its own flags`() {
         // Domain.Payments features
         val PaymentsFeatures = object : FeatureContainer<TestDomains.Payments>(TestDomains.Payments) {
             val paymentEnabled by boolean<Context>(default = true)

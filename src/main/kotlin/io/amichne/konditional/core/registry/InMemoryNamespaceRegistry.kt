@@ -6,7 +6,13 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.instance.ConfigurationPatch
+import io.amichne.konditional.core.ops.ConfigLoadMetric
+import io.amichne.konditional.core.ops.ConfigRollbackMetric
+import io.amichne.konditional.core.ops.RegistryHooks
+import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
+import io.amichne.konditional.rules.Rule
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -62,8 +68,16 @@ import java.util.concurrent.atomic.AtomicReference
  * @constructor Creates a new empty in-memory registry
  * @since 0.0.2
  */
-internal class InMemoryNamespaceRegistry : NamespaceRegistry {
+internal class InMemoryNamespaceRegistry(
+    override val namespaceId: String,
+    hooks: RegistryHooks = RegistryHooks.None,
+    private val historyLimit: Int = DEFAULT_HISTORY_LIMIT,
+) : NamespaceRegistry {
     private val current = AtomicReference(Configuration(emptyMap()))
+    private val hooksRef = AtomicReference(hooks)
+    private val allDisabled = AtomicBoolean(false)
+    private val historyRef = AtomicReference<List<Configuration>>(emptyList())
+    private val writeLock = Any()
 
     /**
      * Thread-safe storage for test overrides.
@@ -81,7 +95,18 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      * @param config The [Configuration] containing the configuration to load
      */
     override fun load(config: Configuration) {
-        current.set(config)
+        synchronized(writeLock) {
+            val previous = current.getAndSet(config)
+            historyRef.set((historyRef.get() + previous).takeLast(historyLimit))
+        }
+
+        hooksRef.get().metrics.recordConfigLoad(
+            ConfigLoadMetric.of(
+                namespaceId = namespaceId,
+                featureCount = config.flags.size,
+                version = config.metadata.version,
+            )
+        )
     }
 
     /**
@@ -91,6 +116,53 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
      */
     override val configuration: Configuration
         get() = current.get()
+
+    override val hooks: RegistryHooks
+        get() = hooksRef.get()
+
+    override fun setHooks(hooks: RegistryHooks) {
+        hooksRef.set(hooks)
+    }
+
+    override val isAllDisabled: Boolean
+        get() = allDisabled.get()
+
+    override fun disableAll() {
+        allDisabled.set(true)
+    }
+
+    override fun enableAll() {
+        allDisabled.set(false)
+    }
+
+    override val history: List<Configuration>
+        get() = historyRef.get()
+
+    override fun rollback(steps: Int): Boolean {
+        require(steps >= 1) { "steps must be >= 1" }
+        val restored = synchronized(writeLock) {
+            val history = historyRef.get()
+            if (history.size < steps) return false
+
+            val targetIndex = history.size - steps
+            val target = history[targetIndex]
+            val newHistory = history.take(targetIndex)
+
+            current.set(target)
+            historyRef.set(newHistory)
+            target
+        }
+
+        hooksRef.get().metrics.recordConfigRollback(
+            ConfigRollbackMetric(
+                namespaceId = namespaceId,
+                steps = steps,
+                success = true,
+                version = restored.metadata.version,
+            )
+        )
+        return true
+    }
 
     /**
      * Retrieves a specific flag definition from the registry, applying any test overrides.
@@ -113,13 +185,12 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
     ): FlagDefinition<T, C, M> {
         val override = getOverride(key)
         return if (override != null) {
-            // Create a FlagDefinition that always returns the override value
             val originalDefinition = configuration.flags[key] as? FlagDefinition<T, C, M>
             originalDefinition?.let { original ->
                 FlagDefinition(
                     feature = original.feature,
-                    bounds = emptyList(), // No rules needed - override takes precedence
-                    defaultValue = override,
+                    bounds = listOf(Rule<C>().targetedBy(override)),
+                    defaultValue = original.defaultValue,
                     salt = original.salt,
                     isActive = true
                 )
@@ -163,7 +234,7 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
         current.updateAndGet { currentSnapshot ->
             val mutableFlags = currentSnapshot.flags.toMutableMap()
             mutableFlags[definition.feature] = definition
-            Configuration(mutableFlags)
+            Configuration(mutableFlags, currentSnapshot.metadata)
         }
     }
 
@@ -274,4 +345,8 @@ internal class InMemoryNamespaceRegistry : NamespaceRegistry {
     internal fun <T : Any, C : Context, M : Namespace> getOverride(
         feature: Feature<T, C, M>,
     ): T? = overrides[feature]?.lastOrNull() as? T
+
+    companion object {
+        internal const val DEFAULT_HISTORY_LIMIT: Int = 10
+    }
 }

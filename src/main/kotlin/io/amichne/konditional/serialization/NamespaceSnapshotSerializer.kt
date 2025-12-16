@@ -100,17 +100,22 @@ class NamespaceSnapshotSerializer<M : Namespace>(
      * @return ParseResult containing either the loaded Configuration or a structured error
      */
     override fun fromJson(json: String): ParseResult<Configuration> {
-        return try {
+        return fromJson(json, SnapshotLoadOptions.strict())
+    }
+
+    fun fromJson(
+        json: String,
+        options: SnapshotLoadOptions,
+    ): ParseResult<Configuration> =
+        try {
             val serializable = snapshotAdapter.fromJson(json)
                                ?: return ParseResult.Failure(
                                    ParseError.InvalidJson("Failed to parseUnsafe JSON for namespace '${module.id}': null result")
                                )
 
-            // Parse the serializable snapshot into a Configuration
-            when (val parseResult = serializable.toSnapshot()) {
+            when (val parseResult = serializable.toSnapshot(options)) {
                 is ParseResult.Success -> {
                     val konfig = parseResult.value
-                    // Load the parsed configuration into the namespace
                     module.load(konfig)
                     ParseResult.Success(konfig)
                 }
@@ -123,7 +128,6 @@ class NamespaceSnapshotSerializer<M : Namespace>(
                 )
             )
         }
-    }
 
     companion object {
         /**
