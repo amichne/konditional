@@ -83,6 +83,11 @@ docs-serve: docs-install ## Serve documentation locally (http://127.0.0.1:8000)
 	@echo "$(BLUE)Starting documentation server...$(NC)"
 	$(MKDOCS) serve
 
+docs-pages: docs-build ## Deploy documentation to GitHub Pages
+	@echo "$(BLUE)Deploying documentation to GitHub Pages...$(NC)"
+	$(MKDOCS) gh-deploy
+	@echo "$(GREEN)Documentation deployed to GitHub Pages$(NC)"
+
 docs-clean: ## Clean generated documentation
 	@echo "$(BLUE)Cleaning documentation...$(NC)"
 	@rm -rf site/
