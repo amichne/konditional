@@ -16,5 +16,4 @@ interface ObjectTraits {
             ValidationResult.Invalid("Missing required fields: $missing")
         }
     }
-
 }

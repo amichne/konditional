@@ -7,7 +7,6 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rampup
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.core.TestNamespace

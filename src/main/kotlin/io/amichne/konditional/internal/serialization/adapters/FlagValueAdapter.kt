@@ -106,13 +106,13 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
         // Parse at the boundary: construct typed domain objects with validation
         return when (type) {
             "BOOLEAN" -> boolValue?.let { FlagValue.BooleanValue(it) }
-                         ?: throw JsonDataException("BOOLEAN type requires boolean value")
+                ?: throw JsonDataException("BOOLEAN type requires boolean value")
             "STRING" -> stringValue?.let { FlagValue.StringValue(it) }
-                        ?: throw JsonDataException("STRING type requires string value")
+                ?: throw JsonDataException("STRING type requires string value")
             "INT" -> intValue?.let { FlagValue.IntValue(it) }
-                     ?: throw JsonDataException("INT type requires int value")
+                ?: throw JsonDataException("INT type requires int value")
             "DOUBLE" -> doubleValue?.let { FlagValue.DoubleValue(it) }
-                        ?: throw JsonDataException("DOUBLE type requires double value")
+                ?: throw JsonDataException("DOUBLE type requires double value")
             "ENUM" -> {
                 if (stringValue == null) {
                     throw JsonDataException("ENUM type requires string value (enum name)")

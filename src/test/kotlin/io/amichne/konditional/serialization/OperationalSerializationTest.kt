@@ -106,7 +106,10 @@ class OperationalSerializationTest {
                 )
             )
         )
-        assertFalse(features.envScopedFlag.evaluate(productionContext), "Sanity: after resetting rules, flag should be default")
+        assertFalse(
+            features.envScopedFlag.evaluate(productionContext),
+            "Sanity: after resetting rules, flag should be default"
+        )
 
         val loaded = serializer.fromJson(json)
         assertIs<ParseResult.Success<Configuration>>(loaded)

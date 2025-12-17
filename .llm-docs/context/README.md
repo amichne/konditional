@@ -4,7 +4,7 @@ This directory contains extracted context for LLM prompts.
 
 ## Files
 
-- `core-types.kt` - Extracted type signatures from source code
+- `core-types.md` - Extracted type signatures from source code
 - `public-api-surface.md` - Concatenated API documentation
 - `.last-updated` - Timestamp of last extraction
 

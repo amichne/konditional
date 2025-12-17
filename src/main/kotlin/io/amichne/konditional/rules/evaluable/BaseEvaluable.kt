@@ -48,9 +48,9 @@ internal data class BaseEvaluable<C : Context>(
      */
     override fun matches(context: C): Boolean =
         (locales.isEmpty() || context.locale in locales) &&
-        (platforms.isEmpty() || context.platform in platforms) &&
-        (!versionRange.hasBounds() || versionRange.contains(context.appVersion)) &&
-        axisConstraints.all { (context.getAxisValue(it.axisId) ?: return false).id in it.allowedIds }
+            (platforms.isEmpty() || context.platform in platforms) &&
+            (!versionRange.hasBounds() || versionRange.contains(context.appVersion)) &&
+            axisConstraints.all { (context.getAxisValue(it.axisId) ?: return false).id in it.allowedIds }
 
     /**
      * Calculates specificity as the count of specified constraints.
@@ -59,7 +59,7 @@ internal data class BaseEvaluable<C : Context>(
      */
     override fun specificity(): Int =
         (if (locales.isNotEmpty()) 1 else 0) +
-        (if (platforms.isNotEmpty()) 1 else 0) +
-        (if (versionRange.hasBounds()) 1 else 0) +
-        axisConstraints.size
+            (if (platforms.isNotEmpty()) 1 else 0) +
+            (if (versionRange.hasBounds()) 1 else 0) +
+            axisConstraints.size
 }

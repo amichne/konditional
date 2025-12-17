@@ -65,7 +65,6 @@ class NamespaceSnapshotSerializer<M : Namespace>(
     private val module: M,
     private val moshi: Moshi = SnapshotSerializer.defaultMoshi(),
 ) : Serializer<Configuration> {
-
     private val snapshotAdapter = moshi.adapter(SerializableSnapshot::class.java).indent("  ")
 
     /**
@@ -83,12 +82,12 @@ class NamespaceSnapshotSerializer<M : Namespace>(
      *
      * Returns ParseResult for type-safe error handling following parseUnsafe-don't-validate principles.
      *
- * ## Error Handling
- *
- * Returns [ParseResult.Failure] with structured error if:
- * - JSON is malformed
- * - Required features are not registered (containers not initialized)
- * - Type mismatches occur
+     * ## Error Handling
+     *
+     * Returns [ParseResult.Failure] with structured error if:
+     * - JSON is malformed
+     * - Required features are not registered (containers not initialized)
+     * - Type mismatches occur
      *
      * ## Side Effects
      *
@@ -99,33 +98,25 @@ class NamespaceSnapshotSerializer<M : Namespace>(
      * @param json JSON string to deserialize
      * @return ParseResult containing either the loaded Configuration or a structured error
      */
-    override fun fromJson(json: String): ParseResult<Configuration> {
-        return fromJson(json, SnapshotLoadOptions.strict())
-    }
+    override fun fromJson(json: String): ParseResult<Configuration> = fromJson(json, SnapshotLoadOptions.strict())
 
     fun fromJson(
         json: String,
         options: SnapshotLoadOptions,
     ): ParseResult<Configuration> =
-        try {
-            val serializable = snapshotAdapter.fromJson(json)
-                               ?: return ParseResult.Failure(
-                                   ParseError.InvalidJson("Failed to parseUnsafe JSON for namespace '${module.id}': null result")
-                               )
-
-            when (val parseResult = serializable.toSnapshot(options)) {
-                is ParseResult.Success -> {
-                    val konfig = parseResult.value
-                    module.load(konfig)
-                    ParseResult.Success(konfig)
+        runCatching {
+            snapshotAdapter.fromJson(json)?.toSnapshot(options)?.let {
+                when (it) {
+                    is ParseResult.Success -> ParseResult.Success(it.value.also { module.load(it) })
+                    is ParseResult.Failure -> it
                 }
-                is ParseResult.Failure -> parseResult
             }
-        } catch (e: Exception) {
-            ParseResult.Failure(
-                ParseError.InvalidJson(
-                    "Failed to deserialize JSON for namespace '${module.id}': ${e.message ?: "Unknown error"}"
+                ?: ParseResult.Failure(
+                    ParseError.InvalidJson("Failed to parseUnsafe JSON for namespace '${module.id}': null result"),
                 )
+        }.getOrElse {
+            ParseResult.Failure(
+                ParseError.InvalidJson("Failed to deserialize JSON for namespace '${module.id}': ${it.message ?: "Unknown error"}"),
             )
         }
 
@@ -146,7 +137,6 @@ class NamespaceSnapshotSerializer<M : Namespace>(
          * @param module The namespace to create a serializer for
          * @return A new NamespaceSnapshotSerializer instance
          */
-        fun <M : Namespace> forModule(module: M): NamespaceSnapshotSerializer<M> =
-            NamespaceSnapshotSerializer(module)
+        fun <M : Namespace> forModule(module: M): NamespaceSnapshotSerializer<M> = NamespaceSnapshotSerializer(module)
     }
 }

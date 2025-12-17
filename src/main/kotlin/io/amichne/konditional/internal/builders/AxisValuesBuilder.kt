@@ -71,7 +71,8 @@ internal class AxisValuesBuilder : AxisValuesScope {
      * @throws IllegalStateException if no axis is registered for type T
      */
     inline fun <reified T> AxisValuesBuilder.axis(value: T) where T : AxisValue, T : Enum<T> {
-        AxisRegistry.axisFor(T::class)?.let { set(it, value) } ?: error("No Axis registered for type ${T::class.simpleName}")
+        AxisRegistry.axisFor(T::class)?.let { set(it, value) }
+            ?: error("No Axis registered for type ${T::class.simpleName}")
     }
 
     /**

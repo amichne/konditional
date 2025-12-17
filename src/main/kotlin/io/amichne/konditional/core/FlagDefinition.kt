@@ -37,7 +37,6 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
         values.sortedWith(compareByDescending<ConditionalValue<T, C>> { it.rule.specificity() })
 
     internal companion object {
-
         /**
          * Creates a FlagDefinition instance.
          */
@@ -47,13 +46,14 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
             defaultValue: T,
             salt: String = "v1",
             isActive: Boolean = true,
-        ): FlagDefinition<T, C, M> = FlagDefinition(
-            defaultValue = defaultValue,
-            feature = feature,
-            values = bounds,
-            isActive = isActive,
-            salt = salt,
-        )
+        ): FlagDefinition<T, C, M> =
+            FlagDefinition(
+                defaultValue = defaultValue,
+                feature = feature,
+                values = bounds,
+                isActive = isActive,
+                salt = salt,
+            )
     }
 
     /**
@@ -92,11 +92,13 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
         for (candidate in valuesByPrecedence) {
             if (!candidate.rule.matches(context)) continue
 
-            val computedBucket = bucket ?: Bucketing.stableBucket(
-                salt = salt,
-                flagKey = feature.key,
-                stableId = stableId,
-            ).also { bucket = it }
+            val computedBucket =
+                bucket ?: Bucketing
+                    .stableBucket(
+                        salt = salt,
+                        flagKey = feature.key,
+                        stableId = stableId,
+                    ).also { bucket = it }
 
             if (Bucketing.isInRollout(candidate.rule.rollout, computedBucket)) {
                 return Trace(
