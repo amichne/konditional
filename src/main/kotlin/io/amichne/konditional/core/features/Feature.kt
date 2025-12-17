@@ -2,7 +2,7 @@ package io.amichne.konditional.core.features
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.values.Identifier
+import io.amichne.konditional.values.FeatureId
 
 /**
  * Represents a feature flag that can be used to enable or disable specific functionality
@@ -37,5 +37,5 @@ sealed interface Feature<T : Any, C : Context, out M : Namespace> : Identifiable
     val key: String
     val namespace: M
 
-    override val id: Identifier
+    override val id: FeatureId
 }

@@ -23,7 +23,7 @@ import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.evaluable.AxisConstraint
 import io.amichne.konditional.rules.versions.Unbounded
-import io.amichne.konditional.values.Identifier
+import io.amichne.konditional.values.FeatureId
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.primaryConstructor
@@ -65,7 +65,7 @@ private fun SerializableSnapshotMetadata?.toDomain(): ConfigurationMetadata =
 /**
  * Converts a FlagDefinition to a SerializableFlag.
  */
-private fun <T : Any, C : Context> FlagDefinition<T, C, *>.toSerializable(flagKey: Identifier): SerializableFlag =
+private fun <T : Any, C : Context> FlagDefinition<T, C, *>.toSerializable(flagKey: FeatureId): SerializableFlag =
     SerializableFlag(
         key = flagKey,
         defaultValue = FlagValue.from(defaultValue),

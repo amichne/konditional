@@ -378,7 +378,7 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(17)              // Java 17 toolchain
+    jvmToolchain(21)              // Java 21 toolchain
     compilerOptions {
         freeCompilerArgs.add("-Xcontext-parameters")  // Context receivers
     }

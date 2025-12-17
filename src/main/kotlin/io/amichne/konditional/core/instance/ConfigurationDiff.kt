@@ -12,7 +12,7 @@ import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.evaluable.Placeholder
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
-import io.amichne.konditional.values.Identifier
+import io.amichne.konditional.values.FeatureId
 import io.amichne.kontracts.schema.ObjectSchema
 
 @ConsistentCopyVisibility
@@ -51,7 +51,7 @@ data class ConfigurationDiff internal constructor(
 
 @ConsistentCopyVisibility
 data class FlagChange internal constructor(
-    val id: Identifier,
+    val id: FeatureId,
     val key: String,
     val before: FlagSnapshot,
     val after: FlagSnapshot,
@@ -59,7 +59,7 @@ data class FlagChange internal constructor(
 
 @ConsistentCopyVisibility
 data class FlagSnapshot internal constructor(
-    val id: Identifier,
+    val id: FeatureId,
     val key: String,
     val isActive: Boolean,
     val salt: String,

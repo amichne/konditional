@@ -7,7 +7,8 @@ import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.internal.serialization.adapters.FlagValueAdapter
-import io.amichne.konditional.internal.serialization.adapters.ValueClassJsonAdapter
+import io.amichne.konditional.internal.serialization.adapters.IdentifierJsonAdapter
+import io.amichne.konditional.internal.serialization.adapters.ValueClassAdapterFactory
 import io.amichne.konditional.internal.serialization.adapters.VersionRangeAdapter
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
 import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
@@ -75,16 +76,16 @@ object SnapshotSerializer {
      * @param json The JSON string to deserialize
      * @return ParseResult containing either the deserialized Configuration or a structured error
      */
-    fun fromJson(json: String): ParseResult<Configuration> =
-        fromJson(json, SnapshotLoadOptions.strict())
+    fun fromJson(json: String): ParseResult<Configuration> = fromJson(json, SnapshotLoadOptions.strict())
 
     fun fromJson(
         json: String,
         options: SnapshotLoadOptions,
     ): ParseResult<Configuration> =
         try {
-            val serializable = snapshotAdapter.fromJson(json)
-                ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parseUnsafe JSON: null result"))
+            val serializable =
+                snapshotAdapter.fromJson(json)
+                    ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parseUnsafe JSON: null result"))
             serializable.toSnapshot(options)
         } catch (e: Exception) {
             ParseResult.Failure(ParseError.InvalidJson(e.message ?: "Unknown JSON parsing error"))
@@ -96,9 +97,7 @@ object SnapshotSerializer {
      * @param patch The patch to serialize
      * @return JSON string representation
      */
-    internal fun serializePatch(patch: SerializablePatch): String {
-        return patchAdapter.toJson(patch)
-    }
+    internal fun serializePatch(patch: SerializablePatch): String = patchAdapter.toJson(patch)
 
     /**
      * Deserializes a JSON string to a SerializablePatch.
@@ -108,8 +107,9 @@ object SnapshotSerializer {
      */
     internal fun fromJsonPatch(json: String): ParseResult<SerializablePatch> {
         return try {
-            val patch = patchAdapter.fromJson(json)
-                ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parseUnsafe patch JSON: null result"))
+            val patch =
+                patchAdapter.fromJson(json)
+                    ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parseUnsafe patch JSON: null result"))
             ParseResult.Success(patch)
         } catch (e: Exception) {
             ParseResult.Failure(ParseError.InvalidJson(e.message ?: "Unknown JSON parsing error"))
@@ -127,8 +127,8 @@ object SnapshotSerializer {
         currentConfiguration: Configuration,
         patch: SerializablePatch,
         options: SnapshotLoadOptions,
-    ): ParseResult<Configuration> {
-        return try {
+    ): ParseResult<Configuration> =
+        try {
             // Convert current snapshot to serializable form
             val currentSerializable = currentConfiguration.toSerializable()
 
@@ -146,15 +146,15 @@ object SnapshotSerializer {
             }
 
             // Convert back to snapshot
-            val patchedSerializable = SerializableSnapshot(
-                meta = patch.meta ?: currentSerializable.meta,
-                flags = flagMap.values.toList(),
-            )
+            val patchedSerializable =
+                SerializableSnapshot(
+                    meta = patch.meta ?: currentSerializable.meta,
+                    flags = flagMap.values.toList(),
+                )
             patchedSerializable.toSnapshot(options)
         } catch (e: Exception) {
             ParseResult.Failure(ParseError.InvalidSnapshot("Failed to apply patch: ${e.message}"))
         }
-    }
 
     /**
      * Applies a patch from a JSON string to an existing snapshot.
@@ -166,9 +166,7 @@ object SnapshotSerializer {
     fun applyPatchJson(
         currentConfiguration: Configuration,
         patchJson: String,
-    ): ParseResult<Configuration> {
-        return applyPatchJson(currentConfiguration, patchJson, SnapshotLoadOptions.strict())
-    }
+    ): ParseResult<Configuration> = applyPatchJson(currentConfiguration, patchJson, SnapshotLoadOptions.strict())
 
     fun applyPatchJson(
         currentConfiguration: Configuration,
@@ -188,25 +186,24 @@ object SnapshotSerializer {
      * KotlinJsonAdapterFactory to take precedence over reflection-based serialization.
      */
     fun defaultMoshi(): Moshi {
-        // Build Moshi with custom adapters registered BEFORE KotlinJsonAdapterFactory
-        // This ensures our custom adapters take precedence over reflection-based serialization
+        // Build Moshi with custom adapters registered before KotlinJsonAdapterFactory so they take precedence.
         return Moshi.Builder()
+            .add(IdentifierJsonAdapter)
+            .add(ValueClassAdapterFactory)
             .add(FlagValueAdapter.Factory)
             .add(
                 VersionRangeAdapter(
                     // Create a minimal Moshi for VersionRangeAdapter to use for Version
-                    Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
-                )
-            )
-            .add(
-                PolymorphicJsonAdapterFactory.of(VersionRange::class.java, "type")
+                    Moshi.Builder().add(KotlinJsonAdapterFactory()).build(),
+                ),
+            ).add(
+                PolymorphicJsonAdapterFactory
+                    .of(VersionRange::class.java, "type")
                     .withSubtype(FullyBound::class.java, VersionRange.Type.MIN_AND_MAX_BOUND.name)
                     .withSubtype(Unbounded::class.java, VersionRange.Type.UNBOUNDED.name)
                     .withSubtype(LeftBound::class.java, VersionRange.Type.MIN_BOUND.name)
-                    .withSubtype(RightBound::class.java, VersionRange.Type.MAX_BOUND.name)
-            )
-            .addLast(KotlinJsonAdapterFactory())
-            .add(ValueClassJsonAdapter.Factory)
+                    .withSubtype(RightBound::class.java, VersionRange.Type.MAX_BOUND.name),
+            ).addLast(KotlinJsonAdapterFactory())
             .build()
     }
 }

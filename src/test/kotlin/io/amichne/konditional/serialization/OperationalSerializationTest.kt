@@ -18,7 +18,7 @@ import io.amichne.konditional.fixtures.utilities.axisValues
 import io.amichne.konditional.internal.serialization.models.FlagValue
 import io.amichne.konditional.internal.serialization.models.SerializableFlag
 import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
-import io.amichne.konditional.values.Identifier
+import io.amichne.konditional.values.FeatureId
 import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -39,7 +39,7 @@ class OperationalSerializationTest {
         // Ensure container initialization / registration occurs
         features.knownFeature
 
-        val unknownKey = Identifier(namespace.id, "missing-${UUID.randomUUID()}")
+        val unknownKey = FeatureId(namespaceSeed = namespace.id, key = "missing-${UUID.randomUUID()}")
         val snapshotJson = SnapshotSerializer.defaultMoshi().adapter(SerializableSnapshot::class.java)
             .indent("  ").toJson(
                 SerializableSnapshot(

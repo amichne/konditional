@@ -19,7 +19,7 @@ flowchart LR
     Snap[Snapshot JSON] --> Flags["flags: List{SerializableFlag}"]
     Snap --> Meta["meta: SerializableSnapshotMetadata?"]
     Flags --> Flag["SerializableFlag"]
-    Flag --> Key["key: Identifier"]
+    Flag --> Key["key: FeatureId"]
     Flag --> Default["defaultValue: FlagValue"]
     Flag --> Salt["salt: String"]
     Flag --> Active["isActive: Boolean"]
@@ -37,12 +37,12 @@ flowchart LR
 
 ---
 
-## Identifier format (`key`)
+## FeatureId format (`key`)
 
-Each flag is stored under a stable **Identifier** string:
+Each flag is stored under a stable **FeatureId** string:
 
 ```
-value::${namespaceIdentifierSeed}::${featureKey}
+feature::${namespaceIdentifierSeed}::${featureKey}
 ```
 
 Where:
@@ -53,8 +53,11 @@ Where:
 Example (Global namespace, `DARK_MODE`):
 
 ```
-value::global::DARK_MODE
+feature::global::DARK_MODE
 ```
+
+Backward compatibility: older snapshots may contain `value::${namespaceIdentifierSeed}::${featureKey}`. These are
+normalized on load.
 
 ---
 
@@ -127,7 +130,7 @@ val snapshotJson = """
   },
   "flags": [
     {
-      "key": "value::${namespaceSeed}::${featureKey}",
+      "key": "feature::${namespaceSeed}::${featureKey}",
       "defaultValue": {
         "type": "${valueType}",
         "value": ${defaultValueJson},
@@ -176,8 +179,8 @@ val patchJson = """
     { "...": "SerializableFlag objects (same shape as snapshot)" }
   ],
   "removeKeys": [
-    "value::${namespaceSeed}::${featureKeyToRemove}",
-    "value::${namespaceSeed}::${anotherKey}"
+    "feature::${namespaceSeed}::${featureKeyToRemove}",
+    "feature::${namespaceSeed}::${anotherKey}"
   ]
 }
 """
@@ -220,7 +223,7 @@ Snapshots and patches may include an optional `meta` object:
     {
       "flags": [
         {
-          "key": "value::global::DARK_MODE",
+          "key": "feature::global::DARK_MODE",
           "defaultValue": { "type": "BOOLEAN", "value": false },
           "salt": "v1",
           "isActive": true,
@@ -236,7 +239,7 @@ Snapshots and patches may include an optional `meta` object:
           ]
         },
         {
-          "key": "value::global::API_ENDPOINT",
+          "key": "feature::global::API_ENDPOINT",
           "defaultValue": { "type": "STRING", "value": "https://api.example.com" },
           "salt": "v1",
           "isActive": true,
@@ -268,7 +271,7 @@ Snapshots and patches may include an optional `meta` object:
     {
       "flags": [
         {
-          "key": "value::global::THEME",
+          "key": "feature::global::THEME",
           "defaultValue": {
             "type": "ENUM",
             "value": "LIGHT",
@@ -300,7 +303,7 @@ Snapshots and patches may include an optional `meta` object:
     {
       "flags": [
         {
-          "key": "value::global::DARK_MODE",
+          "key": "feature::global::DARK_MODE",
           "defaultValue": { "type": "BOOLEAN", "value": false },
           "salt": "v1",
           "isActive": true,
@@ -317,7 +320,7 @@ Snapshots and patches may include an optional `meta` object:
         }
       ],
       "removeKeys": [
-        "value::global::LEGACY_SUPPORT"
+        "feature::global::LEGACY_SUPPORT"
       ]
     }
     ```
@@ -327,7 +330,7 @@ Snapshots and patches may include an optional `meta` object:
     {
       "flags": [
         {
-          "key": "value::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::darkMode",
+          "key": "feature::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::darkMode",
           "defaultValue": {
             "type": "BOOLEAN",
             "value": false
@@ -353,7 +356,7 @@ Snapshots and patches may include an optional `meta` object:
           ]
         },
         {
-          "key": "value::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::apiEndpoint",
+          "key": "feature::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::apiEndpoint",
           "defaultValue": {
             "type": "STRING",
             "value": "https://api.example.com"
@@ -379,7 +382,7 @@ Snapshots and patches may include an optional `meta` object:
           ]
         },
         {
-          "key": "value::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::maxRetries",
+          "key": "feature::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::maxRetries",
           "defaultValue": {
             "type": "INT",
             "value": 3
@@ -408,7 +411,7 @@ Snapshots and patches may include an optional `meta` object:
           ]
         },
         {
-          "key": "value::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::theme",
+          "key": "feature::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::theme",
           "defaultValue": {
             "type": "ENUM",
             "value": "LIGHT",
@@ -436,7 +439,7 @@ Snapshots and patches may include an optional `meta` object:
           ]
         },
         {
-          "key": "value::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::userSettings",
+          "key": "feature::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::userSettings",
           "defaultValue": {
             "type": "DATA_CLASS",
             "dataClassName": "io.amichne.konditional.serialization.ConsumerConfigurationLifecycleTest$UserSettings",

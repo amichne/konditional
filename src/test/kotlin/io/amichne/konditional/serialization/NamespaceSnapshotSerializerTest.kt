@@ -8,10 +8,12 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.fixtures.utilities.update
+import io.amichne.konditional.values.FeatureId
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -38,8 +40,7 @@ class NamespaceSnapshotSerializerTest {
         // Clear both FeatureRegistry and the namespace registry before each test
         FeatureRegistry.clear()
         testNamespace.load(
-            io.amichne.konditional.core.instance
-                .Configuration(emptyMap()),
+            Configuration(emptyMap()),
         )
 
         // Register test features
@@ -58,8 +59,7 @@ class NamespaceSnapshotSerializerTest {
     fun `Given namespace with no flags, When serialized, Then produces JSON with empty flags array`() {
         // Start with empty namespace
         testNamespace.load(
-            io.amichne.konditional.core.instance
-                .Configuration(emptyMap()),
+            Configuration(emptyMap()),
         )
 
         val serializer = NamespaceSnapshotSerializer(testNamespace)
@@ -110,7 +110,7 @@ class NamespaceSnapshotSerializerTest {
         val serializer = NamespaceSnapshotSerializer(testNamespace)
         val result = serializer.fromJson(json)
 
-        assertIs<ParseResult.Success<io.amichne.konditional.core.instance.Configuration>>(result)
+        assertIs<ParseResult.Success<Configuration>>(result)
 
         // Verify the flag was loaded into the namespace
         val context = ctx("11111111111111111111111111111111")
@@ -137,7 +137,7 @@ class NamespaceSnapshotSerializerTest {
             {
               "flags" : [
                 {
-                  "key" : "unregistered_feature",
+                  "key" : "${FeatureId(namespaceSeed = "global", key = "unregistered_feature")}",
                   "defaultValue" : {
                     "type" : "BOOLEAN",
                     "value" : true
@@ -177,11 +177,10 @@ class NamespaceSnapshotSerializerTest {
 
         // Clear and deserialize
         testNamespace.load(
-            io.amichne.konditional.core.instance
-                .Configuration(emptyMap()),
+            Configuration(emptyMap()),
         )
         val result = serializer.fromJson(json)
-        assertIs<ParseResult.Success<io.amichne.konditional.core.instance.Configuration>>(result)
+        assertIs<ParseResult.Success<Configuration>>(result)
 
         // Verify flags work correctly
         val iosContext = ctx("11111111111111111111111111111111", platform = Platform.IOS)

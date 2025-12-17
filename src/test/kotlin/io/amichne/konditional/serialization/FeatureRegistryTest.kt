@@ -6,7 +6,7 @@ import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.fixtures.core.TestNamespace
-import io.amichne.konditional.values.Identifier
+import io.amichne.konditional.values.FeatureId
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -80,11 +80,11 @@ class FeatureRegistryTest {
 
     @Test
     fun `Given unregistered key, When retrieved, Then returns FeatureNotFound error`() {
-        val result = FeatureRegistry.get(Identifier("nonexistent_key"))
+        val result = FeatureRegistry.get(FeatureId(namespaceSeed = "test", key = "nonexistent_key"))
 
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.FeatureNotFound>(result.error)
-        assertEquals(Identifier("nonexistent_key"), (result.error as ParseError.FeatureNotFound).key)
+        assertEquals(FeatureId(namespaceSeed = "test", key = "nonexistent_key"), (result.error as ParseError.FeatureNotFound).key)
     }
 
     @Test
@@ -98,7 +98,7 @@ class FeatureRegistryTest {
 
     @Test
     fun `Given unregistered feature, When contains checked, Then returns false`() {
-        val result = FeatureRegistry.contains(Identifier("nonexistent_key"))
+        val result = FeatureRegistry.contains(FeatureId(namespaceSeed = "test", key = "nonexistent_key"))
 
         assertFalse(result)
     }
@@ -124,7 +124,7 @@ class FeatureRegistryTest {
         // Should not throw
         FeatureRegistry.clear()
 
-        val result = FeatureRegistry.get(Identifier("any_key"))
+        val result = FeatureRegistry.get(FeatureId(namespaceSeed = "test", key = "any_key"))
         assertIs<ParseResult.Failure>(result)
     }
 

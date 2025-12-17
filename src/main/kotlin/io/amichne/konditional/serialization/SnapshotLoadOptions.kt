@@ -1,6 +1,6 @@
 package io.amichne.konditional.serialization
 
-import io.amichne.konditional.values.Identifier
+import io.amichne.konditional.values.FeatureId
 
 /**
  * Controls deserialization behavior for snapshots and patches.
@@ -31,14 +31,14 @@ sealed interface UnknownFeatureKeyStrategy {
 data class SnapshotWarning internal constructor(
     val kind: Kind,
     val message: String,
-    val key: Identifier? = null,
+    val key: FeatureId? = null,
 ) {
     enum class Kind {
         UNKNOWN_FEATURE_KEY,
     }
 
     companion object {
-        fun unknownFeatureKey(key: Identifier): SnapshotWarning =
+        fun unknownFeatureKey(key: FeatureId): SnapshotWarning =
             SnapshotWarning(
                 kind = Kind.UNKNOWN_FEATURE_KEY,
                 key = key,

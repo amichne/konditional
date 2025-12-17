@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/konditional.iml" filepath="$PROJECT_DIR$/.idea/modules/konditional.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/kontracts/konditional.kontracts.iml" filepath="$PROJECT_DIR$/.idea/modules/kontracts/konditional.kontracts.iml" />
     </modules>
   </component>
 </project>
