@@ -101,33 +101,29 @@ private fun <T : Any, C : Context> ConditionalValue<T, C>.toSerializable(): Seri
 internal fun SerializableSnapshot.toSnapshot(): ParseResult<Configuration> = toSnapshot(SnapshotLoadOptions.strict())
 
 internal fun SerializableSnapshot.toSnapshot(options: SnapshotLoadOptions): ParseResult<Configuration> =
-    try {
-        val flagMap =
-            buildMap<Feature<*, *, *>, FlagDefinition<*, *, *>> {
-                flags.forEach { serializableFlag ->
-                    when (val pairResult = serializableFlag.toFlagPair()) {
-                        is ParseResult.Success -> {
-                            put(pairResult.value.first, pairResult.value.second)
-                        }
+    runCatching {
+        buildMap {
+            flags.forEach { serializableFlag ->
+                when (val pairResult = serializableFlag.toFlagPair()) {
+                    is ParseResult.Success -> {
+                        put(pairResult.value.first, pairResult.value.second)
+                    }
 
-                        is ParseResult.Failure -> {
-                            val error = pairResult.error
-                            if (error is ParseError.FeatureNotFound &&
-                                options.unknownFeatureKeyStrategy is UnknownFeatureKeyStrategy.Skip
-                            ) {
-                                options.onWarning(SnapshotWarning.unknownFeatureKey(error.key))
-                                return@forEach
-                            }
-                            return ParseResult.Failure(error)
+                    is ParseResult.Failure -> {
+                        if (pairResult.error is ParseError.FeatureNotFound &&
+                            options.unknownFeatureKeyStrategy is UnknownFeatureKeyStrategy.Skip
+                        ) {
+                            options.onWarning(SnapshotWarning.unknownFeatureKey(pairResult.error.key))
+                            return@forEach
                         }
+                        return ParseResult.Failure(pairResult.error)
                     }
                 }
             }
-
-        ParseResult.Success(Configuration(flagMap, meta.toDomain()))
-    } catch (e: Exception) {
-        ParseResult.Failure(ParseError.InvalidSnapshot(e.message ?: "Unknown error"))
-    }
+        }.let {
+            ParseResult.Success(Configuration(it, meta.toDomain()))
+        }
+    }.getOrElse { ParseResult.Failure(ParseError.InvalidSnapshot(it.message ?: "Unknown error")) }
 
 /**
  * Converts a SerializableFlag to a Map.Entry of Feature to FlagDefinition.
@@ -150,22 +146,16 @@ private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Feature<*, *, *>, Fl
  * Converts a SerializableFlag to a FlagDefinitionImpl.
  * Type-safe: no casting required thanks to FlagValue sealed class.
  */
-@Suppress("UNCHECKED_CAST")
 private fun <T : Any, C : Context, M : Namespace> SerializableFlag.toFlagDefinition(
     conditional: Feature<T, C, M>,
-): FlagDefinition<T, C, M> {
-    // Extract typed value from FlagValue (type-safe extraction)
-    val typedDefaultValue = defaultValue.extractValue<T>()
-    val values = rules.map { it.toValue<T, C>() }
-
-    return FlagDefinition(
+): FlagDefinition<T, C, M> =
+    FlagDefinition(
         feature = conditional,
-        bounds = values,
-        defaultValue = typedDefaultValue,
+        bounds = rules.map { it.toRule<C>().targetedBy(it.value.extractValue()) },
+        defaultValue = defaultValue.extractValue(),
         salt = salt,
         isActive = isActive,
     )
-}
 
 /**
  * Extracts the value from a FlagValue with type safety.
@@ -278,7 +268,8 @@ private fun coerceValue(
         }
 
         target.java.isEnum -> {
-            val enumConstantName = value as? String ?: error("Enum values must be strings, got ${value::class.simpleName}")
+            val enumConstantName =
+                value as? String ?: error("Enum values must be strings, got ${value::class.simpleName}")
             decodeEnum(target.java.name, enumConstantName)
         }
 
@@ -291,16 +282,6 @@ private fun coerceValue(
             value
         }
     }
-
-/**
- * Converts a SerializableRule to a ConditionalValue.
- */
-@Suppress("UNCHECKED_CAST")
-private fun <T : Any, C : Context> SerializableRule.toValue(): ConditionalValue<T, C> {
-    val typedValue = value.extractValue<T>()
-    val rule = toRule<C>()
-    return rule.targetedBy(typedValue)
-}
 
 /**
  * Converts a SerializableRule to a Rule.
