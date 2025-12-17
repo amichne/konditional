@@ -56,7 +56,7 @@ internal object FeatureRegistry {
      *
      * Internal: Used by serialization infrastructure for deserialization.
      *
-     * @param key The string key of the conditional
+     * @param key The string key create the conditional
      * @return ParseResult with the registered Feature or an error
      */
     internal fun get(key: FeatureId): ParseResult<Feature<*, *, *>> =

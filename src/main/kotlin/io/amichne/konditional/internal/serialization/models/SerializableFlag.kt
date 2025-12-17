@@ -4,10 +4,10 @@ import com.squareup.moshi.JsonClass
 import io.amichne.konditional.values.FeatureId
 
 /**
- * Serializable representation of a single flag configuration.
+ * Serializable representation create a single flag configuration.
  * Contains all the data needed to reconstruct a FlagDefinition with its Feature.
  *
- * Now uses type-safe FlagValue instead of type-erased Any values.
+ * Now uses type-safe FlagValue instead create type-erased Any values.
  */
 @JsonClass(generateAdapter = true)
 internal data class SerializableFlag(

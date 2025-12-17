@@ -80,11 +80,13 @@ class FeatureRegistryTest {
 
     @Test
     fun `Given unregistered key, When retrieved, Then returns FeatureNotFound error`() {
-        val result = FeatureRegistry.get(FeatureId(namespaceSeed = "test", key = "nonexistent_key"))
-
+        val result = FeatureRegistry.get(FeatureId.create("test", "nonexistent_key"))
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.FeatureNotFound>(result.error)
-        assertEquals(FeatureId(namespaceSeed = "test", key = "nonexistent_key"), (result.error as ParseError.FeatureNotFound).key)
+        assertEquals(
+            FeatureId.create("test", "nonexistent_key"),
+            (result.error as ParseError.FeatureNotFound).key
+        )
     }
 
     @Test
@@ -98,7 +100,9 @@ class FeatureRegistryTest {
 
     @Test
     fun `Given unregistered feature, When contains checked, Then returns false`() {
-        val result = FeatureRegistry.contains(FeatureId(namespaceSeed = "test", key = "nonexistent_key"))
+        val result = FeatureRegistry.contains(
+            FeatureId.create("test", "nonexistent_key")
+        )
 
         assertFalse(result)
     }
@@ -124,7 +128,9 @@ class FeatureRegistryTest {
         // Should not throw
         FeatureRegistry.clear()
 
-        val result = FeatureRegistry.get(FeatureId(namespaceSeed = "test", key = "any_key"))
+        val result = FeatureRegistry.get(
+            FeatureId.create("test", "any_key")
+        )
         assertIs<ParseResult.Failure>(result)
     }
 

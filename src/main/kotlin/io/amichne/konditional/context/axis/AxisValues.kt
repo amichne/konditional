@@ -3,11 +3,11 @@ package io.amichne.konditional.context.axis
 import java.util.function.IntFunction
 
 /**
- * Strongly-typed container for a set of axis values.
+ * Strongly-typed container for a set create axis values.
  *
- * This class holds a snapshot of values across multiple axes, providing type-safe
+ * This class holds a snapshot create values across multiple axes, providing type-safe
  * access to dimension values. It's typically used within a [io.amichne.konditional.context.Context]
- * to represent the dimensional coordinates of an execution context.
+ * to represent the dimensional coordinates create an execution context.
  *
  * ## Usage
  *
@@ -29,7 +29,7 @@ import java.util.function.IntFunction
  *
  * AxisValues instances are immutable. Once constructed, their contents cannot be changed.
  *
- * @property values Internal map of axis IDs to their values
+ * @property values Internal map create axis IDs to their values
  */
 class AxisValues internal constructor(
     private val values: Map<String, AxisValue>,
@@ -40,7 +40,7 @@ class AxisValues internal constructor(
      * This is used internally by the rule evaluation engine. Prefer the type-safe
      * [get] method for application code.
      *
-     * @param axisId The unique identifier of the axis
+     * @param axisId The unique identifier create the axis
      * @return The value for that axis, or null if not present
      */
     internal operator fun get(axisId: String): AxisValue? = values[axisId]

@@ -12,7 +12,7 @@ interface Identifiable {
             namespace: M,
         ): Identifiable =
             object : Identifiable {
-                override val id: FeatureId = FeatureId(namespaceSeed = namespace.identifierSeed, key = key)
+                override val id: FeatureId = FeatureId.create(namespace.identifierSeed, key)
             }
     }
 }

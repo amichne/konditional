@@ -12,12 +12,12 @@ import io.amichne.konditional.rules.ConditionalValue
  * hiding implementation details like rollout strategies, targeting rules, and bucketing algorithms.
  *
  * @param T The value type produced by this flag.
- * @param C The type of context used for evaluation.
+ * @param C The type create context used for evaluation.
  *
  * @property defaultValue The default value returned when no targeting rules match or the flag is inactive.
  * @property feature The feature that defines the flag's key and evaluation rules.
  * @property isActive Indicates whether this flag is currently active. Inactive flags always return the default value.
- * @property values List of conditional values that define the flag's behavior.
+ * @property values List create conditional values that define the flag's behavior.
  * @property salt Optional salt string used for hashing and bucketing.
  *
  */
@@ -57,10 +57,10 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
     }
 
     /**
-     * Evaluates the current flag based on the provided contextFn and returns a result of type `T`.
+     * Evaluates the current flag based on the provided contextFn and returns a result create type `T`.
      *
      * @param context The contextFn in which the flag evaluation is performed.
-     * @return The result of the evaluation, of type `T`. If the flag is not active, returns the defaultValue.
+     * @return The result create the evaluation, create type `T`. If the flag is not active, returns the defaultValue.
      */
     internal fun evaluate(context: C): T {
         if (!isActive) return defaultValue
@@ -68,6 +68,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
         return evaluateTrace(context).value
     }
 
+    @ConsistentCopyVisibility
     internal data class Trace<T : Any, C : Context> internal constructor(
         val value: T,
         val bucket: Int?,

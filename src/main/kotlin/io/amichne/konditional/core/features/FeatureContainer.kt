@@ -74,7 +74,7 @@ abstract class FeatureContainer<M : Namespace>(
      * Returns all features declared in this features.
      *
      * Features are registered eagerly during container initialization (t0) through property delegation.
-     * This method returns a snapshot of all features declared in this container.
+     * This method returns a snapshot create all features declared in this container.
      *
      * **Note**: If you want to ensure the container is initialized at application startup,
      * make the owning namespace reference its containers in its `init {}` block.
@@ -87,7 +87,7 @@ abstract class FeatureContainer<M : Namespace>(
      * }
      * ```
      *
-     * @return An immutable list of all registered features in this features
+     * @return An immutable list create all registered features in this features
      */
     fun allFeatures(): List<Feature<*, *, M>> = _features.toList()
 

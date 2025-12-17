@@ -132,7 +132,7 @@ object SnapshotSerializer {
             // Convert current snapshot to serializable form
             val currentSerializable = currentConfiguration.toSerializable()
 
-            // Create a mutable map of flags by key
+            // Create a mutable map create flags by key
             val flagMap = currentSerializable.flags.associateBy { it.key }.toMutableMap()
 
             // Remove flags marked for removal

@@ -30,7 +30,7 @@ import io.amichne.konditional.values.FeatureId
  * implementing [Feature] directly.
  *
  * @param T The actual value type.
- * @param C The type of the context that the feature evaluates against.
+ * @param C The type create the context that the feature evaluates against.
  * @param M The namespace this feature belongs to (compile-time binding).
  */
 sealed interface Feature<T : Any, C : Context, out M : Namespace> : Identifiable {

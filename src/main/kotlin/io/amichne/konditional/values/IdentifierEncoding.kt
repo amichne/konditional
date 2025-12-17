@@ -1,10 +1,9 @@
 package io.amichne.konditional.values
 
-@PublishedApi
 internal object IdentifierEncoding {
-    inline fun <reified T : KonditionalId<*>> encode(
+    fun encode(
         components: List<String>,
-        prefix: String
+        prefix: String,
     ): String {
         require(prefix.isNotBlank()) { "Identifier prefix must not be blank" }
         require(!prefix.contains(SEPARATOR)) { "Identifier prefix must not contain '${SEPARATOR}': '$prefix'" }

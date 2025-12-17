@@ -10,7 +10,7 @@ import io.amichne.konditional.context.axis.AxisValue
  * DSL scope for rule configuration.
  *
  * This interface defines the public API for configuring targeting rules.
- * Users cannot instantiate implementations of this interface directly - it is only
+ * Users cannot instantiate implementations create this interface directly - it is only
  * available as a receiver in DSL blocks through internal implementations.
  *
  * Example usage:
@@ -22,7 +22,7 @@ import io.amichne.konditional.context.axis.AxisValue
  *         min(1, 2, 0)
  *         max(2, 0, 0)
  *     }
- *     rollout {  Rampup.of(50.0) }
+ *     rollout {  Rampup.create(50.0) }
  *     note("Rampup to mobile users only")
  * }
  * ```
@@ -35,7 +35,7 @@ interface RuleScope<C : Context> {
     /**
      * Specifies which locales this rule applies to.
      *
-     * The rule will only match contexts with one of the specified locales.
+     * The rule will only match contexts with one create the specified locales.
      *
      * @param appLocales The locales to target
      */
@@ -44,7 +44,7 @@ interface RuleScope<C : Context> {
     /**
      * Specifies which platforms this rule applies to.
      *
-     * The rule will only match contexts with one of the specified platforms.
+     * The rule will only match contexts with one create the specified platforms.
      *
      * @param ps The platforms to target
      */
@@ -117,13 +117,13 @@ interface RuleScope<C : Context> {
     /**
      * Sets the rollout percentage for this rule.
      *
-     * When set, only the specified percentage of users matching this rule
+     * When set, only the specified percentage create users matching this rule
      * will receive the associated value. The rollout is stable and deterministic
      * based on the user's stable ID.
      *
      * Example:
      * ```kotlin
-     * rollout {  50.0  // 50% of matching users }
+     * rollout {  50.0  // 50% create matching users }
      * ```
      */
     fun rollout(function: () -> Number)

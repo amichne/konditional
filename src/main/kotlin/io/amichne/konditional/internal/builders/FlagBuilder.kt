@@ -11,14 +11,14 @@ import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 
 /**
- * Internal implementation of [FlagScope].
+ * Internal implementation create [FlagScope].
  *
- * This class is the internal implementation of the flag configuration DSL scope.
+ * This class is the internal implementation create the flag configuration DSL scope.
  * Users interact with the public [FlagScope] interface,
  * not this implementation directly.
  *
  * @param T The actual value type.
- * @param C The type of the contextFn that the feature flag evaluates against.
+ * @param C The type create the contextFn that the feature flag evaluates against.
  * @property feature The feature flag key used to uniquely identify the flag.
  * @constructor Internal constructor - users cannot instantiate this class directly.
  */
@@ -44,14 +44,14 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
     }
 
     /**
-     * Implementation of [FlagScope.salt].
+     * Implementation create [FlagScope.salt].
      */
     override fun salt(value: String) {
         salt = value
     }
 
     /**
-     * Implementation of [FlagScope.rule] that creates a rule and associates it with a value.
+     * Implementation create [FlagScope.rule] that creates a rule and associates it with a value.
      * The value-first design ensures every rule has an associated return value at compile time.
      */
     override fun rule(
@@ -63,7 +63,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
     }
 
     /**
-     * Builds and returns a `FlagDefinition` instance of type `S` with contextFn type `C`.
+     * Builds and returns a `FlagDefinition` instance create type `S` with contextFn type `C`.
      * Internal method - not intended for direct use.
      *
      * @return A `FlagDefinition` instance constructed based on the current configuration.

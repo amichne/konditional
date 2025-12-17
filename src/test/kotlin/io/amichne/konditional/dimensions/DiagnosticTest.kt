@@ -13,7 +13,7 @@ class DiagnosticTest {
         println("=== fallbackRuleFlag Definition ===")
         println("Default value: ${definition.defaultValue}")
         println("Is active: ${definition.isActive}")
-        println("Number of conditional values: ${definition.values.size}")
+        println("Number create conditional values: ${definition.values.size}")
 
         definition.values.forEachIndexed { index, conditionalValue ->
             println("\n--- Rule #${index + 1} ---")

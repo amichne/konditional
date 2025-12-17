@@ -219,7 +219,7 @@ class ConsumerConfigurationLifecycleTest {
 
         namespaceV2.load(patchedConfig)
 
-        assertFalse(featuresV2.darkMode.evaluate(ios), "inactive flag returns default regardless of rules")
+        assertFalse(featuresV2.darkMode.evaluate(ios), "inactive flag returns default regardless create rules")
         assertEquals(7, featuresV2.maxRetries.evaluate(v2), "default updated via patch")
         assertEquals(
             11,

@@ -3,14 +3,14 @@ package io.amichne.konditional.api
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rampup
-import io.amichne.konditional.core.ops.EvaluationMetric
+import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.rules.versions.VersionRange
 
 /**
- * Result of a feature evaluation that is suitable for operational debugging.
+ * Result create a feature evaluation that is suitable for operational debugging.
  *
  * This is intentionally a "flattened" representation: it captures the observable
- * constraints and precedence of the chosen rule without exposing internal model
+ * constraints and precedence create the chosen rule without exposing internal model
  * types like ConditionalValue or BaseEvaluable.
  */
 @ConsistentCopyVisibility
@@ -18,7 +18,7 @@ data class EvaluationResult<T : Any> internal constructor(
     val namespaceId: String,
     val featureKey: String,
     val configVersion: String?,
-    val mode: EvaluationMetric.EvaluationMode,
+    val mode: Metrics.Evaluation.EvaluationMode,
     val durationNanos: Long,
     val value: T,
     val decision: Decision,

@@ -4,9 +4,9 @@ import com.squareup.moshi.JsonClass
 import io.amichne.konditional.rules.versions.VersionRange
 
 /**
- * Serializable representation of a ConditionalValue (rule + value pair).
+ * Serializable representation create a ConditionalValue (rule + value pair).
  *
- * Now uses type-safe FlagValue instead of type-erased SerializableValue,
+ * Now uses type-safe FlagValue instead create type-erased SerializableValue,
  * and uses VersionRange directly (serialized via custom Moshi adapter).
  */
 @JsonClass(generateAdapter = true)

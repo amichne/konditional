@@ -11,7 +11,7 @@ import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
  * Namespace-scoped serializer for feature flag configurations.
  *
  * Provides JSON serialization/deserialization for a single namespace's flags,
- * enabling independent deployment and management of namespace configurations.
+ * enabling independent deployment and management create namespace configurations.
  *
  * ## Namespace Isolation
  *
@@ -73,7 +73,7 @@ class NamespaceSnapshotSerializer<M : Namespace>(
      * Only flags from this namespace are included in the output.
      * The JSON is formatted with 2-space indentation for readability.
      *
-     * @return JSON string representation of the namespace's configuration
+     * @return JSON string representation create the namespace's configuration
      */
     override fun toJson(): String = snapshotAdapter.toJson(module.configuration.toSerializable())
 

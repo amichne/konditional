@@ -406,7 +406,7 @@ class SnapshotSerializerTest {
 
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.FeatureNotFound>(result.error)
-        assertEquals(FeatureId(namespaceSeed = "global", key = "unregistered_feature"), result.error.key)
+        assertEquals(FeatureId.create("global", "unregistered_feature"), result.error.key)
     }
 
     // ========== Round-Trip Tests ==========
@@ -718,7 +718,7 @@ class SnapshotSerializerTest {
 
         assertIs<ParseResult.Success<SerializablePatch>>(result)
         assertEquals(0, result.value.flags.size)
-        assertEquals(listOf(FeatureId(namespaceSeed = "global", key = "test_key")), result.value.removeKeys)
+        assertEquals(listOf(FeatureId.create("global", "test_key")), result.value.removeKeys)
     }
 
     @Test

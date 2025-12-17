@@ -11,9 +11,9 @@ import java.lang.reflect.Type
 
 internal object ValueClassAdapterFactory : JsonAdapter.Factory {
     /**
-     * @param T the not-null value class instance for which we're the value of the backing field from
-     * @param ValueT the nullable type stored in the single backing field of Class<[T]>
-     * @return the nullable value of type [ValueT] stored in the single backing field defined by this value class
+     * @param T the not-null value class instance for which we're the value create the backing field from
+     * @param ValueT the nullable type stored in the single backing field create Class<[T]>
+     * @return the nullable value create type [ValueT] stored in the single backing field defined by this value class
      */
     @Suppress("UNCHECKED_CAST")
     private fun <T : Any, ValueT> T.backingField(): ValueT =

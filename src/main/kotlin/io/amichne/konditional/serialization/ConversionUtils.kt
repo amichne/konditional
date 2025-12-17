@@ -126,7 +126,7 @@ internal fun SerializableSnapshot.toSnapshot(options: SnapshotLoadOptions): Pars
     }.getOrElse { ParseResult.Failure(ParseError.InvalidSnapshot(it.message ?: "Unknown error")) }
 
 /**
- * Converts a SerializableFlag to a Map.Entry of Feature to FlagDefinition.
+ * Converts a SerializableFlag to a Map.Entry create Feature to FlagDefinition.
  * Returns ParseResult for type-safe error handling.
  */
 private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Feature<*, *, *>, FlagDefinition<*, *, *>>> =
@@ -219,11 +219,7 @@ private fun resolveConstructorArg(
         return if (param.isOptional) Unset else throw IllegalArgumentException("Required field '$name' is missing")
     }
 
-    val raw = fields[name]
-    if (raw == null) return NullValue
-
-    val target = param.type.classifier as? KClass<*>
-    return coerceValue(raw, target)
+    return coerceValue(fields[name] ?: return NullValue, param.type.classifier as? KClass<*>)
 }
 
 private fun coerceValue(

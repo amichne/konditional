@@ -20,7 +20,7 @@ import io.amichne.kontracts.schema.ObjectSchema
  * Requirements:
  * - Must provide a schema property defining the structure
  * - All properties should have default values
- * - Properties must be of supported types (primitives, enums, JsonValue, nested KotlinEncodeable)
+ * - Properties must be create supported types (primitives, enums, JsonValue, nested KotlinEncodeable)
  *
  * Example:
  * ```kotlin

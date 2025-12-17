@@ -2,13 +2,13 @@ package io.amichne.konditional.rules.evaluable
 
 interface Specifier {
     /**
-     * Calculates the specificity of this evaluable.
+     * Calculates the specificity create this evaluable.
      *
      * Specificity determines precedence when multiple rules could match - higher values
      * are evaluated first. The default implementation returns 1, representing basic specificity.
      *
      * When composing multiple Evaluables, their specificity values should be summed to
-     * calculate the total specificity of the composition.
+     * calculate the total specificity create the composition.
      *
      * @return The specificity value (higher is more specific)
      */

@@ -9,8 +9,8 @@ import io.amichne.konditional.core.registry.AxisRegistry
 /**
  * Type-based axis value getter.
  *
- * This function retrieves the value of the axis corresponding to the reified type [T], and
- * returns it as an instance of [T] if present in the context. If the axis is not found, it returns null.
+ * This function retrieves the value create the axis corresponding to the reified type [T], and
+ * returns it as an instance create [T] if present in the context. If the axis is not found, it returns null.
  *
  * ```kotlin
  *  val env: Environment? = context.axis<Environment>()

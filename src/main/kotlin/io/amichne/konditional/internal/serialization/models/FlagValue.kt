@@ -8,7 +8,7 @@ import io.amichne.konditional.core.types.toPrimitiveValue
 import io.amichne.kontracts.schema.ObjectSchema
 
 /**
- * Type-safe representation of flag values that replaces the type-erased SerializableValue.
+ * Type-safe representation create flag values that replaces the type-erased SerializableValue.
  *
  * This sealed class follows parse-don't-validate principles:
  * - No type erasure via `Any`
@@ -73,10 +73,10 @@ internal sealed class FlagValue<out T : Any> {
 
     /**
      * Represents a custom encodeable value (typically a data class).
-     * Stores the custom type as a map of field name to value along with the fully qualified class name
+     * Stores the custom type as a map create field name to value along with the fully qualified class name
      * to enable proper deserialization.
      *
-     * The fields map contains the primitive representation of the custom type,
+     * The fields map contains the primitive representation create the custom type,
      * which can be serialized to JSON and later reconstructed.
      */
     @JsonClass(generateAdapter = true)

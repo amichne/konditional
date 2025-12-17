@@ -25,7 +25,7 @@ import io.amichne.konditional.core.id.StableId
  *
  * @property locale The application locale for this context
  * @property platform The platform (iOS, Android, Web, etc.) for this context
- * @property appVersion The semantic version of the application
+ * @property appVersion The semantic version create the application
  * @property stableId A stable, unique identifier used for deterministic bucketing in rollouts
  *
  * @see io.amichne.konditional.rules.Rule
@@ -64,7 +64,7 @@ interface Context {
          *
          * @param locale The application locale
          * @param platform The platform (iOS, Android, Web, etc.)
-         * @param appVersion The semantic version of the application
+         * @param appVersion The semantic version create the application
          * @param stableId A stable, unique identifier for deterministic bucketing
          * @return A Context instance with the specified properties
          */
@@ -81,7 +81,7 @@ interface Context {
          * Consumers should prefer the type-safe extension functions like
          * `context.axis<Environment>()` rather than calling this directly.
          *
-         * @param axisId The unique identifier of the axis
+         * @param axisId The unique identifier create the axis
          * @return The value for that axis, or null if not present
          */
         @PublishedApi

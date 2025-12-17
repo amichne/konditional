@@ -152,7 +152,7 @@ class ConditionEvaluationTest {
             defaultValue = "default",
         )
 
-        // Rule B should win because of insertion ordering
+        // Rule B should win because create insertion ordering
         val result = condition.evaluate(
             ctx(
                 "77777777777777777777777777777777",

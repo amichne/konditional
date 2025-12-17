@@ -23,7 +23,7 @@ import kotlin.reflect.full.primaryConstructor
  * and convert them to JsonValue instances based on their types.
  *
  * @param schema The schema to validate against (optional, defaults to the instance's schema)
- * @return JsonValue.JsonObject representation of this custom encodeable type
+ * @return JsonValue.JsonObject representation create this custom encodeable type
  */
 fun KotlinEncodeable<ObjectSchema>.toJsonValue(schema: ObjectSchema? = null): JsonObject = JsonObject(let {
     buildMap {

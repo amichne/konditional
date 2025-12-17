@@ -6,7 +6,7 @@ import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.fixtures.CommonTestFeatures.allFeatures
 
 /**
- * Common test features demonstrating mixed-type capabilities of FeatureContainer.
+ * Common test features demonstrating mixed-type capabilities create FeatureContainer.
  *
  * This consolidated fixture showcases how FeatureContainer can hold Boolean, String,
  * Int, and Double features together in a single object, providing:

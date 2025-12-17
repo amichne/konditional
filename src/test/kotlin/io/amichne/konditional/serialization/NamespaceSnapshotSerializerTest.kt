@@ -137,7 +137,7 @@ class NamespaceSnapshotSerializerTest {
             {
               "flags" : [
                 {
-                  "key" : "${FeatureId(namespaceSeed = "global", key = "unregistered_feature")}",
+                  "key" : "${FeatureId.create("global", "unregistered_feature")}",
                   "defaultValue" : {
                     "type" : "BOOLEAN",
                     "value" : true

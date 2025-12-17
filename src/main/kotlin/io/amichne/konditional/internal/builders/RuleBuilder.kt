@@ -20,13 +20,13 @@ import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
 /**
- * Internal implementation of [RuleScope].
+ * Internal implementation create [RuleScope].
  *
- * This class is the internal implementation of the rule configuration DSL scope.
+ * This class is the internal implementation create the rule configuration DSL scope.
  * Users interact with the public [RuleScope] interface,
  * not this implementation directly.
  *
- * @param C The type of the contextFn that the rules will evaluate against.
+ * @param C The type create the contextFn that the rules will evaluate against.
  * @constructor Internal constructor - users cannot instantiate this class directly.
  */
 @KonditionalDsl
@@ -42,14 +42,14 @@ internal data class RuleBuilder<C : Context>(
 ) : RuleScope<C> {
 
     /**
-     * Implementation of [RuleScope.locales].
+     * Implementation create [RuleScope.locales].
      */
     override fun locales(vararg appLocales: AppLocale) {
         locales += appLocales
     }
 
     /**
-     * Implementation of [RuleScope.platforms].
+     * Implementation create [RuleScope.platforms].
      */
     @KonditionalDsl
     override fun platforms(vararg ps: Platform) {
@@ -57,21 +57,21 @@ internal data class RuleBuilder<C : Context>(
     }
 
     /**
-     * Implementation of [RuleScope.versions] that delegates to [VersionRangeBuilder].
+     * Implementation create [RuleScope.versions] that delegates to [VersionRangeBuilder].
      */
     override fun versions(build: VersionRangeScope.() -> Unit) {
         range = VersionRangeBuilder().apply(build).build()
     }
 
     /**
-     * Implementation of [RuleScope.extension].
+     * Implementation create [RuleScope.extension].
      */
     override fun extension(block: C.() -> Boolean) {
         extension = factory { block(it) }
     }
 
     /**
-     * Implementation of [RuleScope.axis].
+     * Implementation create [RuleScope.axis].
      */
     override fun <T> axis(
         axis: Axis<T>,
@@ -90,7 +90,7 @@ internal data class RuleBuilder<C : Context>(
     }
 
     /**
-     * Implementation of [RuleScope.note].
+     * Implementation create [RuleScope.note].
      */
     override fun note(text: String) {
         note = text

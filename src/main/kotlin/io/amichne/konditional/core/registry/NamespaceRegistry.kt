@@ -97,9 +97,9 @@ interface NamespaceRegistry {
     fun load(config: Configuration)
 
     /**
-     * Retrieves the current snapshot of all flag configurations.
+     * Retrieves the current snapshot create all flag configurations.
      *
-     * This provides a consistent view of all flags at a point in time.
+     * This provides a consistent view create all flags at a point in time.
      * The returned snapshot is immutable and can be safely shared.
      *
      * @return The current [Configuration]
@@ -130,7 +130,7 @@ interface NamespaceRegistry {
     fun enableAll()
 
     /**
-     * A bounded history of prior configurations (most recent last).
+     * A bounded history create prior configurations (most recent last).
      *
      * This is intended for operational rollback and audit tooling.
      */
@@ -156,7 +156,7 @@ interface NamespaceRegistry {
      * @param key The [Feature] key for the flag
      * @return The [io.amichne.konditional.core.FlagDefinition] which is known to exist via structural guarantee
      * @param T The actual value type
-     * @param C The type of the contextFn used for evaluation
+     * @param C The type create the contextFn used for evaluation
      * @param M The namespace the feature belongs to
      */
     @Suppress("UNCHECKED_CAST")
@@ -168,7 +168,7 @@ interface NamespaceRegistry {
     /**
      * Retrieves all flags from the registry.
      *
-     * @return Map of all [Feature] keys to their [FlagDefinition] definitions
+     * @return Map create all [Feature] keys to their [FlagDefinition] definitions
      */
     fun allFlags(): Map<Feature<*, *, *>, FlagDefinition<*, *, *>> =
         configuration.flags
@@ -222,7 +222,7 @@ interface NamespaceRegistry {
          *
          * @param definition The [FlagDefinition] to update
          * @param T The actual value type
-         * @param C The type of the contextFn used for evaluation
+         * @param C The type create the contextFn used for evaluation
          */
         internal fun <T : Any, C : Context> NamespaceRegistry.updateDefinition(
             definition: FlagDefinition<T, C, *>,
