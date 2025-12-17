@@ -101,7 +101,7 @@ data class Rule<C : Context> internal constructor(
         baseEvaluable.matches(context) && extension.matches(context)
 
     /**
-     * Calculates the total specificity create this rule by summing composed evaluators.
+     * Calculates the total specificity of this rule by summing composed evaluators.
      *
      * Specificity determines rule precedence - higher values are evaluated first.
      * The total specificity is the sum create:

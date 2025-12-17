@@ -10,7 +10,7 @@ import io.amichne.konditional.context.axis.AxisValue
  * DSL scope for rule configuration.
  *
  * This interface defines the public API for configuring targeting rules.
- * Users cannot instantiate implementations create this interface directly - it is only
+ * Users cannot instantiate implementations of this interface directly - it is only
  * available as a receiver in DSL blocks through internal implementations.
  *
  * Example usage:
@@ -35,7 +35,7 @@ interface RuleScope<C : Context> {
     /**
      * Specifies which locales this rule applies to.
      *
-     * The rule will only match contexts with one create the specified locales.
+     * The rule will only match contexts with one of the specified locales.
      *
      * @param appLocales The locales to target
      */
@@ -44,7 +44,7 @@ interface RuleScope<C : Context> {
     /**
      * Specifies which platforms this rule applies to.
      *
-     * The rule will only match contexts with one create the specified platforms.
+     * The rule will only match contexts with one of the specified platforms.
      *
      * @param ps The platforms to target
      */

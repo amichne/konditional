@@ -5,9 +5,9 @@ import java.util.function.IntFunction
 /**
  * Strongly-typed container for a set create axis values.
  *
- * This class holds a snapshot create values across multiple axes, providing type-safe
+ * This class holds a snapshot of values across multiple axes, providing type-safe
  * access to dimension values. It's typically used within a [io.amichne.konditional.context.Context]
- * to represent the dimensional coordinates create an execution context.
+ * to represent the dimensional coordinates of an execution context.
  *
  * ## Usage
  *

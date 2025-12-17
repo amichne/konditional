@@ -20,9 +20,9 @@ import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
 /**
- * Internal implementation create [RuleScope].
+ * Internal implementation of [RuleScope].
  *
- * This class is the internal implementation create the rule configuration DSL scope.
+ * This class is the internal implementation of the rule configuration DSL scope.
  * Users interact with the public [RuleScope] interface,
  * not this implementation directly.
  *
@@ -42,14 +42,14 @@ internal data class RuleBuilder<C : Context>(
 ) : RuleScope<C> {
 
     /**
-     * Implementation create [RuleScope.locales].
+     * Implementation of [RuleScope.locales].
      */
     override fun locales(vararg appLocales: AppLocale) {
         locales += appLocales
     }
 
     /**
-     * Implementation create [RuleScope.platforms].
+     * Implementation of [RuleScope.platforms].
      */
     @KonditionalDsl
     override fun platforms(vararg ps: Platform) {
@@ -57,21 +57,21 @@ internal data class RuleBuilder<C : Context>(
     }
 
     /**
-     * Implementation create [RuleScope.versions] that delegates to [VersionRangeBuilder].
+     * Implementation of [RuleScope.versions] that delegates to [VersionRangeBuilder].
      */
     override fun versions(build: VersionRangeScope.() -> Unit) {
         range = VersionRangeBuilder().apply(build).build()
     }
 
     /**
-     * Implementation create [RuleScope.extension].
+     * Implementation of [RuleScope.extension].
      */
     override fun extension(block: C.() -> Boolean) {
         extension = factory { block(it) }
     }
 
     /**
-     * Implementation create [RuleScope.axis].
+     * Implementation of [RuleScope.axis].
      */
     override fun <T> axis(
         axis: Axis<T>,
@@ -90,7 +90,7 @@ internal data class RuleBuilder<C : Context>(
     }
 
     /**
-     * Implementation create [RuleScope.note].
+     * Implementation of [RuleScope.note].
      */
     override fun note(text: String) {
         note = text
@@ -133,7 +133,7 @@ internal data class RuleBuilder<C : Context>(
  * ```
  *
  * Multiple calls to the same axis accumulate allowed values (OR semantics).
- * Multiple different axes create AND semantics.
+ * Multiple different axes of AND semantics.
  *
  * @param T The axis value type (must be registered)
  * @param values The values to allow for this axis

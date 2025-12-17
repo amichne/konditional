@@ -9,9 +9,9 @@ import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
 /**
- * Internal implementation create [VersionRangeScope].
+ * Internal implementation of [VersionRangeScope].
  *
- * This class is the internal implementation create the version range configuration DSL scope.
+ * This class is the internal implementation of the version range configuration DSL scope.
  * Users interact with the public [VersionRangeScope] interface,
  * not this implementation directly.
  *
@@ -24,7 +24,7 @@ internal data class VersionRangeBuilder(
 ) : VersionRangeScope {
 
     /**
-     * Implementation create [VersionRangeScope.min].
+     * Implementation of [VersionRangeScope.min].
      */
     override fun min(
         major: Int,
@@ -35,7 +35,7 @@ internal data class VersionRangeBuilder(
     }
 
     /**
-     * Implementation create [VersionRangeScope.max].
+     * Implementation of [VersionRangeScope.max].
      */
     override fun max(
         major: Int,

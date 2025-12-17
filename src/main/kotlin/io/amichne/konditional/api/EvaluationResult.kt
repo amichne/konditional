@@ -7,10 +7,10 @@ import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.rules.versions.VersionRange
 
 /**
- * Result create a feature evaluation that is suitable for operational debugging.
+ * Result of a feature evaluation that is suitable for operational debugging.
  *
  * This is intentionally a "flattened" representation: it captures the observable
- * constraints and precedence create the chosen rule without exposing internal model
+ * constraints and precedence of the chosen rule without exposing internal model
  * types like ConditionalValue or BaseEvaluable.
  */
 @ConsistentCopyVisibility

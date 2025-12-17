@@ -57,7 +57,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
     }
 
     /**
-     * Evaluates the current flag based on the provided contextFn and returns a result create type `T`.
+     * Evaluates the current flag based on the provided contextFn and returns a result of type `T`.
      *
      * @param context The contextFn in which the flag evaluation is performed.
      * @return The result create the evaluation, create type `T`. If the flag is not active, returns the defaultValue.

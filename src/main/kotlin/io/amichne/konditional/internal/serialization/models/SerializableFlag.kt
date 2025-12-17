@@ -4,7 +4,7 @@ import com.squareup.moshi.JsonClass
 import io.amichne.konditional.values.FeatureId
 
 /**
- * Serializable representation create a single flag configuration.
+ * Serializable representation of a single flag configuration.
  * Contains all the data needed to reconstruct a FlagDefinition with its Feature.
  *
  * Now uses type-safe FlagValue instead create type-erased Any values.

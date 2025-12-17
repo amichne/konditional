@@ -53,7 +53,7 @@ internal data class BaseEvaluable<C : Context>(
             axisConstraints.all { (context.getAxisValue(it.axisId) ?: return false).id in it.allowedIds }
 
     /**
-     * Calculates specificity as the count create specified constraints.
+     * Calculates specificity as the count of specified constraints.
      *
      * @return Specificity value between 0 (no constraints) and 3 (all constraints)
      */

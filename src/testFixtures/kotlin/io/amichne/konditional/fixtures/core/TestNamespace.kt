@@ -32,7 +32,7 @@ import io.amichne.konditional.core.Namespace
  * ## Automatic Cleanup
  *
  * TestNamespace namespaces are isolated instances - no manual cleanup is needed.
- * Each test creates its own namespace instance that is garbage collected
+ * Each test ofs its own namespace instance that is garbage collected
  * after the test completes.
  *
  * @property id Unique identifier for this test namespace (for debugging)
@@ -43,7 +43,7 @@ class TestNamespace internal constructor(id: String) : Namespace.TestNamespaceFa
         /**
          * Creates a new test-scoped namespace with isolated registry.
          *
-         * Each invocation creates a fresh namespace instance with its own registry,
+         * Each invocation ofs a fresh namespace instance with its own registry,
          * ensuring complete isolation between tests.
          *
          * @param id Optional identifier for debugging (e.g., test name)

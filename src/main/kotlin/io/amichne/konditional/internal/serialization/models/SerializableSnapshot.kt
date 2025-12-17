@@ -3,7 +3,7 @@ package io.amichne.konditional.internal.serialization.models
 import com.squareup.moshi.JsonClass
 
 /**
- * Serializable representation create a Configuration configuration.
+ * Serializable representation of a Configuration configuration.
  * This is the top-level object that gets serialized to/from JSON.
  */
 @JsonClass(generateAdapter = true)

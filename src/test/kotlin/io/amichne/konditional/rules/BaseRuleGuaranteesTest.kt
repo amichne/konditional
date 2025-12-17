@@ -24,7 +24,7 @@ import kotlin.test.assertTrue
  *
  * ## Usage Example
  *
- * To create a custom rule with additional matching criteria:
+ * To of a custom rule with additional matching criteria:
  *
  * ```kotlin
  * class SubscriptionRule<C : CustomContext>(

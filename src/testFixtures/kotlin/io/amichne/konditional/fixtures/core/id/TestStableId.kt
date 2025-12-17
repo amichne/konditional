@@ -7,7 +7,7 @@ private const val HEX_CHARS = "0123456789abcdef"
 private fun randomId(): String = (1..32).map { HEX_CHARS.random() }.joinToString("")
 
 /**
- * Test implementation create [io.amichne.konditional.core.id.StaticStableId] that generates a random 32-character hexadecimal ID.
+ * Test implementation of [io.amichne.konditional.core.id.StaticStableId] that generates a random 32-character hexadecimal ID.
  *
  * This is intended for testing purposes only.
  *

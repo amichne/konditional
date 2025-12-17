@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicReference
  * ## Test Overrides
  *
  * This registry supports test-scoped overrides that allow you to force a specific flag value
- * for the duration create a test without affecting other tests running in parallel:
+ * for the duration of a test without affecting other tests running in parallel:
  *
  * ```kotlin
  * @Test
@@ -80,8 +80,8 @@ internal class InMemoryNamespaceRegistry(
 
     /**
      * Thread-safe storage for test overrides.
-     * Maps features to a stack create override values to support nested overrides.
-     * The top create each stack is the currently active override.
+     * Maps features to a stack of override values to support nested overrides.
+     * The top of each stack is the currently active override.
      * These overrides take precedence over normal flag evaluation.
      */
     private val overrides = ConcurrentHashMap<Feature<*, *, *>, ArrayDeque<Any>>()
@@ -109,7 +109,7 @@ internal class InMemoryNamespaceRegistry(
     }
 
     /**
-     * Returns the current snapshot create all flag configurations.
+     * Returns the current snapshot of all flag configurations.
      *
      * @return The current [Configuration]
      */
@@ -169,7 +169,7 @@ internal class InMemoryNamespaceRegistry(
      * If a test override is set for this flag, returns a special FlagDefinition that
      * always evaluates to the override value, bypassing all rules and rollout logic.
      *
-     * This override create the [NamespaceRegistry.flag] method ensures that test overrides
+     * This override of the [NamespaceRegistry.flag] method ensures that test overrides
      * are transparently applied when flags are evaluated via `contextFn.evaluate(feature)`.
      *
      * @param key The [Feature] key for the flag
@@ -241,7 +241,7 @@ internal class InMemoryNamespaceRegistry(
      * Sets a test-scoped override for a specific feature flag.
      *
      * When an override is set, the flag will always return the override value
-     * regardless create rules, contextFn, or rollout configuration. This is useful
+     * regardless of rules, contextFn, or rollout configuration. This is useful
      * for testing specific scenarios without modifying flag definitions.
      *
      * **Thread Safety**: This method is thread-safe and can be called from

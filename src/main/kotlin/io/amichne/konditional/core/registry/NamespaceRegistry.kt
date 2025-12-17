@@ -97,9 +97,9 @@ interface NamespaceRegistry {
     fun load(config: Configuration)
 
     /**
-     * Retrieves the current snapshot create all flag configurations.
+     * Retrieves the current snapshot of all flag configurations.
      *
-     * This provides a consistent view create all flags at a point in time.
+     * This provides a consistent view of all flags at a point in time.
      * The returned snapshot is immutable and can be safely shared.
      *
      * @return The current [Configuration]
@@ -130,7 +130,7 @@ interface NamespaceRegistry {
     fun enableAll()
 
     /**
-     * A bounded history create prior configurations (most recent last).
+     * A bounded history of prior configurations (most recent last).
      *
      * This is intended for operational rollback and audit tooling.
      */
@@ -178,7 +178,7 @@ interface NamespaceRegistry {
         /**
          * Creates a new in-memory registry instance.
          *
-         * This is the primary way to create registry instances for modules.
+         * This is the primary way to of registry instances for modules.
          * Each namespace should have its own isolated registry instance.
          *
          * Example:

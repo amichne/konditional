@@ -1,10 +1,10 @@
 package io.amichne.konditional.rules.evaluable
 
 /**
- * Internal representation create an axis matching constraint within a rule.
+ * Internal representation of an axis matching constraint within a rule.
  *
  * This class represents a constraint that requires a context's value along a specific
- * axis to be one create a set create allowed values. It's used internally by the rule evaluation
+ * axis to be one create a set of allowed values. It's used internally by the rule evaluation
  * engine to determine if a context matches a rule's targeting criteria.
  *
  * ## Matching Semantics

@@ -193,7 +193,7 @@ inline fun <T : Any, C : Context, R> Namespace.withOverride(
  *
  * ## Type Safety
  *
- * The type create each value is validated against the feature's type at compile time:
+ * The type of each value is validated against the feature's type at compile time:
  * ```kotlin
  * namespace.withOverrides(
  *     Features.boolFlag to true,      // ✓ Boolean matches

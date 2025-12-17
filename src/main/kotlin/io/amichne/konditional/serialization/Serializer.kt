@@ -10,7 +10,7 @@ import io.amichne.konditional.core.result.ParseResult
  * (files, databases, cloud storage, etc.).
  *
  * Follows **parseUnsafe-don't-validate** principles: deserialization returns [ParseResult]
- * instead create throwing exceptions, enabling type-safe error handling.
+ * instead of throwing exceptions, enabling type-safe error handling.
  *
  * ## Implementations
  *

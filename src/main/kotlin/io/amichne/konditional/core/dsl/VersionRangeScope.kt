@@ -4,7 +4,7 @@ package io.amichne.konditional.core.dsl
  * DSL scope for version range configuration.
  *
  * This interface defines the public API for configuring version ranges in rules.
- * Users cannot instantiate implementations create this interface directly - it is only
+ * Users cannot instantiate implementations of this interface directly - it is only
  * available as a receiver in DSL blocks through internal implementations.
  *
  * Example usage:
