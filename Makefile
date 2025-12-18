@@ -1,4 +1,4 @@
-.PHONY: help clean test build publish docs-serve docs-build docs-clean docs-install venv-create all
+.PHONY: help clean test build publish docs-serve docs-build docs-clean docs-install venv-create all docs-docusaurus-install docs-docusaurus-serve docs-docusaurus-build
 
 # Default target
 .DEFAULT_GOAL := help
@@ -88,6 +88,20 @@ docs-pages: docs-build ## Deploy documentation to GitHub Pages
 	$(MKDOCS) gh-deploy
 	@echo "$(GREEN)Documentation deployed to GitHub Pages$(NC)"
 
+docs-docusaurus-install: ## Install Docusaurus dependencies (in ./docusaurus)
+	@echo "$(BLUE)Installing Docusaurus dependencies...$(NC)"
+	@cd docusaurus && npm install
+	@echo "$(GREEN)Docusaurus dependencies installed$(NC)"
+
+docs-docusaurus-build: docs-docusaurus-install ## Build the Docusaurus site
+	@echo "$(BLUE)Building Docusaurus site...$(NC)"
+	@cd docusaurus && npm run build
+	@echo "$(GREEN)Docusaurus built successfully$(NC)"
+
+docs-docusaurus-serve: docs-docusaurus-install ## Serve Docusaurus locally (http://localhost:3000/konditional/)
+	@echo "$(BLUE)Starting Docusaurus server...$(NC)"
+	@cd docusaurus && npm run start
+
 docs-clean: ## Clean generated documentation
 	@echo "$(BLUE)Cleaning documentation...$(NC)"
 	@rm -rf site/
@@ -96,7 +110,7 @@ docs-clean: ## Clean generated documentation
 docs-venv-clean: ## Remove documentation virtual environment
 	@echo "$(BLUE)Removing virtual environment...$(NC)"
 	@rm -rf $(VENV_DIR)
-	@echo "$(GREEN)Virtual environment removed$(NC)
+	@echo "$(GREEN)Virtual environment removed$(NC)"
 
 ##@ Combined Tasks
 
