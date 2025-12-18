@@ -2,7 +2,9 @@ package io.amichne.konditional.core.types
 
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.kontracts.schema.ObjectSchema
+import io.amichne.kontracts.schema.DoubleSchema
+import io.amichne.kontracts.schema.IntSchema
+import io.amichne.kontracts.schema.JsonSchema
 import io.amichne.kontracts.schema.ValidationResult
 import io.amichne.kontracts.value.JsonArray
 import io.amichne.kontracts.value.JsonBoolean
@@ -15,6 +17,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.jvm.isAccessible
 
 /**
  * Converts a custom encodeable instance to a JsonValue.JsonObject.
@@ -23,17 +26,24 @@ import kotlin.reflect.full.primaryConstructor
  * and convert them to JsonValue instances based on their types.
  *
  * @param schema The schema to validate against (optional, defaults to the instance's schema)
- * @return JsonValue.JsonObject representation of this custom encodeable type
+ * @return JsonValue.JsonObject representation create this custom encodeable type
  */
-fun KotlinEncodeable<ObjectSchema>.toJsonValue(schema: ObjectSchema? = null): JsonObject = JsonObject(let {
-    buildMap {
-        it::class.memberProperties.forEach { property ->
-            if (property.name != "schema") {
-                put(property.name, property.call(it).toJsonValue())
-            }
-        }
-    }
-}, schema ?: this.schema)
+fun KotlinEncodeable<*>.toJsonValue(schema: JsonSchema? = null): JsonObject =
+    JsonObject(
+        fields =
+            buildMap {
+                val instance = this@toJsonValue
+                instance::class.memberProperties
+                    .asSequence()
+                    .filterNot { it.name == "schema" }
+                    .sortedBy { it.name }
+                    .forEach { property ->
+                        property.isAccessible = true
+                        put(property.name, property.call(instance).toJsonValue())
+                    }
+            },
+        schema = (schema ?: this.schema).asObjectSchema(),
+    )
 
 /**
  * Converts any value to a JsonValue.
@@ -47,9 +57,21 @@ internal fun Any?.toJsonValue(): JsonValue = when (this) {
     is Int -> JsonNumber(this.toDouble())
     is Double -> JsonNumber(this)
     is Enum<*> -> JsonString(this.name)
-    is KotlinEncodeable<*> -> {
+    is Map<*, *> -> {
         @Suppress("UNCHECKED_CAST")
-        (this as KotlinEncodeable<ObjectSchema>).toJsonValue()
+        JsonObject(
+            fields =
+                this.entries.associate { (rawKey, rawValue) ->
+                    val key =
+                        rawKey as? String
+                            ?: error("JsonObject keys must be strings, got ${rawKey?.let { it::class.simpleName }}")
+                    key to rawValue.toJsonValue()
+                },
+            schema = null,
+        )
+    }
+    is KotlinEncodeable<*> -> {
+        this.toJsonValue()
     }
     is JsonValue -> this
     is List<*> -> JsonArray(map { it.toJsonValue() }, null)
@@ -67,12 +89,13 @@ internal fun Any?.toJsonValue(): JsonValue = when (this) {
  * @param T The custom encodeable type to parse into
  * @return ParseResult containing either the custom type instance or an error
  */
-inline fun <reified T : KotlinEncodeable<ObjectSchema>> JsonObject.parseAs(): ParseResult<T> {
+inline fun <reified T : KotlinEncodeable<*>> JsonObject.parseAs(): ParseResult<T> {
     return try {
         val kClass = T::class
         val constructor = kClass.primaryConstructor ?: return ParseResult.Failure(
             ParseError.InvalidSnapshot("Custom type ${kClass.simpleName} must have a primary constructor")
         )
+        constructor.isAccessible = true
 
         // Validate against schema if present
         this.schema?.let { schema ->
@@ -141,6 +164,16 @@ fun JsonValue.toPrimitiveValue(): Any? = when (this) {
     is JsonBoolean -> value
     is JsonString -> value
     is JsonNumber -> value
-    is JsonObject -> fields.mapValues { (_, v) -> v.toPrimitiveValue() }
+    is JsonObject ->
+        schema?.let { s ->
+            fields.mapValues { (k, v) ->
+                val fieldSchema = s.fields[k]?.schema
+                when {
+                    v is JsonNumber && fieldSchema is IntSchema -> v.toInt()
+                    v is JsonNumber && fieldSchema is DoubleSchema -> v.toDouble()
+                    else -> v.toPrimitiveValue()
+                }
+            }
+        } ?: fields.mapValues { (_, v) -> v.toPrimitiveValue() }
     is JsonArray -> elements.map { it.toPrimitiveValue() }
 }

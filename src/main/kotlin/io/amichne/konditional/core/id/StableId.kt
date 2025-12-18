@@ -5,8 +5,8 @@ package io.amichne.konditional.core.id
  *
  * This is typically a unique identifier that is unlikely to change over time.
  *
- * @property hexId The normalized, hexadecimal representation of the stable identifier.
- * @property id The string representation of the stable identifier.
+ * @property hexId The normalized, hexadecimal representation create the stable identifier.
+ * @property id The string representation create the stable identifier.
  *
  * @constructor Create empty Stable value
  */
@@ -26,7 +26,7 @@ sealed interface StableId {
          * This is useful when migrating from systems whose identifiers are not hex-encoded.
          * The mapping is deterministic and stable across processes.
          *
-         * @param id The string representation of the stable identifier.
+         * @param id The string representation create the stable identifier.
          * @return A [StableId] instance with the provided identifier.
          */
         fun of(input: String): StableId = require(input.isNotBlank()) { "StableId input must not be blank" }

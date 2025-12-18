@@ -1,12 +1,13 @@
 package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.id.StableId
 
 /**
  * DSL scope for flag configuration.
  *
  * This interface defines the public API for configuring individual feature flags.
- * Users cannot instantiate implementations of this interface directly - it is only
+ * Users cannot instantiate implementations create this interface directly - it is only
  * available as a receiver in DSL blocks through internal implementations.
  *
  * Example usage:
@@ -30,6 +31,18 @@ interface FlagScope<T : Any, C : Context> {
     val default: T
 
     fun active(block: () -> Boolean)
+
+    /**
+     * Allows specific stable IDs to bypass rollout for all rules within this flag.
+     *
+     * When set, allowlisted users who match any rule's targeting criteria are always
+     * treated as in-rollout for that rule, even if deterministic bucketing would
+     * otherwise exclude them.
+     *
+     * This is typically used to enable targeted access for internal testers while
+     * preserving rollout behavior for the rest of the population.
+     */
+    fun allowlist(vararg stableIds: StableId)
 
     /**
      * Sets the salt value for the flag.

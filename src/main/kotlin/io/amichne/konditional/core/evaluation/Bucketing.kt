@@ -9,6 +9,10 @@ import kotlin.math.roundToInt
 internal object Bucketing {
     private const val BUCKET_SPACE: Int = 10_000
 
+    private val threadLocalDigest = ThreadLocal.withInitial {
+        MessageDigest.getInstance("SHA-256")
+    }
+
     /**
      * Computes a stable bucket assignment in the range [0, 10_000).
      *
@@ -19,7 +23,7 @@ internal object Bucketing {
         flagKey: String,
         stableId: HexId,
     ): Int {
-        val digest = MessageDigest.getInstance("SHA-256")
+        val digest = threadLocalDigest.get()
         return with(digest.digest("$salt:$flagKey:${stableId.id}".toByteArray(Charsets.UTF_8))) {
             (
                 (

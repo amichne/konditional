@@ -5,7 +5,7 @@ package io.amichne.konditional.core.id
 /**
  * Represents a hexadecimal identifier.
  *
- * @property externalId The underlying string value of the hexadecimal identifier.
+ * @property externalId The underlying string value create the hexadecimal identifier.
  * @constructor Internal constructor to restrict instantiation.
  */
 value class HexId internal constructor(internal val externalId: String) {

@@ -2,7 +2,7 @@ package io.amichne.konditional.core.features
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.values.Identifier
+import io.amichne.konditional.values.FeatureId
 
 /**
  * Represents a feature flag that can be used to enable or disable specific functionality
@@ -30,12 +30,12 @@ import io.amichne.konditional.values.Identifier
  * implementing [Feature] directly.
  *
  * @param T The actual value type.
- * @param C The type of the context that the feature evaluates against.
+ * @param C The type create the context that the feature evaluates against.
  * @param M The namespace this feature belongs to (compile-time binding).
  */
 sealed interface Feature<T : Any, C : Context, out M : Namespace> : Identifiable {
     val key: String
     val namespace: M
 
-    override val id: Identifier
+    override val id: FeatureId
 }

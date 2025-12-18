@@ -1,6 +1,7 @@
 # Remote Configuration
 
 Konditional supports dynamic configuration via JSON, but treats JSON as a **trust boundary**:
+
 - compile-time guarantees apply to statically-defined flags and rules
 - runtime JSON is accepted only after validation (`ParseResult.Success`), otherwise rejected (`ParseResult.Failure`)
 
@@ -13,11 +14,36 @@ flowchart LR
   Code["Flags defined in code"] --> Snap["SnapshotSerializer.serialize(...)"]
   Snap --> Json["JSON snapshot"]
   Json --> Parse["SnapshotSerializer.fromJson(json)"]
-  Parse -->|Success| Load["Namespace.load(snapshot)"]
+  Parse -->|Success| Load["Namespace.load(configuration)"]
   Parse -->|Failure| Reject["Keep last-known-good + log"]
   Load --> Eval["Evaluation uses active snapshot"]
   style Load fill:#c8e6c9
   style Reject fill:#ffcdd2
+```
+
+---
+
+## Prerequisite: features must be registered
+
+Deserialization can only succeed for features that exist in the process. In practice, this means your
+`FeatureContainer` objects must be initialized (so features are registered) before you call
+`SnapshotSerializer.fromJson(...)`.
+
+If a snapshot references a feature that has not been registered yet, deserialization fails with
+`ParseError.FeatureNotFound`.
+
+One simple pattern is to have the `Namespace` own its containers and reference them in `init {}`:
+
+```kotlin
+object Payments : Namespace("payments") {
+    object Features : FeatureContainer<Payments>(this) {
+        val applePay by boolean(default = false)
+    }
+
+    init {
+        Features // ensure registration at startup (t0)
+    }
+}
 ```
 
 ---
@@ -43,6 +69,7 @@ when (val result = SnapshotSerializer.fromJson(json)) {
 ```
 
 The contract is explicit:
+
 - **Success** means you have a type-correct, internally consistent snapshot representation (validated at the boundary).
 - **Failure** means the payload is rejected before it can affect evaluation.
 
@@ -51,6 +78,7 @@ The contract is explicit:
 ## Incremental updates via patching
 
 ```kotlin
+val currentConfig = Namespace.Global.configuration
 when (val result = SnapshotSerializer.applyPatchJson(currentConfig, patchJson)) {
     is ParseResult.Success -> Namespace.Global.load(result.value)
     is ParseResult.Failure -> handleError(result.error)
@@ -66,19 +94,21 @@ This supports applying incremental JSON updates, then atomically swapping the ac
 Remote configuration is designed to force explicit handling of invalid input:
 
 ```kotlin
-sealed class ParseResult<out T> {
+sealed interface ParseResult<out T> {
     data class Success<T>(val value: T) : ParseResult<T>()
     data class Failure(val error: ParseError) : ParseResult<Nothing>()
 }
 ```
 
-Operationally, treat failures as non-fatal: keep last-known-good configuration, log for alerting, and retry on the next update.
+Operationally, treat failures as non-fatal: keep last-known-good configuration, log for alerting, and retry on the next
+update.
 
 ---
 
 ## Hot-reload semantics (atomicity)
 
 `Namespace.load(newConfiguration)` applies updates with atomic replacement semantics:
+
 - readers see either the old snapshot or the new snapshot
 - readers never see a partially-applied configuration
 
@@ -121,16 +151,25 @@ when (val result = SnapshotSerializer.fromJson(json)) {
 }
 ```
 
+Registries keep a bounded history of prior configurations for operational rollback:
+
+```kotlin
+val rolledBack: Boolean = Namespace.Global.rollback(steps = 1)
+val history = Namespace.Global.historyMetadata
+```
+
 ---
 
 ## What’s validated (and what is not)
 
 Validated at the boundary:
+
 - JSON syntax validity
 - schema/structure validity
 - value type checking against declared feature types
 
 Not validated by the type system:
+
 - semantic correctness (e.g., whether 50% is the intended rollout)
 - business correctness (e.g., whether the targeted segment is correct)
 
@@ -166,7 +205,8 @@ configStream.collect { json ->
 
 ## Where Kontracts fits
 
-Konditional uses Kontracts (a standalone, zero-dependency JSON Schema DSL) for schema validation of configuration payloads.
+Konditional uses Kontracts (a standalone, zero-dependency JSON Schema DSL) for schema validation of configuration
+payloads.
 
 ---
 

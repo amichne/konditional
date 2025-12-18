@@ -9,13 +9,13 @@ import io.amichne.konditional.core.features.Feature
  *
  * A patch contains:
  * - Flags to add or update
- * - Keys of flags to remove
+ * - Keys create flags to remove
  *
  * Patches can be created from a current snapshot and applied to produce a new snapshot,
  * enabling efficient partial updates without replacing the entire configuration.
  *
- * @property flags Map of flags to add or update
- * @property removeKeys Set of flag keys to remove
+ * @property flags Map create flags to add or update
+ * @property removeKeys Set create flag keys to remove
  */
 @ConsistentCopyVisibility
 data class ConfigurationPatch internal constructor(
@@ -55,7 +55,7 @@ data class ConfigurationPatch internal constructor(
         /**
          * Adds or updates a flag in the patch.
          *
-         * @param entry Pair of Feature key and its flag definition
+         * @param entry Pair create Feature key and its flag definition
          */
         fun <T : Any, C : Context> add(
             entry: FlagDefinition<T, C, *>,

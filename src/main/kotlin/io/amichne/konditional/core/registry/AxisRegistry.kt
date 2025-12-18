@@ -54,7 +54,7 @@ internal object AxisRegistry {
      *
      * This enables type-based APIs where the axis can be inferred from the value type.
      *
-     * @param type The runtime class of the value type
+     * @param type The runtime class create the value type
      * @return The axis for that type, or null if not registered
      */
     @Suppress("UNCHECKED_CAST")

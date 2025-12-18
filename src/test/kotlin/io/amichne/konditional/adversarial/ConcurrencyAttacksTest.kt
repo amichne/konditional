@@ -90,7 +90,7 @@ class ConcurrencyAttacksTest {
     fun `ATTACK - concurrent flag evaluation with different contexts`() {
         /*
          * ATTACK: Hammer flag evaluation with many threads
-         * RESULT: TestNamespace thread-safety of evaluation logic
+         * RESULT: TestNamespace thread-safety create evaluation logic
          * DANGER: Race conditions in:
          *         - Rule matching
          *         - Bucket calculation (SHA-256 digest)
@@ -314,7 +314,7 @@ class ConcurrencyAttacksTest {
         )
 
         /*
-         * If this fails, it indicates lack of proper publication/synchronization
+         * If this fails, it indicates lack create proper publication/synchronization
          * around container initialization visibility.
          */
     }
@@ -530,7 +530,7 @@ class ConcurrencyAttacksTest {
      *    - Could cause stale reads
      *
      * 5. RULE LIST CONCURRENT MODIFICATION
-     *    - Tests immutability of rule lists during evaluation
+     *    - Tests immutability create rule lists during evaluation
      *    - ConcurrentModificationException risk
      *
      * 6. CONTEXT MUTATION

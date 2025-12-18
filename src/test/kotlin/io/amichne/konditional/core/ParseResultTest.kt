@@ -12,7 +12,7 @@ import io.amichne.konditional.core.result.utils.isFailure
 import io.amichne.konditional.core.result.utils.isSuccess
 import io.amichne.konditional.core.result.utils.map
 import io.amichne.konditional.core.result.utils.toResult
-import io.amichne.konditional.values.Identifier
+import io.amichne.konditional.values.FeatureId
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -53,7 +53,9 @@ class ParseResultTest {
 
     @Test
     fun `Failure contains error`() {
-        val error = ParseError.FlagNotFound(Identifier("my-flag"))
+        val error = ParseError.FlagNotFound(
+            FeatureId.create("test", "my-flag")
+        )
         val result = ParseResult.Failure(error)
         assertIs<ParseResult.Failure>(result)
         assertEquals(error, result.error)
@@ -195,14 +197,22 @@ class ParseResultTest {
 
     @Test
     fun `ParseError FeatureNotFound generates message`() {
-        val error = ParseError.FeatureNotFound(Identifier("test-key"))
-        assertEquals("Feature not found: value::test-key", error.message)
+        val error = ParseError.FeatureNotFound(
+            FeatureId.create("test", "test-key")
+        )
+        assertEquals(
+            "Feature not found: feature::test::test-key", error.message
+        )
     }
 
     @Test
     fun `ParseError FlagNotFound generates message`() {
-        val error = ParseError.FlagNotFound(Identifier("test-flag"))
-        assertEquals("Flag not found: value::test-flag", error.message)
+        val error = ParseError.FlagNotFound(
+            FeatureId.create("test", "test-flag")
+        )
+        assertEquals(
+            "Flag not found: feature::test::test-flag", error.message
+        )
     }
 
     @Test
@@ -282,7 +292,8 @@ class ParseResultTest {
     @Test
     fun `Success and Failure are distinct types`() {
         val success: ParseResult<String> = ParseResult.Success("value")
-        val failure: ParseResult<String> = ParseResult.Failure(ParseError.FlagNotFound(Identifier("key")))
+        val failure: ParseResult<String> =
+            ParseResult.Failure(ParseError.FlagNotFound(FeatureId.create("test", "key")))
 
         // Type system enforces exhaustive when
         val result = when (success) {

@@ -4,6 +4,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
 import io.amichne.konditional.core.registry.NamespaceRegistry
+import io.amichne.konditional.values.IdentifierEncoding.SEPARATOR
 import org.jetbrains.annotations.TestOnly
 import java.util.UUID
 
@@ -81,6 +82,15 @@ open class Namespace(
     @PublishedApi internal val identifierSeed: String = id,
 ) : NamespaceRegistry by registry {
 
+    init {
+        require(id.isNotBlank()) { "Namespace id must not be blank" }
+        require(!id.contains(SEPARATOR)) { "Namespace id must not contain '$SEPARATOR': '$id'" }
+        require(identifierSeed.isNotBlank()) { "Namespace identifierSeed must not be blank" }
+        require(!identifierSeed.contains(SEPARATOR)) {
+            "Namespace identifierSeed must not contain '$SEPARATOR': '$identifierSeed'"
+        }
+    }
+
     /**
      * Global namespace containing shared flags accessible across the application.
      *
@@ -111,7 +121,7 @@ open class Namespace(
      * object Auth : Namespace("auth")
      * ```
      */
-    // Intentionally no additional built-in namespaces.
+//     Intentionally no additional built-in namespaces.
 
     @TestOnly
     abstract class TestNamespaceFacade(id: String) : Namespace(

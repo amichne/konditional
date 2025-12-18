@@ -2,7 +2,8 @@ package io.amichne.konditional.api
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.ops.EvaluationMetric
+import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.core.registry.NamespaceRegistry
 
 @ConsistentCopyVisibility
@@ -37,20 +38,20 @@ data class ShadowMismatch<T : Any> internal constructor(
  *
  * By default, candidate evaluation is skipped when the baseline registry kill-switch is enabled.
  */
-fun <T : Any, C : Context, M : Namespace> io.amichne.konditional.core.features.Feature<T, C, M>.evaluateWithShadow(
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithShadow(
     context: C,
     candidateRegistry: NamespaceRegistry,
     baselineRegistry: NamespaceRegistry = namespace,
     options: ShadowOptions = ShadowOptions.defaults(),
     onMismatch: (ShadowMismatch<T>) -> Unit = {},
 ): T {
-    val baseline = evaluateInternal(context, baselineRegistry, mode = EvaluationMetric.EvaluationMode.NORMAL)
+    val baseline = evaluateInternal(context, baselineRegistry, mode = Metrics.Evaluation.EvaluationMode.NORMAL)
 
     if (baselineRegistry.isAllDisabled && !options.evaluateCandidateWhenBaselineDisabled) {
         return baseline.value
     }
 
-    val candidate = evaluateInternal(context, candidateRegistry, mode = EvaluationMetric.EvaluationMode.SHADOW)
+    val candidate = evaluateInternal(context, candidateRegistry, mode = Metrics.Evaluation.EvaluationMode.SHADOW)
     val mismatchKinds = buildSet {
         if (baseline.value != candidate.value) add(ShadowMismatch.Kind.VALUE)
         if (options.reportDecisionMismatches && baseline.decision::class != candidate.decision::class) {
@@ -84,7 +85,7 @@ fun <T : Any, C : Context, M : Namespace> io.amichne.konditional.core.features.F
  * This is useful for "dark launches" where you want comparison telemetry without coupling the call site
  * to the baseline return value.
  */
-fun <T : Any, C : Context, M : Namespace> io.amichne.konditional.core.features.Feature<T, C, M>.evaluateShadow(
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateShadow(
     context: C,
     candidateRegistry: NamespaceRegistry,
     baselineRegistry: NamespaceRegistry = namespace,

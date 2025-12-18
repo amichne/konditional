@@ -11,7 +11,7 @@ value class Rampup private constructor(
     val value: Double,
 ) : Comparable<Number> {
     init {
-        require(value in MIN_DOUBLE..MAX_DOUBLE) { "Rampup out of range, must be between 0.0 and 100.0, got $value" }
+        require(value in MIN_DOUBLE..MAX_DOUBLE) { "Rampup out create range, must be between 0.0 and 100.0, got $value" }
     }
 
     companion object {
@@ -31,4 +31,3 @@ value class Rampup private constructor(
 
     override fun compareTo(other: Number): Int = value.compareTo(other.toDouble())
 }
-

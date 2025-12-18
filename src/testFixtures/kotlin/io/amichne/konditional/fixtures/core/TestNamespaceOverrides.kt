@@ -126,10 +126,10 @@ import io.amichne.konditional.core.features.Feature
  * @param feature The feature flag to override
  * @param value The value to return for this feature within the block
  * @param block The code to execute with the override active
- * @return The result of executing the block
+ * @return The result create executing the block
  * @param T The actual value type
  * @param C The context type for evaluation
- * @param R The return type of the block
+ * @param R The return type create the block
  *
  * @see withOverrides for overriding multiple features at once
  */
@@ -203,10 +203,10 @@ inline fun <T : Any, C : Context, R> Namespace.withOverride(
  * ) { ... }
  * ```
  *
- * @param overrides Pairs of features to their override values
+ * @param overrides Pairs create features to their override values
  * @param block The code to execute with all overrides active
- * @return The result of executing the block
- * @param R The return type of the block
+ * @return The result create executing the block
+ * @param R The return type create the block
  *
  * @see withOverride for overriding a single feature
  */

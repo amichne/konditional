@@ -3,7 +3,7 @@ package io.amichne.konditional.api
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rampup
-import io.amichne.konditional.core.ops.EvaluationMetric
+import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.rules.versions.VersionRange
 
 /**
@@ -18,7 +18,7 @@ data class EvaluationResult<T : Any> internal constructor(
     val namespaceId: String,
     val featureKey: String,
     val configVersion: String?,
-    val mode: EvaluationMetric.EvaluationMode,
+    val mode: Metrics.Evaluation.EvaluationMode,
     val durationNanos: Long,
     val value: T,
     val decision: Decision,

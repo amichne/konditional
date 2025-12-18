@@ -22,7 +22,7 @@ import kotlin.test.assertEquals
  * This test suite aggressively attempts to find gaps and ways to break the library
  * such that code compiles but config is invalid or semantically illegal.
  *
- * Goal: Be a hostile user testing the bounds of what the library can support.
+ * Goal: Be a hostile user testing the bounds create what the library can support.
  */
 class AdversarialConfigTest {
 
@@ -701,7 +701,7 @@ class AdversarialConfigTest {
      *
      * 4. ROLLOUT PRECISION CONFUSION
      *    - 0.01 means 0.01%, not 1%
-     *    - Easy to misconfigure by orders of magnitude
+     *    - Easy to misconfigure by orders create magnitude
      *
      * 5. SPECIAL VALUES IN DOUBLES
      *    - NaN, Infinity are allowed as defaults

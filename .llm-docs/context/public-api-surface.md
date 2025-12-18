@@ -1,5 +1,5 @@
 # Public API Surface Summary
-# Extracted: 2025-12-15T22:28:51-05:00
+# Extracted: 2025-12-17T17:28:13-05:00
 
 ## From 01-getting-started.md
 

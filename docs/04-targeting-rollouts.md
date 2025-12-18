@@ -3,10 +3,11 @@
 Rules let you target specific contexts and roll out behavior safely. A rule is a typed mapping:
 
 ```
-criteria(context) -> returns value
+criteria(context) -> value
 ```
 
 Two properties define how rules behave:
+
 - **AND semantics within a rule**: all specified criteria must match.
 - **Specificity ordering across rules**: the most specific matching rule wins.
 
@@ -17,65 +18,80 @@ Two properties define how rules behave:
 ### Platform
 
 ```kotlin
-val API_ENDPOINT by string(default = "https://api.example.com") {
-    rule { platforms(Platform.IOS) } returns "https://api-ios.example.com"
-    rule { platforms(Platform.ANDROID) } returns "https://api-android.example.com"
-    rule { platforms(Platform.WEB) } returns "https://api-web.example.com"
+val apiEndpoint by string<Context>(default = "https://api.example.com") {
+    rule("https://api-ios.example.com") { platforms(Platform.IOS) }
+    rule("https://api-android.example.com") { platforms(Platform.ANDROID) }
+    rule("https://api-web.example.com") { platforms(Platform.WEB) }
 }
 ```
 
 Multiple platforms combine as OR:
 
 ```kotlin
-rule { platforms(Platform.IOS, Platform.ANDROID) } returns "mobile value"
+rule("mobile value") { platforms(Platform.IOS, Platform.ANDROID) }
 ```
 
 ### Locale
 
 ```kotlin
-val WELCOME_MESSAGE by string(default = "Hello!") {
-    rule { locales(AppLocale.UNITED_STATES, AppLocale.CANADA) } returns "Welcome!"
-    rule { locales(AppLocale.FRANCE) } returns "Bienvenue!"
-    rule { locales(AppLocale.JAPAN) } returns "ようこそ!"
+val welcomeMessage by string<Context>(default = "Hello!") {
+    rule("Welcome!") { locales(AppLocale.UNITED_STATES, AppLocale.CANADA) }
+    rule("Bienvenue!") { locales(AppLocale.FRANCE) }
+    rule("ようこそ!") { locales(AppLocale.JAPAN) }
 }
 ```
 
 ### Version ranges
 
 ```kotlin
-val NEW_UI by boolean(default = false) {
-    rule { versions { min(2, 0, 0) } } returns true
+val newUi by boolean<Context>(default = false) {
+    rule(true) { versions { min(2, 0, 0) } }
 }
 ```
 
 ```kotlin
-val LEGACY_SUPPORT by boolean(default = false) {
-    rule { versions { max(2, 0, 0) } } returns true
+val legacySupport by boolean<Context>(default = false) {
+    rule(true) { versions { max(2, 0, 0) } }
 }
 ```
 
 ### Percentage rollout
 
 ```kotlin
-val NEW_CHECKOUT by boolean(default = false) {
-    rule { rollout { 10.0 } } returns true
+val newCheckout by boolean<Context>(default = false) {
+    rule(true) { rollout { 10.0 } }
 }
 ```
 
 Rollouts are deterministic: the same `(stableId, flagKey, salt)` produces the same bucket assignment.
 
+### Rollout allowlisting (internal testers)
+
+Allowlists bypass rollout *after* a rule matches by criteria:
+
+```kotlin
+val newUi by boolean<Context>(default = false) {
+    allowlist(StableId.of("tester-1")) // flag-scope allowlist
+    rule(true) { rollout { 5.0 } }
+}
+```
+
+Rule-scoped allowlists are also supported:
+
+```kotlin
+rule(true) {
+    rollout { 5.0 }
+    allowlist(StableId.of("tester-1"))
+}
+```
+
 ### Custom predicates via `extension { }`
 
 ```kotlin
 val ADVANCED_ANALYTICS by boolean<EnterpriseContext>(default = false) {
-    rule {
-        extension {
-            Evaluable.factory { ctx ->
-                ctx.subscriptionTier == SubscriptionTier.ENTERPRISE &&
-                    ctx.employeeCount > 100
-            }
-        }
-    } returns true
+    rule(true) {
+        extension { subscriptionTier == SubscriptionTier.ENTERPRISE && employeeCount > 100 }
+    }
 }
 ```
 
@@ -86,13 +102,13 @@ val ADVANCED_ANALYTICS by boolean<EnterpriseContext>(default = false) {
 All criteria in a rule must match:
 
 ```kotlin
-val PREMIUM_FEATURE by boolean(default = false) {
-    rule {
+val premiumFeature by boolean<Context>(default = false) {
+    rule(true) {
         platforms(Platform.IOS, Platform.ANDROID)
         locales(AppLocale.UNITED_STATES)
         versions { min(2, 0, 0) }
         rollout { 50.0 }
-    } returns true
+    }
 }
 ```
 
@@ -115,17 +131,22 @@ flowchart TD
 
 ## Specificity: which rule wins
 
-Konditional orders rules by **specificity** before evaluating them. Specificity is the count of criteria present on a rule:
+Konditional orders rules by **specificity** before evaluating them. Specificity is the count of criteria present on a
+rule:
 
 ```
 specificity(rule):
   +1 if platforms is set
   +1 if locales is set
   +1 if versions has bounds
-  +1 if rollout is set
+  +N for axis constraints (one per axis)
+  +extensionSpecificity (defaults to 1 when `extension { ... }` is used)
 ```
 
-Rules are evaluated in descending specificity; the first rule whose criteria all match determines the value. If no rules match, the default is returned.
+Rules are evaluated in descending specificity; the first rule whose criteria all match determines the value. If no rules
+match, the default is returned.
+
+If multiple rules have the same specificity, their original insertion order is used as the tie-breaker.
 
 ```mermaid
 flowchart TD
@@ -144,25 +165,32 @@ flowchart TD
 Rollouts are computed locally. The bucketing input is stable and per-flag:
 
 ```kotlin
-input = "$stableId:$flagKey:$salt"
-hash = input.sha256()
-percentage = (hash.mapToPercentage() % 10000) / 100.0   // ["0.00, 100.00)
+input = "$salt:$flagKey:${stableIdHex}"
+hash = sha256(input)
+bucket = uint32(hash[0..3]) % 10_000 // [0, 10_000)
 ```
 
 This yields three operational properties:
+
 - **Deterministic**: same inputs → same bucket
 - **Per-flag isolation**: changing one flag does not affect other flags’ buckets
 - **Salt-controlled redistribution**: changing `salt` re-buckets users for that flag
 
+Rollout checks are performed in basis points:
+
+```
+thresholdBasisPoints = round(rolloutPercent * 100) // 0..10_000
+inRollout = bucket < thresholdBasisPoints
+```
+
 ```mermaid
 flowchart TD
-  Id["stableId"] --> In["stableId:flagKey:salt"]
+  Salt["salt"] --> In["salt:flagKey:stableIdHex"]
   Key["flagKey"] --> In
-  Salt["salt"] --> In
+  Id["stableIdHex"] --> In
   In --> H["SHA-256"]
-  H --> M["mod 10,000"]
-  M --> P["percentage 0.00..99.99"]
-  P --> T{"< rollout % ?"}
+  H --> M["uint32(hash[0..3]) mod 10,000"]
+  M --> T{"bucket < rolloutBasisPoints ?"}
   T -->|Yes| Enabled["In rollout"]
   T -->|No| Disabled["Out of rollout"]
   style Enabled fill:#c8e6c9

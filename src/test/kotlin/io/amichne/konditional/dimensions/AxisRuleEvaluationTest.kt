@@ -118,7 +118,7 @@ class AxisRuleEvaluationTest {
             version = "1.5.0",
         )
 
-        // Rule #1 should match regardless of version
+        // Rule #1 should match regardless create version
         Assertions.assertTrue(
             FeaturesWithAxis.fallbackRuleFlag.evaluate(prodEnterpriseV1),
             "Specific env+tenant rule should match first",

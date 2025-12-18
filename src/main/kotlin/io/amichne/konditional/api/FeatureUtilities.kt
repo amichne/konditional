@@ -7,7 +7,7 @@ import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.evaluation.Bucketing.isInRollout
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.features.FeatureAware
-import io.amichne.konditional.core.ops.EvaluationMetric
+import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.core.registry.NamespaceRegistry
 import io.amichne.konditional.rules.Rule
 import kotlin.system.measureNanoTime
@@ -37,18 +37,18 @@ inline fun <reified T : Any, reified C : Context, D> D.feature(
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
     context: C,
     registry: NamespaceRegistry = namespace,
-): T = evaluateInternal(context, registry, mode = EvaluationMetric.EvaluationMode.NORMAL).value
+): T = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.NORMAL).value
 
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithReason(
     context: C,
     registry: NamespaceRegistry = namespace,
-): EvaluationResult<T> = evaluateInternal(context, registry, mode = EvaluationMetric.EvaluationMode.EXPLAIN)
+): EvaluationResult<T> = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.EXPLAIN)
 
 @PublishedApi
 internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInternal(
     context: C,
     registry: NamespaceRegistry,
-    mode: EvaluationMetric.EvaluationMode,
+    mode: Metrics.Evaluation.EvaluationMode,
 ): EvaluationResult<T> {
     val definition = registry.flag(this)
     lateinit var result: EvaluationResult<T>
@@ -116,24 +116,24 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
 
     result = result.copy(durationNanos = nanos)
 
-    if (mode == EvaluationMetric.EvaluationMode.EXPLAIN) {
+    if (mode == Metrics.Evaluation.EvaluationMode.EXPLAIN) {
         registry.hooks.logger.debug {
             "konditional.explain namespaceId=${result.namespaceId} key=${result.featureKey} decision=${result.decision::class.simpleName} version=${result.configVersion}"
         }
     }
 
     registry.hooks.metrics.recordEvaluation(
-        EvaluationMetric(
+        Metrics.Evaluation(
             namespaceId = registry.namespaceId,
             featureKey = key,
             mode = mode,
             durationNanos = nanos,
             decision =
                 when (result.decision) {
-                    is EvaluationResult.Decision.RegistryDisabled -> EvaluationMetric.DecisionKind.REGISTRY_DISABLED
-                    is EvaluationResult.Decision.Inactive -> EvaluationMetric.DecisionKind.INACTIVE
-                    is EvaluationResult.Decision.Rule -> EvaluationMetric.DecisionKind.RULE
-                    is EvaluationResult.Decision.Default -> EvaluationMetric.DecisionKind.DEFAULT
+                    is EvaluationResult.Decision.RegistryDisabled -> Metrics.Evaluation.DecisionKind.REGISTRY_DISABLED
+                    is EvaluationResult.Decision.Inactive -> Metrics.Evaluation.DecisionKind.INACTIVE
+                    is EvaluationResult.Decision.Rule -> Metrics.Evaluation.DecisionKind.RULE
+                    is EvaluationResult.Decision.Default -> Metrics.Evaluation.DecisionKind.DEFAULT
                 },
             configVersion = result.configVersion,
             bucket =

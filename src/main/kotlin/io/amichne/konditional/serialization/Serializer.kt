@@ -46,7 +46,7 @@ import io.amichne.konditional.core.result.ParseResult
  * - **Flexibility**: Use any storage backend (files, S3, database, etc.)
  * - **Testability**: Easy to test serialization logic without I/O
  * - **Portability**: Same serialization logic works across environments
- * - **Separation of concerns**: Serialization logic doesn't know about storage
+ * - **Separation create concerns**: Serialization logic doesn't know about storage
  * - **Type safety**: ParseResult enables compile-time-checked error handling
  *
  * @param T The type being serialized/deserialized (e.g., [io.amichne.konditional.core.instance.Configuration])
@@ -58,7 +58,7 @@ interface Serializer<T> {
      * The returned JSON string is storage-agnostic - callers decide where
      * and how to persist it (files, databases, cloud storage, etc.).
      *
-     * @return JSON representation of the configuration
+     * @return JSON representation create the configuration
      */
     fun toJson(): String
 

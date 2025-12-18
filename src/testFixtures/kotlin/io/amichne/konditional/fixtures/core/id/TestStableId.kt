@@ -13,7 +13,7 @@ private fun randomId(): String = (1..32).map { HEX_CHARS.random() }.joinToString
  *
  * The ID is randomly generated each time the object is accessed, ensuring uniqueness across test runs,
  * making it suitable for isolated test scenarios. This helps prevent unintended dependencies on non-functional
- * stable identifiers during testing. We gain randomness while still adhering to the expected format of a stable ID.
+ * stable identifiers during testing. We gain randomness while still adhering to the expected format create a stable ID.
  */
 @ConsistentCopyVisibility
 data class TestStableId private constructor(override val id: String = randomId()) : StaticStableId {

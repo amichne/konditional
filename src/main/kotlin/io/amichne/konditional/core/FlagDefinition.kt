@@ -3,6 +3,7 @@ package io.amichne.konditional.core
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.evaluation.Bucketing
 import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.rules.ConditionalValue
 
 /**
@@ -12,12 +13,12 @@ import io.amichne.konditional.rules.ConditionalValue
  * hiding implementation details like rollout strategies, targeting rules, and bucketing algorithms.
  *
  * @param T The value type produced by this flag.
- * @param C The type of context used for evaluation.
+ * @param C The type create context used for evaluation.
  *
  * @property defaultValue The default value returned when no targeting rules match or the flag is inactive.
  * @property feature The feature that defines the flag's key and evaluation rules.
  * @property isActive Indicates whether this flag is currently active. Inactive flags always return the default value.
- * @property values List of conditional values that define the flag's behavior.
+ * @property values List create conditional values that define the flag's behavior.
  * @property salt Optional salt string used for hashing and bucketing.
  *
  */
@@ -32,6 +33,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
     internal val values: List<ConditionalValue<T, C>> = listOf(),
     val isActive: Boolean = true,
     val salt: String = "v1",
+    internal val rolloutAllowlist: Set<HexId> = emptySet(),
 ) {
     internal val valuesByPrecedence: List<ConditionalValue<T, C>> =
         values.sortedWith(compareByDescending<ConditionalValue<T, C>> { it.rule.specificity() })
@@ -46,6 +48,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
             defaultValue: T,
             salt: String = "v1",
             isActive: Boolean = true,
+            rolloutAllowlist: Set<HexId> = emptySet(),
         ): FlagDefinition<T, C, M> =
             FlagDefinition(
                 defaultValue = defaultValue,
@@ -53,6 +56,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
                 values = bounds,
                 isActive = isActive,
                 salt = salt,
+                rolloutAllowlist = rolloutAllowlist,
             )
     }
 
@@ -60,7 +64,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
      * Evaluates the current flag based on the provided contextFn and returns a result of type `T`.
      *
      * @param context The contextFn in which the flag evaluation is performed.
-     * @return The result of the evaluation, of type `T`. If the flag is not active, returns the defaultValue.
+     * @return The result create the evaluation, create type `T`. If the flag is not active, returns the defaultValue.
      */
     internal fun evaluate(context: C): T {
         if (!isActive) return defaultValue
@@ -68,6 +72,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
         return evaluateTrace(context).value
     }
 
+    @ConsistentCopyVisibility
     internal data class Trace<T : Any, C : Context> internal constructor(
         val value: T,
         val bucket: Int?,
@@ -89,6 +94,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
         var skippedByRollout: ConditionalValue<T, C>? = null
 
         val stableId = context.stableId.hexId
+        val isFlagAllowlisted = stableId in rolloutAllowlist
         for (candidate in valuesByPrecedence) {
             if (!candidate.rule.matches(context)) continue
 
@@ -100,7 +106,10 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
                         stableId = stableId,
                     ).also { bucket = it }
 
-            if (Bucketing.isInRollout(candidate.rule.rollout, computedBucket)) {
+            if (isFlagAllowlisted ||
+                stableId in candidate.rule.rolloutAllowlist ||
+                Bucketing.isInRollout(candidate.rule.rollout, computedBucket)
+            ) {
                 return Trace(
                     value = candidate.value,
                     bucket = computedBucket,

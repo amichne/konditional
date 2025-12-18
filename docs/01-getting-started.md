@@ -1,14 +1,16 @@
 # Getting Started
 
 Konditional is a Kotlin feature-flag DSL designed to make configuration *typed*, *deterministic*, and *non-null*.
-The core claim is precise: statically-defined flags have compile-time type correctness, and evaluation is total (you always get a value back).
+The core claim is precise: statically-defined flags have compile-time type correctness, and evaluation is total (you
+always get a value back).
 
 ---
 
 ## Why Konditional (and what it actually guarantees)
 
 Most flag systems are stringly-typed: a string key selects a value and the caller chooses a “typed getter”.
-That architecture creates three failure modes that are syntactically valid but semantically wrong at runtime: key typos, type mismatches, and null propagation.
+That architecture creates three failure modes that are syntactically valid but semantically wrong at runtime: key typos,
+type mismatches, and null propagation.
 
 Konditional changes the failure surface by binding identity and type at definition time via Kotlin properties:
 
@@ -18,13 +20,13 @@ Konditional changes the failure surface by binding identity and type at definiti
 
 ```mermaid
 flowchart LR
-  Def["Flag defined as a property"] --> Bound["Key + type bound at compile-time"]
-  Bound --> Eval["Evaluation"]
-  Eval -->|Rule matches| Value["Rule value"]
-  Eval -->|No match| Default["Declared default"]
-  style Bound fill:#e1f5ff
-  style Default fill:#fff3cd
-  style Value fill:#c8e6c9
+    Def["Flag defined as a property"] --> Bound["Key + type bound at compile-time"]
+    Bound --> Eval["Evaluation"]
+    Eval -->|Rule matches| Value["Rule value"]
+    Eval -->|No match| Default["Declared default"]
+    style Bound fill: #e1f5ff
+    style Default fill: #fff3cd
+    style Value fill: #c8e6c9
 ```
 
 ---
@@ -34,7 +36,7 @@ flowchart LR
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.amichne:konditional:0.0.1")
+    implementation("io.github.amichne:konditional:0.0.1")
 }
 ```
 
@@ -45,32 +47,36 @@ dependencies {
 Define a flag as a delegated property in a `FeatureContainer` bound to a `Namespace`:
 
 ```kotlin
+import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.context.*
+import io.amichne.konditional.core.id.StableId
 
 object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
-    val DARK_MODE by boolean(default = false) {
-        rule {
+    val darkMode by boolean<Context>(default = false) {
+        rule(true) {
             platforms(Platform.IOS)
             rollout { 50.0 }
-        } returns true
+        }
     }
 }
 
 val context = Context(
     locale = AppLocale.UNITED_STATES,
     platform = Platform.IOS,
-    appVersion = Version.parse("2.1.0"),
-    stableId = StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
+    appVersion = Version.of(2, 1, 0),
+    stableId = StableId.of("user-123"),
 )
 
-val enabled: Boolean = feature { AppFeatures.DARK_MODE }
+val enabled: Boolean = AppFeatures.darkMode.evaluate(context)
 ```
 
 Notes:
-- Konditional models evaluation as context-dependent; examples assume you are evaluating within a context-aware scope.
-- `feature { ... }` returns the flag’s declared Kotlin type and never returns null.
+
+- Evaluation is total for declared features: `evaluate(context)` always returns the flag’s declared Kotlin type (never
+  null).
+- Use `evaluateWithReason(context)` when you need operational traceability (“why did I get this value?”).
 
 ---
 
@@ -78,13 +84,14 @@ Notes:
 
 Supported value types (out of the box):
 
-| Type    | DSL Method  | Kotlin Type   | Example Default |
-|---------|-------------|---------------|-----------------|
-| Boolean | `boolean()` | `Boolean`     | `false`         |
-| String  | `string()`  | `String`      | `"production"`  |
-| Integer | `int()`     | `Int`         | `42`            |
-| Decimal | `double()`  | `Double`      | `3.14`          |
-| Enum    | `enum<E>()` | `E : Enum<E>` | `LogLevel.INFO` |
+| Type       | FeatureContainer method | Kotlin type                          | Example default |
+|------------|-------------------------|--------------------------------------|-----------------|
+| Boolean    | `boolean(...)`          | `Boolean`                            | `false`         |
+| String     | `string(...)`           | `String`                             | `"production"`  |
+| Integer    | `integer(...)`          | `Int`                                | `42`            |
+| Decimal    | `double(...)`           | `Double`                             | `3.14`          |
+| Enum       | `enum(...)`             | `E : Enum<E>`                        | `LogLevel.INFO` |
+| Data class | `custom(...)`           | `T : KotlinEncodeable<ObjectSchema>` | `MyConfig()`    |
 
 ---
 
@@ -93,11 +100,11 @@ Supported value types (out of the box):
 ### Gradual rollout (deterministic)
 
 ```kotlin
-val NEW_CHECKOUT by boolean(default = false) {
-    rule {
+val newCheckout by boolean<Context>(default = false) {
+    rule(true) {
         platforms(Platform.ANDROID)
         rollout { 10.0 }
-    } returns true
+    }
 }
 ```
 
@@ -106,10 +113,21 @@ Konditional’s rollouts are deterministic: the same `(stableId, flagKey, salt)`
 ### Platform-specific configuration
 
 ```kotlin
-val API_ENDPOINT by string(default = "https://api.example.com") {
-    rule { platforms(Platform.IOS) } returns "https://api-ios.example.com"
-    rule { platforms(Platform.ANDROID) } returns "https://api-android.example.com"
-    rule { platforms(Platform.WEB) } returns "https://api-web.example.com"
+val apiEndpoint by string<Context>(default = "https://api.example.com") {
+    rule("https://api-ios.example.com") { platforms(Platform.IOS) }
+    rule("https://api-android.example.com") { platforms(Platform.ANDROID) }
+    rule("https://api-web.example.com") { platforms(Platform.WEB) }
+}
+```
+
+### Rollout allowlisting (internal testers)
+
+Allowlists bypass rollout *after* a rule matches by criteria:
+
+```kotlin
+val newUi by boolean<Context>(default = false) {
+    allowlist(StableId.of("tester-1"))
+    rule(true) { rollout { 5.0 } }
 }
 ```
 
@@ -118,14 +136,17 @@ val API_ENDPOINT by string(default = "https://api.example.com") {
 ```kotlin
 enum class Theme { LIGHT, DARK }
 
-val THEME by enum<Theme, Context>(default = Theme.LIGHT)
+val theme by enum<Theme, Context>(default = Theme.LIGHT) {
+    rule(Theme.DARK) { platforms(Platform.IOS) }
+}
 ```
 
 ---
 
 ## Namespaces scale ownership, not prefixes
 
-Konditional provides `Namespace.Global`. If you need isolation boundaries beyond global, define your own namespaces in your codebase (consumer-defined), then bind `FeatureContainer`s to them.
+Konditional provides `Namespace.Global`. If you need isolation boundaries beyond global, define your own namespaces in
+your codebase (consumer-defined), then bind `FeatureContainer`s to them.
 
 ```kotlin
 sealed class AppDomain(id: String) : Namespace(id) {
@@ -134,11 +155,11 @@ sealed class AppDomain(id: String) : Namespace(id) {
 }
 
 object AuthFeatures : FeatureContainer<AppDomain.Auth>(AppDomain.Auth) {
-    val SOCIAL_LOGIN by boolean(default = false)
+    val socialLogin by boolean<Context>(default = false)
 }
 
 object PaymentFeatures : FeatureContainer<AppDomain.Payments>(AppDomain.Payments) {
-    val APPLE_PAY by boolean(default = false)
+    val applePay by boolean<Context>(default = false)
 }
 ```
 

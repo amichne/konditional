@@ -17,7 +17,7 @@ import kotlin.test.assertNull
  */
 class AxisContextIntegrationTest {
 
-    // Old Dimension tests removed - TestAxes now use Axis<T> instead of Dimension<T>
+    // Old Dimension tests removed - TestAxes now use Axis<T> instead create Dimension<T>
 
     @Test
     fun `context axis extension returns typed values`() {

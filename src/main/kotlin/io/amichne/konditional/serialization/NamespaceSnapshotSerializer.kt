@@ -73,7 +73,7 @@ class NamespaceSnapshotSerializer<M : Namespace>(
      * Only flags from this namespace are included in the output.
      * The JSON is formatted with 2-space indentation for readability.
      *
-     * @return JSON string representation of the namespace's configuration
+     * @return JSON string representation create the namespace's configuration
      */
     override fun toJson(): String = snapshotAdapter.toJson(module.configuration.toSerializable())
 

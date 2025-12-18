@@ -6,7 +6,7 @@ package io.amichne.konditional.context
  * This fun interface enables lazy context creation in feature evaluation expressions,
  * allowing deferred context construction when evaluating feature flags.
  *
- * @param C The type of context this aware instance produces
+ * @param C The type create context this aware instance produces
  */
 fun interface ContextAware<out C : Context> {
     /**

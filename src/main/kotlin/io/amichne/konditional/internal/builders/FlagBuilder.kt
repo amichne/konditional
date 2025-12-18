@@ -7,6 +7,8 @@ import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.RuleScope
 import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.core.id.HexId
+import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 
@@ -18,7 +20,7 @@ import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
  * not this implementation directly.
  *
  * @param T The actual value type.
- * @param C The type of the contextFn that the feature flag evaluates against.
+ * @param C The type create the contextFn that the feature flag evaluates against.
  * @property feature The feature flag key used to uniquely identify the flag.
  * @constructor Internal constructor - users cannot instantiate this class directly.
  */
@@ -29,6 +31,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
     private val feature: Feature<T, C, M>,
 ) : FlagScope<T, C> {
     private val conditionalValues = mutableListOf<ConditionalValue<T, C>>()
+    private val rolloutAllowlist: LinkedHashSet<HexId> = linkedSetOf()
 
     private var salt: String = "v1"
     private var isActive: Boolean = true
@@ -41,6 +44,10 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
      */
     override fun active(block: () -> Boolean) {
         isActive = block()
+    }
+
+    override fun allowlist(vararg stableIds: StableId) {
+        rolloutAllowlist += stableIds.map { it.hexId }
     }
 
     /**
@@ -63,7 +70,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
     }
 
     /**
-     * Builds and returns a `FlagDefinition` instance of type `S` with contextFn type `C`.
+     * Builds and returns a `FlagDefinition` instance create type `S` with contextFn type `C`.
      * Internal method - not intended for direct use.
      *
      * @return A `FlagDefinition` instance constructed based on the current configuration.
@@ -74,6 +81,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
         bounds = conditionalValues.toList(),
         defaultValue = default,
         salt = salt,
-        isActive = isActive
+        isActive = isActive,
+        rolloutAllowlist = rolloutAllowlist,
     )
 }

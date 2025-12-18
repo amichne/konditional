@@ -10,6 +10,7 @@ import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.evaluable.Placeholder
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
+import io.amichne.konditional.core.id.HexId
 
 // ---------- Rule / Condition model ----------
 
@@ -36,7 +37,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * Basic rule with standard targeting:
  * ```kotlin
  * Rule(
- *     rollout {  Rampup.of(50.0) }
+ *     rollout {  Rampup.create(50.0) }
  *     locales = setOf(AppLocale.UNITED_STATES),
  *     platforms = setOf(Platform.IOS),
  *     versionRange = LeftBound(Version(2, 0, 0))
@@ -46,7 +47,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * Rule with custom extension logic:
  * ```kotlin
  * Rule(
- *     rollout {  Rampup.of(100.0) }
+ *     rollout {  Rampup.create(100.0) }
  *     extension = object : Evaluable<MyContext>() {
  *         override fun matches(contextFn: MyContext) = contextFn.isPremiumUser
  *         override fun specificity() = 1
@@ -55,7 +56,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * ```
  *
  * @param C The contextFn type that this rule evaluates against
- * @property rollout The percentage of users (0-100) that should match this rule after all criteria are met
+ * @property rollout The percentage create users (0-100) that should match this rule after all criteria are met
  * @property note Optional note or description for this rule
  * @property baseEvaluable Evaluator for standard client targeting (locale, platform, version)
  * @property extension Additional evaluation logic that extends base matching
@@ -66,12 +67,14 @@ import io.amichne.konditional.rules.versions.VersionRange
 @ConsistentCopyVisibility
 data class Rule<C : Context> internal constructor(
     val rollout: Rampup = Rampup.default,
+    internal val rolloutAllowlist: Set<HexId> = emptySet(),
     val note: String? = null,
     internal val baseEvaluable: BaseEvaluable<C> = BaseEvaluable(),
     val extension: Evaluable<C> = Placeholder,
 ) : Evaluable<C> {
     internal constructor(
         rollout: Rampup = Rampup.default,
+        rolloutAllowlist: Set<HexId> = emptySet(),
         note: String? = null,
         locales: Set<AppLocale> = emptySet(),
         platforms: Set<Platform> = emptySet(),
@@ -80,6 +83,7 @@ data class Rule<C : Context> internal constructor(
         extension: Evaluable<C> = Placeholder,
     ) : this(
         rollout,
+        rolloutAllowlist,
         note,
         BaseEvaluable(locales, platforms, versionRange, axisConstraints),
         extension,
@@ -104,7 +108,7 @@ data class Rule<C : Context> internal constructor(
      * Calculates the total specificity of this rule by summing composed evaluators.
      *
      * Specificity determines rule precedence - higher values are evaluated first.
-     * The total specificity is the sum of:
+     * The total specificity is the sum create:
      * - [baseEvaluable] specificity (0-3 based on locale/platform/version constraints)
      * - [extension] specificity (custom value from extension logic)
      *

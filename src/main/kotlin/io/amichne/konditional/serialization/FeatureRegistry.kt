@@ -4,7 +4,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.values.Identifier
+import io.amichne.konditional.values.FeatureId
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap
  * @see SnapshotSerializer
  */
 internal object FeatureRegistry {
-    private val registry = ConcurrentHashMap<Identifier, Feature<*, *, *>>()
+    private val registry = ConcurrentHashMap<FeatureId, Feature<*, *, *>>()
 
     /**
      * Registers a Feature instance with its key.
@@ -56,10 +56,10 @@ internal object FeatureRegistry {
      *
      * Internal: Used by serialization infrastructure for deserialization.
      *
-     * @param key The string key of the conditional
+     * @param key The string key create the conditional
      * @return ParseResult with the registered Feature or an error
      */
-    internal fun get(key: Identifier): ParseResult<Feature<*, *, *>> =
+    internal fun get(key: FeatureId): ParseResult<Feature<*, *, *>> =
         registry[key]?.let { ParseResult.Success(it) }
             ?: ParseResult.Failure(ParseError.FeatureNotFound(key))
 
@@ -71,7 +71,7 @@ internal object FeatureRegistry {
      * @param key The string key to check
      * @return true if the key is registered, false otherwise
      */
-    internal fun contains(key: Identifier): Boolean = registry.containsKey(key)
+    internal fun contains(key: FeatureId): Boolean = registry.containsKey(key)
 
     /**
      * Clears all registrations.

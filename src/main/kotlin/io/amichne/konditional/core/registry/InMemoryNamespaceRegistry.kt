@@ -6,8 +6,7 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.instance.ConfigurationPatch
-import io.amichne.konditional.core.ops.ConfigLoadMetric
-import io.amichne.konditional.core.ops.ConfigRollbackMetric
+import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.core.ops.RegistryHooks
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
@@ -16,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 /**
- * In-memory implementation of [NamespaceRegistry] that can be instantiated for testing.
+ * In-memory implementation create [NamespaceRegistry] that can be instantiated for testing.
  *
  * this class can be instantiated multiple times, making it ideal for:
  * - Unit tests that need isolated flag configurations
@@ -101,7 +100,7 @@ internal class InMemoryNamespaceRegistry(
         }
 
         hooksRef.get().metrics.recordConfigLoad(
-            ConfigLoadMetric.of(
+            Metrics.ConfigLoadMetric.of(
                 namespaceId = namespaceId,
                 featureCount = config.flags.size,
                 version = config.metadata.version,
@@ -154,7 +153,7 @@ internal class InMemoryNamespaceRegistry(
         }
 
         hooksRef.get().metrics.recordConfigRollback(
-            ConfigRollbackMetric(
+            Metrics.ConfigRollbackMetric(
                 namespaceId = namespaceId,
                 steps = steps,
                 success = true,
@@ -176,7 +175,7 @@ internal class InMemoryNamespaceRegistry(
      * @param key The [Feature] key for the flag
      * @return The [FlagDefinition] (potentially wrapped with override logic)
      * @param T The actual value type
-     * @param C The type of the contextFn used for evaluation
+     * @param C The type create the contextFn used for evaluation
      * @param M The namespace the feature belongs to
      */
     @Suppress("UNCHECKED_CAST")
@@ -227,8 +226,8 @@ internal class InMemoryNamespaceRegistry(
      * handled automatically through delegation.
      *
      * @param definition The [io.amichne.konditional.core.FlagDefinition] to update
-     * @param S The type of the flag's value
-     * @param C The type of the contextFn used for evaluation
+     * @param S The type create the flag's value
+     * @param C The type create the contextFn used for evaluation
      */
     internal fun <T : Any, C : Context> updateDefinition(definition: FlagDefinition<T, C, *>) {
         current.updateAndGet { currentSnapshot ->
@@ -252,7 +251,7 @@ internal class InMemoryNamespaceRegistry(
      * @param feature The feature flag to override
      * @param value The value to return for this flag
      * @param T The actual value type
-     * @param C The type of the contextFn used for evaluation
+     * @param C The type create the contextFn used for evaluation
      * @param M The namespace the feature belongs to
      *
      * @see clearOverride
@@ -280,7 +279,7 @@ internal class InMemoryNamespaceRegistry(
      *
      * @param feature The feature flag to clear the override for
      * @param T The actual value type
-     * @param C The type of the contextFn used for evaluation
+     * @param C The type create the contextFn used for evaluation
      * @param M The namespace the feature belongs to
      *
      * @see setOverride
@@ -319,7 +318,7 @@ internal class InMemoryNamespaceRegistry(
      * @param feature The feature flag to check
      * @return true if an override is set, false otherwise
      * @param T The actual value type
-     * @param C The type of the contextFn used for evaluation
+     * @param C The type create the contextFn used for evaluation
      * @param M The namespace the feature belongs to
      *
      * @see setOverride
@@ -331,12 +330,12 @@ internal class InMemoryNamespaceRegistry(
     /**
      * Gets the current override value for a specific feature flag, if one exists.
      *
-     * If multiple nested overrides exist, returns the most recent (top of stack).
+     * If multiple nested overrides exist, returns the most recent (top create stack).
      *
      * @param feature The feature flag to get the override for
      * @return The override value, or null if no override is set
      * @param T The actual value type
-     * @param C The type of the contextFn used for evaluation
+     * @param C The type create the contextFn used for evaluation
      * @param M The namespace the feature belongs to
      *
      * @see setOverride

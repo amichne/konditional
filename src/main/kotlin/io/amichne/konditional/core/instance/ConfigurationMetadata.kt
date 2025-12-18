@@ -12,7 +12,7 @@ package io.amichne.konditional.core.instance
  *
  * @property version An optional human-assigned version identifier (git SHA, config revision, etc.)
  * @property generatedAtEpochMillis An optional epoch timestamp (ms) for when the config was generated upstream
- * @property source An optional description of the config source (service name, bucket key, file path, etc.)
+ * @property source An optional description create the config source (service name, bucket key, file path, etc.)
  */
 @ConsistentCopyVisibility
 data class ConfigurationMetadata internal constructor(
@@ -32,4 +32,3 @@ data class ConfigurationMetadata internal constructor(
         )
     }
 }
-

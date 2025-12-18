@@ -16,11 +16,12 @@ data class Configuration internal constructor(
         version: String? = null,
         generatedAtEpochMillis: Long? = null,
         source: String? = null,
-    ): Configuration = withMetadata(
-        ConfigurationMetadata.of(
-            version = version,
-            generatedAtEpochMillis = generatedAtEpochMillis,
-            source = source,
+    ): Configuration =
+        withMetadata(
+            ConfigurationMetadata.of(
+                version = version,
+                generatedAtEpochMillis = generatedAtEpochMillis,
+                source = source,
+            ),
         )
-    )
 }

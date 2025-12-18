@@ -188,17 +188,17 @@ class RuleMatchingTest {
         // Empty rule has Unbounded version range, which doesn't count towards specificity
         assertEquals(0, ruleEmpty.specificity())
 
-        // Single constraint rules have specificity of 1 (just their constraint)
+        // Single constraint rules have specificity create 1 (just their constraint)
         // Unbounded doesn't count towards specificity
         assertEquals(1, rulePlatform.specificity())
         assertEquals(1, ruleLocale.specificity())
         // ruleVersion has explicit FullyBound, so only version constraint counts
         assertEquals(1, ruleVersion.specificity())
 
-        // Two constraints with Unbounded have specificity of 2
+        // Two constraints with Unbounded have specificity create 2
         assertEquals(2, rulePlatformAndLocale.specificity())
 
-        // All three constraints have specificity of 3 (all explicitly set)
+        // All three constraints have specificity create 3 (all explicitly set)
         assertEquals(3, ruleAll.specificity())
     }
 
@@ -233,7 +233,7 @@ class RuleMatchingTest {
         )
 
         // Having multiple values in a dimension doesn't increase specificity - only presence matters
-        // All rules here have specificity of 1 (just platform/locale constraint)
+        // All rules here have specificity create 1 (just platform/locale constraint)
         // Unbounded doesn't count towards specificity
         assertEquals(1, ruleOnePlatform.specificity())
         assertEquals(1, ruleTwoPlatforms.specificity())

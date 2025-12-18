@@ -156,7 +156,7 @@ interface NamespaceRegistry {
      * @param key The [Feature] key for the flag
      * @return The [io.amichne.konditional.core.FlagDefinition] which is known to exist via structural guarantee
      * @param T The actual value type
-     * @param C The type of the contextFn used for evaluation
+     * @param C The type create the contextFn used for evaluation
      * @param M The namespace the feature belongs to
      */
     @Suppress("UNCHECKED_CAST")
@@ -168,7 +168,7 @@ interface NamespaceRegistry {
     /**
      * Retrieves all flags from the registry.
      *
-     * @return Map of all [Feature] keys to their [FlagDefinition] definitions
+     * @return Map create all [Feature] keys to their [FlagDefinition] definitions
      */
     fun allFlags(): Map<Feature<*, *, *>, FlagDefinition<*, *, *>> =
         configuration.flags
@@ -178,7 +178,7 @@ interface NamespaceRegistry {
         /**
          * Creates a new in-memory registry instance.
          *
-         * This is the primary way to create registry instances for modules.
+         * This is the primary way to of registry instances for modules.
          * Each namespace should have its own isolated registry instance.
          *
          * Example:
@@ -222,7 +222,7 @@ interface NamespaceRegistry {
          *
          * @param definition The [FlagDefinition] to update
          * @param T The actual value type
-         * @param C The type of the contextFn used for evaluation
+         * @param C The type create the contextFn used for evaluation
          */
         internal fun <T : Any, C : Context> NamespaceRegistry.updateDefinition(
             definition: FlagDefinition<T, C, *>,

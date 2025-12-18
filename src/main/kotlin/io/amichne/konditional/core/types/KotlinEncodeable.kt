@@ -1,7 +1,7 @@
 package io.amichne.konditional.core.types
 
 import io.amichne.kontracts.schema.JsonSchema
-import io.amichne.kontracts.schema.ObjectSchema
+import io.amichne.kontracts.schema.ObjectTraits
 
 /**
  * Interface for custom types that can be encoded with schema validation.
@@ -10,7 +10,7 @@ import io.amichne.kontracts.schema.ObjectSchema
  * The schema is used for validation and JSON conversion at the library boundary.
  *
  * The generic type parameter [S] allows for different schema types, though
- * [ObjectSchema] is the most common use case for data classes.
+ * object schemas are the most common use case for data classes.
  *
  * ## Usage with Data Classes
  *
@@ -28,11 +28,11 @@ import io.amichne.kontracts.schema.ObjectSchema
  *     val theme: String = "light",
  *     val notificationsEnabled: Boolean = true,
  *     val maxRetries: Int = 3
- * ) : KotlinEncodeable<JsonSchema.ObjectSchema> {
- *     override val schema = jsonObject {
- *         field("theme", required = true, default = "light") { string() }
- *         field("notificationsEnabled", required = true, default = true) { boolean() }
- *         field("maxRetries", required = true, default = 3) { int() }
+ * ) : KotlinEncodeable<ObjectSchema> {
+ *     override val schema = schemaRoot {
+ *         ::theme of { minLength = 1 }
+ *         ::notificationsEnabled of { default = true }
+ *         ::maxRetries of { minimum = 0 }
  *     }
  * }
  * ```
@@ -43,22 +43,22 @@ import io.amichne.kontracts.schema.ObjectSchema
  *     val theme: String = "light",
  *     val notificationsEnabled: Boolean = true,
  *     val maxRetries: Int = 3
- * ) : KotlinEncodeable<JsonSchema.ObjectSchema> {
+ * ) : KotlinEncodeable<ObjectSchema> {
  *     override val schema = Companion.schema
  *
  *     companion object {
- *         val schema = jsonObject {
- *             field("theme", required = true, default = "light") { string() }
- *             field("notificationsEnabled", required = true, default = true) { boolean() }
- *             field("maxRetries", required = true, default = 3) { int() }
+ *         val schema = schemaRoot {
+ *             ::theme of { minLength = 1 }
+ *             ::notificationsEnabled of { default = true }
+ *             ::maxRetries of { minimum = 0 }
  *         }
  *     }
  * }
  * ```
  *
- * @param S The schema type used for validation (typically [ObjectSchema])
+ * @param S The schema type used for validation (must be an object schema)
  */
-interface KotlinEncodeable<out S : JsonSchema> {
+interface KotlinEncodeable<out S> where S : JsonSchema, S : ObjectTraits {
     /**
      * The schema defining the structure and validation rules for this custom type.
      */

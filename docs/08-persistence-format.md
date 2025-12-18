@@ -19,14 +19,16 @@ flowchart LR
     Snap[Snapshot JSON] --> Flags["flags: List{SerializableFlag}"]
     Snap --> Meta["meta: SerializableSnapshotMetadata?"]
     Flags --> Flag["SerializableFlag"]
-    Flag --> Key["key: Identifier"]
+    Flag --> Key["key: FeatureId"]
     Flag --> Default["defaultValue: FlagValue"]
     Flag --> Salt["salt: String"]
     Flag --> Active["isActive: Boolean"]
+    Flag --> FAllow["rolloutAllowlist: Set{String}"]
     Flag --> Rules
     Rules --> Rule["SerializableRule"]
     Rule --> RVal["value: FlagValue"]
     Rule --> Ramp["rampUp: Double"]
+    Rule --> RAllow["rolloutAllowlist: Set{String}"]
     Rule --> Note["note: String?"]
     Rule --> Loc["locales: Set{String}"]
     Rule --> Plat["platforms: Set{String}"]
@@ -37,12 +39,12 @@ flowchart LR
 
 ---
 
-## Identifier format (`key`)
+## FeatureId format (`key`)
 
-Each flag is stored under a stable **Identifier** string:
+Each flag is stored under a stable **FeatureId** string:
 
 ```
-value::${namespaceIdentifierSeed}::${featureKey}
+feature::${namespaceIdentifierSeed}::${featureKey}
 ```
 
 Where:
@@ -50,11 +52,14 @@ Where:
 - `${namespaceIdentifierSeed}` is `Namespace.identifierSeed` (defaults to the namespace `id`)
 - `${featureKey}` is the feature key (typically the Kotlin property name)
 
-Example (Global namespace, `DARK_MODE`):
+Example (Global namespace, `darkMode`):
 
 ```
-value::global::DARK_MODE
+feature::global::darkMode
 ```
+
+Backward compatibility: older snapshots may contain `value::${namespaceIdentifierSeed}::${featureKey}`. These are
+normalized on load.
 
 ---
 
@@ -113,6 +118,23 @@ Valid `type` values:
 
 ---
 
+## Rollout allowlists (`rolloutAllowlist`)
+
+Both flags and individual rules may include a `rolloutAllowlist` field:
+
+- It is a set of **stable ID hex strings** (the same representation returned by `Context.stableId.id`).
+- It does not force a rule to match; it only bypasses the rollout check *after* a rule matches by criteria.
+- Flag-level and rule-level allowlists are treated as a union (either can bypass rollout).
+- It does not override `isActive` or the namespace kill-switch (`disableAll`).
+
+To generate a value for remote config, use the same normalization as the runtime:
+
+```kotlin
+val stableIdHex = StableId.of("user-123").id // "757365722d313233"
+```
+
+---
+
 ## Generic templates (Kotlin-style)
 
 ### Snapshot template
@@ -127,7 +149,7 @@ val snapshotJson = """
   },
   "flags": [
     {
-      "key": "value::${namespaceSeed}::${featureKey}",
+      "key": "feature::${namespaceSeed}::${featureKey}",
       "defaultValue": {
         "type": "${valueType}",
         "value": ${defaultValueJson},
@@ -135,6 +157,7 @@ val snapshotJson = """
       },
       "salt": "${salt}",
       "isActive": ${isActive},
+      "rolloutAllowlist": ["${stableIdHex}", "..."],
       "rules": [
         {
           "value": {
@@ -143,6 +166,7 @@ val snapshotJson = """
             "...": "${typeSpecificFields}"
           },
           "rampUp": ${rolloutPercent},
+          "rolloutAllowlist": ["${stableIdHex}", "..."],
           "note": "${optionalNoteOrNull}",
           "locales": ["${APP_LOCALE_ENUM_NAME}", "..."],
           "platforms": ["${PLATFORM_ENUM_NAME}", "..."],
@@ -176,8 +200,8 @@ val patchJson = """
     { "...": "SerializableFlag objects (same shape as snapshot)" }
   ],
   "removeKeys": [
-    "value::${namespaceSeed}::${featureKeyToRemove}",
-    "value::${namespaceSeed}::${anotherKey}"
+    "feature::${namespaceSeed}::${featureKeyToRemove}",
+    "feature::${namespaceSeed}::${anotherKey}"
   ]
 }
 """
@@ -215,46 +239,60 @@ Snapshots and patches may include an optional `meta` object:
 
 ## JSON examples
 
+Notes:
+
+- Incoming JSON may omit fields that have defaults (for example `rolloutAllowlist`, `locales`, `platforms`, `axes`, and
+  `versionRange`).
+- `SnapshotSerializer.serialize(...)` emits explicit values for these fields (including empty arrays/objects).
+
 ??? example "Snapshot: booleans + string variants, with version ranges"
     ```json
     {
       "flags": [
         {
-          "key": "value::global::DARK_MODE",
+          "key": "feature::global::darkMode",
           "defaultValue": { "type": "BOOLEAN", "value": false },
           "salt": "v1",
           "isActive": true,
+          "rolloutAllowlist": [],
           "rules": [
             {
               "value": { "type": "BOOLEAN", "value": true },
               "rampUp": 50.0,
+              "rolloutAllowlist": ["757365722d313233"],
               "note": "iOS gradual rollout",
               "locales": ["UNITED_STATES"],
               "platforms": ["IOS"],
+              "axes": {},
               "versionRange": { "type": "MIN_BOUND", "min": { "major": 2, "minor": 0, "patch": 0 } }
             }
           ]
         },
         {
-          "key": "value::global::API_ENDPOINT",
+          "key": "feature::global::apiEndpoint",
           "defaultValue": { "type": "STRING", "value": "https://api.example.com" },
           "salt": "v1",
           "isActive": true,
+          "rolloutAllowlist": [],
           "rules": [
             {
               "value": { "type": "STRING", "value": "https://api-ios.example.com" },
               "rampUp": 100.0,
+              "rolloutAllowlist": [],
               "note": "iOS endpoint",
               "locales": [],
               "platforms": ["IOS"],
+              "axes": {},
               "versionRange": { "type": "UNBOUNDED" }
             },
             {
               "value": { "type": "STRING", "value": "https://api-android.example.com" },
               "rampUp": 100.0,
+              "rolloutAllowlist": [],
               "note": "Android endpoint",
               "locales": [],
               "platforms": ["ANDROID"],
+              "axes": {},
               "versionRange": { "type": "UNBOUNDED" }
             }
           ]
@@ -268,7 +306,7 @@ Snapshots and patches may include an optional `meta` object:
     {
       "flags": [
         {
-          "key": "value::global::THEME",
+          "key": "feature::global::theme",
           "defaultValue": {
             "type": "ENUM",
             "value": "LIGHT",
@@ -276,6 +314,7 @@ Snapshots and patches may include an optional `meta` object:
           },
           "salt": "v1",
           "isActive": true,
+          "rolloutAllowlist": [],
           "rules": [
             {
               "value": {
@@ -284,9 +323,11 @@ Snapshots and patches may include an optional `meta` object:
                 "enumClassName": "com.example.Theme"
               },
               "rampUp": 100.0,
+              "rolloutAllowlist": [],
               "note": "Dark theme for iOS",
               "locales": [],
               "platforms": ["IOS"],
+              "axes": {},
               "versionRange": { "type": "UNBOUNDED" }
             }
           ]
@@ -300,24 +341,27 @@ Snapshots and patches may include an optional `meta` object:
     {
       "flags": [
         {
-          "key": "value::global::DARK_MODE",
+          "key": "feature::global::darkMode",
           "defaultValue": { "type": "BOOLEAN", "value": false },
           "salt": "v1",
           "isActive": true,
+          "rolloutAllowlist": [],
           "rules": [
             {
               "value": { "type": "BOOLEAN", "value": true },
               "rampUp": 100.0,
+              "rolloutAllowlist": [],
               "note": "Rollout complete",
               "locales": [],
               "platforms": [],
+              "axes": {},
               "versionRange": { "type": "UNBOUNDED" }
             }
           ]
         }
       ],
       "removeKeys": [
-        "value::global::LEGACY_SUPPORT"
+        "feature::global::LEGACY_SUPPORT"
       ]
     }
     ```
@@ -327,7 +371,7 @@ Snapshots and patches may include an optional `meta` object:
     {
       "flags": [
         {
-          "key": "value::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::darkMode",
+          "key": "feature::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::darkMode",
           "defaultValue": {
             "type": "BOOLEAN",
             "value": false
@@ -353,7 +397,7 @@ Snapshots and patches may include an optional `meta` object:
           ]
         },
         {
-          "key": "value::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::apiEndpoint",
+          "key": "feature::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::apiEndpoint",
           "defaultValue": {
             "type": "STRING",
             "value": "https://api.example.com"
@@ -379,7 +423,7 @@ Snapshots and patches may include an optional `meta` object:
           ]
         },
         {
-          "key": "value::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::maxRetries",
+          "key": "feature::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::maxRetries",
           "defaultValue": {
             "type": "INT",
             "value": 3
@@ -408,7 +452,7 @@ Snapshots and patches may include an optional `meta` object:
           ]
         },
         {
-          "key": "value::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::theme",
+          "key": "feature::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::theme",
           "defaultValue": {
             "type": "ENUM",
             "value": "LIGHT",
@@ -436,7 +480,7 @@ Snapshots and patches may include an optional `meta` object:
           ]
         },
         {
-          "key": "value::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::userSettings",
+          "key": "feature::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::userSettings",
           "defaultValue": {
             "type": "DATA_CLASS",
             "dataClassName": "io.amichne.konditional.serialization.ConsumerConfigurationLifecycleTest$UserSettings",

@@ -7,11 +7,15 @@ import io.amichne.konditional.context.Rampup
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.instance.ConfigurationMetadata
 import io.amichne.konditional.core.instance.ConfigurationPatch
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.core.types.KotlinEncodeable
+import io.amichne.konditional.core.types.asObjectSchema
+import io.amichne.konditional.core.types.toJsonValue
 import io.amichne.konditional.internal.serialization.models.FlagValue
 import io.amichne.konditional.internal.serialization.models.SerializableFlag
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
@@ -23,10 +27,13 @@ import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.evaluable.AxisConstraint
 import io.amichne.konditional.rules.versions.Unbounded
-import io.amichne.konditional.values.Identifier
+import io.amichne.konditional.values.FeatureId
+import io.amichne.kontracts.schema.ObjectSchema
+import io.amichne.kontracts.value.JsonObject
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.jvm.isAccessible
 
 /**
  * Converts a Configuration to a SerializableSnapshot.
@@ -65,12 +72,13 @@ private fun SerializableSnapshotMetadata?.toDomain(): ConfigurationMetadata =
 /**
  * Converts a FlagDefinition to a SerializableFlag.
  */
-private fun <T : Any, C : Context> FlagDefinition<T, C, *>.toSerializable(flagKey: Identifier): SerializableFlag =
+private fun <T : Any, C : Context> FlagDefinition<T, C, *>.toSerializable(flagKey: FeatureId): SerializableFlag =
     SerializableFlag(
         key = flagKey,
         defaultValue = FlagValue.from(defaultValue),
         salt = salt,
         isActive = isActive,
+        rolloutAllowlist = rolloutAllowlist.mapTo(linkedSetOf()) { it.id },
         rules = values.map { it.toSerializable() },
     )
 
@@ -81,6 +89,7 @@ private fun <T : Any, C : Context> ConditionalValue<T, C>.toSerializable(): Seri
     SerializableRule(
         value = FlagValue.from(value),
         rampUp = rule.rollout.value,
+        rolloutAllowlist = rule.rolloutAllowlist.mapTo(linkedSetOf()) { it.id },
         note = rule.note,
         locales =
             rule.baseEvaluable.locales
@@ -101,44 +110,43 @@ private fun <T : Any, C : Context> ConditionalValue<T, C>.toSerializable(): Seri
 internal fun SerializableSnapshot.toSnapshot(): ParseResult<Configuration> = toSnapshot(SnapshotLoadOptions.strict())
 
 internal fun SerializableSnapshot.toSnapshot(options: SnapshotLoadOptions): ParseResult<Configuration> =
-    try {
-        val flagMap =
-            buildMap<Feature<*, *, *>, FlagDefinition<*, *, *>> {
-                flags.forEach { serializableFlag ->
-                    when (val pairResult = serializableFlag.toFlagPair()) {
-                        is ParseResult.Success -> {
-                            put(pairResult.value.first, pairResult.value.second)
-                        }
+    runCatching {
+        buildMap {
+            flags.forEach { serializableFlag ->
+                when (val pairResult = serializableFlag.toFlagPair()) {
+                    is ParseResult.Success -> {
+                        put(pairResult.value.first, pairResult.value.second)
+                    }
 
-                        is ParseResult.Failure -> {
-                            val error = pairResult.error
-                            if (error is ParseError.FeatureNotFound &&
-                                options.unknownFeatureKeyStrategy is UnknownFeatureKeyStrategy.Skip
-                            ) {
-                                options.onWarning(SnapshotWarning.unknownFeatureKey(error.key))
-                                return@forEach
-                            }
-                            return ParseResult.Failure(error)
+                    is ParseResult.Failure -> {
+                        if (pairResult.error is ParseError.FeatureNotFound &&
+                            options.unknownFeatureKeyStrategy is UnknownFeatureKeyStrategy.Skip
+                        ) {
+                            options.onWarning(SnapshotWarning.unknownFeatureKey(pairResult.error.key))
+                            return@forEach
                         }
+                        return ParseResult.Failure(pairResult.error)
                     }
                 }
             }
-
-        ParseResult.Success(Configuration(flagMap, meta.toDomain()))
-    } catch (e: Exception) {
-        ParseResult.Failure(ParseError.InvalidSnapshot(e.message ?: "Unknown error"))
-    }
+        }.let {
+            ParseResult.Success(Configuration(it, meta.toDomain()))
+        }
+    }.getOrElse { ParseResult.Failure(ParseError.InvalidSnapshot(it.message ?: "Unknown error")) }
 
 /**
- * Converts a SerializableFlag to a Map.Entry of Feature to FlagDefinition.
+ * Converts a SerializableFlag to a Map.Entry create Feature to FlagDefinition.
  * Returns ParseResult for type-safe error handling.
  */
 private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Feature<*, *, *>, FlagDefinition<*, *, *>>> =
     when (val conditionalResult = FeatureRegistry.get(key)) {
         is ParseResult.Success -> {
             val conditional = conditionalResult.value
-            val definition = toFlagDefinition(conditional)
-            ParseResult.Success(conditional to definition)
+            runCatching { toFlagDefinition(conditional) }
+                .fold(
+                    onSuccess = { ParseResult.Success(conditional to it) },
+                    onFailure = { ParseResult.Failure(ParseError.InvalidSnapshot(it.message ?: "Failed to decode flag")) },
+                )
         }
 
         is ParseResult.Failure -> {
@@ -150,20 +158,38 @@ private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Feature<*, *, *>, Fl
  * Converts a SerializableFlag to a FlagDefinitionImpl.
  * Type-safe: no casting required thanks to FlagValue sealed class.
  */
-@Suppress("UNCHECKED_CAST")
 private fun <T : Any, C : Context, M : Namespace> SerializableFlag.toFlagDefinition(
     conditional: Feature<T, C, M>,
-): FlagDefinition<T, C, M> {
-    // Extract typed value from FlagValue (type-safe extraction)
-    val typedDefaultValue = defaultValue.extractValue<T>()
-    val values = rules.map { it.toValue<T, C>() }
+): FlagDefinition<T, C, M> =
+    defaultValue
+        .extractValue<T>()
+        .let { decodedDefault ->
+            val schema =
+                (decodedDefault as? KotlinEncodeable<*>)
+                    ?.schema
+                    ?.asObjectSchema()
 
-    return FlagDefinition(
-        feature = conditional,
-        bounds = values,
-        defaultValue = typedDefaultValue,
-        salt = salt,
-        isActive = isActive,
+            if (defaultValue is FlagValue.DataClassValue && schema != null) {
+                validateDataClassFields(defaultValue.value, schema)
+            }
+
+            FlagDefinition(
+                feature = conditional,
+                bounds = rules.map { it.toRule<C>().targetedBy(it.value.extractValue(schema)) },
+                defaultValue = decodedDefault,
+                salt = salt,
+                isActive = isActive,
+                rolloutAllowlist = rolloutAllowlist.mapTo(linkedSetOf()) { HexId(it) },
+            )
+        }
+
+private fun validateDataClassFields(
+    fields: Map<String, Any?>,
+    schema: ObjectSchema,
+) {
+    JsonObject(
+        fields = fields.mapValues { (_, v) -> v.toJsonValue() },
+        schema = schema,
     )
 }
 
@@ -175,10 +201,13 @@ private fun <T : Any, C : Context, M : Namespace> SerializableFlag.toFlagDefinit
  * - KotlinEncodeable/data classes: stored as (dataClassName, primitive field map)
  */
 @Suppress("UNCHECKED_CAST")
-private fun <T : Any> FlagValue<*>.extractValue(): T =
+private fun <T : Any> FlagValue<*>.extractValue(schema: ObjectSchema? = null): T =
     when (this) {
         is FlagValue.EnumValue -> decodeEnum(enumClassName, value) as T
-        is FlagValue.DataClassValue -> decodeDataClass(dataClassName, value) as T
+        is FlagValue.DataClassValue -> {
+            schema?.let { validateDataClassFields(value, it) }
+            decodeDataClass(dataClassName, value) as T
+        }
         else -> value as T
     }
 
@@ -205,6 +234,7 @@ private fun decodeDataClass(
     val constructor =
         kClass.primaryConstructor
             ?: throw IllegalArgumentException("Custom type '${kClass.simpleName}' must have a primary constructor")
+    constructor.isAccessible = true
 
     val args =
         constructor.parameters
@@ -229,11 +259,7 @@ private fun resolveConstructorArg(
         return if (param.isOptional) Unset else throw IllegalArgumentException("Required field '$name' is missing")
     }
 
-    val raw = fields[name]
-    if (raw == null) return NullValue
-
-    val target = param.type.classifier as? KClass<*>
-    return coerceValue(raw, target)
+    return coerceValue(fields[name] ?: return NullValue, param.type.classifier as? KClass<*>)
 }
 
 private fun coerceValue(
@@ -278,7 +304,8 @@ private fun coerceValue(
         }
 
         target.java.isEnum -> {
-            val enumConstantName = value as? String ?: error("Enum values must be strings, got ${value::class.simpleName}")
+            val enumConstantName =
+                value as? String ?: error("Enum values must be strings, got ${value::class.simpleName}")
             decodeEnum(target.java.name, enumConstantName)
         }
 
@@ -293,22 +320,13 @@ private fun coerceValue(
     }
 
 /**
- * Converts a SerializableRule to a ConditionalValue.
- */
-@Suppress("UNCHECKED_CAST")
-private fun <T : Any, C : Context> SerializableRule.toValue(): ConditionalValue<T, C> {
-    val typedValue = value.extractValue<T>()
-    val rule = toRule<C>()
-    return rule.targetedBy(typedValue)
-}
-
-/**
  * Converts a SerializableRule to a Rule.
  * Simplified: VersionRange is already the domain type.
  */
 private fun <C : Context> SerializableRule.toRule(): Rule<C> =
     Rule(
         rollout = Rampup.of(rampUp),
+        rolloutAllowlist = rolloutAllowlist.mapTo(linkedSetOf()) { HexId(it) },
         note = note,
         locales = locales.map { AppLocale.valueOf(it) }.toSet(),
         platforms = platforms.map { Platform.valueOf(it) }.toSet(),

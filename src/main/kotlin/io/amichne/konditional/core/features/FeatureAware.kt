@@ -8,7 +8,7 @@ import io.amichne.konditional.core.Namespace
  * This is primarily used by [FeatureContainer] itself, which implements this interface
  * to enable the feature evaluation DSL through extension functions.
  *
- * @param M The namespace type of the feature container
+ * @param M The namespace type create the feature container
  */
 interface FeatureAware<M : Namespace> {
     /**

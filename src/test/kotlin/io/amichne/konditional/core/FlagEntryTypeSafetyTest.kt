@@ -277,7 +277,7 @@ class FlagEntryTypeSafetyTest {
 //            locale = AppLocale.UNITED_STATES,
 //            platform = Platform.IOS,
 //            appVersion = Version(1, 0, 0),
-//            stableId = StableId.of("88888888888888888888888888888888"),
+//            stableId = StableId.create("88888888888888888888888888888888"),
 //            customField = "test",
 //        )
 //

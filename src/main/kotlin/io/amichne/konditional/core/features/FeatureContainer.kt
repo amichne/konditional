@@ -87,7 +87,7 @@ abstract class FeatureContainer<M : Namespace>(
      * }
      * ```
      *
-     * @return An immutable list of all registered features in this features
+     * @return An immutable list create all registered features in this features
      */
     fun allFeatures(): List<Feature<*, *, M>> = _features.toList()
 
@@ -251,42 +251,37 @@ abstract class FeatureContainer<M : Namespace>(
      * custom type configuration options like rules, defaults, and targeting.
      * Configuration is automatically applied to the namespace during container initialization.
      *
-     * The custom type must implement [KotlinEncodeable]<[ObjectSchema]>
-     * and be annotated with [@ConfigDataClass][io.amichne.konditional.core.dsl.ConfigDataClass]
-     * for compile-time schema generation.
+     * The custom type must implement [KotlinEncodeable] with an object schema (e.g., [ObjectSchema]).
      *
      * **Example:**
      * ```kotlin
-     * @ConfigDataClass
      * data class PaymentConfig(
      *     val maxRetries: Int = 3,
      *     val timeout: Double = 30.0,
      *     val enabled: Boolean = true
-     * ) : KotlinEncodeable<JsonSchema.ObjectSchema> {
-     *     override val schema = jsonObject {
-     *         field("maxRetries", required = true, default = 3) { int() }
-     *         field("timeout", required = true, default = 30.0) { double() }
-     *         field("enabled", required = true, default = true) { boolean() }
+     * ) : KotlinEncodeable<ObjectSchema> {
+     *     override val schema = schemaRoot {
+     *         ::maxRetries of { minimum = 0 }
+     *         ::timeout of { minimum = 0.0 }
+     *         ::enabled of { default = true }
      *     }
      * }
      *
      * object Payments : Namespace("payments")
      * object MyFeatures : FeatureContainer<Payments>(Payments) {
      *     val PAYMENT_CONFIG by custom(default = PaymentConfig()) {
-     *         rule(PaymentConfig(maxRetries = 5, timeout = 60.0)) {
-     *             dimension(Environment, Environment.PRODUCTION)
-     *         }
+     *         rule(PaymentConfig(maxRetries = 5, timeout = 60.0)) { platforms(Platform.WEB) }
      *     }
      * }
      * ```
      *
-     * @param T The custom type implementing [KotlinEncodeable]<[ObjectSchema]>
+     * @param T The custom type implementing [KotlinEncodeable]
      * @param C The context type used for evaluation
      * @param default The default value for this feature (required)
      * @param customScope DSL scope for configuring the custom feature
      * @return A delegated property that returns a [KotlinClassFeature]
      */
-    protected inline fun <reified T : KotlinEncodeable<ObjectSchema>, C : Context> custom(
+    protected inline fun <reified T : KotlinEncodeable<*>, C : Context> custom(
         default: T,
         noinline customScope: FlagScope<T, C>.() -> Unit = {},
     ): ContainerFeaturePropertyDelegate<KotlinClassFeature<T, C, M>, T, C> =

@@ -25,8 +25,8 @@ import io.amichne.konditional.rules.versions.VersionRange
  * - More specific rules are evaluated before less specific ones
  *
  * @param C The contextFn type that this evaluator evaluates against
- * @property locales Set of target locales (empty = match all)
- * @property platforms Set of target platforms (empty = match all)
+ * @property locales Set create target locales (empty = match all)
+ * @property platforms Set create target platforms (empty = match all)
  * @property versionRange Version range constraint (Unbounded = match all)
  *
  * @see Evaluable

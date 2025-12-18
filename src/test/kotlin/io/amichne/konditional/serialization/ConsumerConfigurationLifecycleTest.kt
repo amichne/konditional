@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test
 import java.util.UUID
 
 class ConsumerConfigurationLifecycleTest {
-
     enum class Theme {
         LIGHT,
         DARK,
@@ -33,12 +32,13 @@ class ConsumerConfigurationLifecycleTest {
         val timeoutSeconds: Double = 30.0,
         val enabled: Boolean = true,
     ) : KotlinEncodeable<ObjectSchema> {
-        override val schema = schemaRoot {
-            ::theme of { minLength = 1 }
-            ::maxRetries of { minimum = 0 }
-            ::timeoutSeconds of { minimum = 0.0 }
-            ::enabled of {}
-        }
+        override val schema =
+            schemaRoot {
+                ::theme of { minLength = 1 }
+                ::maxRetries of { minimum = 0 }
+                ::timeoutSeconds of { minimum = 0.0 }
+                ::enabled of {}
+            }
     }
 
     private fun ctx(
@@ -46,60 +46,62 @@ class ConsumerConfigurationLifecycleTest {
         locale: AppLocale = AppLocale.UNITED_STATES,
         version: Version = Version.of(1, 0, 0),
         stableId: StableId = StableId.of("consumer-lifecycle"),
-    ): Context = Context(
-        locale = locale,
-        platform = platform,
-        appVersion = version,
-        stableId = stableId,
-    )
+    ): Context =
+        Context(
+            locale = locale,
+            platform = platform,
+            appVersion = version,
+            stableId = stableId,
+        )
 
     @Test
     fun `consumer lifecycle supports dump load and patch`() {
         val namespaceId = "consumer-lifecycle-${UUID.randomUUID()}"
         val namespaceV1 = Namespace(namespaceId)
 
-        val featuresV1 = object : FeatureContainer<Namespace>(namespaceV1) {
-            val darkMode by boolean<Context>(default = false) {
-                salt("v1")
-                rule(true) {
-                    platforms(Platform.IOS)
-                    rollout { 100.0 }
-                    note("iOS fully enabled")
+        val featuresV1 =
+            object : FeatureContainer<Namespace>(namespaceV1) {
+                val darkMode by boolean<Context>(default = false) {
+                    salt("v1")
+                    rule(true) {
+                        platforms(Platform.IOS)
+                        rollout { 100.0 }
+                        note("iOS fully enabled")
+                    }
                 }
-            }
 
-            val apiEndpoint by string<Context>(default = "https://api.example.com") {
-                rule("https://api-web.example.com") {
-                    platforms(Platform.WEB)
-                    rollout { 100.0 }
-                    note("Web endpoint override")
+                val apiEndpoint by string<Context>(default = "https://api.example.com") {
+                    rule("https://api-web.example.com") {
+                        platforms(Platform.WEB)
+                        rollout { 100.0 }
+                        note("Web endpoint override")
+                    }
                 }
-            }
 
-            val maxRetries by integer<Context>(default = 3) {
-                rule(5) {
-                    versions { min(2, 0, 0) }
-                    rollout { 100.0 }
-                    note("More retries on v2+")
+                val maxRetries by integer<Context>(default = 3) {
+                    rule(5) {
+                        versions { min(2, 0, 0) }
+                        rollout { 100.0 }
+                        note("More retries on v2+")
+                    }
                 }
-            }
 
-            val theme by enum<Theme, Context>(default = Theme.LIGHT) {
-                rule(Theme.DARK) {
-                    locales(AppLocale.FRANCE)
-                    rollout { 100.0 }
-                    note("Dark theme for FR locale")
+                val theme by enum<Theme, Context>(default = Theme.LIGHT) {
+                    rule(Theme.DARK) {
+                        locales(AppLocale.FRANCE)
+                        rollout { 100.0 }
+                        note("Dark theme for FR locale")
+                    }
                 }
-            }
 
-            val userSettings by custom<UserSettings, Context>(default = UserSettings()) {
-                rule(UserSettings(theme = "dark", maxRetries = 5, timeoutSeconds = 10.0, enabled = false)) {
-                    platforms(Platform.IOS)
-                    rollout { 100.0 }
-                    note("Custom settings for iOS")
+                val userSettings by custom<UserSettings, Context>(default = UserSettings()) {
+                    rule(UserSettings(theme = "dark", maxRetries = 5, timeoutSeconds = 10.0, enabled = false)) {
+                        platforms(Platform.IOS)
+                        rollout { 100.0 }
+                        note("Custom settings for iOS")
+                    }
                 }
             }
-        }
 
         val ios = ctx(platform = Platform.IOS, version = Version.of(2, 1, 0))
         val web = ctx(platform = Platform.WEB, version = Version.of(2, 1, 0))
@@ -131,21 +133,22 @@ class ConsumerConfigurationLifecycleTest {
         FeatureRegistry.clear()
 
         val namespaceV2 = Namespace(namespaceId)
-        val featuresV2 = object : FeatureContainer<Namespace>(namespaceV2) {
-            val darkMode by boolean<Context>(default = true) {
-                rule(false) { platforms(Platform.IOS) }
+        val featuresV2 =
+            object : FeatureContainer<Namespace>(namespaceV2) {
+                val darkMode by boolean<Context>(default = true) {
+                    rule(false) { platforms(Platform.IOS) }
+                }
+
+                val apiEndpoint by string<Context>(default = "https://wrong.example.com") {}
+
+                val maxRetries by integer<Context>(default = 0) {}
+
+                val theme by enum<Theme, Context>(default = Theme.DARK) {}
+
+                val userSettings by custom<UserSettings, Context>(
+                    default = UserSettings(theme = "baseline", maxRetries = 0, timeoutSeconds = 0.0, enabled = true),
+                ) {}
             }
-
-            val apiEndpoint by string<Context>(default = "https://wrong.example.com") {}
-
-            val maxRetries by integer<Context>(default = 0) {}
-
-            val theme by enum<Theme, Context>(default = Theme.DARK) {}
-
-            val userSettings by custom<UserSettings, Context>(
-                default = UserSettings(theme = "baseline", maxRetries = 0, timeoutSeconds = 0.0, enabled = true)
-            ) {}
-        }
 
         assertFalse(featuresV2.darkMode.evaluate(ios), "baseline differs before load")
         assertEquals("https://wrong.example.com", featuresV2.apiEndpoint.evaluate(web), "baseline differs before load")
@@ -174,7 +177,8 @@ class ConsumerConfigurationLifecycleTest {
             featuresV2.userSettings.evaluate(ios),
         )
 
-        val patchJson = """
+        val patchJson =
+            """
             {
               "flags": [
                 {
@@ -205,7 +209,7 @@ class ConsumerConfigurationLifecycleTest {
                 "${featuresV2.apiEndpoint.id}"
               ]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val patchedConfig =
             when (val patched = SnapshotSerializer.applyPatchJson(namespaceV2.configuration, patchJson)) {
@@ -215,15 +219,15 @@ class ConsumerConfigurationLifecycleTest {
 
         namespaceV2.load(patchedConfig)
 
-        assertFalse(featuresV2.darkMode.evaluate(ios), "inactive flag returns default regardless of rules")
+        assertFalse(featuresV2.darkMode.evaluate(ios), "inactive flag returns default regardless create rules")
         assertEquals(7, featuresV2.maxRetries.evaluate(v2), "default updated via patch")
         assertEquals(
             11,
-            featuresV2.maxRetries.evaluate(ctx(platform = Platform.ANDROID, version = Version.of(3, 0, 0)))
+            featuresV2.maxRetries.evaluate(ctx(platform = Platform.ANDROID, version = Version.of(3, 0, 0))),
         )
         assertFalse(
             namespaceV2.configuration.flags.containsKey(featuresV2.apiEndpoint),
-            "flag removed via patch is absent from configuration"
+            "flag removed via patch is absent from configuration",
         )
     }
 }
