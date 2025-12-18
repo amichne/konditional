@@ -487,7 +487,7 @@ val info = RolloutBucketing.explain(
     stableId = context.stableId,
     featureKey = Features.darkMode.key,
     salt = Features.flag(Features.darkMode).salt,
-    rollout = Rampup.of(10.0),
+    rollout = RampUp.of(10.0),
 )
 println(info)
 ```
@@ -602,4 +602,3 @@ fun `50 percent rollout distributes correctly`() {
 
 - Understand rollouts and bucketing inputs: ["Targeting & Rollouts"](04-targeting-rollouts.md)
 - Add runtime-validated JSON configuration: ["Remote Configuration"](06-remote-config.md)
-

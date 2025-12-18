@@ -337,14 +337,14 @@ class ConditionEvaluationTest {
 
     @Test
     fun `Given rule matching but user not in bucket, When evaluating, Then continues to next rule`() {
-        val highSpecificityLowRampup = Rule<Context>(
+        val highSpecificityLowRampUp = Rule<Context>(
             rampUp = RampUp.of(1.0), // Very low ramp-up
             locales = setOf(AppLocale.UNITED_STATES),
             platforms = setOf(Platform.IOS),
             versionRange = Unbounded(),
         )
 
-        val lowSpecificityHighRampup = Rule<Context>(
+        val lowSpecificityHighRampUp = Rule<Context>(
             rampUp = RampUp.MAX,
             locales = emptySet(),
             platforms = setOf(Platform.IOS),
@@ -354,8 +354,8 @@ class ConditionEvaluationTest {
         val condition = FlagDefinition(
             feature = TestFlags.TEST_FLAG,
             values = listOf(
-                highSpecificityLowRampup.targetedBy("specific"),
-                lowSpecificityHighRampup.targetedBy("fallback"),
+                highSpecificityLowRampUp.targetedBy("specific"),
+                lowSpecificityHighRampUp.targetedBy("fallback"),
             ),
             defaultValue = "default",
         )

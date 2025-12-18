@@ -85,7 +85,7 @@ val info = RolloutBucketing.explain(
     stableId = context.stableId,
     featureKey = Features.darkMode.key,
     salt = Features.flag(Features.darkMode).salt,
-    rollout = Rampup.of(10.0),
+    rollout = RampUp.of(10.0),
 )
 println(info)
 ```
