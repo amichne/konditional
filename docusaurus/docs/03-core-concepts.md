@@ -1,7 +1,6 @@
 # Core Concepts
 
-Konditional’s public surface is intentionally small. Understanding three primitives—**Features**, **Context**, and *
-*Namespaces**—is enough to reason about correctness, organization, and runtime behavior.
+Konditional’s public surface is intentionally small. Understanding three primitives—**Features**, **Context**, and **Namespaces**—is enough to reason about correctness, organization, and runtime behavior.
 
 ```mermaid
 flowchart TD
@@ -10,7 +9,7 @@ flowchart TD
     F --> D["Default (required)"]
     F --> Rules["Rules"]
     Rules --> Rule["rule(value) { ... }"]
-    Rule --> Criteria["platforms/locales/versions/axis/rollout/allowlist/extension"]
+    Rule --> Criteria["platforms/locales/versions/axis/rampUp/allowlist/extension"]
     X["Context"] --> Rule
 ```
 
@@ -86,8 +85,8 @@ Criteria you can compose (within a single rule):
 - `platforms(...)`
 - `locales(...)`
 - `versions { min(...); max(...) }`
-- `rollout { percent }`
-- `allowlist(...)` (rollout bypass)
+- `rampUp { percent }`
+- `allowlist(...)` (ramp-up bypass)
 - `axis(...)` (dimensional targeting)
 - `extension { ... }` for custom predicates
 
@@ -138,7 +137,7 @@ val context = Context(
 )
 ```
 
-### StableId (deterministic rollouts)
+### StableId (deterministic ramp-ups)
 
 `stableId` is a stable identifier used for deterministic bucketing.
 `StableId.of(...)` accepts any non-blank string and normalizes it to a hex representation used for bucketing.
@@ -217,6 +216,6 @@ PremiumFeatures.ADVANCED_ANALYTICS.evaluate(basicContext) // Compile error (requ
 
 ## Next steps
 
-- Understand rule composition and rollouts: ["Targeting & Rollouts"](targeting-rollouts)
+- Understand rule composition and ramp-ups: ["Targeting & Ramp-ups"](targeting-ramp-ups)
 - Understand evaluation order and determinism: ["Evaluation"](evaluation)
 - Understand the runtime JSON boundary: ["Remote Configuration"](remote-config)

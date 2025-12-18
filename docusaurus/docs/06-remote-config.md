@@ -166,7 +166,7 @@ Validated at the boundary:
 
 Not validated by the type system:
 
-- semantic correctness (e.g., whether 50% is the intended rollout)
+- semantic correctness (e.g., whether 50% is the intended ramp-up)
 - business correctness (e.g., whether the targeted segment is correct)
 
 ---
@@ -209,5 +209,5 @@ payloads.
 ## Next steps
 
 - Understand the “if it compiles” claim boundary: ["Theory"](theory)
-- Understand bucketing determinism inputs: ["Targeting & Rollouts"](targeting-rollouts)
+- Understand bucketing determinism inputs: ["Targeting & Ramp-ups"](targeting-ramp-ups)
 - See the concrete snapshot/patch payload shapes: ["Persistence & Storage Format"](persistence-format)

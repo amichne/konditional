@@ -142,7 +142,7 @@ The guarantee is qualified:
 - **Precondition**: the features referenced by the JSON must be registered (i.e., your `Namespace` objects have
   been initialized).
 
-- **Not guaranteed**: Semantic correctness of the configuration (rollout percentage, targeting intent, business
+- **Not guaranteed**: Semantic correctness of the configuration (ramp-up percentage, targeting intent, business
   correctness).
 
 ---

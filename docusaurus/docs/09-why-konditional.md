@@ -57,9 +57,9 @@ if (isEnabled(NEW_CHECKOUT) && !isEnabled(NEW_CHECKOUT_V2)) {
 **Boolean-only forces you to encode variants as control flow.** Every combination requires explicit handling. Testing
 becomes exponential. Bugs hide in interactions.
 
-### Each team reimplements rollout logic differently
+### Each team reimplements ramp-up logic differently
 
-The account team implements rollouts with modulo arithmetic. The payments team uses random number generators. The growth
+The account team implements ramp-ups with modulo arithmetic. The payments team uses random number generators. The growth
 team copies some Stack Overflow answer. Each has different edge cases:
 
 - Do they bucket consistently for the same user?
@@ -67,7 +67,7 @@ team copies some Stack Overflow answer. Each has different edge cases:
 - Does the same user get the same experience on web and mobile?
 - What happens when you change the percentage?
 
-**Inconsistent rollout semantics create A/B testing landmines.** Results become untrustworthy. Debugging requires
+**Inconsistent ramp-up semantics create A/B testing landmines.** Results become untrustworthy. Debugging requires
 reading five different implementations.
 
 ### Type safety disappears at the boundary
@@ -102,7 +102,7 @@ enum class CheckoutVariant { CLASSIC, OPTIMIZED, EXPERIMENTAL }
 object AppFlags : Namespace("app") {
     val checkoutVariant by enum<CheckoutVariant, Context>(default = CheckoutVariant.CLASSIC) {
         rule(CheckoutVariant.OPTIMIZED) { platforms(Platform.IOS, Platform.ANDROID) }
-        rule(CheckoutVariant.EXPERIMENTAL) { rollout { 50.0 } }
+        rule(CheckoutVariant.EXPERIMENTAL) { rampUp { 50.0 } }
     }
 
     val maxRetries by integer<Context>(default = 3) {
@@ -139,7 +139,7 @@ when (AppFlags.checkoutVariant.evaluate(ctx)) {
 }
 ```
 
-**Rollouts are deterministic and consistent:**
+**Ramp-ups are deterministic and consistent:**
 
 ```kotlin
 // Same user, same flag, same percentage → same bucket
@@ -171,7 +171,7 @@ unknown keys during migrations).
 | **Typo safety**          | Runtime failure (silent or crash)            | Compile-time (enum typos caught)                     | Compile-time (property references)                               |
 | **Type safety**          | Runtime coercion (often unsafe)              | Boolean only                                         | Compile-time types (Boolean/String/Int/Double/Enum/custom)       |
 | **Variants**             | Supported but runtime-typed                  | Requires multiple booleans + control flow            | First-class typed values                                         |
-| **Rollout logic**        | SDK-dependent, varies                        | Reimplemented per domain/team                        | Centralized, deterministic (SHA-256 bucketing)                   |
+| **Ramp-up logic**        | SDK-dependent, varies                        | Reimplemented per domain/team                        | Centralized, deterministic (SHA-256 bucketing)                   |
 | **Evaluation semantics** | SDK-defined, often opaque                    | Ad-hoc per evaluator (account, card, merchant, etc.) | Single DSL with specificity ordering                             |
 | **Configuration drift**  | Implicit boundary, often fails silently      | Ad-hoc validation per evaluator                      | Explicit `ParseResult` boundary, rejects invalid JSON            |
 | **Null/missing values**  | Depends on SDK (null, exception, or default) | Depends on implementation                            | Total evaluation (defaults required, no null returns)            |
@@ -190,7 +190,7 @@ unknown keys during migrations).
 
 ### For teams running experiments
 
-- **Rollouts are reproducible:** Same user always gets same bucket. You can replay decisions from logs.
+- **Ramp-ups are reproducible:** Same user always gets same bucket. You can replay decisions from logs.
 - **Percentages are stable:** Increasing 10% → 20% only adds users for the same `(stableId, flagKey, salt)`.
 - **Targeting is consistent:** Platform/locale/version targeting works the same across all flags.
 
@@ -210,7 +210,7 @@ Choose Konditional when:
 - **You want compile-time correctness** for flag definitions and callsites
 - **You need typed values** beyond on/off booleans (variants, thresholds, configuration)
 - **You value consistency** over bespoke per-domain solutions
-- **You run experiments** and need deterministic, reproducible rollouts
+- **You run experiments** and need deterministic, reproducible ramp-ups
 - **You have remote configuration** and want explicit validation boundaries
 
 Konditional might not fit if:
@@ -244,10 +244,10 @@ configuration remains active. No incident.
 
 ### Experiment contamination: Inconsistent bucketing
 
-Two teams implement rollouts with different hashing. Same user gets opposite buckets for related features. A/B test
+Two teams implement ramp-ups with different hashing. Same user gets opposite buckets for related features. A/B test
 results are polluted. Experiment analysis is invalid.
 
-**With Konditional:** All rollouts use the same deterministic SHA-256 bucketing. Same user, same flag, same bucket.
+**With Konditional:** All ramp-ups use the same deterministic SHA-256 bucketing. Same user, same flag, same bucket.
 Results are clean.
 
 ### Maintenance burden: Boolean explosion
@@ -260,7 +260,7 @@ Bugs hide in interactions. Engineers avoid touching the code.
 ### Configuration drift: Silent deployment
 
 Someone changes `"new_onboarding_flow"` to `"new_onboarding_experience"` in the remote config. Half the codebase uses
-the old key, half uses the new key. Rollout percentage splits across both. Metrics are nonsense.
+the old key, half uses the new key. Ramp-up percentage splits across both. Metrics are nonsense.
 
 **With Konditional:** Flag keys are derived from property names. Renaming the property updates all callsites (
 compile-time). If remote config still sends the old key, loading fails (or emits a warning if configured to skip unknown
@@ -284,7 +284,7 @@ If you're coming from a boolean capability system:
    object Features : Namespace("app") {
        val featureX by boolean(default = false) {
            rule(true) { platforms(Platform.WEB) }
-           rule(true) { rollout { 25.0 } }
+           rule(true) { rampUp { 25.0 } }
        }
    }
    ```
@@ -296,8 +296,8 @@ If you're coming from a boolean capability system:
    enum class CheckoutVersion { V1, V2, V3 }
    object CheckoutFlags : Namespace("checkout") {
        val checkoutVersion by enum(default = CheckoutVersion.V1) {
-           rule(CheckoutVersion.V2) { rollout { 33.0 } }
-           rule(CheckoutVersion.V3) { rollout { 66.0 } }
+           rule(CheckoutVersion.V2) { rampUp { 33.0 } }
+           rule(CheckoutVersion.V3) { rampUp { 66.0 } }
        }
    }
    ```

@@ -50,7 +50,7 @@ What you gain immediately:
 - return type is concrete (no cast; `Boolean` is enforced)
 - evaluation is non-null (default is required)
 
-### 2. Introduce typed context (targeting + rollouts)
+### 2. Introduce typed context (targeting + ramp-ups)
 
 ```kotlin
 val context = Context(
@@ -61,8 +61,8 @@ val context = Context(
 )
 ```
 
-`stableId` is the stable input used for deterministic rollout bucketing (
-see ["Targeting & Rollouts"](targeting-rollouts)).
+`stableId` is the stable input used for deterministic ramp-up bucketing (
+see ["Targeting & Ramp-ups"](targeting-ramp-ups)).
 
 ### 3. Add rules after defaults exist (behavior safety)
 

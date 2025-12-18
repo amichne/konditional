@@ -7,7 +7,7 @@ const sidebars = {
     'why-konditional',
     'migration',
     'core-concepts',
-    'targeting-rollouts',
+    'targeting-ramp-ups',
     'evaluation',
     'remote-config',
     'theory',

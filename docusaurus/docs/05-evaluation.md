@@ -39,7 +39,7 @@ println(result.decision)
 
 - decision kind (rule/default/inactive/disabled)
 - matched rule constraints + specificity
-- deterministic rollout bucket information
+- deterministic ramp-up bucket information
 
 ---
 
@@ -57,7 +57,7 @@ flowchart TD
     Next -->|No| Default2["Return default"]
     Next -->|Yes| Match{All criteria match?}
     Match -->|No| Next
-    Match -->|Yes| Roll{In rollout or allowlisted?}
+    Match -->|Yes| Roll{In ramp-up or allowlisted?}
     Roll -->|No| Next
     Roll -->|Yes| Value["Return rule value"]
     style Default0 fill: #fff3cd
@@ -78,14 +78,14 @@ Features.enableAll()
 
 ---
 
-## Bucketing utility (rollout debugging)
+## Bucketing utility (ramp-up debugging)
 
 ```kotlin
-val info = RolloutBucketing.explain(
+val info = RampUpBucketing.explain(
     stableId = context.stableId,
     featureKey = Features.darkMode.key,
     salt = Features.flag(Features.darkMode).salt,
-    rollout = RampUp.of(10.0),
+    rampUp = RampUp.of(10.0),
 )
 println(info)
 ```
@@ -94,12 +94,12 @@ println(info)
 
 All specified criteria must match; empty constraint sets match everything.
 
-Evaluation applies the first matching rule that is in-rollout (or allowlisted), otherwise it falls back to the default.
+Evaluation applies the first matching rule that is in-ramp-up (or allowlisted), otherwise it falls back to the default.
 
 ### Specificity ordering (most specific wins)
 
 Rules are sorted by targeting specificity (platforms/locales/version bounds/axes) plus extension specificity.
-Rollout percentage does not affect specificity; it gates whether a matching rule is applied.
+Ramp-up percentage does not affect specificity; it gates whether a matching rule is applied.
 
 ---
 
@@ -109,7 +109,7 @@ The evaluation path is designed to be predictable:
 
 - **Registry lookup:** O(1)
 - **Rule iteration:** O(n) where n is rules per flag (typically small)
-- **Rollout bucketing:** 0 or 1 SHA-256 hash per evaluation (bucket is computed only after a rule matches by criteria)
+- **Ramp-up bucketing:** 0 or 1 SHA-256 hash per evaluation (bucket is computed only after a rule matches by criteria)
 
 Space model:
 
@@ -165,17 +165,17 @@ fun `evaluation is deterministic`() {
 }
 ```
 
-### Rollout distribution (statistical sanity check)
+### Ramp-up distribution (statistical sanity check)
 
 ```kotlin
 @Test
-fun `50 percent rollout distributes correctly`() {
+fun `50 percent ramp-up distributes correctly`() {
     val sampleSize = 10_000
     val enabled = (0 until sampleSize).count { i ->
         val ctx = Context(/*..., */
                           stableId = StableId.of(i.toString(16).padStart(32, '0'))
         )
-        Features.rolloutFlag.evaluate(ctx)
+        Features.rampUpFlag.evaluate(ctx)
     }
 
     val percentage = (enabled.toDouble() / sampleSize) * 100
@@ -198,5 +198,5 @@ fun `50 percent rollout distributes correctly`() {
 
 ## Next steps
 
-- Understand rollouts and bucketing inputs: ["Targeting & Rollouts"](targeting-rollouts)
+- Understand ramp-ups and bucketing inputs: ["Targeting & Ramp-ups"](targeting-ramp-ups)
 - Add runtime-validated JSON configuration: ["Remote Configuration"](remote-config)

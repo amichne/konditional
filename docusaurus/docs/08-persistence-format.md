@@ -23,12 +23,12 @@ flowchart LR
     Flag --> Default["defaultValue: FlagValue"]
     Flag --> Salt["salt: String"]
     Flag --> Active["isActive: Boolean"]
-    Flag --> FAllow["rolloutAllowlist: Set{String}"]
+    Flag --> FAllow["rampUpAllowlist: Set{String}"]
     Flag --> Rules
     Rules --> Rule["SerializableRule"]
     Rule --> RVal["value: FlagValue"]
     Rule --> Ramp["rampUp: Double"]
-    Rule --> RAllow["rolloutAllowlist: Set{String}"]
+    Rule --> RAllow["rampUpAllowlist: Set{String}"]
     Rule --> Note["note: String?"]
     Rule --> Loc["locales: Set{String}"]
     Rule --> Plat["platforms: Set{String}"]
@@ -118,13 +118,13 @@ Valid `type` values:
 
 ---
 
-## Rollout allowlists (`rolloutAllowlist`)
+## Ramp-up allowlists (`rampUpAllowlist`)
 
-Both flags and individual rules may include a `rolloutAllowlist` field:
+Both flags and individual rules may include a `rampUpAllowlist` field:
 
 - It is a set of **stable ID hex strings** (the same representation returned by `Context.stableId.id`).
-- It does not force a rule to match; it only bypasses the rollout check *after* a rule matches by criteria.
-- Flag-level and rule-level allowlists are treated as a union (either can bypass rollout).
+- It does not force a rule to match; it only bypasses the ramp-up check *after* a rule matches by criteria.
+- Flag-level and rule-level allowlists are treated as a union (either can bypass ramp-up).
 - It does not override `isActive` or the namespace kill-switch (`disableAll`).
 
 To generate a value for remote config, use the same normalization as the runtime:
@@ -157,7 +157,7 @@ val snapshotJson = """
       },
       "salt": "${salt}",
       "isActive": ${isActive},
-      "rolloutAllowlist": ["${stableIdHex}", "..."],
+      "rampUpAllowlist": ["${stableIdHex}", "..."],
       "rules": [
         {
           "value": {
@@ -165,8 +165,8 @@ val snapshotJson = """
             "value": ${ruleValueJson},
             "...": "${typeSpecificFields}"
           },
-          "rampUp": ${rolloutPercent},
-          "rolloutAllowlist": ["${stableIdHex}", "..."],
+          "rampUp": ${rampUpPercent},
+          "rampUpAllowlist": ["${stableIdHex}", "..."],
           "note": "${optionalNoteOrNull}",
           "locales": ["${APP_LOCALE_ENUM_NAME}", "..."],
           "platforms": ["${PLATFORM_ENUM_NAME}", "..."],
@@ -241,7 +241,7 @@ Snapshots and patches may include an optional `meta` object:
 
 Notes:
 
-- Incoming JSON may omit fields that have defaults (for example `rolloutAllowlist`, `locales`, `platforms`, `axes`, and
+- Incoming JSON may omit fields that have defaults (for example `rampUpAllowlist`, `locales`, `platforms`, `axes`, and
   `versionRange`).
 - `SnapshotSerializer.serialize(...)` emits explicit values for these fields (including empty arrays/objects).
 
@@ -254,13 +254,13 @@ Notes:
       "defaultValue": { "type": "BOOLEAN", "value": false },
       "salt": "v1",
       "isActive": true,
-      "rolloutAllowlist": [],
+      "rampUpAllowlist": [],
       "rules": [
         {
           "value": { "type": "BOOLEAN", "value": true },
           "rampUp": 50.0,
-          "rolloutAllowlist": ["757365722d313233"],
-          "note": "iOS gradual rollout",
+          "rampUpAllowlist": ["757365722d313233"],
+          "note": "iOS gradual ramp-up",
           "locales": ["UNITED_STATES"],
           "platforms": ["IOS"],
           "axes": {},
@@ -273,12 +273,12 @@ Notes:
       "defaultValue": { "type": "STRING", "value": "https://api.example.com" },
       "salt": "v1",
       "isActive": true,
-      "rolloutAllowlist": [],
+      "rampUpAllowlist": [],
       "rules": [
         {
           "value": { "type": "STRING", "value": "https://api-ios.example.com" },
           "rampUp": 100.0,
-          "rolloutAllowlist": [],
+          "rampUpAllowlist": [],
           "note": "iOS endpoint",
           "locales": [],
           "platforms": ["IOS"],
@@ -288,7 +288,7 @@ Notes:
         {
           "value": { "type": "STRING", "value": "https://api-android.example.com" },
           "rampUp": 100.0,
-          "rolloutAllowlist": [],
+          "rampUpAllowlist": [],
           "note": "Android endpoint",
           "locales": [],
           "platforms": ["ANDROID"],
@@ -315,7 +315,7 @@ Notes:
       },
       "salt": "v1",
       "isActive": true,
-      "rolloutAllowlist": [],
+      "rampUpAllowlist": [],
       "rules": [
         {
           "value": {
@@ -324,7 +324,7 @@ Notes:
             "enumClassName": "com.example.Theme"
           },
           "rampUp": 100.0,
-          "rolloutAllowlist": [],
+          "rampUpAllowlist": [],
           "note": "Dark theme for iOS",
           "locales": [],
           "platforms": ["IOS"],
@@ -347,13 +347,13 @@ Notes:
       "defaultValue": { "type": "BOOLEAN", "value": false },
       "salt": "v1",
       "isActive": true,
-      "rolloutAllowlist": [],
+      "rampUpAllowlist": [],
       "rules": [
         {
           "value": { "type": "BOOLEAN", "value": true },
           "rampUp": 100.0,
-          "rolloutAllowlist": [],
-          "note": "Rollout complete",
+          "rampUpAllowlist": [],
+          "note": "Ramp-up complete",
           "locales": [],
           "platforms": [],
           "axes": {},

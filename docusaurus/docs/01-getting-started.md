@@ -56,7 +56,7 @@ object AppFeatures : Namespace("app") {
     val darkMode by boolean<Context>(default = false) {
         rule(true) {
             platforms(Platform.IOS)
-            rollout { 50.0 }
+            rampUp { 50.0 }
         }
     }
 }
@@ -96,18 +96,18 @@ Supported value types (out of the box):
 
 ## Common patterns
 
-### Gradual rollout (deterministic)
+### Gradual ramp-up (deterministic)
 
 ```kotlin
 val newCheckout by boolean<Context>(default = false) {
     rule(true) {
         platforms(Platform.ANDROID)
-        rollout { 10.0 }
+        rampUp { 10.0 }
     }
 }
 ```
 
-Konditional’s rollouts are deterministic: the same `(stableId, flagKey, salt)` yields the same bucket assignment.
+Konditional’s ramp-ups are deterministic: the same `(stableId, flagKey, salt)` yields the same bucket assignment.
 
 ### Platform-specific configuration
 
@@ -119,14 +119,14 @@ val apiEndpoint by string<Context>(default = "https://api.example.com") {
 }
 ```
 
-### Rollout allowlisting (internal testers)
+### Ramp-up allowlisting (internal testers)
 
-Allowlists bypass rollout *after* a rule matches by criteria:
+Allowlists bypass ramp-up *after* a rule matches by criteria:
 
 ```kotlin
 val newUi by boolean<Context>(default = false) {
     allowlist(StableId.of("tester-1"))
-    rule(true) { rollout { 5.0 } }
+    rule(true) { rampUp { 5.0 } }
 }
 ```
 
@@ -163,7 +163,7 @@ sealed class AppDomain(id: String) : Namespace(id) {
 ## Next steps
 
 - Learn the building blocks: ["Core Concepts"](core-concepts)
-- Write targeting rules and understand rollouts: ["Targeting & Rollouts"](targeting-rollouts)
+- Write targeting rules and ramp-ups: ["Targeting & Ramp-ups"](targeting-ramp-ups)
 - Understand evaluation order and determinism: ["Evaluation"](evaluation)
 - Add runtime-validated JSON configuration: ["Remote Configuration"](remote-config)
 - Understand the exact trust boundary: ["Theory"](theory)

@@ -7,17 +7,17 @@ slug: /
 **Type-safe feature flags for Kotlin that won't break in production.**
 
 Konditional prevents the entire class of runtime errors that come from stringly-typed feature flag systems: typos that
-ship to production, type coercion failures, inconsistent rollout logic, and configuration drift.
+ship to production, type coercion failures, inconsistent ramp-up logic, and configuration drift.
 
 ```kotlin
 object AppFlags : Namespace("app") {
     val checkoutVersion by string(default = "classic") {
         rule("optimized") { platforms(Platform.IOS, Platform.ANDROID) }
-        rule("experimental") { rollout { 50.0 } }
+        rule("experimental") { rampUp { 50.0 } }
     }
 }
 
-// Typos don't compile. Types are guaranteed. Rollouts are deterministic.
+// Typos don't compile. Types are guaranteed. Ramp-ups are deterministic.
 val version: String = AppFlags.checkoutVersion.evaluate(ctx)
 ```
 
@@ -43,7 +43,7 @@ val version = AppFlags.checkoutVersion.evaluate(ctx)  // property access is comp
 Beyond typo safety, Konditional gives you:
 
 - **Typed values** — not just booleans, but strings, ints, doubles, enums, and custom types
-- **Deterministic rollouts** — SHA-256 bucketing ensures same user → same bucket, always
+- **Deterministic ramp-ups** — SHA-256 bucketing ensures same user → same bucket, always
 - **Unified evaluation** — one rule DSL across your entire codebase, not per-domain evaluators
 - **Explicit boundaries** — parse JSON configuration with validation; reject invalid updates before they affect
   production
@@ -70,7 +70,7 @@ dependencies {
 object AppFeatures : Namespace("app") {
     val darkMode by boolean(default = false) {
         rule(true) { platforms(Platform.IOS) }
-        rule(true) { rollout { 50.0 } }
+        rule(true) { rampUp { 50.0 } }
     }
 
     val apiEndpoint by string(default = "https://api.example.com") {
@@ -123,8 +123,8 @@ if (isEnabled(CHECKOUT_V1) && !isEnabled(CHECKOUT_V2)) {
 ```kotlin
 object CheckoutFlags : Namespace("checkout") {
     val checkoutVersion by string(default = "v1") {
-        rule("v2") { rollout { 33.0 } }
-        rule("v3") { rollout { 66.0 } }
+        rule("v2") { rampUp { 33.0 } }
+        rule("v3") { rampUp { 66.0 } }
     }
 }
 
@@ -174,14 +174,14 @@ and provide defaults for optional fields.
 
 ---
 
-## Deterministic Rollouts
+## Deterministic Ramp-ups
 
-Rollouts use SHA-256 bucketing for consistent, reproducible results:
+Ramp-ups use SHA-256 bucketing for consistent, reproducible results:
 
 ```kotlin
-object RolloutFlags : Namespace("rollout") {
+object RampUpFlags : Namespace("ramp-up") {
     val newFeature by boolean(default = false) {
-        rule(true) { rollout { 25.0 } }
+        rule(true) { rampUp { 25.0 } }
     }
 }
 ```
@@ -190,10 +190,10 @@ object RolloutFlags : Namespace("rollout") {
 
 - Same user + same flag + same percentage → same bucket
 - Increasing 10% → 20% only adds users (no reshuffle) for the same `(stableId, flagKey, salt)`
-- Rollout decisions are reproducible (`stableId` + flag key + salt → deterministic bucket)
+- Ramp-up decisions are reproducible (`stableId` + flag key + salt → deterministic bucket)
 - Changing `salt(...)` intentionally redistributes buckets (useful when re-running experiments)
 
-No random number generators. No modulo edge cases. No per-team rollout implementations with subtle differences.
+No random number generators. No modulo edge cases. No per-team ramp-up implementations with subtle differences.
 
 ---
 
@@ -276,7 +276,7 @@ Each namespace has independent configuration lifecycle, registry, and serializat
 - **Namespace:** Isolation boundary with its own registry and configuration lifecycle
 - **Flags:** Delegated properties defined on a namespace
 - **Context:** Runtime inputs for evaluation (`locale`, `platform`, `appVersion`, `stableId`)
-- **Rules:** Typed criteria-to-value mappings (`platforms/locales/versions/rollout/extension`)
+- **Rules:** Typed criteria-to-value mappings (`platforms/locales/versions/rampUp/extension`)
 - **Snapshot/Patch:** JSON formats for persistence and incremental updates
 - **Total evaluation:** No nulls—every flag returns its default if no rule matches
 
@@ -291,7 +291,7 @@ Each namespace has independent configuration lifecycle, registry, and serializat
 
 **Features:**
 
-- [Targeting & Rollouts](targeting-rollouts)
+- [Targeting & Ramp-ups](targeting-ramp-ups)
 - [Evaluation Semantics](evaluation)
 - [Remote Configuration](remote-config)
 - [Persistence Format](persistence-format)
@@ -326,7 +326,7 @@ AppFlags.maxRetries                  // parse fails at boundary, last-known-good
 // After: 1 typed enum flag → 5 explicit variants, all defined
 ```
 
-**Inconsistent rollout logic:**
+**Inconsistent ramp-up logic:**
 
 ```kotlin
 // Before: Account team uses modulo, Payments team uses random(), different bucketing
@@ -343,7 +343,7 @@ Read more: [Real Problems Konditional Prevents](why-konditional#real-problems-ko
 
 * You want compile-time correctness for flag definitions and callsites
 * You need typed values beyond booleans (variants, thresholds, structured config)
-* You run experiments and need deterministic, reproducible rollouts
+* You run experiments and need deterministic, reproducible ramp-ups
 * You value consistency over bespoke per-domain solutions
 * You have remote configuration and want explicit validation boundaries
 

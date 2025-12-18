@@ -1,6 +1,6 @@
-# Targeting & Rollouts
+# Targeting & Ramp-ups
 
-Rules let you target specific contexts and roll out behavior safely. A rule is a typed mapping:
+Rules let you target specific contexts and ramp up behavior safely. A rule is a typed mapping:
 
 ```
 criteria(context) -> value
@@ -55,24 +55,24 @@ val legacySupport by boolean<Context>(default = false) {
 }
 ```
 
-### Percentage rollout
+### Percentage ramp-up
 
 ```kotlin
 val newCheckout by boolean<Context>(default = false) {
-    rule(true) { rollout { 10.0 } }
+    rule(true) { rampUp { 10.0 } }
 }
 ```
 
-Rollouts are deterministic: the same `(stableId, flagKey, salt)` produces the same bucket assignment.
+Ramp-ups are deterministic: the same `(stableId, flagKey, salt)` produces the same bucket assignment.
 
-### Rollout allowlisting (internal testers)
+### Ramp-up allowlisting (internal testers)
 
-Allowlists bypass rollout *after* a rule matches by criteria:
+Allowlists bypass ramp-up *after* a rule matches by criteria:
 
 ```kotlin
 val newUi by boolean<Context>(default = false) {
     allowlist(StableId.of("tester-1")) // flag-scope allowlist
-    rule(true) { rollout { 5.0 } }
+    rule(true) { rampUp { 5.0 } }
 }
 ```
 
@@ -80,7 +80,7 @@ Rule-scoped allowlists are also supported:
 
 ```kotlin
 rule(true) {
-    rollout { 5.0 }
+    rampUp { 5.0 }
     allowlist(StableId.of("tester-1"))
 }
 ```
@@ -107,7 +107,7 @@ val premiumFeature by boolean<Context>(default = false) {
         platforms(Platform.IOS, Platform.ANDROID)
         locales(AppLocale.UNITED_STATES)
         versions { min(2, 0, 0) }
-        rollout { 50.0 }
+        rampUp { 50.0 }
     }
 }
 ```
@@ -120,7 +120,7 @@ flowchart TD
   L -->|No| Skip
   L -->|Yes| V{Version match?}
   V -->|No| Skip
-  V -->|Yes| R{Rollout bucket in range?}
+  V -->|Yes| R{Ramp-up bucket in range?}
   R -->|No| Skip
   R -->|Yes| Win["Rule matches"]
   style Win fill:#c8e6c9
@@ -160,9 +160,9 @@ flowchart TD
 
 ---
 
-## Deterministic rollout bucketing (SHA-256)
+## Deterministic ramp-up bucketing (SHA-256)
 
-Rollouts are computed locally. The bucketing input is stable and per-flag:
+Ramp-ups are computed locally. The bucketing input is stable and per-flag:
 
 ```kotlin
 input = "$salt:$flagKey:${stableIdHex}"
@@ -176,11 +176,11 @@ This yields three operational properties:
 - **Per-flag isolation**: changing one flag does not affect other flags’ buckets
 - **Salt-controlled redistribution**: changing `salt` re-buckets users for that flag
 
-Rollout checks are performed in basis points:
+Ramp-up checks are performed in basis points:
 
 ```
-thresholdBasisPoints = round(rolloutPercent * 100) // 0..10_000
-inRollout = bucket < thresholdBasisPoints
+thresholdBasisPoints = round(rampUpPercent * 100) // 0..10_000
+inRampUp = bucket < thresholdBasisPoints
 ```
 
 ```mermaid
@@ -190,9 +190,9 @@ flowchart TD
   Id["stableIdHex"] --> In
   In --> H["SHA-256"]
   H --> M["uint32(hash[0..3]) mod 10,000"]
-  M --> T{"bucket < rolloutBasisPoints ?"}
-  T -->|Yes| Enabled["In rollout"]
-  T -->|No| Disabled["Out of rollout"]
+  M --> T{"bucket < rampUpBasisPoints ?"}
+  T -->|Yes| Enabled["In ramp-up"]
+  T -->|No| Disabled["Out of ramp-up"]
   style Enabled fill:#c8e6c9
   style Disabled fill:#ffcdd2
 ```
