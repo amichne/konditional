@@ -1,1 +1,1 @@
-docs/index.md
+docusaurus/docs/index.md
