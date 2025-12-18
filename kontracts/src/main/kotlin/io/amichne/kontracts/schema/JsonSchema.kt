@@ -114,6 +114,47 @@ sealed class JsonSchema : OpenApiProps {
             uniqueItems
         )
 
+        fun map(
+            valueSchema: JsonSchema,
+            title: String? = null,
+            description: String? = null,
+            default: Any? = null,
+            nullable: Boolean = false,
+            example: Any? = null,
+            deprecated: Boolean = false,
+            minProperties: Int? = null,
+            maxProperties: Int? = null
+        ) = MapSchema(
+            valueSchema,
+            title,
+            description,
+            default,
+            nullable,
+            example,
+            deprecated,
+            minProperties,
+            maxProperties
+        )
+
+        fun oneOf(
+            options: List<JsonSchema>,
+            title: String? = null,
+            description: String? = null,
+            default: Any? = null,
+            nullable: Boolean = false,
+            example: Any? = null,
+            deprecated: Boolean = false
+        ) = OneOfSchema(options, title, description, default, nullable, example, deprecated)
+
+        fun any(
+            title: String? = null,
+            description: String? = null,
+            default: Any? = null,
+            nullable: Boolean = false,
+            example: Any? = null,
+            deprecated: Boolean = false
+        ) = AnySchema(title, description, default, nullable, example, deprecated)
+
         fun obj(
             fields: Map<String, FieldSchema>,
             title: String? = null,

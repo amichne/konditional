@@ -54,6 +54,27 @@ tasks.test {
     useJUnitPlatform()
 }
 
+@Suppress("UnstableApiUsage")
+val openApiOutput = layout.settingsDirectory.file("kontracts/openapi.json")
+
+@Suppress("UnstableApiUsage")
+val openApiRedocOutput = layout.settingsDirectory.file("docusaurus/static/openapi.json")
+
+tasks.register<JavaExec>("generateOpenApiSchema") {
+    group = "documentation"
+    description = "Generates OpenAPI schema for serialized configuration models."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("io.amichne.konditional.openapi.GenerateOpenApiSchema")
+    args(
+        openApiOutput.asFile.absolutePath,
+        project.version.toString(),
+        "Konditional Serialization Schema",
+    )
+    outputs.file(openApiOutput)
+    dependsOn("classes")
+    outputs.files.first().copyTo(openApiRedocOutput.asFile, overwrite = true)
+}
+
 // ============================================================================
 // Publishing Configuration
 // ============================================================================
@@ -136,7 +157,7 @@ publishing {
 signing {
     // Only require signing if publishing to Maven Central
     isRequired = gradle.taskGraph.hasTask("publishToSonatype") ||
-                 gradle.taskGraph.hasTask("publishToMavenCentral")
+        gradle.taskGraph.hasTask("publishToMavenCentral")
 
     // Use in-memory key from environment (CI) or gpg agent (local)
     val signingKey = System.getenv("SIGNING_KEY")
