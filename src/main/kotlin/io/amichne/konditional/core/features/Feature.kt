@@ -21,12 +21,12 @@ import io.amichne.konditional.values.FeatureId
  * ```kotlin
  * object Payments : Namespace("payments")
  *
- * object PaymentFeatures : FeatureContainer<Payments>(Payments) {
+ * object Payments : Namespace("payments") {
  *     val APPLE_PAY by boolean<Context>(default = false)
  * }
  * ```
  *
- * Note: [Feature] is a sealed API. Consumer code defines flags via [FeatureContainer] rather than
+ * Note: [Feature] is a sealed API. Consumer code defines flags via namespace property delegation rather than
  * implementing [Feature] directly.
  *
  * @param T The actual value type.

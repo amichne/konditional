@@ -99,13 +99,13 @@ Konditional makes three structural commitments:
 ```kotlin
 enum class CheckoutVariant { CLASSIC, OPTIMIZED, EXPERIMENTAL }
 
-object AppFlags : FeatureContainer<Namespace.Global>(Namespace.Global) {
-    val checkoutVariant by enum(default = CheckoutVariant.CLASSIC) {
+object AppFlags : Namespace("app") {
+    val checkoutVariant by enum<CheckoutVariant, Context>(default = CheckoutVariant.CLASSIC) {
         rule(CheckoutVariant.OPTIMIZED) { platforms(Platform.IOS, Platform.ANDROID) }
         rule(CheckoutVariant.EXPERIMENTAL) { rollout { 50.0 } }
     }
 
-    val maxRetries by integer(default = 3) {
+    val maxRetries by integer<Context>(default = 3) {
         rule(5) { platforms(Platform.WEB) }
     }
 }
@@ -150,8 +150,8 @@ when (AppFlags.checkoutVariant.evaluate(ctx)) {
 **Configuration boundaries are explicit:**
 
 ```kotlin
-when (val result = SnapshotSerializer.fromJson(remoteConfig)) {
-    is ParseResult.Success -> Namespace.Global.load(result.value)
+when (val result = AppFlags.fromJson(remoteConfig)) {
+    is ParseResult.Success -> Unit // loaded into AppFlags
     is ParseResult.Failure -> {
         // Invalid JSON rejected, last-known-good remains active
         logError("Config parse failed: ${result.error}")
@@ -272,16 +272,16 @@ keys) instead of silently splitting traffic.
 
 If you're coming from a boolean capability system:
 
-1. **Mirror existing flags** as properties in a `FeatureContainer`:
+1. **Mirror existing flags** as properties on a `Namespace`:
    ```kotlin
-   object Features : FeatureContainer<Namespace.Global>(Namespace.Global) {
+   object Features : Namespace("app") {
        val featureX by boolean(default = false)
    }
    ```
 
 2. **Centralize evaluation logic** into rules:
    ```kotlin
-   object Features : FeatureContainer<Namespace.Global>(Namespace.Global) {
+   object Features : Namespace("app") {
        val featureX by boolean(default = false) {
            rule(true) { platforms(Platform.WEB) }
            rule(true) { rollout { 25.0 } }
@@ -294,7 +294,7 @@ If you're coming from a boolean capability system:
    // Before: CHECKOUT_V1, CHECKOUT_V2, CHECKOUT_V3 (3 booleans)
    // After:
    enum class CheckoutVersion { V1, V2, V3 }
-   object CheckoutFlags : FeatureContainer<Namespace.Global>(Namespace.Global) {
+   object CheckoutFlags : Namespace("checkout") {
        val checkoutVersion by enum(default = CheckoutVersion.V1) {
            rule(CheckoutVersion.V2) { rollout { 33.0 } }
            rule(CheckoutVersion.V3) { rollout { 66.0 } }
@@ -312,8 +312,8 @@ If you're coming from a boolean capability system:
 
 5. **Add remote config** with explicit boundaries:
    ```kotlin
-   when (val result = SnapshotSerializer.fromJson(json)) {
-       is ParseResult.Success -> namespace.load(result.value)
+   when (val result = Features.fromJson(json)) {
+       is ParseResult.Success -> Unit // loaded into Features
        is ParseResult.Failure -> keepLastKnownGood()
    }
    ```

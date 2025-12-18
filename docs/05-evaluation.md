@@ -22,8 +22,7 @@ Use this when:
 - defaults are meaningful
 - you want the smallest call-site surface
 
-`feature { ... }` still exists as an optional helper when your receiver implements both
-`ContextAware<C>` and `FeatureAware<M>`, but it is not required for normal usage.
+Evaluation is always via `Feature.evaluate(...)` (or `evaluateWithReason(...)`) and requires an explicit `Context`.
 
 ---
 
@@ -72,9 +71,9 @@ flowchart TD
 ## Emergency kill switch (namespace-scoped)
 
 ```kotlin
-Namespace.Global.disableAll()
+Features.disableAll()
 // ... all evaluations in this namespace return declared defaults ...
-Namespace.Global.enableAll()
+Features.enableAll()
 ```
 
 ---
@@ -85,8 +84,8 @@ Namespace.Global.enableAll()
 val info = RolloutBucketing.explain(
     stableId = context.stableId,
     featureKey = Features.darkMode.key,
-    salt = Namespace.Global.flag(Features.darkMode).salt,
-    rollout = Rampup.of(10.0),
+    salt = Features.flag(Features.darkMode).salt,
+    rollout = RampUp.of(10.0),
 )
 println(info)
 ```
@@ -128,7 +127,7 @@ Evaluation is designed for concurrent reads:
 
 ```kotlin
 // Thread 1
-Namespace.Global.load(newConfig)
+Features.load(newConfig)
 
 // Thread 2 (during update)
 val value = Features.darkMode.evaluate(context) // sees old OR new, never a mixed state

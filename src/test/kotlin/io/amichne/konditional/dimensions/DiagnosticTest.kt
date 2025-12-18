@@ -8,7 +8,7 @@ class DiagnosticTest {
     @Test
     fun `check FALLBACK_RULE_FLAG definition`() {
         val flag = FeaturesWithAxis.fallbackRuleFlag
-        val definition = FeaturesWithAxis.namespace.flag(flag)
+        val definition = FeaturesWithAxis.flag(flag)
 
         println("=== fallbackRuleFlag Definition ===")
         println("Default value: ${definition.defaultValue}")
@@ -19,7 +19,7 @@ class DiagnosticTest {
             println("\n--- Rule #${index + 1} ---")
             println("Value: ${conditionalValue.value}")
             val rule = conditionalValue.rule
-            println("Rollout: ${rule.rollout}")
+            println("Rollout: ${rule.rampUp}")
             println("Note: ${rule.note}")
 
             // Access internal properties via reflection to debug

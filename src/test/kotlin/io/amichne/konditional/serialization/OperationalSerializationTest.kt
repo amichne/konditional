@@ -4,7 +4,6 @@ import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.instance.ConfigurationMetadata
 import io.amichne.konditional.core.result.ParseError
@@ -30,14 +29,9 @@ class OperationalSerializationTest {
 
     @Test
     fun `skipUnknownKeys loads known flags and emits warning`() {
-        val namespace = Namespace("lenient-${UUID.randomUUID()}")
-
-        val features = object : FeatureContainer<Namespace>(namespace) {
+        val namespace = object : Namespace("lenient-${UUID.randomUUID()}") {
             val knownFeature by boolean<TestContext>(default = false)
         }
-
-        // Ensure container initialization / registration occurs
-        features.knownFeature
 
         val unknownKey = FeatureId.create(namespace.id, "missing-${UUID.randomUUID()}")
         val snapshotJson = SnapshotSerializer.defaultMoshi().adapter(SerializableSnapshot::class.java)
@@ -45,7 +39,7 @@ class OperationalSerializationTest {
                 SerializableSnapshot(
                     flags = listOf(
                         SerializableFlag(
-                            key = features.knownFeature.id,
+                            key = namespace.knownFeature.id,
                             defaultValue = FlagValue.BooleanValue(false),
                         ),
                         SerializableFlag(
@@ -64,16 +58,14 @@ class OperationalSerializationTest {
         val lenient = SnapshotLoadOptions.skipUnknownKeys { warnings.add(it) }
         val lenientResult = SnapshotSerializer.fromJson(snapshotJson, lenient)
         assertIs<ParseResult.Success<Configuration>>(lenientResult)
-        assertEquals(setOf(features.knownFeature), lenientResult.value.flags.keys)
+        assertEquals(setOf(namespace.knownFeature), lenientResult.value.flags.keys)
         assertEquals(1, warnings.size)
         assertEquals(SnapshotWarning.Kind.UNKNOWN_FEATURE_KEY, warnings.single().kind)
     }
 
     @Test
     fun `axis constraints roundtrip preserves evaluation semantics`() {
-        val namespace = Namespace("axis-roundtrip-${UUID.randomUUID()}")
-
-        val features = object : FeatureContainer<Namespace>(namespace) {
+        val namespace = object : Namespace("axis-roundtrip-${UUID.randomUUID()}") {
             val envScopedFlag by boolean<TestContext>(default = false) {
                 rule(true) { axis(TestAxes.Environment, TestEnvironment.PROD) }
             }
@@ -88,8 +80,8 @@ class OperationalSerializationTest {
             axisValues = axisValues { environment(TestEnvironment.DEV) },
         )
 
-        assertTrue(features.envScopedFlag.evaluate(productionContext))
-        assertFalse(features.envScopedFlag.evaluate(developementContext))
+        assertTrue(namespace.envScopedFlag.evaluate(productionContext))
+        assertFalse(namespace.envScopedFlag.evaluate(developementContext))
 
         val serializer = NamespaceSnapshotSerializer(namespace)
         val json = serializer.toJson()
@@ -98,8 +90,8 @@ class OperationalSerializationTest {
         namespace.load(
             Configuration(
                 flags = mapOf(
-                    features.envScopedFlag to FlagDefinition(
-                        feature = features.envScopedFlag,
+                    namespace.envScopedFlag to FlagDefinition(
+                        feature = namespace.envScopedFlag,
                         bounds = emptyList(),
                         defaultValue = false,
                     )
@@ -107,15 +99,15 @@ class OperationalSerializationTest {
             )
         )
         assertFalse(
-            features.envScopedFlag.evaluate(productionContext),
+            namespace.envScopedFlag.evaluate(productionContext),
             "Sanity: after resetting rules, flag should be default"
         )
 
         val loaded = serializer.fromJson(json)
         assertIs<ParseResult.Success<Configuration>>(loaded)
 
-        assertTrue(features.envScopedFlag.evaluate(productionContext))
-        assertFalse(features.envScopedFlag.evaluate(developementContext))
+        assertTrue(namespace.envScopedFlag.evaluate(productionContext))
+        assertFalse(namespace.envScopedFlag.evaluate(developementContext))
     }
 
     @Test

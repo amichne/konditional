@@ -1,11 +1,10 @@
 package io.amichne.konditional.serialization
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.values.FeatureId
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -21,8 +20,7 @@ import kotlin.test.assertTrue
  */
 class FeatureRegistryTest {
 
-    private val testNamespace = TestNamespace.test("feature-registry")
-    private val TestFeatures = object : FeatureContainer<TestNamespace>(testNamespace) {
+    private object TestFeatures : Namespace.TestNamespaceFacade("feature-registry") {
         val feature1 by boolean<Context>(default = false)
         val feature2 by string<Context>(default = "default")
         val feature3 by integer<Context>(default = 0)
@@ -138,7 +136,7 @@ class FeatureRegistryTest {
 
     @Test
     fun `Given features with different keys, When registered, Then both are stored separately`() {
-        val AnotherContainer = object : FeatureContainer<TestNamespace>(testNamespace) {
+        val AnotherContainer = object : Namespace.TestNamespaceFacade("feature-registry-other") {
             val differentFeature by boolean<Context>(default = false)
         }
 

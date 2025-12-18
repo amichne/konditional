@@ -18,13 +18,13 @@ import io.amichne.konditional.core.Namespace
  * fun `test feature flag behavior`() {
  *     val testNamespace = Namespace.test("my-test")
  *
- *     val TestFeatures = object : FeatureContainer<Namespace.TestNamespace>(testNamespace) {
+ *     val ns = object : Namespace.TestNamespaceFacade("my-test") {
  *         val myFlag by boolean<Context>(default = false) {
  *             rule(true) { platforms(Platform.IOS) }
  *         }
  *     }
  *
- *     val result = TestFeatures.myFlag.evaluate(contextFn)
+ *     val result = ns.myFlag.evaluate(contextFn)
  *     assertEquals(true, result)
  * }
  * ```

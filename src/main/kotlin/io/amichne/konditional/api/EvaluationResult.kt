@@ -2,7 +2,7 @@ package io.amichne.konditional.api
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Rampup
+import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.rules.versions.VersionRange
 
@@ -31,7 +31,7 @@ data class EvaluationResult<T : Any> internal constructor(
          * A rule was applied and produced the returned [EvaluationResult.value].
          *
          * @property matched The rule that produced the value.
-         * @property skippedByRollout A more specific rule that matched by criteria but excluded this context by rollout.
+         * @property skippedByRollout A more specific rule that matched by criteria but excluded this context by rampUp.
          */
         @ConsistentCopyVisibility
         data class Rule internal constructor(
@@ -42,7 +42,7 @@ data class EvaluationResult<T : Any> internal constructor(
         /**
          * No rule produced a value; the declared default was returned.
          *
-         * @property skippedByRollout The most specific rule that matched by criteria but excluded this context by rollout.
+         * @property skippedByRollout The most specific rule that matched by criteria but excluded this context by rampUp.
          */
         @ConsistentCopyVisibility
         data class Default internal constructor(
@@ -59,7 +59,7 @@ data class EvaluationResult<T : Any> internal constructor(
     @ConsistentCopyVisibility
     data class RuleExplanation internal constructor(
         val note: String?,
-        val rollout: Rampup,
+        val rollout: RampUp,
         val locales: Set<AppLocale>,
         val platforms: Set<Platform>,
         val versionRange: VersionRange,

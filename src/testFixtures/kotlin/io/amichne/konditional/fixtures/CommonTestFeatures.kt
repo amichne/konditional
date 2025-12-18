@@ -2,26 +2,24 @@ package io.amichne.konditional.fixtures
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.features.FeatureContainer
-import io.amichne.konditional.fixtures.CommonTestFeatures.allFeatures
 
 /**
- * Common test features demonstrating mixed-type capabilities create FeatureContainer.
+ * Common test features demonstrating mixed-type capabilities.
  *
- * This consolidated fixture showcases how FeatureContainer can hold Boolean, String,
+ * This consolidated fixture showcases how a Namespace can hold Boolean, String,
  * Int, and Double features together in a single object, providing:
  * - Complete enumeration via [allFeatures]
  * - Ergonomic delegation for all feature types
  * - Type safety with full compile-time checking
- * - Single module declaration for the entire container
+ * - Single namespace declaration for all flags
  *
- * All features use the Global namespace and are available across all tests.
+ * All features share a single test namespace instance and are available across all tests.
  *
  * **Naming convention:**
  * - Feature properties use camelCase following Kotlin best practices
  * - Feature keys match property names automatically for consistency and discoverability
  */
-object CommonTestFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
+object CommonTestFeatures : Namespace.TestNamespaceFacade("common-test-features") {
 
     // Boolean features
     /** General-purpose test feature flag */
@@ -36,7 +34,7 @@ object CommonTestFeatures : FeatureContainer<Namespace.Global>(Namespace.Global)
     /** Feature flag for testing disabled state */
     val disabledFeature by boolean<Context>(default = false)
 
-    /** Feature flag for testing rollout percentages */
+    /** Feature flag for testing rampUp percentages */
     val rolloutFeature by boolean<Context>(default = false)
 
     /** Feature flag for testing platform targeting */

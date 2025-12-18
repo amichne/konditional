@@ -167,7 +167,7 @@ internal class InMemoryNamespaceRegistry(
      * Retrieves a specific flag definition from the registry, applying any test overrides.
      *
      * If a test override is set for this flag, returns a special FlagDefinition that
-     * always evaluates to the override value, bypassing all rules and rollout logic.
+     * always evaluates to the override value, bypassing all rules and rampUp logic.
      *
      * This override of the [NamespaceRegistry.flag] method ensures that test overrides
      * are transparently applied when flags are evaluated via `contextFn.evaluate(feature)`.
@@ -206,7 +206,7 @@ internal class InMemoryNamespaceRegistry(
      * This method is useful for incremental updates without replacing the entire snapshot.
      * The update is performed atomically using compare-and-swap semantics.
      *
-     * **Internal API**: Used internally by FeatureContainer. Configuration updates are
+     * **Internal API**: Used internally by namespace property delegation. Configuration updates are
      * handled automatically through delegation.
      *
      * @param patch The [io.amichne.konditional.core.instance.ConfigurationPatch] to apply
@@ -222,7 +222,7 @@ internal class InMemoryNamespaceRegistry(
      *
      * This operation atomically updates the specified flag while leaving others unchanged.
      *
-     * **Internal API**: Used internally by FeatureContainer. Configuration updates are
+     * **Internal API**: Used internally by namespace property delegation. Configuration updates are
      * handled automatically through delegation.
      *
      * @param definition The [io.amichne.konditional.core.FlagDefinition] to update
@@ -241,7 +241,7 @@ internal class InMemoryNamespaceRegistry(
      * Sets a test-scoped override for a specific feature flag.
      *
      * When an override is set, the flag will always return the override value
-     * regardless of rules, contextFn, or rollout configuration. This is useful
+     * regardless of rules, contextFn, or rampUp configuration. This is useful
      * for testing specific scenarios without modifying flag definitions.
      *
      * **Thread Safety**: This method is thread-safe and can be called from

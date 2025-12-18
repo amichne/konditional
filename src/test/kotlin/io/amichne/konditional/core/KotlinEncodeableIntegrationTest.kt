@@ -6,14 +6,11 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.ConditionEvaluationTest.TestFlags.toJson
-import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.result.utils.onSuccess
 import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.konditional.core.types.parseAs
 import io.amichne.konditional.core.types.toJsonValue
-import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.fixtures.core.withOverride
 import io.amichne.konditional.serialization.SnapshotSerializer.fromJson
@@ -145,25 +142,24 @@ class KotlinEncodeableIntegrationTest {
 
     @Test
     fun `feature flag integration with data class works`() {
-        val testNamespace = TestNamespace.test("data-class-flag")
         val context = Context(
             locale = AppLocale.UNITED_STATES,
             platform = Platform.WEB,
             appVersion = Version(1, 0, 0),
             stableId = TestStableId
         )
-        val Features = object : FeatureContainer<TestNamespace>(testNamespace) {
+        val Features = object : Namespace.TestNamespaceFacade("data-class-flag") {
             val userSettings by custom<UserSettings, Context>(default = UserSettings()) {}
         }
         // Default value
         assertEquals(UserSettings(), Features.userSettings.evaluate(context))
         // Override
         val override = UserSettings(theme = "dark", notificationsEnabled = false, maxRetries = 1, timeout = 10.0)
-        testNamespace.withOverride(Features.userSettings, override) {
+        Features.withOverride(Features.userSettings, override) {
             assertEquals(override, Features.userSettings.evaluate(context))
-            println(serialize(testNamespace.configuration))
+            println(serialize(Features.configuration))
             // Verify round-trip serialization works
-            fromJson(toJson()).onSuccess { config ->
+            fromJson(Features.toJson()).onSuccess { config ->
                 println("Successfully deserialized ${config.flags.size} flags")
             }
         }

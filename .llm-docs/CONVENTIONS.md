@@ -68,7 +68,6 @@ Use these terms consistently across all domains:
 | Term | Definition |
 |------|------------|
 | **Feature** | A typed configuration value with optional targeting rules |
-| **FeatureContainer** | An object that holds feature definitions, bound to a namespace |
 | **Namespace** | An isolation boundary for feature registries |
 | **Context** | Runtime information used for rule evaluation (locale, platform, version, stableId) |
 | **Rule** | A set of criteria that, when matched, returns a specific value |

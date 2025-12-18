@@ -6,7 +6,6 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.KotlinEncodeable
@@ -57,15 +56,13 @@ class ConsumerConfigurationLifecycleTest {
     @Test
     fun `consumer lifecycle supports dump load and patch`() {
         val namespaceId = "consumer-lifecycle-${UUID.randomUUID()}"
-        val namespaceV1 = Namespace(namespaceId)
-
-        val featuresV1 =
-            object : FeatureContainer<Namespace>(namespaceV1) {
+        val namespaceV1 =
+            object : Namespace(namespaceId) {
                 val darkMode by boolean<Context>(default = false) {
                     salt("v1")
                     rule(true) {
                         platforms(Platform.IOS)
-                        rollout { 100.0 }
+                        rampUp { 100.0 }
                         note("iOS fully enabled")
                     }
                 }
@@ -73,7 +70,7 @@ class ConsumerConfigurationLifecycleTest {
                 val apiEndpoint by string<Context>(default = "https://api.example.com") {
                     rule("https://api-web.example.com") {
                         platforms(Platform.WEB)
-                        rollout { 100.0 }
+                        rampUp { 100.0 }
                         note("Web endpoint override")
                     }
                 }
@@ -81,7 +78,7 @@ class ConsumerConfigurationLifecycleTest {
                 val maxRetries by integer<Context>(default = 3) {
                     rule(5) {
                         versions { min(2, 0, 0) }
-                        rollout { 100.0 }
+                        rampUp { 100.0 }
                         note("More retries on v2+")
                     }
                 }
@@ -89,7 +86,7 @@ class ConsumerConfigurationLifecycleTest {
                 val theme by enum<Theme, Context>(default = Theme.LIGHT) {
                     rule(Theme.DARK) {
                         locales(AppLocale.FRANCE)
-                        rollout { 100.0 }
+                        rampUp { 100.0 }
                         note("Dark theme for FR locale")
                     }
                 }
@@ -97,7 +94,7 @@ class ConsumerConfigurationLifecycleTest {
                 val userSettings by custom<UserSettings, Context>(default = UserSettings()) {
                     rule(UserSettings(theme = "dark", maxRetries = 5, timeoutSeconds = 10.0, enabled = false)) {
                         platforms(Platform.IOS)
-                        rollout { 100.0 }
+                        rampUp { 100.0 }
                         note("Custom settings for iOS")
                     }
                 }
@@ -109,32 +106,31 @@ class ConsumerConfigurationLifecycleTest {
         val v1 = ctx(platform = Platform.ANDROID, version = Version.of(1, 0, 0))
         val v2 = ctx(platform = Platform.ANDROID, version = Version.of(2, 0, 0))
 
-        assertTrue(featuresV1.darkMode.evaluate(ios))
-        assertFalse(featuresV1.darkMode.evaluate(web))
-        assertEquals("https://api-web.example.com", featuresV1.apiEndpoint.evaluate(web))
-        assertEquals("https://api.example.com", featuresV1.apiEndpoint.evaluate(ios))
-        assertEquals(3, featuresV1.maxRetries.evaluate(v1))
-        assertEquals(5, featuresV1.maxRetries.evaluate(v2))
-        assertEquals(Theme.DARK, featuresV1.theme.evaluate(france))
+        assertTrue(namespaceV1.darkMode.evaluate(ios))
+        assertFalse(namespaceV1.darkMode.evaluate(web))
+        assertEquals("https://api-web.example.com", namespaceV1.apiEndpoint.evaluate(web))
+        assertEquals("https://api.example.com", namespaceV1.apiEndpoint.evaluate(ios))
+        assertEquals(3, namespaceV1.maxRetries.evaluate(v1))
+        assertEquals(5, namespaceV1.maxRetries.evaluate(v2))
+        assertEquals(Theme.DARK, namespaceV1.theme.evaluate(france))
         assertEquals(
             UserSettings(theme = "dark", maxRetries = 5, timeoutSeconds = 10.0, enabled = false),
-            featuresV1.userSettings.evaluate(ios),
+            namespaceV1.userSettings.evaluate(ios),
         )
 
         val dumpedJson = NamespaceSnapshotSerializer(namespaceV1).toJson()
-        assertTrue(dumpedJson.contains(featuresV1.darkMode.id.toString()))
-        assertTrue(dumpedJson.contains(featuresV1.apiEndpoint.id.toString()))
-        assertTrue(dumpedJson.contains(featuresV1.maxRetries.id.toString()))
-        assertTrue(dumpedJson.contains(featuresV1.theme.id.toString()))
-        assertTrue(dumpedJson.contains(featuresV1.userSettings.id.toString()))
+        assertTrue(dumpedJson.contains(namespaceV1.darkMode.id.toString()))
+        assertTrue(dumpedJson.contains(namespaceV1.apiEndpoint.id.toString()))
+        assertTrue(dumpedJson.contains(namespaceV1.maxRetries.id.toString()))
+        assertTrue(dumpedJson.contains(namespaceV1.theme.id.toString()))
+        assertTrue(dumpedJson.contains(namespaceV1.userSettings.id.toString()))
         println(dumpedJson)
 
         // Simulate a fresh process (FeatureRegistry is process-global).
         FeatureRegistry.clear()
 
-        val namespaceV2 = Namespace(namespaceId)
-        val featuresV2 =
-            object : FeatureContainer<Namespace>(namespaceV2) {
+        val namespaceV2 =
+            object : Namespace(namespaceId) {
                 val darkMode by boolean<Context>(default = true) {
                     rule(false) { platforms(Platform.IOS) }
                 }
@@ -150,13 +146,13 @@ class ConsumerConfigurationLifecycleTest {
                 ) {}
             }
 
-        assertFalse(featuresV2.darkMode.evaluate(ios), "baseline differs before load")
-        assertEquals("https://wrong.example.com", featuresV2.apiEndpoint.evaluate(web), "baseline differs before load")
-        assertEquals(0, featuresV2.maxRetries.evaluate(v2), "baseline differs before load")
-        assertEquals(Theme.DARK, featuresV2.theme.evaluate(france), "baseline differs before load")
+        assertFalse(namespaceV2.darkMode.evaluate(ios), "baseline differs before load")
+        assertEquals("https://wrong.example.com", namespaceV2.apiEndpoint.evaluate(web), "baseline differs before load")
+        assertEquals(0, namespaceV2.maxRetries.evaluate(v2), "baseline differs before load")
+        assertEquals(Theme.DARK, namespaceV2.theme.evaluate(france), "baseline differs before load")
         assertEquals(
             UserSettings(theme = "baseline", maxRetries = 0, timeoutSeconds = 0.0, enabled = true),
-            featuresV2.userSettings.evaluate(ios),
+            namespaceV2.userSettings.evaluate(ios),
             "baseline differs before load",
         )
 
@@ -165,16 +161,16 @@ class ConsumerConfigurationLifecycleTest {
             is ParseResult.Failure -> error("Failed to load dumped snapshot: ${loaded.error.message}")
         }
 
-        assertTrue(featuresV2.darkMode.evaluate(ios))
-        assertFalse(featuresV2.darkMode.evaluate(web))
-        assertEquals("https://api-web.example.com", featuresV2.apiEndpoint.evaluate(web))
-        assertEquals("https://api.example.com", featuresV2.apiEndpoint.evaluate(ios))
-        assertEquals(3, featuresV2.maxRetries.evaluate(v1))
-        assertEquals(5, featuresV2.maxRetries.evaluate(v2))
-        assertEquals(Theme.DARK, featuresV2.theme.evaluate(france))
+        assertTrue(namespaceV2.darkMode.evaluate(ios))
+        assertFalse(namespaceV2.darkMode.evaluate(web))
+        assertEquals("https://api-web.example.com", namespaceV2.apiEndpoint.evaluate(web))
+        assertEquals("https://api.example.com", namespaceV2.apiEndpoint.evaluate(ios))
+        assertEquals(3, namespaceV2.maxRetries.evaluate(v1))
+        assertEquals(5, namespaceV2.maxRetries.evaluate(v2))
+        assertEquals(Theme.DARK, namespaceV2.theme.evaluate(france))
         assertEquals(
             UserSettings(theme = "dark", maxRetries = 5, timeoutSeconds = 10.0, enabled = false),
-            featuresV2.userSettings.evaluate(ios),
+            namespaceV2.userSettings.evaluate(ios),
         )
 
         val patchJson =
@@ -182,14 +178,14 @@ class ConsumerConfigurationLifecycleTest {
             {
               "flags": [
                 {
-                  "key": "${featuresV2.darkMode.id}",
+                  "key": "${namespaceV2.darkMode.id}",
                   "defaultValue": { "type": "BOOLEAN", "value": false },
                   "salt": "v1",
                   "isActive": false,
                   "rules": []
                 },
                 {
-                  "key": "${featuresV2.maxRetries.id}",
+                  "key": "${namespaceV2.maxRetries.id}",
                   "defaultValue": { "type": "INT", "value": 7 },
                   "salt": "v1",
                   "isActive": true,
@@ -206,7 +202,7 @@ class ConsumerConfigurationLifecycleTest {
                 }
               ],
               "removeKeys": [
-                "${featuresV2.apiEndpoint.id}"
+                "${namespaceV2.apiEndpoint.id}"
               ]
             }
             """.trimIndent()
@@ -219,14 +215,14 @@ class ConsumerConfigurationLifecycleTest {
 
         namespaceV2.load(patchedConfig)
 
-        assertFalse(featuresV2.darkMode.evaluate(ios), "inactive flag returns default regardless create rules")
-        assertEquals(7, featuresV2.maxRetries.evaluate(v2), "default updated via patch")
+        assertFalse(namespaceV2.darkMode.evaluate(ios), "inactive flag returns default regardless create rules")
+        assertEquals(7, namespaceV2.maxRetries.evaluate(v2), "default updated via patch")
         assertEquals(
             11,
-            featuresV2.maxRetries.evaluate(ctx(platform = Platform.ANDROID, version = Version.of(3, 0, 0))),
+            namespaceV2.maxRetries.evaluate(ctx(platform = Platform.ANDROID, version = Version.of(3, 0, 0))),
         )
         assertFalse(
-            namespaceV2.configuration.flags.containsKey(featuresV2.apiEndpoint),
+            namespaceV2.configuration.flags.containsKey(namespaceV2.apiEndpoint),
             "flag removed via patch is absent from configuration",
         )
     }

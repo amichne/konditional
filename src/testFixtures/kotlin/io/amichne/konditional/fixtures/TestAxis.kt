@@ -10,7 +10,6 @@ import io.amichne.konditional.context.axis.AxisValues
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.AxisValuesScope
 import io.amichne.konditional.core.dsl.RuleScope
-import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.getOrThrow
 
@@ -66,17 +65,9 @@ data class TestContext(
 ) : Context
 
 /**
- * Test-only namespace to host feature flags.
- *
- * Namespace.TestNamespaceFacade is explicitly designed for tests in the library.
- */
-object DimensionsTestNamespace : Namespace.TestNamespaceFacade("dimensions-test")
-
-/**
  * Test-only feature container exercising the dimension-based DSL.
  */
-object FeaturesWithAxis :
-    FeatureContainer<Namespace.TestNamespaceFacade>(DimensionsTestNamespace) {
+object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
 
     /**
      * Enabled only when environment == PROD.

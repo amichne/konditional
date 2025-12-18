@@ -33,10 +33,10 @@ Konditional targets this gap: prevent categories of runtime failure by moving ke
 
 ## Mechanism 1: Property delegation binds identity + type
 
-Flags are delegated properties in a `FeatureContainer`:
+Flags are delegated properties on a `Namespace`:
 
 ```kotlin
-object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
+object AppFeatures : Namespace("app") {
     val darkMode by boolean(default = false)
     val timeout by double(default = 30.0)
     val maxRetries by integer(default = 3)
@@ -102,21 +102,23 @@ val darkMode by boolean(default = false)
 
 ## Mechanism 5: Namespace isolation is structural
 
-Containers are bound to a namespace type, and namespaces have separate registries:
+Namespaces have separate registries, and features are type-bound to their namespace:
 
 ```kotlin
 sealed class AppDomain(id: String) : Namespace(id) {
-    data object Auth : AppDomain("auth")
-    data object Payments : AppDomain("payments")
-}
+    data object Auth : AppDomain("auth") {
+        val socialLogin by boolean<Context>(default = false)
+    }
 
-object AuthFeatures : FeatureContainer<AppDomain.Auth>(AppDomain.Auth) { ... }
-object PaymentFeatures : FeatureContainer<AppDomain.Payments>(AppDomain.Payments) { ... }
+    data object Payments : AppDomain("payments") {
+        val applePay by boolean<Context>(default = false)
+    }
+}
 ```
 
 **Guarantee**: feature key collisions across namespaces cannot occur (separate registries bound at the type level).
 
-**Boundary**: defining conflicting keys within the same namespace is a design error detected at container initialization
+**Boundary**: defining conflicting keys within the same namespace is a design error detected at namespace initialization
 (duplicate feature ids are rejected during registration).
 
 ---
@@ -128,8 +130,8 @@ the boundary:
 
 ```kotlin
 val json = File("flags.json").readText()
-when (val result = SnapshotSerializer.fromJson(json)) {
-    is ParseResult.Success -> Namespace.Global.load(result.value)
+when (val result = AppFeatures.fromJson(json)) {
+    is ParseResult.Success -> Unit // loaded into AppFeatures
     is ParseResult.Failure -> logError("Parse failed: ${result.error}")
 }
 ```
@@ -137,7 +139,7 @@ when (val result = SnapshotSerializer.fromJson(json)) {
 The guarantee is qualified:
 
 - **Guaranteed**: invalid JSON is detected and rejected before it can affect evaluation.
-- **Precondition**: the features referenced by the JSON must be registered (i.e., your `FeatureContainer` objects have
+- **Precondition**: the features referenced by the JSON must be registered (i.e., your `Namespace` objects have
   been initialized).
 
 - **Not guaranteed**: Semantic correctness of the configuration (rollout percentage, targeting intent, business

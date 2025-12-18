@@ -15,6 +15,6 @@ internal data class SerializableFlag(
     val defaultValue: FlagValue<*>,
     val salt: String = "v1",
     val isActive: Boolean = true,
-    val rolloutAllowlist: Set<String> = emptySet(),
+    val rampUpAllowlist: Set<String> = emptySet(),
     val rules: List<SerializableRule> = emptyList(),
 )

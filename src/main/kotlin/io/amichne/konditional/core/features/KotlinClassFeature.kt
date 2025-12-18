@@ -10,9 +10,6 @@ import io.amichne.konditional.core.types.KotlinEncodeable
  * KotlinClassFeature (despite its name) allows using any custom encodeable type as feature flag values,
  * providing structured, type-safe configuration with full schema validation.
  *
- * **Note:** This interface name is retained for backwards compatibility but works with
- * [KotlinEncodeable] types. Consider using the term "custom feature" in new documentation.
- *
  * Example:
  * ```kotlin
  * data class PaymentConfig(
@@ -27,8 +24,7 @@ import io.amichne.konditional.core.types.KotlinEncodeable
  *     }
  * }
  *
- * object Payments : Namespace("payments")
- * object PaymentFeatures : FeatureContainer<Payments>(Payments) {
+ * object Payments : Namespace("payments") {
  *     val PAYMENT_CONFIG by custom(default = PaymentConfig()) {
  *         rule(PaymentConfig(maxRetries = 5, timeout = 60.0)) { platforms(Platform.WEB) }
  *     }

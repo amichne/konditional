@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 /**
- * Unit tests for axis-based rule evaluation via FeatureContainer & Feature.evaluate.
+ * Unit tests for axis-based rule evaluation via namespace-defined features and `Feature.evaluate`.
  */
 class AxisRuleEvaluationTest {
 

@@ -3,7 +3,7 @@ package io.amichne.konditional.internal.builders
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Rampup
+import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.dsl.KonditionalDsl
@@ -40,7 +40,7 @@ internal data class RuleBuilder<C : Context>(
     private val axisConstraints: MutableList<AxisConstraint> = mutableListOf(),
     private val locales: LinkedHashSet<AppLocale> = linkedSetOf(),
     private val rolloutAllowlist: LinkedHashSet<HexId> = linkedSetOf(),
-    private var rollout: Rampup? = null,
+    private var rampUp: RampUp? = null,
 ) : RuleScope<C> {
 
     override fun allowlist(vararg stableIds: StableId) {
@@ -102,8 +102,8 @@ internal data class RuleBuilder<C : Context>(
         note = text
     }
 
-    override fun rollout(function: () -> Number) {
-        this.rollout = Rampup.of(function().toDouble())
+    override fun rampUp(function: () -> Number) {
+        this.rampUp = RampUp.of(function().toDouble())
     }
 
     /**
@@ -114,7 +114,7 @@ internal data class RuleBuilder<C : Context>(
      */
     internal fun build(): Rule<C> =
         Rule(
-            rollout = rollout ?: Rampup.default,
+            rampUp = rampUp ?: RampUp.default,
             rolloutAllowlist = rolloutAllowlist,
             locales = locales,
             platforms = platforms,

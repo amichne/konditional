@@ -1,6 +1,6 @@
 package io.amichne.konditional.api
 
-import io.amichne.konditional.context.Rampup
+import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.core.evaluation.Bucketing
 import io.amichne.konditional.core.id.StableId
 
@@ -9,15 +9,15 @@ data class BucketInfo internal constructor(
     val featureKey: String,
     val salt: String,
     val bucket: Int,
-    val rollout: Rampup,
+    val rollout: RampUp,
     val thresholdBasisPoints: Int,
     val inRollout: Boolean,
 )
 
 /**
- * Deterministic rollout bucketing utilities.
+ * Deterministic rampUp bucketing utilities.
  *
- * These functions are useful for production debugging (e.g., "why is user X not in the 10% rollout?")
+ * These functions are useful for production debugging (e.g., "why is user X not in the 10% rampUp?")
  * and are guaranteed to match Konditional's evaluation behavior.
  */
 object RolloutBucketing {
@@ -35,15 +35,15 @@ object RolloutBucketing {
         stableId: StableId,
         featureKey: String,
         salt: String,
-        rollout: Rampup,
+        rollout: RampUp,
     ): BucketInfo = bucket(stableId, featureKey, salt).let {
         BucketInfo(
             featureKey = featureKey,
             salt = salt,
             bucket = it,
             rollout = rollout,
-            thresholdBasisPoints = Bucketing.rolloutThresholdBasisPoints(rollout),
-            inRollout = Bucketing.isInRollout(rollout, it),
+            thresholdBasisPoints = Bucketing.rampUpThresholdBasisPoints(rollout),
+            inRollout = Bucketing.isInRampUp(rollout, it),
         )
     }
 }

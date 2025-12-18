@@ -1,6 +1,6 @@
 package io.amichne.konditional.core.evaluation
 
-import io.amichne.konditional.context.Rampup
+import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.core.id.HexId
 import java.security.MessageDigest
 import kotlin.math.roundToInt
@@ -37,17 +37,17 @@ internal object Bucketing {
     }
 
     /**
-     * Converts a rollout percentage (0.0-100.0) into basis points (0-10_000).
+     * Converts a rampUp percentage (0.0-100.0) into basis points (0-10_000).
      */
-    fun rolloutThresholdBasisPoints(rollout: Rampup): Int = (rollout.value * 100.0).roundToInt()
+    fun rampUpThresholdBasisPoints(rollout: RampUp): Int = (rollout.value * 100.0).roundToInt()
 
-    fun isInRollout(
-        rollout: Rampup,
+    fun isInRampUp(
+        rampUp: RampUp,
         bucket: Int,
     ): Boolean =
         when {
-            rollout <= 0.0 -> false
-            rollout >= 100.0 -> true
-            else -> bucket < rolloutThresholdBasisPoints(rollout)
+            rampUp <= 0.0 -> false
+            rampUp >= 100.0 -> true
+            else -> bucket < rampUpThresholdBasisPoints(rampUp)
         }
 }

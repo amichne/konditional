@@ -12,7 +12,7 @@ import io.amichne.konditional.internal.builders.FlagBuilder
  * Updates this feature using a DSL configuration block.
  *
  * **Internal API**: This method is used internally and should not be called directly.
- * When using FeatureContainer, configuration is handled automatically through delegation.
+ * When defining flags on a namespace, configuration is handled automatically through delegation.
  *
  * @param function The DSL configuration block
  */
@@ -25,7 +25,7 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.update(
  * Updates this feature's definition in the namespace.
  *
  * **Internal API**: This method is used internally and should not be called directly.
- * When using FeatureContainer, configuration is handled automatically through delegation.
+ * When defining flags on a namespace, configuration is handled automatically through delegation.
  *
  * @param definition The flag definition to override
  */

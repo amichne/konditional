@@ -2,7 +2,7 @@ package io.amichne.konditional.core.instance
 
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Rampup
+import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.rules.Rule
@@ -51,7 +51,7 @@ data class ConfigurationDiff internal constructor(
 
             return FlagChange.FlagSnapshot.RuleValueSnapshot.RuleSnapshot(
                 note = note,
-                rollout = rollout,
+                rollout = rampUp,
                 locales = base.locales,
                 platforms = base.platforms,
                 versionRange = base.versionRange.takeIf { it.hasBounds() } ?: Unbounded(),
@@ -111,7 +111,7 @@ data class ConfigurationDiff internal constructor(
                 @ConsistentCopyVisibility
                 data class RuleSnapshot internal constructor(
                     val note: String?,
-                    val rollout: Rampup,
+                    val rollout: RampUp,
                     val locales: Set<AppLocale>,
                     val platforms: Set<Platform>,
                     val versionRange: VersionRange,

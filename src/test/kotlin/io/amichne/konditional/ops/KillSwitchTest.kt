@@ -7,11 +7,9 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.features.FeatureContainer
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.getOrThrow
-import io.amichne.konditional.fixtures.core.TestNamespace
-import io.amichne.konditional.fixtures.core.test
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -28,22 +26,20 @@ class KillSwitchTest {
 
     @Test
     fun `disableAll forces declared defaults`() {
-        val namespace = test("kill-switch")
-
-        val features = object : FeatureContainer<TestNamespace>(namespace) {
+        val namespace = object : Namespace.TestNamespaceFacade("kill-switch") {
             val feature by boolean<Context>(default = false) {
                 rule(true) { platforms(Platform.IOS) }
             }
         }
 
-        assertTrue(features.feature.evaluate(context))
+        assertTrue(namespace.feature.evaluate(context))
 
         namespace.disableAll()
-        assertFalse(features.feature.evaluate(context))
+        assertFalse(namespace.feature.evaluate(context))
 
-        val explained = features.feature.evaluateWithReason(context)
+        val explained = namespace.feature.evaluateWithReason(context)
         assertEquals(RegistryDisabled, explained.decision)
         namespace.enableAll()
-        assertTrue(features.feature.evaluate(context))
+        assertTrue(namespace.feature.evaluate(context))
     }
 }

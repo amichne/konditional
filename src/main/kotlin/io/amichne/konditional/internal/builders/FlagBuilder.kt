@@ -82,6 +82,6 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
         defaultValue = default,
         salt = salt,
         isActive = isActive,
-        rolloutAllowlist = rolloutAllowlist,
+        rampUpAllowlist = rolloutAllowlist,
     )
 }

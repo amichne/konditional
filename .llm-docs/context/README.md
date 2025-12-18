@@ -4,7 +4,7 @@ This directory contains extracted context for LLM prompts.
 
 ## Files
 
-- `core-types.md` - Extracted type signatures from source code
+- `core-types.kt` - Extracted type signatures from source code
 - `public-api-surface.md` - Concatenated API documentation
 - `.last-updated` - Timestamp of last extraction
 
@@ -13,7 +13,7 @@ This directory contains extracted context for LLM prompts.
 Run the extraction script after significant API changes:
 
 ```bash
-./scripts/extract-llm-context.sh
+.llm-docs/scripts/extract-llm-context.sh
 ```
 
 ## Usage

@@ -17,7 +17,7 @@ import io.amichne.konditional.core.id.StableId
  *     salt("v2")
  *     rule(false) {
  *         platforms(Platform.IOS)
- *         rollout { 50.0 }
+ *         rampUp { 50.0 }
  *     }
  * }
  * ```
@@ -33,22 +33,22 @@ interface FlagScope<T : Any, C : Context> {
     fun active(block: () -> Boolean)
 
     /**
-     * Allows specific stable IDs to bypass rollout for all rules within this flag.
+     * Allows specific stable IDs to bypass rampUp for all rules within this flag.
      *
      * When set, allowlisted users who match any rule's targeting criteria are always
-     * treated as in-rollout for that rule, even if deterministic bucketing would
+     * treated as in-rampUp for that rule, even if deterministic bucketing would
      * otherwise exclude them.
      *
      * This is typically used to enable targeted access for internal testers while
-     * preserving rollout behavior for the rest of the population.
+     * preserving rampUp behavior for the rest of the population.
      */
     fun allowlist(vararg stableIds: StableId)
 
     /**
      * Sets the salt value for the flag.
      *
-     * Salt is used in hash-based rollout calculations. Changing the salt
-     * will redistribute users across rollout percentages.
+     * Salt is used in hash-based rampUp calculations. Changing the salt
+     * will redistribute users across rampUp percentages.
      *
      * @param value The salt value (default is "v1")
      */
@@ -66,7 +66,7 @@ interface FlagScope<T : Any, C : Context> {
      * rule(true) {
      *     platforms(Platform.IOS)
      *     locales(AppLocale.UNITED_STATES)
-     *     rollout { 50.0 }
+     *     rampUp { 50.0 }
      * }
      * ```
      *

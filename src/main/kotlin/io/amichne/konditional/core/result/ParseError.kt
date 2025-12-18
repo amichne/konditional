@@ -24,7 +24,7 @@ sealed interface ParseError {
     ) : ParseError
 
     /**
-     * Invalid rollout percentage (must be 0.0-100.0).
+     * Invalid rampUp percentage (must be 0.0-100.0).
      */
     @ConsistentCopyVisibility
     data class InvalidRollout internal constructor(

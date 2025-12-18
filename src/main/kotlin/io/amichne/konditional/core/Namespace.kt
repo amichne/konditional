@@ -1,12 +1,25 @@
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.dsl.FlagScope
+import io.amichne.konditional.core.features.BooleanFeature
+import io.amichne.konditional.core.features.DoubleFeature
+import io.amichne.konditional.core.features.EnumFeature
 import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.core.features.IntFeature
+import io.amichne.konditional.core.features.KotlinClassFeature
+import io.amichne.konditional.core.features.StringFeature
 import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
 import io.amichne.konditional.core.registry.NamespaceRegistry
+import io.amichne.konditional.core.registry.NamespaceRegistry.Companion.updateDefinition
+import io.amichne.konditional.core.types.KotlinEncodeable
+import io.amichne.konditional.internal.builders.FlagBuilder
+import io.amichne.konditional.serialization.FeatureRegistry
+import io.amichne.konditional.serialization.NamespaceSnapshotSerializer
 import io.amichne.konditional.values.IdentifierEncoding.SEPARATOR
 import org.jetbrains.annotations.TestOnly
 import java.util.UUID
+import kotlin.reflect.KProperty
 
 /**
  * Represents a feature flag namespace with isolated configuration and runtime isolation.
@@ -16,20 +29,12 @@ import java.util.UUID
  * - **Runtime isolation**: Each namespace has its own flag registry
  * - **Type safety**: Namespace identity is encoded in the type system
  * - **Direct registry operations**: Namespaces implement [NamespaceRegistry], eliminating the need for `.registry` access
+ * - **Inline feature definition**: Define feature flags directly on the namespace via property delegation
  *
  * ## Namespace Types
  *
- * ### Global Namespace
- * The [Global] namespace is the only namespace shipped by Konditional. It is intended for shared flags that are
- * broadly accessible across the application:
- * ```kotlin
- * object CoreFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
- *     val KILL_SWITCH by boolean<Context>(default = false)
- * }
- * ```
- *
  * ### Consumer-defined namespaces
- * If you need isolation boundaries beyond [Global], define namespaces in your own codebase.
+ * Define namespaces in your own codebase.
  * A namespace is just a [Namespace] instance, typically modeled as an `object`:
  * ```kotlin
  * object Payments : Namespace("payments")
@@ -37,18 +42,11 @@ import java.util.UUID
  *
  * ## Adding New Modules
  *
- * Define a namespace in your module, and have it own its [io.amichne.konditional.core.features.FeatureContainer]:
+ * Define a namespace in your module, and define flags directly on it:
  *
  * ```kotlin
  * object Payments : Namespace("payments") {
- *     object Features : FeatureContainer<Payments>(this) {
- *         val APPLE_PAY by boolean<Context>(default = false)
- *     }
- *
- *     init {
- *         // Ensure the container initializes at t0
- *         Features
- *     }
+ *     val APPLE_PAY by boolean<Context>(default = false)
  * }
  * ```
  *
@@ -57,13 +55,13 @@ import java.util.UUID
  * [Namespace] implements [NamespaceRegistry] via delegation, so you can call registry methods directly:
  * ```kotlin
  * // Load configuration
- * Namespace.Global.load(configuration)
+ * Payments.load(configuration)
  *
  * // Get current state
- * val snapshot = Namespace.Global.configuration
+ * val snapshot = Payments.configuration
  *
  * // Query flags
- * val flag = Namespace.Global.flag(MY_FLAG)
+ * val flag = Payments.flag(MY_FLAG)
  * ```
  *
  * @property id Unique identifier for this namespace
@@ -92,28 +90,9 @@ open class Namespace(
     }
 
     /**
-     * Global namespace containing shared flags accessible across the application.
-     *
-     * Use this namespace for:
-     * - System-wide kill switches
-     * - Maintenance mode flags
-     * - Cross-cutting feature toggles
-     * - Common infrastructure flags
-     *
-     * Example:
-     * ```kotlin
-     * object CoreFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
-     *     val KILL_SWITCH by boolean(default = false)
-     * }
-     * ```
-     */
-    data object Global : Namespace("global")
-
-    /**
      * Consumer-defined namespaces.
      *
-     * Konditional only provides [Global]. Consumers define any additional namespaces in their own codebase by
-     * extending [Namespace].
+     * Consumers define namespaces in their own codebase by extending [Namespace].
      *
      * Example:
      * ```kotlin
@@ -129,6 +108,167 @@ open class Namespace(
         registry = NamespaceRegistry(namespaceId = id),
         identifierSeed = UUID.randomUUID().toString(),
     )
+
+    private val _features = mutableListOf<Feature<*, *, *>>()
+
+    fun allFeatures(): List<Feature<*, *, *>> = _features.toList()
+
+    fun toJson(): String = NamespaceSnapshotSerializer(this).toJson()
+
+    fun fromJson(json: String) = NamespaceSnapshotSerializer(this).fromJson(json)
+
+    protected fun <C : Context> boolean(
+        default: Boolean,
+        flagScope: FlagScope<Boolean, C>.() -> Unit = {},
+    ): BooleanDelegate<C> = BooleanDelegate(default, flagScope)
+
+    protected fun <C : Context> string(
+        default: String,
+        stringScope: FlagScope<String, C>.() -> Unit = {},
+    ): StringDelegate<C> = StringDelegate(default, stringScope)
+
+    protected fun <C : Context> integer(
+        default: Int,
+        integerScope: FlagScope<Int, C>.() -> Unit = {},
+    ): IntDelegate<C> = IntDelegate(default, integerScope)
+
+    protected fun <C : Context> double(
+        default: Double,
+        decimalScope: FlagScope<Double, C>.() -> Unit = {},
+    ): DoubleDelegate<C> = DoubleDelegate(default, decimalScope)
+
+    protected fun <E : Enum<E>, C : Context> enum(
+        default: E,
+        enumScope: FlagScope<E, C>.() -> Unit = {},
+    ): EnumDelegate<E, C> = EnumDelegate(default, enumScope)
+
+    protected inline fun <reified T : KotlinEncodeable<*>, C : Context> custom(
+        default: T,
+        noinline customScope: FlagScope<T, C>.() -> Unit = {},
+    ): KotlinClassDelegate<T, C> = KotlinClassDelegate(default, customScope)
+
+    @Suppress("UNCHECKED_CAST")
+    protected class BooleanDelegate<C : Context>(
+        private val default: Boolean,
+        private val configScope: FlagScope<Boolean, C>.() -> Unit,
+    ) {
+        private lateinit var feature: BooleanFeature<C, *>
+
+        operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): BooleanDelegate<C> {
+            val typedFeature = BooleanFeature<C, M>(property.name, thisRef)
+            feature = typedFeature
+            (thisRef as Namespace)._features.add(typedFeature)
+            thisRef.updateDefinition(FlagBuilder(default, typedFeature).apply(configScope).build())
+            FeatureRegistry.register(typedFeature)
+            return this
+        }
+
+        operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): BooleanFeature<C, M> =
+            feature as BooleanFeature<C, M>
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    protected class StringDelegate<C : Context>(
+        private val default: String,
+        private val configScope: FlagScope<String, C>.() -> Unit,
+    ) {
+        private lateinit var feature: StringFeature<C, *>
+
+        operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): StringDelegate<C> {
+            val typedFeature = StringFeature<C, M>(property.name, thisRef)
+            feature = typedFeature
+            (thisRef as Namespace)._features.add(typedFeature)
+            thisRef.updateDefinition(FlagBuilder(default, typedFeature).apply(configScope).build())
+            FeatureRegistry.register(typedFeature)
+            return this
+        }
+
+        operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): StringFeature<C, M> =
+            feature as StringFeature<C, M>
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    protected class IntDelegate<C : Context>(
+        private val default: Int,
+        private val configScope: FlagScope<Int, C>.() -> Unit,
+    ) {
+        private lateinit var feature: IntFeature<C, *>
+
+        operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): IntDelegate<C> {
+            val typedFeature = IntFeature<C, M>(property.name, thisRef)
+            feature = typedFeature
+            (thisRef as Namespace)._features.add(typedFeature)
+            thisRef.updateDefinition(FlagBuilder(default, typedFeature).apply(configScope).build())
+            FeatureRegistry.register(typedFeature)
+            return this
+        }
+
+        operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): IntFeature<C, M> =
+            feature as IntFeature<C, M>
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    protected class DoubleDelegate<C : Context>(
+        private val default: Double,
+        private val configScope: FlagScope<Double, C>.() -> Unit,
+    ) {
+        private lateinit var feature: DoubleFeature<C, *>
+
+        operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): DoubleDelegate<C> {
+            val typedFeature = DoubleFeature<C, M>(property.name, thisRef)
+            feature = typedFeature
+            (thisRef as Namespace)._features.add(typedFeature)
+            thisRef.updateDefinition(FlagBuilder(default, typedFeature).apply(configScope).build())
+            FeatureRegistry.register(typedFeature)
+            return this
+        }
+
+        operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): DoubleFeature<C, M> =
+            feature as DoubleFeature<C, M>
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    protected class EnumDelegate<E : Enum<E>, C : Context>(
+        private val default: E,
+        private val configScope: FlagScope<E, C>.() -> Unit,
+    ) {
+        private lateinit var feature: EnumFeature<E, C, *>
+
+        operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): EnumDelegate<E, C> {
+            val typedFeature = EnumFeature<E, C, M>(property.name, thisRef)
+            feature = typedFeature
+            (thisRef as Namespace)._features.add(typedFeature)
+            thisRef.updateDefinition(FlagBuilder(default, typedFeature).apply(configScope).build())
+            FeatureRegistry.register(typedFeature)
+            return this
+        }
+
+        operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): EnumFeature<E, C, M> =
+            feature as EnumFeature<E, C, M>
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    protected class KotlinClassDelegate<T : KotlinEncodeable<*>, C : Context>(
+        private val default: T,
+        private val configScope: FlagScope<T, C>.() -> Unit,
+    ) {
+        private lateinit var feature: KotlinClassFeature<T, C, *>
+
+        operator fun <M : Namespace> provideDelegate(
+            thisRef: M,
+            property: KProperty<*>,
+        ): KotlinClassDelegate<T, C> {
+            val typedFeature = KotlinClassFeature<T, C, M>(property.name, thisRef)
+            feature = typedFeature
+            (thisRef as Namespace)._features.add(typedFeature)
+            thisRef.updateDefinition(FlagBuilder(default, typedFeature).apply(configScope).build())
+            FeatureRegistry.register(typedFeature)
+            return this
+        }
+
+        operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): KotlinClassFeature<T, C, M> =
+            feature as KotlinClassFeature<T, C, M>
+    }
 
     /**
      * Sets a test-scoped override for a feature flag.
