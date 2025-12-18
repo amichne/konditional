@@ -328,6 +328,13 @@
 </a>
 </li>
 <li class="md-nav__item">
+<a class="md-nav__link" href="#rollout-allowlisting-internal-testers">
+<span class="md-ellipsis">
+      Rollout allowlisting (internal testers)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="#variants-via-enums-not-strings">
 <span class="md-ellipsis">
       Variants via enums (not strings)
@@ -483,6 +490,13 @@
 </a>
 </li>
 <li class="md-nav__item">
+<a class="md-nav__link" href="#rollout-allowlisting-internal-testers">
+<span class="md-ellipsis">
+      Rollout allowlisting (internal testers)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="#variants-via-enums-not-strings">
 <span class="md-ellipsis">
       Variants via enums (not strings)
@@ -515,11 +529,13 @@
 <article class="md-content__inner md-typeset">
 <h1 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">¶</a></h1>
 <p>Konditional is a Kotlin feature-flag DSL designed to make configuration <em>typed</em>, <em>deterministic</em>, and <em>non-null</em>.
-The core claim is precise: statically-defined flags have compile-time type correctness, and evaluation is total (you always get a value back).</p>
+The core claim is precise: statically-defined flags have compile-time type correctness, and evaluation is total (you
+always get a value back).</p>
 <hr/>
 <h2 id="why-konditional-and-what-it-actually-guarantees">Why Konditional (and what it actually guarantees)<a class="headerlink" href="#why-konditional-and-what-it-actually-guarantees" title="Permanent link">¶</a></h2>
 <p>Most flag systems are stringly-typed: a string key selects a value and the caller chooses a “typed getter”.
-That architecture creates three failure modes that are syntactically valid but semantically wrong at runtime: key typos, type mismatches, and null propagation.</p>
+That architecture creates three failure modes that are syntactically valid but semantically wrong at runtime: key typos,
+type mismatches, and null propagation.</p>
 <p>Konditional changes the failure surface by binding identity and type at definition time via Kotlin properties:</p>
 <ul>
 <li><strong>No string keys at call sites</strong>: flags are accessed as properties (typos become compile errors).</li>
@@ -527,48 +543,53 @@ That architecture creates three failure modes that are syntactically valid but s
 <li><strong>No nulls from evaluation</strong>: defaults are required, so evaluation has a total return path.</li>
 </ul>
 <pre class="mermaid"><code>flowchart LR
-  Def["Flag defined as a property"] --&gt; Bound["Key + type bound at compile-time"]
-  Bound --&gt; Eval["Evaluation"]
-  Eval --&gt;|Rule matches| Value["Rule value"]
-  Eval --&gt;|No match| Default["Declared default"]
-  style Bound fill:#e1f5ff
-  style Default fill:#fff3cd
-  style Value fill:#c8e6c9</code></pre>
+    Def["Flag defined as a property"] --&gt; Bound["Key + type bound at compile-time"]
+    Bound --&gt; Eval["Evaluation"]
+    Eval --&gt;|Rule matches| Value["Rule value"]
+    Eval --&gt;|No match| Default["Declared default"]
+    style Bound fill: #e1f5ff
+    style Default fill: #fff3cd
+    style Value fill: #c8e6c9</code></pre>
 <hr/>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">¶</a></h2>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="c1">// build.gradle.kts</span>
 </span><span id="__span-0-2"><a href="#__codelineno-0-2" id="__codelineno-0-2" name="__codelineno-0-2"></a><span class="n">dependencies</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-3"><a href="#__codelineno-0-3" id="__codelineno-0-3" name="__codelineno-0-3"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"io.amichne:konditional:0.0.1"</span><span class="p">)</span>
+</span><span id="__span-0-3"><a href="#__codelineno-0-3" id="__codelineno-0-3" name="__codelineno-0-3"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"io.github.amichne:konditional:0.0.1"</span><span class="p">)</span>
 </span><span id="__span-0-4"><a href="#__codelineno-0-4" id="__codelineno-0-4" name="__codelineno-0-4"></a><span class="p">}</span>
 </span></code></pre></div>
 <hr/>
 <h2 id="your-first-flag">Your first flag<a class="headerlink" href="#your-first-flag" title="Permanent link">¶</a></h2>
 <p>Define a flag as a delegated property in a <code>FeatureContainer</code> bound to a <code>Namespace</code>:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.core.Namespace</span>
-</span><span id="__span-1-2"><a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.core.features.FeatureContainer</span>
-</span><span id="__span-1-3"><a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.context.*</span>
-</span><span id="__span-1-4"><a href="#__codelineno-1-4" id="__codelineno-1-4" name="__codelineno-1-4"></a>
-</span><span id="__span-1-5"><a href="#__codelineno-1-5" id="__codelineno-1-5" name="__codelineno-1-5"></a><span class="kd">object</span><span class="w"> </span><span class="nc">AppFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-1-6"><a href="#__codelineno-1-6" id="__codelineno-1-6" name="__codelineno-1-6"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">DARK_MODE</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-1-7"><a href="#__codelineno-1-7" id="__codelineno-1-7" name="__codelineno-1-7"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-1-8"><a href="#__codelineno-1-8" id="__codelineno-1-8" name="__codelineno-1-8"></a><span class="w">            </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
-</span><span id="__span-1-9"><a href="#__codelineno-1-9" id="__codelineno-1-9" name="__codelineno-1-9"></a><span class="w">            </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">50.0</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-1-10"><a href="#__codelineno-1-10" id="__codelineno-1-10" name="__codelineno-1-10"></a><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-1-11"><a href="#__codelineno-1-11" id="__codelineno-1-11" name="__codelineno-1-11"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-1-12"><a href="#__codelineno-1-12" id="__codelineno-1-12" name="__codelineno-1-12"></a><span class="p">}</span>
-</span><span id="__span-1-13"><a href="#__codelineno-1-13" id="__codelineno-1-13" name="__codelineno-1-13"></a>
-</span><span id="__span-1-14"><a href="#__codelineno-1-14" id="__codelineno-1-14" name="__codelineno-1-14"></a><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
-</span><span id="__span-1-15"><a href="#__codelineno-1-15" id="__codelineno-1-15" name="__codelineno-1-15"></a><span class="w">    </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
-</span><span id="__span-1-16"><a href="#__codelineno-1-16" id="__codelineno-1-16" name="__codelineno-1-16"></a><span class="w">    </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span>
-</span><span id="__span-1-17"><a href="#__codelineno-1-17" id="__codelineno-1-17" name="__codelineno-1-17"></a><span class="w">    </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">.</span><span class="na">parse</span><span class="p">(</span><span class="s">"2.1.0"</span><span class="p">),</span>
-</span><span id="__span-1-18"><a href="#__codelineno-1-18" id="__codelineno-1-18" name="__codelineno-1-18"></a><span class="w">    </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"</span><span class="p">)</span>
-</span><span id="__span-1-19"><a href="#__codelineno-1-19" id="__codelineno-1-19" name="__codelineno-1-19"></a><span class="p">)</span>
-</span><span id="__span-1-20"><a href="#__codelineno-1-20" id="__codelineno-1-20" name="__codelineno-1-20"></a>
-</span><span id="__span-1-21"><a href="#__codelineno-1-21" id="__codelineno-1-21" name="__codelineno-1-21"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">AppFeatures</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="p">}</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.api.evaluate</span>
+</span><span id="__span-1-2"><a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.core.Namespace</span>
+</span><span id="__span-1-3"><a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.core.features.FeatureContainer</span>
+</span><span id="__span-1-4"><a href="#__codelineno-1-4" id="__codelineno-1-4" name="__codelineno-1-4"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.context.*</span>
+</span><span id="__span-1-5"><a href="#__codelineno-1-5" id="__codelineno-1-5" name="__codelineno-1-5"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.core.id.StableId</span>
+</span><span id="__span-1-6"><a href="#__codelineno-1-6" id="__codelineno-1-6" name="__codelineno-1-6"></a>
+</span><span id="__span-1-7"><a href="#__codelineno-1-7" id="__codelineno-1-7" name="__codelineno-1-7"></a><span class="kd">object</span><span class="w"> </span><span class="nc">AppFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-8"><a href="#__codelineno-1-8" id="__codelineno-1-8" name="__codelineno-1-8"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">darkMode</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-9"><a href="#__codelineno-1-9" id="__codelineno-1-9" name="__codelineno-1-9"></a><span class="w">        </span><span class="n">rule</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-10"><a href="#__codelineno-1-10" id="__codelineno-1-10" name="__codelineno-1-10"></a><span class="w">            </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span>
+</span><span id="__span-1-11"><a href="#__codelineno-1-11" id="__codelineno-1-11" name="__codelineno-1-11"></a><span class="w">            </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">50.0</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-1-12"><a href="#__codelineno-1-12" id="__codelineno-1-12" name="__codelineno-1-12"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-1-13"><a href="#__codelineno-1-13" id="__codelineno-1-13" name="__codelineno-1-13"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-1-14"><a href="#__codelineno-1-14" id="__codelineno-1-14" name="__codelineno-1-14"></a><span class="p">}</span>
+</span><span id="__span-1-15"><a href="#__codelineno-1-15" id="__codelineno-1-15" name="__codelineno-1-15"></a>
+</span><span id="__span-1-16"><a href="#__codelineno-1-16" id="__codelineno-1-16" name="__codelineno-1-16"></a><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
+</span><span id="__span-1-17"><a href="#__codelineno-1-17" id="__codelineno-1-17" name="__codelineno-1-17"></a><span class="w">    </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
+</span><span id="__span-1-18"><a href="#__codelineno-1-18" id="__codelineno-1-18" name="__codelineno-1-18"></a><span class="w">    </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span>
+</span><span id="__span-1-19"><a href="#__codelineno-1-19" id="__codelineno-1-19" name="__codelineno-1-19"></a><span class="w">    </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">),</span>
+</span><span id="__span-1-20"><a href="#__codelineno-1-20" id="__codelineno-1-20" name="__codelineno-1-20"></a><span class="w">    </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"user-123"</span><span class="p">),</span>
+</span><span id="__span-1-21"><a href="#__codelineno-1-21" id="__codelineno-1-21" name="__codelineno-1-21"></a><span class="p">)</span>
+</span><span id="__span-1-22"><a href="#__codelineno-1-22" id="__codelineno-1-22" name="__codelineno-1-22"></a>
+</span><span id="__span-1-23"><a href="#__codelineno-1-23" id="__codelineno-1-23" name="__codelineno-1-23"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppFeatures</span><span class="p">.</span><span class="na">darkMode</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
 </span></code></pre></div>
-<p>Notes:
-- Konditional models evaluation as context-dependent; examples assume you are evaluating within a context-aware scope.
-- <code>feature { ... }</code> returns the flag’s declared Kotlin type and never returns null.</p>
+<p>Notes:</p>
+<ul>
+<li>Evaluation is total for declared features: <code>evaluate(context)</code> always returns the flag’s declared Kotlin type (never
+  null).</li>
+<li>Use <code>evaluateWithReason(context)</code> when you need operational traceability (“why did I get this value?”).</li>
+</ul>
 <hr/>
 <h2 id="a-small-api-surface-intentionally">A small API surface, intentionally<a class="headerlink" href="#a-small-api-surface-intentionally" title="Permanent link">¶</a></h2>
 <p>Supported value types (out of the box):</p>
@@ -576,82 +597,98 @@ That architecture creates three failure modes that are syntactically valid but s
 <thead>
 <tr>
 <th>Type</th>
-<th>DSL Method</th>
-<th>Kotlin Type</th>
-<th>Example Default</th>
+<th>FeatureContainer method</th>
+<th>Kotlin type</th>
+<th>Example default</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Boolean</td>
-<td><code>boolean()</code></td>
+<td><code>boolean(...)</code></td>
 <td><code>Boolean</code></td>
 <td><code>false</code></td>
 </tr>
 <tr>
 <td>String</td>
-<td><code>string()</code></td>
+<td><code>string(...)</code></td>
 <td><code>String</code></td>
 <td><code>"production"</code></td>
 </tr>
 <tr>
 <td>Integer</td>
-<td><code>int()</code></td>
+<td><code>integer(...)</code></td>
 <td><code>Int</code></td>
 <td><code>42</code></td>
 </tr>
 <tr>
 <td>Decimal</td>
-<td><code>double()</code></td>
+<td><code>double(...)</code></td>
 <td><code>Double</code></td>
 <td><code>3.14</code></td>
 </tr>
 <tr>
 <td>Enum</td>
-<td><code>enum&lt;E&gt;()</code></td>
+<td><code>enum(...)</code></td>
 <td><code>E : Enum&lt;E&gt;</code></td>
 <td><code>LogLevel.INFO</code></td>
+</tr>
+<tr>
+<td>Data class</td>
+<td><code>custom(...)</code></td>
+<td><code>T : KotlinEncodeable&lt;ObjectSchema&gt;</code></td>
+<td><code>MyConfig()</code></td>
 </tr>
 </tbody>
 </table>
 <hr/>
 <h2 id="common-patterns">Common patterns<a class="headerlink" href="#common-patterns" title="Permanent link">¶</a></h2>
 <h3 id="gradual-rollout-deterministic">Gradual rollout (deterministic)<a class="headerlink" href="#gradual-rollout-deterministic" title="Permanent link">¶</a></h3>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">NEW_CHECKOUT</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-2"><a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">newCheckout</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-2"><a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a><span class="w">    </span><span class="n">rule</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-2-3"><a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a><span class="w">        </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span>
 </span><span id="__span-2-4"><a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a><span class="w">        </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">10.0</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-2-5"><a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
+</span><span id="__span-2-5"><a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a><span class="w">    </span><span class="p">}</span>
 </span><span id="__span-2-6"><a href="#__codelineno-2-6" id="__codelineno-2-6" name="__codelineno-2-6"></a><span class="p">}</span>
 </span></code></pre></div>
 <p>Konditional’s rollouts are deterministic: the same <code>(stableId, flagKey, salt)</code> yields the same bucket assignment.</p>
 <h3 id="platform-specific-configuration">Platform-specific configuration<a class="headerlink" href="#platform-specific-configuration" title="Permanent link">¶</a></h3>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">API_ENDPOINT</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"https://api.example.com"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-2"><a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"https://api-ios.example.com"</span>
-</span><span id="__span-3-3"><a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"https://api-android.example.com"</span>
-</span><span id="__span-3-4"><a href="#__codelineno-3-4" id="__codelineno-3-4" name="__codelineno-3-4"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">WEB</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"https://api-web.example.com"</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">apiEndpoint</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">string</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"https://api.example.com"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-2"><a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="w">    </span><span class="n">rule</span><span class="p">(</span><span class="s">"https://api-ios.example.com"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-3-3"><a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a><span class="w">    </span><span class="n">rule</span><span class="p">(</span><span class="s">"https://api-android.example.com"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-3-4"><a href="#__codelineno-3-4" id="__codelineno-3-4" name="__codelineno-3-4"></a><span class="w">    </span><span class="n">rule</span><span class="p">(</span><span class="s">"https://api-web.example.com"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">WEB</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
 </span><span id="__span-3-5"><a href="#__codelineno-3-5" id="__codelineno-3-5" name="__codelineno-3-5"></a><span class="p">}</span>
 </span></code></pre></div>
+<h3 id="rollout-allowlisting-internal-testers">Rollout allowlisting (internal testers)<a class="headerlink" href="#rollout-allowlisting-internal-testers" title="Permanent link">¶</a></h3>
+<p>Allowlists bypass rollout <em>after</em> a rule matches by criteria:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">newUi</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-2"><a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a><span class="w">    </span><span class="n">allowlist</span><span class="p">(</span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"tester-1"</span><span class="p">))</span>
+</span><span id="__span-4-3"><a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a><span class="w">    </span><span class="n">rule</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">5.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-4-4"><a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a><span class="p">}</span>
+</span></code></pre></div>
 <h3 id="variants-via-enums-not-strings">Variants via enums (not strings)<a class="headerlink" href="#variants-via-enums-not-strings" title="Permanent link">¶</a></h3>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="kd">enum</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">Theme</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">LIGHT</span><span class="p">,</span><span class="w"> </span><span class="n">DARK</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-4-2"><a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">THEME</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">enum</span><span class="o">&lt;</span><span class="n">Theme</span><span class="p">,</span><span class="w"> </span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Theme</span><span class="p">.</span><span class="na">LIGHT</span><span class="p">)</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-5-1"><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a><span class="kd">enum</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">Theme</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">LIGHT</span><span class="p">,</span><span class="w"> </span><span class="n">DARK</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-5-2"><a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">theme</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">enum</span><span class="o">&lt;</span><span class="n">Theme</span><span class="p">,</span><span class="w"> </span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Theme</span><span class="p">.</span><span class="na">LIGHT</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-4"><a href="#__codelineno-5-4" id="__codelineno-5-4" name="__codelineno-5-4"></a><span class="w">    </span><span class="n">rule</span><span class="p">(</span><span class="n">Theme</span><span class="p">.</span><span class="na">DARK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-5-5"><a href="#__codelineno-5-5" id="__codelineno-5-5" name="__codelineno-5-5"></a><span class="p">}</span>
 </span></code></pre></div>
 <hr/>
 <h2 id="namespaces-scale-ownership-not-prefixes">Namespaces scale ownership, not prefixes<a class="headerlink" href="#namespaces-scale-ownership-not-prefixes" title="Permanent link">¶</a></h2>
-<p>Konditional provides <code>Namespace.Global</code>. If you need isolation boundaries beyond global, define your own namespaces in your codebase (consumer-defined), then bind <code>FeatureContainer</code>s to them.</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-5-1"><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a><span class="kd">sealed</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">AppDomain</span><span class="p">(</span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Namespace</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-2"><a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a><span class="w">    </span><span class="kd">data</span><span class="w"> </span><span class="kd">object</span><span class="w"> </span><span class="nc">Auth</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">AppDomain</span><span class="p">(</span><span class="s">"auth"</span><span class="p">)</span>
-</span><span id="__span-5-3"><a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a><span class="w">    </span><span class="kd">data</span><span class="w"> </span><span class="kd">object</span><span class="w"> </span><span class="nc">Payments</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">AppDomain</span><span class="p">(</span><span class="s">"payments"</span><span class="p">)</span>
-</span><span id="__span-5-4"><a href="#__codelineno-5-4" id="__codelineno-5-4" name="__codelineno-5-4"></a><span class="p">}</span>
-</span><span id="__span-5-5"><a href="#__codelineno-5-5" id="__codelineno-5-5" name="__codelineno-5-5"></a>
-</span><span id="__span-5-6"><a href="#__codelineno-5-6" id="__codelineno-5-6" name="__codelineno-5-6"></a><span class="kd">object</span><span class="w"> </span><span class="nc">AuthFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">AppDomain</span><span class="p">.</span><span class="na">Auth</span><span class="o">&gt;</span><span class="p">(</span><span class="n">AppDomain</span><span class="p">.</span><span class="na">Auth</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-7"><a href="#__codelineno-5-7" id="__codelineno-5-7" name="__codelineno-5-7"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">SOCIAL_LOGIN</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
-</span><span id="__span-5-8"><a href="#__codelineno-5-8" id="__codelineno-5-8" name="__codelineno-5-8"></a><span class="p">}</span>
-</span><span id="__span-5-9"><a href="#__codelineno-5-9" id="__codelineno-5-9" name="__codelineno-5-9"></a>
-</span><span id="__span-5-10"><a href="#__codelineno-5-10" id="__codelineno-5-10" name="__codelineno-5-10"></a><span class="kd">object</span><span class="w"> </span><span class="nc">PaymentFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">AppDomain</span><span class="p">.</span><span class="na">Payments</span><span class="o">&gt;</span><span class="p">(</span><span class="n">AppDomain</span><span class="p">.</span><span class="na">Payments</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-11"><a href="#__codelineno-5-11" id="__codelineno-5-11" name="__codelineno-5-11"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">APPLE_PAY</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
-</span><span id="__span-5-12"><a href="#__codelineno-5-12" id="__codelineno-5-12" name="__codelineno-5-12"></a><span class="p">}</span>
+<p>Konditional provides <code>Namespace.Global</code>. If you need isolation boundaries beyond global, define your own namespaces in
+your codebase (consumer-defined), then bind <code>FeatureContainer</code>s to them.</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-6-1"><a href="#__codelineno-6-1" id="__codelineno-6-1" name="__codelineno-6-1"></a><span class="kd">sealed</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">AppDomain</span><span class="p">(</span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Namespace</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-2"><a href="#__codelineno-6-2" id="__codelineno-6-2" name="__codelineno-6-2"></a><span class="w">    </span><span class="kd">data</span><span class="w"> </span><span class="kd">object</span><span class="w"> </span><span class="nc">Auth</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">AppDomain</span><span class="p">(</span><span class="s">"auth"</span><span class="p">)</span>
+</span><span id="__span-6-3"><a href="#__codelineno-6-3" id="__codelineno-6-3" name="__codelineno-6-3"></a><span class="w">    </span><span class="kd">data</span><span class="w"> </span><span class="kd">object</span><span class="w"> </span><span class="nc">Payments</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">AppDomain</span><span class="p">(</span><span class="s">"payments"</span><span class="p">)</span>
+</span><span id="__span-6-4"><a href="#__codelineno-6-4" id="__codelineno-6-4" name="__codelineno-6-4"></a><span class="p">}</span>
+</span><span id="__span-6-5"><a href="#__codelineno-6-5" id="__codelineno-6-5" name="__codelineno-6-5"></a>
+</span><span id="__span-6-6"><a href="#__codelineno-6-6" id="__codelineno-6-6" name="__codelineno-6-6"></a><span class="kd">object</span><span class="w"> </span><span class="nc">AuthFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">AppDomain</span><span class="p">.</span><span class="na">Auth</span><span class="o">&gt;</span><span class="p">(</span><span class="n">AppDomain</span><span class="p">.</span><span class="na">Auth</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-7"><a href="#__codelineno-6-7" id="__codelineno-6-7" name="__codelineno-6-7"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">socialLogin</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+</span><span id="__span-6-8"><a href="#__codelineno-6-8" id="__codelineno-6-8" name="__codelineno-6-8"></a><span class="p">}</span>
+</span><span id="__span-6-9"><a href="#__codelineno-6-9" id="__codelineno-6-9" name="__codelineno-6-9"></a>
+</span><span id="__span-6-10"><a href="#__codelineno-6-10" id="__codelineno-6-10" name="__codelineno-6-10"></a><span class="kd">object</span><span class="w"> </span><span class="nc">PaymentFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">AppDomain</span><span class="p">.</span><span class="na">Payments</span><span class="o">&gt;</span><span class="p">(</span><span class="n">AppDomain</span><span class="p">.</span><span class="na">Payments</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-11"><a href="#__codelineno-6-11" id="__codelineno-6-11" name="__codelineno-6-11"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">applePay</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+</span><span id="__span-6-12"><a href="#__codelineno-6-12" id="__codelineno-6-12" name="__codelineno-6-12"></a><span class="p">}</span>
 </span></code></pre></div>
 <hr/>
 <h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">¶</a></h2>

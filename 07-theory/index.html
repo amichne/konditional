@@ -499,7 +499,7 @@ established via validation and explicit error handling (<code>ParseResult</code>
     Code["Flags + rules defined in code"] --&gt; CT["Compile-time guarantees"]
     CT --&gt; Eval["Evaluation returns typed, non-null values"]
     Json["JSON payload"] --&gt; RT["Runtime validation boundary"]
-    RT --&gt;|Success| Load["Namespace.load(snapshot)"]
+    RT --&gt;|Success| Load["Namespace.load(configuration)"]
     RT --&gt;|Failure| Reject["Reject before evaluation"]
     style CT fill: #e1f5ff
     style RT fill: #fff3cd
@@ -520,10 +520,11 @@ architecture introduces three classes of runtime failure:</p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="kd">object</span><span class="w"> </span><span class="nc">AppFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-0-2"><a href="#__codelineno-0-2" id="__codelineno-0-2" name="__codelineno-0-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">darkMode</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
 </span><span id="__span-0-3"><a href="#__codelineno-0-3" id="__codelineno-0-3" name="__codelineno-0-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">timeout</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">double</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">30.0</span><span class="p">)</span>
-</span><span id="__span-0-4"><a href="#__codelineno-0-4" id="__codelineno-0-4" name="__codelineno-0-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">maxRetries</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">int</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">)</span>
+</span><span id="__span-0-4"><a href="#__codelineno-0-4" id="__codelineno-0-4" name="__codelineno-0-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">maxRetries</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">integer</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">)</span>
 </span><span id="__span-0-5"><a href="#__codelineno-0-5" id="__codelineno-0-5" name="__codelineno-0-5"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>Because the delegate (<code>boolean</code>, <code>double</code>, <code>int</code>, …) determines the type parameter, the compiler knows the declared type
+<p>Because the delegate (<code>boolean</code>, <code>double</code>, <code>integer</code>, …) determines the type parameter, the compiler knows the declared
+type
 at the definition site and carries it forward.</p>
 <p><strong>Guarantee</strong>: the declared type of a feature is statically known and cannot drift without code changes the compiler
 re-checks.</p>
@@ -531,7 +532,7 @@ re-checks.</p>
 <h2 id="mechanism-2-rule-return-types-are-constrained">Mechanism 2: Rule return types are constrained<a class="headerlink" href="#mechanism-2-rule-return-types-are-constrained" title="Permanent link">¶</a></h2>
 <p>Rules must return a value of the feature’s declared type:</p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">timeout</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">double</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">30.0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-1-2"><a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="m">45.0</span>
+</span><span id="__span-1-2"><a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a><span class="w">    </span><span class="n">rule</span><span class="p">(</span><span class="m">45.0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
 </span><span id="__span-1-3"><a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a><span class="p">}</span>
 </span></code></pre></div>
 <p><strong>Guarantee</strong>: statically-defined rule return values are type-checked at compile time.</p>
@@ -539,8 +540,15 @@ re-checks.</p>
 <hr/>
 <h2 id="mechanism-3-evaluation-site-preserves-the-concrete-type">Mechanism 3: Evaluation site preserves the concrete type<a class="headerlink" href="#mechanism-3-evaluation-site-preserves-the-concrete-type" title="Permanent link">¶</a></h2>
 <p>Evaluation preserves the type parameter from definition to usage:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">isDarkMode</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">AppFeatures</span><span class="p">.</span><span class="na">darkMode</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-2-2"><a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">timeout</span><span class="p">:</span><span class="w"> </span><span class="kt">Double</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">AppFeatures</span><span class="p">.</span><span class="na">timeout</span><span class="w"> </span><span class="p">}</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
+</span><span id="__span-2-2"><a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a><span class="w">    </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
+</span><span id="__span-2-3"><a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a><span class="w">    </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span>
+</span><span id="__span-2-4"><a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a><span class="w">    </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">),</span>
+</span><span id="__span-2-5"><a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a><span class="w">    </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"user-123"</span><span class="p">),</span>
+</span><span id="__span-2-6"><a href="#__codelineno-2-6" id="__codelineno-2-6" name="__codelineno-2-6"></a><span class="p">)</span>
+</span><span id="__span-2-7"><a href="#__codelineno-2-7" id="__codelineno-2-7" name="__codelineno-2-7"></a>
+</span><span id="__span-2-8"><a href="#__codelineno-2-8" id="__codelineno-2-8" name="__codelineno-2-8"></a><span class="kd">val</span><span class="w"> </span><span class="nv">isDarkMode</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppFeatures</span><span class="p">.</span><span class="na">darkMode</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+</span><span id="__span-2-9"><a href="#__codelineno-2-9" id="__codelineno-2-9" name="__codelineno-2-9"></a><span class="kd">val</span><span class="w"> </span><span class="nv">timeout</span><span class="p">:</span><span class="w"> </span><span class="kt">Double</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppFeatures</span><span class="p">.</span><span class="na">timeout</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
 </span></code></pre></div>
 <p><strong>Guarantee</strong>: no casts are required at call sites; incompatible assignments are compile errors.</p>
 <hr/>
@@ -561,8 +569,8 @@ re-checks.</p>
 </span><span id="__span-4-7"><a href="#__codelineno-4-7" id="__codelineno-4-7" name="__codelineno-4-7"></a><span class="kd">object</span><span class="w"> </span><span class="nc">PaymentFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">AppDomain</span><span class="p">.</span><span class="na">Payments</span><span class="o">&gt;</span><span class="p">(</span><span class="n">AppDomain</span><span class="p">.</span><span class="na">Payments</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
 <p><strong>Guarantee</strong>: feature key collisions across namespaces cannot occur (separate registries bound at the type level).</p>
-<p><strong>Boundary</strong>: defining conflicting keys within the same namespace is a design error that can be detected at runtime during
-registration.</p>
+<p><strong>Boundary</strong>: defining conflicting keys within the same namespace is a design error detected at container initialization
+(duplicate feature ids are rejected during registration).</p>
 <hr/>
 <h2 id="the-trust-boundary-runtime-json">The trust boundary: runtime JSON<a class="headerlink" href="#the-trust-boundary-runtime-json" title="Permanent link">¶</a></h2>
 <p>When configuration is loaded from JSON, compile-time guarantees necessarily end. Konditional establishes correctness at
@@ -575,8 +583,10 @@ the boundary:</p>
 </span></code></pre></div>
 <p>The guarantee is qualified:</p>
 <ul>
+<li><strong>Guaranteed</strong>: invalid JSON is detected and rejected before it can affect evaluation.</li>
 <li>
-<p><strong>Guaranteed</strong>: invalid JSON is detected and rejected before it can affect evaluation.</p>
+<p><strong>Precondition</strong>: the features referenced by the JSON must be registered (i.e., your <code>FeatureContainer</code> objects have
+  been initialized).</p>
 </li>
 <li>
 <p><strong>Not guaranteed</strong>: Semantic correctness of the configuration (rollout percentage, targeting intent, business

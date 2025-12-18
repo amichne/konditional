@@ -1198,10 +1198,12 @@
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">track</span><span class="p">(</span><span class="s">&quot;new_onboarding_flow_completed&quot;</span><span class="p">)</span><span class="w">  </span><span class="c1">// correct spelling</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1">// Somewhere in config JSON</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="p">{</span><span class="s">&quot;new_onboarding_flow&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">}</span><span class="w">  </span><span class="c1">// correct spelling</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="p">{</span><span class="w"> </span><span class="s">&quot;new_onboarding_flow&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span><span class="w">  </span><span class="c1">// correct spelling</span>
 </span></code></pre></div>
-<p>The typo ships. The flag never activates. Your A/B test runs for weeks with 0% treatment. Nobody notices until you check the results.</p>
-<p><strong>String keys fail silently.</strong> The compiler can't help you. Your IDE can't help you. You find out in production or in post-mortems.</p>
+<p>The typo ships. The flag never activates. Your A/B test runs for weeks with 0% treatment. Nobody notices until you check
+the results.</p>
+<p><strong>String keys fail silently.</strong> The compiler can't help you. Your IDE can't help you. You find out in production or in
+post-mortems.</p>
 <h3 id="boolean-only-systems-turn-into-boolean-matrices">Boolean-only systems turn into boolean matrices<a class="headerlink" href="#boolean-only-systems-turn-into-boolean-matrices" title="Permanent link">&para;</a></h3>
 <p>You start clean:</p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kd">enum</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">Capability</span><span class="w"> </span><span class="p">{</span>
@@ -1226,27 +1228,31 @@
 </span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">    </span><span class="c1">// ... which logic wins?</span>
 </span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="p">}</span>
 </span></code></pre></div>
-<p><strong>Boolean-only forces you to encode variants as control flow.</strong> Every combination requires explicit handling. Testing becomes exponential. Bugs hide in interactions.</p>
+<p><strong>Boolean-only forces you to encode variants as control flow.</strong> Every combination requires explicit handling. Testing
+becomes exponential. Bugs hide in interactions.</p>
 <h3 id="each-team-reimplements-rollout-logic-differently">Each team reimplements rollout logic differently<a class="headerlink" href="#each-team-reimplements-rollout-logic-differently" title="Permanent link">&para;</a></h3>
-<p>The account team implements rollouts with modulo arithmetic. The payments team uses random number generators. The growth team copies some Stack Overflow answer. Each has different edge cases:</p>
+<p>The account team implements rollouts with modulo arithmetic. The payments team uses random number generators. The growth
+team copies some Stack Overflow answer. Each has different edge cases:</p>
 <ul>
 <li>Do they bucket consistently for the same user?</li>
 <li>Can you replay decisions deterministically in logs?</li>
 <li>Does the same user get the same experience on web and mobile?</li>
 <li>What happens when you change the percentage?</li>
 </ul>
-<p><strong>Inconsistent rollout semantics create A/B testing landmines.</strong> Results become untrustworthy. Debugging requires reading five different implementations.</p>
+<p><strong>Inconsistent rollout semantics create A/B testing landmines.</strong> Results become untrustworthy. Debugging requires
+reading five different implementations.</p>
 <h3 id="type-safety-disappears-at-the-boundary">Type safety disappears at the boundary<a class="headerlink" href="#type-safety-disappears-at-the-boundary" title="Permanent link">&para;</a></h3>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">// You define this</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">maxRetries</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flagClient</span><span class="p">.</span><span class="na">getInt</span><span class="p">(</span><span class="s">&quot;max_retries&quot;</span><span class="p">,</span><span class="w"> </span><span class="m">3</span><span class="p">)</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1">// Someone deploys this</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">{</span><span class="s">&quot;max_retries&quot;</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;five&quot;</span><span class="p">}</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">{</span><span class="w"> </span><span class="s">&quot;max_retries&quot;</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;five&quot;</span><span class="w"> </span><span class="p">}</span>
 </span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
 </span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1">// Production gets this</span>
 </span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">maxRetries</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="w">  </span><span class="c1">// or throws, or returns default, depends on the SDK</span>
 </span></code></pre></div>
-<p><strong>Runtime configuration breaks compile-time contracts.</strong> JSON is stringly-typed. Your code expects ints. The gap causes incidents.</p>
+<p><strong>Runtime configuration breaks compile-time contracts.</strong> JSON is stringly-typed. Your code expects ints. The gap causes
+incidents.</p>
 <hr />
 <h2 id="what-konditional-does-differently">What Konditional Does Differently<a class="headerlink" href="#what-konditional-does-differently" title="Permanent link">&para;</a></h2>
 <p>Konditional makes three structural commitments:</p>
@@ -1255,41 +1261,43 @@
 <li><strong>Types flow from definitions to callsites</strong> — no type casting or runtime coercion</li>
 <li><strong>One evaluation semantics for the entire codebase</strong> — centralized, deterministic, testable</li>
 </ol>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kd">object</span><span class="w"> </span><span class="nc">AppFlags</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">NEW_CHECKOUT</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;classic&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">MOBILE</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">&quot;optimized&quot;</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">50.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">&quot;experimental&quot;</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">MAX_RETRIES</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">int</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">WEB</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="m">5</span>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="p">}</span>
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>
-</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="c1">// Usage</span>
-</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="kd">val</span><span class="w"> </span><span class="nv">checkoutMode</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppFlags</span><span class="p">.</span><span class="na">NEW_CHECKOUT</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="w">  </span><span class="c1">// typed, cannot be wrong</span>
-</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="kd">val</span><span class="w"> </span><span class="nv">retries</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppFlags</span><span class="p">.</span><span class="na">MAX_RETRIES</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="w">           </span><span class="c1">// typed, cannot be wrong</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kd">enum</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">CheckoutVariant</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">CLASSIC</span><span class="p">,</span><span class="w"> </span><span class="n">OPTIMIZED</span><span class="p">,</span><span class="w"> </span><span class="n">EXPERIMENTAL</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kd">object</span><span class="w"> </span><span class="nc">AppFlags</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">checkoutVariant</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">enum</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CheckoutVariant</span><span class="p">.</span><span class="na">CLASSIC</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">        </span><span class="n">rule</span><span class="p">(</span><span class="n">CheckoutVariant</span><span class="p">.</span><span class="na">OPTIMIZED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">        </span><span class="n">rule</span><span class="p">(</span><span class="n">CheckoutVariant</span><span class="p">.</span><span class="na">EXPERIMENTAL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">50.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">maxRetries</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">integer</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">        </span><span class="n">rule</span><span class="p">(</span><span class="m">5</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">WEB</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="p">}</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="c1">// Usage</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="kd">val</span><span class="w"> </span><span class="nv">checkoutVariant</span><span class="p">:</span><span class="w"> </span><span class="n">CheckoutVariant</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppFlags</span><span class="p">.</span><span class="na">checkoutVariant</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="w">  </span><span class="c1">// typed, cannot be wrong</span>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="kd">val</span><span class="w"> </span><span class="nv">retries</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppFlags</span><span class="p">.</span><span class="na">maxRetries</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="w">                           </span><span class="c1">// typed, cannot be wrong</span>
 </span></code></pre></div>
 <h3 id="what-you-get">What you get<a class="headerlink" href="#what-you-get" title="Permanent link">&para;</a></h3>
-<p><strong>Typos become compile errors:</strong>
+<p><strong>Typos become compile errors:</strong></p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">AppFlags</span><span class="p">.</span><span class="na">NEW_ONBOARING_FLOW</span><span class="w">  </span><span class="c1">// doesn&#39;t compile</span>
-</span></code></pre></div></p>
-<p><strong>Type mismatches become compile errors:</strong>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">retries</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppFlags</span><span class="p">.</span><span class="na">MAX_RETRIES</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="w">  </span><span class="c1">// doesn&#39;t compile</span>
-</span></code></pre></div></p>
-<p><strong>Variants are values, not boolean matrices:</strong>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="n">AppFlags</span><span class="p">.</span><span class="na">NEW_CHECKOUT</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="n">ctx</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="s">&quot;classic&quot;</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">classicCheckout</span><span class="p">()</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="s">&quot;optimized&quot;</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">optimizedCheckout</span><span class="p">()</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="s">&quot;experimental&quot;</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">experimentalCheckout</span><span class="p">()</span>
+</span></code></pre></div>
+<p><strong>Type mismatches become compile errors:</strong></p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">retries</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppFlags</span><span class="p">.</span><span class="na">maxRetries</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="w">  </span><span class="c1">// doesn&#39;t compile</span>
+</span></code></pre></div>
+<p><strong>Variants are values, not boolean matrices:</strong></p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="n">AppFlags</span><span class="p">.</span><span class="na">checkoutVariant</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">ctx</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="n">CheckoutVariant</span><span class="p">.</span><span class="na">CLASSIC</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">classicCheckout</span><span class="p">()</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="n">CheckoutVariant</span><span class="p">.</span><span class="na">OPTIMIZED</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">optimizedCheckout</span><span class="p">()</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="n">CheckoutVariant</span><span class="p">.</span><span class="na">EXPERIMENTAL</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">experimentalCheckout</span><span class="p">()</span>
 </span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="p">}</span>
-</span></code></pre></div></p>
-<p><strong>Rollouts are deterministic and consistent:</strong>
+</span></code></pre></div>
+<p><strong>Rollouts are deterministic and consistent:</strong></p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1">// Same user, same flag, same percentage → same bucket</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="c1">// SHA-256(&quot;$userId:$flagKey:$salt&quot;) determines bucket</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="c1">// SHA-256(&quot;$salt:$flagKey:${stableId.hexId}&quot;) determines bucket</span>
 </span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="c1">// No random numbers, no modulo edge cases, reproducible in logs</span>
-</span></code></pre></div></p>
-<p><strong>Configuration boundaries are explicit:</strong>
+</span></code></pre></div>
+<p><strong>Configuration boundaries are explicit:</strong></p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="kd">val</span><span class="w"> </span><span class="nv">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SnapshotSerializer</span><span class="p">.</span><span class="na">fromJson</span><span class="p">(</span><span class="n">remoteConfig</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="k">is</span><span class="w"> </span><span class="n">ParseResult</span><span class="p">.</span><span class="na">Success</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="na">value</span><span class="p">)</span>
 </span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="k">is</span><span class="w"> </span><span class="n">ParseResult</span><span class="p">.</span><span class="na">Failure</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span>
@@ -1297,7 +1305,9 @@
 </span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">        </span><span class="n">logError</span><span class="p">(</span><span class="s">&quot;Config parse failed: </span><span class="si">${</span><span class="n">result</span><span class="p">.</span><span class="na">error</span><span class="si">}</span><span class="s">&quot;</span><span class="p">)</span>
 </span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="p">}</span>
 </span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="p">}</span>
-</span></code></pre></div></p>
+</span></code></pre></div>
+<p>If the payload references unknown or not-yet-registered feature keys, parsing fails (or can be configured to skip
+unknown keys during migrations).</p>
 <hr />
 <h2 id="comparison-to-alternatives">Comparison to Alternatives<a class="headerlink" href="#comparison-to-alternatives" title="Permanent link">&para;</a></h2>
 <table>
@@ -1377,14 +1387,15 @@
 <h3 id="for-teams-running-experiments">For teams running experiments<a class="headerlink" href="#for-teams-running-experiments" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Rollouts are reproducible:</strong> Same user always gets same bucket. You can replay decisions from logs.</li>
-<li><strong>Percentages are stable:</strong> Changing 10% → 20% doesn't reshuffle existing users.</li>
+<li><strong>Percentages are stable:</strong> Increasing 10% → 20% only adds users for the same <code>(stableId, flagKey, salt)</code>.</li>
 <li><strong>Targeting is consistent:</strong> Platform/locale/version targeting works the same across all flags.</li>
 </ul>
 <h3 id="for-systems-that-grow">For systems that grow<a class="headerlink" href="#for-systems-that-grow" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>No boolean explosion:</strong> Variants are values, not combinatorial boolean checks.</li>
 <li><strong>No evaluation logic duplication:</strong> One DSL, one evaluation engine, shared across all domains.</li>
-<li><strong>Clear boundaries:</strong> Compile-time correctness for definitions. Runtime validation for remote config. No blurred lines.</li>
+<li><strong>Clear boundaries:</strong> Compile-time correctness for definitions. Runtime validation for remote config. No blurred
+  lines.</li>
 </ul>
 <hr />
 <h2 id="when-konditional-fits">When Konditional Fits<a class="headerlink" href="#when-konditional-fits" title="Permanent link">&para;</a></h2>
@@ -1399,7 +1410,8 @@
 <p>Konditional might not fit if:</p>
 <ul>
 <li><strong>You need vendor-hosted dashboards</strong> more than you need compile-time safety</li>
-<li><strong>Your flags are fully dynamic</strong> with zero static definitions (though you can still use Konditional for the static subset)</li>
+<li><strong>Your flags are fully dynamic</strong> with zero static definitions (though you can still use Konditional for the static
+  subset)</li>
 <li><strong>You're okay with process and tooling</strong> to prevent string key drift (code review, linters, integration tests)</li>
 </ul>
 <hr />
@@ -1441,42 +1453,57 @@
 <hr />
 <h2 id="real-problems-konditional-prevents">Real Problems Konditional Prevents<a class="headerlink" href="#real-problems-konditional-prevents" title="Permanent link">&para;</a></h2>
 <h3 id="production-incident-type-coercion">Production incident: Type coercion<a class="headerlink" href="#production-incident-type-coercion" title="Permanent link">&para;</a></h3>
-<p>A string-keyed SDK returns <code>0</code> when parsing <code>"max_retries": "disabled"</code> from JSON. The service retries 0 times. All requests fail immediately. Incident lasts 45 minutes.</p>
-<p><strong>With Konditional:</strong> The JSON parse fails at the boundary. <code>ParseResult.Failure</code> is logged. Last-known-good configuration remains active. No incident.</p>
+<p>A string-keyed SDK returns <code>0</code> when parsing <code>"max_retries": "disabled"</code> from JSON. The service retries 0 times. All
+requests fail immediately. Incident lasts 45 minutes.</p>
+<p><strong>With Konditional:</strong> The JSON parse fails at the boundary. <code>ParseResult.Failure</code> is logged. Last-known-good
+configuration remains active. No incident.</p>
 <h3 id="experiment-contamination-inconsistent-bucketing">Experiment contamination: Inconsistent bucketing<a class="headerlink" href="#experiment-contamination-inconsistent-bucketing" title="Permanent link">&para;</a></h3>
-<p>Two teams implement rollouts with different hashing. Same user gets opposite buckets for related features. A/B test results are polluted. Experiment analysis is invalid.</p>
-<p><strong>With Konditional:</strong> All rollouts use the same deterministic SHA-256 bucketing. Same user, same flag, same bucket. Results are clean.</p>
+<p>Two teams implement rollouts with different hashing. Same user gets opposite buckets for related features. A/B test
+results are polluted. Experiment analysis is invalid.</p>
+<p><strong>With Konditional:</strong> All rollouts use the same deterministic SHA-256 bucketing. Same user, same flag, same bucket.
+Results are clean.</p>
 <h3 id="maintenance-burden-boolean-explosion">Maintenance burden: Boolean explosion<a class="headerlink" href="#maintenance-burden-boolean-explosion" title="Permanent link">&para;</a></h3>
-<p>A feature has 5 boolean flags for variants. Testing requires 2^5 = 32 combinations. Most combinations are undefined. Bugs hide in interactions. Engineers avoid touching the code.</p>
+<p>A feature has 5 boolean flags for variants. Testing requires 2^5 = 32 combinations. Most combinations are undefined.
+Bugs hide in interactions. Engineers avoid touching the code.</p>
 <p><strong>With Konditional:</strong> One flag, one typed value, explicit variants. Testing covers defined cases. Code is readable.</p>
 <h3 id="configuration-drift-silent-deployment">Configuration drift: Silent deployment<a class="headerlink" href="#configuration-drift-silent-deployment" title="Permanent link">&para;</a></h3>
-<p>Someone changes <code>"new_onboarding_flow"</code> to <code>"new_onboarding_experience"</code> in the remote config. Half the codebase uses the old key, half uses the new key. Rollout percentage splits across both. Metrics are nonsense.</p>
-<p><strong>With Konditional:</strong> Flag keys are derived from property names. Renaming the property updates all callsites (compile-time). Remote config uses the same derived key (validated at parse boundary). Drift is impossible.</p>
+<p>Someone changes <code>"new_onboarding_flow"</code> to <code>"new_onboarding_experience"</code> in the remote config. Half the codebase uses
+the old key, half uses the new key. Rollout percentage splits across both. Metrics are nonsense.</p>
+<p><strong>With Konditional:</strong> Flag keys are derived from property names. Renaming the property updates all callsites (
+compile-time). If remote config still sends the old key, loading fails (or emits a warning if configured to skip unknown
+keys) instead of silently splitting traffic.</p>
 <hr />
 <h2 id="migration-path">Migration Path<a class="headerlink" href="#migration-path" title="Permanent link">&para;</a></h2>
 <p>If you're coming from a boolean capability system:</p>
 <ol>
 <li>
 <p><strong>Mirror existing flags</strong> as properties in a <code>FeatureContainer</code>:
-   <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">FEATURE_X</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+   <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kd">object</span><span class="w"> </span><span class="nc">Features</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">featureX</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="p">}</span>
 </span></code></pre></div></p>
 </li>
 <li>
 <p><strong>Centralize evaluation logic</strong> into rules:
-   <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">FEATURE_X</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">WEB</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">25.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="p">}</span>
+   <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kd">object</span><span class="w"> </span><span class="nc">Features</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">featureX</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">        </span><span class="n">rule</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">WEB</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">        </span><span class="n">rule</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">25.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="p">}</span>
 </span></code></pre></div></p>
 </li>
 <li>
 <p><strong>Replace boolean matrices</strong> with typed values where variants exist:
    <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1">// Before: CHECKOUT_V1, CHECKOUT_V2, CHECKOUT_V3 (3 booleans)</span>
 </span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="c1">// After:</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">CHECKOUT_VERSION</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;v1&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">33.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">&quot;v2&quot;</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">66.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">&quot;v3&quot;</span>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="p">}</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="kd">enum</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">CheckoutVersion</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">V1</span><span class="p">,</span><span class="w"> </span><span class="n">V2</span><span class="p">,</span><span class="w"> </span><span class="n">V3</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="kd">object</span><span class="w"> </span><span class="nc">CheckoutFlags</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">checkoutVersion</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">enum</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CheckoutVersion</span><span class="p">.</span><span class="na">V1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">        </span><span class="n">rule</span><span class="p">(</span><span class="n">CheckoutVersion</span><span class="p">.</span><span class="na">V2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">33.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">        </span><span class="n">rule</span><span class="p">(</span><span class="n">CheckoutVersion</span><span class="p">.</span><span class="na">V3</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="m">66.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="p">}</span>
 </span></code></pre></div></p>
 </li>
 <li>
@@ -1498,9 +1525,12 @@
 </ol>
 <hr />
 <h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
-<p>Feature flags and configuration aren't just "nice to have" features. They're load-bearing infrastructure. When they fail, they fail at scale, in production, with user impact.</p>
-<p>Konditional exists because <strong>stringly-typed systems cause production incidents</strong>, <strong>boolean-only systems create maintenance nightmares</strong>, and <strong>inconsistent evaluation semantics make experiments untrustworthy</strong>.</p>
-<p>The solution isn't more process or better code review. The solution is structural: bind types at compile-time, centralize evaluation semantics, and draw explicit boundaries between static definitions and dynamic configuration.</p>
+<p>Feature flags and configuration aren't just "nice to have" features. They're load-bearing infrastructure. When they
+fail, they fail at scale, in production, with user impact.</p>
+<p>Konditional exists because <strong>stringly-typed systems cause production incidents</strong>, <strong>boolean-only systems create
+maintenance nightmares</strong>, and <strong>inconsistent evaluation semantics make experiments untrustworthy</strong>.</p>
+<p>The solution isn't more process or better code review. The solution is structural: bind types at compile-time,
+centralize evaluation semantics, and draw explicit boundaries between static definitions and dynamic configuration.</p>
 <p>That's what Konditional does.</p>
 
 

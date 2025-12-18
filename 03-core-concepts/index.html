@@ -402,13 +402,6 @@
     </span>
 </a>
 </li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#cross-namespace-misuse">
-<span class="md-ellipsis">
-      Cross-namespace misuse
-    </span>
-</a>
-</li>
 </ul>
 </nav>
 </li>
@@ -577,13 +570,6 @@
     </span>
 </a>
 </li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="#cross-namespace-misuse">
-<span class="md-ellipsis">
-      Cross-namespace misuse
-    </span>
-</a>
-</li>
 </ul>
 </nav>
 </li>
@@ -602,73 +588,85 @@
 <div class="md-content" data-md-component="content">
 <article class="md-content__inner md-typeset">
 <h1 id="core-concepts">Core Concepts<a class="headerlink" href="#core-concepts" title="Permanent link">¶</a></h1>
-<p>Konditional’s public surface is intentionally small. Understanding three primitives—<strong>Features</strong>, <strong>Context</strong>, and <strong>Namespaces</strong>—is enough to reason about correctness, organization, and runtime behavior.</p>
+<p>Konditional’s public surface is intentionally small. Understanding three primitives—<strong>Features</strong>, <strong>Context</strong>, and *
+<em>Namespaces</em>*—is enough to reason about correctness, organization, and runtime behavior.</p>
 <pre class="mermaid"><code>flowchart TD
-  N["Namespace"] --&gt; R["Registry"]
-  C["FeatureContainer"] --&gt; R
-  C --&gt; F["Feature (typed)"]
-  F --&gt; D["Default (required)"]
-  F --&gt; Rules["Rules"]
-  Rules --&gt; Rule["rule { ... } returns value"]
-  Rule --&gt; Criteria["platforms/locales/versions/rollout/extension"]
-  X["Context"] --&gt; Rule</code></pre>
+    N["Namespace"] --&gt; R["Registry"]
+    C["FeatureContainer"] --&gt; R
+    C --&gt; F["Feature (typed)"]
+    F --&gt; D["Default (required)"]
+    F --&gt; Rules["Rules"]
+    Rules --&gt; Rule["rule(value) { ... }"]
+    Rule --&gt; Criteria["platforms/locales/versions/axis/rollout/allowlist/extension"]
+    X["Context"] --&gt; Rule</code></pre>
 <hr/>
 <h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">¶</a></h2>
-<p>A feature is a typed configuration value with an optional rule set. You define features as delegated properties in a <code>FeatureContainer</code>:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="kd">object</span><span class="w"> </span><span class="nc">AppFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-2"><a href="#__codelineno-0-2" id="__codelineno-0-2" name="__codelineno-0-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">DARK_MODE</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
-</span><span id="__span-0-3"><a href="#__codelineno-0-3" id="__codelineno-0-3" name="__codelineno-0-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">API_ENDPOINT</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"https://api.example.com"</span><span class="p">)</span>
-</span><span id="__span-0-4"><a href="#__codelineno-0-4" id="__codelineno-0-4" name="__codelineno-0-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">MAX_RETRIES</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">int</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">)</span>
-</span><span id="__span-0-5"><a href="#__codelineno-0-5" id="__codelineno-0-5" name="__codelineno-0-5"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">TIMEOUT</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">double</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">30.0</span><span class="p">)</span>
-</span><span id="__span-0-6"><a href="#__codelineno-0-6" id="__codelineno-0-6" name="__codelineno-0-6"></a><span class="p">}</span>
-</span><span id="__span-0-7"><a href="#__codelineno-0-7" id="__codelineno-0-7" name="__codelineno-0-7"></a>
-</span><span id="__span-0-8"><a href="#__codelineno-0-8" id="__codelineno-0-8" name="__codelineno-0-8"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">AppFeatures</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-0-9"><a href="#__codelineno-0-9" id="__codelineno-0-9" name="__codelineno-0-9"></a><span class="kd">val</span><span class="w"> </span><span class="nv">endpoint</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">AppFeatures</span><span class="p">.</span><span class="na">API_ENDPOINT</span><span class="w"> </span><span class="p">}</span>
+<p>A feature is a typed configuration value with an optional rule set. You define features as delegated properties in a
+<code>FeatureContainer</code>:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.api.evaluate</span>
+</span><span id="__span-0-2"><a href="#__codelineno-0-2" id="__codelineno-0-2" name="__codelineno-0-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">io.amichne.konditional.context.Context</span>
+</span><span id="__span-0-3"><a href="#__codelineno-0-3" id="__codelineno-0-3" name="__codelineno-0-3"></a><span class="kd">object</span><span class="w"> </span><span class="nc">AppFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-4"><a href="#__codelineno-0-4" id="__codelineno-0-4" name="__codelineno-0-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">darkMode</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+</span><span id="__span-0-5"><a href="#__codelineno-0-5" id="__codelineno-0-5" name="__codelineno-0-5"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">apiEndpoint</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">string</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"https://api.example.com"</span><span class="p">)</span>
+</span><span id="__span-0-6"><a href="#__codelineno-0-6" id="__codelineno-0-6" name="__codelineno-0-6"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">maxRetries</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">integer</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">)</span>
+</span><span id="__span-0-7"><a href="#__codelineno-0-7" id="__codelineno-0-7" name="__codelineno-0-7"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">timeoutSeconds</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">double</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">30.0</span><span class="p">)</span>
+</span><span id="__span-0-8"><a href="#__codelineno-0-8" id="__codelineno-0-8" name="__codelineno-0-8"></a><span class="p">}</span>
+</span><span id="__span-0-9"><a href="#__codelineno-0-9" id="__codelineno-0-9" name="__codelineno-0-9"></a>
+</span><span id="__span-0-10"><a href="#__codelineno-0-10" id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppFeatures</span><span class="p">.</span><span class="na">darkMode</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+</span><span id="__span-0-11"><a href="#__codelineno-0-11" id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="kd">val</span><span class="w"> </span><span class="nv">endpoint</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppFeatures</span><span class="p">.</span><span class="na">apiEndpoint</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
 </span></code></pre></div>
-<p>What this buys you:
-- <strong>Property name becomes the key</strong> (no string keys at call sites)
-- <strong>Type flows from the delegate</strong> (<code>boolean</code> → <code>Boolean</code>, etc.)
-- <strong>Non-null evaluation</strong> (default is required)</p>
+<p>What this buys you:</p>
+<ul>
+<li><strong>Property name becomes the key</strong> (no string keys at call sites)</li>
+<li><strong>Type flows from the delegate</strong> (<code>boolean</code> → <code>Boolean</code>, etc.)</li>
+<li><strong>Non-null evaluation</strong> (default is required)</li>
+</ul>
 <h3 id="supported-types">Supported types<a class="headerlink" href="#supported-types" title="Permanent link">¶</a></h3>
 <table>
 <thead>
 <tr>
 <th>Type</th>
-<th>DSL Method</th>
-<th>Kotlin Type</th>
-<th>Example Default</th>
+<th>FeatureContainer method</th>
+<th>Kotlin type</th>
+<th>Example default</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Boolean</td>
-<td><code>boolean()</code></td>
+<td><code>boolean(...)</code></td>
 <td><code>Boolean</code></td>
 <td><code>false</code></td>
 </tr>
 <tr>
 <td>String</td>
-<td><code>string()</code></td>
+<td><code>string(...)</code></td>
 <td><code>String</code></td>
 <td><code>"production"</code></td>
 </tr>
 <tr>
 <td>Integer</td>
-<td><code>int()</code></td>
+<td><code>integer(...)</code></td>
 <td><code>Int</code></td>
 <td><code>42</code></td>
 </tr>
 <tr>
 <td>Decimal</td>
-<td><code>double()</code></td>
+<td><code>double(...)</code></td>
 <td><code>Double</code></td>
 <td><code>3.14</code></td>
 </tr>
 <tr>
 <td>Enum</td>
-<td><code>enum&lt;E&gt;()</code></td>
+<td><code>enum(...)</code></td>
 <td><code>E : Enum&lt;E&gt;</code></td>
 <td><code>LogLevel.INFO</code></td>
+</tr>
+<tr>
+<td>Data class</td>
+<td><code>custom(...)</code></td>
+<td><code>T : KotlinEncodeable&lt;ObjectSchema&gt;</code></td>
+<td><code>MyConfig()</code></td>
 </tr>
 </tbody>
 </table>
@@ -681,23 +679,27 @@
 </span><span id="__span-1-6"><a href="#__codelineno-1-6" id="__codelineno-1-6" name="__codelineno-1-6"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">THEME</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">enum</span><span class="o">&lt;</span><span class="n">Theme</span><span class="p">,</span><span class="w"> </span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Theme</span><span class="p">.</span><span class="na">LIGHT</span><span class="p">)</span>
 </span><span id="__span-1-7"><a href="#__codelineno-1-7" id="__codelineno-1-7" name="__codelineno-1-7"></a><span class="p">}</span>
 </span><span id="__span-1-8"><a href="#__codelineno-1-8" id="__codelineno-1-8" name="__codelineno-1-8"></a>
-</span><span id="__span-1-9"><a href="#__codelineno-1-9" id="__codelineno-1-9" name="__codelineno-1-9"></a><span class="kd">val</span><span class="w"> </span><span class="nv">level</span><span class="p">:</span><span class="w"> </span><span class="n">LogLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">AppConfig</span><span class="p">.</span><span class="na">LOG_LEVEL</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-1-9"><a href="#__codelineno-1-9" id="__codelineno-1-9" name="__codelineno-1-9"></a><span class="kd">val</span><span class="w"> </span><span class="nv">level</span><span class="p">:</span><span class="w"> </span><span class="n">LogLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppConfig</span><span class="p">.</span><span class="na">LOG_LEVEL</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
 </span></code></pre></div>
 <p>Because variants are enum values, invalid variants cannot compile.</p>
 <hr/>
 <h2 id="rules">Rules<a class="headerlink" href="#rules" title="Permanent link">¶</a></h2>
 <p>Rules are a typed mapping from a set of criteria to a concrete return value:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">API_ENDPOINT</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"https://api.example.com"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-2"><a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"https://api-ios.example.com"</span>
-</span><span id="__span-2-3"><a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"https://api-android.example.com"</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">apiEndpoint</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">string</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"https://api.example.com"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-2"><a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a><span class="w">    </span><span class="n">rule</span><span class="p">(</span><span class="s">"https://api-ios.example.com"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-2-3"><a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a><span class="w">    </span><span class="n">rule</span><span class="p">(</span><span class="s">"https://api-android.example.com"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">ANDROID</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
 </span><span id="__span-2-4"><a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>Criteria you can compose (within a single rule):
-- <code>platforms(...)</code>
-- <code>locales(...)</code>
-- <code>versions { min(...); max(...) }</code>
-- <code>rollout { percent }</code>
-- <code>extension { ... }</code> for custom predicates</p>
+<p>Criteria you can compose (within a single rule):</p>
+<ul>
+<li><code>platforms(...)</code></li>
+<li><code>locales(...)</code></li>
+<li><code>versions { min(...); max(...) }</code></li>
+<li><code>rollout { percent }</code></li>
+<li><code>allowlist(...)</code> (rollout bypass)</li>
+<li><code>axis(...)</code> (dimensional targeting)</li>
+<li><code>extension { ... }</code> for custom predicates</li>
+</ul>
 <p>Within a rule, criteria combine as <strong>AND</strong>: all specified criteria must match for the rule to match.</p>
 <h3 id="custom-predicates-via-extension">Custom predicates via <code>extension { }</code><a class="headerlink" href="#custom-predicates-via-extension" title="Permanent link">¶</a></h3>
 <p>To keep business targeting logic typed (not string-based), define a custom <code>Context</code> and use <code>extension { }</code>:</p>
@@ -714,88 +716,77 @@
 </span><span id="__span-3-11"><a href="#__codelineno-3-11" id="__codelineno-3-11" name="__codelineno-3-11"></a>
 </span><span id="__span-3-12"><a href="#__codelineno-3-12" id="__codelineno-3-12" name="__codelineno-3-12"></a><span class="kd">object</span><span class="w"> </span><span class="nc">PremiumFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-3-13"><a href="#__codelineno-3-13" id="__codelineno-3-13" name="__codelineno-3-13"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">ADVANCED_ANALYTICS</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">EnterpriseContext</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-14"><a href="#__codelineno-3-14" id="__codelineno-3-14" name="__codelineno-3-14"></a><span class="w">        </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-15"><a href="#__codelineno-3-15" id="__codelineno-3-15" name="__codelineno-3-15"></a><span class="w">            </span><span class="n">extension</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-16"><a href="#__codelineno-3-16" id="__codelineno-3-16" name="__codelineno-3-16"></a><span class="w">                </span><span class="n">Evaluable</span><span class="p">.</span><span class="na">factory</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="o">-&gt;</span>
-</span><span id="__span-3-17"><a href="#__codelineno-3-17" id="__codelineno-3-17" name="__codelineno-3-17"></a><span class="w">                    </span><span class="n">ctx</span><span class="p">.</span><span class="na">subscriptionTier</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SubscriptionTier</span><span class="p">.</span><span class="na">ENTERPRISE</span><span class="w"> </span><span class="o">&amp;&amp;</span>
-</span><span id="__span-3-18"><a href="#__codelineno-3-18" id="__codelineno-3-18" name="__codelineno-3-18"></a><span class="w">                        </span><span class="n">ctx</span><span class="p">.</span><span class="na">employeeCount</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">100</span>
-</span><span id="__span-3-19"><a href="#__codelineno-3-19" id="__codelineno-3-19" name="__codelineno-3-19"></a><span class="w">                </span><span class="p">}</span>
-</span><span id="__span-3-20"><a href="#__codelineno-3-20" id="__codelineno-3-20" name="__codelineno-3-20"></a><span class="w">            </span><span class="p">}</span>
-</span><span id="__span-3-21"><a href="#__codelineno-3-21" id="__codelineno-3-21" name="__codelineno-3-21"></a><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
-</span><span id="__span-3-22"><a href="#__codelineno-3-22" id="__codelineno-3-22" name="__codelineno-3-22"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-3-23"><a href="#__codelineno-3-23" id="__codelineno-3-23" name="__codelineno-3-23"></a><span class="p">}</span>
+</span><span id="__span-3-14"><a href="#__codelineno-3-14" id="__codelineno-3-14" name="__codelineno-3-14"></a><span class="w">        </span><span class="n">rule</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-15"><a href="#__codelineno-3-15" id="__codelineno-3-15" name="__codelineno-3-15"></a><span class="w">            </span><span class="n">extension</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">subscriptionTier</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SubscriptionTier</span><span class="p">.</span><span class="na">ENTERPRISE</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">employeeCount</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-3-16"><a href="#__codelineno-3-16" id="__codelineno-3-16" name="__codelineno-3-16"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-3-17"><a href="#__codelineno-3-17" id="__codelineno-3-17" name="__codelineno-3-17"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-3-18"><a href="#__codelineno-3-18" id="__codelineno-3-18" name="__codelineno-3-18"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>Because the feature is parameterized with <code>EnterpriseContext</code>, <code>ctx</code> is strongly typed inside the predicate.</p>
+<p>Because the feature is parameterized with <code>EnterpriseContext</code>, the receiver inside <code>extension { ... }</code> is strongly
+typed.</p>
 <hr/>
 <h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">¶</a></h2>
 <p>Context provides evaluation inputs: it tells Konditional who is asking and where they are.</p>
 <p>Standard fields (the minimum required by the rule DSL):</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">Context</span><span class="p">(</span>
-</span><span id="__span-4-2"><a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">locale</span><span class="p">:</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">,</span>
-</span><span id="__span-4-3"><a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">platform</span><span class="p">:</span><span class="w"> </span><span class="n">Platform</span><span class="p">,</span>
-</span><span id="__span-4-4"><a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">appVersion</span><span class="p">:</span><span class="w"> </span><span class="n">Version</span><span class="p">,</span>
-</span><span id="__span-4-5"><a href="#__codelineno-4-5" id="__codelineno-4-5" name="__codelineno-4-5"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">stableId</span><span class="p">:</span><span class="w"> </span><span class="n">StableId</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
+</span><span id="__span-4-2"><a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a><span class="w">    </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
+</span><span id="__span-4-3"><a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a><span class="w">    </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span>
+</span><span id="__span-4-4"><a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a><span class="w">    </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">),</span>
+</span><span id="__span-4-5"><a href="#__codelineno-4-5" id="__codelineno-4-5" name="__codelineno-4-5"></a><span class="w">    </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"user-123"</span><span class="p">),</span>
 </span><span id="__span-4-6"><a href="#__codelineno-4-6" id="__codelineno-4-6" name="__codelineno-4-6"></a><span class="p">)</span>
 </span></code></pre></div>
 <h3 id="stableid-deterministic-rollouts">StableId (deterministic rollouts)<a class="headerlink" href="#stableid-deterministic-rollouts" title="Permanent link">¶</a></h3>
-<p><code>stableId</code> is a stable identifier used for deterministic bucketing. It must be hex (32+ chars):</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-5-1"><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"</span><span class="p">)</span>
+<p><code>stableId</code> is a stable identifier used for deterministic bucketing.
+<code>StableId.of(...)</code> accepts any non-blank string and normalizes it to a hex representation used for bucketing.</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-5-1"><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"user-123"</span><span class="p">)</span>
 </span></code></pre></div>
-<p>If you have an existing user ID, hash it into hex:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-6-1"><a href="#__codelineno-6-1" id="__codelineno-6-1" name="__codelineno-6-1"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">toStableId</span><span class="p">(</span><span class="n">userId</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">):</span><span class="w"> </span><span class="n">StableId</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-6-2"><a href="#__codelineno-6-2" id="__codelineno-6-2" name="__codelineno-6-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">hash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MessageDigest</span><span class="p">.</span><span class="na">getInstance</span><span class="p">(</span><span class="s">"SHA-256"</span><span class="p">)</span>
-</span><span id="__span-6-3"><a href="#__codelineno-6-3" id="__codelineno-6-3" name="__codelineno-6-3"></a><span class="w">        </span><span class="p">.</span><span class="na">digest</span><span class="p">(</span><span class="n">userId</span><span class="p">.</span><span class="na">toByteArray</span><span class="p">())</span>
-</span><span id="__span-6-4"><a href="#__codelineno-6-4" id="__codelineno-6-4" name="__codelineno-6-4"></a><span class="w">        </span><span class="p">.</span><span class="na">joinToString</span><span class="p">(</span><span class="s">""</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">"%02x"</span><span class="p">.</span><span class="na">format</span><span class="p">(</span><span class="nb">it</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-6-5"><a href="#__codelineno-6-5" id="__codelineno-6-5" name="__codelineno-6-5"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">hash</span><span class="p">)</span>
-</span><span id="__span-6-6"><a href="#__codelineno-6-6" id="__codelineno-6-6" name="__codelineno-6-6"></a><span class="p">}</span>
-</span></code></pre></div>
+<p>If you need cross-platform consistency, ensure all platforms pass the same canonical stable identifier string
+into <code>StableId.of(...)</code> (it lowercases the input).</p>
 <hr/>
 <h2 id="namespaces">Namespaces<a class="headerlink" href="#namespaces" title="Permanent link">¶</a></h2>
 <p>Namespaces are isolation boundaries: each namespace has its own registry and independent configuration lifecycle.
-Konditional provides <code>Namespace.Global</code>. If you need more isolation boundaries, define your own namespaces (consumer-defined) and bind containers to them.</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-7-1"><a href="#__codelineno-7-1" id="__codelineno-7-1" name="__codelineno-7-1"></a><span class="kd">sealed</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">AppDomain</span><span class="p">(</span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Namespace</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-7-2"><a href="#__codelineno-7-2" id="__codelineno-7-2" name="__codelineno-7-2"></a><span class="w">    </span><span class="kd">data</span><span class="w"> </span><span class="kd">object</span><span class="w"> </span><span class="nc">Auth</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">AppDomain</span><span class="p">(</span><span class="s">"auth"</span><span class="p">)</span>
-</span><span id="__span-7-3"><a href="#__codelineno-7-3" id="__codelineno-7-3" name="__codelineno-7-3"></a><span class="w">    </span><span class="kd">data</span><span class="w"> </span><span class="kd">object</span><span class="w"> </span><span class="nc">Payments</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">AppDomain</span><span class="p">(</span><span class="s">"payments"</span><span class="p">)</span>
-</span><span id="__span-7-4"><a href="#__codelineno-7-4" id="__codelineno-7-4" name="__codelineno-7-4"></a><span class="p">}</span>
-</span><span id="__span-7-5"><a href="#__codelineno-7-5" id="__codelineno-7-5" name="__codelineno-7-5"></a>
-</span><span id="__span-7-6"><a href="#__codelineno-7-6" id="__codelineno-7-6" name="__codelineno-7-6"></a><span class="kd">object</span><span class="w"> </span><span class="nc">AuthFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">AppDomain</span><span class="p">.</span><span class="na">Auth</span><span class="o">&gt;</span><span class="p">(</span><span class="n">AppDomain</span><span class="p">.</span><span class="na">Auth</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-7-7"><a href="#__codelineno-7-7" id="__codelineno-7-7" name="__codelineno-7-7"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">SOCIAL_LOGIN</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
-</span><span id="__span-7-8"><a href="#__codelineno-7-8" id="__codelineno-7-8" name="__codelineno-7-8"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">TWO_FACTOR_AUTH</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
-</span><span id="__span-7-9"><a href="#__codelineno-7-9" id="__codelineno-7-9" name="__codelineno-7-9"></a><span class="p">}</span>
-</span><span id="__span-7-10"><a href="#__codelineno-7-10" id="__codelineno-7-10" name="__codelineno-7-10"></a>
-</span><span id="__span-7-11"><a href="#__codelineno-7-11" id="__codelineno-7-11" name="__codelineno-7-11"></a><span class="kd">object</span><span class="w"> </span><span class="nc">PaymentFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">AppDomain</span><span class="p">.</span><span class="na">Payments</span><span class="o">&gt;</span><span class="p">(</span><span class="n">AppDomain</span><span class="p">.</span><span class="na">Payments</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-7-12"><a href="#__codelineno-7-12" id="__codelineno-7-12" name="__codelineno-7-12"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">APPLE_PAY</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
-</span><span id="__span-7-13"><a href="#__codelineno-7-13" id="__codelineno-7-13" name="__codelineno-7-13"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">STRIPE_INTEGRATION</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
-</span><span id="__span-7-14"><a href="#__codelineno-7-14" id="__codelineno-7-14" name="__codelineno-7-14"></a><span class="p">}</span>
-</span><span id="__span-7-15"><a href="#__codelineno-7-15" id="__codelineno-7-15" name="__codelineno-7-15"></a>
-</span><span id="__span-7-16"><a href="#__codelineno-7-16" id="__codelineno-7-16" name="__codelineno-7-16"></a><span class="n">AppDomain</span><span class="p">.</span><span class="na">Auth</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">authConfig</span><span class="p">)</span>
-</span><span id="__span-7-17"><a href="#__codelineno-7-17" id="__codelineno-7-17" name="__codelineno-7-17"></a><span class="n">AppDomain</span><span class="p">.</span><span class="na">Payments</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">paymentConfig</span><span class="p">)</span>
+Konditional provides <code>Namespace.Global</code>. If you need more isolation boundaries, define your own namespaces (
+consumer-defined) and bind containers to them.</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-6-1"><a href="#__codelineno-6-1" id="__codelineno-6-1" name="__codelineno-6-1"></a><span class="kd">sealed</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">AppDomain</span><span class="p">(</span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Namespace</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-2"><a href="#__codelineno-6-2" id="__codelineno-6-2" name="__codelineno-6-2"></a><span class="w">    </span><span class="kd">data</span><span class="w"> </span><span class="kd">object</span><span class="w"> </span><span class="nc">Auth</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">AppDomain</span><span class="p">(</span><span class="s">"auth"</span><span class="p">)</span>
+</span><span id="__span-6-3"><a href="#__codelineno-6-3" id="__codelineno-6-3" name="__codelineno-6-3"></a><span class="w">    </span><span class="kd">data</span><span class="w"> </span><span class="kd">object</span><span class="w"> </span><span class="nc">Payments</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">AppDomain</span><span class="p">(</span><span class="s">"payments"</span><span class="p">)</span>
+</span><span id="__span-6-4"><a href="#__codelineno-6-4" id="__codelineno-6-4" name="__codelineno-6-4"></a><span class="p">}</span>
+</span><span id="__span-6-5"><a href="#__codelineno-6-5" id="__codelineno-6-5" name="__codelineno-6-5"></a>
+</span><span id="__span-6-6"><a href="#__codelineno-6-6" id="__codelineno-6-6" name="__codelineno-6-6"></a><span class="kd">object</span><span class="w"> </span><span class="nc">AuthFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">AppDomain</span><span class="p">.</span><span class="na">Auth</span><span class="o">&gt;</span><span class="p">(</span><span class="n">AppDomain</span><span class="p">.</span><span class="na">Auth</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-7"><a href="#__codelineno-6-7" id="__codelineno-6-7" name="__codelineno-6-7"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">socialLogin</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+</span><span id="__span-6-8"><a href="#__codelineno-6-8" id="__codelineno-6-8" name="__codelineno-6-8"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">twoFactorAuth</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
+</span><span id="__span-6-9"><a href="#__codelineno-6-9" id="__codelineno-6-9" name="__codelineno-6-9"></a><span class="p">}</span>
+</span><span id="__span-6-10"><a href="#__codelineno-6-10" id="__codelineno-6-10" name="__codelineno-6-10"></a>
+</span><span id="__span-6-11"><a href="#__codelineno-6-11" id="__codelineno-6-11" name="__codelineno-6-11"></a><span class="kd">object</span><span class="w"> </span><span class="nc">PaymentFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">AppDomain</span><span class="p">.</span><span class="na">Payments</span><span class="o">&gt;</span><span class="p">(</span><span class="n">AppDomain</span><span class="p">.</span><span class="na">Payments</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-12"><a href="#__codelineno-6-12" id="__codelineno-6-12" name="__codelineno-6-12"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">applePay</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+</span><span id="__span-6-13"><a href="#__codelineno-6-13" id="__codelineno-6-13" name="__codelineno-6-13"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">stripeIntegration</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
+</span><span id="__span-6-14"><a href="#__codelineno-6-14" id="__codelineno-6-14" name="__codelineno-6-14"></a><span class="p">}</span>
+</span><span id="__span-6-15"><a href="#__codelineno-6-15" id="__codelineno-6-15" name="__codelineno-6-15"></a>
+</span><span id="__span-6-16"><a href="#__codelineno-6-16" id="__codelineno-6-16" name="__codelineno-6-16"></a><span class="n">AppDomain</span><span class="p">.</span><span class="na">Auth</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">authConfig</span><span class="p">)</span>
+</span><span id="__span-6-17"><a href="#__codelineno-6-17" id="__codelineno-6-17" name="__codelineno-6-17"></a><span class="n">AppDomain</span><span class="p">.</span><span class="na">Payments</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">paymentConfig</span><span class="p">)</span>
 </span></code></pre></div>
 <h3 id="custom-namespaces-governance">Custom namespaces (governance)<a class="headerlink" href="#custom-namespaces-governance" title="Permanent link">¶</a></h3>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-8-1"><a href="#__codelineno-8-1" id="__codelineno-8-1" name="__codelineno-8-1"></a><span class="kd">sealed</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">TeamDomain</span><span class="p">(</span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Namespace</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-8-2"><a href="#__codelineno-8-2" id="__codelineno-8-2" name="__codelineno-8-2"></a><span class="w">    </span><span class="kd">data</span><span class="w"> </span><span class="kd">object</span><span class="w"> </span><span class="nc">Recommendations</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">TeamDomain</span><span class="p">(</span><span class="s">"recommendations"</span><span class="p">)</span>
-</span><span id="__span-8-3"><a href="#__codelineno-8-3" id="__codelineno-8-3" name="__codelineno-8-3"></a><span class="w">    </span><span class="kd">data</span><span class="w"> </span><span class="kd">object</span><span class="w"> </span><span class="nc">Analytics</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">TeamDomain</span><span class="p">(</span><span class="s">"analytics"</span><span class="p">)</span>
-</span><span id="__span-8-4"><a href="#__codelineno-8-4" id="__codelineno-8-4" name="__codelineno-8-4"></a><span class="p">}</span>
-</span><span id="__span-8-5"><a href="#__codelineno-8-5" id="__codelineno-8-5" name="__codelineno-8-5"></a>
-</span><span id="__span-8-6"><a href="#__codelineno-8-6" id="__codelineno-8-6" name="__codelineno-8-6"></a><span class="kd">object</span><span class="w"> </span><span class="nc">RecFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">TeamDomain</span><span class="p">.</span><span class="na">Recommendations</span><span class="o">&gt;</span><span class="p">(</span><span class="n">TeamDomain</span><span class="p">.</span><span class="na">Recommendations</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-8-7"><a href="#__codelineno-8-7" id="__codelineno-8-7" name="__codelineno-8-7"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">COLLABORATIVE_FILTERING</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
-</span><span id="__span-8-8"><a href="#__codelineno-8-8" id="__codelineno-8-8" name="__codelineno-8-8"></a><span class="p">}</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-7-1"><a href="#__codelineno-7-1" id="__codelineno-7-1" name="__codelineno-7-1"></a><span class="kd">sealed</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">TeamDomain</span><span class="p">(</span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Namespace</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-7-2"><a href="#__codelineno-7-2" id="__codelineno-7-2" name="__codelineno-7-2"></a><span class="w">    </span><span class="kd">data</span><span class="w"> </span><span class="kd">object</span><span class="w"> </span><span class="nc">Recommendations</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">TeamDomain</span><span class="p">(</span><span class="s">"recommendations"</span><span class="p">)</span>
+</span><span id="__span-7-3"><a href="#__codelineno-7-3" id="__codelineno-7-3" name="__codelineno-7-3"></a><span class="w">    </span><span class="kd">data</span><span class="w"> </span><span class="kd">object</span><span class="w"> </span><span class="nc">Analytics</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">TeamDomain</span><span class="p">(</span><span class="s">"analytics"</span><span class="p">)</span>
+</span><span id="__span-7-4"><a href="#__codelineno-7-4" id="__codelineno-7-4" name="__codelineno-7-4"></a><span class="p">}</span>
+</span><span id="__span-7-5"><a href="#__codelineno-7-5" id="__codelineno-7-5" name="__codelineno-7-5"></a>
+</span><span id="__span-7-6"><a href="#__codelineno-7-6" id="__codelineno-7-6" name="__codelineno-7-6"></a><span class="kd">object</span><span class="w"> </span><span class="nc">RecFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">TeamDomain</span><span class="p">.</span><span class="na">Recommendations</span><span class="o">&gt;</span><span class="p">(</span><span class="n">TeamDomain</span><span class="p">.</span><span class="na">Recommendations</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-7-7"><a href="#__codelineno-7-7" id="__codelineno-7-7" name="__codelineno-7-7"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">COLLABORATIVE_FILTERING</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
+</span><span id="__span-7-8"><a href="#__codelineno-7-8" id="__codelineno-7-8" name="__codelineno-7-8"></a><span class="p">}</span>
 </span></code></pre></div>
 <hr/>
 <h2 id="type-safety-in-action-what-becomes-impossible">Type safety in action (what becomes impossible)<a class="headerlink" href="#type-safety-in-action-what-becomes-impossible" title="Permanent link">¶</a></h2>
 <h3 id="wrong-value-type-at-call-site">Wrong value type at call site<a class="headerlink" href="#wrong-value-type-at-call-site" title="Permanent link">¶</a></h3>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-9-1"><a href="#__codelineno-9-1" id="__codelineno-9-1" name="__codelineno-9-1"></a><span class="kd">object</span><span class="w"> </span><span class="nc">Config</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-9-2"><a href="#__codelineno-9-2" id="__codelineno-9-2" name="__codelineno-9-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">MAX_RETRIES</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">int</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">)</span>
-</span><span id="__span-9-3"><a href="#__codelineno-9-3" id="__codelineno-9-3" name="__codelineno-9-3"></a><span class="p">}</span>
-</span><span id="__span-9-4"><a href="#__codelineno-9-4" id="__codelineno-9-4" name="__codelineno-9-4"></a>
-</span><span id="__span-9-5"><a href="#__codelineno-9-5" id="__codelineno-9-5" name="__codelineno-9-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">retries</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Config</span><span class="p">.</span><span class="na">MAX_RETRIES</span><span class="w"> </span><span class="p">}</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-8-1"><a href="#__codelineno-8-1" id="__codelineno-8-1" name="__codelineno-8-1"></a><span class="kd">object</span><span class="w"> </span><span class="nc">Config</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FeatureContainer</span><span class="o">&lt;</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-8-2"><a href="#__codelineno-8-2" id="__codelineno-8-2" name="__codelineno-8-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">maxRetries</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">integer</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">)</span>
+</span><span id="__span-8-3"><a href="#__codelineno-8-3" id="__codelineno-8-3" name="__codelineno-8-3"></a><span class="p">}</span>
+</span><span id="__span-8-4"><a href="#__codelineno-8-4" id="__codelineno-8-4" name="__codelineno-8-4"></a>
+</span><span id="__span-8-5"><a href="#__codelineno-8-5" id="__codelineno-8-5" name="__codelineno-8-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">retries</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Config</span><span class="p">.</span><span class="na">maxRetries</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
 </span></code></pre></div>
 <h3 id="wrong-context-type-for-a-feature">Wrong context type for a feature<a class="headerlink" href="#wrong-context-type-for-a-feature" title="Permanent link">¶</a></h3>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-10-1"><a href="#__codelineno-10-1" id="__codelineno-10-1" name="__codelineno-10-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">basicContext</span><span class="p">:</span><span class="w"> </span><span class="n">Context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(...)</span>
-</span><span id="__span-10-2"><a href="#__codelineno-10-2" id="__codelineno-10-2" name="__codelineno-10-2"></a><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">PremiumFeatures</span><span class="p">.</span><span class="na">ADVANCED_ANALYTICS</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="c1">// Compile error (requires EnterpriseContext)</span>
-</span></code></pre></div>
-<h3 id="cross-namespace-misuse">Cross-namespace misuse<a class="headerlink" href="#cross-namespace-misuse" title="Permanent link">¶</a></h3>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-11-1"><a href="#__codelineno-11-1" id="__codelineno-11-1" name="__codelineno-11-1"></a><span class="n">AppDomain</span><span class="p">.</span><span class="na">Auth</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">paymentConfig</span><span class="p">)</span><span class="w"> </span><span class="c1">// Compile error (type mismatch)</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-9-1"><a href="#__codelineno-9-1" id="__codelineno-9-1" name="__codelineno-9-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">basicContext</span><span class="p">:</span><span class="w"> </span><span class="n">Context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(...)</span>
+</span><span id="__span-9-2"><a href="#__codelineno-9-2" id="__codelineno-9-2" name="__codelineno-9-2"></a><span class="n">PremiumFeatures</span><span class="p">.</span><span class="na">ADVANCED_ANALYTICS</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">basicContext</span><span class="p">)</span><span class="w"> </span><span class="c1">// Compile error (requires EnterpriseContext)</span>
 </span></code></pre></div>
 <hr/>
 <h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">¶</a></h2>

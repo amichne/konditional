@@ -325,9 +325,9 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#feature-recommended">
+<a class="md-nav__link" href="#featureevaluatecontext-recommended">
 <span class="md-ellipsis">
-      feature { } (recommended)
+      Feature.evaluate(context) (recommended)
     </span>
 </a>
 </li>
@@ -486,9 +486,9 @@
 </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#feature-recommended">
+<a class="md-nav__link" href="#featureevaluatecontext-recommended">
 <span class="md-ellipsis">
-      feature { } (recommended)
+      Feature.evaluate(context) (recommended)
     </span>
 </a>
 </li>
@@ -613,41 +613,50 @@
 <li><strong>Non-null</strong> — Defaults are required, so evaluation does not return <code>T?</code>.</li>
 </ul>
 <hr/>
-<h2 id="feature-recommended"><code>feature { }</code> (recommended)<a class="headerlink" href="#feature-recommended" title="Permanent link">¶</a></h2>
-<p>Concise evaluation inside a context-aware scope:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">darkMode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="p">}</span>
+<h2 id="featureevaluatecontext-recommended"><code>Feature.evaluate(context)</code> (recommended)<a class="headerlink" href="#featureevaluatecontext-recommended" title="Permanent link">¶</a></h2>
+<p>Concise evaluation with an explicit context:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">darkMode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">darkMode</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
 </span><span id="__span-0-2"><a href="#__codelineno-0-2" id="__codelineno-0-2" name="__codelineno-0-2"></a><span class="n">applyDarkMode</span><span class="p">(</span><span class="n">darkMode</span><span class="p">)</span>
 </span></code></pre></div>
-<p>Use this when:
-- defaults are meaningful
-- you want the smallest call-site surface</p>
+<p>Use this when:</p>
+<ul>
+<li>defaults are meaningful</li>
+<li>you want the smallest call-site surface</li>
+</ul>
+<p><code>feature { ... }</code> still exists as an optional helper when your receiver implements both
+<code>ContextAware&lt;C&gt;</code> and <code>FeatureAware&lt;M&gt;</code>, but it is not required for normal usage.</p>
 <hr/>
 <h2 id="explain-trace-operational-debugging">Explain / trace (operational debugging)<a class="headerlink" href="#explain-trace-operational-debugging" title="Permanent link">¶</a></h2>
 <p>When you need to diagnose a specific user’s outcome, evaluate with a structured reason:</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="p">.</span><span class="na">evaluateWithReason</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">darkMode</span><span class="p">.</span><span class="na">evaluateWithReason</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
 </span><span id="__span-1-2"><a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a><span class="n">println</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="na">decision</span><span class="p">)</span>
 </span></code></pre></div>
-<p><code>EvaluationResult</code> includes:
-- decision kind (rule/default/inactive/disabled)
-- matched rule constraints + specificity
-- deterministic rollout bucket information</p>
+<p><code>EvaluationResult</code> includes:</p>
+<ul>
+<li>decision kind (rule/default/inactive/disabled)</li>
+<li>matched rule constraints + specificity</li>
+<li>deterministic rollout bucket information</li>
+</ul>
 <hr/>
 <h2 id="evaluation-flow">Evaluation flow<a class="headerlink" href="#evaluation-flow" title="Permanent link">¶</a></h2>
 <pre class="mermaid"><code>flowchart TD
-  Start["Context available"] --&gt; Lookup["Registry lookup"]
-  Lookup --&gt; Active{Flag active?}
-  Active --&gt;|No| Default1["Return default"]
-  Active --&gt;|Yes| Sort["Sort rules by specificity"]
-  Sort --&gt; Next{Next rule?}
-  Next --&gt;|No| Default2["Return default"]
-  Next --&gt;|Yes| Match{All criteria match?}
-  Match --&gt;|No| Next
-  Match --&gt;|Yes| Roll{Rollout passes?}
-  Roll --&gt;|No| Next
-  Roll --&gt;|Yes| Value["Return rule value"]
-  style Default1 fill:#fff3cd
-  style Default2 fill:#fff3cd
-  style Value fill:#c8e6c9</code></pre>
+    Start["Context available"] --&gt; Lookup["Registry lookup"]
+    Lookup --&gt; Disabled{Registry disabled?}
+    Disabled --&gt;|Yes| Default0["Return default"]
+    Disabled --&gt;|No| Active{Flag active?}
+    Active --&gt;|No| Default1["Return default"]
+    Active --&gt;|Yes| Sort["Sort rules by specificity"]
+    Sort --&gt; Next{Next rule?}
+    Next --&gt;|No| Default2["Return default"]
+    Next --&gt;|Yes| Match{All criteria match?}
+    Match --&gt;|No| Next
+    Match --&gt;|Yes| Roll{In rollout or allowlisted?}
+    Roll --&gt;|No| Next
+    Roll --&gt;|Yes| Value["Return rule value"]
+    style Default0 fill: #fff3cd
+    style Default1 fill: #fff3cd
+    style Default2 fill: #fff3cd
+    style Value fill: #c8e6c9</code></pre>
 <hr/>
 <h2 id="emergency-kill-switch-namespace-scoped">Emergency kill switch (namespace-scoped)<a class="headerlink" href="#emergency-kill-switch-namespace-scoped" title="Permanent link">¶</a></h2>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">.</span><span class="na">disableAll</span><span class="p">()</span>
@@ -658,82 +667,82 @@
 <h2 id="bucketing-utility-rollout-debugging">Bucketing utility (rollout debugging)<a class="headerlink" href="#bucketing-utility-rollout-debugging" title="Permanent link">¶</a></h2>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">info</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RolloutBucketing</span><span class="p">.</span><span class="na">explain</span><span class="p">(</span>
 </span><span id="__span-3-2"><a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="w">    </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">stableId</span><span class="p">,</span>
-</span><span id="__span-3-3"><a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a><span class="w">    </span><span class="n">featureKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="p">.</span><span class="na">key</span><span class="p">,</span>
-</span><span id="__span-3-4"><a href="#__codelineno-3-4" id="__codelineno-3-4" name="__codelineno-3-4"></a><span class="w">    </span><span class="n">salt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">.</span><span class="na">flag</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="p">).</span><span class="na">salt</span><span class="p">,</span>
+</span><span id="__span-3-3"><a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a><span class="w">    </span><span class="n">featureKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">darkMode</span><span class="p">.</span><span class="na">key</span><span class="p">,</span>
+</span><span id="__span-3-4"><a href="#__codelineno-3-4" id="__codelineno-3-4" name="__codelineno-3-4"></a><span class="w">    </span><span class="n">salt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">.</span><span class="na">flag</span><span class="p">(</span><span class="n">Features</span><span class="p">.</span><span class="na">darkMode</span><span class="p">).</span><span class="na">salt</span><span class="p">,</span>
 </span><span id="__span-3-5"><a href="#__codelineno-3-5" id="__codelineno-3-5" name="__codelineno-3-5"></a><span class="w">    </span><span class="n">rollout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Rampup</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="m">10.0</span><span class="p">),</span>
 </span><span id="__span-3-6"><a href="#__codelineno-3-6" id="__codelineno-3-6" name="__codelineno-3-6"></a><span class="p">)</span>
 </span><span id="__span-3-7"><a href="#__codelineno-3-7" id="__codelineno-3-7" name="__codelineno-3-7"></a><span class="n">println</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
 </span></code></pre></div>
 <h3 id="rule-matching-and-semantics">Rule matching (AND semantics)<a class="headerlink" href="#rule-matching-and-semantics" title="Permanent link">¶</a></h3>
 <p>All specified criteria must match; empty constraint sets match everything.</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">rule</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">rulesSortedBySpecificity</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-4-2"><a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rule</span><span class="p">.</span><span class="na">matches</span><span class="p">(</span><span class="n">context</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-4-3"><a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">rule</span><span class="p">.</span><span class="na">value</span>
-</span><span id="__span-4-4"><a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-4-5"><a href="#__codelineno-4-5" id="__codelineno-4-5" name="__codelineno-4-5"></a><span class="p">}</span>
-</span><span id="__span-4-6"><a href="#__codelineno-4-6" id="__codelineno-4-6" name="__codelineno-4-6"></a><span class="k">return</span><span class="w"> </span><span class="n">default</span>
-</span></code></pre></div>
+<p>Evaluation applies the first matching rule that is in-rollout (or allowlisted), otherwise it falls back to the default.</p>
 <h3 id="specificity-ordering-most-specific-wins">Specificity ordering (most specific wins)<a class="headerlink" href="#specificity-ordering-most-specific-wins" title="Permanent link">¶</a></h3>
-<p>Rules are sorted by the number of criteria present (platforms/locales/versions/rollout).
-This makes “more targeted” rules win over “more general” rules.</p>
+<p>Rules are sorted by targeting specificity (platforms/locales/version bounds/axes) plus extension specificity.
+Rollout percentage does not affect specificity; it gates whether a matching rule is applied.</p>
 <hr/>
 <h2 id="performance-model">Performance model<a class="headerlink" href="#performance-model" title="Permanent link">¶</a></h2>
-<p>The evaluation path is designed to be constant-time in typical usage:
-- <strong>Registry lookup:</strong> O(1)
-- <strong>Rule iteration:</strong> O(n) where n is rules per flag (typically small)
-- <strong>Rollout bucketing:</strong> O(1) SHA-256 hash</p>
-<p>Space model:
-- no allocations during evaluation
-- immutable, pre-built rule structures</p>
+<p>The evaluation path is designed to be predictable:</p>
+<ul>
+<li><strong>Registry lookup:</strong> O(1)</li>
+<li><strong>Rule iteration:</strong> O(n) where n is rules per flag (typically small)</li>
+<li><strong>Rollout bucketing:</strong> 0 or 1 SHA-256 hash per evaluation (bucket is computed only after a rule matches by criteria)</li>
+</ul>
+<p>Space model:</p>
+<ul>
+<li>evaluation allocates a small trace object internally and may allocate for hashing inputs</li>
+<li>rule structures are pre-built and reused across evaluations</li>
+</ul>
 <hr/>
 <h2 id="concurrency-model">Concurrency model<a class="headerlink" href="#concurrency-model" title="Permanent link">¶</a></h2>
-<p>Evaluation is designed for concurrent reads:
-- <strong>Lock-free reads</strong>: evaluation does not require synchronization.
-- <strong>Atomic updates</strong>: configuration updates swap the active snapshot atomically (<code>Namespace.load</code>).</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-5-1"><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a><span class="c1">// Thread 1</span>
-</span><span id="__span-5-2"><a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">newConfig</span><span class="p">)</span>
-</span><span id="__span-5-3"><a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a>
-</span><span id="__span-5-4"><a href="#__codelineno-5-4" id="__codelineno-5-4" name="__codelineno-5-4"></a><span class="c1">// Thread 2 (during update)</span>
-</span><span id="__span-5-5"><a href="#__codelineno-5-5" id="__codelineno-5-5" name="__codelineno-5-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="c1">// sees old OR new, never a mixed state</span>
+<p>Evaluation is designed for concurrent reads:</p>
+<ul>
+<li><strong>Lock-free reads</strong>: evaluation does not require synchronization.</li>
+<li><strong>Atomic updates</strong>: configuration updates swap the active snapshot atomically (<code>Namespace.load</code>).</li>
+</ul>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="c1">// Thread 1</span>
+</span><span id="__span-4-2"><a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a><span class="n">Namespace</span><span class="p">.</span><span class="na">Global</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">newConfig</span><span class="p">)</span>
+</span><span id="__span-4-3"><a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a><span class="c1">// Thread 2 (during update)</span>
+</span><span id="__span-4-5"><a href="#__codelineno-4-5" id="__codelineno-4-5" name="__codelineno-4-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">darkMode</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">context</span><span class="p">)</span><span class="w"> </span><span class="c1">// sees old OR new, never a mixed state</span>
 </span></code></pre></div>
 <hr/>
 <h2 id="testing-evaluation">Testing evaluation<a class="headerlink" href="#testing-evaluation" title="Permanent link">¶</a></h2>
 <h3 id="rule-matching">Rule matching<a class="headerlink" href="#rule-matching" title="Permanent link">¶</a></h3>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-6-1"><a href="#__codelineno-6-1" id="__codelineno-6-1" name="__codelineno-6-1"></a><span class="nd">@Test</span>
-</span><span id="__span-6-2"><a href="#__codelineno-6-2" id="__codelineno-6-2" name="__codelineno-6-2"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">`iOS users in US get dark mode`</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-6-3"><a href="#__codelineno-6-3" id="__codelineno-6-3" name="__codelineno-6-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
-</span><span id="__span-6-4"><a href="#__codelineno-6-4" id="__codelineno-6-4" name="__codelineno-6-4"></a><span class="w">        </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
-</span><span id="__span-6-5"><a href="#__codelineno-6-5" id="__codelineno-6-5" name="__codelineno-6-5"></a><span class="w">        </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span>
-</span><span id="__span-6-6"><a href="#__codelineno-6-6" id="__codelineno-6-6" name="__codelineno-6-6"></a><span class="w">        </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">.</span><span class="na">parse</span><span class="p">(</span><span class="s">"2.1.0"</span><span class="p">),</span>
-</span><span id="__span-6-7"><a href="#__codelineno-6-7" id="__codelineno-6-7" name="__codelineno-6-7"></a><span class="w">        </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"</span><span class="p">)</span>
-</span><span id="__span-6-8"><a href="#__codelineno-6-8" id="__codelineno-6-8" name="__codelineno-6-8"></a><span class="w">    </span><span class="p">)</span>
-</span><span id="__span-6-9"><a href="#__codelineno-6-9" id="__codelineno-6-9" name="__codelineno-6-9"></a>
-</span><span id="__span-6-10"><a href="#__codelineno-6-10" id="__codelineno-6-10" name="__codelineno-6-10"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-6-11"><a href="#__codelineno-6-11" id="__codelineno-6-11" name="__codelineno-6-11"></a><span class="w">    </span><span class="n">assertTrue</span><span class="p">(</span><span class="n">enabled</span><span class="p">)</span>
-</span><span id="__span-6-12"><a href="#__codelineno-6-12" id="__codelineno-6-12" name="__codelineno-6-12"></a><span class="p">}</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-5-1"><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a><span class="nd">@Test</span>
+</span><span id="__span-5-2"><a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">`iOS users in US get dark mode`</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-3"><a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
+</span><span id="__span-5-4"><a href="#__codelineno-5-4" id="__codelineno-5-4" name="__codelineno-5-4"></a><span class="w">        </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
+</span><span id="__span-5-5"><a href="#__codelineno-5-5" id="__codelineno-5-5" name="__codelineno-5-5"></a><span class="w">        </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span>
+</span><span id="__span-5-6"><a href="#__codelineno-5-6" id="__codelineno-5-6" name="__codelineno-5-6"></a><span class="w">        </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">),</span>
+</span><span id="__span-5-7"><a href="#__codelineno-5-7" id="__codelineno-5-7" name="__codelineno-5-7"></a><span class="w">        </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"user-123"</span><span class="p">),</span>
+</span><span id="__span-5-8"><a href="#__codelineno-5-8" id="__codelineno-5-8" name="__codelineno-5-8"></a><span class="w">    </span><span class="p">)</span>
+</span><span id="__span-5-9"><a href="#__codelineno-5-9" id="__codelineno-5-9" name="__codelineno-5-9"></a>
+</span><span id="__span-5-10"><a href="#__codelineno-5-10" id="__codelineno-5-10" name="__codelineno-5-10"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">darkMode</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+</span><span id="__span-5-11"><a href="#__codelineno-5-11" id="__codelineno-5-11" name="__codelineno-5-11"></a><span class="w">    </span><span class="n">assertTrue</span><span class="p">(</span><span class="n">enabled</span><span class="p">)</span>
+</span><span id="__span-5-12"><a href="#__codelineno-5-12" id="__codelineno-5-12" name="__codelineno-5-12"></a><span class="p">}</span>
 </span></code></pre></div>
 <h3 id="determinism">Determinism<a class="headerlink" href="#determinism" title="Permanent link">¶</a></h3>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-7-1"><a href="#__codelineno-7-1" id="__codelineno-7-1" name="__codelineno-7-1"></a><span class="nd">@Test</span>
-</span><span id="__span-7-2"><a href="#__codelineno-7-2" id="__codelineno-7-2" name="__codelineno-7-2"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">`evaluation is deterministic`</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-7-3"><a href="#__codelineno-7-3" id="__codelineno-7-3" name="__codelineno-7-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span><span class="cm">/*...*/</span><span class="p">)</span>
-</span><span id="__span-7-4"><a href="#__codelineno-7-4" id="__codelineno-7-4" name="__codelineno-7-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">results</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="m">1.</span><span class="p">.</span><span class="m">100</span><span class="p">).</span><span class="na">map</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-7-5"><a href="#__codelineno-7-5" id="__codelineno-7-5" name="__codelineno-7-5"></a><span class="w">    </span><span class="n">assertTrue</span><span class="p">(</span><span class="n">results</span><span class="p">.</span><span class="na">distinct</span><span class="p">().</span><span class="na">size</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="s">"Non-deterministic!"</span><span class="p">)</span>
-</span><span id="__span-7-6"><a href="#__codelineno-7-6" id="__codelineno-7-6" name="__codelineno-7-6"></a><span class="p">}</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-6-1"><a href="#__codelineno-6-1" id="__codelineno-6-1" name="__codelineno-6-1"></a><span class="nd">@Test</span>
+</span><span id="__span-6-2"><a href="#__codelineno-6-2" id="__codelineno-6-2" name="__codelineno-6-2"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">`evaluation is deterministic`</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-3"><a href="#__codelineno-6-3" id="__codelineno-6-3" name="__codelineno-6-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span><span class="cm">/*...*/</span><span class="p">)</span>
+</span><span id="__span-6-4"><a href="#__codelineno-6-4" id="__codelineno-6-4" name="__codelineno-6-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">results</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="m">1.</span><span class="p">.</span><span class="m">100</span><span class="p">).</span><span class="na">map</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">darkMode</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">context</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-6-5"><a href="#__codelineno-6-5" id="__codelineno-6-5" name="__codelineno-6-5"></a><span class="w">    </span><span class="n">assertTrue</span><span class="p">(</span><span class="n">results</span><span class="p">.</span><span class="na">distinct</span><span class="p">().</span><span class="na">size</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="s">"Non-deterministic!"</span><span class="p">)</span>
+</span><span id="__span-6-6"><a href="#__codelineno-6-6" id="__codelineno-6-6" name="__codelineno-6-6"></a><span class="p">}</span>
 </span></code></pre></div>
 <h3 id="rollout-distribution-statistical-sanity-check">Rollout distribution (statistical sanity check)<a class="headerlink" href="#rollout-distribution-statistical-sanity-check" title="Permanent link">¶</a></h3>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-8-1"><a href="#__codelineno-8-1" id="__codelineno-8-1" name="__codelineno-8-1"></a><span class="nd">@Test</span>
-</span><span id="__span-8-2"><a href="#__codelineno-8-2" id="__codelineno-8-2" name="__codelineno-8-2"></a><span class="kd">fun</span><span class="w"> </span><span class="err">`50 </span><span class="nf">percent</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="n">distributes</span><span class="w"> </span><span class="n">correctly</span><span class="err">`</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-8-3"><a href="#__codelineno-8-3" id="__codelineno-8-3" name="__codelineno-8-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">sampleSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="n">_000</span>
-</span><span id="__span-8-4"><a href="#__codelineno-8-4" id="__codelineno-8-4" name="__codelineno-8-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="m">0</span><span class="w"> </span><span class="n">until</span><span class="w"> </span><span class="n">sampleSize</span><span class="p">).</span><span class="na">count</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">-&gt;</span>
-</span><span id="__span-8-5"><a href="#__codelineno-8-5" id="__codelineno-8-5" name="__codelineno-8-5"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span><span class="cm">/*..., */</span>
-</span><span id="__span-8-6"><a href="#__codelineno-8-6" id="__codelineno-8-6" name="__codelineno-8-6"></a><span class="w">                          </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="m">16</span><span class="p">).</span><span class="na">padStart</span><span class="p">(</span><span class="m">32</span><span class="p">,</span><span class="w"> </span><span class="sc">'0'</span><span class="p">))</span>
-</span><span id="__span-8-7"><a href="#__codelineno-8-7" id="__codelineno-8-7" name="__codelineno-8-7"></a><span class="w">        </span><span class="p">)</span>
-</span><span id="__span-8-8"><a href="#__codelineno-8-8" id="__codelineno-8-8" name="__codelineno-8-8"></a><span class="w">        </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">ROLLOUT_FLAG</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-8-9"><a href="#__codelineno-8-9" id="__codelineno-8-9" name="__codelineno-8-9"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-8-10"><a href="#__codelineno-8-10" id="__codelineno-8-10" name="__codelineno-8-10"></a>
-</span><span id="__span-8-11"><a href="#__codelineno-8-11" id="__codelineno-8-11" name="__codelineno-8-11"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">percentage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">enabled</span><span class="p">.</span><span class="na">toDouble</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">sampleSize</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="m">100</span>
-</span><span id="__span-8-12"><a href="#__codelineno-8-12" id="__codelineno-8-12" name="__codelineno-8-12"></a><span class="w">    </span><span class="n">assertTrue</span><span class="p">(</span><span class="n">percentage</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="m">48.0</span><span class="p">..</span><span class="m">52.0</span><span class="p">)</span>
-</span><span id="__span-8-13"><a href="#__codelineno-8-13" id="__codelineno-8-13" name="__codelineno-8-13"></a><span class="p">}</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-7-1"><a href="#__codelineno-7-1" id="__codelineno-7-1" name="__codelineno-7-1"></a><span class="nd">@Test</span>
+</span><span id="__span-7-2"><a href="#__codelineno-7-2" id="__codelineno-7-2" name="__codelineno-7-2"></a><span class="kd">fun</span><span class="w"> </span><span class="err">`50 </span><span class="nf">percent</span><span class="w"> </span><span class="n">rollout</span><span class="w"> </span><span class="n">distributes</span><span class="w"> </span><span class="n">correctly</span><span class="err">`</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-7-3"><a href="#__codelineno-7-3" id="__codelineno-7-3" name="__codelineno-7-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">sampleSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="n">_000</span>
+</span><span id="__span-7-4"><a href="#__codelineno-7-4" id="__codelineno-7-4" name="__codelineno-7-4"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="m">0</span><span class="w"> </span><span class="n">until</span><span class="w"> </span><span class="n">sampleSize</span><span class="p">).</span><span class="na">count</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">-&gt;</span>
+</span><span id="__span-7-5"><a href="#__codelineno-7-5" id="__codelineno-7-5" name="__codelineno-7-5"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span><span class="cm">/*..., */</span>
+</span><span id="__span-7-6"><a href="#__codelineno-7-6" id="__codelineno-7-6" name="__codelineno-7-6"></a><span class="w">                          </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="m">16</span><span class="p">).</span><span class="na">padStart</span><span class="p">(</span><span class="m">32</span><span class="p">,</span><span class="w"> </span><span class="sc">'0'</span><span class="p">))</span>
+</span><span id="__span-7-7"><a href="#__codelineno-7-7" id="__codelineno-7-7" name="__codelineno-7-7"></a><span class="w">        </span><span class="p">)</span>
+</span><span id="__span-7-8"><a href="#__codelineno-7-8" id="__codelineno-7-8" name="__codelineno-7-8"></a><span class="w">        </span><span class="n">Features</span><span class="p">.</span><span class="na">rolloutFlag</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+</span><span id="__span-7-9"><a href="#__codelineno-7-9" id="__codelineno-7-9" name="__codelineno-7-9"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-7-10"><a href="#__codelineno-7-10" id="__codelineno-7-10" name="__codelineno-7-10"></a>
+</span><span id="__span-7-11"><a href="#__codelineno-7-11" id="__codelineno-7-11" name="__codelineno-7-11"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">percentage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">enabled</span><span class="p">.</span><span class="na">toDouble</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">sampleSize</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="m">100</span>
+</span><span id="__span-7-12"><a href="#__codelineno-7-12" id="__codelineno-7-12" name="__codelineno-7-12"></a><span class="w">    </span><span class="n">assertTrue</span><span class="p">(</span><span class="n">percentage</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="m">48.0</span><span class="p">..</span><span class="m">52.0</span><span class="p">)</span>
+</span><span id="__span-7-13"><a href="#__codelineno-7-13" id="__codelineno-7-13" name="__codelineno-7-13"></a><span class="p">}</span>
 </span></code></pre></div>
 <hr/>
 <h2 id="guarantees-and-boundaries">Guarantees (and boundaries)<a class="headerlink" href="#guarantees-and-boundaries" title="Permanent link">¶</a></h2>

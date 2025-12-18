@@ -532,18 +532,22 @@
 It focuses on what changes at the definition site, at the call site, and at the trust boundary (runtime JSON).</p>
 <hr/>
 <h2 id="the-core-mapping">The core mapping<a class="headerlink" href="#the-core-mapping" title="Permanent link">¶</a></h2>
-<p>String-based flag systems typically have:
-- a <strong>string key</strong> (<code>"dark-mode"</code>)
-- a <strong>typed getter</strong> chosen by the caller (<code>getBoolean</code>, <code>getString</code>, …)
-- an <strong>untyped context</strong> (often string keys and <code>Any</code> values)</p>
-<p>Konditional replaces those with:
-- a <strong>property</strong> (the property name becomes the key)
-- a <strong>declared type</strong> (from the delegate: <code>boolean</code>, <code>string</code>, <code>int</code>, <code>double</code>, <code>enum</code>)
-- a <strong>typed <code>Context</code></strong> (and optionally domain-specific context data classes)</p>
+<p>String-based flag systems typically have:</p>
+<ul>
+<li>a <strong>string key</strong> (<code>"dark-mode"</code>)</li>
+<li>a <strong>typed getter</strong> chosen by the caller (<code>getBoolean</code>, <code>getString</code>, …)</li>
+<li>an <strong>untyped context</strong> (often string keys and <code>Any</code> values)</li>
+</ul>
+<p>Konditional replaces those with:</p>
+<ul>
+<li>a <strong>property</strong> (the property name becomes the key)</li>
+<li>a <strong>declared type</strong> (from the delegate: <code>boolean</code>, <code>string</code>, <code>int</code>, <code>double</code>, <code>enum</code>)</li>
+<li>a <strong>typed <code>Context</code></strong> (and optionally domain-specific context data classes)</li>
+</ul>
 <pre class="mermaid"><code>flowchart LR
-  A["String key"] --&gt; B["Property name"]
-  C["Typed getter"] --&gt; D["Type flows from definition"]
-  E["Untyped context map"] --&gt; F["Typed Context data"]</code></pre>
+    A["String key"] --&gt; B["Property name"]
+    C["Typed getter"] --&gt; D["Type flows from definition"]
+    E["Untyped context map"] --&gt; F["Typed Context data"]</code></pre>
 <hr/>
 <h2 id="step-by-step-adoption-incremental">Step-by-step adoption (incremental)<a class="headerlink" href="#step-by-step-adoption-incremental" title="Permanent link">¶</a></h2>
 <h3 id="0-start-with-one-container">0. Start with one container<a class="headerlink" href="#0-start-with-one-container" title="Permanent link">¶</a></h3>
@@ -554,10 +558,12 @@ It focuses on what changes at the definition site, at the call site, and at the 
 <h3 id="1-replace-call-sites-first-value-safety">1. Replace call sites first (value safety)<a class="headerlink" href="#1-replace-call-sites-first-value-safety" title="Permanent link">¶</a></h3>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">DARK_MODE</span><span class="w"> </span><span class="p">}</span>
 </span></code></pre></div>
-<p>What you gain immediately:
-- key typos are eliminated at the call site (there is no string key)
-- return type is concrete (no cast; <code>Boolean</code> is enforced)
-- evaluation is non-null (default is required)</p>
+<p>What you gain immediately:</p>
+<ul>
+<li>key typos are eliminated at the call site (there is no string key)</li>
+<li>return type is concrete (no cast; <code>Boolean</code> is enforced)</li>
+<li>evaluation is non-null (default is required)</li>
+</ul>
 <h3 id="2-introduce-typed-context-targeting-rollouts">2. Introduce typed context (targeting + rollouts)<a class="headerlink" href="#2-introduce-typed-context-targeting-rollouts" title="Permanent link">¶</a></h3>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
 </span><span id="__span-2-2"><a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a><span class="w">    </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
@@ -566,7 +572,8 @@ It focuses on what changes at the definition site, at the call site, and at the 
 </span><span id="__span-2-5"><a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a><span class="w">    </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"</span><span class="p">)</span>
 </span><span id="__span-2-6"><a href="#__codelineno-2-6" id="__codelineno-2-6" name="__codelineno-2-6"></a><span class="p">)</span>
 </span></code></pre></div>
-<p><code>stableId</code> is the stable input used for deterministic rollout bucketing (see <a href="../04-targeting-rollouts/">"Targeting &amp; Rollouts"</a>).</p>
+<p><code>stableId</code> is the stable input used for deterministic rollout bucketing (
+see <a href="../04-targeting-rollouts/">"Targeting &amp; Rollouts"</a>).</p>
 <h3 id="3-add-rules-after-defaults-exist-behavior-safety">3. Add rules after defaults exist (behavior safety)<a class="headerlink" href="#3-add-rules-after-defaults-exist-behavior-safety" title="Permanent link">¶</a></h3>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">API_ENDPOINT</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">string</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"https://api.example.com"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-3-2"><a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="w">    </span><span class="n">rule</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="s">"https://api-ios.example.com"</span>
@@ -591,7 +598,7 @@ It focuses on what changes at the definition site, at the call site, and at the 
 </span><span id="__span-4-14"><a href="#__codelineno-4-14" id="__codelineno-4-14" name="__codelineno-4-14"></a><span class="w">        </span><span class="n">extension</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-4-15"><a href="#__codelineno-4-15" id="__codelineno-4-15" name="__codelineno-4-15"></a><span class="w">            </span><span class="n">Evaluable</span><span class="p">.</span><span class="na">factory</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="o">-&gt;</span>
 </span><span id="__span-4-16"><a href="#__codelineno-4-16" id="__codelineno-4-16" name="__codelineno-4-16"></a><span class="w">                </span><span class="n">ctx</span><span class="p">.</span><span class="na">subscriptionTier</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SubscriptionTier</span><span class="p">.</span><span class="na">ENTERPRISE</span><span class="w"> </span><span class="o">&amp;&amp;</span>
-</span><span id="__span-4-17"><a href="#__codelineno-4-17" id="__codelineno-4-17" name="__codelineno-4-17"></a><span class="w">                    </span><span class="n">ctx</span><span class="p">.</span><span class="na">employeeCount</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">100</span>
+</span><span id="__span-4-17"><a href="#__codelineno-4-17" id="__codelineno-4-17" name="__codelineno-4-17"></a><span class="w">                </span><span class="n">ctx</span><span class="p">.</span><span class="na">employeeCount</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">100</span>
 </span><span id="__span-4-18"><a href="#__codelineno-4-18" id="__codelineno-4-18" name="__codelineno-4-18"></a><span class="w">            </span><span class="p">}</span>
 </span><span id="__span-4-19"><a href="#__codelineno-4-19" id="__codelineno-4-19" name="__codelineno-4-19"></a><span class="w">        </span><span class="p">}</span>
 </span><span id="__span-4-20"><a href="#__codelineno-4-20" id="__codelineno-4-20" name="__codelineno-4-20"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="kc">true</span>
@@ -624,7 +631,8 @@ It focuses on what changes at the definition site, at the call site, and at the 
 </span><span id="__span-6-4"><a href="#__codelineno-6-4" id="__codelineno-6-4" name="__codelineno-6-4"></a><span class="w">    </span><span class="k">is</span><span class="w"> </span><span class="n">ParseResult</span><span class="p">.</span><span class="na">Failure</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">logError</span><span class="p">(</span><span class="s">"Parse failed: </span><span class="si">${</span><span class="n">result</span><span class="p">.</span><span class="na">error</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
 </span><span id="__span-6-5"><a href="#__codelineno-6-5" id="__codelineno-6-5" name="__codelineno-6-5"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>The guarantee is intentionally qualified: JSON is not “always safe”; instead, invalid JSON is rejected before it can affect evaluation.</p>
+<p>The guarantee is intentionally qualified: JSON is not “always safe”; instead, invalid JSON is rejected before it can
+affect evaluation.</p>
 <hr/>
 <h2 id="shadow-evaluation-parallel-migration">Shadow evaluation (parallel migration)<a class="headerlink" href="#shadow-evaluation-parallel-migration" title="Permanent link">¶</a></h2>
 <p>For gradual migrations, you can evaluate against a baseline registry and shadow-evaluate against a candidate:</p>
