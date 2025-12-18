@@ -44,16 +44,15 @@ dependencies {
 
 ## Your first flag
 
-Define a flag as a delegated property in a `FeatureContainer` bound to a `Namespace`:
+Define a flag as a delegated property on a `Namespace`:
 
 ```kotlin
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.context.*
 import io.amichne.konditional.core.id.StableId
 
-object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
+object AppFeatures : Namespace("app") {
     val darkMode by boolean<Context>(default = false) {
         rule(true) {
             platforms(Platform.IOS)
@@ -84,7 +83,7 @@ Notes:
 
 Supported value types (out of the box):
 
-| Type       | FeatureContainer method | Kotlin type                          | Example default |
+| Type       | Namespace method | Kotlin type                          | Example default |
 |------------|-------------------------|--------------------------------------|-----------------|
 | Boolean    | `boolean(...)`          | `Boolean`                            | `false`         |
 | String     | `string(...)`           | `String`                             | `"production"`  |
@@ -145,21 +144,17 @@ val theme by enum<Theme, Context>(default = Theme.LIGHT) {
 
 ## Namespaces scale ownership, not prefixes
 
-Konditional provides `Namespace.Global`. If you need isolation boundaries beyond global, define your own namespaces in
-your codebase (consumer-defined), then bind `FeatureContainer`s to them.
+Define multiple namespaces when you need isolated registries (per-team, per-domain).
 
 ```kotlin
 sealed class AppDomain(id: String) : Namespace(id) {
-    data object Auth : AppDomain("auth")
-    data object Payments : AppDomain("payments")
-}
+    data object Auth : AppDomain("auth") {
+        val socialLogin by boolean<Context>(default = false)
+    }
 
-object AuthFeatures : FeatureContainer<AppDomain.Auth>(AppDomain.Auth) {
-    val socialLogin by boolean<Context>(default = false)
-}
-
-object PaymentFeatures : FeatureContainer<AppDomain.Payments>(AppDomain.Payments) {
-    val applePay by boolean<Context>(default = false)
+    data object Payments : AppDomain("payments") {
+        val applePay by boolean<Context>(default = false)
+    }
 }
 ```
 

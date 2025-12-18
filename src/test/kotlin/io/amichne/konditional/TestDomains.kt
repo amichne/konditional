@@ -4,8 +4,6 @@ import io.amichne.konditional.core.Namespace
 
 /**
  * Consumer-defined namespaces used by tests.
- *
- * Konditional intentionally only ships [Namespace.Global]. Any additional namespaces are defined by consumers.
  */
 object TestDomains {
     object Payments : Namespace("payments")

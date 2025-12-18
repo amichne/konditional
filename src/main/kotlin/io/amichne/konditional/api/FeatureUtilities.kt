@@ -1,28 +1,13 @@
 package io.amichne.konditional.api
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.ContextAware
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.dsl.KonditionalDsl
-import io.amichne.konditional.core.evaluation.Bucketing.isInRollout
+import io.amichne.konditional.core.evaluation.Bucketing.isInRampUp
 import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.core.features.FeatureAware
 import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.core.registry.NamespaceRegistry
 import io.amichne.konditional.rules.Rule
 import kotlin.system.measureNanoTime
-
-inline fun <reified T : Any, reified C : Context, M : Namespace, D> D.feature(
-    block: D.() -> Feature<T, C, M>,
-): T where D : ContextAware<C>, D : FeatureAware<out M> = block().evaluate(context)
-
-/**
- * Evaluate with an explicit context instance.
- */
-inline fun <reified T : Any, reified C : Context, D> D.feature(
-    context: C,
-    @KonditionalDsl block: D.() -> Feature<T, C, *>,
-): T where D : FeatureAware<*>, D : ContextAware<*> = block().evaluate(context)
 
 /**
  * Evaluates this feature for the given contextFn.
@@ -85,7 +70,7 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
                         val trace = definition.evaluateTrace(context)
 
                         val skipped =
-                            trace.skippedByRollout?.toRuleMatch(
+                            trace.skippedByRampUp?.toRuleMatch(
                                 bucket = trace.bucket,
                                 featureKey = key,
                                 salt = definition.salt,
@@ -175,10 +160,10 @@ private fun <T : Any, C : Context> io.amichne.konditional.rules.ConditionalValue
                 bucket = bucket,
                 rollout = explanation.rollout,
                 thresholdBasisPoints =
-                    io.amichne.konditional.core.evaluation.Bucketing.rolloutThresholdBasisPoints(
+                    io.amichne.konditional.core.evaluation.Bucketing.rampUpThresholdBasisPoints(
                         explanation.rollout,
                     ),
-                inRollout = isInRollout(explanation.rollout, bucket),
+                inRollout = isInRampUp(explanation.rollout, bucket),
             ),
     )
 }
@@ -201,7 +186,7 @@ private fun <C : Context> Rule<C>.toExplanation(): EvaluationResult.RuleExplanat
 
     return EvaluationResult.RuleExplanation(
         note = note,
-        rollout = rollout,
+        rollout = rampUp,
         locales = base.locales,
         platforms = base.platforms,
         versionRange = base.versionRange,

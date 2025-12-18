@@ -5,11 +5,8 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.getOrThrow
-import io.amichne.konditional.fixtures.core.TestNamespace
-import io.amichne.konditional.fixtures.core.test
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -28,19 +25,18 @@ class AllowlistRolloutTest {
         val allowlisted = StableId.of("allowlisted-user")
         val other = StableId.of("other-user")
 
-        val namespace = test("rule-allowlist")
-        val features =
-            object : FeatureContainer<TestNamespace>(namespace) {
+        val namespace =
+            object : Namespace.TestNamespaceFacade("rule-allowlist") {
                 val feature by boolean<Context>(default = false) {
                     rule(true) {
-                        rollout { 0.0 }
+                        rampUp { 0.0 }
                         allowlist(allowlisted)
                     }
                 }
             }
 
-        assertTrue(features.feature.evaluate(ctx(allowlisted)))
-        assertFalse(features.feature.evaluate(ctx(other)))
+        assertTrue(namespace.feature.evaluate(ctx(allowlisted)))
+        assertFalse(namespace.feature.evaluate(ctx(other)))
     }
 
     @Test
@@ -48,19 +44,17 @@ class AllowlistRolloutTest {
         val allowlisted = StableId.of("allowlisted-user")
         val other = StableId.of("other-user")
 
-        val namespace = test("flag-allowlist")
-        val features =
-            object : FeatureContainer<TestNamespace>(namespace) {
+        val namespace =
+            object : Namespace.TestNamespaceFacade("flag-allowlist") {
                 val feature by boolean<Context>(default = false) {
                     allowlist(allowlisted)
                     rule(true) {
-                        rollout { 0.0 }
+                        rampUp { 0.0 }
                     }
                 }
             }
 
-        assertTrue(features.feature.evaluate(ctx(allowlisted)))
-        assertFalse(features.feature.evaluate(ctx(other)))
+        assertTrue(namespace.feature.evaluate(ctx(allowlisted)))
+        assertFalse(namespace.feature.evaluate(ctx(other)))
     }
 }
-

@@ -3,14 +3,14 @@ package io.amichne.konditional.rules
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Rampup
+import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.rules.evaluable.AxisConstraint
 import io.amichne.konditional.rules.evaluable.BaseEvaluable
 import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.evaluable.Placeholder
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
-import io.amichne.konditional.core.id.HexId
 
 // ---------- Rule / Condition model ----------
 
@@ -37,7 +37,7 @@ import io.amichne.konditional.core.id.HexId
  * Basic rule with standard targeting:
  * ```kotlin
  * Rule(
- *     rollout {  Rampup.create(50.0) }
+ *     rampUp {  RampUp.create(50.0) }
  *     locales = setOf(AppLocale.UNITED_STATES),
  *     platforms = setOf(Platform.IOS),
  *     versionRange = LeftBound(Version(2, 0, 0))
@@ -47,7 +47,7 @@ import io.amichne.konditional.core.id.HexId
  * Rule with custom extension logic:
  * ```kotlin
  * Rule(
- *     rollout {  Rampup.create(100.0) }
+ *     rampUp {  RampUp.create(100.0) }
  *     extension = object : Evaluable<MyContext>() {
  *         override fun matches(contextFn: MyContext) = contextFn.isPremiumUser
  *         override fun specificity() = 1
@@ -56,7 +56,7 @@ import io.amichne.konditional.core.id.HexId
  * ```
  *
  * @param C The contextFn type that this rule evaluates against
- * @property rollout The percentage create users (0-100) that should match this rule after all criteria are met
+ * @property rampUp The percentage create users (0-100) that should match this rule after all criteria are met
  * @property note Optional note or description for this rule
  * @property baseEvaluable Evaluator for standard client targeting (locale, platform, version)
  * @property extension Additional evaluation logic that extends base matching
@@ -66,14 +66,14 @@ import io.amichne.konditional.core.id.HexId
  */
 @ConsistentCopyVisibility
 data class Rule<C : Context> internal constructor(
-    val rollout: Rampup = Rampup.default,
-    internal val rolloutAllowlist: Set<HexId> = emptySet(),
+    val rampUp: RampUp = RampUp.default,
+    internal val rampUpAllowlist: Set<HexId> = emptySet(),
     val note: String? = null,
     internal val baseEvaluable: BaseEvaluable<C> = BaseEvaluable(),
     val extension: Evaluable<C> = Placeholder,
 ) : Evaluable<C> {
     internal constructor(
-        rollout: Rampup = Rampup.default,
+        rampUp: RampUp = RampUp.default,
         rolloutAllowlist: Set<HexId> = emptySet(),
         note: String? = null,
         locales: Set<AppLocale> = emptySet(),
@@ -82,7 +82,7 @@ data class Rule<C : Context> internal constructor(
         axisConstraints: List<AxisConstraint> = emptyList(),
         extension: Evaluable<C> = Placeholder,
     ) : this(
-        rollout,
+        rampUp,
         rolloutAllowlist,
         note,
         BaseEvaluable(locales, platforms, versionRange, axisConstraints),
@@ -96,7 +96,7 @@ data class Rule<C : Context> internal constructor(
      * - Base matching: locale, platform, and version constraints from [baseEvaluable]
      * - Extension matching: any custom logic from [extension]
      *
-     * Note: This does not check rollout eligibility - that is handled separately during flag evaluation.
+     * Note: This does not check rampUp eligibility - that is handled separately during flag evaluation.
      *
      * @param context The contextFn to evaluate against
      * @return true if both [baseEvaluable] and [extension] match the contextFn

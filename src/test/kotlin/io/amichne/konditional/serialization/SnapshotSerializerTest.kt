@@ -4,19 +4,18 @@ import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Rampup
+import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.FlagDefinition
-import io.amichne.konditional.core.features.FeatureContainer
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.core.types.KotlinEncodeable
-import io.amichne.konditional.fixtures.core.TestNamespace
 import io.amichne.konditional.fixtures.utilities.axisValues
 import io.amichne.konditional.fixtures.utilities.update
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
@@ -24,7 +23,8 @@ import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.values.FeatureId
-import io.amichne.kontracts.dsl.*
+import io.amichne.kontracts.dsl.of
+import io.amichne.kontracts.dsl.schemaRoot
 import io.amichne.kontracts.schema.ObjectSchema
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -41,22 +41,20 @@ import kotlin.test.assertTrue
  * including round-trip tests, error cases, and patch functionality.
  */
 class SnapshotSerializerTest {
-    private val testNamespace = TestNamespace.test("snapshot-serializer")
-    private val TestFeatures =
-        object : FeatureContainer<TestNamespace>(testNamespace) {
-            val boolFlag by boolean<Context>(default = false)
-            val stringFlag by string<Context>(default = "default")
-            val intFlag by integer<Context>(default = 0)
-            val doubleFlag by double<Context>(default = 0.0)
-            val themeFlag by enum<Theme, Context>(default = Theme.LIGHT)
-            val retryPolicyFlag by custom<RetryPolicy, Context>(default = RetryPolicy())
-        }
+    private object TestFeatures : Namespace.TestNamespaceFacade("snapshot-serializer") {
+        val boolFlag by boolean<Context>(default = false)
+        val stringFlag by string<Context>(default = "default")
+        val intFlag by integer<Context>(default = 0)
+        val doubleFlag by double<Context>(default = 0.0)
+        val themeFlag by enum<Theme, Context>(default = Theme.LIGHT)
+        val retryPolicyFlag by custom<RetryPolicy, Context>(default = RetryPolicy())
+    }
 
     @BeforeEach
     fun setup() {
         // Clear both FeatureRegistry and the namespace registry before each test
         FeatureRegistry.clear()
-        testNamespace.load(Configuration(emptyMap()))
+        TestFeatures.load(Configuration(emptyMap()))
 
         // Register test features
         FeatureRegistry.register(TestFeatures.boolFlag)
@@ -139,7 +137,7 @@ class SnapshotSerializerTest {
     fun `Given Konfig with boolean flag, When serialized, Then includes flag with correct type`() {
         TestFeatures.boolFlag.update(true) {}
 
-        val json = SnapshotSerializer.serialize(testNamespace.configuration)
+        val json = SnapshotSerializer.serialize(TestFeatures.configuration)
 
         assertNotNull(json)
         assertTrue(json.contains("\"key\": \"${TestFeatures.boolFlag.id}\""))
@@ -167,7 +165,7 @@ class SnapshotSerializerTest {
     @Test
     fun `Given Konfig with int flag, When serialized, Then includes flag with correct type`() {
         TestFeatures.intFlag.update(42) {}
-        val json = SnapshotSerializer.serialize(testNamespace.configuration)
+        val json = SnapshotSerializer.serialize(TestFeatures.configuration)
 
         assertNotNull(json)
         println(json)
@@ -180,7 +178,7 @@ class SnapshotSerializerTest {
     fun `Given Konfig with double flag, When serialized, Then includes flag with correct type`() {
         TestFeatures.doubleFlag.update(3.14) {}
 
-        val json = SnapshotSerializer.serialize(testNamespace.configuration)
+        val json = SnapshotSerializer.serialize(TestFeatures.configuration)
 
         assertNotNull(json)
         assertTrue(json.contains("\"key\": \"${TestFeatures.doubleFlag.id}\""))
@@ -192,7 +190,7 @@ class SnapshotSerializerTest {
     fun `Given Konfig with complex rules, When serialized, Then includes all rule attributes`() {
         val rule =
             Rule<Context>(
-                rollout = Rampup.of(50.0),
+                rampUp = RampUp.of(50.0),
                 note = "TestNamespace rule",
                 locales = setOf(AppLocale.UNITED_STATES, AppLocale.FRANCE),
                 platforms = setOf(Platform.IOS, Platform.ANDROID),
@@ -228,18 +226,18 @@ class SnapshotSerializerTest {
         TestFeatures.boolFlag.update(false) {
             allowlist(allowlisted)
             rule(true) {
-                rollout { 0.0 }
+                rampUp { 0.0 }
             }
         }
 
         assertTrue(TestFeatures.boolFlag.evaluate(ctx(allowlistedId)))
         assertFalse(TestFeatures.boolFlag.evaluate(ctx(otherId)))
 
-        val json = SnapshotSerializer.serialize(testNamespace.configuration)
+        val json = SnapshotSerializer.serialize(TestFeatures.configuration)
         val parsed = SnapshotSerializer.fromJson(json).getOrThrow()
 
-        testNamespace.load(Configuration(emptyMap()))
-        testNamespace.load(parsed)
+        TestFeatures.load(Configuration(emptyMap()))
+        TestFeatures.load(parsed)
 
         assertTrue(TestFeatures.boolFlag.evaluate(ctx(allowlistedId)))
         assertFalse(TestFeatures.boolFlag.evaluate(ctx(otherId)))
@@ -253,7 +251,7 @@ class SnapshotSerializerTest {
             }
         }
 
-        val json = SnapshotSerializer.serialize(testNamespace.configuration)
+        val json = SnapshotSerializer.serialize(TestFeatures.configuration)
         assertTrue(json.contains("\"axes\""))
         assertTrue(json.contains("\"environment\""))
         assertTrue(json.contains("prod"))
@@ -261,8 +259,8 @@ class SnapshotSerializerTest {
 
         val parsed = SnapshotSerializer.fromJson(json).getOrThrow()
 
-        testNamespace.load(Configuration(emptyMap()))
-        testNamespace.load(parsed)
+        TestFeatures.load(Configuration(emptyMap()))
+        TestFeatures.load(parsed)
 
         assertTrue(TestFeatures.boolFlag.evaluate(ctxWithEnvironment(Environment.PROD)))
         assertTrue(TestFeatures.boolFlag.evaluate(ctxWithEnvironment(Environment.STAGE)))
@@ -287,7 +285,7 @@ class SnapshotSerializerTest {
                 versions { min(1, 0, 0); max(2, 0, 0) }
                 axis(Axes.EnvironmentAxis, Environment.PROD, Environment.STAGE)
                 axis(Axes.TenantAxis, Tenant.ENTERPRISE)
-                rollout { 12.34 }
+                rampUp { 12.34 }
             }
         }
 
@@ -296,12 +294,12 @@ class SnapshotSerializerTest {
             allowlist(flagAllowlistA)
             rule(RetryPolicy(maxAttempts = 9, backoffMs = 2500.0, enabled = false, mode = "linear")) {
                 note("policy-rule")
-                rollout { 99.0 }
+                rampUp { 99.0 }
             }
         }
 
         val config =
-            testNamespace.configuration.withMetadata(
+            TestFeatures.configuration.withMetadata(
                 version = "rev-123",
                 generatedAtEpochMillis = 1734480000000,
                 source = "s3://configs/global.json",
@@ -331,7 +329,7 @@ class SnapshotSerializerTest {
                   },
                   "salt": "salt-v2",
                   "isActive": false,
-                  "rolloutAllowlist": [
+                  "rampUpAllowlist": [
                     "616c6c6f776c69737465642d75736572",
                     "666c61672d616c6c6f776c697374"
                   ],
@@ -343,7 +341,7 @@ class SnapshotSerializerTest {
                         "enumClassName": "${Theme::class.java.name}"
                       },
                       "rampUp": 12.34,
-                      "rolloutAllowlist": [
+                      "rampUpAllowlist": [
                         "72756c652d616c6c6f776c697374"
                       ],
                       "note": "maximal-rule",
@@ -394,7 +392,7 @@ class SnapshotSerializerTest {
                   },
                   "salt": "policy-salt",
                   "isActive": true,
-                  "rolloutAllowlist": [
+                  "rampUpAllowlist": [
                     "616c6c6f776c69737465642d75736572"
                   ],
                   "rules": [
@@ -410,7 +408,7 @@ class SnapshotSerializerTest {
                         }
                       },
                       "rampUp": 99.0,
-                      "rolloutAllowlist": [],
+                      "rampUpAllowlist": [],
                       "note": "policy-rule",
                       "locales": [],
                       "platforms": [],
@@ -639,7 +637,7 @@ class SnapshotSerializerTest {
         assertEquals(1, flag.values.size)
 
         val rule = flag.values.first().rule
-        assertEquals(50.0, rule.rollout.value)
+        assertEquals(50.0, rule.rampUp.value)
         assertEquals("TestNamespace rule", rule.note)
         assertEquals(setOf(AppLocale.UNITED_STATES, AppLocale.FRANCE), rule.baseEvaluable.locales)
         assertEquals(setOf(Platform.IOS, Platform.ANDROID), rule.baseEvaluable.platforms)
@@ -747,7 +745,7 @@ class SnapshotSerializerTest {
     fun `Given flag with complex rules, When round-tripped, Then all rule attributes are preserved`() {
         val rule =
             Rule<Context>(
-                rollout = Rampup.of(75.0),
+                rampUp = RampUp.of(75.0),
                 note = "Complex rule",
                 locales = setOf(AppLocale.UNITED_STATES, AppLocale.UNITED_STATES),
                 platforms = setOf(Platform.WEB),
@@ -771,7 +769,7 @@ class SnapshotSerializerTest {
         assertEquals(1, deserializedFlag.values.size)
 
         val deserializedRule = deserializedFlag.values.first().rule
-        assertEquals(75.0, deserializedRule.rollout.value)
+        assertEquals(75.0, deserializedRule.rampUp.value)
         assertEquals("Complex rule", deserializedRule.note)
         assertEquals(setOf(AppLocale.UNITED_STATES, AppLocale.UNITED_STATES), deserializedRule.baseEvaluable.locales)
         assertEquals(setOf(Platform.WEB), deserializedRule.baseEvaluable.platforms)

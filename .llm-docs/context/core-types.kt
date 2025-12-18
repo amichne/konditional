@@ -1,5 +1,5 @@
 # Core Type Signatures
-# Extracted: 2025-12-17T17:28:13-05:00
+# Extracted: 2025-12-18T03:06:17-05:00
 # Source: src/main/kotlin/io/amichne/konditional/
 
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/context/Context.kt:33:interface Context {
@@ -8,9 +8,9 @@
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/context/axis/AxisValues.kt:34:class AxisValues internal constructor(
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/context/axis/Axis.kt:42:abstract class Axis<T>(
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/context/axis/AxisValue.kt:28:interface AxisValue {
-/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/types/KotlinEncodeable.kt:61:interface KotlinEncodeable<out S : JsonSchema> {
-/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/types/KotlinClassExtensions.kt:28:fun KotlinEncodeable<ObjectSchema>.toJsonValue(schema: ObjectSchema? = null): JsonObject = JsonObject(let {
-/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/types/KotlinClassExtensions.kt:139:fun JsonValue.toPrimitiveValue(): Any? = when (this) {
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/types/KotlinEncodeable.kt:61:interface KotlinEncodeable<out S> where S : JsonSchema, S : ObjectTraits {
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/types/KotlinClassExtensions.kt:31:fun KotlinEncodeable<*>.toJsonValue(schema: JsonSchema? = null): JsonObject =
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/types/KotlinClassExtensions.kt:162:fun JsonValue.toPrimitiveValue(): Any? = when (this) {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/result/utils/ParseResultUtils.kt:55:fun <T> ParseResult<T>.getOrNull(): T? = when (this) {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/result/utils/ParseResultUtils.kt:63:fun <T> ParseResult<T>.getOrDefault(default: T): T = when (this) {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/result/utils/ParseResultUtils.kt:79:fun <T> ParseResult<T>.isSuccess(): Boolean = this is ParseResult.Success
@@ -21,23 +21,21 @@
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/result/ParseResult.kt:33:fun <T> ParseResult<T>.getOrThrow(): T = when (this) {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/result/ParseException.kt:7:class ParseException(val error: ParseError) : Exception(error.message)
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/features/Identifiable.kt:6:interface Identifiable {
-/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/features/KotlinClassFeature.kt:46:sealed interface KotlinClassFeature<T : KotlinEncodeable<ObjectSchema>, C : Context, M : Namespace> :
-/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/features/FeatureContainer.kt:60:abstract class FeatureContainer<M : Namespace>(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/features/KotlinClassFeature.kt:38:sealed interface KotlinClassFeature<T : KotlinEncodeable<*>, C : Context, M : Namespace> :
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/features/EnumFeature.kt:14:sealed interface EnumFeature<E : Enum<E>, C : Context, M : Namespace> :
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/features/BooleanFeature.kt:6:sealed interface BooleanFeature<C : Context, M : Namespace> : Feature<Boolean, C, M> {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/features/DoubleFeature.kt:6:sealed interface DoubleFeature<C : Context, M : Namespace> :
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/features/StringFeature.kt:6:sealed interface StringFeature<C : Context, M : Namespace> : Feature<String, C, M> {
-/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/features/FeatureAware.kt:13:interface FeatureAware<M : Namespace> {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/features/Feature.kt:36:sealed interface Feature<T : Any, C : Context, out M : Namespace> : Identifiable {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/features/IntFeature.kt:6:sealed interface IntFeature<C : Context, M : Namespace> : Feature<Int, C, M> {
-/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/Namespace.kt:71:open class Namespace(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/Namespace.kt:69:open class Namespace(
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/FlagDefinition.kt:27:data class FlagDefinition<T : Any, C : Context, M : Namespace> internal constructor(
-/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/instance/ConfigValue.kt:8:sealed interface ConfigValue {
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/instance/ConfigValue.kt:7:sealed interface ConfigValue {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/instance/ConfigurationPatch.kt:21:data class ConfigurationPatch internal constructor(
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/instance/Configuration.kt:7:data class Configuration internal constructor(
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/instance/ConfigurationMetadata.kt:18:data class ConfigurationMetadata internal constructor(
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/instance/ConfigurationDiff.kt:15:data class ConfigurationDiff internal constructor(
-/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt:82:interface NamespaceRegistry {
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt:72:interface NamespaceRegistry {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/ops/Metrics.kt:3:object Metrics {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/ops/RegistryHooks.kt:11:data class RegistryHooks internal constructor(
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/core/ops/MetricsCollector.kt:3:interface MetricsCollector {
@@ -53,8 +51,6 @@
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/serialization/SnapshotLoadOptions.kt:24:sealed interface UnknownFeatureKeyStrategy {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/serialization/SnapshotLoadOptions.kt:31:data class SnapshotWarning internal constructor(
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/serialization/NamespaceSnapshotSerializer.kt:64:class NamespaceSnapshotSerializer<M : Namespace>(
-/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/values/TypedId.kt:21:interface KonditionalId<T : KonditionalId<T>> : Comparable<T> {
-/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/values/TypedId.kt:78:class TFactory<T : KonditionalId<*>>(
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/rules/Rule.kt:68:data class Rule<C : Context> internal constructor(
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/rules/versions/RightBound.kt:5:data class RightBound(
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/rules/versions/LeftBound.kt:5:data class LeftBound(
@@ -64,8 +60,8 @@
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/rules/evaluable/Specifier.kt:3:interface Specifier {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/rules/evaluable/Placeholder.kt:5:object Placeholder : Evaluable<Context> {
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/rules/evaluable/Evaluable.kt:22:fun interface Evaluable<in C : Context> : Specifier {
-/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/api/FeatureUtilities.kt:37:fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
-/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/api/FeatureUtilities.kt:42:fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithReason(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/api/FeatureUtilities.kt:22:fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
+/Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/api/FeatureUtilities.kt:27:fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithReason(
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/api/ShadowEvaluation.kt:10:data class ShadowOptions internal constructor(
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/api/ShadowEvaluation.kt:23:data class ShadowMismatch<T : Any> internal constructor(
 /Users/amichne/code/konditional/src/main/kotlin/io/amichne/konditional/api/ShadowEvaluation.kt:41:fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithShadow(

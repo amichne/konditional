@@ -5,10 +5,8 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.features.FeatureContainer
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.fixtures.core.TestNamespace
-import io.amichne.konditional.fixtures.core.test
 import org.junit.jupiter.api.Test
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
@@ -40,7 +38,7 @@ class ConcurrencyAttacksTest {
          *              so concurrent reads should be safe and should not trigger any registration races.
          */
 
-        val container = object : FeatureContainer<TestNamespace>(test()) {
+        val container = object : Namespace.TestNamespaceFacade("concurrency-access") {
             val concurrentFeature1 by boolean<Context>(default = true)
             val concurrentFeature2 by boolean<Context>(default = false)
             val concurrentFeature3 by string<Context>(default = "test")
@@ -97,16 +95,16 @@ class ConcurrencyAttacksTest {
          *         - Value retrieval
          */
 
-        val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
+        val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("concurrent-flag-eval") {
             val highContentionFlag by boolean<Context>(default = false) {
                 rule(true) {
                     platforms(Platform.ANDROID)
-                    rollout { 50.0 }
+                    rampUp { 50.0 }
                 }
 
                 rule(true) {
                     platforms(Platform.IOS)
-                    rollout { 30.0 }
+                    rampUp { 30.0 }
                 }
             }
         }
@@ -173,16 +171,16 @@ class ConcurrencyAttacksTest {
          *       If this is a singleton, it's a CRITICAL BUG
          */
 
-        val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
+        val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("concurrent-digest") {
             // Create many flags to stress digest usage
             val flag1 by boolean<Context>(default = false) {
-                rule(true) { rollout { 50.0 } }
+                rule(true) { rampUp { 50.0 } }
             }
             val flag2 by boolean<Context>(default = false) {
-                rule(true) { rollout { 50.0 } }
+                rule(true) { rampUp { 50.0 } }
             }
             val flag3 by boolean<Context>(default = false) {
-                rule(true) { rollout { 50.0 } }
+                rule(true) { rampUp { 50.0 } }
             }
         }
 
@@ -241,14 +239,13 @@ class ConcurrencyAttacksTest {
     @Test
     fun `ATTACK - concurrent registration in same namespace`() {
         /*
-         * ATTACK: Multiple containers in same namespace accessed concurrently
-         * RESULT: TestNamespace namespace registry thread-safety
-         * DANGER: Registry might not handle concurrent writes correctly
+         * ATTACK: Multiple namespaces registering features concurrently
+         * RESULT: Namespace registry thread-safety and global FeatureRegistry behavior
+         * DANGER: Shared mutable state during registration might not be thread-safe
          */
 
-        // Create multiple containers in same namespace
-        val containers = (1..10).map { i ->
-            object : FeatureContainer<TestNamespace>(test()) {
+        val namespaces = (1..10).map { i ->
+            object : Namespace.TestNamespaceFacade("concurrent-registration-$i") {
                 val feature by boolean<Context>(default = i % 2 == 0)
             }
         }
@@ -257,12 +254,11 @@ class ConcurrencyAttacksTest {
         val latch = CountDownLatch(10)
         val errors = ConcurrentHashMap.newKeySet<Throwable>()
 
-        // Access all containers concurrently
-        containers.forEach { container ->
+        namespaces.forEach { namespace ->
             executor.submit {
                 try {
-                    container.feature // Trigger registration
-                    container.allFeatures()
+                    namespace.feature // Trigger registration
+                    namespace.allFeatures()
                 } catch (e: Throwable) {
                     errors.add(e)
                 } finally {
@@ -290,7 +286,7 @@ class ConcurrencyAttacksTest {
          * EXPECTATION: Registration happens at container initialization (t0), and is visible to readers.
          */
 
-        val container = object : FeatureContainer<TestNamespace>(test()) {
+        val container = object : Namespace.TestNamespaceFacade("memory-visibility") {
             val visibilityTest by boolean<Context>(default = true)
         }
 
@@ -331,7 +327,7 @@ class ConcurrencyAttacksTest {
          * DANGER: If rules can be modified during evaluation, could crash
          */
 
-        val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
+        val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("concurrent-iteration") {
             val manyRulesFlag by boolean<Context>(default = false) {
                 // Create many rules to increase iteration time
                 repeat(100) { i ->
@@ -340,7 +336,7 @@ class ConcurrencyAttacksTest {
                         if (i % 3 == 0) platforms(Platform.ANDROID)
                         if (i % 3 == 1) platforms(Platform.IOS)
                         if (i % 3 == 2) platforms(Platform.WEB)
-                        rollout { (i % 100).toDouble() }
+                        rampUp { (i % 100).toDouble() }
                     }
                 }
             }
@@ -398,7 +394,7 @@ class ConcurrencyAttacksTest {
             override val stableId: StableId,
         ) : Context
 
-        val TestNamespaceFeatures = object : FeatureContainer<TestNamespace>(test()) {
+        val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("mutable-context") {
             val contextDependentFlag by boolean<Context>(default = false) {
                 rule(true) {
                     platforms(Platform.ANDROID)
@@ -461,7 +457,7 @@ class ConcurrencyAttacksTest {
          *              so allFeatures() is read-only and should be safe to call concurrently.
          */
 
-        val container = object : FeatureContainer<TestNamespace>(test()) {
+        val container = object : Namespace.TestNamespaceFacade("concurrent-all-features") {
             val f1 by boolean<Context>(default = true)
             val f2 by boolean<Context>(default = true)
             val f3 by boolean<Context>(default = true)

@@ -6,8 +6,7 @@ Konditional’s public surface is intentionally small. Understanding three primi
 ```mermaid
 flowchart TD
     N["Namespace"] --> R["Registry"]
-    C["FeatureContainer"] --> R
-    C --> F["Feature (typed)"]
+    N --> F["Feature (typed)"]
     F --> D["Default (required)"]
     F --> Rules["Rules"]
     Rules --> Rule["rule(value) { ... }"]
@@ -19,13 +18,13 @@ flowchart TD
 
 ## Features
 
-A feature is a typed configuration value with an optional rule set. You define features as delegated properties in a
-`FeatureContainer`:
+A feature is a typed configuration value with an optional rule set. You define features as delegated properties on a
+`Namespace`:
 
 ```kotlin
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.Context
-object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
+object AppFeatures : Namespace("app") {
     val darkMode by boolean<Context>(default = false)
     val apiEndpoint by string<Context>(default = "https://api.example.com")
     val maxRetries by integer<Context>(default = 3)
@@ -44,7 +43,7 @@ What this buys you:
 
 ### Supported types
 
-| Type       | FeatureContainer method | Kotlin type                          | Example default |
+| Type       | Namespace method | Kotlin type                          | Example default |
 |------------|-------------------------|--------------------------------------|-----------------|
 | Boolean    | `boolean(...)`          | `Boolean`                            | `false`         |
 | String     | `string(...)`           | `String`                             | `"production"`  |
@@ -59,7 +58,7 @@ What this buys you:
 enum class LogLevel { DEBUG, INFO, WARN, ERROR }
 enum class Theme { LIGHT, DARK, AUTO }
 
-object AppConfig : FeatureContainer<Namespace.Global>(Namespace.Global) {
+object AppConfig : Namespace("app-config") {
     val LOG_LEVEL by enum<LogLevel, Context>(default = LogLevel.INFO)
     val THEME by enum<Theme, Context>(default = Theme.LIGHT)
 }
@@ -110,7 +109,7 @@ data class EnterpriseContext(
 
 enum class SubscriptionTier { FREE, PRO, ENTERPRISE }
 
-object PremiumFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
+object PremiumFeatures : Namespace("premium") {
     val ADVANCED_ANALYTICS by boolean<EnterpriseContext>(default = false) {
         rule(true) {
             extension { subscriptionTier == SubscriptionTier.ENTERPRISE && employeeCount > 100 }
@@ -156,23 +155,19 @@ into `StableId.of(...)` (it lowercases the input).
 ## Namespaces
 
 Namespaces are isolation boundaries: each namespace has its own registry and independent configuration lifecycle.
-Konditional provides `Namespace.Global`. If you need more isolation boundaries, define your own namespaces (
-consumer-defined) and bind containers to them.
+Define multiple namespaces when you need more isolation boundaries.
 
 ```kotlin
 sealed class AppDomain(id: String) : Namespace(id) {
-    data object Auth : AppDomain("auth")
-    data object Payments : AppDomain("payments")
-}
+    data object Auth : AppDomain("auth") {
+        val socialLogin by boolean<Context>(default = false)
+        val twoFactorAuth by boolean<Context>(default = true)
+    }
 
-object AuthFeatures : FeatureContainer<AppDomain.Auth>(AppDomain.Auth) {
-    val socialLogin by boolean<Context>(default = false)
-    val twoFactorAuth by boolean<Context>(default = true)
-}
-
-object PaymentFeatures : FeatureContainer<AppDomain.Payments>(AppDomain.Payments) {
-    val applePay by boolean<Context>(default = false)
-    val stripeIntegration by boolean<Context>(default = true)
+    data object Payments : AppDomain("payments") {
+        val applePay by boolean<Context>(default = false)
+        val stripeIntegration by boolean<Context>(default = true)
+    }
 }
 
 AppDomain.Auth.load(authConfig)
@@ -183,14 +178,19 @@ AppDomain.Payments.load(paymentConfig)
 
 ```kotlin
 sealed class TeamDomain(id: String) : Namespace(id) {
-    data object Recommendations : TeamDomain("recommendations")
+    data object Recommendations : TeamDomain("recommendations") {
+        val COLLABORATIVE_FILTERING by boolean(default = true)
+    }
+
     data object Analytics : TeamDomain("analytics")
 }
-
-object RecFeatures : FeatureContainer<TeamDomain.Recommendations>(TeamDomain.Recommendations) {
-    val COLLABORATIVE_FILTERING by boolean(default = true)
-}
 ```
+
+```kotlin
+TeamDomain.Recommendations.COLLABORATIVE_FILTERING.evaluate(context)
+```
+
+Each namespace has independent configuration lifecycle, registry, and serialization.
 
 ---
 
@@ -199,7 +199,7 @@ object RecFeatures : FeatureContainer<TeamDomain.Recommendations>(TeamDomain.Rec
 ### Wrong value type at call site
 
 ```kotlin
-object Config : FeatureContainer<Namespace.Global>(Namespace.Global) {
+object Config : Namespace("config") {
     val maxRetries by integer<Context>(default = 3)
 }
 

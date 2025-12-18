@@ -19,21 +19,12 @@ import java.util.concurrent.atomic.AtomicReference
  *
  * ## Primary Usage
  *
- * Most users interact with registries through [io.amichne.konditional.core.Namespace] instances and [io.amichne.konditional.core.features.FeatureContainer]:
+ * Most users interact with registries through [io.amichne.konditional.core.Namespace] instances:
  * ```kotlin
  * object Payments : Namespace("payments")
  *
- * // Define features using FeatureContainer (recommended)
- * object PaymentFeatures : FeatureContainer<Payments>(
- *     Payments
- * ) {
- *     val APPLE_PAY by boolean(default = false) {
- *         rule(true) { platforms(Platform.IOS) }
- *     }
- * }
- *
  * // Evaluate features
- * val isEnabled = PaymentFeatures.APPLE_PAY.evaluate(context)
+ * val isEnabled = Payments.APPLE_PAY.evaluate(context)
  * ```
  *
  * ## Direct Registry Operations
@@ -71,12 +62,11 @@ import java.util.concurrent.atomic.AtomicReference
  * The primary implementation is [InMemoryNamespaceRegistry], which provides a thread-safe
  * registry backed by [AtomicReference].
  *
- * **Note**: Configuration updates are handled internally by [io.amichne.konditional.core.features.FeatureContainer].
- * Users should not need to manually update individual flags when using the delegation API.
+ * **Note**: Configuration updates are handled internally by [io.amichne.konditional.core.Namespace] delegation.
+ * Users should not need to manually update individual flags when defining flags on their namespace.
  *
  * @see InMemoryNamespaceRegistry
  * @see io.amichne.konditional.core.Namespace
- * @see io.amichne.konditional.core.features.FeatureContainer
  * @see Configuration
  */
 interface NamespaceRegistry {
@@ -217,7 +207,7 @@ interface NamespaceRegistry {
          * This is a convenience method for updating individual flags without
          * creating a full patch or snapshot.
          *
-         * **Internal API**: This method is used internally by FeatureContainer and should not be
+         * **Internal API**: This method is used internally by namespace property delegation and should not be
          * called directly. Configuration updates are handled automatically through delegation.
          *
          * @param definition The [FlagDefinition] to update

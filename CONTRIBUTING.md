@@ -73,7 +73,7 @@ konditional/
 - `Platform.kt`: Enum (IOS, ANDROID, WEB, DESKTOP)
 - `AppLocale.kt`: Supported locales (UNITED_STATES, FRANCE, DE_DE, etc.)
 - `Version.kt`: Semantic versioning with comparison
-- `Rampup.kt`: Value class enforcing 0-100% rollout with SHA-256 bucketing
+- `RampUp.kt`: Value class enforcing 0-100% rollout with SHA-256 bucketing
 
 #### **core/** - Core Framework
 
@@ -175,7 +175,7 @@ Feature<T, C, M>
 └── KotlinClassFeature<T, C, M>    (T : KotlinEncodeable<ObjectSchema>)
 ```
 
-**Key Principle**: Consumers define flags via `FeatureContainer` builders (`boolean`, `string`, `int`, `double`, `enum`, `custom`). Unsupported flag value types are not constructible through the public DSL.
+**Key Principle**: Consumers define flags directly on a `Namespace` via builders (`boolean`, `string`, `integer`, `double`, `enum`, `custom`). Unsupported flag value types are not constructible through the public DSL.
 
 ### Namespace Isolation
 
@@ -353,7 +353,7 @@ Current test files (13 total):
 - `core/EvaluationResultTest.kt` - Result type handling
 - `core/FlagEntryTypeSafetyTest.kt` - Type safety guarantees
 - `core/ParseResultTest.kt` - Parsing logic
-- `core/FeatureContainerTest.kt` - FeatureContainer delegation and registration
+- `core/NamespaceFeatureDefinitionTest.kt` - Namespace delegation and registration
 - `rules/BaseRuleGuaranteesTest.kt` - Rule evaluation guarantees
 - `rules/RuleMatchingTest.kt` - Rule matching logic
 - `rules/versions/VersionRangeTest.kt` - Version range behavior
@@ -580,33 +580,24 @@ Flag value types are selected at definition time (e.g., `boolean`, `string`, `en
 
 ### 6. Namespace Registry Isolation
 
-Each `Namespace` has its own registry:
+Each `Namespace` has its own registry and independent configuration lifecycle:
 
 ```kotlin
 sealed class AppDomain(id: String) : Namespace(id) {
-    data object Payments : AppDomain("payments")
+    data object Payments : AppDomain("payments") {
+        val applePay by boolean<Context>(default = false)
+    }
 }
-
-// ✅ Correct - same namespace
-Namespace.Global.flag(CoreFeature.FLAG)
-
-// ❌ Wrong - different namespaces, won't compile (type error)
-AppDomain.Payments.flag(CoreFeature.FLAG)
 ```
 
-**Note on Registry Evaluation (v0.0.2):**
-Features now evaluate against their namespace's registry by default:
+Features evaluate against their namespace registry by default:
 
 ```kotlin
-// Evaluation uses the feature's namespace automatically
-val value = feature { PaymentFeatures.APPLE_PAY }
-// Internally: PaymentFeatures.APPLE_PAY.namespace.registry
+val value = AppDomain.Payments.applePay.evaluate(context)
 
-// For testing, pass registry explicitly
-val value = feature.evaluate(context, registry = testRegistry)
+// For testing/shadowing, pass a registry explicitly
+val value = AppDomain.Payments.applePay.evaluate(context, registry = testRegistry)
 ```
-
-The `withRegistry()` function and `RegistryScope` are deprecated (see `docs/REGISTRY_SIMPLIFICATION.md`).
 
 ### 7. Version Parsing
 

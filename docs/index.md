@@ -6,7 +6,7 @@ Konditional prevents the entire class of runtime errors that come from stringly-
 ship to production, type coercion failures, inconsistent rollout logic, and configuration drift.
 
 ```kotlin
-object AppFlags : FeatureContainer<Namespace.Global>(Namespace.Global) {
+object AppFlags : Namespace("app") {
     val checkoutVersion by string(default = "classic") {
         rule("optimized") { platforms(Platform.IOS, Platform.ANDROID) }
         rule("experimental") { rollout { 50.0 } }
@@ -63,7 +63,7 @@ dependencies {
 ### Define flags as properties
 
 ```kotlin
-object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
+object AppFeatures : Namespace("app") {
     val darkMode by boolean(default = false) {
         rule(true) { platforms(Platform.IOS) }
         rule(true) { rollout { 50.0 } }
@@ -117,7 +117,7 @@ if (isEnabled(CHECKOUT_V1) && !isEnabled(CHECKOUT_V2)) {
 **After (typed values):**
 
 ```kotlin
-object CheckoutFlags : FeatureContainer<Namespace.Global>(Namespace.Global) {
+object CheckoutFlags : Namespace("checkout") {
     val checkoutVersion by string(default = "v1") {
         rule("v2") { rollout { 33.0 } }
         rule("v3") { rollout { 66.0 } }
@@ -136,7 +136,7 @@ when (CheckoutFlags.checkoutVersion.evaluate(ctx)) {
 ```kotlin
 enum class Theme { LIGHT, DARK, AUTO }
 
-object ThemeFlags : FeatureContainer<Namespace.Global>(Namespace.Global) {
+object ThemeFlags : Namespace("theme") {
     val theme by enum(default = Theme.LIGHT) {
         rule(Theme.DARK) { platforms(Platform.IOS) }
     }
@@ -158,7 +158,7 @@ data class RetryPolicy(
     }
 }
 
-object PolicyFlags : FeatureContainer<Namespace.Global>(Namespace.Global) {
+object PolicyFlags : Namespace("policy") {
     val retryPolicy by custom(default = RetryPolicy()) {
         rule(RetryPolicy(maxAttempts = 5, backoffMs = 2000.0)) { platforms(Platform.WEB) }
     }
@@ -175,7 +175,7 @@ and provide defaults for optional fields.
 Rollouts use SHA-256 bucketing for consistent, reproducible results:
 
 ```kotlin
-object RolloutFlags : FeatureContainer<Namespace.Global>(Namespace.Global) {
+object RolloutFlags : Namespace("rollout") {
     val newFeature by boolean(default = false) {
         rule(true) { rollout { 25.0 } }
     }
@@ -200,12 +200,12 @@ No random number generators. No modulo edge cases. No per-team rollout implement
 ```kotlin
 val json = fetchRemoteConfig()
 
-// Important: deserialization requires that your FeatureContainer objects have been initialized
+// Important: deserialization requires that your Namespace objects have been initialized
 // (so features are registered) before calling SnapshotSerializer.fromJson(...).
 // See: 06-remote-config.md
 
 when (val result = SnapshotSerializer.fromJson(json)) {
-    is ParseResult.Success -> Namespace.Global.load(result.value)
+    is ParseResult.Success -> AppFlags.load(result.value)
     is ParseResult.Failure -> {
         // Invalid JSON rejected, last-known-good remains active
         logError("Config parse failed: ${result.error.message}")
@@ -219,7 +219,7 @@ rejected; the previous working config stays active.
 ### Serialize current configuration
 
 ```kotlin
-val snapshot = SnapshotSerializer.serialize(Namespace.Global.configuration)
+val snapshot = SnapshotSerializer.serialize(AppFlags.configuration)
 persistToStorage(snapshot)
 ```
 
@@ -227,10 +227,10 @@ persistToStorage(snapshot)
 
 ```kotlin
 val patchJson = fetchPatch()
-val currentConfig = Namespace.Global.configuration
+val currentConfig = AppFlags.configuration
 
 when (val result = SnapshotSerializer.applyPatchJson(currentConfig, patchJson)) {
-    is ParseResult.Success -> Namespace.Global.load(result.value)
+    is ParseResult.Success -> AppFlags.load(result.value)
     is ParseResult.Failure -> logError("Patch failed: ${result.error.message}")
 }
 ```
@@ -249,21 +249,17 @@ See [06-remote-config.md](06-remote-config.md) and [08-persistence-format.md](08
 
 ## Namespaces (Optional Isolation)
 
-By default, all flags live in `Namespace.Global`. If you need isolated registries (e.g., per-team, per-domain), define
-your own:
+If you need isolated registries (e.g., per-team, per-domain), define multiple namespaces:
 
 ```kotlin
 sealed class AppDomain(id: String) : Namespace(id) {
-    data object Account : AppDomain("account")
-    data object Payments : AppDomain("payments")
-}
+    data object Account : AppDomain("account") {
+        val creditCheck by boolean(default = false)
+    }
 
-object AccountFlags : FeatureContainer<AppDomain.Account>(AppDomain.Account) {
-    val creditCheck by boolean(default = false)
-}
-
-object PaymentFlags : FeatureContainer<AppDomain.Payments>(AppDomain.Payments) {
-    val stripeEnabled by boolean(default = true)
+    data object Payments : AppDomain("payments") {
+        val stripeEnabled by boolean(default = true)
+    }
 }
 ```
 
@@ -274,7 +270,7 @@ Each namespace has independent configuration lifecycle, registry, and serializat
 ## Core Concepts
 
 - **Namespace:** Isolation boundary with its own registry and configuration lifecycle
-- **FeatureContainer:** Declares flags as delegated properties bound to a namespace
+- **Flags:** Delegated properties defined on a namespace
 - **Context:** Runtime inputs for evaluation (`locale`, `platform`, `appVersion`, `stableId`)
 - **Rules:** Typed criteria-to-value mappings (`platforms/locales/versions/rollout/extension`)
 - **Snapshot/Patch:** JSON formats for persistence and incremental updates

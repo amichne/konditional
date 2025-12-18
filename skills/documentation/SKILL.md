@@ -43,7 +43,7 @@ State what's guaranteed and under what conditions:
 | Term | Use | Don't Use |
 |------|-----|-----------|
 | Feature | Typed configuration value with rules | Flag, setting, config |
-| FeatureContainer | Object holding features | Registry, config class |
+| Namespace | Object holding features | Registry, config class |
 | Context | Runtime evaluation inputs | Environment, request |
 | Rule | Criteria → value mapping | Condition, constraint |
 | Specificity | Number of targeting criteria | Priority, weight |
@@ -54,7 +54,7 @@ State what's guaranteed and under what conditions:
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.*
 
-object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
+object AppFeatures : Namespace("app") {
     val darkMode by boolean<Context>(default = false) {
         rule(true) { platforms(Platform.IOS) }
     }
@@ -194,7 +194,7 @@ val feature by boolean(default = false) {
 **Wrong**: `val feature by boolean(default = false)`
 **Right**:
 ```kotlin
-object Features : FeatureContainer<Namespace.Global>(Namespace.Global) {
+object Features : Namespace("app") {
     val feature by boolean<Context>(default = false)
 }
 

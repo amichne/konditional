@@ -30,18 +30,18 @@ flowchart LR
 
 ## Step-by-step adoption (incremental)
 
-### 0. Start with one container
+### 0. Start with one namespace
 
 ```kotlin
-object Features : FeatureContainer<Namespace.Global>(Namespace.Global) {
-    val DARK_MODE by boolean(default = false)
+object Features : Namespace("app") {
+    val darkMode by boolean<Context>(default = false)
 }
 ```
 
 ### 1. Replace call sites first (value safety)
 
 ```kotlin
-val enabled: Boolean = feature { Features.DARK_MODE }
+val enabled: Boolean = Features.darkMode.evaluate(context)
 ```
 
 What you gain immediately:
@@ -67,8 +67,8 @@ see ["Targeting & Rollouts"](04-targeting-rollouts.md)).
 ### 3. Add rules after defaults exist (behavior safety)
 
 ```kotlin
-val API_ENDPOINT by string(default = "https://api.example.com") {
-    rule { platforms(Platform.IOS) } returns "https://api-ios.example.com"
+val apiEndpoint by string<Context>(default = "https://api.example.com") {
+    rule("https://api-ios.example.com") { platforms(Platform.IOS) }
 }
 ```
 
@@ -90,15 +90,14 @@ data class EnterpriseContext(
 
 enum class SubscriptionTier { FREE, PRO, ENTERPRISE }
 
-val ADVANCED_ANALYTICS by boolean<EnterpriseContext>(default = false) {
-    rule {
-        extension {
-            Evaluable.factory { ctx ->
-                ctx.subscriptionTier == SubscriptionTier.ENTERPRISE &&
-                ctx.employeeCount > 100
+object EnterpriseFeatures : Namespace("enterprise") {
+    val advancedAnalytics by boolean<EnterpriseContext>(default = false) {
+        rule(true) {
+            extension {
+                subscriptionTier == SubscriptionTier.ENTERPRISE && employeeCount > 100
             }
         }
-    } returns true
+    }
 }
 ```
 
@@ -112,16 +111,13 @@ Instead of `"auth.dark-mode"` / `"payments.dark-mode"` style prefixes, use names
 
 ```kotlin
 sealed class AppDomain(id: String) : Namespace(id) {
-    data object Auth : AppDomain("auth")
-    data object Payments : AppDomain("payments")
-}
+    data object Auth : AppDomain("auth") {
+        val socialLogin by boolean<Context>(default = false)
+    }
 
-object AuthFeatures : FeatureContainer<AppDomain.Auth>(AppDomain.Auth) {
-    val SOCIAL_LOGIN by boolean(default = false)
-}
-
-object PaymentFeatures : FeatureContainer<AppDomain.Payments>(AppDomain.Payments) {
-    val APPLE_PAY by boolean(default = false)
+    data object Payments : AppDomain("payments") {
+        val applePay by boolean<Context>(default = false)
+    }
 }
 ```
 
@@ -135,8 +131,8 @@ Konditional supports JSON configuration as a validated boundary:
 
 ```kotlin
 val json = File("flags.json").readText()
-when (val result = SnapshotSerializer.fromJson(json)) {
-    is ParseResult.Success -> Namespace.Global.load(result.value)
+when (val result = AppDomain.Payments.fromJson(json)) {
+    is ParseResult.Success -> Unit // loaded into AppDomain.Payments
     is ParseResult.Failure -> logError("Parse failed: ${result.error}")
 }
 ```
@@ -151,7 +147,7 @@ affect evaluation.
 For gradual migrations, you can evaluate against a baseline registry and shadow-evaluate against a candidate:
 
 ```kotlin
-val value = Features.DARK_MODE.evaluateWithShadow(
+val value = Features.darkMode.evaluateWithShadow(
     context = context,
     candidateRegistry = candidateRegistry,
     onMismatch = { mismatch ->

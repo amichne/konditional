@@ -23,8 +23,8 @@ import io.amichne.konditional.core.id.StableId
  *         min(1, 2, 0)
  *         max(2, 0, 0)
  *     }
- *     rollout {  Rampup.create(50.0) }
- *     note("Rampup to mobile users only")
+ *     rampUp {  RampUp.create(50.0) }
+ *     note("RampUp to mobile users only")
  * }
  * ```
  *
@@ -34,13 +34,13 @@ import io.amichne.konditional.core.id.StableId
 @KonditionalDsl
 interface RuleScope<C : Context> {
     /**
-     * Allows specific stable IDs to bypass this rule's rollout percentage.
+     * Allows specific stable IDs to bypass this rule's rampUp percentage.
      *
      * When set, allowlisted users who match this rule's targeting criteria are always
-     * treated as in-rollout, even if deterministic bucketing would otherwise exclude them.
+     * treated as in-rampUp, even if deterministic bucketing would otherwise exclude them.
      *
      * This is typically used to ensure specific users (e.g., internal testers) can access
-     * a change during a gradual rollout.
+     * a change during a gradual rampUp.
      */
     fun allowlist(vararg stableIds: StableId)
 
@@ -127,16 +127,16 @@ interface RuleScope<C : Context> {
     fun note(text: String)
 
     /**
-     * Sets the rollout percentage for this rule.
+     * Sets the rampUp percentage for this rule.
      *
      * When set, only the specified percentage create users matching this rule
-     * will receive the associated value. The rollout is stable and deterministic
+     * will receive the associated value. The rampUp is stable and deterministic
      * based on the user's stable ID.
      *
      * Example:
      * ```kotlin
-     * rollout {  50.0  // 50% create matching users }
+     * rampUp {  50.0  // 50% create matching users }
      * ```
      */
-    fun rollout(function: () -> Number)
+    fun rampUp(function: () -> Number)
 }

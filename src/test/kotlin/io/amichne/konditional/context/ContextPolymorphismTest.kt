@@ -2,7 +2,6 @@ package io.amichne.konditional.context
 
 import io.amichne.konditional.TestDomains
 import io.amichne.konditional.api.evaluate
-import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.CompositeContext
 import io.amichne.konditional.fixtures.EnterpriseContext
@@ -30,11 +29,6 @@ class ContextPolymorphismTest {
     @BeforeEach
     fun setup() {
         // Reset registry before each test
-        println("Global")
-        println("--------")
-        println(SnapshotSerializer.serialize(Namespace.Global.configuration))
-        println("--------")
-
         println("Payments")
         println("--------")
         println(SnapshotSerializer.serialize(TestDomains.Payments.configuration))
@@ -150,7 +144,7 @@ class ContextPolymorphismTest {
         EnterpriseFeatures.api_access.update(false) {
             rule(true) {
                 platforms(Platform.WEB)
-                rollout { 100 }
+                rampUp { 100 }
 
                 extension { EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN).matches(this) }
             }
@@ -185,7 +179,7 @@ class ContextPolymorphismTest {
         // Configure using .override() for test-specific configuration
         EnterpriseFeatures.custom_branding.update(default = false) {
             rule(true) {
-                rollout { 100 }
+                rampUp { 100 }
             }
         }
 

@@ -9,7 +9,7 @@ import io.amichne.konditional.core.id.StableId
  *
  * This interface defines the base contextual information required for evaluating
  * feature flags. It provides the standard targeting dimensions (locale, platform, version)
- * and a stable identifier for deterministic rollout bucketing.
+ * and a stable identifier for deterministic rampUp bucketing.
  *
  * You can extend this interface to add custom fields for domain-specific targeting:
  * ```kotlin

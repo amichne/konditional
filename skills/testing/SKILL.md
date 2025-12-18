@@ -132,7 +132,7 @@ fun `valid JSON loads successfully`() {
     val json = """
     {
       "flags": [{
-        "key": "feature::global::darkMode",
+        "key": "feature::app::darkMode",
         "defaultValue": { "type": "BOOLEAN", "value": false },
         "salt": "v1",
         "isActive": true,
@@ -149,14 +149,14 @@ fun `valid JSON loads successfully`() {
 fun `failed parse preserves last known good`() {
     // Load valid config
     SnapshotSerializer.fromJson(validJson).let {
-        if (it is ParseResult.Success) Namespace.Global.load(it.value)
+        if (it is ParseResult.Success) Features.load(it.value)
     }
 
     val enabledBefore = Features.darkMode.evaluate(context)
 
     // Try to load invalid config
     SnapshotSerializer.fromJson(invalidJson).let {
-        if (it is ParseResult.Success) Namespace.Global.load(it.value)
+        if (it is ParseResult.Success) Features.load(it.value)
     }
 
     val enabledAfter = Features.darkMode.evaluate(context)

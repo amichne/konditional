@@ -86,7 +86,7 @@ Don't just state behavior—explain the mechanism:
 | Term | Use | Don't Use |
 |------|-----|-----------|
 | Feature | Typed configuration value | Flag, setting |
-| FeatureContainer | Object holding features | Registry |
+| Namespace | Object holding features | Registry |
 | Context | Runtime evaluation inputs | Environment |
 | Rule | Criteria → value mapping | Condition |
 | Specificity | Number of targeting criteria | Priority |
@@ -143,7 +143,7 @@ Use `skill-creator.md` as your guide. Each skill should:
 
 **Feature definition**:
 ```kotlin
-object Features : FeatureContainer<Namespace.Global>(Namespace.Global) {
+object Features : Namespace("app") {
     val feature by type<Context>(default = value) {
         rule(value) { criteria }
     }

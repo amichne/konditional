@@ -11,10 +11,10 @@ Konditional supports dynamic configuration via JSON, but treats JSON as a **trus
 
 ```mermaid
 flowchart LR
-  Code["Flags defined in code"] --> Snap["SnapshotSerializer.serialize(...)"]
+  Code["Flags defined in code"] --> Snap["namespace.toJson()"]
   Snap --> Json["JSON snapshot"]
-  Json --> Parse["SnapshotSerializer.fromJson(json)"]
-  Parse -->|Success| Load["Namespace.load(configuration)"]
+  Json --> Parse["namespace.fromJson(json)"]
+  Parse -->|Success| Load["Loads into namespace"]
   Parse -->|Failure| Reject["Keep last-known-good + log"]
   Load --> Eval["Evaluation uses active snapshot"]
   style Load fill:#c8e6c9
@@ -26,24 +26,20 @@ flowchart LR
 ## Prerequisite: features must be registered
 
 Deserialization can only succeed for features that exist in the process. In practice, this means your
-`FeatureContainer` objects must be initialized (so features are registered) before you call
+`Namespace` objects must be initialized (so features are registered) before you call
 `SnapshotSerializer.fromJson(...)`.
 
 If a snapshot references a feature that has not been registered yet, deserialization fails with
 `ParseError.FeatureNotFound`.
 
-One simple pattern is to have the `Namespace` own its containers and reference them in `init {}`:
+One simple pattern is to reference your namespaces at application startup (t0):
 
 ```kotlin
 object Payments : Namespace("payments") {
-    object Features : FeatureContainer<Payments>(this) {
-        val applePay by boolean(default = false)
-    }
-
-    init {
-        Features // ensure registration at startup (t0)
-    }
+    val applePay by boolean(default = false)
 }
+
+val _ = Payments // ensure registration at startup (t0)
 ```
 
 ---
@@ -51,7 +47,7 @@ object Payments : Namespace("payments") {
 ## Exporting configuration
 
 ```kotlin
-val json = SnapshotSerializer.serialize(Namespace.Global.configuration)
+val json = Payments.toJson()
 ```
 
 Use this when you want to externalize a namespace’s current configuration state into JSON for storage or transport.
@@ -62,8 +58,8 @@ Use this when you want to externalize a namespace’s current configuration stat
 
 ```kotlin
 val json = File("flags.json").readText()
-when (val result = SnapshotSerializer.fromJson(json)) {
-    is ParseResult.Success -> Namespace.Global.load(result.value)
+when (val result = Payments.fromJson(json)) {
+    is ParseResult.Success -> Unit // loaded into Payments
     is ParseResult.Failure -> handleError(result.error)
 }
 ```
@@ -78,9 +74,9 @@ The contract is explicit:
 ## Incremental updates via patching
 
 ```kotlin
-val currentConfig = Namespace.Global.configuration
+val currentConfig = Payments.configuration
 when (val result = SnapshotSerializer.applyPatchJson(currentConfig, patchJson)) {
-    is ParseResult.Success -> Namespace.Global.load(result.value)
+    is ParseResult.Success -> Payments.load(result.value)
     is ParseResult.Failure -> handleError(result.error)
 }
 ```
@@ -126,7 +122,7 @@ val options = SnapshotLoadOptions.skipUnknownKeys { warning ->
 }
 
 when (val result = SnapshotSerializer.fromJson(json, options)) {
-    is ParseResult.Success -> Namespace.Global.load(result.value)
+    is ParseResult.Success -> Payments.load(result.value)
     is ParseResult.Failure -> handleError(result.error)
 }
 ```
@@ -141,7 +137,7 @@ Snapshots optionally carry `meta` fields (version, timestamp, source). You can a
 
 ```kotlin
 when (val result = SnapshotSerializer.fromJson(json)) {
-    is ParseResult.Success -> Namespace.Global.load(
+    is ParseResult.Success -> Payments.load(
         result.value.withMetadata(
             version = "rev-123",
             source = "s3://configs/global.json",
@@ -154,8 +150,8 @@ when (val result = SnapshotSerializer.fromJson(json)) {
 Registries keep a bounded history of prior configurations for operational rollback:
 
 ```kotlin
-val rolledBack: Boolean = Namespace.Global.rollback(steps = 1)
-val history = Namespace.Global.historyMetadata
+val rolledBack: Boolean = Payments.rollback(steps = 1)
+val history = Payments.historyMetadata
 ```
 
 ---
@@ -183,7 +179,7 @@ Not validated by the type system:
 while (running) {
     val json = fetchFromServer()
     when (val result = SnapshotSerializer.fromJson(json)) {
-        is ParseResult.Success -> Namespace.Global.load(result.value)
+        is ParseResult.Success -> Payments.load(result.value)
         is ParseResult.Failure -> log.error("Config parse failed: ${result.error}")
     }
     delay(pollInterval)
@@ -195,7 +191,7 @@ while (running) {
 ```kotlin
 configStream.collect { json ->
     when (val result = SnapshotSerializer.fromJson(json)) {
-        is ParseResult.Success -> Namespace.Global.load(result.value)
+        is ParseResult.Success -> Payments.load(result.value)
         is ParseResult.Failure -> log.error("Config parse failed: ${result.error}")
     }
 }

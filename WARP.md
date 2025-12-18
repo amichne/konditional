@@ -21,9 +21,9 @@ Hard rule: use `./gradlew` (or `make`, which wraps `./gradlew`). Do not call `gr
 ### Run a single test
 JUnit 5 (Jupiter) is enabled.
 - Single test class:
-  - `./gradlew test --tests 'io.amichne.konditional.core.FeatureContainerTest'`
+  - `./gradlew test --tests 'io.amichne.konditional.core.NamespaceFeatureDefinitionTest'`
 - Single test method:
-  - `./gradlew test --tests 'io.amichne.konditional.core.FeatureContainerTest.someTestMethod'`
+  - `./gradlew test --tests 'io.amichne.konditional.core.NamespaceFeatureDefinitionTest.someTestMethod'`
 - Single test in a specific module:
   - `./gradlew :kontracts:test --tests 'io.amichne.kontracts.CustomTypeMappingTest'`
 
@@ -59,12 +59,10 @@ At a high level, Konditional is:
 Key entry points and responsibilities:
 - `io.amichne.konditional.core.Namespace`
   - Namespace = isolation boundary (each namespace delegates to its own `NamespaceRegistry`).
-  - Built-in namespace: `Namespace.Global`.
-- `io.amichne.konditional.core.features.FeatureContainer`
-  - The primary way to define flags: `val myFlag by boolean(default = false) { rule(true) { ... } }`.
-  - Property delegation eagerly creates + registers features at container init time (t0).
+  - Primary way to define flags: `val myFlag by boolean<Context>(default = false) { rule(true) { ... } }`.
+  - Property delegation eagerly creates + registers features at namespace init time (t0).
   - Delegation also updates the namespace registry definition (see `NamespaceRegistry.updateDefinition(...)`).
-  - Exposes `allFeatures()` and namespace-scoped JSON helpers via `NamespaceSnapshotSerializer`.
+  - Exposes `allFeatures()` and namespace-scoped JSON helpers via `toJson()` / `fromJson(...)`.
 - `io.amichne.konditional.core.registry.NamespaceRegistry` / `io.amichne.konditional.core.registry.InMemoryNamespaceRegistry`
   - Holds the active `Configuration` snapshot in an `AtomicReference` for lock-free reads.
   - `load(...)` atomically swaps the snapshot and records a bounded rollback history.
@@ -89,7 +87,7 @@ Key entry points and responsibilities:
   - Namespace-scoped JSON; on success, loads directly into the namespace.
 
 Important invariant when working with JSON config:
-- Feature containers must be initialized before deserializing/loading snapshots, so the registry knows which features exist.
+- Namespaces must be initialized before deserializing/loading snapshots, so the registry knows which features exist.
 
 ### Observability hooks
 - `io.amichne.konditional.core.ops.RegistryHooks` is the single entry point for dependency-free logging/metrics adapters.

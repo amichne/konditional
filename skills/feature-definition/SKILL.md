@@ -19,7 +19,7 @@ description: Define type-safe Konditional features with compile-time guarantees,
 
 ### Feature Definition Template
 ```kotlin
-object [ContainerName] : FeatureContainer<[Namespace]>([NamespaceInstance]) {
+object [NamespaceName] : Namespace("[namespace-id]") {
     val [featureName] by [type]<[ContextType]>(default = [defaultValue]) {
         // Optional rules
         rule([value]) {
@@ -54,7 +54,7 @@ rule(value) { rollout { 50.0 } }                                     // 0
 
 ### Boolean Feature with Platform Targeting
 ```kotlin
-object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
+object AppFeatures : Namespace("app") {
     val darkMode by boolean<Context>(default = false) {
         rule(true) {
             platforms(Platform.IOS)
@@ -106,7 +106,7 @@ data class EnterpriseContext(
     val employeeCount: Int
 ) : Context
 
-object PremiumFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
+object PremiumFeatures : Namespace("premium") {
     val advancedAnalytics by boolean<EnterpriseContext>(default = false) {
         rule(true) {
             extension {

@@ -28,7 +28,7 @@ val json = fetchRemoteConfig()
 when (val result = SnapshotSerializer.fromJson(json)) {
     is ParseResult.Success -> {
         // 3. Atomically update
-        Namespace.Global.load(result.value)
+        AppFlags.load(result.value)
         logInfo("Config loaded")
     }
     is ParseResult.Failure -> {
@@ -40,23 +40,23 @@ when (val result = SnapshotSerializer.fromJson(json)) {
 
 ### Patch Updates
 ```kotlin
-val currentConfig = Namespace.Global.configuration
+val currentConfig = AppFlags.configuration
 when (val result = SnapshotSerializer.applyPatchJson(currentConfig, patchJson)) {
-    is ParseResult.Success -> Namespace.Global.load(result.value)
+    is ParseResult.Success -> AppFlags.load(result.value)
     is ParseResult.Failure -> logError("Patch failed: ${result.error.message}")
 }
 ```
 
 ### Configuration Export
 ```kotlin
-val snapshot = SnapshotSerializer.serialize(Namespace.Global.configuration)
+val snapshot = AppFlags.toJson()
 File("config.json").writeText(snapshot)
 ```
 
 ### Common Parse Errors
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `FeatureNotFound` | Unregistered feature in JSON | Initialize `FeatureContainer` first |
+| `FeatureNotFound` | Unregistered feature in JSON | Initialize `Namespace` objects first |
 | `InvalidJson` | Malformed JSON | Validate JSON schema |
 | `InvalidSnapshot` | Missing required fields | Check JSON structure |
 | `TypeMismatch` | Value type mismatch | Verify value encoding |
@@ -65,7 +65,7 @@ File("config.json").writeText(snapshot)
 
 ### Initial Configuration Load
 ```kotlin
-object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
+object AppFlags : Namespace("app") {
     val darkMode by boolean<Context>(default = false)
     val apiEndpoint by string<Context>(default = "https://api.example.com")
 }
@@ -74,7 +74,7 @@ fun loadConfig() {
     val json = """
     {
       "flags": [{
-        "key": "feature::global::darkMode",
+        "key": "feature::app::darkMode",
         "defaultValue": { "type": "BOOLEAN", "value": false },
         "salt": "v1",
         "isActive": true,
@@ -87,8 +87,8 @@ fun loadConfig() {
     }
     """.trimIndent()
 
-    when (val result = SnapshotSerializer.fromJson(json)) {
-        is ParseResult.Success -> Namespace.Global.load(result.value)
+    when (val result = AppFlags.fromJson(json)) {
+        is ParseResult.Success -> Unit // loaded into AppFlags
         is ParseResult.Failure -> println("Failed: ${result.error}")
     }
 }
@@ -100,7 +100,7 @@ fun updateRollout() {
     val patchJson = """
     {
       "flags": [{
-        "key": "feature::global::darkMode",
+        "key": "feature::app::darkMode",
         "rules": [{
           "value": { "type": "BOOLEAN", "value": true },
           "rampUp": 100.0,
@@ -110,9 +110,9 @@ fun updateRollout() {
     }
     """.trimIndent()
 
-    val currentConfig = Namespace.Global.configuration
+    val currentConfig = AppFlags.configuration
     when (val result = SnapshotSerializer.applyPatchJson(currentConfig, patchJson)) {
-        is ParseResult.Success -> Namespace.Global.load(result.value)
+        is ParseResult.Success -> AppFlags.load(result.value)
         is ParseResult.Failure -> println("Patch rejected: ${result.error}")
     }
 }
@@ -122,12 +122,12 @@ fun updateRollout() {
 ```kotlin
 // Load valid config
 SnapshotSerializer.fromJson(validJson).let {
-    if (it is ParseResult.Success) Namespace.Global.load(it.value)
+    if (it is ParseResult.Success) AppFlags.load(it.value)
 }
 
 // Invalid update arrives
 when (val result = SnapshotSerializer.fromJson(invalidJson)) {
-    is ParseResult.Success -> Namespace.Global.load(result.value)
+    is ParseResult.Success -> AppFlags.load(result.value)
     is ParseResult.Failure -> {
         // Last-known-good remains active
         logError("Invalid config rejected: ${result.error}")
@@ -135,7 +135,7 @@ when (val result = SnapshotSerializer.fromJson(invalidJson)) {
 }
 
 // Evaluation continues with old config
-val enabled = AppFeatures.darkMode.evaluate(context)
+val enabled = AppFlags.darkMode.evaluate(context)
 ```
 
 ### Common Mistakes
@@ -143,12 +143,12 @@ val enabled = AppFeatures.darkMode.evaluate(context)
 **Wrong: Parse before container initialization**
 ```kotlin
 val result = SnapshotSerializer.fromJson(json)  // FeatureNotFound!
-object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) { ... }
+object AppFlags : Namespace("app") { ... }
 ```
 
-**Right: Initialize containers first**
+**Right: Initialize namespaces first**
 ```kotlin
-object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) { ... }
+object AppFlags : Namespace("app") { ... }
 val result = SnapshotSerializer.fromJson(json)  // Success
 ```
 
@@ -160,7 +160,7 @@ val config = SnapshotSerializer.fromJson(json) as ParseResult.Success  // Crash!
 **Right: Handle both cases**
 ```kotlin
 when (val result = SnapshotSerializer.fromJson(json)) {
-    is ParseResult.Success -> Namespace.Global.load(result.value)
+    is ParseResult.Success -> AppFlags.load(result.value)
     is ParseResult.Failure -> logError(result.error.message)
 }
 ```

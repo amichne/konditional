@@ -3,7 +3,7 @@ package io.amichne.konditional.serialization
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Rampup
+import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
@@ -78,7 +78,7 @@ private fun <T : Any, C : Context> FlagDefinition<T, C, *>.toSerializable(flagKe
         defaultValue = FlagValue.from(defaultValue),
         salt = salt,
         isActive = isActive,
-        rolloutAllowlist = rolloutAllowlist.mapTo(linkedSetOf()) { it.id },
+        rampUpAllowlist = rampUpAllowlist.mapTo(linkedSetOf()) { it.id },
         rules = values.map { it.toSerializable() },
     )
 
@@ -88,8 +88,8 @@ private fun <T : Any, C : Context> FlagDefinition<T, C, *>.toSerializable(flagKe
 private fun <T : Any, C : Context> ConditionalValue<T, C>.toSerializable(): SerializableRule =
     SerializableRule(
         value = FlagValue.from(value),
-        rampUp = rule.rollout.value,
-        rolloutAllowlist = rule.rolloutAllowlist.mapTo(linkedSetOf()) { it.id },
+        rampUp = rule.rampUp.value,
+        rampUpAllowlist = rule.rampUpAllowlist.mapTo(linkedSetOf()) { it.id },
         note = rule.note,
         locales =
             rule.baseEvaluable.locales
@@ -179,7 +179,7 @@ private fun <T : Any, C : Context, M : Namespace> SerializableFlag.toFlagDefinit
                 defaultValue = decodedDefault,
                 salt = salt,
                 isActive = isActive,
-                rolloutAllowlist = rolloutAllowlist.mapTo(linkedSetOf()) { HexId(it) },
+                rampUpAllowlist = rampUpAllowlist.mapTo(linkedSetOf()) { HexId(it) },
             )
         }
 
@@ -325,8 +325,8 @@ private fun coerceValue(
  */
 private fun <C : Context> SerializableRule.toRule(): Rule<C> =
     Rule(
-        rollout = Rampup.of(rampUp),
-        rolloutAllowlist = rolloutAllowlist.mapTo(linkedSetOf()) { HexId(it) },
+        rampUp = RampUp.of(rampUp),
+        rolloutAllowlist = rampUpAllowlist.mapTo(linkedSetOf()) { HexId(it) },
         note = note,
         locales = locales.map { AppLocale.valueOf(it) }.toSet(),
         platforms = platforms.map { Platform.valueOf(it) }.toSet(),

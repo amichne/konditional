@@ -7,7 +7,6 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.registry.NamespaceRegistry
@@ -28,9 +27,7 @@ class ShadowEvaluationTest {
 
     @Test
     fun `evaluateWithShadow returns baseline and reports mismatched values`() {
-        val baselineNamespace = Namespace("shadow-baseline")
-
-        val features = object : FeatureContainer<Namespace>(baselineNamespace) {
+        val baselineNamespace = object : Namespace.TestNamespaceFacade("shadow-baseline") {
             val FLAG by boolean<Context>(default = false) {
                 rule(true) { platforms(Platform.IOS) }
             }
@@ -40,8 +37,8 @@ class ShadowEvaluationTest {
             namespaceId = "shadow-candidate",
             configuration = Configuration(
                 flags = mapOf(
-                    features.FLAG to FlagDefinition(
-                        feature = features.FLAG,
+                    baselineNamespace.FLAG to FlagDefinition(
+                        feature = baselineNamespace.FLAG,
                         bounds = emptyList(),
                         defaultValue = false,
                     )
@@ -50,7 +47,7 @@ class ShadowEvaluationTest {
         )
 
         var mismatched = false
-        val value = features.FLAG.evaluateWithShadow(
+        val value = baselineNamespace.FLAG.evaluateWithShadow(
             context = context,
             candidateRegistry = candidateRegistry,
             baselineRegistry = baselineNamespace,
@@ -63,9 +60,7 @@ class ShadowEvaluationTest {
 
     @Test
     fun `evaluateWithShadow skips candidate when baseline is disabled`() {
-        val baselineNamespace = Namespace("shadow-disabled")
-
-        val features = object : FeatureContainer<Namespace>(baselineNamespace) {
+        val baselineNamespace = object : Namespace.TestNamespaceFacade("shadow-disabled") {
             val FLAG by boolean<Context>(default = false) {
                 rule(true) { platforms(Platform.IOS) }
             }
@@ -75,8 +70,8 @@ class ShadowEvaluationTest {
             namespaceId = "shadow-candidate",
             configuration = Configuration(
                 flags = mapOf(
-                    features.FLAG to FlagDefinition(
-                        feature = features.FLAG,
+                    baselineNamespace.FLAG to FlagDefinition(
+                        feature = baselineNamespace.FLAG,
                         bounds = emptyList(),
                         defaultValue = true,
                     )
@@ -87,7 +82,7 @@ class ShadowEvaluationTest {
         baselineNamespace.disableAll()
 
         var mismatched = false
-        val value = features.FLAG.evaluateWithShadow(
+        val value = baselineNamespace.FLAG.evaluateWithShadow(
             context = context,
             candidateRegistry = candidateRegistry,
             baselineRegistry = baselineNamespace,
