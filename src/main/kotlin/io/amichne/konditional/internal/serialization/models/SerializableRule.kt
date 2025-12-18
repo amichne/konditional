@@ -13,6 +13,7 @@ import io.amichne.konditional.rules.versions.VersionRange
 internal data class SerializableRule(
     val value: FlagValue<*>,
     val rampUp: Double = 100.0,
+    val rolloutAllowlist: Set<String> = emptySet(),
     val note: String? = null,
     val locales: Set<String> = emptySet(),
     val platforms: Set<String> = emptySet(),

@@ -9,7 +9,7 @@ flowchart LR
     Code["Flags + rules defined in code"] --> CT["Compile-time guarantees"]
     CT --> Eval["Evaluation returns typed, non-null values"]
     Json["JSON payload"] --> RT["Runtime validation boundary"]
-    RT -->|Success| Load["Namespace.load(snapshot)"]
+    RT -->|Success| Load["Namespace.load(configuration)"]
     RT -->|Failure| Reject["Reject before evaluation"]
     style CT fill: #e1f5ff
     style RT fill: #fff3cd
@@ -39,11 +39,12 @@ Flags are delegated properties in a `FeatureContainer`:
 object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val darkMode by boolean(default = false)
     val timeout by double(default = 30.0)
-    val maxRetries by int(default = 3)
+    val maxRetries by integer(default = 3)
 }
 ```
 
-Because the delegate (`boolean`, `double`, `int`, …) determines the type parameter, the compiler knows the declared type
+Because the delegate (`boolean`, `double`, `integer`, …) determines the type parameter, the compiler knows the declared
+type
 at the definition site and carries it forward.
 
 **Guarantee**: the declared type of a feature is statically known and cannot drift without code changes the compiler
@@ -57,7 +58,7 @@ Rules must return a value of the feature’s declared type:
 
 ```kotlin
 val timeout by double(default = 30.0) {
-    rule { platforms(Platform.ANDROID) } returns 45.0
+    rule(45.0) { platforms(Platform.ANDROID) }
 }
 ```
 
@@ -72,8 +73,15 @@ Boundary: this applies to rules defined in code; JSON-loaded configurations are 
 Evaluation preserves the type parameter from definition to usage:
 
 ```kotlin
-val isDarkMode: Boolean = feature { AppFeatures.darkMode }
-val timeout: Double = feature { AppFeatures.timeout }
+val ctx = Context(
+    locale = AppLocale.UNITED_STATES,
+    platform = Platform.IOS,
+    appVersion = Version.of(2, 1, 0),
+    stableId = StableId.of("user-123"),
+)
+
+val isDarkMode: Boolean = AppFeatures.darkMode.evaluate(ctx)
+val timeout: Double = AppFeatures.timeout.evaluate(ctx)
 ```
 
 **Guarantee**: no casts are required at call sites; incompatible assignments are compile errors.
@@ -108,8 +116,8 @@ object PaymentFeatures : FeatureContainer<AppDomain.Payments>(AppDomain.Payments
 
 **Guarantee**: feature key collisions across namespaces cannot occur (separate registries bound at the type level).
 
-**Boundary**: defining conflicting keys within the same namespace is a design error that can be detected at runtime during
-registration.
+**Boundary**: defining conflicting keys within the same namespace is a design error detected at container initialization
+(duplicate feature ids are rejected during registration).
 
 ---
 
@@ -129,6 +137,8 @@ when (val result = SnapshotSerializer.fromJson(json)) {
 The guarantee is qualified:
 
 - **Guaranteed**: invalid JSON is detected and rejected before it can affect evaluation.
+- **Precondition**: the features referenced by the JSON must be registered (i.e., your `FeatureContainer` objects have
+  been initialized).
 
 - **Not guaranteed**: Semantic correctness of the configuration (rollout percentage, targeting intent, business
   correctness).

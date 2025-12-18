@@ -1,51 +1,57 @@
 # Core Concepts
 
-Konditional’s public surface is intentionally small. Understanding three primitives—**Features**, **Context**, and **Namespaces**—is enough to reason about correctness, organization, and runtime behavior.
+Konditional’s public surface is intentionally small. Understanding three primitives—**Features**, **Context**, and *
+*Namespaces**—is enough to reason about correctness, organization, and runtime behavior.
 
 ```mermaid
 flowchart TD
-  N["Namespace"] --> R["Registry"]
-  C["FeatureContainer"] --> R
-  C --> F["Feature (typed)"]
-  F --> D["Default (required)"]
-  F --> Rules["Rules"]
-  Rules --> Rule["rule { ... } returns value"]
-  Rule --> Criteria["platforms/locales/versions/rollout/extension"]
-  X["Context"] --> Rule
+    N["Namespace"] --> R["Registry"]
+    C["FeatureContainer"] --> R
+    C --> F["Feature (typed)"]
+    F --> D["Default (required)"]
+    F --> Rules["Rules"]
+    Rules --> Rule["rule(value) { ... }"]
+    Rule --> Criteria["platforms/locales/versions/axis/rollout/allowlist/extension"]
+    X["Context"] --> Rule
 ```
 
 ---
 
 ## Features
 
-A feature is a typed configuration value with an optional rule set. You define features as delegated properties in a `FeatureContainer`:
+A feature is a typed configuration value with an optional rule set. You define features as delegated properties in a
+`FeatureContainer`:
 
 ```kotlin
+import io.amichne.konditional.api.evaluate
+import io.amichne.konditional.context.Context
 object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
-    val DARK_MODE by boolean(default = false)
-    val API_ENDPOINT by string(default = "https://api.example.com")
-    val MAX_RETRIES by int(default = 3)
-    val TIMEOUT by double(default = 30.0)
+    val darkMode by boolean<Context>(default = false)
+    val apiEndpoint by string<Context>(default = "https://api.example.com")
+    val maxRetries by integer<Context>(default = 3)
+    val timeoutSeconds by double<Context>(default = 30.0)
 }
 
-val enabled: Boolean = feature { AppFeatures.DARK_MODE }
-val endpoint: String = feature { AppFeatures.API_ENDPOINT }
+val enabled: Boolean = AppFeatures.darkMode.evaluate(context)
+val endpoint: String = AppFeatures.apiEndpoint.evaluate(context)
 ```
 
 What this buys you:
+
 - **Property name becomes the key** (no string keys at call sites)
 - **Type flows from the delegate** (`boolean` → `Boolean`, etc.)
 - **Non-null evaluation** (default is required)
 
 ### Supported types
 
-| Type    | DSL Method  | Kotlin Type   | Example Default |
-|---------|-------------|---------------|-----------------|
-| Boolean | `boolean()` | `Boolean`     | `false`         |
-| String  | `string()`  | `String`      | `"production"`  |
-| Integer | `int()`     | `Int`         | `42`            |
-| Decimal | `double()`  | `Double`      | `3.14`          |
-| Enum    | `enum<E>()` | `E : Enum<E>` | `LogLevel.INFO` |
+| Type       | FeatureContainer method | Kotlin type                          | Example default |
+|------------|-------------------------|--------------------------------------|-----------------|
+| Boolean    | `boolean(...)`          | `Boolean`                            | `false`         |
+| String     | `string(...)`           | `String`                             | `"production"`  |
+| Integer    | `integer(...)`          | `Int`                                | `42`            |
+| Decimal    | `double(...)`           | `Double`                             | `3.14`          |
+| Enum       | `enum(...)`             | `E : Enum<E>`                        | `LogLevel.INFO` |
+| Data class | `custom(...)`           | `T : KotlinEncodeable<ObjectSchema>` | `MyConfig()`    |
 
 ### Enums instead of strings
 
@@ -58,7 +64,7 @@ object AppConfig : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val THEME by enum<Theme, Context>(default = Theme.LIGHT)
 }
 
-val level: LogLevel = feature { AppConfig.LOG_LEVEL }
+val level: LogLevel = AppConfig.LOG_LEVEL.evaluate(context)
 ```
 
 Because variants are enum values, invalid variants cannot compile.
@@ -70,17 +76,20 @@ Because variants are enum values, invalid variants cannot compile.
 Rules are a typed mapping from a set of criteria to a concrete return value:
 
 ```kotlin
-val API_ENDPOINT by string(default = "https://api.example.com") {
-    rule { platforms(Platform.IOS) } returns "https://api-ios.example.com"
-    rule { platforms(Platform.ANDROID) } returns "https://api-android.example.com"
+val apiEndpoint by string<Context>(default = "https://api.example.com") {
+    rule("https://api-ios.example.com") { platforms(Platform.IOS) }
+    rule("https://api-android.example.com") { platforms(Platform.ANDROID) }
 }
 ```
 
 Criteria you can compose (within a single rule):
+
 - `platforms(...)`
 - `locales(...)`
 - `versions { min(...); max(...) }`
 - `rollout { percent }`
+- `allowlist(...)` (rollout bypass)
+- `axis(...)` (dimensional targeting)
 - `extension { ... }` for custom predicates
 
 Within a rule, criteria combine as **AND**: all specified criteria must match for the rule to match.
@@ -103,19 +112,15 @@ enum class SubscriptionTier { FREE, PRO, ENTERPRISE }
 
 object PremiumFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val ADVANCED_ANALYTICS by boolean<EnterpriseContext>(default = false) {
-        rule {
-            extension {
-                Evaluable.factory { ctx ->
-                    ctx.subscriptionTier == SubscriptionTier.ENTERPRISE &&
-                        ctx.employeeCount > 100
-                }
-            }
-        } returns true
+        rule(true) {
+            extension { subscriptionTier == SubscriptionTier.ENTERPRISE && employeeCount > 100 }
+        }
     }
 }
 ```
 
-Because the feature is parameterized with `EnterpriseContext`, `ctx` is strongly typed inside the predicate.
+Because the feature is parameterized with `EnterpriseContext`, the receiver inside `extension { ... }` is strongly
+typed.
 
 ---
 
@@ -126,39 +131,33 @@ Context provides evaluation inputs: it tells Konditional who is asking and where
 Standard fields (the minimum required by the rule DSL):
 
 ```kotlin
-data class Context(
-    val locale: AppLocale,
-    val platform: Platform,
-    val appVersion: Version,
-    val stableId: StableId
+val context = Context(
+    locale = AppLocale.UNITED_STATES,
+    platform = Platform.IOS,
+    appVersion = Version.of(2, 1, 0),
+    stableId = StableId.of("user-123"),
 )
 ```
 
 ### StableId (deterministic rollouts)
 
-`stableId` is a stable identifier used for deterministic bucketing. It must be hex (32+ chars):
+`stableId` is a stable identifier used for deterministic bucketing.
+`StableId.of(...)` accepts any non-blank string and normalizes it to a hex representation used for bucketing.
 
 ```kotlin
-val id = StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
+val id = StableId.of("user-123")
 ```
 
-If you have an existing user ID, hash it into hex:
-
-```kotlin
-fun toStableId(userId: String): StableId {
-    val hash = MessageDigest.getInstance("SHA-256")
-        .digest(userId.toByteArray())
-        .joinToString("") { "%02x".format(it) }
-    return StableId.of(hash)
-}
-```
+If you need cross-platform consistency, ensure all platforms pass the same canonical stable identifier string
+into `StableId.of(...)` (it lowercases the input).
 
 ---
 
 ## Namespaces
 
 Namespaces are isolation boundaries: each namespace has its own registry and independent configuration lifecycle.
-Konditional provides `Namespace.Global`. If you need more isolation boundaries, define your own namespaces (consumer-defined) and bind containers to them.
+Konditional provides `Namespace.Global`. If you need more isolation boundaries, define your own namespaces (
+consumer-defined) and bind containers to them.
 
 ```kotlin
 sealed class AppDomain(id: String) : Namespace(id) {
@@ -167,13 +166,13 @@ sealed class AppDomain(id: String) : Namespace(id) {
 }
 
 object AuthFeatures : FeatureContainer<AppDomain.Auth>(AppDomain.Auth) {
-    val SOCIAL_LOGIN by boolean(default = false)
-    val TWO_FACTOR_AUTH by boolean(default = true)
+    val socialLogin by boolean<Context>(default = false)
+    val twoFactorAuth by boolean<Context>(default = true)
 }
 
 object PaymentFeatures : FeatureContainer<AppDomain.Payments>(AppDomain.Payments) {
-    val APPLE_PAY by boolean(default = false)
-    val STRIPE_INTEGRATION by boolean(default = true)
+    val applePay by boolean<Context>(default = false)
+    val stripeIntegration by boolean<Context>(default = true)
 }
 
 AppDomain.Auth.load(authConfig)
@@ -201,23 +200,17 @@ object RecFeatures : FeatureContainer<TeamDomain.Recommendations>(TeamDomain.Rec
 
 ```kotlin
 object Config : FeatureContainer<Namespace.Global>(Namespace.Global) {
-    val MAX_RETRIES by int(default = 3)
+    val maxRetries by integer<Context>(default = 3)
 }
 
-val retries: Int = feature { Config.MAX_RETRIES }
+val retries: Int = Config.maxRetries.evaluate(context)
 ```
 
 ### Wrong context type for a feature
 
 ```kotlin
 val basicContext: Context = Context(...)
-feature { PremiumFeatures.ADVANCED_ANALYTICS } // Compile error (requires EnterpriseContext)
-```
-
-### Cross-namespace misuse
-
-```kotlin
-AppDomain.Auth.load(paymentConfig) // Compile error (type mismatch)
+PremiumFeatures.ADVANCED_ANALYTICS.evaluate(basicContext) // Compile error (requires EnterpriseContext)
 ```
 
 ---

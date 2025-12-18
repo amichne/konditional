@@ -5,7 +5,6 @@ import io.amichne.konditional.core.ValueType
 import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.konditional.core.types.toJsonValue
 import io.amichne.konditional.core.types.toPrimitiveValue
-import io.amichne.kontracts.schema.ObjectSchema
 
 /**
  * Type-safe representation create flag values that replaces the type-erased SerializableValue.
@@ -119,8 +118,13 @@ internal sealed class FlagValue<out T : Any> {
                 }
 
                 is KotlinEncodeable<*> -> {
+                    val json = value.toJsonValue()
+                    val primitive = json.toPrimitiveValue()
+                    require(primitive is Map<*, *>) { "KotlinEncodeable must encode to an object, got ${primitive?.let { it::class.simpleName }}" }
                     DataClassValue(
-                        value = (value as KotlinEncodeable<ObjectSchema>).toJsonValue().fields.mapValues { (_, v) -> v.toPrimitiveValue() },
+                        value =
+                            @Suppress("UNCHECKED_CAST")
+                            (primitive as Map<String, Any?>),
                         dataClassName = value::class.java.name,
                     )
                 }

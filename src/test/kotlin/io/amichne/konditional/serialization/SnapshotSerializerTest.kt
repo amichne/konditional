@@ -1,26 +1,35 @@
 package io.amichne.konditional.serialization
 
+import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Rampup
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.context.axis.Axis
+import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.features.FeatureContainer
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.core.result.getOrThrow
+import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.konditional.fixtures.core.TestNamespace
+import io.amichne.konditional.fixtures.utilities.axisValues
 import io.amichne.konditional.fixtures.utilities.update
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.values.FeatureId
+import io.amichne.kontracts.dsl.*
+import io.amichne.kontracts.schema.ObjectSchema
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -39,6 +48,8 @@ class SnapshotSerializerTest {
             val stringFlag by string<Context>(default = "default")
             val intFlag by integer<Context>(default = 0)
             val doubleFlag by double<Context>(default = 0.0)
+            val themeFlag by enum<Theme, Context>(default = Theme.LIGHT)
+            val retryPolicyFlag by custom<RetryPolicy, Context>(default = RetryPolicy())
         }
 
     @BeforeEach
@@ -52,6 +63,44 @@ class SnapshotSerializerTest {
         FeatureRegistry.register(TestFeatures.stringFlag)
         FeatureRegistry.register(TestFeatures.intFlag)
         FeatureRegistry.register(TestFeatures.doubleFlag)
+        FeatureRegistry.register(TestFeatures.themeFlag)
+        FeatureRegistry.register(TestFeatures.retryPolicyFlag)
+    }
+
+    private enum class Environment(override val id: String) : AxisValue {
+        PROD("prod"),
+        STAGE("stage"),
+        DEV("dev"),
+    }
+
+    private enum class Tenant(override val id: String) : AxisValue {
+        ENTERPRISE("enterprise"),
+        SMB("smb"),
+    }
+
+    private object Axes {
+        data object EnvironmentAxis : Axis<Environment>("environment", Environment::class)
+        data object TenantAxis : Axis<Tenant>("tenant", Tenant::class)
+    }
+
+    private enum class Theme {
+        LIGHT,
+        DARK,
+    }
+
+    private data class RetryPolicy(
+        val maxAttempts: Int = 3,
+        val backoffMs: Double = 1000.0,
+        val enabled: Boolean = true,
+        val mode: String = "exponential",
+    ) : KotlinEncodeable<ObjectSchema> {
+        override val schema: ObjectSchema =
+            schemaRoot {
+                ::maxAttempts of { minimum = 1 }
+                ::backoffMs of { minimum = 0.0 }
+                ::enabled of { default = true }
+                ::mode of { minLength = 1 }
+            }
     }
 
     private fun ctx(
@@ -60,6 +109,18 @@ class SnapshotSerializerTest {
         platform: Platform = Platform.IOS,
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
+
+    private fun ctxWithEnvironment(env: Environment): Context =
+        object : Context {
+            override val locale: AppLocale = AppLocale.UNITED_STATES
+            override val platform: Platform = Platform.IOS
+            override val appVersion: Version = Version.of(1, 0, 0)
+            override val stableId: StableId = StableId.of("axis-user")
+            override val axisValues =
+                axisValues {
+                    this[Axes.EnvironmentAxis] = env
+                }
+        }
 
     // ========== Serialization Tests ==========
 
@@ -159,6 +220,215 @@ class SnapshotSerializerTest {
     }
 
     @Test
+    fun `Given Konfig with rollout allowlists, When round-tripped, Then allowlists are preserved`() {
+        val allowlistedId = "allowlisted-user"
+        val otherId = "other-user"
+        val allowlisted = StableId.of(allowlistedId)
+
+        TestFeatures.boolFlag.update(false) {
+            allowlist(allowlisted)
+            rule(true) {
+                rollout { 0.0 }
+            }
+        }
+
+        assertTrue(TestFeatures.boolFlag.evaluate(ctx(allowlistedId)))
+        assertFalse(TestFeatures.boolFlag.evaluate(ctx(otherId)))
+
+        val json = SnapshotSerializer.serialize(testNamespace.configuration)
+        val parsed = SnapshotSerializer.fromJson(json).getOrThrow()
+
+        testNamespace.load(Configuration(emptyMap()))
+        testNamespace.load(parsed)
+
+        assertTrue(TestFeatures.boolFlag.evaluate(ctx(allowlistedId)))
+        assertFalse(TestFeatures.boolFlag.evaluate(ctx(otherId)))
+    }
+
+    @Test
+    fun `Given Konfig with axis targeting, When serialized and round-tripped, Then axes constraints are preserved`() {
+        TestFeatures.boolFlag.update(false) {
+            rule(true) {
+                axis(Axes.EnvironmentAxis, Environment.PROD, Environment.STAGE)
+            }
+        }
+
+        val json = SnapshotSerializer.serialize(testNamespace.configuration)
+        assertTrue(json.contains("\"axes\""))
+        assertTrue(json.contains("\"environment\""))
+        assertTrue(json.contains("prod"))
+        assertTrue(json.contains("stage"))
+
+        val parsed = SnapshotSerializer.fromJson(json).getOrThrow()
+
+        testNamespace.load(Configuration(emptyMap()))
+        testNamespace.load(parsed)
+
+        assertTrue(TestFeatures.boolFlag.evaluate(ctxWithEnvironment(Environment.PROD)))
+        assertTrue(TestFeatures.boolFlag.evaluate(ctxWithEnvironment(Environment.STAGE)))
+        assertFalse(TestFeatures.boolFlag.evaluate(ctxWithEnvironment(Environment.DEV)))
+    }
+
+    @Test
+    fun `Given maximal snapshot, When serialized, Then output includes all supported fields`() {
+        val flagAllowlistA = StableId.of("allowlisted-user") // 616c6c6f776c69737465642d75736572
+        val flagAllowlistB = StableId.of("flag-allowlist") // 666c61672d616c6c6f776c697374
+        val ruleAllowlist = StableId.of("rule-allowlist") // 72756c652d616c6c6f776c697374
+
+        TestFeatures.themeFlag.update(Theme.LIGHT) {
+            salt("salt-v2")
+            active { false }
+            allowlist(flagAllowlistA, flagAllowlistB)
+            rule(Theme.DARK) {
+                allowlist(ruleAllowlist)
+                note("maximal-rule")
+                locales(AppLocale.UNITED_STATES, AppLocale.FRANCE)
+                platforms(Platform.IOS, Platform.ANDROID)
+                versions { min(1, 0, 0); max(2, 0, 0) }
+                axis(Axes.EnvironmentAxis, Environment.PROD, Environment.STAGE)
+                axis(Axes.TenantAxis, Tenant.ENTERPRISE)
+                rollout { 12.34 }
+            }
+        }
+
+        TestFeatures.retryPolicyFlag.update(RetryPolicy()) {
+            salt("policy-salt")
+            allowlist(flagAllowlistA)
+            rule(RetryPolicy(maxAttempts = 9, backoffMs = 2500.0, enabled = false, mode = "linear")) {
+                note("policy-rule")
+                rollout { 99.0 }
+            }
+        }
+
+        val config =
+            testNamespace.configuration.withMetadata(
+                version = "rev-123",
+                generatedAtEpochMillis = 1734480000000,
+                source = "s3://configs/global.json",
+            )
+
+        val json = SnapshotSerializer.serialize(config)
+        println(json)
+
+        val normalized =
+            json.replace(namespaceSeedRegex, "feature::NAMESPACE::")
+
+        val expected =
+            """
+            {
+              "meta": {
+                "version": "rev-123",
+                "generatedAtEpochMillis": 1734480000000,
+                "source": "s3://configs/global.json"
+              },
+              "flags": [
+                {
+                  "key": "feature::NAMESPACE::themeFlag",
+                  "defaultValue": {
+                    "type": "ENUM",
+                    "value": "LIGHT",
+                    "enumClassName": "${Theme::class.java.name}"
+                  },
+                  "salt": "salt-v2",
+                  "isActive": false,
+                  "rolloutAllowlist": [
+                    "616c6c6f776c69737465642d75736572",
+                    "666c61672d616c6c6f776c697374"
+                  ],
+                  "rules": [
+                    {
+                      "value": {
+                        "type": "ENUM",
+                        "value": "DARK",
+                        "enumClassName": "${Theme::class.java.name}"
+                      },
+                      "rampUp": 12.34,
+                      "rolloutAllowlist": [
+                        "72756c652d616c6c6f776c697374"
+                      ],
+                      "note": "maximal-rule",
+                      "locales": [
+                        "UNITED_STATES",
+                        "FRANCE"
+                      ],
+                      "platforms": [
+                        "IOS",
+                        "ANDROID"
+                      ],
+                      "versionRange": {
+                        "type": "MIN_AND_MAX_BOUND",
+                        "min": {
+                          "major": 1,
+                          "minor": 0,
+                          "patch": 0
+                        },
+                        "max": {
+                          "major": 2,
+                          "minor": 0,
+                          "patch": 0
+                        }
+                      },
+                      "axes": {
+                        "environment": [
+                          "prod",
+                          "stage"
+                        ],
+                        "tenant": [
+                          "enterprise"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "key": "feature::NAMESPACE::retryPolicyFlag",
+                  "defaultValue": {
+                    "type": "DATA_CLASS",
+                    "dataClassName": "${RetryPolicy::class.java.name}",
+                    "value": {
+                      "backoffMs": 1000.0,
+                      "enabled": true,
+                      "maxAttempts": 3,
+                      "mode": "exponential"
+                    }
+                  },
+                  "salt": "policy-salt",
+                  "isActive": true,
+                  "rolloutAllowlist": [
+                    "616c6c6f776c69737465642d75736572"
+                  ],
+                  "rules": [
+                    {
+                      "value": {
+                        "type": "DATA_CLASS",
+                        "dataClassName": "${RetryPolicy::class.java.name}",
+                        "value": {
+                          "backoffMs": 2500.0,
+                          "enabled": false,
+                          "maxAttempts": 9,
+                          "mode": "linear"
+                        }
+                      },
+                      "rampUp": 99.0,
+                      "rolloutAllowlist": [],
+                      "note": "policy-rule",
+                      "locales": [],
+                      "platforms": [],
+                      "versionRange": {
+                        "type": "UNBOUNDED"
+                      },
+                      "axes": {}
+                    }
+                  ]
+                }
+              ]
+            }
+            """.trimIndent()
+
+        assertEquals(expected, normalized)
+    }
+
+    @Test
     fun `Given Konfig with multiple flags, When serialized, Then includes all flags`() {
         val boolFlag = FlagDefinition(feature = TestFeatures.boolFlag, defaultValue = true)
         val stringFlag = FlagDefinition(feature = TestFeatures.stringFlag, defaultValue = "test")
@@ -179,6 +449,10 @@ class SnapshotSerializerTest {
         assertTrue(json.contains(TestFeatures.boolFlag.id.toString()))
         assertTrue(json.contains(TestFeatures.stringFlag.id.toString()))
         assertTrue(json.contains(TestFeatures.intFlag.id.toString()))
+    }
+
+    companion object {
+        private val namespaceSeedRegex = Regex("feature::[a-f0-9\\-]+::")
     }
 
     // ========== Deserialization Tests ==========

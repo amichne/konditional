@@ -2,13 +2,14 @@
 
 **Type-safe feature flags for Kotlin that won't break in production.**
 
-Konditional prevents the entire class of runtime errors that come from stringly-typed feature flag systems: typos that ship to production, type coercion failures, inconsistent rollout logic, and configuration drift.
+Konditional prevents the entire class of runtime errors that come from stringly-typed feature flag systems: typos that
+ship to production, type coercion failures, inconsistent rollout logic, and configuration drift.
 
 ```kotlin
-object AppFlags : FeatureContainer() {
+object AppFlags : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val checkoutVersion by string(default = "classic") {
-        rule { platforms(Platform.MOBILE) } returns "optimized"
-        rule { rollout { 50.0 } } returns "experimental"
+        rule("optimized") { platforms(Platform.IOS, Platform.ANDROID) }
+        rule("experimental") { rollout { 50.0 } }
     }
 }
 
@@ -31,7 +32,8 @@ This compiles. It deploys. Your experiment silently fails. You discover it weeks
 **Konditional makes flags compile-time correct:**
 
 ```kotlin
-val enabled = AppFlags.newOnboardingFlow.evaluate(ctx)  // typos are compile errors
+val version = AppFlags.checkoutVersion.evaluate(ctx)  // property access is compile-time checked
+// AppFlags.checkotuVersion.evaluate(ctx)              // doesn't compile (typo)
 ```
 
 Beyond typo safety, Konditional gives you:
@@ -39,7 +41,8 @@ Beyond typo safety, Konditional gives you:
 - **Typed values** — not just booleans, but strings, ints, doubles, enums, and custom types
 - **Deterministic rollouts** — SHA-256 bucketing ensures same user → same bucket, always
 - **Unified evaluation** — one rule DSL across your entire codebase, not per-domain evaluators
-- **Explicit boundaries** — parse JSON configuration with validation; reject invalid updates before they affect production
+- **Explicit boundaries** — parse JSON configuration with validation; reject invalid updates before they affect
+  production
 
 Read the full argument: [Why Konditional Exists](09-why-konditional.md)
 
@@ -60,18 +63,18 @@ dependencies {
 ### Define flags as properties
 
 ```kotlin
-object AppFeatures : FeatureContainer() {
+object AppFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     val darkMode by boolean(default = false) {
-        rule { platforms(Platform.IOS) } returns true
-        rule { rollout { 50.0 } } returns true
+        rule(true) { platforms(Platform.IOS) }
+        rule(true) { rollout { 50.0 } }
     }
 
     val apiEndpoint by string(default = "https://api.example.com") {
-        rule { platforms(Platform.WEB) } returns "https://api-web.example.com"
+        rule("https://api-web.example.com") { platforms(Platform.WEB) }
     }
 
-    val maxRetries by int(default = 3) {
-        rule { versions { min(2, 0, 0) } } returns 5
+    val maxRetries by integer(default = 3) {
+        rule(5) { versions { min(2, 0, 0) } }
     }
 }
 ```
@@ -100,6 +103,7 @@ val retries: Int = AppFeatures.maxRetries.evaluate(ctx)
 ### Stop encoding variants as multiple booleans
 
 **Before (boolean explosion):**
+
 ```kotlin
 if (isEnabled(CHECKOUT_V1) && !isEnabled(CHECKOUT_V2)) {
     // v1 logic
@@ -111,13 +115,16 @@ if (isEnabled(CHECKOUT_V1) && !isEnabled(CHECKOUT_V2)) {
 ```
 
 **After (typed values):**
+
 ```kotlin
-val checkoutVersion by string(default = "v1") {
-    rule { rollout { 33.0 } } returns "v2"
-    rule { rollout { 66.0 } } returns "v3"
+object CheckoutFlags : FeatureContainer<Namespace.Global>(Namespace.Global) {
+    val checkoutVersion by string(default = "v1") {
+        rule("v2") { rollout { 33.0 } }
+        rule("v3") { rollout { 66.0 } }
+    }
 }
 
-when (AppFlags.checkoutVersion.evaluate(ctx)) {
+when (CheckoutFlags.checkoutVersion.evaluate(ctx)) {
     "v1" -> v1Checkout()
     "v2" -> v2Checkout()
     "v3" -> v3Checkout()
@@ -129,31 +136,37 @@ when (AppFlags.checkoutVersion.evaluate(ctx)) {
 ```kotlin
 enum class Theme { LIGHT, DARK, AUTO }
 
-val theme by enum(default = Theme.LIGHT) {
-    rule { platforms(Platform.IOS) } returns Theme.DARK
+object ThemeFlags : FeatureContainer<Namespace.Global>(Namespace.Global) {
+    val theme by enum(default = Theme.LIGHT) {
+        rule(Theme.DARK) { platforms(Platform.IOS) }
+    }
 }
 ```
 
 ### Custom structured values
 
 ```kotlin
-@ConfigDataClass
 data class RetryPolicy(
     val maxAttempts: Int = 3,
     val backoffMs: Double = 1000.0,
     val enabled: Boolean = true
 ) : KotlinEncodeable<ObjectSchema> {
     override val schema = schemaRoot {
-        ::maxAttempts of { minimum = 1.0 }
+        ::maxAttempts of { minimum = 1 }
         ::backoffMs of { minimum = 0.0 }
-        ::enabled of {}
+        ::enabled of { default = true }
     }
 }
 
-val retryPolicy by custom(default = RetryPolicy()) {
-    rule { platforms(Platform.WEB) } returns RetryPolicy(maxAttempts = 5, backoffMs = 2000.0)
+object PolicyFlags : FeatureContainer<Namespace.Global>(Namespace.Global) {
+    val retryPolicy by custom(default = RetryPolicy()) {
+        rule(RetryPolicy(maxAttempts = 5, backoffMs = 2000.0)) { platforms(Platform.WEB) }
+    }
 }
 ```
+
+Note: custom structured values are decoded via reflection at the JSON boundary; keep constructor parameter names stable
+and provide defaults for optional fields.
 
 ---
 
@@ -162,15 +175,19 @@ val retryPolicy by custom(default = RetryPolicy()) {
 Rollouts use SHA-256 bucketing for consistent, reproducible results:
 
 ```kotlin
-val newFeature by boolean(default = false) {
-    rule { rollout { 25.0 } } returns true
+object RolloutFlags : FeatureContainer<Namespace.Global>(Namespace.Global) {
+    val newFeature by boolean(default = false) {
+        rule(true) { rollout { 25.0 } }
+    }
 }
 ```
 
 **Guarantees:**
+
 - Same user + same flag + same percentage → same bucket
-- Changing 10% → 20% doesn't reshuffle existing users
-- Rollout decisions are reproducible from logs (`stableId` + flag key → deterministic bucket)
+- Increasing 10% → 20% only adds users (no reshuffle) for the same `(stableId, flagKey, salt)`
+- Rollout decisions are reproducible (`stableId` + flag key + salt → deterministic bucket)
+- Changing `salt(...)` intentionally redistributes buckets (useful when re-running experiments)
 
 No random number generators. No modulo edge cases. No per-team rollout implementations with subtle differences.
 
@@ -183,6 +200,10 @@ No random number generators. No modulo edge cases. No per-team rollout implement
 ```kotlin
 val json = fetchRemoteConfig()
 
+// Important: deserialization requires that your FeatureContainer objects have been initialized
+// (so features are registered) before calling SnapshotSerializer.fromJson(...).
+// See: 06-remote-config.md
+
 when (val result = SnapshotSerializer.fromJson(json)) {
     is ParseResult.Success -> Namespace.Global.load(result.value)
     is ParseResult.Failure -> {
@@ -192,7 +213,8 @@ when (val result = SnapshotSerializer.fromJson(json)) {
 }
 ```
 
-**The boundary is explicit:** Parse failures don't crash your app or silently corrupt evaluation. Bad config is rejected; the previous working config stays active.
+**The boundary is explicit:** Parse failures don't crash your app or silently corrupt evaluation. Bad config is
+rejected; the previous working config stays active.
 
 ### Serialize current configuration
 
@@ -205,6 +227,7 @@ persistToStorage(snapshot)
 
 ```kotlin
 val patchJson = fetchPatch()
+val currentConfig = Namespace.Global.configuration
 
 when (val result = SnapshotSerializer.applyPatchJson(currentConfig, patchJson)) {
     is ParseResult.Success -> Namespace.Global.load(result.value)
@@ -226,7 +249,8 @@ See [06-remote-config.md](06-remote-config.md) and [08-persistence-format.md](08
 
 ## Namespaces (Optional Isolation)
 
-By default, all flags live in `Namespace.Global`. If you need isolated registries (e.g., per-team, per-domain), define your own:
+By default, all flags live in `Namespace.Global`. If you need isolated registries (e.g., per-team, per-domain), define
+your own:
 
 ```kotlin
 sealed class AppDomain(id: String) : Namespace(id) {
@@ -261,16 +285,19 @@ Each namespace has independent configuration lifecycle, registry, and serializat
 ## Documentation
 
 **Getting started:**
+
 - [Quick Start Guide](01-getting-started.md)
 - [Core Concepts](03-core-concepts.md)
 
 **Features:**
+
 - [Targeting & Rollouts](04-targeting-rollouts.md)
 - [Evaluation Semantics](05-evaluation.md)
 - [Remote Configuration](06-remote-config.md)
 - [Persistence Format](08-persistence-format.md)
 
 **Why Konditional:**
+
 - [Why Konditional Exists](09-why-konditional.md) — The compelling argument
 
 ---
@@ -278,12 +305,14 @@ Each namespace has independent configuration lifecycle, registry, and serializat
 ## What Konditional Prevents
 
 **Typos that ship to production:**
+
 ```kotlin
 flagClient.getBool("new_onboaring_flow", false)  // compiles, deploys, fails silently
 AppFlags.newOnboaringFlow                        // compile error
 ```
 
 **Type coercion incidents:**
+
 ```kotlin
 // JSON: {"max_retries": "disabled"}
 flagClient.getInt("max_retries", 3)  // returns 0, service fails immediately
@@ -291,12 +320,14 @@ AppFlags.maxRetries                  // parse fails at boundary, last-known-good
 ```
 
 **Boolean explosion:**
+
 ```kotlin
 // Before: 5 boolean flags → 2^5 = 32 test cases, most undefined
 // After: 1 typed enum flag → 5 explicit variants, all defined
 ```
 
 **Inconsistent rollout logic:**
+
 ```kotlin
 // Before: Account team uses modulo, Payments team uses random(), different bucketing
 // After: All flags use SHA-256 bucketing, same user → same bucket across all flags
@@ -309,16 +340,20 @@ Read more: [Real Problems Konditional Prevents](09-why-konditional.md#real-probl
 ## When to Use Konditional
 
 **Choose Konditional when:**
-- You want compile-time correctness for flag definitions and callsites
-- You need typed values beyond booleans (variants, thresholds, structured config)
-- You run experiments and need deterministic, reproducible rollouts
-- You value consistency over bespoke per-domain solutions
-- You have remote configuration and want explicit validation boundaries
+
+* You want compile-time correctness for flag definitions and callsites
+* You need typed values beyond booleans (variants, thresholds, structured config)
+* You run experiments and need deterministic, reproducible rollouts
+* You value consistency over bespoke per-domain solutions
+* You have remote configuration and want explicit validation boundaries
 
 **Konditional might not fit if:**
-- You need vendor-hosted dashboards more than compile-time safety
-- Your flags are fully dynamic with zero static definitions
-- You're okay with process/tooling to prevent string key drift
+
+* You need vendor-hosted dashboards more than compile-time safety
+
+* Your flags are fully dynamic with zero static definitions
+
+* You're okay with process/tooling to prevent string key drift
 
 ---
 

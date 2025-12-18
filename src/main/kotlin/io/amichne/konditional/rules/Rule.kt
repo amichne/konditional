@@ -10,6 +10,7 @@ import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.evaluable.Placeholder
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
+import io.amichne.konditional.core.id.HexId
 
 // ---------- Rule / Condition model ----------
 
@@ -66,12 +67,14 @@ import io.amichne.konditional.rules.versions.VersionRange
 @ConsistentCopyVisibility
 data class Rule<C : Context> internal constructor(
     val rollout: Rampup = Rampup.default,
+    internal val rolloutAllowlist: Set<HexId> = emptySet(),
     val note: String? = null,
     internal val baseEvaluable: BaseEvaluable<C> = BaseEvaluable(),
     val extension: Evaluable<C> = Placeholder,
 ) : Evaluable<C> {
     internal constructor(
         rollout: Rampup = Rampup.default,
+        rolloutAllowlist: Set<HexId> = emptySet(),
         note: String? = null,
         locales: Set<AppLocale> = emptySet(),
         platforms: Set<Platform> = emptySet(),
@@ -80,6 +83,7 @@ data class Rule<C : Context> internal constructor(
         extension: Evaluable<C> = Placeholder,
     ) : this(
         rollout,
+        rolloutAllowlist,
         note,
         BaseEvaluable(locales, platforms, versionRange, axisConstraints),
         extension,

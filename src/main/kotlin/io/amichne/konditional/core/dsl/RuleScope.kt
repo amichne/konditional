@@ -5,6 +5,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
+import io.amichne.konditional.core.id.StableId
 
 /**
  * DSL scope for rule configuration.
@@ -32,6 +33,17 @@ import io.amichne.konditional.context.axis.AxisValue
  */
 @KonditionalDsl
 interface RuleScope<C : Context> {
+    /**
+     * Allows specific stable IDs to bypass this rule's rollout percentage.
+     *
+     * When set, allowlisted users who match this rule's targeting criteria are always
+     * treated as in-rollout, even if deterministic bucketing would otherwise exclude them.
+     *
+     * This is typically used to ensure specific users (e.g., internal testers) can access
+     * a change during a gradual rollout.
+     */
+    fun allowlist(vararg stableIds: StableId)
+
     /**
      * Specifies which locales this rule applies to.
      *

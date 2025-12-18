@@ -7,6 +7,8 @@ import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.RuleScope
 import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.core.id.HexId
+import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 
@@ -29,6 +31,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
     private val feature: Feature<T, C, M>,
 ) : FlagScope<T, C> {
     private val conditionalValues = mutableListOf<ConditionalValue<T, C>>()
+    private val rolloutAllowlist: LinkedHashSet<HexId> = linkedSetOf()
 
     private var salt: String = "v1"
     private var isActive: Boolean = true
@@ -41,6 +44,10 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
      */
     override fun active(block: () -> Boolean) {
         isActive = block()
+    }
+
+    override fun allowlist(vararg stableIds: StableId) {
+        rolloutAllowlist += stableIds.map { it.hexId }
     }
 
     /**
@@ -74,6 +81,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
         bounds = conditionalValues.toList(),
         defaultValue = default,
         salt = salt,
-        isActive = isActive
+        isActive = isActive,
+        rolloutAllowlist = rolloutAllowlist,
     )
 }

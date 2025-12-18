@@ -8,20 +8,22 @@ It focuses on what changes at the definition site, at the call site, and at the 
 ## The core mapping
 
 String-based flag systems typically have:
+
 - a **string key** (`"dark-mode"`)
 - a **typed getter** chosen by the caller (`getBoolean`, `getString`, …)
 - an **untyped context** (often string keys and `Any` values)
 
 Konditional replaces those with:
+
 - a **property** (the property name becomes the key)
 - a **declared type** (from the delegate: `boolean`, `string`, `int`, `double`, `enum`)
 - a **typed `Context`** (and optionally domain-specific context data classes)
 
 ```mermaid
 flowchart LR
-  A["String key"] --> B["Property name"]
-  C["Typed getter"] --> D["Type flows from definition"]
-  E["Untyped context map"] --> F["Typed Context data"]
+    A["String key"] --> B["Property name"]
+    C["Typed getter"] --> D["Type flows from definition"]
+    E["Untyped context map"] --> F["Typed Context data"]
 ```
 
 ---
@@ -43,6 +45,7 @@ val enabled: Boolean = feature { Features.DARK_MODE }
 ```
 
 What you gain immediately:
+
 - key typos are eliminated at the call site (there is no string key)
 - return type is concrete (no cast; `Boolean` is enforced)
 - evaluation is non-null (default is required)
@@ -58,7 +61,8 @@ val context = Context(
 )
 ```
 
-`stableId` is the stable input used for deterministic rollout bucketing (see ["Targeting & Rollouts"](04-targeting-rollouts.md)).
+`stableId` is the stable input used for deterministic rollout bucketing (
+see ["Targeting & Rollouts"](04-targeting-rollouts.md)).
 
 ### 3. Add rules after defaults exist (behavior safety)
 
@@ -91,7 +95,7 @@ val ADVANCED_ANALYTICS by boolean<EnterpriseContext>(default = false) {
         extension {
             Evaluable.factory { ctx ->
                 ctx.subscriptionTier == SubscriptionTier.ENTERPRISE &&
-                    ctx.employeeCount > 100
+                ctx.employeeCount > 100
             }
         }
     } returns true
@@ -137,7 +141,8 @@ when (val result = SnapshotSerializer.fromJson(json)) {
 }
 ```
 
-The guarantee is intentionally qualified: JSON is not “always safe”; instead, invalid JSON is rejected before it can affect evaluation.
+The guarantee is intentionally qualified: JSON is not “always safe”; instead, invalid JSON is rejected before it can
+affect evaluation.
 
 ---
 

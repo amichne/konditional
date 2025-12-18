@@ -7,11 +7,15 @@ import io.amichne.konditional.context.Rampup
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.instance.ConfigurationMetadata
 import io.amichne.konditional.core.instance.ConfigurationPatch
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.core.types.KotlinEncodeable
+import io.amichne.konditional.core.types.asObjectSchema
+import io.amichne.konditional.core.types.toJsonValue
 import io.amichne.konditional.internal.serialization.models.FlagValue
 import io.amichne.konditional.internal.serialization.models.SerializableFlag
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
@@ -24,9 +28,12 @@ import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.evaluable.AxisConstraint
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.values.FeatureId
+import io.amichne.kontracts.schema.ObjectSchema
+import io.amichne.kontracts.value.JsonObject
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.jvm.isAccessible
 
 /**
  * Converts a Configuration to a SerializableSnapshot.
@@ -71,6 +78,7 @@ private fun <T : Any, C : Context> FlagDefinition<T, C, *>.toSerializable(flagKe
         defaultValue = FlagValue.from(defaultValue),
         salt = salt,
         isActive = isActive,
+        rolloutAllowlist = rolloutAllowlist.mapTo(linkedSetOf()) { it.id },
         rules = values.map { it.toSerializable() },
     )
 
@@ -81,6 +89,7 @@ private fun <T : Any, C : Context> ConditionalValue<T, C>.toSerializable(): Seri
     SerializableRule(
         value = FlagValue.from(value),
         rampUp = rule.rollout.value,
+        rolloutAllowlist = rule.rolloutAllowlist.mapTo(linkedSetOf()) { it.id },
         note = rule.note,
         locales =
             rule.baseEvaluable.locales
@@ -133,8 +142,11 @@ private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Feature<*, *, *>, Fl
     when (val conditionalResult = FeatureRegistry.get(key)) {
         is ParseResult.Success -> {
             val conditional = conditionalResult.value
-            val definition = toFlagDefinition(conditional)
-            ParseResult.Success(conditional to definition)
+            runCatching { toFlagDefinition(conditional) }
+                .fold(
+                    onSuccess = { ParseResult.Success(conditional to it) },
+                    onFailure = { ParseResult.Failure(ParseError.InvalidSnapshot(it.message ?: "Failed to decode flag")) },
+                )
         }
 
         is ParseResult.Failure -> {
@@ -149,13 +161,37 @@ private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Feature<*, *, *>, Fl
 private fun <T : Any, C : Context, M : Namespace> SerializableFlag.toFlagDefinition(
     conditional: Feature<T, C, M>,
 ): FlagDefinition<T, C, M> =
-    FlagDefinition(
-        feature = conditional,
-        bounds = rules.map { it.toRule<C>().targetedBy(it.value.extractValue()) },
-        defaultValue = defaultValue.extractValue(),
-        salt = salt,
-        isActive = isActive,
+    defaultValue
+        .extractValue<T>()
+        .let { decodedDefault ->
+            val schema =
+                (decodedDefault as? KotlinEncodeable<*>)
+                    ?.schema
+                    ?.asObjectSchema()
+
+            if (defaultValue is FlagValue.DataClassValue && schema != null) {
+                validateDataClassFields(defaultValue.value, schema)
+            }
+
+            FlagDefinition(
+                feature = conditional,
+                bounds = rules.map { it.toRule<C>().targetedBy(it.value.extractValue(schema)) },
+                defaultValue = decodedDefault,
+                salt = salt,
+                isActive = isActive,
+                rolloutAllowlist = rolloutAllowlist.mapTo(linkedSetOf()) { HexId(it) },
+            )
+        }
+
+private fun validateDataClassFields(
+    fields: Map<String, Any?>,
+    schema: ObjectSchema,
+) {
+    JsonObject(
+        fields = fields.mapValues { (_, v) -> v.toJsonValue() },
+        schema = schema,
     )
+}
 
 /**
  * Extracts the value from a FlagValue with type safety.
@@ -165,10 +201,13 @@ private fun <T : Any, C : Context, M : Namespace> SerializableFlag.toFlagDefinit
  * - KotlinEncodeable/data classes: stored as (dataClassName, primitive field map)
  */
 @Suppress("UNCHECKED_CAST")
-private fun <T : Any> FlagValue<*>.extractValue(): T =
+private fun <T : Any> FlagValue<*>.extractValue(schema: ObjectSchema? = null): T =
     when (this) {
         is FlagValue.EnumValue -> decodeEnum(enumClassName, value) as T
-        is FlagValue.DataClassValue -> decodeDataClass(dataClassName, value) as T
+        is FlagValue.DataClassValue -> {
+            schema?.let { validateDataClassFields(value, it) }
+            decodeDataClass(dataClassName, value) as T
+        }
         else -> value as T
     }
 
@@ -195,6 +234,7 @@ private fun decodeDataClass(
     val constructor =
         kClass.primaryConstructor
             ?: throw IllegalArgumentException("Custom type '${kClass.simpleName}' must have a primary constructor")
+    constructor.isAccessible = true
 
     val args =
         constructor.parameters
@@ -286,6 +326,7 @@ private fun coerceValue(
 private fun <C : Context> SerializableRule.toRule(): Rule<C> =
     Rule(
         rollout = Rampup.of(rampUp),
+        rolloutAllowlist = rolloutAllowlist.mapTo(linkedSetOf()) { HexId(it) },
         note = note,
         locales = locales.map { AppLocale.valueOf(it) }.toSet(),
         platforms = platforms.map { Platform.valueOf(it) }.toSet(),

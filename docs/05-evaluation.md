@@ -5,20 +5,25 @@
 - **Total** — Evaluation always returns a value (rule value or default).
 - **Deterministic** — The same inputs produce the same outputs.
 - **Non-null** — Defaults are required, so evaluation does not return `T?`.
+
 ---
 
-## `feature { }` (recommended)
+## `Feature.evaluate(context)` (recommended)
 
-Concise evaluation inside a context-aware scope:
+Concise evaluation with an explicit context:
 
 ```kotlin
-val darkMode = feature { Features.DARK_MODE }
+val darkMode = Features.darkMode.evaluate(context)
 applyDarkMode(darkMode)
 ```
 
 Use this when:
+
 - defaults are meaningful
 - you want the smallest call-site surface
+
+`feature { ... }` still exists as an optional helper when your receiver implements both
+`ContextAware<C>` and `FeatureAware<M>`, but it is not required for normal usage.
 
 ---
 
@@ -27,11 +32,12 @@ Use this when:
 When you need to diagnose a specific user’s outcome, evaluate with a structured reason:
 
 ```kotlin
-val result = Features.DARK_MODE.evaluateWithReason(context)
+val result = Features.darkMode.evaluateWithReason(context)
 println(result.decision)
 ```
 
 `EvaluationResult` includes:
+
 - decision kind (rule/default/inactive/disabled)
 - matched rule constraints + specificity
 - deterministic rollout bucket information
@@ -42,20 +48,23 @@ println(result.decision)
 
 ```mermaid
 flowchart TD
-  Start["Context available"] --> Lookup["Registry lookup"]
-  Lookup --> Active{Flag active?}
-  Active -->|No| Default1["Return default"]
-  Active -->|Yes| Sort["Sort rules by specificity"]
-  Sort --> Next{Next rule?}
-  Next -->|No| Default2["Return default"]
-  Next -->|Yes| Match{All criteria match?}
-  Match -->|No| Next
-  Match -->|Yes| Roll{Rollout passes?}
-  Roll -->|No| Next
-  Roll -->|Yes| Value["Return rule value"]
-  style Default1 fill:#fff3cd
-  style Default2 fill:#fff3cd
-  style Value fill:#c8e6c9
+    Start["Context available"] --> Lookup["Registry lookup"]
+    Lookup --> Disabled{Registry disabled?}
+    Disabled -->|Yes| Default0["Return default"]
+    Disabled -->|No| Active{Flag active?}
+    Active -->|No| Default1["Return default"]
+    Active -->|Yes| Sort["Sort rules by specificity"]
+    Sort --> Next{Next rule?}
+    Next -->|No| Default2["Return default"]
+    Next -->|Yes| Match{All criteria match?}
+    Match -->|No| Next
+    Match -->|Yes| Roll{In rollout or allowlisted?}
+    Roll -->|No| Next
+    Roll -->|Yes| Value["Return rule value"]
+    style Default0 fill: #fff3cd
+    style Default1 fill: #fff3cd
+    style Default2 fill: #fff3cd
+    style Value fill: #c8e6c9
 ```
 
 ---
@@ -75,8 +84,8 @@ Namespace.Global.enableAll()
 ```kotlin
 val info = RolloutBucketing.explain(
     stableId = context.stableId,
-    featureKey = Features.DARK_MODE.key,
-    salt = Namespace.Global.flag(Features.DARK_MODE).salt,
+    featureKey = Features.darkMode.key,
+    salt = Namespace.Global.flag(Features.darkMode).salt,
     rollout = Rampup.of(10.0),
 )
 println(info)
@@ -86,38 +95,34 @@ println(info)
 
 All specified criteria must match; empty constraint sets match everything.
 
-```kotlin
-for (rule in rulesSortedBySpecificity) {
-    if (rule.matches(context)) {
-        return rule.value
-    }
-}
-return default
-```
+Evaluation applies the first matching rule that is in-rollout (or allowlisted), otherwise it falls back to the default.
 
 ### Specificity ordering (most specific wins)
 
-Rules are sorted by the number of criteria present (platforms/locales/versions/rollout).
-This makes “more targeted” rules win over “more general” rules.
+Rules are sorted by targeting specificity (platforms/locales/version bounds/axes) plus extension specificity.
+Rollout percentage does not affect specificity; it gates whether a matching rule is applied.
 
 ---
 
 ## Performance model
 
-The evaluation path is designed to be constant-time in typical usage:
+The evaluation path is designed to be predictable:
+
 - **Registry lookup:** O(1)
 - **Rule iteration:** O(n) where n is rules per flag (typically small)
-- **Rollout bucketing:** O(1) SHA-256 hash
+- **Rollout bucketing:** 0 or 1 SHA-256 hash per evaluation (bucket is computed only after a rule matches by criteria)
 
 Space model:
-- no allocations during evaluation
-- immutable, pre-built rule structures
+
+- evaluation allocates a small trace object internally and may allocate for hashing inputs
+- rule structures are pre-built and reused across evaluations
 
 ---
 
 ## Concurrency model
 
 Evaluation is designed for concurrent reads:
+
 - **Lock-free reads**: evaluation does not require synchronization.
 - **Atomic updates**: configuration updates swap the active snapshot atomically (`Namespace.load`).
 
@@ -126,7 +131,7 @@ Evaluation is designed for concurrent reads:
 Namespace.Global.load(newConfig)
 
 // Thread 2 (during update)
-val value = feature { Features.DARK_MODE } // sees old OR new, never a mixed state
+val value = Features.darkMode.evaluate(context) // sees old OR new, never a mixed state
 ```
 
 ---
@@ -141,11 +146,11 @@ fun `iOS users in US get dark mode`() {
     val context = Context(
         locale = AppLocale.UNITED_STATES,
         platform = Platform.IOS,
-        appVersion = Version.parse("2.1.0"),
-        stableId = StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
+        appVersion = Version.of(2, 1, 0),
+        stableId = StableId.of("user-123"),
     )
 
-    val enabled = feature { Features.DARK_MODE }
+    val enabled = Features.darkMode.evaluate(context)
     assertTrue(enabled)
 }
 ```
@@ -156,7 +161,7 @@ fun `iOS users in US get dark mode`() {
 @Test
 fun `evaluation is deterministic`() {
     val context = Context(/*...*/)
-    val results = (1..100).map { feature { Features.DARK_MODE } }
+    val results = (1..100).map { Features.darkMode.evaluate(context) }
     assertTrue(results.distinct().size == 1, "Non-deterministic!")
 }
 ```
@@ -171,7 +176,7 @@ fun `50 percent rollout distributes correctly`() {
         val ctx = Context(/*..., */
                           stableId = StableId.of(i.toString(16).padStart(32, '0'))
         )
-        feature { Features.ROLLOUT_FLAG }
+        Features.rolloutFlag.evaluate(ctx)
     }
 
     val percentage = (enabled.toDouble() / sampleSize) * 100

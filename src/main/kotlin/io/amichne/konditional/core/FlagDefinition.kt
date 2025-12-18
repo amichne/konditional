@@ -3,6 +3,7 @@ package io.amichne.konditional.core
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.evaluation.Bucketing
 import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.rules.ConditionalValue
 
 /**
@@ -32,6 +33,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
     internal val values: List<ConditionalValue<T, C>> = listOf(),
     val isActive: Boolean = true,
     val salt: String = "v1",
+    internal val rolloutAllowlist: Set<HexId> = emptySet(),
 ) {
     internal val valuesByPrecedence: List<ConditionalValue<T, C>> =
         values.sortedWith(compareByDescending<ConditionalValue<T, C>> { it.rule.specificity() })
@@ -46,6 +48,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
             defaultValue: T,
             salt: String = "v1",
             isActive: Boolean = true,
+            rolloutAllowlist: Set<HexId> = emptySet(),
         ): FlagDefinition<T, C, M> =
             FlagDefinition(
                 defaultValue = defaultValue,
@@ -53,6 +56,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
                 values = bounds,
                 isActive = isActive,
                 salt = salt,
+                rolloutAllowlist = rolloutAllowlist,
             )
     }
 
@@ -90,6 +94,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
         var skippedByRollout: ConditionalValue<T, C>? = null
 
         val stableId = context.stableId.hexId
+        val isFlagAllowlisted = stableId in rolloutAllowlist
         for (candidate in valuesByPrecedence) {
             if (!candidate.rule.matches(context)) continue
 
@@ -101,7 +106,10 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
                         stableId = stableId,
                     ).also { bucket = it }
 
-            if (Bucketing.isInRollout(candidate.rule.rollout, computedBucket)) {
+            if (isFlagAllowlisted ||
+                stableId in candidate.rule.rolloutAllowlist ||
+                Bucketing.isInRollout(candidate.rule.rollout, computedBucket)
+            ) {
                 return Trace(
                     value = candidate.value,
                     bucket = computedBucket,

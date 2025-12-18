@@ -9,7 +9,8 @@ import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.RuleScope
 import io.amichne.konditional.core.dsl.VersionRangeScope
-import io.amichne.konditional.core.registry.AxisRegistry
+import io.amichne.konditional.core.id.HexId
+import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.evaluable.AxisConstraint
@@ -38,8 +39,13 @@ internal data class RuleBuilder<C : Context>(
     private val platforms: LinkedHashSet<Platform> = linkedSetOf(),
     private val axisConstraints: MutableList<AxisConstraint> = mutableListOf(),
     private val locales: LinkedHashSet<AppLocale> = linkedSetOf(),
+    private val rolloutAllowlist: LinkedHashSet<HexId> = linkedSetOf(),
     private var rollout: Rampup? = null,
 ) : RuleScope<C> {
+
+    override fun allowlist(vararg stableIds: StableId) {
+        rolloutAllowlist += stableIds.map { it.hexId }
+    }
 
     /**
      * Implementation of [RuleScope.locales].
@@ -109,6 +115,7 @@ internal data class RuleBuilder<C : Context>(
     internal fun build(): Rule<C> =
         Rule(
             rollout = rollout ?: Rampup.default,
+            rolloutAllowlist = rolloutAllowlist,
             locales = locales,
             platforms = platforms,
             versionRange = range,
@@ -116,33 +123,4 @@ internal data class RuleBuilder<C : Context>(
             note = note,
             extension = extension,
         )
-}
-
-/**
- * Type-based axis targeting (primary API).
- *
- * This is the recommended way to add axis constraints. The axis is inferred from the
- * value type using the [AxisRegistry].
- *
- * Example:
- * ```kotlin
- * rule {
- *     axis(Environment.PROD, Environment.STAGE)  // Axis inferred from type
- *     axis(Tenant.ENTERPRISE)
- * }
- * ```
- *
- * Multiple calls to the same axis accumulate allowed values (OR semantics).
- * Multiple different axes of AND semantics.
- *
- * @param T The axis value type (must be registered)
- * @param values The values to allow for this axis
- * @throws IllegalStateException if no axis is registered for type T
- */
-@PublishedApi
-internal inline fun <reified T, C : Context> RuleBuilder<C>.axis(vararg values: T) where T : AxisValue, T : Enum<T> {
-
-    val axisDescriptor = AxisRegistry.axisFor(T::class)
-        ?: error("No Axis registered for type ${T::class.simpleName}")
-    axis(axisDescriptor, *values)
 }
