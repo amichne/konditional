@@ -52,6 +52,12 @@ class SnapshotSerializerTest {
 
     @BeforeEach
     fun setup() {
+        // Force axis registration for type-based axis() usage in rule builders.
+        @Suppress("UnusedExpression")
+        Axes.EnvironmentAxis
+        @Suppress("UnusedExpression")
+        Axes.TenantAxis
+
         // Clear both FeatureRegistry and the namespace registry before each test
         FeatureRegistry.clear()
         TestFeatures.load(Configuration(emptyMap()))
@@ -77,8 +83,8 @@ class SnapshotSerializerTest {
     }
 
     private object Axes {
-        data object EnvironmentAxis : Axis<Environment>("environment", Environment::class)
-        data object TenantAxis : Axis<Tenant>("tenant", Tenant::class)
+        data object EnvironmentAxis : Axis<Environment>("snapshot-environment", Environment::class)
+        data object TenantAxis : Axis<Tenant>("snapshot-tenant", Tenant::class)
     }
 
     private enum class Theme {
@@ -247,13 +253,13 @@ class SnapshotSerializerTest {
     fun `Given Konfig with axis targeting, When serialized and round-tripped, Then axes constraints are preserved`() {
         TestFeatures.boolFlag.update(false) {
             rule(true) {
-                this.axis(Environment.STAGE)
+                this.axis(Environment.PROD, Environment.STAGE)
             }
         }
 
         val json = SnapshotSerializer.serialize(TestFeatures.configuration)
         assertTrue(json.contains("\"axes\""))
-        assertTrue(json.contains("\"environment\""))
+        assertTrue(json.contains("\"snapshot-environment\""))
         assertTrue(json.contains("prod"))
         assertTrue(json.contains("stage"))
 
@@ -283,7 +289,7 @@ class SnapshotSerializerTest {
                 locales(AppLocale.UNITED_STATES, AppLocale.FRANCE)
                 platforms(Platform.IOS, Platform.ANDROID)
                 versions { min(1, 0, 0); max(2, 0, 0) }
-                axis(Environment.STAGE)
+                axis(Environment.PROD, Environment.STAGE)
                 axis(Tenant.ENTERPRISE)
                 rampUp { 12.34 }
             }
@@ -367,11 +373,11 @@ class SnapshotSerializerTest {
                         }
                       },
                       "axes": {
-                        "environment": [
+                        "snapshot-environment": [
                           "prod",
                           "stage"
                         ],
-                        "tenant": [
+                        "snapshot-tenant": [
                           "enterprise"
                         ]
                       }

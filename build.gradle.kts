@@ -8,6 +8,7 @@ plugins {
     `maven-publish`
     signing
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
+    id("io.gitlab.arturbosch.detekt") version "1.23.7"
 }
 
 // Load properties
@@ -48,6 +49,42 @@ sourceSets {
     testFixtures.configure {
         java.include { true }
     }
+}
+
+// ============================================================================
+// Detekt Configuration
+// ============================================================================
+
+detekt {
+    buildUponDefaultConfig = true
+    allRules = false
+    config.setFrom(files("$projectDir/detekt.yml"))
+    baseline = file("$projectDir/detekt-baseline.xml")
+    parallel = true
+    autoCorrect = false
+
+    source.setFrom(
+        "src/main/kotlin",
+        "src/test/kotlin",
+        "src/testFixtures/kotlin"
+    )
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        txt.required.set(false)
+        sarif.required.set(false)
+        md.required.set(false)
+    }
+    jvmTarget = "21"
+}
+
+tasks.register("detektGenerateBaseline") {
+    group = "verification"
+    description = "Generates Detekt baseline (suppresses existing issues)"
+    dependsOn("detektBaseline")
 }
 
 tasks.test {

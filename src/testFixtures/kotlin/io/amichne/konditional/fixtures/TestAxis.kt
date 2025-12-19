@@ -68,6 +68,11 @@ data class TestContext(
  * Test-only feature container exercising the dimension-based DSL.
  */
 object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
+    init {
+        // Ensure axes are registered before rule definitions are built.
+        TestAxes.Environment
+        TestAxes.Tenant
+    }
 
     /**
      * Enabled only when environment == PROD.
@@ -87,7 +92,7 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      */
     val envAndTenantScopedFlag by boolean<TestContext>(default = false) {
         rule(true) {
-            axis(TestEnvironment.PROD)
+            axis(TestEnvironment.PROD, TestEnvironment.STAGE)
             axis(TestTenant.ENTERPRISE)
         }
     }

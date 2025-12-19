@@ -105,7 +105,7 @@ internal data class RuleBuilder<C : Context>(
 
     override fun <T> axis(vararg values: T) where T : AxisValue, T : Enum<T> {
         @Suppress("DEPRECATION")
-        axis(requireNotNull(axisFor(values.first()::class)), *values)
+        axisFor(values.first()::class)?.let { axis(it, *values) }
     }
 
     /**

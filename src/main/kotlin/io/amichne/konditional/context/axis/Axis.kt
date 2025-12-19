@@ -12,7 +12,7 @@ import kotlin.reflect.KClass
  * ## Auto-Registration
  *
  * Axes automatically register themselves with the [AxisRegistry] upon creation. This enables
- * type-based APIs where the axis can be inferred from the value type.
+ * ID-based lookup, with type-based APIs resolved by matching the value type to a registered axis.
  *
  * ## Usage
  *
