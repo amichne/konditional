@@ -10,6 +10,8 @@ npm install
 npm run start
 ```
 
+Requires Node.js 20+ (the Scalar plugin enforces this).
+
 If you keep `baseUrl: '/konditional/'`, the dev server will be under `http://localhost:3000/konditional/`.
 
 ## Build
