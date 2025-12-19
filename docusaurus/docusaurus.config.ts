@@ -1,5 +1,3 @@
-// import path from 'node:path'
-// docusaurus.config.ts
 import type {Config} from '@docusaurus/types';
 import type * as Redocusaurus from 'redocusaurus';
 import {themes as prismThemes} from 'prism-react-renderer';
@@ -49,34 +47,26 @@ const config: Config = {
                 },
             },
         ],
-
-        [
-            'redocusaurus',
+        ['redocusaurus',
             {
                 id: "api",
                 openapi: {
-                    // Folder to scan for *.openapi.yaml files
                     path: 'openapi',
                     routeBasePath: '/api',
                 },
                 specs: [
-                    // Optionally provide individual files/urls to load
                     {
-                        // Pass it a path to a local OpenAPI YAML file
                         spec: 'docusaurus/openapi/openapi.json',
                         id: 'from-manual-file',
                         route: '/api/from-manual-file',
                     },
-                    // You can also pass it an OpenAPI spec URL
                     {
                         spec: 'https://redocly.github.io/redoc/openapi.yaml',
                         id: 'from-remote-file',
                         route: '/api/from-remote-file',
                     },
                 ],
-                // Theme Options for modifying how redoc renders them
                 theme: {
-                    // Change with your site colors
                     primaryColor: '#1890ff',
                 },
             },
