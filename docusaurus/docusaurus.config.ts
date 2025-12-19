@@ -1,29 +1,14 @@
-import path from 'node:path'
-import {fileURLToPath} from 'node:url'
-import {themes as prismThemes} from 'prism-react-renderer'
-import type {Config} from '@docusaurus/types'
-import type {ScalarOptions} from '@scalar/docusaurus'
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+// import path from 'node:path'
+// docusaurus.config.ts
+import type {Config} from '@docusaurus/types';
+import type * as Redocusaurus from 'redocusaurus';
+import {themes as prismThemes} from 'prism-react-renderer';
+import path from "node:path";
 
 const baseUrl = '/konditional/'
 
-const scalarPlugins: [string, ScalarOptions][] = [
-    [
-        '@scalar/docusaurus',
-        {
-            label: 'API',
-            route: '/api',
-            cdn: 'https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.28.11',
-            showNavLink: false,
-            configuration: {
-                url: `${baseUrl}openapi.json`,
-            },
-        },
-    ],
-]
-
 const config: Config = {
+
     title: 'Konditional',
     tagline: 'Type-safe, deterministic feature flags for Kotlin',
     favicon: 'img/favicon.svg',
@@ -42,14 +27,13 @@ const config: Config = {
         locales: ['en'],
     },
 
-    plugins: scalarPlugins,
+    plugins: [],
 
     markdown: {
         mermaid: true,
     },
 
-    themes: ['@docusaurus/theme-mermaid'],
-
+    themes: ['@docusaurus/theme-mermaid', "docusaurus-theme-openapi-docs"],
     presets: [
         [
             'classic',
@@ -65,6 +49,38 @@ const config: Config = {
                 },
             },
         ],
+
+        [
+            'redocusaurus',
+            {
+                id: "api",
+                openapi: {
+                    // Folder to scan for *.openapi.yaml files
+                    path: 'openapi',
+                    routeBasePath: '/api',
+                },
+                specs: [
+                    // Optionally provide individual files/urls to load
+                    {
+                        // Pass it a path to a local OpenAPI YAML file
+                        spec: 'docusaurus/openapi/openapi.json',
+                        id: 'from-manual-file',
+                        route: '/api/from-manual-file',
+                    },
+                    // You can also pass it an OpenAPI spec URL
+                    {
+                        spec: 'https://redocly.github.io/redoc/openapi.yaml',
+                        id: 'from-remote-file',
+                        route: '/api/from-remote-file',
+                    },
+                ],
+                // Theme Options for modifying how redoc renders them
+                theme: {
+                    // Change with your site colors
+                    primaryColor: '#1890ff',
+                },
+            },
+        ] satisfies Redocusaurus.PresetEntry,
     ],
 
     themeConfig: {
@@ -72,7 +88,7 @@ const config: Config = {
             title: 'Konditional',
             items: [
                 {type: 'docSidebar', sidebarId: 'docs', position: 'left', label: 'Docs'},
-                {to: '/api', label: 'API', position: 'left'},
+                {to: '/api/from-manual-file', label: 'API', position: 'left'},
                 {href: 'https://github.com/amichne/konditional', label: 'GitHub', position: 'right'},
             ],
         },
