@@ -58,6 +58,6 @@ internal object AxisRegistry {
      * @return The axis for that type, or null if not registered
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T> axisFor(type: KClass<T>): Axis<T>? where T : AxisValue, T : Enum<T> =
+    fun <T> axisFor(type: KClass<out T>): Axis<T>? where T : AxisValue, T : Enum<T> =
         byType[type] as? Axis<T>
 }

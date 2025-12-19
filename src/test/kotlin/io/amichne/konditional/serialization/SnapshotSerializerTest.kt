@@ -10,6 +10,7 @@ import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.axis
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.result.ParseError
@@ -247,7 +248,7 @@ class SnapshotSerializerTest {
     fun `Given Konfig with axis targeting, When serialized and round-tripped, Then axes constraints are preserved`() {
         TestFeatures.boolFlag.update(false) {
             rule(true) {
-                axis(Axes.EnvironmentAxis, Environment.PROD, Environment.STAGE)
+                this.axis(Environment.STAGE)
             }
         }
 
@@ -283,8 +284,8 @@ class SnapshotSerializerTest {
                 locales(AppLocale.UNITED_STATES, AppLocale.FRANCE)
                 platforms(Platform.IOS, Platform.ANDROID)
                 versions { min(1, 0, 0); max(2, 0, 0) }
-                axis(Axes.EnvironmentAxis, Environment.PROD, Environment.STAGE)
-                axis(Axes.TenantAxis, Tenant.ENTERPRISE)
+                axis(Environment.STAGE)
+                axis(Tenant.ENTERPRISE)
                 rampUp { 12.34 }
             }
         }

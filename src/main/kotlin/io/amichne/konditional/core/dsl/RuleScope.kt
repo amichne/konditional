@@ -91,11 +91,23 @@ interface RuleScope<C : Context> {
      * standard locale, platform, and version criteria.
      *
      * @param T The axis value type
-     * @param axis The axis descriptor
+     * @param this@axis The axis descriptor
      * @param values The values to allow for this axis
      */
+    @Deprecated(
+        message = "Use axis(axis: Axis<T>, vararg values: T) instead for better type safety.",
+        replaceWith = ReplaceWith(
+            "axis(*values)"
+        ),
+        level = DeprecationLevel.WARNING,
+    )
     fun <T> axis(
         axis: Axis<T>,
+        vararg values: T,
+    ) where T : AxisValue, T : Enum<T>
+
+
+    fun <T> axis(
         vararg values: T,
     ) where T : AxisValue, T : Enum<T>
 

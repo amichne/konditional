@@ -11,6 +11,7 @@ import io.amichne.konditional.core.dsl.RuleScope
 import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.registry.AxisRegistry.axisFor
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.evaluable.AxisConstraint
@@ -79,6 +80,13 @@ internal data class RuleBuilder<C : Context>(
     /**
      * Implementation of [RuleScope.axis].
      */
+    @Deprecated(
+        message = "Use axis(axis: Axis<T>, vararg values: T) instead for better type safety.",
+        replaceWith = ReplaceWith(
+            "axis(*values)"
+        ),
+        level = DeprecationLevel.WARNING,
+    )
     override fun <T> axis(
         axis: Axis<T>,
         vararg values: T,
@@ -93,6 +101,11 @@ internal data class RuleBuilder<C : Context>(
         } else {
             axisConstraints += AxisConstraint(axis.id, allowedIds)
         }
+    }
+
+    override fun <T> axis(vararg values: T) where T : AxisValue, T : Enum<T> {
+        @Suppress("DEPRECATION")
+        axis(requireNotNull(axisFor(values.first()::class)), *values)
     }
 
     /**

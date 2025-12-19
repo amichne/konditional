@@ -75,7 +75,7 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      */
     val envScopedFlag by boolean<TestContext>(default = false) {
         rule(true) {
-            axis(TestAxes.Environment, TestEnvironment.PROD)
+            axis(TestEnvironment.PROD)
         }
     }
 
@@ -87,8 +87,8 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      */
     val envAndTenantScopedFlag by boolean<TestContext>(default = false) {
         rule(true) {
-            axis(TestAxes.Environment, TestEnvironment.STAGE, TestEnvironment.PROD)
-            axis(TestAxes.Tenant, TestTenant.ENTERPRISE)
+            axis(TestEnvironment.PROD)
+            axis(TestTenant.ENTERPRISE)
         }
     }
 
@@ -101,8 +101,8 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      */
     val fallbackRuleFlag by boolean<TestContext>(default = false) {
         rule(true) {
-            axis(TestAxes.Environment, TestEnvironment.PROD)
-            axis(TestAxes.Tenant, TestTenant.ENTERPRISE)
+            axis(TestEnvironment.PROD)
+            axis(TestTenant.ENTERPRISE)
         }
 
         rule(true) {
@@ -118,8 +118,8 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      */
     val repeatedAxisFlag by boolean<TestContext>(default = false) {
         rule(true) {
-            axis(TestAxes.Environment, TestEnvironment.DEV)
-            axis(TestAxes.Environment, TestEnvironment.STAGE)
+            axis(TestEnvironment.DEV)
+            axis(TestEnvironment.STAGE)
         }
     }
 }
@@ -132,9 +132,11 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
  * you can use axis(TestEnvironment.PROD) directly.
  */
 fun <C : Context> RuleScope<C>.environments(vararg envs: TestEnvironment) {
-    axis(TestAxes.Environment, *envs)  // Explicit axis API
+    axis(*envs)
+    // Explicit axis API
 }
 
 fun <C : Context> RuleScope<C>.tenants(vararg tenants: TestTenant) {
-    axis(TestAxes.Tenant, *tenants)  // Explicit axis API
+    axis(*tenants)
+    // Explicit axis API
 }
