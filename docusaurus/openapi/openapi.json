@@ -522,7 +522,34 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "default": []
+            "default": [
+              "AUSTRALIA",
+              "AUSTRIA",
+              "BELGIUM_DUTCH",
+              "BELGIUM_FRENCH",
+              "CANADA",
+              "CANADA_FRENCH",
+              "FINLAND",
+              "FRANCE",
+              "GERMANY",
+              "HONG_KONG",
+              "HONG_KONG_ENGLISH",
+              "INDIA",
+              "ITALY",
+              "JAPAN",
+              "MEXICO",
+              "NETHERLANDS",
+              "NEW_ZEALAND",
+              "NORWAY",
+              "SINGAPORE",
+              "SPAIN",
+              "SWEDEN",
+              "TAIWAN",
+              "UNITED_KINGDOM",
+              "UNITED_STATES",
+              "ICC_EN_EU",
+              "ICC_EN_EI"
+            ]
           },
           "platforms": {
             "type": "array",
@@ -530,7 +557,11 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "default": []
+            "default": [
+              "IOS",
+              "ANDROID",
+              "WEB"
+            ]
           },
           "versionRange": {
             "oneOf": [
@@ -706,7 +737,10 @@
                   "max"
                 ]
               }
-            ]
+            ],
+            "default": {
+              "type": "UNBOUNDED"
+            }
           },
           "axes": {
             "type": "object",
@@ -721,7 +755,13 @@
           }
         },
         "required": [
-          "value"
+          "value",
+          "rampUp",
+          "rampUpAllowlist",
+          "locales",
+          "platforms",
+          "versionRange",
+          "axes"
         ]
       },
       "SerializableFlag": {
@@ -1040,7 +1080,34 @@
                     "type": "string"
                   },
                   "uniqueItems": true,
-                  "default": []
+                  "default": [
+                    "AUSTRALIA",
+                    "AUSTRIA",
+                    "BELGIUM_DUTCH",
+                    "BELGIUM_FRENCH",
+                    "CANADA",
+                    "CANADA_FRENCH",
+                    "FINLAND",
+                    "FRANCE",
+                    "GERMANY",
+                    "HONG_KONG",
+                    "HONG_KONG_ENGLISH",
+                    "INDIA",
+                    "ITALY",
+                    "JAPAN",
+                    "MEXICO",
+                    "NETHERLANDS",
+                    "NEW_ZEALAND",
+                    "NORWAY",
+                    "SINGAPORE",
+                    "SPAIN",
+                    "SWEDEN",
+                    "TAIWAN",
+                    "UNITED_KINGDOM",
+                    "UNITED_STATES",
+                    "ICC_EN_EU",
+                    "ICC_EN_EI"
+                  ]
                 },
                 "platforms": {
                   "type": "array",
@@ -1048,7 +1115,11 @@
                     "type": "string"
                   },
                   "uniqueItems": true,
-                  "default": []
+                  "default": [
+                    "IOS",
+                    "ANDROID",
+                    "WEB"
+                  ]
                 },
                 "versionRange": {
                   "oneOf": [
@@ -1224,7 +1295,10 @@
                         "max"
                       ]
                     }
-                  ]
+                  ],
+                  "default": {
+                    "type": "UNBOUNDED"
+                  }
                 },
                 "axes": {
                   "type": "object",
@@ -1239,7 +1313,13 @@
                 }
               },
               "required": [
-                "value"
+                "value",
+                "rampUp",
+                "rampUpAllowlist",
+                "locales",
+                "platforms",
+                "versionRange",
+                "axes"
               ]
             },
             "default": []
@@ -1247,7 +1327,11 @@
         },
         "required": [
           "key",
-          "defaultValue"
+          "defaultValue",
+          "salt",
+          "isActive",
+          "rampUpAllowlist",
+          "rules"
         ]
       },
       "SerializableSnapshotMetadata": {
@@ -1606,7 +1690,34 @@
                           "type": "string"
                         },
                         "uniqueItems": true,
-                        "default": []
+                        "default": [
+                          "AUSTRALIA",
+                          "AUSTRIA",
+                          "BELGIUM_DUTCH",
+                          "BELGIUM_FRENCH",
+                          "CANADA",
+                          "CANADA_FRENCH",
+                          "FINLAND",
+                          "FRANCE",
+                          "GERMANY",
+                          "HONG_KONG",
+                          "HONG_KONG_ENGLISH",
+                          "INDIA",
+                          "ITALY",
+                          "JAPAN",
+                          "MEXICO",
+                          "NETHERLANDS",
+                          "NEW_ZEALAND",
+                          "NORWAY",
+                          "SINGAPORE",
+                          "SPAIN",
+                          "SWEDEN",
+                          "TAIWAN",
+                          "UNITED_KINGDOM",
+                          "UNITED_STATES",
+                          "ICC_EN_EU",
+                          "ICC_EN_EI"
+                        ]
                       },
                       "platforms": {
                         "type": "array",
@@ -1614,7 +1725,11 @@
                           "type": "string"
                         },
                         "uniqueItems": true,
-                        "default": []
+                        "default": [
+                          "IOS",
+                          "ANDROID",
+                          "WEB"
+                        ]
                       },
                       "versionRange": {
                         "oneOf": [
@@ -1790,7 +1905,10 @@
                               "max"
                             ]
                           }
-                        ]
+                        ],
+                        "default": {
+                          "type": "UNBOUNDED"
+                        }
                       },
                       "axes": {
                         "type": "object",
@@ -1805,7 +1923,13 @@
                       }
                     },
                     "required": [
-                      "value"
+                      "value",
+                      "rampUp",
+                      "rampUpAllowlist",
+                      "locales",
+                      "platforms",
+                      "versionRange",
+                      "axes"
                     ]
                   },
                   "default": []
@@ -1813,7 +1937,11 @@
               },
               "required": [
                 "key",
-                "defaultValue"
+                "defaultValue",
+                "salt",
+                "isActive",
+                "rampUpAllowlist",
+                "rules"
               ]
             }
           }
@@ -2161,7 +2289,34 @@
                           "type": "string"
                         },
                         "uniqueItems": true,
-                        "default": []
+                        "default": [
+                          "AUSTRALIA",
+                          "AUSTRIA",
+                          "BELGIUM_DUTCH",
+                          "BELGIUM_FRENCH",
+                          "CANADA",
+                          "CANADA_FRENCH",
+                          "FINLAND",
+                          "FRANCE",
+                          "GERMANY",
+                          "HONG_KONG",
+                          "HONG_KONG_ENGLISH",
+                          "INDIA",
+                          "ITALY",
+                          "JAPAN",
+                          "MEXICO",
+                          "NETHERLANDS",
+                          "NEW_ZEALAND",
+                          "NORWAY",
+                          "SINGAPORE",
+                          "SPAIN",
+                          "SWEDEN",
+                          "TAIWAN",
+                          "UNITED_KINGDOM",
+                          "UNITED_STATES",
+                          "ICC_EN_EU",
+                          "ICC_EN_EI"
+                        ]
                       },
                       "platforms": {
                         "type": "array",
@@ -2169,7 +2324,11 @@
                           "type": "string"
                         },
                         "uniqueItems": true,
-                        "default": []
+                        "default": [
+                          "IOS",
+                          "ANDROID",
+                          "WEB"
+                        ]
                       },
                       "versionRange": {
                         "oneOf": [
@@ -2345,7 +2504,10 @@
                               "max"
                             ]
                           }
-                        ]
+                        ],
+                        "default": {
+                          "type": "UNBOUNDED"
+                        }
                       },
                       "axes": {
                         "type": "object",
@@ -2360,7 +2522,13 @@
                       }
                     },
                     "required": [
-                      "value"
+                      "value",
+                      "rampUp",
+                      "rampUpAllowlist",
+                      "locales",
+                      "platforms",
+                      "versionRange",
+                      "axes"
                     ]
                   },
                   "default": []
@@ -2368,7 +2536,11 @@
               },
               "required": [
                 "key",
-                "defaultValue"
+                "defaultValue",
+                "salt",
+                "isActive",
+                "rampUpAllowlist",
+                "rules"
               ]
             }
           },
@@ -2382,7 +2554,8 @@
           }
         },
         "required": [
-          "flags"
+          "flags",
+          "removeKeys"
         ]
       }
     }

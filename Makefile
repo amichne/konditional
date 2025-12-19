@@ -61,7 +61,7 @@ compile-test: ## Compile test code
 
 docs-install: ## Install Docusaurus dependencies (in ./docusaurus)
 	@echo "$(BLUE)Installing Docusaurus dependencies...$(NC)"
-	@cd docusaurus && npm install
+	@cd docusaurus && npm install && pnpm install
 	@echo "$(GREEN)Docusaurus dependencies installed$(NC)"
 
 docs-build: docs-docusaurus-install ## Build the Docusaurus site

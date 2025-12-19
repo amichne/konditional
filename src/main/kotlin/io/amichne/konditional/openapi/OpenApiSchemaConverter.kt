@@ -74,11 +74,21 @@ internal object OpenApiSchemaConverter {
         target["type"] = "object"
         target["additionalProperties"] = false
         target["properties"] = schema.fields.mapValues { (_, field) -> toSchema(field) }
-        val required = schema.required?.toList() ?: schema.fields.filter { it.value.required }.keys.toList()
+        val required = requiredFields(schema)
         if (required.isNotEmpty()) {
             target["required"] = required
         }
     }
+
+    private fun requiredFields(schema: ObjectTraits): List<String> =
+        schema.required.orEmpty().let { explicitRequired ->
+            schema.fields.keys.filter { key ->
+                val field = schema.fields.getValue(key)
+                field.required || key in explicitRequired || hasDefault(field)
+            }
+        }
+
+    private fun hasDefault(field: FieldSchema): Boolean = field.defaultValue != null || field.schema.default != null
 
     private fun addMapSchema(
         target: MutableMap<String, Any?>,
