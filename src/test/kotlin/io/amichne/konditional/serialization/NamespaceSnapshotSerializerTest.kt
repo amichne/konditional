@@ -1,4 +1,5 @@
 package io.amichne.konditional.serialization
+
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context

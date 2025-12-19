@@ -194,7 +194,8 @@ internal object SerializationSchemaCatalog {
         schema: JsonSchema,
         description: String? = null,
         defaultValue: Any? = null,
-    ): FieldSchema = FieldSchema(schema = schema, required = false, defaultValue = defaultValue, description = description)
+    ): FieldSchema =
+        FieldSchema(schema = schema, required = false, defaultValue = defaultValue, description = description)
 
     private fun enumString(value: String): JsonSchema = JsonSchema.string(enum = listOf(value))
 }

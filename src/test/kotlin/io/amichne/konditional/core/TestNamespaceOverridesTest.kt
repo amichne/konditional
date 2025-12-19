@@ -358,7 +358,7 @@ class TestNamespaceOverridesTest {
             val myFlag by boolean<Context>(default = false)
         }
 
-        testNamespace.withOverrides() {
+        testNamespace.withOverrides {
             // No overrides set
             assertEquals(false, testNamespace.myFlag.evaluate(testContext))
         }

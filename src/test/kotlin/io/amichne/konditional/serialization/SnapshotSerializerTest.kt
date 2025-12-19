@@ -10,7 +10,6 @@ import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.dsl.axis
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.result.ParseError

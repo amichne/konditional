@@ -6,7 +6,6 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.features.BooleanFeature
-import io.amichne.konditional.core.features.DoubleFeature
 import io.amichne.konditional.core.features.IntFeature
 import io.amichne.konditional.core.features.StringFeature
 import io.amichne.konditional.core.id.StableId

@@ -106,7 +106,6 @@ interface RuleScope<C : Context> {
         vararg values: T,
     ) where T : AxisValue, T : Enum<T>
 
-
     fun <T> axis(
         vararg values: T,
     ) where T : AxisValue, T : Enum<T>

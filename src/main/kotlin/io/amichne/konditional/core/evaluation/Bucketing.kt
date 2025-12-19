@@ -31,8 +31,8 @@ internal object Bucketing {
                         (get(1).toInt() and 0xFF shl 16) or
                         (get(2).toInt() and 0xFF shl 8) or
                         (get(3).toInt() and 0xFF)
-                ).toLong() and 0xFFFF_FFFFL
-            ).mod(BUCKET_SPACE.toLong()).toInt()
+                    ).toLong() and 0xFFFF_FFFFL
+                ).mod(BUCKET_SPACE.toLong()).toInt()
         }
     }
 
