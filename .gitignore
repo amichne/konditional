@@ -1028,3 +1028,4 @@ build/
 
 ### VS Code ###
 .vscode/
+!/docusaurus/.claude/

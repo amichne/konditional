@@ -1,5 +1,8 @@
 package io.amichne.konditional.openapi
 
+import io.amichne.konditional.context.AppLocale
+import io.amichne.konditional.context.Platform
+import io.amichne.konditional.rules.versions.VersionRange
 import io.amichne.kontracts.schema.AnySchema
 import io.amichne.kontracts.schema.FieldSchema
 import io.amichne.kontracts.schema.JsonSchema
@@ -11,6 +14,9 @@ internal object SerializationSchemaCatalog {
     private val uniqueStringArraySchema = JsonSchema.array(stringSchema, uniqueItems = true)
     private val featureIdSchema =
         JsonSchema.string(description = "Encoded feature identifier: feature::<namespace>::<key>.")
+    private val allLocales = AppLocale.entries.map { it.name }
+    private val allPlatforms = Platform.entries.map { it.name }
+    private val unboundedVersionRangeDefault = mapOf("type" to VersionRange.Type.UNBOUNDED.name)
 
     private val versionSchema =
         ObjectSchema(
@@ -115,9 +121,9 @@ internal object SerializationSchemaCatalog {
                     ),
                     "rampUpAllowlist" to optional(uniqueStringArraySchema, defaultValue = emptyList<String>()),
                     "note" to optional(stringSchema),
-                    "locales" to optional(uniqueStringArraySchema, defaultValue = emptyList<String>()),
-                    "platforms" to optional(uniqueStringArraySchema, defaultValue = emptyList<String>()),
-                    "versionRange" to optional(versionRangeSchema),
+                    "locales" to optional(uniqueStringArraySchema, defaultValue = allLocales),
+                    "platforms" to optional(uniqueStringArraySchema, defaultValue = allPlatforms),
+                    "versionRange" to optional(versionRangeSchema, defaultValue = unboundedVersionRangeDefault),
                     "axes" to optional(
                         MapSchema(uniqueStringArraySchema),
                         defaultValue = emptyMap<String, Any?>(),

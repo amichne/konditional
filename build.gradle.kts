@@ -58,7 +58,7 @@ tasks.test {
 val openApiOutput = layout.settingsDirectory.file("kontracts/openapi.json")
 
 @Suppress("UnstableApiUsage")
-val openApiRedocOutput = layout.settingsDirectory.file("docusaurus/static/openapi.json")
+val openApiRedocOutput = layout.settingsDirectory.file("docusaurus/openapi/openapi.json")
 
 tasks.register<JavaExec>("generateOpenApiSchema") {
     group = "documentation"
