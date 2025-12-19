@@ -1,3 +1,4 @@
+import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.time.Duration
 
@@ -70,7 +71,7 @@ detekt {
     )
 }
 
-tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+tasks.withType<Detekt>().configureEach {
     reports {
         html.required.set(true)
         xml.required.set(true)
@@ -92,10 +93,10 @@ tasks.test {
 }
 
 @Suppress("UnstableApiUsage")
-val openApiOutput = layout.settingsDirectory.file("kontracts/openapi.json")
+val openApiOutput: RegularFile = layout.settingsDirectory.file("kontracts/openapi.json")
 
 @Suppress("UnstableApiUsage")
-val openApiRedocOutput = layout.settingsDirectory.file("docusaurus/static/openapi.json")
+val openApiRedocOutput: RegularFile = layout.settingsDirectory.file("docusaurus/openapi/openapi.json")
 
 tasks.register<JavaExec>("generateOpenApiSchema") {
     group = "documentation"
