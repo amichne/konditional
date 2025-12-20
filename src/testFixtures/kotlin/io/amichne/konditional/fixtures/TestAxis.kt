@@ -16,13 +16,17 @@ import io.amichne.konditional.core.result.getOrThrow
 /**
  * Test-only enums representing domain-specific axis values.
  */
-enum class TestEnvironment(override val id: String) : AxisValue {
+enum class TestEnvironment(
+    override val id: String,
+) : AxisValue<TestEnvironment> {
     DEV("dev"),
     STAGE("stage"),
     PROD("prod"),
 }
 
-enum class TestTenant(override val id: String) : AxisValue {
+enum class TestTenant(
+    override val id: String,
+) : AxisValue<TestTenant> {
     CONSUMER("consumer"),
     SME("sme"),
     ENTERPRISE("enterprise")

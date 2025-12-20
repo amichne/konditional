@@ -32,8 +32,8 @@ import java.util.function.IntFunction
  * @property values Internal map create axis IDs to their values
  */
 class AxisValues internal constructor(
-    private val values: Map<String, AxisValue>,
-) : Set<AxisValue> by values.values.toSet() {
+    private val values: Map<String, AxisValue<*>>,
+) : Set<AxisValue<*>> by values.values.toSet() {
     /**
      * Low-level access by axis ID.
      *
@@ -43,7 +43,7 @@ class AxisValues internal constructor(
      * @param axisId The unique identifier create the axis
      * @return The value for that axis, or null if not present
      */
-    internal operator fun get(axisId: String): AxisValue? = values[axisId]
+    internal operator fun get(axisId: String): AxisValue<*>? = values[axisId]
 
     /**
      * Type-safe access by axis descriptor.
@@ -54,7 +54,7 @@ class AxisValues internal constructor(
      * @return The value for that axis, or null if not present
      */
     @Suppress("UNCHECKED_CAST")
-    operator fun <T> get(axis: Axis<T>): T? where T : AxisValue, T : Enum<T> =
+    operator fun <T> get(axis: Axis<T>): T? where T : AxisValue<T>, T : Enum<T> =
         values[axis.id] as? T
 
     override fun equals(other: Any?): Boolean {

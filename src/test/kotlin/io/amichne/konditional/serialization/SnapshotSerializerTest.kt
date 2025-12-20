@@ -16,7 +16,7 @@ import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.core.types.KotlinEncodeable
-import io.amichne.konditional.fixtures.utilities.axisValues
+import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.fixtures.utilities.update
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
@@ -71,13 +71,13 @@ class SnapshotSerializerTest {
         FeatureRegistry.register(TestFeatures.retryPolicyFlag)
     }
 
-    private enum class Environment(override val id: String) : AxisValue {
+    private enum class Environment(override val id: String) : AxisValue<Environment> {
         PROD("prod"),
         STAGE("stage"),
         DEV("dev"),
     }
 
-    private enum class Tenant(override val id: String) : AxisValue {
+    private enum class Tenant(override val id: String) : AxisValue<Tenant> {
         ENTERPRISE("enterprise"),
         SMB("smb"),
     }

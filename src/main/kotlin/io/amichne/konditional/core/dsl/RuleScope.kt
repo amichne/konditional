@@ -104,11 +104,11 @@ interface RuleScope<C : Context> {
     fun <T> axis(
         axis: Axis<T>,
         vararg values: T,
-    ) where T : AxisValue, T : Enum<T>
+    ) where T : AxisValue<T>, T : Enum<T>
 
     fun <T> axis(
         vararg values: T,
-    ) where T : AxisValue, T : Enum<T>
+    ) where T : AxisValue<T>, T : Enum<T>
 
     /**
      * Adds a custom targeting extension using an Evaluable.

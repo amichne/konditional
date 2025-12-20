@@ -5,7 +5,6 @@ import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.AxisValues
 import io.amichne.konditional.core.dsl.AxisValuesScope
 import io.amichne.konditional.core.dsl.KonditionalDsl
-import io.amichne.konditional.core.registry.AxisRegistry
 
 /**
  * Internal builder implementation for constructing [AxisValues] instances.
@@ -27,15 +26,17 @@ import io.amichne.konditional.core.registry.AxisRegistry
  * @see AxisValuesScope
  */
 @KonditionalDsl
-internal class AxisValuesBuilder : AxisValuesScope {
-    private val values = mutableMapOf<String, AxisValue>()
+@PublishedApi
+internal class AxisValuesBuilder(val map: MutableMap<String, AxisValue<*>> = mutableMapOf<String, AxisValue<*>>()) :
+    AxisValuesScope,
+    MutableMap<String, AxisValue<*>> by map {
 
     /**
      * Internal accessor for extracting accumulated values.
      *
      * Used by other builders that need to access the raw map.
      */
-    internal fun getValues(): Map<String, AxisValue> = values.toMap()
+    internal fun getValues(): Map<String, AxisValue<*>> = map.toMap()
 
     /**
      * Sets a value for the given axis.
@@ -43,8 +44,11 @@ internal class AxisValuesBuilder : AxisValuesScope {
     override fun <T> set(
         axis: Axis<T>,
         value: T,
-    ) where T : AxisValue, T : Enum<T> {
-        values[axis.id] = value
+    ) where T : AxisValue<T>, T : Enum<T> {
+        require(axis.valueClass == value::class) {
+            "Axis ${axis.id} expects ${axis.valueClass.simpleName}, got ${value::class.simpleName}"
+        }
+        map[axis.id] = value
     }
 
     /**
@@ -53,26 +57,8 @@ internal class AxisValuesBuilder : AxisValuesScope {
     override fun <T> setIfNotNull(
         axis: Axis<T>,
         value: T?,
-    ) where T : AxisValue, T : Enum<T> {
+    ) where T : AxisValue<T>, T : Enum<T> {
         if (value != null) set(axis, value)
-    }
-
-    /**
-     * Type-based value setter using the registry.
-     *
-     * This extension allows setting values by type without explicitly passing the axis:
-     * ```kotlin
-     * axisValues {
-     *     axis(Environment.PROD)  // Axis inferred from type
-     * }
-     * ```
-     *
-     * @param value The value to set
-     * @throws IllegalStateException if no axis is registered for type T
-     */
-    inline fun <reified T> AxisValuesBuilder.axis(value: T) where T : AxisValue, T : Enum<T> {
-        AxisRegistry.axisFor(T::class)?.let { set(it, value) }
-            ?: error("No Axis registered for type ${T::class.simpleName}")
     }
 
     /**
@@ -80,6 +66,7 @@ internal class AxisValuesBuilder : AxisValuesScope {
      *
      * @return AxisValues.EMPTY if no values were set, otherwise a new AxisValues instance
      */
+    @PublishedApi
     internal fun build(): AxisValues =
-        if (values.isEmpty()) AxisValues.EMPTY else AxisValues(values.toMap())
+        if (map.isEmpty()) AxisValues.EMPTY else AxisValues(map.toMap())
 }

@@ -1,12 +1,13 @@
 package io.amichne.konditional.dimensions
 
+import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.context.axis.AxisValues
+import io.amichne.konditional.core.dsl.unaryPlus
 import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
 import io.amichne.konditional.fixtures.environment
 import io.amichne.konditional.fixtures.tenant
-import io.amichne.konditional.fixtures.utilities.axisValues
 import io.amichne.konditional.internal.builders.AxisValuesBuilder
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -18,7 +19,7 @@ class AxisBuilderTest {
 
     @Test
     fun `axisValues builder returns EMPTY when no values set`() {
-        val values = axisValues { }
+        val values = axisValues {}
 
         Assertions.assertSame(
             AxisValues.EMPTY,
@@ -45,6 +46,30 @@ class AxisBuilderTest {
             TestTenant.SME,
             values[TestAxes.Tenant],
             "Typed axis lookup should return tenant value",
+        )
+    }
+
+    @Test
+    fun `axisValues unary plus sets values`() {
+        @Suppress("UnusedExpression")
+        TestAxes.Environment
+        @Suppress("UnusedExpression")
+        TestAxes.Tenant
+
+        val values = axisValues {
+            +TestEnvironment.DEV
+            +TestTenant.CONSUMER
+        }
+
+        Assertions.assertEquals(
+            TestEnvironment.DEV,
+            values[TestAxes.Environment],
+            "Unary plus should set environment value",
+        )
+        Assertions.assertEquals(
+            TestTenant.CONSUMER,
+            values[TestAxes.Tenant],
+            "Unary plus should set tenant value",
         )
     }
 

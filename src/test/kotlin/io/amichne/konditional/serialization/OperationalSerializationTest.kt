@@ -12,7 +12,7 @@ import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.environment
-import io.amichne.konditional.fixtures.utilities.axisValues
+import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.internal.serialization.models.FlagValue
 import io.amichne.konditional.internal.serialization.models.SerializableFlag
 import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
