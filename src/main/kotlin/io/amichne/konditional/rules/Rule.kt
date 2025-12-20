@@ -9,6 +9,8 @@ import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.evaluable.Placeholder
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
+import io.amichne.konditional.values.LocaleTagIdValue
+import io.amichne.konditional.values.PlatformTagIdValue
 
 // ---------- Rule / Condition model ----------
 
@@ -36,8 +38,8 @@ import io.amichne.konditional.rules.versions.VersionRange
  * ```kotlin
  * Rule(
  *     rampUp {  RampUp.create(50.0) }
- *     locales = setOf(AppLocale.UNITED_STATES),
- *     platforms = setOf(Platform.IOS),
+ *     locales = setOf(LocaleTagIdValue.from(AppLocale.UNITED_STATES.id)),
+ *     platforms = setOf(PlatformTagIdValue.from(Platform.IOS.id)),
  *     versionRange = LeftBound(Version(2, 0, 0))
  * )
  * ```
@@ -74,8 +76,8 @@ data class Rule<C : Context> internal constructor(
         rampUp: RampUp = RampUp.default,
         rolloutAllowlist: Set<HexId> = emptySet(),
         note: String? = null,
-        locales: Set<String> = emptySet(),
-        platforms: Set<String> = emptySet(),
+        locales: Set<LocaleTagIdValue> = emptySet(),
+        platforms: Set<PlatformTagIdValue> = emptySet(),
         versionRange: VersionRange = Unbounded(),
         axisConstraints: List<AxisConstraint> = emptyList(),
         extension: Evaluable<C> = Placeholder,

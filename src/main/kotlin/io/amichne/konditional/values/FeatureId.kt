@@ -5,7 +5,9 @@ import io.amichne.konditional.values.IdentifierEncoding.SEPARATOR
 @JvmInline
 value class FeatureId private constructor(
     val plainId: String,
-) : Comparable<FeatureId> {
+) : Comparable<FeatureId>, GenericId {
+    override val id: String
+        get() = plainId
     override fun compareTo(other: FeatureId): Int = plainId.compareTo(other.plainId)
 
     override fun toString(): String = plainId

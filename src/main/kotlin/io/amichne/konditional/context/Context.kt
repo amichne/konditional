@@ -3,6 +3,7 @@ package io.amichne.konditional.context
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.AxisValues
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.values.AxisId
 
 /**
  * Represents the execution context for feature flag evaluation.
@@ -88,7 +89,7 @@ interface Context {
          * @return The value for that axis, or null if not present
          */
         @PublishedApi
-        internal fun Context.getAxisValue(axisId: String): AxisValue<*>? =
+        internal fun Context.getAxisValue(axisId: AxisId): AxisValue<*>? =
             axisValues[axisId]
     }
 }

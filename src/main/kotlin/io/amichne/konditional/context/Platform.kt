@@ -1,5 +1,7 @@
 package io.amichne.konditional.context
 
+import io.amichne.konditional.values.PlatformTagId
+
 /**
  * Platform
  *
@@ -10,5 +12,5 @@ enum class Platform : PlatformTag {
     ANDROID,
     WEB;
 
-    override val id: String = name
+    override val id: PlatformTagId = PlatformTagId.of(name)
 }

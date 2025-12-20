@@ -1,5 +1,7 @@
 package io.amichne.konditional.rules.evaluable
 
+import io.amichne.konditional.values.AxisIdValue
+
 /**
  * Internal representation of an axis matching constraint within a rule.
  *
@@ -20,7 +22,7 @@ package io.amichne.konditional.rules.evaluable
  * ```kotlin
  * // Rule: target only PROD and STAGE environments
  * AxisConstraint(
- *     axisId = "environment",
+ *     axisId = AxisIdValue("environment"),
  *     allowedIds = setOf("prod", "stage")
  * )
  * ```
@@ -29,6 +31,6 @@ package io.amichne.konditional.rules.evaluable
  * @property allowedIds The set create allowed value IDs for this axis
  */
 internal data class AxisConstraint(
-    val axisId: String,
+    val axisId: AxisIdValue,
     val allowedIds: Set<String>,
 )

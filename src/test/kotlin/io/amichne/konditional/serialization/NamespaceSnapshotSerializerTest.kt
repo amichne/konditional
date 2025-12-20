@@ -124,7 +124,7 @@ class NamespaceSnapshotSerializerTest {
 
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.InvalidJson>(result.error)
-        assertTrue((result.error as ParseError.InvalidJson).message.contains(testNamespace.id))
+        assertTrue((result.error as ParseError.InvalidJson).message.contains(testNamespace.id.id))
     }
 
     @Test

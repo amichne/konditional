@@ -112,11 +112,11 @@ class NamespaceSnapshotSerializer<M : Namespace>(
                 }
             }
                 ?: ParseResult.Failure(
-                    ParseError.InvalidJson("Failed to parseUnsafe JSON for namespace '${module.id}': null result"),
+                    ParseError.InvalidJson("Failed to parseUnsafe JSON for namespace '${module.id.id}': null result"),
                 )
         }.getOrElse {
             ParseResult.Failure(
-                ParseError.InvalidJson("Failed to deserialize JSON for namespace '${module.id}': ${it.message ?: "Unknown error"}"),
+                ParseError.InvalidJson("Failed to deserialize JSON for namespace '${module.id.id}': ${it.message ?: "Unknown error"}"),
             )
         }
 

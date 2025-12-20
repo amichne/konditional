@@ -20,6 +20,9 @@ import io.amichne.konditional.rules.evaluable.Evaluable.Companion.factory
 import io.amichne.konditional.rules.evaluable.Placeholder
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
+import io.amichne.konditional.values.AxisIdValue
+import io.amichne.konditional.values.LocaleTagIdValue
+import io.amichne.konditional.values.PlatformTagIdValue
 
 /**
  * Internal implementation of [RuleScope].
@@ -37,9 +40,9 @@ internal data class RuleBuilder<C : Context>(
     private var extension: Evaluable<C> = Placeholder,
     private var note: String? = null,
     private var range: VersionRange = Unbounded(),
-    private val platforms: LinkedHashSet<String> = linkedSetOf(),
+    private val platforms: LinkedHashSet<PlatformTagIdValue> = linkedSetOf(),
     private val axisConstraints: MutableList<AxisConstraint> = mutableListOf(),
-    private val locales: LinkedHashSet<String> = linkedSetOf(),
+    private val locales: LinkedHashSet<LocaleTagIdValue> = linkedSetOf(),
     private val rolloutAllowlist: LinkedHashSet<HexId> = linkedSetOf(),
     private var rampUp: RampUp? = null,
 ) : RuleScope<C> {
@@ -52,7 +55,7 @@ internal data class RuleBuilder<C : Context>(
      * Implementation of [RuleScope.locales].
      */
     override fun locales(vararg appLocales: LocaleTag) {
-        locales += appLocales.map { it.id }
+        locales += appLocales.map { LocaleTagIdValue.from(it.id) }
     }
 
     /**
@@ -60,7 +63,7 @@ internal data class RuleBuilder<C : Context>(
      */
     @KonditionalDsl
     override fun platforms(vararg ps: PlatformTag) {
-        platforms += ps.map { it.id }
+        platforms += ps.map { PlatformTagIdValue.from(it.id) }
     }
 
     /**
@@ -92,14 +95,15 @@ internal data class RuleBuilder<C : Context>(
         vararg values: T,
     ) where T : AxisValue<T>, T : Enum<T> {
         val allowedIds = values.mapTo(linkedSetOf()) { it.id }
-        val idx = axisConstraints.indexOfFirst { it.axisId == axis.id }
+        val axisId = AxisIdValue.from(axis.id)
+        val idx = axisConstraints.indexOfFirst { it.axisId == axisId }
         if (idx >= 0) {
             val existing = axisConstraints[idx]
             axisConstraints[idx] = existing.copy(
                 allowedIds = existing.allowedIds + allowedIds
             )
         } else {
-            axisConstraints += AxisConstraint(axis.id, allowedIds)
+            axisConstraints += AxisConstraint(axisId, allowedIds)
         }
     }
 

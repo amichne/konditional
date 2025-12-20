@@ -1,5 +1,7 @@
 package io.amichne.konditional.context
 
+import io.amichne.konditional.values.LocaleTagId
+
 /**
  * Locale and Market enums (examples only)
  *
@@ -36,7 +38,7 @@ enum class AppLocale(
     ICC_EN_EU("en", "EU"),
     ICC_EN_EI("en", "EI");
 
-    override val id: String = name
+    override val id: LocaleTagId = LocaleTagId.of(name)
 
     companion object {
         fun from(

@@ -7,7 +7,10 @@ import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.evaluable.Placeholder
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
+import io.amichne.konditional.values.AxisId
 import io.amichne.konditional.values.FeatureId
+import io.amichne.konditional.values.LocaleTagId
+import io.amichne.konditional.values.PlatformTagId
 
 @ConsistentCopyVisibility
 data class ConfigurationDiff internal constructor(
@@ -110,10 +113,10 @@ data class ConfigurationDiff internal constructor(
                 data class RuleSnapshot internal constructor(
                     val note: String?,
                     val rollout: RampUp,
-                    val locales: Set<String>,
-                    val platforms: Set<String>,
+                    val locales: Set<LocaleTagId>,
+                    val platforms: Set<PlatformTagId>,
                     val versionRange: VersionRange,
-                    val axes: Map<String, Set<String>>,
+                    val axes: Map<AxisId, Set<String>>,
                     val baseSpecificity: Int,
                     val extensionSpecificity: Int,
                     val totalSpecificity: Int,

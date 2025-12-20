@@ -7,6 +7,7 @@ import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.instance.ConfigurationMetadata
 import io.amichne.konditional.core.ops.RegistryHooks
+import io.amichne.konditional.values.NamespaceId
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -75,7 +76,7 @@ interface NamespaceRegistry {
      *
      * This is used for observability (logging/metrics) and operational tooling.
      */
-    val namespaceId: String
+    val namespaceId: NamespaceId
 
     /**
      * Loads a complete flag configuration from the provided snapshot.
@@ -191,7 +192,7 @@ interface NamespaceRegistry {
          */
         operator fun invoke(
             configuration: Configuration = Configuration(emptyMap()),
-            namespaceId: String = "anonymous",
+            namespaceId: NamespaceId = NamespaceId.of("anonymous"),
             hooks: RegistryHooks = RegistryHooks.None,
             historyLimit: Int = InMemoryNamespaceRegistry.DEFAULT_HISTORY_LIMIT,
         ): NamespaceRegistry =

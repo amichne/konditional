@@ -11,6 +11,7 @@ import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.registry.NamespaceRegistry
 import io.amichne.konditional.core.result.getOrThrow
+import io.amichne.konditional.values.NamespaceId
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -34,7 +35,7 @@ class ShadowEvaluationTest {
         }
 
         val candidateRegistry = NamespaceRegistry(
-            namespaceId = "shadow-candidate",
+            namespaceId = NamespaceId.of("shadow-candidate"),
             configuration = Configuration(
                 flags = mapOf(
                     baselineNamespace.FLAG to FlagDefinition(
@@ -67,7 +68,7 @@ class ShadowEvaluationTest {
         }
 
         val candidateRegistry: NamespaceRegistry = NamespaceRegistry(
-            namespaceId = "shadow-candidate",
+            namespaceId = NamespaceId.of("shadow-candidate"),
             configuration = Configuration(
                 flags = mapOf(
                     baselineNamespace.FLAG to FlagDefinition(
