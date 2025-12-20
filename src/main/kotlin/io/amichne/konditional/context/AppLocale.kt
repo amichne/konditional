@@ -8,7 +8,7 @@ package io.amichne.konditional.context
 enum class AppLocale(
     private val language: String,
     private val country: String,
-) {
+) : LocaleTag {
     AUSTRALIA("en", "AU"),
     AUSTRIA("de", "AT"),
     BELGIUM_DUTCH("nl", "BE"),
@@ -35,6 +35,8 @@ enum class AppLocale(
     UNITED_STATES("en", "US"),
     ICC_EN_EU("en", "EU"),
     ICC_EN_EI("en", "EI");
+
+    override val id: String = name
 
     companion object {
         fun from(

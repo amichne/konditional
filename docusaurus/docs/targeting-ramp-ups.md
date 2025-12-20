@@ -41,6 +41,29 @@ val welcomeMessage by string<Context>(default = "Hello!") {
 }
 ```
 
+### Axis (custom dimensions)
+
+Axis values let you target custom dimensions (environment, tenant, region, etc.):
+
+```kotlin
+enum class Environment(override val id: String) : AxisValue<Environment> {
+    PROD("prod"),
+    STAGE("stage"),
+    DEV("dev"),
+}
+
+object Axes {
+    object Environment : Axis<Environment>("environment", Environment::class)
+}
+
+val newUi by boolean<Context>(default = false) {
+    rule(true) { axis(Environment.PROD) }
+}
+```
+
+Axis ids are serialized into configuration snapshots. Keep them stable and explicit; avoid relying on implicit ids
+derived from class names if you use code shrinking/obfuscation.
+
 ### Version ranges
 
 ```kotlin

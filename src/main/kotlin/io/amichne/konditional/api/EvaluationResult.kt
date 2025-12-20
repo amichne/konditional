@@ -1,7 +1,5 @@
 package io.amichne.konditional.api
 
-import io.amichne.konditional.context.AppLocale
-import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.rules.versions.VersionRange
@@ -60,8 +58,8 @@ data class EvaluationResult<T : Any> internal constructor(
     data class RuleExplanation internal constructor(
         val note: String?,
         val rollout: RampUp,
-        val locales: Set<AppLocale>,
-        val platforms: Set<Platform>,
+        val locales: Set<String>,
+        val platforms: Set<String>,
         val versionRange: VersionRange,
         val axes: Map<String, Set<String>>,
         val baseSpecificity: Int,

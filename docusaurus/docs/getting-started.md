@@ -76,6 +76,8 @@ Notes:
 - Evaluation is total for declared features: `evaluate(context)` always returns the flag’s declared Kotlin type (never
   null).
 - Use `evaluateWithReason(context)` when you need operational traceability (“why did I get this value?”).
+- `AppLocale` and `Platform` are defaults; you can supply your own locale/platform types by implementing
+  `LocaleTag` / `PlatformTag` with stable `id` values.
 
 ---
 

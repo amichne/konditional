@@ -193,15 +193,9 @@ inline fun <T : Any, C : Context, R> Namespace.withOverride(
  *
  * ## Type Safety
  *
- * The type of each value is validated against the feature's type at compile time:
- * ```kotlin
- * namespace.withOverrides(
- *     Features.boolFlag to true,      // ✓ Boolean matches
- *     Features.stringFlag to "text",  // ✓ String matches
- *     Features.intFlag to 42          // ✓ Int matches
- *     // Features.boolFlag to "oops"  // ✗ Compile error: type mismatch
- * ) { ... }
- * ```
+ * `withOverride` is fully type-safe because it accepts a single typed feature and value.
+ * `withOverrides` accepts heterogenous pairs and applies unchecked casts internally, so
+ * prefer `withOverride` when you need compile-time enforcement.
  *
  * @param overrides Pairs create features to their override values
  * @param block The code to execute with all overrides active

@@ -7,6 +7,8 @@ import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.core.id.TestStableId
+import io.amichne.konditional.fixtures.utilities.localeIds
+import io.amichne.konditional.fixtures.utilities.platformIds
 import io.amichne.konditional.rules.evaluable.Evaluable
 import io.amichne.konditional.rules.evaluable.Evaluable.Companion.factory
 import io.amichne.konditional.rules.versions.LeftBound
@@ -95,7 +97,7 @@ class RuleGuaranteesTest {
     fun `base rule locale restriction is always enforced`() {
         val rule = Rule<Context>(
             rampUp = RampUp.of(100.0),
-            locales = setOf(AppLocale.CANADA)
+            locales = localeIds(AppLocale.CANADA)
         )
 
         // Context has UNITED_STATES locale, rule requires UNITED_STATES
@@ -106,7 +108,7 @@ class RuleGuaranteesTest {
     fun `base rule platform restriction is always enforced`() {
         val rule = Rule<Context>(
             rampUp = RampUp.of(100.0),
-            platforms = setOf(Platform.IOS)
+            platforms = platformIds(Platform.IOS)
         )
 
         // Context has ANDROID platform, rule requires IOS
@@ -130,7 +132,7 @@ class RuleGuaranteesTest {
         // the base locale restriction prevents a match
         val rule = Rule(
             rampUp = RampUp.of(100.0),
-            locales = setOf(AppLocale.MEXICO),
+            locales = localeIds(AppLocale.MEXICO),
             extension = SubscriptionRule(
                 requiredTier = "premium"
             )
@@ -143,7 +145,7 @@ class RuleGuaranteesTest {
     @Test
     fun `custom rule cannot bypass base platform restriction`() {
         val rule = Rule(
-            platforms = setOf(Platform.IOS),
+            platforms = platformIds(Platform.IOS),
             extension = SubscriptionRule(
                 requiredTier = "premium"
             )
@@ -179,7 +181,7 @@ class RuleGuaranteesTest {
     @Test
     fun `custom rule specificity includes both base and additional specificity`() {
         val ruleWithLocaleAndTier = Rule(
-            locales = setOf(AppLocale.UNITED_STATES), extension = SubscriptionRule(
+            locales = localeIds(AppLocale.UNITED_STATES), extension = SubscriptionRule(
                 requiredTier = "premium"
             )
         )
@@ -191,8 +193,8 @@ class RuleGuaranteesTest {
 
         val ruleWithAllAttributes = ruleWithLocaleAndTier.copy(
             baseEvaluable = ruleWithLocaleAndTier.baseEvaluable.copy(
-                locales = setOf(AppLocale.UNITED_STATES),
-                platforms = setOf(Platform.ANDROID),
+                locales = localeIds(AppLocale.UNITED_STATES),
+                platforms = platformIds(Platform.ANDROID),
             )
         )
 

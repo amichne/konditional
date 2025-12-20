@@ -51,6 +51,9 @@ What this buys you:
 | Enum       | `enum(...)`             | `E : Enum<E>`                        | `LogLevel.INFO` |
 | Data class | `custom(...)`           | `T : KotlinEncodeable<ObjectSchema>` | `MyConfig()`    |
 
+Custom data classes are decoded via Kotlin reflection at the JSON boundary. Ensure Kotlin reflection is available
+at runtime (Konditional bundles it), and keep constructor parameter names stable when using obfuscation.
+
 ### Enums instead of strings
 
 ```kotlin
@@ -126,6 +129,9 @@ typed.
 
 Context provides evaluation inputs: it tells Konditional who is asking and where they are.
 
+`locale` and `platform` are modeled as stable identifiers via `LocaleTag` and `PlatformTag`. Use the built-in
+`AppLocale` / `Platform` enums or supply your own types with stable `id` values.
+
 Standard fields (the minimum required by the rule DSL):
 
 ```kotlin
@@ -147,7 +153,8 @@ val id = StableId.of("user-123")
 ```
 
 If you need cross-platform consistency, ensure all platforms pass the same canonical stable identifier string
-into `StableId.of(...)` (it lowercases the input).
+into `StableId.of(...)` (it lowercases using `Locale.ROOT`). Use `StableId.fromHex(...)` when you already have a
+canonical hex identifier.
 
 ---
 

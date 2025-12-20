@@ -170,7 +170,8 @@ object PolicyFlags : Namespace("policy") {
 ```
 
 Note: custom structured values are decoded via reflection at the JSON boundary; keep constructor parameter names stable
-and provide defaults for optional fields.
+and provide defaults for optional fields. If you use code shrinking/obfuscation, keep constructor parameter names and
+ensure Kotlin reflection is available at runtime.
 
 ---
 

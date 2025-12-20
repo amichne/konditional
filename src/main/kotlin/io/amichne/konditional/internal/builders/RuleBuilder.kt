@@ -1,8 +1,8 @@
 package io.amichne.konditional.internal.builders
 
-import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Platform
+import io.amichne.konditional.context.LocaleTag
+import io.amichne.konditional.context.PlatformTag
 import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
@@ -37,9 +37,9 @@ internal data class RuleBuilder<C : Context>(
     private var extension: Evaluable<C> = Placeholder,
     private var note: String? = null,
     private var range: VersionRange = Unbounded(),
-    private val platforms: LinkedHashSet<Platform> = linkedSetOf(),
+    private val platforms: LinkedHashSet<String> = linkedSetOf(),
     private val axisConstraints: MutableList<AxisConstraint> = mutableListOf(),
-    private val locales: LinkedHashSet<AppLocale> = linkedSetOf(),
+    private val locales: LinkedHashSet<String> = linkedSetOf(),
     private val rolloutAllowlist: LinkedHashSet<HexId> = linkedSetOf(),
     private var rampUp: RampUp? = null,
 ) : RuleScope<C> {
@@ -51,16 +51,16 @@ internal data class RuleBuilder<C : Context>(
     /**
      * Implementation of [RuleScope.locales].
      */
-    override fun locales(vararg appLocales: AppLocale) {
-        locales += appLocales
+    override fun locales(vararg appLocales: LocaleTag) {
+        locales += appLocales.map { it.id }
     }
 
     /**
      * Implementation of [RuleScope.platforms].
      */
     @KonditionalDsl
-    override fun platforms(vararg ps: Platform) {
-        platforms += ps
+    override fun platforms(vararg ps: PlatformTag) {
+        platforms += ps.map { it.id }
     }
 
     /**

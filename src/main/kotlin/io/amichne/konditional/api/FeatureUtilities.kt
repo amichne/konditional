@@ -17,7 +17,8 @@ import kotlin.system.measureNanoTime
  *
  * @param context The evaluation contextFn
  * @param registry The registry to use (defaults to the feature's namespace)
- * @return The evaluated value, or null if the feature is not registered
+ * @return The evaluated value
+ * @throws IllegalStateException if the feature is not registered in the registry
  */
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
     context: C,

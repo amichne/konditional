@@ -17,6 +17,8 @@ import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.konditional.api.axisValues
+import io.amichne.konditional.fixtures.utilities.localeIds
+import io.amichne.konditional.fixtures.utilities.platformIds
 import io.amichne.konditional.fixtures.utilities.update
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
@@ -198,8 +200,8 @@ class SnapshotSerializerTest {
             Rule<Context>(
                 rampUp = RampUp.of(50.0),
                 note = "TestNamespace rule",
-                locales = setOf(AppLocale.UNITED_STATES, AppLocale.FRANCE),
-                platforms = setOf(Platform.IOS, Platform.ANDROID),
+                locales = localeIds(AppLocale.UNITED_STATES, AppLocale.FRANCE),
+                platforms = platformIds(Platform.IOS, Platform.ANDROID),
                 versionRange = FullyBound(Version(1, 0, 0), Version(2, 0, 0)),
             )
 
@@ -645,8 +647,14 @@ class SnapshotSerializerTest {
         val rule = flag.values.first().rule
         assertEquals(50.0, rule.rampUp.value)
         assertEquals("TestNamespace rule", rule.note)
-        assertEquals(setOf(AppLocale.UNITED_STATES, AppLocale.FRANCE), rule.baseEvaluable.locales)
-        assertEquals(setOf(Platform.IOS, Platform.ANDROID), rule.baseEvaluable.platforms)
+        assertEquals(
+            setOf(AppLocale.UNITED_STATES.id, AppLocale.FRANCE.id),
+            rule.baseEvaluable.locales,
+        )
+        assertEquals(
+            setOf(Platform.IOS.id, Platform.ANDROID.id),
+            rule.baseEvaluable.platforms,
+        )
         assertIs<FullyBound>(rule.baseEvaluable.versionRange)
     }
 
@@ -753,8 +761,8 @@ class SnapshotSerializerTest {
             Rule<Context>(
                 rampUp = RampUp.of(75.0),
                 note = "Complex rule",
-                locales = setOf(AppLocale.UNITED_STATES, AppLocale.UNITED_STATES),
-                platforms = setOf(Platform.WEB),
+                locales = localeIds(AppLocale.UNITED_STATES, AppLocale.UNITED_STATES),
+                platforms = platformIds(Platform.WEB),
                 versionRange = FullyBound(Version(2, 0, 0), Version(3, 0, 0)),
             )
 
@@ -777,8 +785,14 @@ class SnapshotSerializerTest {
         val deserializedRule = deserializedFlag.values.first().rule
         assertEquals(75.0, deserializedRule.rampUp.value)
         assertEquals("Complex rule", deserializedRule.note)
-        assertEquals(setOf(AppLocale.UNITED_STATES, AppLocale.UNITED_STATES), deserializedRule.baseEvaluable.locales)
-        assertEquals(setOf(Platform.WEB), deserializedRule.baseEvaluable.platforms)
+        assertEquals(
+            setOf(AppLocale.UNITED_STATES.id, AppLocale.UNITED_STATES.id),
+            deserializedRule.baseEvaluable.locales,
+        )
+        assertEquals(
+            setOf(Platform.WEB.id),
+            deserializedRule.baseEvaluable.platforms,
+        )
 
         val versionRange = deserializedRule.baseEvaluable.versionRange
         assertIs<FullyBound>(versionRange)

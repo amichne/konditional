@@ -1,8 +1,6 @@
 package io.amichne.konditional.serialization
 
-import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
@@ -91,14 +89,8 @@ private fun <T : Any, C : Context> ConditionalValue<T, C>.toSerializable(): Seri
         rampUp = rule.rampUp.value,
         rampUpAllowlist = rule.rampUpAllowlist.mapTo(linkedSetOf()) { it.id },
         note = rule.note,
-        locales =
-            rule.baseEvaluable.locales
-                .map { it.name }
-                .toSet(),
-        platforms =
-            rule.baseEvaluable.platforms
-                .map { it.name }
-                .toSet(),
+        locales = rule.baseEvaluable.locales.toSet(),
+        platforms = rule.baseEvaluable.platforms.toSet(),
         versionRange = rule.baseEvaluable.versionRange,
         axes = rule.baseEvaluable.axisConstraints.associate { it.axisId to it.allowedIds },
     )
@@ -334,8 +326,8 @@ private fun <C : Context> SerializableRule.toRule(): Rule<C> =
         rampUp = RampUp.of(rampUp),
         rolloutAllowlist = rampUpAllowlist.mapTo(linkedSetOf()) { HexId(it) },
         note = note,
-        locales = locales.map { AppLocale.valueOf(it) }.toSet(),
-        platforms = platforms.map { Platform.valueOf(it) }.toSet(),
+        locales = locales.toSet(),
+        platforms = platforms.toSet(),
         versionRange = (versionRange ?: Unbounded()),
         axisConstraints = axes.map { (axisId, allowedIds) -> AxisConstraint(axisId, allowedIds) },
     )

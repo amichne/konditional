@@ -6,6 +6,8 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.fixtures.utilities.localeIds
+import io.amichne.konditional.fixtures.utilities.platformIds
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
@@ -46,7 +48,7 @@ class ConditionEvaluationTest {
     fun `Given condition with one matching rule, When evaluating, Then returns rule value`() {
         val rule = Rule<Context>(
             rampUp = RampUp.MAX,
-            locales = setOf(AppLocale.UNITED_STATES),
+            locales = localeIds(AppLocale.UNITED_STATES),
             platforms = emptySet(),
             versionRange = Unbounded(),
         )
@@ -81,14 +83,14 @@ class ConditionEvaluationTest {
         val platformRule = Rule<Context>(
             rampUp = RampUp.MAX,
             locales = emptySet(),
-            platforms = setOf(Platform.IOS),
+            platforms = platformIds(Platform.IOS),
             versionRange = Unbounded(),
         )
 
         val platformAndLocaleRule = Rule<Context>(
             rampUp = RampUp.MAX,
-            locales = setOf(AppLocale.MEXICO),
-            platforms = setOf(Platform.IOS),
+            locales = localeIds(AppLocale.MEXICO),
+            platforms = platformIds(Platform.IOS),
             versionRange = Unbounded(),
         )
 
@@ -125,16 +127,16 @@ class ConditionEvaluationTest {
     fun `Given rules with same specificity, When evaluating, Then insertion order is used as tiebreaker`() {
         val ruleA = Rule<Context>(
             rampUp = RampUp.MAX,
-            locales = setOf(AppLocale.UNITED_STATES),
-            platforms = setOf(Platform.IOS),
+            locales = localeIds(AppLocale.UNITED_STATES),
+            platforms = platformIds(Platform.IOS),
             versionRange = Unbounded(),
             note = "rule-a",
         )
 
         val ruleB = Rule<Context>(
             rampUp = RampUp.MAX,
-            locales = setOf(AppLocale.UNITED_STATES),
-            platforms = setOf(Platform.IOS),
+            locales = localeIds(AppLocale.UNITED_STATES),
+            platforms = platformIds(Platform.IOS),
             versionRange = Unbounded(),
             note = "rule-b",
         )
@@ -305,14 +307,14 @@ class ConditionEvaluationTest {
         val iosOnlyRule = Rule<Context>(
             rampUp = RampUp.MAX,
             locales = emptySet(),
-            platforms = setOf(Platform.IOS),
+            platforms = platformIds(Platform.IOS),
             versionRange = Unbounded(),
         )
 
         val androidOnlyRule = Rule<Context>(
             rampUp = RampUp.MAX,
             locales = emptySet(),
-            platforms = setOf(Platform.ANDROID),
+            platforms = platformIds(Platform.ANDROID),
             versionRange = Unbounded(),
         )
 
@@ -339,15 +341,15 @@ class ConditionEvaluationTest {
     fun `Given rule matching but user not in bucket, When evaluating, Then continues to next rule`() {
         val highSpecificityLowRampUp = Rule<Context>(
             rampUp = RampUp.of(1.0), // Very low ramp-up
-            locales = setOf(AppLocale.UNITED_STATES),
-            platforms = setOf(Platform.IOS),
+            locales = localeIds(AppLocale.UNITED_STATES),
+            platforms = platformIds(Platform.IOS),
             versionRange = Unbounded(),
         )
 
         val lowSpecificityHighRampUp = Rule<Context>(
             rampUp = RampUp.MAX,
             locales = emptySet(),
-            platforms = setOf(Platform.IOS),
+            platforms = platformIds(Platform.IOS),
             versionRange = Unbounded(),
         )
 
@@ -395,8 +397,8 @@ class ConditionEvaluationTest {
 
         val specific = Rule<Context>(
             rampUp = RampUp.MAX,
-            locales = setOf(AppLocale.UNITED_STATES),
-            platforms = setOf(Platform.IOS),
+            locales = localeIds(AppLocale.UNITED_STATES),
+            platforms = platformIds(Platform.IOS),
             versionRange = Unbounded(),
             note = "specific",
         )

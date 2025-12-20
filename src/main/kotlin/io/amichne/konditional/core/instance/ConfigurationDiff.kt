@@ -1,7 +1,5 @@
 package io.amichne.konditional.core.instance
 
-import io.amichne.konditional.context.AppLocale
-import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.features.Feature
@@ -112,8 +110,8 @@ data class ConfigurationDiff internal constructor(
                 data class RuleSnapshot internal constructor(
                     val note: String?,
                     val rollout: RampUp,
-                    val locales: Set<AppLocale>,
-                    val platforms: Set<Platform>,
+                    val locales: Set<String>,
+                    val platforms: Set<String>,
                     val versionRange: VersionRange,
                     val axes: Map<String, Set<String>>,
                     val baseSpecificity: Int,

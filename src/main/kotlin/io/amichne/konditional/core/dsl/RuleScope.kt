@@ -1,8 +1,8 @@
 package io.amichne.konditional.core.dsl
 
-import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Platform
+import io.amichne.konditional.context.LocaleTag
+import io.amichne.konditional.context.PlatformTag
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.id.StableId
@@ -49,18 +49,18 @@ interface RuleScope<C : Context> {
      *
      * The rule will only match contexts with one of the specified locales.
      *
-     * @param appLocales The locales to target
+     * @param appLocales The locales to target (use [io.amichne.konditional.context.AppLocale] or your own [LocaleTag])
      */
-    fun locales(vararg appLocales: AppLocale)
+    fun locales(vararg appLocales: LocaleTag)
 
     /**
      * Specifies which platforms this rule applies to.
      *
      * The rule will only match contexts with one of the specified platforms.
      *
-     * @param ps The platforms to target
+     * @param ps The platforms to target (use [io.amichne.konditional.context.Platform] or your own [PlatformTag])
      */
-    fun platforms(vararg ps: Platform)
+    fun platforms(vararg ps: PlatformTag)
 
     /**
      * Specifies the version range this rule applies to.
