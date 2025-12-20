@@ -108,7 +108,7 @@ update.
 - readers see either the old snapshot or the new snapshot
 - readers never see a partially-applied configuration
 
-This aligns with the evaluation model documented in ["Evaluation"](evaluation).
+This aligns with the evaluation model documented in ["Evaluation"](/evaluation).
 
 ---
 
@@ -208,6 +208,6 @@ payloads.
 
 ## Next steps
 
-- Understand the “if it compiles” claim boundary: ["Theory"](theory)
-- Understand bucketing determinism inputs: ["Targeting & Ramp-ups"](targeting-ramp-ups)
-- See the concrete snapshot/patch payload shapes: ["Persistence & Storage Format"](persistence-format)
+- Understand the “if it compiles” claim boundary: ["Theory"](/theory)
+- Understand bucketing determinism inputs: ["Targeting & Ramp-ups"](/targeting-ramp-ups)
+- See the concrete snapshot/patch payload shapes: ["Persistence & Storage Format"](/persistence-format)

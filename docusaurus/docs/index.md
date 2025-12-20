@@ -240,7 +240,7 @@ when (val result = SnapshotSerializer.applyPatchJson(currentConfig, patchJson)) 
 }
 ```
 
-See [06-remote-config.md](remote-config) and [08-persistence-format.md](persistence-format) for details.
+See [06-remote-config.md](/remote-config) and [08-persistence-format.md](/persistence-format) for details.
 
 ---
 
@@ -288,14 +288,14 @@ Each namespace has independent configuration lifecycle, registry, and serializat
 **Getting started:**
 
 - [Quick Start Guide](getting-started)
-- [Core Concepts](core-concepts)
+- [Core Concepts](/core-concepts)
 
 **Features:**
 
-- [Targeting & Ramp-ups](targeting-ramp-ups)
-- [Evaluation Semantics](evaluation)
-- [Remote Configuration](remote-config)
-- [Persistence Format](persistence-format)
+- [Targeting & Ramp-ups](/targeting-ramp-ups)
+- [Evaluation Semantics](/evaluation)
+- [Remote Configuration](/remote-config)
+- [Persistence Format](/persistence-format)
 
 **Why Konditional:**
 

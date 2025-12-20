@@ -62,7 +62,7 @@ val context = Context(
 ```
 
 `stableId` is the stable input used for deterministic ramp-up bucketing (
-see ["Targeting & Ramp-ups"](targeting-ramp-ups)).
+see ["Targeting & Ramp-ups"](/targeting-ramp-ups)).
 
 ### 3. Add rules after defaults exist (behavior safety)
 
@@ -162,6 +162,6 @@ This keeps behavior pinned to the baseline value while generating comparison tel
 
 ## Next steps
 
-- Learn the primitives: ["Core Concepts"](core-concepts)
-- Understand rule evaluation and determinism: ["Evaluation"](evaluation)
-- Operate remote config safely: ["Remote Configuration"](remote-config)
+- Learn the primitives: ["Core Concepts"](/core-concepts)
+- Understand rule evaluation and determinism: ["Evaluation"](/evaluation)
+- Operate remote config safely: ["Remote Configuration"](/remote-config)

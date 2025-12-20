@@ -224,5 +224,5 @@ flowchart TD
 
 ## Next steps
 
-- Understand evaluation flow and performance: ["Evaluation"](evaluation)
-- Understand the compile-time vs runtime boundary: ["Theory"](theory)
+- Understand evaluation flow and performance: ["Evaluation"](/evaluation)
+- Understand the compile-time vs runtime boundary: ["Theory"](/theory)

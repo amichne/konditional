@@ -164,8 +164,8 @@ sealed class AppDomain(id: String) : Namespace(id) {
 
 ## Next steps
 
-- Learn the building blocks: ["Core Concepts"](core-concepts)
-- Write targeting rules and ramp-ups: ["Targeting & Ramp-ups"](targeting-ramp-ups)
-- Understand evaluation order and determinism: ["Evaluation"](evaluation)
-- Add runtime-validated JSON configuration: ["Remote Configuration"](remote-config)
-- Understand the exact trust boundary: ["Theory"](theory)
+- Learn the building blocks: ["Core Concepts"](/core-concepts)
+- Write targeting rules and ramp-ups: ["Targeting & Ramp-ups"](/targeting-ramp-ups)
+- Understand evaluation order and determinism: ["Evaluation"](/evaluation)
+- Add runtime-validated JSON configuration: ["Remote Configuration"](/remote-config)
+- Understand the exact trust boundary: ["Theory"](/theory)

@@ -223,6 +223,6 @@ PremiumFeatures.ADVANCED_ANALYTICS.evaluate(basicContext) // Compile error (requ
 
 ## Next steps
 
-- Understand rule composition and ramp-ups: ["Targeting & Ramp-ups"](targeting-ramp-ups)
-- Understand evaluation order and determinism: ["Evaluation"](evaluation)
-- Understand the runtime JSON boundary: ["Remote Configuration"](remote-config)
+- Understand rule composition and ramp-ups: ["Targeting & Ramp-ups"](/targeting-ramp-ups)
+- Understand evaluation order and determinism: ["Evaluation"](/evaluation)
+- Understand the runtime JSON boundary: ["Remote Configuration"](/remote-config)
