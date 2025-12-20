@@ -163,5 +163,5 @@ The guarantee is qualified:
 
 ## Next steps
 
-- See the runtime boundary mechanics: ["Remote Configuration"](remote-config)
-- See deterministic behavior and concurrency claims in practice: ["Evaluation"](evaluation)
+- See the runtime boundary mechanics: ["Remote Configuration"](/remote-config)
+- See deterministic behavior and concurrency claims in practice: ["Evaluation"](/evaluation)

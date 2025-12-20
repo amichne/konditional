@@ -7,14 +7,16 @@
     "start": "docusaurus start",
     "build": "docusaurus build",
     "serve": "docusaurus serve",
-    "clear": "docusaurus clear"
+    "clear": "docusaurus clear",
+    "gen-api-docs": "docusaurus gen-api-docs",
+    "clean-api-docs": "docusaurus clean-api-docs",
+    "deploy": "docusaurus deploy"
   },
   "dependencies": {
     "@docusaurus/core": "3.8.1",
     "@docusaurus/preset-classic": "3.8.1",
     "@docusaurus/theme-mermaid": "3.8.1",
     "@mdx-js/react": "^3.0.1",
-    "@scalar/docusaurus": "^0.7.26",
     "clsx": "^2.1.1",
     "docusaurus-plugin-openapi-docs": "^4.5.1",
     "docusaurus-theme-openapi-docs": "^4.5.1",

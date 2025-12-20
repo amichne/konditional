@@ -1,9 +1,9 @@
-import type {Config} from '@docusaurus/types';
-import type * as Redocusaurus from 'redocusaurus';
+import type * as Preset from "@docusaurus/preset-classic";
+import type {Config} from "@docusaurus/types";
+import type * as OpenApiPlugin from "docusaurus-plugin-openapi-docs";
 import {themes as prismThemes} from 'prism-react-renderer';
-import path from "node:path";
 
-const baseUrl = '/konditional/'
+const baseUrl = '/'
 
 const config: Config = {
 
@@ -12,73 +12,66 @@ const config: Config = {
     favicon: 'img/favicon.svg',
 
     url: 'https://amichne.github.io',
-    baseUrl,
+    baseUrl: baseUrl,
+    trailingSlash: true,
 
     onBrokenMarkdownLinks: 'warn',
     onBrokenLinks: 'throw',
 
     organizationName: 'amichne',
     projectName: 'konditional',
+    deploymentBranch: 'gh-pages',
 
     i18n: {
         defaultLocale: 'en',
         locales: ['en'],
     },
 
-    plugins: [],
 
     markdown: {
         mermaid: true,
     },
 
-    themes: ['@docusaurus/theme-mermaid', "docusaurus-theme-openapi-docs"],
-    presets: [
+    plugins: [
         [
-            'classic',
+            'docusaurus-plugin-openapi-docs',
             {
-                docs: {
-                    routeBasePath: '/',
-                    sidebarPath: path.resolve(__dirname, 'sidebars.ts'),
-                    editUrl: 'https://github.com/amichne/konditional/edit/main/docusaurus/',
-                },
-                blog: false,
-                theme: {
-                    customCss: path.resolve(__dirname, 'src/css/custom.css'),
-                },
+                id: "api", // plugin id
+                docsPluginId: "classic", // configured for preset-classic
+                config: {
+                    snapshot: {
+                        specPath: "openapi/openapi.json",
+                        outputDir: "docs/openapi",
+                        sidebarOptions: {
+                            groupPathsBy: "tag",
+                        },
+                    } satisfies OpenApiPlugin.Options,
+                }
             },
-        ],
-        ['redocusaurus',
-            {
-                id: "api",
-                openapi: {
-                    path: 'openapi',
-                    routeBasePath: '/api',
-                },
-                specs: [
-                    {
-                        spec: 'docusaurus/openapi/openapi.json',
-                        id: 'from-manual-file',
-                        route: '/api/from-manual-file',
-                    },
-                    {
-                        spec: 'https://redocly.github.io/redoc/openapi.yaml',
-                        id: 'from-remote-file',
-                        route: '/api/from-remote-file',
-                    },
-                ],
-                theme: {
-                    primaryColor: '#1890ff',
-                },
-            },
-        ] satisfies Redocusaurus.PresetEntry,
+        ]
     ],
+    themes: ["docusaurus-theme-openapi-docs"], // export theme components
+    presets: [
+    [
+      "classic",
+      {
+        docs: {
+          sidebarPath: "./sidebars.ts",
+          docItemComponent: "@theme/ApiItem", // Derived from docusaurus-theme-openapi
+          routeBasePath: '/',
+        },
+        theme: {
+          customCss: "./src/css/custom.css",
+        },
+      } satisfies Preset.Options,
+    ],
+  ],
 
     themeConfig: {
         navbar: {
             title: 'Konditional',
             items: [
                 {type: 'docSidebar', sidebarId: 'docs', position: 'left', label: 'Docs'},
-                {to: '/api/from-manual-file', label: 'API', position: 'left'},
                 {href: 'https://github.com/amichne/konditional', label: 'GitHub', position: 'right'},
             ],
         },
