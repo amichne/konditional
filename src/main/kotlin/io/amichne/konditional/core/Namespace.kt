@@ -17,6 +17,7 @@ import io.amichne.konditional.internal.builders.FlagBuilder
 import io.amichne.konditional.serialization.FeatureRegistry
 import io.amichne.konditional.serialization.NamespaceSnapshotSerializer
 import io.amichne.konditional.values.IdentifierEncoding.SEPARATOR
+import io.amichne.konditional.values.NamespaceId
 import org.jetbrains.annotations.TestOnly
 import java.util.UUID
 import kotlin.reflect.KProperty
@@ -67,7 +68,7 @@ import kotlin.reflect.KProperty
  * @property id Unique identifier for this namespace
  */
 open class Namespace(
-    val id: String,
+    val id: NamespaceId,
     @PublishedApi internal val registry: NamespaceRegistry = NamespaceRegistry(namespaceId = id),
     /**
      * Seed used to construct stable [io.amichne.konditional.values.FeatureId] values for features.
@@ -77,12 +78,18 @@ open class Namespace(
      *
      * Test-only/ephemeral namespaces should provide a per-instance unique seed to avoid collisions.
      */
-    @PublishedApi internal val identifierSeed: String = id,
+    @PublishedApi internal val identifierSeed: String = id.id,
 ) : NamespaceRegistry by registry {
 
+    constructor(
+        id: String,
+        registry: NamespaceRegistry = NamespaceRegistry(namespaceId = NamespaceId.of(id)),
+        identifierSeed: String = id,
+    ) : this(NamespaceId.of(id), registry, identifierSeed)
+
     init {
-        require(id.isNotBlank()) { "Namespace id must not be blank" }
-        require(!id.contains(SEPARATOR)) { "Namespace id must not contain '$SEPARATOR': '$id'" }
+        require(id.id.isNotBlank()) { "Namespace id must not be blank" }
+        require(!id.id.contains(SEPARATOR)) { "Namespace id must not contain '$SEPARATOR': '${id.id}'" }
         require(identifierSeed.isNotBlank()) { "Namespace identifierSeed must not be blank" }
         require(!identifierSeed.contains(SEPARATOR)) {
             "Namespace identifierSeed must not contain '$SEPARATOR': '$identifierSeed'"
@@ -104,8 +111,8 @@ open class Namespace(
 
     @TestOnly
     abstract class TestNamespaceFacade(id: String) : Namespace(
-        id = id,
-        registry = NamespaceRegistry(namespaceId = id),
+        id = NamespaceId.of(id),
+        registry = NamespaceRegistry(namespaceId = NamespaceId.of(id)),
         identifierSeed = UUID.randomUUID().toString(),
     )
 

@@ -32,7 +32,7 @@ class OperationalSerializationTest {
             val knownFeature by boolean<TestContext>(default = false)
         }
 
-        val unknownKey = FeatureId.create(namespace.id, "missing-${UUID.randomUUID()}")
+        val unknownKey = FeatureId.create(namespace.id.id, "missing-${UUID.randomUUID()}")
         val snapshotJson = SnapshotSerializer.defaultMoshi().adapter(SerializableSnapshot::class.java)
             .indent("  ").toJson(
                 SerializableSnapshot(

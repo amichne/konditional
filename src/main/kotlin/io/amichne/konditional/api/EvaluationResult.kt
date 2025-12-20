@@ -3,6 +3,10 @@ package io.amichne.konditional.api
 import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.rules.versions.VersionRange
+import io.amichne.konditional.values.AxisId
+import io.amichne.konditional.values.LocaleTagId
+import io.amichne.konditional.values.NamespaceId
+import io.amichne.konditional.values.PlatformTagId
 
 /**
  * Result of a feature evaluation that is suitable for operational debugging.
@@ -13,7 +17,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  */
 @ConsistentCopyVisibility
 data class EvaluationResult<T : Any> internal constructor(
-    val namespaceId: String,
+    val namespaceId: NamespaceId,
     val featureKey: String,
     val configVersion: String?,
     val mode: Metrics.Evaluation.EvaluationMode,
@@ -58,10 +62,10 @@ data class EvaluationResult<T : Any> internal constructor(
     data class RuleExplanation internal constructor(
         val note: String?,
         val rollout: RampUp,
-        val locales: Set<String>,
-        val platforms: Set<String>,
+        val locales: Set<LocaleTagId>,
+        val platforms: Set<PlatformTagId>,
         val versionRange: VersionRange,
-        val axes: Map<String, Set<String>>,
+        val axes: Map<AxisId, Set<String>>,
         val baseSpecificity: Int,
         val extensionSpecificity: Int,
         val totalSpecificity: Int,

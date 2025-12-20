@@ -1,9 +1,11 @@
 package io.amichne.konditional.core.ops
 
+import io.amichne.konditional.values.NamespaceId
+
 object Metrics {
     @ConsistentCopyVisibility
     data class Evaluation internal constructor(
-        val namespaceId: String,
+        val namespaceId: NamespaceId,
         val featureKey: String,
         val mode: EvaluationMode,
         val durationNanos: Long,
@@ -19,19 +21,19 @@ object Metrics {
 
     @ConsistentCopyVisibility
     data class ConfigLoadMetric internal constructor(
-        val namespaceId: String,
+        val namespaceId: NamespaceId,
         val featureCount: Int,
         val version: String? = null,
     ) {
         companion object {
-            fun of(namespaceId: String, featureCount: Int, version: String?): ConfigLoadMetric =
+            fun of(namespaceId: NamespaceId, featureCount: Int, version: String?): ConfigLoadMetric =
                 ConfigLoadMetric(namespaceId, featureCount, version)
         }
     }
 
     @ConsistentCopyVisibility
     data class ConfigRollbackMetric internal constructor(
-        val namespaceId: String,
+        val namespaceId: NamespaceId,
         val steps: Int,
         val success: Boolean,
         val version: String? = null,

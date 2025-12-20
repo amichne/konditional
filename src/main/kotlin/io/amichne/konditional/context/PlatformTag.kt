@@ -1,5 +1,7 @@
 package io.amichne.konditional.context
 
+import io.amichne.konditional.values.PlatformTagId
+
 /**
  * Stable platform identifier used for rule targeting and serialization.
  *
@@ -8,5 +10,5 @@ package io.amichne.konditional.context
  * against `Context.platform.id` during evaluation, so it must be stable.
  */
 interface PlatformTag {
-    val id: String
+    val id: PlatformTagId
 }

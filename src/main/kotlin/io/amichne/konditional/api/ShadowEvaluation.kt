@@ -70,7 +70,7 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithShadow(
         )
         baselineRegistry.hooks.logger.warn(
             message = {
-                "konditional.shadowMismatch namespaceId=${baseline.namespaceId} key=$key kinds=$mismatchKinds baselineVersion=${baseline.configVersion} candidateVersion=${candidate.configVersion}"
+                "konditional.shadowMismatch namespaceId=${baseline.namespaceId.id} key=$key kinds=$mismatchKinds baselineVersion=${baseline.configVersion} candidateVersion=${candidate.configVersion}"
             },
             throwable = null,
         )

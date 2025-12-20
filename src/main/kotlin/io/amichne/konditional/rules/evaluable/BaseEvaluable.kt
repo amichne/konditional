@@ -4,6 +4,8 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Context.Companion.getAxisValue
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
+import io.amichne.konditional.values.LocaleTagIdValue
+import io.amichne.konditional.values.PlatformTagIdValue
 
 /**
  * Evaluable implementation for standard user/client matching criteria.
@@ -31,8 +33,8 @@ import io.amichne.konditional.rules.versions.VersionRange
  * @see io.amichne.konditional.rules.Rule
  */
 internal data class BaseEvaluable<C : Context>(
-    val locales: Set<String> = emptySet(),
-    val platforms: Set<String> = emptySet(),
+    val locales: Set<LocaleTagIdValue> = emptySet(),
+    val platforms: Set<PlatformTagIdValue> = emptySet(),
     val versionRange: VersionRange = Unbounded(),
     val axisConstraints: List<AxisConstraint> = emptyList(),
 ) : Evaluable<C> {
@@ -45,8 +47,8 @@ internal data class BaseEvaluable<C : Context>(
      * @return true if contextFn matches all specified constraints, false otherwise
      */
     override fun matches(context: C): Boolean =
-        (locales.isEmpty() || context.locale.id in locales) &&
-            (platforms.isEmpty() || context.platform.id in platforms) &&
+        (locales.isEmpty() || LocaleTagIdValue.from(context.locale.id) in locales) &&
+            (platforms.isEmpty() || PlatformTagIdValue.from(context.platform.id) in platforms) &&
             (!versionRange.hasBounds() || versionRange.contains(context.appVersion)) &&
             axisConstraints.all { (context.getAxisValue(it.axisId) ?: return false).id in it.allowedIds }
 

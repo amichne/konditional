@@ -10,6 +10,7 @@ import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.core.ops.RegistryHooks
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
+import io.amichne.konditional.values.NamespaceId
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -68,7 +69,7 @@ import java.util.concurrent.atomic.AtomicReference
  * @since 0.0.2
  */
 internal class InMemoryNamespaceRegistry(
-    override val namespaceId: String,
+    override val namespaceId: NamespaceId,
     hooks: RegistryHooks = RegistryHooks.None,
     private val historyLimit: Int = DEFAULT_HISTORY_LIMIT,
 ) : NamespaceRegistry {

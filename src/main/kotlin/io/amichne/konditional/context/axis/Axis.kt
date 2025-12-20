@@ -1,6 +1,7 @@
 package io.amichne.konditional.context.axis
 
 import io.amichne.konditional.core.registry.AxisRegistry
+import io.amichne.konditional.values.AxisId
 import kotlin.reflect.KClass
 
 /**
@@ -45,10 +46,15 @@ import kotlin.reflect.KClass
  * Provide explicit, stable ids that are independent of class names.
  */
 abstract class Axis<T>(
-    val id: String,
+    val id: AxisId,
     val valueClass: KClass<T>,
 ) where T : AxisValue<T>, T : Enum<T> {
     open val isImplicit: Boolean = false
+
+    constructor(
+        id: String,
+        valueClass: KClass<T>,
+    ) : this(AxisId.of(id), valueClass)
 
     init {
         // Auto-register this axis upon creation
@@ -59,14 +65,14 @@ abstract class Axis<T>(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Axis<*>) return false
-        return id == other.id && valueClass == other.valueClass
+        return id.id == other.id.id && valueClass == other.valueClass
     }
 
     override fun hashCode(): Int {
-        return 31 * id.hashCode() + valueClass.hashCode()
+        return 31 * id.id.hashCode() + valueClass.hashCode()
     }
 
     override fun toString(): String {
-        return "Axis(id='$id', valueClass=${valueClass.simpleName})"
+        return "Axis(id='${id.id}', valueClass=${valueClass.simpleName})"
     }
 }

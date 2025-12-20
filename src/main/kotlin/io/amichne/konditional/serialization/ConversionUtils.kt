@@ -26,6 +26,9 @@ import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.evaluable.AxisConstraint
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.values.FeatureId
+import io.amichne.konditional.values.AxisIdValue
+import io.amichne.konditional.values.LocaleTagIdValue
+import io.amichne.konditional.values.PlatformTagIdValue
 import io.amichne.kontracts.schema.ObjectSchema
 import io.amichne.kontracts.value.JsonObject
 import kotlin.reflect.KClass
@@ -89,10 +92,10 @@ private fun <T : Any, C : Context> ConditionalValue<T, C>.toSerializable(): Seri
         rampUp = rule.rampUp.value,
         rampUpAllowlist = rule.rampUpAllowlist.mapTo(linkedSetOf()) { it.id },
         note = rule.note,
-        locales = rule.baseEvaluable.locales.toSet(),
-        platforms = rule.baseEvaluable.platforms.toSet(),
+        locales = rule.baseEvaluable.locales.mapTo(linkedSetOf()) { it.id },
+        platforms = rule.baseEvaluable.platforms.mapTo(linkedSetOf()) { it.id },
         versionRange = rule.baseEvaluable.versionRange,
-        axes = rule.baseEvaluable.axisConstraints.associate { it.axisId to it.allowedIds },
+        axes = rule.baseEvaluable.axisConstraints.associate { it.axisId.id to it.allowedIds },
     )
 
 /**
@@ -326,10 +329,10 @@ private fun <C : Context> SerializableRule.toRule(): Rule<C> =
         rampUp = RampUp.of(rampUp),
         rolloutAllowlist = rampUpAllowlist.mapTo(linkedSetOf()) { HexId(it) },
         note = note,
-        locales = locales.toSet(),
-        platforms = platforms.toSet(),
+        locales = locales.mapTo(linkedSetOf()) { LocaleTagIdValue(it) },
+        platforms = platforms.mapTo(linkedSetOf()) { PlatformTagIdValue(it) },
         versionRange = (versionRange ?: Unbounded()),
-        axisConstraints = axes.map { (axisId, allowedIds) -> AxisConstraint(axisId, allowedIds) },
+        axisConstraints = axes.map { (axisId, allowedIds) -> AxisConstraint(AxisIdValue(axisId), allowedIds) },
     )
 
 /**

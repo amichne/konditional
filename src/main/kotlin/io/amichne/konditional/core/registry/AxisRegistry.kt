@@ -49,26 +49,28 @@ internal object AxisRegistry {
         val valueClass = axis.valueClass as KClass<out Enum<*>>
         val existingByType = byValueClass[valueClass]
         if (existingByType != null && existingByType !== axis) {
-            if (!axis.isImplicit && existingByType.isImplicit && existingByType.id == axis.id) {
+            if (!axis.isImplicit && existingByType.isImplicit && existingByType.id.id == axis.id.id) {
                 byValueClass[valueClass] = axis
-                byId[axis.id] = axis
+                byId[axis.id.id] = axis
                 return
             }
             throw IllegalArgumentException(
                 "Axis already registered for type ${valueClass.simpleName}: existing=$existingByType, attempted=$axis",
             )
         }
-        val existingById = byId[axis.id]
+        val existingById = byId[axis.id.id]
         if (existingById != null && existingById !== axis) {
             if (!axis.isImplicit && existingById.isImplicit && existingById.valueClass == axis.valueClass) {
                 byValueClass[valueClass] = axis
-                byId[axis.id] = axis
+                byId[axis.id.id] = axis
                 return
             }
-            throw IllegalArgumentException("Axis already registered for id ${axis.id}: existing=$existingById, attempted=$axis")
+            throw IllegalArgumentException(
+                "Axis already registered for id ${axis.id.id}: existing=$existingById, attempted=$axis"
+            )
         }
         byValueClass[valueClass] = axis
-        byId[axis.id] = axis
+        byId[axis.id.id] = axis
     }
 
     /**

@@ -5,6 +5,7 @@ import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.AxisValues
 import io.amichne.konditional.core.dsl.AxisValuesScope
 import io.amichne.konditional.core.dsl.KonditionalDsl
+import io.amichne.konditional.values.AxisIdValue
 
 /**
  * Internal builder implementation for constructing [AxisValues] instances.
@@ -27,16 +28,16 @@ import io.amichne.konditional.core.dsl.KonditionalDsl
  */
 @KonditionalDsl
 @PublishedApi
-internal class AxisValuesBuilder(val map: MutableMap<String, AxisValue<*>> = mutableMapOf<String, AxisValue<*>>()) :
+internal class AxisValuesBuilder(val map: MutableMap<AxisIdValue, AxisValue<*>> = mutableMapOf()) :
     AxisValuesScope,
-    MutableMap<String, AxisValue<*>> by map {
+    MutableMap<AxisIdValue, AxisValue<*>> by map {
 
     /**
      * Internal accessor for extracting accumulated values.
      *
      * Used by other builders that need to access the raw map.
      */
-    internal fun getValues(): Map<String, AxisValue<*>> = map.toMap()
+    internal fun getValues(): Map<AxisIdValue, AxisValue<*>> = map.toMap()
 
     /**
      * Sets a value for the given axis.
@@ -48,7 +49,7 @@ internal class AxisValuesBuilder(val map: MutableMap<String, AxisValue<*>> = mut
         require(axis.valueClass == value::class) {
             "Axis ${axis.id} expects ${axis.valueClass.simpleName}, got ${value::class.simpleName}"
         }
-        map[axis.id] = value
+        map[AxisIdValue.from(axis.id)] = value
     }
 
     /**

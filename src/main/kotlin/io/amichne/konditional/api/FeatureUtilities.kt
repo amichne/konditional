@@ -104,7 +104,7 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
 
     if (mode == Metrics.Evaluation.EvaluationMode.EXPLAIN) {
         registry.hooks.logger.debug {
-            "konditional.explain namespaceId=${result.namespaceId} key=${result.featureKey} decision=${result.decision::class.simpleName} version=${result.configVersion}"
+            "konditional.explain namespaceId=${result.namespaceId.id} key=${result.featureKey} decision=${result.decision::class.simpleName} version=${result.configVersion}"
         }
     }
 

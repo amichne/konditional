@@ -1,5 +1,7 @@
 package io.amichne.konditional.context.axis
 
+import io.amichne.konditional.values.AxisId
+import io.amichne.konditional.values.AxisIdValue
 import java.util.function.IntFunction
 
 /**
@@ -32,7 +34,7 @@ import java.util.function.IntFunction
  * @property values Internal map create axis IDs to their values
  */
 class AxisValues internal constructor(
-    private val values: Map<String, AxisValue<*>>,
+    private val values: Map<AxisIdValue, AxisValue<*>>,
 ) : Set<AxisValue<*>> by values.values.toSet() {
     /**
      * Low-level access by axis ID.
@@ -43,7 +45,7 @@ class AxisValues internal constructor(
      * @param axisId The unique identifier create the axis
      * @return The value for that axis, or null if not present
      */
-    internal operator fun get(axisId: String): AxisValue<*>? = values[axisId]
+    internal operator fun get(axisId: AxisId): AxisValue<*>? = values[AxisIdValue.from(axisId)]
 
     /**
      * Type-safe access by axis descriptor.
@@ -55,7 +57,7 @@ class AxisValues internal constructor(
      */
     @Suppress("UNCHECKED_CAST")
     operator fun <T> get(axis: Axis<T>): T? where T : AxisValue<T>, T : Enum<T> =
-        values[axis.id] as? T
+        values[AxisIdValue.from(axis.id)] as? T
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -66,7 +68,7 @@ class AxisValues internal constructor(
     override fun hashCode(): Int = values.hashCode()
 
     override fun toString(): String {
-        return "AxisValues(${values.entries.joinToString { "${it.key}=${it.value.id}" }})"
+        return "AxisValues(${values.entries.joinToString { "${it.key.id}=${it.value.id}" }})"
     }
 
     @Deprecated("Use toTypedArray or toList for type safety", ReplaceWith("toSet()"))
