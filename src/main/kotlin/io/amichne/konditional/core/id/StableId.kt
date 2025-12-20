@@ -1,5 +1,7 @@
 package io.amichne.konditional.core.id
 
+import java.util.Locale
+
 /**
  * StableId represents a stable identifier for a user or device.
  *
@@ -31,11 +33,23 @@ sealed interface StableId {
          *
          * @throws IllegalArgumentException if the input is blank.
          */
-        fun of(input: String): StableId = require(input.isNotBlank()) { "StableId input must not be blank" }
-            .run {
-                Instance(
-                    HexId(input.lowercase().encodeToByteArray().joinToString(separator = "") { "%02x".format(it) })
-                )
-            }
+        fun of(input: String): StableId =
+            input
+                .also { require(it.isNotBlank()) { "StableId input must not be blank" } }
+                .lowercase(Locale.ROOT)
+                .encodeToByteArray()
+                .joinToString(separator = "") { "%02x".format(it) }
+                .let { Instance(HexId(it)) }
+
+        /**
+         * Creates a StableId from a pre-computed hex identifier.
+         *
+         * The input is normalized to lowercase and validated as a canonical hex string.
+         */
+        fun fromHex(hexId: String): StableId =
+            hexId
+                .also { require(it.isNotBlank()) { "StableId hex input must not be blank" } }
+                .lowercase(Locale.ROOT)
+                .let { Instance(HexId(it)) }
     }
 }

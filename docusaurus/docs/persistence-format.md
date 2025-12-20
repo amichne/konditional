@@ -116,6 +116,9 @@ Valid `type` values:
 - `MAX_BOUND` (requires `max`)
 - `MIN_AND_MAX_BOUND` (requires `min` and `max`)
 
+Locale and platform values are serialized as their stable ids (`LocaleTag.id` / `PlatformTag.id`). The built-in
+`AppLocale` and `Platform` enums use their enum names as ids, so existing snapshots remain stable.
+
 ---
 
 ## Ramp-up allowlists (`rampUpAllowlist`)
@@ -131,6 +134,7 @@ To generate a value for remote config, use the same normalization as the runtime
 
 ```kotlin
 val stableIdHex = StableId.of("user-123").id // "757365722d313233"
+val stableIdFromHex = StableId.fromHex(stableIdHex)
 ```
 
 ---

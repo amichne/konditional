@@ -88,6 +88,7 @@ internal object AxisRegistry {
         axisFor(type) ?: registerImplicit(type)
 
     private fun <T> registerImplicit(type: KClass<out T>): Axis<T> where T : AxisValue<T>, T : Enum<T> {
+        // Implicit ids derive from class names; avoid this path if names can be obfuscated.
         val axisId = type.qualifiedName ?: type.simpleName
         require(!axisId.isNullOrBlank()) {
             "Cannot derive axis id for ${type.qualifiedName ?: type}"

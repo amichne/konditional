@@ -40,6 +40,9 @@ import kotlin.reflect.KClass
  * @param valueClass The runtime class of the value type [T].
  *      This is intentionally passed explicitly to avoid fragile reflection-based extraction from generic supertypes.
  * @property id A stable, unique identifier for this axis
+ *
+ * If you use code shrinking/obfuscation, avoid relying on implicitly derived ids.
+ * Provide explicit, stable ids that are independent of class names.
  */
 abstract class Axis<T>(
     val id: String,

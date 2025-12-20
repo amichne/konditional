@@ -70,7 +70,7 @@ konditional/
 #### **context/** - Evaluation Context
 
 - `Context.kt`: Base interface requiring locale, platform, appVersion, stableId
-- `Platform.kt`: Enum (IOS, ANDROID, WEB, DESKTOP)
+- `Platform.kt`: Enum (IOS, ANDROID, WEB)
 - `AppLocale.kt`: Supported locales (UNITED_STATES, FRANCE, DE_DE, etc.)
 - `Version.kt`: Semantic versioning with comparison
 - `RampUp.kt`: Value class enforcing 0-100% rollout with SHA-256 bucketing

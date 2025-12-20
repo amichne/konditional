@@ -1,9 +1,7 @@
 package io.amichne.konditional.rules.evaluable
 
-import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Context.Companion.getAxisValue
-import io.amichne.konditional.context.Platform
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
@@ -15,8 +13,8 @@ import io.amichne.konditional.rules.versions.VersionRange
  * empty, any value for that dimension matches.
  *
  * Matching semantics:
- * - **Locales**: Empty set matches all locales; otherwise contextFn locale must be in the set
- * - **Platforms**: Empty set matches all platforms; otherwise contextFn platform must be in the set
+ * - **Locales**: Empty set matches all locales; otherwise contextFn locale id must be in the set
+ * - **Platforms**: Empty set matches all platforms; otherwise contextFn platform id must be in the set
  * - **VersionRange**: Unbounded range matches all versions; otherwise contextFn version must be in range
  *
  * Specificity calculation:
@@ -25,16 +23,16 @@ import io.amichne.konditional.rules.versions.VersionRange
  * - More specific rules are evaluated before less specific ones
  *
  * @param C The contextFn type that this evaluator evaluates against
- * @property locales Set create target locales (empty = match all)
- * @property platforms Set create target platforms (empty = match all)
+ * @property locales Set create target locale ids (empty = match all)
+ * @property platforms Set create target platform ids (empty = match all)
  * @property versionRange Version range constraint (Unbounded = match all)
  *
  * @see Evaluable
  * @see io.amichne.konditional.rules.Rule
  */
 internal data class BaseEvaluable<C : Context>(
-    val locales: Set<AppLocale> = emptySet(),
-    val platforms: Set<Platform> = emptySet(),
+    val locales: Set<String> = emptySet(),
+    val platforms: Set<String> = emptySet(),
     val versionRange: VersionRange = Unbounded(),
     val axisConstraints: List<AxisConstraint> = emptyList(),
 ) : Evaluable<C> {
@@ -47,8 +45,8 @@ internal data class BaseEvaluable<C : Context>(
      * @return true if contextFn matches all specified constraints, false otherwise
      */
     override fun matches(context: C): Boolean =
-        (locales.isEmpty() || context.locale in locales) &&
-            (platforms.isEmpty() || context.platform in platforms) &&
+        (locales.isEmpty() || context.locale.id in locales) &&
+            (platforms.isEmpty() || context.platform.id in platforms) &&
             (!versionRange.hasBounds() || versionRange.contains(context.appVersion)) &&
             axisConstraints.all { (context.getAxisValue(it.axisId) ?: return false).id in it.allowedIds }
 

@@ -8,6 +8,7 @@ import io.amichne.konditional.context.RampUp.Companion.MAX
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Configuration
+import io.amichne.konditional.fixtures.utilities.localeIds
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded
@@ -78,7 +79,7 @@ class FlagEntryTypeSafetyTest {
     fun `Given ContextualFlagDefinition, When evaluating, Then returns correct value type`() {
         val rule = Rule<Context>(
             rampUp = MAX,
-            locales = setOf(AppLocale.UNITED_STATES),
+            locales = localeIds(AppLocale.UNITED_STATES),
             platforms = emptySet(),
             versionRange = Unbounded(),
         )

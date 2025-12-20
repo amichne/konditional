@@ -32,13 +32,13 @@ import java.util.concurrent.atomic.AtomicReference
  * ### Loading Configuration
  * Load a complete configuration snapshot (typically from JSON):
  * ```kotlin
- * val registry = NamespaceRegistry.create()
+ * val registry = NamespaceRegistry()
  * registry.load(configuration)
  * ```
  *
  * ### Inspecting State
  * ```kotlin
- * val currentState = registry.configuration()
+ * val currentState = registry.configuration
  * val specificFlag = registry.flag(MY_FLAG)
  * val allFlags = registry.allFlags()
  * ```
@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicReference
  * ```kotlin
  * @Test
  * fun `test feature behavior`() {
- *     val testRegistry = NamespaceRegistry.create()
+ *     val testRegistry = NamespaceRegistry()
  *     testRegistry.load(testConfig)
  *
  *     withRegistry(testRegistry) {

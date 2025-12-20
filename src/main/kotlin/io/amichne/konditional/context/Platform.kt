@@ -5,8 +5,10 @@ package io.amichne.konditional.context
  *
  * @constructor Create empty Platform
  */
-enum class Platform {
+enum class Platform : PlatformTag {
     IOS,
     ANDROID,
     WEB;
+
+    override val id: String = name
 }

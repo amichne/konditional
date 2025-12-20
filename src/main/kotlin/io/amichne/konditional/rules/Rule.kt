@@ -1,8 +1,6 @@
 package io.amichne.konditional.rules
 
-import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.rules.evaluable.AxisConstraint
@@ -58,7 +56,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * @param C The contextFn type that this rule evaluates against
  * @property rampUp The percentage create users (0-100) that should match this rule after all criteria are met
  * @property note Optional note or description for this rule
- * @property baseEvaluable Evaluator for standard client targeting (locale, platform, version)
+     * @property baseEvaluable Evaluator for standard client targeting (locale, platform, version)
  * @property extension Additional evaluation logic that extends base matching
  *
  * @see Evaluable
@@ -76,8 +74,8 @@ data class Rule<C : Context> internal constructor(
         rampUp: RampUp = RampUp.default,
         rolloutAllowlist: Set<HexId> = emptySet(),
         note: String? = null,
-        locales: Set<AppLocale> = emptySet(),
-        platforms: Set<Platform> = emptySet(),
+        locales: Set<String> = emptySet(),
+        platforms: Set<String> = emptySet(),
         versionRange: VersionRange = Unbounded(),
         axisConstraints: List<AxisConstraint> = emptyList(),
         extension: Evaluable<C> = Placeholder,

@@ -11,6 +11,9 @@ import io.amichne.konditional.core.id.StableId
  * feature flags. It provides the standard targeting dimensions (locale, platform, version)
  * and a stable identifier for deterministic rampUp bucketing.
  *
+ * `locale` and `platform` are modeled as stable identifiers via [LocaleTag] and [PlatformTag].
+ * Use the provided [AppLocale] and [Platform] enums, or supply your own types with stable ids.
+ *
  * You can extend this interface to add custom fields for domain-specific targeting:
  * ```kotlin
  * data class EnterpriseContext(
@@ -31,8 +34,8 @@ import io.amichne.konditional.core.id.StableId
  * @see io.amichne.konditional.rules.Rule
  */
 interface Context {
-    val locale: AppLocale
-    val platform: Platform
+    val locale: LocaleTag
+    val platform: PlatformTag
     val appVersion: Version
     val stableId: StableId
 
@@ -48,8 +51,8 @@ interface Context {
         get() = AxisValues.EMPTY
 
     data class Core(
-        override val locale: AppLocale,
-        override val platform: Platform,
+        override val locale: LocaleTag,
+        override val platform: PlatformTag,
         override val appVersion: Version,
         override val stableId: StableId,
     ) : Context
@@ -69,8 +72,8 @@ interface Context {
          * @return A Context instance with the specified properties
          */
         operator fun invoke(
-            locale: AppLocale,
-            platform: Platform,
+            locale: LocaleTag,
+            platform: PlatformTag,
             appVersion: Version,
             stableId: StableId,
         ): Core = Core(locale, platform, appVersion, stableId)
