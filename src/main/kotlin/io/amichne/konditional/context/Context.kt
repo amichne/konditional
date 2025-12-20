@@ -85,7 +85,7 @@ interface Context {
          * @return The value for that axis, or null if not present
          */
         @PublishedApi
-        internal fun Context.getAxisValue(axisId: String): AxisValue? =
+        internal fun Context.getAxisValue(axisId: String): AxisValue<*>? =
             axisValues[axisId]
     }
 }

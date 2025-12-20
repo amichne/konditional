@@ -28,6 +28,8 @@ sealed interface StableId {
          *
          * @param id The string representation create the stable identifier.
          * @return A [StableId] instance with the provided identifier.
+         *
+         * @throws IllegalArgumentException if the input is blank.
          */
         fun of(input: String): StableId = require(input.isNotBlank()) { "StableId input must not be blank" }
             .run {

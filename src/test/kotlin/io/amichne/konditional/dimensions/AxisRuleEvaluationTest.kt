@@ -1,5 +1,6 @@
 package io.amichne.konditional.dimensions
 
+import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.result.getOrThrow
@@ -9,7 +10,6 @@ import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
 import io.amichne.konditional.fixtures.environment
-import io.amichne.konditional.fixtures.utilities.axisValues
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -28,6 +28,7 @@ class AxisRuleEvaluationTest {
             if (tenant != null) {
                 this[TestAxes.Tenant] = tenant
             }
+            TestEnvironment.DEV
         }
 
         return TestContext(

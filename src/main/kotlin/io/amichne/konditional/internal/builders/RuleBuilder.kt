@@ -11,6 +11,7 @@ import io.amichne.konditional.core.dsl.RuleScope
 import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.registry.AxisRegistry
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.evaluable.AxisConstraint
@@ -79,10 +80,17 @@ internal data class RuleBuilder<C : Context>(
     /**
      * Implementation of [RuleScope.axis].
      */
+    @Deprecated(
+        message = "Use axis(axis: Axis<T>, vararg values: T) instead for better type safety.",
+        replaceWith = ReplaceWith(
+            "axis(*values)"
+        ),
+        level = DeprecationLevel.WARNING,
+    )
     override fun <T> axis(
         axis: Axis<T>,
         vararg values: T,
-    ) where T : AxisValue, T : Enum<T> {
+    ) where T : AxisValue<T>, T : Enum<T> {
         val allowedIds = values.mapTo(linkedSetOf()) { it.id }
         val idx = axisConstraints.indexOfFirst { it.axisId == axis.id }
         if (idx >= 0) {
@@ -93,6 +101,12 @@ internal data class RuleBuilder<C : Context>(
         } else {
             axisConstraints += AxisConstraint(axis.id, allowedIds)
         }
+    }
+
+    override fun <T> axis(vararg values: T) where T : AxisValue<T>, T : Enum<T> {
+        require(values.isNotEmpty()) { "axis(...) requires at least one value to infer the axis type." }
+        @Suppress("DEPRECATION")
+        axis(AxisRegistry.axisForOrRegister(values.first()::class), *values)
     }
 
     /**

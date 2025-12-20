@@ -9,11 +9,10 @@ import io.amichne.konditional.core.instance.ConfigurationMetadata
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.result.getOrThrow
-import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.environment
-import io.amichne.konditional.fixtures.utilities.axisValues
+import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.internal.serialization.models.FlagValue
 import io.amichne.konditional.internal.serialization.models.SerializableFlag
 import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
@@ -67,7 +66,9 @@ class OperationalSerializationTest {
     fun `axis constraints roundtrip preserves evaluation semantics`() {
         val namespace = object : Namespace("axis-roundtrip-${UUID.randomUUID()}") {
             val envScopedFlag by boolean<TestContext>(default = false) {
-                rule(true) { axis(TestAxes.Environment, TestEnvironment.PROD) }
+                rule(true) {
+                    axis(TestEnvironment.PROD)
+                }
             }
         }
 

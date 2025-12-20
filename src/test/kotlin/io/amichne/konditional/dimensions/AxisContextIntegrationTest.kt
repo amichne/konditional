@@ -7,7 +7,8 @@ import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
 import io.amichne.konditional.fixtures.environment
 import io.amichne.konditional.fixtures.tenant
-import io.amichne.konditional.fixtures.utilities.axisValues
+import io.amichne.konditional.api.axisValues
+import io.amichne.konditional.core.dsl.unaryPlus
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNull
@@ -68,4 +69,23 @@ class AxisContextIntegrationTest {
         assertNull(ctx.axis(TestAxes.Tenant), "Tenant should be null when not set")
         assertNull(ctx.axis<TestTenant>(), "Type-based access should also return null")
     }
+
+    @Test
+    fun `axis values auto-register axis when not explicitly defined`() {
+        val values = axisValues {
+            +EphemeralEnvironment.PROD
+        }
+
+        val ctx = TestContext(axisValues = values)
+
+        Assertions.assertEquals(
+            EphemeralEnvironment.PROD,
+            ctx.axis<EphemeralEnvironment>(),
+        )
+    }
+}
+
+private enum class EphemeralEnvironment(override val id: String) :
+    io.amichne.konditional.context.axis.AxisValue<EphemeralEnvironment> {
+    PROD("prod"),
 }

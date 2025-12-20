@@ -1,5 +1,6 @@
 package io.amichne.konditional.context.axis
 
+
 /**
  * A value that exists along some axis (environment, region, tenant, etc.).
  *
@@ -11,7 +12,7 @@ package io.amichne.konditional.context.axis
  *
  * Define an enum that implements this interface:
  * ```kotlin
- * enum class Environment(override val id: String) : AxisValue {
+ * enum class Environment(override val id: String) : AxisValue<Environment> {
  *     PROD("prod"),
  *     STAGE("stage"),
  *     DEV("dev")
@@ -23,8 +24,10 @@ package io.amichne.konditional.context.axis
  * - Rule matching and evaluation
  * - Storage and retrieval
  *
+ * Each enum type that implements [AxisValue] must have exactly one [Axis] registered.
+ *
  * @property id A stable, unique identifier for this value within its axis
  */
-interface AxisValue {
+interface AxisValue<T> where T : Enum<T> {
     val id: String
 }

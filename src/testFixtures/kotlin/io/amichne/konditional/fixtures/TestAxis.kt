@@ -16,13 +16,17 @@ import io.amichne.konditional.core.result.getOrThrow
 /**
  * Test-only enums representing domain-specific axis values.
  */
-enum class TestEnvironment(override val id: String) : AxisValue {
+enum class TestEnvironment(
+    override val id: String,
+) : AxisValue<TestEnvironment> {
     DEV("dev"),
     STAGE("stage"),
     PROD("prod"),
 }
 
-enum class TestTenant(override val id: String) : AxisValue {
+enum class TestTenant(
+    override val id: String,
+) : AxisValue<TestTenant> {
     CONSUMER("consumer"),
     SME("sme"),
     ENTERPRISE("enterprise")
@@ -68,6 +72,11 @@ data class TestContext(
  * Test-only feature container exercising the dimension-based DSL.
  */
 object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
+    init {
+        // Ensure axes are registered before rule definitions are built.
+        TestAxes.Environment
+        TestAxes.Tenant
+    }
 
     /**
      * Enabled only when environment == PROD.
@@ -75,7 +84,7 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      */
     val envScopedFlag by boolean<TestContext>(default = false) {
         rule(true) {
-            axis(TestAxes.Environment, TestEnvironment.PROD)
+            axis(TestEnvironment.PROD)
         }
     }
 
@@ -87,8 +96,8 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      */
     val envAndTenantScopedFlag by boolean<TestContext>(default = false) {
         rule(true) {
-            axis(TestAxes.Environment, TestEnvironment.STAGE, TestEnvironment.PROD)
-            axis(TestAxes.Tenant, TestTenant.ENTERPRISE)
+            axis(TestEnvironment.PROD, TestEnvironment.STAGE)
+            axis(TestTenant.ENTERPRISE)
         }
     }
 
@@ -101,8 +110,8 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      */
     val fallbackRuleFlag by boolean<TestContext>(default = false) {
         rule(true) {
-            axis(TestAxes.Environment, TestEnvironment.PROD)
-            axis(TestAxes.Tenant, TestTenant.ENTERPRISE)
+            axis(TestEnvironment.PROD)
+            axis(TestTenant.ENTERPRISE)
         }
 
         rule(true) {
@@ -118,8 +127,8 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      */
     val repeatedAxisFlag by boolean<TestContext>(default = false) {
         rule(true) {
-            axis(TestAxes.Environment, TestEnvironment.DEV)
-            axis(TestAxes.Environment, TestEnvironment.STAGE)
+            axis(TestEnvironment.DEV)
+            axis(TestEnvironment.STAGE)
         }
     }
 }
@@ -132,9 +141,11 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
  * you can use axis(TestEnvironment.PROD) directly.
  */
 fun <C : Context> RuleScope<C>.environments(vararg envs: TestEnvironment) {
-    axis(TestAxes.Environment, *envs)  // Explicit axis API
+    axis(*envs)
+    // Explicit axis API
 }
 
 fun <C : Context> RuleScope<C>.tenants(vararg tenants: TestTenant) {
-    axis(TestAxes.Tenant, *tenants)  // Explicit axis API
+    axis(*tenants)
+    // Explicit axis API
 }

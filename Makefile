@@ -1,4 +1,4 @@
-.PHONY: help clean test build publish docs-serve docs-build docs-clean docs-install venv-create all docs-docusaurus-install docs-docusaurus-serve docs-docusaurus-build
+.PHONY: help clean test build publish docs-serve docs-build docs-clean docs-install venv-create all docs-docusaurus-install docs-docusaurus-serve docs-docusaurus-build detekt detekt-baseline
 
 # Default target
 .DEFAULT_GOAL := help
@@ -56,6 +56,15 @@ compile: ## Compile Kotlin code
 compile-test: ## Compile test code
 	@echo "$(BLUE)Compiling test code...$(NC)"
 	$(GRADLEW) compileTestKotlin
+
+detekt: ## Run Detekt static analysis
+	@echo "$(BLUE)Running Detekt...$(NC)"
+	$(GRADLEW) detekt
+
+detekt-baseline: ## Generate Detekt baseline (suppress existing issues)
+	@echo "$(BLUE)Generating Detekt baseline...$(NC)"
+	$(GRADLEW) detektBaseline
+	@echo "$(GREEN)Detekt baseline generated at detekt-baseline.xml$(NC)"
 
 ##@ Documentation
 

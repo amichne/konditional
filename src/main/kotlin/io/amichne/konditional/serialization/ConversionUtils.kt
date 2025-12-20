@@ -145,7 +145,13 @@ private fun SerializableFlag.toFlagPair(): ParseResult<Pair<Feature<*, *, *>, Fl
             runCatching { toFlagDefinition(conditional) }
                 .fold(
                     onSuccess = { ParseResult.Success(conditional to it) },
-                    onFailure = { ParseResult.Failure(ParseError.InvalidSnapshot(it.message ?: "Failed to decode flag")) },
+                    onFailure = {
+                        ParseResult.Failure(
+                            ParseError.InvalidSnapshot(
+                                it.message ?: "Failed to decode flag"
+                            )
+                        )
+                    },
                 )
         }
 

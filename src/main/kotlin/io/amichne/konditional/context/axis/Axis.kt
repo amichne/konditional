@@ -12,13 +12,13 @@ import kotlin.reflect.KClass
  * ## Auto-Registration
  *
  * Axes automatically register themselves with the [AxisRegistry] upon creation. This enables
- * type-based APIs where the axis can be inferred from the value type.
+ * ID-based lookup, with type-based APIs resolved by matching the value type to a registered axis.
  *
  * ## Usage
  *
  * Define an axis by extending this abstract class:
  * ```kotlin
- * enum class Environment(override val id: String) : AxisValue {
+ * enum class Environment(override val id: String) : AxisValue<Environment> {
  *     PROD("prod"), STAGE("stage"), DEV("dev")
  * }
  *
@@ -37,18 +37,15 @@ import kotlin.reflect.KClass
  * ```
  *
  * @param T The enum type that represents values along this axis
+ * @param valueClass The runtime class of the value type [T].
+ *      This is intentionally passed explicitly to avoid fragile reflection-based extraction from generic supertypes.
  * @property id A stable, unique identifier for this axis
  */
 abstract class Axis<T>(
-    final override val id: String,
-    /**
-     * The runtime class of the value type [T].
-     *
-     * This is intentionally passed explicitly to avoid fragile reflection-based extraction
-     * from generic supertypes.
-     */
+    val id: String,
     val valueClass: KClass<T>,
-) : AxisValue where T : AxisValue, T : Enum<T> {
+) where T : AxisValue<T>, T : Enum<T> {
+    open val isImplicit: Boolean = false
 
     init {
         // Auto-register this axis upon creation
