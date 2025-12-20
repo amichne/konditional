@@ -3,7 +3,7 @@ import type {Config} from "@docusaurus/types";
 import type * as OpenApiPlugin from "docusaurus-plugin-openapi-docs";
 import {themes as prismThemes} from 'prism-react-renderer';
 
-const baseUrl = '/'
+const baseUrl = '/konditional'
 
 const config: Config = {
 
