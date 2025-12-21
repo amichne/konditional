@@ -4,6 +4,8 @@ site_url: https://amichne.github.io/konditional/
 repo_url: https://github.com/amichne/konditional
 repo_name: amichne/konditional
 
+docs_dir: docs
+
 theme:
   name: material
   palette:
@@ -60,18 +62,24 @@ markdown_extensions:
 plugins:
   - search
   - mermaid2
+  - neoteroi.mkdocsoad:
+      use_pymdownx: true
+
+extra_css:
+  - static/css-v1.2.0.css
 
 nav:
   - Konditional: index.md
-  - Getting Started: 01-getting-started.md
-  - Why Konditional: 09-why-konditional.md
-  - Migration Guide: 02-migration.md
-  - Core Concepts: 03-core-concepts.md
-  - Targeting & Rollouts: 04-targeting-rollouts.md
-  - Evaluation: 05-evaluation.md
-  - Remote Configuration: 06-remote-config.md
-  - Theory: 07-theory.md
-  - Persistence Format: 08-persistence-format.md
+  - Getting Started: getting-started.md
+  - Why Konditional: why-konditional.md
+  - Migration Guide: migration.md
+  - Core Concepts: core-concepts.md
+  - Targeting & Rollouts: targeting-rollouts.md
+  - Evaluation: evaluation.md
+  - Remote Configuration: remote-config.md
+  - Theory: theory.md
+  - Persistence Format: persistence-format.md
+  - OpenAPI: oas.md
 
 extra:
   social:

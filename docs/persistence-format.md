@@ -1,3 +1,8 @@
+---
+hide:
+  - navigation
+---
+
 # Persistence & Storage Format
 
 This page documents the JSON formats used to persist and transport Konditional configuration:
@@ -250,63 +255,102 @@ Notes:
 - `SnapshotSerializer.serialize(...)` emits explicit values for these fields (including empty arrays/objects).
 
 :::details Snapshot: booleans + string variants, with version ranges
+
 ```json
 {
   "flags": [
     {
       "key": "feature::global::darkMode",
-      "defaultValue": { "type": "BOOLEAN", "value": false },
+      "defaultValue": {
+        "type": "BOOLEAN",
+        "value": false
+      },
       "salt": "v1",
       "isActive": true,
       "rampUpAllowlist": [],
       "rules": [
         {
-          "value": { "type": "BOOLEAN", "value": true },
+          "value": {
+            "type": "BOOLEAN",
+            "value": true
+          },
           "rampUp": 50.0,
-          "rampUpAllowlist": ["757365722d313233"],
+          "rampUpAllowlist": [
+            "757365722d313233"
+          ],
           "note": "iOS gradual ramp-up",
-          "locales": ["UNITED_STATES"],
-          "platforms": ["IOS"],
+          "locales": [
+            "UNITED_STATES"
+          ],
+          "platforms": [
+            "IOS"
+          ],
           "axes": {},
-          "versionRange": { "type": "MIN_BOUND", "min": { "major": 2, "minor": 0, "patch": 0 } }
+          "versionRange": {
+            "type": "MIN_BOUND",
+            "min": {
+              "major": 2,
+              "minor": 0,
+              "patch": 0
+            }
+          }
         }
       ]
     },
     {
       "key": "feature::global::apiEndpoint",
-      "defaultValue": { "type": "STRING", "value": "https://api.example.com" },
+      "defaultValue": {
+        "type": "STRING",
+        "value": "https://api.example.com"
+      },
       "salt": "v1",
       "isActive": true,
       "rampUpAllowlist": [],
       "rules": [
         {
-          "value": { "type": "STRING", "value": "https://api-ios.example.com" },
+          "value": {
+            "type": "STRING",
+            "value": "https://api-ios.example.com"
+          },
           "rampUp": 100.0,
           "rampUpAllowlist": [],
           "note": "iOS endpoint",
           "locales": [],
-          "platforms": ["IOS"],
+          "platforms": [
+            "IOS"
+          ],
           "axes": {},
-          "versionRange": { "type": "UNBOUNDED" }
+          "versionRange": {
+            "type": "UNBOUNDED"
+          }
         },
         {
-          "value": { "type": "STRING", "value": "https://api-android.example.com" },
+          "value": {
+            "type": "STRING",
+            "value": "https://api-android.example.com"
+          },
           "rampUp": 100.0,
           "rampUpAllowlist": [],
           "note": "Android endpoint",
           "locales": [],
-          "platforms": ["ANDROID"],
+          "platforms": [
+            "ANDROID"
+          ],
           "axes": {},
-          "versionRange": { "type": "UNBOUNDED" }
+          "versionRange": {
+            "type": "UNBOUNDED"
+          }
         }
       ]
     }
   ]
 }
 ```
+
 :::
 
 :::details Snapshot: enum value payload
+
 ```json
 {
   "flags": [
@@ -331,37 +375,51 @@ Notes:
           "rampUpAllowlist": [],
           "note": "Dark theme for iOS",
           "locales": [],
-          "platforms": ["IOS"],
+          "platforms": [
+            "IOS"
+          ],
           "axes": {},
-          "versionRange": { "type": "UNBOUNDED" }
+          "versionRange": {
+            "type": "UNBOUNDED"
+          }
         }
       ]
     }
   ]
 }
 ```
+
 :::
 
 :::details Patch: update one flag, remove one flag
+
 ```json
 {
   "flags": [
     {
       "key": "feature::global::darkMode",
-      "defaultValue": { "type": "BOOLEAN", "value": false },
+      "defaultValue": {
+        "type": "BOOLEAN",
+        "value": false
+      },
       "salt": "v1",
       "isActive": true,
       "rampUpAllowlist": [],
       "rules": [
         {
-          "value": { "type": "BOOLEAN", "value": true },
+          "value": {
+            "type": "BOOLEAN",
+            "value": true
+          },
           "rampUp": 100.0,
           "rampUpAllowlist": [],
           "note": "Ramp-up complete",
           "locales": [],
           "platforms": [],
           "axes": {},
-          "versionRange": { "type": "UNBOUNDED" }
+          "versionRange": {
+            "type": "UNBOUNDED"
+          }
         }
       ]
     }
@@ -371,9 +429,11 @@ Notes:
   ]
 }
 ```
+
 :::
 
 :::details Consumer Configuration Lifecycle Sample
+
 ```json
 {
   "flags": [
@@ -527,4 +587,5 @@ Notes:
   ]
 }
 ```
+
 :::
