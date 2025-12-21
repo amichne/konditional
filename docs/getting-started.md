@@ -1,3 +1,8 @@
+---
+hide:
+  - navigation
+---
+
 # Getting Started
 
 Konditional is a Kotlin feature-flag DSL designed to make configuration *typed*, *deterministic*, and *non-null*.
@@ -86,13 +91,13 @@ Notes:
 Supported value types (out of the box):
 
 | Type       | Namespace method | Kotlin type                          | Example default |
-|------------|-------------------------|--------------------------------------|-----------------|
-| Boolean    | `boolean(...)`          | `Boolean`                            | `false`         |
-| String     | `string(...)`           | `String`                             | `"production"`  |
-| Integer    | `integer(...)`          | `Int`                                | `42`            |
-| Decimal    | `double(...)`           | `Double`                             | `3.14`          |
-| Enum       | `enum(...)`             | `E : Enum<E>`                        | `LogLevel.INFO` |
-| Data class | `custom(...)`           | `T : KotlinEncodeable<ObjectSchema>` | `MyConfig()`    |
+|------------|------------------|--------------------------------------|-----------------|
+| Boolean    | `boolean(...)`   | `Boolean`                            | `false`         |
+| String     | `string(...)`    | `String`                             | `"production"`  |
+| Integer    | `integer(...)`   | `Int`                                | `42`            |
+| Decimal    | `double(...)`    | `Double`                             | `3.14`          |
+| Enum       | `enum(...)`      | `E : Enum<E>`                        | `LogLevel.INFO` |
+| Data class | `custom(...)`    | `T : KotlinEncodeable<ObjectSchema>` | `MyConfig()`    |
 
 ---
 
@@ -164,8 +169,8 @@ sealed class AppDomain(id: String) : Namespace(id) {
 
 ## Next steps
 
-- Learn the building blocks: ["Core Concepts"](/core-concepts)
-- Write targeting rules and ramp-ups: ["Targeting & Ramp-ups"](/targeting-ramp-ups)
-- Understand evaluation order and determinism: ["Evaluation"](/evaluation)
-- Add runtime-validated JSON configuration: ["Remote Configuration"](/remote-config)
-- Understand the exact trust boundary: ["Theory"](/theory)
+- Learn the building blocks: ["Core Concepts"](./core-concepts.md)
+- Write targeting rules and ramp-ups: ["Targeting & Ramp-ups"](./targeting-ramp-ups.md)
+- Understand evaluation order and determinism: ["Evaluation"](./evaluation.md)
+- Add runtime-validated JSON configuration: ["Remote Configuration"](./remote-config.md)
+- Understand the exact trust boundary: ["Theory"](./theory.md)

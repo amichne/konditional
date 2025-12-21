@@ -1,3 +1,8 @@
+---
+hide:
+  - navigation
+---
+
 # Why Konditional Exists
 
 ## The Problem

@@ -1,3 +1,8 @@
+---
+hide:
+  - navigation
+---
+
 # Remote Configuration
 
 Konditional supports dynamic configuration via JSON, but treats JSON as a **trust boundary**:
@@ -11,14 +16,14 @@ Konditional supports dynamic configuration via JSON, but treats JSON as a **trus
 
 ```mermaid
 flowchart LR
-  Code["Flags defined in code"] --> Snap["namespace.toJson()"]
-  Snap --> Json["JSON snapshot"]
-  Json --> Parse["namespace.fromJson(json)"]
-  Parse -->|Success| Load["Loads into namespace"]
-  Parse -->|Failure| Reject["Keep last-known-good + log"]
-  Load --> Eval["Evaluation uses active snapshot"]
-  style Load fill:#c8e6c9
-  style Reject fill:#ffcdd2
+    Code["Flags defined in code"] --> Snap["namespace.toJson()"]
+    Snap --> Json["JSON snapshot"]
+    Json --> Parse["namespace.fromJson(json)"]
+    Parse -->|Success| Load["Loads into namespace"]
+    Parse -->|Failure| Reject["Keep last-known-good + log"]
+    Load --> Eval["Evaluation uses active snapshot"]
+    style Load fill: #c8e6c9
+    style Reject fill: #ffcdd2
 ```
 
 ---
@@ -108,7 +113,7 @@ update.
 - readers see either the old snapshot or the new snapshot
 - readers never see a partially-applied configuration
 
-This aligns with the evaluation model documented in ["Evaluation"](/evaluation).
+This aligns with the evaluation model documented in ["Evaluation"](./evaluation.md).
 
 ---
 
@@ -208,6 +213,6 @@ payloads.
 
 ## Next steps
 
-- Understand the “if it compiles” claim boundary: ["Theory"](/theory)
-- Understand bucketing determinism inputs: ["Targeting & Ramp-ups"](/targeting-ramp-ups)
-- See the concrete snapshot/patch payload shapes: ["Persistence & Storage Format"](/persistence-format)
+- Understand the “if it compiles” claim boundary: ["Theory"](./theory.md)
+- Understand bucketing determinism inputs: ["Targeting & Ramp-ups"](./targeting-ramp-ups.md)
+- See the concrete snapshot/patch payload shapes: ["Persistence & Storage Format"](./persistence-format.md)

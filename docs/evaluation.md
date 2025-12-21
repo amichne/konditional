@@ -1,3 +1,8 @@
+---
+hide:
+  - navigation
+---
+
 # Evaluation
 
 ### Konditional evaluation is designed to be predictable
@@ -198,5 +203,5 @@ fun `50 percent ramp-up distributes correctly`() {
 
 ## Next steps
 
-- Understand ramp-ups and bucketing inputs: ["Targeting & Ramp-ups"](/targeting-ramp-ups)
-- Add runtime-validated JSON configuration: ["Remote Configuration"](/remote-config)
+- Understand ramp-ups and bucketing inputs: ["Targeting & Ramp-ups"](./targeting-ramp-ups.md)
+- Add runtime-validated JSON configuration: ["Remote Configuration"](./remote-config.md)

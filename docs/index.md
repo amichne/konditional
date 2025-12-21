@@ -1,5 +1,6 @@
 ---
-slug: /
+hide:
+  - navigation
 ---
 
 # Konditional
@@ -48,7 +49,7 @@ Beyond typo safety, Konditional gives you:
 - **Explicit boundaries** — parse JSON configuration with validation; reject invalid updates before they affect
   production
 
-Read the full argument: [Why Konditional Exists](why-konditional)
+Read the full argument: [Why Konditional Exists](why-konditional.md)
 
 ---
 
@@ -240,7 +241,7 @@ when (val result = SnapshotSerializer.applyPatchJson(currentConfig, patchJson)) 
 }
 ```
 
-See [06-remote-config.md](/remote-config) and [08-persistence-format.md](/persistence-format) for details.
+See [06-remote-config.md](./remote-config.md) and [08-persistence-format.md](./persistence-format.md) for details.
 
 ---
 
@@ -287,19 +288,19 @@ Each namespace has independent configuration lifecycle, registry, and serializat
 
 **Getting started:**
 
-- [Quick Start Guide](getting-started)
-- [Core Concepts](/core-concepts)
+- [Quick Start Guide](getting-started.md)
+- [Core Concepts](./core-concepts.md)
 
 **Features:**
 
-- [Targeting & Ramp-ups](/targeting-ramp-ups)
-- [Evaluation Semantics](/evaluation)
-- [Remote Configuration](/remote-config)
-- [Persistence Format](/persistence-format)
+- [Targeting & Ramp-ups](./targeting-ramp-ups.md)
+- [Evaluation Semantics](./evaluation.md)
+- [Remote Configuration](./remote-config.md)
+- [Persistence Format](./persistence-format.md)
 
 **Why Konditional:**
 
-- [Why Konditional Exists](why-konditional) — The compelling argument
+- [Why Konditional Exists](why-konditional.md) — The compelling argument
 
 ---
 
@@ -334,7 +335,7 @@ AppFlags.maxRetries                  // parse fails at boundary, last-known-good
 // After: All flags use SHA-256 bucketing, same user → same bucket across all flags
 ```
 
-Read more: [Real Problems Konditional Prevents](why-konditional#real-problems-konditional-prevents)
+Read more: [Real Problems Konditional Prevents](why-konditional.md#real-problems-konditional-prevents)
 
 ---
 

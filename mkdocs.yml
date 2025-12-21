@@ -1,0 +1,87 @@
+site_name: Konditional
+site_description: Type-safe, deterministic feature flags for Kotlin
+site_url: https://amichne.github.io/konditional/
+repo_url: https://github.com/amichne/konditional
+repo_name: amichne/konditional
+
+docs_dir: docs
+
+theme:
+  name: material
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+
+plugins:
+  - search
+  - mermaid2
+  - neoteroi.mkdocsoad:
+      use_pymdownx: true
+
+extra_css:
+  - static/css-v1.2.0.css
+
+nav:
+  - Konditional: index.md
+  - Getting Started: getting-started.md
+  - Why Konditional: why-konditional.md
+  - Migration Guide: migration.md
+  - Core Concepts: core-concepts.md
+  - Targeting & Rollouts: targeting-rollouts.md
+  - Evaluation: evaluation.md
+  - Remote Configuration: remote-config.md
+  - Theory: theory.md
+  - Persistence Format: persistence-format.md
+  - OpenAPI: oas.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/amichne/konditional

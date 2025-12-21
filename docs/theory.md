@@ -1,3 +1,8 @@
+---
+hide:
+  - navigation
+---
+
 # Theory: What “If it compiles, it works” means
 
 Konditional’s core claim is intentionally narrow and testable: **for statically-defined flags and rules, the compiler
@@ -163,5 +168,5 @@ The guarantee is qualified:
 
 ## Next steps
 
-- See the runtime boundary mechanics: ["Remote Configuration"](/remote-config)
-- See deterministic behavior and concurrency claims in practice: ["Evaluation"](/evaluation)
+- See the runtime boundary mechanics: ["Remote Configuration"](./remote-config.md)
+- See deterministic behavior and concurrency claims in practice: ["Evaluation"](./evaluation.md)

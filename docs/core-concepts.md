@@ -1,6 +1,12 @@
+---
+hide:
+  - navigation
+---
+
 # Core Concepts
 
-Konditional’s public surface is intentionally small. Understanding three primitives—**Features**, **Context**, and **Namespaces**—is enough to reason about correctness, organization, and runtime behavior.
+Konditional’s public surface is intentionally small. Understanding three primitives—**Features**, **Context**, and *
+*Namespaces**—is enough to reason about correctness, organization, and runtime behavior.
 
 ```mermaid
 flowchart TD
@@ -43,13 +49,13 @@ What this buys you:
 ### Supported types
 
 | Type       | Namespace method | Kotlin type                          | Example default |
-|------------|-------------------------|--------------------------------------|-----------------|
-| Boolean    | `boolean(...)`          | `Boolean`                            | `false`         |
-| String     | `string(...)`           | `String`                             | `"production"`  |
-| Integer    | `integer(...)`          | `Int`                                | `42`            |
-| Decimal    | `double(...)`           | `Double`                             | `3.14`          |
-| Enum       | `enum(...)`             | `E : Enum<E>`                        | `LogLevel.INFO` |
-| Data class | `custom(...)`           | `T : KotlinEncodeable<ObjectSchema>` | `MyConfig()`    |
+|------------|------------------|--------------------------------------|-----------------|
+| Boolean    | `boolean(...)`   | `Boolean`                            | `false`         |
+| String     | `string(...)`    | `String`                             | `"production"`  |
+| Integer    | `integer(...)`   | `Int`                                | `42`            |
+| Decimal    | `double(...)`    | `Double`                             | `3.14`          |
+| Enum       | `enum(...)`      | `E : Enum<E>`                        | `LogLevel.INFO` |
+| Data class | `custom(...)`    | `T : KotlinEncodeable<ObjectSchema>` | `MyConfig()`    |
 
 Custom data classes are decoded via Kotlin reflection at the JSON boundary. Ensure Kotlin reflection is available
 at runtime (Konditional bundles it), and keep constructor parameter names stable when using obfuscation.
@@ -223,6 +229,6 @@ PremiumFeatures.ADVANCED_ANALYTICS.evaluate(basicContext) // Compile error (requ
 
 ## Next steps
 
-- Understand rule composition and ramp-ups: ["Targeting & Ramp-ups"](/targeting-ramp-ups)
-- Understand evaluation order and determinism: ["Evaluation"](/evaluation)
-- Understand the runtime JSON boundary: ["Remote Configuration"](/remote-config)
+- Understand rule composition and ramp-ups: ["Targeting & Ramp-ups"](./targeting-ramp-ups.md)
+- Understand evaluation order and determinism: ["Evaluation"](./evaluation.md)
+- Understand the runtime JSON boundary: ["Remote Configuration"](./remote-config.md)

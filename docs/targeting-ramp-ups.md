@@ -1,3 +1,8 @@
+---
+hide:
+  - navigation
+---
+
 # Targeting & Ramp-ups
 
 Rules let you target specific contexts and ramp up behavior safely. A rule is a typed mapping:
@@ -224,5 +229,5 @@ flowchart TD
 
 ## Next steps
 
-- Understand evaluation flow and performance: ["Evaluation"](/evaluation)
-- Understand the compile-time vs runtime boundary: ["Theory"](/theory)
+- Understand evaluation flow and performance: ["Evaluation"](./evaluation.md)
+- Understand the compile-time vs runtime boundary: ["Theory"](./theory.md)
