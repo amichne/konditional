@@ -1,24 +1,560 @@
-<!doctype html>
-<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-migration" data-has-hydrated="false">
+
+<!DOCTYPE html>
+
+<html class="no-js" lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="generator" content="Docusaurus v3.8.1">
-<title data-rh="true">Migration Guide | Konditional</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://amichne.github.io/migration/"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Migration Guide | Konditional"><meta data-rh="true" name="description" content="This guide maps the conceptual shift from string-based flags to Konditional’s typed, property-based model."><meta data-rh="true" property="og:description" content="This guide maps the conceptual shift from string-based flags to Konditional’s typed, property-based model."><link data-rh="true" rel="icon" href="/img/favicon.svg"><link data-rh="true" rel="canonical" href="https://amichne.github.io/migration/"><link data-rh="true" rel="alternate" href="https://amichne.github.io/migration/" hreflang="en"><link data-rh="true" rel="alternate" href="https://amichne.github.io/migration/" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Migration Guide","item":"https://amichne.github.io/migration"}]}</script><link rel="stylesheet" href="/assets/css/styles.46ecde27.css">
-<script src="/assets/js/runtime~main.06416ff2.js" defer="defer"></script>
-<script src="/assets/js/main.f09279d5.js" defer="defer"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="Type-safe, deterministic feature flags for Kotlin" name="description"/>
+<link href="https://amichne.github.io/konditional/migration/" rel="canonical"/>
+<link href="../why-konditional/" rel="prev"/>
+<link href="../core-concepts/" rel="next"/>
+<link href="../assets/images/favicon.png" rel="icon"/>
+<meta content="mkdocs-1.6.1, mkdocs-material-9.6.10" name="generator"/>
+<title>Migration Guide - Konditional</title>
+<link href="../assets/stylesheets/main.4af4bdda.min.css" rel="stylesheet"/>
+<link href="../assets/stylesheets/palette.06af60db.min.css" rel="stylesheet"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback" rel="stylesheet"/>
+<style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+<link href="../static/css-v1.2.0.css" rel="stylesheet"/>
+<script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
 </head>
-<body class="navigation-with-keyboard">
-<svg xmlns="http://www.w3.org/2000/svg" style="display: none;"><defs>
-<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
-</defs></svg>
-<script>!function(){var t="light";var e=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",e||t),document.documentElement.setAttribute("data-theme-choice",e||t)}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_LqEn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/"><b class="navbar__title text--truncate">Konditional</b></a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/">Docs</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><a href="https://github.com/amichne/konditional" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_KEHk"><use href="#theme-svg-external-link"></use></svg></a><div class="toggle_AywZ colorModeToggle_oPpI"><button class="clean-btn toggleButton_E027 toggleButtonDisabled_tr3o" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_XYIc lightToggleIcon_Ugf6"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_XYIc darkToggleIcon_vvsL"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_XYIc systemToggleIcon_SsDX"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_Njcm"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_UM7Y"><div class="docsWrapper_lZeL"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_l3cH" type="button"></button><div class="docRoot_JmoI"><aside class="theme-doc-sidebar-container docSidebarContainer_ji8a"><div class="sidebarViewport_ZXvE"><div class="sidebar_qHGU"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_AqUe"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/">Konditional</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/getting-started/">Getting Started</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" href="/migration/">Migration Guide</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/core-concepts/">Core Concepts</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/targeting-ramp-ups/">Targeting &amp; Ramp-ups</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/evaluation/">Evaluation</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/remote-config/">Remote Configuration</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/theory/">Theory: What “If it compiles, it works” means</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/persistence-format/">Persistence &amp; Storage Format</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/why-konditional/">Why Konditional Exists</a></li></ul></nav></div></div></aside><main class="docMainContainer_N4B6"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_pV_3"><div class="docItemContainer_UCax"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_zbSR" aria-label="Breadcrumbs"><ul class="breadcrumbs"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_ADap"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">Migration Guide</span></li></ul></nav><div class="tocCollapsible_Ch7O theme-doc-toc-mobile tocMobile_NZiN"><button type="button" class="clean-btn tocCollapsibleButton_DTIY">On this page</button></div><div class="theme-doc-markdown markdown"><div class="row"><div class="col col--12 markdown"><header><h1>Migration Guide</h1></header>
+<body data-md-color-accent="indigo" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
+<input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
+<input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
+<label class="md-overlay" for="__drawer"></label>
+<div data-md-component="skip">
+<a class="md-skip" href="#migration-guide">
+          Skip to content
+        </a>
+</div>
+<div data-md-component="announce">
+</div>
+<header class="md-header" data-md-component="header">
+<nav aria-label="Header" class="md-header__inner md-grid">
+<a aria-label="Konditional" class="md-header__button md-logo" data-md-component="logo" href=".." title="Konditional">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"></path></svg>
+</a>
+<label class="md-header__button md-icon" for="__drawer">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+</label>
+<div class="md-header__title" data-md-component="header-title">
+<div class="md-header__ellipsis">
+<div class="md-header__topic">
+<span class="md-ellipsis">
+            Konditional
+          </span>
+</div>
+<div class="md-header__topic" data-md-component="header-topic">
+<span class="md-ellipsis">
+            
+              Migration Guide
+            
+          </span>
+</div>
+</div>
+</div>
+<form class="md-header__option" data-md-component="palette">
+<input aria-label="Switch to dark mode" class="md-option" data-md-color-accent="indigo" data-md-color-media="(prefers-color-scheme: light)" data-md-color-primary="indigo" data-md-color-scheme="default" id="__palette_0" name="__palette" type="radio"/>
+<label class="md-header__button md-icon" for="__palette_1" hidden="" title="Switch to dark mode">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+</label>
+<input aria-label="Switch to light mode" class="md-option" data-md-color-accent="indigo" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-primary="indigo" data-md-color-scheme="slate" id="__palette_1" name="__palette" type="radio"/>
+<label class="md-header__button md-icon" for="__palette_0" hidden="" title="Switch to light mode">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+</label>
+</form>
+<script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+<label class="md-header__button md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+</label>
+<div class="md-search" data-md-component="search" role="dialog">
+<label class="md-search__overlay" for="__search"></label>
+<div class="md-search__inner" role="search">
+<form class="md-search__form" name="search">
+<input aria-label="Search" autocapitalize="off" autocomplete="off" autocorrect="off" class="md-search__input" data-md-component="search-query" name="query" placeholder="Search" required="" spellcheck="false" type="text"/>
+<label class="md-search__icon md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+</label>
+<nav aria-label="Search" class="md-search__options">
+<button aria-label="Clear" class="md-search__icon md-icon" tabindex="-1" title="Clear" type="reset">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+</button>
+</nav>
+<div class="md-search__suggest" data-md-component="search-suggest"></div>
+</form>
+<div class="md-search__output">
+<div class="md-search__scrollwrap" data-md-scrollfix="" tabindex="0">
+<div class="md-search-result" data-md-component="search-result">
+<div class="md-search-result__meta">
+            Initializing search
+          </div>
+<ol class="md-search-result__list" role="presentation"></ol>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="md-header__source">
+<a class="md-source" data-md-component="source" href="https://github.com/amichne/konditional" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"></path></svg>
+</div>
+<div class="md-source__repository">
+    amichne/konditional
+  </div>
+</a>
+</div>
+</nav>
+</header>
+<div class="md-container" data-md-component="container">
+<nav aria-label="Tabs" class="md-tabs" data-md-component="tabs">
+<div class="md-grid">
+<ul class="md-tabs__list">
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="..">
+        
+  
+  
+    
+  
+  Konditional
+
+      </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../getting-started/">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../why-konditional/">
+        
+  
+  
+    
+  
+  Why Konditional
+
+      </a>
+</li>
+<li class="md-tabs__item md-tabs__item--active">
+<a class="md-tabs__link" href="./">
+        
+  
+  
+    
+  
+  Migration Guide
+
+      </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../core-concepts/">
+        
+  
+  
+    
+  
+  Core Concepts
+
+      </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../targeting-rollouts.md">
+        
+  
+  
+    
+  
+  Targeting &amp; Rollouts
+
+      </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../evaluation/">
+        
+  
+  
+    
+  
+  Evaluation
+
+      </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../remote-config/">
+        
+  
+  
+    
+  
+  Remote Configuration
+
+      </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../theory/">
+        
+  
+  
+    
+  
+  Theory
+
+      </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../persistence-format/">
+        
+  
+  
+    
+  
+  Persistence Format
+
+      </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../oas/">
+        
+  
+  
+    
+  
+  OpenAPI
+
+      </a>
+</li>
+</ul>
+</div>
+</nav>
+<main class="md-main" data-md-component="main">
+<div class="md-main__inner md-grid">
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" hidden="">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Navigation" class="md-nav md-nav--primary md-nav--lifted" data-md-level="0">
+<label class="md-nav__title" for="__drawer">
+<a aria-label="Konditional" class="md-nav__button md-logo" data-md-component="logo" href=".." title="Konditional">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"></path></svg>
+</a>
+    Konditional
+  </label>
+<div class="md-nav__source">
+<a class="md-source" data-md-component="source" href="https://github.com/amichne/konditional" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"></path></svg>
+</div>
+<div class="md-source__repository">
+    amichne/konditional
+  </div>
+</a>
+</div>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="..">
+<span class="md-ellipsis">
+    Konditional
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../getting-started/">
+<span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../why-konditional/">
+<span class="md-ellipsis">
+    Why Konditional
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" id="__toc" type="checkbox"/>
+<label class="md-nav__link md-nav__link--active" for="__toc">
+<span class="md-ellipsis">
+    Migration Guide
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<a class="md-nav__link md-nav__link--active" href="./">
+<span class="md-ellipsis">
+    Migration Guide
+    
+  </span>
+</a>
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#the-core-mapping">
+<span class="md-ellipsis">
+      The core mapping
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#step-by-step-adoption-incremental">
+<span class="md-ellipsis">
+      Step-by-step adoption (incremental)
+    </span>
+</a>
+<nav aria-label="Step-by-step adoption (incremental)" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#0-start-with-one-namespace">
+<span class="md-ellipsis">
+      0. Start with one namespace
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-replace-call-sites-first-value-safety">
+<span class="md-ellipsis">
+      1. Replace call sites first (value safety)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-introduce-typed-context-targeting-ramp-ups">
+<span class="md-ellipsis">
+      2. Introduce typed context (targeting + ramp-ups)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#3-add-rules-after-defaults-exist-behavior-safety">
+<span class="md-ellipsis">
+      3. Add rules after defaults exist (behavior safety)
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#migrating-context-maps-to-typed-contexts">
+<span class="md-ellipsis">
+      Migrating “context maps” to typed contexts
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#namespaces-replace-prefixes">
+<span class="md-ellipsis">
+      Namespaces replace prefixes
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#when-you-need-runtime-configuration-remote-json">
+<span class="md-ellipsis">
+      When you need runtime configuration (remote JSON)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#shadow-evaluation-parallel-migration">
+<span class="md-ellipsis">
+      Shadow evaluation (parallel migration)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#next-steps">
+<span class="md-ellipsis">
+      Next steps
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../core-concepts/">
+<span class="md-ellipsis">
+    Core Concepts
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../targeting-rollouts.md">
+<span class="md-ellipsis">
+    Targeting &amp; Rollouts
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../evaluation/">
+<span class="md-ellipsis">
+    Evaluation
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../remote-config/">
+<span class="md-ellipsis">
+    Remote Configuration
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../theory/">
+<span class="md-ellipsis">
+    Theory
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../persistence-format/">
+<span class="md-ellipsis">
+    Persistence Format
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../oas/">
+<span class="md-ellipsis">
+    OpenAPI
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#the-core-mapping">
+<span class="md-ellipsis">
+      The core mapping
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#step-by-step-adoption-incremental">
+<span class="md-ellipsis">
+      Step-by-step adoption (incremental)
+    </span>
+</a>
+<nav aria-label="Step-by-step adoption (incremental)" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#0-start-with-one-namespace">
+<span class="md-ellipsis">
+      0. Start with one namespace
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-replace-call-sites-first-value-safety">
+<span class="md-ellipsis">
+      1. Replace call sites first (value safety)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-introduce-typed-context-targeting-ramp-ups">
+<span class="md-ellipsis">
+      2. Introduce typed context (targeting + ramp-ups)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#3-add-rules-after-defaults-exist-behavior-safety">
+<span class="md-ellipsis">
+      3. Add rules after defaults exist (behavior safety)
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#migrating-context-maps-to-typed-contexts">
+<span class="md-ellipsis">
+      Migrating “context maps” to typed contexts
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#namespaces-replace-prefixes">
+<span class="md-ellipsis">
+      Namespaces replace prefixes
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#when-you-need-runtime-configuration-remote-json">
+<span class="md-ellipsis">
+      When you need runtime configuration (remote JSON)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#shadow-evaluation-parallel-migration">
+<span class="md-ellipsis">
+      Shadow evaluation (parallel migration)
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#next-steps">
+<span class="md-ellipsis">
+      Next steps
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-content" data-md-component="content">
+<article class="md-content__inner md-typeset">
+<h1 id="migration-guide">Migration Guide<a class="headerlink" href="#migration-guide" title="Permanent link">¶</a></h1>
 <p>This guide maps the conceptual shift from string-based flags to Konditional’s typed, property-based model.
 It focuses on what changes at the definition site, at the call site, and at the trust boundary (runtime JSON).</p>
-<hr>
-<h2 class="anchor anchorWithStickyNavbar_piTN" id="the-core-mapping">The core mapping<a href="#the-core-mapping" class="hash-link" aria-label="Direct link to The core mapping" title="Direct link to The core mapping">​</a></h2>
+<hr/>
+<h2 id="the-core-mapping">The core mapping<a class="headerlink" href="#the-core-mapping" title="Permanent link">¶</a></h2>
 <p>String-based flag systems typically have:</p>
 <ul>
-<li>a <strong>string key</strong> (<code>&quot;dark-mode&quot;</code>)</li>
+<li>a <strong>string key</strong> (<code>"dark-mode"</code>)</li>
 <li>a <strong>typed getter</strong> chosen by the caller (<code>getBoolean</code>, <code>getString</code>, …)</li>
 <li>an <strong>untyped context</strong> (often string keys and <code>Any</code> values)</li>
 </ul>
@@ -28,52 +564,143 @@ It focuses on what changes at the definition site, at the call site, and at the 
 <li>a <strong>declared type</strong> (from the delegate: <code>boolean</code>, <code>string</code>, <code>int</code>, <code>double</code>, <code>enum</code>)</li>
 <li>a <strong>typed <code>Context</code></strong> (and optionally domain-specific context data classes)</li>
 </ul>
-<!-- -->
-<hr>
-<h2 class="anchor anchorWithStickyNavbar_piTN" id="step-by-step-adoption-incremental">Step-by-step adoption (incremental)<a href="#step-by-step-adoption-incremental" class="hash-link" aria-label="Direct link to Step-by-step adoption (incremental)" title="Direct link to Step-by-step adoption (incremental)">​</a></h2>
-<h3 class="anchor anchorWithStickyNavbar_piTN" id="0-start-with-one-namespace">0. Start with one namespace<a href="#0-start-with-one-namespace" class="hash-link" aria-label="Direct link to 0. Start with one namespace" title="Direct link to 0. Start with one namespace">​</a></h3>
-<div class="language-kotlin codeBlockContainer_JOuc theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_UV5k"><pre tabindex="0" class="prism-code language-kotlin codeBlock_cO2c thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_Jat4"><span class="token-line" style="color:#393A34"><span class="token keyword" style="color:#00009f">object</span><span class="token plain"> Features </span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token function" style="color:#d73a49">Namespace</span><span class="token punctuation" style="color:#393A34">(</span><span class="token string-literal singleline string" style="color:#e3116c">&quot;app&quot;</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token keyword" style="color:#00009f">val</span><span class="token plain"> darkMode </span><span class="token keyword" style="color:#00009f">by</span><span class="token plain"> boolean</span><span class="token operator" style="color:#393A34">&lt;</span><span class="token plain">Context</span><span class="token operator" style="color:#393A34">&gt;</span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain">default </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> </span><span class="token boolean" style="color:#36acaa">false</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">}</span><br></span></code></pre></div></div>
-<h3 class="anchor anchorWithStickyNavbar_piTN" id="1-replace-call-sites-first-value-safety">1. Replace call sites first (value safety)<a href="#1-replace-call-sites-first-value-safety" class="hash-link" aria-label="Direct link to 1. Replace call sites first (value safety)" title="Direct link to 1. Replace call sites first (value safety)">​</a></h3>
-<div class="language-kotlin codeBlockContainer_JOuc theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_UV5k"><pre tabindex="0" class="prism-code language-kotlin codeBlock_cO2c thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_Jat4"><span class="token-line" style="color:#393A34"><span class="token keyword" style="color:#00009f">val</span><span class="token plain"> enabled</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> Boolean </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> Features</span><span class="token punctuation" style="color:#393A34">.</span><span class="token plain">darkMode</span><span class="token punctuation" style="color:#393A34">.</span><span class="token function" style="color:#d73a49">evaluate</span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain">context</span><span class="token punctuation" style="color:#393A34">)</span><br></span></code></pre></div></div>
+<pre class="mermaid"><code>flowchart LR
+    A["String key"] --&gt; B["Property name"]
+    C["Typed getter"] --&gt; D["Type flows from definition"]
+    E["Untyped context map"] --&gt; F["Typed Context data"]</code></pre>
+<hr/>
+<h2 id="step-by-step-adoption-incremental">Step-by-step adoption (incremental)<a class="headerlink" href="#step-by-step-adoption-incremental" title="Permanent link">¶</a></h2>
+<h3 id="0-start-with-one-namespace">0. Start with one namespace<a class="headerlink" href="#0-start-with-one-namespace" title="Permanent link">¶</a></h3>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="kd">object</span><span class="w"> </span><span class="nc">Features</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Namespace</span><span class="p">(</span><span class="s">"app"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-2"><a href="#__codelineno-0-2" id="__codelineno-0-2" name="__codelineno-0-2"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">darkMode</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+</span><span id="__span-0-3"><a href="#__codelineno-0-3" id="__codelineno-0-3" name="__codelineno-0-3"></a><span class="p">}</span>
+</span></code></pre></div>
+<h3 id="1-replace-call-sites-first-value-safety">1. Replace call sites first (value safety)<a class="headerlink" href="#1-replace-call-sites-first-value-safety" title="Permanent link">¶</a></h3>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">darkMode</span><span class="p">.</span><span class="na">evaluate</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+</span></code></pre></div>
 <p>What you gain immediately:</p>
 <ul>
 <li>key typos are eliminated at the call site (there is no string key)</li>
 <li>return type is concrete (no cast; <code>Boolean</code> is enforced)</li>
 <li>evaluation is non-null (default is required)</li>
 </ul>
-<h3 class="anchor anchorWithStickyNavbar_piTN" id="2-introduce-typed-context-targeting--ramp-ups">2. Introduce typed context (targeting + ramp-ups)<a href="#2-introduce-typed-context-targeting--ramp-ups" class="hash-link" aria-label="Direct link to 2. Introduce typed context (targeting + ramp-ups)" title="Direct link to 2. Introduce typed context (targeting + ramp-ups)">​</a></h3>
-<div class="language-kotlin codeBlockContainer_JOuc theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_UV5k"><pre tabindex="0" class="prism-code language-kotlin codeBlock_cO2c thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_Jat4"><span class="token-line" style="color:#393A34"><span class="token keyword" style="color:#00009f">val</span><span class="token plain"> context </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> </span><span class="token function" style="color:#d73a49">Context</span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    locale </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> AppLocale</span><span class="token punctuation" style="color:#393A34">.</span><span class="token plain">UNITED_STATES</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    platform </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> Platform</span><span class="token punctuation" style="color:#393A34">.</span><span class="token plain">IOS</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    appVersion </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> Version</span><span class="token punctuation" style="color:#393A34">.</span><span class="token function" style="color:#d73a49">parse</span><span class="token punctuation" style="color:#393A34">(</span><span class="token string-literal singleline string" style="color:#e3116c">&quot;2.1.0&quot;</span><span class="token punctuation" style="color:#393A34">)</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    stableId </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> StableId</span><span class="token punctuation" style="color:#393A34">.</span><span class="token function" style="color:#d73a49">of</span><span class="token punctuation" style="color:#393A34">(</span><span class="token string-literal singleline string" style="color:#e3116c">&quot;a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6&quot;</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">)</span><br></span></code></pre></div></div>
+<h3 id="2-introduce-typed-context-targeting-ramp-ups">2. Introduce typed context (targeting + ramp-ups)<a class="headerlink" href="#2-introduce-typed-context-targeting-ramp-ups" title="Permanent link">¶</a></h3>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Context</span><span class="p">(</span>
+</span><span id="__span-2-2"><a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a><span class="w">    </span><span class="n">locale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">.</span><span class="na">UNITED_STATES</span><span class="p">,</span>
+</span><span id="__span-2-3"><a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a><span class="w">    </span><span class="n">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">,</span>
+</span><span id="__span-2-4"><a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a><span class="w">    </span><span class="n">appVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Version</span><span class="p">.</span><span class="na">parse</span><span class="p">(</span><span class="s">"2.1.0"</span><span class="p">),</span>
+</span><span id="__span-2-5"><a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a><span class="w">    </span><span class="n">stableId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StableId</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">"a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"</span><span class="p">)</span>
+</span><span id="__span-2-6"><a href="#__codelineno-2-6" id="__codelineno-2-6" name="__codelineno-2-6"></a><span class="p">)</span>
+</span></code></pre></div>
 <p><code>stableId</code> is the stable input used for deterministic ramp-up bucketing (
-see <a href="/targeting-ramp-ups/">&quot;Targeting &amp; Ramp-ups&quot;</a>).</p>
-<h3 class="anchor anchorWithStickyNavbar_piTN" id="3-add-rules-after-defaults-exist-behavior-safety">3. Add rules after defaults exist (behavior safety)<a href="#3-add-rules-after-defaults-exist-behavior-safety" class="hash-link" aria-label="Direct link to 3. Add rules after defaults exist (behavior safety)" title="Direct link to 3. Add rules after defaults exist (behavior safety)">​</a></h3>
-<div class="language-kotlin codeBlockContainer_JOuc theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_UV5k"><pre tabindex="0" class="prism-code language-kotlin codeBlock_cO2c thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_Jat4"><span class="token-line" style="color:#393A34"><span class="token keyword" style="color:#00009f">val</span><span class="token plain"> apiEndpoint </span><span class="token keyword" style="color:#00009f">by</span><span class="token plain"> string</span><span class="token operator" style="color:#393A34">&lt;</span><span class="token plain">Context</span><span class="token operator" style="color:#393A34">&gt;</span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain">default </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> </span><span class="token string-literal singleline string" style="color:#e3116c">&quot;https://api.example.com&quot;</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token function" style="color:#d73a49">rule</span><span class="token punctuation" style="color:#393A34">(</span><span class="token string-literal singleline string" style="color:#e3116c">&quot;https://api-ios.example.com&quot;</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"> </span><span class="token function" style="color:#d73a49">platforms</span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain">Platform</span><span class="token punctuation" style="color:#393A34">.</span><span class="token plain">IOS</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">}</span><br></span></code></pre></div></div>
-<hr>
-<h2 class="anchor anchorWithStickyNavbar_piTN" id="migrating-context-maps-to-typed-contexts">Migrating “context maps” to typed contexts<a href="#migrating-context-maps-to-typed-contexts" class="hash-link" aria-label="Direct link to Migrating “context maps” to typed contexts" title="Direct link to Migrating “context maps” to typed contexts">​</a></h2>
-<p>If your current system uses string keys (<code>&quot;tier&quot;</code>, <code>&quot;role&quot;</code>, …), move that information into a custom context:</p>
-<div class="language-kotlin codeBlockContainer_JOuc theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_UV5k"><pre tabindex="0" class="prism-code language-kotlin codeBlock_cO2c thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_Jat4"><span class="token-line" style="color:#393A34"><span class="token keyword" style="color:#00009f">data</span><span class="token plain"> </span><span class="token keyword" style="color:#00009f">class</span><span class="token plain"> </span><span class="token function" style="color:#d73a49">EnterpriseContext</span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token keyword" style="color:#00009f">override</span><span class="token plain"> </span><span class="token keyword" style="color:#00009f">val</span><span class="token plain"> locale</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> AppLocale</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token keyword" style="color:#00009f">override</span><span class="token plain"> </span><span class="token keyword" style="color:#00009f">val</span><span class="token plain"> platform</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> Platform</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token keyword" style="color:#00009f">override</span><span class="token plain"> </span><span class="token keyword" style="color:#00009f">val</span><span class="token plain"> appVersion</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> Version</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token keyword" style="color:#00009f">override</span><span class="token plain"> </span><span class="token keyword" style="color:#00009f">val</span><span class="token plain"> stableId</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> StableId</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token keyword" style="color:#00009f">val</span><span class="token plain"> subscriptionTier</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> SubscriptionTier</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token keyword" style="color:#00009f">val</span><span class="token plain"> employeeCount</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> Int</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> Context</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token keyword" style="color:#00009f">enum</span><span class="token plain"> </span><span class="token keyword" style="color:#00009f">class</span><span class="token plain"> SubscriptionTier </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"> FREE</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"> PRO</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"> ENTERPRISE </span><span class="token punctuation" style="color:#393A34">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token keyword" style="color:#00009f">object</span><span class="token plain"> EnterpriseFeatures </span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token function" style="color:#d73a49">Namespace</span><span class="token punctuation" style="color:#393A34">(</span><span class="token string-literal singleline string" style="color:#e3116c">&quot;enterprise&quot;</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token keyword" style="color:#00009f">val</span><span class="token plain"> advancedAnalytics </span><span class="token keyword" style="color:#00009f">by</span><span class="token plain"> boolean</span><span class="token operator" style="color:#393A34">&lt;</span><span class="token plain">EnterpriseContext</span><span class="token operator" style="color:#393A34">&gt;</span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain">default </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> </span><span class="token boolean" style="color:#36acaa">false</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">        </span><span class="token function" style="color:#d73a49">rule</span><span class="token punctuation" style="color:#393A34">(</span><span class="token boolean" style="color:#36acaa">true</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">            extension </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">                subscriptionTier </span><span class="token operator" style="color:#393A34">==</span><span class="token plain"> SubscriptionTier</span><span class="token punctuation" style="color:#393A34">.</span><span class="token plain">ENTERPRISE </span><span class="token operator" style="color:#393A34">&amp;&amp;</span><span class="token plain"> employeeCount </span><span class="token operator" style="color:#393A34">&gt;</span><span class="token plain"> </span><span class="token number" style="color:#36acaa">100</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">            </span><span class="token punctuation" style="color:#393A34">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">        </span><span class="token punctuation" style="color:#393A34">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token punctuation" style="color:#393A34">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">}</span><br></span></code></pre></div></div>
+see <a href="../targeting-ramp-ups/">"Targeting &amp; Ramp-ups"</a>).</p>
+<h3 id="3-add-rules-after-defaults-exist-behavior-safety">3. Add rules after defaults exist (behavior safety)<a class="headerlink" href="#3-add-rules-after-defaults-exist-behavior-safety" title="Permanent link">¶</a></h3>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">apiEndpoint</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">string</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"https://api.example.com"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-2"><a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="w">    </span><span class="n">rule</span><span class="p">(</span><span class="s">"https://api-ios.example.com"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">platforms</span><span class="p">(</span><span class="n">Platform</span><span class="p">.</span><span class="na">IOS</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-3-3"><a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a><span class="p">}</span>
+</span></code></pre></div>
+<hr/>
+<h2 id="migrating-context-maps-to-typed-contexts">Migrating “context maps” to typed contexts<a class="headerlink" href="#migrating-context-maps-to-typed-contexts" title="Permanent link">¶</a></h2>
+<p>If your current system uses string keys (<code>"tier"</code>, <code>"role"</code>, …), move that information into a custom context:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a href="#__codelineno-4-1" id="__codelineno-4-1" name="__codelineno-4-1"></a><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">EnterpriseContext</span><span class="p">(</span>
+</span><span id="__span-4-2"><a href="#__codelineno-4-2" id="__codelineno-4-2" name="__codelineno-4-2"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">locale</span><span class="p">:</span><span class="w"> </span><span class="n">AppLocale</span><span class="p">,</span>
+</span><span id="__span-4-3"><a href="#__codelineno-4-3" id="__codelineno-4-3" name="__codelineno-4-3"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">platform</span><span class="p">:</span><span class="w"> </span><span class="n">Platform</span><span class="p">,</span>
+</span><span id="__span-4-4"><a href="#__codelineno-4-4" id="__codelineno-4-4" name="__codelineno-4-4"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">appVersion</span><span class="p">:</span><span class="w"> </span><span class="n">Version</span><span class="p">,</span>
+</span><span id="__span-4-5"><a href="#__codelineno-4-5" id="__codelineno-4-5" name="__codelineno-4-5"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">stableId</span><span class="p">:</span><span class="w"> </span><span class="n">StableId</span><span class="p">,</span>
+</span><span id="__span-4-6"><a href="#__codelineno-4-6" id="__codelineno-4-6" name="__codelineno-4-6"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">subscriptionTier</span><span class="p">:</span><span class="w"> </span><span class="n">SubscriptionTier</span><span class="p">,</span>
+</span><span id="__span-4-7"><a href="#__codelineno-4-7" id="__codelineno-4-7" name="__codelineno-4-7"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">employeeCount</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span>
+</span><span id="__span-4-8"><a href="#__codelineno-4-8" id="__codelineno-4-8" name="__codelineno-4-8"></a><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Context</span>
+</span><span id="__span-4-9"><a href="#__codelineno-4-9" id="__codelineno-4-9" name="__codelineno-4-9"></a>
+</span><span id="__span-4-10"><a href="#__codelineno-4-10" id="__codelineno-4-10" name="__codelineno-4-10"></a><span class="kd">enum</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">SubscriptionTier</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">FREE</span><span class="p">,</span><span class="w"> </span><span class="n">PRO</span><span class="p">,</span><span class="w"> </span><span class="n">ENTERPRISE</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-4-11"><a href="#__codelineno-4-11" id="__codelineno-4-11" name="__codelineno-4-11"></a>
+</span><span id="__span-4-12"><a href="#__codelineno-4-12" id="__codelineno-4-12" name="__codelineno-4-12"></a><span class="kd">object</span><span class="w"> </span><span class="nc">EnterpriseFeatures</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Namespace</span><span class="p">(</span><span class="s">"enterprise"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-13"><a href="#__codelineno-4-13" id="__codelineno-4-13" name="__codelineno-4-13"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">advancedAnalytics</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">EnterpriseContext</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-14"><a href="#__codelineno-4-14" id="__codelineno-4-14" name="__codelineno-4-14"></a><span class="w">        </span><span class="n">rule</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-15"><a href="#__codelineno-4-15" id="__codelineno-4-15" name="__codelineno-4-15"></a><span class="w">            </span><span class="n">extension</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-16"><a href="#__codelineno-4-16" id="__codelineno-4-16" name="__codelineno-4-16"></a><span class="w">                </span><span class="n">subscriptionTier</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SubscriptionTier</span><span class="p">.</span><span class="na">ENTERPRISE</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">employeeCount</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">100</span>
+</span><span id="__span-4-17"><a href="#__codelineno-4-17" id="__codelineno-4-17" name="__codelineno-4-17"></a><span class="w">            </span><span class="p">}</span>
+</span><span id="__span-4-18"><a href="#__codelineno-4-18" id="__codelineno-4-18" name="__codelineno-4-18"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-4-19"><a href="#__codelineno-4-19" id="__codelineno-4-19" name="__codelineno-4-19"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-4-20"><a href="#__codelineno-4-20" id="__codelineno-4-20" name="__codelineno-4-20"></a><span class="p">}</span>
+</span></code></pre></div>
 <p>Result: business targeting logic becomes type-checked and refactor-safe.</p>
-<hr>
-<h2 class="anchor anchorWithStickyNavbar_piTN" id="namespaces-replace-prefixes">Namespaces replace prefixes<a href="#namespaces-replace-prefixes" class="hash-link" aria-label="Direct link to Namespaces replace prefixes" title="Direct link to Namespaces replace prefixes">​</a></h2>
-<p>Instead of <code>&quot;auth.dark-mode&quot;</code> / <code>&quot;payments.dark-mode&quot;</code> style prefixes, use namespace isolation:</p>
-<div class="language-kotlin codeBlockContainer_JOuc theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_UV5k"><pre tabindex="0" class="prism-code language-kotlin codeBlock_cO2c thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_Jat4"><span class="token-line" style="color:#393A34"><span class="token keyword" style="color:#00009f">sealed</span><span class="token plain"> </span><span class="token keyword" style="color:#00009f">class</span><span class="token plain"> </span><span class="token function" style="color:#d73a49">AppDomain</span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain">id</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> String</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token function" style="color:#d73a49">Namespace</span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain">id</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token keyword" style="color:#00009f">data</span><span class="token plain"> </span><span class="token keyword" style="color:#00009f">object</span><span class="token plain"> Auth </span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token function" style="color:#d73a49">AppDomain</span><span class="token punctuation" style="color:#393A34">(</span><span class="token string-literal singleline string" style="color:#e3116c">&quot;auth&quot;</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">        </span><span class="token keyword" style="color:#00009f">val</span><span class="token plain"> socialLogin </span><span class="token keyword" style="color:#00009f">by</span><span class="token plain"> boolean</span><span class="token operator" style="color:#393A34">&lt;</span><span class="token plain">Context</span><span class="token operator" style="color:#393A34">&gt;</span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain">default </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> </span><span class="token boolean" style="color:#36acaa">false</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token punctuation" style="color:#393A34">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token keyword" style="color:#00009f">data</span><span class="token plain"> </span><span class="token keyword" style="color:#00009f">object</span><span class="token plain"> Payments </span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token function" style="color:#d73a49">AppDomain</span><span class="token punctuation" style="color:#393A34">(</span><span class="token string-literal singleline string" style="color:#e3116c">&quot;payments&quot;</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">        </span><span class="token keyword" style="color:#00009f">val</span><span class="token plain"> applePay </span><span class="token keyword" style="color:#00009f">by</span><span class="token plain"> boolean</span><span class="token operator" style="color:#393A34">&lt;</span><span class="token plain">Context</span><span class="token operator" style="color:#393A34">&gt;</span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain">default </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> </span><span class="token boolean" style="color:#36acaa">false</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token punctuation" style="color:#393A34">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">}</span><br></span></code></pre></div></div>
+<hr/>
+<h2 id="namespaces-replace-prefixes">Namespaces replace prefixes<a class="headerlink" href="#namespaces-replace-prefixes" title="Permanent link">¶</a></h2>
+<p>Instead of <code>"auth.dark-mode"</code> / <code>"payments.dark-mode"</code> style prefixes, use namespace isolation:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-5-1"><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a><span class="kd">sealed</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">AppDomain</span><span class="p">(</span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Namespace</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-2"><a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a><span class="w">    </span><span class="kd">data</span><span class="w"> </span><span class="kd">object</span><span class="w"> </span><span class="nc">Auth</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">AppDomain</span><span class="p">(</span><span class="s">"auth"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-3"><a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">socialLogin</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+</span><span id="__span-5-4"><a href="#__codelineno-5-4" id="__codelineno-5-4" name="__codelineno-5-4"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-5-5"><a href="#__codelineno-5-5" id="__codelineno-5-5" name="__codelineno-5-5"></a>
+</span><span id="__span-5-6"><a href="#__codelineno-5-6" id="__codelineno-5-6" name="__codelineno-5-6"></a><span class="w">    </span><span class="kd">data</span><span class="w"> </span><span class="kd">object</span><span class="w"> </span><span class="nc">Payments</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">AppDomain</span><span class="p">(</span><span class="s">"payments"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-7"><a href="#__codelineno-5-7" id="__codelineno-5-7" name="__codelineno-5-7"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">applePay</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">boolean</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">(</span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+</span><span id="__span-5-8"><a href="#__codelineno-5-8" id="__codelineno-5-8" name="__codelineno-5-8"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-5-9"><a href="#__codelineno-5-9" id="__codelineno-5-9" name="__codelineno-5-9"></a><span class="p">}</span>
+</span></code></pre></div>
 <p>Each namespace has its own registry and independent configuration lifecycle.</p>
-<hr>
-<h2 class="anchor anchorWithStickyNavbar_piTN" id="when-you-need-runtime-configuration-remote-json">When you need runtime configuration (remote JSON)<a href="#when-you-need-runtime-configuration-remote-json" class="hash-link" aria-label="Direct link to When you need runtime configuration (remote JSON)" title="Direct link to When you need runtime configuration (remote JSON)">​</a></h2>
+<hr/>
+<h2 id="when-you-need-runtime-configuration-remote-json">When you need runtime configuration (remote JSON)<a class="headerlink" href="#when-you-need-runtime-configuration-remote-json" title="Permanent link">¶</a></h2>
 <p>Konditional supports JSON configuration as a validated boundary:</p>
-<div class="language-kotlin codeBlockContainer_JOuc theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_UV5k"><pre tabindex="0" class="prism-code language-kotlin codeBlock_cO2c thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_Jat4"><span class="token-line" style="color:#393A34"><span class="token keyword" style="color:#00009f">val</span><span class="token plain"> json </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> </span><span class="token function" style="color:#d73a49">File</span><span class="token punctuation" style="color:#393A34">(</span><span class="token string-literal singleline string" style="color:#e3116c">&quot;flags.json&quot;</span><span class="token punctuation" style="color:#393A34">)</span><span class="token punctuation" style="color:#393A34">.</span><span class="token function" style="color:#d73a49">readText</span><span class="token punctuation" style="color:#393A34">(</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token keyword" style="color:#00009f">when</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">(</span><span class="token keyword" style="color:#00009f">val</span><span class="token plain"> result </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> AppDomain</span><span class="token punctuation" style="color:#393A34">.</span><span class="token plain">Payments</span><span class="token punctuation" style="color:#393A34">.</span><span class="token function" style="color:#d73a49">fromJson</span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain">json</span><span class="token punctuation" style="color:#393A34">)</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token keyword" style="color:#00009f">is</span><span class="token plain"> ParseResult</span><span class="token punctuation" style="color:#393A34">.</span><span class="token plain">Success </span><span class="token operator" style="color:#393A34">-&gt;</span><span class="token plain"> Unit </span><span class="token comment" style="color:#999988;font-style:italic">// loaded into AppDomain.Payments</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token keyword" style="color:#00009f">is</span><span class="token plain"> ParseResult</span><span class="token punctuation" style="color:#393A34">.</span><span class="token plain">Failure </span><span class="token operator" style="color:#393A34">-&gt;</span><span class="token plain"> </span><span class="token function" style="color:#d73a49">logError</span><span class="token punctuation" style="color:#393A34">(</span><span class="token string-literal singleline string" style="color:#e3116c">&quot;Parse failed: </span><span class="token string-literal singleline interpolation interpolation-punctuation punctuation" style="color:#393A34">${</span><span class="token string-literal singleline interpolation expression">result</span><span class="token string-literal singleline interpolation expression punctuation" style="color:#393A34">.</span><span class="token string-literal singleline interpolation expression">error</span><span class="token string-literal singleline interpolation interpolation-punctuation punctuation" style="color:#393A34">}</span><span class="token string-literal singleline string" style="color:#e3116c">&quot;</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">}</span><br></span></code></pre></div></div>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-6-1"><a href="#__codelineno-6-1" id="__codelineno-6-1" name="__codelineno-6-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">File</span><span class="p">(</span><span class="s">"flags.json"</span><span class="p">).</span><span class="na">readText</span><span class="p">()</span>
+</span><span id="__span-6-2"><a href="#__codelineno-6-2" id="__codelineno-6-2" name="__codelineno-6-2"></a><span class="k">when</span><span class="w"> </span><span class="p">(</span><span class="kd">val</span><span class="w"> </span><span class="nv">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AppDomain</span><span class="p">.</span><span class="na">Payments</span><span class="p">.</span><span class="na">fromJson</span><span class="p">(</span><span class="n">json</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-3"><a href="#__codelineno-6-3" id="__codelineno-6-3" name="__codelineno-6-3"></a><span class="w">    </span><span class="k">is</span><span class="w"> </span><span class="n">ParseResult</span><span class="p">.</span><span class="na">Success</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">Unit</span><span class="w"> </span><span class="c1">// loaded into AppDomain.Payments</span>
+</span><span id="__span-6-4"><a href="#__codelineno-6-4" id="__codelineno-6-4" name="__codelineno-6-4"></a><span class="w">    </span><span class="k">is</span><span class="w"> </span><span class="n">ParseResult</span><span class="p">.</span><span class="na">Failure</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">logError</span><span class="p">(</span><span class="s">"Parse failed: </span><span class="si">${</span><span class="n">result</span><span class="p">.</span><span class="na">error</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
+</span><span id="__span-6-5"><a href="#__codelineno-6-5" id="__codelineno-6-5" name="__codelineno-6-5"></a><span class="p">}</span>
+</span></code></pre></div>
 <p>The guarantee is intentionally qualified: JSON is not “always safe”; instead, invalid JSON is rejected before it can
 affect evaluation.</p>
-<hr>
-<h2 class="anchor anchorWithStickyNavbar_piTN" id="shadow-evaluation-parallel-migration">Shadow evaluation (parallel migration)<a href="#shadow-evaluation-parallel-migration" class="hash-link" aria-label="Direct link to Shadow evaluation (parallel migration)" title="Direct link to Shadow evaluation (parallel migration)">​</a></h2>
+<hr/>
+<h2 id="shadow-evaluation-parallel-migration">Shadow evaluation (parallel migration)<a class="headerlink" href="#shadow-evaluation-parallel-migration" title="Permanent link">¶</a></h2>
 <p>For gradual migrations, you can evaluate against a baseline registry and shadow-evaluate against a candidate:</p>
-<div class="language-kotlin codeBlockContainer_JOuc theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_UV5k"><pre tabindex="0" class="prism-code language-kotlin codeBlock_cO2c thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_Jat4"><span class="token-line" style="color:#393A34"><span class="token keyword" style="color:#00009f">val</span><span class="token plain"> value </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> Features</span><span class="token punctuation" style="color:#393A34">.</span><span class="token plain">darkMode</span><span class="token punctuation" style="color:#393A34">.</span><span class="token function" style="color:#d73a49">evaluateWithShadow</span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    context </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> context</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    candidateRegistry </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> candidateRegistry</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    onMismatch </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"> mismatch </span><span class="token operator" style="color:#393A34">-&gt;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">        log</span><span class="token punctuation" style="color:#393A34">.</span><span class="token function" style="color:#d73a49">warn</span><span class="token punctuation" style="color:#393A34">(</span><span class="token string-literal singleline string" style="color:#e3116c">&quot;Mismatch: </span><span class="token string-literal singleline interpolation interpolation-punctuation punctuation" style="color:#393A34">${</span><span class="token string-literal singleline interpolation expression">mismatch</span><span class="token string-literal singleline interpolation expression punctuation" style="color:#393A34">.</span><span class="token string-literal singleline interpolation expression">kinds</span><span class="token string-literal singleline interpolation interpolation-punctuation punctuation" style="color:#393A34">}</span><span class="token string-literal singleline string" style="color:#e3116c"> baseline=</span><span class="token string-literal singleline interpolation interpolation-punctuation punctuation" style="color:#393A34">${</span><span class="token string-literal singleline interpolation expression">mismatch</span><span class="token string-literal singleline interpolation expression punctuation" style="color:#393A34">.</span><span class="token string-literal singleline interpolation expression">baseline</span><span class="token string-literal singleline interpolation expression punctuation" style="color:#393A34">.</span><span class="token string-literal singleline interpolation expression">value</span><span class="token string-literal singleline interpolation interpolation-punctuation punctuation" style="color:#393A34">}</span><span class="token string-literal singleline string" style="color:#e3116c"> candidate=</span><span class="token string-literal singleline interpolation interpolation-punctuation punctuation" style="color:#393A34">${</span><span class="token string-literal singleline interpolation expression">mismatch</span><span class="token string-literal singleline interpolation expression punctuation" style="color:#393A34">.</span><span class="token string-literal singleline interpolation expression">candidate</span><span class="token string-literal singleline interpolation expression punctuation" style="color:#393A34">.</span><span class="token string-literal singleline interpolation expression">value</span><span class="token string-literal singleline interpolation interpolation-punctuation punctuation" style="color:#393A34">}</span><span class="token string-literal singleline string" style="color:#e3116c">&quot;</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    </span><span class="token punctuation" style="color:#393A34">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">)</span><br></span></code></pre></div></div>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-7-1"><a href="#__codelineno-7-1" id="__codelineno-7-1" name="__codelineno-7-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Features</span><span class="p">.</span><span class="na">darkMode</span><span class="p">.</span><span class="na">evaluateWithShadow</span><span class="p">(</span>
+</span><span id="__span-7-2"><a href="#__codelineno-7-2" id="__codelineno-7-2" name="__codelineno-7-2"></a><span class="w">    </span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">,</span>
+</span><span id="__span-7-3"><a href="#__codelineno-7-3" id="__codelineno-7-3" name="__codelineno-7-3"></a><span class="w">    </span><span class="n">candidateRegistry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">candidateRegistry</span><span class="p">,</span>
+</span><span id="__span-7-4"><a href="#__codelineno-7-4" id="__codelineno-7-4" name="__codelineno-7-4"></a><span class="w">    </span><span class="n">onMismatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">mismatch</span><span class="w"> </span><span class="o">-&gt;</span>
+</span><span id="__span-7-5"><a href="#__codelineno-7-5" id="__codelineno-7-5" name="__codelineno-7-5"></a><span class="w">        </span><span class="n">log</span><span class="p">.</span><span class="na">warn</span><span class="p">(</span><span class="s">"Mismatch: </span><span class="si">${</span><span class="n">mismatch</span><span class="p">.</span><span class="na">kinds</span><span class="si">}</span><span class="s"> baseline=</span><span class="si">${</span><span class="n">mismatch</span><span class="p">.</span><span class="na">baseline</span><span class="p">.</span><span class="na">value</span><span class="si">}</span><span class="s"> candidate=</span><span class="si">${</span><span class="n">mismatch</span><span class="p">.</span><span class="na">candidate</span><span class="p">.</span><span class="na">value</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
+</span><span id="__span-7-6"><a href="#__codelineno-7-6" id="__codelineno-7-6" name="__codelineno-7-6"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-7-7"><a href="#__codelineno-7-7" id="__codelineno-7-7" name="__codelineno-7-7"></a><span class="p">)</span>
+</span></code></pre></div>
 <p>This keeps behavior pinned to the baseline value while generating comparison telemetry for the candidate path.</p>
-<hr>
-<h2 class="anchor anchorWithStickyNavbar_piTN" id="next-steps">Next steps<a href="#next-steps" class="hash-link" aria-label="Direct link to Next steps" title="Direct link to Next steps">​</a></h2>
+<hr/>
+<h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">¶</a></h2>
 <ul>
-<li>Learn the primitives: <a href="/core-concepts/">&quot;Core Concepts&quot;</a></li>
-<li>Understand rule evaluation and determinism: <a href="/evaluation/">&quot;Evaluation&quot;</a></li>
-<li>Operate remote config safely: <a href="/remote-config/">&quot;Remote Configuration&quot;</a></li>
-</ul></div></div></div><div class="row"><div class="col col--12"></div></div></article><div class="row"><div class="col col--12"><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/getting-started/"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Getting Started</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/core-concepts/"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Core Concepts</div></a></nav></div></div></div></div><div class="col col--3"><div class="tableOfContents_Ss8j thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#the-core-mapping" class="table-of-contents__link toc-highlight">The core mapping</a></li><li><a href="#step-by-step-adoption-incremental" class="table-of-contents__link toc-highlight">Step-by-step adoption (incremental)</a><ul><li><a href="#0-start-with-one-namespace" class="table-of-contents__link toc-highlight">0. Start with one namespace</a></li><li><a href="#1-replace-call-sites-first-value-safety" class="table-of-contents__link toc-highlight">1. Replace call sites first (value safety)</a></li><li><a href="#2-introduce-typed-context-targeting--ramp-ups" class="table-of-contents__link toc-highlight">2. Introduce typed context (targeting + ramp-ups)</a></li><li><a href="#3-add-rules-after-defaults-exist-behavior-safety" class="table-of-contents__link toc-highlight">3. Add rules after defaults exist (behavior safety)</a></li></ul></li><li><a href="#migrating-context-maps-to-typed-contexts" class="table-of-contents__link toc-highlight">Migrating “context maps” to typed contexts</a></li><li><a href="#namespaces-replace-prefixes" class="table-of-contents__link toc-highlight">Namespaces replace prefixes</a></li><li><a href="#when-you-need-runtime-configuration-remote-json" class="table-of-contents__link toc-highlight">When you need runtime configuration (remote JSON)</a></li><li><a href="#shadow-evaluation-parallel-migration" class="table-of-contents__link toc-highlight">Shadow evaluation (parallel migration)</a></li><li><a href="#next-steps" class="table-of-contents__link toc-highlight">Next steps</a></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Docs</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/">Konditional</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">More</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/amichne/konditional" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_KEHk"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2025 amichne.</div></div></div></footer></div>
+<li>Learn the primitives: <a href="../core-concepts/">"Core Concepts"</a></li>
+<li>Understand rule evaluation and determinism: <a href="../evaluation/">"Evaluation"</a></li>
+<li>Operate remote config safely: <a href="../remote-config/">"Remote Configuration"</a></li>
+</ul>
+</article>
+</div>
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+</div>
+<button class="md-top md-icon" data-md-component="top" hidden="" type="button">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  Back to top
+</button>
+</main>
+<footer class="md-footer">
+<div class="md-footer-meta md-typeset">
+<div class="md-footer-meta__inner md-grid">
+<div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" rel="noopener" target="_blank">
+      Material for MkDocs
+    </a>
+</div>
+<div class="md-social">
+<a class="md-social__link" href="https://github.com/amichne/konditional" rel="noopener" target="_blank" title="github.com">
+<svg viewbox="0 0 496 512" xmlns="http://www.w3.org/2000/svg"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+</a>
+</div>
+</div>
+</div>
+</footer>
+</div>
+<div class="md-dialog" data-md-component="dialog">
+<div class="md-dialog__inner md-typeset"></div>
+</div>
+<script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+<script src="../assets/javascripts/bundle.c8b220af.min.js"></script>
 </body>
 </html>

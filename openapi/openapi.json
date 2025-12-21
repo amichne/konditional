@@ -1,0 +1,2563 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Konditional Serialization Schema",
+    "version": "0.0.1"
+  },
+  "paths": {
+    "/snapshot": {
+      "get": {
+        "summary": "Fetch a configuration snapshot",
+        "responses": {
+          "200": {
+            "description": "Snapshot payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SerializableSnapshot"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "FeatureId": {
+        "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+        "type": "string"
+      },
+      "Version": {
+        "description": "Semantic version representation.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "major": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "minor": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "patch": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "major",
+          "minor",
+          "patch"
+        ]
+      },
+      "VersionRange": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "UNBOUNDED"
+                ]
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "MIN_BOUND"
+                ]
+              },
+              "min": {
+                "description": "Semantic version representation.",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "major": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 0
+                  },
+                  "minor": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 0
+                  },
+                  "patch": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "major",
+                  "minor",
+                  "patch"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "min"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "MAX_BOUND"
+                ]
+              },
+              "max": {
+                "description": "Semantic version representation.",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "major": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 0
+                  },
+                  "minor": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 0
+                  },
+                  "patch": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "major",
+                  "minor",
+                  "patch"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "max"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "MIN_AND_MAX_BOUND"
+                ]
+              },
+              "min": {
+                "description": "Semantic version representation.",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "major": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 0
+                  },
+                  "minor": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 0
+                  },
+                  "patch": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "major",
+                  "minor",
+                  "patch"
+                ]
+              },
+              "max": {
+                "description": "Semantic version representation.",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "major": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 0
+                  },
+                  "minor": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 0
+                  },
+                  "patch": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "major",
+                  "minor",
+                  "patch"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "min",
+              "max"
+            ]
+          }
+        ]
+      },
+      "FlagValue": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "BOOLEAN"
+                ]
+              },
+              "value": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "STRING"
+                ]
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "INT"
+                ]
+              },
+              "value": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "DOUBLE"
+                ]
+              },
+              "value": {
+                "type": "number",
+                "format": "double"
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "ENUM"
+                ]
+              },
+              "value": {
+                "type": "string"
+              },
+              "enumClassName": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "value",
+              "enumClassName"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "DATA_CLASS"
+                ]
+              },
+              "dataClassName": {
+                "type": "string"
+              },
+              "value": {
+                "type": "object",
+                "additionalProperties": {
+                  "nullable": true
+                }
+              }
+            },
+            "required": [
+              "type",
+              "dataClassName",
+              "value"
+            ]
+          }
+        ]
+      },
+      "SerializableRule": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "BOOLEAN"
+                    ]
+                  },
+                  "value": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "type",
+                  "value"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "STRING"
+                    ]
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "value"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "INT"
+                    ]
+                  },
+                  "value": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                },
+                "required": [
+                  "type",
+                  "value"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "DOUBLE"
+                    ]
+                  },
+                  "value": {
+                    "type": "number",
+                    "format": "double"
+                  }
+                },
+                "required": [
+                  "type",
+                  "value"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "ENUM"
+                    ]
+                  },
+                  "value": {
+                    "type": "string"
+                  },
+                  "enumClassName": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "value",
+                  "enumClassName"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "DATA_CLASS"
+                    ]
+                  },
+                  "dataClassName": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "nullable": true
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "dataClassName",
+                  "value"
+                ]
+              }
+            ]
+          },
+          "rampUp": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0.0,
+            "maximum": 100.0,
+            "default": 100.0
+          },
+          "rampUpAllowlist": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true,
+            "default": []
+          },
+          "note": {
+            "type": "string"
+          },
+          "locales": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true,
+            "default": [
+              "AUSTRALIA",
+              "AUSTRIA",
+              "BELGIUM_DUTCH",
+              "BELGIUM_FRENCH",
+              "CANADA",
+              "CANADA_FRENCH",
+              "FINLAND",
+              "FRANCE",
+              "GERMANY",
+              "HONG_KONG",
+              "HONG_KONG_ENGLISH",
+              "INDIA",
+              "ITALY",
+              "JAPAN",
+              "MEXICO",
+              "NETHERLANDS",
+              "NEW_ZEALAND",
+              "NORWAY",
+              "SINGAPORE",
+              "SPAIN",
+              "SWEDEN",
+              "TAIWAN",
+              "UNITED_KINGDOM",
+              "UNITED_STATES",
+              "ICC_EN_EU",
+              "ICC_EN_EI"
+            ]
+          },
+          "platforms": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true,
+            "default": [
+              "IOS",
+              "ANDROID",
+              "WEB"
+            ]
+          },
+          "versionRange": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "UNBOUNDED"
+                    ]
+                  }
+                },
+                "required": [
+                  "type"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "MIN_BOUND"
+                    ]
+                  },
+                  "min": {
+                    "description": "Semantic version representation.",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "major": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                      },
+                      "minor": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                      },
+                      "patch": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                      }
+                    },
+                    "required": [
+                      "major",
+                      "minor",
+                      "patch"
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "min"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "MAX_BOUND"
+                    ]
+                  },
+                  "max": {
+                    "description": "Semantic version representation.",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "major": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                      },
+                      "minor": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                      },
+                      "patch": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                      }
+                    },
+                    "required": [
+                      "major",
+                      "minor",
+                      "patch"
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "max"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "MIN_AND_MAX_BOUND"
+                    ]
+                  },
+                  "min": {
+                    "description": "Semantic version representation.",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "major": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                      },
+                      "minor": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                      },
+                      "patch": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                      }
+                    },
+                    "required": [
+                      "major",
+                      "minor",
+                      "patch"
+                    ]
+                  },
+                  "max": {
+                    "description": "Semantic version representation.",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "major": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                      },
+                      "minor": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                      },
+                      "patch": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                      }
+                    },
+                    "required": [
+                      "major",
+                      "minor",
+                      "patch"
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "min",
+                  "max"
+                ]
+              }
+            ],
+            "default": {
+              "type": "UNBOUNDED"
+            }
+          },
+          "axes": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
+            },
+            "default": {}
+          }
+        },
+        "required": [
+          "value",
+          "rampUp",
+          "rampUpAllowlist",
+          "locales",
+          "platforms",
+          "versionRange",
+          "axes"
+        ]
+      },
+      "SerializableFlag": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+            "type": "string"
+          },
+          "defaultValue": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "BOOLEAN"
+                    ]
+                  },
+                  "value": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "type",
+                  "value"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "STRING"
+                    ]
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "value"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "INT"
+                    ]
+                  },
+                  "value": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                },
+                "required": [
+                  "type",
+                  "value"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "DOUBLE"
+                    ]
+                  },
+                  "value": {
+                    "type": "number",
+                    "format": "double"
+                  }
+                },
+                "required": [
+                  "type",
+                  "value"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "ENUM"
+                    ]
+                  },
+                  "value": {
+                    "type": "string"
+                  },
+                  "enumClassName": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "value",
+                  "enumClassName"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "DATA_CLASS"
+                    ]
+                  },
+                  "dataClassName": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "nullable": true
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "dataClassName",
+                  "value"
+                ]
+              }
+            ]
+          },
+          "salt": {
+            "type": "string",
+            "default": "v1"
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          },
+          "rampUpAllowlist": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true,
+            "default": []
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "value": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "BOOLEAN"
+                          ]
+                        },
+                        "value": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "STRING"
+                          ]
+                        },
+                        "value": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "INT"
+                          ]
+                        },
+                        "value": {
+                          "type": "integer",
+                          "format": "int32"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "DOUBLE"
+                          ]
+                        },
+                        "value": {
+                          "type": "number",
+                          "format": "double"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "ENUM"
+                          ]
+                        },
+                        "value": {
+                          "type": "string"
+                        },
+                        "enumClassName": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value",
+                        "enumClassName"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "DATA_CLASS"
+                          ]
+                        },
+                        "dataClassName": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "nullable": true
+                          }
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "dataClassName",
+                        "value"
+                      ]
+                    }
+                  ]
+                },
+                "rampUp": {
+                  "type": "number",
+                  "format": "double",
+                  "minimum": 0.0,
+                  "maximum": 100.0,
+                  "default": 100.0
+                },
+                "rampUpAllowlist": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "uniqueItems": true,
+                  "default": []
+                },
+                "note": {
+                  "type": "string"
+                },
+                "locales": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "uniqueItems": true,
+                  "default": [
+                    "AUSTRALIA",
+                    "AUSTRIA",
+                    "BELGIUM_DUTCH",
+                    "BELGIUM_FRENCH",
+                    "CANADA",
+                    "CANADA_FRENCH",
+                    "FINLAND",
+                    "FRANCE",
+                    "GERMANY",
+                    "HONG_KONG",
+                    "HONG_KONG_ENGLISH",
+                    "INDIA",
+                    "ITALY",
+                    "JAPAN",
+                    "MEXICO",
+                    "NETHERLANDS",
+                    "NEW_ZEALAND",
+                    "NORWAY",
+                    "SINGAPORE",
+                    "SPAIN",
+                    "SWEDEN",
+                    "TAIWAN",
+                    "UNITED_KINGDOM",
+                    "UNITED_STATES",
+                    "ICC_EN_EU",
+                    "ICC_EN_EI"
+                  ]
+                },
+                "platforms": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "uniqueItems": true,
+                  "default": [
+                    "IOS",
+                    "ANDROID",
+                    "WEB"
+                  ]
+                },
+                "versionRange": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "UNBOUNDED"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "MIN_BOUND"
+                          ]
+                        },
+                        "min": {
+                          "description": "Semantic version representation.",
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "major": {
+                              "type": "integer",
+                              "format": "int32",
+                              "minimum": 0
+                            },
+                            "minor": {
+                              "type": "integer",
+                              "format": "int32",
+                              "minimum": 0
+                            },
+                            "patch": {
+                              "type": "integer",
+                              "format": "int32",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "major",
+                            "minor",
+                            "patch"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "min"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "MAX_BOUND"
+                          ]
+                        },
+                        "max": {
+                          "description": "Semantic version representation.",
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "major": {
+                              "type": "integer",
+                              "format": "int32",
+                              "minimum": 0
+                            },
+                            "minor": {
+                              "type": "integer",
+                              "format": "int32",
+                              "minimum": 0
+                            },
+                            "patch": {
+                              "type": "integer",
+                              "format": "int32",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "major",
+                            "minor",
+                            "patch"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "max"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "MIN_AND_MAX_BOUND"
+                          ]
+                        },
+                        "min": {
+                          "description": "Semantic version representation.",
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "major": {
+                              "type": "integer",
+                              "format": "int32",
+                              "minimum": 0
+                            },
+                            "minor": {
+                              "type": "integer",
+                              "format": "int32",
+                              "minimum": 0
+                            },
+                            "patch": {
+                              "type": "integer",
+                              "format": "int32",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "major",
+                            "minor",
+                            "patch"
+                          ]
+                        },
+                        "max": {
+                          "description": "Semantic version representation.",
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "major": {
+                              "type": "integer",
+                              "format": "int32",
+                              "minimum": 0
+                            },
+                            "minor": {
+                              "type": "integer",
+                              "format": "int32",
+                              "minimum": 0
+                            },
+                            "patch": {
+                              "type": "integer",
+                              "format": "int32",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "major",
+                            "minor",
+                            "patch"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "min",
+                        "max"
+                      ]
+                    }
+                  ],
+                  "default": {
+                    "type": "UNBOUNDED"
+                  }
+                },
+                "axes": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "uniqueItems": true
+                  },
+                  "default": {}
+                }
+              },
+              "required": [
+                "value",
+                "rampUp",
+                "rampUpAllowlist",
+                "locales",
+                "platforms",
+                "versionRange",
+                "axes"
+              ]
+            },
+            "default": []
+          }
+        },
+        "required": [
+          "key",
+          "defaultValue",
+          "salt",
+          "isActive",
+          "rampUpAllowlist",
+          "rules"
+        ]
+      },
+      "SerializableSnapshotMetadata": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "string"
+          },
+          "generatedAtEpochMillis": {
+            "type": "number",
+            "format": "int64",
+            "minimum": 0.0
+          },
+          "source": {
+            "type": "string"
+          }
+        }
+      },
+      "SerializableSnapshot": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "meta": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "version": {
+                "type": "string"
+              },
+              "generatedAtEpochMillis": {
+                "type": "number",
+                "format": "int64",
+                "minimum": 0.0
+              },
+              "source": {
+                "type": "string"
+              }
+            }
+          },
+          "flags": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+                  "type": "string"
+                },
+                "defaultValue": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "BOOLEAN"
+                          ]
+                        },
+                        "value": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "STRING"
+                          ]
+                        },
+                        "value": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "INT"
+                          ]
+                        },
+                        "value": {
+                          "type": "integer",
+                          "format": "int32"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "DOUBLE"
+                          ]
+                        },
+                        "value": {
+                          "type": "number",
+                          "format": "double"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "ENUM"
+                          ]
+                        },
+                        "value": {
+                          "type": "string"
+                        },
+                        "enumClassName": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value",
+                        "enumClassName"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "DATA_CLASS"
+                          ]
+                        },
+                        "dataClassName": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "nullable": true
+                          }
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "dataClassName",
+                        "value"
+                      ]
+                    }
+                  ]
+                },
+                "salt": {
+                  "type": "string",
+                  "default": "v1"
+                },
+                "isActive": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "rampUpAllowlist": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "uniqueItems": true,
+                  "default": []
+                },
+                "rules": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "value": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "BOOLEAN"
+                                ]
+                              },
+                              "value": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "value"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "STRING"
+                                ]
+                              },
+                              "value": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "value"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "INT"
+                                ]
+                              },
+                              "value": {
+                                "type": "integer",
+                                "format": "int32"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "value"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "DOUBLE"
+                                ]
+                              },
+                              "value": {
+                                "type": "number",
+                                "format": "double"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "value"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "ENUM"
+                                ]
+                              },
+                              "value": {
+                                "type": "string"
+                              },
+                              "enumClassName": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "value",
+                              "enumClassName"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "DATA_CLASS"
+                                ]
+                              },
+                              "dataClassName": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "object",
+                                "additionalProperties": {
+                                  "nullable": true
+                                }
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "dataClassName",
+                              "value"
+                            ]
+                          }
+                        ]
+                      },
+                      "rampUp": {
+                        "type": "number",
+                        "format": "double",
+                        "minimum": 0.0,
+                        "maximum": 100.0,
+                        "default": 100.0
+                      },
+                      "rampUpAllowlist": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "uniqueItems": true,
+                        "default": []
+                      },
+                      "note": {
+                        "type": "string"
+                      },
+                      "locales": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "uniqueItems": true,
+                        "default": [
+                          "AUSTRALIA",
+                          "AUSTRIA",
+                          "BELGIUM_DUTCH",
+                          "BELGIUM_FRENCH",
+                          "CANADA",
+                          "CANADA_FRENCH",
+                          "FINLAND",
+                          "FRANCE",
+                          "GERMANY",
+                          "HONG_KONG",
+                          "HONG_KONG_ENGLISH",
+                          "INDIA",
+                          "ITALY",
+                          "JAPAN",
+                          "MEXICO",
+                          "NETHERLANDS",
+                          "NEW_ZEALAND",
+                          "NORWAY",
+                          "SINGAPORE",
+                          "SPAIN",
+                          "SWEDEN",
+                          "TAIWAN",
+                          "UNITED_KINGDOM",
+                          "UNITED_STATES",
+                          "ICC_EN_EU",
+                          "ICC_EN_EI"
+                        ]
+                      },
+                      "platforms": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "uniqueItems": true,
+                        "default": [
+                          "IOS",
+                          "ANDROID",
+                          "WEB"
+                        ]
+                      },
+                      "versionRange": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "UNBOUNDED"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "type"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "MIN_BOUND"
+                                ]
+                              },
+                              "min": {
+                                "description": "Semantic version representation.",
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "major": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  },
+                                  "minor": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  },
+                                  "patch": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  }
+                                },
+                                "required": [
+                                  "major",
+                                  "minor",
+                                  "patch"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "min"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "MAX_BOUND"
+                                ]
+                              },
+                              "max": {
+                                "description": "Semantic version representation.",
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "major": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  },
+                                  "minor": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  },
+                                  "patch": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  }
+                                },
+                                "required": [
+                                  "major",
+                                  "minor",
+                                  "patch"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "max"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "MIN_AND_MAX_BOUND"
+                                ]
+                              },
+                              "min": {
+                                "description": "Semantic version representation.",
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "major": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  },
+                                  "minor": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  },
+                                  "patch": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  }
+                                },
+                                "required": [
+                                  "major",
+                                  "minor",
+                                  "patch"
+                                ]
+                              },
+                              "max": {
+                                "description": "Semantic version representation.",
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "major": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  },
+                                  "minor": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  },
+                                  "patch": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  }
+                                },
+                                "required": [
+                                  "major",
+                                  "minor",
+                                  "patch"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "min",
+                              "max"
+                            ]
+                          }
+                        ],
+                        "default": {
+                          "type": "UNBOUNDED"
+                        }
+                      },
+                      "axes": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "uniqueItems": true
+                        },
+                        "default": {}
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "rampUp",
+                      "rampUpAllowlist",
+                      "locales",
+                      "platforms",
+                      "versionRange",
+                      "axes"
+                    ]
+                  },
+                  "default": []
+                }
+              },
+              "required": [
+                "key",
+                "defaultValue",
+                "salt",
+                "isActive",
+                "rampUpAllowlist",
+                "rules"
+              ]
+            }
+          }
+        },
+        "required": [
+          "flags"
+        ]
+      },
+      "SerializablePatch": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "meta": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "version": {
+                "type": "string"
+              },
+              "generatedAtEpochMillis": {
+                "type": "number",
+                "format": "int64",
+                "minimum": 0.0
+              },
+              "source": {
+                "type": "string"
+              }
+            }
+          },
+          "flags": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+                  "type": "string"
+                },
+                "defaultValue": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "BOOLEAN"
+                          ]
+                        },
+                        "value": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "STRING"
+                          ]
+                        },
+                        "value": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "INT"
+                          ]
+                        },
+                        "value": {
+                          "type": "integer",
+                          "format": "int32"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "DOUBLE"
+                          ]
+                        },
+                        "value": {
+                          "type": "number",
+                          "format": "double"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "ENUM"
+                          ]
+                        },
+                        "value": {
+                          "type": "string"
+                        },
+                        "enumClassName": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value",
+                        "enumClassName"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "DATA_CLASS"
+                          ]
+                        },
+                        "dataClassName": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "nullable": true
+                          }
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "dataClassName",
+                        "value"
+                      ]
+                    }
+                  ]
+                },
+                "salt": {
+                  "type": "string",
+                  "default": "v1"
+                },
+                "isActive": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "rampUpAllowlist": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "uniqueItems": true,
+                  "default": []
+                },
+                "rules": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "value": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "BOOLEAN"
+                                ]
+                              },
+                              "value": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "value"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "STRING"
+                                ]
+                              },
+                              "value": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "value"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "INT"
+                                ]
+                              },
+                              "value": {
+                                "type": "integer",
+                                "format": "int32"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "value"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "DOUBLE"
+                                ]
+                              },
+                              "value": {
+                                "type": "number",
+                                "format": "double"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "value"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "ENUM"
+                                ]
+                              },
+                              "value": {
+                                "type": "string"
+                              },
+                              "enumClassName": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "value",
+                              "enumClassName"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "DATA_CLASS"
+                                ]
+                              },
+                              "dataClassName": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "object",
+                                "additionalProperties": {
+                                  "nullable": true
+                                }
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "dataClassName",
+                              "value"
+                            ]
+                          }
+                        ]
+                      },
+                      "rampUp": {
+                        "type": "number",
+                        "format": "double",
+                        "minimum": 0.0,
+                        "maximum": 100.0,
+                        "default": 100.0
+                      },
+                      "rampUpAllowlist": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "uniqueItems": true,
+                        "default": []
+                      },
+                      "note": {
+                        "type": "string"
+                      },
+                      "locales": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "uniqueItems": true,
+                        "default": [
+                          "AUSTRALIA",
+                          "AUSTRIA",
+                          "BELGIUM_DUTCH",
+                          "BELGIUM_FRENCH",
+                          "CANADA",
+                          "CANADA_FRENCH",
+                          "FINLAND",
+                          "FRANCE",
+                          "GERMANY",
+                          "HONG_KONG",
+                          "HONG_KONG_ENGLISH",
+                          "INDIA",
+                          "ITALY",
+                          "JAPAN",
+                          "MEXICO",
+                          "NETHERLANDS",
+                          "NEW_ZEALAND",
+                          "NORWAY",
+                          "SINGAPORE",
+                          "SPAIN",
+                          "SWEDEN",
+                          "TAIWAN",
+                          "UNITED_KINGDOM",
+                          "UNITED_STATES",
+                          "ICC_EN_EU",
+                          "ICC_EN_EI"
+                        ]
+                      },
+                      "platforms": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "uniqueItems": true,
+                        "default": [
+                          "IOS",
+                          "ANDROID",
+                          "WEB"
+                        ]
+                      },
+                      "versionRange": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "UNBOUNDED"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "type"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "MIN_BOUND"
+                                ]
+                              },
+                              "min": {
+                                "description": "Semantic version representation.",
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "major": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  },
+                                  "minor": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  },
+                                  "patch": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  }
+                                },
+                                "required": [
+                                  "major",
+                                  "minor",
+                                  "patch"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "min"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "MAX_BOUND"
+                                ]
+                              },
+                              "max": {
+                                "description": "Semantic version representation.",
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "major": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  },
+                                  "minor": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  },
+                                  "patch": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  }
+                                },
+                                "required": [
+                                  "major",
+                                  "minor",
+                                  "patch"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "max"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "MIN_AND_MAX_BOUND"
+                                ]
+                              },
+                              "min": {
+                                "description": "Semantic version representation.",
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "major": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  },
+                                  "minor": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  },
+                                  "patch": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  }
+                                },
+                                "required": [
+                                  "major",
+                                  "minor",
+                                  "patch"
+                                ]
+                              },
+                              "max": {
+                                "description": "Semantic version representation.",
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "major": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  },
+                                  "minor": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  },
+                                  "patch": {
+                                    "type": "integer",
+                                    "format": "int32",
+                                    "minimum": 0
+                                  }
+                                },
+                                "required": [
+                                  "major",
+                                  "minor",
+                                  "patch"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "min",
+                              "max"
+                            ]
+                          }
+                        ],
+                        "default": {
+                          "type": "UNBOUNDED"
+                        }
+                      },
+                      "axes": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "uniqueItems": true
+                        },
+                        "default": {}
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "rampUp",
+                      "rampUpAllowlist",
+                      "locales",
+                      "platforms",
+                      "versionRange",
+                      "axes"
+                    ]
+                  },
+                  "default": []
+                }
+              },
+              "required": [
+                "key",
+                "defaultValue",
+                "salt",
+                "isActive",
+                "rampUpAllowlist",
+                "rules"
+              ]
+            }
+          },
+          "removeKeys": {
+            "type": "array",
+            "items": {
+              "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+              "type": "string"
+            },
+            "default": []
+          }
+        },
+        "required": [
+          "flags",
+          "removeKeys"
+        ]
+      }
+    }
+  }
+}
