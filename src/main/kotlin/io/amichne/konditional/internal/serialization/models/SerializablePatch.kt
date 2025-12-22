@@ -8,7 +8,7 @@ import io.amichne.konditional.values.FeatureId
  * Only includes flags that should be updated or added.
  */
 @JsonClass(generateAdapter = true)
-internal data class SerializablePatch(
+data class SerializablePatch(
     val meta: SerializableSnapshotMetadata? = null,
     val flags: List<SerializableFlag>,
     val removeKeys: List<FeatureId> = emptyList(),

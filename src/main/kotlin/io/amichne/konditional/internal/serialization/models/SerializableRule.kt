@@ -10,7 +10,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * and uses VersionRange directly (serialized via custom Moshi adapter).
  */
 @JsonClass(generateAdapter = true)
-internal data class SerializableRule(
+data class SerializableRule(
     val value: FlagValue<*>,
     val rampUp: Double = 100.0,
     val rampUpAllowlist: Set<String> = emptySet(),
