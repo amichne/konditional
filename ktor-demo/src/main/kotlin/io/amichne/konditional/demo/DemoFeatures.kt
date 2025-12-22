@@ -4,151 +4,125 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.features.FeatureContainer
-import io.amichne.konditional.rules.evaluable.Evaluable.Companion.factory
 
 /**
- * Demo features features showcasing different value types using FeatureContainer delegation.
+ * Demo features showcasing different value types using [Namespace] property delegation.
  *
- * This demonstrates the modern pattern of using FeatureContainer instead of enum-based features:
+ * This demonstrates the modern pattern of using [Namespace] instead of enum-based features:
  * - Complete enumeration via allFeatures()
  * - Zero boilerplate (namespace declared once)
  * - Mixed types in one features
  * - Type-safe delegation with DSL configuration
  */
-object DemoFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
+object DemoFeatures : Namespace("demo") {
     // Boolean Features
     val DARK_MODE by boolean<Context>(false) {
-        rule {
+        rule(true) {
             platforms(Platform.IOS, Platform.ANDROID)
-            rollout { 50.0 }
-        } returns true
-        rule {
+            rampUp { 50.0 }
+        }
+        rule(true) {
             platforms(Platform.WEB)
-            rollout { 75.0 }
-        } returns true
+            rampUp { 75.0 }
+        }
     }
 
     val BETA_FEATURES by boolean<Context>(false) {
-        default(false)
-        rule {
+        rule(true) {
             versions {
                 max(3)
                 min(2)
             }
-            rollout { 25.0 }
-        } returns true
-        rule {
+            rampUp { 25.0 }
+        }
+        rule(true) {
             versions { max(3) }
-            rollout { 100.0 }
-        } returns true
+            rampUp { 100.0 }
+        }
     }
     val ANALYTICS_ENABLED by boolean<Context>(true) { }
 
     // String Features
-    val WELCOME_MESSAGE by string<Context>("Hello!") {
-        default("Welcome!")
-        rule {
+    val WELCOME_MESSAGE by string<Context>("Welcome!") {
+        rule("Welcome to Konditional Demo!") {
             locales(AppLocale.UNITED_STATES, AppLocale.CANADA)
-        } returns "Welcome to Konditional Demo!"
-        rule {
+        }
+        rule("Bienvenue dans Konditional Demo!") {
             locales(AppLocale.UNITED_STATES)
-        } returns "Bienvenue dans Konditional Demo!"
-
+        }
     }
-    val THEME_COLOR by string<Context>("blue") {
-        default("#3B82F6") // Blue
-        rule {
+    val THEME_COLOR by string<Context>("#3B82F6") {
+        rule("#10B981") {
             platforms(Platform.IOS)
-            rollout { 50.0 }
-        } returns "#10B981" // Green
-        rule {
+            rampUp { 50.0 }
+        }
+        rule("#8B5CF6") {
             platforms(Platform.ANDROID)
-        } returns "#8B5CF6" // Purple
-        rule {
+        }
+        rule("#F59E0B") {
             platforms(Platform.WEB)
-        } returns "#F59E0B" // Amber
+        }
     }
 
     // Integer Features
     val MAX_ITEMS_PER_PAGE by integer<Context>(10) {
-        default(10)
-        rule {
+        rule(25) {
             platforms(Platform.WEB)
-        } returns 25
-        rule {
+        }
+        rule(15) {
             platforms(Platform.IOS, Platform.ANDROID)
-        } returns 15
+        }
     }
 
-    val CACHE_TTL_SECONDS by integer<Context>(60) {
-        default(300) // 5 minutes
-        rule {
+    val CACHE_TTL_SECONDS by integer<Context>(300) {
+        rule(600) {
             versions { min(2) }
-        } returns 600 // 10 minutes for v2+
-        rule {
+        }
+        rule(900) {
             platforms(Platform.WEB)
-        } returns 900 // 15 minutes for web
-
+        }
     }
 
     // Double Features
-    val DISCOUNT_PERCENTAGE by double<Context>(15.0) {
-        default(0.0)
-        rule {
+    val DISCOUNT_PERCENTAGE by double<Context>(0.0) {
+        rule(10.0) {
             platforms(Platform.IOS)
-            rollout { 30.0 }
-        } returns 10.0
-        rule {
+            rampUp { 30.0 }
+        }
+        rule(15.0) {
             platforms(Platform.ANDROID)
-            rollout { 20.0 }
-        } returns 15.0
-        rule {
+            rampUp { 20.0 }
+        }
+        rule(20.0) {
             versions { min(2, 5) }
-            rollout { 50.0 }
-        } returns 20.0
-
+            rampUp { 50.0 }
+        }
     }
-    val API_RATE_LIMIT by double<Context>(100.5) {
-        default(100.0)
-        rule {
+    val API_RATE_LIMIT by double<Context>(100.0) {
+        rule(200.0) {
             platforms(Platform.WEB)
-        } returns 200.0
-        rule {
+        }
+        rule(500.0) {
             versions { min(3) }
-        } returns 500.0
-
+        }
     }
-}
 
-/**
- * Enterprise-specific features features demonstrating contextFn extensibility.
- *
- * These features require the EnterpriseContext with additional fields like
- * subscription tier and employee count.
- */
-object EnterpriseFeatures : FeatureContainer<Namespace.Global>(Namespace.Global) {
     // Enterprise Boolean Features
     val SSO_ENABLED by boolean<EnterpriseContext>(true) {
-        rule {
+        rule(true) {
             extension {
-                factory { ctx ->
-                    ctx.subscriptionTier == SubscriptionTier.ENTERPRISE ||
-                    ctx.subscriptionTier == SubscriptionTier.PROFESSIONAL
-                }
+                subscriptionTier == SubscriptionTier.ENTERPRISE ||
+                    subscriptionTier == SubscriptionTier.PROFESSIONAL
             }
-        } returns true
-
+        }
     }
     val ADVANCED_ANALYTICS by boolean<EnterpriseContext>(false) {
-        rule {
+        rule(true) {
             extension {
-                factory { ctx ->
-                    ctx.subscriptionTier == SubscriptionTier.ENTERPRISE &&
-                    ctx.employeeCount > 100
-                }
+                subscriptionTier == SubscriptionTier.ENTERPRISE &&
+                    employeeCount > 100
             }
-        } returns true
+        }
     }
     val CUSTOM_BRANDING by boolean<EnterpriseContext>(true) { }
     val DEDICATED_SUPPORT by boolean<EnterpriseContext>(false) { }

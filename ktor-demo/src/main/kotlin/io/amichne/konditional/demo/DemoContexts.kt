@@ -4,8 +4,6 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.features.FeatureAware
 import io.amichne.konditional.core.id.StableId
 
 /**
