@@ -1,6 +1,7 @@
 name: Deploy to GitHub Pages
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -30,7 +31,7 @@ jobs:
       - name: Upload Build Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: build
+          path: docusaurus/build
 
   deploy:
     name: Deploy to GitHub Pages
