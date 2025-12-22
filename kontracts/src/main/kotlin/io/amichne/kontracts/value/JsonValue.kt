@@ -20,7 +20,7 @@ sealed class JsonValue {
     /**
      * Validates this value against a schema.
      */
-    abstract fun validate(schema: JsonSchema): ValidationResult
+    abstract fun validate(schema: JsonSchema<*>): ValidationResult
 
     companion object {
         /**
@@ -56,7 +56,7 @@ sealed class JsonValue {
          */
         fun array(
             elements: List<JsonValue>,
-            elementSchema: JsonSchema? = null
+            elementSchema: JsonSchema<Any>? = null
         ): JsonArray = JsonArray(elements, elementSchema)
     }
 }

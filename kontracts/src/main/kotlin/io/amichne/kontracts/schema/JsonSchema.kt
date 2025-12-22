@@ -3,30 +3,30 @@ package io.amichne.kontracts.schema
 /**
  * Sealed class representing compile-time schema definitions for JSON values, with OpenAPI-esque properties.
  */
-sealed class JsonSchema : OpenApiProps {
+sealed class JsonSchema<out T : Any> : OpenApiProps<T> {
     override val title: String? = null
     override val description: String? = null
-    override val default: Any? = null
+    override val default: T? = null
     override val nullable: Boolean = false
-    override val example: Any? = null
+    override val example: T? = null
     override val deprecated: Boolean = false
 
     companion object {
         fun boolean(
             title: String? = null,
             description: String? = null,
-            default: Any? = null,
+            default: Boolean? = null,
             nullable: Boolean = false,
-            example: Any? = null,
+            example: Boolean? = null,
             deprecated: Boolean = false
         ): BooleanSchema = BooleanSchema(title, description, default, nullable, example, deprecated)
 
         fun string(
             title: String? = null,
             description: String? = null,
-            default: Any? = null,
+            default: String? = null,
             nullable: Boolean = false,
-            example: Any? = null,
+            example: String? = null,
             deprecated: Boolean = false,
             minLength: Int? = null,
             maxLength: Int? = null,
@@ -50,9 +50,9 @@ sealed class JsonSchema : OpenApiProps {
         fun int(
             title: String? = null,
             description: String? = null,
-            default: Any? = null,
+            default: Int? = null,
             nullable: Boolean = false,
-            example: Any? = null,
+            example: Int? = null,
             deprecated: Boolean = false,
             minimum: Int? = null,
             maximum: Int? = null,
@@ -62,9 +62,9 @@ sealed class JsonSchema : OpenApiProps {
         fun double(
             title: String? = null,
             description: String? = null,
-            default: Any? = null,
+            default: Double? = null,
             nullable: Boolean = false,
-            example: Any? = null,
+            example: Double? = null,
             deprecated: Boolean = false,
             minimum: Double? = null,
             maximum: Double? = null,
@@ -76,9 +76,9 @@ sealed class JsonSchema : OpenApiProps {
             values: List<E>,
             title: String? = null,
             description: String? = null,
-            default: Any? = null,
+            default: E? = null,
             nullable: Boolean = false,
-            example: Any? = null,
+            example: E? = null,
             deprecated: Boolean = false
         ) = EnumSchema(E::class, values, title, description, default, nullable, example, deprecated)
 
@@ -90,13 +90,13 @@ sealed class JsonSchema : OpenApiProps {
             deprecated: Boolean = false
         ) = NullSchema(title, description, default, true, example, deprecated)
 
-        fun array(
-            elementSchema: JsonSchema,
+        fun <E : Any> array(
+            elementSchema: JsonSchema<E>,
             title: String? = null,
             description: String? = null,
-            default: Any? = null,
+            default: List<E>? = null,
             nullable: Boolean = false,
-            example: Any? = null,
+            example: List<E>? = null,
             deprecated: Boolean = false,
             minItems: Int? = null,
             maxItems: Int? = null,
@@ -114,13 +114,13 @@ sealed class JsonSchema : OpenApiProps {
             uniqueItems
         )
 
-        fun map(
-            valueSchema: JsonSchema,
+        fun <V : Any> map(
+            valueSchema: JsonSchema<V>,
             title: String? = null,
             description: String? = null,
-            default: Any? = null,
+            default: Map<String, V>? = null,
             nullable: Boolean = false,
-            example: Any? = null,
+            example: Map<String, V>? = null,
             deprecated: Boolean = false,
             minProperties: Int? = null,
             maxProperties: Int? = null
@@ -137,7 +137,7 @@ sealed class JsonSchema : OpenApiProps {
         )
 
         fun oneOf(
-            options: List<JsonSchema>,
+            options: List<JsonSchema<*>>,
             title: String? = null,
             description: String? = null,
             default: Any? = null,
@@ -159,9 +159,9 @@ sealed class JsonSchema : OpenApiProps {
             fields: Map<String, FieldSchema>,
             title: String? = null,
             description: String? = null,
-            default: Any? = null,
+            default: Map<String, Any?>? = null,
             nullable: Boolean = false,
-            example: Any? = null,
+            example: Map<String, Any?>? = null,
             deprecated: Boolean = false,
             required: Set<String>? = null
         ) = ObjectSchema(fields, title, description, default, nullable, example, deprecated, required)

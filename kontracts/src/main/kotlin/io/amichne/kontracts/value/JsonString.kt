@@ -9,7 +9,7 @@ import io.amichne.kontracts.schema.ValidationResult
  * JSON string value.
  */
 data class JsonString(val value: String) : JsonValue() {
-    override fun validate(schema: JsonSchema): ValidationResult {
+    override fun validate(schema: JsonSchema<*>): ValidationResult {
         return when (schema) {
             is StringSchema -> {
                 if (schema.minLength != null && value.length < schema.minLength) {

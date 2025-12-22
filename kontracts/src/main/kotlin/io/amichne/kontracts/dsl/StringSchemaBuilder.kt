@@ -6,9 +6,9 @@ import io.amichne.kontracts.schema.StringSchema
 open class StringSchemaBuilder : JsonSchemaBuilder {
     var title: String? = null
     var description: String? = null
-    var default: Any? = null
+    var default: String? = null
     var nullable: Boolean = false
-    var example: Any? = null
+    var example: String? = null
     var deprecated: Boolean = false
     var minLength: Int? = null
     var maxLength: Int? = null

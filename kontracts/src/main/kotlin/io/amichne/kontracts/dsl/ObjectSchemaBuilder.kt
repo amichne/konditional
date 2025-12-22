@@ -7,9 +7,9 @@ import io.amichne.kontracts.schema.ObjectSchema
 class ObjectSchemaBuilder : JsonSchemaBuilder {
     var title: String? = null
     var description: String? = null
-    var default: Any? = null
+    var default: Map<String, Any?>? = null
     var nullable: Boolean = false
-    var example: Any? = null
+    var example: Map<String, Any?>? = null
     var deprecated: Boolean = false
     var required: Set<String>? = null
     private val fields = mutableMapOf<String, FieldSchema>()

@@ -178,7 +178,7 @@ internal object SerializationSchemaCatalog {
                 ),
         )
 
-    val schemas: Map<String, JsonSchema> =
+    val schemas: Map<String, JsonSchema<*>> =
         mapOf(
             "FeatureId" to featureIdSchema,
             "Version" to versionSchema,
@@ -192,16 +192,16 @@ internal object SerializationSchemaCatalog {
         )
 
     private fun required(
-        schema: JsonSchema,
+        schema: JsonSchema<*>,
         description: String? = null,
     ): FieldSchema = FieldSchema(schema = schema, required = true, description = description)
 
     private fun optional(
-        schema: JsonSchema,
+        schema: JsonSchema<*>,
         description: String? = null,
         defaultValue: Any? = null,
     ): FieldSchema =
         FieldSchema(schema = schema, required = false, defaultValue = defaultValue, description = description)
 
-    private fun enumString(value: String): JsonSchema = JsonSchema.string(enum = listOf(value))
+    private fun enumString(value: String): JsonSchema<String> = JsonSchema.string(enum = listOf(value))
 }

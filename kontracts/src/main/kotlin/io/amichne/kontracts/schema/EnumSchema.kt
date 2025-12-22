@@ -13,10 +13,10 @@ data class EnumSchema<E : Enum<E>>(
     val values: List<E>,
     override val title: String? = null,
     override val description: String? = null,
-    override val default: Any? = null,
+    override val default: E? = null,
     override val nullable: Boolean = false,
-    override val example: Any? = null,
+    override val example: E? = null,
     override val deprecated: Boolean = false
-) : JsonSchema() {
+) : JsonSchema<E>() {
     override fun toString() = "EnumSchema(${enumClass.simpleName})"
 }

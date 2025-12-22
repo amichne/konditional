@@ -18,7 +18,7 @@ import io.amichne.kontracts.schema.RootObjectSchema
 import io.amichne.kontracts.schema.StringSchema
 
 internal object OpenApiSchemaConverter {
-    fun toSchema(schema: JsonSchema): Map<String, Any?> =
+    fun toSchema(schema: JsonSchema<*>): Map<String, Any?> =
         buildMap {
             addOpenApiProps(this, schema)
             when (schema) {
@@ -49,7 +49,7 @@ internal object OpenApiSchemaConverter {
                     put("type", "string")
                     put("enum", schema.values.map { it.name })
                 }
-                is ArraySchema -> {
+                is ArraySchema<*> -> {
                     put("type", "array")
                     put("items", toSchema(schema.elementSchema))
                     schema.minItems?.let { put("minItems", it) }
@@ -61,7 +61,7 @@ internal object OpenApiSchemaConverter {
                 is ObjectSchema -> addObjectSchema(this, schema)
                 is RootObjectSchema -> addObjectSchema(this, schema)
                 is NullSchema -> put("nullable", true)
-                is MapSchema -> addMapSchema(this, schema)
+                is MapSchema<*> -> addMapSchema(this, schema)
                 is OneOfSchema -> put("oneOf", schema.options.map { toSchema(it) })
                 is AnySchema -> Unit
             }
@@ -92,7 +92,7 @@ internal object OpenApiSchemaConverter {
 
     private fun addMapSchema(
         target: MutableMap<String, Any?>,
-        schema: MapSchema,
+        schema: MapSchema<*>,
     ) {
         target["type"] = "object"
         target["additionalProperties"] = toSchema(schema.valueSchema)
@@ -112,7 +112,7 @@ internal object OpenApiSchemaConverter {
 
     private fun addOpenApiProps(
         target: MutableMap<String, Any?>,
-        props: OpenApiProps,
+        props: OpenApiProps<*>,
     ) {
         props.title?.let { target["title"] = it }
         props.description?.let { target["description"] = it }

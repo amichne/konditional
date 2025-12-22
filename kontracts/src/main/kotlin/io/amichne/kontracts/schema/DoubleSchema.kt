@@ -7,14 +7,14 @@ package io.amichne.kontracts.schema
 data class DoubleSchema(
     override val title: String? = null,
     override val description: String? = null,
-    override val default: Any? = null,
+    override val default: Double? = null,
     override val nullable: Boolean = false,
-    override val example: Any? = null,
+    override val example: Double? = null,
     override val deprecated: Boolean = false,
     val minimum: Double? = null,
     val maximum: Double? = null,
     val enum: List<Double>? = null,
     val format: String? = null
-) : JsonSchema() {
+) : JsonSchema<Double>() {
     override fun toString() = "DoubleSchema"
 }

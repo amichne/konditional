@@ -10,7 +10,7 @@ class RootObjectSchemaBuilder {
     internal val fields: MutableMap<String, FieldSchema> = mutableMapOf()
 
     @PublishedApi
-    internal var schema: JsonSchema? = null
+    internal var schema: JsonSchema<*>? = null
 
     fun build(): ObjectSchema = when (val builtSchema = schema) {
         is ObjectSchema -> builtSchema

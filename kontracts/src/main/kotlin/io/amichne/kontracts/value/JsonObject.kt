@@ -26,7 +26,7 @@ data class JsonObject(
         }
     }
 
-    override fun validate(schema: JsonSchema): ValidationResult {
+    override fun validate(schema: JsonSchema<*>): ValidationResult {
         if (schema !is ObjectSchema) {
             return ValidationResult.Invalid(
                 "Expected ${schema}, but got JsonObject"
