@@ -3,7 +3,7 @@ package io.amichne.kontracts.dsl
 import io.amichne.kontracts.schema.DoubleSchema
 
 @JsonSchemaBuilderDsl
-open class DoubleSchemaBuilder : JsonSchemaBuilder {
+open class DoubleSchemaBuilder : JsonSchemaBuilder<Double> {
     var title: String? = null
     var description: String? = null
     var default: Double? = null
@@ -14,7 +14,7 @@ open class DoubleSchemaBuilder : JsonSchemaBuilder {
     var maximum: Double? = null
     var enum: List<Double>? = null
     var format: String? = null
-    fun build() = DoubleSchema(
+    override fun build() = DoubleSchema(
         title,
         description,
         default,

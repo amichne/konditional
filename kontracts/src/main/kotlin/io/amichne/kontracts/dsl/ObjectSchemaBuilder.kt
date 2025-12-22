@@ -4,7 +4,7 @@ import io.amichne.kontracts.schema.FieldSchema
 import io.amichne.kontracts.schema.ObjectSchema
 
 @JsonSchemaBuilderDsl
-class ObjectSchemaBuilder : JsonSchemaBuilder {
+class ObjectSchemaBuilder : JsonSchemaBuilder<Map<String, Any?>> {
     var title: String? = null
     var description: String? = null
     var default: Map<String, Any?>? = null
@@ -14,5 +14,5 @@ class ObjectSchemaBuilder : JsonSchemaBuilder {
     var required: Set<String>? = null
     private val fields = mutableMapOf<String, FieldSchema>()
 
-    fun build() = ObjectSchema(fields, title, description, default, nullable, example, deprecated, required)
+    override fun build() = ObjectSchema(fields, title, description, default, nullable, example, deprecated, required)
 }

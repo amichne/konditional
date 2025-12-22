@@ -4,7 +4,7 @@ import io.amichne.kontracts.schema.EnumSchema
 import kotlin.reflect.KClass
 
 @JsonSchemaBuilderDsl
-class EnumSchemaBuilder<E : Enum<E>>(private val enumClass: KClass<E>) : JsonSchemaBuilder {
+class EnumSchemaBuilder<E : Enum<E>>(private val enumClass: KClass<E>) : JsonSchemaBuilder<E> {
     var title: String? = null
     var description: String? = null
     var default: E? = null
@@ -12,5 +12,5 @@ class EnumSchemaBuilder<E : Enum<E>>(private val enumClass: KClass<E>) : JsonSch
     var example: E? = null
     var deprecated: Boolean = false
     var values: List<E> = enumClass.java.enumConstants.toList()
-    fun build() = EnumSchema(enumClass, values, title, description, default, nullable, example, deprecated)
+    override fun build() = EnumSchema(enumClass, values, title, description, default, nullable, example, deprecated)
 }
