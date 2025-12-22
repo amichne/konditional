@@ -9,7 +9,7 @@ import io.amichne.kontracts.schema.ValidationResult
  * JSON number value (stored as Double for precision).
  */
 data class JsonNumber(val value: Double) : JsonValue() {
-    override fun validate(schema: JsonSchema): ValidationResult {
+    override fun validate(schema: JsonSchema<*>): ValidationResult {
         return when (schema) {
             is IntSchema -> {
                 if (value % 1 != 0.0) return ValidationResult.Invalid("Expected integer value, but got $value")

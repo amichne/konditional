@@ -8,11 +8,11 @@ data class ObjectSchema(
     override val fields: Map<String, FieldSchema>,
     override val title: String? = null,
     override val description: String? = null,
-    override val default: Any? = null,
+    override val default: Map<String, Any?>? = null,
     override val nullable: Boolean = false,
-    override val example: Any? = null,
+    override val example: Map<String, Any?>? = null,
     override val deprecated: Boolean = false,
     override val required: Set<String>? = null
-) : JsonSchema(), ObjectTraits {
+) : JsonSchema<Map<String, Any?>>(), ObjectTraits {
     override fun toString() = "ObjectSchema(fields=${fields.keys})"
 }

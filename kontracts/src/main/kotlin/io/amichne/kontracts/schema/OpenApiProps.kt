@@ -3,11 +3,11 @@ package io.amichne.kontracts.schema
 /**
  * Base interface for OpenAPI-esque properties.
  */
-interface OpenApiProps {
+interface OpenApiProps<out T : Any> {
     val title: String?
     val description: String?
-    val default: Any?
+    val default: T?
     val nullable: Boolean
-    val example: Any?
+    val example: T?
     val deprecated: Boolean
 }

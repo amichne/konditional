@@ -6,9 +6,9 @@ import io.amichne.kontracts.schema.DoubleSchema
 open class DoubleSchemaBuilder : JsonSchemaBuilder {
     var title: String? = null
     var description: String? = null
-    var default: Any? = null
+    var default: Double? = null
     var nullable: Boolean = false
-    var example: Any? = null
+    var example: Double? = null
     var deprecated: Boolean = false
     var minimum: Double? = null
     var maximum: Double? = null

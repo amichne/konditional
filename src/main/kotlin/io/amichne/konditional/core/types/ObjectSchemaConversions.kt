@@ -5,7 +5,7 @@ import io.amichne.kontracts.schema.ObjectSchema
 import io.amichne.kontracts.schema.RootObjectSchema
 
 @PublishedApi
-internal fun JsonSchema.asObjectSchema(): ObjectSchema =
+internal fun JsonSchema<*>.asObjectSchema(): ObjectSchema =
     when (this) {
         is ObjectSchema -> this
         is RootObjectSchema ->
@@ -21,4 +21,3 @@ internal fun JsonSchema.asObjectSchema(): ObjectSchema =
             )
         else -> throw IllegalArgumentException("Expected an object schema, got ${this::class.qualifiedName}")
     }
-

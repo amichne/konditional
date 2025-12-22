@@ -7,14 +7,14 @@ import io.amichne.kontracts.schema.JsonSchema
 class ArraySchemaBuilder : JsonSchemaBuilder {
     var title: String? = null
     var description: String? = null
-    var default: Any? = null
+    var default: List<Any>? = null
     var nullable: Boolean = false
-    var example: Any? = null
+    var example: List<Any>? = null
     var deprecated: Boolean = false
     var minItems: Int? = null
     var maxItems: Int? = null
     var uniqueItems: Boolean = false
-    lateinit var elementSchema: JsonSchema
+    lateinit var elementSchema: JsonSchema<Any>
     fun element(builder: RootObjectSchemaBuilder.() -> Unit) {
         elementSchema = RootObjectSchemaBuilder().apply(builder).build()
     }

@@ -12,7 +12,7 @@ import io.amichne.kontracts.schema.ValidationResult
  */
 data class JsonArray(
     val elements: List<JsonValue>,
-    val elementSchema: JsonSchema? = null,
+    val elementSchema: JsonSchema<Any>? = null,
 ) : JsonValue() {
 
     init {
@@ -23,8 +23,8 @@ data class JsonArray(
         }
     }
 
-    override fun validate(schema: JsonSchema): ValidationResult {
-        if (schema !is ArraySchema) {
+    override fun validate(schema: JsonSchema<*>): ValidationResult {
+        if (schema !is ArraySchema<*>) {
             return ValidationResult.Invalid("Expected ${schema}, but got JsonArray")
         }
 

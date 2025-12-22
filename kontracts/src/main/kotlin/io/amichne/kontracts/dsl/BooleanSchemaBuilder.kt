@@ -6,9 +6,9 @@ import io.amichne.kontracts.schema.BooleanSchema
 open class BooleanSchemaBuilder : JsonSchemaBuilder {
     var title: String? = null
     var description: String? = null
-    var default: Any? = null
+    var default: Boolean? = null
     var nullable: Boolean = false
-    var example: Any? = null
+    var example: Boolean? = null
     var deprecated: Boolean = false
     fun build() = BooleanSchema(title, description, default, nullable, example, deprecated)
 }

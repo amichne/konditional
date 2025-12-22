@@ -138,7 +138,7 @@ class CustomTypeMappingTest {
 
         // All fields have their schemas defined
         config.schema.fields.values.forEach { fieldSchema ->
-            assertIs<JsonSchema>(fieldSchema.schema)
+            assertIs<JsonSchema<*>>(fieldSchema.schema)
         }
     }
 }

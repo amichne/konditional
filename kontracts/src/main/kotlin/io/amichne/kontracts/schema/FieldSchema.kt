@@ -7,7 +7,7 @@ package io.amichne.kontracts.schema
  * @param defaultValue Optional default value if field is missing
  */
 data class FieldSchema(
-    val schema: JsonSchema,
+    val schema: JsonSchema<*>,
     val required: Boolean = false,
     val defaultValue: Any? = null,
     val description: String? = null,

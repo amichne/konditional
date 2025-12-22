@@ -7,13 +7,13 @@ package io.amichne.kontracts.schema
 data class IntSchema(
     override val title: String? = null,
     override val description: String? = null,
-    override val default: Any? = null,
+    override val default: Int? = null,
     override val nullable: Boolean = false,
-    override val example: Any? = null,
+    override val example: Int? = null,
     override val deprecated: Boolean = false,
     val minimum: Int? = null,
     val maximum: Int? = null,
     val enum: List<Int>? = null
-) : JsonSchema() {
+) : JsonSchema<Int>() {
     override fun toString() = "IntSchema"
 }

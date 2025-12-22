@@ -9,7 +9,7 @@ import io.amichne.kontracts.schema.ValidationResult.Companion.typeCheck
  * JSON boolean value.
  */
 data class JsonBoolean(val value: Boolean) : JsonValue() {
-    override fun validate(schema: JsonSchema): ValidationResult = BooleanSchema::class.typeCheck(schema)
+    override fun validate(schema: JsonSchema<*>): ValidationResult = BooleanSchema::class.typeCheck(schema)
 
     override fun toString() = value.toString()
 }

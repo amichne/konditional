@@ -28,7 +28,7 @@ import kotlin.reflect.jvm.isAccessible
  * @param schema The schema to validate against (optional, defaults to the instance's schema)
  * @return JsonValue.JsonObject representation create this custom encodeable type
  */
-fun KotlinEncodeable<*>.toJsonValue(schema: JsonSchema? = null): JsonObject =
+fun KotlinEncodeable<*>.toJsonValue(schema: JsonSchema<*>? = null): JsonObject =
     JsonObject(
         fields =
             buildMap {

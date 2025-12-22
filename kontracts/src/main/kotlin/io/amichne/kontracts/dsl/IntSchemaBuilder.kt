@@ -6,9 +6,9 @@ import io.amichne.kontracts.schema.IntSchema
 open class IntSchemaBuilder : JsonSchemaBuilder {
     var title: String? = null
     var description: String? = null
-    var default: Any? = null
+    var default: Int? = null
     var nullable: Boolean = false
-    var example: Any? = null
+    var example: Int? = null
     var deprecated: Boolean = false
     var minimum: Int? = null
     var maximum: Int? = null

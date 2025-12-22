@@ -18,7 +18,7 @@ sealed class ValidationResult {
     }
 
     companion object {
-        inline fun <reified T : JsonSchema> KClass<T>.typeCheck(schema: JsonSchema): ValidationResult =
+        inline fun <reified T : JsonSchema<*>> KClass<T>.typeCheck(schema: JsonSchema<*>): ValidationResult =
             if (isInstance(schema)) Valid else Invalid("Expected type ${T::class.simpleName}, but got $simpleName")
     }
 }

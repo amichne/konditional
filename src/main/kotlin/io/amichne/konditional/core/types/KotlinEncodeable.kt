@@ -58,7 +58,7 @@ import io.amichne.kontracts.schema.ObjectTraits
  *
  * @param S The schema type used for validation (must be an object schema)
  */
-interface KotlinEncodeable<out S> where S : JsonSchema, S : ObjectTraits {
+interface KotlinEncodeable<out S> where S : JsonSchema<*>, S : ObjectTraits {
     /**
      * The schema defining the structure and validation rules for this custom type.
      */

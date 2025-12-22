@@ -6,10 +6,10 @@ package io.amichne.kontracts.schema
 data class BooleanSchema(
     override val title: String? = null,
     override val description: String? = null,
-    override val default: Any? = null,
+    override val default: Boolean? = null,
     override val nullable: Boolean = false,
-    override val example: Any? = null,
+    override val example: Boolean? = null,
     override val deprecated: Boolean = false
-) : JsonSchema() {
+) : JsonSchema<Boolean>() {
     override fun toString() = "BooleanSchema"
 }

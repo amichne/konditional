@@ -10,6 +10,6 @@ data class NullSchema(
     override val nullable: Boolean = true,
     override val example: Any? = null,
     override val deprecated: Boolean = false
-) : JsonSchema() {
+) : JsonSchema<Any>() {
     override fun toString() = "NullSchema"
 }

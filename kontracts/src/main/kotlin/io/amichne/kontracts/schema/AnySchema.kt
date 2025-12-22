@@ -10,6 +10,6 @@ data class AnySchema(
     override val nullable: Boolean = false,
     override val example: Any? = null,
     override val deprecated: Boolean = false
-) : JsonSchema() {
+) : JsonSchema<Any>() {
     override fun toString() = "AnySchema"
 }
