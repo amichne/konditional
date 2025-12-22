@@ -34,12 +34,16 @@ const config: Config = {
             "classic",
             {
                 docs: {
+                    routeBasePath: "/",
                     sidebarPath: require.resolve("./sidebars.ts"),
                     editUrl: "https://github.com/amichne/konditional/tree/main/docusaurus/",
+
                 },
+
                 theme: {
                     customCss: "./src/css/custom.css",
                 },
+
             } satisfies Preset.Options,
         ],
         [
@@ -73,7 +77,7 @@ const config: Config = {
             links: [
                 {
                     title: 'Docs',
-                    items: [{label: 'Konditional', to: '/docs/'}],
+                    items: [{label: 'Konditional', to: '/'}],
                 },
                 {
                     title: 'More',
