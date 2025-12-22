@@ -4,7 +4,7 @@ import io.amichne.kontracts.schema.ArraySchema
 import io.amichne.kontracts.schema.JsonSchema
 
 @JsonSchemaBuilderDsl
-class ArraySchemaBuilder : JsonSchemaBuilder {
+class ArraySchemaBuilder : JsonSchemaBuilder<List<Any>> {
     var title: String? = null
     var description: String? = null
     var default: List<Any>? = null
@@ -19,7 +19,7 @@ class ArraySchemaBuilder : JsonSchemaBuilder {
         elementSchema = RootObjectSchemaBuilder().apply(builder).build()
     }
 
-    fun build() = ArraySchema(
+    override fun build() = ArraySchema(
         elementSchema,
         title,
         description,

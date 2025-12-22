@@ -3,7 +3,7 @@ package io.amichne.kontracts.dsl
 import io.amichne.kontracts.schema.StringSchema
 
 @JsonSchemaBuilderDsl
-open class StringSchemaBuilder : JsonSchemaBuilder {
+open class StringSchemaBuilder : JsonSchemaBuilder<String> {
     var title: String? = null
     var description: String? = null
     var default: String? = null
@@ -15,7 +15,7 @@ open class StringSchemaBuilder : JsonSchemaBuilder {
     var pattern: String? = null
     var format: String? = null
     var enum: List<String>? = null
-    fun build() = StringSchema(
+    override fun build() = StringSchema(
         title,
         description,
         default,

@@ -19,7 +19,7 @@ import io.amichne.konditional.core.types.toPrimitiveValue
  * Supports primitive types and user-defined types:
  * - Boolean, String, Int, Double, Enum
  */
-internal sealed class FlagValue<out T : Any> {
+sealed class FlagValue<out T : Any> {
     abstract val value: T
 
     /**

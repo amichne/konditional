@@ -7,7 +7,7 @@ import com.squareup.moshi.JsonClass
  * This is the top-level object that gets serialized to/from JSON.
  */
 @JsonClass(generateAdapter = true)
-internal data class SerializableSnapshot(
+data class SerializableSnapshot(
     val meta: SerializableSnapshotMetadata? = null,
     val flags: List<SerializableFlag>,
 )

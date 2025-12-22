@@ -68,34 +68,24 @@ detekt-baseline: ## Generate Detekt baseline (suppress existing issues)
 
 ##@ Documentation
 
-venv-create: ## Create Python virtual environment for docs
-	@if [ ! -d "$(VENV_DIR)" ]; then \
-		echo "$(BLUE)Creating virtual environment...$(NC)"; \
-		$(PYTHON) -m venv $(VENV_DIR); \
-		echo "$(GREEN)Virtual environment created$(NC)"; \
-	else \
-		echo "$(YELLOW)Virtual environment already exists$(NC)"; \
-	fi
+docs-install: ## Install Docusaurus dependencies (in ./docusaurus)
+	@echo "$(BLUE)Installing Docusaurus dependencies...$(NC)"
+	@cd docusaurus && npm install && pnpm install
+	@echo "$(GREEN)Docusaurus dependencies installed$(NC)"
 
-docs-install: venv-create ## Install documentation dependencies
-	@echo "$(BLUE)Installing documentation dependencies...$(NC)"
-	$(PIP) install --upgrade pip
-	$(PIP) install -r $(REQUIREMENTS)
-	@echo "$(GREEN)Dependencies installed$(NC)"
+docs-build: docs-docusaurus-install ## Build the Docusaurus site
+	@echo "$(BLUE)Building Docusaurus site...$(NC)"
+	@cd docusaurus && npm run build
+	@echo "$(GREEN)Docusaurus built successfully$(NC)"
 
-docs-build: docs-install ## Build documentation site
-	@echo "$(BLUE)Building documentation...$(NC)"
-	$(MKDOCS) build
-	@echo "$(GREEN)Documentation built successfully$(NC)"
+docs-serve: docs-docusaurus-install ## Serve Docusaurus locally (http://localhost:3000/konditional/)
+	@echo "$(BLUE)Starting Docusaurus server...$(NC)"
+	@cd docusaurus && npm run start
 
-docs-serve: docs-install ## Serve documentation locally (http://127.0.0.1:8000)
-	@echo "$(BLUE)Starting documentation server...$(NC)"
-	$(MKDOCS) serve
-
-docs-pages: docs-build ## Deploy documentation to GitHub Pages
-	@echo "$(BLUE)Deploying documentation to GitHub Pages...$(NC)"
-	$(MKDOCS) gh-deploy
-	@echo "$(GREEN)Documentation deployed to GitHub Pages$(NC)"
+docs-clean: ## Clean generated documentation
+	@echo "$(BLUE)Cleaning documentation...$(NC)"
+	@rm -rf site/
+	@echo "$(GREEN)Documentation cleaned$(NC)"
 
 ##@ Combined Tasks
 

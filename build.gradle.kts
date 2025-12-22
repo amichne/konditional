@@ -36,12 +36,17 @@ dependencies {
     implementation("com.squareup.moshi:moshi:1.15.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.15.0")
     implementation("com.squareup.moshi:moshi-adapters:1.15.0")
-    implementation(kotlin("reflect"))
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     testFixturesApi(kotlin("test"))
+}
+
+subprojects.map {
+    dependencies {
+        implementation(kotlin("reflect"))
+    }
 }
 
 sourceSets {

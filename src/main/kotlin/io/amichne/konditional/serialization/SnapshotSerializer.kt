@@ -48,6 +48,14 @@ object SnapshotSerializer {
     private val patchAdapter = moshi.adapter(SerializablePatch::class.java).indent("  ")
 
     /**
+     * Converts a [Configuration] into its persisted snapshot JSON model without serializing to a string.
+     *
+     * This is useful when a server endpoint needs to return the snapshot structure as a JSON object
+     * alongside additional metadata.
+     */
+    fun toSerializableSnapshot(configuration: Configuration): SerializableSnapshot = configuration.toSerializable()
+
+    /**
      * Serializes a Configuration to a JSON string.
      *
      * @param configuration The configuration to serialize

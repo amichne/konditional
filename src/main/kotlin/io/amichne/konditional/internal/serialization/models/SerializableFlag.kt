@@ -10,7 +10,7 @@ import io.amichne.konditional.values.FeatureId
  * Now uses type-safe FlagValue instead create type-erased Any values.
  */
 @JsonClass(generateAdapter = true)
-internal data class SerializableFlag(
+data class SerializableFlag(
     val key: FeatureId,
     val defaultValue: FlagValue<*>,
     val salt: String = "v1",
