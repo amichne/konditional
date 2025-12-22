@@ -39,8 +39,9 @@ markdown_extensions:
   - admonition
   - pymdownx.details
   - pymdownx.superfences
-  - pymdownx.tabbed:
-      alternate_style: true
+#  - pymdownx.tabbed:
+#      alternate_style: true
+  - pymdownx.blocks.tab
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -67,14 +68,14 @@ plugins:
 
 extra_css:
   - static/css-v1.2.0.css
+  - static/custom.css
 
 nav:
-  - Konditional: index.md
   - Getting Started: getting-started.md
   - Why Konditional: why-konditional.md
   - Migration Guide: migration.md
   - Core Concepts: core-concepts.md
-  - Targeting & Rollouts: targeting-rollouts.md
+  - Targeting & Rollouts: targeting-ramp-ups.md
   - Evaluation: evaluation.md
   - Remote Configuration: remote-config.md
   - Theory: theory.md
