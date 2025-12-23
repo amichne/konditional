@@ -199,7 +199,7 @@ println(result.decision)  // Why this value was chosen
 **Time complexity:**
 
 - **Registry lookup:** O(1)
-- **Rule iteration:** O(n) where n = rules per flag (typically small, <10)
+- **Rule iteration:** O(n) where n = rules per flag (typically small, fewer than 10)
 - **Ramp-up bucketing:** 0 or 1 SHA-256 hash per evaluation (only when a rule matches by criteria)
 
 **Space:**

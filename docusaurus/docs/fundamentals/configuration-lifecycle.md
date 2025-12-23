@@ -38,6 +38,7 @@ when (val result = AppFeatures.fromJson(json)) {
     }
     is ParseResult.Failure -> {
         // Invalid JSON rejected
+        // This will error
         logError("Parse failed: ${result.error.message}")
     }
 }

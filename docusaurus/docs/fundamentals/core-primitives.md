@@ -173,13 +173,15 @@ object Config : Namespace("config") {
 }
 
 val retries: Int = Config.maxRetries.evaluate(context)
-// val retries: String = Config.maxRetries.evaluate(context)  // Compile error
+    // This will error
+val retries: String = Config.maxRetries.evaluate(context)  // Compile error
 ```
 
 ### Wrong Context Type for a Feature
 
 ```kotlin
 val basicContext: Context = Context(...)
+// This will error
 // PremiumFeatures.ADVANCED_ANALYTICS.evaluate(basicContext)  // Compile error (requires EnterpriseContext)
 ```
 

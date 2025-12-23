@@ -60,6 +60,7 @@ JSON deserialization looks up features by key in the registry. If a feature hasn
 val json = fetchRemoteConfig()
 when (val result = SnapshotSerializer.fromJson(json)) {
     // Fails with ParseError.FeatureNotFound if AppFeatures not initialized
+    // This will error
     is ParseResult.Failure -> println(result.error)
 }
 ```

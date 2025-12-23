@@ -41,3 +41,17 @@ code {
 [data-theme='dark'] code {
   border-color: rgba(240, 246, 252, 0.12);
 }
+
+.code-block-error-line {
+    background-color: #ff000020;
+    display: block;
+    margin: 0 calc(-1 * var(--ifm-pre-padding));
+    padding: 0 var(--ifm-pre-padding);
+    border-left: 3px solid #ff000080;
+}
+
+/*Set the active equal to the inactive style, to functionally disable the active style's rendering*/
+.dropdown__link.dropdown__link--active {
+    background-color: inherit;
+    -webkit-text-stroke-color: var(--ifm-color-primary);
+}
