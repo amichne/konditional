@@ -2,6 +2,7 @@
 
 Konditional’s public surface is intentionally small. Understanding three primitives—**Features**, **Context**, and **Namespaces**—is enough to reason about correctness, organization, and runtime behavior.
 
+
 ```mermaid
 flowchart TD
     N["Namespace"] --> R["Registry"]

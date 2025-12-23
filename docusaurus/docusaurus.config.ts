@@ -67,10 +67,31 @@ const config: Config = {
         navbar: {
             title: 'Konditional',
             items: [
-                {type: 'docSidebar', sidebarId: 'docs', position: 'left', label: 'Docs'},
-                {to: '/api/', position: 'left', label: 'API'},
+                {
+                    type: "doc",
+                    docId: "index",
+                    label: "Home"
+                },
+                {
+                    type: "docSidebar",
+                    sidebarId: "docs",
+                    label: "Documentation",
+                    position: "left"
+                },
+                {to: '/api/', position: 'left', label: 'API Schema'},
+                {
+                    type: "doc",
+                    docId: "glossary",
+                    label: "Glossary",
+                    position: "left"
+                },
                 {href: 'https://github.com/amichne/konditional', label: 'GitHub', position: 'right'},
             ],
+        },
+        docs: {
+            sidebar: {
+                autoCollapseCategories: true,
+            },
         },
         footer: {
             style: 'dark',
@@ -89,6 +110,7 @@ const config: Config = {
         prism: {
             theme: prismThemes.github,
             darkTheme: prismThemes.dracula,
+
             additionalLanguages: ['kotlin'],
         },
     },
