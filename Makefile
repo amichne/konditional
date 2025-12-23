@@ -70,15 +70,15 @@ detekt-baseline: ## Generate Detekt baseline (suppress existing issues)
 
 docs-install: ## Install Docusaurus dependencies (in ./docusaurus)
 	@echo "$(BLUE)Installing Docusaurus dependencies...$(NC)"
-	@cd docusaurus && npm install && pnpm install
+	@cd docusaurus && pnpm install
 	@echo "$(GREEN)Docusaurus dependencies installed$(NC)"
 
-docs-build: docs-docusaurus-install ## Build the Docusaurus site
+docs-build: docs-install ## Build the Docusaurus site
 	@echo "$(BLUE)Building Docusaurus site...$(NC)"
-	@cd docusaurus && npm run build
+	@cd docusaurus && pnpm run build
 	@echo "$(GREEN)Docusaurus built successfully$(NC)"
 
-docs-serve: docs-docusaurus-install ## Serve Docusaurus locally (http://localhost:3000/konditional/)
+docs-serve: docs-build ## Serve Docusaurus locally (http://localhost:3000/konditional/)
 	@echo "$(BLUE)Starting Docusaurus server...$(NC)"
 	@cd docusaurus && npm run start
 

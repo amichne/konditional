@@ -1,12 +1,9 @@
 package io.amichne.konditional.demo
 
+import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.AppLocale
-import io.amichne.konditional.context.Context.Companion.evaluate
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.context.contextualize
-import io.amichne.konditional.context.feature
-import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.demo.DemoFeatures.ANALYTICS_ENABLED
@@ -16,6 +13,7 @@ import io.amichne.konditional.demo.DemoFeatures.CACHE_TTL_SECONDS
 import io.amichne.konditional.demo.DemoFeatures.DARK_MODE
 import io.amichne.konditional.demo.DemoFeatures.DISCOUNT_PERCENTAGE
 import io.amichne.konditional.demo.DemoFeatures.MAX_ITEMS_PER_PAGE
+import io.amichne.konditional.demo.DemoFeatures.SSO_ENABLED
 import io.amichne.konditional.demo.DemoFeatures.THEME_COLOR
 import io.amichne.konditional.demo.DemoFeatures.WELCOME_MESSAGE
 import io.amichne.konditional.serialization.SnapshotSerializer
@@ -57,14 +55,10 @@ import kotlinx.html.unsafe
 
 // Extension properties for display names
 private val AppLocale.displayName: String
-    get() = when (this) {
-        AppLocale.UNITED_STATES -> "English (US)"
-        AppLocale.UNITED_STATES -> "Spanish (US)"
-        AppLocale.CANADA -> "English (Canada)"
-        AppLocale.FRANCE -> "French (France)"
-        AppLocale.INDIA -> "Hindi (India)"
-        else -> error("Unsupported locale: $this")
-    }
+    get() =
+        name
+            .split('_')
+            .joinToString(separator = " ") { it.lowercase().replaceFirstChar(Char::uppercase) }
 
 private val Platform.displayName: String
     get() = when (this) {
@@ -107,23 +101,20 @@ fun main() {
         listOf(
             DARK_MODE, BETA_FEATURES, ANALYTICS_ENABLED, WELCOME_MESSAGE,
             THEME_COLOR, MAX_ITEMS_PER_PAGE, CACHE_TTL_SECONDS,
-            DISCOUNT_PERCENTAGE, API_RATE_LIMIT
+            DISCOUNT_PERCENTAGE, API_RATE_LIMIT,
+            SSO_ENABLED, ADVANCED_ANALYTICS, CUSTOM_BRANDING, DEDICATED_SUPPORT,
         )
-    }
-    println("[main] Initializing EnterpriseFeatures...")
-    with(EnterpriseFeatures) {
-        listOf(SSO_ENABLED, ADVANCED_ANALYTICS, CUSTOM_BRANDING, DEDICATED_SUPPORT)
     }
 
     // Verify features are registered
-    val konfig = Namespace.Global.configuration
-    val snapshot = SnapshotSerializer.serialize(konfig)
+    val configuration = DemoFeatures.configuration
+    val snapshot = SnapshotSerializer.serialize(configuration)
     println("[main] Konfig snapshot length: ${snapshot.length}")
     if (snapshot.length < 100) {
         println("[main] WARNING: Snapshot is suspiciously small!")
         println("[main] Snapshot: $snapshot")
     } else {
-        println("[main] Successfully initialized ${DemoFeatures.allFeatures().size + EnterpriseFeatures.allFeatures().size} features")
+        println("[main] Successfully initialized ${DemoFeatures.allFeatures().size} features")
     }
 
     println("[main] Starting server on port 8080...")
@@ -167,7 +158,7 @@ private fun buildRulesInfo(): String {
     val adapter = moshi.adapter(Map::class.java)
 
     // Parse the snapshot to extract rule details
-    val snapshot = SnapshotSerializer.serialize(Namespace.Global.configuration)
+    val snapshot = SnapshotSerializer.serialize(DemoFeatures.configuration)
     println("[buildRulesInfo] Snapshot length: ${snapshot.length}")
 
     val snapshotData = moshi.adapter(Map::class.java).fromJson(snapshot) as? Map<*, *>
@@ -212,9 +203,9 @@ private fun buildRulesInfo(): String {
 private fun evaluateBaseContext(params: Parameters): String {
     val locale = AppLocale.valueOf(params["locale"] ?: "UNITED_STATES")
     val platform = Platform.valueOf(params["platform"] ?: "WEB")
-    val version = Version.parseUnsafe(params["version"] ?: "1.0.0")
+    val version = Version.parse(params["version"] ?: "1.0.0").getOrThrow()
     val stableIdHex = params["stableId"] ?: "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"
-    val stableId = StableId.of(stableIdHex)
+    val stableId = StableId.fromHex(stableIdHex)
 
     val context = DemoContext(
         locale = locale,
@@ -231,7 +222,7 @@ private fun evaluateEnterpriseContext(params: Parameters): String {
     val platform = Platform.valueOf(params["platform"] ?: "WEB")
     val version = Version.parse(params["version"] ?: "1.0.0").getOrThrow()
     val stableIdHex = params["stableId"] ?: "f1e2d3c4b5a6978685746352413021ab"
-    val stableId = StableId.of(stableIdHex)
+    val stableId = StableId.fromHex(stableIdHex)
     val subscriptionTier = SubscriptionTier.fromString(params["subscriptionTier"] ?: "FREE")
     val organizationId = params["organizationId"] ?: "org-001"
     val employeeCount = params["employeeCount"]?.toIntOrNull() ?: 10
@@ -252,16 +243,15 @@ private fun evaluateEnterpriseContext(params: Parameters): String {
 private fun buildEvaluationJson(context: DemoContext): String {
     val results = mutableMapOf<String, Any>()
 
-    // Evaluate all demo features using Context.evaluate()
-    results["darkMode"] = context.evaluate(DemoFeatures.DARK_MODE)
-    results["betaFeatures"] = context.evaluate(DemoFeatures.BETA_FEATURES)
-    results["analyticsEnabled"] = context.evaluate(DemoFeatures.ANALYTICS_ENABLED)
-    results["welcomeMessage"] = context.evaluate(DemoFeatures.WELCOME_MESSAGE)
-    results["themeColor"] = context.evaluate(DemoFeatures.THEME_COLOR)
-    results["maxItemsPerPage"] = context.evaluate(DemoFeatures.MAX_ITEMS_PER_PAGE)
-    results["cacheTtlSeconds"] = context.evaluate(DemoFeatures.CACHE_TTL_SECONDS)
-    results["discountPercentage"] = context.evaluate(DemoFeatures.DISCOUNT_PERCENTAGE)
-    results["apiRateLimit"] = context.evaluate(DemoFeatures.API_RATE_LIMIT)
+    results["darkMode"] = DemoFeatures.DARK_MODE.evaluate(context)
+    results["betaFeatures"] = DemoFeatures.BETA_FEATURES.evaluate(context)
+    results["analyticsEnabled"] = DemoFeatures.ANALYTICS_ENABLED.evaluate(context)
+    results["welcomeMessage"] = DemoFeatures.WELCOME_MESSAGE.evaluate(context)
+    results["themeColor"] = DemoFeatures.THEME_COLOR.evaluate(context)
+    results["maxItemsPerPage"] = DemoFeatures.MAX_ITEMS_PER_PAGE.evaluate(context)
+    results["cacheTtlSeconds"] = DemoFeatures.CACHE_TTL_SECONDS.evaluate(context)
+    results["discountPercentage"] = DemoFeatures.DISCOUNT_PERCENTAGE.evaluate(context)
+    results["apiRateLimit"] = DemoFeatures.API_RATE_LIMIT.evaluate(context)
 
     return com.squareup.moshi.Moshi.Builder().build()
         .adapter(Map::class.java)
@@ -272,21 +262,21 @@ private fun buildEnterpriseEvaluationJson(context: EnterpriseContext): String {
     val results = mutableMapOf<String, Any>()
 
     // Evaluate base features with enterprise context
-    results["darkMode"] = context.evaluate(DemoFeatures.DARK_MODE)
-    results["betaFeatures"] = context.evaluate(DemoFeatures.BETA_FEATURES)
-    results["analyticsEnabled"] = context.evaluate(DemoFeatures.ANALYTICS_ENABLED)
-    results["welcomeMessage"] = context.evaluate(DemoFeatures.WELCOME_MESSAGE)
-    results["themeColor"] = context.evaluate(DemoFeatures.THEME_COLOR)
-    results["maxItemsPerPage"] = context.evaluate(DemoFeatures.MAX_ITEMS_PER_PAGE)
-    results["cacheTtlSeconds"] = context.evaluate(DemoFeatures.CACHE_TTL_SECONDS)
-    results["discountPercentage"] = context.evaluate(DemoFeatures.DISCOUNT_PERCENTAGE)
-    results["apiRateLimit"] = context.evaluate(DemoFeatures.API_RATE_LIMIT)
+    results["darkMode"] = DemoFeatures.DARK_MODE.evaluate(context)
+    results["betaFeatures"] = DemoFeatures.BETA_FEATURES.evaluate(context)
+    results["analyticsEnabled"] = DemoFeatures.ANALYTICS_ENABLED.evaluate(context)
+    results["welcomeMessage"] = DemoFeatures.WELCOME_MESSAGE.evaluate(context)
+    results["themeColor"] = DemoFeatures.THEME_COLOR.evaluate(context)
+    results["maxItemsPerPage"] = DemoFeatures.MAX_ITEMS_PER_PAGE.evaluate(context)
+    results["cacheTtlSeconds"] = DemoFeatures.CACHE_TTL_SECONDS.evaluate(context)
+    results["discountPercentage"] = DemoFeatures.DISCOUNT_PERCENTAGE.evaluate(context)
+    results["apiRateLimit"] = DemoFeatures.API_RATE_LIMIT.evaluate(context)
 
     // Evaluate enterprise features
-    results["ssoEnabled"] = context.evaluate(EnterpriseFeatures.SSO_ENABLED)
-    results["advancedAnalytics"] = context.evaluate(EnterpriseFeatures.ADVANCED_ANALYTICS)
-    results["customBranding"] = context.evaluate(EnterpriseFeatures.CUSTOM_BRANDING)
-    results["dedicatedSupport"] = context.evaluate(EnterpriseFeatures.DEDICATED_SUPPORT)
+    results["ssoEnabled"] = DemoFeatures.SSO_ENABLED.evaluate(context)
+    results["advancedAnalytics"] = DemoFeatures.ADVANCED_ANALYTICS.evaluate(context)
+    results["customBranding"] = DemoFeatures.CUSTOM_BRANDING.evaluate(context)
+    results["dedicatedSupport"] = DemoFeatures.DEDICATED_SUPPORT.evaluate(context)
 
     return com.squareup.moshi.Moshi.Builder().build()
         .adapter(Map::class.java)
@@ -529,7 +519,7 @@ private fun HTML.renderMainPage() {
         div("features") {
             div("header") {
                 h1 { +"🚀 Konditional Demo" }
-                p { +"Interactive Feature Flags with FeatureContainer Delegation" }
+                p { +"Interactive Feature Flags with Namespace Delegation" }
             }
             div("content") {
                 // Left panel - Configuration
@@ -699,7 +689,7 @@ private fun HTML.renderMainPage() {
                 raw(
                     """
                     window.KONDITIONAL_RULES = ${buildRulesInfo()};
-                    window.KONDITIONAL_SNAPSHOT = ${SnapshotSerializer.serialize(Namespace.Global.configuration)};
+                    window.KONDITIONAL_SNAPSHOT = ${SnapshotSerializer.serialize(DemoFeatures.configuration)};
                 """.trimIndent()
                 )
             }

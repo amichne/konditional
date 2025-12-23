@@ -120,12 +120,14 @@ val retries: Int = AppFlags.maxRetries.evaluate(ctx)                           /
 **Typos become compile errors:**
 
 ```kotlin
+// This will error
 AppFlags.NEW_ONBOARING_FLOW  // doesn't compile
 ```
 
 **Type mismatches become compile errors:**
 
 ```kotlin
+// This will error
 val retries: String = AppFlags.maxRetries.evaluate(ctx)  // doesn't compile
 ```
 
@@ -154,6 +156,7 @@ when (val result = AppFlags.fromJson(remoteConfig)) {
     is ParseResult.Success -> Unit // loaded into AppFlags
     is ParseResult.Failure -> {
         // Invalid JSON rejected, last-known-good remains active
+        // This will error
         logError("Config parse failed: ${result.error}")
     }
 }

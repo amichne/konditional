@@ -25,5 +25,5 @@ kotlin {
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-html-js:0.11.0")
     implementation("org.jetbrains.kotlinx:kotlinx-browser:0.5.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:1.10.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:1.10.2")
 }

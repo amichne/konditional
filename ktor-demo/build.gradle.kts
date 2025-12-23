@@ -19,6 +19,8 @@ repositories {
 dependencies {
     // Konditional library (from main project)
     implementation(project(":"))
+    // Kontracts is part of Konditional's public type surface (JsonSchema/ObjectTraits bounds)
+    implementation(project(":kontracts"))
 
     // Ktor server
     implementation("io.ktor:ktor-server-core-jvm:3.0.1")
@@ -33,6 +35,7 @@ dependencies {
     // Moshi (for JSON handling, matching main project)
     implementation("com.squareup.moshi:moshi:1.15.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.15.0")
+    implementation("com.squareup.moshi:moshi-adapters:1.15.0")
 }
 
 // Task to copy compiled JS from client module to server resources
