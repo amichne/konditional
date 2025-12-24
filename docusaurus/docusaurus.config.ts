@@ -29,8 +29,6 @@ const config: Config = {
     markdown: {
         mermaid: true,
     },
-
-    themes: ['classic'],
     presets: [
         [
             "classic",
