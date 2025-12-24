@@ -30,6 +30,7 @@ const config: Config = {
         mermaid: true,
     },
 
+    themes: ['classic'],
     presets: [
         [
             "classic",
