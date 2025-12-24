@@ -12,6 +12,14 @@ kotlin {
     }
 }
 
+ktor {
+    docker {
+        jreVersion.set(JavaVersion.VERSION_21)
+        localImageName.set("konditional-demo")
+        imageTag.set(project.version.toString())
+    }
+}
+
 repositories {
     mavenCentral()
 }
@@ -21,6 +29,9 @@ dependencies {
     implementation(project(":"))
     // Kontracts is part of Konditional's public type surface (JsonSchema/ObjectTraits bounds)
     implementation(project(":kontracts"))
+
+    // Logging backend (SLF4J)
+    runtimeOnly("ch.qos.logback:logback-classic:1.5.18")
 
     // Ktor server
     implementation("io.ktor:ktor-server-core-jvm:3.0.1")

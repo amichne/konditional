@@ -1,21 +1,26 @@
 package io.amichne.konditional.demo
 
 import io.amichne.konditional.api.evaluate
+import io.amichne.konditional.configstate.BooleanDescriptor
+import io.amichne.konditional.configstate.ConfigurationStateFactory
+import io.amichne.konditional.configstate.EnumOptionsDescriptor
+import io.amichne.konditional.configstate.FieldDescriptor
+import io.amichne.konditional.configstate.MapConstraintsDescriptor
+import io.amichne.konditional.configstate.NumberRangeDescriptor
+import io.amichne.konditional.configstate.Option
+import io.amichne.konditional.configstate.SchemaRefDescriptor
+import io.amichne.konditional.configstate.SemverConstraintsDescriptor
+import io.amichne.konditional.configstate.StringConstraintsDescriptor
+import io.amichne.konditional.configstate.SupportedValues
+import io.amichne.konditional.configstate.UiHints
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.instance.Configuration
+import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.result.getOrThrow
-import io.amichne.konditional.demo.DemoFeatures.ANALYTICS_ENABLED
-import io.amichne.konditional.demo.DemoFeatures.API_RATE_LIMIT
-import io.amichne.konditional.demo.DemoFeatures.BETA_FEATURES
-import io.amichne.konditional.demo.DemoFeatures.CACHE_TTL_SECONDS
-import io.amichne.konditional.demo.DemoFeatures.DARK_MODE
-import io.amichne.konditional.demo.DemoFeatures.DISCOUNT_PERCENTAGE
-import io.amichne.konditional.demo.DemoFeatures.MAX_ITEMS_PER_PAGE
-import io.amichne.konditional.demo.DemoFeatures.SSO_ENABLED
-import io.amichne.konditional.demo.DemoFeatures.THEME_COLOR
-import io.amichne.konditional.demo.DemoFeatures.WELCOME_MESSAGE
+import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
 import io.amichne.konditional.serialization.SnapshotSerializer
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
@@ -26,6 +31,7 @@ import io.ktor.server.html.respondHtml
 import io.ktor.server.http.content.staticResources
 import io.ktor.server.netty.Netty
 import io.ktor.server.request.receiveParameters
+import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
@@ -118,6 +124,7 @@ fun main() {
     }
 
     println("[main] Starting server on port 8080...")
+
     embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
         configureRouting()
     }.start(wait = true)
@@ -134,6 +141,12 @@ fun Application.configureRouting() {
             }
         }
 
+        get("/config-state") {
+            call.respondHtml {
+                renderConfigurationStatePage()
+            }
+        }
+
         post("/api/evaluate") {
             try {
                 val params = call.receiveParameters()
@@ -147,6 +160,36 @@ fun Application.configureRouting() {
                 call.respondText(result, ContentType.Application.Json)
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "Unknown error")))
+            }
+        }
+
+        get("/configuration-state") {
+            call.respondText(
+                configurationStateResponseJson(DemoFeatures.configuration),
+                ContentType.Application.Json,
+            )
+        }
+
+        post("/configuration-state") {
+            val body = call.receiveText()
+            val parsed = SnapshotSerializer.fromJson(body)
+
+            when (parsed) {
+                is ParseResult.Success -> {
+                    DemoFeatures.load(parsed.value)
+                    call.respondText(
+                        configurationStateResponseJson(DemoFeatures.configuration),
+                        ContentType.Application.Json,
+                    )
+                }
+
+                is ParseResult.Failure -> {
+                    call.respondText(
+                        """{"error":"Invalid snapshot","details":${jsonEscape(parsed.error.toString())}}""",
+                        ContentType.Application.Json,
+                        HttpStatusCode.BadRequest,
+                    )
+                }
             }
         }
     }
@@ -701,3 +744,115 @@ private fun HTML.renderMainPage() {
         }
     }
 }
+
+private fun HTML.renderConfigurationStatePage() {
+    head {
+        title { +"Konditional Demo - Configuration State" }
+        style {
+            unsafe {
+                raw(
+                    """
+                    * { box-sizing: border-box; }
+                    body {
+                        margin: 0;
+                        padding: 0;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        min-height: 100vh;
+                        padding: 18px;
+                    }
+                    .shell {
+                        max-width: 1400px;
+                        margin: 0 auto;
+                        background: white;
+                        border-radius: 12px;
+                        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                        overflow: hidden;
+                    }
+                    """.trimIndent(),
+                )
+            }
+        }
+    }
+    body {
+        div("shell") {
+            div {
+                id = "configurationStateRoot"
+            }
+        }
+        script {
+            src = "/static/demo-client.js"
+        }
+    }
+}
+
+private fun configurationStateResponseJson(configuration: Configuration): String {
+    val response = ConfigurationStateFactory.from(configuration)
+
+    val moshi = SnapshotSerializer.defaultMoshi()
+    val snapshotJsonValue = moshi.adapter(SerializableSnapshot::class.java).toJsonValue(response.currentState)
+    val payload =
+        mapOf(
+            "currentState" to snapshotJsonValue,
+            "supportedValues" to response.supportedValues.toJsonCompatible(),
+        )
+
+    return moshi.adapter(Map::class.java).indent("  ").toJson(payload)
+}
+
+private fun SupportedValues.toJsonCompatible(): Map<String, Any?> =
+    mapOf(
+        "bindings" to bindings.mapValues { (_, fieldType) -> fieldType.name },
+        "byType" to byType.mapValues { (_, descriptor) -> descriptor.toJsonCompatible() },
+    )
+
+private fun FieldDescriptor.toJsonCompatible(): Map<String, Any?> =
+    buildMap {
+        put("kind", kind.name)
+        put("uiHints", uiHints.toJsonCompatible())
+
+        when (this@toJsonCompatible) {
+            is BooleanDescriptor -> Unit
+            is EnumOptionsDescriptor -> put("options", options.map(Option::toJsonCompatible))
+            is NumberRangeDescriptor -> {
+                put("min", min)
+                put("max", max)
+                put("step", step)
+                unit?.let { put("unit", it) }
+            }
+            is SemverConstraintsDescriptor -> {
+                put("minimum", minimum)
+                put("allowAnyAboveMinimum", allowAnyAboveMinimum)
+                pattern?.let { put("pattern", it) }
+            }
+            is StringConstraintsDescriptor -> {
+                minLength?.let { put("minLength", it) }
+                maxLength?.let { put("maxLength", it) }
+                pattern?.let { put("pattern", it) }
+                suggestions?.let { put("suggestions", it) }
+            }
+            is SchemaRefDescriptor -> put("ref", ref)
+            is MapConstraintsDescriptor -> {
+                put("key", this@toJsonCompatible.key.toJsonCompatible())
+                put("values", this@toJsonCompatible.values.toJsonCompatible())
+            }
+        }
+    }
+
+private fun UiHints.toJsonCompatible(): Map<String, Any?> =
+    buildMap {
+        put("control", control.name)
+        label?.let { put("label", it) }
+        helpText?.let { put("helpText", it) }
+        placeholder?.let { put("placeholder", it) }
+        put("advanced", advanced)
+        order?.let { put("order", it) }
+    }
+
+private fun Option.toJsonCompatible(): Map<String, Any?> =
+    mapOf(
+        "value" to value,
+        "label" to label,
+    )
+
+private fun jsonEscape(value: String): String =
+    "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n") + "\""

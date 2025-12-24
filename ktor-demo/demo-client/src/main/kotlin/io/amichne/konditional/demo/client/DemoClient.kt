@@ -1,5 +1,6 @@
 package io.amichne.konditional.demo.client
 
+import io.amichne.konditional.demo.client.configstate.Client
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.GlobalScope
@@ -27,6 +28,9 @@ object DemoClient {
     fun init() {
         console.log("=== Initializing Konditional Demo Client (Kotlin/JS) ===")
         document.addEventListener("DOMContentLoaded", {
+            if (!isDemoPage()) {
+                return@addEventListener
+            }
             console.log("[init] DOM Content Loaded - setting up event listeners")
             setupEventListeners()
             console.log("[init] Loading snapshot...")
@@ -35,6 +39,10 @@ object DemoClient {
             loadRules()
         })
     }
+
+    private fun isDemoPage(): Boolean =
+        document.getElementById("contextForm") != null &&
+            document.getElementById("evaluateBtn") != null
 
     private fun setupEventListeners() {
         val contextType = getSelectElement("contextType")
@@ -74,8 +82,8 @@ object DemoClient {
                     if (hotReloadEnabled) {
                         debounceTimeoutId?.let { window.clearTimeout(it) }
                         debounceTimeoutId = window.setTimeout({
-                            evaluate()
-                        }, 500)
+                                                                  evaluate()
+                                                              }, 500)
                     }
                 })
             }
@@ -113,7 +121,7 @@ object DemoClient {
         GlobalScope.launch {
             try {
                 val form = getFormElement("contextForm")
-                val formData = FormData(form)
+                FormData(form)
                 val params = URLSearchParams()
 
                 // Convert FormData to URLSearchParams
@@ -351,4 +359,5 @@ external class FormData(form: HTMLFormElement)
 // Entry point
 fun main() {
     DemoClient.init()
+    Client.init()
 }

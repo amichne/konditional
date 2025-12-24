@@ -54,12 +54,14 @@ const config: Config = {
                 specs: [
                     {
                         id: 'konditional-api',
-                        spec: 'openapi/openapi.json',
+                        spec: './openapi/openapi.json',
                         route: '/api/',
                     },
                 ],
+
                 theme: {
-                    primaryColor: '#1890ff',
+                    customCss: './src/css/custom.css',
+                    // primaryColor: '#1890ff',
                 },
             },
         ],
