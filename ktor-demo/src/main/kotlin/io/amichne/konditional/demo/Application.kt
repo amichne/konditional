@@ -22,6 +22,7 @@ import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
 import io.amichne.konditional.serialization.SnapshotSerializer
+import io.amichne.konditional.demo.tobebuilt.toBeBuiltRoutes
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.Parameters
@@ -37,6 +38,7 @@ import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
+import io.amichne.konditional.demo.tobebuilt.toBeBuiltRoutes
 import kotlinx.html.ButtonType
 import kotlinx.html.HTML
 import kotlinx.html.InputType
@@ -134,6 +136,8 @@ fun Application.configureRouting() {
     routing {
         // Serve static resources (compiled Kotlin/JS)
         staticResources("/static", "static")
+
+        toBeBuiltRoutes()
 
         get("/") {
             call.respondHtml {

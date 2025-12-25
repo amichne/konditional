@@ -4,6 +4,7 @@ import io.amichne.konditional.demo.client.configstate.Editor.renderEditor
 import io.amichne.konditional.demo.client.configstate.HtmlLayout.buildLayout
 import io.amichne.konditional.demo.client.configstate.HtmlLayout.setStatus
 import io.amichne.konditional.demo.client.configstate.HtmlLayout.showToast
+import io.amichne.konditional.demo.client.configstate.HtmlLayout.ToastKind
 import io.amichne.konditional.demo.client.configstate.Json.deepCopy
 import io.amichne.konditional.demo.client.configstate.Json.setAtJsonPointer
 import io.amichne.konditional.demo.client.configstate.Json.stableJson

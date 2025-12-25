@@ -1,6 +1,7 @@
 package io.amichne.konditional.demo.client
 
 import io.amichne.konditional.demo.client.configstate.Client
+import io.amichne.konditional.demo.client.tobebuilt.ToBeBuiltClient
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.GlobalScope
@@ -360,4 +361,5 @@ external class FormData(form: HTMLFormElement)
 fun main() {
     DemoClient.init()
     Client.init()
+    ToBeBuiltClient.init()
 }

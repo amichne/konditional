@@ -1,0 +1,18 @@
+<!-- Golden-ish structure for the To-Be-Built slice (framework-agnostic).
+     Kotlin/JS should reproduce the same ids and high-level nesting. -->
+<div id="tbbRoot">
+  <aside id="tbbNav">
+    <a href="/to-be-built#index" data-section="index">Index</a>
+    <a href="/to-be-built#primitives-colors" data-section="primitives/colors">Primitives / Colors</a>
+    <a href="/to-be-built#primitives-typography" data-section="primitives/typography">Primitives / Typography</a>
+    <a href="/to-be-built#components-inputs" data-section="components/inputs">Components / Inputs</a>
+    <a href="/to-be-built#patterns-schema-forms" data-section="patterns/schema-forms">Patterns / Schema Forms</a>
+  </aside>
+
+  <main id="tbbContent">
+    <!-- swapped via HTMX -->
+    <div data-state="loading">Loading…</div>
+  </main>
+
+  <div id="tbbToastHost" aria-live="polite"></div>
+</div>

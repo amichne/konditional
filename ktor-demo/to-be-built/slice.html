@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>To Be Built — Konditional UI</title>
+    <link rel="stylesheet" href="/static/to-be-built/to-be-built.css" />
+    <script src="/static/vendor/htmx.min.js" defer></script>
+    <script src="/static/demo-client.js" defer></script>
+  </head>
+  <body data-sidebar="expanded">
+    <div id="tbbRoot" class="tbb-root">
+      <aside class="tbb-sidebar">
+        <div class="tbb-sidebarHeader">
+          <a class="tbb-logo" href="/to-be-built/">ConfigUI</a>
+          <button id="tbbSidebarToggle" type="button" class="tbb-button tbb-buttonGhost">
+            Collapse
+          </button>
+        </div>
+        <nav class="tbb-nav">
+          <a data-nav href="/to-be-built/primitives/colors">Colors</a>
+          <a data-nav href="/to-be-built/primitives/typography">Typography</a>
+          <a data-nav href="/to-be-built/components/inputs">Inputs</a>
+          <a data-nav href="/to-be-built/patterns/schema-forms">Schema Forms</a>
+        </nav>
+      </aside>
+
+      <div class="tbb-main">
+        <header class="tbb-topbar">
+          <div class="tbb-topbarLeft">
+            <div class="tbb-title">To Be Built</div>
+          </div>
+          <div class="tbb-topbarRight">
+            <label class="tbb-field">
+              <span>Theme</span>
+              <select id="tbbTheme">
+                <option value="dark">Dark</option>
+                <option value="light">Light</option>
+                <option value="system">System</option>
+              </select>
+            </label>
+            <label class="tbb-field">
+              <span>Density</span>
+              <select id="tbbDensity">
+                <option value="comfortable">Comfortable</option>
+                <option value="compact">Compact</option>
+              </select>
+            </label>
+            <label class="tbb-field tbb-fieldInline">
+              <input id="tbbReducedMotion" type="checkbox" />
+              <span>Reduced motion</span>
+            </label>
+          </div>
+        </header>
+
+        <div id="tbbToastArea" class="tbb-toasts"></div>
+
+        <!-- HTMX swap boundary -->
+        <main id="tbbContent" class="tbb-content">
+          <!-- Server renders route content here -->
+        </main>
+      </div>
+    </div>
+  </body>
+</html>
+

@@ -1,6 +1,7 @@
 package io.amichne.konditional.demo.client.configstate
 
 import io.amichne.konditional.demo.client.configstate.Json.stableString
+import io.amichne.konditional.demo.client.configstate.HtmlLayout.div
 import org.w3c.dom.HTMLDivElement
 
 object Sidebar {
