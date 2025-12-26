@@ -60,6 +60,14 @@ dependencies {
 }
 ```
 
+### Optional: UI Components for Configuration Editors
+
+If you're building web UIs for configuration editing, see the [`konditional-ui`](konditional-ui/README.md) module - a Kotlin/JS React component library with:
+- Rich editors for arrays, objects, and nested structures
+- Real-time validation with severity levels
+- MUI Material Design components
+- JSON Pointer utilities for deep navigation
+
 ---
 
 ## Quick Start
@@ -269,6 +277,21 @@ sealed class AppDomain(id: String) : Namespace(id) {
 ```
 
 Each namespace has independent configuration lifecycle, registry, and serialization.
+
+---
+
+## Repository Structure
+
+This repository contains multiple modules:
+
+- **`konditional`** (root) - Core feature flag library (JVM)
+- **`kontracts`** - Type-safe JSON Schema DSL for custom structured values
+- **`konditional-ui`** - Kotlin/JS React component library for configuration UIs (optional)
+- **`ktor-demo`** - Full-stack demo application with two web apps:
+  - Feature evaluation demo at `/`
+  - ConfigState UI catalog at `/configstate/catalog`
+
+See individual module READMEs for details.
 
 ---
 

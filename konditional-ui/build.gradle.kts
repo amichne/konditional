@@ -1,4 +1,5 @@
-// Kotlin/JS client built as a single JS executable (bundled via webpack) for the Ktor demo server.
+// Kotlin/JS React component library for Konditional configuration UIs.
+// This module provides reusable, type-safe React components for editing feature flag configurations.
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
@@ -7,7 +8,6 @@ plugins {
 repositories {
     mavenCentral()
 }
-
 
 kotlin {
     js {
@@ -18,28 +18,28 @@ kotlin {
                 }
             }
         }
-        binaries.executable()
+        binaries.library()
     }
 
     sourceSets {
         val jsMain by getting {
             dependencies {
-                // Reusable UI components from konditional-ui module
-                implementation(project(":konditional-ui"))
-
-                implementation("org.jetbrains.kotlinx:kotlinx-html-js:0.11.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-browser:0.5.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:1.10.2")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 
-                // Kotlin/JS React + MUI wrappers (transitively from konditional-ui, but explicit for clarity)
+                // Kotlin/JS React + MUI wrappers via the JetBrains kotlin-wrappers version catalog.
                 implementation(kotlinWrappers.react)
                 implementation(kotlinWrappers.reactDom)
+                implementation(kotlinWrappers.emotion.react)
+                implementation(kotlinWrappers.emotion.styled)
+                implementation(kotlinWrappers.web)
                 implementation(kotlinWrappers.mui.material)
                 implementation(kotlinWrappers.mui.system)
                 implementation(kotlinWrappers.mui.iconsMaterial)
-                implementation(kotlinWrappers.emotion.react)
-                implementation(kotlinWrappers.web)
+
+                // Drag-and-drop for array reordering
+                implementation(npm("@dnd-kit/core", "6.1.0"))
+                implementation(npm("@dnd-kit/sortable", "8.0.0"))
+                implementation(npm("@dnd-kit/utilities", "3.2.2"))
             }
         }
     }

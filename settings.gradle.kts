@@ -21,5 +21,6 @@ dependencyResolutionManagement {
 rootProject.name = "konditional"
 
 include("kontracts")
+include("konditional-ui")
 include("ktor-demo")
 include("ktor-demo:demo-client")

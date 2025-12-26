@@ -2,6 +2,10 @@
 
 An interactive web application demonstrating the Konditional feature flags library with type-safe Kotlin on both client and server.
 
+This demo includes **two applications**:
+1. **Feature Evaluation Demo** - Interactive feature flag evaluation at `/`
+2. **ConfigState Catalog** - Rich UI component catalog at `/configstate/catalog`
+
 ## Architecture
 
 This demo uses **Kotlin Multiplatform** with separate modules for client and server:
@@ -14,10 +18,17 @@ ktor-demo/
 │       ├── DemoFeatures.kt   # Feature definitions
 │       └── DemoContexts.kt   # Context types
 └── demo-client/              # Kotlin/JS client module
-    └── src/main/kotlin/
-        └── io/amichne/konditional/demo/client/
-            └── DemoClient.kt # Type-safe client logic
+    └── src/main/kotlin/io/amichne/konditional/demo/
+        ├── client/
+        │   └── DemoClient.kt      # Feature evaluation demo
+        ├── catalog/
+        │   ├── ConfigStateCatalogApp.kt    # ConfigState UI catalog (React)
+        │   └── ConfigStateCatalogClient.kt # API client for catalog
+        └── net/
+            └── ConfigStateApi.kt  # Shared API types
 ```
+
+The demo-client depends on the `konditional-ui` module (see [`../konditional-ui/README.md`](../konditional-ui/README.md)) for reusable React components.
 
 ## Key Features
 
@@ -126,12 +137,41 @@ cd ktor-demo
 ../gradlew run
 ```
 
-Then visit: **http://localhost:8080**
+Then visit:
+- **http://localhost:8080** - Feature Evaluation Demo
+- **http://localhost:8080/configstate/catalog** - ConfigState UI Catalog
 
 The server will display:
 ```
 Initializing Konditional Demo Client (Kotlin/JS)
 ```
+
+## ConfigState UI Catalog
+
+The **ConfigState Catalog** (`/configstate/catalog`) is a **React-based UI component showcase** built with `konditional-ui`:
+
+### Features
+- **Descriptor Catalog**: Preview all field type editors (Boolean, String, Number, Enum, Array, Object)
+- **Bindings Table**: Shows JSON Pointer templates → Field Type mappings
+- **Editable Fields Panel**: Live editing of configuration snapshot with validation
+- **Validation Summary**: Real-time error/warning/info feedback grouped by severity
+- **JSON Viewer**: Pretty-printed snapshot with copy-to-clipboard
+
+### Key Components Demonstrated
+1. **ArrayFieldEditor** - Add/remove/reorder array items with up/down buttons
+2. **ObjectFieldEditor** - Collapsible MUI Accordions for object properties
+3. **ValidationErrorSummary** - Error counts by severity with expandable details
+4. **FieldEditor** - Polymorphic editor routing to specialized field types
+5. **JsonPointer utilities** - Template expansion, nested value access
+
+### Architecture
+The catalog uses:
+- **React Functional Components** from `konditional-ui`
+- **MUI Material Design** components (Paper, Stack, Accordion, TextField, etc.)
+- **kotlinx-serialization** for JSON snapshot handling
+- **Fetch API** for async config loading
+
+See [`../konditional-ui/README.md`](../konditional-ui/README.md) for component documentation.
 
 ## Development Workflow
 
@@ -153,13 +193,19 @@ Or use the Gradle daemon:
 ## API Endpoints
 
 ### Server Routes
-- `GET /` - Main demo page (server-rendered HTML)
+- `GET /` - Feature Evaluation Demo (server-rendered HTML)
+- `GET /configstate/catalog` - ConfigState UI Catalog (React SPA)
 - `GET /static/*` - Static resources (compiled Kotlin/JS)
 
 ### REST API
+
+#### Feature Evaluation API
 - `POST /api/evaluate` - Evaluate features for a context
 - `GET /api/snapshot` - Get Konfig JSON snapshot
 - `GET /api/rules` - Get rules metadata (feature types, defaults, rule counts)
+
+#### ConfigState API
+- `GET /api/configstate` - Get configuration state with supported values, bindings, and current snapshot
 
 ### Example Request
 
@@ -186,6 +232,8 @@ Response:
 
 ## Using the Demo
 
+### Feature Evaluation Demo (`/`)
+
 1. **Open** http://localhost:8080
 
 2. **Choose Context Type**:
@@ -211,6 +259,33 @@ Response:
    - **Middle Panel**: Feature evaluation results
    - **Right Panel**: Rules configuration (types, defaults, rule counts)
    - **Bottom Panel**: Complete Konfig JSON snapshot
+
+### ConfigState UI Catalog (`/configstate/catalog`)
+
+1. **Open** http://localhost:8080/configstate/catalog
+
+2. **View Sections**:
+   - **Top**: **Descriptor Catalog** - Preview all field type editors with live interaction
+   - **Middle**: **Bindings Table** - JSON Pointer templates mapped to field types
+   - **Bottom**: **Editable Fields Panel** - Live configuration editing with validation
+
+3. **Interact with Field Editors**:
+   - **Booleans**: Click checkboxes/toggles
+   - **Strings**: Type in text fields
+   - **Numbers**: Use number inputs with constraints
+   - **Enums**: Select from dropdowns
+   - **Arrays**: Add/remove items, reorder with ↑↓ buttons
+   - **Objects**: Expand accordions, edit nested properties
+
+4. **See Validation in Action**:
+   - **Real-time errors**: Red borders on invalid fields
+   - **Error summary**: Top panel shows counts by severity (ERROR/WARNING/INFO)
+   - **Inline feedback**: Helper text under each field
+
+5. **View Live JSON**:
+   - Bottom panel shows pretty-printed snapshot
+   - Click copy button to copy JSON to clipboard
+   - Updates in real-time as you edit fields
 
 ## Technical Highlights
 
@@ -284,10 +359,18 @@ implementation("com.squareup.moshi:moshi:1.15.0")
 
 ### Client (JS)
 ```kotlin
+// Reusable UI components from konditional-ui module
+implementation(project(":konditional-ui"))
+
 // kotlinx libraries for Kotlin/JS
 implementation("org.jetbrains.kotlinx:kotlinx-html-js:0.11.0")
 implementation("org.jetbrains.kotlinx:kotlinx-browser:0.2")
 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:1.10.1")
+
+// React + MUI (transitively from konditional-ui, but explicit for clarity)
+implementation(kotlinWrappers.react)
+implementation(kotlinWrappers.reactDom)
+implementation(kotlinWrappers.mui.material)
 ```
 
 ## Project Structure
@@ -313,13 +396,28 @@ implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:1.10.1")
 
 ### Client Code (JS)
 
-**DemoClient.kt** (Kotlin/JS):
+**DemoClient.kt** (Kotlin/JS - Feature Evaluation):
 - Main client application object
 - Event listeners (type-safe)
 - Async API calls (coroutines → Promises)
 - DOM manipulation (kotlinx-browser)
 - Feature rendering logic
 - External JS API declarations (URLSearchParams, FormData, JSON)
+
+**ConfigStateCatalogApp.kt** (Kotlin/JS - React):
+- React SPA for UI component catalog
+- Uses `konditional-ui` components (FieldEditor, ArrayFieldEditor, ObjectFieldEditor, etc.)
+- Live configuration editing with validation
+- MUI Material Design UI
+
+**ConfigStateCatalogClient.kt**:
+- API client for fetching configuration state
+- Fetches `/api/configstate` endpoint
+- Returns `ConfigurationStateResponse` with supported values, bindings, snapshot
+
+**ConfigStateApi.kt**:
+- Shared API types for ConfigState endpoints
+- DTO definitions for configuration state responses
 
 ## Example Feature Configuration
 

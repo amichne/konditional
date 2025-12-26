@@ -83,3 +83,12 @@ When core types or APIs change, regenerate context files:
 
 - Main repository: https://github.com/amichne/konditional
 - Documentation site: https://amichne.github.io/konditional/
+
+## Repository Modules
+
+This documentation system focuses on the **core Konditional library**. The repository also contains:
+
+- **`konditional`** (root) - Core feature flag library (scope of these LLM docs)
+- **`kontracts`** - Type-safe JSON Schema DSL (has domain prompt: 06-kontracts.md)
+- **`konditional-ui`** - Optional Kotlin/JS React UI components (see `konditional-ui/README.md`)
+- **`ktor-demo`** - Demo applications (see `ktor-demo/README.md`)
