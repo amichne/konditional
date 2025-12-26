@@ -38,7 +38,7 @@ import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
-import io.amichne.konditional.demo.tobebuilt.toBeBuiltRoutes
+import io.amichne.konditional.demo.configpages.configPagesRoutes
 import kotlinx.html.ButtonType
 import kotlinx.html.HTML
 import kotlinx.html.InputType
@@ -138,6 +138,7 @@ fun Application.configureRouting() {
         staticResources("/static", "static")
 
         toBeBuiltRoutes()
+        configPagesRoutes()
 
         get("/") {
             call.respondHtml {
