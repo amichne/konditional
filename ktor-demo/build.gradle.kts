@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "2.2.20"
+    kotlin("jvm") version "2.3.0"
     id("io.ktor.plugin") version "3.0.1"
     id("com.google.cloud.tools.jib") version "3.4.4"
     application
@@ -40,7 +40,7 @@ dependencies {
 
 // Task to copy compiled JS from client module to server resources
 val copyClientJs by tasks.registering(Copy::class) {
-    dependsOn(":ktor-demo:demo-client:browserProductionWebpack")
+    dependsOn(":ktor-demo:demo-client:jsBrowserProductionWebpack")
     from(project(":ktor-demo:demo-client").layout.buildDirectory.dir("kotlin-webpack/js/productionExecutable"))
     into(layout.buildDirectory.dir("resources/main/static"))
 }

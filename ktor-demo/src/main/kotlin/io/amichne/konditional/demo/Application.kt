@@ -1,21 +1,13 @@
 package io.amichne.konditional.demo
 
 import io.amichne.konditional.api.evaluate
+import io.amichne.konditional.configstate.ConfigurationStateFactory
+import io.amichne.konditional.configstate.ConfigurationStateSerializer
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.getOrThrow
-import io.amichne.konditional.demo.DemoFeatures.ANALYTICS_ENABLED
-import io.amichne.konditional.demo.DemoFeatures.API_RATE_LIMIT
-import io.amichne.konditional.demo.DemoFeatures.BETA_FEATURES
-import io.amichne.konditional.demo.DemoFeatures.CACHE_TTL_SECONDS
-import io.amichne.konditional.demo.DemoFeatures.DARK_MODE
-import io.amichne.konditional.demo.DemoFeatures.DISCOUNT_PERCENTAGE
-import io.amichne.konditional.demo.DemoFeatures.MAX_ITEMS_PER_PAGE
-import io.amichne.konditional.demo.DemoFeatures.SSO_ENABLED
-import io.amichne.konditional.demo.DemoFeatures.THEME_COLOR
-import io.amichne.konditional.demo.DemoFeatures.WELCOME_MESSAGE
 import io.amichne.konditional.serialization.SnapshotSerializer
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
@@ -34,6 +26,7 @@ import io.ktor.server.routing.routing
 import kotlinx.html.ButtonType
 import kotlinx.html.HTML
 import kotlinx.html.InputType
+import kotlinx.html.a
 import kotlinx.html.body
 import kotlinx.html.button
 import kotlinx.html.div
@@ -134,6 +127,17 @@ fun Application.configureRouting() {
             }
         }
 
+        get("/configstate/catalog") {
+            call.respondHtml {
+                renderConfigStateCatalogPage()
+            }
+        }
+
+        get("/api/configstate") {
+            val response = ConfigurationStateFactory.from(DemoFeatures.configuration)
+            call.respondText(ConfigurationStateSerializer.toJson(response), ContentType.Application.Json)
+        }
+
         post("/api/evaluate") {
             try {
                 val params = call.receiveParameters()
@@ -161,7 +165,7 @@ private fun buildRulesInfo(): String {
     val snapshot = SnapshotSerializer.serialize(DemoFeatures.configuration)
     println("[buildRulesInfo] Snapshot length: ${snapshot.length}")
 
-    val snapshotData = moshi.adapter(Map::class.java).fromJson(snapshot) as? Map<*, *>
+    val snapshotData = moshi.adapter(Map::class.java).fromJson(snapshot)
     println("[buildRulesInfo] Snapshot parsed, keys: ${snapshotData?.keys}")
 
     val flags = snapshotData?.get("flags")
@@ -520,6 +524,10 @@ private fun HTML.renderMainPage() {
             div("header") {
                 h1 { +"🚀 Konditional Demo" }
                 p { +"Interactive Feature Flags with Namespace Delegation" }
+                p {
+                    +"ConfigState UI catalog: "
+                    a(href = "/configstate/catalog") { +"Open" }
+                }
             }
             div("content") {
                 // Left panel - Configuration
@@ -696,6 +704,29 @@ private fun HTML.renderMainPage() {
         }
 
         // Load compiled Kotlin/JS client code
+        script {
+            src = "/static/demo-client.js"
+        }
+    }
+}
+
+private fun HTML.renderConfigStateCatalogPage() {
+    head {
+        title { +"Konditional ConfigState UI Catalog" }
+        style {
+            unsafe {
+                raw(
+                    """
+                    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+                    """.trimIndent(),
+                )
+            }
+        }
+    }
+    body {
+        div {
+            id = "configstateCatalogRoot"
+        }
         script {
             src = "/static/demo-client.js"
         }

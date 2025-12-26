@@ -5,6 +5,5 @@ data class SemverConstraintsDescriptor(
     val minimum: String,
     val allowAnyAboveMinimum: Boolean = true,
     val pattern: String? = null,
-) : FieldDescriptor {
-    override val kind: FieldDescriptor.Kind = FieldDescriptor.Kind.SEMVER_CONSTRAINTS
-}
+    override val kind: FieldDescriptor.Kind = FieldDescriptor.Kind.SEMVER_CONSTRAINTS,
+) : FieldDescriptor

@@ -3,6 +3,7 @@ package io.amichne.konditional.serialization
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import io.amichne.konditional.configstate.FieldDescriptorMoshiAdapterFactory
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
@@ -199,6 +200,7 @@ object SnapshotSerializer {
             .add(IdentifierJsonAdapter)
             .add(ValueClassAdapterFactory)
             .add(FlagValueAdapter.Factory)
+            .add(FieldDescriptorMoshiAdapterFactory)
             .add(
                 VersionRangeAdapter(
                     // Create a minimal Moshi for VersionRangeAdapter to use for Version

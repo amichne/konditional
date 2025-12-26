@@ -1,8 +1,7 @@
-// Note: Using kotlin("js") plugin (deprecated but functional)
-// Upgraded to Kotlin 2.2.20 which fixes JS IR compiler bugs (KT-77372)
-// Future: migrate to kotlin("multiplatform") with js() target
+// Kotlin/JS client built as a single JS executable (bundled via webpack) for the Ktor demo server.
 plugins {
-    kotlin("js")
+    kotlin("multiplatform")
+    kotlin("plugin.serialization")
 }
 
 repositories {
@@ -20,10 +19,25 @@ kotlin {
         }
         binaries.executable()
     }
-}
 
-dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-html-js:0.11.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-browser:0.5.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:1.10.2")
+    sourceSets {
+        val jsMain by getting {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-html-js:0.11.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-browser:0.5.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:1.10.2")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+
+                // Kotlin/JS React + MUI wrappers via the JetBrains kotlin-wrappers version catalog.
+                implementation(kotlinWrappers.react)
+                implementation(kotlinWrappers.reactDom)
+                implementation(kotlinWrappers.emotion.react)
+                implementation(kotlinWrappers.emotion.styled)
+                implementation(kotlinWrappers.web)
+                implementation(kotlinWrappers.mui.material)
+                implementation(kotlinWrappers.mui.system)
+                implementation(kotlinWrappers.mui.iconsMaterial)
+            }
+        }
+    }
 }

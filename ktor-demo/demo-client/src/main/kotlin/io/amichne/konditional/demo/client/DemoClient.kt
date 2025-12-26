@@ -5,6 +5,7 @@ import kotlinx.browser.window
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.await
 import kotlinx.coroutines.launch
+import io.amichne.konditional.configstate.ui.ConfigStateCatalogClient
 import org.w3c.dom.HTMLButtonElement
 import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLElement
@@ -350,5 +351,9 @@ external class FormData(form: HTMLFormElement)
 
 // Entry point
 fun main() {
-    DemoClient.init()
+    when {
+        document.getElementById(ConfigStateCatalogClient.ROOT_ELEMENT_ID) != null -> ConfigStateCatalogClient.init()
+        document.getElementById("contextForm") != null -> DemoClient.init()
+        else -> console.warn("No known root element found; skipping client initialization.")
+    }
 }

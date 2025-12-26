@@ -6,6 +6,5 @@ data class NumberRangeDescriptor(
     val max: Double,
     val step: Double,
     val unit: String? = null,
-) : FieldDescriptor {
-    override val kind: FieldDescriptor.Kind = FieldDescriptor.Kind.NUMBER_RANGE
-}
+    override val kind: FieldDescriptor.Kind = FieldDescriptor.Kind.NUMBER_RANGE,
+) : FieldDescriptor
