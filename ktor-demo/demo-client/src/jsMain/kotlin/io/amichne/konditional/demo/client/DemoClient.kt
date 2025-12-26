@@ -2,368 +2,262 @@ package io.amichne.konditional.demo.client
 
 import kotlinx.browser.document
 import kotlinx.browser.window
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.await
 import kotlinx.coroutines.launch
-import io.amichne.konditional.demo.catalog.ConfigStateCatalogClient
-import org.w3c.dom.HTMLButtonElement
-import org.w3c.dom.HTMLDivElement
-import org.w3c.dom.HTMLElement
-import org.w3c.dom.HTMLFormElement
-import org.w3c.dom.HTMLInputElement
-import org.w3c.dom.HTMLSelectElement
-import org.w3c.dom.events.Event
+import kotlinx.serialization.json.Json
+import io.amichne.konditional.demo.net.EvaluationResponse
+import org.w3c.dom.*
 import org.w3c.fetch.RequestInit
-import kotlin.js.Json
 import kotlin.js.json
 
 /**
- * Main client-side application for Konditional demo
- * Written in type-safe Kotlin/JS instead of raw JavaScript
+ * Simplified single-file Kotlin/JS demo client.
+ * No React, no complex dependencies - just type-safe DOM manipulation.
  */
 object DemoClient {
-    private var hotReloadEnabled = false
-    private var debounceTimeoutId: Int? = null
+    private val scope = MainScope()
 
     fun init() {
-        console.log("=== Initializing Konditional Demo Client (Kotlin/JS) ===")
         document.addEventListener("DOMContentLoaded", {
-            console.log("[init] DOM Content Loaded - setting up event listeners")
-            setupEventListeners()
-            console.log("[init] Loading snapshot...")
-            loadSnapshot()
-            console.log("[init] Loading rules...")
-            loadRules()
+            setupUI()
         })
     }
 
-    private fun setupEventListeners() {
-        val contextType = getSelectElement("contextType")
-        val hotReloadToggle = getInputElement("hotReloadToggle")
-        val evaluateBtn = getButtonElement("evaluateBtn")
-        val form = getFormElement("contextForm")
+    private fun setupUI() {
+        val root = document.getElementById("app-root") as? HTMLDivElement ?: return
 
-        // Context type change handler
-        contextType.addEventListener("change", { event ->
-            handleContextTypeChange(event)
+        root.innerHTML = """
+            <div class="container">
+                <header class="header">
+                    <div>
+                        <h1>🎯 Konditional Feature Evaluation Demo</h1>
+                        <a href="/config" style="color: #667eea; text-decoration: none; font-size: 14px;">→ Open Configuration Editor</a>
+                    </div>
+                </header>
+
+                <div class="content">
+                    <div class="form-panel">
+                        <h2>📝 Context Configuration</h2>
+
+                        <div class="form-group">
+                            <label for="contextType">Context Type</label>
+                            <select id="contextType">
+                                <option value="base">Base Context</option>
+                                <option value="enterprise">Enterprise Context</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="locale">Locale</label>
+                            <select id="locale">
+                                <option value="UNITED_STATES">United States</option>
+                                <option value="CANADA">Canada</option>
+                                <option value="INDIA">India</option>
+                                <option value="UNITED_KINGDOM">United Kingdom</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="platform">Platform</label>
+                            <select id="platform">
+                                <option value="WEB">Web</option>
+                                <option value="IOS">iOS</option>
+                                <option value="ANDROID">Android</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="version">App Version</label>
+                            <input type="text" id="version" value="1.0.0" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="stableId">User</label>
+                            <select id="stableId">
+                                <option value="a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6">User Alpha</option>
+                                <option value="b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6a1">User Beta</option>
+                                <option value="c3d4e5f6a7b8c9d0e1f2a3b4c5d6a1b2">User Gamma</option>
+                                <option value="d4e5f6a7b8c9d0e1f2a3b4c5d6a1b2c3">User Delta</option>
+                                <option value="e5f6a7b8c9d0e1f2a3b4c5d6a1b2c3d4">User Epsilon</option>
+                            </select>
+                        </div>
+
+                        <div id="enterpriseFields" style="display: none;">
+                            <div class="divider"></div>
+                            <h3>Enterprise Options</h3>
+
+                            <div class="form-group">
+                                <label for="tier">Subscription Tier</label>
+                                <select id="tier">
+                                    <option value="FREE">Free</option>
+                                    <option value="STARTER">Starter</option>
+                                    <option value="PROFESSIONAL">Professional</option>
+                                    <option value="ENTERPRISE">Enterprise</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="orgId">Organization ID</label>
+                                <input type="text" id="orgId" value="org-001" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="employeeCount">Employee Count</label>
+                                <input type="number" id="employeeCount" value="10" />
+                            </div>
+                        </div>
+
+                        <button id="evaluateBtn" class="evaluate-btn">Evaluate Features</button>
+                    </div>
+
+                    <div class="results-panel">
+                        <h2>📊 Evaluation Results</h2>
+                        <div id="results" class="results-container">
+                            <p class="placeholder">Click 'Evaluate Features' to see results</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        """.trimIndent()
+
+        // Setup event listeners
+        val contextTypeSelect = document.getElementById("contextType") as HTMLSelectElement
+        val evaluateBtn = document.getElementById("evaluateBtn") as HTMLButtonElement
+
+        contextTypeSelect.addEventListener("change", {
+            toggleEnterpriseFields()
         })
 
-        // Hot reload toggle handler
-        hotReloadToggle.addEventListener("change", { event ->
-            handleHotReloadToggle(event)
+        evaluateBtn.addEventListener("click", {
+            evaluateFeatures()
         })
-
-        // Evaluate button handler
-        evaluateBtn.addEventListener("click", { _ ->
-            evaluate()
-        })
-
-        // Auto-evaluate on form changes when hot reload is enabled
-        val inputs = form.querySelectorAll("input, select")
-        for (i in 0 until inputs.length) {
-            val input = inputs.item(i) as? HTMLElement ?: continue
-
-            input.addEventListener("change", { _ ->
-                if (hotReloadEnabled) {
-                    evaluate()
-                }
-            })
-
-            // Debounce text input
-            if (input is HTMLInputElement && input.type == "text") {
-                input.addEventListener("input", { _ ->
-                    if (hotReloadEnabled) {
-                        debounceTimeoutId?.let { window.clearTimeout(it) }
-                        debounceTimeoutId = window.setTimeout({
-                            evaluate()
-                        }, 500)
-                    }
-                })
-            }
-        }
     }
 
-    private fun handleContextTypeChange(event: Event) {
-        val select = event.target as HTMLSelectElement
-        val enterpriseFields = getDivElement("enterpriseFields")
+    private fun toggleEnterpriseFields() {
+        val contextType = (document.getElementById("contextType") as HTMLSelectElement).value
+        val enterpriseFields = document.getElementById("enterpriseFields") as HTMLDivElement
 
-        if (select.value == "enterprise") {
-            enterpriseFields.classList.add("visible")
-        } else {
-            enterpriseFields.classList.remove("visible")
-        }
-
-        if (hotReloadEnabled) {
-            evaluate()
-        }
+        enterpriseFields.style.display = if (contextType == "enterprise") "block" else "none"
     }
 
-    private fun handleHotReloadToggle(event: Event) {
-        val checkbox = event.target as HTMLInputElement
-        hotReloadEnabled = checkbox.checked
-
-        val evaluateBtn = getButtonElement("evaluateBtn")
-        evaluateBtn.disabled = hotReloadEnabled
-
-        if (hotReloadEnabled) {
-            evaluate()
-        }
-    }
-
-    private fun evaluate() {
-        GlobalScope.launch {
+    private fun evaluateFeatures() {
+        scope.launch {
             try {
-                val form = getFormElement("contextForm")
-                val formData = FormData(form)
-                val params = URLSearchParams()
+                val resultsDiv = document.getElementById("results") as HTMLDivElement
+                resultsDiv.innerHTML = """<div class="loading">Evaluating...</div>"""
 
-                // Convert FormData to URLSearchParams
-                val iterator: dynamic = js("formData.entries()")
-                var entry: dynamic = iterator.next()
-                while (entry.done == false) {
-                    val pair = entry.value.unsafeCast<Array<String>>()
-                    params.append(pair[0], pair[1])
-                    entry = iterator.next()
+                val contextType = (document.getElementById("contextType") as HTMLSelectElement).value
+                val locale = (document.getElementById("locale") as HTMLSelectElement).value
+                val platform = (document.getElementById("platform") as HTMLSelectElement).value
+                val version = (document.getElementById("version") as HTMLInputElement).value
+                val stableId = (document.getElementById("stableId") as HTMLSelectElement).value
+
+                val params = buildString {
+                    append("contextType=$contextType")
+                    append("&locale=$locale")
+                    append("&platform=$platform")
+                    append("&version=$version")
+                    append("&stableId=$stableId")
+
+                    if (contextType == "enterprise") {
+                        val tier = (document.getElementById("tier") as HTMLSelectElement).value
+                        val orgId = (document.getElementById("orgId") as HTMLInputElement).value
+                        val employeeCount = (document.getElementById("employeeCount") as HTMLInputElement).value
+
+                        append("&tier=$tier")
+                        append("&orgId=$orgId")
+                        append("&employeeCount=$employeeCount")
+                    }
                 }
 
-                // Make API request
-                val fetchOptions = json(
+                val response = window.fetch("/api/evaluate", json(
                     "method" to "POST",
-                    "body" to params.toString(),
-                    "headers" to json(
-                        "Content-Type" to "application/x-www-form-urlencoded"
-                    )
-                )
-
-                val response = window.fetch("/api/evaluate", fetchOptions.unsafeCast<RequestInit>()).await()
+                    "body" to params,
+                    "headers" to json("Content-Type" to "application/x-www-form-urlencoded")
+                ).unsafeCast<RequestInit>()).await()
 
                 if (response.ok) {
-                    val data = response.json().await()
-                    renderResults(data.unsafeCast<Json>())
+                    val text = response.text().await()
+                    val result = Json.decodeFromString<EvaluationResponse>(text)
+                    renderResults(result, contextType)
                 } else {
-                    val errorText = response.text().await()
-                    console.error("[evaluate] Error response:", errorText)
-                    showError("results", "Evaluation failed: ${response.statusText}")
+                    resultsDiv.innerHTML = """<div class="error">Evaluation failed: ${response.statusText}</div>"""
                 }
-            } catch (e: dynamic) {
-                val errorMsg = js("e.message || e.toString() || 'Unknown error'") as String
-                console.error("[evaluate] Error:", errorMsg)
-                showError("results", "Error: $errorMsg")
+            } catch (e: Exception) {
+                val resultsDiv = document.getElementById("results") as HTMLDivElement
+                resultsDiv.innerHTML = """<div class="error">Error: ${e.message}</div>"""
+                console.error("Evaluation error:", e)
             }
         }
     }
 
-    private fun renderResults(data: Json) {
-        val results = getDivElement("results")
-        val contextType = getSelectElement("contextType").value
+    private fun renderResults(result: EvaluationResponse, contextType: String) {
+        val resultsDiv = document.getElementById("results") as HTMLDivElement
 
-        try {
-            var html = """<div class="features-grid">"""
+        val html = buildString {
+            append("<div class=\"features-grid\">")
 
             // Base features
-            html += renderFeature("Dark Mode", data["darkMode"], FeatureType.BOOLEAN)
-            html += renderFeature("Beta Features", data["betaFeatures"], FeatureType.BOOLEAN)
-            html += renderFeature("Analytics Enabled", data["analyticsEnabled"], FeatureType.BOOLEAN)
-            html += renderFeature("Welcome Message", data["welcomeMessage"], FeatureType.STRING)
-            html += renderFeature("Theme Color", data["themeColor"], FeatureType.STRING)
-            html += renderFeature("Max Items Per Page", data["maxItemsPerPage"], FeatureType.NUMBER)
-            html += renderFeature("Cache TTL (seconds)", data["cacheTtlSeconds"], FeatureType.NUMBER)
-            html += renderFeature("Discount %", "${data["discountPercentage"]}%", FeatureType.NUMBER)
-            html += renderFeature("API Rate Limit", data["apiRateLimit"], FeatureType.NUMBER)
+            append(renderFeature("Dark Mode", result.darkMode))
+            append(renderFeature("Beta Features", result.betaFeatures))
+            append(renderFeature("Analytics Enabled", result.analyticsEnabled))
+            append(renderFeature("Welcome Message", result.welcomeMessage))
+            append(renderFeature("Theme Color", result.themeColor, isColor = true))
+            append(renderFeature("Max Items Per Page", result.maxItemsPerPage))
+            append(renderFeature("Cache TTL (seconds)", result.cacheTtlSeconds))
+            append(renderFeature("Discount %", "${result.discountPercentage}%"))
+            append(renderFeature("API Rate Limit", result.apiRateLimit))
 
             // Enterprise features
             if (contextType == "enterprise") {
-                html += renderFeature("SSO Enabled", data["ssoEnabled"], FeatureType.BOOLEAN)
-                html += renderFeature("Advanced Analytics", data["advancedAnalytics"], FeatureType.BOOLEAN)
-                html += renderFeature("Custom Branding", data["customBranding"], FeatureType.BOOLEAN)
-                html += renderFeature("Dedicated Support", data["dedicatedSupport"], FeatureType.BOOLEAN)
+                append(renderFeature("SSO Enabled", result.ssoEnabled))
+                append(renderFeature("Advanced Analytics", result.advancedAnalytics))
+                append(renderFeature("Custom Branding", result.customBranding))
+                append(renderFeature("Dedicated Support", result.dedicatedSupport))
             }
 
-            html += """</div>"""
-            results.innerHTML = html
-        } catch (e: Exception) {
-            console.error("[renderResults] Error:", e.message)
-            showError("results", "Error rendering results: ${e.message}")
+            append("</div>")
         }
+
+        resultsDiv.innerHTML = html
     }
 
-    private fun renderFeature(name: String, value: Any?, type: FeatureType): String {
-        val displayValue = when (type) {
-            FeatureType.BOOLEAN -> if (value as? Boolean == true) "Enabled" else "Disabled"
+    private fun renderFeature(name: String, value: Any?, isColor: Boolean = false): String {
+        val displayValue = when (value) {
+            is Boolean -> if (value) "Enabled" else "Disabled"
             else -> value.toString()
         }
 
-        val statusClass = when (type) {
-            FeatureType.BOOLEAN -> if (value as? Boolean == true) "enabled" else "disabled"
-            else -> "enabled"
+        val statusClass = when (value) {
+            is Boolean -> if (value) "enabled" else "disabled"
+            else -> "value"
         }
+
+        val colorSwatch = if (isColor && value is String) {
+            """<span class="color-swatch" style="background-color: $value;"></span>"""
+        } else ""
 
         return """
-            <div class="feature-item $statusClass">
-                <span class="feature-name">$name</span>
-                <span class="feature-value ${type.cssClass}">$displayValue</span>
+            <div class="feature-card $statusClass">
+                <div class="feature-name">$name</div>
+                <div class="feature-value">$colorSwatch$displayValue</div>
             </div>
-        """
+        """.trimIndent()
     }
-
-    private fun loadSnapshot() {
-        try {
-            console.log("[loadSnapshot] Reading embedded snapshot from window.KONDITIONAL_SNAPSHOT")
-            val snapshotData: dynamic = js("window.KONDITIONAL_SNAPSHOT")
-
-            if (snapshotData == null || js("typeof snapshotData === 'undefined'") == true) {
-                console.error("[loadSnapshot] No embedded snapshot data found")
-                getDivElement("jsonOutput").textContent = "Error: No snapshot data available"
-                return
-            }
-
-            val formatted = JSON.stringify(snapshotData, null, 2)
-            getDivElement("jsonOutput").textContent = formatted
-            console.log("[loadSnapshot] Successfully loaded and formatted embedded snapshot")
-        } catch (e: Exception) {
-            console.error("[loadSnapshot] Error:", e)
-            console.error("[loadSnapshot] Error message:", e.message)
-            getDivElement("jsonOutput").textContent = "Error loading snapshot: ${e.message}"
-        }
-    }
-
-    private fun loadRules() {
-        try {
-            console.log("[loadRules] Reading embedded rules from window.KONDITIONAL_RULES")
-            val rulesData: dynamic = js("window.KONDITIONAL_RULES")
-
-            if (rulesData == null || js("typeof rulesData === 'undefined'") == true) {
-                console.error("[loadRules] No embedded rules data found")
-                showError("rulesPanel", "Error: No rules data available")
-                return
-            }
-
-            console.log("[loadRules] Rules data loaded, calling renderRules()")
-            renderRules(rulesData.unsafeCast<Json>())
-            console.log("[loadRules] Successfully loaded and rendered embedded rules")
-        } catch (e: Exception) {
-            console.error("[loadRules] Error:", e)
-            console.error("[loadRules] Error message:", e.message)
-            showError("rulesPanel", "Error loading rules: ${e.message}")
-        }
-    }
-
-    private fun renderRules(data: Json) {
-        val rulesPanel = getDivElement("rulesPanel")
-
-        try {
-            val featuresData = data["features"]
-
-            if (featuresData == null) {
-                showError("rulesPanel", "No features data received")
-                return
-            }
-
-            val features = featuresData as? Array<*>
-
-            if (features == null) {
-                showError("rulesPanel", "Invalid features data format")
-                return
-            }
-
-            if (features.isNotEmpty()) {
-                var html = ""
-
-                features.forEach { featureData ->
-                    val feature = featureData.unsafeCast<Json>()
-                    val key = feature["key"].unsafeCast<String?>() ?: "unknown"
-                    val type = feature["type"].unsafeCast<String?>() ?: "Unknown"
-                    val default = feature["default"]
-                    val rulesCount = feature["rulesCount"].unsafeCast<Number?>()?.toInt() ?: 0
-                    val hasRules = feature["hasRules"].unsafeCast<Boolean?>() ?: false
-
-                    val defaultDisplay = if (default is String) """"$default"""" else default.toString()
-                    val rulesText = if (hasRules) {
-                        "✓ $rulesCount rule(s) configured"
-                    } else {
-                        "✗ No rules"
-                    }
-
-                    html += """
-                        <div class="rule-item">
-                            <div class="rule-header">
-                                <span class="rule-name">$key</span>
-                                <span class="rule-badge">$type</span>
-                            </div>
-                            <div class="rule-details">
-                                Default: $defaultDisplay<br>
-                                $rulesText
-                            </div>
-                        </div>
-                    """
-                }
-
-                rulesPanel.innerHTML = html
-            } else {
-                rulesPanel.innerHTML = """<div class="loading">No rules configured</div>"""
-            }
-        } catch (e: Exception) {
-            console.error("[renderRules] Error:", e.message)
-            showError("rulesPanel", "Error rendering rules: ${e.message}")
-        }
-    }
-
-    private fun showError(elementId: String, message: String) {
-        val element = document.getElementById(elementId) as? HTMLDivElement
-        element?.innerHTML = """<div class="loading" style="color: #ef4444;">$message</div>"""
-    }
-
-    // Type-safe element getters
-    private fun getSelectElement(id: String): HTMLSelectElement =
-        document.getElementById(id) as HTMLSelectElement
-
-    private fun getInputElement(id: String): HTMLInputElement =
-        document.getElementById(id) as HTMLInputElement
-
-    private fun getButtonElement(id: String): HTMLButtonElement =
-        document.getElementById(id) as HTMLButtonElement
-
-    private fun getFormElement(id: String): HTMLFormElement =
-        document.getElementById(id) as HTMLFormElement
-
-    private fun getDivElement(id: String): HTMLDivElement =
-        document.getElementById(id) as HTMLDivElement
 }
 
-enum class FeatureType(val cssClass: String) {
-    BOOLEAN("boolean"),
-    STRING("string"),
-    NUMBER("number")
-}
-
-// External JavaScript APIs not in kotlinx-browser
-external class URLSearchParams {
-    fun append(name: String, value: String)
-    override fun toString(): String
-}
-
-external object JSON {
-    fun parse(text: String): Json
-    fun stringify(obj: Json, replacer: Nothing?, space: Int): String
-}
-
-external class FormData(form: HTMLFormElement)
-
-// Entry point
+// Entry point - routes to appropriate client based on page
 fun main() {
     when {
-        document.getElementById(ConfigStateCatalogClient.ROOT_ELEMENT_ID) != null -> {
-            console.log("Detected ConfigState catalog root element")
-            ConfigStateCatalogClient.init()
-        }
-        document.getElementById(io.amichne.konditional.demo.evaluation.FeatureEvaluationClient.ROOT_ELEMENT_ID) != null -> {
-            console.log("Detected Feature Evaluation root element")
-            io.amichne.konditional.demo.evaluation.FeatureEvaluationClient.init()
-        }
-        document.getElementById("contextForm") != null -> {
-            console.log("Detected legacy DemoClient form (fallback)")
+        document.getElementById("app-root") != null -> {
+            console.log("Initializing Feature Evaluation Demo")
             DemoClient.init()
         }
-        else -> console.warn("No known root element found; skipping client initialization.")
+        document.getElementById("config-root") != null -> {
+            console.log("Initializing Configuration Editor")
+            io.amichne.konditional.demo.config.ConfigEditor.init()
+        }
+        else -> console.warn("No known root element found")
     }
 }

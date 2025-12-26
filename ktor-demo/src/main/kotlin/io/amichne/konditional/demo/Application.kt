@@ -33,46 +33,6 @@ import kotlinx.html.style
 import kotlinx.html.title
 import kotlinx.html.unsafe
 
-// Extension properties for display names
-private val AppLocale.displayName: String
-    get() =
-        name
-            .split('_')
-            .joinToString(separator = " ") { it.lowercase().replaceFirstChar(Char::uppercase) }
-
-private val Platform.displayName: String
-    get() = when (this) {
-        Platform.IOS -> "iOS"
-        Platform.ANDROID -> "Android"
-        Platform.WEB -> "Web"
-    }
-
-private val SubscriptionTier.displayName: String
-    get() = when (this) {
-        SubscriptionTier.FREE -> "Free"
-        SubscriptionTier.STARTER -> "Starter"
-        SubscriptionTier.PROFESSIONAL -> "Professional"
-        SubscriptionTier.ENTERPRISE -> "Enterprise"
-    }
-
-// Predefined HexId-compliant user IDs for testing
-private object SampleHexIds {
-    val USER_1 = "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"
-    val USER_2 = "f1e2d3c4b5a6978685746352413021ab"
-    val USER_3 = "123456789abcdef0fedcba9876543210"
-    val USER_4 = "deadbeefcafebabe1234567890abcdef"
-    val USER_5 = "0f1e2d3c4b5a69788574635241302100"
-
-    val all = listOf(USER_1, USER_2, USER_3, USER_4, USER_5)
-    val displayNames = listOf(
-        "User Alpha",
-        "User Beta",
-        "User Gamma",
-        "User Delta",
-        "User Epsilon"
-    )
-}
-
 fun main() {
     // Force initialization of feature containers by accessing their properties
     // This triggers the property delegation which registers features with the namespace
@@ -114,9 +74,9 @@ fun Application.configureRouting() {
             }
         }
 
-        get("/configstate/catalog") {
+        get("/config") {
             call.respondHtml {
-                renderConfigStateCatalogPage()
+                renderConfigPage()
             }
         }
 
@@ -143,54 +103,6 @@ fun Application.configureRouting() {
     }
 }
 
-private fun buildRulesInfo(): String {
-    println("[buildRulesInfo] Starting to build rules info")
-    val moshi = com.squareup.moshi.Moshi.Builder().build()
-    val adapter = moshi.adapter(Map::class.java)
-
-    // Parse the snapshot to extract rule details
-    val snapshot = SnapshotSerializer.serialize(DemoFeatures.configuration)
-    println("[buildRulesInfo] Snapshot length: ${snapshot.length}")
-
-    val snapshotData = moshi.adapter(Map::class.java).fromJson(snapshot)
-    println("[buildRulesInfo] Snapshot parsed, keys: ${snapshotData?.keys}")
-
-    val flags = snapshotData?.get("flags")
-    println("[buildRulesInfo] Flags data: $flags")
-    println("[buildRulesInfo] Flags type: ${flags?.javaClass?.name}")
-
-    val featuresData = (snapshotData?.get("flags") as? List<*>)?.map { flagData ->
-        val flag = flagData as? Map<*, *>
-        val key = flag?.get("key") as? String ?: "unknown"
-
-        // Get rules array (not "values")
-        val rules = flag?.get("rules") as? List<*> ?: emptyList<Any>()
-
-        // Get defaultValue object and extract the actual value
-        val defaultValueObj = flag?.get("defaultValue") as? Map<*, *>
-        val defaultValue = defaultValueObj?.get("value")
-        val typeStr = defaultValueObj?.get("type") as? String ?: "Unknown"
-
-        println("[buildRulesInfo] Processing flag: key=$key, rulesCount=${rules.size}, default=$defaultValue, type=$typeStr")
-
-        mapOf(
-            "key" to key,
-            "type" to typeStr.lowercase().replaceFirstChar { it.uppercase() }, // "BOOLEAN" -> "Boolean"
-            "default" to defaultValue,
-            "rulesCount" to rules.size,
-            "hasRules" to rules.isNotEmpty(),
-            "rules" to rules.map { moshi.adapter(List::class.java).toJsonValue(rules) }
-        )
-    } ?: emptyList()
-
-    println("[buildRulesInfo] Features data count: ${featuresData.size}")
-
-    val rulesMap = mapOf("features" to featuresData)
-    val result = adapter.toJson(rulesMap)
-    println("[buildRulesInfo] Final JSON: $result")
-    return result
-}
-
 private fun evaluateBaseContext(params: Parameters): String {
     val locale = AppLocale.valueOf(params["locale"] ?: "UNITED_STATES")
     val platform = Platform.valueOf(params["platform"] ?: "WEB")
@@ -214,8 +126,8 @@ private fun evaluateEnterpriseContext(params: Parameters): String {
     val version = Version.parse(params["version"] ?: "1.0.0").getOrThrow()
     val stableIdHex = params["stableId"] ?: "f1e2d3c4b5a6978685746352413021ab"
     val stableId = StableId.fromHex(stableIdHex)
-    val subscriptionTier = SubscriptionTier.fromString(params["subscriptionTier"] ?: "FREE")
-    val organizationId = params["organizationId"] ?: "org-001"
+    val subscriptionTier = SubscriptionTier.fromString(params["tier"] ?: "FREE")
+    val organizationId = params["orgId"] ?: "org-001"
     val employeeCount = params["employeeCount"]?.toIntOrNull() ?: 10
 
     val context = EnterpriseContext(
@@ -281,11 +193,201 @@ private fun HTML.renderMainPage() {
             unsafe {
                 raw(
                     """
+                    * { box-sizing: border-box; margin: 0; padding: 0; }
+
                     body {
-                        margin: 0;
-                        padding: 0;
                         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                        background-color: #f5f5f5;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        min-height: 100vh;
+                        padding: 20px;
+                    }
+
+                    .container { max-width: 1400px; margin: 0 auto; }
+
+                    .header {
+                        background: white;
+                        padding: 24px;
+                        border-radius: 12px;
+                        margin-bottom: 24px;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    }
+
+                    .header h1 {
+                        font-size: 28px;
+                        color: #1a202c;
+                    }
+
+                    .content {
+                        display: grid;
+                        grid-template-columns: 400px 1fr;
+                        gap: 24px;
+                    }
+
+                    .form-panel, .results-panel {
+                        background: white;
+                        padding: 24px;
+                        border-radius: 12px;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    }
+
+                    .form-panel h2, .results-panel h2 {
+                        font-size: 20px;
+                        color: #1a202c;
+                        margin-bottom: 20px;
+                    }
+
+                    .form-panel h3 {
+                        font-size: 16px;
+                        color: #2d3748;
+                        margin: 16px 0 12px 0;
+                    }
+
+                    .form-group {
+                        margin-bottom: 16px;
+                    }
+
+                    .form-group label {
+                        display: block;
+                        font-size: 14px;
+                        font-weight: 500;
+                        color: #4a5568;
+                        margin-bottom: 6px;
+                    }
+
+                    .form-group select,
+                    .form-group input {
+                        width: 100%;
+                        padding: 10px 12px;
+                        border: 1px solid #cbd5e0;
+                        border-radius: 6px;
+                        font-size: 14px;
+                        color: #2d3748;
+                        background: white;
+                    }
+
+                    .form-group select:focus,
+                    .form-group input:focus {
+                        outline: none;
+                        border-color: #667eea;
+                        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+                    }
+
+                    .divider {
+                        height: 1px;
+                        background: #e2e8f0;
+                        margin: 20px 0;
+                    }
+
+                    .evaluate-btn {
+                        width: 100%;
+                        padding: 12px;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        border: none;
+                        border-radius: 6px;
+                        font-size: 16px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: transform 0.2s, box-shadow 0.2s;
+                    }
+
+                    .evaluate-btn:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+                    }
+
+                    .evaluate-btn:active {
+                        transform: translateY(0);
+                    }
+
+                    .results-container {
+                        min-height: 200px;
+                    }
+
+                    .placeholder {
+                        text-align: center;
+                        color: #a0aec0;
+                        padding: 60px 20px;
+                    }
+
+                    .loading {
+                        text-align: center;
+                        color: #667eea;
+                        padding: 60px 20px;
+                        font-weight: 500;
+                    }
+
+                    .error {
+                        color: #e53e3e;
+                        padding: 20px;
+                        background: #fff5f5;
+                        border: 1px solid #feb2b2;
+                        border-radius: 6px;
+                    }
+
+                    .features-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                        gap: 16px;
+                    }
+
+                    .feature-card {
+                        padding: 16px;
+                        border-radius: 8px;
+                        border: 1px solid #e2e8f0;
+                        transition: all 0.2s;
+                    }
+
+                    .feature-card:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                    }
+
+                    .feature-card.enabled {
+                        background: #f0fff4;
+                        border-color: #68d391;
+                    }
+
+                    .feature-card.disabled {
+                        background: #fffaf0;
+                        border-color: #feb2b2;
+                    }
+
+                    .feature-card.value {
+                        background: #ebf8ff;
+                        border-color: #90cdf4;
+                    }
+
+                    .feature-name {
+                        font-size: 13px;
+                        font-weight: 600;
+                        color: #4a5568;
+                        margin-bottom: 8px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+
+                    .feature-value {
+                        font-size: 16px;
+                        font-weight: 500;
+                        color: #1a202c;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+
+                    .color-swatch {
+                        display: inline-block;
+                        width: 24px;
+                        height: 24px;
+                        border-radius: 4px;
+                        border: 2px solid #e2e8f0;
+                    }
+
+                    @media (max-width: 1024px) {
+                        .content {
+                            grid-template-columns: 1fr;
+                        }
                     }
                     """.trimIndent()
                 )
@@ -293,47 +395,287 @@ private fun HTML.renderMainPage() {
         }
     }
     body {
-        // React root element
         div {
-            id = "featureEvaluationRoot"
+            id = "app-root"
         }
 
-        // Embed snapshot and rules data directly in HTML (for backward compatibility)
-        script {
-            unsafe {
-                raw(
-                    """
-                    window.KONDITIONAL_RULES = ${buildRulesInfo()};
-                    window.KONDITIONAL_SNAPSHOT = ${SnapshotSerializer.serialize(DemoFeatures.configuration)};
-                """.trimIndent()
-                )
-            }
-        }
-
-        // Load compiled Kotlin/JS client code
         script {
             src = "/static/demo-client.js"
         }
     }
 }
 
-private fun HTML.renderConfigStateCatalogPage() {
+private fun HTML.renderConfigPage() {
     head {
-        title { +"Konditional ConfigState UI Catalog" }
+        title { +"Konditional Configuration Editor" }
         style {
             unsafe {
                 raw(
                     """
-                    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-                    """.trimIndent(),
+                    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+                    body {
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                        background: #f5f7fa;
+                        height: 100vh;
+                        overflow: hidden;
+                    }
+
+                    .config-container {
+                        display: flex;
+                        flex-direction: column;
+                        height: 100vh;
+                    }
+
+                    .config-header {
+                        background: white;
+                        border-bottom: 1px solid #e2e8f0;
+                        padding: 16px 24px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                    }
+
+                    .config-header h1 {
+                        font-size: 20px;
+                        color: #1a202c;
+                        font-weight: 600;
+                    }
+
+                    .header-actions {
+                        display: flex;
+                        gap: 12px;
+                    }
+
+                    .btn {
+                        padding: 8px 16px;
+                        border-radius: 6px;
+                        border: none;
+                        font-size: 14px;
+                        font-weight: 500;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    }
+
+                    .btn-primary {
+                        background: #667eea;
+                        color: white;
+                    }
+
+                    .btn-primary:hover {
+                        background: #5a67d8;
+                        transform: translateY(-1px);
+                        box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+                    }
+
+                    .btn-secondary {
+                        background: white;
+                        color: #4a5568;
+                        border: 1px solid #cbd5e0;
+                    }
+
+                    .btn-secondary:hover {
+                        background: #f7fafc;
+                    }
+
+                    .config-content {
+                        display: grid;
+                        grid-template-columns: 350px 1fr;
+                        gap: 0;
+                        height: calc(100vh - 64px);
+                        overflow: hidden;
+                    }
+
+                    .sidebar {
+                        background: white;
+                        border-right: 1px solid #e2e8f0;
+                        overflow-y: auto;
+                    }
+
+                    .main-content {
+                        overflow-y: auto;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 16px;
+                        padding: 16px;
+                    }
+
+                    .panel {
+                        background: white;
+                        border-radius: 8px;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                    }
+
+                    .sidebar .panel {
+                        border-radius: 0;
+                        box-shadow: none;
+                        height: 100%;
+                    }
+
+                    .panel h2 {
+                        font-size: 16px;
+                        color: #2d3748;
+                        padding: 16px 20px;
+                        border-bottom: 1px solid #e2e8f0;
+                        font-weight: 600;
+                    }
+
+                    .descriptor-list {
+                        padding: 12px;
+                    }
+
+                    .descriptor-item {
+                        padding: 12px;
+                        margin-bottom: 8px;
+                        background: #f7fafc;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 6px;
+                        transition: all 0.2s;
+                    }
+
+                    .descriptor-item:hover {
+                        background: #edf2f7;
+                        border-color: #cbd5e0;
+                    }
+
+                    .descriptor-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 8px;
+                    }
+
+                    .descriptor-key {
+                        font-weight: 600;
+                        font-size: 13px;
+                        color: #2d3748;
+                        font-family: 'Monaco', 'Courier New', monospace;
+                    }
+
+                    .descriptor-type {
+                        font-size: 11px;
+                        padding: 2px 8px;
+                        border-radius: 4px;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+
+                    .descriptor-type.boolean {
+                        background: #bee3f8;
+                        color: #2c5282;
+                    }
+
+                    .descriptor-type.string {
+                        background: #c6f6d5;
+                        color: #22543d;
+                    }
+
+                    .descriptor-type.integer,
+                    .descriptor-type.number {
+                        background: #fed7d7;
+                        color: #742a2a;
+                    }
+
+                    .descriptor-details {
+                        font-size: 12px;
+                        color: #718096;
+                    }
+
+                    .detail-row {
+                        display: flex;
+                        gap: 8px;
+                        margin-top: 4px;
+                    }
+
+                    .detail-row .label {
+                        font-weight: 500;
+                        color: #4a5568;
+                    }
+
+                    .fields-container {
+                        padding: 20px;
+                    }
+
+                    .field-group {
+                        margin-bottom: 20px;
+                    }
+
+                    .field-label {
+                        display: block;
+                        font-size: 14px;
+                        font-weight: 500;
+                        color: #2d3748;
+                        margin-bottom: 8px;
+                        font-family: 'Monaco', 'Courier New', monospace;
+                    }
+
+                    .field-input,
+                    .field-textarea {
+                        width: 100%;
+                        padding: 10px 12px;
+                        border: 1px solid #cbd5e0;
+                        border-radius: 6px;
+                        font-size: 14px;
+                        color: #2d3748;
+                        background: white;
+                        font-family: inherit;
+                    }
+
+                    .field-textarea {
+                        min-height: 100px;
+                        font-family: 'Monaco', 'Courier New', monospace;
+                        resize: vertical;
+                    }
+
+                    .field-input:focus,
+                    .field-textarea:focus {
+                        outline: none;
+                        border-color: #667eea;
+                        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+                    }
+
+                    .field-hint {
+                        font-size: 12px;
+                        color: #718096;
+                        margin-top: 4px;
+                    }
+
+                    .json-viewer {
+                        padding: 20px;
+                        background: #1a202c;
+                        color: #68d391;
+                        font-family: 'Monaco', 'Courier New', monospace;
+                        font-size: 12px;
+                        overflow-x: auto;
+                        border-radius: 0 0 8px 8px;
+                        margin: 0;
+                        max-height: 600px;
+                    }
+
+                    .loading,
+                    .placeholder {
+                        text-align: center;
+                        color: #a0aec0;
+                        padding: 40px 20px;
+                    }
+
+                    input[type="checkbox"] {
+                        width: auto;
+                        margin-right: 8px;
+                        cursor: pointer;
+                    }
+                    """.trimIndent()
                 )
             }
         }
     }
     body {
         div {
-            id = "configstateCatalogRoot"
+            id = "config-root"
         }
+
         script {
             src = "/static/demo-client.js"
         }

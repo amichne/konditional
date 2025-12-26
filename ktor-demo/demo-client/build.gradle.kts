@@ -24,22 +24,13 @@ kotlin {
     sourceSets {
         val jsMain by getting {
             dependencies {
-                // Reusable UI components from konditional-ui module
-                implementation(project(":konditional-ui"))
-
-                implementation("org.jetbrains.kotlinx:kotlinx-html-js:0.11.0")
+                // Minimal dependencies for vanilla Kotlin/JS
                 implementation("org.jetbrains.kotlinx:kotlinx-browser:0.5.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:1.10.2")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 
-                // Kotlin/JS React + MUI wrappers (transitively from konditional-ui, but explicit for clarity)
-                implementation(kotlinWrappers.react)
-                implementation(kotlinWrappers.reactDom)
-                implementation(kotlinWrappers.mui.material)
-                implementation(kotlinWrappers.mui.system)
-                implementation(kotlinWrappers.mui.iconsMaterial)
-                implementation(kotlinWrappers.emotion.react)
-                implementation(kotlinWrappers.web)
+                // konditional-ui for DTOs and models (UI logic rewritten in vanilla)
+                implementation(project(":konditional-ui"))
             }
         }
     }
