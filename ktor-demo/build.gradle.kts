@@ -17,8 +17,8 @@ repositories {
 }
 
 dependencies {
-    // Konditional library (from main project)
-    implementation(project(":"))
+    // Konditional library (from core module)
+    implementation(project(":core"))
     // Kontracts is part of Konditional's public type surface (JsonSchema/ObjectTraits bounds)
     implementation(project(":kontracts"))
 

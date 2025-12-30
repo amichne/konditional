@@ -40,28 +40,34 @@ over traditional string-based configuration systems.
 
 ```
 konditional/
-├── src/
-│   ├── main/kotlin/io/amichne/konditional/
-│   │   ├── context/              # Evaluation context (Context, Platform, Rollout, Version)
-│   │   ├── core/                 # Core framework components
-│   │   │   ├── types/           # EncodableValue type system
-│   │   │   ├── instance/        # Konfig (snapshot) and KonfigPatch
-│   │   │   ├── result/          # EvaluationResult, ParseResult, exceptions
-│   │   │   └── id/              # HexId and StableId for bucketing
-│   │   ├── rules/                # Rule evaluation and targeting
-│   │   │   ├── evaluable/       # Evaluable and BaseEvaluable abstractions
-│   │   │   └── versions/        # Version range types
-│   │   ├── serialization/        # JSON serialization with Moshi
-│   │   ├── internal/             # Internal implementation details
-│   │   │   ├── builders/        # DSL builder implementations
-│   │   │   └── serialization/   # Serialization models and adapters
-│   │   └── example/              # Example usage patterns
-│   ├── test/kotlin/              # Unit tests (13 test files)
-│   └── testFixtures/             # Shared test fixtures
-├── docs/                         # 14 markdown documentation files
+├── core/                         # Core library module
+│   ├── src/
+│   │   ├── main/kotlin/io/amichne/konditional/
+│   │   │   ├── context/              # Evaluation context (Context, Platform, Rollout, Version)
+│   │   │   ├── core/                 # Core framework components
+│   │   │   │   ├── types/           # EncodableValue type system
+│   │   │   │   ├── instance/        # Konfig (snapshot) and KonfigPatch
+│   │   │   │   ├── result/          # EvaluationResult, ParseResult, exceptions
+│   │   │   │   └── id/              # HexId and StableId for bucketing
+│   │   │   ├── rules/                # Rule evaluation and targeting
+│   │   │   │   ├── evaluable/       # Evaluable and BaseEvaluable abstractions
+│   │   │   │   └── versions/        # Version range types
+│   │   │   ├── serialization/        # JSON serialization with Moshi
+│   │   │   ├── internal/             # Internal implementation details
+│   │   │   │   ├── builders/        # DSL builder implementations
+│   │   │   │   └── serialization/   # Serialization models and adapters
+│   │   │   └── example/              # Example usage patterns
+│   │   ├── test/kotlin/              # Unit tests
+│   │   └── testFixtures/             # Shared test fixtures
+│   ├── build.gradle.kts          # Core module build configuration
+│   └── detekt.yml                # Static analysis configuration
+├── kontracts/                    # JSON Schema DSL (submodule)
+├── konditional-opentelemetry/    # OpenTelemetry observability hooks
+├── ktor-demo/                    # Example Ktor integration
+├── docusaurus/                   # Documentation site
 ├── scripts/                      # Build and utility scripts
 ├── .github/workflows/            # CI/CD pipelines
-├── build.gradle.kts              # Build configuration
+├── build.gradle.kts              # Root build configuration
 └── gradle.properties             # Project properties
 ```
 
@@ -676,14 +682,14 @@ testFixtures / kotlin / CommonTestFeatures.kt
 
 ### File Locations
 
-| Purpose         | Location                                                |
-|-----------------|---------------------------------------------------------|
-| Core API        | `src/main/kotlin/io/amichne/konditional/core/`          |
-| Context types   | `src/main/kotlin/io/amichne/konditional/context/`       |
-| Rule evaluation | `src/main/kotlin/io/amichne/konditional/rules/`         |
-| Serialization   | `src/main/kotlin/io/amichne/konditional/serialization/` |
-| Tests           | `src/test/kotlin/`                                      |
-| Test fixtures   | `src/testFixtures/`                                     |
+| Purpose         | Location                                                    |
+|-----------------|-------------------------------------------------------------|
+| Core API        | `core/src/main/kotlin/io/amichne/konditional/core/`         |
+| Context types   | `core/src/main/kotlin/io/amichne/konditional/context/`      |
+| Rule evaluation | `core/src/main/kotlin/io/amichne/konditional/rules/`        |
+| Serialization   | `core/src/main/kotlin/io/amichne/konditional/serialization/`|
+| Tests           | `core/src/test/kotlin/`                                     |
+| Test fixtures   | `core/src/testFixtures/`                                    |
 | Documentation   | `docs/`                                                 |
 | Build config    | `build.gradle.kts`, `gradle.properties`                 |
 | CI/CD           | `.github/workflows/`                                    |
