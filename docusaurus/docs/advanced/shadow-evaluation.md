@@ -125,7 +125,7 @@ class ShadowEvaluationCampaign(
                 onMismatch = { mismatch -> mismatchesByStableId[context.stableId] = mismatch },
             )
         } else {
-            feature(context)
+            feature.evaluate(context)
         }
     }
 

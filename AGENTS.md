@@ -136,7 +136,7 @@ Key entry points and responsibilities:
 - `io.amichne.konditional.core.evaluation.Bucketing`
     - Deterministic bucketing for rollouts: SHA-256 → bucket in [0, 10_000), threshold in basis points.
 - Public API helpers live in `io.amichne.konditional.api.*`:
-    - `Feature.evaluate(...)`, `explain(...)` for explainable decisions (also `invoke()` operator for concise usage).
+    - `Feature.evaluate(...)`, `explain(...)` for explainable decisions.
     - `Feature.evaluateWithShadow(...)` for migration/shadow comparisons between registries/configs.
 
 ### Serialization / remote config boundary

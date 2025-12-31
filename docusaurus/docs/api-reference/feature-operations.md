@@ -4,12 +4,12 @@ API reference for evaluating features and retrieving evaluation metadata.
 
 ---
 
-## `Feature(context, registry): T`
+## `Feature.evaluate(context, registry): T`
 
-Preferred evaluation API (operator overload).
+Standard evaluation API.
 
 ```kotlin
-operator fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.invoke(
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
     context: C,
     registry: NamespaceRegistry = namespace,
 ): T
@@ -18,7 +18,7 @@ operator fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.invoke(
 ### Parameters
 
 - `context` — Runtime context providing locale, platform, version, stableId
-- `registry` — Registry to evaluate against (defaults to the feature’s namespace)
+- `registry` — Registry to evaluate against (defaults to the feature's namespace)
 
 ### Returns
 
@@ -32,8 +32,8 @@ The feature's typed value (rule value or default). Never returns `null`.
 ### Example
 
 ```kotlin
-val enabled: Boolean = AppFeatures.darkMode(context)
-val endpoint: String = AppFeatures.apiEndpoint(context)
+val enabled: Boolean = AppFeatures.darkMode.evaluate(context)
+val endpoint: String = AppFeatures.apiEndpoint.evaluate(context)
 ```
 
 ### Behavior
@@ -99,38 +99,6 @@ when (val decision = result.decision) {
 - Debugging user-specific outcomes
 - Logging/metrics for observability
 - Testing rule matching logic
-
----
-
-## `Feature.evaluate(context, registry): T` (discouraged)
-
-Verbose evaluation API.
-
-This function is annotated with `@VerboseApi` (a Kotlin `@RequiresOptIn(level = ERROR)` marker) to discourage usage in
-client code. Prefer the operator overload: `feature(context)`.
-
-```kotlin
-@VerboseApi
-fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
-    context: C,
-    registry: NamespaceRegistry = namespace,
-): T
-```
-
-### Opt-in (if you really want it)
-
-```kotlin
-@OptIn(VerboseApi::class)
-fun evaluateExplicitly() {
-    val enabled = AppFeatures.darkMode.evaluate(context)
-    // Prefer: val enabled = AppFeatures.darkMode(context)
-}
-```
-
-### Why this exists
-
-- Sometimes teams prefer explicit method calls for grep/searchability.
-- The operator overload remains the supported default.
 
 ---
 

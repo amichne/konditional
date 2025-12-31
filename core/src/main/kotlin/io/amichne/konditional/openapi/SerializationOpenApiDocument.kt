@@ -33,7 +33,7 @@ internal object SerializationOpenApiDocument {
                                                         mapOf(
                                                             "schema" to
                                                                 mapOf(
-                                                                    "\$ref" to "#/components/schemas/SerializableSnapshot",
+                                                                    "\$ref" to "#/components/schemas/Snapshot",
                                                                 ),
                                                         ),
                                                 ),

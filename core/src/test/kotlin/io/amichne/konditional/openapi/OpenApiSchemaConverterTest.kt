@@ -10,7 +10,7 @@ import kotlin.test.assertNotNull
 class OpenApiSchemaConverterTest {
     @Test
     fun `serializable rule defaults are required and explicit`() {
-        val schema = schemaFor("SerializableRule")
+        val schema = schemaFor("Rule")
         val required = schema.requiredFields()
 
         assertEquals(
@@ -43,7 +43,7 @@ class OpenApiSchemaConverterTest {
 
     @Test
     fun `serializable flag is discriminated by default value type and enforces consistent rule value types`() {
-        val schema = schemaFor("SerializableFlag")
+        val schema = schemaFor("Flag")
 
         val options = schema.oneOfOptions()
         assertEquals(6, options.size)

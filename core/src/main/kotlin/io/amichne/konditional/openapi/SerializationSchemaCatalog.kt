@@ -3,118 +3,84 @@ package io.amichne.konditional.openapi
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.rules.versions.VersionRange
-import io.amichne.kontracts.schema.AnySchema
-import io.amichne.kontracts.schema.FieldSchema
+import io.amichne.kontracts.dsl.schemaRoot
 import io.amichne.kontracts.schema.JsonSchema
-import io.amichne.kontracts.schema.MapSchema
 import io.amichne.kontracts.schema.ObjectSchema
 
 internal object SerializationSchemaCatalog {
     private val stringSchema = JsonSchema.string()
     private val uniqueStringArraySchema = JsonSchema.array(stringSchema, uniqueItems = true)
-    private val featureIdSchema =
-        JsonSchema.string(description = "Encoded feature identifier: feature::<namespace>::<key>.")
+    private val featureIdSchema = JsonSchema.string(description = "Encoded feature identifier: feature::(namespace)::(key).")
     private val allLocales = AppLocale.entries.map { it.name }
     private val allPlatforms = Platform.entries.map { it.name }
     private val unboundedVersionRangeDefault = mapOf("type" to VersionRange.Type.UNBOUNDED.name)
 
     private val versionSchema =
-        ObjectSchema(
-            fields =
-                mapOf(
-                    "major" to required(JsonSchema.int(minimum = 0)),
-                    "minor" to required(JsonSchema.int(minimum = 0)),
-                    "patch" to required(JsonSchema.int(minimum = 0)),
-                ),
-            description = "Semantic version representation.",
-        )
+        schemaRoot {
+            required("major", JsonSchema.int(minimum = 0))
+            required("minor", JsonSchema.int(minimum = 0))
+            required("patch", JsonSchema.int(minimum = 0))
+        }.copy(description = "Semantic version representation.")
 
     private val versionRangeSchema =
         JsonSchema.oneOf(
             listOf(
-                ObjectSchema(
-                    fields = mapOf("type" to required(enumString("UNBOUNDED"))),
-                ),
-                ObjectSchema(
-                    fields =
-                        mapOf(
-                            "type" to required(enumString("MIN_BOUND")),
-                            "min" to required(versionSchema),
-                        ),
-                ),
-                ObjectSchema(
-                    fields =
-                        mapOf(
-                            "type" to required(enumString("MAX_BOUND")),
-                            "max" to required(versionSchema),
-                        ),
-                ),
-                ObjectSchema(
-                    fields =
-                        mapOf(
-                            "type" to required(enumString("MIN_AND_MAX_BOUND")),
-                            "min" to required(versionSchema),
-                            "max" to required(versionSchema),
-                        ),
-                ),
+                schemaRoot {
+                    required("type", enumString(VersionRange.Type.UNBOUNDED.name))
+                },
+                schemaRoot {
+                    required("type", enumString(VersionRange.Type.MIN_BOUND.name))
+                    required("min", versionSchema)
+                },
+                schemaRoot {
+                    required("type", enumString(VersionRange.Type.MAX_BOUND.name))
+                    required("max", versionSchema)
+                },
+                schemaRoot {
+                    required("type", enumString(VersionRange.Type.MIN_AND_MAX_BOUND.name))
+                    required("min", versionSchema)
+                    required("max", versionSchema)
+                },
             ),
         )
 
     private val booleanFlagValueSchema =
-        ObjectSchema(
-            fields =
-                mapOf(
-                    "type" to required(enumString("BOOLEAN")),
-                    "value" to required(JsonSchema.boolean()),
-                ),
-        )
+        schemaRoot {
+            required("type", enumString("BOOLEAN"))
+            required("value", JsonSchema.boolean())
+        }
 
     private val stringFlagValueSchema =
-        ObjectSchema(
-            fields =
-                mapOf(
-                    "type" to required(enumString("STRING")),
-                    "value" to required(stringSchema),
-                ),
-        )
+        schemaRoot {
+            required("type", enumString("STRING"))
+            required("value", stringSchema)
+        }
 
     private val intFlagValueSchema =
-        ObjectSchema(
-            fields =
-                mapOf(
-                    "type" to required(enumString("INT")),
-                    "value" to required(JsonSchema.int()),
-                ),
-        )
+        schemaRoot {
+            required("type", enumString("INT"))
+            required("value", JsonSchema.int())
+        }
 
     private val doubleFlagValueSchema =
-        ObjectSchema(
-            fields =
-                mapOf(
-                    "type" to required(enumString("DOUBLE")),
-                    "value" to required(JsonSchema.double()),
-                ),
-        )
+        schemaRoot {
+            required("type", enumString("DOUBLE"))
+            required("value", JsonSchema.double())
+        }
 
     private val enumFlagValueSchema =
-        ObjectSchema(
-            fields =
-                mapOf(
-                    "type" to required(enumString("ENUM")),
-                    "value" to required(stringSchema),
-                    "enumClassName" to required(stringSchema),
-                ),
-        )
+        schemaRoot {
+            required("type", enumString("ENUM"))
+            required("value", stringSchema)
+            required("enumClassName", stringSchema)
+        }
 
     private val dataClassFlagValueSchema =
-        ObjectSchema(
-            fields =
-                mapOf(
-                    "type" to required(enumString("DATA_CLASS")),
-                    "dataClassName" to required(stringSchema),
-                    "value" to required(MapSchema(AnySchema(nullable = true))),
-                ),
-        )
+        schemaRoot {
+            required("type", enumString("DATA_CLASS"))
+            required("dataClassName", stringSchema)
+            required("value", JsonSchema.map(JsonSchema.any(nullable = true)))
+        }
 
     private val flagValueSchema =
         JsonSchema.oneOf(
@@ -128,83 +94,79 @@ internal object SerializationSchemaCatalog {
             ),
         )
 
-    private fun serializableRuleSchema(valueSchema: JsonSchema<*>): ObjectSchema =
-        ObjectSchema(
-            fields =
-                mapOf(
-                    "value" to required(valueSchema),
-                    "rampUp" to optional(
-                        JsonSchema.double(minimum = 0.0, maximum = 100.0),
-                        defaultValue = 100.0,
-                    ),
-                    "rampUpAllowlist" to optional(uniqueStringArraySchema, defaultValue = emptyList<String>()),
-                    "note" to optional(stringSchema),
-                    "locales" to optional(uniqueStringArraySchema, defaultValue = allLocales),
-                    "platforms" to optional(uniqueStringArraySchema, defaultValue = allPlatforms),
-                    "versionRange" to optional(versionRangeSchema, defaultValue = unboundedVersionRangeDefault),
-                    "axes" to optional(
-                        MapSchema(uniqueStringArraySchema),
-                        defaultValue = emptyMap<String, Any?>(),
-                    ),
-                ),
-        )
+    private fun serializableRuleSchemaFor(valueSchema: JsonSchema<*>): ObjectSchema =
+        schemaRoot {
+            required("value", valueSchema)
+            optional(
+                "rampUp",
+                JsonSchema.double(minimum = 0.0, maximum = 100.0),
+                defaultValue = 100.0,
+            )
+            optional("rampUpAllowlist", uniqueStringArraySchema, defaultValue = emptyList<String>())
+            optional("note", stringSchema)
+            optional("locales", uniqueStringArraySchema, defaultValue = allLocales)
+            optional("platforms", uniqueStringArraySchema, defaultValue = allPlatforms)
+            optional("versionRange", versionRangeSchema, defaultValue = unboundedVersionRangeDefault)
+            optional(
+                "axes",
+                JsonSchema.map(uniqueStringArraySchema),
+                defaultValue = emptyMap<String, Any?>(),
+            )
+        }
 
-    private val serializableRuleSchema = serializableRuleSchema(flagValueSchema)
-    private val serializableBooleanRuleSchema = serializableRuleSchema(booleanFlagValueSchema)
-    private val serializableStringRuleSchema = serializableRuleSchema(stringFlagValueSchema)
-    private val serializableIntRuleSchema = serializableRuleSchema(intFlagValueSchema)
-    private val serializableDoubleRuleSchema = serializableRuleSchema(doubleFlagValueSchema)
-    private val serializableEnumRuleSchema = serializableRuleSchema(enumFlagValueSchema)
-    private val serializableDataClassRuleSchema = serializableRuleSchema(dataClassFlagValueSchema)
+    private val serializableRuleSchema = serializableRuleSchemaFor(flagValueSchema)
+    private val serializableBooleanRuleSchema = serializableRuleSchemaFor(booleanFlagValueSchema)
+    private val serializableStringRuleSchema = serializableRuleSchemaFor(stringFlagValueSchema)
+    private val serializableIntRuleSchema = serializableRuleSchemaFor(intFlagValueSchema)
+    private val serializableDoubleRuleSchema = serializableRuleSchemaFor(doubleFlagValueSchema)
+    private val serializableEnumRuleSchema = serializableRuleSchemaFor(enumFlagValueSchema)
+    private val serializableDataClassRuleSchema = serializableRuleSchemaFor(dataClassFlagValueSchema)
 
-    private fun serializableFlagSchema(
+    private fun serializableFlagSchemaFor(
         defaultValueSchema: JsonSchema<*>,
         ruleSchema: JsonSchema<*>,
     ): ObjectSchema =
-        ObjectSchema(
-            fields =
-                mapOf(
-                    "key" to required(featureIdSchema),
-                    "defaultValue" to required(defaultValueSchema),
-                    "salt" to optional(stringSchema, defaultValue = "v1"),
-                    "isActive" to optional(JsonSchema.boolean(), defaultValue = true),
-                    "rampUpAllowlist" to optional(uniqueStringArraySchema, defaultValue = emptyList<String>()),
-                    "rules" to optional(JsonSchema.array(ruleSchema), defaultValue = emptyList<Any?>()),
-                ),
-        )
+        schemaRoot {
+            required("key", featureIdSchema)
+            required("defaultValue", defaultValueSchema)
+            optional("salt", stringSchema, defaultValue = "v1")
+            optional("isActive", JsonSchema.boolean(), defaultValue = true)
+            optional("rampUpAllowlist", uniqueStringArraySchema, defaultValue = emptyList<String>())
+            optional("rules", JsonSchema.array(ruleSchema), defaultValue = emptyList<Any?>())
+        }
 
     private val serializableBooleanFlagSchema =
-        serializableFlagSchema(
+        serializableFlagSchemaFor(
             defaultValueSchema = booleanFlagValueSchema,
             ruleSchema = serializableBooleanRuleSchema,
         )
 
     private val serializableStringFlagSchema =
-        serializableFlagSchema(
+        serializableFlagSchemaFor(
             defaultValueSchema = stringFlagValueSchema,
             ruleSchema = serializableStringRuleSchema,
         )
 
     private val serializableIntFlagSchema =
-        serializableFlagSchema(
+        serializableFlagSchemaFor(
             defaultValueSchema = intFlagValueSchema,
             ruleSchema = serializableIntRuleSchema,
         )
 
     private val serializableDoubleFlagSchema =
-        serializableFlagSchema(
+        serializableFlagSchemaFor(
             defaultValueSchema = doubleFlagValueSchema,
             ruleSchema = serializableDoubleRuleSchema,
         )
 
     private val serializableEnumFlagSchema =
-        serializableFlagSchema(
+        serializableFlagSchemaFor(
             defaultValueSchema = enumFlagValueSchema,
             ruleSchema = serializableEnumRuleSchema,
         )
 
     private val serializableDataClassFlagSchema =
-        serializableFlagSchema(
+        serializableFlagSchemaFor(
             defaultValueSchema = dataClassFlagValueSchema,
             ruleSchema = serializableDataClassRuleSchema,
         )
@@ -222,38 +184,24 @@ internal object SerializationSchemaCatalog {
         )
 
     private val serializableSnapshotMetadataSchema =
-        ObjectSchema(
-            fields =
-                mapOf(
-                    "version" to optional(stringSchema),
-                    "generatedAtEpochMillis" to optional(
-                        JsonSchema.double(format = "int64", minimum = 0.0),
-                    ),
-                    "source" to optional(stringSchema),
-                ),
-        )
+        schemaRoot {
+            optional("version", stringSchema)
+            optional("generatedAtEpochMillis", JsonSchema.double(format = "int64", minimum = 0.0))
+            optional("source", stringSchema)
+        }
 
     private val serializableSnapshotSchema =
-        ObjectSchema(
-            fields =
-                mapOf(
-                    "meta" to optional(serializableSnapshotMetadataSchema),
-                    "flags" to required(JsonSchema.array(serializableFlagSchema)),
-                ),
-        )
+        schemaRoot {
+            optional("meta", serializableSnapshotMetadataSchema)
+            required("flags", JsonSchema.array(serializableFlagSchema))
+        }
 
     private val serializablePatchSchema =
-        ObjectSchema(
-            fields =
-                mapOf(
-                    "meta" to optional(serializableSnapshotMetadataSchema),
-                    "flags" to required(JsonSchema.array(serializableFlagSchema)),
-                    "removeKeys" to optional(
-                        JsonSchema.array(featureIdSchema),
-                        defaultValue = emptyList<String>(),
-                    ),
-                ),
-        )
+        schemaRoot {
+            optional("meta", serializableSnapshotMetadataSchema)
+            required("flags", JsonSchema.array(serializableFlagSchema))
+            optional("removeKeys", JsonSchema.array(featureIdSchema), defaultValue = emptyList<String>())
+        }
 
     val schemas: Map<String, JsonSchema<*>> =
         mapOf(
@@ -267,36 +215,24 @@ internal object SerializationSchemaCatalog {
             "EnumFlagValue" to enumFlagValueSchema,
             "DataClassFlagValue" to dataClassFlagValueSchema,
             "FlagValue" to flagValueSchema,
-            "SerializableRule" to serializableRuleSchema,
-            "SerializableBooleanRule" to serializableBooleanRuleSchema,
-            "SerializableStringRule" to serializableStringRuleSchema,
-            "SerializableIntRule" to serializableIntRuleSchema,
-            "SerializableDoubleRule" to serializableDoubleRuleSchema,
-            "SerializableEnumRule" to serializableEnumRuleSchema,
-            "SerializableDataClassRule" to serializableDataClassRuleSchema,
-            "SerializableFlag" to serializableFlagSchema,
-            "SerializableBooleanFlag" to serializableBooleanFlagSchema,
-            "SerializableStringFlag" to serializableStringFlagSchema,
-            "SerializableIntFlag" to serializableIntFlagSchema,
-            "SerializableDoubleFlag" to serializableDoubleFlagSchema,
-            "SerializableEnumFlag" to serializableEnumFlagSchema,
-            "SerializableDataClassFlag" to serializableDataClassFlagSchema,
-            "SerializableSnapshotMetadata" to serializableSnapshotMetadataSchema,
-            "SerializableSnapshot" to serializableSnapshotSchema,
-            "SerializablePatch" to serializablePatchSchema,
+            "Rule" to serializableRuleSchema,
+            "BooleanRule" to serializableBooleanRuleSchema,
+            "StringRule" to serializableStringRuleSchema,
+            "IntRule" to serializableIntRuleSchema,
+            "DoubleRule" to serializableDoubleRuleSchema,
+            "EnumRule" to serializableEnumRuleSchema,
+            "DataClassRule" to serializableDataClassRuleSchema,
+            "Flag" to serializableFlagSchema,
+            "BooleanFlag" to serializableBooleanFlagSchema,
+            "StringFlag" to serializableStringFlagSchema,
+            "IntFlag" to serializableIntFlagSchema,
+            "DoubleFlag" to serializableDoubleFlagSchema,
+            "EnumFlag" to serializableEnumFlagSchema,
+            "DataClassFlag" to serializableDataClassFlagSchema,
+            "SnapshotMetadata" to serializableSnapshotMetadataSchema,
+            "Snapshot" to serializableSnapshotSchema,
+            "Patch" to serializablePatchSchema,
         )
-
-    private fun required(
-        schema: JsonSchema<*>,
-        description: String? = null,
-    ): FieldSchema = FieldSchema(schema = schema, required = true, description = description)
-
-    private fun optional(
-        schema: JsonSchema<*>,
-        description: String? = null,
-        defaultValue: Any? = null,
-    ): FieldSchema =
-        FieldSchema(schema = schema, required = false, defaultValue = defaultValue, description = description)
 
     private fun enumString(value: String): JsonSchema<String> = JsonSchema.string(enum = listOf(value))
 }

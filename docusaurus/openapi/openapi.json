@@ -14,7 +14,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SerializableSnapshot"
+                  "$ref": "#/components/schemas/Snapshot"
                 }
               }
             }
@@ -26,7 +26,7 @@
   "components": {
     "schemas": {
       "FeatureId": {
-        "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+        "description": "Encoded feature identifier: feature::(namespace)::(key).",
         "type": "string"
       },
       "Version": {
@@ -490,7 +490,7 @@
           }
         ]
       },
-      "SerializableRule": {
+      "Rule": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -891,7 +891,7 @@
           "axes"
         ]
       },
-      "SerializableBooleanRule": {
+      "BooleanRule": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -1180,7 +1180,7 @@
           "axes"
         ]
       },
-      "SerializableStringRule": {
+      "StringRule": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -1469,7 +1469,7 @@
           "axes"
         ]
       },
-      "SerializableIntRule": {
+      "IntRule": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -1759,7 +1759,7 @@
           "axes"
         ]
       },
-      "SerializableDoubleRule": {
+      "DoubleRule": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -2049,7 +2049,7 @@
           "axes"
         ]
       },
-      "SerializableEnumRule": {
+      "EnumRule": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -2342,7 +2342,7 @@
           "axes"
         ]
       },
-      "SerializableDataClassRule": {
+      "DataClassRule": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -2638,14 +2638,14 @@
           "axes"
         ]
       },
-      "SerializableFlag": {
+      "Flag": {
         "oneOf": [
           {
             "type": "object",
             "additionalProperties": false,
             "properties": {
               "key": {
-                "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+                "description": "Encoded feature identifier: feature::(namespace)::(key).",
                 "type": "string"
               },
               "defaultValue": {
@@ -2991,7 +2991,7 @@
             "additionalProperties": false,
             "properties": {
               "key": {
-                "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+                "description": "Encoded feature identifier: feature::(namespace)::(key).",
                 "type": "string"
               },
               "defaultValue": {
@@ -3337,7 +3337,7 @@
             "additionalProperties": false,
             "properties": {
               "key": {
-                "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+                "description": "Encoded feature identifier: feature::(namespace)::(key).",
                 "type": "string"
               },
               "defaultValue": {
@@ -3685,7 +3685,7 @@
             "additionalProperties": false,
             "properties": {
               "key": {
-                "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+                "description": "Encoded feature identifier: feature::(namespace)::(key).",
                 "type": "string"
               },
               "defaultValue": {
@@ -4033,7 +4033,7 @@
             "additionalProperties": false,
             "properties": {
               "key": {
-                "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+                "description": "Encoded feature identifier: feature::(namespace)::(key).",
                 "type": "string"
               },
               "defaultValue": {
@@ -4387,7 +4387,7 @@
             "additionalProperties": false,
             "properties": {
               "key": {
-                "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+                "description": "Encoded feature identifier: feature::(namespace)::(key).",
                 "type": "string"
               },
               "defaultValue": {
@@ -4744,12 +4744,12 @@
           }
         ]
       },
-      "SerializableBooleanFlag": {
+      "BooleanFlag": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "key": {
-            "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+            "description": "Encoded feature identifier: feature::(namespace)::(key).",
             "type": "string"
           },
           "defaultValue": {
@@ -5090,12 +5090,12 @@
           "rules"
         ]
       },
-      "SerializableStringFlag": {
+      "StringFlag": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "key": {
-            "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+            "description": "Encoded feature identifier: feature::(namespace)::(key).",
             "type": "string"
           },
           "defaultValue": {
@@ -5436,12 +5436,12 @@
           "rules"
         ]
       },
-      "SerializableIntFlag": {
+      "IntFlag": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "key": {
-            "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+            "description": "Encoded feature identifier: feature::(namespace)::(key).",
             "type": "string"
           },
           "defaultValue": {
@@ -5784,12 +5784,12 @@
           "rules"
         ]
       },
-      "SerializableDoubleFlag": {
+      "DoubleFlag": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "key": {
-            "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+            "description": "Encoded feature identifier: feature::(namespace)::(key).",
             "type": "string"
           },
           "defaultValue": {
@@ -6132,12 +6132,12 @@
           "rules"
         ]
       },
-      "SerializableEnumFlag": {
+      "EnumFlag": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "key": {
-            "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+            "description": "Encoded feature identifier: feature::(namespace)::(key).",
             "type": "string"
           },
           "defaultValue": {
@@ -6486,12 +6486,12 @@
           "rules"
         ]
       },
-      "SerializableDataClassFlag": {
+      "DataClassFlag": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "key": {
-            "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+            "description": "Encoded feature identifier: feature::(namespace)::(key).",
             "type": "string"
           },
           "defaultValue": {
@@ -6846,7 +6846,7 @@
           "rules"
         ]
       },
-      "SerializableSnapshotMetadata": {
+      "SnapshotMetadata": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -6863,7 +6863,7 @@
           }
         }
       },
-      "SerializableSnapshot": {
+      "Snapshot": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -6893,7 +6893,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "key": {
-                      "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+                      "description": "Encoded feature identifier: feature::(namespace)::(key).",
                       "type": "string"
                     },
                     "defaultValue": {
@@ -7239,7 +7239,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "key": {
-                      "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+                      "description": "Encoded feature identifier: feature::(namespace)::(key).",
                       "type": "string"
                     },
                     "defaultValue": {
@@ -7585,7 +7585,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "key": {
-                      "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+                      "description": "Encoded feature identifier: feature::(namespace)::(key).",
                       "type": "string"
                     },
                     "defaultValue": {
@@ -7933,7 +7933,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "key": {
-                      "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+                      "description": "Encoded feature identifier: feature::(namespace)::(key).",
                       "type": "string"
                     },
                     "defaultValue": {
@@ -8281,7 +8281,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "key": {
-                      "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+                      "description": "Encoded feature identifier: feature::(namespace)::(key).",
                       "type": "string"
                     },
                     "defaultValue": {
@@ -8635,7 +8635,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "key": {
-                      "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+                      "description": "Encoded feature identifier: feature::(namespace)::(key).",
                       "type": "string"
                     },
                     "defaultValue": {
@@ -8998,7 +8998,7 @@
           "flags"
         ]
       },
-      "SerializablePatch": {
+      "Patch": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -9028,7 +9028,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "key": {
-                      "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+                      "description": "Encoded feature identifier: feature::(namespace)::(key).",
                       "type": "string"
                     },
                     "defaultValue": {
@@ -9374,7 +9374,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "key": {
-                      "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+                      "description": "Encoded feature identifier: feature::(namespace)::(key).",
                       "type": "string"
                     },
                     "defaultValue": {
@@ -9720,7 +9720,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "key": {
-                      "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+                      "description": "Encoded feature identifier: feature::(namespace)::(key).",
                       "type": "string"
                     },
                     "defaultValue": {
@@ -10068,7 +10068,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "key": {
-                      "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+                      "description": "Encoded feature identifier: feature::(namespace)::(key).",
                       "type": "string"
                     },
                     "defaultValue": {
@@ -10416,7 +10416,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "key": {
-                      "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+                      "description": "Encoded feature identifier: feature::(namespace)::(key).",
                       "type": "string"
                     },
                     "defaultValue": {
@@ -10770,7 +10770,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "key": {
-                      "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+                      "description": "Encoded feature identifier: feature::(namespace)::(key).",
                       "type": "string"
                     },
                     "defaultValue": {
@@ -11131,7 +11131,7 @@
           "removeKeys": {
             "type": "array",
             "items": {
-              "description": "Encoded feature identifier: feature::<namespace>::<key>.",
+              "description": "Encoded feature identifier: feature::(namespace)::(key).",
               "type": "string"
             },
             "default": []

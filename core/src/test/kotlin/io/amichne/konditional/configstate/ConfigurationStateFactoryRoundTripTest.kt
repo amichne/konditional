@@ -1,7 +1,7 @@
 package io.amichne.konditional.configstate
 
 import io.amichne.konditional.api.axisValues
-import io.amichne.konditional.api.invoke
+import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.RampUp
@@ -96,17 +96,17 @@ class ConfigurationStateFactoryRoundTripTest {
 
         val expectedBoolResults =
             listOf(
-                TestFeatures.boolFlag(prodAllowlistedByFlag),
-                TestFeatures.boolFlag(prodAllowlistedByRule),
-                TestFeatures.boolFlag(prodNeitherAllowlisted),
-                TestFeatures.boolFlag(devAllowlistedByFlag),
-                TestFeatures.boolFlag(prodWrongVersionAllowlistedByFlag),
+                TestFeatures.boolFlag.evaluate(prodAllowlistedByFlag),
+                TestFeatures.boolFlag.evaluate(prodAllowlistedByRule),
+                TestFeatures.boolFlag.evaluate(prodNeitherAllowlisted),
+                TestFeatures.boolFlag.evaluate(devAllowlistedByFlag),
+                TestFeatures.boolFlag.evaluate(prodWrongVersionAllowlistedByFlag),
             )
 
-        val expectedTheme = TestFeatures.themeFlag(prodAllowlistedByFlag)
-        val expectedRetryPolicyConsumer = TestFeatures.retryPolicyFlag(prodAllowlistedByFlag)
+        val expectedTheme = TestFeatures.themeFlag.evaluate(prodAllowlistedByFlag)
+        val expectedRetryPolicyConsumer = TestFeatures.retryPolicyFlag.evaluate(prodAllowlistedByFlag)
         val expectedRetryPolicyEnterprise =
-            TestFeatures.retryPolicyFlag(
+            TestFeatures.retryPolicyFlag.evaluate(
                 ctx(env = TestEnvironment.PROD, tenant = TestTenant.ENTERPRISE, stableId = stableIdNeither),
             )
 
@@ -121,19 +121,19 @@ class ConfigurationStateFactoryRoundTripTest {
 
         val actualBoolResults =
             listOf(
-                TestFeatures.boolFlag(prodAllowlistedByFlag),
-                TestFeatures.boolFlag(prodAllowlistedByRule),
-                TestFeatures.boolFlag(prodNeitherAllowlisted),
-                TestFeatures.boolFlag(devAllowlistedByFlag),
-                TestFeatures.boolFlag(prodWrongVersionAllowlistedByFlag),
+                TestFeatures.boolFlag.evaluate(prodAllowlistedByFlag),
+                TestFeatures.boolFlag.evaluate(prodAllowlistedByRule),
+                TestFeatures.boolFlag.evaluate(prodNeitherAllowlisted),
+                TestFeatures.boolFlag.evaluate(devAllowlistedByFlag),
+                TestFeatures.boolFlag.evaluate(prodWrongVersionAllowlistedByFlag),
             )
 
         assertEquals(expectedBoolResults, actualBoolResults)
-        assertEquals(expectedTheme, TestFeatures.themeFlag(prodAllowlistedByFlag))
-        assertEquals(expectedRetryPolicyConsumer, TestFeatures.retryPolicyFlag(prodAllowlistedByFlag))
+        assertEquals(expectedTheme, TestFeatures.themeFlag.evaluate(prodAllowlistedByFlag))
+        assertEquals(expectedRetryPolicyConsumer, TestFeatures.retryPolicyFlag.evaluate(prodAllowlistedByFlag))
         assertEquals(
             expectedRetryPolicyEnterprise,
-            TestFeatures.retryPolicyFlag(
+            TestFeatures.retryPolicyFlag.evaluate(
                 ctx(
                     env = TestEnvironment.PROD,
                     tenant = TestTenant.ENTERPRISE,
@@ -142,11 +142,11 @@ class ConfigurationStateFactoryRoundTripTest {
             ),
         )
 
-        assertTrue(TestFeatures.boolFlag(prodAllowlistedByFlag))
-        assertTrue(TestFeatures.boolFlag(prodAllowlistedByRule))
-        assertFalse(TestFeatures.boolFlag(prodNeitherAllowlisted))
-        assertFalse(TestFeatures.boolFlag(devAllowlistedByFlag))
-        assertFalse(TestFeatures.boolFlag(prodWrongVersionAllowlistedByFlag))
+        assertTrue(TestFeatures.boolFlag.evaluate(prodAllowlistedByFlag))
+        assertTrue(TestFeatures.boolFlag.evaluate(prodAllowlistedByRule))
+        assertFalse(TestFeatures.boolFlag.evaluate(prodNeitherAllowlisted))
+        assertFalse(TestFeatures.boolFlag.evaluate(devAllowlistedByFlag))
+        assertFalse(TestFeatures.boolFlag.evaluate(prodWrongVersionAllowlistedByFlag))
     }
 
     @Test
@@ -154,7 +154,7 @@ class ConfigurationStateFactoryRoundTripTest {
         TestFeatures.load(configWithComplexRules())
 
         val baselineContext = ctx(env = TestEnvironment.PROD, tenant = TestTenant.CONSUMER, stableId = stableIdNeither)
-        assertFalse(TestFeatures.boolFlag(baselineContext))
+        assertFalse(TestFeatures.boolFlag.evaluate(baselineContext))
 
         val response = ConfigurationStateFactory.from(TestFeatures.configuration)
         val updatedSnapshot =
@@ -171,7 +171,7 @@ class ConfigurationStateFactoryRoundTripTest {
         TestFeatures.load(parsed.value)
 
         assertTrue(
-            TestFeatures.boolFlag(baselineContext),
+            TestFeatures.boolFlag.evaluate(baselineContext),
             "Inactive flags must return the updated default value",
         )
     }
@@ -185,8 +185,8 @@ class ConfigurationStateFactoryRoundTripTest {
         val devNeitherAllowlisted =
             ctx(env = TestEnvironment.DEV, tenant = TestTenant.CONSUMER, stableId = stableIdNeither)
 
-        assertTrue(TestFeatures.boolFlag(prodAllowlistedByFlag))
-        assertFalse(TestFeatures.boolFlag(devNeitherAllowlisted))
+        assertTrue(TestFeatures.boolFlag.evaluate(prodAllowlistedByFlag))
+        assertFalse(TestFeatures.boolFlag.evaluate(devNeitherAllowlisted))
 
         val response = ConfigurationStateFactory.from(TestFeatures.configuration)
         val updatedSnapshot =
@@ -213,11 +213,11 @@ class ConfigurationStateFactoryRoundTripTest {
         TestFeatures.load(parsed.value)
 
         assertFalse(
-            TestFeatures.boolFlag(prodAllowlistedByFlag),
+            TestFeatures.boolFlag.evaluate(prodAllowlistedByFlag),
             "After retargeting axes to DEV and removing allowlists, PROD must no longer match",
         )
         assertTrue(
-            TestFeatures.boolFlag(devNeitherAllowlisted),
+            TestFeatures.boolFlag.evaluate(devNeitherAllowlisted),
             "After retargeting axes to DEV with rampUp=100%, DEV must match",
         )
     }

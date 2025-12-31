@@ -37,9 +37,7 @@ const config: Config = {
             {
                 docs: {
                     routeBasePath: "/",
-                    sidebarPath: require.resolve("./sidebars.ts"),
                     editUrl: "https://github.com/amichne/konditional/tree/main/docusaurus/",
-
                 },
 
                 theme: {
@@ -58,9 +56,6 @@ const config: Config = {
                         route: '/api/',
                     },
                 ],
-//                 theme: {
-//                     primaryColor: '#1890ff',
-//                 },
             },
         ],
     ],
