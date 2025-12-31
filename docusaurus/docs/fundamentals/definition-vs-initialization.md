@@ -42,10 +42,10 @@ val _ = AppFeatures  // or: val flag = AppFeatures.darkMode
 
 **What happens at initialization:**
 
-1. `Namespace` constructor creates/retrieves the `NamespaceRegistry` for the given ID
+1. `Namespace` constructor creates its `NamespaceRegistry` (one registry per namespace instance)
 2. Each property delegate creates a `Feature` instance
-3. `Feature` is registered in the namespace's registry
-4. Registry records the `FlagDefinition` (default + rules + salt + active state)
+3. The namespace registry snapshot is updated with the `FlagDefinition` (default + rules + salt + active state)
+4. The feature is registered in an internal lookup registry used by JSON deserialization
 
 **Critical invariant:** Features must be registered **before** JSON deserialization attempts to reference them.
 
@@ -114,7 +114,7 @@ fun loadConfig() {
 
 ```kotlin
 @Singleton
-class FeatureRegistry {
+class KonditionalBootstrap {
     init {
         // Initialize all namespaces at DI container startup
         AppFeatures

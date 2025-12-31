@@ -7,7 +7,7 @@
 set -euo pipefail
 
 PROJECT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
-CONTEXT_DIR="$PROJECT_ROOT/.llm-docs/context"
+CONTEXT_DIR="$PROJECT_ROOT/llm-docs/context"
 
 mkdir -p "$CONTEXT_DIR"
 
@@ -20,10 +20,10 @@ echo "# Source: src/main/kotlin/io/amichne/konditional/" >> "$CONTEXT_DIR/core-t
 echo "" >> "$CONTEXT_DIR/core-types.kt"
 
 # Find key type definitions
-if [ -d "$PROJECT_ROOT/src/main/kotlin" ]; then
+if [ -d "$PROJECT_ROOT/core/src/main/kotlin" ]; then
     # Extract class/interface/object declarations with their signatures
     grep -rn "^\(public \)\?\(sealed \|data \|abstract \|open \)\?\(class\|interface\|object\|fun \)" \
-        "$PROJECT_ROOT/src/main/kotlin/" \
+        "$PROJECT_ROOT/core/src/main/kotlin/" \
         --include="*.kt" \
         2>/dev/null | head -300 >> "$CONTEXT_DIR/core-types.kt" || true
     

@@ -87,24 +87,27 @@ Kotlin's `sortedByDescending` is a **stable sort**:
 ### Configuration Immutability
 
 ```kotlin
-data class Configuration(
-    val flags: Map<FeatureKey, FlagDefinition<*, *, *>>,
-    val metadata: ConfigurationMetadata? = null
+data class Configuration internal constructor(
+    val flags: Map<Feature<*, *, *>, FlagDefinition<*, *, *>>,
+    val metadata: ConfigurationMetadata = ConfigurationMetadata(),
 )
 ```
 
 `Configuration` is a Kotlin `data class` with `val` properties:
 - All fields are immutable references
-- `Map` is immutable (Kotlin's default map is read-only)
-- No setters or mutation methods
+- The public API exposes a read-only `Map` (treat the snapshot as immutable)
+- No supported mutation methods
 
 **Property:** Once created, a `Configuration` cannot change.
 
 ### Evaluation with Snapshot
 
 ```kotlin
-fun <T : Any> Feature<T>.evaluate(context: Context): T {
-    val config = registry.getConfig()  // Read current snapshot
+operator fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.invoke(
+    context: C,
+    registry: NamespaceRegistry,
+): T {
+    val config = registry.configuration  // Read current snapshot
     // ... evaluate using config ...
 }
 ```
@@ -168,8 +171,8 @@ val ctx = Context(
     stableId = StableId.of("user-123")
 )
 
-val v1 = AppFeatures.darkMode.evaluate(ctx)
-val v2 = AppFeatures.darkMode.evaluate(ctx)
+val v1 = AppFeatures.darkMode(ctx)
+val v2 = AppFeatures.darkMode(ctx)
 // v1 == v2 (guaranteed)
 ```
 
@@ -196,12 +199,12 @@ This is **intentional**: ramp-up bucketing is deterministic **per user**, not ac
 ### ✗ Non-Deterministic: Configuration Changes Between Evaluations
 
 ```kotlin
-val v1 = AppFeatures.darkMode.evaluate(ctx)
+val v1 = AppFeatures.darkMode(ctx)
 
 // Configuration changes
 AppFeatures.load(newConfig)
 
-val v2 = AppFeatures.darkMode.evaluate(ctx)
+val v2 = AppFeatures.darkMode(ctx)
 // v1 might ≠ v2 (config changed)
 ```
 
@@ -211,10 +214,10 @@ This is **intentional**: determinism is scoped to a single configuration snapsho
 
 ```kotlin
 // Thread 1
-val v1 = AppFeatures.darkMode.evaluate(ctx)
+val v1 = AppFeatures.darkMode(ctx)
 
 // Thread 2 (before config update)
-val v2 = AppFeatures.darkMode.evaluate(ctx)
+val v2 = AppFeatures.darkMode(ctx)
 
 // v1 == v2 (both read same snapshot)
 ```
@@ -236,7 +239,7 @@ fun `evaluation is deterministic`() {
     )
 
     val results = (1..1000).map {
-        AppFeatures.darkMode.evaluate(ctx)
+        AppFeatures.darkMode(ctx)
     }
 
     assertEquals(1, results.distinct().size, "Non-deterministic evaluation!")
@@ -256,7 +259,7 @@ fun `50 percent ramp-up distributes evenly`() {
             appVersion = Version.of(2, 1, 0),
             stableId = StableId.of(i.toString().padStart(32, '0'))
         )
-        AppFeatures.rampUpFlag.evaluate(ctx)
+        AppFeatures.rampUpFlag(ctx)
     }
 
     val percentage = (enabled.toDouble() / sampleSize) * 100

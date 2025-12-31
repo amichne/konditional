@@ -13,7 +13,7 @@ When you call `Namespace.load(newConfiguration)`, the update is atomic:
 AppFeatures.load(newConfig)
 
 // Thread 2: Concurrent evaluation
-val value = AppFeatures.darkMode.evaluate(context)  // Sees old OR new, never mixed
+val value = AppFeatures.darkMode(context)  // Sees old OR new, never mixed
 ```
 
 **What's guaranteed:**
@@ -29,17 +29,15 @@ val value = AppFeatures.darkMode.evaluate(context)  // Sees old OR new, never mi
 Internally, `NamespaceRegistry` stores the active configuration in an `AtomicReference`:
 
 ```kotlin
-class InMemoryNamespaceRegistry {
-    private val activeConfig: AtomicReference<Configuration> = AtomicReference(initial)
+// Simplified: the default in-memory NamespaceRegistry implementation.
+private val current: AtomicReference<Configuration> = AtomicReference(initialConfiguration)
 
-    fun load(newConfig: Configuration) {
-        activeConfig.set(newConfig)  // Single atomic write
-    }
-
-    fun getConfig(): Configuration {
-        return activeConfig.get()  // Lock-free read
-    }
+override fun load(config: Configuration) {
+    current.set(config)  // Single atomic write
 }
+
+override val configuration: Configuration
+    get() = current.get()  // Lock-free atomic read
 ```
 
 **Why this is safe:**
@@ -57,8 +55,11 @@ See [Theory: Atomicity Guarantees](/theory/atomicity-guarantees) for the formal 
 Evaluation reads the current snapshot without blocking writers:
 
 ```kotlin
-fun <T : Any> Feature<T>.evaluate(context: Context): T {
-    val config = registry.getConfig()  // Lock-free read
+operator fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.invoke(
+    context: C,
+    registry: NamespaceRegistry,
+): T {
+    val config = registry.configuration  // Lock-free atomic read
     // ... evaluate using config ...
 }
 ```
@@ -80,8 +81,8 @@ fun <T : Any> Feature<T>.evaluate(context: Context): T {
 AppFeatures.load(newConfig)
 
 // Thread 2
-val v1 = AppFeatures.darkMode.evaluate(ctx1)
-val v2 = AppFeatures.apiEndpoint.evaluate(ctx2)
+val v1 = AppFeatures.darkMode(ctx1)
+val v2 = AppFeatures.apiEndpoint(ctx2)
 ```
 
 **Outcome:** Both evaluations see the same snapshot (old or new), never mixed.
@@ -107,37 +108,27 @@ val mutated = mutateSomehow(config)  // Hypothetical mutation
 AppFeatures.load(mutated)
 ```
 
-**Issue:** `Configuration` is designed to be immutable. Mutation breaks the safety guarantee. Always create new `Configuration` instances via deserialization or `SnapshotSerializer`.
-
-### ✗ Unsafe: Direct Registry Mutation
-
-```kotlin
-// DON'T DO THIS (internal API)
-val registry = AppFeatures.registry  // Accessing internal state
-registry.internalState.mutate(...)  // Breaking encapsulation
-```
-
-**Issue:** Bypassing `load(...)` breaks the atomic swap guarantee. Always use `Namespace.load(...)` for updates.
+**Issue:** `Configuration` must be treated as an immutable snapshot. Mutating an existing snapshot breaks the mental
+model (evaluations could observe changes that did not come from `load(...)`).
 
 ---
 
-## Precondition: Use `Namespace.load(...)`
+## Precondition: Use `load(...)` / `fromJson(...)`
 
 The safety guarantee depends on using the public API:
 
 ```kotlin
 // ✓ Correct
+val _ = AppFeatures // ensure features are registered before parsing
 when (val result = SnapshotSerializer.fromJson(json)) {
     is ParseResult.Success -> AppFeatures.load(result.value)
     is ParseResult.Failure -> logError(result.error.message)
 }
 
-// ✗ Incorrect (bypassing load)
-when (val result = SnapshotSerializer.fromJson(json)) {
-    is ParseResult.Success -> {
-        // Hypothetical: manually updating internal state
-        registry.unsafeInternalUpdate(result.value)  // Breaks atomicity
-    }
+// ✓ Correct (namespace-scoped helper parses + loads on success)
+when (val result = AppFeatures.fromJson(json)) {
+    is ParseResult.Success -> logger.info("Config refreshed")
+    is ParseResult.Failure -> logError(result.error.message)
 }
 ```
 

@@ -7,6 +7,24 @@ import io.amichne.kontracts.dsl.custom.CustomStringSchemaBuilder
 import io.amichne.kontracts.schema.FieldSchema
 import kotlin.reflect.KProperty0
 
+context(root: RootObjectSchemaBuilder)
+@PublishedApi
+@JsonSchemaBuilderDsl
+internal inline fun <B : JsonSchemaBuilder<Any>> KProperty0<*>.registerCustomSchema(
+    builder: B,
+    required: Boolean,
+    configure: B.() -> Unit,
+) {
+    val schema = builder.apply(configure).build()
+    root.fields[name] = FieldSchema(
+        schema,
+        required = required,
+        defaultValue = schema.default,
+        description = schema.description,
+        deprecated = schema.deprecated
+    )
+}
+
 /**
  * Maps a custom type property to a String schema representation.
  *
@@ -24,40 +42,31 @@ import kotlin.reflect.KProperty0
  */
 context(root: RootObjectSchemaBuilder)
 @JvmName("asString")
+@JsonSchemaBuilderDsl
 inline infix fun <reified V : Any> KProperty0<V>.asString(
     builder: CustomStringSchemaBuilder<V>.() -> Unit,
 ) {
-    val schemaBuilder = CustomStringSchemaBuilder<V>().apply(builder)
-    val schema = schemaBuilder.build()
-    root.fields[name] = FieldSchema(
-        schema,
+    registerCustomSchema(
+        CustomStringSchemaBuilder(),
         required = !returnType.isMarkedNullable,
-        defaultValue = schema.default,
-        description = schema.description,
-        deprecated = schema.deprecated
+        configure = builder
     )
 }
 
 /**
  * Maps a nullable custom type property to a String schema representation.
  */
+@Suppress("unused")
 context(root: RootObjectSchemaBuilder)
 @JvmName("asNullableString")
+@JsonSchemaBuilderDsl
 inline infix fun <reified V : Any> KProperty0<V?>.asString(
     builder: CustomStringSchemaBuilder<V>.() -> Unit,
 ) {
-    val schemaBuilder = CustomStringSchemaBuilder<V>().apply {
+    registerCustomSchema(CustomStringSchemaBuilder<V>(), required = false) {
         nullable = true
         builder()
     }
-    val schema = schemaBuilder.build()
-    root.fields[name] = FieldSchema(
-        schema,
-        required = false,
-        defaultValue = schema.default,
-        description = schema.description,
-        deprecated = schema.deprecated
-    )
 }
 
 /**
@@ -76,40 +85,31 @@ inline infix fun <reified V : Any> KProperty0<V?>.asString(
  */
 context(root: RootObjectSchemaBuilder)
 @JvmName("asInt")
+@JsonSchemaBuilderDsl
 inline infix fun <reified V : Any> KProperty0<V>.asInt(
     builder: CustomIntSchemaBuilder<V>.() -> Unit,
 ) {
-    val schemaBuilder = CustomIntSchemaBuilder<V>().apply(builder)
-    val schema = schemaBuilder.build()
-    root.fields[name] = FieldSchema(
-        schema,
+    registerCustomSchema(
+        CustomIntSchemaBuilder(),
         required = !returnType.isMarkedNullable,
-        defaultValue = schema.default,
-        description = schema.description,
-        deprecated = schema.deprecated
+        configure = builder
     )
 }
 
 /**
  * Maps a nullable custom type property to an Int schema representation.
  */
+@Suppress("unused")
 context(root: RootObjectSchemaBuilder)
 @JvmName("asNullableInt")
+@JsonSchemaBuilderDsl
 inline infix fun <reified V : Any> KProperty0<V?>.asInt(
-    builder: CustomIntSchemaBuilder<V>.() -> Unit,
+    @JsonSchemaBuilderDsl builder: CustomIntSchemaBuilder<V>.() -> Unit,
 ) {
-    val schemaBuilder = CustomIntSchemaBuilder<V>().apply {
+    registerCustomSchema(CustomIntSchemaBuilder<V>(), required = false) {
         nullable = true
         builder()
     }
-    val schema = schemaBuilder.build()
-    root.fields[name] = FieldSchema(
-        schema,
-        required = false,
-        defaultValue = schema.default,
-        description = schema.description,
-        deprecated = schema.deprecated
-    )
 }
 
 /**
@@ -127,40 +127,31 @@ inline infix fun <reified V : Any> KProperty0<V?>.asInt(
  */
 context(root: RootObjectSchemaBuilder)
 @JvmName("asBoolean")
+@JsonSchemaBuilderDsl
 inline infix fun <reified V : Any> KProperty0<V>.asBoolean(
     builder: CustomBooleanSchemaBuilder<V>.() -> Unit,
 ) {
-    val schemaBuilder = CustomBooleanSchemaBuilder<V>().apply(builder)
-    val schema = schemaBuilder.build()
-    root.fields[name] = FieldSchema(
-        schema,
+    registerCustomSchema(
+        CustomBooleanSchemaBuilder(),
         required = !returnType.isMarkedNullable,
-        defaultValue = schema.default,
-        description = schema.description,
-        deprecated = schema.deprecated
+        configure = builder
     )
 }
 
 /**
  * Maps a nullable custom type property to a Boolean schema representation.
  */
+@Suppress("unused")
 context(root: RootObjectSchemaBuilder)
 @JvmName("asNullableBoolean")
+@JsonSchemaBuilderDsl
 inline infix fun <reified V : Any> KProperty0<V?>.asBoolean(
     builder: CustomBooleanSchemaBuilder<V>.() -> Unit,
 ) {
-    val schemaBuilder = CustomBooleanSchemaBuilder<V>().apply {
+    registerCustomSchema(CustomBooleanSchemaBuilder<V>(), required = false) {
         nullable = true
         builder()
     }
-    val schema = schemaBuilder.build()
-    root.fields[name] = FieldSchema(
-        schema,
-        required = false,
-        defaultValue = schema.default,
-        description = schema.description,
-        deprecated = schema.deprecated
-    )
 }
 
 /**
@@ -180,38 +171,29 @@ inline infix fun <reified V : Any> KProperty0<V?>.asBoolean(
  */
 context(root: RootObjectSchemaBuilder)
 @JvmName("asDouble")
+@JsonSchemaBuilderDsl
 inline infix fun <reified V : Any> KProperty0<V>.asDouble(
     builder: CustomDoubleSchemaBuilder<V>.() -> Unit,
 ) {
-    val schemaBuilder = CustomDoubleSchemaBuilder<V>().apply(builder)
-    val schema = schemaBuilder.build()
-    root.fields[name] = FieldSchema(
-        schema,
+    registerCustomSchema(
+        CustomDoubleSchemaBuilder(),
         required = !returnType.isMarkedNullable,
-        defaultValue = schema.default,
-        description = schema.description,
-        deprecated = schema.deprecated
+        configure = builder
     )
 }
 
 /**
  * Maps a nullable custom type property to a Double schema representation.
  */
+@Suppress("unused")
 context(root: RootObjectSchemaBuilder)
 @JvmName("asNullableDouble")
+@JsonSchemaBuilderDsl
 inline infix fun <reified V : Any> KProperty0<V?>.asDouble(
     builder: CustomDoubleSchemaBuilder<V>.() -> Unit,
 ) {
-    val schemaBuilder = CustomDoubleSchemaBuilder<V>().apply {
+    registerCustomSchema(CustomDoubleSchemaBuilder<V>(), required = false) {
         nullable = true
         builder()
     }
-    val schema = schemaBuilder.build()
-    root.fields[name] = FieldSchema(
-        schema,
-        required = false,
-        defaultValue = schema.default,
-        description = schema.description,
-        deprecated = schema.deprecated
-    )
 }

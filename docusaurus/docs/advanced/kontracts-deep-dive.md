@@ -63,7 +63,7 @@ object NetworkConfig : Namespace("network") {
 }
 
 // Evaluation
-val policy: RetryPolicy = NetworkConfig.RETRY_POLICY.evaluate(context)
+val policy: RetryPolicy = NetworkConfig.RETRY_POLICY(context)
 retryWithPolicy(policy)
 ```
 

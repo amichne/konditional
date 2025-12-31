@@ -65,6 +65,7 @@ JSON enters the system as an untrusted `String`. Konditional parses it into a tr
 ```kotlin
 val json: String = fetchRemoteConfig()  // Untrusted
 
+val _ = AppFeatures // ensure features are registered before parsing
 when (val result = SnapshotSerializer.fromJson(json)) {
     is ParseResult.Success -> {
         val config: Configuration = result.value  // Trusted

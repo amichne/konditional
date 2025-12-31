@@ -16,17 +16,17 @@ At persistence time, the library serializes a list of **flag definitions**:
 
 ```mermaid
 flowchart LR
-    Snap[Snapshot JSON] --> Flags["flags: List{SerializableFlag}"]
-    Snap --> Meta["meta: SerializableSnapshotMetadata?"]
-    Flags --> Flag["SerializableFlag"]
+    Snap[Snapshot JSON] --> Flags["flags: List{Flag}"]
+    Snap --> Meta["meta: SnapshotMetadata?"]
+    Flags --> Flag["Flag"]
     Flag --> Key["key: FeatureId"]
-    Flag --> Default["defaultValue: FlagValue"]
+    Flag --> Default["defaultValue: tagged value object"]
     Flag --> Salt["salt: String"]
     Flag --> Active["isActive: Boolean"]
     Flag --> FAllow["rampUpAllowlist: Set{String}"]
     Flag --> Rules
-    Rules --> Rule["SerializableRule"]
-    Rule --> RVal["value: FlagValue"]
+    Rules --> Rule["Rule"]
+    Rule --> RVal["value: tagged value object"]
     Rule --> Ramp["rampUp: Double"]
     Rule --> RAllow["rampUpAllowlist: Set{String}"]
     Rule --> Note["note: String?"]
@@ -63,7 +63,7 @@ normalized on load.
 
 ---
 
-## Value encoding (`FlagValue`)
+## Value encoding (`defaultValue` / rule `value`)
 
 Both `defaultValue` and each rule’s `value` are encoded as a tagged object:
 
@@ -201,7 +201,7 @@ val patchJson = """
     "source": "${optionalSourceOrNull}"
   },
   "flags": [
-    { "...": "SerializableFlag objects (same shape as snapshot)" }
+    { "...": "flag objects (same shape as snapshot)" }
   ],
   "removeKeys": [
     "feature::${namespaceSeed}::${featureKeyToRemove}",

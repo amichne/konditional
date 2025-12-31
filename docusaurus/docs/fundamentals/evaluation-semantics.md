@@ -11,7 +11,7 @@ Konditional evaluation is designed to be **total**, **deterministic**, and **ato
 Evaluation never returns `null` or throws:
 
 ```kotlin
-val enabled: Boolean = AppFeatures.darkMode.evaluate(context)
+val enabled: Boolean = AppFeatures.darkMode(context)
 ```
 
 **Why:** Every feature requires a `default`, so there's always a fallback value when no rules match.
@@ -28,8 +28,8 @@ val ctx = Context(
     stableId = StableId.of("user-123"),
 )
 
-val result1 = AppFeatures.darkMode.evaluate(ctx)
-val result2 = AppFeatures.darkMode.evaluate(ctx)
+val result1 = AppFeatures.darkMode(ctx)
+val result2 = AppFeatures.darkMode(ctx)
 // result1 == result2  (guaranteed)
 ```
 
@@ -44,7 +44,7 @@ Configuration updates are atomic; readers never see partial updates:
 AppFeatures.load(newConfig)
 
 // Thread 2: Concurrent evaluation
-val value = AppFeatures.darkMode.evaluate(context)  // Sees old OR new, never mixed
+val value = AppFeatures.darkMode(context)  // Sees old OR new, never mixed
 ```
 
 **How:** Registry stores configuration in an `AtomicReference`; `load(...)` performs a single atomic swap.
@@ -173,17 +173,17 @@ See [Rules & Targeting: Rollout Strategies](/rules-and-targeting/rollout-strateg
 Concise evaluation with an explicit context:
 
 ```kotlin
-val darkMode = AppFeatures.darkMode.evaluate(context)
+val darkMode = AppFeatures.darkMode(context)
 ```
 
 Use when defaults are meaningful and you want minimal call-site surface.
 
-### `evaluateWithReason(context): EvaluationResult<T>`
+### `explain(context): EvaluationResult<T>`
 
 Explainable evaluation for debugging:
 
 ```kotlin
-val result = AppFeatures.darkMode.evaluateWithReason(context)
+val result = AppFeatures.darkMode.explain(context)
 println(result.decision)  // Why this value was chosen
 ```
 
@@ -221,7 +221,7 @@ Evaluation is designed for concurrent reads:
 AppFeatures.load(newConfig)
 
 // Thread 2 (during update)
-val value = AppFeatures.darkMode.evaluate(context)  // Sees old OR new, never mixed
+val value = AppFeatures.darkMode(context)  // Sees old OR new, never mixed
 ```
 
 See [Refresh Safety](/fundamentals/refresh-safety) for details.

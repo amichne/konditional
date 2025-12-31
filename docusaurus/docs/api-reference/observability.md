@@ -1,6 +1,6 @@
 # Observability
 
-API reference for logging, metrics, and explainability: hooks, evaluation results, and bucketing utilities.
+API reference for logging, metrics, and explainability: registry hooks, evaluation results, and deterministic bucketing utilities.
 
 ---
 
@@ -9,77 +9,97 @@ API reference for logging, metrics, and explainability: hooks, evaluation result
 Dependency-free hooks for logging and metrics adapters.
 
 ```kotlin
-object RegistryHooks {
-    var onEvaluationComplete: ((EvaluationEvent) -> Unit)? = null
-    var onConfigurationLoad: ((ConfigurationLoadEvent) -> Unit)? = null
-    var onParseFailure: ((ParseFailureEvent) -> Unit)? = null
+data class RegistryHooks(
+    val logger: KonditionalLogger = KonditionalLogger.NoOp,
+    val metrics: MetricsCollector = MetricsCollector.NoOp,
+) {
+    companion object {
+        val None: RegistryHooks
+        fun of(
+            logger: KonditionalLogger = KonditionalLogger.NoOp,
+            metrics: MetricsCollector = MetricsCollector.NoOp,
+        ): RegistryHooks
+    }
 }
 ```
 
-### Hook Types
-
-#### `onEvaluationComplete`
-
-Invoked after every feature evaluation.
+Attach hooks to a namespace (or any `NamespaceRegistry`) via `setHooks(...)`:
 
 ```kotlin
-data class EvaluationEvent(
-    val featureKey: FeatureKey,
-    val context: Context,
-    val value: Any,
-    val decision: EvaluationDecision,
-    val durationMs: Long
+AppFeatures.setHooks(
+    RegistryHooks.of(
+        logger = myLogger,
+        metrics = myMetrics,
+    ),
 )
 ```
 
-**Example:**
+Notes:
+
+- Hooks run on the hot path; keep them lightweight and avoid blocking I/O.
+- The core runtime does not expose a global “parse failure hook”; JSON parsing returns `ParseResult`, and you decide how to log/metric failures.
+
+---
+
+## `KonditionalLogger`
+
+Minimal logging interface used by the core runtime.
 
 ```kotlin
-RegistryHooks.onEvaluationComplete = { event ->
-    logger.debug("Evaluated ${event.featureKey}: ${event.value} (${event.decision})")
-    metrics.histogram("feature.evaluation.duration", event.durationMs)
+interface KonditionalLogger {
+    fun debug(message: () -> String) {}
+    fun info(message: () -> String) {}
+    fun warn(message: () -> String, throwable: Throwable? = null) {}
+    fun error(message: () -> String, throwable: Throwable? = null) {}
 }
 ```
 
-#### `onConfigurationLoad`
+Used by the runtime for:
 
-Invoked when configuration is successfully loaded.
+- `Feature.explain(...)` debug lines (`konditional.explain ...`)
+- shadow mismatch warnings emitted by `Feature.evaluateWithShadow(...)` (`konditional.shadowMismatch ...`)
 
-```kotlin
-data class ConfigurationLoadEvent(
-    val namespaceId: String,
-    val metadata: ConfigurationMetadata?,
-    val flagCount: Int
-)
-```
+---
 
-**Example:**
+## `MetricsCollector`
+
+Minimal metrics interface used by the core runtime.
 
 ```kotlin
-RegistryHooks.onConfigurationLoad = { event ->
-    logger.info("Loaded ${event.flagCount} flags into namespace ${event.namespaceId}")
-    metrics.gauge("feature.flags.loaded", event.flagCount.toDouble())
+interface MetricsCollector {
+    fun recordEvaluation(event: Metrics.Evaluation) {}
+    fun recordConfigLoad(event: Metrics.ConfigLoadMetric) {}
+    fun recordConfigRollback(event: Metrics.ConfigRollbackMetric) {}
 }
 ```
 
-#### `onParseFailure`
-
-Invoked when JSON parsing fails.
+### Metric payloads
 
 ```kotlin
-data class ParseFailureEvent(
-    val namespaceId: String?,
-    val error: ParseError,
-    val json: String?  // Truncated if large
-)
-```
+object Metrics {
+    data class Evaluation(
+        val namespaceId: String,
+        val featureKey: String,
+        val mode: EvaluationMode,               // NORMAL | EXPLAIN | SHADOW
+        val durationNanos: Long,
+        val decision: DecisionKind,             // DEFAULT | RULE | INACTIVE | REGISTRY_DISABLED
+        val configVersion: String? = null,
+        val bucket: Int? = null,
+        val matchedRuleSpecificity: Int? = null,
+    )
 
-**Example:**
+    data class ConfigLoadMetric(
+        val namespaceId: String,
+        val featureCount: Int,
+        val version: String? = null,
+    )
 
-```kotlin
-RegistryHooks.onParseFailure = { event ->
-    logger.error("Parse failed for ${event.namespaceId}: ${event.error}")
-    metrics.increment("feature.config.parse.failure")
+    data class ConfigRollbackMetric(
+        val namespaceId: String,
+        val steps: Int,
+        val success: Boolean,
+        val version: String? = null,
+    )
 }
 ```
 
@@ -87,87 +107,46 @@ RegistryHooks.onParseFailure = { event ->
 
 ## `EvaluationResult<T>`
 
-Explainable evaluation result with decision metadata.
+Returned by `Feature.explain(...)`.
 
 ```kotlin
 data class EvaluationResult<T : Any>(
+    val namespaceId: String,
+    val featureKey: String,
+    val configVersion: String?,
+    val mode: Metrics.Evaluation.EvaluationMode,
+    val durationNanos: Long,
     val value: T,
-    val decision: EvaluationDecision,
-    val matchedRule: RuleInfo? = null,
-    val bucketInfo: BucketInfo? = null
+    val decision: Decision,
 )
 ```
 
-### Fields
+### Decision model
 
-- `value` — The evaluated value
-- `decision` — Why this value was chosen
-- `matchedRule` — Details of matched rule (if `RULE_MATCHED`)
-- `bucketInfo` — Ramp-up bucket details (if rule has ramp-up)
+`decision` is a sealed hierarchy:
 
-### `EvaluationDecision` (Enum)
+- `RegistryDisabled` — registry kill-switch enabled (`disableAll()`)
+- `Inactive` — flag inactive (`isActive=false` in config)
+- `Rule(matched, skippedByRollout?)` — a rule produced the value
+- `Default(skippedByRollout?)` — no rule produced a value; returned the declared default
 
-```kotlin
-enum class EvaluationDecision {
-    RULE_MATCHED,   // A rule matched and returned a value
-    DEFAULT,        // No rules matched, using default
-    INACTIVE,       // Flag is inactive
-    DISABLED        // Namespace disabled via kill-switch
-}
-```
-
-### Example: Logging Decisions
+### Example: inspect a rule match
 
 ```kotlin
-val result = AppFeatures.darkMode.evaluateWithReason(context)
+val result = AppFeatures.darkMode.explain(context)
 
-when (result.decision) {
-    EvaluationDecision.RULE_MATCHED -> {
-        logger.info("Rule matched: ${result.matchedRule?.note}")
-        logger.debug("Bucket: ${result.bucketInfo?.bucket}")
+when (val decision = result.decision) {
+    EvaluationResult.Decision.RegistryDisabled -> logger.warn { "Registry disabled for ${result.featureKey}" }
+    EvaluationResult.Decision.Inactive -> logger.warn { "Inactive flag ${result.featureKey}" }
+    is EvaluationResult.Decision.Rule -> {
+        val matchedRule = decision.matched.rule
+        val bucket = decision.matched.bucket
+
+        logger.info {
+            "Matched rule key=${result.featureKey} note=${matchedRule.note} specificity=${matchedRule.totalSpecificity} bucket=${bucket.bucket}"
+        }
     }
-    EvaluationDecision.DEFAULT -> {
-        logger.info("No rules matched, using default: ${result.value}")
-    }
-    EvaluationDecision.INACTIVE -> {
-        logger.warn("Flag ${AppFeatures.darkMode.key} is inactive")
-    }
-    EvaluationDecision.DISABLED -> {
-        logger.error("Namespace disabled, returning default")
-    }
-}
-```
-
----
-
-## `RuleInfo`
-
-Metadata about a matched rule.
-
-```kotlin
-data class RuleInfo(
-    val note: String?,
-    val specificity: Int,
-    val platforms: Set<String>,
-    val locales: Set<String>,
-    val versionRange: VersionRange?,
-    val axes: Map<String, Set<String>>,
-    val hasExtension: Boolean
-)
-```
-
-### Example: Audit Trail
-
-```kotlin
-val result = AppFeatures.apiEndpoint.evaluateWithReason(context)
-
-result.matchedRule?.let { rule ->
-    logger.info("""
-        Matched rule: ${rule.note}
-        Specificity: ${rule.specificity}
-        Platforms: ${rule.platforms}
-        Locales: ${rule.locales}
-    """.trimIndent())
+    is EvaluationResult.Decision.Default -> logger.info { "Default returned for ${result.featureKey}" }
 }
 ```
 
@@ -175,164 +154,70 @@ result.matchedRule?.let { rule ->
 
 ## `BucketInfo`
 
-Ramp-up bucket assignment details.
+Bucket assignment details (used in `EvaluationResult` and `RampUpBucketing`).
 
 ```kotlin
 data class BucketInfo(
-    val bucket: Int,                    // Bucket value [0, 10_000)
-    val thresholdBasisPoints: Int,      // Ramp-up threshold
-    val inRampUp: Boolean,              // Whether user is in ramp-up
-    val stableIdHex: String,            // Normalized stableId (hex)
-    val bucketingInput: String          // Full input to SHA-256
+    val featureKey: String,
+    val salt: String,
+    val bucket: Int,                    // [0, 10_000)
+    val rollout: RampUp,
+    val thresholdBasisPoints: Int,
+    val inRollout: Boolean,
 )
-```
-
-### Example: Debug Ramp-Up
-
-```kotlin
-val result = AppFeatures.newFeature.evaluateWithReason(context)
-
-result.bucketInfo?.let { info ->
-    logger.debug("""
-        Bucket: ${info.bucket} / 10,000
-        Threshold: ${info.thresholdBasisPoints}
-        In ramp-up: ${info.inRampUp}
-        Bucketing input: ${info.bucketingInput}
-    """.trimIndent())
-}
 ```
 
 ---
 
-## `RampUpBucketing.explain(...)`
+## `RampUpBucketing`
 
-Utility to compute bucket assignment for a specific user.
+Deterministic ramp-up bucketing utilities (guaranteed to match runtime evaluation behavior).
 
 ```kotlin
 object RampUpBucketing {
+    fun bucket(
+        stableId: StableId,
+        featureKey: String,
+        salt: String,
+    ): Int
+
     fun explain(
         stableId: StableId,
-        featureKey: FeatureKey,
+        featureKey: String,
         salt: String,
-        rampUp: RampUp
+        rampUp: RampUp,
     ): BucketInfo
 }
 ```
 
-### Parameters
-
-- `stableId` — User's stable identifier
-- `featureKey` — Feature key
-- `salt` — Feature salt
-- `rampUp` — Ramp-up configuration
-
-### Returns
-
-`BucketInfo` with bucket assignment details.
-
-### Example
-
-```kotlin
-val flag = AppFeatures.flag(AppFeatures.darkMode)
-
-val info = RampUpBucketing.explain(
-    stableId = context.stableId,
-    featureKey = AppFeatures.darkMode.key,
-    salt = flag.salt,
-    rampUp = RampUp.of(25.0)
-)
-
-println("""
-    User ${context.stableId.id} → bucket ${info.bucket}
-    Threshold: ${info.thresholdBasisPoints} (25%)
-    In ramp-up: ${info.inRampUp}
-""".trimIndent())
-```
+`RolloutBucketing` exists as a deprecated alias.
 
 ---
 
 ## `ShadowMismatch<T>`
 
-Result type for shadow evaluation mismatches.
+Result type passed to shadow mismatch callbacks.
 
 ```kotlin
 data class ShadowMismatch<T : Any>(
-    val primary: T,
-    val shadow: T,
-    val context: Context
-)
-```
-
-### Fields
-
-- `primary` — Value from primary registry
-- `shadow` — Value from shadow registry
-- `context` — Context used for evaluation
-
-### Example
-
-```kotlin
-val mismatch = AppFeatures.darkMode.evaluateShadow(context, shadowOptions)
-
-mismatch?.let {
-    logger.error("""
-        Shadow mismatch detected!
-        Primary: ${it.primary}
-        Shadow: ${it.shadow}
-        User: ${it.context.stableId}
-    """.trimIndent())
+    val featureKey: String,
+    val baseline: EvaluationResult<T>,
+    val candidate: EvaluationResult<T>,
+    val kinds: Set<Kind>,
+) {
+    enum class Kind { VALUE, DECISION }
 }
 ```
 
----
+Notes:
 
-## Integration Example: Full Observability Stack
-
-```kotlin
-// Setup hooks at application startup
-fun setupObservability() {
-    RegistryHooks.onEvaluationComplete = { event ->
-        // Log evaluation
-        logger.debug("Eval: ${event.featureKey} → ${event.value}")
-
-        // Metrics
-        metrics.histogram("feature.evaluation.duration", event.durationMs)
-        metrics.increment("feature.evaluation.count", mapOf(
-            "feature" to event.featureKey.toString(),
-            "decision" to event.decision.name
-        ))
-    }
-
-    RegistryHooks.onConfigurationLoad = { event ->
-        logger.info("Config loaded: ${event.metadata?.version}")
-        metrics.gauge("feature.flags.count", event.flagCount.toDouble())
-    }
-
-    RegistryHooks.onParseFailure = { event ->
-        logger.error("Parse failed: ${event.error}")
-        metrics.increment("feature.config.parse.failure")
-        alerting.notify("Config parse failure in ${event.namespaceId}")
-    }
-}
-
-// Use evaluateWithReason for debugging
-fun debugFeature(context: Context) {
-    val result = AppFeatures.darkMode.evaluateWithReason(context)
-
-    logger.info("Decision: ${result.decision}")
-    result.matchedRule?.let { rule ->
-        logger.info("Matched rule: ${rule.note} (specificity: ${rule.specificity})")
-    }
-    result.bucketInfo?.let { bucket ->
-        logger.info("Bucket: ${bucket.bucket} (in ramp-up: ${bucket.inRampUp})")
-    }
-}
-```
+- The callback runs inline on the evaluation thread; keep it cheap or offload.
+- If you need to associate mismatches with a user, capture `context.stableId` from the call site (it’s not embedded in the mismatch object).
 
 ---
 
 ## Next Steps
 
-- [Feature Operations](/api-reference/feature-operations) — Evaluation API
-- [Namespace Operations](/api-reference/namespace-operations) — Lifecycle operations
+- [Feature Operations](/api-reference/feature-operations) — Evaluation and shadow APIs
+- [Namespace Operations](/api-reference/namespace-operations) — Registry lifecycle operations
 - [Advanced: Shadow Evaluation](/advanced/shadow-evaluation) — Migration patterns

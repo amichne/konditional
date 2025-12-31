@@ -15,7 +15,7 @@ val json = """{ "flags": [ { "invalid": true } ] }"""
 
 when (val result = AppFeatures.fromJson(json)) {
     is ParseResult.Failure -> {
-        println(result.error.message)  // "Invalid snapshot structure"
+        println(result.error.message)  // ParseError.InvalidJson / ParseError.InvalidSnapshot
     }
 }
 ```
@@ -57,7 +57,7 @@ val json = """
 
 when (val result = AppFeatures.fromJson(json)) {
     is ParseResult.Failure -> {
-        println(result.error)  // ParseError.FeatureNotFound("feature::app::unknownFlag")
+        println(result.error.message)  // "Feature not found: feature::app::unknownFlag"
     }
 }
 ```
@@ -66,7 +66,7 @@ when (val result = AppFeatures.fromJson(json)) {
 
 - Ensure namespaces are initialized **before** JSON deserialization (see [Definition vs Initialization](/fundamentals/definition-vs-initialization))
 - Reference namespace objects at startup (t0)
-- Use lenient deserialization with `SnapshotLoadOptions.skipUnknownKeys` for forward compatibility
+- Use lenient deserialization with `SnapshotLoadOptions.skipUnknownKeys(...)` for forward compatibility
 
 ### How to Detect
 
@@ -103,7 +103,7 @@ val json = """
 
 when (val result = SnapshotSerializer.fromJson(json)) {
     is ParseResult.Failure -> {
-        println(result.error)  // "Type mismatch for feature::config::timeout"
+        println(result.error.message)  // ParseError.InvalidSnapshot with details about the failed decode
     }
 }
 ```
@@ -252,7 +252,7 @@ Namespace is disabled via `disableAll()`:
 ```kotlin
 AppFeatures.disableAll()
 
-val enabled = AppFeatures.darkMode.evaluate(context)  // Returns default (false)
+val enabled = AppFeatures.darkMode(context)  // Returns default (false)
 ```
 
 ### How to Prevent

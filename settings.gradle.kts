@@ -7,6 +7,6 @@ pluginManagement {
 
 rootProject.name = "konditional"
 
+include("core")
 include("kontracts")
-include("ktor-demo")
-include("ktor-demo:demo-client")
+include("opentelemetry")

@@ -41,8 +41,8 @@ val ctx = Context(
     stableId = StableId.of("user-123"),
 )
 
-val result1 = AppFeatures.newFeature.evaluate(ctx)
-val result2 = AppFeatures.newFeature.evaluate(ctx)
+val result1 = AppFeatures.newFeature(ctx)
+val result2 = AppFeatures.newFeature(ctx)
 // result1 == result2 (guaranteed)
 ```
 
@@ -244,7 +244,7 @@ fun `50 percent ramp-up distributes correctly`() {
             appVersion = Version.of(2, 1, 0),
             stableId = StableId.of(i.toString().padStart(32, '0'))
         )
-        AppFeatures.rampUpFlag.evaluate(ctx)
+        AppFeatures.rampUpFlag(ctx)
     }
 
     val percentage = (enabled.toDouble() / sampleSize) * 100

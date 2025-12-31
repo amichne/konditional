@@ -41,7 +41,7 @@ object Features : Namespace("app") {
 ### 1. Replace call sites first (value safety)
 
 ```kotlin
-val enabled: Boolean = Features.darkMode.evaluate(context)
+val enabled: Boolean = Features.darkMode(context)
 ```
 
 What you gain immediately:
