@@ -3,7 +3,6 @@ package io.amichne.konditional.internal.serialization.models
 import com.squareup.moshi.JsonClass
 import io.amichne.konditional.core.ValueType
 import io.amichne.konditional.core.types.KotlinEncodeable
-import io.amichne.konditional.core.types.toJsonValue
 import io.amichne.konditional.core.types.toPrimitiveValue
 
 /**
@@ -118,7 +117,19 @@ sealed class FlagValue<out T : Any> {
                 }
 
                 is KotlinEncodeable<*> -> {
-                    val json = value.toJsonValue()
+                    // Use registry-based serializer (no reflection)
+                    val serializer = io.amichne.konditional.serialization.SerializerRegistry.get(value::class)
+                        ?: throw IllegalArgumentException(
+                            "No serializer registered for ${value::class.qualifiedName}. " +
+                                "Register with SerializerRegistry.register(${value::class.simpleName}::class, serializer)"
+                        )
+
+                    @Suppress("UNCHECKED_CAST")
+                    val json =
+                        (serializer as io.amichne.konditional.serialization.TypeSerializer<KotlinEncodeable<*>>).encode(
+                            value
+                        )
+
                     val primitive = json.toPrimitiveValue()
                     require(primitive is Map<*, *>) { "KotlinEncodeable must encode to an object, got ${primitive?.let { it::class.simpleName }}" }
                     DataClassValue(

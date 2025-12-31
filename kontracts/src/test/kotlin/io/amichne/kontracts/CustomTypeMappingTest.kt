@@ -1,5 +1,6 @@
 package io.amichne.kontracts
 
+import io.amichne.kontracts.dsl.asBoolean
 import io.amichne.kontracts.dsl.asDouble
 import io.amichne.kontracts.dsl.asInt
 import io.amichne.kontracts.dsl.asString
@@ -26,9 +27,11 @@ class CustomTypeMappingTest {
     data class Email(val value: String)
     data class Count(val value: Int)
     data class Percentage(val value: Double)
+    data class Agent(val isAgent: Boolean)
 
     // Configuration using custom type mapping
     data class UserConfig(
+        val agent: Agent,
         val userId: UserId,
         val email: Email,
         val loginAttempts: Count,
@@ -36,6 +39,11 @@ class CustomTypeMappingTest {
         val nickname: String,
     ) {
         val schema = schemaRoot {
+            ::agent asBoolean {
+                description = "Boolean flag test"
+                example = true
+            }
+
             // Custom type mapped to String with validation rules
             ::userId asString {
                 represent = { this.value }
@@ -82,6 +90,7 @@ class CustomTypeMappingTest {
     @Test
     fun `custom type mapping creates correct schema types`() {
         val config = UserConfig(
+            agent = Agent(true),
             userId = UserId("ABC12345"),
             email = Email("user@example.com"),
             loginAttempts = Count(0),
@@ -92,31 +101,27 @@ class CustomTypeMappingTest {
         // Verify userId schema
         val userIdField = config.schema.fields["userId"]!!
         assertIs<StringSchema>(userIdField.schema)
-        val userIdSchema = userIdField.schema as StringSchema
-        assertEquals("[A-Z0-9]{8}", userIdSchema.pattern)
-        assertEquals(8, userIdSchema.minLength)
-        assertEquals(8, userIdSchema.maxLength)
-        assertEquals("Unique 8-character user identifier", userIdSchema.description)
+        assertEquals("[A-Z0-9]{8}", userIdField.schema.pattern)
+        assertEquals(8, userIdField.schema.minLength)
+        assertEquals(8, userIdField.schema.maxLength)
+        assertEquals("Unique 8-character user identifier", userIdField.schema.description)
 
         // Verify email schema
         val emailField = config.schema.fields["email"]!!
         assertIs<StringSchema>(emailField.schema)
-        val emailSchema = emailField.schema as StringSchema
-        assertEquals("email", emailSchema.format)
+        assertEquals("email", emailField.schema.format)
 
         // Verify loginAttempts schema
         val attemptsField = config.schema.fields["loginAttempts"]!!
         assertIs<IntSchema>(attemptsField.schema)
-        val attemptsSchema = attemptsField.schema as IntSchema
-        assertEquals(0, attemptsSchema.minimum)
-        assertEquals(5, attemptsSchema.maximum)
+        assertEquals(0, attemptsField.schema.minimum)
+        assertEquals(5, attemptsField.schema.maximum)
 
         // Verify completionRate schema
         val rateField = config.schema.fields["completionRate"]!!
         assertIs<DoubleSchema>(rateField.schema)
-        val rateSchema = rateField.schema as DoubleSchema
-        assertEquals(0.0, rateSchema.minimum)
-        assertEquals(100.0, rateSchema.maximum)
+        assertEquals(0.0, rateField.schema.minimum)
+        assertEquals(100.0, rateField.schema.maximum)
 
         // Verify regular primitive type
         val nicknameField = config.schema.fields["nickname"]!!
@@ -126,6 +131,7 @@ class CustomTypeMappingTest {
     @Test
     fun `custom type conversion functions are captured`() {
         val config = UserConfig(
+            agent = Agent(true),
             userId = UserId("XYZ98765"),
             email = Email("test@test.com"),
             loginAttempts = Count(2),

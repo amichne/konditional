@@ -25,13 +25,18 @@ import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.evaluable.AxisConstraint
 import io.amichne.konditional.rules.versions.Unbounded
+import io.amichne.konditional.serialization.options.SnapshotLoadOptions
+import io.amichne.konditional.serialization.options.SnapshotWarning
+import io.amichne.konditional.serialization.options.UnknownFeatureKeyStrategy
 import io.amichne.konditional.values.FeatureId
 import io.amichne.kontracts.schema.ObjectSchema
+import io.amichne.kontracts.value.JsonArray
+import io.amichne.kontracts.value.JsonBoolean
+import io.amichne.kontracts.value.JsonNull
+import io.amichne.kontracts.value.JsonNumber
 import io.amichne.kontracts.value.JsonObject
-import kotlin.reflect.KClass
-import kotlin.reflect.KParameter
-import kotlin.reflect.full.primaryConstructor
-import kotlin.reflect.jvm.isAccessible
+import io.amichne.kontracts.value.JsonString
+import io.amichne.kontracts.value.JsonValue
 
 /**
  * Converts a Configuration to a SerializableSnapshot.
@@ -58,7 +63,7 @@ private fun ConfigurationMetadata.toSerializable(): SerializableSnapshotMetadata
         )
     }
 
-private fun SerializableSnapshotMetadata?.toDomain(): ConfigurationMetadata =
+private fun SerializableSnapshotMetadata?.toSnapshot(): ConfigurationMetadata =
     this?.let {
         ConfigurationMetadata.of(
             version = it.version,
@@ -122,7 +127,7 @@ internal fun SerializableSnapshot.toSnapshot(options: SnapshotLoadOptions): Pars
                 }
             }
         }.let {
-            ParseResult.Success(Configuration(it, meta.toDomain()))
+            ParseResult.Success(Configuration(it, meta.toSnapshot()))
         }
     }.getOrElse { ParseResult.Failure(ParseError.InvalidSnapshot(it.message ?: "Unknown error")) }
 
@@ -225,97 +230,20 @@ private fun decodeDataClass(
     dataClassName: String,
     fields: Map<String, Any?>,
 ): Any {
-    val kClass =
-        runCatching { Class.forName(dataClassName).kotlin }
-            .getOrElse { throw IllegalArgumentException("Failed to load data class '$dataClassName': ${it.message}") }
+    // Use registry-based serializer (no reflection)
+    val jsonObject = JsonObject(
+        fields = fields.mapValues { (_, v) -> v.toJsonValueInternal() },
+        schema = null
+    )
 
-    val constructor =
-        kClass.primaryConstructor
-            ?: throw IllegalArgumentException("Custom type '${kClass.simpleName}' must have a primary constructor")
-    constructor.isAccessible = true
-
-    val args =
-        constructor.parameters
-            .associateWith { param -> resolveConstructorArg(fields, param) }
-            .filterValues { it != Unset }
-            .mapValues { (_, v) -> if (v === NullValue) null else v }
-
-    return constructor.callBy(args)
-}
-
-private object Unset
-
-private object NullValue
-
-private fun resolveConstructorArg(
-    fields: Map<String, Any?>,
-    param: KParameter,
-): Any {
-    val name = param.name ?: throw IllegalArgumentException("Constructor parameter has no name")
-
-    if (!fields.containsKey(name)) {
-        return if (param.isOptional) Unset else throw IllegalArgumentException("Required field '$name' is missing")
+    return when (val registryResult = SerializerRegistry.decodeByClassName(dataClassName, jsonObject)) {
+        is ParseResult.Success -> registryResult.value
+        is ParseResult.Failure -> throw IllegalArgumentException(
+            "Failed to decode '$dataClassName': ${registryResult.error.message}. " +
+                "Ensure a TypeSerializer is registered via SerializerRegistry.register()"
+        )
     }
-
-    return coerceValue(fields[name] ?: return NullValue, param.type.classifier as? KClass<*>)
 }
-
-private fun coerceValue(
-    value: Any,
-    target: KClass<*>?,
-): Any =
-    when {
-        target == null -> {
-            value
-        }
-
-        target == String::class -> {
-            value.toString()
-        }
-
-        target == Boolean::class -> {
-            when (value) {
-                is Boolean -> value
-                is String -> value.toBooleanStrictOrNull() ?: error("Cannot coerce '$value' to Boolean")
-                else -> error("Cannot coerce ${value::class.simpleName} to Boolean")
-            }
-        }
-
-        target == Int::class -> {
-            when (value) {
-                is Int -> value
-                is Double -> value.toInt()
-                is Number -> value.toInt()
-                is String -> value.toInt()
-                else -> error("Cannot coerce ${value::class.simpleName} to Int")
-            }
-        }
-
-        target == Double::class -> {
-            when (value) {
-                is Double -> value
-                is Int -> value.toDouble()
-                is Number -> value.toDouble()
-                is String -> value.toDouble()
-                else -> error("Cannot coerce ${value::class.simpleName} to Double")
-            }
-        }
-
-        target.java.isEnum -> {
-            val enumConstantName =
-                value as? String ?: error("Enum values must be strings, got ${value::class.simpleName}")
-            decodeEnum(target.java.name, enumConstantName)
-        }
-
-        value is Map<*, *> -> {
-            @Suppress("UNCHECKED_CAST")
-            decodeDataClass(target.java.name, value as Map<String, Any?>)
-        }
-
-        else -> {
-            value
-        }
-    }
 
 /**
  * Converts a SerializableRule to a Rule.
@@ -381,4 +309,26 @@ internal fun SerializablePatch.toPatch(): ParseResult<ConfigurationPatch> {
     } catch (e: Exception) {
         ParseResult.Failure(ParseError.InvalidSnapshot(e.message ?: "Unknown error"))
     }
+}
+
+/**
+ * Converts a primitive value to JsonValue for internal use.
+ *
+ * Used when converting Map<String, Any?> fields to JsonObject.
+ */
+private fun Any?.toJsonValueInternal(): JsonValue = when (this) {
+    null -> JsonNull
+    is Boolean -> JsonBoolean(this)
+    is String -> JsonString(this)
+    is Int -> JsonNumber(this.toDouble())
+    is Double -> JsonNumber(this)
+    is Map<*, *> -> {
+        @Suppress("UNCHECKED_CAST")
+        JsonObject(
+            fields = (this as Map<String, Any?>).mapValues { (_, v) -> v.toJsonValueInternal() },
+            schema = null
+        )
+    }
+    is List<*> -> JsonArray(map { it.toJsonValueInternal() }, elementSchema = null)
+    else -> error("Unsupported type for JSON conversion: ${this::class.simpleName}")
 }

@@ -66,7 +66,7 @@ class OpenApiSchemaConverterTest {
         )
 
         options.forEach { option ->
-            val defaultValue = option.properties().property("defaultValue") as Map<String, Any?>
+            val defaultValue = option.properties().property("defaultValue")
             if (defaultValue.containsKey("oneOf")) {
                 error("Expected SerializableFlag.defaultValue to be a concrete FlagValue subtype schema, not oneOf.")
             }
@@ -83,11 +83,11 @@ class OpenApiSchemaConverterTest {
     private fun schemaFor(name: String): Map<String, Any?> =
         OpenApiSchemaConverter.toSchema(SerializationSchemaCatalog.schemas.getValue(name))
 
-    private fun Map<String, Any?>.properties(): Map<*, *> =
-        requireNotNull(this["properties"] as? Map<*, *>) { "Expected properties in schema." }
+    private fun Map<String, Any?>.properties(): Map<String, Any?> =
+        requireNotNull(this["properties"]) { "Expected properties in schema." } as Map<String, Any?>
 
-    private fun Map<*, *>.property(key: String): Map<*, *> =
-        requireNotNull(this[key] as? Map<*, *>) { "Expected property '$key' in schema." }
+    private fun Map<*, *>.property(key: String): Map<String, Any?> =
+        requireNotNull(this[key] as? Map<*, *>) { "Expected property '$key' in schema." } as Map<String, Any?>
 
     private fun Map<String, Any?>.requiredFields(): Set<String> =
         (this["required"] as? List<*>)?.filterIsInstance<String>()?.toSet().orEmpty()
@@ -101,7 +101,8 @@ class OpenApiSchemaConverterTest {
     private fun Map<String, Any?>.defaultValueTypeDiscriminator(): String {
         val defaultValueSchema = properties().property("defaultValue") as Map<String, Any?>
         val discriminatorSchema = defaultValueSchema.properties().property("type")
-        val values = requireNotNull(discriminatorSchema["enum"] as? List<*>) { "Expected enum discriminator in defaultValue.type." }
+        val values =
+            requireNotNull(discriminatorSchema["enum"] as? List<*>) { "Expected enum discriminator in defaultValue.type." }
         return requireNotNull(values.singleOrNull() as? String) { "Expected single enum discriminator value in defaultValue.type." }
     }
 
@@ -110,7 +111,8 @@ class OpenApiSchemaConverterTest {
         val itemsSchema = requireNotNull(rulesSchema["items"] as? Map<String, Any?>) { "Expected rules.items schema." }
         val valueSchema = itemsSchema.properties().property("value") as Map<String, Any?>
         val discriminatorSchema = valueSchema.properties().property("type")
-        val values = requireNotNull(discriminatorSchema["enum"] as? List<*>) { "Expected enum discriminator in rules.items.value.type." }
+        val values =
+            requireNotNull(discriminatorSchema["enum"] as? List<*>) { "Expected enum discriminator in rules.items.value.type." }
         return requireNotNull(values.singleOrNull() as? String) { "Expected single enum discriminator value in rules.items.value.type." }
     }
 }

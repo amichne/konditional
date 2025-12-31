@@ -31,8 +31,12 @@ internal object AxisRegistry {
     @PublishedApi
     internal val byId: MutableMap<String, Axis<*>> =
         ConcurrentHashMap()
+
     @PublishedApi
     internal val byValueClass: MutableMap<KClass<out Enum<*>>, Axis<*>> =
+        ConcurrentHashMap()
+
+    private val idsByValueClass: MutableMap<KClass<out Enum<*>>, MutableSet<String>> =
         ConcurrentHashMap()
 
     /**
@@ -47,28 +51,45 @@ internal object AxisRegistry {
     fun register(axis: Axis<*>) {
         @Suppress("UNCHECKED_CAST")
         val valueClass = axis.valueClass as KClass<out Enum<*>>
+        val existingById = byId[axis.id]
+        if (existingById != null && existingById !== axis && existingById.valueClass != axis.valueClass) {
+            throw IllegalArgumentException("Axis already registered for id ${axis.id}: existing=$existingById, attempted=$axis")
+        }
         val existingByType = byValueClass[valueClass]
         if (existingByType != null && existingByType !== axis) {
-            if (!axis.isImplicit && existingByType.isImplicit && existingByType.id == axis.id) {
+            if (!axis.isImplicit && existingByType.isImplicit) {
                 byValueClass[valueClass] = axis
                 byId[axis.id] = axis
+                rememberAxisId(valueClass, axis.id)
+                rememberAxisId(valueClass, existingByType.id)
+                return
+            }
+            if (axis.isImplicit && !existingByType.isImplicit) {
+                byId.putIfAbsent(axis.id, axis)
+                rememberAxisId(valueClass, axis.id)
                 return
             }
             throw IllegalArgumentException(
                 "Axis already registered for type ${valueClass.simpleName}: existing=$existingByType, attempted=$axis",
             )
         }
-        val existingById = byId[axis.id]
         if (existingById != null && existingById !== axis) {
-            if (!axis.isImplicit && existingById.isImplicit && existingById.valueClass == axis.valueClass) {
+            if (!axis.isImplicit && existingById.isImplicit) {
                 byValueClass[valueClass] = axis
                 byId[axis.id] = axis
+                rememberAxisId(valueClass, axis.id)
+                rememberAxisId(valueClass, existingById.id)
+                return
+            }
+            if (axis.isImplicit && !existingById.isImplicit) {
+                rememberAxisId(valueClass, axis.id)
                 return
             }
             throw IllegalArgumentException("Axis already registered for id ${axis.id}: existing=$existingById, attempted=$axis")
         }
         byValueClass[valueClass] = axis
         byId[axis.id] = axis
+        rememberAxisId(valueClass, axis.id)
     }
 
     /**
@@ -87,6 +108,16 @@ internal object AxisRegistry {
     internal fun <T> axisForOrRegister(type: KClass<out T>): Axis<T> where T : AxisValue<T>, T : Enum<T> =
         axisFor(type) ?: registerImplicit(type)
 
+    @PublishedApi
+    internal fun axisIdsFor(axisId: String): Set<String> =
+        byId[axisId]?.let { axisIdsForValueClass(it.valueClass as KClass<out Enum<*>>) }
+            ?.takeIf { it.isNotEmpty() } ?: setOf(axisId)
+
+    @PublishedApi
+    internal fun axisIdsFor(axis: Axis<*>): Set<String> =
+        axisIdsForValueClass(axis.valueClass as KClass<out Enum<*>>)
+            .takeIf { it.isNotEmpty() } ?: setOf(axis.id)
+
     private fun <T> registerImplicit(type: KClass<out T>): Axis<T> where T : AxisValue<T>, T : Enum<T> {
         // Implicit ids derive from class names; avoid this path if names can be obfuscated.
         val axisId = type.qualifiedName ?: type.simpleName
@@ -104,5 +135,16 @@ internal object AxisRegistry {
         valueClass: KClass<T>,
     ) : Axis<T>(id, valueClass) where T : AxisValue<T>, T : Enum<T> {
         override val isImplicit: Boolean = true
+    }
+
+    private fun axisIdsForValueClass(valueClass: KClass<out Enum<*>>): Set<String> =
+        idsByValueClass[valueClass]?.toSet() ?: emptySet()
+
+    private fun rememberAxisId(
+        valueClass: KClass<out Enum<*>>,
+        axisId: String,
+    ) {
+        val ids = idsByValueClass.computeIfAbsent(valueClass) { ConcurrentHashMap.newKeySet() }
+        ids.add(axisId)
     }
 }

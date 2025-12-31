@@ -22,12 +22,24 @@ import kotlin.reflect.jvm.isAccessible
 /**
  * Converts a custom encodeable instance to a JsonValue.JsonObject.
  *
+ * **DEPRECATED:** This reflection-based method is deprecated and will be removed in 0.1.0.
+ * Use SerializerRegistry with explicit TypeSerializer implementations instead.
+ *
  * This function uses reflection to extract all properties from the custom type
  * and convert them to JsonValue instances based on their types.
  *
  * @param schema The schema to validate against (optional, defaults to the instance's schema)
  * @return JsonValue.JsonObject representation create this custom encodeable type
  */
+@Deprecated(
+    message = "Reflection-based serialization is deprecated. " +
+        "Register a TypeSerializer via SerializerRegistry.register() instead.",
+    replaceWith = ReplaceWith(
+        "SerializerRegistry.encode(this)",
+        "io.amichne.konditional.serialization.SerializerRegistry"
+    ),
+    level = DeprecationLevel.WARNING
+)
 fun KotlinEncodeable<*>.toJsonValue(schema: JsonSchema<*>? = null): JsonObject =
     JsonObject(
         fields =
@@ -83,12 +95,24 @@ internal fun Any?.toJsonValue(): JsonValue = when (this) {
 /**
  * Parses a JsonValue.JsonObject into a custom encodeable instance.
  *
+ * **DEPRECATED:** This reflection-based method is deprecated and will be removed in 0.1.0.
+ * Use SerializerRegistry with explicit TypeSerializer implementations instead.
+ *
  * This function uses reflection to instantiate the custom type with values
  * extracted from the JsonObject, validating against the schema if present.
  *
  * @param T The custom encodeable type to parse into
  * @return ParseResult containing either the custom type instance or an error
  */
+@Deprecated(
+    message = "Reflection-based deserialization is deprecated. " +
+        "Register a TypeSerializer via SerializerRegistry.register() instead.",
+    replaceWith = ReplaceWith(
+        "SerializerRegistry.decode(T::class, this)",
+        "io.amichne.konditional.serialization.SerializerRegistry"
+    ),
+    level = DeprecationLevel.WARNING
+)
 inline fun <reified T : KotlinEncodeable<*>> JsonObject.parseAs(): ParseResult<T> {
     return try {
         val kClass = T::class

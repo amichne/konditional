@@ -1,6 +1,4 @@
-package io.amichne.konditional.serialization
-
-import io.amichne.konditional.values.FeatureId
+package io.amichne.konditional.serialization.options
 
 /**
  * Controls deserialization behavior for snapshots and patches.
@@ -18,31 +16,5 @@ data class SnapshotLoadOptions(
 
         fun skipUnknownKeys(onWarning: (SnapshotWarning) -> Unit = {}): SnapshotLoadOptions =
             SnapshotLoadOptions(UnknownFeatureKeyStrategy.Skip, onWarning)
-    }
-}
-
-sealed interface UnknownFeatureKeyStrategy {
-    data object Fail : UnknownFeatureKeyStrategy
-
-    data object Skip : UnknownFeatureKeyStrategy
-}
-
-@ConsistentCopyVisibility
-data class SnapshotWarning internal constructor(
-    val kind: Kind,
-    val message: String,
-    val key: FeatureId? = null,
-) {
-    enum class Kind {
-        UNKNOWN_FEATURE_KEY,
-    }
-
-    companion object {
-        fun unknownFeatureKey(key: FeatureId): SnapshotWarning =
-            SnapshotWarning(
-                kind = Kind.UNKNOWN_FEATURE_KEY,
-                key = key,
-                message = "Unknown feature key encountered during deserialization: $key",
-            )
     }
 }

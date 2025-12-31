@@ -6,6 +6,7 @@ import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
+import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 
 /**
  * Namespace-scoped serializer for feature flag configurations.

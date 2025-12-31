@@ -17,7 +17,7 @@ Add the dependency to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("io.amichne:konditional-opentelemetry:$version")
+    implementation("io.amichne:opentelemetry:$version")
 }
 ```
 
@@ -146,7 +146,7 @@ val telemetry = KonditionalTelemetry(
 ### Module Structure
 
 ```
-konditional-opentelemetry/
+opentelemetry/
 ├── traces/
 │   ├── FlagEvaluationTracer.kt       # Span creation and population
 │   ├── SpanAttributes.kt             # Semantic conventions

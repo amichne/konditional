@@ -1,9 +1,11 @@
 package io.amichne.konditional.serialization
 
+import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.unaryPlus
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.instance.ConfigurationMetadata
 import io.amichne.konditional.core.result.ParseError
@@ -11,11 +13,11 @@ import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
-import io.amichne.konditional.fixtures.environment
-import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.internal.serialization.models.FlagValue
 import io.amichne.konditional.internal.serialization.models.SerializableFlag
 import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
+import io.amichne.konditional.serialization.options.SnapshotLoadOptions
+import io.amichne.konditional.serialization.options.SnapshotWarning
 import io.amichne.konditional.values.FeatureId
 import org.junit.jupiter.api.Test
 import java.util.UUID
@@ -74,11 +76,15 @@ class OperationalSerializationTest {
 
         val productionContext = TestContext(
             appVersion = Version.parse("1.0.0").getOrThrow(),
-            axisValues = axisValues { environment(TestEnvironment.PROD) },
+            axisValues = axisValues {
+                +TestEnvironment.PROD
+            },
         )
         val developementContext = TestContext(
             appVersion = Version.parse("1.0.0").getOrThrow(),
-            axisValues = axisValues { environment(TestEnvironment.DEV) },
+            axisValues = axisValues {
+                +TestEnvironment.DEV
+            },
         )
 
         assertTrue(namespace.envScopedFlag.evaluate(productionContext))

@@ -1,5 +1,6 @@
 package io.amichne.konditional.context.axis
 
+import io.amichne.konditional.core.registry.AxisRegistry
 import java.util.function.IntFunction
 
 /**
@@ -55,7 +56,10 @@ class AxisValues internal constructor(
      */
     @Suppress("UNCHECKED_CAST")
     operator fun <T> get(axis: Axis<T>): T? where T : AxisValue<T>, T : Enum<T> =
-        values[axis.id] as? T
+        AxisRegistry.axisIdsFor(axis)
+            .asSequence()
+            .mapNotNull { values[it] as? T }
+            .firstOrNull()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

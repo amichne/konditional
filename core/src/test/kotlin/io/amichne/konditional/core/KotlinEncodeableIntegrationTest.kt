@@ -8,23 +8,21 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.result.utils.onSuccess
-import io.amichne.konditional.core.types.KotlinEncodeable
-import io.amichne.konditional.core.types.parseAs
-import io.amichne.konditional.core.types.toJsonValue
 import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.fixtures.core.withOverride
+import io.amichne.konditional.fixtures.serializers.UserSettings
+import io.amichne.konditional.serialization.SerializerRegistry
 import io.amichne.konditional.serialization.SnapshotSerializer.fromJson
 import io.amichne.konditional.serialization.SnapshotSerializer.serialize
-import io.amichne.kontracts.dsl.of
-import io.amichne.kontracts.dsl.schemaRoot
-import io.amichne.kontracts.schema.ObjectSchema
 import io.amichne.kontracts.value.JsonBoolean
 import io.amichne.kontracts.value.JsonNumber
 import io.amichne.kontracts.value.JsonObject
 import io.amichne.kontracts.value.JsonString
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 /**
@@ -38,50 +36,23 @@ import org.junit.jupiter.api.Test
  * - Feature flag integration
  */
 class KotlinEncodeableIntegrationTest {
-    // Test data class with manually defined schema
-    data class UserSettings(
-        val theme: String = "light",
-        val notificationsEnabled: Boolean = true,
-        val maxRetries: Int = 3,
-        val timeout: Double = 30.0,
-    ) : KotlinEncodeable<ObjectSchema> {
-        override val schema = schemaRoot {
-            // Type-inferred DSL: no need to call string(), the property type determines the schema
-            ::theme of {
-                minLength = 1
-                maxLength = 50
-                description = "UI theme preference"
-                enum = listOf("light", "dark", "auto")
-            }
 
-            // Boolean schema with automatic type inference
-            ::notificationsEnabled of {
-                description = "Enable push notifications"
-                default = true
-            }
+    @BeforeEach
+    fun setup() {
+        // Register serializer for UserSettings
+        SerializerRegistry.register(UserSettings::class, UserSettings.serializer)
+    }
 
-            // Int schema with constraints
-            ::maxRetries of {
-                minimum = 0
-                maximum = 10
-                description = "Maximum retry attempts"
-            }
-
-            // Double schema with format
-            ::timeout of {
-                minimum = 0.0
-                maximum = 300.0
-                format = "double"
-                description = "Request timeout in seconds"
-            }
-
-        }
+    @AfterEach
+    fun cleanup() {
+        // Clear registry after tests
+        SerializerRegistry.clear()
     }
 
     @Test
     fun `data class to JsonValue conversion is correct`() {
         val settings = UserSettings()
-        val json = settings.toJsonValue()
+        val json = SerializerRegistry.encode(settings) as JsonObject
         val fields = json.fields
         assertEquals("light", fields["theme"]?.let { (it as? JsonString)?.value })
         assertEquals(true, fields["notificationsEnabled"]?.let { (it as? JsonBoolean)?.value })
@@ -92,14 +63,15 @@ class KotlinEncodeableIntegrationTest {
     @Test
     fun `JsonValue to data class parsing is correct`() {
         val json = JsonObject(
-            mapOf(
+            fields = mapOf(
                 "theme" to JsonString("dark"),
                 "notificationsEnabled" to JsonBoolean(false),
                 "maxRetries" to JsonNumber(7.0),
                 "timeout" to JsonNumber(120.0)
-            )
+            ),
+            schema = null
         )
-        val result = json.parseAs<UserSettings>()
+        val result = SerializerRegistry.decode(UserSettings::class, json)
         assertTrue(result is ParseResult.Success)
         val settings = (result as ParseResult.Success).value
         assertEquals("dark", settings.theme)
@@ -112,17 +84,18 @@ class KotlinEncodeableIntegrationTest {
     fun `schema generation and validation works as expected`() {
         val settings = UserSettings()
         val schema = settings.schema
-        val validJson = settings.toJsonValue()
+        val validJson = SerializerRegistry.encode(settings) as JsonObject
         val validResult = validJson.validate(schema)
         assertTrue(validResult.isValid)
 
         val invalidJson = JsonObject(
-            mapOf(
+            fields = mapOf(
                 "theme" to JsonString(""), // too short
                 "notificationsEnabled" to JsonBoolean(true),
                 "maxRetries" to JsonNumber(-1.0), // below min
                 "timeout" to JsonNumber(500.0) // above max
-            )
+            ),
+            schema = null
         )
         val invalidResult = invalidJson.validate(schema)
         assertTrue(invalidResult.isInvalid)

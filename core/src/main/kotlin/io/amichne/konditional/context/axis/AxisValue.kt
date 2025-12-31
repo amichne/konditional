@@ -1,6 +1,5 @@
 package io.amichne.konditional.context.axis
 
-
 /**
  * A value that exists along some axis (environment, region, tenant, etc.).
  *

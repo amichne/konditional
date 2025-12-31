@@ -188,5 +188,4 @@ internal object ConfigurationStateSchemaCatalog {
         FieldSchema(schema = schema, required = false, defaultValue = defaultValue, description = description)
 
     private fun enumString(value: String): JsonSchema<String> = JsonSchema.string(enum = listOf(value))
-
 }

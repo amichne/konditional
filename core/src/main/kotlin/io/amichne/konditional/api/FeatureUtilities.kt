@@ -3,9 +3,11 @@ package io.amichne.konditional.api
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.evaluation.Bucketing.isInRampUp
+import io.amichne.konditional.core.evaluation.Bucketing.rampUpThresholdBasisPoints
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.core.registry.NamespaceRegistry
+import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.Rule
 import kotlin.system.measureNanoTime
 
@@ -145,7 +147,7 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
     return result
 }
 
-private fun <T : Any, C : Context> io.amichne.konditional.rules.ConditionalValue<T, C>.toRuleMatch(
+private fun <T : Any, C : Context> ConditionalValue<T, C>.toRuleMatch(
     bucket: Int?,
     featureKey: String,
     salt: String,
@@ -161,7 +163,7 @@ private fun <T : Any, C : Context> io.amichne.konditional.rules.ConditionalValue
                 bucket = bucket,
                 rollout = explanation.rollout,
                 thresholdBasisPoints =
-                    io.amichne.konditional.core.evaluation.Bucketing.rampUpThresholdBasisPoints(
+                    rampUpThresholdBasisPoints(
                         explanation.rollout,
                     ),
                 inRollout = isInRampUp(explanation.rollout, bucket),

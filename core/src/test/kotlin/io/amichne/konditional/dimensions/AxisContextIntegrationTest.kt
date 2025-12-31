@@ -1,14 +1,12 @@
 package io.amichne.konditional.dimensions
 
 import io.amichne.konditional.api.axis
+import io.amichne.konditional.api.axisValues
+import io.amichne.konditional.core.dsl.unaryPlus
 import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
-import io.amichne.konditional.fixtures.environment
-import io.amichne.konditional.fixtures.tenant
-import io.amichne.konditional.api.axisValues
-import io.amichne.konditional.core.dsl.unaryPlus
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNull
@@ -18,13 +16,11 @@ import kotlin.test.assertNull
  */
 class AxisContextIntegrationTest {
 
-    // Old Dimension tests removed - TestAxes now use Axis<T> instead create Dimension<T>
-
     @Test
     fun `context axis extension returns typed values`() {
         val values = axisValues {
-            environment(TestEnvironment.STAGE)
-            tenant(TestTenant.ENTERPRISE)
+            +TestEnvironment.STAGE
+            +TestTenant.ENTERPRISE
         }
 
         val ctx = TestContext(axisValues = values)
@@ -42,8 +38,8 @@ class AxisContextIntegrationTest {
     @Test
     fun `context axis type-based extension returns typed values`() {
         val values = axisValues {
-            environment(TestEnvironment.STAGE)
-            tenant(TestTenant.ENTERPRISE)
+            +TestEnvironment.STAGE
+            +TestTenant.ENTERPRISE
         }
 
         val ctx = TestContext(axisValues = values)
@@ -62,7 +58,7 @@ class AxisContextIntegrationTest {
     @Test
     fun `context axis extension returns null for missing axis`() {
         val values = axisValues {
-            environment(TestEnvironment.PROD)
+            +TestEnvironment.PROD
         }
         val ctx = TestContext(axisValues = values)
 

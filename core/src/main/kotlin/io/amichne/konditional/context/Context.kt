@@ -2,6 +2,7 @@ package io.amichne.konditional.context
 
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.AxisValues
+import io.amichne.konditional.core.registry.AxisRegistry
 import io.amichne.konditional.core.id.StableId
 
 /**
@@ -89,6 +90,9 @@ interface Context {
          */
         @PublishedApi
         internal fun Context.getAxisValue(axisId: String): AxisValue<*>? =
-            axisValues[axisId]
+            AxisRegistry.axisIdsFor(axisId)
+                .asSequence()
+                .mapNotNull { axisValues[it] }
+                .firstOrNull()
     }
 }

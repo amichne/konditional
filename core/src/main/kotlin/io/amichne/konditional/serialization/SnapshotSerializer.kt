@@ -17,6 +17,7 @@ import io.amichne.konditional.rules.versions.LeftBound
 import io.amichne.konditional.rules.versions.RightBound
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
+import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 
 /**
  * Main serialization object for Configuration configurations.

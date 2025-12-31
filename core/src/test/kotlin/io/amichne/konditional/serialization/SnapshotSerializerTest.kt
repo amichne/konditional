@@ -1,5 +1,6 @@
 package io.amichne.konditional.serialization
 
+import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
@@ -15,8 +16,7 @@ import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.result.getOrThrow
-import io.amichne.konditional.core.types.KotlinEncodeable
-import io.amichne.konditional.api.axisValues
+import io.amichne.konditional.fixtures.serializers.RetryPolicy
 import io.amichne.konditional.fixtures.utilities.localeIds
 import io.amichne.konditional.fixtures.utilities.platformIds
 import io.amichne.konditional.fixtures.utilities.update
@@ -24,10 +24,9 @@ import io.amichne.konditional.internal.serialization.models.SerializablePatch
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.FullyBound
+import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.values.FeatureId
-import io.amichne.kontracts.dsl.of
-import io.amichne.kontracts.dsl.schemaRoot
-import io.amichne.kontracts.schema.ObjectSchema
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -54,6 +53,9 @@ class SnapshotSerializerTest {
 
     @BeforeEach
     fun setup() {
+        // Register type serializers
+        SerializerRegistry.register(RetryPolicy::class, RetryPolicy.serializer)
+
         // Force axis registration for type-based axis() usage in rule builders.
         @Suppress("UnusedExpression")
         Axes.EnvironmentAxis
@@ -71,6 +73,11 @@ class SnapshotSerializerTest {
         FeatureRegistry.register(TestFeatures.doubleFlag)
         FeatureRegistry.register(TestFeatures.themeFlag)
         FeatureRegistry.register(TestFeatures.retryPolicyFlag)
+    }
+
+    @AfterEach
+    fun cleanup() {
+        SerializerRegistry.clear()
     }
 
     private enum class Environment(override val id: String) : AxisValue<Environment> {
@@ -92,21 +99,6 @@ class SnapshotSerializerTest {
     private enum class Theme {
         LIGHT,
         DARK,
-    }
-
-    private data class RetryPolicy(
-        val maxAttempts: Int = 3,
-        val backoffMs: Double = 1000.0,
-        val enabled: Boolean = true,
-        val mode: String = "exponential",
-    ) : KotlinEncodeable<ObjectSchema> {
-        override val schema: ObjectSchema =
-            schemaRoot {
-                ::maxAttempts of { minimum = 1 }
-                ::backoffMs of { minimum = 0.0 }
-                ::enabled of { default = true }
-                ::mode of { minLength = 1 }
-            }
     }
 
     private fun ctx(
@@ -392,9 +384,9 @@ class SnapshotSerializerTest {
                     "type": "DATA_CLASS",
                     "dataClassName": "${RetryPolicy::class.java.name}",
                     "value": {
+                      "maxAttempts": 3.0,
                       "backoffMs": 1000.0,
                       "enabled": true,
-                      "maxAttempts": 3,
                       "mode": "exponential"
                     }
                   },
@@ -409,9 +401,9 @@ class SnapshotSerializerTest {
                         "type": "DATA_CLASS",
                         "dataClassName": "${RetryPolicy::class.java.name}",
                         "value": {
+                          "maxAttempts": 9.0,
                           "backoffMs": 2500.0,
                           "enabled": false,
-                          "maxAttempts": 9,
                           "mode": "linear"
                         }
                       },

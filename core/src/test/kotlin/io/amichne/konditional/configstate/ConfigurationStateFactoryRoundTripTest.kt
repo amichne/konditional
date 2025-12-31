@@ -8,15 +8,14 @@ import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.unaryPlus
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
-import io.amichne.konditional.fixtures.environment
-import io.amichne.konditional.fixtures.tenant
+import io.amichne.konditional.fixtures.serializers.RetryPolicy
 import io.amichne.konditional.fixtures.utilities.localeIds
 import io.amichne.konditional.fixtures.utilities.platformIds
 import io.amichne.konditional.internal.serialization.models.FlagValue
@@ -26,11 +25,10 @@ import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.evaluable.AxisConstraint
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.serialization.FeatureRegistry
+import io.amichne.konditional.serialization.SerializerRegistry
 import io.amichne.konditional.serialization.SnapshotSerializer
 import io.amichne.konditional.serialization.toSerializable
-import io.amichne.kontracts.dsl.of
-import io.amichne.kontracts.dsl.schemaRoot
-import io.amichne.kontracts.schema.ObjectSchema
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
@@ -45,19 +43,6 @@ class ConfigurationStateFactoryRoundTripTest {
         DARK,
     }
 
-    private data class RetryPolicy(
-        val maxAttempts: Int = 3,
-        val backoffMs: Double = 1000.0,
-        val enabled: Boolean = true,
-    ) : KotlinEncodeable<ObjectSchema> {
-        override val schema: ObjectSchema =
-            schemaRoot {
-                ::maxAttempts of { minimum = 1 }
-                ::backoffMs of { minimum = 0.0 }
-                ::enabled of { default = true }
-            }
-    }
-
     private object TestFeatures : Namespace.TestNamespaceFacade("configstate-roundtrip-${UUID.randomUUID()}") {
         val boolFlag by boolean<TestContext>(default = false)
         val themeFlag by enum<Theme, TestContext>(default = Theme.LIGHT)
@@ -70,11 +55,17 @@ class ConfigurationStateFactoryRoundTripTest {
 
     @BeforeEach
     fun setup() {
+        SerializerRegistry.register(RetryPolicy::class, RetryPolicy.serializer)
         FeatureRegistry.clear()
         TestFeatures.load(Configuration(emptyMap()))
         FeatureRegistry.register(TestFeatures.boolFlag)
         FeatureRegistry.register(TestFeatures.themeFlag)
         FeatureRegistry.register(TestFeatures.retryPolicyFlag)
+    }
+
+    @AfterEach
+    fun cleanup() {
+        SerializerRegistry.clear()
     }
 
     @Test
@@ -83,10 +74,14 @@ class ConfigurationStateFactoryRoundTripTest {
         TestFeatures.load(initial)
         println(snapshotJson(initial.toSerializable()))
 
-        val prodAllowlistedByFlag = ctx(env = TestEnvironment.PROD, tenant = TestTenant.CONSUMER, stableId = stableIdFlagAllowlisted)
-        val prodAllowlistedByRule = ctx(env = TestEnvironment.PROD, tenant = TestTenant.CONSUMER, stableId = stableIdRuleAllowlisted)
-        val prodNeitherAllowlisted = ctx(env = TestEnvironment.PROD, tenant = TestTenant.CONSUMER, stableId = stableIdNeither)
-        val devAllowlistedByFlag = ctx(env = TestEnvironment.DEV, tenant = TestTenant.CONSUMER, stableId = stableIdFlagAllowlisted)
+        val prodAllowlistedByFlag =
+            ctx(env = TestEnvironment.PROD, tenant = TestTenant.CONSUMER, stableId = stableIdFlagAllowlisted)
+        val prodAllowlistedByRule =
+            ctx(env = TestEnvironment.PROD, tenant = TestTenant.CONSUMER, stableId = stableIdRuleAllowlisted)
+        val prodNeitherAllowlisted =
+            ctx(env = TestEnvironment.PROD, tenant = TestTenant.CONSUMER, stableId = stableIdNeither)
+        val devAllowlistedByFlag =
+            ctx(env = TestEnvironment.DEV, tenant = TestTenant.CONSUMER, stableId = stableIdFlagAllowlisted)
         val prodWrongVersionAllowlistedByFlag =
             ctx(
                 env = TestEnvironment.PROD,
@@ -132,7 +127,16 @@ class ConfigurationStateFactoryRoundTripTest {
         assertEquals(expectedBoolResults, actualBoolResults)
         assertEquals(expectedTheme, TestFeatures.themeFlag.evaluate(prodAllowlistedByFlag))
         assertEquals(expectedRetryPolicyConsumer, TestFeatures.retryPolicyFlag.evaluate(prodAllowlistedByFlag))
-        assertEquals(expectedRetryPolicyEnterprise, TestFeatures.retryPolicyFlag.evaluate(ctx(env = TestEnvironment.PROD, tenant = TestTenant.ENTERPRISE, stableId = stableIdNeither)))
+        assertEquals(
+            expectedRetryPolicyEnterprise,
+            TestFeatures.retryPolicyFlag.evaluate(
+                ctx(
+                    env = TestEnvironment.PROD,
+                    tenant = TestTenant.ENTERPRISE,
+                    stableId = stableIdNeither
+                )
+            )
+        )
 
         assertTrue(TestFeatures.boolFlag.evaluate(prodAllowlistedByFlag))
         assertTrue(TestFeatures.boolFlag.evaluate(prodAllowlistedByRule))
@@ -172,8 +176,10 @@ class ConfigurationStateFactoryRoundTripTest {
     fun `external snapshot update can retarget rule axes and rampUp`() {
         TestFeatures.load(configWithComplexRules())
 
-        val prodAllowlistedByFlag = ctx(env = TestEnvironment.PROD, tenant = TestTenant.CONSUMER, stableId = stableIdFlagAllowlisted)
-        val devNeitherAllowlisted = ctx(env = TestEnvironment.DEV, tenant = TestTenant.CONSUMER, stableId = stableIdNeither)
+        val prodAllowlistedByFlag =
+            ctx(env = TestEnvironment.PROD, tenant = TestTenant.CONSUMER, stableId = stableIdFlagAllowlisted)
+        val devNeitherAllowlisted =
+            ctx(env = TestEnvironment.DEV, tenant = TestTenant.CONSUMER, stableId = stableIdNeither)
 
         assertTrue(TestFeatures.boolFlag.evaluate(prodAllowlistedByFlag))
         assertFalse(TestFeatures.boolFlag.evaluate(devNeitherAllowlisted))
@@ -234,8 +240,8 @@ class ConfigurationStateFactoryRoundTripTest {
             stableId = stableId,
             axisValues =
                 axisValues {
-                    environment(env)
-                    tenant(tenant)
+                    +env
+                    +tenant
                 },
         )
 
@@ -248,7 +254,12 @@ class ConfigurationStateFactoryRoundTripTest {
                 locales = localeIds(AppLocale.UNITED_STATES, AppLocale.FRANCE),
                 platforms = platformIds(Platform.IOS, Platform.ANDROID),
                 versionRange = FullyBound(Version.of(1, 0, 0), Version.of(2, 0, 0)),
-                axisConstraints = listOf(AxisConstraint(axisId = "environment", allowedIds = setOf(TestEnvironment.PROD.id))),
+                axisConstraints = listOf(
+                    AxisConstraint(
+                        axisId = "environment",
+                        allowedIds = setOf(TestEnvironment.PROD.id)
+                    )
+                ),
             )
 
         val boolDefinition =
@@ -277,7 +288,12 @@ class ConfigurationStateFactoryRoundTripTest {
         val retryPolicyRule =
             Rule<TestContext>(
                 rampUp = RampUp.of(100.0),
-                axisConstraints = listOf(AxisConstraint(axisId = "tenant", allowedIds = setOf(TestTenant.ENTERPRISE.id))),
+                axisConstraints = listOf(
+                    AxisConstraint(
+                        axisId = "tenant",
+                        allowedIds = setOf(TestTenant.ENTERPRISE.id)
+                    )
+                ),
             )
         val retryPolicyDefinition =
             FlagDefinition(

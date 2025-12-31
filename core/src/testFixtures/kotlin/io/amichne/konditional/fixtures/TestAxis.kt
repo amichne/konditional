@@ -66,18 +66,17 @@ data class TestContext(
         Version.parse("1.0.0").getOrThrow(),
     override val stableId: StableId = StableId.of("deadbeef"),
     override val axisValues: AxisValues = AxisValues.EMPTY,
-) : Context
+) : Context {
+    init {
+        TestAxes.Environment
+        TestAxes.Tenant
+    }
+}
 
 /**
  * Test-only feature container exercising the dimension-based DSL.
  */
 object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
-    init {
-        // Ensure axes are registered before rule definitions are built.
-        TestAxes.Environment
-        TestAxes.Tenant
-    }
-
     /**
      * Enabled only when environment == PROD.
      * Uses the new axis API.
