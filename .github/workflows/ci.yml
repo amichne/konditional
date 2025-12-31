@@ -38,17 +38,3 @@ jobs:
         with:
           name: test-results-${{ matrix.os }}-java${{ matrix.java }}
           path: build/reports/tests/
-      - name: Generate checksums
-        run: |
-          cd build/libs
-          sha256sum *.jar > SHA256SUMS.txt
-          cat SHA256SUMS.txt
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: |
-            build/libs/*.jar
-            build/libs/SHA256SUMS.txt
-          retention-days: 7
