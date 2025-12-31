@@ -9,7 +9,6 @@ import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.AxisValues
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.AxisValuesScope
-import io.amichne.konditional.core.dsl.RuleScope
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.getOrThrow
 
@@ -68,8 +67,8 @@ data class TestContext(
     override val axisValues: AxisValues = AxisValues.EMPTY,
 ) : Context {
     init {
-        TestAxes.Environment
-        TestAxes.Tenant
+//        TestAxes.Environment
+//        TestAxes.Tenant
     }
 }
 
@@ -130,21 +129,4 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
             axis(TestEnvironment.STAGE)
         }
     }
-}
-
-/**
- * App-specific helpers to make the rule DSL read naturally.
- *
- * These would typically live alongside your feature containers.
- * Note: With the new axis API, these helpers are less necessary since
- * you can use axis(TestEnvironment.PROD) directly.
- */
-fun <C : Context> RuleScope<C>.environments(vararg envs: TestEnvironment) {
-    axis(*envs)
-    // Explicit axis API
-}
-
-fun <C : Context> RuleScope<C>.tenants(vararg tenants: TestTenant) {
-    axis(*tenants)
-    // Explicit axis API
 }

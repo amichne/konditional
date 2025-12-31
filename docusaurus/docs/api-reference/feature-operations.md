@@ -41,12 +41,12 @@ val endpoint: String = AppFeatures.apiEndpoint.evaluate(context)
 
 ---
 
-## `Feature.evaluateWithReason(context): EvaluationResult<T>`
+## `Feature.explain(context): EvaluationResult<T>`
 
 Explainable evaluation for debugging and observability.
 
 ```kotlin
-fun <T : Any, C : Context> Feature<T, C, *>.evaluateWithReason(
+fun <T : Any, C : Context> Feature<T, C, *>.explain(
     context: C
 ): EvaluationResult<T>
 ```
@@ -66,7 +66,7 @@ fun <T : Any, C : Context> Feature<T, C, *>.evaluateWithReason(
 ### Example
 
 ```kotlin
-val result = AppFeatures.darkMode.evaluateWithReason(context)
+val result = AppFeatures.darkMode.explain(context)
 
 when (result.decision) {
     EvaluationDecision.RULE_MATCHED -> {
@@ -90,6 +90,18 @@ when (result.decision) {
 - Debugging user-specific outcomes
 - Logging/metrics for observability
 - Testing rule matching logic
+
+### Alternative: Invoke Operator
+
+For concise evaluation syntax:
+
+```kotlin
+// Using invoke operator
+val enabled = AppFeatures.darkMode(context)
+
+// Equivalent to
+val enabled = AppFeatures.darkMode.evaluate(context)
+```
 
 ---
 

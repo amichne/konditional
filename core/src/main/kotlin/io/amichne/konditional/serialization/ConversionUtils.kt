@@ -94,10 +94,10 @@ private fun <T : Any, C : Context> ConditionalValue<T, C>.toSerializable(): Seri
         rampUp = rule.rampUp.value,
         rampUpAllowlist = rule.rampUpAllowlist.mapTo(linkedSetOf()) { it.id },
         note = rule.note,
-        locales = rule.baseEvaluable.locales.toSet(),
-        platforms = rule.baseEvaluable.platforms.toSet(),
-        versionRange = rule.baseEvaluable.versionRange,
-        axes = rule.baseEvaluable.axisConstraints.associate { it.axisId to it.allowedIds },
+        locales = rule.targeting.locales.toSet(),
+        platforms = rule.targeting.platforms.toSet(),
+        versionRange = rule.targeting.versionRange,
+        axes = rule.targeting.axisConstraints.associate { it.axisId to it.allowedIds },
     )
 
 /**

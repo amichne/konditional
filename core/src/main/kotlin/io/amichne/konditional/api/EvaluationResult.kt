@@ -9,7 +9,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  *
  * This is intentionally a "flattened" representation: it captures the observable
  * constraints and precedence of the chosen rule without exposing internal model
- * types like ConditionalValue or BaseEvaluable.
+ * types like ConditionalValue or BasePredicate.
  */
 @ConsistentCopyVisibility
 data class EvaluationResult<T : Any> internal constructor(

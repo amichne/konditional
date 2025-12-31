@@ -2,7 +2,7 @@ package io.amichne.konditional.otel
 
 import io.amichne.konditional.api.EvaluationResult
 import io.amichne.konditional.api.evaluate
-import io.amichne.konditional.api.evaluateWithReason
+import io.amichne.konditional.api.explain
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
@@ -48,7 +48,7 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithTelemetry
     parentSpan: Span? = null,
 ): T =
     telemetry.tracer.traceEvaluation(this, context, parentSpan) {
-        evaluateWithReason(context, registry)
+        explain(context, registry)
     }.value
 
 /**
@@ -69,7 +69,7 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithTelemetry
     parentSpan: Span? = null,
 ): EvaluationResult<T> =
     telemetry.tracer.traceEvaluation(this, context, parentSpan) {
-        evaluateWithReason(context, registry)
+        explain(context, registry)
     }
 
 /**

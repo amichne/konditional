@@ -10,16 +10,16 @@ import io.amichne.konditional.context.Context
  * can be composed together to create complex rule systems.
  *
  * The design enables composition through:
- * - Multiple Evaluable instances can be combined (e.g., [io.amichne.konditional.rules.Rule] composes [BaseEvaluable] with extension logic)
+ * - Multiple Predicate instances can be combined (e.g., [io.amichne.konditional.rules.Rule] composes [BasePredicate] with extension logic)
  * - Specificity values can be summed to determine rule precedence
  * - Matching logic can be chained (all must match for composition to match)
  *
  * @param C The contextFn type that this evaluable evaluates against
  *
  * @see io.amichne.konditional.rules.Rule
- * @see BaseEvaluable
+ * @see BasePredicate
  */
-fun interface Evaluable<in C : Context> : Specifier {
+fun interface Predicate<in C : Context> : Specifier {
     /**
      * Determines if this evaluable matches the given contextFn.
      *
@@ -32,6 +32,6 @@ fun interface Evaluable<in C : Context> : Specifier {
     fun matches(context: C): Boolean
 
     companion object {
-        fun <C : Context> factory(matcher: (C) -> Boolean): Evaluable<C> = Evaluable { context -> matcher(context) }
+        fun <C : Context> factory(matcher: (C) -> Boolean): Predicate<C> = Predicate { context -> matcher(context) }
     }
 }

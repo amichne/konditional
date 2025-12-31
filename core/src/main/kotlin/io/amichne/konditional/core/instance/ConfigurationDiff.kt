@@ -34,17 +34,17 @@ data class ConfigurationDiff internal constructor(
             )
 
         private fun Rule<*>.toSnapshot(): FlagChange.FlagSnapshot.RuleValueSnapshot.RuleSnapshot {
-            val base = baseEvaluable
+            val base = targeting
             val baseSpecificity =
                 (if (base.locales.isNotEmpty()) 1 else 0) +
                     (if (base.platforms.isNotEmpty()) 1 else 0) +
                     (if (base.versionRange.hasBounds()) 1 else 0) +
                     base.axisConstraints.size
 
-            val extensionSpecificity = extension.specificity()
-            val extensionClassName = when (extension) {
+            val extensionSpecificity = predicate.specificity()
+            val extensionClassName = when (predicate) {
                 Placeholder -> null
-                else -> extension::class.qualifiedName
+                else -> predicate::class.qualifiedName
             }
 
             return FlagChange.FlagSnapshot.RuleValueSnapshot.RuleSnapshot(

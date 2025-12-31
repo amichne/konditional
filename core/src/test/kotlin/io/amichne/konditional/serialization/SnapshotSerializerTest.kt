@@ -641,13 +641,13 @@ class SnapshotSerializerTest {
         assertEquals("TestNamespace rule", rule.note)
         assertEquals(
             setOf(AppLocale.UNITED_STATES.id, AppLocale.FRANCE.id),
-            rule.baseEvaluable.locales,
+            rule.targeting.locales,
         )
         assertEquals(
             setOf(Platform.IOS.id, Platform.ANDROID.id),
-            rule.baseEvaluable.platforms,
+            rule.targeting.platforms,
         )
-        assertIs<FullyBound>(rule.baseEvaluable.versionRange)
+        assertIs<FullyBound>(rule.targeting.versionRange)
     }
 
     @Test
@@ -779,14 +779,14 @@ class SnapshotSerializerTest {
         assertEquals("Complex rule", deserializedRule.note)
         assertEquals(
             setOf(AppLocale.UNITED_STATES.id, AppLocale.UNITED_STATES.id),
-            deserializedRule.baseEvaluable.locales,
+            deserializedRule.targeting.locales,
         )
         assertEquals(
             setOf(Platform.WEB.id),
-            deserializedRule.baseEvaluable.platforms,
+            deserializedRule.targeting.platforms,
         )
 
-        val versionRange = deserializedRule.baseEvaluable.versionRange
+        val versionRange = deserializedRule.targeting.versionRange
         assertIs<FullyBound>(versionRange)
         assertEquals(Version(2, 0, 0), versionRange.min)
         assertEquals(Version(3, 0, 0), versionRange.max)

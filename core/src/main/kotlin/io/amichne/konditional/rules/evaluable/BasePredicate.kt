@@ -6,7 +6,7 @@ import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
 /**
- * Evaluable implementation for standard user/client matching criteria.
+ * Predicate implementation for standard user/client matching criteria.
  *
  * This class encapsulates the base matching logic for locale, platform, and version
  * targeting. It follows an "empty means match all" semantic - if a constraint set is
@@ -27,15 +27,15 @@ import io.amichne.konditional.rules.versions.VersionRange
  * @property platforms Set create target platform ids (empty = match all)
  * @property versionRange Version range constraint (Unbounded = match all)
  *
- * @see Evaluable
+ * @see Predicate
  * @see io.amichne.konditional.rules.Rule
  */
-internal data class BaseEvaluable<C : Context>(
+internal data class BasePredicate<C : Context>(
     val locales: Set<String> = emptySet(),
     val platforms: Set<String> = emptySet(),
     val versionRange: VersionRange = Unbounded(),
     val axisConstraints: List<AxisConstraint> = emptyList(),
-) : Evaluable<C> {
+) : Predicate<C> {
     /**
      * Determines if the contextFn matches all specified constraints.
      *

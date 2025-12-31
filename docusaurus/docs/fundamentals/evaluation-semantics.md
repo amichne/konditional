@@ -178,12 +178,12 @@ val darkMode = AppFeatures.darkMode.evaluate(context)
 
 Use when defaults are meaningful and you want minimal call-site surface.
 
-### `evaluateWithReason(context): EvaluationResult<T>`
+### `explain(context): EvaluationResult<T>`
 
 Explainable evaluation for debugging:
 
 ```kotlin
-val result = AppFeatures.darkMode.evaluateWithReason(context)
+val result = AppFeatures.darkMode.explain(context)
 println(result.decision)  // Why this value was chosen
 ```
 

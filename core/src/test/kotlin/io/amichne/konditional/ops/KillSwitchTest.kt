@@ -2,7 +2,7 @@ package io.amichne.konditional.ops
 
 import io.amichne.konditional.api.EvaluationResult.Decision.RegistryDisabled
 import io.amichne.konditional.api.evaluate
-import io.amichne.konditional.api.evaluateWithReason
+import io.amichne.konditional.api.explain
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
@@ -37,7 +37,7 @@ class KillSwitchTest {
         namespace.disableAll()
         assertFalse(namespace.feature.evaluate(context))
 
-        val explained = namespace.feature.evaluateWithReason(context)
+        val explained = namespace.feature.explain(context)
         assertEquals(RegistryDisabled, explained.decision)
         namespace.enableAll()
         assertTrue(namespace.feature.evaluate(context))

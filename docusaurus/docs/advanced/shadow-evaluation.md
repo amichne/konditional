@@ -272,9 +272,9 @@ val value = evaluator.evaluate(context)
 shadowOptions = ShadowEvaluationOptions(
     shadowRegistry = candidateRegistry,
     onMismatch = { m ->
-        val primaryReason = feature.evaluateWithReason(context)
+        val primaryReason = feature.explain(context)
         val shadowFeature = candidateRegistry.getFlag(feature.key)
-        val shadowReason = shadowFeature?.evaluateWithReason(context)
+        val shadowReason = shadowFeature?.explain(context)
 
         logger.error("""
             ┌─ Shadow Mismatch Detected ─────────────────────

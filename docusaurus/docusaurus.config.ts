@@ -30,7 +30,7 @@ const config: Config = {
         mermaid: true,
     },
 
-    themes: ['classic'],
+//     themes: ['classic'],
     presets: [
         [
             "classic",
@@ -58,9 +58,9 @@ const config: Config = {
                         route: '/api/',
                     },
                 ],
-                theme: {
-                    primaryColor: '#1890ff',
-                },
+//                 theme: {
+//                     primaryColor: '#1890ff',
+//                 },
             },
         ],
     ],

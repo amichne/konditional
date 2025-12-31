@@ -23,8 +23,8 @@ class DiagnosticTest {
             println("Note: ${rule.note}")
 
             // Access internal properties via reflection to debug
-            val baseEvaluable = rule::class.members.find { it.name == "baseEvaluable" }?.call(rule)
-            println("BaseEvaluable: $baseEvaluable")
+            val targeting = rule::class.members.find { it.name == "targeting" }?.call(rule)
+            println("Targeting: $targeting")
         }
     }
 }

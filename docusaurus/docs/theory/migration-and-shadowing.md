@@ -254,10 +254,10 @@ val mismatch = AppFeatures.darkMode.evaluateWithShadow(
     shadowOptions = ShadowEvaluationOptions(
         shadowRegistry = candidateRegistry,
         onMismatch = { m ->
-            val primaryReason = AppFeatures.darkMode.evaluateWithReason(context)
+            val primaryReason = AppFeatures.darkMode.explain(context)
             val shadowReason = candidateRegistry
                 .getFlag(AppFeatures.darkMode.key)
-                ?.evaluateWithReason(context)
+                ?.explain(context)
 
             logger.error("""
                 Mismatch detected:

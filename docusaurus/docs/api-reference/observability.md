@@ -119,7 +119,7 @@ enum class EvaluationDecision {
 ### Example: Logging Decisions
 
 ```kotlin
-val result = AppFeatures.darkMode.evaluateWithReason(context)
+val result = AppFeatures.darkMode.explain(context)
 
 when (result.decision) {
     EvaluationDecision.RULE_MATCHED -> {
@@ -159,7 +159,7 @@ data class RuleInfo(
 ### Example: Audit Trail
 
 ```kotlin
-val result = AppFeatures.apiEndpoint.evaluateWithReason(context)
+val result = AppFeatures.apiEndpoint.explain(context)
 
 result.matchedRule?.let { rule ->
     logger.info("""
@@ -190,7 +190,7 @@ data class BucketInfo(
 ### Example: Debug Ramp-Up
 
 ```kotlin
-val result = AppFeatures.newFeature.evaluateWithReason(context)
+val result = AppFeatures.newFeature.explain(context)
 
 result.bucketInfo?.let { info ->
     logger.debug("""
@@ -315,9 +315,9 @@ fun setupObservability() {
     }
 }
 
-// Use evaluateWithReason for debugging
+// Use explain for debugging
 fun debugFeature(context: Context) {
-    val result = AppFeatures.darkMode.evaluateWithReason(context)
+    val result = AppFeatures.darkMode.explain(context)
 
     logger.info("Decision: ${result.decision}")
     result.matchedRule?.let { rule ->

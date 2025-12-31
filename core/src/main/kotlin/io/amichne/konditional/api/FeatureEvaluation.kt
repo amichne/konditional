@@ -27,10 +27,63 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
     registry: NamespaceRegistry = namespace,
 ): T = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.NORMAL).value
 
-fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithReason(
+/**
+ * Explains how this feature was evaluated for the given context.
+ *
+ * Returns detailed information about the evaluation decision, including which rule matched
+ * (if any), the bucket assignment, and specificity values. Useful for debugging and
+ * understanding feature flag behavior.
+ *
+ * Example:
+ * ```kotlin
+ * val result = feature.explain(context)
+ * when (result.decision) {
+ *     is Decision.Rule -> println("Matched rule: ${result.decision.matched.rule.note}")
+ *     is Decision.Default -> println("No rule matched, using default")
+ *     is Decision.Inactive -> println("Feature is inactive")
+ *     is Decision.RegistryDisabled -> println("Registry is disabled")
+ * }
+ * ```
+ *
+ * @param context The evaluation contextFn
+ * @param registry The registry to use (defaults to the feature's namespace)
+ * @return Detailed evaluation result with decision information
+ * @throws IllegalStateException if the feature is not registered in the registry
+ */
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.explain(
     context: C,
     registry: NamespaceRegistry = namespace,
 ): EvaluationResult<T> = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.EXPLAIN)
+
+/**
+ * Operator overload for concise feature evaluation.
+ *
+ * Allows calling a feature directly as a function: `feature(context)` instead of `feature.evaluate(context)`.
+ *
+ * Example:
+ * ```kotlin
+ * val enabled = AppFlags.darkMode(context)  // Instead of AppFlags.darkMode.evaluate(context)
+ * ```
+ *
+ * @param context The evaluation contextFn
+ * @param registry The registry to use (defaults to the feature's namespace)
+ * @return The evaluated value
+ * @throws IllegalStateException if the feature is not registered in the registry
+ */
+operator fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.invoke(
+    context: C,
+    registry: NamespaceRegistry = namespace,
+): T = evaluate(context, registry)
+
+@Deprecated(
+    message = "Use explain() instead for clearer intent",
+    replaceWith = ReplaceWith("explain(context, registry)"),
+    level = DeprecationLevel.WARNING
+)
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithReason(
+    context: C,
+    registry: NamespaceRegistry = namespace,
+): EvaluationResult<T> = explain(context, registry)
 
 @PublishedApi
 internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInternal(
@@ -172,11 +225,11 @@ private fun <T : Any, C : Context> ConditionalValue<T, C>.toRuleMatch(
 }
 
 private fun <C : Context> Rule<C>.toExplanation(): EvaluationResult.RuleExplanation {
-    val base = baseEvaluable
+    val base = targeting
     val extensionClassName =
-        when (extension) {
+        when (predicate) {
             io.amichne.konditional.rules.evaluable.Placeholder -> null
-            else -> extension::class.qualifiedName
+            else -> predicate::class.qualifiedName
         }
 
     val baseSpecificity =
@@ -185,7 +238,7 @@ private fun <C : Context> Rule<C>.toExplanation(): EvaluationResult.RuleExplanat
             (if (base.versionRange.hasBounds()) 1 else 0) +
             base.axisConstraints.size
 
-    val extensionSpecificity = extension.specificity()
+    val extensionSpecificity = predicate.specificity()
 
     return EvaluationResult.RuleExplanation(
         note = note,

@@ -97,7 +97,7 @@ io/amichne/konditional/
 │   └── serialization/     # Moshi adapters and models
 ├── openapi/                # OpenAPI schema generation
 ├── rules/                  # Rule evaluation and targeting
-│   ├── evaluable/         # Evaluable abstractions
+│   ├── evaluable/         # Predicate abstractions
 │   └── versions/          # Version range types
 ├── serialization/          # JSON serialization (SnapshotSerializer)
 └── values/                 # Value types (FeatureId, etc.)
@@ -576,7 +576,7 @@ when (val result = SnapshotSerializer.fromJson(json)) {
 
 ### Composition Over Inheritance
 
-Rules compose `BaseEvaluable` + extension `Evaluable` rather than deep hierarchies.
+Rules compose `BasePredicate` (targeting) + custom `Predicate` logic rather than deep hierarchies.
 
 ### Type State Pattern
 
@@ -668,7 +668,7 @@ Exhaustive type checking for feature variants, contexts, results—compiler enfo
 **Rules:**
 - `core/src/main/kotlin/.../rules/Rule.kt` - Rule evaluation
 - `core/src/main/kotlin/.../rules/ConditionalValue.kt` - Criteria-to-value mappings
-- `core/src/main/kotlin/.../rules/evaluable/` - Evaluable abstractions
+- `core/src/main/kotlin/.../rules/evaluable/` - Predicate abstractions
 
 **Serialization:**
 - `core/src/main/kotlin/.../serialization/SnapshotSerializer.kt` - Main serialization API

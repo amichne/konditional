@@ -39,7 +39,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
     /**
      * Sets a rule's [isActive] to the passed boolean
      *
-     * @param block Evaluable boolean
+     * @param block Predicate boolean
      * @see FlagScope.active
      */
     override fun active(block: () -> Boolean) {

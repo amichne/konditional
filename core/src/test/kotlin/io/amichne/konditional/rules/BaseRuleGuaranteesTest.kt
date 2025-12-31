@@ -9,8 +9,8 @@ import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.fixtures.utilities.localeIds
 import io.amichne.konditional.fixtures.utilities.platformIds
-import io.amichne.konditional.rules.evaluable.Evaluable
-import io.amichne.konditional.rules.evaluable.Evaluable.Companion.factory
+import io.amichne.konditional.rules.evaluable.Predicate
+import io.amichne.konditional.rules.evaluable.Predicate.Companion.factory
 import io.amichne.konditional.rules.versions.LeftBound
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -82,7 +82,7 @@ class RuleGuaranteesTest {
      */
     data class SubscriptionRule<C : CustomContext>(
         val requiredTier: String? = null,
-    ) : Evaluable<C> by factory({ context -> requiredTier == null || context.subscriptionTier == requiredTier })
+    ) : Predicate<C> by factory({ context -> requiredTier == null || context.subscriptionTier == requiredTier })
 
     @Test
     fun `base rule with no restrictions matches any context`() {
@@ -133,7 +133,7 @@ class RuleGuaranteesTest {
         val rule = Rule(
             rampUp = RampUp.of(100.0),
             locales = localeIds(AppLocale.MEXICO),
-            extension = SubscriptionRule(
+            predicate = SubscriptionRule(
                 requiredTier = "premium"
             )
         )
@@ -146,7 +146,7 @@ class RuleGuaranteesTest {
     fun `custom rule cannot bypass base platform restriction`() {
         val rule = Rule(
             platforms = platformIds(Platform.IOS),
-            extension = SubscriptionRule(
+            predicate = SubscriptionRule(
                 requiredTier = "premium"
             )
         )
@@ -181,7 +181,7 @@ class RuleGuaranteesTest {
     @Test
     fun `custom rule specificity includes both base and additional specificity`() {
         val ruleWithLocaleAndTier = Rule(
-            locales = localeIds(AppLocale.UNITED_STATES), extension = SubscriptionRule(
+            locales = localeIds(AppLocale.UNITED_STATES), predicate = SubscriptionRule(
                 requiredTier = "premium"
             )
         )
@@ -192,7 +192,7 @@ class RuleGuaranteesTest {
         assertEquals(2, ruleWithLocaleAndTier.specificity())
 
         val ruleWithAllAttributes = ruleWithLocaleAndTier.copy(
-            baseEvaluable = ruleWithLocaleAndTier.baseEvaluable.copy(
+            targeting = ruleWithLocaleAndTier.targeting.copy(
                 locales = localeIds(AppLocale.UNITED_STATES),
                 platforms = platformIds(Platform.ANDROID),
             )

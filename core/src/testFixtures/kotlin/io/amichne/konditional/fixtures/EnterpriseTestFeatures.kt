@@ -6,7 +6,7 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.rules.evaluable.Evaluable
+import io.amichne.konditional.rules.evaluable.Predicate
 
 /**
  * TestNamespace features for validating contextFn polymorphism.
@@ -94,7 +94,7 @@ object ExperimentFeatures : Namespace.TestNamespaceFacade("experiment-features")
 data class EnterpriseRule(
     val requiredTier: SubscriptionTier? = null,
     val requiredRole: UserRole? = null,
-) : Evaluable<EnterpriseContext> {
+) : Predicate<EnterpriseContext> {
     override fun matches(context: EnterpriseContext): Boolean =
         (requiredTier == null || context.subscriptionTier >= requiredTier) &&
             (requiredRole == null || context.userRole >= requiredRole)

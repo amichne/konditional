@@ -111,7 +111,7 @@ interface RuleScope<C : Context> {
     ) where T : AxisValue<T>, T : Enum<T>
 
     /**
-     * Adds a custom targeting extension using an Evaluable.
+     * Adds a custom targeting extension using an Predicate.
      *
      * Extensions allow for domain-specific targeting beyond the standard
      * platform, locale, and version criteria.

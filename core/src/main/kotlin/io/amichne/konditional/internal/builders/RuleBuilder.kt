@@ -15,9 +15,9 @@ import io.amichne.konditional.core.registry.AxisRegistry
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.evaluable.AxisConstraint
-import io.amichne.konditional.rules.evaluable.Evaluable
-import io.amichne.konditional.rules.evaluable.Evaluable.Companion.factory
 import io.amichne.konditional.rules.evaluable.Placeholder
+import io.amichne.konditional.rules.evaluable.Predicate
+import io.amichne.konditional.rules.evaluable.Predicate.Companion.factory
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
@@ -34,7 +34,7 @@ import io.amichne.konditional.rules.versions.VersionRange
 @KonditionalDsl
 @PublishedApi
 internal data class RuleBuilder<C : Context>(
-    private var extension: Evaluable<C> = Placeholder,
+    private var predicate: Predicate<C> = Placeholder,
     private var note: String? = null,
     private var range: VersionRange = Unbounded(),
     private val platforms: LinkedHashSet<String> = linkedSetOf(),
@@ -74,7 +74,7 @@ internal data class RuleBuilder<C : Context>(
      * Implementation of [RuleScope.extension].
      */
     override fun extension(block: C.() -> Boolean) {
-        extension = factory { block(it) }
+        predicate = factory { block(it) }
     }
 
     /**
@@ -135,6 +135,6 @@ internal data class RuleBuilder<C : Context>(
             versionRange = range,
             axisConstraints = axisConstraints.toList(),
             note = note,
-            extension = extension,
+            predicate = predicate,
         )
 }

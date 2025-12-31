@@ -2,6 +2,7 @@ package io.amichne.konditional.configstate
 
 import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.api.evaluate
+import io.amichne.konditional.api.invoke
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.RampUp
@@ -181,8 +182,8 @@ class ConfigurationStateFactoryRoundTripTest {
         val devNeitherAllowlisted =
             ctx(env = TestEnvironment.DEV, tenant = TestTenant.CONSUMER, stableId = stableIdNeither)
 
-        assertTrue(TestFeatures.boolFlag.evaluate(prodAllowlistedByFlag))
-        assertFalse(TestFeatures.boolFlag.evaluate(devNeitherAllowlisted))
+        assertTrue(TestFeatures.boolFlag(prodAllowlistedByFlag))
+        assertFalse(TestFeatures.boolFlag(devNeitherAllowlisted))
 
         val response = ConfigurationStateFactory.from(TestFeatures.configuration)
         val updatedSnapshot =

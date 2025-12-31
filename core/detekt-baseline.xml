@@ -20,7 +20,7 @@
     <ID>MaxLineLength:AxisRegistry.kt$AxisRegistry$else -&gt; error("Multiple axes registered for type ${type.simpleName}: ${matches.joinToString { it.id }}")</ID>
     <ID>MaxLineLength:ConditionEvaluationTest.kt$ConditionEvaluationTest$fun</ID>
     <ID>MaxLineLength:ConfigValue.kt$ConfigValue.Companion$require(primitive is Map&lt;*, *&gt;) { "KotlinEncodeable must encode to an object, got ${primitive?.let { it::class.simpleName }}" }</ID>
-    <ID>MaxLineLength:Evaluable.kt$Evaluable$*</ID>
+    <ID>MaxLineLength:Predicate.kt$Evaluable$*</ID>
     <ID>MaxLineLength:EvaluationResult.kt$EvaluationResult.Decision.Default$*</ID>
     <ID>MaxLineLength:Feature.kt$Feature$*</ID>
     <ID>MaxLineLength:FeatureRegistry.kt$FeatureRegistry$"Feature already registered for id='${feature.id}' (key='${feature.key}'): existing=$existing, attempted=$feature"</ID>
