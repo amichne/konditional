@@ -13,7 +13,7 @@ This directory contains extracted context for LLM prompts.
 Run the extraction script after significant API changes:
 
 ```bash
-.llm-docs/scripts/extract-llm-context.sh
+llm-docs/scripts/extract-llm-context.sh
 ```
 
 ## Usage
