@@ -106,7 +106,7 @@ when (val decision = result.decision) {
 
 Verbose evaluation API.
 
-This function is annotated with `@VerboseApi` (a Kotlin `@RequiresOptIn(level = WARNING)` marker) to discourage usage in
+This function is annotated with `@VerboseApi` (a Kotlin `@RequiresOptIn(level = ERROR)` marker) to discourage usage in
 client code. Prefer the operator overload: `feature(context)`.
 
 ```kotlin

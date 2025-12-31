@@ -139,7 +139,9 @@ tasks.withType<JavaCompile> {
 
 tasks.withType<KotlinCompile> {
     compilerOptions {
-        // Additional compiler options if needed
+        if (name.startsWith("compileTest")) {
+            freeCompilerArgs.add("-opt-in=io.amichne.konditional.api.VerboseApi")
+        }
     }
 }
 

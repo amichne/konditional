@@ -200,7 +200,7 @@ If you introduce a new public API or change semantics, add an entry here and upd
 ## D-017 — Prefer `Feature(context)` / `explain(...)` over `evaluate(...)`
 
 - **Docs previously used:** `feature.evaluate(context)` as the primary evaluation API at call sites.
-- **Code reality:** `Feature.evaluate(...)` is now annotated with `@VerboseApi` (a Kotlin `@RequiresOptIn(level = WARNING)` marker).
+- **Code reality:** `Feature.evaluate(...)` is now annotated with `@VerboseApi` (a Kotlin `@RequiresOptIn(level = ERROR)` marker).
   The preferred call-site API is the operator overload `Feature(context)`, and the preferred debugging API is `feature.explain(context)`.
 - **Code references:** `core/src/main/kotlin/io/amichne/konditional/api/FeatureEvaluation.kt`
 - **Docs updated:** `/api-reference/feature-operations` (`docusaurus/docs/api-reference/feature-operations.md`),

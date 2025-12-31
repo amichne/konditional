@@ -13,7 +13,7 @@ import kotlin.system.measureNanoTime
 
 @RequiresOptIn(
     message = "Prefer using the operator overload invoke() for concise feature evaluation",
-    level = RequiresOptIn.Level.WARNING
+    level = RequiresOptIn.Level.ERROR
 )
 annotation class VerboseApi
 
