@@ -381,6 +381,40 @@ sealed interface Feature<T : Any, C : Context, out M : Namespace>
 - **Private:** Internal class details
 - **Sealed:** Exhaustive type hierarchies
 
+### Nested Type Conventions
+
+When an enum or sealed class is closely coupled to a single interface or class, nest it inside that type rather than defining it at the package level:
+
+```kotlin
+// ✅ Preferred: Nested enum inside its parent interface
+interface OpenApi<out T : Any> {
+    val type: Type
+
+    enum class Type(val serialized: String) {
+        STRING("string"),
+        INTEGER("integer"),
+        // ...
+    }
+}
+
+// Usage: OpenApi.Type.STRING
+
+// ❌ Avoid: Separate top-level enum
+enum class SchemaType(val jsonValue: String) { ... }
+interface OpenApi<out T : Any> {
+    val type: SchemaType
+}
+```
+
+**When to nest:**
+- The type is only meaningful in the context of its parent
+- The type is referenced via the parent interface (e.g., `OpenApi.Type`)
+- There's a clear ownership relationship
+
+**When NOT to nest:**
+- The type is used independently across multiple unrelated contexts
+- The nesting would create awkward or overly long qualified names
+
 ### Documentation Requirements
 
 - **KDoc:** Required for all public APIs

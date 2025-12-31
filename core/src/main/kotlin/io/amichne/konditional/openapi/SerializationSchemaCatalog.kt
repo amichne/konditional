@@ -6,6 +6,8 @@ import io.amichne.konditional.rules.versions.VersionRange
 import io.amichne.kontracts.dsl.schemaRoot
 import io.amichne.kontracts.schema.JsonSchema
 import io.amichne.kontracts.schema.ObjectSchema
+import io.amichne.kontracts.schema.OneOfSchema
+import io.amichne.kontracts.schema.OpenApi
 
 internal object SerializationSchemaCatalog {
     private val stringSchema = JsonSchema.string()
@@ -22,25 +24,46 @@ internal object SerializationSchemaCatalog {
             required("patch", JsonSchema.int(minimum = 0))
         }.copy(description = "Semantic version representation.")
 
+    private val versionRangeUnboundedSchema =
+        schemaRoot {
+            required("type", enumString(VersionRange.Type.UNBOUNDED.name))
+        }
+
+    private val versionRangeMinBoundSchema =
+        schemaRoot {
+            required("type", enumString(VersionRange.Type.MIN_BOUND.name))
+            required("min", versionSchema)
+        }
+
+    private val versionRangeMaxBoundSchema =
+        schemaRoot {
+            required("type", enumString(VersionRange.Type.MAX_BOUND.name))
+            required("max", versionSchema)
+        }
+
+    private val versionRangeMinAndMaxBoundSchema =
+        schemaRoot {
+            required("type", enumString(VersionRange.Type.MIN_AND_MAX_BOUND.name))
+            required("min", versionSchema)
+            required("max", versionSchema)
+        }
+
     private val versionRangeSchema =
         JsonSchema.oneOf(
-            listOf(
-                schemaRoot {
-                    required("type", enumString(VersionRange.Type.UNBOUNDED.name))
-                },
-                schemaRoot {
-                    required("type", enumString(VersionRange.Type.MIN_BOUND.name))
-                    required("min", versionSchema)
-                },
-                schemaRoot {
-                    required("type", enumString(VersionRange.Type.MAX_BOUND.name))
-                    required("max", versionSchema)
-                },
-                schemaRoot {
-                    required("type", enumString(VersionRange.Type.MIN_AND_MAX_BOUND.name))
-                    required("min", versionSchema)
-                    required("max", versionSchema)
-                },
+            options = listOf(
+                versionRangeUnboundedSchema,
+                versionRangeMinBoundSchema,
+                versionRangeMaxBoundSchema,
+                versionRangeMinAndMaxBoundSchema,
+            ),
+            discriminator = OneOfSchema.Discriminator(
+                propertyName = "type",
+                mapping = mapOf(
+                    VersionRange.Type.UNBOUNDED.name to "VersionRangeUnbounded",
+                    VersionRange.Type.MIN_BOUND.name to "VersionRangeMinBound",
+                    VersionRange.Type.MAX_BOUND.name to "VersionRangeMaxBound",
+                    VersionRange.Type.MIN_AND_MAX_BOUND.name to "VersionRangeMinAndMaxBound",
+                ),
             ),
         )
 
@@ -84,13 +107,24 @@ internal object SerializationSchemaCatalog {
 
     private val flagValueSchema =
         JsonSchema.oneOf(
-            listOf(
+            options = listOf(
                 booleanFlagValueSchema,
                 stringFlagValueSchema,
                 intFlagValueSchema,
                 doubleFlagValueSchema,
                 enumFlagValueSchema,
                 dataClassFlagValueSchema,
+            ),
+            discriminator = OneOfSchema.Discriminator(
+                propertyName = "type",
+                mapping = mapOf(
+                    "BOOLEAN" to "BooleanFlagValue",
+                    "STRING" to "StringFlagValue",
+                    "INT" to "IntFlagValue",
+                    "DOUBLE" to "DoubleFlagValue",
+                    "ENUM" to "EnumFlagValue",
+                    "DATA_CLASS" to "DataClassFlagValue",
+                ),
             ),
         )
 
@@ -104,7 +138,7 @@ internal object SerializationSchemaCatalog {
             )
             optional("rampUpAllowlist", uniqueStringArraySchema, defaultValue = emptyList<String>())
             optional("note", stringSchema)
-            optional("locales", uniqueStringArraySchema, defaultValue = allLocales)
+            optional("locales", JsonSchema.enum<AppLocale>(AppLocale.entries), defaultValue = AppLocale.UNITED_STATES.id)
             optional("platforms", uniqueStringArraySchema, defaultValue = allPlatforms)
             optional("versionRange", versionRangeSchema, defaultValue = unboundedVersionRangeDefault)
             optional(
@@ -181,6 +215,18 @@ internal object SerializationSchemaCatalog {
                 serializableEnumFlagSchema,
                 serializableDataClassFlagSchema,
             ),
+            discriminator = OneOfSchema.Discriminator(
+                propertyName = "defaultValue.type",
+                mapping = mapOf(
+                    OpenApi.Type.BOOLEAN.name to OpenApi.Type.BOOLEAN.serialized,
+                    // Using OpenApi.Type names for consistency
+                    OpenApi.Type.STRING.name to OpenApi.Type.STRING.serialized,
+                    OpenApi.Type.INTEGER.name to OpenApi.Type.INTEGER.serialized,
+                    OpenApi.Type.NUMBER.name to OpenApi.Type.NUMBER.serialized,
+                    "ENUM" to "EnumFlag",
+                    "DATA_CLASS" to "DataClassFlag",
+                ),
+            ),
         )
 
     private val serializableSnapshotMetadataSchema =
@@ -207,6 +253,10 @@ internal object SerializationSchemaCatalog {
         mapOf(
             "FeatureId" to featureIdSchema,
             "Version" to versionSchema,
+            "VersionRangeUnbounded" to versionRangeUnboundedSchema,
+            "VersionRangeMinBound" to versionRangeMinBoundSchema,
+            "VersionRangeMaxBound" to versionRangeMaxBoundSchema,
+            "VersionRangeMinAndMaxBound" to versionRangeMinAndMaxBoundSchema,
             "VersionRange" to versionRangeSchema,
             "BooleanFlagValue" to booleanFlagValueSchema,
             "StringFlagValue" to stringFlagValueSchema,

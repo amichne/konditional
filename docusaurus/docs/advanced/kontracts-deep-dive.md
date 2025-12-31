@@ -314,6 +314,65 @@ data class DynamicConfig(
 }
 ```
 
+### Discriminated Unions (Sealed Classes)
+
+For polymorphic types like sealed classes, use `oneOf` with a discriminator. The discriminator specifies which property distinguishes between variants and maps values to schema references:
+
+```kotlin
+import io.amichne.kontracts.schema.JsonSchema
+import io.amichne.kontracts.schema.OneOfSchema
+
+// Define individual variant schemas
+val unboundedSchema = schemaRoot {
+    required("type", JsonSchema.string(enum = listOf("UNBOUNDED")))
+}
+
+val minBoundSchema = schemaRoot {
+    required("type", JsonSchema.string(enum = listOf("MIN_BOUND")))
+    required("min", versionSchema)
+}
+
+val maxBoundSchema = schemaRoot {
+    required("type", JsonSchema.string(enum = listOf("MAX_BOUND")))
+    required("max", versionSchema)
+}
+
+// Combine with discriminator
+val versionRangeSchema = JsonSchema.oneOf(
+    options = listOf(unboundedSchema, minBoundSchema, maxBoundSchema),
+    discriminator = OneOfSchema.Discriminator(
+        propertyName = "type",
+        mapping = mapOf(
+            "UNBOUNDED" to "VersionRangeUnbounded",
+            "MIN_BOUND" to "VersionRangeMinBound",
+            "MAX_BOUND" to "VersionRangeMaxBound",
+        )
+    )
+)
+```
+
+This generates OpenAPI-compliant discriminator metadata:
+
+```json
+{
+  "discriminator": {
+    "propertyName": "type",
+    "mapping": {
+      "UNBOUNDED": "#/components/schemas/VersionRangeUnbounded",
+      "MIN_BOUND": "#/components/schemas/VersionRangeMinBound",
+      "MAX_BOUND": "#/components/schemas/VersionRangeMaxBound"
+    }
+  },
+  "oneOf": [
+    { "$ref": "#/components/schemas/VersionRangeUnbounded" },
+    { "$ref": "#/components/schemas/VersionRangeMinBound" },
+    { "$ref": "#/components/schemas/VersionRangeMaxBound" }
+  ]
+}
+```
+
+**Convention:** Sealed classes with a `type` property should use discriminators. Each variant's `type` field contains a single-value enum that identifies the subtype.
+
 ---
 
 ## Schema Reuse

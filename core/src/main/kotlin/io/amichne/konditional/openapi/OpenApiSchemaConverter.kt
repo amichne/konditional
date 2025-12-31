@@ -13,7 +13,7 @@ import io.amichne.kontracts.schema.NullSchema
 import io.amichne.kontracts.schema.ObjectSchema
 import io.amichne.kontracts.schema.ObjectTraits
 import io.amichne.kontracts.schema.OneOfSchema
-import io.amichne.kontracts.schema.OpenApiProps
+import io.amichne.kontracts.schema.OpenApi
 import io.amichne.kontracts.schema.RootObjectSchema
 import io.amichne.kontracts.schema.StringSchema
 
@@ -62,7 +62,31 @@ internal object OpenApiSchemaConverter {
                 is RootObjectSchema -> addObjectSchema(this, schema)
                 is NullSchema -> put("nullable", true)
                 is MapSchema<*> -> addMapSchema(this, schema)
-                is OneOfSchema -> put("oneOf", schema.options.map { toSchema(it) })
+                is OneOfSchema -> {
+                    val discriminator = schema.discriminator
+                    if (discriminator != null) {
+                        put(
+                            "discriminator",
+                            buildMap {
+                                put("propertyName", discriminator.propertyName)
+                                put(
+                                    "mapping",
+                                    discriminator.mapping.mapValues { (_, schemaName) ->
+                                        "#/components/schemas/$schemaName"
+                                    },
+                                )
+                            },
+                        )
+                        put(
+                            "oneOf",
+                            discriminator.mapping.values.map { schemaName ->
+                                mapOf("\$ref" to "#/components/schemas/$schemaName")
+                            },
+                        )
+                    } else {
+                        put("oneOf", schema.options.map { toSchema(it) })
+                    }
+                }
                 is AnySchema -> Unit
             }
         }
@@ -112,7 +136,7 @@ internal object OpenApiSchemaConverter {
 
     private fun addOpenApiProps(
         target: MutableMap<String, Any?>,
-        props: OpenApiProps<*>,
+        props: OpenApi<*>,
     ) {
         props.title?.let { target["title"] = it }
         props.description?.let { target["description"] = it }

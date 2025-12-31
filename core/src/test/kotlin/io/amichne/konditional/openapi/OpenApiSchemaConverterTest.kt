@@ -107,9 +107,9 @@ class OpenApiSchemaConverterTest {
     }
 
     private fun Map<String, Any?>.ruleValueTypeDiscriminator(): String {
-        val rulesSchema = properties().property("rules") as Map<String, Any?>
+        val rulesSchema = properties().property("rules")
         val itemsSchema = requireNotNull(rulesSchema["items"] as? Map<String, Any?>) { "Expected rules.items schema." }
-        val valueSchema = itemsSchema.properties().property("value") as Map<String, Any?>
+        val valueSchema = itemsSchema.properties().property("value")
         val discriminatorSchema = valueSchema.properties().property("type")
         val values =
             requireNotNull(discriminatorSchema["enum"] as? List<*>) { "Expected enum discriminator in rules.items.value.type." }

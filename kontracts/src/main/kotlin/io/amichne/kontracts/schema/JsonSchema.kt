@@ -3,7 +3,8 @@ package io.amichne.kontracts.schema
 /**
  * Sealed class representing compile-time schema definitions for JSON values, with OpenAPI-esque properties.
  */
-sealed class JsonSchema<out T : Any> : OpenApiProps<T> {
+sealed class JsonSchema<out T : Any> : OpenApi<T> {
+    abstract override val type: OpenApi.Type
     override val title: String? = null
     override val description: String? = null
     override val default: T? = null
@@ -138,13 +139,14 @@ sealed class JsonSchema<out T : Any> : OpenApiProps<T> {
 
         fun oneOf(
             options: List<JsonSchema<*>>,
+            discriminator: OneOfSchema.Discriminator? = null,
             title: String? = null,
             description: String? = null,
             default: Any? = null,
             nullable: Boolean = false,
             example: Any? = null,
             deprecated: Boolean = false
-        ) = OneOfSchema(options, title, description, default, nullable, example, deprecated)
+        ) = OneOfSchema(options, discriminator, title, description, default, nullable, example, deprecated)
 
         fun any(
             title: String? = null,

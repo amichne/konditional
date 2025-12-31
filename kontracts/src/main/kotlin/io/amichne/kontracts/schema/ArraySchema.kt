@@ -16,5 +16,6 @@ data class ArraySchema<E : Any>(
     val maxItems: Int? = null,
     val uniqueItems: Boolean = false
 ) : JsonSchema<List<E>>() {
+    override val type: OpenApi.Type = OpenApi.Type.ARRAY
     override fun toString() = "ArraySchema($elementSchema)"
 }
