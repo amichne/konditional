@@ -111,8 +111,8 @@ object AppFlags : Namespace("app") {
 }
 
 // Usage
-val checkoutVariant: CheckoutVariant = AppFlags.checkoutVariant.evaluate(ctx)  // typed, cannot be wrong
-val retries: Int = AppFlags.maxRetries.evaluate(ctx)                           // typed, cannot be wrong
+val checkoutVariant: CheckoutVariant = AppFlags.checkoutVariant(ctx)  // typed, cannot be wrong
+val retries: Int = AppFlags.maxRetries(ctx)                           // typed, cannot be wrong
 ```
 
 ### What you get
@@ -128,13 +128,13 @@ AppFlags.NEW_ONBOARING_FLOW  // doesn't compile
 
 ```kotlin
 // This will error
-val retries: String = AppFlags.maxRetries.evaluate(ctx)  // doesn't compile
+val retries: String = AppFlags.maxRetries(ctx)  // doesn't compile
 ```
 
 **Variants are values, not boolean matrices:**
 
 ```kotlin
-when (AppFlags.checkoutVariant.evaluate(ctx)) {
+when (AppFlags.checkoutVariant(ctx)) {
     CheckoutVariant.CLASSIC -> classicCheckout()
     CheckoutVariant.OPTIMIZED -> optimizedCheckout()
     CheckoutVariant.EXPERIMENTAL -> experimentalCheckout()
@@ -278,14 +278,14 @@ If you're coming from a boolean capability system:
 1. **Mirror existing flags** as properties on a `Namespace`:
    ```kotlin
    object Features : Namespace("app") {
-       val featureX by boolean(default = false)
+       val featureX by boolean<Context>(default = false)
    }
    ```
 
 2. **Centralize evaluation logic** into rules:
    ```kotlin
    object Features : Namespace("app") {
-       val featureX by boolean(default = false) {
+       val featureX by boolean<Context>(default = false) {
            rule(true) { platforms(Platform.WEB) }
            rule(true) { rampUp { 25.0 } }
        }
@@ -298,7 +298,7 @@ If you're coming from a boolean capability system:
    // After:
    enum class CheckoutVersion { V1, V2, V3 }
    object CheckoutFlags : Namespace("checkout") {
-       val checkoutVersion by enum(default = CheckoutVersion.V1) {
+       val checkoutVersion by enum<CheckoutVersion, Context>(default = CheckoutVersion.V1) {
            rule(CheckoutVersion.V2) { rampUp { 33.0 } }
            rule(CheckoutVersion.V3) { rampUp { 66.0 } }
        }

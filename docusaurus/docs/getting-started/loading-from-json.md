@@ -86,7 +86,7 @@ when (val result = SnapshotSerializer.fromJson(json)) {
 }
 
 // Thread 2: Concurrent evaluation
-val enabled = AppFeatures.darkMode.evaluate(context)  // Sees old OR new, never mixed
+val enabled = AppFeatures.darkMode(context)  // Sees old OR new, never mixed
 ```
 
 **How it works:**

@@ -27,7 +27,7 @@ object AppFeatures : Namespace("app") {
     }
 }
 
-val enabled: Boolean = AppFeatures.darkMode.evaluate(context)
+val enabled: Boolean = AppFeatures.darkMode(context)
 ```
 
 **What the compiler guarantees:**
@@ -114,8 +114,8 @@ object Config : Namespace("config") {
     }
 }
 
-// val timeout: Int = Config.timeout.evaluate(context)  // Compile error: type mismatch
-val timeout: Double = Config.timeout.evaluate(context)  // ✓ Type-safe
+// val timeout: Int = Config.timeout(context)  // Compile error: type mismatch
+val timeout: Double = Config.timeout(context)  // ✓ Type-safe
 ```
 
 ### Runtime (Validated)
@@ -138,11 +138,12 @@ val timeout: Double = Config.timeout.evaluate(context)  // ✓ Type-safe
 ```
 
 ```kotlin
+val _ = AppFeatures // ensure features are registered before parsing
 when (val result = SnapshotSerializer.fromJson(json)) {
     is ParseResult.Success -> /* unreachable */
     is ParseResult.Failure -> {
         // Parse fails: rule value type (STRING) doesn't match feature type (DOUBLE)
-        println(result.error.message)  // "Type mismatch for feature::config::timeout"
+        println(result.error) // ParseError.InvalidSnapshot(...)
     }
 }
 ```

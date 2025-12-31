@@ -30,14 +30,14 @@ object AppFeatures : Namespace("app") {
 
 1. **Property name = feature key**
    ```kotlin
-   AppFeatures.darkMode.evaluate(context)  // ✓ Property exists
-   // AppFeatures.darkMood.evaluate(context)  // ✗ Compile error
+   AppFeatures.darkMode(context)  // ✓ Property exists
+   // AppFeatures.darkMood(context)  // ✗ Compile error
    ```
 
 2. **Type propagation**
    ```kotlin
-   val enabled: Boolean = AppFeatures.darkMode.evaluate(context)  // ✓
-   // val enabled: String = AppFeatures.darkMode.evaluate(context)  // ✗ Type mismatch
+   val enabled: Boolean = AppFeatures.darkMode(context)  // ✓
+   // val enabled: String = AppFeatures.darkMode(context)  // ✗ Type mismatch
    ```
 
 3. **Rule return types match feature type**
@@ -61,10 +61,10 @@ object AppFeatures : Namespace("app") {
    }
 
    val ctx: EnterpriseContext = buildContext()
-   PREMIUM.evaluate(ctx)  // ✓
+   PREMIUM(ctx)  // ✓
 
    val basicCtx: Context = Context(...)
-   // PREMIUM.evaluate(basicCtx)  // ✗ Compile error
+   // PREMIUM(basicCtx)  // ✗ Compile error
    ```
 
 ### Mechanism: Property Delegation + Generics
@@ -89,7 +89,7 @@ fun <C : Context> Namespace.boolean(
 1. `boolean<Context>(default = false)` → `BooleanFeatureDelegate<Context>`
 2. Delegate returns `Feature<Boolean, Context, Namespace>`
 3. Property type is inferred: `Feature<Boolean, Context, Namespace>`
-4. `evaluate(context: Context)` returns `Boolean`
+4. `feature(context: Context)` returns `Boolean`
 
 **Compile-time safety:** The type parameter `T` flows from definition to usage without casts.
 
@@ -123,6 +123,7 @@ When configuration comes from JSON:
 ### Mechanism: Runtime Validation via ParseResult
 
 ```kotlin
+val _ = AppFeatures // ensure features are registered before parsing
 when (val result = SnapshotSerializer.fromJson(json)) {
     is ParseResult.Success -> {
         // JSON is valid, types match, features exist
@@ -134,7 +135,7 @@ when (val result = SnapshotSerializer.fromJson(json)) {
         when (val error = result.error) {
             is ParseError.InvalidJson -> logError("Malformed JSON")
             is ParseError.FeatureNotFound -> logError("Unknown feature: ${error.key}")
-            is ParseError.TypeMismatch -> logError("Type error: ${error.key}")
+            is ParseError.InvalidSnapshot -> logError("Snapshot shape/type mismatch: ${error.reason}")
         }
     }
 }
@@ -142,10 +143,10 @@ when (val result = SnapshotSerializer.fromJson(json)) {
 
 **Runtime checks:**
 
-1. **JSON parsing** — `kotlinx.serialization` validates syntax
-2. **Schema validation** — Kontracts validates structure
-3. **Type checking** — Deserializer verifies value types match declared types
-4. **Feature lookup** — Registry confirms features are registered
+1. **JSON parsing** — Moshi parses JSON into the snapshot model
+2. **Feature lookup** — Each `FeatureId` is resolved to a registered `Feature` (or fails with `ParseError.FeatureNotFound`)
+3. **Type decoding** — Tagged values (`defaultValue` and rule `value`) are decoded into the declared Kotlin types (or fail with `ParseError.InvalidSnapshot`)
+4. **Structured value validation** — For `KotlinEncodeable` values, fields are validated against the provided Kontracts schema at the boundary
 
 ---
 
@@ -220,7 +221,7 @@ val timeout = flagClient.getInt("timeout", 30)  // Type coercion can fail silent
 
 ```kotlin
 // ✓ Compile-time checks
-val enabled = AppFeatures.newOnboardingFlow.evaluate(context)  // Typo is compile error
+val enabled = AppFeatures.newOnboardingFlow(context)  // Typo is compile error
 // AppFeatures.newOnboaringFlow  // ✗ Compile error
 ```
 
@@ -231,7 +232,7 @@ val enabled = AppFeatures.newOnboardingFlow.evaluate(context)  // Typo is compil
 when (val result = SnapshotSerializer.fromJson(json)) {
     is ParseResult.Success -> {
         // Type-safe from here on
-        val enabled = AppFeatures.newOnboardingFlow.evaluate(context)
+        val enabled = AppFeatures.newOnboardingFlow(context)
     }
     is ParseResult.Failure -> {
         // Invalid JSON rejected, last-known-good remains active

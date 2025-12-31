@@ -11,14 +11,14 @@ ship to production, type coercion failures, inconsistent ramp-up logic, and conf
 
 ```kotlin
 object AppFlags : Namespace("app") {
-    val checkoutVersion by string(default = "classic") {
+    val checkoutVersion by string<Context>(default = "classic") {
         rule("optimized") { platforms(Platform.IOS, Platform.ANDROID) }
         rule("experimental") { rampUp { 50.0 } }
     }
 }
 
 // Typos don't compile. Types are guaranteed. Ramp-ups are deterministic.
-val version: String = AppFlags.checkoutVersion.evaluate(ctx)
+val version: String = AppFlags.checkoutVersion(ctx)
 ```
 
 ---
@@ -36,8 +36,8 @@ This compiles. It deploys. Your experiment silently fails. You discover it weeks
 **Konditional makes flags compile-time correct:**
 
 ```kotlin
-val version = AppFlags.checkoutVersion.evaluate(ctx)  // property access is compile-time checked
-// AppFlags.checkotuVersion.evaluate(ctx)              // doesn't compile (typo)
+val version = AppFlags.checkoutVersion(ctx)  // property access is compile-time checked
+// AppFlags.checkotuVersion(ctx)              // doesn't compile (typo)
 ```
 
 Beyond typo safety, Konditional gives you:
@@ -56,7 +56,7 @@ Read the full argument: [Why Konditional Exists](why-konditional)
 
 ```kotlin
 dependencies {
-    implementation("io.github.amichne:konditional:0.0.1")
+    implementation("io.amichne:konditional:0.0.1")
 }
 ```
 
@@ -68,16 +68,16 @@ dependencies {
 
 ```kotlin
 object AppFeatures : Namespace("app") {
-    val darkMode by boolean(default = false) {
+    val darkMode by boolean<Context>(default = false) {
         rule(true) { platforms(Platform.IOS) }
         rule(true) { rampUp { 50.0 } }
     }
 
-    val apiEndpoint by string(default = "https://api.example.com") {
+    val apiEndpoint by string<Context>(default = "https://api.example.com") {
         rule("https://api-web.example.com") { platforms(Platform.WEB) }
     }
 
-    val maxRetries by integer(default = 3) {
+    val maxRetries by integer<Context>(default = 3) {
         rule(5) { versions { min(2, 0, 0) } }
     }
 }
@@ -93,9 +93,9 @@ val ctx = Context(
     stableId = StableId.of("user-123")
 )
 
-val enabled: Boolean = AppFeatures.darkMode.evaluate(ctx)
-val endpoint: String = AppFeatures.apiEndpoint.evaluate(ctx)
-val retries: Int = AppFeatures.maxRetries.evaluate(ctx)
+val enabled: Boolean = AppFeatures.darkMode(ctx)
+val endpoint: String = AppFeatures.apiEndpoint(ctx)
+val retries: Int = AppFeatures.maxRetries(ctx)
 ```
 
 **Evaluation is total:** if no rule matches, the default is returned. No nulls, no exceptions.
@@ -122,13 +122,13 @@ if (isEnabled(CHECKOUT_V1) && !isEnabled(CHECKOUT_V2)) {
 
 ```kotlin
 object CheckoutFlags : Namespace("checkout") {
-    val checkoutVersion by string(default = "v1") {
+    val checkoutVersion by string<Context>(default = "v1") {
         rule("v2") { rampUp { 33.0 } }
         rule("v3") { rampUp { 66.0 } }
     }
 }
 
-when (CheckoutFlags.checkoutVersion.evaluate(ctx)) {
+when (CheckoutFlags.checkoutVersion(ctx)) {
     "v1" -> v1Checkout()
     "v2" -> v2Checkout()
     "v3" -> v3Checkout()
@@ -141,7 +141,7 @@ when (CheckoutFlags.checkoutVersion.evaluate(ctx)) {
 enum class Theme { LIGHT, DARK, AUTO }
 
 object ThemeFlags : Namespace("theme") {
-    val theme by enum(default = Theme.LIGHT) {
+    val theme by enum<Theme, Context>(default = Theme.LIGHT) {
         rule(Theme.DARK) { platforms(Platform.IOS) }
     }
 }
@@ -163,7 +163,7 @@ data class RetryPolicy(
 }
 
 object PolicyFlags : Namespace("policy") {
-    val retryPolicy by custom(default = RetryPolicy()) {
+    val retryPolicy by custom<RetryPolicy, Context>(default = RetryPolicy()) {
         rule(RetryPolicy(maxAttempts = 5, backoffMs = 2000.0)) { platforms(Platform.WEB) }
     }
 }
@@ -181,7 +181,7 @@ Ramp-ups use SHA-256 bucketing for consistent, reproducible results:
 
 ```kotlin
 object RampUpFlags : Namespace("ramp-up") {
-    val newFeature by boolean(default = false) {
+    val newFeature by boolean<Context>(default = false) {
         rule(true) { rampUp { 25.0 } }
     }
 }
@@ -207,7 +207,7 @@ val json = fetchRemoteConfig()
 
 // Important: deserialization requires that your Namespace objects have been initialized
 // (so features are registered) before calling SnapshotSerializer.fromJson(...).
-// See: 06-remote-config.md
+// See: /remote-config
 
 when (val result = SnapshotSerializer.fromJson(json)) {
     is ParseResult.Success -> AppFlags.load(result.value)
@@ -240,7 +240,7 @@ when (val result = SnapshotSerializer.applyPatchJson(currentConfig, patchJson)) 
 }
 ```
 
-See [06-remote-config.md](/remote-config) and [08-persistence-format.md](/persistence-format) for details.
+See [Remote Configuration](/remote-config) and [Persistence Format](/persistence-format) for details.
 
 ---
 
@@ -259,11 +259,11 @@ If you need isolated registries (e.g., per-team, per-domain), define multiple na
 ```kotlin
 sealed class AppDomain(id: String) : Namespace(id) {
     data object Account : AppDomain("account") {
-        val creditCheck by boolean(default = false)
+        val creditCheck by boolean<Context>(default = false)
     }
 
     data object Payments : AppDomain("payments") {
-        val stripeEnabled by boolean(default = true)
+        val stripeEnabled by boolean<Context>(default = true)
     }
 }
 ```
@@ -300,6 +300,10 @@ Each namespace has independent configuration lifecycle, registry, and serializat
 **Why Konditional:**
 
 - [Why Konditional Exists](why-konditional) — The compelling argument
+
+**Maintenance:**
+
+- [Documentation Discrepancy Log](/documentation-discrepancy-log) — Tracked doc↔code deltas (maintainers)
 
 ---
 

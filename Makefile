@@ -75,16 +75,16 @@ docs-install: ## Install Docusaurus dependencies (in ./docusaurus)
 
 docs-build: docs-install ## Build the Docusaurus site
 	@echo "$(BLUE)Building Docusaurus site...$(NC)"
-	@npm run build
+	@cd docusaurus && npm run build
 	@echo "$(GREEN)Docusaurus built successfully$(NC)"
 
 docs-serve: docs-build ## Serve Docusaurus locally (http://localhost:3000/konditional/)
 	@echo "$(BLUE)Starting Docusaurus server...$(NC)"
-	@npm run start
+	@cd docusaurus && npm run start
 
 docs-clean: ## Clean generated documentation
 	@echo "$(BLUE)Cleaning documentation...$(NC)"
-	@rm -rf site/
+	@cd docusaurus && rm -rf site/
 	@echo "$(GREEN)Documentation cleaned$(NC)"
 
 ##@ Combined Tasks

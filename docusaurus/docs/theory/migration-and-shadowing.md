@@ -1,6 +1,6 @@
 # Migration and Shadowing
 
-How `evaluateWithShadow` enables safe A/B testing of configuration changes and migration between flag systems.
+How `evaluateWithShadow` enables safe comparisons between two Konditional configurations.
 
 ---
 
@@ -23,58 +23,57 @@ When updating configuration or migrating between flag systems, you need confiden
 
 ## Shadow Evaluation
 
-**Shadow evaluation** means: evaluate against two configurations (primary + shadow) and compare results without affecting production.
+**Shadow evaluation** means: evaluate against two configurations (baseline + candidate) and compare results without affecting production.
 
 ```kotlin
-val primaryValue = feature.evaluate(context)  // Returned to caller
+val baselineValue = feature(context)  // Returned to caller
 
-val shadowValue = evaluateAgainstShadowConfig(feature, context)  // For comparison only
+val candidateValue = evaluateAgainstCandidateConfig(feature, context)  // For comparison only
 
-if (primaryValue != shadowValue) {
-    logMismatch(feature, context, primaryValue, shadowValue)
+if (baselineValue != candidateValue) {
+    logMismatch(feature, context, baselineValue, candidateValue)
 }
 
-return primaryValue  // Production uses primary
+return baselineValue  // Production uses baseline
 ```
 
-**Key insight:** Production behavior is unchanged (primary value is returned), but mismatches are logged for analysis.
+**Key insight:** Production behavior is unchanged (baseline value is returned), but mismatches are logged for analysis.
 
 ---
 
 ## Konditional's Shadow API
 
-### `evaluateWithShadow(context, shadowOptions): T`
+### `evaluateWithShadow(context, candidateRegistry, ...): T`
 
-Evaluate against primary (returned) and shadow (comparison only):
+Evaluate against baseline (returned) and candidate (comparison only):
 
 ```kotlin
-val shadowConfig = SnapshotSerializer.fromJson(candidateJson).value
+val _ = AppFeatures // ensure features are registered before parsing
+val candidateConfig = SnapshotSerializer.fromJson(candidateJson).getOrThrow()
+val candidateRegistry = NamespaceRegistry(
+    configuration = candidateConfig,
+    namespaceId = AppFeatures.namespaceId,
+)
 
 val value = AppFeatures.darkMode.evaluateWithShadow(
     context = context,
-    shadowOptions = ShadowEvaluationOptions(
-        shadowRegistry = shadowRegistry,
-        onMismatch = { mismatch ->
-            logger.warn("""
-                Shadow mismatch:
-                Feature: ${mismatch.featureKey}
-                Primary: ${mismatch.primary}
-                Shadow: ${mismatch.shadow}
-                User: ${mismatch.context.stableId}
-            """.trimIndent())
-        }
-    )
+    candidateRegistry = candidateRegistry,
+    onMismatch = { mismatch ->
+        logger.warn(
+            "shadowMismatch key=${mismatch.featureKey} kinds=${mismatch.kinds} baseline=${mismatch.baseline.value} candidate=${mismatch.candidate.value} stableId=${context.stableId.id}",
+        )
+    },
 )
 
-// value is from primary registry (production unchanged)
+// value is from the baseline registry (production unchanged)
 applyDarkMode(value)
 ```
 
 **Behavior:**
-1. Evaluate against primary registry → `primaryValue`
-2. Evaluate against shadow registry → `shadowValue`
-3. If `primaryValue ≠ shadowValue`, invoke `onMismatch` callback
-4. Return `primaryValue` (production unaffected)
+1. Evaluate against baseline registry → `baselineValue` (returned)
+2. Evaluate against candidate registry → `candidateValue` (comparison only)
+3. If they differ, invoke the `onMismatch` callback
+4. Return `baselineValue` (production unaffected)
 
 ---
 
@@ -97,6 +96,7 @@ val newFeature by boolean<Context>(default = false) {
   "flags": [
     {
       "key": "feature::app::newFeature",
+      "defaultValue": { "type": "BOOLEAN", "value": false },
       "rules": [
         { "value": { "type": "BOOLEAN", "value": true }, "rampUp": 25.0 }
       ]
@@ -107,26 +107,28 @@ val newFeature by boolean<Context>(default = false) {
 
 **Shadow evaluation:**
 ```kotlin
-val candidateConfig = SnapshotSerializer.fromJson(candidateJson).value
-val candidateRegistry = NamespaceRegistry.from(candidateConfig)
+val _ = AppFeatures // ensure features are registered before parsing
+val candidateConfig = SnapshotSerializer.fromJson(candidateJson).getOrThrow()
+val candidateRegistry = NamespaceRegistry(configuration = candidateConfig, namespaceId = AppFeatures.namespaceId)
 
 // Evaluate sample of users
 users.forEach { user ->
     val ctx = buildContext(user)
 
-    val mismatch = AppFeatures.newFeature.evaluateShadow(
+    AppFeatures.newFeature.evaluateShadow(
         context = ctx,
-        shadowOptions = ShadowEvaluationOptions(shadowRegistry = candidateRegistry)
+        candidateRegistry = candidateRegistry,
+        onMismatch = { mismatch ->
+            logger.info(
+                "User ${user.id}: baseline=${mismatch.baseline.value} candidate=${mismatch.candidate.value} kinds=${mismatch.kinds}",
+            )
+        },
     )
-
-    mismatch?.let {
-        logger.info("User ${user.id}: primary=${it.primary}, shadow=${it.shadow}")
-    }
 }
 ```
 
 **Analysis:**
-- Users with `primary=false, shadow=true` → will be newly enabled by the candidate config
+- Users with `baseline=false, candidate=true` → will be newly enabled by the candidate config
 - Verify this matches the expected 15% increase (10% → 25%)
 
 ---
@@ -138,37 +140,40 @@ You're migrating from another flag system to Konditional. You want to verify tha
 ### Migration Flow
 
 1. **Define flags in Konditional** (statically)
-2. **Load baseline config from old system** (via JSON)
-3. **Run shadow evaluation** (old system = primary, Konditional = shadow)
+2. **Translate “old system” state into a baseline snapshot** (via JSON)
+3. **Build a candidate snapshot** (the new desired behavior)
 4. **Log mismatches**, investigate differences
-5. **Once confident**, flip: Konditional = primary, old system = shadow
+5. **Once confident**, promote the candidate snapshot
 6. **Monitor for regressions**
 7. **Decommission old system**
 
 ### Example
 
 ```kotlin
-// Old system (primary)
-val oldSystemValue = oldFlagClient.getBool("dark_mode", false)
+// If you can translate the "old system" state into a Konditional snapshot, you can compare
+// two registries side-by-side without changing production behavior:
+val _ = AppFeatures // ensure features are registered before parsing
+val baselineConfig = SnapshotSerializer.fromJson(baselineJson).getOrThrow()
+val candidateConfig = SnapshotSerializer.fromJson(candidateJson).getOrThrow()
 
-// Konditional (shadow)
-val mismatch = AppFeatures.darkMode.evaluateShadow(
+val baselineRegistry = NamespaceRegistry(configuration = baselineConfig, namespaceId = AppFeatures.namespaceId)
+val candidateRegistry = NamespaceRegistry(configuration = candidateConfig, namespaceId = AppFeatures.namespaceId)
+
+val value = AppFeatures.darkMode.evaluateWithShadow(
     context = context,
-    shadowOptions = ShadowEvaluationOptions(
-        shadowRegistry = konditionalRegistry,
-        onMismatch = { m ->
-            logger.error("Migration mismatch: old=${oldSystemValue}, konditional=${m.shadow}")
-        }
-    )
+    candidateRegistry = candidateRegistry,
+    baselineRegistry = baselineRegistry,
+    onMismatch = { m ->
+        logger.error("Migration mismatch baseline=${m.baseline.value} candidate=${m.candidate.value} kinds=${m.kinds}")
+    },
 )
 
-// Use old system value for now (primary)
-applyDarkMode(oldSystemValue)
+applyDarkMode(value)
 ```
 
 **Progression:**
-- **Phase 1:** Old system = primary, Konditional = shadow (log mismatches)
-- **Phase 2:** Konditional = primary, old system = shadow (verify no regressions)
+- **Phase 1:** Baseline vs candidate comparison (log mismatches)
+- **Phase 2:** Candidate becomes baseline (optional continued shadowing)
 - **Phase 3:** Decommission old system
 
 ---
@@ -178,33 +183,39 @@ applyDarkMode(oldSystemValue)
 ### Implementation (Simplified)
 
 ```kotlin
-fun <T : Any> Feature<T>.evaluateWithShadow(
-    context: Context,
-    shadowOptions: ShadowEvaluationOptions
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithShadow(
+    context: C,
+    candidateRegistry: NamespaceRegistry,
+    baselineRegistry: NamespaceRegistry = namespace,
+    options: ShadowOptions = ShadowOptions.defaults(),
+    onMismatch: (ShadowMismatch<T>) -> Unit,
 ): T {
-    val primaryValue = this.evaluate(context)  // Primary registry
+    val baseline = explain(context, baselineRegistry) // EvaluationResult<T>
 
-    val shadowValue = shadowOptions.shadowRegistry
-        .getFlag(this.key)
-        ?.evaluate(context)
-
-    if (shadowValue != null && primaryValue != shadowValue) {
-        shadowOptions.onMismatch(ShadowMismatch(
-            featureKey = this.key,
-            primary = primaryValue,
-            shadow = shadowValue,
-            context = context
-        ))
+    if (baselineRegistry.isAllDisabled && !options.evaluateCandidateWhenBaselineDisabled) {
+        return baseline.value
     }
 
-    return primaryValue  // Always return primary (production unchanged)
+    val candidate = explain(context, candidateRegistry) // EvaluationResult<T>
+    if (baseline.value != candidate.value) {
+        onMismatch(
+            ShadowMismatch(
+                featureKey = key,
+                baseline = baseline,
+                candidate = candidate,
+                kinds = setOf(ShadowMismatch.Kind.VALUE),
+            ),
+        )
+    }
+
+    return baseline.value
 }
 ```
 
 **Guarantees:**
-1. Primary value is returned (production behavior unchanged)
-2. Shadow evaluation happens **after** primary (if shadow throws, primary is unaffected)
-3. Mismatch callback is invoked **after** both evaluations (no impact on latency if callback is async)
+1. Baseline value is returned (production behavior unchanged)
+2. Candidate evaluation does not affect the returned result
+3. Mismatch callback runs inline; keep it lightweight
 
 ---
 
@@ -213,8 +224,8 @@ fun <T : Any> Feature<T>.evaluateWithShadow(
 ### Overhead
 
 Shadow evaluation doubles the evaluation work:
-- Primary evaluation: ~O(n) where n = rules per flag
-- Shadow evaluation: ~O(n) where n = rules per flag
+- Baseline evaluation: ~O(n) where n = rules per flag
+- Candidate evaluation: ~O(n) where n = rules per flag
 - Total: ~O(2n)
 
 **Mitigations:**
@@ -228,9 +239,17 @@ Shadow evaluation doubles the evaluation work:
 val shouldShadow = Random.nextDouble() < 0.10  // 10% sampling
 
 val value = if (shouldShadow) {
-    AppFeatures.darkMode.evaluateWithShadow(context, shadowOptions)
+    AppFeatures.darkMode.evaluateWithShadow(
+        context = context,
+        candidateRegistry = candidateRegistry,
+        onMismatch = { mismatch ->
+            logger.warn(
+                "shadowMismatch key=${mismatch.featureKey} kinds=${mismatch.kinds} baseline=${mismatch.baseline.value} candidate=${mismatch.candidate.value}",
+            )
+        },
+    )
 } else {
-    AppFeatures.darkMode.evaluate(context)
+    AppFeatures.darkMode(context)
 }
 ```
 
@@ -244,29 +263,19 @@ val value = if (shouldShadow) {
 2. **Targeting criteria changed** — Rules match different users
 3. **Rule ordering changed** — Different rule wins due to specificity
 4. **Salt changed** — Bucket assignment redistributed
-5. **Configuration drift** — Shadow config is stale
+5. **Configuration drift** — Candidate config is stale
 
 ### Debugging Mismatches
 
 ```kotlin
-val mismatch = AppFeatures.darkMode.evaluateWithShadow(
+AppFeatures.darkMode.evaluateWithShadow(
     context = context,
-    shadowOptions = ShadowEvaluationOptions(
-        shadowRegistry = candidateRegistry,
-        onMismatch = { m ->
-            val primaryReason = AppFeatures.darkMode.explain(context)
-            val shadowReason = candidateRegistry
-                .getFlag(AppFeatures.darkMode.key)
-                ?.explain(context)
-
-            logger.error("""
-                Mismatch detected:
-                Primary: ${m.primary} (decision: ${primaryReason.decision})
-                Shadow: ${m.shadow} (decision: ${shadowReason?.decision})
-                User: ${m.context.stableId}
-            """.trimIndent())
-        }
-    )
+    candidateRegistry = candidateRegistry,
+    onMismatch = { m ->
+        logger.error(
+            "Mismatch detected baseline=${m.baseline.value} candidate=${m.candidate.value} baselineDecision=${m.baseline.decision::class.simpleName} candidateDecision=${m.candidate.decision::class.simpleName} stableId=${context.stableId.id}",
+        )
+    },
 )
 ```
 

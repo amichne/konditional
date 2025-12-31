@@ -27,19 +27,17 @@ object GlobalFlags {
 
 ## Konditional's Solution: Namespace Isolation
 
-Each namespace has its own registry, configuration lifecycle, and independence guarantees:
+Each namespace is a first-class isolation boundary: it owns its own registry, configuration lifecycle, and kill-switch.
 
 ```kotlin
-sealed class AppDomain(id: String) : Namespace(id) {
-    data object Auth : AppDomain("auth") {
-        val socialLogin by boolean<Context>(default = false)
-        val twoFactorAuth by boolean<Context>(default = true)
-    }
+object Auth : Namespace("auth") {
+    val socialLogin by boolean<Context>(default = false)
+    val twoFactorAuth by boolean<Context>(default = true)
+}
 
-    data object Payments : AppDomain("payments") {
-        val applePay by boolean<Context>(default = false)
-        val stripeIntegration by boolean<Context>(default = true)
-    }
+object Payments : Namespace("payments") {
+    val applePay by boolean<Context>(default = false)
+    val stripeIntegration by boolean<Context>(default = true)
 }
 ```
 
@@ -51,79 +49,61 @@ sealed class AppDomain(id: String) : Namespace(id) {
 
 ---
 
-## Mechanism 1: Separate NamespaceRegistry Instances
+## Mechanism 1: Per-Namespace Registry (No Global Singleton)
 
-### Registry Storage
+Each `Namespace` instance owns an internal registry and delegates the `NamespaceRegistry` API surface:
 
-```kotlin
-object NamespaceRegistryFactory {
-    private val registries: MutableMap<String, NamespaceRegistry> = mutableMapOf()
+- `Auth.load(configuration)` only updates `Auth`
+- `Payments.rollback(steps = 1)` only updates `Payments`
+- `Auth.disableAll()` only affects `Auth` evaluations
 
-    fun getOrCreate(namespaceId: String): NamespaceRegistry {
-        return registries.getOrPut(namespaceId) {
-            InMemoryNamespaceRegistry(namespaceId)
-        }
-    }
-}
-```
-
-**Key insight:** Each namespace ID maps to a unique `NamespaceRegistry` instance.
-
-### Namespace Construction
-
-```kotlin
-abstract class Namespace(val id: String) {
-    val registry: NamespaceRegistry = NamespaceRegistryFactory.getOrCreate(id)
-}
-```
-
-**Guarantee:** Two namespaces with different IDs have different registries (no shared state).
+This is why namespaces are operationally safe: isolation is enforced by construction, not convention.
 
 ---
 
-## Mechanism 2: Feature Key Scoping
+## Mechanism 2: Stable, Namespaced FeatureId
 
-Features are keyed by `(namespaceId, featureKey)`:
+Each feature has:
+
+- `Feature.key: String` — the logical key (typically the Kotlin property name)
+- `Feature.id: FeatureId` — the stable, serialized identifier used at the JSON boundary
+
+`FeatureId` is encoded as:
 
 ```kotlin
-data class FeatureKey(val value: String) {
-    companion object {
-        fun from(namespaceId: String, propertyName: String): FeatureKey {
-            return FeatureKey("feature::$namespaceId::$propertyName")
-        }
-    }
-}
+feature::${namespaceIdentifierSeed}::${featureKey}
 ```
 
 **Example:**
-- `Auth.socialLogin` → `"feature::auth::socialLogin"`
-- `Payments.socialLogin` → `"feature::payments::socialLogin"`
+- `Auth.socialLogin.id` → `"feature::auth::socialLogin"`
+- `Payments.socialLogin.id` → `"feature::payments::socialLogin"`
 
-**Guarantee:** Features with the same property name but different namespaces have different keys (no collisions).
+**Guarantee:** Features with the same `key` but different namespaces have different `id`s (no collisions).
 
 ---
 
-## Mechanism 3: Type-Bound Containers
+## Mechanism 3: Type-Bound Features
 
-Features are parameterized by their namespace type:
+The namespace type participates in the feature type:
 
 ```kotlin
-interface Feature<out T : Any, in C : Context, M : Namespace>
+sealed interface Feature<T : Any, C : Context, out M : Namespace>
 ```
 
 **Example:**
 
 ```kotlin
 object Auth : Namespace("auth") {
-    val socialLogin: Feature<Boolean, Context, Auth> by boolean(default = false)
+    val socialLogin: Feature<Boolean, Context, Auth> by boolean<Context>(default = false)
 }
 
 object Payments : Namespace("payments") {
-    val socialLogin: Feature<Boolean, Context, Payments> by boolean(default = false)
+    val socialLogin: Feature<Boolean, Context, Payments> by boolean<Context>(default = false)
 }
 ```
 
-**Type safety:** `Auth.socialLogin` and `Payments.socialLogin` are different types (compiler prevents mixing them).
+**Type safety:** `Auth.socialLogin` and `Payments.socialLogin` are different types, which lets you build strongly typed
+APIs that accept features from a specific namespace.
 
 ---
 
@@ -132,8 +112,10 @@ object Payments : Namespace("payments") {
 ### Load
 
 ```kotlin
-val authConfig = SnapshotSerializer.fromJson(authJson).value
-val paymentConfig = SnapshotSerializer.fromJson(paymentJson).value
+val _ = Auth
+val _ = Payments
+val authConfig = SnapshotSerializer.fromJson(authJson).getOrThrow()
+val paymentConfig = SnapshotSerializer.fromJson(paymentJson).getOrThrow()
 
 Auth.load(authConfig)      // Only affects Auth registry
 Payments.load(paymentConfig)  // Only affects Payments registry
@@ -300,11 +282,11 @@ com.example.teams.analytics.AnalyticsFeatures : Namespace("analytics")
 
 | Property | Mechanism | Guarantee |
 |----------|-----------|-----------|
-| **No name collisions** | Feature keys scoped by namespace ID | `Auth.socialLogin` ≠ `Payments.socialLogin` |
+| **No identifier collisions** | `FeatureId` includes namespace seed | `Auth.socialLogin.id` ≠ `Payments.socialLogin.id` |
 | **Separate state** | Different `NamespaceRegistry` instances | Updating Auth doesn't affect Payments |
 | **Independent lifecycle** | Operations scoped to namespace | `Auth.load(...)` only affects Auth |
 | **Failure isolation** | Parse errors scoped to namespace | Auth parse failure doesn't break Payments |
-| **Type safety** | Feature parameterized by namespace type | Compiler prevents mixing namespaces |
+| **Type binding** | `Feature<*, *, M>` is namespace-bound | Lets you build APIs constrained to `M` |
 
 ---
 

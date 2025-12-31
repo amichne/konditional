@@ -18,7 +18,7 @@ fun `iOS users get dark mode enabled`() {
         stableId = StableId.of("user-123")
     )
 
-    val enabled = AppFeatures.darkMode.evaluate(ctx)
+    val enabled = AppFeatures.darkMode(ctx)
     assertTrue(enabled)
 }
 
@@ -31,7 +31,7 @@ fun `Android users get dark mode disabled`() {
         stableId = StableId.of("user-123")
     )
 
-    val enabled = AppFeatures.darkMode.evaluate(ctx)
+    val enabled = AppFeatures.darkMode(ctx)
     assertFalse(enabled)
 }
 ```
@@ -53,7 +53,7 @@ fun `dark mode enabled only for iOS`(platform: Platform, expected: Boolean) {
         stableId = StableId.of("user-123")
     )
 
-    val actual = AppFeatures.darkMode.evaluate(ctx)
+    val actual = AppFeatures.darkMode(ctx)
     assertEquals(expected, actual)
 }
 ```
@@ -85,19 +85,19 @@ fun `rule matches only when all criteria match`() {
         appVersion = Version.of(2, 1, 0),
         stableId = StableId.of("user-1")
     )
-    assertTrue(premiumFeature.FEATURE.evaluate(ctx1))
+    assertTrue(premiumFeature.FEATURE(ctx1))
 
     // Platform doesn't match → rule fails
     val ctx2 = ctx1.copy(platform = Platform.ANDROID)
-    assertFalse(premiumFeature.FEATURE.evaluate(ctx2))
+    assertFalse(premiumFeature.FEATURE(ctx2))
 
     // Locale doesn't match → rule fails
     val ctx3 = ctx1.copy(locale = AppLocale.FRANCE)
-    assertFalse(premiumFeature.FEATURE.evaluate(ctx3))
+    assertFalse(premiumFeature.FEATURE(ctx3))
 
     // Version doesn't match → rule fails
     val ctx4 = ctx1.copy(appVersion = Version.of(1, 9, 0))
-    assertFalse(premiumFeature.FEATURE.evaluate(ctx4))
+    assertFalse(premiumFeature.FEATURE(ctx4))
 }
 ```
 
@@ -128,11 +128,11 @@ fun `most specific rule wins`() {
         appVersion = Version.of(2, 1, 0),
         stableId = StableId.of("user-1")
     )
-    assertEquals("https://api-ios-us.example.com", feature.API_ENDPOINT.evaluate(ctx1))
+    assertEquals("https://api-ios-us.example.com", feature.API_ENDPOINT(ctx1))
 
     // iOS + other locale → less specific rule
     val ctx2 = ctx1.copy(locale = AppLocale.FRANCE)
-    assertEquals("https://api-ios.example.com", feature.API_ENDPOINT.evaluate(ctx2))
+    assertEquals("https://api-ios.example.com", feature.API_ENDPOINT(ctx2))
 }
 ```
 
@@ -153,7 +153,7 @@ fun `ramp-up is deterministic for same context`() {
     )
 
     val results = (1..100).map {
-        AppFeatures.rampUpFlag.evaluate(ctx)
+        AppFeatures.rampUpFlag(ctx)
     }
 
     // All evaluations return the same value
@@ -180,7 +180,7 @@ fun `50 percent ramp-up distributes correctly`() {
             appVersion = Version.of(2, 1, 0),
             stableId = StableId.of(i.toString().padStart(32, '0'))
         )
-        feature.FEATURE.evaluate(ctx)
+        feature.FEATURE(ctx)
     }
 
     val percentage = (enabled.toDouble() / sampleSize) * 100
@@ -210,7 +210,7 @@ fun `allowlisted users bypass ramp-up`() {
     )
 
     // Allowlisted user is in ramp-up despite 0%
-    assertTrue(feature.FEATURE.evaluate(ctx))
+    assertTrue(feature.FEATURE(ctx))
 }
 ```
 
@@ -264,13 +264,14 @@ fun `invalid JSON is rejected`() {
     }
     """
 
+    val _ = AppFeatures // ensure features are registered before parsing
     when (val result = SnapshotSerializer.fromJson(json)) {
         is ParseResult.Success -> {
             fail("Expected failure, got success")
         }
         is ParseResult.Failure -> {
             // Failure expected
-            assertIs<ParseError.TypeMismatch>(result.error)
+            assertIs<ParseError.InvalidSnapshot>(result.error)
         }
     }
 }
@@ -317,7 +318,7 @@ fun `enterprise users with 100+ employees get feature`() {
         employeeCount = 150
     )
 
-    val enabled = PremiumFeatures.ADVANCED_ANALYTICS.evaluate(ctx)
+    val enabled = PremiumFeatures.ADVANCED_ANALYTICS(ctx)
     assertTrue(enabled)
 }
 
@@ -332,7 +333,7 @@ fun `enterprise users with fewer employees do not get feature`() {
         employeeCount = 50
     )
 
-    val enabled = PremiumFeatures.ADVANCED_ANALYTICS.evaluate(ctx)
+    val enabled = PremiumFeatures.ADVANCED_ANALYTICS(ctx)
     assertFalse(enabled)
 }
 ```
@@ -346,11 +347,18 @@ fun `enterprise users with fewer employees do not get feature`() {
 ```kotlin
 @Test
 fun `evaluation hook is invoked`() {
-    val events = mutableListOf<EvaluationEvent>()
-
-    RegistryHooks.onEvaluationComplete = { event ->
-        events.add(event)
+    val events = mutableListOf<Metrics.Evaluation>()
+    val metricsCollector = object : MetricsCollector {
+        override fun recordEvaluation(event: Metrics.Evaluation) {
+            events.add(event)
+        }
     }
+
+    val registry = NamespaceRegistry(
+        configuration = AppFeatures.configuration,
+        namespaceId = "test",
+        hooks = RegistryHooks.of(metrics = metricsCollector),
+    )
 
     val ctx = Context(
         locale = AppLocale.UNITED_STATES,
@@ -359,10 +367,11 @@ fun `evaluation hook is invoked`() {
         stableId = StableId.of("user-123")
     )
 
-    AppFeatures.darkMode.evaluate(ctx)
+    AppFeatures.darkMode(ctx, registry = registry)
 
     assertEquals(1, events.size)
     assertEquals(AppFeatures.darkMode.key, events[0].featureKey)
+    assertEquals("test", events[0].namespaceId)
 }
 ```
 
@@ -371,13 +380,23 @@ fun `evaluation hook is invoked`() {
 ```kotlin
 @Test
 fun `shadow evaluation detects mismatches`() {
-    val mismatches = mutableListOf<ShadowMismatch<*>>()
+    val mismatches = mutableListOf<ShadowMismatch<Boolean>>()
 
-    val shadowOptions = ShadowEvaluationOptions(
-        shadowRegistry = candidateRegistry,
-        onMismatch = { mismatch ->
-            mismatches.add(mismatch)
+    val candidateJson = """
+    {
+      "flags": [
+        {
+          "key": "${AppFeatures.darkMode.id}",
+          "defaultValue": { "type": "BOOLEAN", "value": true }
         }
+      ]
+    }
+    """.trimIndent()
+
+    val candidateConfig = SnapshotSerializer.fromJson(candidateJson).getOrThrow()
+    val candidateRegistry = NamespaceRegistry(
+        configuration = candidateConfig,
+        namespaceId = AppFeatures.namespaceId,
     )
 
     val ctx = Context(
@@ -387,9 +406,14 @@ fun `shadow evaluation detects mismatches`() {
         stableId = StableId.of("user-123")
     )
 
-    AppFeatures.darkMode.evaluateWithShadow(ctx, shadowOptions)
+    AppFeatures.darkMode.evaluateShadow(
+        context = ctx,
+        candidateRegistry = candidateRegistry,
+        onMismatch = { mismatches.add(it) },
+    )
 
-    assertTrue(mismatches.size > 0)
+    assertEquals(1, mismatches.size)
+    assertEquals(setOf(ShadowMismatch.Kind.VALUE), mismatches.single().kinds)
 }
 ```
 
@@ -426,7 +450,7 @@ object TestContexts {
 @Test
 fun `test with fixture`() {
     val ctx = TestContexts.basic(platform = Platform.ANDROID)
-    val enabled = AppFeatures.darkMode.evaluate(ctx)
+    val enabled = AppFeatures.darkMode(ctx)
     assertFalse(enabled)
 }
 ```
@@ -457,12 +481,12 @@ fun `end-to-end configuration lifecycle`() {
 
     // 4. Evaluate
     val ctx = TestContexts.basic()
-    val enabled = TestFeatures.FEATURE.evaluate(ctx)
+    val enabled = TestFeatures.FEATURE(ctx)
     assertTrue(enabled)
 
     // 5. Rollback
     TestFeatures.rollback(steps = 1)
-    val rolledBack = TestFeatures.FEATURE.evaluate(ctx)
+    val rolledBack = TestFeatures.FEATURE(ctx)
     assertFalse(rolledBack)
 }
 ```

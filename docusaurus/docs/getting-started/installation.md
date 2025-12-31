@@ -7,7 +7,7 @@ Add Konditional to your Kotlin project via Gradle or Maven.
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.amichne:konditional:0.0.1")
+    implementation("io.amichne:konditional:0.0.1")
 }
 ```
 
@@ -16,7 +16,7 @@ dependencies {
 ```groovy
 // build.gradle
 dependencies {
-    implementation 'io.github.amichne:konditional:0.0.1'
+    implementation 'io.amichne:konditional:0.0.1'
 }
 ```
 
@@ -24,7 +24,7 @@ dependencies {
 
 ```xml
 <dependency>
-    <groupId>io.github.amichne</groupId>
+    <groupId>io.amichne</groupId>
     <artifactId>konditional</artifactId>
     <version>0.0.1</version>
 </dependency>
@@ -34,21 +34,9 @@ dependencies {
 
 ## Requirements
 
-- **Kotlin 1.9+**
-- **JVM 11+** (or compatible Kotlin/Native, Kotlin/JS target)
-- **Kotlin reflection** — Konditional bundles `kotlin-reflect` for custom data class deserialization
-
----
-
-## Multiplatform Support
-
-Konditional is a Kotlin Multiplatform library. It supports:
-
-- **JVM** (Android, server-side)
-- **Kotlin/JS** (browser, Node.js)
-- **Kotlin/Native** (iOS, macOS, Linux, Windows)
-
-Platform-specific configuration may be required for certain targets. See the [migration guide](/migration) for details on integrating with existing codebases.
+- **Kotlin 2.2+**
+- **JVM 21+**
+- **Kotlin reflection** — Konditional depends on `kotlin-reflect` for custom structured value decoding at the JSON boundary
 
 ---
 

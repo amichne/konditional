@@ -25,6 +25,7 @@ fun Namespace.load(configuration: Configuration)
 ### Example
 
 ```kotlin
+val _ = AppFeatures // ensure features are registered before parsing
 when (val result = SnapshotSerializer.fromJson(json)) {
     is ParseResult.Success -> AppFeatures.load(result.value)
     is ParseResult.Failure -> logError(result.error.message)
@@ -40,12 +41,12 @@ See [Fundamentals: Refresh Safety](/fundamentals/refresh-safety) for details.
 
 ---
 
-## `Namespace.fromJson(json): ParseResult<Unit>`
+## `Namespace.fromJson(json): ParseResult<Configuration>`
 
 Parse and load JSON configuration in one step (convenience wrapper).
 
 ```kotlin
-fun Namespace.fromJson(json: String): ParseResult<Unit>
+fun Namespace.fromJson(json: String): ParseResult<Configuration>
 ```
 
 ### Parameters
@@ -54,7 +55,7 @@ fun Namespace.fromJson(json: String): ParseResult<Unit>
 
 ### Returns
 
-- `ParseResult.Success` if JSON is valid and loaded
+- `ParseResult.Success(configuration)` if JSON is valid and loaded
 - `ParseResult.Failure` if parse fails (last-known-good remains active)
 
 ### Example
@@ -63,7 +64,7 @@ fun Namespace.fromJson(json: String): ParseResult<Unit>
 val json = File("flags.json").readText()
 
 when (val result = AppFeatures.fromJson(json)) {
-    is ParseResult.Success -> logger.info("Config loaded")
+    is ParseResult.Success -> logger.info("Config loaded: version=${result.value.metadata.version}")
     is ParseResult.Failure -> logger.error("Parse failed: ${result.error}")
 }
 ```
@@ -118,7 +119,7 @@ The active `Configuration` snapshot.
 ```kotlin
 val currentConfig = AppFeatures.configuration
 val metadata = currentConfig.metadata
-println("Version: ${metadata?.version}")
+println("Version: ${metadata.version}")
 ```
 
 ---
@@ -153,7 +154,7 @@ if (success) {
 
 ### Behavior
 
-- Registry maintains a bounded history (configurable, default: 5)
+- Registry maintains a bounded history (configurable, default: 10)
 - Rollback atomically swaps to the prior snapshot
 - Does not affect feature definitions in code
 
@@ -201,7 +202,7 @@ fun Namespace.disableAll()
 ```kotlin
 AppFeatures.disableAll()
 
-val enabled = AppFeatures.darkMode.evaluate(context)  // Returns default (false)
+val enabled = AppFeatures.darkMode(context)  // Returns default (false)
 ```
 
 ### Use Cases
@@ -225,28 +226,24 @@ fun Namespace.enableAll()
 ```kotlin
 AppFeatures.enableAll()
 
-val enabled = AppFeatures.darkMode.evaluate(context)  // Normal evaluation resumes
+val enabled = AppFeatures.darkMode(context)  // Normal evaluation resumes
 ```
 
 ---
 
-## `Namespace.registry: NamespaceRegistry`
+## `Namespace.setHooks(hooks)`
 
-Access the underlying registry (advanced use only).
+Attach dependency-free logging/metrics hooks to a namespace registry.
 
 ```kotlin
-val Namespace.registry: NamespaceRegistry
+fun Namespace.setHooks(hooks: RegistryHooks)
 ```
 
-### Returns
+This controls:
 
-The `NamespaceRegistry` instance for this namespace.
-
-### Warning
-
-Direct registry manipulation bypasses safety guarantees. Prefer public API methods (`load`, `rollback`, `disableAll`).
-
----
+- Evaluation logging (explain and shadow mismatch warnings)
+- Evaluation metrics (`MetricsCollector.recordEvaluation`)
+- Config load/rollback metrics (`MetricsCollector.recordConfigLoad` / `recordConfigRollback`)
 
 ## Next Steps
 

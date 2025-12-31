@@ -211,7 +211,7 @@ if (success) {
 ExperimentFlags.disableAll()
 
 // Critical path and infrastructure continue normally
-val paymentEnabled = CriticalPath.PAYMENT_PROCESSING_ENABLED.evaluate(context)  // Normal evaluation
+val paymentEnabled = CriticalPath.PAYMENT_PROCESSING_ENABLED(context)  // Normal evaluation
 ```
 
 ---
@@ -277,42 +277,53 @@ paymentsPoller.start()
 ### Namespace-Scoped Metrics
 
 ```kotlin
-RegistryHooks.onConfigurationLoad = { event ->
-    metrics.gauge(
-        "feature.flags.count",
-        event.flagCount.toDouble(),
-        mapOf("namespace" to event.namespaceId)
-    )
+val metricsCollector = object : MetricsCollector {
+    override fun recordConfigLoad(event: Metrics.ConfigLoadMetric) {
+        metrics.gauge(
+            "konditional.flags.count",
+            event.featureCount.toDouble(),
+            mapOf("namespaceId" to event.namespaceId),
+        )
+    }
+
+    override fun recordEvaluation(event: Metrics.Evaluation) {
+        metrics.histogram(
+            "konditional.evaluation.durationNanos",
+            event.durationNanos.toDouble(),
+            mapOf(
+                "namespaceId" to event.namespaceId,
+                "featureKey" to event.featureKey,
+                "mode" to event.mode.name,
+                "decision" to event.decision.name,
+            ),
+        )
+    }
 }
 
-RegistryHooks.onEvaluationComplete = { event ->
-    metrics.histogram(
-        "feature.evaluation.duration",
-        event.durationMs,
-        mapOf(
-            "namespace" to event.featureKey.namespaceId,
-            "feature" to event.featureKey.name
-        )
-    )
-}
+AppDomain.Auth.setHooks(RegistryHooks.of(metrics = metricsCollector))
+AppDomain.Payments.setHooks(RegistryHooks.of(metrics = metricsCollector))
 ```
 
 ### Namespace-Scoped Alerting
 
 ```kotlin
-RegistryHooks.onParseFailure = { event ->
-    val severity = when (event.namespaceId) {
-        "critical" -> AlertSeverity.CRITICAL
-        "infrastructure" -> AlertSeverity.HIGH
-        "experiments" -> AlertSeverity.LOW
-        else -> AlertSeverity.MEDIUM
-    }
+// Parse failures are reported at the parse/load boundary (not via RegistryHooks).
+when (val result = namespace.fromJson(json)) {
+    is ParseResult.Success -> logger.debug("${namespace.id} updated")
+    is ParseResult.Failure -> {
+        val severity = when (namespace.id) {
+            "critical" -> AlertSeverity.CRITICAL
+            "infrastructure" -> AlertSeverity.HIGH
+            "experiments" -> AlertSeverity.LOW
+            else -> AlertSeverity.MEDIUM
+        }
 
-    alerting.notify(
-        message = "Config parse failed for ${event.namespaceId}",
-        severity = severity,
-        error = event.error
-    )
+        alerting.notify(
+            message = "Config parse failed for ${namespace.id}",
+            severity = severity,
+            error = result.error,
+        )
+    }
 }
 ```
 

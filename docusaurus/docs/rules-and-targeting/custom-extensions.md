@@ -63,14 +63,14 @@ val ctx = EnterpriseContext(
     employeeCount = 150
 )
 
-val enabled = PremiumFeatures.ADVANCED_ANALYTICS.evaluate(ctx)
+val enabled = PremiumFeatures.ADVANCED_ANALYTICS(ctx)
 ```
 
 **Compile error if you try:**
 
 ```kotlin
 val basicCtx: Context = Context(...)
-// PremiumFeatures.ADVANCED_ANALYTICS.evaluate(basicCtx)  // Compile error
+// PremiumFeatures.ADVANCED_ANALYTICS(basicCtx)  // Compile error
 ```
 
 ---
@@ -195,7 +195,7 @@ fun `enterprise users with 100+ employees get advanced analytics`() {
         employeeCount = 150
     )
 
-    val enabled = PremiumFeatures.ADVANCED_ANALYTICS.evaluate(ctx)
+    val enabled = PremiumFeatures.ADVANCED_ANALYTICS(ctx)
     assertTrue(enabled)
 }
 
@@ -210,7 +210,7 @@ fun `enterprise users with fewer than 100 employees do not get advanced analytic
         employeeCount = 50
     )
 
-    val enabled = PremiumFeatures.ADVANCED_ANALYTICS.evaluate(ctx)
+    val enabled = PremiumFeatures.ADVANCED_ANALYTICS(ctx)
     assertFalse(enabled)
 }
 ```
@@ -240,11 +240,11 @@ If you use extensions, all call sites must provide the custom `Context` type:
 ```kotlin
 // ✓ Correct
 val enterpriseCtx: EnterpriseContext = buildEnterpriseContext()
-val enabled = PremiumFeatures.ADVANCED_ANALYTICS.evaluate(enterpriseCtx)
+val enabled = PremiumFeatures.ADVANCED_ANALYTICS(enterpriseCtx)
 
 // ✗ Incorrect
 val basicCtx: Context = Context(...)
-// PremiumFeatures.ADVANCED_ANALYTICS.evaluate(basicCtx)  // Compile error
+// PremiumFeatures.ADVANCED_ANALYTICS(basicCtx)  // Compile error
 ```
 
 ---

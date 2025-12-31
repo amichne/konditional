@@ -16,7 +16,7 @@ if (enabled && user.subscriptionTier == "enterprise") {
 }
 
 // ✓ With custom context (type-safe)
-val enabled = PremiumFeatures.ADVANCED_ANALYTICS.evaluate(enterpriseContext)
+val enabled = PremiumFeatures.ADVANCED_ANALYTICS(enterpriseContext)
 // If extension checks subscriptionTier, it's compile-time verified
 ```
 
@@ -197,7 +197,7 @@ class EnterpriseContextBuilder(
 // Usage
 val contextBuilder = EnterpriseContextBuilder(userService, subscriptionService, deviceInfo)
 val context = contextBuilder.build(userId)
-val enabled = PremiumFeatures.ADVANCED_ANALYTICS.evaluate(context)
+val enabled = PremiumFeatures.ADVANCED_ANALYTICS(context)
 ```
 
 ---
@@ -247,7 +247,7 @@ fun `enterprise users with 100+ employees get advanced analytics`() {
         accountAge = 365.days
     )
 
-    val enabled = PremiumFeatures.ADVANCED_ANALYTICS.evaluate(ctx)
+    val enabled = PremiumFeatures.ADVANCED_ANALYTICS(ctx)
     assertTrue(enabled)
 }
 
@@ -263,7 +263,7 @@ fun `pro users with fewer than 100 employees do not get advanced analytics`() {
         accountAge = 30.days
     )
 
-    val enabled = PremiumFeatures.ADVANCED_ANALYTICS.evaluate(ctx)
+    val enabled = PremiumFeatures.ADVANCED_ANALYTICS(ctx)
     assertFalse(enabled)
 }
 ```
@@ -274,7 +274,7 @@ fun `pro users with fewer than 100 employees do not get advanced analytics`() {
 @ParameterizedTest
 @MethodSource("enterpriseContexts")
 fun `advanced analytics rules`(ctx: EnterpriseContext, expected: Boolean) {
-    val actual = PremiumFeatures.ADVANCED_ANALYTICS.evaluate(ctx)
+    val actual = PremiumFeatures.ADVANCED_ANALYTICS(ctx)
     assertEquals(expected, actual)
 }
 
@@ -322,11 +322,11 @@ If a feature uses `EnterpriseContext`, all call sites must provide `EnterpriseCo
 ```kotlin
 // ✓ Correct
 val enterpriseCtx: EnterpriseContext = buildEnterpriseContext()
-PremiumFeatures.ADVANCED_ANALYTICS.evaluate(enterpriseCtx)
+PremiumFeatures.ADVANCED_ANALYTICS(enterpriseCtx)
 
 // ✗ Incorrect
 val basicCtx: Context = Context(...)
-// PremiumFeatures.ADVANCED_ANALYTICS.evaluate(basicCtx)  // Compile error
+// PremiumFeatures.ADVANCED_ANALYTICS(basicCtx)  // Compile error
 ```
 
 ---

@@ -11,6 +11,12 @@ import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.Rule
 import kotlin.system.measureNanoTime
 
+@RequiresOptIn(
+    message = "Prefer using the operator overload invoke() for concise feature evaluation",
+    level = RequiresOptIn.Level.WARNING
+)
+annotation class VerboseApi
+
 /**
  * Evaluates this feature for the given contextFn.
  *
@@ -22,10 +28,11 @@ import kotlin.system.measureNanoTime
  * @return The evaluated value
  * @throws IllegalStateException if the feature is not registered in the registry
  */
+@VerboseApi
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
     context: C,
     registry: NamespaceRegistry = namespace,
-): T = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.NORMAL).value
+): T = this(context, registry)
 
 /**
  * Explains how this feature was evaluated for the given context.
@@ -73,7 +80,7 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.explain(
 operator fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.invoke(
     context: C,
     registry: NamespaceRegistry = namespace,
-): T = evaluate(context, registry)
+): T = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.NORMAL).value
 
 @Deprecated(
     message = "Use explain() instead for clearer intent",

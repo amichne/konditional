@@ -33,17 +33,15 @@ class Registry {
 ## Konditional's Solution: AtomicReference
 
 ```kotlin
-class InMemoryNamespaceRegistry {
-    private val activeConfig: AtomicReference<Configuration> = AtomicReference(initial)
+// Simplified: the default in-memory NamespaceRegistry implementation.
+private val current: AtomicReference<Configuration> = AtomicReference(initialConfiguration)
 
-    fun load(newConfig: Configuration) {
-        activeConfig.set(newConfig)  // Single atomic write
-    }
-
-    fun getConfig(): Configuration {
-        return activeConfig.get()  // Atomic read
-    }
+override fun load(config: Configuration) {
+    current.set(config)  // Single atomic write
 }
+
+override val configuration: Configuration
+    get() = current.get()  // Atomic read
 ```
 
 **Guarantees:**
@@ -70,7 +68,7 @@ From the Java Language Specification (JLS §17.4.5):
 ### Single Write Operation
 
 ```kotlin
-activeConfig.set(newConfig)
+current.set(newConfig)
 ```
 
 This is **one atomic operation**:
@@ -89,13 +87,13 @@ This is **one atomic operation**:
 AppFeatures.load(newConfig)
 
 // Thread 2: Concurrent evaluation
-val value = AppFeatures.darkMode.evaluate(context)
+val value = AppFeatures.darkMode(context)
 ```
 
 **What happens:**
 
-1. Thread 1 calls `activeConfig.set(newConfig)`
-2. Thread 2 calls `activeConfig.get()` during the update
+1. Thread 1 calls `current.set(newConfig)`
+2. Thread 2 calls `current.get()` during the update
 3. Thread 2 sees **either**:
    - Old config (read happened before write completed)
    - New config (read happened after write completed)
@@ -113,8 +111,11 @@ val value = AppFeatures.darkMode.evaluate(context)
 Evaluation reads the current snapshot without acquiring locks:
 
 ```kotlin
-fun <T : Any> Feature<T>.evaluate(context: Context): T {
-    val config = registry.getConfig()  // Lock-free read
+operator fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.invoke(
+    context: C,
+    registry: NamespaceRegistry,
+): T {
+    val config = registry.configuration  // Lock-free atomic read
     // ... evaluate using config ...
 }
 ```
@@ -173,7 +174,7 @@ AppFeatures.load(config1)
 AppFeatures.load(config2)
 
 // Thread 3
-val value = AppFeatures.darkMode.evaluate(context)
+val value = AppFeatures.darkMode(context)
 ```
 
 **Outcome:**
@@ -196,7 +197,7 @@ AppFeatures.load(newConfig)
 // Threads 2-100
 (2..100).forEach { i ->
     thread {
-        val value = AppFeatures.darkMode.evaluate(context)
+        val value = AppFeatures.darkMode(context)
     }
 }
 ```
@@ -218,24 +219,23 @@ thread { AppFeatures.load(config3) }
 ```kotlin
 // DON'T DO THIS
 val config = AppFeatures.configuration
-mutateSomehow(config)  // If this were possible (it's not)
+mutateSomehow(config)  // Breaks the "snapshot" mental model
 ```
 
-**Issue:** `Configuration` is designed to be immutable. Mutation would break atomicity.
+**Issue:** `Configuration` is treated as immutable. Mutating it would break the snapshot guarantee (readers could
+observe changes that did not come from `load(...)`).
 
-**Mitigation:** `Configuration` has no public setters; mutation is impossible.
+**Mitigation:** Treat snapshots as immutable values. If you need a different configuration, deserialize a new snapshot
+and call `load(...)`.
 
 ### ✗ Unsafe: Bypassing `load(...)`
 
 ```kotlin
-// DON'T DO THIS (internal API)
-val registry = AppFeatures.registry
-registry.internalState.mutate(...)  // Hypothetical
+// There is no supported public API for mutating a registry's internal state.
+// Always update via `load(...)` (or `rollback(...)`), which swaps the full snapshot atomically.
 ```
 
-**Issue:** Bypassing `load(...)` breaks the atomic swap guarantee.
-
-**Mitigation:** Internal state is private; only `load(...)` is public.
+**Issue:** Any hypothetical internal mutation would break the atomic swap guarantee.
 
 ---
 

@@ -1,31 +1,52 @@
 # Core Types
 
-Reference for fundamental types used throughout the Konditional API.
+Reference for fundamental types used throughout the Konditional runtime API.
 
 ---
 
 ## `Feature<T, C, M>`
 
-A typed configuration value with optional rules.
+A typed feature definition created via namespace property delegation.
 
 ```kotlin
-interface Feature<out T : Any, in C : Context, M : Namespace>
+sealed interface Feature<T : Any, C : Context, out M : Namespace> : Identifiable {
+    val key: String
+    val namespace: M
+    override val id: FeatureId
+}
 ```
 
-### Type Parameters
+### Notes
 
-- `T` — Value type (Boolean, String, Int, Double, Enum, custom)
-- `C` — Context type required for evaluation
-- `M` — Namespace type this feature belongs to
+- `key` is the in-code key (typically the Kotlin property name).
+- `id` is the stable serialized identifier used in snapshots/patches (see `FeatureId` below).
+- Consumers do not implement `Feature`; features are created when you declare `val foo by boolean<Context>(...) { ... }`.
 
-### Properties
+See [Feature Operations](/api-reference/feature-operations) for evaluation APIs.
 
-- `key: FeatureKey` — Stable identifier for this feature
-- `default: T` — Default value (required, non-null)
+---
 
-### Methods
+## `FeatureId`
 
-See [Feature Operations](/api-reference/feature-operations) for evaluation API.
+Stable serialized identifier for a feature.
+
+```kotlin
+@JvmInline
+value class FeatureId private constructor(val plainId: String) {
+    companion object {
+        fun create(namespaceSeed: String, key: String): FeatureId
+        fun parse(plainId: String): FeatureId
+    }
+}
+```
+
+Canonical format:
+
+```
+feature::${namespaceSeed}::${key}
+```
+
+`namespaceSeed` defaults to the namespace `id`, but test-only namespaces use a unique seed to avoid collisions.
 
 ---
 
@@ -39,18 +60,25 @@ interface Context {
     val platform: PlatformTag
     val appVersion: Version
     val stableId: StableId
+
+    val axisValues: AxisValues get() = AxisValues.EMPTY
+
+    data class Core(
+        override val locale: LocaleTag,
+        override val platform: PlatformTag,
+        override val appVersion: Version,
+        override val stableId: StableId,
+    ) : Context
+
+    companion object {
+        operator fun invoke(
+            locale: LocaleTag,
+            platform: PlatformTag,
+            appVersion: Version,
+            stableId: StableId,
+        ): Core
+    }
 }
-```
-
-### Standard Implementation
-
-```kotlin
-data class Context(
-    override val locale: LocaleTag,
-    override val platform: PlatformTag,
-    override val appVersion: Version,
-    override val stableId: StableId
-) : Context
 ```
 
 ### Extending Context
@@ -62,7 +90,7 @@ data class EnterpriseContext(
     override val appVersion: Version,
     override val stableId: StableId,
     val subscriptionTier: SubscriptionTier,
-    val employeeCount: Int
+    val employeeCount: Int,
 ) : Context
 ```
 
@@ -70,18 +98,16 @@ data class EnterpriseContext(
 
 ## `Namespace`
 
-Isolation boundary for features.
+Isolation boundary for features and configuration.
 
 ```kotlin
-abstract class Namespace(val id: String)
+open class Namespace(val id: String) : NamespaceRegistry
 ```
 
-### Properties
+`Namespace` implements `NamespaceRegistry`, so lifecycle operations are available directly on the namespace:
+`load(...)`, `rollback(...)`, `disableAll()`, `setHooks(...)`, and so on.
 
-- `id: String` — Unique namespace identifier
-- `registry: NamespaceRegistry` — Registry instance for this namespace
-
-### Example
+Example:
 
 ```kotlin
 object AppFeatures : Namespace("app") {
@@ -96,89 +122,61 @@ sealed class TeamDomain(id: String) : Namespace(id) {
 
 ---
 
-## `FlagDefinition<T, C, M>`
-
-The compiled/effective definition of a single flag.
-
-```kotlin
-data class FlagDefinition<T : Any, C : Context, M : Namespace>(
-    val key: FeatureKey,
-    val default: T,
-    val rules: List<Rule<C>>,
-    val salt: String,
-    val isActive: Boolean
-)
-```
-
-### Fields
-
-- `key` — Feature identifier
-- `default` — Required default value
-- `rules` — List of targeting rules (sorted by specificity)
-- `salt` — Per-feature salt for bucketing
-- `isActive` — Whether flag is active (inactive flags return default)
-
----
-
-## `Rule<C>`
-
-A typed mapping from criteria to a value.
-
-```kotlin
-data class Rule<C : Context>(
-    val value: Any,
-    val criteria: RuleCriteria<C>,
-    val rampUp: RampUp = RampUp.full,
-    val allowlist: Set<StableId> = emptySet(),
-    val note: String? = null
-)
-```
-
-### Fields
-
-- `value` — Return value if rule matches
-- `criteria` — Targeting criteria (platform/locale/version/axes/extension)
-- `rampUp` — Percentage rollout (default: 100%)
-- `allowlist` — StableIds that bypass ramp-up
-- `note` — Optional description (for debugging/observability)
-
----
-
 ## `Configuration`
 
-Immutable snapshot of flag state.
+Immutable snapshot of a namespace’s flag state.
 
 ```kotlin
-data class Configuration(
-    val flags: Map<FeatureKey, FlagDefinition<*, *, *>>,
-    val metadata: ConfigurationMetadata? = null
+data class Configuration internal constructor(
+    val flags: Map<Feature<*, *, *>, FlagDefinition<*, *, *>>,
+    val metadata: ConfigurationMetadata = ConfigurationMetadata(),
 )
 ```
 
-### Fields
+Notes:
 
-- `flags` — Map of feature keys to definitions
-- `metadata` — Optional metadata (version, source, timestamp)
+- `Configuration` is produced at the JSON boundary (`SnapshotSerializer.fromJson(...)`) or read from a namespace via
+  `Namespace.configuration`.
+- `flags` is keyed by `Feature` instances (not strings); lookups are done via `Namespace.flag(feature)`.
 
 ---
 
 ## `ConfigurationMetadata`
 
-Metadata attached to configuration snapshots.
+Operational metadata attached to configuration snapshots.
 
 ```kotlin
-data class ConfigurationMetadata(
+data class ConfigurationMetadata internal constructor(
     val version: String? = null,
+    val generatedAtEpochMillis: Long? = null,
     val source: String? = null,
-    val generatedAtEpochMillis: Long? = null
-)
+) {
+    companion object {
+        fun of(
+            version: String? = null,
+            generatedAtEpochMillis: Long? = null,
+            source: String? = null,
+        ): ConfigurationMetadata
+    }
+}
 ```
 
-### Fields
+---
 
-- `version` — Version identifier (e.g., "rev-123")
-- `source` — Source identifier (e.g., "s3://configs/production.json")
-- `generatedAtEpochMillis` — Timestamp in epoch milliseconds
+## `FlagDefinition<T, C, M>`
+
+Effective definition of a single feature in a loaded configuration.
+
+Consumers typically use this only for introspection/tooling via `Namespace.flag(feature)`.
+
+```kotlin
+data class FlagDefinition<T : Any, C : Context, M : Namespace> internal constructor(
+    val defaultValue: T,
+    val feature: Feature<T, C, M>,
+    val isActive: Boolean = true,
+    val salt: String = "v1",
+)
+```
 
 ---
 
@@ -187,57 +185,43 @@ data class ConfigurationMetadata(
 Stable identifier for deterministic bucketing.
 
 ```kotlin
-data class StableId private constructor(val id: String) {
+sealed interface StableId {
+    val id: String      // canonical hex string
+    val hexId: HexId
+
     companion object {
         fun of(input: String): StableId
-        fun fromHex(hex: String): StableId
+        fun fromHex(hexId: String): StableId
     }
 }
 ```
 
-### Factory Methods
-
-- `StableId.of(input)` — Normalizes input to hex (lowercase via `Locale.ROOT`)
-- `StableId.fromHex(hex)` — Uses pre-computed hex identifier
-
-### Example
+Example:
 
 ```kotlin
 val id1 = StableId.of("user-123")
-val id2 = StableId.fromHex("757365722d313233")
-// id1.id == id2.id (true)
+val id2 = StableId.fromHex(id1.id)
 ```
 
 ---
 
 ## `Version`
 
-Semantic version for version-based targeting.
+Semantic version used for version targeting.
 
 ```kotlin
+@JsonClass(generateAdapter = true)
 data class Version(
     val major: Int,
     val minor: Int,
-    val patch: Int
+    val patch: Int,
 ) : Comparable<Version> {
     companion object {
         fun of(major: Int, minor: Int, patch: Int): Version
+        fun parse(raw: String): ParseResult<Version>
+        val default: Version
     }
 }
-```
-
-### Example
-
-```kotlin
-val v = Version.of(2, 1, 0)  // 2.1.0
-```
-
-### Comparison
-
-```kotlin
-val v1 = Version.of(2, 0, 0)
-val v2 = Version.of(2, 1, 0)
-println(v1 < v2)  // true
 ```
 
 ---
@@ -247,41 +231,11 @@ println(v1 < v2)  // true
 Stable identifiers for locale and platform targeting.
 
 ```kotlin
-interface LocaleTag {
-    val id: String
-}
-
-interface PlatformTag {
-    val id: String
-}
+interface LocaleTag { val id: String }
+interface PlatformTag { val id: String }
 ```
 
-### Built-In Implementations
-
-```kotlin
-enum class AppLocale(override val id: String) : LocaleTag {
-    UNITED_STATES("UNITED_STATES"),
-    CANADA("CANADA"),
-    FRANCE("FRANCE"),
-    JAPAN("JAPAN")
-}
-
-enum class Platform(override val id: String) : PlatformTag {
-    IOS("IOS"),
-    ANDROID("ANDROID"),
-    WEB("WEB")
-}
-```
-
-### Custom Implementations
-
-```kotlin
-enum class CustomLocale(override val id: String) : LocaleTag {
-    US_EAST("us-east"),
-    US_WEST("us-west"),
-    EU_CENTRAL("eu-central")
-}
-```
+The built-in `AppLocale` and `Platform` enums use their enum names as stable ids.
 
 ---
 
@@ -290,29 +244,17 @@ enum class CustomLocale(override val id: String) : LocaleTag {
 Custom targeting dimensions.
 
 ```kotlin
-interface AxisValue<T : AxisValue<T>> {
+interface AxisValue<T> where T : Enum<T> {
     val id: String
 }
 
-data class Axis<T : AxisValue<T>>(
+abstract class Axis<T>(
     val id: String,
-    val type: KClass<T>
-)
+    val valueClass: KClass<T>,
+) where T : AxisValue<T>, T : Enum<T>
 ```
 
-### Example
-
-```kotlin
-enum class Environment(override val id: String) : AxisValue<Environment> {
-    PROD("prod"),
-    STAGE("stage"),
-    DEV("dev")
-}
-
-object Axes {
-    object Environment : Axis<Environment>("environment", Environment::class)
-}
-```
+Axes auto-register on initialization so rules can infer axes from value types.
 
 ---
 
@@ -321,38 +263,20 @@ object Axes {
 Percentage rollout configuration.
 
 ```kotlin
-data class RampUp private constructor(val percent: Double) {
+@JvmInline
+value class RampUp private constructor(val value: Double) : Comparable<Number> {
     companion object {
-        val full = RampUp(100.0)
-        fun of(percent: Double): RampUp
+        fun of(value: Double): RampUp
+        val default: RampUp
     }
 }
 ```
 
-### Factory Methods
-
-- `RampUp.of(percent)` — Create ramp-up (0.0 to 100.0)
-- `RampUp.full` — 100% ramp-up (constant)
-
 ---
 
-## `FeatureKey`
+## `ParseResult<T>` / `ParseError`
 
-Stable identifier for a feature.
-
-```kotlin
-data class FeatureKey(val value: String) {
-    override fun toString(): String = value
-}
-```
-
-Format: `"feature::{namespaceId}::{propertyName}"`
-
----
-
-## `ParseResult<T>`
-
-Success/failure boundary type for JSON parsing.
+Explicit success/failure boundary (used primarily at the JSON boundary).
 
 ```kotlin
 sealed interface ParseResult<out T> {
@@ -361,7 +285,7 @@ sealed interface ParseResult<out T> {
 }
 ```
 
-See [Serialization](/api-reference/serialization) for details.
+See [Serialization](/api-reference/serialization) for parsing/validation behavior and error types.
 
 ---
 
@@ -369,4 +293,5 @@ See [Serialization](/api-reference/serialization) for details.
 
 - [Feature Operations](/api-reference/feature-operations) — Evaluation API
 - [Namespace Operations](/api-reference/namespace-operations) — Lifecycle operations
+- [Serialization](/api-reference/serialization) — JSON snapshot/patch operations
 - [Fundamentals: Core Primitives](/fundamentals/core-primitives) — Conceptual overview

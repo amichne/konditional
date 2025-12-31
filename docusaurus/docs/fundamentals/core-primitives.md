@@ -20,7 +20,7 @@ flowchart TD
 A **Feature** is a typed configuration value with an optional rule set. You define features as delegated properties on a `Namespace`:
 
 ```kotlin
-import io.amichne.konditional.api.evaluate
+import io.amichne.konditional.api.invoke
 import io.amichne.konditional.context.Context
 
 object AppFeatures : Namespace("app") {
@@ -30,8 +30,8 @@ object AppFeatures : Namespace("app") {
     val timeoutSeconds by double<Context>(default = 30.0)
 }
 
-val enabled: Boolean = AppFeatures.darkMode.evaluate(context)
-val endpoint: String = AppFeatures.apiEndpoint.evaluate(context)
+val enabled: Boolean = AppFeatures.darkMode(context)
+val endpoint: String = AppFeatures.apiEndpoint(context)
 ```
 
 **What property delegation buys you:**
@@ -60,11 +60,11 @@ enum class LogLevel { DEBUG, INFO, WARN, ERROR }
 enum class Theme { LIGHT, DARK, AUTO }
 
 object AppConfig : Namespace("app-config") {
-    val LOG_LEVEL by enum<LogLevel, Context>(default = LogLevel.INFO)
+val LOG_LEVEL by enum<LogLevel, Context>(default = LogLevel.INFO)
     val THEME by enum<Theme, Context>(default = Theme.LIGHT)
 }
 
-val level: LogLevel = AppConfig.LOG_LEVEL.evaluate(context)
+val level: LogLevel = AppConfig.LOG_LEVEL(context)
 ```
 
 Because variants are enum values, invalid variants cannot compile.
@@ -172,9 +172,8 @@ object Config : Namespace("config") {
     val maxRetries by integer<Context>(default = 3)
 }
 
-val retries: Int = Config.maxRetries.evaluate(context)
-    // This will error
-val retries: String = Config.maxRetries.evaluate(context)  // Compile error
+val retries: Int = Config.maxRetries(context)
+// val retries: String = Config.maxRetries(context)  // Compile error
 ```
 
 ### Wrong Context Type for a Feature
@@ -182,7 +181,7 @@ val retries: String = Config.maxRetries.evaluate(context)  // Compile error
 ```kotlin
 val basicContext: Context = Context(...)
 // This will error
-// PremiumFeatures.ADVANCED_ANALYTICS.evaluate(basicContext)  // Compile error (requires EnterpriseContext)
+// PremiumFeatures.ADVANCED_ANALYTICS(basicContext)  // Compile error (requires EnterpriseContext)
 ```
 
 ---
