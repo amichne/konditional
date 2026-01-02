@@ -8,6 +8,8 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.features.EnumFeature
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Configuration
+import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
+import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -226,10 +228,10 @@ class EnumFeatureTest {
             stableId = StableId.of("12345678901234567890123456789012")
         )
 
-        val json = namespace.toJson()
+        val json = ConfigurationSnapshotCodec.encode(namespace.configuration)
         namespace.load(Configuration(emptyMap()))
 
-        val reloadResult = namespace.fromJson(json)
+        val reloadResult = NamespaceSnapshotLoader(namespace).load(json)
         assertTrue(reloadResult is io.amichne.konditional.core.result.ParseResult.Success)
 
         assertEquals(LogLevel.DEBUG, namespace.logLevel.evaluate(webContext))

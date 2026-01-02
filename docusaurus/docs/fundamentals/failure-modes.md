@@ -2,6 +2,25 @@
 
 What can go wrong when using Konditional, how to prevent it, how to detect it, and what the worst-case outcome is.
 
+```mermaid
+flowchart TD
+    Source["JSON payload (remote/file/network)"] --> Parse["Parse + validate snapshot"]
+    Parse -->|Invalid JSON / schema| Reject["Reject update<br/>keep last-known-good"]
+    Parse --> Lookup["Lookup keys in registry"]
+    Lookup -->|FeatureNotFound| Reject
+    Lookup --> Decode["Decode values to declared feature types"]
+    Decode -->|Type mismatch / schema violation| Reject
+    Decode --> Load["Atomic load new snapshot"]
+    Load --> Eval["Evaluation reads active snapshot"]
+
+    Eval -->|Operator control| Rollback["rollback(steps)"]
+    Eval -->|Operator control| Kill["disableAll() → defaults"]
+
+    style Reject fill:#ffcdd2
+    style Load fill:#c8e6c9
+    style Eval fill:#e1f5ff
+```
+
 ---
 
 ## 1. Parse Errors (Invalid JSON)
@@ -13,7 +32,7 @@ JSON payload is malformed or doesn't match the expected schema:
 ```kotlin
 val json = """{ "flags": [ { "invalid": true } ] }"""
 
-when (val result = AppFeatures.fromJson(json)) {
+when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
     is ParseResult.Failure -> {
         println(result.error.message)  // ParseError.InvalidJson / ParseError.InvalidSnapshot
     }
@@ -55,7 +74,7 @@ val json = """
 }
 """
 
-when (val result = AppFeatures.fromJson(json)) {
+when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
     is ParseResult.Failure -> {
         println(result.error.message)  // "Feature not found: feature::app::unknownFlag"
     }
@@ -101,7 +120,7 @@ val json = """
 }
 """
 
-when (val result = SnapshotSerializer.fromJson(json)) {
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Failure -> {
         println(result.error.message)  // ParseError.InvalidSnapshot with details about the failed decode
     }
@@ -111,7 +130,7 @@ when (val result = SnapshotSerializer.fromJson(json)) {
 ### How to Prevent
 
 - Validate JSON schemas in CI/CD
-- Use generated JSON from `namespace.toJson()` as the source of truth
+- Use generated JSON from `ConfigurationSnapshotCodec.encode(namespace.configuration)` as the source of truth
 - Test deserialization with actual payloads
 
 ### How to Detect
@@ -135,7 +154,7 @@ JSON for a custom data class doesn't match the Kotlin schema:
 data class RetryPolicy(
     val maxAttempts: Int,
     val backoffMs: Double
-) : KotlinEncodeable<ObjectSchema> {
+) : Konstrained<ObjectSchema> {
     override val schema = schemaRoot {
         ::maxAttempts of { minimum = 1 }
         ::backoffMs of { minimum = 0.0 }
@@ -182,7 +201,7 @@ Attempting to load JSON before namespace initialization:
 ```kotlin
 // ✗ Incorrect order
 val json = fetchRemoteConfig()
-when (val result = SnapshotSerializer.fromJson(json)) {
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Failure -> {
         // Fails: features not registered yet
     }
@@ -199,7 +218,7 @@ when (val result = SnapshotSerializer.fromJson(json)) {
 val _ = AppFeatures  // Force initialization
 
 val json = fetchRemoteConfig()
-when (val result = AppFeatures.fromJson(json)) {
+when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
     is ParseResult.Success -> Unit
     is ParseResult.Failure -> logError(result.error.message)
 }

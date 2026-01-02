@@ -171,7 +171,7 @@ fun loadAllConfigs() {
     // Load Auth config
     when (val result = fetchAuthConfig()) {
         is ConfigFetchResult.Success -> {
-            AppDomain.Auth.fromJson(result.json)
+            NamespaceSnapshotLoader(AppDomain.Auth).load(result.json)
         }
         is ConfigFetchResult.Failure -> {
             logger.error("Auth config fetch failed")
@@ -182,7 +182,7 @@ fun loadAllConfigs() {
     // Load Payments config (independent of Auth)
     when (val result = fetchPaymentsConfig()) {
         is ConfigFetchResult.Success -> {
-            AppDomain.Payments.fromJson(result.json)
+            NamespaceSnapshotLoader(AppDomain.Payments).load(result.json)
         }
         is ConfigFetchResult.Failure -> {
             logger.error("Payments config fetch failed")

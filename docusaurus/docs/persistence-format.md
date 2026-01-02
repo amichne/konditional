@@ -2,8 +2,8 @@
 
 This page documents the JSON formats used to persist and transport Konditional configuration:
 
-- **Snapshot**: the full configuration payload (`SnapshotSerializer.serialize(...)`)
-- **Patch**: an incremental update payload (`SnapshotSerializer.applyPatchJson(...)`)
+- **Snapshot**: the full configuration payload (`ConfigurationSnapshotCodec.encode(...)`)
+- **Patch**: an incremental update payload (`ConfigurationSnapshotCodec.applyPatchJson(...)`)
 
 These formats are intentionally storage-agnostic: you can store the JSON in files, a database, or ship it over the
 network.
@@ -249,7 +249,7 @@ Notes:
 
 - Incoming JSON may omit fields that have defaults (for example `rampUpAllowlist`, `locales`, `platforms`, `axes`, and
   `versionRange`).
-- `SnapshotSerializer.serialize(...)` emits explicit values for these fields (including empty arrays/objects).
+- `ConfigurationSnapshotCodec.encode(...)` emits explicit values for these fields (including empty arrays/objects).
 
 :::details Snapshot: booleans + string variants, with version ranges
 ```json

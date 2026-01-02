@@ -48,7 +48,7 @@ When configuration crosses the JSON boundary, compile-time guarantees necessaril
 ```kotlin
 val json = File("flags.json").readText()
 
-when (val result = AppFeatures.fromJson(json)) {
+when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
     is ParseResult.Success -> {
         // Valid configuration loaded
     }
@@ -139,7 +139,7 @@ val timeout: Double = Config.timeout(context)  // ✓ Type-safe
 
 ```kotlin
 val _ = AppFeatures // ensure features are registered before parsing
-when (val result = SnapshotSerializer.fromJson(json)) {
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> /* unreachable */
     is ParseResult.Failure -> {
         // Parse fails: rule value type (STRING) doesn't match feature type (DOUBLE)
@@ -158,7 +158,7 @@ Deserialization requires that features exist in the registry **before** JSON is 
 // ✓ Correct: Initialize namespace first
 val _ = AppFeatures  // Forces class initialization (registers features)
 
-when (val result = AppFeatures.fromJson(json)) {
+when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
     is ParseResult.Success -> Unit
     is ParseResult.Failure -> logError(result.error.message)
 }
@@ -166,7 +166,7 @@ when (val result = AppFeatures.fromJson(json)) {
 
 ```kotlin
 // ✗ Incorrect: Namespace not initialized
-when (val result = SnapshotSerializer.fromJson(json)) {
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
     // Fails with ParseError.FeatureNotFound if AppFeatures hasn't been initialized
     is ParseResult.Failure -> println(result.error)
 }

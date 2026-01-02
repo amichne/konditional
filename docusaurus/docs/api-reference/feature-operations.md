@@ -146,7 +146,7 @@ The **baseline** value (candidate is only evaluated for comparison).
 
 ```kotlin
 val _ = AppFeatures // ensure features are registered before parsing
-val candidateConfig = SnapshotSerializer.fromJson(candidateJson).getOrThrow()
+val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow()
 val candidateRegistry = NamespaceRegistry(configuration = candidateConfig, namespaceId = AppFeatures.id)
 
 val value = AppFeatures.darkMode.evaluateWithShadow(

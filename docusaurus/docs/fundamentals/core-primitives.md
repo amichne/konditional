@@ -49,7 +49,7 @@ val endpoint: String = AppFeatures.apiEndpoint.evaluate(context)
 | Integer    | `integer(...)`   | `Int`                                | `42`                  |
 | Decimal    | `double(...)`    | `Double`                             | `3.14`                |
 | Enum       | `enum(...)`      | `E : Enum<E>`                        | `LogLevel.INFO`       |
-| Data class | `custom(...)`    | `T : KotlinEncodeable<ObjectSchema>` | `MyConfig()`          |
+| Data class | `custom(...)`    | `T : Konstrained<ObjectSchema>` | `MyConfig()`          |
 
 Custom data classes are decoded via Kotlin reflection at the JSON boundary. Ensure Kotlin reflection is available at runtime (Konditional bundles it), and keep constructor parameter names stable when using obfuscation.
 

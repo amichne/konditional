@@ -7,20 +7,17 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.core.types.KotlinEncodeable
+import io.amichne.konditional.core.types.Konstrained
+import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
+import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 import io.amichne.kontracts.dsl.of
 import io.amichne.kontracts.dsl.schemaRoot
 import io.amichne.kontracts.schema.ObjectSchema
-import io.amichne.kontracts.value.JsonObject
-import io.amichne.kontracts.value.JsonValue
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
 
@@ -35,7 +32,7 @@ class ConsumerConfigurationLifecycleTest {
         val maxRetries: Int = 3,
         val timeoutSeconds: Double = 30.0,
         val enabled: Boolean = true,
-    ) : KotlinEncodeable<ObjectSchema> {
+    ) : Konstrained<ObjectSchema> {
         override val schema =
             schemaRoot {
                 ::theme of { minLength = 1 }
@@ -43,51 +40,6 @@ class ConsumerConfigurationLifecycleTest {
                 ::timeoutSeconds of { minimum = 0.0 }
                 ::enabled of {}
             }
-
-        companion object {
-            val serializer = object : TypeSerializer<UserSettings> {
-                override fun encode(value: UserSettings): JsonValue =
-                    jsonObject {
-                        "theme" to value.theme
-                        "maxRetries" to value.maxRetries
-                        "timeoutSeconds" to value.timeoutSeconds
-                        "enabled" to value.enabled
-                    }
-
-                override fun decode(json: JsonValue): ParseResult<UserSettings> =
-                    when (json) {
-                        is JsonObject -> {
-                            val theme = json.fields["theme"]?.asString()
-                            val maxRetries = json.fields["maxRetries"]?.asInt()
-                            val timeoutSeconds = json.fields["timeoutSeconds"]?.asDouble()
-                            val enabled = json.fields["enabled"]?.asBoolean()
-
-                            if (theme != null && maxRetries != null && timeoutSeconds != null && enabled != null) {
-                                ParseResult.Success(
-                                    UserSettings(theme, maxRetries, timeoutSeconds, enabled)
-                                )
-                            } else {
-                                ParseResult.Failure(
-                                    ParseError.InvalidSnapshot("Missing required fields for UserSettings")
-                                )
-                            }
-                        }
-                        else -> ParseResult.Failure(
-                            ParseError.InvalidSnapshot("Expected JsonObject for UserSettings, got ${json::class.simpleName}")
-                        )
-                    }
-            }
-        }
-    }
-
-    @BeforeEach
-    fun setup() {
-        SerializerRegistry.register(UserSettings::class, UserSettings.serializer)
-    }
-
-    @AfterEach
-    fun cleanup() {
-        SerializerRegistry.clear()
     }
 
     private fun ctx(
@@ -168,7 +120,7 @@ class ConsumerConfigurationLifecycleTest {
             namespaceV1.userSettings.evaluate(ios),
         )
 
-        val dumpedJson = NamespaceSnapshotSerializer(namespaceV1).toJson()
+        val dumpedJson = ConfigurationSnapshotCodec.encode(namespaceV1.configuration)
         assertTrue(dumpedJson.contains(namespaceV1.darkMode.id.toString()))
         assertTrue(dumpedJson.contains(namespaceV1.apiEndpoint.id.toString()))
         assertTrue(dumpedJson.contains(namespaceV1.maxRetries.id.toString()))
@@ -206,7 +158,7 @@ class ConsumerConfigurationLifecycleTest {
             "baseline differs before load",
         )
 
-        when (val loaded = NamespaceSnapshotSerializer(namespaceV2).fromJson(dumpedJson)) {
+        when (val loaded = NamespaceSnapshotLoader(namespaceV2).load(dumpedJson)) {
             is ParseResult.Success -> assertNotNull(loaded.value)
             is ParseResult.Failure -> error("Failed to load dumped snapshot: ${loaded.error.message}")
         }
@@ -258,7 +210,7 @@ class ConsumerConfigurationLifecycleTest {
             """.trimIndent()
 
         val patchedConfig =
-            when (val patched = SnapshotSerializer.applyPatchJson(namespaceV2.configuration, patchJson)) {
+            when (val patched = ConfigurationSnapshotCodec.applyPatchJson(namespaceV2.configuration, patchJson)) {
                 is ParseResult.Success -> patched.value
                 is ParseResult.Failure -> error("Failed to apply patch: ${patched.error.message}")
             }

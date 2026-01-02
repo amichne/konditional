@@ -2,8 +2,15 @@ package io.amichne.konditional.internal.serialization.models
 
 import com.squareup.moshi.JsonClass
 import io.amichne.konditional.core.ValueType
-import io.amichne.konditional.core.types.KotlinEncodeable
+import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.core.types.Konstrained
+import io.amichne.konditional.core.types.asObjectSchema
+import io.amichne.konditional.core.types.toJsonValue
 import io.amichne.konditional.core.types.toPrimitiveValue
+import io.amichne.konditional.serialization.SchemaValueCodec
+import io.amichne.konditional.serialization.extractSchema
+import io.amichne.kontracts.schema.ObjectSchema
+import io.amichne.kontracts.value.JsonObject
 
 /**
  * Type-safe representation create flag values that replaces the type-erased SerializableValue.
@@ -18,7 +25,7 @@ import io.amichne.konditional.core.types.toPrimitiveValue
  * Supports primitive types and user-defined types:
  * - Boolean, String, Int, Double, Enum
  */
-sealed class FlagValue<out T : Any> {
+internal sealed class FlagValue<out T : Any> {
     abstract val value: T
 
     /**
@@ -29,28 +36,28 @@ sealed class FlagValue<out T : Any> {
     // ========== Primitive Types ==========
 
     @JsonClass(generateAdapter = true)
-    data class BooleanValue(
+    internal data class BooleanValue(
         override val value: Boolean,
     ) : FlagValue<Boolean>() {
         override fun toValueType() = ValueType.BOOLEAN
     }
 
     @JsonClass(generateAdapter = true)
-    data class StringValue(
+    internal data class StringValue(
         override val value: String,
     ) : FlagValue<String>() {
         override fun toValueType() = ValueType.STRING
     }
 
     @JsonClass(generateAdapter = true)
-    data class IntValue(
+    internal data class IntValue(
         override val value: Int,
     ) : FlagValue<Int>() {
         override fun toValueType() = ValueType.INT
     }
 
     @JsonClass(generateAdapter = true)
-    data class DoubleValue(
+    internal data class DoubleValue(
         override val value: Double,
     ) : FlagValue<Double>() {
         override fun toValueType() = ValueType.DOUBLE
@@ -62,7 +69,7 @@ sealed class FlagValue<out T : Any> {
      * to enable proper deserialization.
      */
     @JsonClass(generateAdapter = true)
-    data class EnumValue(
+    internal data class EnumValue(
         override val value: String,
         val enumClassName: String,
     ) : FlagValue<String>() {
@@ -78,12 +85,29 @@ sealed class FlagValue<out T : Any> {
      * which can be serialized to JSON and later reconstructed.
      */
     @JsonClass(generateAdapter = true)
-    data class DataClassValue(
+    internal data class DataClassValue(
         override val value: Map<String, Any?>,
         val dataClassName: String,
     ) : FlagValue<Map<String, Any?>>() {
         override fun toValueType() = ValueType.DATA_CLASS
     }
+
+    internal fun validate(schema: ObjectSchema) {
+        if (this is DataClassValue) {
+            validateDataClassFields(value, schema)
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    internal fun <V : Any> extractValue(schema: ObjectSchema? = null): V =
+        when (this) {
+            is EnumValue -> decodeEnum(enumClassName, value) as V
+            is DataClassValue -> {
+                schema?.let { validateDataClassFields(value, it) }
+                decodeDataClass(dataClassName, value) as V
+            }
+            else -> value as V
+        }
 
     companion object {
         /**
@@ -116,26 +140,18 @@ sealed class FlagValue<out T : Any> {
                     )
                 }
 
-                is KotlinEncodeable<*> -> {
-                    // Use registry-based serializer (no reflection)
-                    val serializer = io.amichne.konditional.serialization.SerializerRegistry.get(value::class)
-                        ?: throw IllegalArgumentException(
-                            "No serializer registered for ${value::class.qualifiedName}. " +
-                                "Register with SerializerRegistry.register(${value::class.simpleName}::class, serializer)"
-                        )
-
-                    @Suppress("UNCHECKED_CAST")
-                    val json =
-                        (serializer as io.amichne.konditional.serialization.TypeSerializer<KotlinEncodeable<*>>).encode(
-                            value
-                        )
-
+                is Konstrained<*> -> {
+                    // Use schema-based serializer
+                    val schema = value.schema.asObjectSchema()
+                    val json = SchemaValueCodec.encode(value, schema)
                     val primitive = json.toPrimitiveValue()
-                    require(primitive is Map<*, *>) { "KotlinEncodeable must encode to an object, got ${primitive?.let { it::class.simpleName }}" }
+
+                    require(primitive is Map<*, *>) {
+                        "Konstrained must encode to an object, got ${primitive?.let { it::class.simpleName }}"
+                    }
+
                     DataClassValue(
-                        value =
-                            @Suppress("UNCHECKED_CAST")
-                            (primitive as Map<String, Any?>),
+                        value = @Suppress("UNCHECKED_CAST") (primitive as Map<String, Any?>),
                         dataClassName = value::class.java.name,
                     )
                 }
@@ -143,9 +159,57 @@ sealed class FlagValue<out T : Any> {
                 else -> {
                     throw IllegalArgumentException(
                         "Unsupported value type: ${value::class.simpleName}. " +
-                            "Supported types: Boolean, String, Int, Double, Enum, KotlinEncodeable.",
+                            "Supported types: Boolean, String, Int, Double, Enum, Konstrained.",
                     )
                 }
             }
     }
 }
+
+private fun validateDataClassFields(
+    fields: Map<String, Any?>,
+    schema: ObjectSchema,
+) {
+    toJsonObject(fields, schema)
+}
+
+private fun decodeEnum(
+    enumClassName: String,
+    enumConstantName: String,
+): Enum<*> =
+    runCatching { Class.forName(enumClassName).asSubclass(Enum::class.java) }
+        .getOrElse { throw IllegalArgumentException("Failed to load enum class '$enumClassName': ${it.message}") }
+        .let { enumClass ->
+            @Suppress("UNCHECKED_CAST")
+            java.lang.Enum.valueOf(enumClass as Class<out Enum<*>>, enumConstantName)
+        }
+
+private fun decodeDataClass(
+    dataClassName: String,
+    fields: Map<String, Any?>,
+): Any =
+    runCatching { Class.forName(dataClassName).kotlin }
+        .getOrElse { throw IllegalArgumentException("Failed to load class '$dataClassName': ${it.message}") }
+        .let { kClass ->
+            val schema = extractSchema(kClass)
+                ?: throw IllegalArgumentException(
+                    "Class '$dataClassName' must implement Konstrained<ObjectSchema> for deserialization"
+                )
+
+            val jsonObject = toJsonObject(fields)
+            when (val result = SchemaValueCodec.decode(kClass, jsonObject, schema)) {
+                is ParseResult.Success -> result.value
+                is ParseResult.Failure -> throw IllegalArgumentException(
+                    "Failed to decode '$dataClassName': ${result.error.message}"
+                )
+            }
+        }
+
+private fun toJsonObject(
+    fields: Map<String, Any?>,
+    schema: ObjectSchema? = null,
+): JsonObject =
+    JsonObject(
+        fields = fields.mapValues { (_, value) -> value.toJsonValue() },
+        schema = schema,
+    )

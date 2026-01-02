@@ -11,22 +11,19 @@ import io.amichne.konditional.core.result.utils.onSuccess
 import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.fixtures.core.withOverride
 import io.amichne.konditional.fixtures.serializers.UserSettings
-import io.amichne.konditional.serialization.SerializerRegistry
-import io.amichne.konditional.serialization.SnapshotSerializer.fromJson
-import io.amichne.konditional.serialization.SnapshotSerializer.serialize
+import io.amichne.konditional.serialization.SchemaValueCodec
+import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 import io.amichne.kontracts.value.JsonBoolean
 import io.amichne.kontracts.value.JsonNumber
 import io.amichne.kontracts.value.JsonObject
 import io.amichne.kontracts.value.JsonString
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 /**
- * Comprehensive integration tests for KotlinEncodeable<ObjectSchema> support.
+ * Comprehensive integration tests for Konstrained<ObjectSchema> support.
  *
  * These tests validate:
  * - Data class to JsonValue conversion
@@ -35,24 +32,12 @@ import org.junit.jupiter.api.Test
  * - Serialization with Moshi
  * - Feature flag integration
  */
-class KotlinEncodeableIntegrationTest {
-
-    @BeforeEach
-    fun setup() {
-        // Register serializer for UserSettings
-        SerializerRegistry.register(UserSettings::class, UserSettings.serializer)
-    }
-
-    @AfterEach
-    fun cleanup() {
-        // Clear registry after tests
-        SerializerRegistry.clear()
-    }
+class KonstrainedIntegrationTest {
 
     @Test
     fun `data class to JsonValue conversion is correct`() {
         val settings = UserSettings()
-        val json = SerializerRegistry.encode(settings) as JsonObject
+        val json = SchemaValueCodec.encode(settings, settings.schema)
         val fields = json.fields
         assertEquals("light", fields["theme"]?.let { (it as? JsonString)?.value })
         assertEquals(true, fields["notificationsEnabled"]?.let { (it as? JsonBoolean)?.value })
@@ -71,7 +56,7 @@ class KotlinEncodeableIntegrationTest {
             ),
             schema = null
         )
-        val result = SerializerRegistry.decode(UserSettings::class, json)
+        val result = SchemaValueCodec.decode(UserSettings::class, json, UserSettings().schema)
         assertTrue(result is ParseResult.Success)
         val settings = (result as ParseResult.Success).value
         assertEquals("dark", settings.theme)
@@ -84,7 +69,7 @@ class KotlinEncodeableIntegrationTest {
     fun `schema generation and validation works as expected`() {
         val settings = UserSettings()
         val schema = settings.schema
-        val validJson = SerializerRegistry.encode(settings) as JsonObject
+        val validJson = SchemaValueCodec.encode(settings, schema)
         val validResult = validJson.validate(schema)
         assertTrue(validResult.isValid)
 
@@ -130,9 +115,10 @@ class KotlinEncodeableIntegrationTest {
         val override = UserSettings(theme = "dark", notificationsEnabled = false, maxRetries = 1, timeout = 10.0)
         Features.withOverride(Features.userSettings, override) {
             assertEquals(override, Features.userSettings.evaluate(context))
-            println(serialize(Features.configuration))
+            val json = ConfigurationSnapshotCodec.encode(Features.configuration)
+            println(json)
             // Verify round-trip serialization works
-            fromJson(Features.toJson()).onSuccess { config ->
+            ConfigurationSnapshotCodec.decode(json).onSuccess { config ->
                 println("Successfully deserialized ${config.flags.size} flags")
             }
         }

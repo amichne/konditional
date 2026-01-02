@@ -1,9 +1,9 @@
 package io.amichne.konditional.core.instance
 
-import io.amichne.konditional.core.types.KotlinEncodeable
+import io.amichne.konditional.core.types.Konstrained
+import io.amichne.konditional.core.types.asObjectSchema
 import io.amichne.konditional.core.types.toPrimitiveValue
-import io.amichne.konditional.serialization.SerializerRegistry
-import io.amichne.konditional.serialization.TypeSerializer
+import io.amichne.konditional.serialization.SchemaValueCodec
 
 sealed interface ConfigValue {
     @ConsistentCopyVisibility
@@ -43,27 +43,19 @@ sealed interface ConfigValue {
             is Int -> IntValue(value)
             is Double -> DoubleValue(value)
             is Enum<*> -> EnumValue(value.javaClass.name, value.name)
-            is KotlinEncodeable<*> -> {
-                // Use registry-based serializer (no reflection)
-                val serializer = SerializerRegistry.get(value::class)
-                    ?: throw IllegalArgumentException(
-                        "No serializer registered for ${value::class.qualifiedName}. " +
-                            "Register with SerializerRegistry.register(${value::class.simpleName}::class, serializer)"
-                    )
-
-                @Suppress("UNCHECKED_CAST")
-                val json =
-                    (serializer as TypeSerializer<KotlinEncodeable<*>>).encode(
-                        value
-                    )
-
+            is Konstrained<*> -> {
+                // Use schema-based serializer
+                val schema = value.schema.asObjectSchema()
+                val json = SchemaValueCodec.encode(value, schema)
                 val primitive = json.toPrimitiveValue()
-                require(primitive is Map<*, *>) { "KotlinEncodeable must encode to an object, got ${primitive?.let { it::class.simpleName }}" }
+
+                require(primitive is Map<*, *>) {
+                    "Konstrained must encode to an object, got ${primitive?.let { it::class.simpleName }}"
+                }
+
                 DataClassValue(
                     dataClassName = value::class.java.name,
-                    fields =
-                        @Suppress("UNCHECKED_CAST")
-                        (primitive as Map<String, Any?>),
+                    fields = @Suppress("UNCHECKED_CAST") (primitive as Map<String, Any?>),
                 )
             }
             else -> Opaque(

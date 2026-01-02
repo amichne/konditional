@@ -152,7 +152,7 @@ when (AppFlags.checkoutVariant.evaluate(ctx)) {
 **Configuration boundaries are explicit:**
 
 ```kotlin
-when (val result = AppFlags.fromJson(remoteConfig)) {
+when (val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)) {
     is ParseResult.Success -> Unit // loaded into AppFlags
     is ParseResult.Failure -> {
         // Invalid JSON rejected, last-known-good remains active
@@ -315,7 +315,7 @@ If you're coming from a boolean capability system:
 
 5. **Add remote config** with explicit boundaries:
    ```kotlin
-   when (val result = Features.fromJson(json)) {
+   when (val result = NamespaceSnapshotLoader(Features).load(json)) {
        is ParseResult.Success -> Unit // loaded into Features
        is ParseResult.Failure -> keepLastKnownGood()
    }

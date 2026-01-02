@@ -1,7 +1,10 @@
 package io.amichne.kontracts.schema
 
 /**
- * Base interface for OpenAPI-esque properties.
+ * Base interface for OpenAPI schema representation.
+ *
+ * @param T
+ * @constructor Create empty Open api
  */
 interface OpenApi<out T : Any> {
     val type: Type
@@ -13,7 +16,9 @@ interface OpenApi<out T : Any> {
     val deprecated: Boolean
 
     /**
-     * OpenAPI/JSON Schema type identifiers.
+     * JSON Schema data types, as per OpenAPI Specification.
+     *
+     * @property serialized The serialized string representation of the type.
      */
     enum class Type(val serialized: String) {
         STRING("string"),

@@ -66,7 +66,7 @@ JSON enters the system as an untrusted `String`. Konditional parses it into a tr
 val json: String = fetchRemoteConfig()  // Untrusted
 
 val _ = AppFeatures // ensure features are registered before parsing
-when (val result = SnapshotSerializer.fromJson(json)) {
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> {
         val config: Configuration = result.value  // Trusted
         AppFeatures.load(config)
@@ -96,7 +96,7 @@ sealed interface ParseResult<out T> {
 **Compiler enforcement:**
 
 ```kotlin
-when (val result = SnapshotSerializer.fromJson(json)) {
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> { /* handle success */ }
     is ParseResult.Failure -> { /* handle failure */ }
     // No other cases possible
@@ -132,7 +132,7 @@ Konditional uses `ParseResult` instead:
 
 ```kotlin
 // ✓ Explicit boundary
-when (val result = SnapshotSerializer.fromJson(json)) {
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> applyConfig(result.value)
     is ParseResult.Failure -> logError(result.error.message)
 }
@@ -154,7 +154,7 @@ Because `Configuration` can only be created via parsing (not public constructors
 // val config = Configuration(flags = emptyMap())  // Private constructor
 
 // ✓ Must go through parser
-when (val result = SnapshotSerializer.fromJson(json)) {
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> {
         // config is guaranteed valid
         val config = result.value
@@ -233,7 +233,7 @@ if (validateJson(json)) {
 ```kotlin
 val json = """{ "invalid": true }"""
 
-when (val result = SnapshotSerializer.fromJson(json)) {
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> {
         // Unreachable: JSON is invalid
     }

@@ -154,7 +154,7 @@ data class RetryPolicy(
     val maxAttempts: Int = 3,
     val backoffMs: Double = 1000.0,
     val enabled: Boolean = true
-) : KotlinEncodeable<ObjectSchema> {
+) : Konstrained<ObjectSchema> {
     override val schema = schemaRoot {
         ::maxAttempts of { minimum = 1 }
         ::backoffMs of { minimum = 0.0 }
@@ -206,10 +206,10 @@ No random number generators. No modulo edge cases. No per-team ramp-up implement
 val json = fetchRemoteConfig()
 
 // Important: deserialization requires that your Namespace objects have been initialized
-// (so features are registered) before calling SnapshotSerializer.fromJson(...).
+// (so features are registered) before calling ConfigurationSnapshotCodec.decode(...).
 // See: /remote-config
 
-when (val result = SnapshotSerializer.fromJson(json)) {
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> AppFlags.load(result.value)
     is ParseResult.Failure -> {
         // Invalid JSON rejected, last-known-good remains active
@@ -224,7 +224,7 @@ rejected; the previous working config stays active.
 ### Serialize current configuration
 
 ```kotlin
-val snapshot = SnapshotSerializer.serialize(AppFlags.configuration)
+val snapshot = ConfigurationSnapshotCodec.encode(AppFlags.configuration)
 persistToStorage(snapshot)
 ```
 
@@ -234,7 +234,7 @@ persistToStorage(snapshot)
 val patchJson = fetchPatch()
 val currentConfig = AppFlags.configuration
 
-when (val result = SnapshotSerializer.applyPatchJson(currentConfig, patchJson)) {
+when (val result = ConfigurationSnapshotCodec.applyPatchJson(currentConfig, patchJson)) {
     is ParseResult.Success -> AppFlags.load(result.value)
     is ParseResult.Failure -> logError("Patch failed: ${result.error.message}")
 }

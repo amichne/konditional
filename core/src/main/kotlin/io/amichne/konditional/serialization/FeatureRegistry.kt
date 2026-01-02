@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap
  * The only semantic requirement is ordering: callers must ensure that any feature they expect
  * to deserialize has been registered before deserialization begins.
  *
- * @see SnapshotSerializer
+ * @see io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
  */
 internal object FeatureRegistry {
     private val registry = ConcurrentHashMap<FeatureId, Feature<*, *, *>>()

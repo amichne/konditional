@@ -20,7 +20,10 @@ import io.amichne.kontracts.schema.ObjectTraits
  * Requirements:
  * - Must provide a schema property defining the structure
  * - All properties should have default values
- * - Properties must be of supported types (primitives, enums, JsonValue, nested KotlinEncodeable)
+ * - Properties must be of supported types (primitives, enums, nested Konstrained)
+ *
+ * Note: Konditional does not expose a public runtime JSON value model for you to construct literals. Model structured
+ * values as Kotlin data classes and validate them at the JSON boundary via the provided schema.
  *
  * Example:
  * ```kotlin
@@ -28,7 +31,7 @@ import io.amichne.kontracts.schema.ObjectTraits
  *     val theme: String = "light",
  *     val notificationsEnabled: Boolean = true,
  *     val maxRetries: Int = 3
- * ) : KotlinEncodeable<ObjectSchema> {
+ * ) : Konstrained<ObjectSchema> {
  *     override val schema = schemaRoot {
  *         ::theme of { minLength = 1 }
  *         ::notificationsEnabled of { default = true }
@@ -37,28 +40,10 @@ import io.amichne.kontracts.schema.ObjectTraits
  * }
  * ```
  *
- * Alternatively, define the schema in the companion object for reuse:
- * ```kotlin
- * data class UserSettings(
- *     val theme: String = "light",
- *     val notificationsEnabled: Boolean = true,
- *     val maxRetries: Int = 3
- * ) : KotlinEncodeable<ObjectSchema> {
- *     override val schema = Companion.schema
- *
- *     companion object {
- *         val schema = schemaRoot {
- *             ::theme of { minLength = 1 }
- *             ::notificationsEnabled of { default = true }
- *             ::maxRetries of { minimum = 0 }
- *         }
- *     }
- * }
- * ```
  *
  * @param S The schema type used for validation (must be an object schema)
  */
-interface KotlinEncodeable<out S> where S : JsonSchema<*>, S : ObjectTraits {
+interface Konstrained<out S> where S : JsonSchema<*>, S : ObjectTraits {
     /**
      * The schema defining the structure and validation rules for this custom type.
      */

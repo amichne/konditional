@@ -19,14 +19,14 @@
     <ID>MaxLineLength:AppLocale.kt$AppLocale$*</ID>
     <ID>MaxLineLength:AxisRegistry.kt$AxisRegistry$else -&gt; error("Multiple axes registered for type ${type.simpleName}: ${matches.joinToString { it.id }}")</ID>
     <ID>MaxLineLength:ConditionEvaluationTest.kt$ConditionEvaluationTest$fun</ID>
-    <ID>MaxLineLength:ConfigValue.kt$ConfigValue.Companion$require(primitive is Map&lt;*, *&gt;) { "KotlinEncodeable must encode to an object, got ${primitive?.let { it::class.simpleName }}" }</ID>
+    <ID>MaxLineLength:ConfigValue.kt$ConfigValue.Companion$require(primitive is Map&lt;*, *&gt;) { "Konstrained must encode to an object, got ${primitive?.let { it::class.simpleName }}" }</ID>
     <ID>MaxLineLength:Predicate.kt$Evaluable$*</ID>
     <ID>MaxLineLength:EvaluationResult.kt$EvaluationResult.Decision.Default$*</ID>
     <ID>MaxLineLength:Feature.kt$Feature$*</ID>
     <ID>MaxLineLength:FeatureRegistry.kt$FeatureRegistry$"Feature already registered for id='${feature.id}' (key='${feature.key}'): existing=$existing, attempted=$feature"</ID>
     <ID>MaxLineLength:FeatureUtilities.kt$"konditional.explain namespaceId=${result.namespaceId} key=${result.featureKey} decision=${result.decision::class.simpleName} version=${result.configVersion}"</ID>
     <ID>MaxLineLength:FeatureUtilities.kt$matchedRuleSpecificity = (result.decision as? EvaluationResult.Decision.Rule)?.matched?.rule?.totalSpecificity</ID>
-    <ID>MaxLineLength:FlagValue.kt$FlagValue.Companion$require(primitive is Map&lt;*, *&gt;) { "KotlinEncodeable must encode to an object, got ${primitive?.let { it::class.simpleName }}" }</ID>
+    <ID>MaxLineLength:FlagValue.kt$FlagValue.Companion$require(primitive is Map&lt;*, *&gt;) { "Konstrained must encode to an object, got ${primitive?.let { it::class.simpleName }}" }</ID>
     <ID>MaxLineLength:InMemoryNamespaceRegistry.kt$InMemoryNamespaceRegistry$*</ID>
     <ID>MaxLineLength:Namespace.kt$Namespace$*</ID>
     <ID>MaxLineLength:NamespaceSnapshotSerializer.kt$NamespaceSnapshotSerializer$ParseError.InvalidJson("Failed to deserialize JSON for namespace '${module.id}': ${it.message ?: "Unknown error"}")</ID>
@@ -39,7 +39,7 @@
     <ID>NestedBlockDepth:FlagValueAdapter.kt$FlagValueAdapter$override fun fromJson(reader: JsonReader): FlagValue&lt;*&gt;</ID>
     <ID>ReturnCount:ConversionUtils.kt$private fun resolveConstructorArg( fields: Map&lt;String, Any?&gt;, param: KParameter, ): Any</ID>
     <ID>ReturnCount:FlagDefinition.kt$FlagDefinition$internal fun evaluateTrace(context: C): Trace&lt;T, C&gt;</ID>
-    <ID>ReturnCount:KotlinClassExtensions.kt$inline fun &lt;reified T : KotlinEncodeable&lt;*&gt;&gt; JsonObject.parseAs(): ParseResult&lt;T&gt;</ID>
+    <ID>ReturnCount:KotlinClassExtensions.kt$inline fun &lt;reified T : Konstrained&lt;*&gt;&gt; JsonObject.parseAs(): ParseResult&lt;T&gt;</ID>
     <ID>ThrowsCount:VersionRangeAdapter.kt$VersionRangeAdapter$@FromJson fun fromJson(reader: JsonReader): VersionRange</ID>
     <ID>TooGenericExceptionCaught:ConversionUtils.kt$e: Exception</ID>
     <ID>TooGenericExceptionCaught:KotlinClassExtensions.kt$e: Exception</ID>
@@ -79,6 +79,6 @@
     <ID>VariableNaming:ExploitationAttacksTest.kt$ExploitationAttacksTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("exploit-rule-order") { val conflictingRules by boolean&lt;Context&gt;(default = false) { rule(true) { platforms(Platform.ANDROID) // Specificity = 1 note("first-rule") } rule(false) { locales(AppLocale.UNITED_STATES) // Also specificity = 1 note("second-rule") } } }</ID>
     <ID>VariableNaming:ExploitationAttacksTest.kt$ExploitationAttacksTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("exploit-specificity-shadowing") { val shadowedRules by string&lt;Context&gt;(default = "default") { // User writes this first, thinking it's a "catch-all" rule("catch-all") { // Specificity = 0 (no constraints) } // Then adds specific rules later rule("web-specific") { platforms(Platform.WEB) // Specificity = 1 } } }</ID>
     <ID>VariableNaming:FeatureRegistryTest.kt$FeatureRegistryTest$val AnotherContainer = object : Namespace.TestNamespaceFacade("feature-registry-other") { val differentFeature by boolean&lt;Context&gt;(default = false) }</ID>
-    <ID>VariableNaming:KotlinEncodeableIntegrationTest.kt$KotlinEncodeableIntegrationTest$val Features = object : Namespace.TestNamespaceFacade("data-class-flag") { val userSettings by custom&lt;UserSettings, Context&gt;(default = UserSettings()) {} }</ID>
+    <ID>VariableNaming:KonstrainedIntegrationTest.kt$KonstrainedIntegrationTest$val Features = object : Namespace.TestNamespaceFacade("data-class-flag") { val userSettings by custom&lt;UserSettings, Context&gt;(default = UserSettings()) {} }</ID>
   </CurrentIssues>
 </SmellBaseline>

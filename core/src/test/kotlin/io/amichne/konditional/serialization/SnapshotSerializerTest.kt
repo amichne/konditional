@@ -24,9 +24,9 @@ import io.amichne.konditional.internal.serialization.models.SerializablePatch
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.FullyBound
+import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.values.FeatureId
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -41,7 +41,7 @@ import kotlin.test.assertTrue
  * Tests both serialization and deserialization in both directions,
  * including round-trip tests, error cases, and patch functionality.
  */
-class SnapshotSerializerTest {
+class ConfigurationSnapshotCodecTest {
     private object TestFeatures : Namespace.TestNamespaceFacade("snapshot-serializer") {
         val boolFlag by boolean<Context>(default = false)
         val stringFlag by string<Context>(default = "default")
@@ -53,9 +53,6 @@ class SnapshotSerializerTest {
 
     @BeforeEach
     fun setup() {
-        // Register type serializers
-        SerializerRegistry.register(RetryPolicy::class, RetryPolicy.serializer)
-
         // Force axis registration for type-based axis() usage in rule builders.
         @Suppress("UnusedExpression")
         Axes.EnvironmentAxis
@@ -73,11 +70,6 @@ class SnapshotSerializerTest {
         FeatureRegistry.register(TestFeatures.doubleFlag)
         FeatureRegistry.register(TestFeatures.themeFlag)
         FeatureRegistry.register(TestFeatures.retryPolicyFlag)
-    }
-
-    @AfterEach
-    fun cleanup() {
-        SerializerRegistry.clear()
     }
 
     private enum class Environment(override val id: String) : AxisValue<Environment> {
@@ -126,7 +118,7 @@ class SnapshotSerializerTest {
     fun `Given empty Konfig, When serialized, Then produces valid JSON with empty flags array`() {
         val configuration = Configuration(emptyMap())
 
-        val json = SnapshotSerializer.serialize(configuration)
+        val json = ConfigurationSnapshotCodec.encode(configuration)
 
         assertNotNull(json)
         assertTrue(json.contains("\"flags\""))
@@ -137,7 +129,7 @@ class SnapshotSerializerTest {
     fun `Given Konfig with boolean flag, When serialized, Then includes flag with correct type`() {
         TestFeatures.boolFlag.update(true) {}
 
-        val json = SnapshotSerializer.serialize(TestFeatures.configuration)
+        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
 
         assertNotNull(json)
         assertTrue(json.contains("\"key\": \"${TestFeatures.boolFlag.id}\""))
@@ -154,7 +146,7 @@ class SnapshotSerializerTest {
             )
         val configuration = Configuration(mapOf(TestFeatures.stringFlag to flag))
 
-        val json = SnapshotSerializer.serialize(configuration)
+        val json = ConfigurationSnapshotCodec.encode(configuration)
 
         assertNotNull(json)
         assertTrue(json.contains("\"key\": \"${TestFeatures.stringFlag.id}\""))
@@ -165,7 +157,7 @@ class SnapshotSerializerTest {
     @Test
     fun `Given Konfig with int flag, When serialized, Then includes flag with correct type`() {
         TestFeatures.intFlag.update(42) {}
-        val json = SnapshotSerializer.serialize(TestFeatures.configuration)
+        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
 
         assertNotNull(json)
         println(json)
@@ -178,7 +170,7 @@ class SnapshotSerializerTest {
     fun `Given Konfig with double flag, When serialized, Then includes flag with correct type`() {
         TestFeatures.doubleFlag.update(3.14) {}
 
-        val json = SnapshotSerializer.serialize(TestFeatures.configuration)
+        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
 
         assertNotNull(json)
         assertTrue(json.contains("\"key\": \"${TestFeatures.doubleFlag.id}\""))
@@ -205,7 +197,7 @@ class SnapshotSerializerTest {
             )
         val configuration = Configuration(mapOf(TestFeatures.boolFlag to flag))
 
-        val json = SnapshotSerializer.serialize(configuration)
+        val json = ConfigurationSnapshotCodec.encode(configuration)
 
         assertNotNull(json)
         assertTrue(json.contains("\"rampUp\": 50.0"))
@@ -233,8 +225,8 @@ class SnapshotSerializerTest {
         assertTrue(TestFeatures.boolFlag.evaluate(ctx(allowlistedId)))
         assertFalse(TestFeatures.boolFlag.evaluate(ctx(otherId)))
 
-        val json = SnapshotSerializer.serialize(TestFeatures.configuration)
-        val parsed = SnapshotSerializer.fromJson(json).getOrThrow()
+        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
+        val parsed = ConfigurationSnapshotCodec.decode(json).getOrThrow()
 
         TestFeatures.load(Configuration(emptyMap()))
         TestFeatures.load(parsed)
@@ -251,13 +243,13 @@ class SnapshotSerializerTest {
             }
         }
 
-        val json = SnapshotSerializer.serialize(TestFeatures.configuration)
+        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
         assertTrue(json.contains("\"axes\""))
         assertTrue(json.contains("\"snapshot-environment\""))
         assertTrue(json.contains("prod"))
         assertTrue(json.contains("stage"))
 
-        val parsed = SnapshotSerializer.fromJson(json).getOrThrow()
+        val parsed = ConfigurationSnapshotCodec.decode(json).getOrThrow()
 
         TestFeatures.load(Configuration(emptyMap()))
         TestFeatures.load(parsed)
@@ -305,7 +297,7 @@ class SnapshotSerializerTest {
                 source = "s3://configs/global.json",
             )
 
-        val json = SnapshotSerializer.serialize(config)
+        val json = ConfigurationSnapshotCodec.encode(config)
         println(json)
 
         val normalized =
@@ -384,7 +376,7 @@ class SnapshotSerializerTest {
                     "type": "DATA_CLASS",
                     "dataClassName": "${RetryPolicy::class.java.name}",
                     "value": {
-                      "maxAttempts": 3.0,
+                      "maxAttempts": 3,
                       "backoffMs": 1000.0,
                       "enabled": true,
                       "mode": "exponential"
@@ -401,7 +393,7 @@ class SnapshotSerializerTest {
                         "type": "DATA_CLASS",
                         "dataClassName": "${RetryPolicy::class.java.name}",
                         "value": {
-                          "maxAttempts": 9.0,
+                          "maxAttempts": 9,
                           "backoffMs": 2500.0,
                           "enabled": false,
                           "mode": "linear"
@@ -441,7 +433,7 @@ class SnapshotSerializerTest {
                 ),
             )
 
-        val json = SnapshotSerializer.serialize(configuration)
+        val json = ConfigurationSnapshotCodec.encode(configuration)
 
         assertNotNull(json)
         assertTrue(json.contains(TestFeatures.boolFlag.id.toString()))
@@ -464,7 +456,7 @@ class SnapshotSerializerTest {
             }
             """.trimIndent()
 
-        val result = SnapshotSerializer.fromJson(json)
+        val result = ConfigurationSnapshotCodec.decode(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         assertEquals(0, result.value.flags.size)
@@ -490,7 +482,7 @@ class SnapshotSerializerTest {
             }
             """.trimIndent()
 
-        val result = SnapshotSerializer.fromJson(json)
+        val result = ConfigurationSnapshotCodec.decode(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val konfig = result.value
@@ -521,7 +513,7 @@ class SnapshotSerializerTest {
             }
             """.trimIndent()
 
-        val result = SnapshotSerializer.fromJson(json)
+        val result = ConfigurationSnapshotCodec.decode(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val flag = result.value.flags[TestFeatures.stringFlag]
@@ -549,7 +541,7 @@ class SnapshotSerializerTest {
             }
             """.trimIndent()
 
-        val result = SnapshotSerializer.fromJson(json)
+        val result = ConfigurationSnapshotCodec.decode(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val flag = result.value.flags[TestFeatures.intFlag]
@@ -577,7 +569,7 @@ class SnapshotSerializerTest {
             }
             """.trimIndent()
 
-        val result = SnapshotSerializer.fromJson(json)
+        val result = ConfigurationSnapshotCodec.decode(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val flag = result.value.flags[TestFeatures.doubleFlag]
@@ -629,7 +621,7 @@ class SnapshotSerializerTest {
             }
             """.trimIndent()
 
-        val result = SnapshotSerializer.fromJson(json)
+        val result = ConfigurationSnapshotCodec.decode(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val flag = result.value.flags[TestFeatures.boolFlag]
@@ -654,7 +646,7 @@ class SnapshotSerializerTest {
     fun `Given invalid JSON, When deserialized, Then returns failure with InvalidJson error`() {
         val json = "not valid json at all"
 
-        val result = SnapshotSerializer.fromJson(json)
+        val result = ConfigurationSnapshotCodec.decode(json)
 
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.InvalidJson>(result.error)
@@ -680,7 +672,7 @@ class SnapshotSerializerTest {
             }
             """.trimIndent()
 
-        val result = SnapshotSerializer.fromJson(json)
+        val result = ConfigurationSnapshotCodec.decode(json)
 
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.FeatureNotFound>(result.error)
@@ -694,8 +686,8 @@ class SnapshotSerializerTest {
         val originalFlag = FlagDefinition(feature = TestFeatures.boolFlag, defaultValue = true)
         val originalConfiguration = Configuration(mapOf(TestFeatures.boolFlag to originalFlag))
 
-        val json = SnapshotSerializer.serialize(originalConfiguration)
-        val result = SnapshotSerializer.fromJson(json)
+        val json = ConfigurationSnapshotCodec.encode(originalConfiguration)
+        val result = ConfigurationSnapshotCodec.decode(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val deserializedFlag = result.value.flags[TestFeatures.boolFlag]
@@ -710,8 +702,8 @@ class SnapshotSerializerTest {
         val originalFlag = FlagDefinition(feature = TestFeatures.stringFlag, defaultValue = "test-value")
         val originalConfiguration = Configuration(mapOf(TestFeatures.stringFlag to originalFlag))
 
-        val json = SnapshotSerializer.serialize(originalConfiguration)
-        val result = SnapshotSerializer.fromJson(json)
+        val json = ConfigurationSnapshotCodec.encode(originalConfiguration)
+        val result = ConfigurationSnapshotCodec.decode(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val deserializedFlag = result.value.flags[TestFeatures.stringFlag]
@@ -724,8 +716,8 @@ class SnapshotSerializerTest {
         val originalFlag = FlagDefinition(feature = TestFeatures.intFlag, defaultValue = 42)
         val originalConfiguration = Configuration(mapOf(TestFeatures.intFlag to originalFlag))
 
-        val json = SnapshotSerializer.serialize(originalConfiguration)
-        val result = SnapshotSerializer.fromJson(json)
+        val json = ConfigurationSnapshotCodec.encode(originalConfiguration)
+        val result = ConfigurationSnapshotCodec.decode(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val deserializedFlag = result.value.flags[TestFeatures.intFlag]
@@ -738,8 +730,8 @@ class SnapshotSerializerTest {
         val originalFlag = FlagDefinition(feature = TestFeatures.doubleFlag, defaultValue = 3.14)
         val originalConfiguration = Configuration(mapOf(TestFeatures.doubleFlag to originalFlag))
 
-        val json = SnapshotSerializer.serialize(originalConfiguration)
-        val result = SnapshotSerializer.fromJson(json)
+        val json = ConfigurationSnapshotCodec.encode(originalConfiguration)
+        val result = ConfigurationSnapshotCodec.decode(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val deserializedFlag = result.value.flags[TestFeatures.doubleFlag]
@@ -766,8 +758,8 @@ class SnapshotSerializerTest {
             )
         val originalConfiguration = Configuration(mapOf(TestFeatures.boolFlag to originalFlag))
 
-        val json = SnapshotSerializer.serialize(originalConfiguration)
-        val result = SnapshotSerializer.fromJson(json)
+        val json = ConfigurationSnapshotCodec.encode(originalConfiguration)
+        val result = ConfigurationSnapshotCodec.decode(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val deserializedFlag = result.value.flags[TestFeatures.boolFlag]
@@ -809,8 +801,8 @@ class SnapshotSerializerTest {
                 ),
             )
 
-        val json = SnapshotSerializer.serialize(originalConfiguration)
-        val result = SnapshotSerializer.fromJson(json)
+        val json = ConfigurationSnapshotCodec.encode(originalConfiguration)
+        val result = ConfigurationSnapshotCodec.decode(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val deserializedKonfig = result.value
@@ -850,7 +842,7 @@ class SnapshotSerializerTest {
             }
             """.trimIndent()
 
-        val result = SnapshotSerializer.applyPatchJson(originalConfiguration, patchJson)
+        val result = ConfigurationSnapshotCodec.applyPatchJson(originalConfiguration, patchJson)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val patchedKonfig = result.value
@@ -885,7 +877,7 @@ class SnapshotSerializerTest {
             }
             """.trimIndent()
 
-        val result = SnapshotSerializer.applyPatchJson(originalConfiguration, patchJson)
+        val result = ConfigurationSnapshotCodec.applyPatchJson(originalConfiguration, patchJson)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val patchedFlag = result.value.flags[TestFeatures.boolFlag]
@@ -907,7 +899,7 @@ class SnapshotSerializerTest {
             }
             """.trimIndent()
 
-        val result = SnapshotSerializer.applyPatchJson(originalConfiguration, patchJson)
+        val result = ConfigurationSnapshotCodec.applyPatchJson(originalConfiguration, patchJson)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val patchedKonfig = result.value
@@ -955,7 +947,7 @@ class SnapshotSerializerTest {
             }
             """.trimIndent()
 
-        val result = SnapshotSerializer.applyPatchJson(originalConfiguration, patchJson)
+        val result = ConfigurationSnapshotCodec.applyPatchJson(originalConfiguration, patchJson)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val patchedKonfig = result.value
@@ -982,7 +974,7 @@ class SnapshotSerializerTest {
         val originalConfiguration = Configuration(emptyMap())
         val invalidPatchJson = "not valid json"
 
-        val result = SnapshotSerializer.applyPatchJson(originalConfiguration, invalidPatchJson)
+        val result = ConfigurationSnapshotCodec.applyPatchJson(originalConfiguration, invalidPatchJson)
 
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.InvalidJson>(result.error)
@@ -998,7 +990,7 @@ class SnapshotSerializerTest {
             }
             """.trimIndent()
 
-        val result = SnapshotSerializer.fromJsonPatch(patchJson)
+        val result = ConfigurationSnapshotCodec.fromJsonPatch(patchJson)
 
         assertIs<ParseResult.Success<SerializablePatch>>(result)
         assertEquals(0, result.value.flags.size)
@@ -1017,11 +1009,7 @@ class SnapshotSerializerTest {
             }
             """.trimIndent()
 
-        val patchResult = SnapshotSerializer.fromJsonPatch(patchJson)
-        assertIs<ParseResult.Success<SerializablePatch>>(patchResult)
-
-        val result =
-            SnapshotSerializer.applyPatch(originalConfiguration, patchResult.value, SnapshotLoadOptions.strict())
+        val result = ConfigurationSnapshotCodec.applyPatchJson(originalConfiguration, patchJson, SnapshotLoadOptions.strict())
 
         assertIs<ParseResult.Success<Configuration>>(result)
     }

@@ -124,7 +124,7 @@ When configuration comes from JSON:
 
 ```kotlin
 val _ = AppFeatures // ensure features are registered before parsing
-when (val result = SnapshotSerializer.fromJson(json)) {
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> {
         // JSON is valid, types match, features exist
         val config: Configuration = result.value
@@ -146,7 +146,11 @@ when (val result = SnapshotSerializer.fromJson(json)) {
 1. **JSON parsing** — Moshi parses JSON into the snapshot model
 2. **Feature lookup** — Each `FeatureId` is resolved to a registered `Feature` (or fails with `ParseError.FeatureNotFound`)
 3. **Type decoding** — Tagged values (`defaultValue` and rule `value`) are decoded into the declared Kotlin types (or fail with `ParseError.InvalidSnapshot`)
-4. **Structured value validation** — For `KotlinEncodeable` values, fields are validated against the provided Kontracts schema at the boundary
+4. **Structured value validation** — For `Konstrained` values, fields are validated against the provided Kontracts schema at the boundary
+
+**Guarantee**: Application code does not construct JSON literals via a Konditional JSON value model.  
+**Mechanism**: JSON is parsed into the snapshot model and decoded into Kotlin values; structured values validate against `ObjectSchema`.  
+**Boundary**: This guarantee applies to Konditional’s public API; `kontracts` may still expose a runtime JSON model for standalone use.
 
 ---
 
@@ -229,7 +233,7 @@ val enabled = AppFeatures.newOnboardingFlow(context)  // Typo is compile error
 
 ```kotlin
 // ✓ Runtime validation with explicit error handling
-when (val result = SnapshotSerializer.fromJson(json)) {
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> {
         // Type-safe from here on
         val enabled = AppFeatures.newOnboardingFlow(context)

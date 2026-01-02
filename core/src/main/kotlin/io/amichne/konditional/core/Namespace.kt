@@ -12,10 +12,9 @@ import io.amichne.konditional.core.features.StringFeature
 import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
 import io.amichne.konditional.core.registry.NamespaceRegistry
 import io.amichne.konditional.core.registry.NamespaceRegistry.Companion.updateDefinition
-import io.amichne.konditional.core.types.KotlinEncodeable
+import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.internal.builders.FlagBuilder
 import io.amichne.konditional.serialization.FeatureRegistry
-import io.amichne.konditional.serialization.NamespaceSnapshotSerializer
 import io.amichne.konditional.values.IdentifierEncoding.SEPARATOR
 import org.jetbrains.annotations.TestOnly
 import java.util.UUID
@@ -113,10 +112,6 @@ open class Namespace(
 
     fun allFeatures(): List<Feature<*, *, *>> = _features.toList()
 
-    fun toJson(): String = NamespaceSnapshotSerializer(this).toJson()
-
-    fun fromJson(json: String) = NamespaceSnapshotSerializer(this).fromJson(json)
-
     protected fun <C : Context> boolean(
         default: Boolean,
         flagScope: FlagScope<Boolean, C>.() -> Unit = {},
@@ -142,7 +137,7 @@ open class Namespace(
         enumScope: FlagScope<E, C>.() -> Unit = {},
     ): EnumDelegate<E, C> = EnumDelegate(default, enumScope)
 
-    protected inline fun <reified T : KotlinEncodeable<*>, C : Context> custom(
+    protected inline fun <reified T : Konstrained<*>, C : Context> custom(
         default: T,
         noinline customScope: FlagScope<T, C>.() -> Unit = {},
     ): KotlinClassDelegate<T, C> = KotlinClassDelegate(default, customScope)
@@ -275,7 +270,7 @@ open class Namespace(
     }
 
     @Suppress("UNCHECKED_CAST")
-    protected class KotlinClassDelegate<T : KotlinEncodeable<*>, C : Context>(
+    protected class KotlinClassDelegate<T : Konstrained<*>, C : Context>(
         private val default: T,
         private val configScope: FlagScope<T, C>.() -> Unit,
     ) {
