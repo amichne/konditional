@@ -49,7 +49,7 @@ Evaluate against baseline (returned) and candidate (comparison only):
 
 ```kotlin
 val _ = AppFeatures // ensure features are registered before parsing
-val candidateConfig = SnapshotSerializer.fromJson(candidateJson).getOrThrow()
+val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow()
 val candidateRegistry = NamespaceRegistry(
     configuration = candidateConfig,
     namespaceId = AppFeatures.namespaceId,
@@ -108,7 +108,7 @@ val newFeature by boolean<Context>(default = false) {
 **Shadow evaluation:**
 ```kotlin
 val _ = AppFeatures // ensure features are registered before parsing
-val candidateConfig = SnapshotSerializer.fromJson(candidateJson).getOrThrow()
+val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow()
 val candidateRegistry = NamespaceRegistry(configuration = candidateConfig, namespaceId = AppFeatures.namespaceId)
 
 // Evaluate sample of users
@@ -153,8 +153,8 @@ You're migrating from another flag system to Konditional. You want to verify tha
 // If you can translate the "old system" state into a Konditional snapshot, you can compare
 // two registries side-by-side without changing production behavior:
 val _ = AppFeatures // ensure features are registered before parsing
-val baselineConfig = SnapshotSerializer.fromJson(baselineJson).getOrThrow()
-val candidateConfig = SnapshotSerializer.fromJson(candidateJson).getOrThrow()
+val baselineConfig = ConfigurationSnapshotCodec.decode(baselineJson).getOrThrow()
+val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow()
 
 val baselineRegistry = NamespaceRegistry(configuration = baselineConfig, namespaceId = AppFeatures.namespaceId)
 val candidateRegistry = NamespaceRegistry(configuration = candidateConfig, namespaceId = AppFeatures.namespaceId)

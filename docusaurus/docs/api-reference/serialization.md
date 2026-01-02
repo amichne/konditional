@@ -4,51 +4,48 @@ API reference for JSON snapshot/patch operations: parsing, serialization, and in
 
 ---
 
-## `SnapshotSerializer.serialize(configuration): String`
+## `ConfigurationSnapshotCodec.encode(configuration): String`
 
 Serialize a `Configuration` to JSON.
 
 ```kotlin
-object SnapshotSerializer {
-    fun serialize(configuration: Configuration): String
+object ConfigurationSnapshotCodec {
+    fun encode(configuration: Configuration): String
 }
 ```
 
 ### Example
 
 ```kotlin
-val snapshotJson = SnapshotSerializer.serialize(AppFeatures.configuration)
+val snapshotJson = ConfigurationSnapshotCodec.encode(AppFeatures.configuration)
 persistToStorage(snapshotJson)
 ```
 
 ---
 
-## `SnapshotSerializer.fromJson(json, options): ParseResult<Configuration>`
+## `ConfigurationSnapshotCodec.decode(json, options): ParseResult<Configuration>`
 
 Parse a snapshot JSON payload into a validated `Configuration`.
 
 ```kotlin
-object SnapshotSerializer {
-    fun fromJson(json: String): ParseResult<Configuration>
+object ConfigurationSnapshotCodec {
+    fun decode(json: String): ParseResult<Configuration>
 
-    fun fromJson(
-        json: String,
-        options: SnapshotLoadOptions,
-    ): ParseResult<Configuration>
+    fun decode(json: String, options: SnapshotLoadOptions): ParseResult<Configuration>
 }
 ```
 
 ### Precondition
 
 Features must be registered before parsing. In practice: ensure your `Namespace` objects (and their delegated feature
-properties) have been initialized before calling `fromJson(...)`.
+properties) have been initialized before calling `decode(...)`.
 
 See [Fundamentals: Definition vs Initialization](/fundamentals/definition-vs-initialization).
 
 ### Example
 
 ```kotlin
-when (val result = SnapshotSerializer.fromJson(json)) {
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> AppFeatures.load(result.value)
     is ParseResult.Failure -> logger.error { "Parse failed: ${result.error.message}" }
 }
@@ -56,12 +53,12 @@ when (val result = SnapshotSerializer.fromJson(json)) {
 
 ---
 
-## `SnapshotSerializer.applyPatchJson(configuration, patchJson, options): ParseResult<Configuration>`
+## `ConfigurationSnapshotCodec.applyPatchJson(configuration, patchJson, options): ParseResult<Configuration>`
 
 Apply an incremental patch to an existing configuration snapshot.
 
 ```kotlin
-object SnapshotSerializer {
+object ConfigurationSnapshotCodec {
     fun applyPatchJson(
         currentConfiguration: Configuration,
         patchJson: String,
@@ -79,7 +76,7 @@ object SnapshotSerializer {
 
 ```kotlin
 val currentConfig = AppFeatures.configuration
-when (val result = SnapshotSerializer.applyPatchJson(currentConfig, patchJson)) {
+when (val result = ConfigurationSnapshotCodec.applyPatchJson(currentConfig, patchJson)) {
     is ParseResult.Success -> AppFeatures.load(result.value)
     is ParseResult.Failure -> logger.error { "Patch failed: ${result.error.message}" }
 }
@@ -89,25 +86,24 @@ Patch JSON shape is documented in [Persistence & Storage Format](/persistence-fo
 
 ---
 
-## `NamespaceSnapshotSerializer<M>`
+## `NamespaceSnapshotLoader<M>`
 
-Namespace-scoped JSON serializer/deserializer.
+Namespace-scoped JSON loader.
 
-On success, `fromJson(...)` loads the new configuration into the namespace.
+On success, `load(...)` loads the new configuration into the namespace.
 
 ```kotlin
-class NamespaceSnapshotSerializer<M : Namespace>(namespace: M) : Serializer<Configuration> {
-    override fun toJson(): String
-    override fun fromJson(json: String): ParseResult<Configuration>
-
-    fun fromJson(json: String, options: SnapshotLoadOptions): ParseResult<Configuration>
+class NamespaceSnapshotLoader<M : Namespace>(namespace: M) {
+    fun load(json: String): ParseResult<Configuration>
+    fun load(json: String, options: SnapshotLoadOptions): ParseResult<Configuration>
 }
 ```
 
-For the common case you can use the `Namespace` convenience methods:
+Encoding a namespace snapshot remains explicit and side-effect free:
 
-- `Namespace.toJson(): String`
-- `Namespace.fromJson(json: String): ParseResult<Configuration>`
+```kotlin
+val json = ConfigurationSnapshotCodec.encode(AppFeatures.configuration)
+```
 
 ---
 
@@ -155,7 +151,7 @@ val options = SnapshotLoadOptions.skipUnknownKeys { warning ->
     logger.warn { warning.message }
 }
 
-when (val result = SnapshotSerializer.fromJson(json, options)) {
+when (val result = ConfigurationSnapshotCodec.decode(json, options)) {
     is ParseResult.Success -> AppFeatures.load(result.value)
     is ParseResult.Failure -> logger.error { result.error.message }
 }

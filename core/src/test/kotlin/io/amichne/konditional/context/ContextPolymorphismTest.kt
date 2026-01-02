@@ -14,7 +14,7 @@ import io.amichne.konditional.fixtures.SubscriptionTier
 import io.amichne.konditional.fixtures.UserRole
 import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.fixtures.utilities.update
-import io.amichne.konditional.serialization.SnapshotSerializer
+import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 import org.junit.jupiter.api.BeforeEach
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -31,12 +31,12 @@ class ContextPolymorphismTest {
         // Reset registry before each test
         println("Payments")
         println("--------")
-        println(SnapshotSerializer.serialize(TestDomains.Payments.configuration))
+        println(ConfigurationSnapshotCodec.encode(TestDomains.Payments.configuration))
         println("--------")
 
         println("Search")
         println("--------")
-        println(SnapshotSerializer.serialize(TestDomains.Search.configuration))
+        println(ConfigurationSnapshotCodec.encode(TestDomains.Search.configuration))
         println("--------")
     }
 

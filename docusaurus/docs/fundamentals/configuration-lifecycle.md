@@ -4,9 +4,9 @@ From JSON to evaluation: how configuration flows through Konditional's validated
 
 ```mermaid
 flowchart LR
-  Code["Flags defined in code"] --> Snap["namespace.toJson()"]
+  Code["Flags defined in code"] --> Snap["ConfigurationSnapshotCodec.encode(namespace.configuration)"]
   Snap --> Json["JSON snapshot"]
-  Json --> Parse["namespace.fromJson(json)"]
+  Json --> Parse["NamespaceSnapshotLoader(namespace).load(json)"]
   Parse -->|Success| Load["Loads into namespace"]
   Parse -->|Failure| Reject["Keep last-known-good + log"]
   Load --> Eval["Evaluation uses active snapshot"]
@@ -32,7 +32,7 @@ val json = File("flags.json").readText()
 The payload is parsed and validated against registered features:
 
 ```kotlin
-when (val result = AppFeatures.fromJson(json)) {
+when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
     is ParseResult.Success -> {
         // Valid configuration, ready to load
     }
@@ -61,7 +61,7 @@ when (val result = AppFeatures.fromJson(json)) {
 If validation succeeds, the new configuration is loaded atomically:
 
 ```kotlin
-when (val result = AppFeatures.fromJson(json)) {
+when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
     is ParseResult.Success -> {
         // Configuration is already loaded (fromJson calls load internally)
         logger.info("Config updated successfully")
@@ -83,7 +83,7 @@ when (val result = AppFeatures.fromJson(json)) {
 If validation fails, the payload is rejected and the last-known-good configuration remains active:
 
 ```kotlin
-when (val result = AppFeatures.fromJson(json)) {
+when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
     is ParseResult.Success -> Unit
     is ParseResult.Failure -> {
         // Last-known-good config is still active
@@ -106,7 +106,7 @@ Evaluation always reads the current active snapshot (lock-free):
 
 ```kotlin
 // Thread 1: Update configuration
-AppFeatures.fromJson(newJson)
+NamespaceSnapshotLoader(AppFeatures).load(newJson)
 
 // Thread 2: Concurrent evaluation
 val enabled = AppFeatures.darkMode(context)  // Sees old OR new, never mixed
@@ -123,7 +123,7 @@ Before loading JSON, ensure your `Namespace` objects have been initialized (see 
 val _ = AppFeatures
 
 // Later: Load JSON
-when (val result = AppFeatures.fromJson(json)) {
+when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
     is ParseResult.Success -> Unit
     is ParseResult.Failure -> logError(result.error.message)
 }
@@ -138,7 +138,7 @@ If JSON references a feature that hasn't been registered, deserialization fails 
 Export the current snapshot to JSON for storage or transport:
 
 ```kotlin
-val json = AppFeatures.toJson()
+val json = ConfigurationSnapshotCodec.encode(AppFeatures.configuration)
 File("flags.json").writeText(json)
 ```
 
@@ -165,7 +165,7 @@ val patchJson = """
 """
 
 val currentConfig = AppFeatures.configuration
-when (val result = SnapshotSerializer.applyPatchJson(currentConfig, patchJson)) {
+when (val result = ConfigurationSnapshotCodec.applyPatchJson(currentConfig, patchJson)) {
     is ParseResult.Success -> AppFeatures.load(result.value)
     is ParseResult.Failure -> logError(result.error.message)
 }
@@ -199,7 +199,7 @@ val history: List<ConfigurationMetadata> = AppFeatures.historyMetadata
 ```kotlin
 while (running) {
     val json = fetchFromServer()
-    when (val result = AppFeatures.fromJson(json)) {
+    when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
         is ParseResult.Success -> logger.info("Config updated")
         is ParseResult.Failure -> logger.error("Parse failed: ${result.error}")
     }
@@ -211,7 +211,7 @@ while (running) {
 
 ```kotlin
 configStream.collect { json ->
-    when (val result = AppFeatures.fromJson(json)) {
+    when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
         is ParseResult.Success -> logger.info("Config updated")
         is ParseResult.Failure -> logger.error("Parse failed: ${result.error}")
     }

@@ -131,7 +131,7 @@ Konditional supports JSON configuration as a validated boundary:
 
 ```kotlin
 val json = File("flags.json").readText()
-when (val result = AppDomain.Payments.fromJson(json)) {
+when (val result = NamespaceSnapshotLoader(AppDomain.Payments).load(json)) {
     is ParseResult.Success -> Unit // loaded into AppDomain.Payments
     is ParseResult.Failure -> logError("Parse failed: ${result.error}")
 }

@@ -1,11 +1,8 @@
 package io.amichne.konditional.core.types
 
-import io.amichne.konditional.core.result.ParseError
-import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.serialization.SchemaValueCodec
 import io.amichne.kontracts.schema.DoubleSchema
 import io.amichne.kontracts.schema.IntSchema
-import io.amichne.kontracts.schema.JsonSchema
-import io.amichne.kontracts.schema.ValidationResult
 import io.amichne.kontracts.value.JsonArray
 import io.amichne.kontracts.value.JsonBoolean
 import io.amichne.kontracts.value.JsonNull
@@ -13,50 +10,6 @@ import io.amichne.kontracts.value.JsonNumber
 import io.amichne.kontracts.value.JsonObject
 import io.amichne.kontracts.value.JsonString
 import io.amichne.kontracts.value.JsonValue
-import kotlin.reflect.KClass
-import kotlin.reflect.KParameter
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.full.primaryConstructor
-import kotlin.reflect.jvm.isAccessible
-
-/**
- * Converts a custom encodeable instance to a JsonValue.JsonObject.
- *
- * **DEPRECATED:** This reflection-based method is deprecated and will be removed in 0.1.0.
- * Schema-based serialization now happens automatically via SchemaBasedSerializer.
- *
- * This function uses reflection to extract all properties from the custom type
- * and convert them to JsonValue instances based on their types.
- *
- * @param schema The schema to validate against (optional, defaults to the instance's schema)
- * @return JsonValue.JsonObject representation create this custom encodeable type
- */
-@Deprecated(
-    message = "Reflection-based serialization is deprecated. " +
-        "Serialization now happens automatically via schema.",
-    replaceWith = ReplaceWith(
-        "SchemaBasedSerializer.encode(this, this.schema.asObjectSchema())",
-        "io.amichne.konditional.serialization.SchemaBasedSerializer",
-        "io.amichne.konditional.core.types.asObjectSchema"
-    ),
-    level = DeprecationLevel.WARNING
-)
-fun KotlinEncodeable<*>.toJsonValue(schema: JsonSchema<*>? = null): JsonObject =
-    JsonObject(
-        fields =
-            buildMap {
-                val instance = this@toJsonValue
-                instance::class.memberProperties
-                    .asSequence()
-                    .filterNot { it.name == "schema" }
-                    .sortedBy { it.name }
-                    .forEach { property ->
-                        property.isAccessible = true
-                        put(property.name, property.call(instance).toJsonValue())
-                    }
-            },
-        schema = (schema ?: this.schema).asObjectSchema(),
-    )
 
 /**
  * Converts any value to a JsonValue.
@@ -83,9 +36,7 @@ internal fun Any?.toJsonValue(): JsonValue = when (this) {
             schema = null,
         )
     }
-    is KotlinEncodeable<*> -> {
-        this.toJsonValue()
-    }
+    is KotlinEncodeable<*> -> SchemaValueCodec.encode(this, schema.asObjectSchema())
     is JsonValue -> this
     is List<*> -> JsonArray(map { it.toJsonValue() }, null)
     else -> throw IllegalArgumentException(
@@ -94,100 +45,11 @@ internal fun Any?.toJsonValue(): JsonValue = when (this) {
 }
 
 /**
- * Parses a JsonValue.JsonObject into a custom encodeable instance.
- *
- * **DEPRECATED:** This reflection-based method is deprecated and will be removed in 0.1.0.
- * Schema-based deserialization now happens automatically via SchemaBasedSerializer.
- *
- * This function uses reflection to instantiate the custom type with values
- * extracted from the JsonObject, validating against the schema if present.
- *
- * @param T The custom encodeable type to parse into
- * @return ParseResult containing either the custom type instance or an error
- */
-@Deprecated(
-    message = "Reflection-based deserialization is deprecated. " +
-        "Deserialization now happens automatically via schema.",
-    replaceWith = ReplaceWith(
-        "extractSchema(T::class)?.let { schema -> SchemaBasedSerializer.decode(T::class, this, schema) } ?: ParseResult.Failure(ParseError.InvalidSnapshot(\"No schema found\"))",
-        "io.amichne.konditional.serialization.extractSchema",
-        "io.amichne.konditional.serialization.SchemaBasedSerializer",
-        "io.amichne.konditional.core.result.ParseResult",
-        "io.amichne.konditional.core.result.ParseError"
-    ),
-    level = DeprecationLevel.WARNING
-)
-inline fun <reified T : KotlinEncodeable<*>> JsonObject.parseAs(): ParseResult<T> {
-    return try {
-        val kClass = T::class
-        val constructor = kClass.primaryConstructor ?: return ParseResult.Failure(
-            ParseError.InvalidSnapshot("Custom type ${kClass.simpleName} must have a primary constructor")
-        )
-        constructor.isAccessible = true
-
-        // Validate against schema if present
-        this.schema?.let { schema ->
-            val validationResult = this.validate(schema)
-            if (validationResult is ValidationResult.Invalid) {
-                return ParseResult.Failure(
-                    ParseError.InvalidSnapshot("Schema validation failed: ${validationResult.message}")
-                )
-            }
-        }
-
-        // Build parameter map for constructor
-        val parameterMap = mutableMapOf<KParameter, Any?>()
-        constructor.parameters.forEach { param ->
-            val fieldName = param.name ?: return ParseResult.Failure(
-                ParseError.InvalidSnapshot("Constructor parameter has no name")
-            )
-
-            val jsonValue = this.fields[fieldName]
-            val value = if (jsonValue != null) jsonValue.toKotlinValue(param.type.classifier as? KClass<*>) else
-                if (param.isOptional) null else {
-                    return ParseResult.Failure(
-                        ParseError.InvalidSnapshot("Required field '$fieldName' is missing")
-                    )
-                }
-
-            if (value != null) {
-                parameterMap[param] = value
-            }
-        }
-
-        // Instantiate the custom type
-        val instance = constructor.callBy(parameterMap)
-        ParseResult.Success(instance)
-    } catch (e: Exception) {
-        ParseResult.Failure(
-            ParseError.InvalidSnapshot("Failed to parse custom type: ${e.message}")
-        )
-    }
-}
-
-/**
- * Converts a JsonValue to its Kotlin equivalent.
- */
-@PublishedApi
-internal fun JsonValue.toKotlinValue(targetClass: KClass<*>?): Any? = when (this) {
-    is JsonNull -> null
-    is JsonBoolean -> value
-    is JsonString -> value
-    is JsonNumber -> when (targetClass) {
-        Int::class -> toInt()
-        Double::class -> toDouble()
-        else -> toDouble()
-    }
-    is JsonObject -> this
-    is JsonArray -> elements
-}
-
-/**
  * Converts a JsonValue to a primitive value for serialization.
  *
  * This is used when converting JsonObjects to Maps for FlagValue serialization.
  */
-fun JsonValue.toPrimitiveValue(): Any? = when (this) {
+internal fun JsonValue.toPrimitiveValue(): Any? = when (this) {
     is JsonNull -> null
     is JsonBoolean -> value
     is JsonString -> value

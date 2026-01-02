@@ -135,7 +135,7 @@ data class Configuration internal constructor(
 
 Notes:
 
-- `Configuration` is produced at the JSON boundary (`SnapshotSerializer.fromJson(...)`) or read from a namespace via
+- `Configuration` is produced at the JSON boundary (`ConfigurationSnapshotCodec.decode(...)`) or read from a namespace via
   `Namespace.configuration`.
 - `flags` is keyed by `Feature` instances (not strings); lookups are done via `Namespace.flag(feature)`.
 

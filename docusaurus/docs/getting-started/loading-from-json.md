@@ -22,7 +22,7 @@ At this point, features are registered in the namespace registry.
 ```kotlin
 val json = File("flags.json").readText()
 
-when (val result = AppFeatures.fromJson(json)) {
+when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
     is ParseResult.Success -> {
         // Configuration loaded successfully
         println("Config loaded")
@@ -57,14 +57,14 @@ sealed interface ParseResult<out T> {
 
 ## Prerequisite: Features Must Be Registered
 
-Deserialization requires that your `Namespace` objects have been initialized (so features are registered) **before** calling `fromJson(...)`.
+Deserialization requires that your `Namespace` objects have been initialized (so features are registered) **before** calling `ConfigurationSnapshotCodec.decode(...)` (or `NamespaceSnapshotLoader(...).load(...)`).
 
 ```kotlin
 // Ensure namespace is initialized at startup (t0)
 val _ = AppFeatures  // Reference forces class initialization
 
 // Later, at runtime...
-when (val result = AppFeatures.fromJson(json)) {
+when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
     is ParseResult.Success -> Unit
     is ParseResult.Failure -> handleError(result.error)
 }
@@ -80,7 +80,7 @@ If JSON references a feature that hasn't been registered, deserialization fails 
 
 ```kotlin
 // Thread 1: Update configuration
-when (val result = SnapshotSerializer.fromJson(json)) {
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> AppFeatures.load(result.value)
     is ParseResult.Failure -> logError(result.error.message)
 }
@@ -100,7 +100,7 @@ val enabled = AppFeatures.darkMode(context)  // Sees old OR new, never mixed
 ## Exporting Configuration
 
 ```kotlin
-val json = AppFeatures.toJson()
+val json = ConfigurationSnapshotCodec.encode(AppFeatures.configuration)
 File("flags.json").writeText(json)
 ```
 
@@ -112,7 +112,7 @@ Use this to externalize your current configuration state for storage or transpor
 
 ```kotlin
 val currentConfig = AppFeatures.configuration
-when (val result = SnapshotSerializer.applyPatchJson(currentConfig, patchJson)) {
+when (val result = ConfigurationSnapshotCodec.applyPatchJson(currentConfig, patchJson)) {
     is ParseResult.Success -> AppFeatures.load(result.value)
     is ParseResult.Failure -> logError(result.error.message)
 }
@@ -126,7 +126,7 @@ Patches allow you to send incremental updates (add/modify/remove flags) instead 
 
 ```kotlin
 fun loadRemoteConfig(json: String) {
-    when (val result = AppFeatures.fromJson(json)) {
+    when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
         is ParseResult.Success -> {
             // Success: new config is active
             logger.info("Config updated successfully")

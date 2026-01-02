@@ -114,8 +114,8 @@ APIs that accept features from a specific namespace.
 ```kotlin
 val _ = Auth
 val _ = Payments
-val authConfig = SnapshotSerializer.fromJson(authJson).getOrThrow()
-val paymentConfig = SnapshotSerializer.fromJson(paymentJson).getOrThrow()
+val authConfig = ConfigurationSnapshotCodec.decode(authJson).getOrThrow()
+val paymentConfig = ConfigurationSnapshotCodec.decode(paymentJson).getOrThrow()
 
 Auth.load(authConfig)      // Only affects Auth registry
 Payments.load(paymentConfig)  // Only affects Payments registry
@@ -145,7 +145,7 @@ Auth.disableAll()  // Only Auth evaluations return defaults
 val authJson = """{ "invalid": true }"""
 val paymentJson = """{ "valid": "config" }"""
 
-when (val result = Auth.fromJson(authJson)) {
+when (val result = NamespaceSnapshotLoader(Auth).load(authJson)) {
     is ParseResult.Failure -> {
         // Auth parse failed
         logger.error("Auth config parse failed: ${result.error}")
@@ -153,7 +153,7 @@ when (val result = Auth.fromJson(authJson)) {
     }
 }
 
-when (val result = Payments.fromJson(paymentJson)) {
+when (val result = NamespaceSnapshotLoader(Payments).load(paymentJson)) {
     is ParseResult.Success -> {
         // Payments config loaded successfully
         // Payments is unaffected by Auth parse failure

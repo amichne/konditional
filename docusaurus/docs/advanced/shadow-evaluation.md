@@ -31,7 +31,7 @@ Compare a candidate JSON snapshot against production traffic before promoting it
 // Candidate: parse JSON into a Configuration
 val candidateJson = fetchCandidateConfig()
 val _ = AppFeatures // ensure features are registered before parsing
-val candidateConfig = SnapshotSerializer.fromJson(candidateJson).getOrThrow()
+val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow()
 
 // Candidate registry: isolate evaluation without touching production namespace state
 val candidateRegistry = NamespaceRegistry(

@@ -92,7 +92,7 @@ namespace wasn't initialized), deserialization fails:
 ```kotlin
 // ✗ Incorrect order
 val json = fetchRemoteConfig()
-when (val result = SnapshotSerializer.fromJson(json)) {
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
     // Fails with ParseError.FeatureNotFound if AppFeatures not initialized
     // This will error
     is ParseResult.Failure -> println(result.error)
@@ -104,7 +104,7 @@ when (val result = SnapshotSerializer.fromJson(json)) {
 val _ = AppFeatures  // Ensure initialization at startup (t0)
 
 val json = fetchRemoteConfig()
-when (val result = AppFeatures.fromJson(json)) {
+when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
     is ParseResult.Success -> Unit
     is ParseResult.Failure -> logError(result.error.message)
 }
@@ -135,7 +135,7 @@ val appFeatures by lazy { AppFeatures }
 
 fun loadConfig() {
     appFeatures  // Initializes on first access
-    when (val result = AppFeatures.fromJson(json)) {
+    when (val result = NamespaceSnapshotLoader(appFeatures).load(json)) {
         is ParseResult.Success -> Unit
         is ParseResult.Failure -> logError(result.error.message)
     }

@@ -14,7 +14,7 @@ fun Namespace.load(configuration: Configuration)
 
 ### Parameters
 
-- `configuration` — New configuration snapshot (typically from `SnapshotSerializer.fromJson(...)`)
+- `configuration` — New configuration snapshot (typically from `ConfigurationSnapshotCodec.decode(...)`)
 
 ### Behavior
 
@@ -26,7 +26,7 @@ fun Namespace.load(configuration: Configuration)
 
 ```kotlin
 val _ = AppFeatures // ensure features are registered before parsing
-when (val result = SnapshotSerializer.fromJson(json)) {
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> AppFeatures.load(result.value)
     is ParseResult.Failure -> logError(result.error.message)
 }
@@ -41,12 +41,12 @@ See [Fundamentals: Refresh Safety](/fundamentals/refresh-safety) for details.
 
 ---
 
-## `Namespace.fromJson(json): ParseResult<Configuration>`
+## `NamespaceSnapshotLoader.load(json): ParseResult<Configuration>`
 
-Parse and load JSON configuration in one step (convenience wrapper).
+Parse and load JSON configuration into a namespace.
 
 ```kotlin
-fun Namespace.fromJson(json: String): ParseResult<Configuration>
+fun NamespaceSnapshotLoader(namespace: Namespace).load(json: String): ParseResult<Configuration>
 ```
 
 ### Parameters
@@ -63,7 +63,7 @@ fun Namespace.fromJson(json: String): ParseResult<Configuration>
 ```kotlin
 val json = File("flags.json").readText()
 
-when (val result = AppFeatures.fromJson(json)) {
+when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
     is ParseResult.Success -> logger.info("Config loaded: version=${result.value.metadata.version}")
     is ParseResult.Failure -> logger.error("Parse failed: ${result.error}")
 }
@@ -71,16 +71,16 @@ when (val result = AppFeatures.fromJson(json)) {
 
 ### Precondition
 
-Features must be registered before calling `fromJson(...)`. See [Fundamentals: Definition vs Initialization](/fundamentals/definition-vs-initialization).
+Features must be registered before calling `load(...)`. See [Fundamentals: Definition vs Initialization](/fundamentals/definition-vs-initialization).
 
 ---
 
-## `Namespace.toJson(): String`
+## `ConfigurationSnapshotCodec.encode(configuration): String`
 
 Export the current configuration snapshot to JSON.
 
 ```kotlin
-fun Namespace.toJson(): String
+fun ConfigurationSnapshotCodec.encode(configuration: Configuration): String
 ```
 
 ### Returns
@@ -90,7 +90,7 @@ JSON string representing the current namespace configuration.
 ### Example
 
 ```kotlin
-val json = AppFeatures.toJson()
+val json = ConfigurationSnapshotCodec.encode(AppFeatures.configuration)
 File("flags.json").writeText(json)
 ```
 

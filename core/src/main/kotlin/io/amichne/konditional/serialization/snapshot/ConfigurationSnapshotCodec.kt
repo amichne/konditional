@@ -1,4 +1,4 @@
-package io.amichne.konditional.serialization
+package io.amichne.konditional.serialization.snapshot
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
@@ -12,6 +12,8 @@ import io.amichne.konditional.internal.serialization.adapters.ValueClassAdapterF
 import io.amichne.konditional.internal.serialization.adapters.VersionRangeAdapter
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
 import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
+import io.amichne.konditional.serialization.toSerializable
+import io.amichne.konditional.serialization.toSnapshot
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.rules.versions.LeftBound
 import io.amichne.konditional.rules.versions.RightBound
@@ -20,52 +22,36 @@ import io.amichne.konditional.rules.versions.VersionRange
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 
 /**
- * Main serialization object for Configuration configurations.
- * Provides methods to serialize/deserialize snapshots to/from JSON, and apply patch updates.
+ * Configuration snapshot JSON codec.
+ *
+ * Provides pure encoding/decoding for full configuration snapshots and patch application.
  *
  * Returns ParseResult for all deserialization operations, following parseUnsafe-don't-validate principles.
  *
- * This serializer is storage-agnostic - it only handles JSON conversion, allowing callers
+ * This codec is storage-agnostic - it only handles JSON conversion, allowing callers
  * to choose their storage solution (files, databases, cloud storage, etc.).
  *
- * For namespace-scoped serialization, use [NamespaceSnapshotSerializer] instead.
+ * For side-effecting loading into a namespace, use [NamespaceSnapshotLoader].
  *
  * ## Usage
  *
  * ```kotlin
- * // Serialize
- * val json = SnapshotSerializer.serialize(configuration)
+ * // Encode
+ * val json = ConfigurationSnapshotCodec.encode(configuration)
  *
- * // Deserialize
- * when (val result = SnapshotSerializer.fromJson(json)) {
+ * // Decode
+ * when (val result = ConfigurationSnapshotCodec.decode(json)) {
  *     is ParseResult.Success -> println("Loaded: ${result.value}")
  *     is ParseResult.Failure -> println("Error: ${result.error}")
  * }
  * ```
  */
-object SnapshotSerializer {
+object ConfigurationSnapshotCodec : SnapshotCodec<Configuration> {
     private val moshi = defaultMoshi()
     private val snapshotAdapter = moshi.adapter(SerializableSnapshot::class.java).indent("  ")
     private val patchAdapter = moshi.adapter(SerializablePatch::class.java).indent("  ")
 
-    /**
-     * Converts a [Configuration] into its persisted snapshot JSON model without serializing to a string.
-     *
-     * This is useful when a server endpoint needs to return the snapshot structure as a JSON object
-     * alongside additional metadata.
-     */
-    fun toSerializableSnapshot(configuration: Configuration): SerializableSnapshot = configuration.toSerializable()
-
-    /**
-     * Serializes a Configuration to a JSON string.
-     *
-     * @param configuration The configuration to serialize
-     * @return JSON string representation
-     */
-    fun serialize(configuration: Configuration): String {
-        val serializable = configuration.toSerializable()
-        return snapshotAdapter.toJson(serializable)
-    }
+    override fun encode(value: Configuration): String = snapshotAdapter.toJson(value.toSerializable())
 
     /**
      * Deserializes a JSON string to a Configuration.
@@ -76,7 +62,7 @@ object SnapshotSerializer {
      * Callers must explicitly load the result if desired:
      *
      * ```kotlin
-     * when (val result = SnapshotSerializer.fromJson(json)) {
+     * when (val result = ConfigurationSnapshotCodec.decode(json)) {
      *     is ParseResult.Success -> namespace.load(result.value)
      *     is ParseResult.Failure -> handleError(result.error)
      * }
@@ -85,18 +71,14 @@ object SnapshotSerializer {
      * @param json The JSON string to deserialize
      * @return ParseResult containing either the deserialized Configuration or a structured error
      */
-    fun fromJson(json: String): ParseResult<Configuration> = fromJson(json, SnapshotLoadOptions.strict())
-
-    fun fromJson(
+    override fun decode(
         json: String,
         options: SnapshotLoadOptions,
     ): ParseResult<Configuration> =
-        try {
-            val serializable =
-                snapshotAdapter.fromJson(json)
-                    ?: return ParseResult.Failure(ParseError.InvalidJson("Failed to parseUnsafe JSON: null result"))
-            serializable.toSnapshot(options)
-        } catch (e: Exception) {
+        runCatching {
+            snapshotAdapter.fromJson(json)?.toSnapshot(options)
+                ?: ParseResult.Failure(ParseError.InvalidJson("Failed to parseUnsafe JSON: null result"))
+        }.getOrElse { e ->
             ParseResult.Failure(ParseError.InvalidJson(e.message ?: "Unknown JSON parsing error"))
         }
 
@@ -132,7 +114,7 @@ object SnapshotSerializer {
      * @param patch The patch to apply
      * @return ParseResult containing either the new Configuration with the patch applied or an error
      */
-    internal fun applyPatch(
+    private fun applyPatchInternal(
         currentConfiguration: Configuration,
         patch: SerializablePatch,
         options: SnapshotLoadOptions,
@@ -183,7 +165,7 @@ object SnapshotSerializer {
         options: SnapshotLoadOptions,
     ): ParseResult<Configuration> =
         when (val patchResult = fromJsonPatch(patchJson)) {
-            is ParseResult.Success -> applyPatch(currentConfiguration, patchResult.value, options)
+            is ParseResult.Success -> applyPatchInternal(currentConfiguration, patchResult.value, options)
             is ParseResult.Failure -> ParseResult.Failure(patchResult.error)
         }
 
@@ -194,7 +176,7 @@ object SnapshotSerializer {
      * Note: Custom adapters (FlagValueAdapter.Factory, VersionRangeAdapter) must be added before
      * KotlinJsonAdapterFactory to take precedence over reflection-based serialization.
      */
-    fun defaultMoshi(): Moshi {
+    internal fun defaultMoshi(): Moshi {
         // Build Moshi with custom adapters registered before KotlinJsonAdapterFactory so they take precedence.
         return Moshi.Builder()
             .add(IdentifierJsonAdapter)

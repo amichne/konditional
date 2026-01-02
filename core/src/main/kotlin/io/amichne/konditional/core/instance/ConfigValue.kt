@@ -3,7 +3,7 @@ package io.amichne.konditional.core.instance
 import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.konditional.core.types.asObjectSchema
 import io.amichne.konditional.core.types.toPrimitiveValue
-import io.amichne.konditional.serialization.SchemaBasedSerializer
+import io.amichne.konditional.serialization.SchemaValueCodec
 
 sealed interface ConfigValue {
     @ConsistentCopyVisibility
@@ -46,7 +46,7 @@ sealed interface ConfigValue {
             is KotlinEncodeable<*> -> {
                 // Use schema-based serializer
                 val schema = value.schema.asObjectSchema()
-                val json = SchemaBasedSerializer.encode(value, schema)
+                val json = SchemaValueCodec.encode(value, schema)
                 val primitive = json.toPrimitiveValue()
 
                 require(primitive is Map<*, *>) {

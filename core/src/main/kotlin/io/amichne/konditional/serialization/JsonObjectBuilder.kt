@@ -39,7 +39,7 @@ import io.amichne.kontracts.value.JsonValue
  * - `JsonValue` → passed through
  * - Lists → `JsonArray`
  */
-class JsonObjectBuilder {
+internal class JsonObjectBuilder {
     private val fields = mutableMapOf<String, JsonValue>()
 
     /**
@@ -67,7 +67,7 @@ class JsonObjectBuilder {
  * }
  * ```
  */
-fun jsonObject(builder: JsonObjectBuilder.() -> Unit): JsonObject {
+internal fun jsonObject(builder: JsonObjectBuilder.() -> Unit): JsonObject {
     return JsonObjectBuilder().apply(builder).build()
 }
 
@@ -79,7 +79,7 @@ fun jsonObject(builder: JsonObjectBuilder.() -> Unit): JsonObject {
  * val arr2 = jsonArray(1, 2, 3)
  * ```
  */
-fun jsonArray(vararg values: Any?): JsonArray {
+internal fun jsonArray(vararg values: Any?): JsonArray {
     return JsonArray(values.map { it.toJsonValue() }, elementSchema = null)
 }
 
@@ -117,7 +117,7 @@ private fun Any?.toJsonValue(): JsonValue = when (this) {
  * Extracts an Int from a JsonValue.
  * Returns null if the value is not a JsonNumber or cannot be converted to Int.
  */
-fun JsonValue.asInt(): Int? = when (this) {
+internal fun JsonValue.asInt(): Int? = when (this) {
     is JsonNumber -> toInt()
     else -> null
 }
@@ -126,7 +126,7 @@ fun JsonValue.asInt(): Int? = when (this) {
  * Extracts a Double from a JsonValue.
  * Returns null if the value is not a JsonNumber.
  */
-fun JsonValue.asDouble(): Double? = when (this) {
+internal fun JsonValue.asDouble(): Double? = when (this) {
     is JsonNumber -> toDouble()
     else -> null
 }
@@ -135,7 +135,7 @@ fun JsonValue.asDouble(): Double? = when (this) {
  * Extracts a String from a JsonValue.
  * Returns null if the value is not a JsonString.
  */
-fun JsonValue.asString(): String? = when (this) {
+internal fun JsonValue.asString(): String? = when (this) {
     is JsonString -> value
     else -> null
 }
@@ -144,7 +144,7 @@ fun JsonValue.asString(): String? = when (this) {
  * Extracts a Boolean from a JsonValue.
  * Returns null if the value is not a JsonBoolean.
  */
-fun JsonValue.asBoolean(): Boolean? = when (this) {
+internal fun JsonValue.asBoolean(): Boolean? = when (this) {
     is JsonBoolean -> value
     else -> null
 }
@@ -153,10 +153,10 @@ fun JsonValue.asBoolean(): Boolean? = when (this) {
  * Extracts a JsonObject from a JsonValue.
  * Returns null if the value is not a JsonObject.
  */
-fun JsonValue.asObject(): JsonObject? = this as? JsonObject
+internal fun JsonValue.asObject(): JsonObject? = this as? JsonObject
 
 /**
  * Extracts a JsonArray from a JsonValue.
  * Returns null if the value is not a JsonArray.
  */
-fun JsonValue.asArray(): JsonArray? = this as? JsonArray
+internal fun JsonValue.asArray(): JsonArray? = this as? JsonArray

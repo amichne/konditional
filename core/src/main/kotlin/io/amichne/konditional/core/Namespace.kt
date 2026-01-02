@@ -15,7 +15,6 @@ import io.amichne.konditional.core.registry.NamespaceRegistry.Companion.updateDe
 import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.konditional.internal.builders.FlagBuilder
 import io.amichne.konditional.serialization.FeatureRegistry
-import io.amichne.konditional.serialization.NamespaceSnapshotSerializer
 import io.amichne.konditional.values.IdentifierEncoding.SEPARATOR
 import org.jetbrains.annotations.TestOnly
 import java.util.UUID
@@ -112,10 +111,6 @@ open class Namespace(
     private val _features = mutableListOf<Feature<*, *, *>>()
 
     fun allFeatures(): List<Feature<*, *, *>> = _features.toList()
-
-    fun toJson(): String = NamespaceSnapshotSerializer(this).toJson()
-
-    fun fromJson(json: String) = NamespaceSnapshotSerializer(this).fromJson(json)
 
     protected fun <C : Context> boolean(
         default: Boolean,

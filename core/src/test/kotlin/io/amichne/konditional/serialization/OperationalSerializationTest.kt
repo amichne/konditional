@@ -18,6 +18,8 @@ import io.amichne.konditional.internal.serialization.models.SerializableFlag
 import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.options.SnapshotWarning
+import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
+import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 import io.amichne.konditional.values.FeatureId
 import org.junit.jupiter.api.Test
 import java.util.UUID
@@ -35,7 +37,7 @@ class OperationalSerializationTest {
         }
 
         val unknownKey = FeatureId.create(namespace.id, "missing-${UUID.randomUUID()}")
-        val snapshotJson = SnapshotSerializer.defaultMoshi().adapter(SerializableSnapshot::class.java)
+        val snapshotJson = ConfigurationSnapshotCodec.defaultMoshi().adapter(SerializableSnapshot::class.java)
             .indent("  ").toJson(
                 SerializableSnapshot(
                     flags = listOf(
@@ -51,13 +53,13 @@ class OperationalSerializationTest {
                 )
             )
 
-        val strictResult = SnapshotSerializer.fromJson(snapshotJson)
+        val strictResult = ConfigurationSnapshotCodec.decode(snapshotJson)
         assertIs<ParseResult.Failure>(strictResult)
         assertIs<ParseError.FeatureNotFound>(strictResult.error)
 
         val warnings = mutableListOf<SnapshotWarning>()
         val lenient = SnapshotLoadOptions.skipUnknownKeys { warnings.add(it) }
-        val lenientResult = SnapshotSerializer.fromJson(snapshotJson, lenient)
+        val lenientResult = ConfigurationSnapshotCodec.decode(snapshotJson, lenient)
         assertIs<ParseResult.Success<Configuration>>(lenientResult)
         assertEquals(setOf(namespace.knownFeature), lenientResult.value.flags.keys)
         assertEquals(1, warnings.size)
@@ -90,8 +92,7 @@ class OperationalSerializationTest {
         assertTrue(namespace.envScopedFlag.evaluate(productionContext))
         assertFalse(namespace.envScopedFlag.evaluate(developementContext))
 
-        val serializer = NamespaceSnapshotSerializer(namespace)
-        val json = serializer.toJson()
+        val json = ConfigurationSnapshotCodec.encode(namespace.configuration)
 
         // Reset to a configuration that still contains the feature key but has no rules.
         namespace.load(
@@ -110,7 +111,7 @@ class OperationalSerializationTest {
             "Sanity: after resetting rules, flag should be default"
         )
 
-        val loaded = serializer.fromJson(json)
+        val loaded = NamespaceSnapshotLoader(namespace).load(json)
         assertIs<ParseResult.Success<Configuration>>(loaded)
 
         assertTrue(namespace.envScopedFlag.evaluate(productionContext))
@@ -128,8 +129,8 @@ class OperationalSerializationTest {
             ),
         )
 
-        val json = SnapshotSerializer.serialize(config)
-        val parsed = SnapshotSerializer.fromJson(json)
+        val json = ConfigurationSnapshotCodec.encode(config)
+        val parsed = ConfigurationSnapshotCodec.decode(json)
         assertIs<ParseResult.Success<Configuration>>(parsed)
         assertEquals(config.metadata, parsed.value.metadata)
     }

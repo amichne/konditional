@@ -11,6 +11,8 @@ import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.fixtures.utilities.update
+import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
+import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 import io.amichne.konditional.values.FeatureId
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -20,12 +22,13 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
- * Tests for NamespaceSnapshotSerializer.
+ * Tests for NamespaceSnapshotLoader.
  *
- * Validates that namespace-scoped serialization works correctly,
- * including automatic loading into the namespace registry.
+ * Validates the enforced boundary:
+ * - Encoding is done via the pure [ConfigurationSnapshotCodec]
+ * - Loading into a namespace is done via [NamespaceSnapshotLoader]
  */
-class NamespaceSnapshotSerializerTest {
+class NamespaceConfigurationSnapshotCodecTest {
     private val testNamespace =
         object : Namespace.TestNamespaceFacade("namespace-snapshot-serializer") {
             val boolFlag by boolean<Context>(default = false)
@@ -59,8 +62,7 @@ class NamespaceSnapshotSerializerTest {
             Configuration(emptyMap()),
         )
 
-        val serializer = NamespaceSnapshotSerializer(testNamespace)
-        val json = serializer.toJson()
+        val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
 
         assertNotNull(json)
         assertTrue(json.contains("\"flags\""))
@@ -74,8 +76,7 @@ class NamespaceSnapshotSerializerTest {
         testNamespace.stringFlag.update("test-value") {
         }
 
-        val serializer = NamespaceSnapshotSerializer(testNamespace)
-        val json = serializer.toJson()
+        val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
 
         assertNotNull(json)
         assertTrue(json.contains(testNamespace.boolFlag.id.toString()))
@@ -104,8 +105,7 @@ class NamespaceSnapshotSerializerTest {
             }
             """.trimIndent()
 
-        val serializer = NamespaceSnapshotSerializer(testNamespace)
-        val result = serializer.fromJson(json)
+        val result = NamespaceSnapshotLoader(testNamespace).load(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
 
@@ -119,8 +119,7 @@ class NamespaceSnapshotSerializerTest {
     fun `Given invalid JSON, When deserialized, Then returns failure without loading`() {
         val invalidJson = "not valid json"
 
-        val serializer = NamespaceSnapshotSerializer(testNamespace)
-        val result = serializer.fromJson(invalidJson)
+        val result = NamespaceSnapshotLoader(testNamespace).load(invalidJson)
 
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.InvalidJson>(result.error)
@@ -147,8 +146,7 @@ class NamespaceSnapshotSerializerTest {
             }
             """.trimIndent()
 
-        val serializer = NamespaceSnapshotSerializer(testNamespace)
-        val result = serializer.fromJson(json)
+        val result = NamespaceSnapshotLoader(testNamespace).load(json)
 
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.FeatureNotFound>(result.error)
@@ -169,14 +167,13 @@ class NamespaceSnapshotSerializerTest {
         }
 
         // Serialize
-        val serializer = NamespaceSnapshotSerializer(testNamespace)
-        val json = serializer.toJson()
+        val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
 
         // Clear and deserialize
         testNamespace.load(
             Configuration(emptyMap()),
         )
-        val result = serializer.fromJson(json)
+        val result = NamespaceSnapshotLoader(testNamespace).load(json)
         assertIs<ParseResult.Success<Configuration>>(result)
 
         // Verify flags work correctly
@@ -194,8 +191,8 @@ class NamespaceSnapshotSerializerTest {
     fun `Given forModule factory, When created, Then works same as constructor`() {
         testNamespace.boolFlag.update(true) {}
 
-        val serializer = NamespaceSnapshotSerializer.forModule(testNamespace)
-        val json = serializer.toJson()
+        val serializer = NamespaceSnapshotLoader.forNamespace(testNamespace)
+        val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
 
         assertNotNull(json)
         assertTrue(json.contains(testNamespace.boolFlag.id.toString()))
@@ -218,11 +215,8 @@ class NamespaceSnapshotSerializerTest {
         FeatureRegistry.register(searchNamespace.searchEnabled)
 
         // Serialize each namespace
-        val paymentsSerializer = NamespaceSnapshotSerializer(paymentsNamespace)
-        val searchSerializer = NamespaceSnapshotSerializer(searchNamespace)
-
-        val paymentsJson = paymentsSerializer.toJson()
-        val searchJson = searchSerializer.toJson()
+        val paymentsJson = ConfigurationSnapshotCodec.encode(paymentsNamespace.configuration)
+        val searchJson = ConfigurationSnapshotCodec.encode(searchNamespace.configuration)
 
         // Verify separation
         assertTrue(paymentsJson.contains(paymentsNamespace.paymentEnabled.id.toString()))

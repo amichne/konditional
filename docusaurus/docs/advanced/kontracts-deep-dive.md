@@ -207,7 +207,7 @@ When JSON is loaded, Kontracts validates the payload:
 ```
 
 ```kotlin
-when (val result = SnapshotSerializer.fromJson(json)) {
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> {
         // JSON is valid, schema checks passed
         NetworkConfig.load(result.value)
@@ -236,7 +236,7 @@ when (val result = SnapshotSerializer.fromJson(json)) {
 ```
 
 ```kotlin
-when (val result = SnapshotSerializer.fromJson(json)) {
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Failure -> {
         // Schema validation failed
         logger.error("Parse failed: ${result.error}")

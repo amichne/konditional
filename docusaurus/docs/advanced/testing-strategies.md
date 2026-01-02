@@ -237,7 +237,7 @@ fun `valid JSON loads successfully`() {
     }
     """
 
-    when (val result = AppFeatures.fromJson(json)) {
+    when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
         is ParseResult.Success -> {
             // Success expected
         }
@@ -265,7 +265,7 @@ fun `invalid JSON is rejected`() {
     """
 
     val _ = AppFeatures // ensure features are registered before parsing
-    when (val result = SnapshotSerializer.fromJson(json)) {
+    when (val result = ConfigurationSnapshotCodec.decode(json)) {
         is ParseResult.Success -> {
             fail("Expected failure, got success")
         }
@@ -286,7 +286,7 @@ fun `rollback restores previous config`() {
 
     // Load new config
     val newJson = """{ "flags": [ ... ] }"""
-    AppFeatures.fromJson(newJson)
+    NamespaceSnapshotLoader(AppFeatures).load(newJson)
 
     val updatedConfig = AppFeatures.configuration
     assertNotEquals(initialConfig, updatedConfig)
@@ -393,7 +393,7 @@ fun `shadow evaluation detects mismatches`() {
     }
     """.trimIndent()
 
-    val candidateConfig = SnapshotSerializer.fromJson(candidateJson).getOrThrow()
+    val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow()
     val candidateRegistry = NamespaceRegistry(
         configuration = candidateConfig,
         namespaceId = AppFeatures.namespaceId,
@@ -470,11 +470,11 @@ fun `end-to-end configuration lifecycle`() {
     }
 
     // 2. Export initial config
-    val initialJson = TestFeatures.toJson()
+    val initialJson = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
 
     // 3. Load modified config
     val modifiedJson = initialJson.replace(""""value": false""", """"value": true""")
-    when (val result = TestFeatures.fromJson(modifiedJson)) {
+    when (val result = NamespaceSnapshotLoader(TestFeatures).load(modifiedJson)) {
         is ParseResult.Success -> { /* Expected */ }
         is ParseResult.Failure -> fail("Load failed: ${result.error}")
     }

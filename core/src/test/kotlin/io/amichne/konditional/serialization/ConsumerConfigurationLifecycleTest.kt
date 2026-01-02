@@ -7,13 +7,13 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.KotlinEncodeable
+import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
+import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 import io.amichne.kontracts.dsl.of
 import io.amichne.kontracts.dsl.schemaRoot
 import io.amichne.kontracts.schema.ObjectSchema
-import io.amichne.kontracts.value.JsonObject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -120,7 +120,7 @@ class ConsumerConfigurationLifecycleTest {
             namespaceV1.userSettings.evaluate(ios),
         )
 
-        val dumpedJson = NamespaceSnapshotSerializer(namespaceV1).toJson()
+        val dumpedJson = ConfigurationSnapshotCodec.encode(namespaceV1.configuration)
         assertTrue(dumpedJson.contains(namespaceV1.darkMode.id.toString()))
         assertTrue(dumpedJson.contains(namespaceV1.apiEndpoint.id.toString()))
         assertTrue(dumpedJson.contains(namespaceV1.maxRetries.id.toString()))
@@ -158,7 +158,7 @@ class ConsumerConfigurationLifecycleTest {
             "baseline differs before load",
         )
 
-        when (val loaded = NamespaceSnapshotSerializer(namespaceV2).fromJson(dumpedJson)) {
+        when (val loaded = NamespaceSnapshotLoader(namespaceV2).load(dumpedJson)) {
             is ParseResult.Success -> assertNotNull(loaded.value)
             is ParseResult.Failure -> error("Failed to load dumped snapshot: ${loaded.error.message}")
         }
@@ -210,7 +210,7 @@ class ConsumerConfigurationLifecycleTest {
             """.trimIndent()
 
         val patchedConfig =
-            when (val patched = SnapshotSerializer.applyPatchJson(namespaceV2.configuration, patchJson)) {
+            when (val patched = ConfigurationSnapshotCodec.applyPatchJson(namespaceV2.configuration, patchJson)) {
                 is ParseResult.Success -> patched.value
                 is ParseResult.Failure -> error("Failed to apply patch: ${patched.error.message}")
             }

@@ -249,7 +249,7 @@ private fun decodeDataClass(
         )
 
     // Use schema-based deserializer
-    return when (val result = SchemaBasedSerializer.decode(kClass, jsonObject, schema)) {
+    return when (val result = SchemaValueCodec.decode(kClass, jsonObject, schema)) {
         is ParseResult.Success -> result.value
         is ParseResult.Failure -> throw IllegalArgumentException(
             "Failed to decode '$dataClassName': ${result.error.message}"

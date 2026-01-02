@@ -133,20 +133,20 @@ model (evaluations could observe changes that did not come from `load(...)`).
 
 ---
 
-## Precondition: Use `load(...)` / `fromJson(...)`
+## Precondition: Use `load(...)` + snapshot decoding
 
 The safety guarantee depends on using the public API:
 
 ```kotlin
 // ✓ Correct
 val _ = AppFeatures // ensure features are registered before parsing
-when (val result = SnapshotSerializer.fromJson(json)) {
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> AppFeatures.load(result.value)
     is ParseResult.Failure -> logError(result.error.message)
 }
 
-// ✓ Correct (namespace-scoped helper parses + loads on success)
-when (val result = AppFeatures.fromJson(json)) {
+// ✓ Correct (side-effecting loader parses + loads on success)
+when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
     is ParseResult.Success -> logger.info("Config refreshed")
     is ParseResult.Failure -> logError(result.error.message)
 }
@@ -179,7 +179,7 @@ Same safety guarantees apply: readers see old OR new, never mixed.
 ```kotlin
 while (running) {
     val json = fetchFromServer()
-    when (val result = AppFeatures.fromJson(json)) {
+    when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
         is ParseResult.Success -> {
             // Safe: atomic update, concurrent evaluations see consistent snapshot
             logger.info("Config refreshed")
@@ -197,7 +197,7 @@ while (running) {
 
 ```kotlin
 configStream.collect { json ->
-    when (val result = AppFeatures.fromJson(json)) {
+    when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
         is ParseResult.Success -> logger.info("Config updated")
         is ParseResult.Failure -> logger.error("Update failed: ${result.error}")
     }

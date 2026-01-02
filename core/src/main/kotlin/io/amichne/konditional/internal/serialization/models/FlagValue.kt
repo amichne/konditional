@@ -120,7 +120,7 @@ sealed class FlagValue<out T : Any> {
                 is KotlinEncodeable<*> -> {
                     // Use schema-based serializer
                     val schema = value.schema.asObjectSchema()
-                    val json = io.amichne.konditional.serialization.SchemaBasedSerializer.encode(value, schema)
+                    val json = io.amichne.konditional.serialization.SchemaValueCodec.encode(value, schema)
                     val primitive = json.toPrimitiveValue()
 
                     require(primitive is Map<*, *>) {

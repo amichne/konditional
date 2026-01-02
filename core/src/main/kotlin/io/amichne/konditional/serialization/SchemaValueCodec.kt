@@ -49,7 +49,7 @@ import kotlin.reflect.full.primaryConstructor
  * - Nested custom types
  * - Optional fields with defaults
  */
-object SchemaBasedSerializer {
+internal object SchemaValueCodec {
 
     /**
      * Encodes a value to JsonObject using its schema.
@@ -63,7 +63,7 @@ object SchemaBasedSerializer {
      * @throws IllegalArgumentException if property cannot be read
      */
     fun <T : Any> encode(value: T, schema: ObjectSchema): JsonObject {
-        val fields = schema.fields.mapValues { (fieldName, fieldSchema) ->
+        val fields = schema.fields.mapValues { (fieldName, _) ->
             // Find property by name using reflection
             val property = value::class.memberProperties.find { it.name == fieldName }
                 ?: error("Property '$fieldName' not found on ${value::class.qualifiedName}")
@@ -180,8 +180,7 @@ object SchemaBasedSerializer {
 
         // Instantiate via constructor
         return try {
-            @Suppress("UNCHECKED_CAST")
-            ParseResult.Success(constructor.callBy(parameterMap) as T)
+            ParseResult.Success(constructor.callBy(parameterMap))
         } catch (e: Exception) {
             ParseResult.Failure(
                 ParseError.InvalidSnapshot(

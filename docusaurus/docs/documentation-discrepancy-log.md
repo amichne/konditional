@@ -76,7 +76,7 @@ If you introduce a new public API or change semantics, add an entry here and upd
 
 ## D-007 — ParseResult access patterns (`.value` vs helpers)
 
-- **Docs previously used:** `SnapshotSerializer.fromJson(...).value` / `ParseResult.value` as if it were always present.
+- **Docs previously used:** `ConfigurationSnapshotCodec.decode(...).value` / `ParseResult.value` as if it were always present.
 - **Code reality:** `ParseResult` is sealed; access the value via `when` on `ParseResult.Success`, or use
   `ParseResult.getOrThrow()` when you want fail-fast behavior.
 - **Code references:** `core/src/main/kotlin/io/amichne/konditional/core/result/ParseResult.kt`
@@ -100,7 +100,7 @@ If you introduce a new public API or change semantics, add an entry here and upd
 
 - **Docs previously implied:** `kotlinx.serialization`.
 - **Code reality:** snapshots/patches are parsed with Moshi (plus custom adapters).
-- **Code references:** `core/src/main/kotlin/io/amichne/konditional/serialization/SnapshotSerializer.kt`
+- **Code references:** `core/src/main/kotlin/io/amichne/konditional/serialization/snapshot/ConfigurationSnapshotCodec.kt`
 - **Docs updated:** `/theory/type-safety-boundaries` (`docusaurus/docs/theory/type-safety-boundaries.md`)
 
 ---
@@ -159,7 +159,7 @@ If you introduce a new public API or change semantics, add an entry here and upd
 
 ## D-014 — Snapshot parsing requires namespace initialization (feature registration)
 
-- **Docs previously contained examples that:** called `SnapshotSerializer.fromJson(...)` before ensuring namespaces were
+- **Docs previously contained examples that:** called `ConfigurationSnapshotCodec.decode(...)` before ensuring namespaces were
   initialized.
 - **Code reality:** deserialization resolves each `FeatureId` via an internal registry populated during namespace
   initialization (delegated properties). Without registration, parsing fails with `ParseError.FeatureNotFound`.
