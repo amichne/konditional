@@ -13,7 +13,7 @@ import io.amichne.kontracts.schema.ValidationResult
 data class JsonArray(
     val elements: List<JsonValue>,
     val elementSchema: JsonSchema<Any>? = null,
-) : JsonValue() {
+) : JsonValue {
 
     init {
         elementSchema?.let {

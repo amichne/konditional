@@ -30,11 +30,11 @@ class SchemaDslTest {
     fun `schemaRoot creates schema for String property`() {
         data class Config(val name: String) : SchemaProvider<ObjectSchema> {
             override val schema = schemaRoot {
-                    ::name of {
-                        minLength = 1
-                        maxLength = 100
-                        description = "User name"
-                    }
+                ::name of {
+                    minLength = 1
+                    maxLength = 100
+                    description = "User name"
+                }
             }
         }
 
@@ -72,12 +72,12 @@ class SchemaDslTest {
     fun `schemaRoot creates schema for Double property`() {
         data class Config(val rate: Double) : SchemaProvider<ObjectSchema> {
             override val schema = schemaRoot {
-                    ::rate of {
-                        minimum = 0.0
-                        maximum = 100.0
-                        description = "Success rate"
-                    }
-        }
+                ::rate of {
+                    minimum = 0.0
+                    maximum = 100.0
+                    description = "Success rate"
+                }
+            }
         }
 
         val config = Config(50.0)
@@ -93,11 +93,11 @@ class SchemaDslTest {
     fun `schemaRoot creates schema for Boolean property`() {
         data class Config(val enabled: Boolean) : SchemaProvider<ObjectSchema> {
             override val schema = schemaRoot {
-                    ::enabled of {
-                        description = "Feature enabled flag"
-                        default = false
-                    }
-        }
+                ::enabled of {
+                    description = "Feature enabled flag"
+                    default = false
+                }
+            }
         }
 
         val config = Config(true)
@@ -117,11 +117,11 @@ class SchemaDslTest {
             val active: Boolean
         ) : SchemaProvider<ObjectSchema> {
             override val schema = schemaRoot {
-                    ::name of { description = "Name" }
-                    ::age of { description = "Age" }
-                    ::rate of { description = "Rate" }
-                    ::active of { description = "Active" }
-        }
+                ::name of { description = "Name" }
+                ::age of { description = "Age" }
+                ::rate of { description = "Rate" }
+                ::active of { description = "Active" }
+            }
         }
 
         val config = Config("Alice", 30, 0.95, true)
@@ -138,10 +138,10 @@ class SchemaDslTest {
     fun `schemaRoot handles nullable String property`() {
         data class Config(val nickname: String?) : SchemaProvider<ObjectSchema> {
             override val schema = schemaRoot {
-                    ::nickname of {
-                        description = "Optional nickname"
-                    }
-        }
+                ::nickname of {
+                    description = "Optional nickname"
+                }
+            }
         }
 
         val config = Config(null)
@@ -155,10 +155,10 @@ class SchemaDslTest {
     fun `schemaRoot handles nullable Int property`() {
         data class Config(val maxRetries: Int?) : SchemaProvider<ObjectSchema> {
             override val schema = schemaRoot {
-                    ::maxRetries of {
-                        description = "Optional max retries"
-                    }
-        }
+                ::maxRetries of {
+                    description = "Optional max retries"
+                }
+            }
         }
 
         val config = Config(null)
@@ -172,10 +172,10 @@ class SchemaDslTest {
     fun `schemaRoot handles nullable Double property`() {
         data class Config(val threshold: Double?) : SchemaProvider<ObjectSchema> {
             override val schema = schemaRoot {
-                    ::threshold of {
-                        description = "Optional threshold"
-                    }
-        }
+                ::threshold of {
+                    description = "Optional threshold"
+                }
+            }
         }
 
         val config = Config(null)
@@ -189,10 +189,10 @@ class SchemaDslTest {
     fun `schemaRoot handles nullable Boolean property`() {
         data class Config(val verified: Boolean?) : SchemaProvider<ObjectSchema> {
             override val schema = schemaRoot {
-                    ::verified of {
-                        description = "Optional verification status"
-                    }
-        }
+                ::verified of {
+                    description = "Optional verification status"
+                }
+            }
         }
 
         val config = Config(null)
@@ -214,14 +214,14 @@ class SchemaDslTest {
     fun `asString maps custom type to StringSchema`() {
         data class Config(val userId: UserId) : SchemaProvider<ObjectSchema> {
             override val schema = schemaRoot {
-                    ::userId asString {
-                        represent = { this.value }
-                        pattern = "[A-Z0-9]{8}"
-                        minLength = 8
-                        maxLength = 8
-                        description = "User ID"
-                    }
-        }
+                ::userId asString {
+                    represent = { this.value }
+                    pattern = "[A-Z0-9]{8}"
+                    minLength = 8
+                    maxLength = 8
+                    description = "User ID"
+                }
+            }
         }
 
         val config = Config(UserId("ABC12345"))
@@ -237,13 +237,13 @@ class SchemaDslTest {
     fun `asInt maps custom type to IntSchema`() {
         data class Config(val loginAttempts: Count) : SchemaProvider<ObjectSchema> {
             override val schema = schemaRoot {
-                    ::loginAttempts asInt {
-                        represent = { this.value }
-                        minimum = 0
-                        maximum = 5
-                        description = "Login attempts"
-                    }
-        }
+                ::loginAttempts asInt {
+                    represent = { this.value }
+                    minimum = 0
+                    maximum = 5
+                    description = "Login attempts"
+                }
+            }
         }
 
         val config = Config(Count(0))
@@ -258,13 +258,13 @@ class SchemaDslTest {
     fun `asDouble maps custom type to DoubleSchema`() {
         data class Config(val completionRate: Percentage) : SchemaProvider<ObjectSchema> {
             override val schema = schemaRoot {
-                    ::completionRate asDouble {
-                        represent = { this.value }
-                        minimum = 0.0
-                        maximum = 100.0
-                        description = "Completion percentage"
-                    }
-        }
+                ::completionRate asDouble {
+                    represent = { this.value }
+                    minimum = 0.0
+                    maximum = 100.0
+                    description = "Completion percentage"
+                }
+            }
         }
 
         val config = Config(Percentage(50.0))
@@ -279,11 +279,11 @@ class SchemaDslTest {
     fun `asBoolean maps custom type to BooleanSchema`() {
         data class Config(val verified: Verified) : SchemaProvider<ObjectSchema> {
             override val schema = schemaRoot {
-                    ::verified asBoolean {
-                        represent = { this.value }
-                        description = "Verification status"
-                    }
-        }
+                ::verified asBoolean {
+                    represent = { this.value }
+                    description = "Verification status"
+                }
+            }
         }
 
         val config = Config(Verified(true))
@@ -296,20 +296,21 @@ class SchemaDslTest {
     fun `custom type mapping preserves all constraints`() {
         data class Config(val email: Email) : SchemaProvider<ObjectSchema> {
             override val schema = schemaRoot {
-                    ::email asString {
-                        represent = { this.value }
-                        format = "email"
-                        pattern = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
-                        minLength = 5
-                        maxLength = 255
-                        description = "Email address"
-                        example = "user@example.com"
-                    }
-        }
+                ::email asString {
+                    represent = { this.value }
+                    format = "email"
+                    pattern = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+                    minLength = 5
+                    maxLength = 255
+                    description = "Email address"
+                    example = "user@example.com"
+                }
+            }
         }
 
-        val config = Config(Email("user@example.com"))
+        val config = Config(Email("userexampl.com"))
         val emailField = config.schema.fields["email"]!!
+        emailField.schema
         assertIs<StringSchema>(emailField.schema)
         assertEquals("email", emailField.schema.format)
         assertEquals("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", emailField.schema.pattern)
@@ -364,13 +365,13 @@ class SchemaDslTest {
             val maxRetries: Int = 3
         ) : SchemaProvider<ObjectSchema> {
             override val schema = schemaRoot {
-                    ::theme of {
-                        default = "light"
-                    }
-                    ::maxRetries of {
-                        default = 3
-                    }
-        }
+                ::theme of {
+                    default = "light"
+                }
+                ::maxRetries of {
+                    default = 3
+                }
+            }
         }
 
         val config = Config()
@@ -382,10 +383,10 @@ class SchemaDslTest {
     fun `schemaRoot captures examples`() {
         data class Config(val email: String) : SchemaProvider<ObjectSchema> {
             override val schema = schemaRoot {
-                    ::email of {
-                        example = "user@example.com"
-                    }
-        }
+                ::email of {
+                    example = "user@example.com"
+                }
+            }
         }
 
         val config = Config("test@test.com")
@@ -396,11 +397,11 @@ class SchemaDslTest {
     fun `schemaRoot captures deprecation status`() {
         data class Config(val oldField: String) : SchemaProvider<ObjectSchema> {
             override val schema = schemaRoot {
-                    ::oldField of {
-                        deprecated = true
-                        description = "Deprecated field, use newField instead"
-                    }
-        }
+                ::oldField of {
+                    deprecated = true
+                    description = "Deprecated field, use newField instead"
+                }
+            }
         }
 
         val config = Config("test")
@@ -411,11 +412,11 @@ class SchemaDslTest {
     fun `schemaRoot captures title`() {
         data class Config(val username: String) : SchemaProvider<ObjectSchema> {
             override val schema = schemaRoot {
-                    ::username of {
-                        title = "Username"
-                        description = "The user's login name"
-                    }
-        }
+                ::username of {
+                    title = "Username"
+                    description = "The user's login name"
+                }
+            }
         }
 
         val config = Config("alice")
@@ -428,11 +429,11 @@ class SchemaDslTest {
     fun `schemaRoot handles string enum constraints`() {
         data class Config(val theme: String) : SchemaProvider<ObjectSchema> {
             override val schema = schemaRoot {
-                    ::theme of {
-                        enum = listOf("light", "dark", "auto")
-                        description = "UI theme"
-                    }
-        }
+                ::theme of {
+                    enum = listOf("light", "dark", "auto")
+                    description = "UI theme"
+                }
+            }
         }
 
         val config = Config("light")
@@ -445,11 +446,11 @@ class SchemaDslTest {
     fun `schemaRoot handles int enum constraints`() {
         data class Config(val priority: Int) : SchemaProvider<ObjectSchema> {
             override val schema = schemaRoot {
-                    ::priority of {
-                        enum = listOf(1, 2, 3, 4, 5)
-                        description = "Priority level"
-                    }
-        }
+                ::priority of {
+                    enum = listOf(1, 2, 3, 4, 5)
+                    description = "Priority level"
+                }
+            }
         }
 
         val config = Config(1)

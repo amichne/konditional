@@ -14,13 +14,10 @@ import io.amichne.kontracts.dsl.of
 import io.amichne.kontracts.dsl.schemaRoot
 import io.amichne.kontracts.schema.ObjectSchema
 import io.amichne.kontracts.value.JsonObject
-import io.amichne.kontracts.value.JsonValue
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
 
@@ -43,51 +40,6 @@ class ConsumerConfigurationLifecycleTest {
                 ::timeoutSeconds of { minimum = 0.0 }
                 ::enabled of {}
             }
-
-        companion object {
-            val serializer = object : TypeSerializer<UserSettings> {
-                override fun encode(value: UserSettings): JsonValue =
-                    jsonObject {
-                        "theme" to value.theme
-                        "maxRetries" to value.maxRetries
-                        "timeoutSeconds" to value.timeoutSeconds
-                        "enabled" to value.enabled
-                    }
-
-                override fun decode(json: JsonValue): ParseResult<UserSettings> =
-                    when (json) {
-                        is JsonObject -> {
-                            val theme = json.fields["theme"]?.asString()
-                            val maxRetries = json.fields["maxRetries"]?.asInt()
-                            val timeoutSeconds = json.fields["timeoutSeconds"]?.asDouble()
-                            val enabled = json.fields["enabled"]?.asBoolean()
-
-                            if (theme != null && maxRetries != null && timeoutSeconds != null && enabled != null) {
-                                ParseResult.Success(
-                                    UserSettings(theme, maxRetries, timeoutSeconds, enabled)
-                                )
-                            } else {
-                                ParseResult.Failure(
-                                    ParseError.InvalidSnapshot("Missing required fields for UserSettings")
-                                )
-                            }
-                        }
-                        else -> ParseResult.Failure(
-                            ParseError.InvalidSnapshot("Expected JsonObject for UserSettings, got ${json::class.simpleName}")
-                        )
-                    }
-            }
-        }
-    }
-
-    @BeforeEach
-    fun setup() {
-        SerializerRegistry.register(UserSettings::class, UserSettings.serializer)
-    }
-
-    @AfterEach
-    fun cleanup() {
-        SerializerRegistry.clear()
     }
 
     private fun ctx(

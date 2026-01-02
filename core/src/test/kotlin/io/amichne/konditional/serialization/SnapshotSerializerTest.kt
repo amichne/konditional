@@ -26,7 +26,6 @@ import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.values.FeatureId
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -53,9 +52,6 @@ class SnapshotSerializerTest {
 
     @BeforeEach
     fun setup() {
-        // Register type serializers
-        SerializerRegistry.register(RetryPolicy::class, RetryPolicy.serializer)
-
         // Force axis registration for type-based axis() usage in rule builders.
         @Suppress("UnusedExpression")
         Axes.EnvironmentAxis
@@ -73,11 +69,6 @@ class SnapshotSerializerTest {
         FeatureRegistry.register(TestFeatures.doubleFlag)
         FeatureRegistry.register(TestFeatures.themeFlag)
         FeatureRegistry.register(TestFeatures.retryPolicyFlag)
-    }
-
-    @AfterEach
-    fun cleanup() {
-        SerializerRegistry.clear()
     }
 
     private enum class Environment(override val id: String) : AxisValue<Environment> {
@@ -384,7 +375,7 @@ class SnapshotSerializerTest {
                     "type": "DATA_CLASS",
                     "dataClassName": "${RetryPolicy::class.java.name}",
                     "value": {
-                      "maxAttempts": 3.0,
+                      "maxAttempts": 3,
                       "backoffMs": 1000.0,
                       "enabled": true,
                       "mode": "exponential"
@@ -401,7 +392,7 @@ class SnapshotSerializerTest {
                         "type": "DATA_CLASS",
                         "dataClassName": "${RetryPolicy::class.java.name}",
                         "value": {
-                          "maxAttempts": 9.0,
+                          "maxAttempts": 9,
                           "backoffMs": 2500.0,
                           "enabled": false,
                           "mode": "linear"

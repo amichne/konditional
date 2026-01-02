@@ -21,7 +21,7 @@ internal inline fun <B : JsonSchemaBuilder<Any>> KProperty0<*>.registerCustomSch
         required = required,
         defaultValue = schema.default,
         description = schema.description,
-        deprecated = schema.deprecated
+        deprecated = schema.deprecated,
     )
 }
 

@@ -23,7 +23,7 @@ import kotlin.reflect.jvm.isAccessible
  * Converts a custom encodeable instance to a JsonValue.JsonObject.
  *
  * **DEPRECATED:** This reflection-based method is deprecated and will be removed in 0.1.0.
- * Use SerializerRegistry with explicit TypeSerializer implementations instead.
+ * Schema-based serialization now happens automatically via SchemaBasedSerializer.
  *
  * This function uses reflection to extract all properties from the custom type
  * and convert them to JsonValue instances based on their types.
@@ -33,10 +33,11 @@ import kotlin.reflect.jvm.isAccessible
  */
 @Deprecated(
     message = "Reflection-based serialization is deprecated. " +
-        "Register a TypeSerializer via SerializerRegistry.register() instead.",
+        "Serialization now happens automatically via schema.",
     replaceWith = ReplaceWith(
-        "SerializerRegistry.encode(this)",
-        "io.amichne.konditional.serialization.SerializerRegistry"
+        "SchemaBasedSerializer.encode(this, this.schema.asObjectSchema())",
+        "io.amichne.konditional.serialization.SchemaBasedSerializer",
+        "io.amichne.konditional.core.types.asObjectSchema"
     ),
     level = DeprecationLevel.WARNING
 )
@@ -96,7 +97,7 @@ internal fun Any?.toJsonValue(): JsonValue = when (this) {
  * Parses a JsonValue.JsonObject into a custom encodeable instance.
  *
  * **DEPRECATED:** This reflection-based method is deprecated and will be removed in 0.1.0.
- * Use SerializerRegistry with explicit TypeSerializer implementations instead.
+ * Schema-based deserialization now happens automatically via SchemaBasedSerializer.
  *
  * This function uses reflection to instantiate the custom type with values
  * extracted from the JsonObject, validating against the schema if present.
@@ -106,10 +107,13 @@ internal fun Any?.toJsonValue(): JsonValue = when (this) {
  */
 @Deprecated(
     message = "Reflection-based deserialization is deprecated. " +
-        "Register a TypeSerializer via SerializerRegistry.register() instead.",
+        "Deserialization now happens automatically via schema.",
     replaceWith = ReplaceWith(
-        "SerializerRegistry.decode(T::class, this)",
-        "io.amichne.konditional.serialization.SerializerRegistry"
+        "extractSchema(T::class)?.let { schema -> SchemaBasedSerializer.decode(T::class, this, schema) } ?: ParseResult.Failure(ParseError.InvalidSnapshot(\"No schema found\"))",
+        "io.amichne.konditional.serialization.extractSchema",
+        "io.amichne.konditional.serialization.SchemaBasedSerializer",
+        "io.amichne.konditional.core.result.ParseResult",
+        "io.amichne.konditional.core.result.ParseError"
     ),
     level = DeprecationLevel.WARNING
 )

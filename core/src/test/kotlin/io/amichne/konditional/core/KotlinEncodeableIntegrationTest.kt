@@ -11,18 +11,16 @@ import io.amichne.konditional.core.result.utils.onSuccess
 import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.fixtures.core.withOverride
 import io.amichne.konditional.fixtures.serializers.UserSettings
-import io.amichne.konditional.serialization.SerializerRegistry
+import io.amichne.konditional.serialization.SchemaBasedSerializer
 import io.amichne.konditional.serialization.SnapshotSerializer.fromJson
 import io.amichne.konditional.serialization.SnapshotSerializer.serialize
 import io.amichne.kontracts.value.JsonBoolean
 import io.amichne.kontracts.value.JsonNumber
 import io.amichne.kontracts.value.JsonObject
 import io.amichne.kontracts.value.JsonString
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 /**
@@ -37,22 +35,10 @@ import org.junit.jupiter.api.Test
  */
 class KotlinEncodeableIntegrationTest {
 
-    @BeforeEach
-    fun setup() {
-        // Register serializer for UserSettings
-        SerializerRegistry.register(UserSettings::class, UserSettings.serializer)
-    }
-
-    @AfterEach
-    fun cleanup() {
-        // Clear registry after tests
-        SerializerRegistry.clear()
-    }
-
     @Test
     fun `data class to JsonValue conversion is correct`() {
         val settings = UserSettings()
-        val json = SerializerRegistry.encode(settings) as JsonObject
+        val json = SchemaBasedSerializer.encode(settings, settings.schema)
         val fields = json.fields
         assertEquals("light", fields["theme"]?.let { (it as? JsonString)?.value })
         assertEquals(true, fields["notificationsEnabled"]?.let { (it as? JsonBoolean)?.value })
@@ -71,7 +57,7 @@ class KotlinEncodeableIntegrationTest {
             ),
             schema = null
         )
-        val result = SerializerRegistry.decode(UserSettings::class, json)
+        val result = SchemaBasedSerializer.decode(UserSettings::class, json, UserSettings().schema)
         assertTrue(result is ParseResult.Success)
         val settings = (result as ParseResult.Success).value
         assertEquals("dark", settings.theme)
@@ -84,7 +70,7 @@ class KotlinEncodeableIntegrationTest {
     fun `schema generation and validation works as expected`() {
         val settings = UserSettings()
         val schema = settings.schema
-        val validJson = SerializerRegistry.encode(settings) as JsonObject
+        val validJson = SchemaBasedSerializer.encode(settings, schema)
         val validResult = validJson.validate(schema)
         assertTrue(validResult.isValid)
 

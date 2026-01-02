@@ -1,8 +1,10 @@
 package io.amichne.konditional.serialization
 
-import io.amichne.konditional.core.KotlinEncodeable
+import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.kontracts.schema.ObjectSchema
 import kotlin.reflect.KClass
+import kotlin.reflect.full.companionObject
+import kotlin.reflect.full.companionObjectInstance
 import kotlin.reflect.full.createInstance
 
 /**

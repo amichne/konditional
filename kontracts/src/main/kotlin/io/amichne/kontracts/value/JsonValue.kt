@@ -15,12 +15,12 @@ import io.amichne.kontracts.schema.ValidationResult
  * - Objects: Structured key-value pairs
  * - Arrays: Lists of homogeneous values
  */
-sealed class JsonValue {
+sealed interface JsonValue {
 
     /**
      * Validates this value against a schema.
      */
-    abstract fun validate(schema: JsonSchema<*>): ValidationResult
+    fun validate(schema: JsonSchema<*>): ValidationResult
 
     companion object {
         /**

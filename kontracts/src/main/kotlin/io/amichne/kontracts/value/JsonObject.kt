@@ -14,7 +14,7 @@ import io.amichne.kontracts.schema.ValidationResult.Invalid
 data class JsonObject(
     val fields: Map<String, JsonValue>,
     val schema: ObjectSchema? = null,
-) : JsonValue() {
+) : JsonValue {
 
     init {
         schema?.let { s ->
@@ -30,7 +30,7 @@ data class JsonObject(
     override fun validate(schema: JsonSchema<*>): ValidationResult {
         if (schema !is ObjectSchema) {
             return ValidationResult.Invalid(
-                "Expected ${schema}, but got JsonObject"
+                "Expected ${schema.type}, but got JsonObject"
             )
         }
 
@@ -77,7 +77,7 @@ data class JsonObject(
             }
             is JsonObject -> if (T::class == JsonObject::class) value as T else null
             is JsonArray -> if (T::class == JsonArray::class) value as T else null
-            JsonNull -> null
+            is JsonNull -> null
             null -> null
         }
     }

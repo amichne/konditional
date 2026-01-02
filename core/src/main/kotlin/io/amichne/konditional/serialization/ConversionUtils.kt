@@ -13,7 +13,6 @@ import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.konditional.core.types.asObjectSchema
-import io.amichne.konditional.core.types.toJsonValue
 import io.amichne.konditional.internal.serialization.models.FlagValue
 import io.amichne.konditional.internal.serialization.models.SerializableFlag
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
@@ -191,7 +190,7 @@ private fun validateDataClassFields(
     schema: ObjectSchema,
 ) {
     JsonObject(
-        fields = fields.mapValues { (_, v) -> v.toJsonValue() },
+        fields = fields.mapValues { it.value.toJsonValueInternal() },
         schema = schema,
     )
 }
@@ -230,17 +229,30 @@ private fun decodeDataClass(
     dataClassName: String,
     fields: Map<String, Any?>,
 ): Any {
-    // Use registry-based serializer (no reflection)
+    // Convert fields to JsonObject
     val jsonObject = JsonObject(
         fields = fields.mapValues { (_, v) -> v.toJsonValueInternal() },
         schema = null
     )
 
-    return when (val registryResult = SerializerRegistry.decodeByClassName(dataClassName, jsonObject)) {
-        is ParseResult.Success -> registryResult.value
+    // Load the class
+    val kClass = try {
+        Class.forName(dataClassName).kotlin
+    } catch (e: ClassNotFoundException) {
+        throw IllegalArgumentException("Failed to load class '$dataClassName': ${e.message}")
+    }
+
+    // Extract schema from the class
+    val schema = extractSchema(kClass)
+        ?: throw IllegalArgumentException(
+            "Class '$dataClassName' must implement KotlinEncodeable<ObjectSchema> for deserialization"
+        )
+
+    // Use schema-based deserializer
+    return when (val result = SchemaBasedSerializer.decode(kClass, jsonObject, schema)) {
+        is ParseResult.Success -> result.value
         is ParseResult.Failure -> throw IllegalArgumentException(
-            "Failed to decode '$dataClassName': ${registryResult.error.message}. " +
-                "Ensure a TypeSerializer is registered via SerializerRegistry.register()"
+            "Failed to decode '$dataClassName': ${result.error.message}"
         )
     }
 }
