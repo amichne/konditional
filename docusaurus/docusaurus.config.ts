@@ -30,7 +30,7 @@ const config: Config = {
         mermaid: true,
     },
 
-//     themes: ['classic'],
+    themes: ['@docusaurus/theme-mermaid'],
     presets: [
         [
             "classic",
@@ -52,7 +52,7 @@ const config: Config = {
                 specs: [
                     {
                         id: 'konditional-api',
-                        spec: 'openapi/openapi.json',
+                        spec: 'openapi/openapi.yaml',
                         route: '/api/',
                     },
                 ],
@@ -161,13 +161,6 @@ const config: Config = {
                 {href: 'https://github.com/amichne/konditional', label: 'GitHub', position: 'right'},
             ],
 
-        },
-        docs: {
-            sidebar: {
-                autoCollapseCategories: true,
-                hideable: true, // Enable the hideable feature
-
-            },
         },
         footer: {
             style: 'dark',

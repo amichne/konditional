@@ -229,6 +229,21 @@
         ]
       },
       "VersionRange": {
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "UNBOUNDED",
+              "MIN_BOUND",
+              "MAX_BOUND",
+              "MIN_AND_MAX_BOUND"
+            ]
+          }
+        },
         "discriminator": {
           "propertyName": "type",
           "mapping": {
@@ -381,6 +396,23 @@
         ]
       },
       "FlagValue": {
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "BOOLEAN",
+              "STRING",
+              "INT",
+              "DOUBLE",
+              "ENUM",
+              "DATA_CLASS"
+            ]
+          }
+        },
         "discriminator": {
           "propertyName": "type",
           "mapping": {
@@ -413,155 +445,6 @@
           }
         ]
       },
-      "Rule": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "value": {
-            "discriminator": {
-              "propertyName": "type",
-              "mapping": {
-                "BOOLEAN": "#/components/schemas/BooleanFlagValue",
-                "STRING": "#/components/schemas/StringFlagValue",
-                "INT": "#/components/schemas/IntFlagValue",
-                "DOUBLE": "#/components/schemas/DoubleFlagValue",
-                "ENUM": "#/components/schemas/EnumFlagValue",
-                "DATA_CLASS": "#/components/schemas/DataClassFlagValue"
-              }
-            },
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/BooleanFlagValue"
-              },
-              {
-                "$ref": "#/components/schemas/StringFlagValue"
-              },
-              {
-                "$ref": "#/components/schemas/IntFlagValue"
-              },
-              {
-                "$ref": "#/components/schemas/DoubleFlagValue"
-              },
-              {
-                "$ref": "#/components/schemas/EnumFlagValue"
-              },
-              {
-                "$ref": "#/components/schemas/DataClassFlagValue"
-              }
-            ]
-          },
-          "rampUp": {
-            "type": "number",
-            "format": "double",
-            "minimum": 0.0,
-            "maximum": 100.0,
-            "default": 100.0
-          },
-          "rampUpAllowlist": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "uniqueItems": true,
-            "default": []
-          },
-          "note": {
-            "type": "string"
-          },
-          "locales": {
-            "type": "string",
-            "enum": [
-              "AUSTRALIA",
-              "AUSTRIA",
-              "BELGIUM_DUTCH",
-              "BELGIUM_FRENCH",
-              "CANADA",
-              "CANADA_FRENCH",
-              "FINLAND",
-              "FRANCE",
-              "GERMANY",
-              "HONG_KONG",
-              "HONG_KONG_ENGLISH",
-              "INDIA",
-              "ITALY",
-              "JAPAN",
-              "MEXICO",
-              "NETHERLANDS",
-              "NEW_ZEALAND",
-              "NORWAY",
-              "SINGAPORE",
-              "SPAIN",
-              "SWEDEN",
-              "TAIWAN",
-              "UNITED_KINGDOM",
-              "UNITED_STATES",
-              "ICC_EN_EU",
-              "ICC_EN_EI"
-            ],
-            "default": "UNITED_STATES"
-          },
-          "platforms": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "uniqueItems": true,
-            "default": [
-              "IOS",
-              "ANDROID",
-              "WEB"
-            ]
-          },
-          "versionRange": {
-            "discriminator": {
-              "propertyName": "type",
-              "mapping": {
-                "UNBOUNDED": "#/components/schemas/VersionRangeUnbounded",
-                "MIN_BOUND": "#/components/schemas/VersionRangeMinBound",
-                "MAX_BOUND": "#/components/schemas/VersionRangeMaxBound",
-                "MIN_AND_MAX_BOUND": "#/components/schemas/VersionRangeMinAndMaxBound"
-              }
-            },
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/VersionRangeUnbounded"
-              },
-              {
-                "$ref": "#/components/schemas/VersionRangeMinBound"
-              },
-              {
-                "$ref": "#/components/schemas/VersionRangeMaxBound"
-              },
-              {
-                "$ref": "#/components/schemas/VersionRangeMinAndMaxBound"
-              }
-            ],
-            "default": {
-              "type": "UNBOUNDED"
-            }
-          },
-          "axes": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "uniqueItems": true
-            },
-            "default": {}
-          }
-        },
-        "required": [
-          "value",
-          "rampUp",
-          "rampUpAllowlist",
-          "locales",
-          "platforms",
-          "versionRange",
-          "axes"
-        ]
-      },
       "BooleanRule": {
         "type": "object",
         "additionalProperties": false,
@@ -588,9 +471,9 @@
           "rampUp": {
             "type": "number",
             "format": "double",
-            "minimum": 0.0,
-            "maximum": 100.0,
-            "default": 100.0
+            "minimum": 0,
+            "maximum": 100,
+            "default": 100
           },
           "rampUpAllowlist": {
             "type": "array",
@@ -598,7 +481,9 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "default": []
+            "default": [
+
+            ]
           },
           "note": {
             "type": "string"
@@ -684,7 +569,8 @@
               },
               "uniqueItems": true
             },
-            "default": {}
+            "default": {
+            }
           }
         },
         "required": [
@@ -723,9 +609,9 @@
           "rampUp": {
             "type": "number",
             "format": "double",
-            "minimum": 0.0,
-            "maximum": 100.0,
-            "default": 100.0
+            "minimum": 0,
+            "maximum": 100,
+            "default": 100
           },
           "rampUpAllowlist": {
             "type": "array",
@@ -733,7 +619,9 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "default": []
+            "default": [
+
+            ]
           },
           "note": {
             "type": "string"
@@ -819,7 +707,8 @@
               },
               "uniqueItems": true
             },
-            "default": {}
+            "default": {
+            }
           }
         },
         "required": [
@@ -859,9 +748,9 @@
           "rampUp": {
             "type": "number",
             "format": "double",
-            "minimum": 0.0,
-            "maximum": 100.0,
-            "default": 100.0
+            "minimum": 0,
+            "maximum": 100,
+            "default": 100
           },
           "rampUpAllowlist": {
             "type": "array",
@@ -869,7 +758,9 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "default": []
+            "default": [
+
+            ]
           },
           "note": {
             "type": "string"
@@ -955,7 +846,8 @@
               },
               "uniqueItems": true
             },
-            "default": {}
+            "default": {
+            }
           }
         },
         "required": [
@@ -995,9 +887,9 @@
           "rampUp": {
             "type": "number",
             "format": "double",
-            "minimum": 0.0,
-            "maximum": 100.0,
-            "default": 100.0
+            "minimum": 0,
+            "maximum": 100,
+            "default": 100
           },
           "rampUpAllowlist": {
             "type": "array",
@@ -1005,7 +897,9 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "default": []
+            "default": [
+
+            ]
           },
           "note": {
             "type": "string"
@@ -1091,7 +985,8 @@
               },
               "uniqueItems": true
             },
-            "default": {}
+            "default": {
+            }
           }
         },
         "required": [
@@ -1134,9 +1029,9 @@
           "rampUp": {
             "type": "number",
             "format": "double",
-            "minimum": 0.0,
-            "maximum": 100.0,
-            "default": 100.0
+            "minimum": 0,
+            "maximum": 100,
+            "default": 100
           },
           "rampUpAllowlist": {
             "type": "array",
@@ -1144,7 +1039,9 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "default": []
+            "default": [
+
+            ]
           },
           "note": {
             "type": "string"
@@ -1230,7 +1127,8 @@
               },
               "uniqueItems": true
             },
-            "default": {}
+            "default": {
+            }
           }
         },
         "required": [
@@ -1276,9 +1174,9 @@
           "rampUp": {
             "type": "number",
             "format": "double",
-            "minimum": 0.0,
-            "maximum": 100.0,
-            "default": 100.0
+            "minimum": 0,
+            "maximum": 100,
+            "default": 100
           },
           "rampUpAllowlist": {
             "type": "array",
@@ -1286,7 +1184,9 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "default": []
+            "default": [
+
+            ]
           },
           "note": {
             "type": "string"
@@ -1372,7 +1272,8 @@
               },
               "uniqueItems": true
             },
-            "default": {}
+            "default": {
+            }
           }
         },
         "required": [
@@ -1386,8 +1287,25 @@
         ]
       },
       "Flag": {
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "BOOLEAN",
+              "STRING",
+              "INT",
+              "DOUBLE",
+              "ENUM",
+              "DATA_CLASS"
+            ]
+          }
+        },
         "discriminator": {
-          "propertyName": "defaultValue.type",
+          "propertyName": "type",
           "mapping": {
             "BOOLEAN": "#/components/schemas/BooleanFlag",
             "STRING": "#/components/schemas/StringFlag",
@@ -1422,6 +1340,12 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "BOOLEAN"
+            ]
+          },
           "key": {
             "description": "Encoded feature identifier: feature::(namespace)::(key).",
             "type": "string"
@@ -1459,7 +1383,9 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "default": []
+            "default": [
+
+            ]
           },
           "rules": {
             "type": "array",
@@ -1489,9 +1415,9 @@
                 "rampUp": {
                   "type": "number",
                   "format": "double",
-                  "minimum": 0.0,
-                  "maximum": 100.0,
-                  "default": 100.0
+                  "minimum": 0,
+                  "maximum": 100,
+                  "default": 100
                 },
                 "rampUpAllowlist": {
                   "type": "array",
@@ -1499,7 +1425,9 @@
                     "type": "string"
                   },
                   "uniqueItems": true,
-                  "default": []
+                  "default": [
+
+                  ]
                 },
                 "note": {
                   "type": "string"
@@ -1585,7 +1513,8 @@
                     },
                     "uniqueItems": true
                   },
-                  "default": {}
+                  "default": {
+                  }
                 }
               },
               "required": [
@@ -1598,10 +1527,13 @@
                 "axes"
               ]
             },
-            "default": []
+            "default": [
+
+            ]
           }
         },
         "required": [
+          "type",
           "key",
           "defaultValue",
           "salt",
@@ -1614,6 +1546,12 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "STRING"
+            ]
+          },
           "key": {
             "description": "Encoded feature identifier: feature::(namespace)::(key).",
             "type": "string"
@@ -1651,7 +1589,9 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "default": []
+            "default": [
+
+            ]
           },
           "rules": {
             "type": "array",
@@ -1681,9 +1621,9 @@
                 "rampUp": {
                   "type": "number",
                   "format": "double",
-                  "minimum": 0.0,
-                  "maximum": 100.0,
-                  "default": 100.0
+                  "minimum": 0,
+                  "maximum": 100,
+                  "default": 100
                 },
                 "rampUpAllowlist": {
                   "type": "array",
@@ -1691,7 +1631,9 @@
                     "type": "string"
                   },
                   "uniqueItems": true,
-                  "default": []
+                  "default": [
+
+                  ]
                 },
                 "note": {
                   "type": "string"
@@ -1777,7 +1719,8 @@
                     },
                     "uniqueItems": true
                   },
-                  "default": {}
+                  "default": {
+                  }
                 }
               },
               "required": [
@@ -1790,10 +1733,13 @@
                 "axes"
               ]
             },
-            "default": []
+            "default": [
+
+            ]
           }
         },
         "required": [
+          "type",
           "key",
           "defaultValue",
           "salt",
@@ -1806,6 +1752,12 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "INT"
+            ]
+          },
           "key": {
             "description": "Encoded feature identifier: feature::(namespace)::(key).",
             "type": "string"
@@ -1844,7 +1796,9 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "default": []
+            "default": [
+
+            ]
           },
           "rules": {
             "type": "array",
@@ -1875,9 +1829,9 @@
                 "rampUp": {
                   "type": "number",
                   "format": "double",
-                  "minimum": 0.0,
-                  "maximum": 100.0,
-                  "default": 100.0
+                  "minimum": 0,
+                  "maximum": 100,
+                  "default": 100
                 },
                 "rampUpAllowlist": {
                   "type": "array",
@@ -1885,7 +1839,9 @@
                     "type": "string"
                   },
                   "uniqueItems": true,
-                  "default": []
+                  "default": [
+
+                  ]
                 },
                 "note": {
                   "type": "string"
@@ -1971,7 +1927,8 @@
                     },
                     "uniqueItems": true
                   },
-                  "default": {}
+                  "default": {
+                  }
                 }
               },
               "required": [
@@ -1984,10 +1941,13 @@
                 "axes"
               ]
             },
-            "default": []
+            "default": [
+
+            ]
           }
         },
         "required": [
+          "type",
           "key",
           "defaultValue",
           "salt",
@@ -2000,6 +1960,12 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "DOUBLE"
+            ]
+          },
           "key": {
             "description": "Encoded feature identifier: feature::(namespace)::(key).",
             "type": "string"
@@ -2038,7 +2004,9 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "default": []
+            "default": [
+
+            ]
           },
           "rules": {
             "type": "array",
@@ -2069,9 +2037,9 @@
                 "rampUp": {
                   "type": "number",
                   "format": "double",
-                  "minimum": 0.0,
-                  "maximum": 100.0,
-                  "default": 100.0
+                  "minimum": 0,
+                  "maximum": 100,
+                  "default": 100
                 },
                 "rampUpAllowlist": {
                   "type": "array",
@@ -2079,7 +2047,9 @@
                     "type": "string"
                   },
                   "uniqueItems": true,
-                  "default": []
+                  "default": [
+
+                  ]
                 },
                 "note": {
                   "type": "string"
@@ -2165,7 +2135,8 @@
                     },
                     "uniqueItems": true
                   },
-                  "default": {}
+                  "default": {
+                  }
                 }
               },
               "required": [
@@ -2178,10 +2149,13 @@
                 "axes"
               ]
             },
-            "default": []
+            "default": [
+
+            ]
           }
         },
         "required": [
+          "type",
           "key",
           "defaultValue",
           "salt",
@@ -2194,6 +2168,12 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "ENUM"
+            ]
+          },
           "key": {
             "description": "Encoded feature identifier: feature::(namespace)::(key).",
             "type": "string"
@@ -2235,7 +2215,9 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "default": []
+            "default": [
+
+            ]
           },
           "rules": {
             "type": "array",
@@ -2269,9 +2251,9 @@
                 "rampUp": {
                   "type": "number",
                   "format": "double",
-                  "minimum": 0.0,
-                  "maximum": 100.0,
-                  "default": 100.0
+                  "minimum": 0,
+                  "maximum": 100,
+                  "default": 100
                 },
                 "rampUpAllowlist": {
                   "type": "array",
@@ -2279,7 +2261,9 @@
                     "type": "string"
                   },
                   "uniqueItems": true,
-                  "default": []
+                  "default": [
+
+                  ]
                 },
                 "note": {
                   "type": "string"
@@ -2365,7 +2349,8 @@
                     },
                     "uniqueItems": true
                   },
-                  "default": {}
+                  "default": {
+                  }
                 }
               },
               "required": [
@@ -2378,10 +2363,13 @@
                 "axes"
               ]
             },
-            "default": []
+            "default": [
+
+            ]
           }
         },
         "required": [
+          "type",
           "key",
           "defaultValue",
           "salt",
@@ -2394,6 +2382,12 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "DATA_CLASS"
+            ]
+          },
           "key": {
             "description": "Encoded feature identifier: feature::(namespace)::(key).",
             "type": "string"
@@ -2438,7 +2432,9 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "default": []
+            "default": [
+
+            ]
           },
           "rules": {
             "type": "array",
@@ -2475,9 +2471,9 @@
                 "rampUp": {
                   "type": "number",
                   "format": "double",
-                  "minimum": 0.0,
-                  "maximum": 100.0,
-                  "default": 100.0
+                  "minimum": 0,
+                  "maximum": 100,
+                  "default": 100
                 },
                 "rampUpAllowlist": {
                   "type": "array",
@@ -2485,7 +2481,9 @@
                     "type": "string"
                   },
                   "uniqueItems": true,
-                  "default": []
+                  "default": [
+
+                  ]
                 },
                 "note": {
                   "type": "string"
@@ -2571,7 +2569,8 @@
                     },
                     "uniqueItems": true
                   },
-                  "default": {}
+                  "default": {
+                  }
                 }
               },
               "required": [
@@ -2584,10 +2583,13 @@
                 "axes"
               ]
             },
-            "default": []
+            "default": [
+
+            ]
           }
         },
         "required": [
+          "type",
           "key",
           "defaultValue",
           "salt",
@@ -2606,7 +2608,7 @@
           "generatedAtEpochMillis": {
             "type": "number",
             "format": "int64",
-            "minimum": 0.0
+            "minimum": 0
           },
           "source": {
             "type": "string"
@@ -2618,56 +2620,12 @@
         "additionalProperties": false,
         "properties": {
           "meta": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "version": {
-                "type": "string"
-              },
-              "generatedAtEpochMillis": {
-                "type": "number",
-                "format": "int64",
-                "minimum": 0.0
-              },
-              "source": {
-                "type": "string"
-              }
-            }
+            "$ref": "#/components/schemas/SnapshotMetadata"
           },
           "flags": {
             "type": "array",
             "items": {
-              "discriminator": {
-                "propertyName": "defaultValue.type",
-                "mapping": {
-                  "BOOLEAN": "#/components/schemas/BooleanFlag",
-                  "STRING": "#/components/schemas/StringFlag",
-                  "INT": "#/components/schemas/IntFlag",
-                  "DOUBLE": "#/components/schemas/DoubleFlag",
-                  "ENUM": "#/components/schemas/EnumFlag",
-                  "DATA_CLASS": "#/components/schemas/DataClassFlag"
-                }
-              },
-              "oneOf": [
-                {
-                  "$ref": "#/components/schemas/BooleanFlag"
-                },
-                {
-                  "$ref": "#/components/schemas/StringFlag"
-                },
-                {
-                  "$ref": "#/components/schemas/IntFlag"
-                },
-                {
-                  "$ref": "#/components/schemas/DoubleFlag"
-                },
-                {
-                  "$ref": "#/components/schemas/EnumFlag"
-                },
-                {
-                  "$ref": "#/components/schemas/DataClassFlag"
-                }
-              ]
+              "$ref": "#/components/schemas/Flag"
             }
           }
         },
@@ -2689,7 +2647,7 @@
               "generatedAtEpochMillis": {
                 "type": "number",
                 "format": "int64",
-                "minimum": 0.0
+                "minimum": 0
               },
               "source": {
                 "type": "string"
@@ -2699,37 +2657,7 @@
           "flags": {
             "type": "array",
             "items": {
-              "discriminator": {
-                "propertyName": "defaultValue.type",
-                "mapping": {
-                  "BOOLEAN": "#/components/schemas/BooleanFlag",
-                  "STRING": "#/components/schemas/StringFlag",
-                  "INT": "#/components/schemas/IntFlag",
-                  "DOUBLE": "#/components/schemas/DoubleFlag",
-                  "ENUM": "#/components/schemas/EnumFlag",
-                  "DATA_CLASS": "#/components/schemas/DataClassFlag"
-                }
-              },
-              "oneOf": [
-                {
-                  "$ref": "#/components/schemas/BooleanFlag"
-                },
-                {
-                  "$ref": "#/components/schemas/StringFlag"
-                },
-                {
-                  "$ref": "#/components/schemas/IntFlag"
-                },
-                {
-                  "$ref": "#/components/schemas/DoubleFlag"
-                },
-                {
-                  "$ref": "#/components/schemas/EnumFlag"
-                },
-                {
-                  "$ref": "#/components/schemas/DataClassFlag"
-                }
-              ]
+              "$ref": "#/components/schemas/Flag"
             }
           },
           "removeKeys": {
@@ -2738,7 +2666,9 @@
               "description": "Encoded feature identifier: feature::(namespace)::(key).",
               "type": "string"
             },
-            "default": []
+            "default": [
+
+            ]
           }
         },
         "required": [

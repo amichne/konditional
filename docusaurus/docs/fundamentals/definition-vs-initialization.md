@@ -1,6 +1,39 @@
 # Definition vs Initialization
 
-Konditional's lifecycle has two distinct phases: **definition** (compile-time property delegation) and **initialization** (runtime namespace registration). Understanding this distinction is critical for working with JSON-loaded configuration.
+Konditional's lifecycle has two distinct phases: **definition** (compile-time property delegation) and **initialization
+** (runtime namespace registration). Understanding this distinction is critical for working with JSON-loaded
+configuration.
+
+```mermaidgraph
+
+sequenceDiagram
+    participant Dev as Developer
+    participant KC as Kotlin compiler
+    participant RT as JVM runtime
+    participant NS as Namespace (AppFeatures)
+    participant Reg as NamespaceRegistry
+    participant Ser as Snapshot serializer
+
+    Dev->>KC: Define `val darkMode by boolean<Context>(default = false)`
+    KC-->>Dev: Generate typed accessors + delegate wiring
+
+    RT->>NS: First reference (t0)
+    activate NS
+    NS->>Reg: Create registry instance
+    NS->>Reg: Register all delegated features
+    deactivate NS
+
+    RT->>NS: `fromJson(json)` (runtime boundary)
+    NS->>Ser: Parse + validate snapshot
+    Ser->>Reg: Lookup keys + validate types
+
+    alt Valid snapshot
+        Ser-->>NS: Configuration snapshot
+        NS->>Reg: `load(snapshot)` (atomic swap)
+    else Namespace not initialized / drift
+        Ser-->>RT: `ParseResult.Failure(ParseError.FeatureNotFound)`
+    end
+```
 
 ---
 
@@ -53,7 +86,8 @@ val _ = AppFeatures  // or: val flag = AppFeatures.darkMode
 
 ## Why This Matters: The Precondition
 
-JSON deserialization looks up features by key in the registry. If a feature hasn't been registered (because the namespace wasn't initialized), deserialization fails:
+JSON deserialization looks up features by key in the registry. If a feature hasn't been registered (because the
+namespace wasn't initialized), deserialization fails:
 
 ```kotlin
 // ✗ Incorrect order
@@ -128,10 +162,10 @@ class KonditionalBootstrap {
 
 ## Definition vs Initialization: Summary
 
-| Phase                | When           | What Happens                                      | Guarantees                                    |
-|----------------------|----------------|---------------------------------------------------|-----------------------------------------------|
-| **Definition**       | Compile-time   | Property delegation, type checking, code generation | Types are correct, rule DSL is valid          |
-| **Initialization**   | Runtime (t0)   | Class initialization, feature registration        | Features exist in registry, ready for lookup  |
+| Phase              | When         | What Happens                                        | Guarantees                                   |
+|--------------------|--------------|-----------------------------------------------------|----------------------------------------------|
+| **Definition**     | Compile-time | Property delegation, type checking, code generation | Types are correct, rule DSL is valid         |
+| **Initialization** | Runtime (t0) | Class initialization, feature registration          | Features exist in registry, ready for lookup |
 
 ---
 

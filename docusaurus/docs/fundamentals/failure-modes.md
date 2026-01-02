@@ -2,6 +2,25 @@
 
 What can go wrong when using Konditional, how to prevent it, how to detect it, and what the worst-case outcome is.
 
+```mermaid
+flowchart TD
+    Source["JSON payload (remote/file/network)"] --> Parse["Parse + validate snapshot"]
+    Parse -->|Invalid JSON / schema| Reject["Reject update<br/>keep last-known-good"]
+    Parse --> Lookup["Lookup keys in registry"]
+    Lookup -->|FeatureNotFound| Reject
+    Lookup --> Decode["Decode values to declared feature types"]
+    Decode -->|Type mismatch / schema violation| Reject
+    Decode --> Load["Atomic load new snapshot"]
+    Load --> Eval["Evaluation reads active snapshot"]
+
+    Eval -->|Operator control| Rollback["rollback(steps)"]
+    Eval -->|Operator control| Kill["disableAll() → defaults"]
+
+    style Reject fill:#ffcdd2
+    style Load fill:#c8e6c9
+    style Eval fill:#e1f5ff
+```
+
 ---
 
 ## 1. Parse Errors (Invalid JSON)
