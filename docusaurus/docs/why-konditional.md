@@ -111,8 +111,8 @@ object AppFlags : Namespace("app") {
 }
 
 // Usage
-val checkoutVariant: CheckoutVariant = AppFlags.checkoutVariant(ctx)  // typed, cannot be wrong
-val retries: Int = AppFlags.maxRetries(ctx)                           // typed, cannot be wrong
+val checkoutVariant: CheckoutVariant = AppFlags.checkoutVariant.evaluate(ctx)  // typed, cannot be wrong
+val retries: Int = AppFlags.maxRetries.evaluate(ctx)                           // typed, cannot be wrong
 ```
 
 ### What you get
@@ -128,13 +128,13 @@ AppFlags.NEW_ONBOARING_FLOW  // doesn't compile
 
 ```kotlin
 // This will error
-val retries: String = AppFlags.maxRetries(ctx)  // doesn't compile
+val retries: String = AppFlags.maxRetries.evaluate(ctx)  // doesn't compile
 ```
 
 **Variants are values, not boolean matrices:**
 
 ```kotlin
-when (AppFlags.checkoutVariant(ctx)) {
+when (AppFlags.checkoutVariant.evaluate(ctx)) {
     CheckoutVariant.CLASSIC -> classicCheckout()
     CheckoutVariant.OPTIMIZED -> optimizedCheckout()
     CheckoutVariant.EXPERIMENTAL -> experimentalCheckout()

@@ -21,6 +21,8 @@ java {
 }
 
 dependencies {
+    api(project(":openapi"))
+
     // Zero dependencies except Kotlin stdlib
     testImplementation(kotlin("test"))
 

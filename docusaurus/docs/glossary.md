@@ -50,6 +50,14 @@ Learn more: [Context primitive](/fundamentals/core-primitives#context)
 
 Learn more: [Deterministic evaluation](/fundamentals/evaluation-semantics#2-deterministic-same-inputs--same-outputs)
 
+## Discriminated Union
+
+A JSON encoding pattern for polymorphic types (like Kotlin sealed classes) where a `type` field identifies which variant is being represented. In OpenAPI schemas, discriminators map type values to schema references for proper client codegen.
+
+Examples in Konditional: `FlagValue` (BOOLEAN/STRING/INT/DOUBLE/ENUM/DATA_CLASS) and `VersionRange` (UNBOUNDED/MIN_BOUND/MAX_BOUND/MIN_AND_MAX_BOUND).
+
+Learn more: [Persistence format: Value encoding](/persistence-format#value-encoding-defaultvalue--rule-value), [Kontracts: Discriminated Unions](/advanced/kontracts-deep-dive#discriminated-unions-sealed-classes)
+
 ## Extension predicate
 
 A custom, typed predicate attached to a rule via `extension { ... }`. Extensions let you express domain-specific targeting beyond built-in criteria (platform/locale/version/axes) and contribute to a rule's specificity.

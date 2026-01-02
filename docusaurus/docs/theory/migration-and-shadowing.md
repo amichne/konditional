@@ -26,7 +26,7 @@ When updating configuration or migrating between flag systems, you need confiden
 **Shadow evaluation** means: evaluate against two configurations (baseline + candidate) and compare results without affecting production.
 
 ```kotlin
-val baselineValue = feature(context)  // Returned to caller
+val baselineValue = feature.evaluate(context)  // Returned to caller
 
 val candidateValue = evaluateAgainstCandidateConfig(feature, context)  // For comparison only
 

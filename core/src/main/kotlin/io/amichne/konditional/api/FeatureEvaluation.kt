@@ -11,28 +11,26 @@ import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.Rule
 import kotlin.system.measureNanoTime
 
-@RequiresOptIn(
-    message = "Prefer using the operator overload invoke() for concise feature evaluation",
-    level = RequiresOptIn.Level.ERROR
-)
-annotation class VerboseApi
-
 /**
- * Evaluates this feature for the given contextFn.
+ * Evaluates this feature for the given context.
  *
  * By default, evaluates using the feature's namespace registry.
  * For testing, you can provide an explicit registry parameter.
  *
- * @param context The evaluation contextFn
+ * Example:
+ * ```kotlin
+ * val enabled = AppFlags.darkMode.evaluate(context)
+ * ```
+ *
+ * @param context The evaluation context
  * @param registry The registry to use (defaults to the feature's namespace)
  * @return The evaluated value
  * @throws IllegalStateException if the feature is not registered in the registry
  */
-@VerboseApi
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
     context: C,
     registry: NamespaceRegistry = namespace,
-): T = this(context, registry)
+): T = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.NORMAL).value
 
 /**
  * Explains how this feature was evaluated for the given context.
@@ -61,26 +59,6 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.explain(
     context: C,
     registry: NamespaceRegistry = namespace,
 ): EvaluationResult<T> = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.EXPLAIN)
-
-/**
- * Operator overload for concise feature evaluation.
- *
- * Allows calling a feature directly as a function: `feature(context)` instead of `feature.evaluate(context)`.
- *
- * Example:
- * ```kotlin
- * val enabled = AppFlags.darkMode(context)  // Instead of AppFlags.darkMode.evaluate(context)
- * ```
- *
- * @param context The evaluation contextFn
- * @param registry The registry to use (defaults to the feature's namespace)
- * @return The evaluated value
- * @throws IllegalStateException if the feature is not registered in the registry
- */
-operator fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.invoke(
-    context: C,
-    registry: NamespaceRegistry = namespace,
-): T = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.NORMAL).value
 
 @Deprecated(
     message = "Use explain() instead for clearer intent",

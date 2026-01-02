@@ -16,5 +16,6 @@ data class DoubleSchema(
     val enum: List<Double>? = null,
     val format: String? = null
 ) : JsonSchema<Double>() {
+    override val type: OpenApi.Type = OpenApi.Type.NUMBER
     override fun toString() = "DoubleSchema"
 }

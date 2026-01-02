@@ -18,7 +18,7 @@ object AppFlags : Namespace("app") {
 }
 
 // Typos don't compile. Types are guaranteed. Ramp-ups are deterministic.
-val version: String = AppFlags.checkoutVersion(ctx)
+val version: String = AppFlags.checkoutVersion.evaluate(ctx)
 ```
 
 ---
@@ -36,8 +36,8 @@ This compiles. It deploys. Your experiment silently fails. You discover it weeks
 **Konditional makes flags compile-time correct:**
 
 ```kotlin
-val version = AppFlags.checkoutVersion(ctx)  // property access is compile-time checked
-// AppFlags.checkotuVersion(ctx)              // doesn't compile (typo)
+val version = AppFlags.checkoutVersion.evaluate(ctx)  // property access is compile-time checked
+// AppFlags.checkotuVersion.evaluate(ctx)              // doesn't compile (typo)
 ```
 
 Beyond typo safety, Konditional gives you:
@@ -93,9 +93,9 @@ val ctx = Context(
     stableId = StableId.of("user-123")
 )
 
-val enabled: Boolean = AppFeatures.darkMode(ctx)
-val endpoint: String = AppFeatures.apiEndpoint(ctx)
-val retries: Int = AppFeatures.maxRetries(ctx)
+val enabled: Boolean = AppFeatures.darkMode.evaluate(ctx)
+val endpoint: String = AppFeatures.apiEndpoint.evaluate(ctx)
+val retries: Int = AppFeatures.maxRetries.evaluate(ctx)
 ```
 
 **Evaluation is total:** if no rule matches, the default is returned. No nulls, no exceptions.
@@ -128,7 +128,7 @@ object CheckoutFlags : Namespace("checkout") {
     }
 }
 
-when (CheckoutFlags.checkoutVersion(ctx)) {
+when (CheckoutFlags.checkoutVersion.evaluate(ctx)) {
     "v1" -> v1Checkout()
     "v2" -> v2Checkout()
     "v3" -> v3Checkout()

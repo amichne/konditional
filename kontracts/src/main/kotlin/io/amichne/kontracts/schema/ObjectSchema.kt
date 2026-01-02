@@ -14,5 +14,6 @@ data class ObjectSchema(
     override val deprecated: Boolean = false,
     override val required: Set<String>? = null
 ) : JsonSchema<Map<String, Any?>>(), ObjectTraits {
+    override val type: OpenApi.Type = OpenApi.Type.OBJECT
     override fun toString() = "ObjectSchema(fields=${fields.keys})"
 }

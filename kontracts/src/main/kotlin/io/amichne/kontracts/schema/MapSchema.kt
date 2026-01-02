@@ -14,5 +14,6 @@ data class MapSchema<V : Any>(
     val minProperties: Int? = null,
     val maxProperties: Int? = null
 ) : JsonSchema<Map<String, V>>() {
+    override val type: OpenApi.Type = OpenApi.Type.OBJECT
     override fun toString() = "MapSchema($valueSchema)"
 }

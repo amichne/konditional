@@ -20,7 +20,7 @@ flowchart TD
 A **Feature** is a typed configuration value with an optional rule set. You define features as delegated properties on a `Namespace`:
 
 ```kotlin
-import io.amichne.konditional.api.invoke
+import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.Context
 
 object AppFeatures : Namespace("app") {
@@ -30,8 +30,8 @@ object AppFeatures : Namespace("app") {
     val timeoutSeconds by double<Context>(default = 30.0)
 }
 
-val enabled: Boolean = AppFeatures.darkMode(context)
-val endpoint: String = AppFeatures.apiEndpoint(context)
+val enabled: Boolean = AppFeatures.darkMode.evaluate(context)
+val endpoint: String = AppFeatures.apiEndpoint.evaluate(context)
 ```
 
 **What property delegation buys you:**

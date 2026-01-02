@@ -15,5 +15,6 @@ data class IntSchema(
     val maximum: Int? = null,
     val enum: List<Int>? = null
 ) : JsonSchema<Int>() {
+    override val type: OpenApi.Type = OpenApi.Type.INTEGER
     override fun toString() = "IntSchema"
 }

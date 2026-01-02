@@ -7,7 +7,7 @@ Define flags as delegated properties on a `Namespace`. The compiler enforces typ
 ## Define a Namespace with Flags
 
 ```kotlin
-import io.amichne.konditional.api.invoke
+import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.context.*
 import io.amichne.konditional.core.id.StableId
@@ -63,9 +63,9 @@ val context = Context(
 ## Evaluate Flags
 
 ```kotlin
-val enabled: Boolean = AppFeatures.darkMode(context)
-val endpoint: String = AppFeatures.apiEndpoint(context)
-val retries: Int = AppFeatures.maxRetries(context)
+val enabled: Boolean = AppFeatures.darkMode.evaluate(context)
+val endpoint: String = AppFeatures.apiEndpoint.evaluate(context)
+val retries: Int = AppFeatures.maxRetries.evaluate(context)
 ```
 
 **Guarantees:**

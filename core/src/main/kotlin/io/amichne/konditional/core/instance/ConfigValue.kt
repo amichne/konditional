@@ -2,6 +2,8 @@ package io.amichne.konditional.core.instance
 
 import io.amichne.konditional.core.types.KotlinEncodeable
 import io.amichne.konditional.core.types.toPrimitiveValue
+import io.amichne.konditional.serialization.SerializerRegistry
+import io.amichne.konditional.serialization.TypeSerializer
 
 sealed interface ConfigValue {
     @ConsistentCopyVisibility
@@ -43,7 +45,7 @@ sealed interface ConfigValue {
             is Enum<*> -> EnumValue(value.javaClass.name, value.name)
             is KotlinEncodeable<*> -> {
                 // Use registry-based serializer (no reflection)
-                val serializer = io.amichne.konditional.serialization.SerializerRegistry.get(value::class)
+                val serializer = SerializerRegistry.get(value::class)
                     ?: throw IllegalArgumentException(
                         "No serializer registered for ${value::class.qualifiedName}. " +
                             "Register with SerializerRegistry.register(${value::class.simpleName}::class, serializer)"
@@ -51,7 +53,7 @@ sealed interface ConfigValue {
 
                 @Suppress("UNCHECKED_CAST")
                 val json =
-                    (serializer as io.amichne.konditional.serialization.TypeSerializer<KotlinEncodeable<*>>).encode(
+                    (serializer as TypeSerializer<KotlinEncodeable<*>>).encode(
                         value
                     )
 

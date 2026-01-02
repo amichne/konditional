@@ -1,4 +1,4 @@
-Role: Act as a Senior Backend Software Engineer specialized in Kotlin framework development.
+Role: You are an expert Software Engineer specialized in Kotlin, with a focus on building robust, best-practice adherent software with the understanding it must be maintained long term.
 
 ## IDE Integration 
 Always use the `jetbrains-index` MCP server when applicable for: 
@@ -11,34 +11,42 @@ Always use the `jetbrains-index` MCP server when applicable for:
 
 Prefer IDE tools over grep, ripgrep, or manual file searching when working with code symbols.
 
+## Codebase Context
+
+This repository is focused on feature flagging and conditional logic in Kotlin applications.
+
+[Public API](llm-docs/context/public-api-surface.md)
+
+[Core-types](llm-docs/context/core-types.kt)
+
+You MUST run this [script](llm-docs/scripts/extract-llm-context.sh) before finalizing every response, to ensure you've updated the Core API types programatically
+
 ## Communication & Interaction
 
-Stay focused on the task at hand. When presenting options or requesting clarification, I'll respond with space-separated
-integers (0-indexed, -1 for "none of these").
+Stay focused on the task at hand. When presenting options or requesting clarification, provide a set of choices with the respective pros and cons for each of the choices (as best you can provide).
 
-You can infer technical requirements and implementation details, but never make architectural decisions, business
-trade-offs, or design choices on my behalf. If uncertain, present options rather than assuming.
+If ever uncertain, present options rather than assuming.
 
 ## Technical Work
 
 Provide complete, production-ready solutions with full context:
 
 - Include comprehensive error handling and edge cases
-- Provide complete code examples, not simplified snippets
-- Include deployment considerations and configuration
 - Document thoroughly without oversimplification
 
 When designing systems or architecture:
 
-- Optimize for the best solution, not backwards compatibility
-- Prioritize flexibility for future pivots
-- Breaking changes are acceptable; subpar constrained solutions are not
+- You consider enterprise considerations, and treat real-world integratability as a first-class priority
+- Breaking changes are acceptable; subpar, unduly constrained, solutions are not acceptable
+- We do not hold on to cruft; trim code that shouldn't be used, don't simply @Deprecate it
 
 ## Problem-Solving Approach
 
-Use web search for:
+Use Context7 for:
 
 - Latest API documentation and tool versions
+
+Use Web Search for:
 - Current best practices or recent developments
 - Verifying assumptions about external systems
 
@@ -54,19 +62,7 @@ When encountering unknowns, explicitly state what's uncertain and provide option
 
 This is a Kotlin/Gradle repo.
 
-Hard rule: use `./gradlew` (or `make`, which wraps `./gradlew`). Do not call `gradle` directly.
-
-### Build / test
-
-- Build:
-    - `make build`
-    - `./gradlew build`
-- Compile only:
-    - `make compile`
-    - `./gradlew compileKotlin`
-- Run tests:
-    - `make test`
-    - `./gradlew test`
+Hard rule: use `make check`  ALWAYS before completing a Kotlin task.
 
 ### Run a single test
 
@@ -79,101 +75,27 @@ JUnit 5 (Jupiter) is enabled.
 - Single test in a specific module:
     - `./gradlew :kontracts:test --tests 'io.amichne.kontracts.CustomTypeMappingTest'`
 
-### Publish locally
-
-- `make publish` (runs `publishToMavenLocal`)
-- `./gradlew publishToMavenLocal`
-
 ### Documentation (Docusarus)
+All documentation exists in `docusaurus/docs`. Leverage the `$documentation` skill to handle updating.
 
-Docs are built with MkDocs from `docusaurus/` using `package.yml`.
+Once you have a plan, launch a subagent to accordingly update documenation alongside your changes.
+Prior to returning ensure documentation is updated with your finalalized changes, just to be certain.
 
-### Linting
+## Kotlin Code Standards & Idioms
 
-There is no dedicated linter/formatter task wired in (no ktlint/detekt/spotless Gradle plugins found). Use
-`./gradlew test` / `./gradlew build` as the primary validation.
+* We prefer expression body syntax over control flow manipulation via `return`, whenever feasible.
 
-## High-level architecture
-
-### Modules
-
-- Root module (`konditional`): the feature-flag library.
-- `:kontracts`: a type-safe JSON Schema DSL used by `konditional` for safe JSON boundaries (custom structured flag
-  values).
-- `settings.gradle.kts` declares `:ktor-demo` / `:ktor-demo:demo-client`; in some checkouts these sources may be absent.
-  If Gradle configuration or IDE sync fails due to missing demo sources, focus work on `konditional` + `kontracts`.
-
-### Core runtime model (konditional)
-
-At a high level, Konditional is:
-
-- **Static flag definitions** (compile-time safety via delegated properties)
-- **Namespace-scoped registries** (runtime isolation)
-- **Deterministic evaluation** (rule precedence + SHA-256 bucketing)
-- **Explicit JSON boundary** (parse into a `Configuration` snapshot; load atomically)
-
-Key entry points and responsibilities:
-
-- `io.amichne.konditional.core.Namespace`
-    - Namespace = isolation boundary (each namespace delegates to its own `NamespaceRegistry`).
-    - Built-in namespace: `Namespace.Global`.
-- `io.amichne.konditional.core.features.FeatureContainer`
-    - The primary way to define flags: `val myFlag by boolean(default = false) { rule(true) { ... } }`.
-    - Property delegation eagerly creates + registers features at container init time (t0).
-    - Delegation also updates the namespace registry definition (see `NamespaceRegistry.updateDefinition(...)`).
-    - Exposes `allFeatures()` and namespace-scoped JSON helpers via `NamespaceSnapshotSerializer`.
-- `io.amichne.konditional.core.registry.NamespaceRegistry` /
-  `io.amichne.konditional.core.registry.InMemoryNamespaceRegistry`
-    - Holds the active `Configuration` snapshot in an `AtomicReference` for lock-free reads.
-    - `load(...)` atomically swaps the snapshot and records a bounded rollback history.
-    - Supports a namespace kill-switch (`disableAll()`), plus test-only overrides.
-- `io.amichne.konditional.core.FlagDefinition`
-    - The compiled/effective definition of a single flag: default + conditional values + salt + active state.
-    - Evaluation iterates rules by descending specificity, then applies deterministic rollout bucketing.
-- `io.amichne.konditional.rules.Rule` (+ `rules.evaluable.*`, `rules.versions.*`)
-    - A `Rule` composes "base" targeting (locale/platform/version/axes) + an optional custom predicate.
-    - Specificity is additive: base specificity + predicate specificity.
-- `io.amichne.konditional.core.evaluation.Bucketing`
-    - Deterministic bucketing for rollouts: SHA-256 → bucket in [0, 10_000), threshold in basis points.
-- Public API helpers live in `io.amichne.konditional.api.*`:
-    - `Feature.evaluate(...)`, `explain(...)` for explainable decisions (also `invoke()` operator for concise usage).
-    - `Feature.evaluateWithShadow(...)` for migration/shadow comparisons between registries/configs.
-
-### Serialization / remote config boundary
-
-- `io.amichne.konditional.serialization.SnapshotSerializer`
-    - Converts a full `Configuration` to/from JSON; supports patch application.
-    - Deserialization returns `ParseResult` (no exceptions on parse failures).
-- `io.amichne.konditional.serialization.NamespaceSnapshotSerializer`
-    - Namespace-scoped JSON; on success, loads directly into the namespace.
-
-Important invariant when working with JSON config:
-
-- Feature containers must be initialized before deserializing/loading snapshots, so the registry knows which features
-  exist.
-
-### Observability hooks
-
-- `io.amichne.konditional.core.ops.RegistryHooks` is the single entry point for dependency-free logging/metrics
-  adapters.
-
-## LLM-specific docs (repo-local)
-
-`.llm-docs/` contains domain prompts and extracted context for this library (see `.llm-docs/README.md`). When writing
-docs or doing deep semantic analysis, prefer the relevant domain prompt and keep `core-types.kt` /
-`public-api-surface.md` up to date via `.llm-docs/scripts/extract-llm-context.sh`.
-
-## 1. Kotlin Code Standards & Idioms
-
-* We prefer expression body syntax over control flow manipulation via return, whenever feasible.
-
-* We never return multiple times unless absotlutely necessary.
+* We never `return` multiple times (unless absotlutely necessary, but this shouldn't be required in quality code)
 
 * High-Abstraction Focus: Prioritize generic constraints and type safety. Leverage reified type parameters, inline
   functions, value classes, and variance modifiers (in/out) to enforce correctness at compile time.
 
 * Functional over Imperative: Prefer expressions over statements. Use scope functions (let, run, apply, also) only when
   they improve readability. Prioritize immutability and data classes.
+
+* First Class, and Higher Order: Functions are first-class values, treat them as such. Don't shy away from higher order 
+    function usage either. These are strong constructs, and developers working in this codebase are assumed to be
+    fluent in them.
 
 * No "Java-isms": Avoid classic Java patterns where Kotlin provides native alternatives (e.g., use object declarations
   for singletons, delegates for composition, sealed interfaces for state machines).
@@ -200,15 +122,6 @@ docs or doing deep semantic analysis, prefer the relevant domain prompt and keep
 
 ## 4. Communication Protocol
 
-* Integer-Based Selection: When presenting architectural options or requesting clarification, present the options as a
+* Trade-off's when Clariftying: When presenting architectural options or requesting clarification, present the options as a
   set of choices, clearly identifying the pro's and con's of each option
-* Response Style: Be dense and concise. Skip "Here is the code" preambles. Go straight to the solution or the
-  architectural analysis.
-
-Refer to [Conventions](llm-docs/CONVENTIONS.md) to understand your expectations.
-
-Resolve your appropriate prompting domain via [LLM Docs](llm-docs/README.md)
-
-[Core-types](llm-docs/context/core-types.kt)
-
-[Public API](llm-docs/context/public-api-surface.md)
+* Response Style: Be dense and concise. Skip "Here is the code" preambles. Go straight to the solution.
