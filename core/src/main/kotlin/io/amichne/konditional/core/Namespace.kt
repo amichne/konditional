@@ -147,6 +147,23 @@ open class Namespace(
         noinline customScope: FlagScope<T, C>.() -> Unit = {},
     ): KotlinClassDelegate<T, C> = KotlinClassDelegate(default, customScope)
 
+    private inline fun <T : Any, C : Context, M : Namespace, F : Feature<T, C, M>, D> registerFeature(
+        thisRef: M,
+        property: KProperty<*>,
+        default: T,
+        configScope: FlagScope<T, C>.() -> Unit,
+        featureFactory: (String, M) -> F,
+        featureSetter: (F) -> Unit,
+        delegateInstance: D,
+    ): D = delegateInstance.apply {
+        featureFactory(property.name, thisRef).also {
+            featureSetter(it)
+            (thisRef as Namespace)._features.add(it)
+            thisRef.updateDefinition(FlagBuilder(default, it).apply(configScope).build())
+            FeatureRegistry.register(it)
+        }
+    }
+
     @Suppress("UNCHECKED_CAST")
     protected class BooleanDelegate<C : Context>(
         private val default: Boolean,
@@ -154,14 +171,16 @@ open class Namespace(
     ) {
         private lateinit var feature: BooleanFeature<C, *>
 
-        operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): BooleanDelegate<C> {
-            val typedFeature = BooleanFeature<C, M>(property.name, thisRef)
-            feature = typedFeature
-            (thisRef as Namespace)._features.add(typedFeature)
-            thisRef.updateDefinition(FlagBuilder(default, typedFeature).apply(configScope).build())
-            FeatureRegistry.register(typedFeature)
-            return this
-        }
+        operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): BooleanDelegate<C> =
+            thisRef.registerFeature(
+                thisRef = thisRef,
+                property = property,
+                default = default,
+                configScope = configScope,
+                featureFactory = { name, ns -> BooleanFeature(name, ns) },
+                featureSetter = { feature = it },
+                delegateInstance = this,
+            )
 
         operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): BooleanFeature<C, M> =
             feature as BooleanFeature<C, M>
@@ -174,14 +193,16 @@ open class Namespace(
     ) {
         private lateinit var feature: StringFeature<C, *>
 
-        operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): StringDelegate<C> {
-            val typedFeature = StringFeature<C, M>(property.name, thisRef)
-            feature = typedFeature
-            (thisRef as Namespace)._features.add(typedFeature)
-            thisRef.updateDefinition(FlagBuilder(default, typedFeature).apply(configScope).build())
-            FeatureRegistry.register(typedFeature)
-            return this
-        }
+        operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): StringDelegate<C> =
+            thisRef.registerFeature(
+                thisRef = thisRef,
+                property = property,
+                default = default,
+                configScope = configScope,
+                featureFactory = { name, ns -> StringFeature(name, ns) },
+                featureSetter = { feature = it },
+                delegateInstance = this,
+            )
 
         operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): StringFeature<C, M> =
             feature as StringFeature<C, M>
@@ -194,14 +215,16 @@ open class Namespace(
     ) {
         private lateinit var feature: IntFeature<C, *>
 
-        operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): IntDelegate<C> {
-            val typedFeature = IntFeature<C, M>(property.name, thisRef)
-            feature = typedFeature
-            (thisRef as Namespace)._features.add(typedFeature)
-            thisRef.updateDefinition(FlagBuilder(default, typedFeature).apply(configScope).build())
-            FeatureRegistry.register(typedFeature)
-            return this
-        }
+        operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): IntDelegate<C> =
+            thisRef.registerFeature(
+                thisRef = thisRef,
+                property = property,
+                default = default,
+                configScope = configScope,
+                featureFactory = { name, ns -> IntFeature(name, ns) },
+                featureSetter = { feature = it },
+                delegateInstance = this,
+            )
 
         operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): IntFeature<C, M> =
             feature as IntFeature<C, M>
@@ -214,14 +237,16 @@ open class Namespace(
     ) {
         private lateinit var feature: DoubleFeature<C, *>
 
-        operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): DoubleDelegate<C> {
-            val typedFeature = DoubleFeature<C, M>(property.name, thisRef)
-            feature = typedFeature
-            (thisRef as Namespace)._features.add(typedFeature)
-            thisRef.updateDefinition(FlagBuilder(default, typedFeature).apply(configScope).build())
-            FeatureRegistry.register(typedFeature)
-            return this
-        }
+        operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): DoubleDelegate<C> =
+            thisRef.registerFeature(
+                thisRef = thisRef,
+                property = property,
+                default = default,
+                configScope = configScope,
+                featureFactory = { name, ns -> DoubleFeature(name, ns) },
+                featureSetter = { feature = it },
+                delegateInstance = this,
+            )
 
         operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): DoubleFeature<C, M> =
             feature as DoubleFeature<C, M>
@@ -234,14 +259,16 @@ open class Namespace(
     ) {
         private lateinit var feature: EnumFeature<E, C, *>
 
-        operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): EnumDelegate<E, C> {
-            val typedFeature = EnumFeature<E, C, M>(property.name, thisRef)
-            feature = typedFeature
-            (thisRef as Namespace)._features.add(typedFeature)
-            thisRef.updateDefinition(FlagBuilder(default, typedFeature).apply(configScope).build())
-            FeatureRegistry.register(typedFeature)
-            return this
-        }
+        operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): EnumDelegate<E, C> =
+            thisRef.registerFeature(
+                thisRef = thisRef,
+                property = property,
+                default = default,
+                configScope = configScope,
+                featureFactory = { name, ns -> EnumFeature(name, ns) },
+                featureSetter = { feature = it },
+                delegateInstance = this,
+            )
 
         operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): EnumFeature<E, C, M> =
             feature as EnumFeature<E, C, M>
@@ -257,14 +284,16 @@ open class Namespace(
         operator fun <M : Namespace> provideDelegate(
             thisRef: M,
             property: KProperty<*>,
-        ): KotlinClassDelegate<T, C> {
-            val typedFeature = KotlinClassFeature<T, C, M>(property.name, thisRef)
-            feature = typedFeature
-            (thisRef as Namespace)._features.add(typedFeature)
-            thisRef.updateDefinition(FlagBuilder(default, typedFeature).apply(configScope).build())
-            FeatureRegistry.register(typedFeature)
-            return this
-        }
+        ): KotlinClassDelegate<T, C> =
+            thisRef.registerFeature(
+                thisRef = thisRef,
+                property = property,
+                default = default,
+                configScope = configScope,
+                featureFactory = { name, ns -> KotlinClassFeature(name, ns) },
+                featureSetter = { feature = it },
+                delegateInstance = this,
+            )
 
         operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): KotlinClassFeature<T, C, M> =
             feature as KotlinClassFeature<T, C, M>
