@@ -19,7 +19,6 @@ const config: Config = {
     organizationName: 'amichne',
     projectName: 'konditional',
     deploymentBranch: 'gh-pages',
-    plugins: [require.resolve('docusaurus-lunr-search')],
 
     i18n: {
         defaultLocale: 'en',
@@ -31,6 +30,9 @@ const config: Config = {
     },
 
     themes: ['@docusaurus/theme-mermaid'],
+    plugins: [
+        require.resolve('docusaurus-lunr-search'),
+    ],
     presets: [
         [
             "classic",
@@ -38,12 +40,12 @@ const config: Config = {
                 docs: {
                     routeBasePath: "/",
                     editUrl: "https://github.com/amichne/konditional/tree/main/docusaurus/",
+                    sidebarPath: false
                 },
 
                 theme: {
                     customCss: "./src/css/custom.css",
                 },
-
             } satisfies Preset.Options,
         ],
         [
