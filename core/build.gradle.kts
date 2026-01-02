@@ -95,27 +95,6 @@ tasks.test {
     useJUnitPlatform()
 }
 
-val openApiOutput: RegularFile = layout.projectDirectory.file("build/generated/openapi/konditional-schema.json")
-
-val openApiRedocOutput: RegularFile = layout.projectDirectory.file("../docusaurus/openapi/openapi.json")
-
-tasks.register<JavaExec>("generateOpenApiSchema") {
-    shouldRunAfter("test")
-    group = "documentation"
-    description = "Generates OpenAPI schema for serialized configuration models."
-    classpath = sourceSets["main"].runtimeClasspath
-    mainClass.set("io.amichne.konditional.openapi.GenerateOpenApiSchema")
-    args(
-        project.version.toString(),
-        openApiOutput.asFile.absolutePath,
-        "Konditional Serialization Schema",
-        openApiRedocOutput.asFile.absolutePath,
-    )
-    outputs.file(openApiOutput)
-    outputs.file(openApiRedocOutput)
-    dependsOn("classes")
-}
-
 // ============================================================================
 // Publishing Configuration
 // ============================================================================

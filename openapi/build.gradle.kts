@@ -21,11 +21,10 @@ java {
 }
 
 dependencies {
-    api(project(":openapi"))
-
-    // Zero dependencies except Kotlin stdlib
-    testImplementation(kotlin("test"))
-
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

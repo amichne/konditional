@@ -8,5 +8,7 @@ pluginManagement {
 rootProject.name = "konditional"
 
 include("core")
+include("config-metadata")
 include("kontracts")
+include("openapi")
 include("opentelemetry")

@@ -3,6 +3,7 @@ package io.amichne.kontracts.value
 import io.amichne.kontracts.schema.JsonSchema
 import io.amichne.kontracts.schema.ObjectSchema
 import io.amichne.kontracts.schema.ValidationResult
+import io.amichne.kontracts.schema.ValidationResult.Invalid
 
 /**
  * JSON object value with typed fields.
@@ -33,7 +34,13 @@ data class JsonObject(
             )
         }
 
-        val requiredValidation = schema.validateRequiredFields(fields.keys)
+        val req = schema.required ?: schema.fields.filter { it.value.required }.keys
+        val missing = req - fields.keys
+        val requiredValidation = if (missing.isEmpty()) {
+            ValidationResult.Valid
+        } else {
+            Invalid("Missing required fields: $missing")
+        }
         if (requiredValidation.isInvalid) {
             return requiredValidation
         }
