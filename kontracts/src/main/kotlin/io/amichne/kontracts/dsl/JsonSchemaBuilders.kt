@@ -1,9 +1,46 @@
 package io.amichne.kontracts.dsl
 
-import io.amichne.kontracts.schema.FieldSchema
+import io.amichne.kontracts.schema.JsonSchema
 import kotlin.reflect.KProperty0
 
 // ========== Type-inferred DSL for automatic schema type resolution ==========
+
+@PublishedApi
+internal fun RootObjectSchemaBuilder.registerField(
+    name: String,
+    schema: JsonSchema<*>,
+    required: Boolean,
+) {
+    if (required) {
+        required(
+            name = name,
+            schema = schema,
+            description = schema.description,
+            defaultValue = schema.default,
+            deprecated = schema.deprecated,
+        )
+    } else {
+        optional(
+            name = name,
+            schema = schema,
+            description = schema.description,
+            defaultValue = schema.default,
+            deprecated = schema.deprecated,
+        )
+    }
+}
+
+context(root: RootObjectSchemaBuilder)
+@PublishedApi
+@JsonSchemaBuilderDsl
+internal inline fun <B : JsonSchemaBuilder<*>> KProperty0<*>.registerSchema(
+    builder: B,
+    required: Boolean,
+    configure: B.() -> Unit,
+) {
+    val schema = builder.apply(configure).build()
+    root.registerField(name, schema, required)
+}
 
 /**
  * String property schema builder with automatic type inference.
@@ -15,13 +52,10 @@ inline infix fun KProperty0<String>.of(
     @JsonSchemaBuilderDsl
     builder: StringSchemaBuilder.() -> Unit = {},
 ) {
-    val schema = StringSchemaBuilder().apply(builder).build()
-    root.fields[name] = FieldSchema(
-        schema,
+    registerSchema(
+        builder = StringSchemaBuilder(),
         required = !returnType.isMarkedNullable,
-        defaultValue = schema.default,
-        description = schema.description,
-        deprecated = schema.deprecated
+        configure = builder,
     )
 }
 
@@ -33,17 +67,10 @@ context(root: RootObjectSchemaBuilder)
 inline infix fun KProperty0<String?>.of(
     builder: StringSchemaBuilder.() -> Unit = {},
 ) {
-    val schema = StringSchemaBuilder().apply {
+    registerSchema(builder = StringSchemaBuilder(), required = false) {
         nullable = true
         builder()
-    }.build()
-    root.fields[name] = FieldSchema(
-        schema,
-        required = false,
-        defaultValue = schema.default,
-        description = schema.description,
-        deprecated = schema.deprecated
-    )
+    }
 }
 
 /**
@@ -54,13 +81,10 @@ context(root: RootObjectSchemaBuilder)
 inline infix fun KProperty0<Boolean>.of(
     builder: BooleanSchemaBuilder.() -> Unit = {},
 ) {
-    val schema = BooleanSchemaBuilder().apply(builder).build()
-    root.fields[name] = FieldSchema(
-        schema,
+    registerSchema(
+        builder = BooleanSchemaBuilder(),
         required = !returnType.isMarkedNullable,
-        defaultValue = schema.default,
-        description = schema.description,
-        deprecated = schema.deprecated
+        configure = builder,
     )
 }
 
@@ -72,17 +96,10 @@ context(root: RootObjectSchemaBuilder)
 inline infix fun KProperty0<Boolean?>.of(
     builder: BooleanSchemaBuilder.() -> Unit = {},
 ) {
-    val schema = BooleanSchemaBuilder().apply {
+    registerSchema(builder = BooleanSchemaBuilder(), required = false) {
         nullable = true
         builder()
-    }.build()
-    root.fields[name] = FieldSchema(
-        schema,
-        required = false,
-        defaultValue = schema.default,
-        description = schema.description,
-        deprecated = schema.deprecated
-    )
+    }
 }
 
 /**
@@ -93,13 +110,10 @@ context(root: RootObjectSchemaBuilder)
 inline infix fun KProperty0<Int>.of(
     builder: IntSchemaBuilder.() -> Unit = {},
 ) {
-    val schema = IntSchemaBuilder().apply(builder).build()
-    root.fields[name] = FieldSchema(
-        schema,
+    registerSchema(
+        builder = IntSchemaBuilder(),
         required = !returnType.isMarkedNullable,
-        defaultValue = schema.default,
-        description = schema.description,
-        deprecated = schema.deprecated
+        configure = builder,
     )
 }
 
@@ -111,17 +125,10 @@ context(root: RootObjectSchemaBuilder)
 inline infix fun KProperty0<Int?>.of(
     builder: IntSchemaBuilder.() -> Unit = {},
 ) {
-    val schema = IntSchemaBuilder().apply {
+    registerSchema(builder = IntSchemaBuilder(), required = false) {
         nullable = true
         builder()
-    }.build()
-    root.fields[name] = FieldSchema(
-        schema,
-        required = false,
-        defaultValue = schema.default,
-        description = schema.description,
-        deprecated = schema.deprecated
-    )
+    }
 }
 
 /**
@@ -132,13 +139,10 @@ context(root: RootObjectSchemaBuilder)
 inline infix fun KProperty0<Double>.of(
     builder: DoubleSchemaBuilder.() -> Unit = {},
 ) {
-    val schema = DoubleSchemaBuilder().apply(builder).build()
-    root.fields[name] = FieldSchema(
-        schema,
+    registerSchema(
+        builder = DoubleSchemaBuilder(),
         required = !returnType.isMarkedNullable,
-        defaultValue = schema.default,
-        description = schema.description,
-        deprecated = schema.deprecated
+        configure = builder,
     )
 }
 
@@ -150,17 +154,10 @@ context(root: RootObjectSchemaBuilder)
 inline infix fun KProperty0<Double?>.of(
     builder: DoubleSchemaBuilder.() -> Unit = {},
 ) {
-    val schema = DoubleSchemaBuilder().apply {
+    registerSchema(builder = DoubleSchemaBuilder(), required = false) {
         nullable = true
         builder()
-    }.build()
-    root.fields[name] = FieldSchema(
-        schema,
-        required = false,
-        defaultValue = schema.default,
-        description = schema.description,
-        deprecated = schema.deprecated
-    )
+    }
 }
 
 /**
@@ -172,15 +169,11 @@ context(root: RootObjectSchemaBuilder)
 inline infix fun <reified V : Any> KProperty0<V>.of(
     builder: ObjectSchemaBuilder.() -> Unit,
 ) {
-    root.fields[name] = with(ObjectSchemaBuilder().apply { builder() }.build()) {
-        FieldSchema(
-            this,
-            returnType.isMarkedNullable,
-            default,
-            description,
-            deprecated
-        )
-    }
+    registerSchema(
+        builder = ObjectSchemaBuilder(),
+        required = !returnType.isMarkedNullable,
+        configure = builder,
+    )
 }
 
 fun schemaRoot(builder: RootObjectSchemaBuilder.() -> Unit) = RootObjectSchemaBuilder().apply(builder).build()

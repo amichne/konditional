@@ -23,20 +23,17 @@ internal fun Any?.toJsonValue(): JsonValue = when (this) {
     is Int -> JsonNumber(this.toDouble())
     is Double -> JsonNumber(this)
     is Enum<*> -> JsonString(this.name)
-    is Map<*, *> -> {
-        @Suppress("UNCHECKED_CAST")
-        JsonObject(
-            fields =
-                this.entries.associate { (rawKey, rawValue) ->
-                    val key =
-                        rawKey as? String
-                            ?: error("JsonObject keys must be strings, got ${rawKey?.let { it::class.simpleName }}")
-                    key to rawValue.toJsonValue()
-                },
-            schema = null,
-        )
-    }
-    is KotlinEncodeable<*> -> SchemaValueCodec.encode(this, schema.asObjectSchema())
+    is Map<*, *> -> JsonObject(
+        fields =
+            this.entries.associate { (rawKey, rawValue) ->
+                val key =
+                    rawKey as? String
+                        ?: error("JsonObject keys must be strings, got ${rawKey?.let { it::class.simpleName }}")
+                key to rawValue.toJsonValue()
+            },
+        schema = null,
+    )
+    is Konstrained<*> -> SchemaValueCodec.encode(this, schema.asObjectSchema())
     is JsonValue -> this
     is List<*> -> JsonArray(map { it.toJsonValue() }, null)
     else -> throw IllegalArgumentException(

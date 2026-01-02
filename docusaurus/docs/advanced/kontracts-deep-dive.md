@@ -20,14 +20,14 @@ Kontracts is a standalone, zero-dependency JSON Schema DSL used by Konditional f
 ```kotlin
 import io.amichne.kontracts.dsl.schemaRoot
 import io.amichne.kontracts.schema.ObjectSchema
-import io.amichne.konditional.core.types.KotlinEncodeable
+import io.amichne.konditional.core.types.Konstrained
 
 data class RetryPolicy(
     val maxAttempts: Int = 3,
     val backoffMs: Double = 1000.0,
     val enabled: Boolean = true,
     val strategy: RetryStrategy = RetryStrategy.EXPONENTIAL
-) : KotlinEncodeable<ObjectSchema> {
+) : Konstrained<ObjectSchema> {
     override val schema = schemaRoot {
         ::maxAttempts of {
             minimum = 1
@@ -79,7 +79,7 @@ data class Config(
     val numberField: Double,
     val intField: Int,
     val boolField: Boolean
-) : KotlinEncodeable<ObjectSchema> {
+) : Konstrained<ObjectSchema> {
     override val schema = schemaRoot {
         ::stringField of {
             minLength = 1
@@ -109,7 +109,7 @@ data class DatabaseConfig(
     val host: String,
     val port: Int,
     val credentials: Credentials
-) : KotlinEncodeable<ObjectSchema> {
+) : Konstrained<ObjectSchema> {
     override val schema = schemaRoot {
         ::host of { minLength = 1 }
         ::port of { minimum = 1; maximum = 65535 }
@@ -136,7 +136,7 @@ data class AllowlistConfig(
     val userIds: List<String>,
     val regions: Set<String>,
     val metadata: Map<String, String>
-) : KotlinEncodeable<ObjectSchema> {
+) : Konstrained<ObjectSchema> {
     override val schema = schemaRoot {
         ::userIds of {
             type = "array"
@@ -166,7 +166,7 @@ enum class LogLevel { DEBUG, INFO, WARN, ERROR }
 data class LogConfig(
     val level: LogLevel,
     val format: String
-) : KotlinEncodeable<ObjectSchema> {
+) : Konstrained<ObjectSchema> {
     override val schema = schemaRoot {
         ::level of {
             enum = LogLevel.values().map { it.name }
@@ -256,7 +256,7 @@ data class FeatureConfig(
     val enabled: Boolean = true,
     val timeout: Long = 5000L,
     val retries: Int = 3
-) : KotlinEncodeable<ObjectSchema> {
+) : Konstrained<ObjectSchema> {
     override val schema = schemaRoot {
         ::enabled of { default = true }
         ::timeout of { default = 5000L; minimum = 0 }
@@ -280,7 +280,7 @@ data class FeatureConfig(
 data class PaymentConfig(
     val provider: String,
     val apiKey: String?
-) : KotlinEncodeable<ObjectSchema> {
+) : Konstrained<ObjectSchema> {
     override val schema = schemaRoot {
         ::provider of {
             enum = listOf("stripe", "paypal", "square")
@@ -301,7 +301,7 @@ data class PaymentConfig(
 ```kotlin
 data class DynamicConfig(
     val value: Any
-) : KotlinEncodeable<ObjectSchema> {
+) : Konstrained<ObjectSchema> {
     override val schema = schemaRoot {
         ::value of {
             oneOf = listOf(
@@ -395,7 +395,7 @@ object CommonSchemas {
 data class ContactConfig(
     val email: String,
     val website: String
-) : KotlinEncodeable<ObjectSchema> {
+) : Konstrained<ObjectSchema> {
     override val schema = schemaRoot {
         ::email of CommonSchemas.EmailSchema
         ::website of CommonSchemas.UrlSchema
@@ -450,7 +450,7 @@ fun `retry policy accepts valid config`() {
 
 ```kotlin
 // ✓ Good: Schema defined with type
-data class Config(...) : KotlinEncodeable<ObjectSchema> {
+data class Config(...) : Konstrained<ObjectSchema> {
     override val schema = schemaRoot { ... }
 }
 
@@ -497,7 +497,7 @@ data class Config(
  * - backoffMs: [0, 60000] (default: 1000.0)
  * - strategy: CONSTANT | LINEAR | EXPONENTIAL (default: EXPONENTIAL)
  */
-data class RetryPolicy(...) : KotlinEncodeable<ObjectSchema> {
+data class RetryPolicy(...) : Konstrained<ObjectSchema> {
     override val schema = schemaRoot { ... }
 }
 ```
@@ -507,5 +507,5 @@ data class RetryPolicy(...) : KotlinEncodeable<ObjectSchema> {
 ## Next Steps
 
 - [Fundamentals: Core Primitives](/fundamentals/core-primitives) — Custom data class features
-- [API Reference: Core Types](/api-reference/core-types) — `KotlinEncodeable` interface
+- [API Reference: Core Types](/api-reference/core-types) — `Konstrained` interface
 - [Kontracts Documentation](https://github.com/amichne/kontracts) — Full schema DSL reference

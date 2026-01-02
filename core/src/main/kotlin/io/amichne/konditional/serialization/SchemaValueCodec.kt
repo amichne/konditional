@@ -2,7 +2,7 @@ package io.amichne.konditional.serialization
 
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.core.types.KotlinEncodeable
+import io.amichne.konditional.core.types.Konstrained
 import io.amichne.kontracts.schema.ObjectSchema
 import io.amichne.kontracts.value.JsonBoolean
 import io.amichne.kontracts.value.JsonNull
@@ -19,7 +19,7 @@ import kotlin.reflect.full.primaryConstructor
  * Schema-based serializer that uses reflection and ObjectSchema to encode/decode instances.
  *
  * Replaces the explicit TypeSerializer/SerializerRegistry pattern with automatic serialization
- * driven by the schema definition. Any type implementing KotlinEncodeable<ObjectSchema> can be
+ * driven by the schema definition. Any type implementing Konstrained<ObjectSchema> can be
  * serialized without additional registration.
  *
  * ## How It Works
@@ -28,13 +28,13 @@ import kotlin.reflect.full.primaryConstructor
  * - Walks schema fields to determine property names
  * - Uses reflection to read property values from instance
  * - Converts each value to appropriate JsonValue based on type
- * - Handles nested KotlinEncodeable types recursively
+ * - Handles nested Konstrained types recursively
  *
  * **Decoding:**
  * - Validates JSON structure matches schema
  * - Builds constructor parameter map from JSON fields
  * - Uses primary constructor reflection to instantiate class
- * - Handles nested KotlinEncodeable types recursively
+ * - Handles nested Konstrained types recursively
  *
  * ## Type Support
  *
@@ -44,7 +44,7 @@ import kotlin.reflect.full.primaryConstructor
  * - Int, Double → JsonNumber
  * - Enum → JsonString (constant name)
  *
- * Custom types (require KotlinEncodeable<ObjectSchema>):
+ * Custom types (require Konstrained<ObjectSchema>):
  * - Data classes with primary constructor
  * - Nested custom types
  * - Optional fields with defaults
@@ -84,7 +84,7 @@ internal object SchemaValueCodec {
     /**
      * Encodes a single value to JsonValue.
      *
-     * Handles built-in types and recursively encodes KotlinEncodeable types.
+     * Handles built-in types and recursively encodes Konstrained types.
      */
     private fun encodeValue(value: Any): JsonValue = when (value) {
         is Boolean -> JsonBoolean(value)
@@ -92,15 +92,15 @@ internal object SchemaValueCodec {
         is Int -> JsonNumber(value.toDouble())
         is Double -> JsonNumber(value)
         is Enum<*> -> JsonString(value.name)
-        is KotlinEncodeable<*> -> {
+        is Konstrained<*> -> {
             // Recursively encode nested custom types
             val schema = value.schema as? ObjectSchema
-                ?: error("KotlinEncodeable must have ObjectSchema, got ${value.schema::class.simpleName}")
+                ?: error("Konstrained must have ObjectSchema, got ${value.schema::class.simpleName}")
             encode(value, schema)
         }
         else -> error(
             "Unsupported type for encoding: ${value::class.qualifiedName}. " +
-                "Type must implement KotlinEncodeable<ObjectSchema> or be a built-in type " +
+                "Type must implement Konstrained<ObjectSchema> or be a built-in type " +
                 "(Boolean, String, Int, Double, Enum)."
         )
     }
@@ -193,7 +193,7 @@ internal object SchemaValueCodec {
     /**
      * Decodes a single JsonValue to a Kotlin value.
      *
-     * Handles built-in types and recursively decodes KotlinEncodeable types.
+     * Handles built-in types and recursively decodes Konstrained types.
      */
     private fun decodeValue(kClass: KClass<*>?, json: JsonValue): ParseResult<Any> {
         if (kClass == null) {
@@ -238,13 +238,13 @@ internal object SchemaValueCodec {
                 else -> ParseResult.Failure(ParseError.InvalidSnapshot("Expected JsonString for enum, got ${json::class.simpleName}"))
             }
 
-            // Custom types implementing KotlinEncodeable
+            // Custom types implementing Konstrained
             else -> when (json) {
                 is JsonObject -> {
                     val schema = extractSchema(kClass)
                         ?: return ParseResult.Failure(
                             ParseError.InvalidSnapshot(
-                                "${kClass.qualifiedName} must implement KotlinEncodeable<ObjectSchema> " +
+                                "${kClass.qualifiedName} must implement Konstrained<ObjectSchema> " +
                                     "for deserialization"
                             )
                         )

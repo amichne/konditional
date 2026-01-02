@@ -164,7 +164,7 @@ If you introduce a new public API or change semantics, add an entry here and upd
 - **Code reality:** deserialization resolves each `FeatureId` via an internal registry populated during namespace
   initialization (delegated properties). Without registration, parsing fails with `ParseError.FeatureNotFound`.
 - **Code references:** `core/src/main/kotlin/io/amichne/konditional/serialization/FeatureRegistry.kt`,
-  `core/src/main/kotlin/io/amichne/konditional/serialization/ConversionUtils.kt`
+  `core/src/main/kotlin/io/amichne/konditional/internal/serialization/models/SerializableFlag.kt`
 - **Docs updated:** `/api-reference/feature-operations` (`docusaurus/docs/api-reference/feature-operations.md`),
   `/api-reference/namespace-operations` (`docusaurus/docs/api-reference/namespace-operations.md`),
   `/advanced/shadow-evaluation` (`docusaurus/docs/advanced/shadow-evaluation.md`),

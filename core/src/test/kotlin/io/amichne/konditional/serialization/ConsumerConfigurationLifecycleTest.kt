@@ -8,7 +8,7 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.core.types.KotlinEncodeable
+import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 import io.amichne.kontracts.dsl.of
@@ -32,7 +32,7 @@ class ConsumerConfigurationLifecycleTest {
         val maxRetries: Int = 3,
         val timeoutSeconds: Double = 30.0,
         val enabled: Boolean = true,
-    ) : KotlinEncodeable<ObjectSchema> {
+    ) : Konstrained<ObjectSchema> {
         override val schema =
             schemaRoot {
                 ::theme of { minLength = 1 }

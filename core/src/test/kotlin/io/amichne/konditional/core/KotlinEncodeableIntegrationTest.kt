@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
- * Comprehensive integration tests for KotlinEncodeable<ObjectSchema> support.
+ * Comprehensive integration tests for Konstrained<ObjectSchema> support.
  *
  * These tests validate:
  * - Data class to JsonValue conversion
@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test
  * - Serialization with Moshi
  * - Feature flag integration
  */
-class KotlinEncodeableIntegrationTest {
+class KonstrainedIntegrationTest {
 
     @Test
     fun `data class to JsonValue conversion is correct`() {

@@ -1,6 +1,6 @@
 package io.amichne.konditional.core.instance
 
-import io.amichne.konditional.core.types.KotlinEncodeable
+import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.core.types.asObjectSchema
 import io.amichne.konditional.core.types.toPrimitiveValue
 import io.amichne.konditional.serialization.SchemaValueCodec
@@ -43,14 +43,14 @@ sealed interface ConfigValue {
             is Int -> IntValue(value)
             is Double -> DoubleValue(value)
             is Enum<*> -> EnumValue(value.javaClass.name, value.name)
-            is KotlinEncodeable<*> -> {
+            is Konstrained<*> -> {
                 // Use schema-based serializer
                 val schema = value.schema.asObjectSchema()
                 val json = SchemaValueCodec.encode(value, schema)
                 val primitive = json.toPrimitiveValue()
 
                 require(primitive is Map<*, *>) {
-                    "KotlinEncodeable must encode to an object, got ${primitive?.let { it::class.simpleName }}"
+                    "Konstrained must encode to an object, got ${primitive?.let { it::class.simpleName }}"
                 }
 
                 DataClassValue(

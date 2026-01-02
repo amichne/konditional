@@ -1,6 +1,17 @@
 package io.amichne.konditional.internal.serialization.models
 
 import com.squareup.moshi.JsonClass
+import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.FlagDefinition
+import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.core.id.HexId
+import io.amichne.konditional.core.result.ParseError
+import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.core.types.Konstrained
+import io.amichne.konditional.core.types.asObjectSchema
+import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
+import io.amichne.konditional.serialization.FeatureRegistry
 import io.amichne.konditional.values.FeatureId
 
 /**
@@ -10,11 +21,73 @@ import io.amichne.konditional.values.FeatureId
  * Now uses type-safe FlagValue instead create type-erased Any values.
  */
 @JsonClass(generateAdapter = true)
-data class SerializableFlag(
+internal data class SerializableFlag(
     val key: FeatureId,
     val defaultValue: FlagValue<*>,
     val salt: String = "v1",
     val isActive: Boolean = true,
     val rampUpAllowlist: Set<String> = emptySet(),
     val rules: List<SerializableRule> = emptyList(),
-)
+) {
+    internal fun toFlagPair(): ParseResult<Pair<Feature<*, *, *>, FlagDefinition<*, *, *>>> =
+        when (val conditionalResult = FeatureRegistry.get(key)) {
+            is ParseResult.Success -> {
+                val conditional = conditionalResult.value
+                runCatching { toFlagDefinition(conditional) }
+                    .fold(
+                        onSuccess = { ParseResult.Success(conditional to it) },
+                        onFailure = {
+                            ParseResult.Failure(
+                                ParseError.InvalidSnapshot(
+                                    it.message ?: "Failed to decode flag"
+                                )
+                            )
+                        },
+                    )
+            }
+
+            is ParseResult.Failure -> ParseResult.Failure(conditionalResult.error)
+        }
+
+    internal companion object {
+        fun from(flagDefinition: FlagDefinition<*, *, *>, flagKey: FeatureId): SerializableFlag {
+            val defaultValue = requireNotNull(flagDefinition.defaultValue) {
+                "FlagDefinition must not hold a null defaultValue"
+            }
+
+            return SerializableFlag(
+                key = flagKey,
+                defaultValue = FlagValue.from(defaultValue),
+                salt = flagDefinition.salt,
+                isActive = flagDefinition.isActive,
+                rampUpAllowlist = flagDefinition.rampUpAllowlist.mapTo(linkedSetOf()) { it.id },
+                rules = flagDefinition.values.map { SerializableRule.from(it) },
+            )
+        }
+    }
+
+    private fun <T : Any, C : Context, M : Namespace> toFlagDefinition(
+        conditional: Feature<T, C, M>,
+    ): FlagDefinition<T, C, M> =
+        defaultValue
+            .extractValue<T>()
+            .let { decodedDefault ->
+                val schema =
+                    (decodedDefault as? Konstrained<*>)
+                        ?.schema
+                        ?.asObjectSchema()
+
+                if (schema != null) {
+                    defaultValue.validate(schema)
+                }
+
+                FlagDefinition(
+                    feature = conditional,
+                    bounds = rules.map { it.toRule<C>().targetedBy(it.value.extractValue(schema)) },
+                    defaultValue = decodedDefault,
+                    salt = salt,
+                    isActive = isActive,
+                    rampUpAllowlist = rampUpAllowlist.mapTo(linkedSetOf()) { HexId(it) },
+                )
+            }
+}

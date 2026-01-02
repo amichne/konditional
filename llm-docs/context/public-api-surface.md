@@ -1,5 +1,5 @@
 # Public API Surface Summary
-# Extracted: 2026-01-02T03:35:08-05:00
+# Extracted: 2026-01-02T04:22:27-05:00
 
 ## From docusaurus/docs/index.md
 
@@ -159,7 +159,7 @@ data class RetryPolicy(
     val maxAttempts: Int = 3,
     val backoffMs: Double = 1000.0,
     val enabled: Boolean = true
-) : KotlinEncodeable<ObjectSchema> {
+) : Konstrained<ObjectSchema> {
     override val schema = schemaRoot {
         ::maxAttempts of { minimum = 1 }
         ::backoffMs of { minimum = 0.0 }
@@ -536,7 +536,7 @@ flowchart TD
 | Integer    | `integer(...)`   | `Int`                                | `42`                  |
 | Decimal    | `double(...)`    | `Double`                             | `3.14`                |
 | Enum       | `enum(...)`      | `E : Enum<E>`                        | `LogLevel.INFO`       |
-| Data class | `custom(...)`    | `T : KotlinEncodeable<ObjectSchema>` | `MyConfig()`          |
+| Data class | `custom(...)`    | `T : Konstrained<ObjectSchema>` | `MyConfig()`          |
 
 ---
 
@@ -638,7 +638,7 @@ val endpoint: String = AppFeatures.apiEndpoint.evaluate(context)
 | Integer    | `integer(...)`   | `Int`                                | `42`                  |
 | Decimal    | `double(...)`    | `Double`                             | `3.14`                |
 | Enum       | `enum(...)`      | `E : Enum<E>`                        | `LogLevel.INFO`       |
-| Data class | `custom(...)`    | `T : KotlinEncodeable<ObjectSchema>` | `MyConfig()`          |
+| Data class | `custom(...)`    | `T : Konstrained<ObjectSchema>` | `MyConfig()`          |
 
 Custom data classes are decoded via Kotlin reflection at the JSON boundary. Ensure Kotlin reflection is available at runtime (Konditional bundles it), and keep constructor parameter names stable when using obfuscation.
 
@@ -2224,4 +2224,3 @@ Notes:
 - [Feature Operations](/api-reference/feature-operations) — Evaluation and shadow APIs
 - [Namespace Operations](/api-reference/namespace-operations) — Registry lifecycle operations
 - [Advanced: Shadow Evaluation](/advanced/shadow-evaluation) — Migration patterns
-

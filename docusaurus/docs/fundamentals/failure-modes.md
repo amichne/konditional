@@ -154,7 +154,7 @@ JSON for a custom data class doesn't match the Kotlin schema:
 data class RetryPolicy(
     val maxAttempts: Int,
     val backoffMs: Double
-) : KotlinEncodeable<ObjectSchema> {
+) : Konstrained<ObjectSchema> {
     override val schema = schemaRoot {
         ::maxAttempts of { minimum = 1 }
         ::backoffMs of { minimum = 0.0 }

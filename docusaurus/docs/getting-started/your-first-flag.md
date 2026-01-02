@@ -112,7 +112,7 @@ flowchart TD
 | Integer    | `integer(...)`   | `Int`                                | `42`                  |
 | Decimal    | `double(...)`    | `Double`                             | `3.14`                |
 | Enum       | `enum(...)`      | `E : Enum<E>`                        | `LogLevel.INFO`       |
-| Data class | `custom(...)`    | `T : KotlinEncodeable<ObjectSchema>` | `MyConfig()`          |
+| Data class | `custom(...)`    | `T : Konstrained<ObjectSchema>` | `MyConfig()`          |
 
 ---
 

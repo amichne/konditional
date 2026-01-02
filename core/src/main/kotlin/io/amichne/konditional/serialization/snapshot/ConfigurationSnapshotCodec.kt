@@ -12,8 +12,6 @@ import io.amichne.konditional.internal.serialization.adapters.ValueClassAdapterF
 import io.amichne.konditional.internal.serialization.adapters.VersionRangeAdapter
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
 import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
-import io.amichne.konditional.serialization.toSerializable
-import io.amichne.konditional.serialization.toSnapshot
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.rules.versions.LeftBound
 import io.amichne.konditional.rules.versions.RightBound
@@ -51,7 +49,7 @@ object ConfigurationSnapshotCodec : SnapshotCodec<Configuration> {
     private val snapshotAdapter = moshi.adapter(SerializableSnapshot::class.java).indent("  ")
     private val patchAdapter = moshi.adapter(SerializablePatch::class.java).indent("  ")
 
-    override fun encode(value: Configuration): String = snapshotAdapter.toJson(value.toSerializable())
+    override fun encode(value: Configuration): String = snapshotAdapter.toJson(SerializableSnapshot.from(value))
 
     /**
      * Deserializes a JSON string to a Configuration.
@@ -76,7 +74,7 @@ object ConfigurationSnapshotCodec : SnapshotCodec<Configuration> {
         options: SnapshotLoadOptions,
     ): ParseResult<Configuration> =
         runCatching {
-            snapshotAdapter.fromJson(json)?.toSnapshot(options)
+            snapshotAdapter.fromJson(json)?.toConfiguration(options)
                 ?: ParseResult.Failure(ParseError.InvalidJson("Failed to parseUnsafe JSON: null result"))
         }.getOrElse { e ->
             ParseResult.Failure(ParseError.InvalidJson(e.message ?: "Unknown JSON parsing error"))
@@ -121,7 +119,7 @@ object ConfigurationSnapshotCodec : SnapshotCodec<Configuration> {
     ): ParseResult<Configuration> =
         try {
             // Convert current snapshot to serializable form
-            val currentSerializable = currentConfiguration.toSerializable()
+            val currentSerializable = SerializableSnapshot.from(currentConfiguration)
 
             // Create a mutable map create flags by key
             val flagMap = currentSerializable.flags.associateBy { it.key }.toMutableMap()
@@ -142,7 +140,7 @@ object ConfigurationSnapshotCodec : SnapshotCodec<Configuration> {
                     meta = patch.meta ?: currentSerializable.meta,
                     flags = flagMap.values.toList(),
                 )
-            patchedSerializable.toSnapshot(options)
+            patchedSerializable.toConfiguration(options)
         } catch (e: Exception) {
             ParseResult.Failure(ParseError.InvalidSnapshot("Failed to apply patch: ${e.message}"))
         }

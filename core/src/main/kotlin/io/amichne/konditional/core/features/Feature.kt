@@ -14,7 +14,7 @@ import io.amichne.konditional.values.FeatureId
  * Supports:
  * - Primitives: Boolean, String, Int, Double
  * - Enums: `E : Enum<E>`
- * - Custom structured types: [io.amichne.konditional.core.types.KotlinEncodeable]
+ * - Custom structured types: [io.amichne.konditional.core.types.Konstrained]
  *
  * ## Example
  *
