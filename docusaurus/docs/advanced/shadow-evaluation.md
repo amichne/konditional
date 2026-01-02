@@ -97,7 +97,7 @@ val value =
             },
         )
     } else {
-        AppFeatures.darkMode(context)
+        AppFeatures.darkMode.evaluate(context)
     }
 ```
 
@@ -146,7 +146,7 @@ compare manually at the call site:
 val oldValue = oldFlagClient.getBool("dark_mode", default = false)
 
 // Konditional (candidate)
-val candidateValue = AppFeatures.darkMode(context)
+val candidateValue = AppFeatures.darkMode.evaluate(context)
 
 if (oldValue != candidateValue) {
     logger.warn("migrationMismatch stableId=${context.stableId.id} old=$oldValue konditional=$candidateValue")
@@ -185,7 +185,7 @@ AppFeatures.darkMode.evaluateWithShadow(
 
 - Shadow evaluation runs inline; keep `onMismatch` fast (offload logging/metrics if needed).
 - Candidate evaluation is skipped when the baseline registry kill-switch is enabled (by default).
-- Hook both registries with `NamespaceRegistry.setHooks(...)` if you want separate baseline/candidate telemetry.
+- Hook both registries with `baselineRegistry.setHooks(...)` / `candidateRegistry.setHooks(...)` if you want separate baseline/candidate telemetry.
 
 ---
 

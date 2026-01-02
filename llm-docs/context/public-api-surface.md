@@ -1,5 +1,5 @@
 # Public API Surface Summary
-# Extracted: 2026-01-02T04:22:27-05:00
+# Extracted: 2026-01-02T09:39:16-05:00
 
 ## From docusaurus/docs/index.md
 
@@ -212,7 +212,7 @@ val json = fetchRemoteConfig()
 
 // Important: deserialization requires that your Namespace objects have been initialized
 // (so features are registered) before calling ConfigurationSnapshotCodec.decode(...).
-// See: /remote-config
+// See: /fundamentals/definition-vs-initialization
 
 when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> AppFlags.load(result.value)
@@ -245,7 +245,7 @@ when (val result = ConfigurationSnapshotCodec.applyPatchJson(currentConfig, patc
 }
 ```
 
-See [Remote Configuration](/remote-config) and [Persistence Format](/persistence-format) for details.
+See [Loading from JSON](/getting-started/loading-from-json) and [Persistence Format](/persistence-format) for details.
 
 ---
 
@@ -292,23 +292,19 @@ Each namespace has independent configuration lifecycle, registry, and serializat
 
 **Getting started:**
 
-- [Quick Start Guide](getting-started)
-- [Core Concepts](/core-concepts)
+- [Quick Start Guide](/getting-started/installation)
+- [Core Concepts](/fundamentals/core-primitives)
 
 **Features:**
 
-- [Targeting & Ramp-ups](/targeting-ramp-ups)
-- [Evaluation Semantics](/evaluation)
-- [Remote Configuration](/remote-config)
+- [Targeting & Ramp-ups](/rules-and-targeting/rollout-strategies)
+- [Evaluation Semantics](/fundamentals/evaluation-semantics)
+- [Loading from JSON](/getting-started/loading-from-json)
 - [Persistence Format](/persistence-format)
 
 **Why Konditional:**
 
 - [Why Konditional Exists](why-konditional) — The compelling argument
-
-**Maintenance:**
-
-- [Documentation Discrepancy Log](/documentation-discrepancy-log) — Tracked doc↔code deltas (maintainers)
 
 ---
 
@@ -649,11 +645,11 @@ enum class LogLevel { DEBUG, INFO, WARN, ERROR }
 enum class Theme { LIGHT, DARK, AUTO }
 
 object AppConfig : Namespace("app-config") {
-val LOG_LEVEL by enum<LogLevel, Context>(default = LogLevel.INFO)
+    val LOG_LEVEL by enum<LogLevel, Context>(default = LogLevel.INFO)
     val THEME by enum<Theme, Context>(default = Theme.LIGHT)
 }
 
-val level: LogLevel = AppConfig.LOG_LEVEL(context)
+val level: LogLevel = AppConfig.LOG_LEVEL.evaluate(context)
 ```
 
 Because variants are enum values, invalid variants cannot compile.
@@ -761,8 +757,8 @@ object Config : Namespace("config") {
     val maxRetries by integer<Context>(default = 3)
 }
 
-val retries: Int = Config.maxRetries(context)
-// val retries: String = Config.maxRetries(context)  // Compile error
+val retries: Int = Config.maxRetries.evaluate(context)
+// val retries: String = Config.maxRetries.evaluate(context)  // Compile error
 ```
 
 ### Wrong Context Type for a Feature
@@ -770,7 +766,7 @@ val retries: Int = Config.maxRetries(context)
 ```kotlin
 val basicContext: Context = Context(...)
 // This will error
-// PremiumFeatures.ADVANCED_ANALYTICS(basicContext)  // Compile error (requires EnterpriseContext)
+// PremiumFeatures.ADVANCED_ANALYTICS.evaluate(basicContext)  // Compile error (requires EnterpriseContext)
 ```
 
 ---
@@ -796,7 +792,7 @@ Konditional evaluation is designed to be **total**, **deterministic**, and **ato
 Evaluation never returns `null` or throws:
 
 ```kotlin
-val enabled: Boolean = AppFeatures.darkMode(context)
+val enabled: Boolean = AppFeatures.darkMode.evaluate(context)
 ```
 
 **Why:** Every feature requires a `default`, so there's always a fallback value when no rules match.
@@ -813,8 +809,8 @@ val ctx = Context(
     stableId = StableId.of("user-123"),
 )
 
-val result1 = AppFeatures.darkMode(ctx)
-val result2 = AppFeatures.darkMode(ctx)
+val result1 = AppFeatures.darkMode.evaluate(ctx)
+val result2 = AppFeatures.darkMode.evaluate(ctx)
 // result1 == result2  (guaranteed)
 ```
 
@@ -829,7 +825,7 @@ Configuration updates are atomic; readers never see partial updates:
 AppFeatures.load(newConfig)
 
 // Thread 2: Concurrent evaluation
-val value = AppFeatures.darkMode(context)  // Sees old OR new, never mixed
+val value = AppFeatures.darkMode.evaluate(context)  // Sees old OR new, never mixed
 ```
 
 **How:** Registry stores configuration in an `AtomicReference`; `load(...)` performs a single atomic swap.
@@ -958,7 +954,7 @@ See [Rules & Targeting: Rollout Strategies](/rules-and-targeting/rollout-strateg
 Concise evaluation with an explicit context:
 
 ```kotlin
-val darkMode = AppFeatures.darkMode(context)
+val darkMode = AppFeatures.darkMode.evaluate(context)
 ```
 
 Use when defaults are meaningful and you want minimal call-site surface.
@@ -1006,7 +1002,7 @@ Evaluation is designed for concurrent reads:
 AppFeatures.load(newConfig)
 
 // Thread 2 (during update)
-val value = AppFeatures.darkMode(context)  // Sees old OR new, never mixed
+val value = AppFeatures.darkMode.evaluate(context)  // Sees old OR new, never mixed
 ```
 
 See [Refresh Safety](/fundamentals/refresh-safety) for details.
@@ -1758,7 +1754,7 @@ fun Namespace.disableAll()
 ```kotlin
 AppFeatures.disableAll()
 
-val enabled = AppFeatures.darkMode(context)  // Returns default (false)
+val enabled = AppFeatures.darkMode.evaluate(context)  // Returns default (false)
 ```
 
 ### Use Cases
@@ -1782,7 +1778,7 @@ fun Namespace.enableAll()
 ```kotlin
 AppFeatures.enableAll()
 
-val enabled = AppFeatures.darkMode(context)  // Normal evaluation resumes
+val enabled = AppFeatures.darkMode.evaluate(context)  // Normal evaluation resumes
 ```
 
 ---
@@ -2224,3 +2220,4 @@ Notes:
 - [Feature Operations](/api-reference/feature-operations) — Evaluation and shadow APIs
 - [Namespace Operations](/api-reference/namespace-operations) — Registry lifecycle operations
 - [Advanced: Shadow Evaluation](/advanced/shadow-evaluation) — Migration patterns
+

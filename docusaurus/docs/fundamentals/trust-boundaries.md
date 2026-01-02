@@ -27,7 +27,7 @@ object AppFeatures : Namespace("app") {
     }
 }
 
-val enabled: Boolean = AppFeatures.darkMode(context)
+val enabled: Boolean = AppFeatures.darkMode.evaluate(context)
 ```
 
 **What the compiler guarantees:**
@@ -114,8 +114,8 @@ object Config : Namespace("config") {
     }
 }
 
-// val timeout: Int = Config.timeout(context)  // Compile error: type mismatch
-val timeout: Double = Config.timeout(context)  // ✓ Type-safe
+// val timeout: Int = Config.timeout.evaluate(context)  // Compile error: type mismatch
+val timeout: Double = Config.timeout.evaluate(context)  // ✓ Type-safe
 ```
 
 ### Runtime (Validated)

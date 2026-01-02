@@ -207,7 +207,7 @@ val json = fetchRemoteConfig()
 
 // Important: deserialization requires that your Namespace objects have been initialized
 // (so features are registered) before calling ConfigurationSnapshotCodec.decode(...).
-// See: /remote-config
+// See: /fundamentals/definition-vs-initialization
 
 when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> AppFlags.load(result.value)
@@ -240,7 +240,7 @@ when (val result = ConfigurationSnapshotCodec.applyPatchJson(currentConfig, patc
 }
 ```
 
-See [Remote Configuration](/remote-config) and [Persistence Format](/persistence-format) for details.
+See [Loading from JSON](/getting-started/loading-from-json) and [Persistence Format](/persistence-format) for details.
 
 ---
 
@@ -287,23 +287,19 @@ Each namespace has independent configuration lifecycle, registry, and serializat
 
 **Getting started:**
 
-- [Quick Start Guide](getting-started)
-- [Core Concepts](/core-concepts)
+- [Quick Start Guide](/getting-started/installation)
+- [Core Concepts](/fundamentals/core-primitives)
 
 **Features:**
 
-- [Targeting & Ramp-ups](/targeting-ramp-ups)
-- [Evaluation Semantics](/evaluation)
-- [Remote Configuration](/remote-config)
+- [Targeting & Ramp-ups](/rules-and-targeting/rollout-strategies)
+- [Evaluation Semantics](/fundamentals/evaluation-semantics)
+- [Loading from JSON](/getting-started/loading-from-json)
 - [Persistence Format](/persistence-format)
 
 **Why Konditional:**
 
 - [Why Konditional Exists](why-konditional) — The compelling argument
-
-**Maintenance:**
-
-- [Documentation Discrepancy Log](/documentation-discrepancy-log) — Tracked doc↔code deltas (maintainers)
 
 ---
 

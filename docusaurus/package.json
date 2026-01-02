@@ -4,11 +4,11 @@
   "version": "0.0.0",
   "description": "Konditional documentation (Docusaurus)",
   "scripts": {
-    "start": "docusaurus start",
-    "build": "docusaurus build",
-    "serve": "docusaurus serve",
-    "clear": "docusaurus clear",
-    "deploy": "docusaurus deploy"
+    "start": "NO_UPDATE_NOTIFIER=1 docusaurus start",
+    "build": "NO_UPDATE_NOTIFIER=1 docusaurus build",
+    "serve": "NO_UPDATE_NOTIFIER=1 docusaurus serve",
+    "clear": "NO_UPDATE_NOTIFIER=1 docusaurus clear",
+    "deploy": "NO_UPDATE_NOTIFIER=1 docusaurus deploy"
   },
   "dependencies": {
     "@docusaurus/core": "^3.9.2",

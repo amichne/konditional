@@ -197,7 +197,7 @@ class EnterpriseContextBuilder(
 // Usage
 val contextBuilder = EnterpriseContextBuilder(userService, subscriptionService, deviceInfo)
 val context = contextBuilder.build(userId)
-val enabled = PremiumFeatures.ADVANCED_ANALYTICS(context)
+val enabled = PremiumFeatures.ADVANCED_ANALYTICS.evaluate(context)
 ```
 
 ---

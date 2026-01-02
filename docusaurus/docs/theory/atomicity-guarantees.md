@@ -87,7 +87,7 @@ This is **one atomic operation**:
 AppFeatures.load(newConfig)
 
 // Thread 2: Concurrent evaluation
-val value = AppFeatures.darkMode(context)
+val value = AppFeatures.darkMode.evaluate(context)
 ```
 
 **What happens:**
@@ -111,7 +111,7 @@ val value = AppFeatures.darkMode(context)
 Evaluation reads the current snapshot without acquiring locks:
 
 ```kotlin
-operator fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.invoke(
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
     context: C,
     registry: NamespaceRegistry,
 ): T {
@@ -174,7 +174,7 @@ AppFeatures.load(config1)
 AppFeatures.load(config2)
 
 // Thread 3
-val value = AppFeatures.darkMode(context)
+val value = AppFeatures.darkMode.evaluate(context)
 ```
 
 **Outcome:**
@@ -197,7 +197,7 @@ AppFeatures.load(newConfig)
 // Threads 2-100
 (2..100).forEach { i ->
     thread {
-        val value = AppFeatures.darkMode(context)
+        val value = AppFeatures.darkMode.evaluate(context)
     }
 }
 ```

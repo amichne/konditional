@@ -2,7 +2,7 @@ import {themes as prismThemes} from 'prism-react-renderer';
 import type * as Preset from "@docusaurus/preset-classic";
 import type {Config} from "@docusaurus/types";
 
-const baseUrl = '/konditional'
+const baseUrl = '/konditional/'
 
 const config: Config = {
     title: 'Konditional',
@@ -13,7 +13,6 @@ const config: Config = {
     baseUrl: baseUrl,
     trailingSlash: true,
 
-    onBrokenMarkdownLinks: 'warn',
     onBrokenLinks: 'warn',
 
     organizationName: 'amichne',
@@ -27,6 +26,9 @@ const config: Config = {
 
     markdown: {
         mermaid: true,
+        hooks: {
+            onBrokenMarkdownLinks: 'warn',
+        },
     },
 
     themes: ['@docusaurus/theme-mermaid'],

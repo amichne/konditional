@@ -33,7 +33,7 @@ When you call `Namespace.load(newConfiguration)`, the update is atomic:
 AppFeatures.load(newConfig)
 
 // Thread 2: Concurrent evaluation
-val value = AppFeatures.darkMode(context)  // Sees old OR new, never mixed
+val value = AppFeatures.darkMode.evaluate(context)  // Sees old OR new, never mixed
 ```
 
 **What's guaranteed:**
@@ -75,7 +75,7 @@ See [Theory: Atomicity Guarantees](/theory/atomicity-guarantees) for the formal 
 Evaluation reads the current snapshot without blocking writers:
 
 ```kotlin
-operator fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.invoke(
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
     context: C,
     registry: NamespaceRegistry,
 ): T {
@@ -101,8 +101,8 @@ operator fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.invoke(
 AppFeatures.load(newConfig)
 
 // Thread 2
-val v1 = AppFeatures.darkMode(ctx1)
-val v2 = AppFeatures.apiEndpoint(ctx2)
+val v1 = AppFeatures.darkMode.evaluate(ctx1)
+val v2 = AppFeatures.apiEndpoint.evaluate(ctx2)
 ```
 
 **Outcome:** Each evaluation sees either the old snapshot or the new snapshot; if a refresh happens between calls, `v1` and `v2` may observe different snapshots, but neither call can observe a partially-applied update.
