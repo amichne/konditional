@@ -41,7 +41,7 @@ object Features : Namespace("app") {
 ### 1. Replace call sites first (value safety)
 
 ```kotlin
-val enabled: Boolean = Features.darkMode(context)
+val enabled: Boolean = Features.darkMode.evaluate(context)
 ```
 
 What you gain immediately:
@@ -56,13 +56,13 @@ What you gain immediately:
 val context = Context(
     locale = AppLocale.UNITED_STATES,
     platform = Platform.IOS,
-    appVersion = Version.parse("2.1.0"),
+    appVersion = Version.of(2, 1, 0),
     stableId = StableId.of("a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6")
 )
 ```
 
 `stableId` is the stable input used for deterministic ramp-up bucketing (
-see ["Targeting & Ramp-ups"](/targeting-ramp-ups)).
+see ["Rollout Strategies"](/rules-and-targeting/rollout-strategies)).
 
 ### 3. Add rules after defaults exist (behavior safety)
 
@@ -162,6 +162,6 @@ This keeps behavior pinned to the baseline value while generating comparison tel
 
 ## Next steps
 
-- Learn the primitives: ["Core Concepts"](/core-concepts)
-- Understand rule evaluation and determinism: ["Evaluation"](/evaluation)
-- Operate remote config safely: ["Remote Configuration"](/remote-config)
+- Learn the primitives: ["Core Primitives"](/fundamentals/core-primitives)
+- Understand evaluation + determinism: ["Evaluation Semantics"](/fundamentals/evaluation-semantics)
+- Operate remote config safely: ["Loading from JSON"](/getting-started/loading-from-json)

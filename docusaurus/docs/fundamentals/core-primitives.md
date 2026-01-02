@@ -60,11 +60,11 @@ enum class LogLevel { DEBUG, INFO, WARN, ERROR }
 enum class Theme { LIGHT, DARK, AUTO }
 
 object AppConfig : Namespace("app-config") {
-val LOG_LEVEL by enum<LogLevel, Context>(default = LogLevel.INFO)
+    val LOG_LEVEL by enum<LogLevel, Context>(default = LogLevel.INFO)
     val THEME by enum<Theme, Context>(default = Theme.LIGHT)
 }
 
-val level: LogLevel = AppConfig.LOG_LEVEL(context)
+val level: LogLevel = AppConfig.LOG_LEVEL.evaluate(context)
 ```
 
 Because variants are enum values, invalid variants cannot compile.
@@ -172,8 +172,8 @@ object Config : Namespace("config") {
     val maxRetries by integer<Context>(default = 3)
 }
 
-val retries: Int = Config.maxRetries(context)
-// val retries: String = Config.maxRetries(context)  // Compile error
+val retries: Int = Config.maxRetries.evaluate(context)
+// val retries: String = Config.maxRetries.evaluate(context)  // Compile error
 ```
 
 ### Wrong Context Type for a Feature
@@ -181,7 +181,7 @@ val retries: Int = Config.maxRetries(context)
 ```kotlin
 val basicContext: Context = Context(...)
 // This will error
-// PremiumFeatures.ADVANCED_ANALYTICS(basicContext)  // Compile error (requires EnterpriseContext)
+// PremiumFeatures.ADVANCED_ANALYTICS.evaluate(basicContext)  // Compile error (requires EnterpriseContext)
 ```
 
 ---

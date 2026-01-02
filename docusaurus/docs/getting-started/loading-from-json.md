@@ -15,7 +15,8 @@ object AppFeatures : Namespace("app") {
 }
 ```
 
-At this point, features are registered in the namespace registry.
+At this point, the definitions exist in code. Runtime registration happens when `AppFeatures` is initialized by the JVM
+(usually at app startup).
 
 ### Phase 2: Load Configuration (Runtime)
 
@@ -86,7 +87,7 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 }
 
 // Thread 2: Concurrent evaluation
-val enabled = AppFeatures.darkMode(context)  // Sees old OR new, never mixed
+val enabled = AppFeatures.darkMode.evaluate(context)  // Sees old OR new, never mixed
 ```
 
 **How it works:**

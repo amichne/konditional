@@ -271,7 +271,7 @@ Namespace is disabled via `disableAll()`:
 ```kotlin
 AppFeatures.disableAll()
 
-val enabled = AppFeatures.darkMode(context)  // Returns default (false)
+val enabled = AppFeatures.darkMode.evaluate(context)  // Returns default (false)
 ```
 
 ### How to Prevent

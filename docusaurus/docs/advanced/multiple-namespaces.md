@@ -211,7 +211,7 @@ if (success) {
 ExperimentFlags.disableAll()
 
 // Critical path and infrastructure continue normally
-val paymentEnabled = CriticalPath.PAYMENT_PROCESSING_ENABLED(context)  // Normal evaluation
+val paymentEnabled = CriticalPath.PAYMENT_PROCESSING_ENABLED.evaluate(context)  // Normal evaluation
 ```
 
 ---

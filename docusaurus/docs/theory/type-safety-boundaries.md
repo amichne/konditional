@@ -30,14 +30,14 @@ object AppFeatures : Namespace("app") {
 
 1. **Property name = feature key**
    ```kotlin
-   AppFeatures.darkMode(context)  // ✓ Property exists
-   // AppFeatures.darkMood(context)  // ✗ Compile error
+   AppFeatures.darkMode.evaluate(context)  // ✓ Property exists
+   // AppFeatures.darkMood.evaluate(context)  // ✗ Compile error
    ```
 
 2. **Type propagation**
    ```kotlin
-   val enabled: Boolean = AppFeatures.darkMode(context)  // ✓
-   // val enabled: String = AppFeatures.darkMode(context)  // ✗ Type mismatch
+   val enabled: Boolean = AppFeatures.darkMode.evaluate(context)  // ✓
+   // val enabled: String = AppFeatures.darkMode.evaluate(context)  // ✗ Type mismatch
    ```
 
 3. **Rule return types match feature type**
@@ -225,7 +225,7 @@ val timeout = flagClient.getInt("timeout", 30)  // Type coercion can fail silent
 
 ```kotlin
 // ✓ Compile-time checks
-val enabled = AppFeatures.newOnboardingFlow(context)  // Typo is compile error
+val enabled = AppFeatures.newOnboardingFlow.evaluate(context)  // Typo is compile error
 // AppFeatures.newOnboaringFlow  // ✗ Compile error
 ```
 
@@ -236,7 +236,7 @@ val enabled = AppFeatures.newOnboardingFlow(context)  // Typo is compile error
 when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> {
         // Type-safe from here on
-        val enabled = AppFeatures.newOnboardingFlow(context)
+        val enabled = AppFeatures.newOnboardingFlow.evaluate(context)
     }
     is ParseResult.Failure -> {
         // Invalid JSON rejected, last-known-good remains active

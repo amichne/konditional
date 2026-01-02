@@ -103,7 +103,7 @@ data class Configuration internal constructor(
 ### Evaluation with Snapshot
 
 ```kotlin
-operator fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.invoke(
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
     context: C,
     registry: NamespaceRegistry,
 ): T {

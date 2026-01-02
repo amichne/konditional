@@ -249,7 +249,7 @@ val value = if (shouldShadow) {
         },
     )
 } else {
-    AppFeatures.darkMode(context)
+    AppFeatures.darkMode.evaluate(context)
 }
 ```
 
