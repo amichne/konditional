@@ -46,7 +46,7 @@ class ContextPolymorphismTest {
         advanced_analytics.update(default = false) {
             // This demonstrates that the rule can access base Context properties
             rule(true) {
-                platforms(Platform.WEB)
+                android()
                 versions {
                     min(2, 0)
                 }
@@ -55,7 +55,7 @@ class ContextPolymorphismTest {
 
         val ctx = EnterpriseContext(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.ANDROID,
             appVersion = Version(2, 5, 0),
             stableId = TestStableId,
             organizationId = "org-123",
@@ -71,10 +71,10 @@ class ContextPolymorphismTest {
         // Configure using .override() for test-specific configuration
         ExperimentFeatures.homepage_variant.update("control") {
             rule("variant-a") {
-                platforms(Platform.IOS, Platform.ANDROID)
+                ios()
             }
             rule("variant-b") {
-                platforms(Platform.WEB)
+                android()
             }
         }
 
@@ -87,9 +87,9 @@ class ContextPolymorphismTest {
             sessionId = "session-abc",
         )
 
-        val webCtx = ExperimentContext(
+        val androidCtx = ExperimentContext(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("33333333333333333333333333333333"),
             experimentGroups = setOf("exp-001"),
@@ -97,7 +97,7 @@ class ContextPolymorphismTest {
         )
 
         assertEquals("variant-a", ExperimentFeatures.homepage_variant.evaluate(mobileCtx))
-        assertEquals("variant-b", ExperimentFeatures.homepage_variant.evaluate(webCtx))
+        assertEquals("variant-b", ExperimentFeatures.homepage_variant.evaluate(androidCtx))
     }
 
     @Suppress("USELESS_IS_CHECK")
@@ -115,7 +115,7 @@ class ContextPolymorphismTest {
         }
         val enterpriseCtx1 = EnterpriseContext(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = TestStableId.newInstance(),
             organizationId = "org-456",
@@ -143,7 +143,7 @@ class ContextPolymorphismTest {
         // Configure using .override() for test-specific configuration
         EnterpriseFeatures.api_access.update(false) {
             rule(true) {
-                platforms(Platform.WEB)
+                android()
                 rampUp { 100 }
 
                 extension { EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN).matches(this) }
@@ -152,7 +152,7 @@ class ContextPolymorphismTest {
 
         val enterpriseAdmin = EnterpriseContext(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"),
             organizationId = "org-ent",
@@ -162,7 +162,7 @@ class ContextPolymorphismTest {
 
         val premiumEditor = EnterpriseContext(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("cccccccccccccccccccccccccccccccc"),
             organizationId = "org-prem",

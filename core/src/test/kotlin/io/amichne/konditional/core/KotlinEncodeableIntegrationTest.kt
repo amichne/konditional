@@ -102,7 +102,7 @@ class KonstrainedIntegrationTest {
     fun `feature flag integration with data class works`() {
         val context = Context(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = TestStableId
         )

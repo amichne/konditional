@@ -7,8 +7,7 @@ package io.amichne.konditional.context
  */
 enum class Platform : PlatformTag {
     IOS,
-    ANDROID,
-    WEB;
+    ANDROID;
 
     override val id: String = name
 }

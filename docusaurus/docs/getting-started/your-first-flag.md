@@ -10,11 +10,12 @@ Define flags as delegated properties on a `Namespace`. The compiler enforces typ
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.context.*
+import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
 
 object AppFeatures : Namespace("app") {
     val darkMode by boolean<Context>(default = false) {
-        rule(true) {
+        enable {
             platforms(Platform.IOS)
             rampUp { 50.0 }
         }
@@ -34,7 +35,7 @@ object AppFeatures : Namespace("app") {
 - `boolean`, `string`, `integer` are type-safe delegates that create `Feature<Boolean>`, `Feature<String>`, `Feature<Int>`
 - Property names become feature keys (no string keys at call sites)
 - `default` is required — evaluation never returns null
-- `rule(value) { ... }` defines conditional targeting
+- `rule(value) { ... }` (or `rule { ... } yields value`) defines conditional targeting
 
 ---
 
@@ -135,9 +136,8 @@ Ramp-ups are deterministic: the same `(stableId, flagKey, salt)` yields the same
 
 ```kotlin
 val apiEndpoint by string<Context>(default = "https://api.example.com") {
-    rule("https://api-ios.example.com") { platforms(Platform.IOS) }
-    rule("https://api-android.example.com") { platforms(Platform.ANDROID) }
-    rule("https://api-web.example.com") { platforms(Platform.WEB) }
+    rule("https://api-ios.example.com") { ios() }
+    rule("https://api-android.example.com") { android() }
 }
 ```
 

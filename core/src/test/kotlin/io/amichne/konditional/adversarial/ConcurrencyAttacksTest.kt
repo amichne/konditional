@@ -194,7 +194,7 @@ class ConcurrencyAttacksTest {
                 try {
                     val context = Context(
                         locale = AppLocale.UNITED_STATES,
-                        platform = Platform.WEB,
+                        platform = Platform.ANDROID,
                         appVersion = Version(1, 0, 0),
                         stableId = StableId.of(String.format("%032d", i))
                     )
@@ -333,9 +333,8 @@ class ConcurrencyAttacksTest {
                 repeat(100) { i ->
                     rule(i % 2 == 0) {
                         note("rule-$i")
-                        if (i % 3 == 0) platforms(Platform.ANDROID)
-                        if (i % 3 == 1) platforms(Platform.IOS)
-                        if (i % 3 == 2) platforms(Platform.WEB)
+                        if (i % 2 == 0) android()
+                        if (i % 2 != 0) ios()
                         rampUp { (i % 100).toDouble() }
                     }
                 }

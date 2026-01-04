@@ -1,5 +1,5 @@
 # Public API Surface Summary
-# Extracted: 2026-01-02T09:39:16-05:00
+# Extracted: 2026-01-03T19:30:32-05:00
 
 ## From docusaurus/docs/index.md
 
@@ -72,14 +72,16 @@ dependencies {
 ### Define flags as properties
 
 ```kotlin
+import io.amichne.konditional.core.dsl.enable
+
 object AppFeatures : Namespace("app") {
     val darkMode by boolean<Context>(default = false) {
-        rule(true) { platforms(Platform.IOS) }
-        rule(true) { rampUp { 50.0 } }
+        enable { ios() }
+        enable { rampUp { 50.0 } }
     }
 
     val apiEndpoint by string<Context>(default = "https://api.example.com") {
-        rule("https://api-web.example.com") { platforms(Platform.WEB) }
+        rule("https://api-android.example.com") { android() }
     }
 
     val maxRetries by integer<Context>(default = 3) {
@@ -169,7 +171,7 @@ data class RetryPolicy(
 
 object PolicyFlags : Namespace("policy") {
     val retryPolicy by custom<RetryPolicy, Context>(default = RetryPolicy()) {
-        rule(RetryPolicy(maxAttempts = 5, backoffMs = 2000.0)) { platforms(Platform.WEB) }
+        rule(RetryPolicy(maxAttempts = 5, backoffMs = 2000.0)) { android() }
     }
 }
 ```
@@ -187,7 +189,7 @@ Ramp-ups use SHA-256 bucketing for consistent, reproducible results:
 ```kotlin
 object RampUpFlags : Namespace("ramp-up") {
     val newFeature by boolean<Context>(default = false) {
-        rule(true) { rampUp { 25.0 } }
+        enable { rampUp { 25.0 } }
     }
 }
 ```
@@ -430,11 +432,12 @@ Define flags as delegated properties on a `Namespace`. The compiler enforces typ
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.context.*
+import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
 
 object AppFeatures : Namespace("app") {
     val darkMode by boolean<Context>(default = false) {
-        rule(true) {
+        enable {
             platforms(Platform.IOS)
             rampUp { 50.0 }
         }
@@ -454,7 +457,7 @@ object AppFeatures : Namespace("app") {
 - `boolean`, `string`, `integer` are type-safe delegates that create `Feature<Boolean>`, `Feature<String>`, `Feature<Int>`
 - Property names become feature keys (no string keys at call sites)
 - `default` is required — evaluation never returns null
-- `rule(value) { ... }` defines conditional targeting
+- `rule(value) { ... }` (or `rule { ... } yields value`) defines conditional targeting
 
 ---
 
@@ -555,9 +558,8 @@ Ramp-ups are deterministic: the same `(stableId, flagKey, salt)` yields the same
 
 ```kotlin
 val apiEndpoint by string<Context>(default = "https://api.example.com") {
-    rule("https://api-ios.example.com") { platforms(Platform.IOS) }
-    rule("https://api-android.example.com") { platforms(Platform.ANDROID) }
-    rule("https://api-web.example.com") { platforms(Platform.WEB) }
+    rule("https://api-ios.example.com") { ios() }
+    rule("https://api-android.example.com") { android() }
 }
 ```
 

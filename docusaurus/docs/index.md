@@ -67,14 +67,16 @@ dependencies {
 ### Define flags as properties
 
 ```kotlin
+import io.amichne.konditional.core.dsl.enable
+
 object AppFeatures : Namespace("app") {
     val darkMode by boolean<Context>(default = false) {
-        rule(true) { platforms(Platform.IOS) }
-        rule(true) { rampUp { 50.0 } }
+        enable { ios() }
+        enable { rampUp { 50.0 } }
     }
 
     val apiEndpoint by string<Context>(default = "https://api.example.com") {
-        rule("https://api-web.example.com") { platforms(Platform.WEB) }
+        rule("https://api-android.example.com") { android() }
     }
 
     val maxRetries by integer<Context>(default = 3) {
@@ -164,7 +166,7 @@ data class RetryPolicy(
 
 object PolicyFlags : Namespace("policy") {
     val retryPolicy by custom<RetryPolicy, Context>(default = RetryPolicy()) {
-        rule(RetryPolicy(maxAttempts = 5, backoffMs = 2000.0)) { platforms(Platform.WEB) }
+        rule(RetryPolicy(maxAttempts = 5, backoffMs = 2000.0)) { android() }
     }
 }
 ```
@@ -182,7 +184,7 @@ Ramp-ups use SHA-256 bucketing for consistent, reproducible results:
 ```kotlin
 object RampUpFlags : Namespace("ramp-up") {
     val newFeature by boolean<Context>(default = false) {
-        rule(true) { rampUp { 25.0 } }
+        enable { rampUp { 25.0 } }
     }
 }
 ```

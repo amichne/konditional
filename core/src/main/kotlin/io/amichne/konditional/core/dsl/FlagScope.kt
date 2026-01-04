@@ -77,4 +77,19 @@ interface FlagScope<T : Any, C : Context> {
         value: T,
         build: RuleScope<C>.() -> Unit = {},
     )
+
+    /**
+     * Defines a targeting rule in a criteria-first form that can be completed by yielding a value.
+     *
+     * This exists as syntactic sugar over [rule] to improve readability for complex values:
+     * ```kotlin
+     * rule {
+     *     android()
+     * } yields "android"
+     * ```
+     *
+     * Semantics:
+     * - `rule { ... } yields VALUE` ≡ `rule(VALUE) { ... }`
+     */
+    fun rule(build: RuleScope<C>.() -> Unit): YieldingScope<T, C> = YieldingScope(this, build)
 }

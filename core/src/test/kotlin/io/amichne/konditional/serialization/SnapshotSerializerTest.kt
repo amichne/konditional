@@ -746,7 +746,7 @@ class ConfigurationSnapshotCodecTest {
                 rampUp = RampUp.of(75.0),
                 note = "Complex rule",
                 locales = localeIds(AppLocale.UNITED_STATES, AppLocale.UNITED_STATES),
-                platforms = platformIds(Platform.WEB),
+                platforms = platformIds(Platform.ANDROID),
                 versionRange = FullyBound(Version(2, 0, 0), Version(3, 0, 0)),
             )
 
@@ -774,7 +774,7 @@ class ConfigurationSnapshotCodecTest {
             deserializedRule.targeting.locales,
         )
         assertEquals(
-            setOf(Platform.WEB.id),
+            setOf(Platform.ANDROID.id),
             deserializedRule.targeting.platforms,
         )
 

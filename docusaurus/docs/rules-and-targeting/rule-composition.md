@@ -23,6 +23,51 @@ Each `rule(value) { ... }` block defines:
 
 ---
 
+## DSL Sugar
+
+### Criteria-first rules (`rule { ... } yields value`)
+
+When the value is long or when you want the code to read like the mental model (`criteria(context) → value`), use the criteria-first form:
+
+```kotlin
+val apiEndpoint by string<Context>(default = "https://api.example.com") {
+    rule { platforms(Platform.IOS) } yields "https://api-ios.example.com"
+    rule { platforms(Platform.ANDROID) } yields "https://api-android.example.com"
+}
+```
+
+Semantics: `rule { ... } yields VALUE` is equivalent to `rule(VALUE) { ... }`.
+
+### Boolean intent (`enable { ... }` / `disable { ... }`)
+
+For boolean flags, prefer intent-first sugar over boolean literals:
+
+```kotlin
+import io.amichne.konditional.core.dsl.disable
+import io.amichne.konditional.core.dsl.enable
+
+val newUi by boolean<Context>(default = false) {
+    enable { versions { min(2, 0, 0) } }
+    disable { versions { max(1, 9, 9) } }
+}
+```
+
+Semantics:
+- `enable { ... }`  ≡ `rule(true) { ... }`
+- `disable { ... }` ≡ `rule(false) { ... }`
+
+### Explicit catch-all (`always()`)
+
+Empty criteria already matches all contexts, but you can make that intent explicit:
+
+```kotlin
+val variant by string<Context>(default = "control") {
+    rule { always() } yields "control"
+}
+```
+
+---
+
 ## Available Criteria
 
 ### Platform Targeting

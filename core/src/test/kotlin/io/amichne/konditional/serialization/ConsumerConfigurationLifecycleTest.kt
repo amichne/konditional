@@ -71,9 +71,9 @@ class ConsumerConfigurationLifecycleTest {
 
                 val apiEndpoint by string<Context>(default = "https://api.example.com") {
                     rule("https://api-web.example.com") {
-                        platforms(Platform.WEB)
+                        android()
                         rampUp { 100.0 }
-                        note("Web endpoint override")
+                        note("Android endpoint override")
                     }
                 }
 
@@ -103,14 +103,14 @@ class ConsumerConfigurationLifecycleTest {
             }
 
         val ios = ctx(platform = Platform.IOS, version = Version.of(2, 1, 0))
-        val web = ctx(platform = Platform.WEB, version = Version.of(2, 1, 0))
+        val android = ctx(platform = Platform.ANDROID, version = Version.of(2, 1, 0))
         val france = ctx(platform = Platform.ANDROID, locale = AppLocale.FRANCE, version = Version.of(2, 1, 0))
         val v1 = ctx(platform = Platform.ANDROID, version = Version.of(1, 0, 0))
         val v2 = ctx(platform = Platform.ANDROID, version = Version.of(2, 0, 0))
 
         assertTrue(namespaceV1.darkMode.evaluate(ios))
-        assertFalse(namespaceV1.darkMode.evaluate(web))
-        assertEquals("https://api-web.example.com", namespaceV1.apiEndpoint.evaluate(web))
+        assertFalse(namespaceV1.darkMode.evaluate(android))
+        assertEquals("https://api-web.example.com", namespaceV1.apiEndpoint.evaluate(android))
         assertEquals("https://api.example.com", namespaceV1.apiEndpoint.evaluate(ios))
         assertEquals(3, namespaceV1.maxRetries.evaluate(v1))
         assertEquals(5, namespaceV1.maxRetries.evaluate(v2))
@@ -149,7 +149,7 @@ class ConsumerConfigurationLifecycleTest {
             }
 
         assertFalse(namespaceV2.darkMode.evaluate(ios), "baseline differs before load")
-        assertEquals("https://wrong.example.com", namespaceV2.apiEndpoint.evaluate(web), "baseline differs before load")
+        assertEquals("https://wrong.example.com", namespaceV2.apiEndpoint.evaluate(android), "baseline differs before load")
         assertEquals(0, namespaceV2.maxRetries.evaluate(v2), "baseline differs before load")
         assertEquals(Theme.DARK, namespaceV2.theme.evaluate(france), "baseline differs before load")
         assertEquals(
@@ -164,8 +164,8 @@ class ConsumerConfigurationLifecycleTest {
         }
 
         assertTrue(namespaceV2.darkMode.evaluate(ios))
-        assertFalse(namespaceV2.darkMode.evaluate(web))
-        assertEquals("https://api-web.example.com", namespaceV2.apiEndpoint.evaluate(web))
+        assertFalse(namespaceV2.darkMode.evaluate(android))
+        assertEquals("https://api-web.example.com", namespaceV2.apiEndpoint.evaluate(android))
         assertEquals("https://api.example.com", namespaceV2.apiEndpoint.evaluate(ios))
         assertEquals(3, namespaceV2.maxRetries.evaluate(v1))
         assertEquals(5, namespaceV2.maxRetries.evaluate(v2))

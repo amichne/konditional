@@ -95,5 +95,5 @@ full-clean: clean docs-clean docs-venv-clean ## Clean everything (build + docs +
 rebuild: clean build ## Clean and rebuild
 	@echo "$(GREEN)Rebuild completed$(NC)"
 
-check: test ## Alias for test
+check: detekt test ## Static analysis + tests
 	@echo "$(GREEN)Check completed$(NC)"

@@ -30,6 +30,8 @@ dependencies {
     // Kontracts: Type-safe JSON Schema DSL
     implementation(project(":kontracts"))
 
+    detektPlugins(project(":detekt-rules"))
+
     // Moshi for JSON serialization
     implementation("com.squareup.moshi:moshi:1.15.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.15.0")
@@ -59,13 +61,13 @@ sourceSets {
 
 detekt {
     // TODO - Remove this once issues are resolved
-    ignoreFailures = true
+    ignoreFailures = false
     buildUponDefaultConfig = true
     allRules = false
     config.setFrom(files("$projectDir/detekt.yml"))
     baseline = file("$projectDir/detekt-baseline.xml")
     parallel = true
-    autoCorrect = true
+    autoCorrect = false
 
     source.setFrom(
         "src/main/kotlin",

@@ -106,7 +106,7 @@ object AppFlags : Namespace("app") {
     }
 
     val maxRetries by integer<Context>(default = 3) {
-        rule(5) { platforms(Platform.WEB) }
+        rule(5) { android() }
     }
 }
 
@@ -286,7 +286,7 @@ If you're coming from a boolean capability system:
    ```kotlin
    object Features : Namespace("app") {
        val featureX by boolean<Context>(default = false) {
-           rule(true) { platforms(Platform.WEB) }
+           rule(true) { android() }
            rule(true) { rampUp { 25.0 } }
        }
    }

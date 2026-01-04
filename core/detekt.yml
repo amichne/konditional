@@ -116,6 +116,11 @@ empty-blocks:
   EmptyWhileBlock:
     active: true
 
+konditional:
+  active: true
+  UnclosedCriteriaFirstRule:
+    active: true
+
 exceptions:
   active: true
   ExceptionRaisedInUnexpectedLocation:
