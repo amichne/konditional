@@ -88,7 +88,7 @@ class NamespaceFeatureDefinitionTest {
 
         val context = Context(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
         )

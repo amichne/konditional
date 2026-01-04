@@ -2,6 +2,7 @@ package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.LocaleTag
+import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.PlatformTag
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
@@ -33,6 +34,33 @@ import io.amichne.konditional.core.id.StableId
  */
 @KonditionalDsl
 interface RuleScope<C : Context> {
+    /**
+     * Explicitly marks this rule as matching all contexts.
+     *
+     * This is a no-op: an empty rule already matches all contexts. Use this to make "catch-all"
+     * intent explicit in reviews and when reading configuration.
+     */
+    fun always() {}
+
+    /**
+     * Alias for [always].
+     */
+    fun matchAll() = always()
+
+    /**
+     * Sugar for targeting iOS.
+     *
+     * Equivalent to `platforms(Platform.IOS)`.
+     */
+    fun ios() = platforms(Platform.IOS)
+
+    /**
+     * Sugar for targeting Android.
+     *
+     * Equivalent to `platforms(Platform.ANDROID)`.
+     */
+    fun android() = platforms(Platform.ANDROID)
+
     /**
      * Allows specific stable IDs to bypass this rule's rampUp percentage.
      *

@@ -226,7 +226,7 @@ class AdversarialConfigTest {
 
         val context = Context(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
         )
@@ -241,7 +241,7 @@ class AdversarialConfigTest {
         val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-infinity") {
             val infinityFlag by double<Context>(default = Double.POSITIVE_INFINITY) {
                 rule(Double.NEGATIVE_INFINITY) {
-                    platforms(Platform.WEB)
+                    android()
                 }
             }
         }
@@ -255,7 +255,7 @@ class AdversarialConfigTest {
         val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-max-int") {
             val maxIntFlag by integer<Context>(default = Int.MAX_VALUE) {
                 rule(Int.MIN_VALUE) {
-                    platforms(Platform.WEB)
+                    android()
                 }
             }
         }
@@ -270,7 +270,7 @@ class AdversarialConfigTest {
         val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-empty-string") {
             val emptyStringFlag by string<Context>(default = "") {
                 rule("   ") { // Whitespace-only also valid
-                    platforms(Platform.WEB)
+                    android()
                 }
             }
         }
@@ -360,7 +360,7 @@ class AdversarialConfigTest {
         val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-tiny-rampUp") {
             val tinyRolloutFlag by boolean<Context>(default = false) {
                 rule(true) {
-                    platforms(Platform.WEB)
+                    android()
                     rampUp { 0.01 } // User might think this is 1%, but it's 0.01%
                 }
             }
@@ -369,7 +369,7 @@ class AdversarialConfigTest {
         // Bucketing is deterministic, so specific users always get same result
         val context = Context(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
         )
@@ -386,7 +386,7 @@ class AdversarialConfigTest {
     fun `changing salt completely re-randomizes user bucketing`() {
         val context = Context(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("ABCDEF1234567890ABCDEF1234567890")
         )
@@ -426,7 +426,7 @@ class AdversarialConfigTest {
             val noLocaleFlag by boolean<Context>(default = false) {
                 rule(true) {
                     // No locale specified = matches ALL locales
-                    platforms(Platform.WEB)
+                    android()
                 }
             }
         }
@@ -439,7 +439,7 @@ class AdversarialConfigTest {
         ).map { locale ->
             Context(
                 locale = locale,
-                platform = Platform.WEB,
+                platform = Platform.ANDROID,
                 appVersion = Version(1, 0, 0),
                 stableId = StableId.of("12345678901234567890123456789012")
             )
@@ -477,7 +477,7 @@ class AdversarialConfigTest {
         ).map { (version, expected) ->
             Context(
                 locale = AppLocale.UNITED_STATES,
-                platform = Platform.WEB,
+                platform = Platform.ANDROID,
                 appVersion = version,
                 stableId = StableId.of("12345678901234567890123456789012")
             ) to expected
@@ -504,7 +504,7 @@ class AdversarialConfigTest {
 
         val exactContext = Context.Core(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
         )
@@ -573,7 +573,7 @@ class AdversarialConfigTest {
             val inactiveFlag by boolean<Context>(default = false) {
                 active { false } // Flag is turned off
                 rule(true) {
-                    platforms(Platform.WEB)
+                    android()
                     rampUp { 100.0 }
                 }
             }
@@ -581,7 +581,7 @@ class AdversarialConfigTest {
 
         val context = Context(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
         )
@@ -636,12 +636,12 @@ class AdversarialConfigTest {
         val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("rampUp-fallthrough") {
             val rolloutBlockedFlag by boolean<Context>(default = false) {
                 rule(true) {
-                    platforms(Platform.WEB)
+                    android()
                     rampUp { 0.0 } // 0% rampUp - no one gets this
                 }
 
                 rule(false) {
-                    platforms(Platform.WEB)
+                    android()
                     rampUp { 100.0 } // Everyone gets this
                 }
             }
@@ -649,7 +649,7 @@ class AdversarialConfigTest {
 
         val context = Context(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
         )

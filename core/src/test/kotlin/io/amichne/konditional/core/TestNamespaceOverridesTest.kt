@@ -31,7 +31,7 @@ class TestNamespaceOverridesTest {
 
     private val testContext = Context(
         locale = AppLocale.UNITED_STATES,
-        platform = Platform.WEB,
+        platform = Platform.ANDROID,
         appVersion = Version.parse("1.0.0").getOrThrow(),
         stableId = TestStableId
     )
@@ -58,12 +58,12 @@ class TestNamespaceOverridesTest {
     fun `override bypasses rules and rollout logic`() {
         val testNamespace = object : Namespace.TestNamespaceFacade("override-bypasses-rules") {
             val myFlag by boolean<Context>(default = false) {
-                // Rule that would normally make this true for WEB platform
-                rule(true) { platforms(Platform.WEB) }
+                // Rule that would normally make this true for Android
+                rule(true) { android() }
             }
         }
 
-        // Normal evaluation follows rule - returns true for WEB
+        // Normal evaluation follows rule - returns true for Android
         assertEquals(true, testNamespace.myFlag.evaluate(testContext))
 
         // Override to false - bypasses rule

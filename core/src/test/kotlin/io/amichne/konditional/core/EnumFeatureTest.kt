@@ -36,7 +36,7 @@ class EnumFeatureTest {
     private object EnumFeatures : Namespace.TestNamespaceFacade("enum-features") {
         val logLevel by enum<LogLevel, Context>(default = LogLevel.INFO) {
             rule(LogLevel.DEBUG) {
-                platforms(Platform.WEB)
+                android()
             }
         }
 
@@ -86,15 +86,15 @@ class EnumFeatureTest {
 
     @Test
     fun `enum features evaluate with rules`() {
-        val webContext = Context(
+        val androidContext = Context(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
         )
 
-        // Should return DEBUG for WEB platform based on rule
-        assertEquals(LogLevel.DEBUG, EnumFeatures.logLevel.evaluate(webContext))
+        // Should return DEBUG for Android platform based on rule
+        assertEquals(LogLevel.DEBUG, EnumFeatures.logLevel.evaluate(androidContext))
     }
 
     @Test
@@ -154,19 +154,19 @@ class EnumFeatureTest {
         val complexFeatures = object : Namespace.TestNamespaceFacade("complex-enum-rules") {
             val environment by enum<Environment, Context>(default = Environment.PRODUCTION) {
                 rule(Environment.DEVELOPMENT) {
-                    platforms(Platform.WEB)
+                    android()
                     locales(AppLocale.UNITED_STATES)
                 }
 
                 rule(Environment.STAGING) {
-                    platforms(Platform.IOS)
+                    ios()
                 }
             }
         }
 
-        val webUSContext = Context(
+        val androidUSContext = Context(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
         )
@@ -185,7 +185,7 @@ class EnumFeatureTest {
             stableId = StableId.of("12345678901234567890123456789012")
         )
 
-        assertEquals(Environment.DEVELOPMENT, complexFeatures.environment.evaluate(webUSContext))
+        assertEquals(Environment.DEVELOPMENT, complexFeatures.environment.evaluate(androidUSContext))
         assertEquals(Environment.STAGING, complexFeatures.environment.evaluate(iosContext))
         assertEquals(
             Environment.PRODUCTION,
@@ -205,7 +205,7 @@ class EnumFeatureTest {
 
         val context = Context(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
         )
@@ -217,13 +217,13 @@ class EnumFeatureTest {
     fun `enum values survive namespace snapshot roundtrip`() {
         val namespace = object : Namespace.TestNamespaceFacade("enum-roundtrip") {
             val logLevel by enum<LogLevel, Context>(default = LogLevel.INFO) {
-                rule(LogLevel.DEBUG) { platforms(Platform.WEB) }
+                rule(LogLevel.DEBUG) { android() }
             }
         }
 
-        val webContext = Context(
+        val androidContext = Context(
             locale = AppLocale.UNITED_STATES,
-            platform = Platform.WEB,
+            platform = Platform.ANDROID,
             appVersion = Version(1, 0, 0),
             stableId = StableId.of("12345678901234567890123456789012")
         )
@@ -234,6 +234,6 @@ class EnumFeatureTest {
         val reloadResult = NamespaceSnapshotLoader(namespace).load(json)
         assertTrue(reloadResult is io.amichne.konditional.core.result.ParseResult.Success)
 
-        assertEquals(LogLevel.DEBUG, namespace.logLevel.evaluate(webContext))
+        assertEquals(LogLevel.DEBUG, namespace.logLevel.evaluate(androidContext))
     }
 }

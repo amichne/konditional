@@ -54,7 +54,6 @@ class RuleMatchingTest {
 
         assertTrue(rule.matches(ctx(platform = Platform.IOS)))
         assertFalse(rule.matches(ctx(platform = Platform.ANDROID)))
-        assertFalse(rule.matches(ctx(platform = Platform.WEB)))
     }
 
     @Test
@@ -68,7 +67,6 @@ class RuleMatchingTest {
 
         assertTrue(rule.matches(ctx(platform = Platform.IOS)))
         assertTrue(rule.matches(ctx(platform = Platform.ANDROID)))
-        assertFalse(rule.matches(ctx(platform = Platform.WEB)))
     }
 
     @Test

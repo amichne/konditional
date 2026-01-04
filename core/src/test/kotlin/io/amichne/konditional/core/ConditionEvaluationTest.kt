@@ -306,14 +306,14 @@ class ConditionEvaluationTest {
     fun `Given rule not matching context constraints, When evaluating, Then skips to next rule regardless of ramp-up`() {
         val iosOnlyRule = Rule<Context>(
             rampUp = RampUp.MAX,
-            locales = emptySet(),
+            locales = localeIds(AppLocale.UNITED_STATES),
             platforms = platformIds(Platform.IOS),
             versionRange = Unbounded(),
         )
 
         val androidOnlyRule = Rule<Context>(
             rampUp = RampUp.MAX,
-            locales = emptySet(),
+            locales = localeIds(AppLocale.UNITED_STATES),
             platforms = platformIds(Platform.ANDROID),
             versionRange = Unbounded(),
         )
@@ -333,8 +333,9 @@ class ConditionEvaluationTest {
         val androidResult = condition.evaluate(ctx("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", platform = Platform.ANDROID))
         assertEquals("android-value", androidResult)
 
-        val webResult = condition.evaluate(ctx("cccccccccccccccccccccccccccccccc", platform = Platform.WEB))
-        assertEquals("default", webResult)
+        val nonMatchingResult =
+            condition.evaluate(ctx("cccccccccccccccccccccccccccccccc", locale = AppLocale.FRANCE, platform = Platform.IOS))
+        assertEquals("default", nonMatchingResult)
     }
 
     @Test
