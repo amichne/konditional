@@ -1,0 +1,94 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:AxisRegistry.kt$AxisRegistry$fun register(axis: Axis&lt;*&gt;)</ID>
+    <ID>CyclomaticComplexMethod:FlagValueAdapter.kt$FlagValueAdapter$override fun fromJson(reader: JsonReader): FlagValue&lt;*&gt;</ID>
+    <ID>CyclomaticComplexMethod:SchemaValueCodec.kt$SchemaValueCodec$private fun decodeValue(kClass: KClass&lt;*&gt;?, json: JsonValue): ParseResult&lt;Any&gt;</ID>
+    <ID>CyclomaticComplexMethod:VersionRangeAdapter.kt$VersionRangeAdapter$@FromJson fun fromJson(reader: JsonReader): VersionRange</ID>
+    <ID>EnumNaming:EnumSerializationTest.kt$EnumSerializationTest.SpecialEnum$VALUE-WITH-DASH</ID>
+    <ID>ImplicitDefaultLocale:ConcurrencyAttacksTest.kt$ConcurrencyAttacksTest$String.format("%032d", 0)</ID>
+    <ID>ImplicitDefaultLocale:ConcurrencyAttacksTest.kt$ConcurrencyAttacksTest$String.format("%032d", i)</ID>
+    <ID>LargeClass:SnapshotSerializerTest.kt$ConfigurationSnapshotCodecTest</ID>
+    <ID>LongMethod:ConsumerConfigurationLifecycleTest.kt$ConsumerConfigurationLifecycleTest$@Test fun `consumer lifecycle supports dump load and patch`()</ID>
+    <ID>LongMethod:FeatureEvaluation.kt$@PublishedApi internal fun &lt;T : Any, C : Context, M : Namespace&gt; Feature&lt;T, C, M&gt;.evaluateInternal( context: C, registry: NamespaceRegistry, mode: Metrics.Evaluation.EvaluationMode, ): EvaluationResult&lt;T&gt;</ID>
+    <ID>LongMethod:FlagValueAdapter.kt$FlagValueAdapter$override fun fromJson(reader: JsonReader): FlagValue&lt;*&gt;</ID>
+    <ID>LongMethod:SnapshotSerializerTest.kt$ConfigurationSnapshotCodecTest$@Test fun `Given JSON with complex rule, When deserialized, Then returns success with all rule attributes`()</ID>
+    <ID>LongMethod:SnapshotSerializerTest.kt$ConfigurationSnapshotCodecTest$@Test fun `Given maximal snapshot, When serialized, Then output includes all supported fields`()</ID>
+    <ID>LongParameterList:FlagDefinition.kt$FlagDefinition.Companion$( feature: Feature&lt;T, C, M&gt;, bounds: List&lt;ConditionalValue&lt;T, C&gt;&gt;, defaultValue: T, salt: String = "v1", isActive: Boolean = true, rampUpAllowlist: Set&lt;HexId&gt; = emptySet(), )</ID>
+    <ID>LongParameterList:Namespace.kt$Namespace$( thisRef: M, property: KProperty&lt;*&gt;, default: T, configScope: FlagScope&lt;T, C&gt;.() -&gt; Unit, featureFactory: (String, M) -&gt; F, featureSetter: (F) -&gt; Unit, delegateInstance: D, )</ID>
+    <ID>MagicNumber:Bucketing.kt$Bucketing$0xFF</ID>
+    <ID>MagicNumber:Bucketing.kt$Bucketing$0xFFFF_FFFFL</ID>
+    <ID>MagicNumber:Bucketing.kt$Bucketing$100.0</ID>
+    <ID>MagicNumber:Bucketing.kt$Bucketing$16</ID>
+    <ID>MagicNumber:Bucketing.kt$Bucketing$24</ID>
+    <ID>MagicNumber:Bucketing.kt$Bucketing$3</ID>
+    <ID>MagicNumber:Bucketing.kt$Bucketing$8</ID>
+    <ID>MagicNumber:Version.kt$Version.Companion$3</ID>
+    <ID>MatchingDeclarationName:BaseRuleGuaranteesTest.kt$RuleGuaranteesTest</ID>
+    <ID>MatchingDeclarationName:KotlinEncodeableIntegrationTest.kt$KonstrainedIntegrationTest</ID>
+    <ID>MatchingDeclarationName:NamespaceSnapshotSerializerTest.kt$NamespaceConfigurationSnapshotCodecTest</ID>
+    <ID>MatchingDeclarationName:SnapshotSerializerTest.kt$ConfigurationSnapshotCodecTest</ID>
+    <ID>MaxLineLength:AppLocale.kt$AppLocale$*</ID>
+    <ID>MaxLineLength:AxisRegistry.kt$AxisRegistry$*</ID>
+    <ID>MaxLineLength:AxisRegistry.kt$AxisRegistry$throw IllegalArgumentException("Axis already registered for id ${axis.id}: existing=$existingById, attempted=$axis")</ID>
+    <ID>MaxLineLength:ConditionEvaluationTest.kt$ConditionEvaluationTest$condition.evaluate(ctx("cccccccccccccccccccccccccccccccc", locale = AppLocale.FRANCE, platform = Platform.IOS))</ID>
+    <ID>MaxLineLength:ConditionEvaluationTest.kt$ConditionEvaluationTest$fun</ID>
+    <ID>MaxLineLength:ConfigurationSnapshotCodec.kt$ConfigurationSnapshotCodec$?:</ID>
+    <ID>MaxLineLength:ConsumerConfigurationLifecycleTest.kt$ConsumerConfigurationLifecycleTest$assertEquals("https://wrong.example.com", namespaceV2.apiEndpoint.evaluate(android), "baseline differs before load")</ID>
+    <ID>MaxLineLength:EvaluationResult.kt$EvaluationResult.Decision.Default$*</ID>
+    <ID>MaxLineLength:Feature.kt$Feature$*</ID>
+    <ID>MaxLineLength:FeatureEvaluation.kt$"konditional.explain namespaceId=${result.namespaceId} key=${result.featureKey} decision=${result.decision::class.simpleName} version=${result.configVersion}"</ID>
+    <ID>MaxLineLength:FeatureEvaluation.kt$matchedRuleSpecificity = (result.decision as? EvaluationResult.Decision.Rule)?.matched?.rule?.totalSpecificity</ID>
+    <ID>MaxLineLength:FeatureRegistry.kt$FeatureRegistry$"Feature already registered for id='${feature.id}' (key='${feature.key}'): existing=$existing, attempted=$feature"</ID>
+    <ID>MaxLineLength:InMemoryNamespaceRegistry.kt$InMemoryNamespaceRegistry$*</ID>
+    <ID>MaxLineLength:Namespace.kt$Namespace$*</ID>
+    <ID>MaxLineLength:Predicate.kt$Predicate$*</ID>
+    <ID>MaxLineLength:RuleMatchingTest.kt$RuleMatchingTest$fun</ID>
+    <ID>MaxLineLength:SchemaValueCodec.kt$SchemaValueCodec$else -&gt; ParseResult.Failure(ParseError.InvalidSnapshot("Expected JsonBoolean, got ${json::class.simpleName}"))</ID>
+    <ID>MaxLineLength:SchemaValueCodec.kt$SchemaValueCodec$else -&gt; ParseResult.Failure(ParseError.InvalidSnapshot("Expected JsonNumber, got ${json::class.simpleName}"))</ID>
+    <ID>MaxLineLength:SchemaValueCodec.kt$SchemaValueCodec$else -&gt; ParseResult.Failure(ParseError.InvalidSnapshot("Expected JsonString for enum, got ${json::class.simpleName}"))</ID>
+    <ID>MaxLineLength:SchemaValueCodec.kt$SchemaValueCodec$else -&gt; ParseResult.Failure(ParseError.InvalidSnapshot("Expected JsonString, got ${json::class.simpleName}"))</ID>
+    <ID>MaxLineLength:SnapshotSerializerTest.kt$ConfigurationSnapshotCodecTest$val result = ConfigurationSnapshotCodec.applyPatchJson(originalConfiguration, patchJson, SnapshotLoadOptions.strict())</ID>
+    <ID>MaxLineLength:ValueClassAdapterFactory.kt$ValueClassAdapterFactory.ValueClassAdapter$"Could not parse ${constructor.declaringClass.simpleName} from JSON value $this at path ${reader.path}"</ID>
+    <ID>NestedBlockDepth:FlagValueAdapter.kt$FlagValueAdapter$override fun fromJson(reader: JsonReader): FlagValue&lt;*&gt;</ID>
+    <ID>ReturnCount:AxisRegistry.kt$AxisRegistry$fun register(axis: Axis&lt;*&gt;)</ID>
+    <ID>ReturnCount:FlagDefinition.kt$FlagDefinition$internal fun evaluateTrace(context: C): Trace&lt;T, C&gt;</ID>
+    <ID>ReturnCount:SchemaValueCodec.kt$SchemaValueCodec$fun &lt;T : Any&gt; decode(kClass: KClass&lt;T&gt;, json: JsonObject, schema: ObjectSchema): ParseResult&lt;T&gt;</ID>
+    <ID>ReturnCount:SchemaValueCodec.kt$SchemaValueCodec$private fun decodeValue(kClass: KClass&lt;*&gt;?, json: JsonValue): ParseResult&lt;Any&gt;</ID>
+    <ID>ThrowsCount:AxisRegistry.kt$AxisRegistry$fun register(axis: Axis&lt;*&gt;)</ID>
+    <ID>ThrowsCount:VersionRangeAdapter.kt$VersionRangeAdapter$@FromJson fun fromJson(reader: JsonReader): VersionRange</ID>
+    <ID>TooGenericExceptionCaught:ConfigurationSnapshotCodec.kt$ConfigurationSnapshotCodec$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:SchemaValueCodec.kt$SchemaValueCodec$e: Exception</ID>
+    <ID>TooGenericExceptionThrown:TestNamespaceOverridesTest.kt$TestNamespaceOverridesTest$throw RuntimeException("Test exception")</ID>
+    <ID>TooManyFunctions:InMemoryNamespaceRegistry.kt$InMemoryNamespaceRegistry : NamespaceRegistry</ID>
+    <ID>TooManyFunctions:Namespace.kt$Namespace : NamespaceRegistry</ID>
+    <ID>TooManyFunctions:ParseResultUtils.kt$io.amichne.konditional.core.result.utils.ParseResultUtils.kt</ID>
+    <ID>TooManyFunctions:RuleScope.kt$RuleScope&lt;C : Context&gt;</ID>
+    <ID>UnusedPrivateProperty:NamespaceSnapshotSerializerTest.kt$NamespaceConfigurationSnapshotCodecTest$val serializer = NamespaceSnapshotLoader.forNamespace(testNamespace)</ID>
+    <ID>UseCheckOrError:InMemoryNamespaceRegistry.kt$InMemoryNamespaceRegistry$throw IllegalStateException("Flag not found in configuration: ${key.key}")</ID>
+    <ID>UseRequire:AxisRegistry.kt$AxisRegistry$throw IllegalArgumentException("Axis already registered for id ${axis.id}: existing=$existingById, attempted=$axis")</ID>
+    <ID>VariableNaming:AdversarialConfigTest.kt$AdversarialConfigTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-ambiguous-rules") { // Both rules have specificity = 1 (platform only) // Order matters but this is implicit and undocumented val ambiguousFlag by boolean&lt;Context&gt;(default = false) { rule(true) { platforms(Platform.ANDROID) } rule(true) { platforms(Platform.IOS) // Also specificity 1 } } }</ID>
+    <ID>VariableNaming:AdversarialConfigTest.kt$AdversarialConfigTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-empty-string") { val emptyStringFlag by string&lt;Context&gt;(default = "") { rule(" ") { // Whitespace-only also valid android() } } }</ID>
+    <ID>VariableNaming:AdversarialConfigTest.kt$AdversarialConfigTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-huge-string") { val hugeStringFlag by string&lt;Context&gt;(default = longString) }</ID>
+    <ID>VariableNaming:AdversarialConfigTest.kt$AdversarialConfigTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-infinity") { val infinityFlag by double&lt;Context&gt;(default = Double.POSITIVE_INFINITY) { rule(Double.NEGATIVE_INFINITY) { android() } } }</ID>
+    <ID>VariableNaming:AdversarialConfigTest.kt$AdversarialConfigTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-max-int") { val maxIntFlag by integer&lt;Context&gt;(default = Int.MAX_VALUE) { rule(Int.MIN_VALUE) { android() } } }</ID>
+    <ID>VariableNaming:AdversarialConfigTest.kt$AdversarialConfigTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-nan") { val nanFlag by double&lt;Context&gt;(default = Double.NaN) { // This compiles! But NaN != NaN by IEEE 754 } }</ID>
+    <ID>VariableNaming:AdversarialConfigTest.kt$AdversarialConfigTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-salt-defaults") { val defaultSaltFlag by boolean&lt;Context&gt;(default = false) { // Salt defaults to "v1" } val customSaltFlag by boolean&lt;Context&gt;(default = false) { salt("custom-salt-value") } }</ID>
+    <ID>VariableNaming:AdversarialConfigTest.kt$AdversarialConfigTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-salt-empty") { val emptySaltFlag by boolean&lt;Context&gt;(default = false) { salt("") // Empty salt compiles fine } }</ID>
+    <ID>VariableNaming:AdversarialConfigTest.kt$AdversarialConfigTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-salt-special") { val specialSaltFlag by boolean&lt;Context&gt;(default = false) { salt("salt:with:colons\nand\nnewlines") } }</ID>
+    <ID>VariableNaming:AdversarialConfigTest.kt$AdversarialConfigTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-shadowed-rules") { val shadowedFlag by boolean&lt;Context&gt;(default = false) { // Specificity 3: platform + locale + version rule(true) { platforms(Platform.ANDROID) locales(AppLocale.UNITED_STATES) versions { min(1, 0, 0) } } // Specificity 1: platform only // This rule never fires for Android UNITED_STATES v1+ users // even if they intended it as a fallback rule(false) { platforms(Platform.ANDROID) } } }</ID>
+    <ID>VariableNaming:AdversarialConfigTest.kt$AdversarialConfigTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-special-chars") { val specialCharsFlag by string&lt;Context&gt;( default = "Line1\nLine2\tTab\u0000Null\r\nCRLF" ) }</ID>
+    <ID>VariableNaming:AdversarialConfigTest.kt$AdversarialConfigTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-tiny-rampUp") { val tinyRolloutFlag by boolean&lt;Context&gt;(default = false) { rule(true) { android() rampUp { 0.01 } // User might think this is 1%, but it's 0.01% } } }</ID>
+    <ID>VariableNaming:AdversarialConfigTest.kt$AdversarialConfigTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-version-boundaries") { val boundedFlag by boolean&lt;Context&gt;(default = false) { rule(true) { versions { min(1, 0, 0) max(2, 0, 0) } } } }</ID>
+    <ID>VariableNaming:AdversarialConfigTest.kt$AdversarialConfigTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-version-exact") { val exactVersionFlag by boolean&lt;Context&gt;(default = false) { rule(true) { versions { min(1, 0, 0) max(1, 0, 0) } } } }</ID>
+    <ID>VariableNaming:AdversarialConfigTest.kt$AdversarialConfigTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("rampUp-fallthrough") { val rolloutBlockedFlag by boolean&lt;Context&gt;(default = false) { rule(true) { android() rampUp { 0.0 } // 0% rampUp - no one gets this } rule(false) { android() rampUp { 100.0 } // Everyone gets this } } }</ID>
+    <ID>VariableNaming:AdversarialConfigTest.kt$AdversarialConfigTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("rule-specificity") { val catchAllFlag by boolean&lt;Context&gt;(default = false) { // Specific rule: specificity = 1 rule(true) { platforms(Platform.ANDROID) } // Catch-all rule: specificity = 0 rule(false) { // No constraints = matches everything } } }</ID>
+    <ID>VariableNaming:ConcurrencyAttacksTest.kt$ConcurrencyAttacksTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("concurrent-digest") { // Create many flags to stress digest usage val flag1 by boolean&lt;Context&gt;(default = false) { rule(true) { rampUp { 50.0 } } } val flag2 by boolean&lt;Context&gt;(default = false) { rule(true) { rampUp { 50.0 } } } val flag3 by boolean&lt;Context&gt;(default = false) { rule(true) { rampUp { 50.0 } } } }</ID>
+    <ID>VariableNaming:ConcurrencyAttacksTest.kt$ConcurrencyAttacksTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("concurrent-flag-eval") { val highContentionFlag by boolean&lt;Context&gt;(default = false) { rule(true) { platforms(Platform.ANDROID) rampUp { 50.0 } } rule(true) { platforms(Platform.IOS) rampUp { 30.0 } } } }</ID>
+    <ID>VariableNaming:ConcurrencyAttacksTest.kt$ConcurrencyAttacksTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("concurrent-iteration") { val manyRulesFlag by boolean&lt;Context&gt;(default = false) { // Create many rules to increase iteration time repeat(100) { i -&gt; rule(i % 2 == 0) { note("rule-$i") if (i % 2 == 0) android() if (i % 2 != 0) ios() rampUp { (i % 100).toDouble() } } } } }</ID>
+    <ID>VariableNaming:ConcurrencyAttacksTest.kt$ConcurrencyAttacksTest$val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("mutable-context") { val contextDependentFlag by boolean&lt;Context&gt;(default = false) { rule(true) { platforms(Platform.ANDROID) } rule(false) { platforms(Platform.IOS) } } }</ID>
+    <ID>VariableNaming:FeatureRegistryTest.kt$FeatureRegistryTest$val AnotherContainer = object : Namespace.TestNamespaceFacade("feature-registry-other") { val differentFeature by boolean&lt;Context&gt;(default = false) }</ID>
+    <ID>VariableNaming:KotlinEncodeableIntegrationTest.kt$KonstrainedIntegrationTest$val Features = object : Namespace.TestNamespaceFacade("data-class-flag") { val userSettings by custom&lt;UserSettings, Context&gt;(default = UserSettings()) {} }</ID>
+  </CurrentIssues>
+</SmellBaseline>

@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:SchemaValueCodec.kt$SchemaValueCodec$private fun decodeValue(kClass: KClass&lt;*&gt;?, json: JsonValue): ParseResult&lt;Any&gt;</ID>
+    <ID>MaxLineLength:ConfigurationSnapshotCodec.kt$ConfigurationSnapshotCodec$?:</ID>
+    <ID>MaxLineLength:FeatureRegistry.kt$FeatureRegistry$"Feature already registered for id='${feature.id}' (key='${feature.key}'): existing=$existing, attempted=$feature"</ID>
+    <ID>MaxLineLength:SchemaValueCodec.kt$SchemaValueCodec$else -&gt; ParseResult.failure(ParseError.InvalidSnapshot("Expected JsonBoolean, got ${json::class.simpleName}"))</ID>
+    <ID>MaxLineLength:SchemaValueCodec.kt$SchemaValueCodec$else -&gt; ParseResult.failure(ParseError.InvalidSnapshot("Expected JsonNumber, got ${json::class.simpleName}"))</ID>
+    <ID>MaxLineLength:SchemaValueCodec.kt$SchemaValueCodec$else -&gt; ParseResult.failure(ParseError.InvalidSnapshot("Expected JsonString for enum, got ${json::class.simpleName}"))</ID>
+    <ID>MaxLineLength:SchemaValueCodec.kt$SchemaValueCodec$else -&gt; ParseResult.failure(ParseError.InvalidSnapshot("Expected JsonString, got ${json::class.simpleName}"))</ID>
+    <ID>ReturnCount:SchemaValueCodec.kt$SchemaValueCodec$fun &lt;T : Any&gt; decode(kClass: KClass&lt;T&gt;, json: JsonObject, schema: ObjectSchema): ParseResult&lt;T&gt;</ID>
+    <ID>ReturnCount:SchemaValueCodec.kt$SchemaValueCodec$private fun decodeValue(kClass: KClass&lt;*&gt;?, json: JsonValue): ParseResult&lt;Any&gt;</ID>
+    <ID>TooGenericExceptionCaught:ConfigurationSnapshotCodec.kt$ConfigurationSnapshotCodec$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:SchemaValueCodec.kt$SchemaValueCodec$e: Exception</ID>
+  </CurrentIssues>
+</SmellBaseline>
