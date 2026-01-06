@@ -1,3 +1,5 @@
+@file:OptIn(io.amichne.konditional.internal.KonditionalInternalApi::class)
+
 package io.amichne.konditional.internal.serialization.models
 
 import com.squareup.moshi.JsonClass
@@ -5,12 +7,15 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.core.types.asObjectSchema
-import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
+import io.amichne.konditional.internal.SerializedFlagDefinitionMetadata
+import io.amichne.konditional.internal.SerializedFlagRuleSpec
+import io.amichne.konditional.internal.flagDefinitionFromSerialized
+import io.amichne.konditional.internal.toSerializedMetadata
+import io.amichne.konditional.internal.toSerializedRules
 import io.amichne.konditional.serialization.FeatureRegistry
 import io.amichne.konditional.values.FeatureId
 
@@ -35,9 +40,9 @@ internal data class SerializableFlag(
                 val conditional = conditionalResult.value
                 runCatching { toFlagDefinition(conditional) }
                     .fold(
-                        onSuccess = { ParseResult.Success(conditional to it) },
+                        onSuccess = { ParseResult.success(conditional to it) },
                         onFailure = {
-                            ParseResult.Failure(
+                            ParseResult.failure(
                                 ParseError.InvalidSnapshot(
                                     it.message ?: "Failed to decode flag"
                                 )
@@ -46,7 +51,7 @@ internal data class SerializableFlag(
                     )
             }
 
-            is ParseResult.Failure -> ParseResult.Failure(conditionalResult.error)
+            is ParseResult.Failure -> ParseResult.failure(conditionalResult.error)
         }
 
     internal companion object {
@@ -54,14 +59,15 @@ internal data class SerializableFlag(
             val defaultValue = requireNotNull(flagDefinition.defaultValue) {
                 "FlagDefinition must not hold a null defaultValue"
             }
+            val metadata = flagDefinition.toSerializedMetadata()
 
             return SerializableFlag(
                 key = flagKey,
                 defaultValue = FlagValue.from(defaultValue),
-                salt = flagDefinition.salt,
-                isActive = flagDefinition.isActive,
-                rampUpAllowlist = flagDefinition.rampUpAllowlist.mapTo(linkedSetOf()) { it.id },
-                rules = flagDefinition.values.map { SerializableRule.from(it) },
+                salt = metadata.salt,
+                isActive = metadata.isActive,
+                rampUpAllowlist = metadata.rampUpAllowlist,
+                rules = flagDefinition.toSerializedRules().map { SerializableRule.fromSpec(it) },
             )
         }
     }
@@ -81,13 +87,21 @@ internal data class SerializableFlag(
                     defaultValue.validate(schema)
                 }
 
-                FlagDefinition(
+                val ruleSpecs: List<SerializedFlagRuleSpec<T>> =
+                    rules.map { rule ->
+                        rule.toSpec(rule.value.extractValue(schema))
+                    }
+
+                flagDefinitionFromSerialized(
                     feature = conditional,
-                    bounds = rules.map { it.toRule<C>().targetedBy(it.value.extractValue(schema)) },
                     defaultValue = decodedDefault,
-                    salt = salt,
-                    isActive = isActive,
-                    rampUpAllowlist = rampUpAllowlist.mapTo(linkedSetOf()) { HexId(it) },
+                    metadata =
+                        SerializedFlagDefinitionMetadata(
+                            salt = salt,
+                            isActive = isActive,
+                            rampUpAllowlist = rampUpAllowlist,
+                        ),
+                    rules = ruleSpecs,
                 )
             }
 }

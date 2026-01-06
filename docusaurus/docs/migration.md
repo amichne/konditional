@@ -5,6 +5,42 @@ It focuses on what changes at the definition site, at the call site, and at the 
 
 ---
 
+## Migrating from the legacy monolith (`io.amichne:konditional`) to split artifacts
+
+Konditional is now published as split modules.
+
+**Guarantee**: `konditional-core` is implementation-free; it contains the DSL + evaluation surface.
+**Mechanism**: runtime implementations are discovered via `ServiceLoader` (see `NamespaceRegistryFactory`).
+**Boundary**: if no runtime factory is present, namespace initialization fails fast with a clear error.
+
+### Dependencies
+
+```kotlin
+dependencies {
+    // Required for normal usage
+    implementation("io.amichne:konditional-core:0.0.1")
+    implementation("io.amichne:konditional-runtime:0.0.1")
+
+    // Optional (JSON)
+    implementation("io.amichne:konditional-serialization:0.0.1")
+
+    // Optional (shadow evaluation + utilities)
+    implementation("io.amichne:konditional-observability:0.0.1")
+}
+```
+
+### Common API moves
+
+| Topic | Before | After |
+|------|--------|-------|
+| Load config into a namespace | `AppFeatures.load(configuration)` | `AppFeatures.load(configuration)` + `import io.amichne.konditional.runtime.load` |
+| Rollback/history | `AppFeatures.rollback(...)` / `historyMetadata` | same calls + imports from `io.amichne.konditional.runtime.*` |
+| Configuration model | `io.amichne.konditional.core.instance.*` | `io.amichne.konditional.serialization.instance.*` |
+| Snapshot codecs | `io.amichne.konditional.serialization.snapshot.*` | same packages; add `konditional-serialization` dependency |
+| Namespace snapshot loader | `io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader` | same package; add `konditional-runtime` dependency |
+
+---
+
 ## The core mapping
 
 String-based flag systems typically have:

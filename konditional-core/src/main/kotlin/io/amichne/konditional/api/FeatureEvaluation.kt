@@ -7,6 +7,7 @@ import io.amichne.konditional.core.evaluation.Bucketing.rampUpThresholdBasisPoin
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.core.registry.NamespaceRegistry
+import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.Rule
 import kotlin.system.measureNanoTime
@@ -184,6 +185,18 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
 
     return result
 }
+
+/**
+ * Internal evaluation entrypoint used by sibling modules (e.g. shadow evaluation).
+ *
+ * Prefer [evaluate] / [explain] for application usage.
+ */
+@KonditionalInternalApi
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInternalApi(
+    context: C,
+    registry: NamespaceRegistry,
+    mode: Metrics.Evaluation.EvaluationMode,
+): EvaluationResult<T> = evaluateInternal(context, registry, mode)
 
 private fun <T : Any, C : Context> ConditionalValue<T, C>.toRuleMatch(
     bucket: Int?,

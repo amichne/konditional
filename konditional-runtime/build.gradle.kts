@@ -1,7 +1,9 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm")
     `java-library`
+    `java-test-fixtures`
     `maven-publish`
     signing
     id("io.gitlab.arturbosch.detekt")
@@ -18,6 +20,18 @@ kotlin {
     }
 }
 
+tasks.withType<KotlinCompile>().configureEach {
+    if (name.contains("Test", ignoreCase = true)) {
+        compilerOptions {
+            freeCompilerArgs.addAll(
+                "-Xfriend-paths=${project(":konditional-core").layout.buildDirectory.get()}/classes/kotlin/main",
+                "-Xfriend-paths=${project(":konditional-serialization").layout.buildDirectory.get()}/classes/kotlin/main"
+            )
+        }
+    }
+}
+
+
 repositories {
     mavenCentral()
 }
@@ -33,6 +47,8 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
+    testImplementation("com.squareup.moshi:moshi:1.15.0")
+    testImplementation(testFixtures(project(":konditional-runtime")))
 }
 
 tasks.test {

@@ -1,3 +1,5 @@
+@file:OptIn(io.amichne.konditional.internal.KonditionalInternalApi::class)
+
 package io.amichne.konditional.internal.serialization.models
 
 import com.squareup.moshi.JsonClass
@@ -5,10 +7,10 @@ import io.amichne.konditional.core.ValueType
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.core.types.asObjectSchema
-import io.amichne.konditional.core.types.toJsonValue
-import io.amichne.konditional.core.types.toPrimitiveValue
 import io.amichne.konditional.serialization.SchemaValueCodec
 import io.amichne.konditional.serialization.extractSchema
+import io.amichne.konditional.serialization.internal.toJsonValue
+import io.amichne.konditional.serialization.internal.toPrimitiveValue
 import io.amichne.kontracts.schema.ObjectSchema
 import io.amichne.kontracts.value.JsonObject
 

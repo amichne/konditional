@@ -3,10 +3,10 @@ package io.amichne.konditional.internal.serialization.models
 import com.squareup.moshi.JsonClass
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.core.instance.Configuration
-import io.amichne.konditional.core.instance.ConfigurationMetadata
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.serialization.instance.Configuration
+import io.amichne.konditional.serialization.instance.ConfigurationMetadata
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.options.SnapshotWarning
 import io.amichne.konditional.serialization.options.UnknownFeatureKeyStrategy
@@ -25,7 +25,7 @@ internal data class SerializableSnapshot(
     internal fun toConfiguration(options: SnapshotLoadOptions): ParseResult<Configuration> =
         runCatching {
             val initial: ParseResult<MutableMap<Feature<*, *, *>, FlagDefinition<*, *, *>>> =
-                ParseResult.Success(linkedMapOf())
+                ParseResult.success(linkedMapOf())
 
             val flagsResult =
                 flags.fold(initial) { acc, serializableFlag ->
@@ -39,10 +39,11 @@ internal data class SerializableSnapshot(
                                 }
 
                                 is ParseResult.Failure -> {
-                                    if (pairResult.error is ParseError.FeatureNotFound &&
+                                    val featureNotFound = pairResult.error as? ParseError.FeatureNotFound
+                                    if (featureNotFound != null &&
                                         options.unknownFeatureKeyStrategy is UnknownFeatureKeyStrategy.Skip
                                     ) {
-                                        options.onWarning(SnapshotWarning.unknownFeatureKey(pairResult.error.key))
+                                        options.onWarning(SnapshotWarning.unknownFeatureKey(featureNotFound.key))
                                         acc
                                     } else {
                                         pairResult
@@ -54,15 +55,15 @@ internal data class SerializableSnapshot(
                 }
 
             when (flagsResult) {
-                is ParseResult.Success -> ParseResult.Success(
+                is ParseResult.Success -> ParseResult.success(
                     Configuration(
                         flagsResult.value.toMap(),
-                        meta?.toConfigurationMetadata() ?: ConfigurationMetadata.of(),
+                        meta?.toConfigurationMetadata() ?: ConfigurationMetadata(),
                     )
                 )
                 is ParseResult.Failure -> flagsResult
             }
-        }.getOrElse { ParseResult.Failure(ParseError.InvalidSnapshot(it.message ?: "Unknown error")) }
+        }.getOrElse { ParseResult.failure(ParseError.InvalidSnapshot(it.message ?: "Unknown error")) }
 
     internal companion object {
         fun from(configuration: Configuration): SerializableSnapshot =

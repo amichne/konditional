@@ -2,6 +2,8 @@
 
 API reference for managing namespace configuration lifecycle: loading, rollback, and kill-switch operations.
 
+`load`/`rollback`/`history*` are runtime-only extensions from `io.amichne.konditional.runtime` and require `io.amichne:konditional-runtime`.
+
 ---
 
 ## `Namespace.load(configuration)`
@@ -9,7 +11,7 @@ API reference for managing namespace configuration lifecycle: loading, rollback,
 Atomically replace the active configuration snapshot.
 
 ```kotlin
-fun Namespace.load(configuration: Configuration)
+fun Namespace.load(configuration: ConfigurationView)
 ```
 
 ### Parameters
@@ -80,7 +82,7 @@ Features must be registered before calling `load(...)`. See [Fundamentals: Defin
 Export the current configuration snapshot to JSON.
 
 ```kotlin
-fun ConfigurationSnapshotCodec.encode(configuration: Configuration): String
+fun ConfigurationSnapshotCodec.encode(configuration: ConfigurationView): String
 ```
 
 ### Returns
@@ -102,17 +104,17 @@ File("flags.json").writeText(json)
 
 ---
 
-## `Namespace.configuration: Configuration`
+## `Namespace.configuration: ConfigurationView`
 
 Get the current active configuration snapshot.
 
 ```kotlin
-val Namespace.configuration: Configuration
+val Namespace.configuration: ConfigurationView
 ```
 
 ### Returns
 
-The active `Configuration` snapshot.
+The active configuration snapshot view.
 
 ### Example
 
@@ -160,17 +162,17 @@ if (success) {
 
 ---
 
-## `Namespace.historyMetadata: List<ConfigurationMetadata>`
+## `Namespace.historyMetadata: List<ConfigurationMetadataView>`
 
 Get metadata for all configurations in rollback history.
 
 ```kotlin
-val Namespace.historyMetadata: List<ConfigurationMetadata>
+val Namespace.historyMetadata: List<ConfigurationMetadataView>
 ```
 
 ### Returns
 
-List of `ConfigurationMetadata` (version, timestamp, source) for each snapshot in history.
+List of configuration metadata (version, timestamp, source) for each snapshot in history.
 
 ### Example
 

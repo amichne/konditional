@@ -1,6 +1,3 @@
-
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     kotlin("jvm")
     `java-library`
@@ -20,13 +17,15 @@ kotlin {
     }
 }
 
-// Allow this module to use `internal` implementation details from `konditional-core`
-// without widening the public API surface.
-val konditionalCoreClassesDir = project(":konditional-core").layout.buildDirectory.dir("classes/kotlin/main")
-tasks.withType<KotlinCompile>().configureEach {
-    compilerOptions.freeCompilerArgs.add(
-        konditionalCoreClassesDir.map { "-Xfriend-paths=${it.asFile.absolutePath}" },
-    )
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    if (name.contains("Test", ignoreCase = true)) {
+        compilerOptions {
+            freeCompilerArgs.addAll(
+                "-Xfriend-paths=${layout.buildDirectory.get()}/classes/kotlin/main",
+                "-Xfriend-paths=${project(":konditional-core").layout.buildDirectory.get()}/classes/kotlin/main"
+            )
+        }
+    }
 }
 
 repositories {
@@ -53,6 +52,8 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
+    testImplementation(project(":konditional-runtime"))
+    testImplementation(testFixtures(project(":konditional-runtime")))
 }
 
 tasks.test {

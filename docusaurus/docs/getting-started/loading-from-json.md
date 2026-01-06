@@ -2,6 +2,11 @@
 
 Konditional treats JSON as a **trust boundary**: compile-time guarantees apply to statically-defined flags, while runtime JSON is validated before affecting evaluation.
 
+This guide assumes you depend on:
+
+- `io.amichne:konditional-runtime` (runtime registry + `NamespaceSnapshotLoader` + `Namespace.load(...)`)
+- `io.amichne:konditional-serialization` (snapshot/patch codecs + `Configuration`)
+
 ---
 
 ## The Two-Phase Lifecycle
@@ -21,6 +26,8 @@ At this point, the definitions exist in code. Runtime registration happens when 
 ### Phase 2: Load Configuration (Runtime)
 
 ```kotlin
+import io.amichne.konditional.runtime.load
+
 val json = File("flags.json").readText()
 
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {

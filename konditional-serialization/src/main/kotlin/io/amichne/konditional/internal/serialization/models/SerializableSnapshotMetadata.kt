@@ -1,7 +1,7 @@
 package io.amichne.konditional.internal.serialization.models
 
 import com.squareup.moshi.JsonClass
-import io.amichne.konditional.core.instance.ConfigurationMetadata
+import io.amichne.konditional.serialization.instance.ConfigurationMetadata
 
 @JsonClass(generateAdapter = true)
 internal data class SerializableSnapshotMetadata(
@@ -10,7 +10,7 @@ internal data class SerializableSnapshotMetadata(
     val source: String? = null,
 ) {
     internal fun toConfigurationMetadata(): ConfigurationMetadata =
-        ConfigurationMetadata.of(
+        ConfigurationMetadata(
             version = version,
             generatedAtEpochMillis = generatedAtEpochMillis,
             source = source,

@@ -35,5 +35,10 @@ object Metrics {
         val steps: Int,
         val success: Boolean,
         val version: String? = null,
-    )
+    ) {
+        companion object {
+            fun of(namespaceId: String, steps: Int, success: Boolean, version: String?): ConfigRollbackMetric =
+                ConfigRollbackMetric(namespaceId, steps, success, version)
+        }
+    }
 }

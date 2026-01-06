@@ -7,7 +7,17 @@ Add Konditional to your Kotlin project via Gradle or Maven.
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.amichne:konditional:0.0.1")
+    // Core API + DSL (compile-time surface)
+    implementation("io.amichne:konditional-core:0.0.1")
+
+    // Default runtime registry + lifecycle operations (Namespace.load/rollback/history)
+    implementation("io.amichne:konditional-runtime:0.0.1")
+
+    // Optional: JSON snapshot/patch codecs + configuration model
+    implementation("io.amichne:konditional-serialization:0.0.1")
+
+    // Optional: shadow evaluation + observability utilities
+    implementation("io.amichne:konditional-observability:0.0.1")
 }
 ```
 
@@ -16,7 +26,10 @@ dependencies {
 ```groovy
 // build.gradle
 dependencies {
-    implementation 'io.amichne:konditional:0.0.1'
+    implementation 'io.amichne:konditional-core:0.0.1'
+    implementation 'io.amichne:konditional-runtime:0.0.1'
+    implementation 'io.amichne:konditional-serialization:0.0.1'
+    implementation 'io.amichne:konditional-observability:0.0.1'
 }
 ```
 
@@ -25,7 +38,22 @@ dependencies {
 ```xml
 <dependency>
     <groupId>io.amichne</groupId>
-    <artifactId>konditional</artifactId>
+    <artifactId>konditional-core</artifactId>
+    <version>0.0.1</version>
+</dependency>
+<dependency>
+    <groupId>io.amichne</groupId>
+    <artifactId>konditional-runtime</artifactId>
+    <version>0.0.1</version>
+</dependency>
+<dependency>
+    <groupId>io.amichne</groupId>
+    <artifactId>konditional-serialization</artifactId>
+    <version>0.0.1</version>
+</dependency>
+<dependency>
+    <groupId>io.amichne</groupId>
+    <artifactId>konditional-observability</artifactId>
     <version>0.0.1</version>
 </dependency>
 ```

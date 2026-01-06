@@ -51,6 +51,10 @@ sealed interface ParseError {
 
     companion object {
         fun featureNotFound(key: FeatureId): ParseError = FeatureNotFound(key)
+
+        fun invalidJson(reason: String): ParseError = InvalidJson(reason)
+
+        fun invalidSnapshot(reason: String): ParseError = InvalidSnapshot(reason)
     }
 
     /**

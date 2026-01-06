@@ -1,6 +1,5 @@
 package io.amichne.konditional.context
 
-import io.amichne.konditional.TestDomains
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.CompositeContext
@@ -14,8 +13,6 @@ import io.amichne.konditional.fixtures.SubscriptionTier
 import io.amichne.konditional.fixtures.UserRole
 import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.fixtures.utilities.update
-import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
-import org.junit.jupiter.api.BeforeEach
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -26,20 +23,6 @@ import kotlin.test.assertTrue
  * Validates that custom Context implementations can be used with the feature flag system.
  */
 class ContextPolymorphismTest {
-    @BeforeEach
-    fun setup() {
-        // Reset registry before each test
-        println("Payments")
-        println("--------")
-        println(ConfigurationSnapshotCodec.encode(TestDomains.Payments.configuration))
-        println("--------")
-
-        println("Search")
-        println("--------")
-        println(ConfigurationSnapshotCodec.encode(TestDomains.Search.configuration))
-        println("--------")
-    }
-
     @Test
     fun `Given EnterpriseContext, When evaluating flags, Then context-specific properties are accessible`() {
         // Configure using .override() for test-specific configuration

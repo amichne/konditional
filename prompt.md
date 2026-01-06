@@ -1,130 +1,216 @@
-# Task
+Goal
 
-Split konditional-core public API into smaller modules and tighten visibility
+- Fully replace legacy :core with the split modules (:konditional-core, :konditional-runtime, :konditional-serialization, :konditional-observability) and delete :core from the
+  build, source tree, docs, and published coordinates.
 
-# Instructions
+Guiding Principles (Circular Dependency Hard Rules)
 
-Final minimal public API (what to keep public)
-- Namespace (open class) — id only; implements minimal NamespaceRegistry interface but without lifecycle ops on core artifact.
-- Feature<T, C : Context, M : Namespace> (interface) — key, namespace, id.
-- Delegated factory functions (top-level): boolean<>, string<>, integer<>, double<>, enum<>, custom<> — stable DSL entrypoints.
-- Rule DSL receiver types used by delegates (RuleDsl, VersionDsl, etc.) — small, focused surfaces only.
-- Context (interface) + Context.Core (data class/factory) — locale, platform, appVersion, stableId, axisValues accessor.
-- StableId factory helpers (StableId.of, StableId.fromHex).
-- Feature evaluation extensions: evaluate(context, registry = namespace) and explain(context, registry = namespace).
-- EvaluationResult<T> (small explainable result) and Decision sealed kinds (RegistryDisabled, Inactive, Rule, Default).
-- FeatureId (value class) with create/parse helpers.
-- Version type with parse/of/default (basic helpers + Comparable).
-- Version/Platform/Locale tag interfaces and built-in enums (AppLocale, Platform) as read-only enums.
-- Axis surface only as opaque AxisValues accessor; expose Axis/AxisValue only if third-party axes required but prefer opaque map.
-- Minimal KonditionalLogger interface (NoOp default).
+- :konditional-core contains only abstractions + minimal consumer DSL/public surface.
+- :konditional-core must not depend on serialization/runtime/observability implementations.
+- :konditional-runtime, :konditional-serialization, :konditional-observability depend “inwards” on :konditional-core (dependency inversion).
+- No -Xfriend-paths as a long-term solution; remove once refactor is complete.
+- Use @RequiresOptIn + “internal API” packages for implementation contracts when Kotlin internal visibility would otherwise force circularity.
 
-Everything else (serialization, lifecycle ops, metrics, detailed DTOs, internal bucketing helpers, advanced admin APIs) should be moved out of the tiny core.
+———
 
-2) Concrete list of symbols to hide / move and recommended action (apply in short phased steps)
+## 0) Preconditions / Baseline
 
-Make these internal (or move to konditional-runtime / konditional-serialization / konditional-observability modules)
+1. Confirm IDE index is ready (ide_index_status).
+2. Confirm make check currently passes (baseline snapshot).
+3. Inventory current module boundaries and published artifact IDs:
+    - settings.gradle.kts
+    - core/build.gradle.kts
+    - konditional-*/build.gradle.kts
+4. Create a tracking doc section in MODULE_SPLIT_STATUS.md for this refactor plan (phases + exit criteria).
 
-- Configuration (data class)
-    - Action: change constructor to internal; expose read-only accessors or a lightweight view type if needed.
-    - Rationale: produced/consumed only at JSON boundary and by admin ops.
+———
 
-- FlagDefinition<T, C, M>
-    - Action: make constructor/internal and move to io.amichne.konditional.internal or runtime module; provide a FlagDefinitionView for introspection.
-    - Rationale: implementation DTO, not needed for day-to-day evaluation.
+## 1) Define the Target Architecture (Contracts First)
 
-- ConfigurationMetadata
-    - Action: internal constructor; expose ConfigurationMetadata.of(...) factory if a public metadata view is necessary.
-    - Rationale: operational metadata only.
+1. Freeze the desired minimal public API for :konditional-core (use prompt.md as source of truth).
+2. Add a strict “API boundary policy”:
+    - Decide on one: Kotlin Binary Compatibility Validator OR explicit public-api-surface.md gate.
+    - Document which packages are allowed to be public in :konditional-core (e.g., io.amichne.konditional.api, ...context, ...values, ...core.dsl).
+3. Introduce an opt-in annotation in :konditional-core for internal contracts:
+    - Example: @RequiresOptIn(level = RequiresOptIn.Level.ERROR) annotation like @KonditionalInternalApi.
+    - Policy: anything required for other modules to implement core abstractions lives behind this opt-in.
 
-- ConfigurationSnapshotCodec (object)
-    - Action: move to konditional-serialization module (opt-in). Keep thin public loader façade in runtime module if needed.
-    - Rationale: parsing/encoding is operational and should be opt-in.
+Exit criteria
 
-- NamespaceSnapshotLoader / applyPatchJson / SnapshotLoadOptions / UnknownFeatureKeyStrategy / SnapshotWarning / ParseResult / ParseError
-    - Action: move to konditional-serialization. For ParseResult/ParseError keep narrow boundary types but mark detailed error cases internal or in serialization artifact.
-    - Rationale: keep decode/patch logic out of core.
+- A written “core public API allowlist” exists and is enforced (even if initially permissive).
 
-- Namespace.load / Namespace.rollback / Namespace.historyMetadata / Namespace.configuration / NamespaceSnapshotLoader usage
-    - Action: move lifecycle admin methods into konditional-runtime (NamespaceRegistry facade). In core, keep only name/id and registration semantics; deprecate old methods and add Runtime API in new artifact.
-    - Rationale: Prevent accidental admin use by app developers.
+———
 
-- RegistryHooks / setHooks / Registry setHooks usage
-    - Action: move to konditional-observability module; keep kavminimal KonditionalLogger in core (NoOp default). Make RegistryHooks an opt-in type in observability artifact.
-    - Rationale: logging/metrics are opt-in and hot-path.
+## 2) Break Circular Dependencies Through Refactoring (Industry Best Practice Path)
 
-- MetricsCollector + Metrics payloads (Evaluation, ConfigLoadMetric, ConfigRollbackMetric)
-    - Action: move to konditional-observability module; keep only tiny Metrics interface in runtime if absolutely necessary; otherwise provide adapter hooks.
-    - Rationale: avoid polluting core with metric payloads.
+### 2.1 Extract interfaces to :konditional-core
 
-- RampUp, RampUpBucketing, BucketInfo, RampUp utilities
-    - Action: keep deterministic bucketing algorithm in core but hide detailed helpers (BucketInfo) behind explain() result; make RampUp value class internal constructor if possible or keep small public wrapper.
-    - Rationale: expose minimal deterministic guarantees; hide implementation details.
+1. Namespace registry contract
+    - Define NamespaceRegistry as interface only in :konditional-core.
+    - Ensure it does not reference serialization DTOs or observability types.
+    - Split into:
+        - Consumer-safe surface (minimal): evaluate access + registry kill switch.
+        - Opt-in “runtime contract” (behind @KonditionalInternalApi): mutation/lifecycle hooks if needed.
+2. Metrics contract
+    - In :konditional-core, define minimal metrics interface(s) (e.g., KonditionalLogger, MetricsSink).
+    - Keep event shapes minimal and stable (primitives/strings/value classes), not heavy DTO graphs.
+3. Configuration view types
+    - Define view interfaces in :konditional-core:
+        - ConfigurationView
+        - FlagDefinitionView<T> (or non-generic + typed accessors via ValueType)
+        - RuleView / TargetingView / RampUpView as needed
+    - Ensure evaluation engine depends only on these views (not concrete data classes).
 
-- Shadow evaluation APIs (evaluateWithShadow, evaluateShadow, ShadowOptions, ShadowMismatch)
-    - Action: move to konditional-observability or runtime module as opt-in advanced feature.
-    - Rationale: advanced testing/ops functionality.
+### 2.2 Move implementations to specialized modules
 
-- Axis / AxisValue / Axis registration internals
-    - Action: make Axis auto-registration internal; expose AxisValues as an opaque map/receiver; only keep public API for reading axes when necessary.
-    - Rationale: axes are advanced extension points.
+1. :konditional-runtime
+    - Move InMemoryNamespaceRegistry and any registry lifecycle/admin operations here.
+    - Implement NamespaceRegistry (core interface).
+2. :konditional-observability
+    - Move full metrics collectors, hooks, and shadow evaluation APIs here.
+    - Implement/adapt MetricsSink + logging contracts from core.
+3. :konditional-serialization
+    - Move all snapshot/config JSON codecs and all concrete configuration data classes here.
+    - Concrete Configuration implements ConfigurationView.
+    - Ensure serialization can build configuration without referencing core-internal classes.
 
-- Version.parse error types and low-level ParseError cases
-    - Action: keep parse result but narrow public error surface; move fine-grained errors into serialization artifact.
+### 2.3 Use dependency inversion everywhere
 
-- BucketInfo and RampUpBucketing.explain
-    - Action: keep explain result minimal and internal; expose only fields needed by EvaluationResult.
+1. Remove any imports in :konditional-core that reference:
+    - io.amichne.konditional.serialization.*
+    - runtime implementations (InMemoryNamespaceRegistry)
+    - observability implementations (RegistryHooks, concrete MetricsCollector)
+2. Ensure:
+    - :konditional-runtime depends on :konditional-core (+ optionally :konditional-serialization)
+    - :konditional-observability depends on :konditional-core and/or :konditional-runtime (depending on where hooks live)
+    - :konditional-serialization depends on :konditional-core only
 
-- Any data classes currently public that are only needed by serialization or admin flows (search for data class ... internal constructor).
-    - Action: change constructors to internal or move classes into .internal packages / runtime module.
+Exit criteria
 
-3) Suggested file/path patterns to change (where to look)
-- core API candidates:
-    - src/main/kotlin/io/amichne/konditional/core/*.kt
-    - src/main/kotlin/io/amichne/konditional/core/dsl/*.kt
-    - src/main/kotlin/io/amichne/konditional/api/*.kt
-    - src/main/kotlin/io/amichne/konditional/context/*.kt
-    - src/main/kotlin/io/amichne/konditional/id/*.kt
-- serialization & snapshot:
-    - src/main/kotlin/io/amichne/konditional/serialization/**
-    - src/main/kotlin/io/amichne/konditional/snapshot/**
-- observability & runtime:
-    - src/main/kotlin/io/amichne/konditional/observability/**
-    - src/main/kotlin/io/amichne/konditional/runtime/** or namespace/**
+- :konditional-core compiles with zero references to serialization/runtime/observability packages.
+- :konditional-serialization compiles without -Xfriend-paths.
 
-(If you want, I can scan the repository and produce exact file paths for each symbol. Say “scan repo” and I’ll run the search and produce a file-by-file change list.)
+———
 
-4) Draft module split and PR plan (step-by-step)
+## 3) Refactor Evaluation Engine to Use Views (Core Depends Only on Abstractions)
 
-High level split
-- konditional-core (minimal): core DSL + evaluate/explain + Context, Feature, FeatureId, Version, StableId, Delegates, Rule DSL APIs, small KonditionalLogger.
-- konditional-serialization (opt-in): Configuration, ConfigurationSnapshotCodec, NamespaceSnapshotLoader, ParseResult/ParseError, SnapshotLoadOptions, patch APIs.
-- konditional-runtime (opt-in): NamespaceRegistry, lifecycle operations (load/rollback/enable/disable/history), ConfigurationMetadata view, introspection API (FlagDefinitionView).
-- konditional-observability (opt-in): RegistryHooks, MetricsCollector, Metrics payloads, Shadow evaluation APIs.
+1. Identify evaluation entrypoints and data flow (use ide_call_hierarchy on Feature.evaluate / evaluateInternal).
+2. Replace direct dependencies on concrete config/flag types with view interfaces:
+    - Evaluation reads ConfigurationView from NamespaceRegistry.
+    - Evaluation resolves FlagDefinitionView for a FeatureId.
+    - Evaluation applies rules via view-provided targeting + ramp-up + values.
+3. Convert “internal-only” evaluation helper types:
+    - If runtime/serialization needs to create them, make them either:
+        - public but opt-in (@KonditionalInternalApi), OR
+        - private to core and created only through factory functions that accept view inputs.
+4. Ensure Namespace (core) is just identity + feature DSL container:
+    - No direct loading/rollback methods in core.
+    - Provide runtime-only extensions in :konditional-runtime (e.g., Namespace.load(...)) that operate via registry implementations.
 
-PR plan (small iterative commits)
-1. Prepare: add public-api policy file and CI check (kotlin-public-api or binary-compatibility-validator). Commit.
-2. Create new modules in settings.gradle.kts: konditional-core, konditional-serialization, konditional-runtime, konditional-observability. Add Gradle module skeleton with dependencies (core -> none; runtime -> core + serialization optional; observability -> runtime).
-3. Move files:
-- Commit A: move serialization files into konditional-serialization module (package names unchanged). Add forwarding facades only if necessary.
-- Commit B: move lifecycle/admin APIs into konditional-runtime; leave lightweight runtime facade in core that throws instructive exception if not present, and mark deprecated methods in core as @Deprecated(..., level = WARNING) pointing to runtime API.
-4. Visibility tightening:
-- Commit C: change constructors of Configuration, FlagDefinition, ConfigurationMetadata, BucketInfo to internal; add FlagDefinitionView & ConfigurationView types in runtime/serialization modules to expose read-only fields.
-- Commit D: move RegistryHooks/MetricsCollector to konditional-observability; add small KonditionalLogger shim in core.
-5. Deprecation & shims:
-- Commit E: annotate old public members in core as @Deprecated("moved to konditional-runtime", level = DeprecationLevel.WARNING) with migration info.
-- Commit F: add docs updates and migration guide in docs/ (docusaurus): quick start keeps core-only code; admin docs show runtime/obs usage.
-6. CI & validation:
-- Commit G: enable public-api enforcement and detekt rule to prevent new public symbols in implementation packages.
-7. Final cleanup:
-- After 1–2 releases deprecations -> HIDDEN/internal and remove shims.
+Exit criteria
 
-PR metadata
-- PR title: "Split public surface: core + serialization + runtime + observability; tighten visibility"
-- Description: list of moved symbols, migration guidance, API compatibility notes, timeline for hidden removal.
-- Include CHANGELOG entry and short migration guide.
+- Core evaluation is fully driven by interfaces and stable IDs, not concrete serialization DTOs.
 
-Output:
-- Run a repo scan and produce an exact file -> symbol -> recommended change list (I can apply edits).
-- Create the Gradle module skeleton files for the split and open commits.
-- Produce the deprecation patches (annotate public members with @Deprecated WARNING) for review.
+———
+
+## 4) Eliminate Internal Visibility Cross-Module Leaks (Remove Friend Paths)
+
+1. Remove current friend-path configuration from:
+    - konditional-serialization/build.gradle.kts
+    - konditional-observability/build.gradle.kts
+2. Any remaining “needs internal access” must be fixed via:
+    - proper public opt-in contracts in :konditional-core, or
+    - shifting the logic into the module that owns the internals.
+
+Exit criteria
+
+- All modules compile without -Xfriend-paths.
+
+———
+
+## 5) Gradle + Publishing Consolidation (Make New Modules First-Class)
+
+1. Align Gradle configuration across new modules (toolchain, detekt, publishing):
+    - Either create a shared convention plugin, or duplicate minimally but consistently.
+2. Ensure each module has correct artifactId and POM metadata.
+3. Fix module dependencies for downstream projects in this repo:
+    - :opentelemetry should depend on :konditional-observability and/or :konditional-runtime instead of :core.
+    - :openapi, :kontracts, etc. updated as needed.
+4. Update Makefile/CI scripts if they reference :core explicitly.
+
+Exit criteria
+
+- ./gradlew publishToMavenLocal works for the new modules (if publishing is part of CI).
+- make check is green with :core still present but no longer required by dependents.
+
+———
+
+## 6) Migrate Tests from :core to Split Modules
+
+1. Categorize tests by ownership:
+    - Core-only API/evaluation tests → :konditional-core
+    - Snapshot/codec tests → :konditional-serialization
+    - Registry/lifecycle tests → :konditional-runtime
+    - Hooks/metrics/shadow tests → :konditional-observability
+2. Move tests using semantic refactors (using intellij MCP tooling):
+    - ide_find_references + ide_refactor_rename where needed.
+3. Recreate any needed testFixtures in the appropriate module(s) (or replace with internal test utilities).
+4. Ensure the new modules run tests in CI (restore their test source sets).
+
+Exit criteria
+
+- All tests that used to run in :core now run in the correct module(s).
+- ./gradlew test runs with no reliance on :core test sources.
+
+———
+
+## 7) Documentation + API Surface Update (Parallel Track)
+
+1. Update docs to new dependency coordinates:
+    - “Getting started” depends on konditional-core.
+    - “Loading snapshots” depends on konditional-serialization + konditional-runtime.
+    - “Metrics/Telemetry/Shadow” depends on konditional-observability.
+2. Add a migration guide from :core to split artifacts (explicit import/package mapping).
+3. Update llm-docs/context/public-api-surface.md expectations accordingly.
+
+Exit criteria
+
+- Docs build cleanly (if docs build exists).
+- Migration guide covers common upgrade paths.
+
+———
+
+## 8) Remove Legacy :core Module (Final Phase)
+
+1. Ensure no project depends on :core:
+    - Use ide_find_references on project(":core") usages (Gradle files) and key packages.
+2. Remove from Gradle:
+    - Delete include("core") from settings.gradle.kts.
+    - Delete core/ directory.
+3. Confirm no published artifact references core module coordinates.
+4. Run full verification:
+    - make check
+    - bash llm-docs/scripts/extract-llm-context.sh
+
+Exit criteria
+
+- Repository builds and tests with only :konditional-core + sibling modules.
+- No references to legacy :core remain in code, docs, or build logic.
+
+———
+
+## 9) Final Validation Checklist (Must Pass Before “Done”)
+
+- ./gradlew :konditional-core:compileKotlin :konditional-runtime:compileKotlin :konditional-serialization:compileKotlin :konditional-observability:compileKotlin
+- make check
+- No -Xfriend-paths in any module build files.
+- llm-docs/scripts/extract-llm-context.sh executed and committed outputs updated.
+- Public API of :konditional-core matches the allowlist; internal contracts are opt-in gated.
+
+———
+
+## Tooling / Execution Notes for the Implementing LLM
+
+- Prefer JetBrains Intellij MCP tools over rg for symbol work:
+    - ide_find_definition, ide_find_references, ide_find_implementations, ide_refactor_rename, ide_diagnostics.
+- Make small, compilable steps; after each phase run targeted Gradle compile, then make check at phase boundaries.

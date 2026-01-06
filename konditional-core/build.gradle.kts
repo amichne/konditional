@@ -1,3 +1,4 @@
+import io.amichne.konditional.gradle.KonditionalCoreApiBoundaryTask
 
 plugins {
     kotlin("jvm")
@@ -16,12 +17,12 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.add("-Xcontext-parameters")
     }
+}
 
-    // WIP split: tests are not migrated to the split modules yet (they still live in `:core`).
-    sourceSets {
-        val test by getting {
-            kotlin.setSrcDirs(listOf("src/disabled-test/kotlin"))
-            resources.setSrcDirs(listOf("src/disabled-test/resources"))
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    if (name.contains("Test", ignoreCase = true)) {
+        compilerOptions {
+            freeCompilerArgs.add("-Xfriend-paths=${layout.buildDirectory.get()}/classes/kotlin/main")
         }
     }
 }
@@ -46,6 +47,9 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
+    testImplementation(project(":konditional-serialization"))
+    testImplementation(project(":konditional-runtime"))
+    testImplementation(testFixtures(project(":konditional-runtime")))
 }
 
 tasks.test {
@@ -69,4 +73,34 @@ publishing {
             version = props["VERSION"] as String
         }
     }
+}
+
+// ============================================================================
+// API Boundary Policy (package allowlist)
+// ============================================================================
+
+val konditionalCoreAllowedPackagePrefixes =
+    listOf(
+        "io.amichne.konditional.api",
+        "io.amichne.konditional.context",
+        "io.amichne.konditional.core",
+        "io.amichne.konditional.rules",
+        "io.amichne.konditional.values",
+        "io.amichne.konditional.internal",
+    )
+
+tasks.register<KonditionalCoreApiBoundaryTask>("checkKonditionalCoreApiBoundary") {
+    group = "verification"
+    description = "Ensures :konditional-core source packages stay within the declared allowlist."
+    allowedPackagePrefixes.set(konditionalCoreAllowedPackagePrefixes)
+    sourceDir.set(layout.projectDirectory.dir("src/main/kotlin"))
+    projectDir.set(layout.projectDirectory)
+}
+
+tasks.named("check") {
+    dependsOn("checkKonditionalCoreApiBoundary")
+}
+
+tasks.named("compileKotlin") {
+    dependsOn("checkKonditionalCoreApiBoundary")
 }

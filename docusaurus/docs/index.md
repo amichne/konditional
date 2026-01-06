@@ -56,7 +56,8 @@ Read the full argument: [Why Konditional Exists](why-konditional)
 
 ```kotlin
 dependencies {
-    implementation("io.amichne:konditional:0.0.1")
+    implementation("io.amichne:konditional-core:0.0.1")
+    implementation("io.amichne:konditional-runtime:0.0.1")
 }
 ```
 

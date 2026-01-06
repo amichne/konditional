@@ -1,3 +1,5 @@
+@file:OptIn(io.amichne.konditional.internal.KonditionalInternalApi::class)
+
 package io.amichne.konditional.api
 
 import io.amichne.konditional.context.Context
@@ -45,13 +47,13 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithShadow(
     options: ShadowOptions = ShadowOptions.defaults(),
     onMismatch: (ShadowMismatch<T>) -> Unit = {},
 ): T {
-    val baseline = evaluateInternal(context, baselineRegistry, mode = Metrics.Evaluation.EvaluationMode.NORMAL)
+    val baseline = evaluateInternalApi(context, baselineRegistry, mode = Metrics.Evaluation.EvaluationMode.NORMAL)
 
     if (baselineRegistry.isAllDisabled && !options.evaluateCandidateWhenBaselineDisabled) {
         return baseline.value
     }
 
-    val candidate = evaluateInternal(context, candidateRegistry, mode = Metrics.Evaluation.EvaluationMode.SHADOW)
+    val candidate = evaluateInternalApi(context, candidateRegistry, mode = Metrics.Evaluation.EvaluationMode.SHADOW)
     val mismatchKinds = buildSet {
         if (baseline.value != candidate.value) add(ShadowMismatch.Kind.VALUE)
         if (options.reportDecisionMismatches && baseline.decision::class != candidate.decision::class) {

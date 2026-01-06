@@ -1,3 +1,5 @@
+@file:OptIn(io.amichne.konditional.internal.KonditionalInternalApi::class)
+
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.Context
@@ -9,12 +11,13 @@ import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.features.IntFeature
 import io.amichne.konditional.core.features.KotlinClassFeature
 import io.amichne.konditional.core.features.StringFeature
-import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
 import io.amichne.konditional.core.registry.NamespaceRegistry
-import io.amichne.konditional.core.registry.NamespaceRegistry.Companion.updateDefinition
+import io.amichne.konditional.core.registry.NamespaceRegistryFactories
+import io.amichne.konditional.core.registry.NamespaceRegistryRuntime
+import io.amichne.konditional.core.spi.FeatureRegistrationHooks
 import io.amichne.konditional.core.types.Konstrained
+import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.konditional.internal.builders.FlagBuilder
-import io.amichne.konditional.serialization.FeatureRegistry
 import io.amichne.konditional.values.IdentifierEncoding.SEPARATOR
 import org.jetbrains.annotations.TestOnly
 import java.util.UUID
@@ -67,7 +70,8 @@ import kotlin.reflect.KProperty
  */
 open class Namespace(
     val id: String,
-    @PublishedApi internal val registry: NamespaceRegistry = NamespaceRegistry(namespaceId = id),
+    @property:KonditionalInternalApi
+    val registry: NamespaceRegistry = NamespaceRegistryFactories.default(id),
     /**
      * Seed used to construct stable [io.amichne.konditional.values.FeatureId] values for features.
      *
@@ -104,7 +108,7 @@ open class Namespace(
     @TestOnly
     abstract class TestNamespaceFacade(id: String) : Namespace(
         id = id,
-        registry = NamespaceRegistry(namespaceId = id),
+        registry = NamespaceRegistryFactories.default(id),
         identifierSeed = UUID.randomUUID().toString(),
     )
 
@@ -154,8 +158,8 @@ open class Namespace(
         featureFactory(property.name, thisRef).also {
             featureSetter(it)
             (thisRef as Namespace)._features.add(it)
-            thisRef.updateDefinition(FlagBuilder(default, it).apply(configScope).build())
-            FeatureRegistry.register(it)
+            thisRef.updateDefinitionInternal(FlagBuilder(default, it).apply(configScope).build())
+            FeatureRegistrationHooks.notifyFeatureDefined(it)
         }
     }
 
@@ -294,28 +298,19 @@ open class Namespace(
             feature as KotlinClassFeature<T, C, M>
     }
 
-    /**
-     * Sets a test-scoped override for a feature flag.
-     * Internal API used by test utilities.
-     */
+    @OptIn(KonditionalInternalApi::class)
     @PublishedApi
-    internal fun <T : Any, C : Context, M : Namespace> setOverride(
-        feature: Feature<T, C, M>,
-        value: T,
-    ) {
-        (registry as InMemoryNamespaceRegistry).setOverride(feature, value)
+    internal fun updateDefinitionInternal(definition: FlagDefinition<*, *, *>) {
+        runtimeRegistry().updateDefinition(definition)
     }
 
-    /**
-     * Clears a test-scoped override for a feature flag.
-     * Internal API used by test utilities.
-     */
-    @PublishedApi
-    internal fun <T : Any, C : Context, M : Namespace> clearOverride(
-        feature: Feature<T, C, M>,
-    ) {
-        (registry as InMemoryNamespaceRegistry).clearOverride(feature)
-    }
+    @OptIn(KonditionalInternalApi::class)
+    private fun runtimeRegistry(): NamespaceRegistryRuntime =
+        registry as? NamespaceRegistryRuntime
+            ?: error(
+                "NamespaceRegistryRuntime is required. " +
+                    "Add :konditional-runtime to your dependencies to enable runtime operations.",
+            )
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

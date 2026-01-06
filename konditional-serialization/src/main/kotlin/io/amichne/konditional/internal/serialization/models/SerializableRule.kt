@@ -1,17 +1,14 @@
+@file:OptIn(io.amichne.konditional.internal.KonditionalInternalApi::class)
+
 package io.amichne.konditional.internal.serialization.models
 
 import com.squareup.moshi.JsonClass
-import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.RampUp
-import io.amichne.konditional.core.id.HexId
-import io.amichne.konditional.rules.ConditionalValue
-import io.amichne.konditional.rules.Rule
-import io.amichne.konditional.rules.evaluable.AxisConstraint
+import io.amichne.konditional.internal.SerializedFlagRuleSpec
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
 /**
- * Serializable representation of a ConditionalValue (rule + value pair).
+ * Serializable representation of a rule + value pair.
  *
  * Now uses type-safe FlagValue instead create type-erased SerializableValue,
  * and uses VersionRange directly (serialized via custom Moshi adapter).
@@ -27,32 +24,31 @@ internal data class SerializableRule(
     val versionRange: VersionRange? = null,
     val axes: Map<String, Set<String>> = emptyMap(),
 ) {
-    internal fun <C : Context> toRule(): Rule<C> =
-        Rule(
-            rampUp = RampUp.of(rampUp),
-            rolloutAllowlist = rampUpAllowlist.mapTo(linkedSetOf()) { HexId(it) },
+    internal fun <T : Any> toSpec(value: T): SerializedFlagRuleSpec<T> =
+        SerializedFlagRuleSpec(
+            value = value,
+            rampUp = rampUp,
+            rampUpAllowlist = rampUpAllowlist,
             note = note,
-            locales = locales.toSet(),
-            platforms = platforms.toSet(),
-            versionRange = (versionRange ?: Unbounded()),
-            axisConstraints = axes.map { (axisId, allowedIds) -> AxisConstraint(axisId, allowedIds) },
+            locales = locales,
+            platforms = platforms,
+            versionRange = versionRange ?: Unbounded(),
+            axes = axes,
         )
 
     internal companion object {
-        fun from(conditionalValue: ConditionalValue<*, *>): SerializableRule {
-            val value = requireNotNull(conditionalValue.value) {
-                "ConditionalValue must not hold a null value"
-            }
+        fun fromSpec(rule: SerializedFlagRuleSpec<*>): SerializableRule {
+            val value = requireNotNull(rule.value) { "SerializedFlagRuleSpec must not hold a null value" }
 
             return SerializableRule(
                 value = FlagValue.from(value),
-                rampUp = conditionalValue.rule.rampUp.value,
-                rampUpAllowlist = conditionalValue.rule.rampUpAllowlist.mapTo(linkedSetOf()) { it.id },
-                note = conditionalValue.rule.note,
-                locales = conditionalValue.rule.targeting.locales.toSet(),
-                platforms = conditionalValue.rule.targeting.platforms.toSet(),
-                versionRange = conditionalValue.rule.targeting.versionRange,
-                axes = conditionalValue.rule.targeting.axisConstraints.associate { it.axisId to it.allowedIds },
+                rampUp = rule.rampUp,
+                rampUpAllowlist = rule.rampUpAllowlist,
+                note = rule.note,
+                locales = rule.locales,
+                platforms = rule.platforms,
+                versionRange = rule.versionRange,
+                axes = rule.axes,
             )
         }
     }

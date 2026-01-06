@@ -2,15 +2,18 @@
 
 API reference for JSON snapshot/patch operations: parsing, serialization, and incremental updates.
 
+`Configuration` lives in `io.amichne.konditional.serialization.instance.Configuration` and implements `ConfigurationView` (from `:konditional-core`).
+
 ---
 
 ## `ConfigurationSnapshotCodec.encode(configuration): String`
 
-Serialize a `Configuration` to JSON.
+Serialize a configuration snapshot to JSON.
 
 ```kotlin
 object ConfigurationSnapshotCodec {
     fun encode(configuration: Configuration): String
+    fun encode(configuration: ConfigurationView): String
 }
 ```
 
@@ -60,14 +63,9 @@ Apply an incremental patch to an existing configuration snapshot.
 ```kotlin
 object ConfigurationSnapshotCodec {
     fun applyPatchJson(
-        currentConfiguration: Configuration,
+        currentConfiguration: ConfigurationView,
         patchJson: String,
-    ): ParseResult<Configuration>
-
-    fun applyPatchJson(
-        currentConfiguration: Configuration,
-        patchJson: String,
-        options: SnapshotLoadOptions,
+        options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
     ): ParseResult<Configuration>
 }
 ```
