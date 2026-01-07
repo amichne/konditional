@@ -55,4 +55,4 @@ if (!result.isValid) {
 
 ## Next steps
 
-- [Konditional serialization](/serialization/index)
+- [Konditional serialization](/serialization/)

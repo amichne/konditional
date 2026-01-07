@@ -83,7 +83,7 @@ when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
 
 ### How to Prevent
 
-- Ensure namespaces are initialized **before** JSON deserialization (see [Definition vs Initialization](/fundamentals/definition-vs-initialization))
+- Ensure namespaces are initialized **before** JSON deserialization
 - Reference namespace objects at startup (t0)
 - Use lenient deserialization with `SnapshotLoadOptions.skipUnknownKeys(...)` for forward compatibility
 
@@ -339,6 +339,6 @@ One configuration wins (last write). Readers see a consistent snapshot (either c
 ## Next Steps
 
 - [Configuration Lifecycle](/fundamentals/configuration-lifecycle) — JSON → ParseResult → load
-- [Trust Boundaries](/fundamentals/trust-boundaries) — Compile-time vs runtime guarantees
-- [Refresh Safety](/fundamentals/refresh-safety) — Why atomic updates are safe
+- [Trust Boundaries](/fundamentals/type-safety) — Compile-time vs runtime guarantees
+- [Refresh Safety](/production-operations/thread-safety) — Why atomic updates are safe
 - [Theory: Parse Don't Validate](/theory/parse-dont-validate) — Why ParseResult prevents invalid states

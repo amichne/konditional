@@ -57,6 +57,9 @@ interface MetricsCollector {
 
 ---
 
+<details>
+<summary>Advanced Options</summary>
+
 ## `EvaluationResult<T>`
 
 Returned by `Feature.explain(...)`.
@@ -100,6 +103,8 @@ data class ShadowMismatch<T : Any>(
     val kinds: Set<Kind>,
 )
 ```
+
+</details>
 
 ---
 

@@ -52,6 +52,9 @@ println("Version: ${current.metadata.version}")
 
 ---
 
+<details>
+<summary>Advanced Options</summary>
+
 ## `Namespace.rollback(steps): Boolean`
 
 Revert to a prior configuration from rollback history.
@@ -102,12 +105,14 @@ Attach dependency-free logging/metrics hooks to a namespace registry.
 fun Namespace.setHooks(hooks: RegistryHooks)
 ```
 
-See [Observability](/observability/index) for `RegistryHooks` and related interfaces.
+See [Observability](/observability/) for `RegistryHooks` and related interfaces.
+
+</details>
 
 ---
 
 ## Next steps
 
 - [Configuration lifecycle](/runtime/lifecycle)
-- [Serialization module](/serialization/index)
-- [Observability](/observability/index)
+- [Serialization module](/serialization/)
+- [Observability](/observability/)

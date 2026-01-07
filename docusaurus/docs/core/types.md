@@ -20,28 +20,6 @@ Notes:
 
 ---
 
-## `FeatureId`
-
-Stable serialized identifier for a feature.
-
-```kotlin
-@JvmInline
-value class FeatureId private constructor(val plainId: String) {
-    companion object {
-        fun create(namespaceSeed: String, key: String): FeatureId
-        fun parse(plainId: String): FeatureId
-    }
-}
-```
-
-Canonical format:
-
-```
-feature::${namespaceSeed}::${key}
-```
-
----
-
 ## `Context`
 
 Runtime inputs for evaluation.
@@ -88,6 +66,31 @@ Isolation boundary for features and configuration.
 
 ```kotlin
 open class Namespace(val id: String) : NamespaceRegistry
+```
+
+---
+
+<details>
+<summary>Advanced Types</summary>
+
+## `FeatureId`
+
+Stable serialized identifier for a feature.
+
+```kotlin
+@JvmInline
+value class FeatureId private constructor(val plainId: String) {
+    companion object {
+        fun create(namespaceSeed: String, key: String): FeatureId
+        fun parse(plainId: String): FeatureId
+    }
+}
+```
+
+Canonical format:
+
+```
+feature::${namespaceSeed}::${key}
 ```
 
 ---
@@ -178,10 +181,12 @@ Percentage rollout configuration.
 value class RampUp private constructor(val value: Double) : Comparable<Number>
 ```
 
+</details>
+
 ---
 
 ## Next steps
 
 - [Core API reference](/core/reference)
 - [Evaluation model](/fundamentals/evaluation-semantics)
-- [Serialization module](/serialization/index)
+- [Serialization module](/serialization/)

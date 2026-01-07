@@ -71,5 +71,5 @@ val success = AppFeatures.rollback(steps = 1)
 
 ## Next steps
 
-- [Serialization module](/serialization/index)
+- [Serialization module](/serialization/)
 - [Runtime operations](/runtime/operations)

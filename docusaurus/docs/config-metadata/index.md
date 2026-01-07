@@ -4,6 +4,28 @@ Contract types for describing how configuration payloads can be interpreted and 
 This module only defines data structures and a small DSL. It does not generate schemas, compute metadata, or depend on
 `konditional-core`.
 
+## When to Use This Module
+
+You should use `config-metadata` when you need to:
+- Build UIs or tools that dynamically generate configuration forms
+- Attach JSON pointer bindings and descriptors to configuration payloads
+- Provide UI hints (control types, labels, help text) for configuration fields
+- Create contract-based APIs that describe how configuration can be mutated
+
+## What You Get
+
+- **Binding types**: Identify fields in JSON payloads with stable identifiers
+- **Value descriptors**: Attach constraints and UI hints to configuration fields
+- **Type-safe DSL**: Express metadata with Kotlin's type system, not raw JSON
+- **Zero dependencies**: Pure data structures with no core or runtime coupling
+
+## Alternatives
+
+Without this module, you would need to:
+- Build custom metadata structures and binding logic from scratch
+- Hard-code UI form generation instead of deriving it from metadata
+- Maintain separate documentation for what fields exist and how to mutate them
+
 ## Guarantees
 
 **Guarantee**: Metadata is represented as plain Kotlin data structures.
