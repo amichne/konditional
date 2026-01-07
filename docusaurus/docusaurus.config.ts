@@ -127,7 +127,16 @@ const config: Config = {
                     label: 'Advanced',
                     position: 'left',
                     items: [
-                        {type: 'doc', docId: 'advanced/recipes', label: 'Recipes'},
+                        // Link each recipe to the corresponding anchor in the aggregated recipes doc
+                        {  label: 'Recipe 1 — Typed Variants Instead of Boolean Explosion', href: '/docs/advanced/recipes#recipe-1-typed-variants-instead-of-boolean-explosion' },
+                        {  label: 'Recipe 2 — Deterministic Ramp-Up with Resettable Salt', href: '/docs/advanced/recipes#recipe-2-deterministic-ramp-up-with-resettable-salt' },
+                        {  label: 'Recipe 3 — Runtime-Configurable Segments via Axes', href: '/docs/advanced/recipes#recipe-3-runtime-configurable-segments-via-axes' },
+                        {  label: 'Recipe 4 — Business Logic Targeting with Custom Context + Extension', href: '/docs/advanced/recipes#recipe-4-business-logic-targeting-with-custom-context-extension' },
+                        {  label: 'Recipe 5 — Structured Values with Schema Validation', href: '/docs/advanced/recipes#recipe-5-structured-values-with-schema-validation' },
+                        {  label: 'Recipe 6 — Safe Remote Config Loading + Rollback', href: '/docs/advanced/recipes#recipe-6-safe-remote-config-loading-rollback' },
+                        {  label: 'Recipe 7 — Controlled Migrations with Shadow Evaluation', href: '/docs/advanced/recipes#recipe-7-controlled-migrations-with-shadow-evaluation' },
+                        {  label: 'Recipe 8 — Namespace Isolation + Kill-Switch', href: '/docs/advanced/recipes#recipe-8-namespace-isolation-kill-switch' },
+                        {  label: 'Recipe 9 — Lightweight Observability Hooks', href: '/docs/advanced/recipes#recipe-9-lightweight-observability-hooks' },
                     ],
                 },
                 {href: 'https://github.com/amichne/konditional', label: 'GitHub', position: 'right'},
