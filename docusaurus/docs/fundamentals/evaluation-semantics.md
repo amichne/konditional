@@ -1,250 +1,65 @@
-# Evaluation Semantics
+# Evaluation Model
 
-Konditional evaluation is designed to be **total**, **deterministic**, and **atomic**. Same inputs always produce the same outputs, and evaluation always returns a value.
+This page explains how Konditional chooses a value when multiple rules exist.
 
----
+## Evaluation order
 
-## Three Core Guarantees
+When you call `feature.evaluate(context)`:
 
-### 1. Total (Always Returns a Value)
+1. Rules are sorted by **specificity** (highest first).
+2. Each rule is checked against the Context.
+3. If a rule matches, ramp-up is applied (if configured).
+4. The first matching rule that passes ramp-up wins.
+5. If nothing matches, the default value is returned.
 
-Evaluation never returns `null` or throws:
+## Specificity system
 
-```kotlin
-val enabled: Boolean = AppFeatures.darkMode.evaluate(context)
-```
+Specificity is the sum of targeting constraints and custom predicate specificity.
 
-**Why:** Every feature requires a `default`, so there's always a fallback value when no rules match.
+**Base targeting specificity** (0-3+):
 
-### 2. Deterministic (Same Inputs → Same Outputs)
+- `locales(...)` adds 1 if non-empty
+- `platforms(...)` adds 1 if non-empty
+- `versions { ... }` adds 1 if bounded
+- `axis(...)` adds 1 per axis constraint
 
-The same context always produces the same result:
+**Custom predicate specificity**:
 
-```kotlin
-val ctx = Context(
-    locale = AppLocale.UNITED_STATES,
-    platform = Platform.IOS,
-    appVersion = Version.of(2, 1, 0),
-    stableId = StableId.of("user-123"),
-)
+- A custom `Predicate` can define its own `specificity()`
+- Default predicate specificity is 1
 
-val result1 = AppFeatures.darkMode.evaluate(ctx)
-val result2 = AppFeatures.darkMode.evaluate(ctx)
-// result1 == result2  (guaranteed)
-```
+**Guarantee**: More specific rules are evaluated before less specific rules.
 
-**How:** Ramp-up bucketing is based on SHA-256 hashing (deterministic), and rule ordering is stable (by specificity, then definition order).
+**Mechanism**: Rules are sorted by `rule.specificity()` in descending order before evaluation.
 
-### 3. Atomic (Readers See Consistent Snapshots)
+**Boundary**: Ramp-up percentage does not affect specificity.
 
-Configuration updates are atomic; readers never see partial updates:
+## Deterministic ramp-ups
 
-```kotlin
-// Thread 1: Update configuration
-AppFeatures.load(newConfig)
+Ramp-ups are deterministic and reproducible.
 
-// Thread 2: Concurrent evaluation
-val value = AppFeatures.darkMode.evaluate(context)  // Sees old OR new, never mixed
-```
+**Guarantee**: The same `(stableId, featureKey, salt)` always yields the same bucket assignment.
 
-**How:** Registry stores configuration in an `AtomicReference`; `load(...)` performs a single atomic swap.
+**Mechanism**:
 
----
+1. Hash the UTF-8 bytes of `"$salt:$featureKey:${stableId.hexId.id}"` with SHA-256.
+2. Convert the first 4 bytes to an unsigned 32-bit integer.
+3. Bucket = `hash % 10_000` (range `[0, 9999]`).
+4. Threshold = `(rampUp.value * 100.0).roundToInt()` (basis points).
+5. In ramp-up if `bucket < threshold`.
 
-## Evaluation Flow
+**Boundary**: Changing `stableId`, `featureKey`, or `salt` changes the bucket assignment.
 
-```mermaid
-flowchart TD
-    Start["Context available"] --> Lookup["Registry lookup"]
-    Lookup --> Disabled{Registry disabled?}
-    Disabled -->|Yes| Default0["Return default"]
-    Disabled -->|No| Active{Flag active?}
-    Active -->|No| Default1["Return default"]
-    Active -->|Yes| Sort["Sort rules by specificity"]
-    Sort --> Next{Next rule?}
-    Next -->|No| Default2["Return default"]
-    Next -->|Yes| Match{All criteria match?}
-    Match -->|No| Next
-    Match -->|Yes| Roll{In ramp-up or allowlisted?}
-    Roll -->|No| Next
-    Roll -->|Yes| Value["Return rule value"]
-    style Default0 fill: #fff3cd
-    style Default1 fill: #fff3cd
-    style Default2 fill: #fff3cd
-    style Value fill: #c8e6c9
-```
-
-1. **Registry lookup** — O(1) lookup by feature key
-2. **Kill-switch check** — If namespace is disabled via `disableAll()`, return default
-3. **Active check** — If flag is inactive, return default
-4. **Sort rules** — Rules are pre-sorted by specificity (highest first)
-5. **Iterate rules** — For each rule (in order):
-   - Check if all criteria match (AND semantics)
-   - If match, check ramp-up bucket (or allowlist bypass)
-   - If in ramp-up, return rule value
-6. **Default fallback** — If no rules match, return default
-
----
-
-## AND Semantics (Within a Rule)
-
-All criteria in a rule must match:
+## Example
 
 ```kotlin
-val premiumFeature by boolean<Context>(default = false) {
-    rule(true) {
-        platforms(Platform.IOS, Platform.ANDROID)
-        locales(AppLocale.UNITED_STATES)
-        versions { min(2, 0, 0) }
-        rampUp { 50.0 }
+object AppFeatures : Namespace("app") {
+    val checkout by string<Context>(default = "v1") {
+        rule("v3") { platforms(Platform.IOS); versions { min(3, 0, 0) } } // specificity 2
+        rule("v2") { platforms(Platform.IOS) }                            // specificity 1
+        rule("v1") { always() }                                           // specificity 0
     }
 }
 ```
 
-For this rule to apply:
-- Platform must be iOS **OR** Android
-- **AND** locale must be UNITED_STATES
-- **AND** version must be >= 2.0.0
-- **AND** user must be in the 50% ramp-up bucket
-
----
-
-## Specificity Ordering (Across Rules)
-
-Rules are sorted by **specificity** (count of targeting criteria):
-
-```
-specificity(rule):
-  +1 if platforms is set
-  +1 if locales is set
-  +1 if versions has bounds
-  +N for axis constraints (one per axis)
-  +extensionSpecificity (defaults to 1 when `extension { ... }` is used)
-```
-
-Most-specific rule wins. If multiple rules have the same specificity, definition order is used as tie-breaker.
-
-```kotlin
-val apiEndpoint by string<Context>(default = "https://api.example.com") {
-    rule("https://api-ios-us.example.com") {  // specificity = 2 (platform + locale)
-        platforms(Platform.IOS)
-        locales(AppLocale.UNITED_STATES)
-    }
-    rule("https://api-ios.example.com") {  // specificity = 1 (platform only)
-        platforms(Platform.IOS)
-    }
-}
-
-// iOS + US users → first rule (more specific)
-// iOS + other locales → second rule
-// Other platforms → default
-```
-
-See [Rules & Targeting: Specificity System](/rules-and-targeting/specificity-system) for details.
-
----
-
-## Deterministic Ramp-Up Bucketing
-
-Ramp-ups use SHA-256 bucketing for deterministic, reproducible results:
-
-```
-input = "$salt:$flagKey:${stableIdHex}"
-hash = sha256(input)
-bucket = uint32(hash[0..3]) % 10_000  // [0, 10_000)
-thresholdBasisPoints = round(rampUpPercent * 100)
-inRampUp = bucket < thresholdBasisPoints
-```
-
-**Properties:**
-
-- Same `(stableId, flagKey, salt)` → same bucket
-- Increasing ramp-up percentage only adds users (no reshuffle)
-- Changing `salt` redistributes buckets (useful for re-running experiments)
-
-See [Rules & Targeting: Rollout Strategies](/rules-and-targeting/rollout-strategies) for details.
-
----
-
-## Evaluation API
-
-### `evaluate(context): T`
-
-Concise evaluation with an explicit context:
-
-```kotlin
-val darkMode = AppFeatures.darkMode.evaluate(context)
-```
-
-Use when defaults are meaningful and you want minimal call-site surface.
-
-### `explain(context): EvaluationResult<T>`
-
-Explainable evaluation for debugging:
-
-```kotlin
-val result = AppFeatures.darkMode.explain(context)
-println(result.decision)  // Why this value was chosen
-```
-
-`EvaluationResult` includes:
-- Decision kind (rule/default/inactive/disabled)
-- Matched rule constraints + specificity
-- Deterministic ramp-up bucket information
-
----
-
-## Performance Model
-
-**Time complexity:**
-
-- **Registry lookup:** O(1)
-- **Rule iteration:** O(n) where n = rules per flag (typically small, fewer than 10)
-- **Ramp-up bucketing:** 0 or 1 SHA-256 hash per evaluation (only when a rule matches by criteria)
-
-**Space:**
-
-- Evaluation allocates a small trace object internally
-- Rule structures are pre-built and reused across evaluations
-
----
-
-## Concurrency Model
-
-Evaluation is designed for concurrent reads:
-
-- **Lock-free reads** — No synchronization required for evaluation
-- **Atomic updates** — `Namespace.load(...)` swaps configuration atomically
-
-```kotlin
-// Thread 1
-AppFeatures.load(newConfig)
-
-// Thread 2 (during update)
-val value = AppFeatures.darkMode.evaluate(context)  // Sees old OR new, never mixed
-```
-
-See [Refresh Safety](/fundamentals/refresh-safety) for details.
-
----
-
-## Emergency Kill-Switch
-
-Disable all evaluations in a namespace (return defaults):
-
-```kotlin
-AppFeatures.disableAll()
-// ... all evaluations return declared defaults ...
-AppFeatures.enableAll()
-```
-
-This affects only the specific namespace (other namespaces are unaffected).
-
----
-
-## Next Steps
-
-- [Refresh Safety](/fundamentals/refresh-safety) — Why atomic updates are safe
-- [Rules & Targeting: Specificity System](/rules-and-targeting/specificity-system) — Rule ordering details
-- [Rules & Targeting: Rollout Strategies](/rules-and-targeting/rollout-strategies) — Bucketing mechanics
-- [Theory: Determinism Proofs](/theory/determinism-proofs) — SHA-256 bucketing guarantees
+For an iOS user on version 3.1.0, the `v3` rule is evaluated first and wins if it matches.

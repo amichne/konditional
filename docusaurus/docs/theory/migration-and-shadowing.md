@@ -50,10 +50,9 @@ Evaluate against baseline (returned) and candidate (comparison only):
 ```kotlin
 val _ = AppFeatures // ensure features are registered before parsing
 val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow()
-val candidateRegistry = NamespaceRegistry(
-    configuration = candidateConfig,
-    namespaceId = AppFeatures.namespaceId,
-)
+val candidateRegistry = InMemoryNamespaceRegistry(namespaceId = AppFeatures.namespaceId).apply {
+    load(candidateConfig)
+}
 
 val value = AppFeatures.darkMode.evaluateWithShadow(
     context = context,
@@ -70,8 +69,8 @@ applyDarkMode(value)
 ```
 
 **Behavior:**
-1. Evaluate against baseline registry → `baselineValue` (returned)
-2. Evaluate against candidate registry → `candidateValue` (comparison only)
+1. Evaluate against baseline registry -> `baselineValue` (returned)
+2. Evaluate against candidate registry -> `candidateValue` (comparison only)
 3. If they differ, invoke the `onMismatch` callback
 4. Return `baselineValue` (production unaffected)
 
@@ -109,7 +108,9 @@ val newFeature by boolean<Context>(default = false) {
 ```kotlin
 val _ = AppFeatures // ensure features are registered before parsing
 val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow()
-val candidateRegistry = NamespaceRegistry(configuration = candidateConfig, namespaceId = AppFeatures.namespaceId)
+val candidateRegistry = InMemoryNamespaceRegistry(namespaceId = AppFeatures.namespaceId).apply {
+    load(candidateConfig)
+}
 
 // Evaluate sample of users
 users.forEach { user ->
@@ -128,8 +129,8 @@ users.forEach { user ->
 ```
 
 **Analysis:**
-- Users with `baseline=false, candidate=true` → will be newly enabled by the candidate config
-- Verify this matches the expected 15% increase (10% → 25%)
+- Users with `baseline=false, candidate=true` -> will be newly enabled by the candidate config
+- Verify this matches the expected 15% increase (10% -> 25%)
 
 ---
 
@@ -140,7 +141,7 @@ You're migrating from another flag system to Konditional. You want to verify tha
 ### Migration Flow
 
 1. **Define flags in Konditional** (statically)
-2. **Translate “old system” state into a baseline snapshot** (via JSON)
+2. **Translate "old system" state into a baseline snapshot** (via JSON)
 3. **Build a candidate snapshot** (the new desired behavior)
 4. **Log mismatches**, investigate differences
 5. **Once confident**, promote the candidate snapshot
@@ -156,8 +157,12 @@ val _ = AppFeatures // ensure features are registered before parsing
 val baselineConfig = ConfigurationSnapshotCodec.decode(baselineJson).getOrThrow()
 val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow()
 
-val baselineRegistry = NamespaceRegistry(configuration = baselineConfig, namespaceId = AppFeatures.namespaceId)
-val candidateRegistry = NamespaceRegistry(configuration = candidateConfig, namespaceId = AppFeatures.namespaceId)
+val baselineRegistry = InMemoryNamespaceRegistry(namespaceId = AppFeatures.namespaceId).apply {
+    load(baselineConfig)
+}
+val candidateRegistry = InMemoryNamespaceRegistry(namespaceId = AppFeatures.namespaceId).apply {
+    load(candidateConfig)
+}
 
 val value = AppFeatures.darkMode.evaluateWithShadow(
     context = context,
@@ -229,9 +234,9 @@ Shadow evaluation doubles the evaluation work:
 - Total: ~O(2n)
 
 **Mitigations:**
-1. **Sampling** — Only shadow-evaluate a percentage of requests
-2. **Async logging** — `onMismatch` callback should be non-blocking
-3. **Time-boxing** — Run shadow evaluation for limited time period (e.g., 24 hours)
+1. **Sampling** - Only shadow-evaluate a percentage of requests
+2. **Async logging** - `onMismatch` callback should be non-blocking
+3. **Time-boxing** - Run shadow evaluation for limited time period (e.g., 24 hours)
 
 ### Example: Sampled Shadow Evaluation
 
@@ -259,11 +264,11 @@ val value = if (shouldShadow) {
 
 ### Common Causes of Mismatches
 
-1. **Ramp-up percentage changed** — Users move in/out of ramp-up
-2. **Targeting criteria changed** — Rules match different users
-3. **Rule ordering changed** — Different rule wins due to specificity
-4. **Salt changed** — Bucket assignment redistributed
-5. **Configuration drift** — Candidate config is stale
+1. **Ramp-up percentage changed** - Users move in/out of ramp-up
+2. **Targeting criteria changed** - Rules match different users
+3. **Rule ordering changed** - Different rule wins due to specificity
+4. **Salt changed** - Bucket assignment redistributed
+5. **Configuration drift** - Candidate config is stale
 
 ### Debugging Mismatches
 
@@ -283,6 +288,6 @@ AppFeatures.darkMode.evaluateWithShadow(
 
 ## Next Steps
 
-- [Advanced: Shadow Evaluation](/advanced/shadow-evaluation) — Practical migration patterns
-- [API Reference: Feature Operations](/api-reference/feature-operations) — `evaluateWithShadow` API
-- [Migration Guide](/migration) — Migrating from other flag systems
+- [Shadow Evaluation](/observability/shadow-evaluation) - Practical migration patterns
+- [Observability Reference](/observability/reference) - `evaluateWithShadow` API
+- [Core API Reference](/core/reference) - Evaluation baseline

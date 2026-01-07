@@ -116,7 +116,7 @@ val enabled = AppFeatures.darkMode.evaluate(context)  // Sees old OR new, never 
 
 ## Precondition: Features Must Be Registered
 
-Before loading JSON, ensure your `Namespace` objects have been initialized (see [Definition vs Initialization](/fundamentals/definition-vs-initialization)):
+Before loading JSON, ensure your `Namespace` objects have been initialized:
 
 ```kotlin
 // Startup (t0): Initialize namespaces
@@ -222,7 +222,7 @@ configStream.collect { json ->
 
 ## Next Steps
 
-- [Refresh Safety](/fundamentals/refresh-safety) — Why hot-reload is safe
-- [Failure Modes](/fundamentals/failure-modes) — What can go wrong and how to handle it
-- [API Reference: Serialization](/api-reference/serialization) — Full API for snapshot/patch operations
-- [Persistence Format](/persistence-format) — JSON schema reference
+- [Refresh Safety](/production-operations/thread-safety) — Why hot-reload is safe
+- [Failure Modes](/production-operations/failure-modes) — What can go wrong and how to handle it
+- [API Reference: Serialization](/serialization/reference) — Full API for snapshot/patch operations
+- [Persistence Format](/serialization/persistence-format) — JSON schema reference

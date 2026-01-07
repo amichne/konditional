@@ -1,162 +1,51 @@
-# Your First Flag
+# Your First Feature
 
-Define flags as delegated properties on a `Namespace`. The compiler enforces type safety, and evaluation is total (always returns a value, never null).
+This guide builds one feature end-to-end: definition, targeting rules, and evaluation.
 
----
-
-## Define a Namespace with Flags
+## 1) Define a namespace and a feature
 
 ```kotlin
-import io.amichne.konditional.api.evaluate
-import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.context.*
-import io.amichne.konditional.core.dsl.enable
-import io.amichne.konditional.core.id.StableId
 
 object AppFeatures : Namespace("app") {
     val darkMode by boolean<Context>(default = false) {
-        enable {
-            platforms(Platform.IOS)
-            rampUp { 50.0 }
-        }
+        rule(true) { platforms(Platform.IOS) }
+        rule(true) { locales(AppLocale.UNITED_STATES) }
     }
-
-    val apiEndpoint by string<Context>(default = "https://api.example.com") {
-        rule("https://api-ios.example.com") { platforms(Platform.IOS) }
-        rule("https://api-android.example.com") { platforms(Platform.ANDROID) }
-    }
-
-    val maxRetries by integer<Context>(default = 3)
 }
 ```
 
-**What this does:**
-
-- `boolean`, `string`, `integer` are type-safe delegates that create `Feature<Boolean>`, `Feature<String>`, `Feature<Int>`
-- Property names become feature keys (no string keys at call sites)
-- `default` is required — evaluation never returns null
-- `rule(value) { ... }` (or `rule { ... } yields value`) defines conditional targeting
-
----
-
-## Create an Evaluation Context
-
-Context provides runtime inputs: locale, platform, version, and a stable user identifier.
+## 2) Create a context and evaluate
 
 ```kotlin
-val context = Context(
+val ctx = Context(
     locale = AppLocale.UNITED_STATES,
     platform = Platform.IOS,
-    appVersion = Version.of(2, 1, 0),
+    appVersion = Version.of(2, 0, 0),
     stableId = StableId.of("user-123"),
 )
+
+val enabled: Boolean = AppFeatures.darkMode.evaluate(ctx)
 ```
 
-**Key fields:**
+If no rule matches, the default value is returned.
 
-- `locale` — Geographic/language targeting (implements `LocaleTag`)
-- `platform` — iOS, Android, Web, etc. (implements `PlatformTag`)
-- `appVersion` — Semantic versioning for version-based rollouts
-- `stableId` — Deterministic identifier for ramp-up bucketing
+## What just happened
 
----
+- A **Namespace** is a registry of features.
+- A **Feature** is a typed value with rules.
+- A **Rule** is criteria -> value mapping.
+- A **Context** provides runtime inputs used by rules.
 
-## Evaluate Flags
+## Guarantees
 
-```kotlin
-val enabled: Boolean = AppFeatures.darkMode.evaluate(context)
-val endpoint: String = AppFeatures.apiEndpoint.evaluate(context)
-val retries: Int = AppFeatures.maxRetries.evaluate(context)
-```
+**Guarantee**: Evaluation always returns a non-null value of the declared type.
 
-**Guarantees:**
+**Mechanism**: Features require a `default` value and return it when no rule matches.
 
-- Type safety: The return type matches the declared type (no casts)
-- Non-null: Evaluation always returns a value (rule value or default)
-- Deterministic: Same inputs → same outputs
+**Boundary**: Konditional does not validate business logic; it only evaluates rules.
 
----
+## Next steps
 
-## How Evaluation Works
-
-```mermaid
-flowchart TD
-    Start["Context available"] --> Lookup["Registry lookup"]
-    Lookup --> Active{Flag active?}
-    Active -->|No| Default1["Return default"]
-    Active -->|Yes| Sort["Sort rules by specificity"]
-    Sort --> Next{Next rule?}
-    Next -->|No| Default2["Return default"]
-    Next -->|Yes| Match{All criteria match?}
-    Match -->|No| Next
-    Match -->|Yes| Roll{In ramp-up or allowlisted?}
-    Roll -->|No| Next
-    Roll -->|Yes| Value["Return rule value"]
-    style Default1 fill: #fff3cd
-    style Default2 fill: #fff3cd
-    style Value fill: #c8e6c9
-```
-
-1. **Specificity ordering** — Rules are sorted by targeting criteria count (most specific first)
-2. **AND semantics** — All criteria in a rule must match for the rule to match
-3. **First match wins** — The first matching rule (that passes ramp-up check) determines the value
-4. **Default fallback** — If no rules match, the required default is returned
-
----
-
-## Supported Value Types
-
-| Type       | Namespace method | Kotlin type                          | Example default       |
-|------------|------------------|--------------------------------------|-----------------------|
-| Boolean    | `boolean(...)`   | `Boolean`                            | `false`               |
-| String     | `string(...)`    | `String`                             | `"production"`        |
-| Integer    | `integer(...)`   | `Int`                                | `42`                  |
-| Decimal    | `double(...)`    | `Double`                             | `3.14`                |
-| Enum       | `enum(...)`      | `E : Enum<E>`                        | `LogLevel.INFO`       |
-| Data class | `custom(...)`    | `T : Konstrained<ObjectSchema>` | `MyConfig()`          |
-
----
-
-## Common Patterns
-
-### Gradual Ramp-Up
-
-```kotlin
-val newCheckout by boolean<Context>(default = false) {
-    rule(true) {
-        platforms(Platform.ANDROID)
-        rampUp { 10.0 }  // 10% of users
-    }
-}
-```
-
-Ramp-ups are deterministic: the same `(stableId, flagKey, salt)` yields the same bucket assignment.
-
-### Platform-Specific Configuration
-
-```kotlin
-val apiEndpoint by string<Context>(default = "https://api.example.com") {
-    rule("https://api-ios.example.com") { ios() }
-    rule("https://api-android.example.com") { android() }
-}
-```
-
-### Variants via Enums (Not Strings)
-
-```kotlin
-enum class Theme { LIGHT, DARK, AUTO }
-
-val theme by enum<Theme, Context>(default = Theme.LIGHT) {
-    rule(Theme.DARK) { platforms(Platform.IOS) }
-}
-```
-
-Because variants are enum values, invalid variants cannot compile.
-
----
-
-## Next Steps
-
-- [Loading from JSON](/getting-started/loading-from-json) — Add runtime configuration
-- [Fundamentals: Core Primitives](/fundamentals/core-primitives) — Deep dive into Features, Context, and Namespaces
-- [Rules & Targeting](/rules-and-targeting/rule-composition) — Master rollout strategies
+- Learn the core concepts: [Core Concepts](/fundamentals/core-primitives)
+- Understand rule ordering and ramp-ups: [Evaluation Model](/fundamentals/evaluation-semantics)

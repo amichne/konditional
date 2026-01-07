@@ -42,7 +42,7 @@ const config: Config = {
                 docs: {
                     routeBasePath: "/",
                     editUrl: "https://github.com/amichne/konditional/tree/main/docusaurus/",
-                    sidebarPath: false
+                    sidebarPath: require.resolve("./sidebars.ts"),
                 },
 
                 theme: {
@@ -80,49 +80,20 @@ const config: Config = {
                     position: 'left',
                     items: [
                         {type: 'doc', docId: 'getting-started/installation', label: 'Installation'},
-                        {type: 'doc', docId: 'getting-started/your-first-flag', label: 'Your First Flag'},
-                        {type: 'doc', docId: 'getting-started/loading-from-json', label: 'Loading From JSON'},
+                        {type: 'doc', docId: 'getting-started/your-first-flag', label: 'Your First Feature'},
                     ],
                 },
                 {
                     type: 'dropdown',
-                    label: 'Fundamentals',
+                    label: 'Core',
                     position: 'left',
                     items: [
-                        {type: 'doc', docId: 'fundamentals/core-primitives', label: 'Core Primitives'},
-                        {type: 'doc', docId: 'fundamentals/trust-boundaries', label: 'Trust Boundaries'},
-                        {
-                            type: 'doc',
-                            docId: 'fundamentals/definition-vs-initialization',
-                            label: 'Definition vs Initialization'
-                        },
-                        {type: 'doc', docId: 'fundamentals/configuration-lifecycle', label: 'Configuration Lifecycle'},
-                        {type: 'doc', docId: 'fundamentals/evaluation-semantics', label: 'Evaluation Semantics'},
-                        {type: 'doc', docId: 'fundamentals/refresh-safety', label: 'Refresh Safety'},
-                        {type: 'doc', docId: 'fundamentals/failure-modes', label: 'Failure Modes'},
-                    ],
-                },
-                {
-                    type: 'dropdown',
-                    label: 'Rules & Targeting',
-                    position: 'left',
-                    items: [
-                        {type: 'doc', docId: 'rules-and-targeting/rule-composition', label: 'Rule Composition'},
-                        {type: 'doc', docId: 'rules-and-targeting/specificity-system', label: 'Specificity System'},
-                        {type: 'doc', docId: 'rules-and-targeting/rollout-strategies', label: 'Rollout Strategies'},
-                        {type: 'doc', docId: 'rules-and-targeting/custom-extensions', label: 'Custom Extensions'},
-                    ],
-                },
-                {
-                    type: 'dropdown',
-                    label: 'API Reference',
-                    position: 'left',
-                    items: [
-                        {type: 'doc', docId: 'api-reference/feature-operations', label: 'Feature Operations'},
-                        {type: 'doc', docId: 'api-reference/namespace-operations', label: 'Namespace Operations'},
-                        {type: 'doc', docId: 'api-reference/serialization', label: 'Serialization'},
-                        {type: 'doc', docId: 'api-reference/observability', label: 'Observability'},
-                        {type: 'doc', docId: 'api-reference/core-types', label: 'Core Types'},
+                        {type: 'doc', docId: 'core/index', label: 'Core Module'},
+                        {type: 'doc', docId: 'fundamentals/core-primitives', label: 'Core Concepts'},
+                        {type: 'doc', docId: 'fundamentals/evaluation-semantics', label: 'Evaluation Model'},
+                        {type: 'doc', docId: 'core/rules', label: 'Rule DSL'},
+                        {type: 'doc', docId: 'core/reference', label: 'Core API Reference'},
+                        {type: 'doc', docId: 'core/types', label: 'Core Types'},
                     ],
                 },
                 {
@@ -130,12 +101,25 @@ const config: Config = {
                     label: 'Theory',
                     position: 'left',
                     items: [
-                        {type: 'doc', docId: 'theory/parse-dont-validate', label: "Parse, Don't Validate"},
-                        {type: 'doc', docId: 'theory/atomicity-guarantees', label: 'Atomicity Guarantees'},
+                        {type: 'doc', docId: 'theory/parse-dont-validate', label: 'Parse, Don\'t Validate'},
+                        {type: 'doc', docId: 'theory/type-safety-boundaries', label: 'Type Safety Boundaries'},
                         {type: 'doc', docId: 'theory/determinism-proofs', label: 'Determinism Proofs'},
-                        {type: 'doc', docId: 'theory/type-safety-boundaries', label: 'Type-safety Boundaries'},
-                        {type: 'doc', docId: 'theory/migration-and-shadowing', label: 'Migration and Shadowing'},
+                        {type: 'doc', docId: 'theory/atomicity-guarantees', label: 'Atomicity Guarantees'},
                         {type: 'doc', docId: 'theory/namespace-isolation', label: 'Namespace Isolation'},
+                        {type: 'doc', docId: 'theory/migration-and-shadowing', label: 'Migration and Shadowing'},
+                    ],
+                },
+                {
+                    type: 'dropdown',
+                    label: 'Modules',
+                    position: 'left',
+                    items: [
+                        {type: 'doc', docId: 'runtime/index', label: 'Runtime'},
+                        {type: 'doc', docId: 'serialization/index', label: 'Serialization'},
+                        {type: 'doc', docId: 'observability/index', label: 'Observability'},
+                        {type: 'doc', docId: 'opentelemetry/index', label: 'OpenTelemetry'},
+                        {type: 'doc', docId: 'config-metadata/index', label: 'Config Metadata'},
+                        {type: 'doc', docId: 'kontracts/index', label: 'Kontracts'},
                     ],
                 },
                 {
@@ -143,25 +127,9 @@ const config: Config = {
                     label: 'Advanced',
                     position: 'left',
                     items: [
-                        {type: 'doc', docId: 'advanced/multiple-namespaces', label: 'Multiple Namespaces'},
-                        {type: 'doc', docId: 'advanced/shadow-evaluation', label: 'Shadow Evaluation'},
-                        {type: 'doc', docId: 'advanced/custom-context-types', label: 'Custom Context Types'},
-                        {type: 'doc', docId: 'advanced/kontracts-deep-dive', label: 'Kontracts Deep Dive'},
-                        {type: 'doc', docId: 'advanced/testing-strategies', label: 'Testing Strategies'},
+                        {type: 'doc', docId: 'advanced/recipes', label: 'Recipes'},
                     ],
                 },
-                {
-                    type: 'dropdown',
-                    label: 'Resources',
-                    position: 'left',
-                    items: [
-                        {type: 'doc', docId: 'why-konditional', label: 'Why Konditional'},
-                        {type: 'doc', docId: 'migration', label: 'Migration'},
-                        {type: 'doc', docId: 'persistence-format', label: 'Persistence Format'},
-                        {type: 'doc', docId: 'glossary', label: 'Glossary'},
-                    ],
-                },
-                {to: '/api/', position: 'left', label: 'API Schema'},
                 {href: 'https://github.com/amichne/konditional', label: 'GitHub', position: 'right'},
             ],
 

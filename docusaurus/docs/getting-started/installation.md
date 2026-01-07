@@ -1,13 +1,15 @@
 # Installation
 
-Add Konditional to your Kotlin project via Gradle or Maven.
+Konditional Core is a single dependency.
+
+Replace `VERSION` with the latest published version.
 
 ## Gradle (Kotlin DSL)
 
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.amichne:konditional:0.0.1")
+    implementation("io.amichne:konditional-core:VERSION")
 }
 ```
 
@@ -16,7 +18,7 @@ dependencies {
 ```groovy
 // build.gradle
 dependencies {
-    implementation 'io.amichne:konditional:0.0.1'
+    implementation 'io.amichne:konditional-core:VERSION'
 }
 ```
 
@@ -24,23 +26,15 @@ dependencies {
 
 ```xml
 <dependency>
-    <groupId>io.amichne</groupId>
-    <artifactId>konditional</artifactId>
-    <version>0.0.1</version>
+  <groupId>io.amichne</groupId>
+  <artifactId>konditional-core</artifactId>
+  <version>VERSION</version>
 </dependency>
 ```
 
----
+That is enough to define features and evaluate them in code. If you need remote configuration, JSON serialization, or
+observability utilities, see the module docs:
 
-## Requirements
-
-- **Kotlin 2.2+**
-- **JVM 21+**
-- **Kotlin reflection** — Konditional depends on `kotlin-reflect` for custom structured value decoding at the JSON boundary
-
----
-
-## Next Steps
-
-- [Your First Flag](/getting-started/your-first-flag) — Define and evaluate your first feature flag
-- [Loading from JSON](/getting-started/loading-from-json) — Add runtime configuration
+- [Runtime](/runtime/)
+- [Serialization](/serialization/)
+- [Observability](/observability/)

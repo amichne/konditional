@@ -13,7 +13,8 @@ repositories {
 
 dependencies {
     // Core konditional dependency
-    api(project(":core"))
+    api(project(":konditional-core"))
+    implementation(project(":konditional-runtime"))
 
     // OpenTelemetry API (lightweight, propagates to consumers)
     api("io.opentelemetry:opentelemetry-api:1.34.1")
@@ -26,7 +27,6 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
     testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.34.1")
-    testImplementation(testFixtures(project(":core")))
 }
 
 tasks.test {

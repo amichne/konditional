@@ -24,7 +24,7 @@ echo "" >> "$CORE_TYPES_FILE"
 
 TYPE_DECLARATION_REGEX="^(public[[:space:]]+)?(sealed[[:space:]]+|data[[:space:]]+|abstract[[:space:]]+|open[[:space:]]+|value[[:space:]]+|enum[[:space:]]+|annotation[[:space:]]+|inline[[:space:]]+)?(class|interface|object|fun)[[:space:]]"
 MAX_LINES_PER_MODULE=300
-MODULES=(core config-metadata kontracts openapi opentelemetry)
+MODULES=(konditional-core konditional-runtime konditional-serialization konditional-observability config-metadata kontracts openapi opentelemetry)
 
 for module in "${MODULES[@]}"; do
     module_source="$PROJECT_ROOT/$module/src/main/kotlin"
