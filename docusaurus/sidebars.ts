@@ -5,34 +5,55 @@ const sidebars: SidebarsConfig = {
         {type: 'doc', id: 'index', label: 'Home'},
         {
             type: 'category',
-            label: 'Getting Started',
+            label: 'Quick Start',
             items: [
+                'quick-start/what-is-konditional',
                 'getting-started/installation',
                 'getting-started/your-first-flag',
             ],
         },
         {
             type: 'category',
-            label: 'Core',
+            label: 'Fundamentals',
             items: [
-                'core/index',
                 'fundamentals/core-primitives',
                 'fundamentals/evaluation-semantics',
-                'core/rules',
+                'fundamentals/type-safety',
+                'fundamentals/configuration-lifecycle',
+            ],
+        },
+        {
+            type: 'category',
+            label: 'How-To Guides',
+            items: [
+                'how-to-guides/rolling-out-gradually',
+                'how-to-guides/ab-testing',
+                'how-to-guides/safe-remote-config',
+                'how-to-guides/handling-failures',
+                'how-to-guides/debugging-determinism',
+                'how-to-guides/custom-business-logic',
+                'how-to-guides/namespace-isolation',
+                'how-to-guides/testing-features',
+            ],
+        },
+        {
+            type: 'category',
+            label: 'Core Library',
+            items: [
+                'core/index',
                 'core/reference',
+                'core/rules',
                 'core/types',
             ],
         },
         {
             type: 'category',
-            label: 'Theory',
+            label: 'Production Operations',
             items: [
-                'theory/parse-dont-validate',
-                'theory/type-safety-boundaries',
-                'theory/determinism-proofs',
-                'theory/atomicity-guarantees',
-                'theory/namespace-isolation',
-                'theory/migration-and-shadowing',
+                'production-operations/thread-safety',
+                'production-operations/failure-modes',
+                'production-operations/refresh-patterns',
+                'production-operations/debugging',
             ],
         },
         {
@@ -44,8 +65,8 @@ const sidebars: SidebarsConfig = {
                     label: 'Runtime',
                     items: [
                         'runtime/index',
-                        'runtime/operations',
                         'runtime/lifecycle',
+                        'runtime/operations',
                     ],
                 },
                 {
@@ -53,8 +74,8 @@ const sidebars: SidebarsConfig = {
                     label: 'Serialization',
                     items: [
                         'serialization/index',
-                        'serialization/reference',
                         'serialization/persistence-format',
+                        'serialization/reference',
                     ],
                 },
                 {
@@ -62,8 +83,8 @@ const sidebars: SidebarsConfig = {
                     label: 'Observability',
                     items: [
                         'observability/index',
-                        'observability/reference',
                         'observability/shadow-evaluation',
+                        'observability/reference',
                     ],
                 },
                 {
@@ -94,9 +115,23 @@ const sidebars: SidebarsConfig = {
         },
         {
             type: 'category',
-            label: 'Advanced',
+            label: 'Design & Safety',
             items: [
+                'theory/parse-dont-validate',
+                'theory/type-safety-boundaries',
+                'theory/determinism-proofs',
+                'theory/atomicity-guarantees',
+                'theory/namespace-isolation',
+                'theory/migration-and-shadowing',
+            ],
+        },
+        {
+            type: 'category',
+            label: 'Reference',
+            items: [
+                'reference/glossary',
                 'advanced/recipes',
+                'reference/migration-guide',
             ],
         },
     ],
