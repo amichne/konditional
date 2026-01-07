@@ -1,4 +1,4 @@
-# Integrate Custom Business Logic
+# How-To: Integrate Custom Business Logic
 
 ## Problem
 

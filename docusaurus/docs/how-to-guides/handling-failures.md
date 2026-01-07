@@ -1,4 +1,4 @@
-# Handle Configuration Failures
+# How-To: Handle Configuration Failures
 
 ## Problem
 

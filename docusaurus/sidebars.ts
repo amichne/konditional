@@ -63,8 +63,8 @@ const sidebars: SidebarsConfig = {
                 {
                     type: 'category',
                     label: 'Runtime',
-                    link: { type: 'doc', id: 'runtime/index' },
                     items: [
+                        'runtime/index',
                         'runtime/lifecycle',
                         'runtime/operations',
                     ],
@@ -72,8 +72,8 @@ const sidebars: SidebarsConfig = {
                 {
                     type: 'category',
                     label: 'Serialization',
-                    link: { type: 'doc', id: 'serialization/index' },
                     items: [
+                        'serialization/index',
                         'serialization/persistence-format',
                         'serialization/reference',
                     ],
@@ -81,8 +81,8 @@ const sidebars: SidebarsConfig = {
                 {
                     type: 'category',
                     label: 'Observability',
-                    link: { type: 'doc', id: 'observability/index' },
                     items: [
+                        'observability/index',
                         'observability/shadow-evaluation',
                         'observability/reference',
                     ],
@@ -90,24 +90,24 @@ const sidebars: SidebarsConfig = {
                 {
                     type: 'category',
                     label: 'OpenTelemetry',
-                    link: { type: 'doc', id: 'opentelemetry/index' },
                     items: [
+                        'opentelemetry/index',
                         'opentelemetry/reference',
                     ],
                 },
                 {
                     type: 'category',
                     label: 'Config Metadata',
-                    link: { type: 'doc', id: 'config-metadata/index' },
                     items: [
+                        'config-metadata/index',
                         'config-metadata/reference',
                     ],
                 },
                 {
                     type: 'category',
                     label: 'Kontracts',
-                    link: { type: 'doc', id: 'kontracts/index' },
                     items: [
+                        'kontracts/index',
                         'kontracts/schema-dsl',
                     ],
                 },
@@ -130,24 +130,7 @@ const sidebars: SidebarsConfig = {
             label: 'Reference',
             items: [
                 'reference/glossary',
-                {
-                    type: 'category',
-                    label: 'Recipes',
-                    link: { type: 'doc', id: 'advanced/recipes/index' },
-                    items: [
-                        'advanced/recipes/typed-variants',
-                        'advanced/recipes/rampup',
-                        'advanced/recipes/reset',
-                        'advanced/recipes/axes',
-                        'advanced/recipes/extension',
-                        'advanced/recipes/structured',
-                        'advanced/recipes/load',
-                        'advanced/recipes/rollback',
-                        'advanced/recipes/shadow',
-                        'advanced/recipes/namespace',
-                        'advanced/recipes/observability',
-                    ],
-                },
+                'advanced/recipes',
                 'reference/migration-guide',
             ],
         },

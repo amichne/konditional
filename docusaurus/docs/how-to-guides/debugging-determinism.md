@@ -1,4 +1,4 @@
-# Debug Determinism Issues
+# How-To: Debug Determinism Issues
 
 ## Problem
 

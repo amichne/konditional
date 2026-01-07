@@ -1,4 +1,4 @@
-# Load Configuration Safely from Remote
+# How-To: Load Configuration Safely from Remote
 
 ## Problem
 

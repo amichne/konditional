@@ -1,4 +1,4 @@
-# Organize Features with Namespace Isolation
+# How-To: Organize Features with Namespace Isolation
 
 ## Problem
 

@@ -1,4 +1,4 @@
-# Core API
+# konditional-core
 
 `konditional-core` is the minimal, stable API for defining and evaluating typed features in code.
 
@@ -6,21 +6,18 @@ If you only need compile-time correctness and deterministic evaluation, this is 
 
 ## What you get
 
-- Typed feature declarations for all features
-- Evaluation of all features will always return a non-null value
-- Rule DSL for targeting _(locale, platform, version, axes, custom predicates)_
-- Deterministic ramp-ups _(stable bucketing)_
-- Explainable evaluation and operational hooks _(`explain` for debugging)_
+- Typed feature declarations with a default value
+- Rule DSL for targeting (locale, platform, version, axes, custom predicates)
+- Deterministic ramp-ups (stable bucketing)
+- Explainable evaluation (`explain`) for debugging
 
 ## Guarantees
 
 - **Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
 
-- **Mechanism**: Generic type propagation on `Feature<T, C, M>`.
+- **Mechanism**: Property delegation + generic type propagation on `Feature<T, C, M>`.
 
 - **Boundary**: This does not apply to dynamically-generated feature definitions.
-
-----
 
 - **Guarantee**: Evaluation always returns a non-null value of the declared type.
 
