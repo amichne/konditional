@@ -19,13 +19,7 @@ kotlin {
     }
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    if (name.contains("Test", ignoreCase = true)) {
-        compilerOptions {
-            freeCompilerArgs.add("-Xfriend-paths=${layout.buildDirectory.get()}/classes/kotlin/main")
-        }
-    }
-}
+// Friend paths removed - using @KonditionalInternalApi instead
 
 repositories {
     mavenCentral()

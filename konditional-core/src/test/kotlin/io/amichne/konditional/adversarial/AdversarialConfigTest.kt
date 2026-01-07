@@ -1,3 +1,5 @@
+@file:OptIn(KonditionalInternalApi::class)
+
 package io.amichne.konditional.adversarial
 
 import io.amichne.konditional.api.evaluate
@@ -8,10 +10,13 @@ import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.konditional.rules.versions.FullyBound
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 /**
  * ADVERSARIAL TEST SUITE
@@ -232,8 +237,8 @@ class AdversarialConfigTest {
         )
 
         val result = TestNamespaceFeatures.nanFlag.evaluate(context)
-        assert(result != null && result.isNaN()) // NaN propagates through
-        assert(result != null && result != result) // NaN != NaN!
+        assertTrue(result.isNaN()) // NaN propagates through
+        assertTrue(result != result) // NaN != NaN!
     }
 
     @Test
@@ -376,10 +381,10 @@ class AdversarialConfigTest {
 
         // This user might or might not be in the 0.01% bucket
         // But the rampUp is so small it's almost never true
-        val result = TestNamespaceFeatures.tinyRolloutFlag.evaluate(context)
-        // Assertion depends on hash bucket for this specific ID
-        // We're just verifying this compiles and executes without error
-        assert(result is Boolean)
+        // Assertion depends on hash bucket for this specific ID.
+        assertDoesNotThrow {
+            TestNamespaceFeatures.tinyRolloutFlag.evaluate(context)
+        }
     }
 
     @Test
@@ -411,13 +416,9 @@ class AdversarialConfigTest {
 
         // Same user, same rampUp %, but different salts
         // Could get different results (bucket assignment changes)
-        val result1 = testNamespaceFeatures1.flag.evaluate(context)
-        val result2 = testNamespaceFeatures2.flag.evaluate(context)
-
-        // Results may differ due to re-bucketing (not guaranteed, depends on hash)
-        // We're verifying both evaluate successfully (both are Boolean values)
-        assert(result1 is Boolean)
-        assert(result2 is Boolean)
+        // Results may differ due to re-bucketing (not guaranteed, depends on hash).
+        assertDoesNotThrow { testNamespaceFeatures1.flag.evaluate(context) }
+        assertDoesNotThrow { testNamespaceFeatures2.flag.evaluate(context) }
     }
 
     @Test

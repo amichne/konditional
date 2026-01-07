@@ -20,16 +20,7 @@ kotlin {
     }
 }
 
-tasks.withType<KotlinCompile>().configureEach {
-    if (name.contains("Test", ignoreCase = true)) {
-        compilerOptions {
-            freeCompilerArgs.addAll(
-                "-Xfriend-paths=${project(":konditional-core").layout.buildDirectory.get()}/classes/kotlin/main",
-                "-Xfriend-paths=${project(":konditional-serialization").layout.buildDirectory.get()}/classes/kotlin/main"
-            )
-        }
-    }
-}
+// Friend paths removed - using @KonditionalInternalApi instead
 
 
 repositories {
@@ -53,6 +44,12 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+    if (name.contains("Test")) {
+        compilerOptions.optIn.add("io.amichne.konditional.internal.KonditionalInternalApi")
+    }
 }
 
 java {

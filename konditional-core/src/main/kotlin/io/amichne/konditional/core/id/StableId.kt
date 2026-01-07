@@ -1,5 +1,8 @@
+@file:OptIn(KonditionalInternalApi::class)
+
 package io.amichne.konditional.core.id
 
+import io.amichne.konditional.internal.KonditionalInternalApi
 import java.util.Locale
 
 /**

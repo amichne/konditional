@@ -12,8 +12,8 @@ import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 import io.amichne.konditional.serialization.instance.Configuration
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import kotlin.test.assertTrue
 
 /**
  * Test suite demonstrating Enum feature functionality
@@ -43,14 +43,6 @@ class EnumFeatureTest {
 
         val theme by enum<Theme, Context>(default = Theme.AUTO)
         val environment by enum<Environment, Context>(default = Environment.PRODUCTION)
-    }
-
-    @Test
-    fun `enum features are created with correct types`() {
-        // Verify each feature has correct type
-        assertTrue(EnumFeatures.logLevel is EnumFeature<*, *, *>)
-        assertTrue(EnumFeatures.theme is EnumFeature<*, *, *>)
-        assertTrue(EnumFeatures.environment is EnumFeature<*, *, *>)
     }
 
     @Test

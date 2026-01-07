@@ -5,6 +5,7 @@ import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.ConfigurationMetadata
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
@@ -15,14 +16,15 @@ import io.amichne.konditional.serialization.options.UnknownFeatureKeyStrategy
  * Serializable representation of a Configuration configuration.
  * This is the top-level object that gets serialized to/from JSON.
  */
+@KonditionalInternalApi
 @JsonClass(generateAdapter = true)
-internal data class SerializableSnapshot(
+data class SerializableSnapshot(
     val meta: SerializableSnapshotMetadata? = null,
     val flags: List<SerializableFlag>,
 ) {
-    internal fun toConfiguration(): ParseResult<Configuration> = toConfiguration(SnapshotLoadOptions.strict())
+    fun toConfiguration(): ParseResult<Configuration> = toConfiguration(SnapshotLoadOptions.strict())
 
-    internal fun toConfiguration(options: SnapshotLoadOptions): ParseResult<Configuration> =
+    fun toConfiguration(options: SnapshotLoadOptions): ParseResult<Configuration> =
         runCatching {
             val initial: ParseResult<MutableMap<Feature<*, *, *>, FlagDefinition<*, *, *>>> =
                 ParseResult.success(linkedMapOf())
@@ -65,7 +67,7 @@ internal data class SerializableSnapshot(
             }
         }.getOrElse { ParseResult.failure(ParseError.InvalidSnapshot(it.message ?: "Unknown error")) }
 
-    internal companion object {
+    companion object {
         fun from(configuration: Configuration): SerializableSnapshot =
             SerializableSnapshot(
                 meta = SerializableSnapshotMetadata.from(configuration.metadata),

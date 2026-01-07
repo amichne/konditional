@@ -1,3 +1,5 @@
+@file:OptIn(KonditionalInternalApi::class)
+
 package io.amichne.konditional.api
 
 import io.amichne.konditional.context.Context

@@ -1,13 +1,15 @@
+@file:OptIn(KonditionalInternalApi::class)
+
 package io.amichne.konditional.serialization.instance
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.internal.KonditionalInternalApi
 
 /**
  * Represents an incremental update to a [Configuration].
  */
-@ConsistentCopyVisibility
 data class ConfigurationPatch(
     val flags: Map<Feature<*, *, *>, FlagDefinition<*, *, *>>,
     val removeKeys: Set<Feature<*, *, *>> = emptySet(),
@@ -45,4 +47,3 @@ data class ConfigurationPatch(
         internal fun build(): ConfigurationPatch = ConfigurationPatch(flags.toMap(), removeKeys.toSet())
     }
 }
-

@@ -11,6 +11,7 @@ import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.core.types.asObjectSchema
+import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.konditional.internal.SerializedFlagDefinitionMetadata
 import io.amichne.konditional.internal.SerializedFlagRuleSpec
 import io.amichne.konditional.internal.flagDefinitionFromSerialized
@@ -25,8 +26,9 @@ import io.amichne.konditional.values.FeatureId
  *
  * Now uses type-safe FlagValue instead create type-erased Any values.
  */
+@KonditionalInternalApi
 @JsonClass(generateAdapter = true)
-internal data class SerializableFlag(
+data class SerializableFlag(
     val key: FeatureId,
     val defaultValue: FlagValue<*>,
     val salt: String = "v1",
@@ -34,7 +36,7 @@ internal data class SerializableFlag(
     val rampUpAllowlist: Set<String> = emptySet(),
     val rules: List<SerializableRule> = emptyList(),
 ) {
-    internal fun toFlagPair(): ParseResult<Pair<Feature<*, *, *>, FlagDefinition<*, *, *>>> =
+    fun toFlagPair(): ParseResult<Pair<Feature<*, *, *>, FlagDefinition<*, *, *>>> =
         when (val conditionalResult = FeatureRegistry.get(key)) {
             is ParseResult.Success -> {
                 val conditional = conditionalResult.value
@@ -54,7 +56,7 @@ internal data class SerializableFlag(
             is ParseResult.Failure -> ParseResult.failure(conditionalResult.error)
         }
 
-    internal companion object {
+    companion object {
         fun from(flagDefinition: FlagDefinition<*, *, *>, flagKey: FeatureId): SerializableFlag {
             val defaultValue = requireNotNull(flagDefinition.defaultValue) {
                 "FlagDefinition must not hold a null defaultValue"

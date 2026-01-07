@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     kotlin("jvm")
     `java-library`
@@ -17,16 +19,7 @@ kotlin {
     }
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    if (name.contains("Test", ignoreCase = true)) {
-        compilerOptions {
-            freeCompilerArgs.addAll(
-                "-Xfriend-paths=${layout.buildDirectory.get()}/classes/kotlin/main",
-                "-Xfriend-paths=${project(":konditional-core").layout.buildDirectory.get()}/classes/kotlin/main"
-            )
-        }
-    }
-}
+// Friend paths removed - using @KonditionalInternalApi instead
 
 repositories {
     mavenCentral()
@@ -58,6 +51,12 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+    if (name.contains("Test")) {
+        compilerOptions.optIn.add("io.amichne.konditional.internal.KonditionalInternalApi")
+    }
 }
 
 java {

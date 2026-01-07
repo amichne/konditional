@@ -7,6 +7,7 @@ import io.amichne.konditional.core.ValueType
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.core.types.asObjectSchema
+import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.konditional.serialization.SchemaValueCodec
 import io.amichne.konditional.serialization.extractSchema
 import io.amichne.konditional.serialization.internal.toJsonValue
@@ -27,7 +28,8 @@ import io.amichne.kontracts.value.JsonObject
  * Supports primitive types and user-defined types:
  * - Boolean, String, Int, Double, Enum
  */
-internal sealed class FlagValue<out T : Any> {
+@KonditionalInternalApi
+sealed class FlagValue<out T : Any> {
     abstract val value: T
 
     /**
@@ -38,28 +40,28 @@ internal sealed class FlagValue<out T : Any> {
     // ========== Primitive Types ==========
 
     @JsonClass(generateAdapter = true)
-    internal data class BooleanValue(
+    data class BooleanValue(
         override val value: Boolean,
     ) : FlagValue<Boolean>() {
         override fun toValueType() = ValueType.BOOLEAN
     }
 
     @JsonClass(generateAdapter = true)
-    internal data class StringValue(
+    data class StringValue(
         override val value: String,
     ) : FlagValue<String>() {
         override fun toValueType() = ValueType.STRING
     }
 
     @JsonClass(generateAdapter = true)
-    internal data class IntValue(
+    data class IntValue(
         override val value: Int,
     ) : FlagValue<Int>() {
         override fun toValueType() = ValueType.INT
     }
 
     @JsonClass(generateAdapter = true)
-    internal data class DoubleValue(
+    data class DoubleValue(
         override val value: Double,
     ) : FlagValue<Double>() {
         override fun toValueType() = ValueType.DOUBLE
@@ -71,7 +73,7 @@ internal sealed class FlagValue<out T : Any> {
      * to enable proper deserialization.
      */
     @JsonClass(generateAdapter = true)
-    internal data class EnumValue(
+    data class EnumValue(
         override val value: String,
         val enumClassName: String,
     ) : FlagValue<String>() {
@@ -87,21 +89,21 @@ internal sealed class FlagValue<out T : Any> {
      * which can be serialized to JSON and later reconstructed.
      */
     @JsonClass(generateAdapter = true)
-    internal data class DataClassValue(
+    data class DataClassValue(
         override val value: Map<String, Any?>,
         val dataClassName: String,
     ) : FlagValue<Map<String, Any?>>() {
         override fun toValueType() = ValueType.DATA_CLASS
     }
 
-    internal fun validate(schema: ObjectSchema) {
+    fun validate(schema: ObjectSchema) {
         if (this is DataClassValue) {
             validateDataClassFields(value, schema)
         }
     }
 
     @Suppress("UNCHECKED_CAST")
-    internal fun <V : Any> extractValue(schema: ObjectSchema? = null): V =
+    fun <V : Any> extractValue(schema: ObjectSchema? = null): V =
         when (this) {
             is EnumValue -> decodeEnum(enumClassName, value) as V
             is DataClassValue -> {

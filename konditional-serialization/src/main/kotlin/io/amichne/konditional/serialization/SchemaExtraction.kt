@@ -4,6 +4,7 @@ package io.amichne.konditional.serialization
 
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.core.types.asObjectSchema
+import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.kontracts.schema.JsonSchema
 import io.amichne.kontracts.schema.ObjectSchema
 import kotlin.reflect.KClass
@@ -22,7 +23,8 @@ import kotlin.reflect.full.createInstance
  * @param kClass The class to extract schema from
  * @return ObjectSchema if found, null otherwise
  */
-internal fun extractSchema(kClass: KClass<*>): ObjectSchema? {
+@KonditionalInternalApi
+fun extractSchema(kClass: KClass<*>): ObjectSchema? {
     val schemaFromObject =
         (kClass.objectInstance as? Konstrained<*>)?.schema.asObjectSchemaOrNull()
 

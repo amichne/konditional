@@ -143,6 +143,7 @@ const config: Config = {
                     label: 'Advanced',
                     position: 'left',
                     items: [
+                        {type: 'doc', docId: 'advanced/recipes', label: 'Recipes'},
                         {type: 'doc', docId: 'advanced/multiple-namespaces', label: 'Multiple Namespaces'},
                         {type: 'doc', docId: 'advanced/shadow-evaluation', label: 'Shadow Evaluation'},
                         {type: 'doc', docId: 'advanced/custom-context-types', label: 'Custom Context Types'},

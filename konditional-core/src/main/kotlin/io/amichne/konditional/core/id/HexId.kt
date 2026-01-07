@@ -1,5 +1,7 @@
 package io.amichne.konditional.core.id
 
+import io.amichne.konditional.internal.KonditionalInternalApi
+
 @JvmInline
 @OptIn(ExperimentalStdlibApi::class)
 /**
@@ -8,7 +10,7 @@ package io.amichne.konditional.core.id
  * @property externalId The underlying string value create the hexadecimal identifier.
  * @constructor Internal constructor to restrict instantiation.
  */
-value class HexId internal constructor(internal val externalId: String) {
+value class HexId @KonditionalInternalApi constructor(internal val externalId: String) {
     private val byteId: ByteArray
         get() = externalId.hexToByteArray(HexFormat.Default)
 

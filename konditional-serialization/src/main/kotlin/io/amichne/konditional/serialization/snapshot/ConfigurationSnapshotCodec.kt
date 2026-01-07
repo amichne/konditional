@@ -1,3 +1,5 @@
+@file:OptIn(io.amichne.konditional.internal.KonditionalInternalApi::class)
+
 package io.amichne.konditional.serialization.snapshot
 
 import com.squareup.moshi.Moshi

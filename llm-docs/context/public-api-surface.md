@@ -1,5 +1,5 @@
 # Public API Surface Summary
-# Extracted: 2026-01-05T21:49:13-05:00
+# Extracted: 2026-01-07T01:52:51-05:00
 
 ## From docusaurus/docs/index.md
 
@@ -61,7 +61,8 @@ Read the full argument: [Why Konditional Exists](why-konditional)
 
 ```kotlin
 dependencies {
-    implementation("io.amichne:konditional:0.0.1")
+    implementation("io.amichne:konditional-core:0.0.1")
+    implementation("io.amichne:konditional-runtime:0.0.1")
 }
 ```
 
@@ -380,7 +381,17 @@ Add Konditional to your Kotlin project via Gradle or Maven.
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.amichne:konditional:0.0.1")
+    // Core API + DSL (compile-time surface)
+    implementation("io.amichne:konditional-core:0.0.1")
+
+    // Default runtime registry + lifecycle operations (Namespace.load/rollback/history)
+    implementation("io.amichne:konditional-runtime:0.0.1")
+
+    // Optional: JSON snapshot/patch codecs + configuration model
+    implementation("io.amichne:konditional-serialization:0.0.1")
+
+    // Optional: shadow evaluation + observability utilities
+    implementation("io.amichne:konditional-observability:0.0.1")
 }
 ```
 
@@ -389,7 +400,10 @@ dependencies {
 ```groovy
 // build.gradle
 dependencies {
-    implementation 'io.amichne:konditional:0.0.1'
+    implementation 'io.amichne:konditional-core:0.0.1'
+    implementation 'io.amichne:konditional-runtime:0.0.1'
+    implementation 'io.amichne:konditional-serialization:0.0.1'
+    implementation 'io.amichne:konditional-observability:0.0.1'
 }
 ```
 
@@ -398,7 +412,22 @@ dependencies {
 ```xml
 <dependency>
     <groupId>io.amichne</groupId>
-    <artifactId>konditional</artifactId>
+    <artifactId>konditional-core</artifactId>
+    <version>0.0.1</version>
+</dependency>
+<dependency>
+    <groupId>io.amichne</groupId>
+    <artifactId>konditional-runtime</artifactId>
+    <version>0.0.1</version>
+</dependency>
+<dependency>
+    <groupId>io.amichne</groupId>
+    <artifactId>konditional-serialization</artifactId>
+    <version>0.0.1</version>
+</dependency>
+<dependency>
+    <groupId>io.amichne</groupId>
+    <artifactId>konditional-observability</artifactId>
     <version>0.0.1</version>
 </dependency>
 ```
@@ -1556,6 +1585,8 @@ AppFeatures.darkMode.evaluateShadow(
 
 API reference for managing namespace configuration lifecycle: loading, rollback, and kill-switch operations.
 
+`load`/`rollback`/`history*` are runtime-only extensions from `io.amichne.konditional.runtime` and require `io.amichne:konditional-runtime`.
+
 ---
 
 ## `Namespace.load(configuration)`
@@ -1563,7 +1594,7 @@ API reference for managing namespace configuration lifecycle: loading, rollback,
 Atomically replace the active configuration snapshot.
 
 ```kotlin
-fun Namespace.load(configuration: Configuration)
+fun Namespace.load(configuration: ConfigurationView)
 ```
 
 ### Parameters
@@ -1634,7 +1665,7 @@ Features must be registered before calling `load(...)`. See [Fundamentals: Defin
 Export the current configuration snapshot to JSON.
 
 ```kotlin
-fun ConfigurationSnapshotCodec.encode(configuration: Configuration): String
+fun ConfigurationSnapshotCodec.encode(configuration: ConfigurationView): String
 ```
 
 ### Returns
@@ -1656,17 +1687,17 @@ File("flags.json").writeText(json)
 
 ---
 
-## `Namespace.configuration: Configuration`
+## `Namespace.configuration: ConfigurationView`
 
 Get the current active configuration snapshot.
 
 ```kotlin
-val Namespace.configuration: Configuration
+val Namespace.configuration: ConfigurationView
 ```
 
 ### Returns
 
-The active `Configuration` snapshot.
+The active configuration snapshot view.
 
 ### Example
 
@@ -1714,17 +1745,17 @@ if (success) {
 
 ---
 
-## `Namespace.historyMetadata: List<ConfigurationMetadata>`
+## `Namespace.historyMetadata: List<ConfigurationMetadataView>`
 
 Get metadata for all configurations in rollback history.
 
 ```kotlin
-val Namespace.historyMetadata: List<ConfigurationMetadata>
+val Namespace.historyMetadata: List<ConfigurationMetadataView>
 ```
 
 ### Returns
 
-List of `ConfigurationMetadata` (version, timestamp, source) for each snapshot in history.
+List of configuration metadata (version, timestamp, source) for each snapshot in history.
 
 ### Example
 
@@ -1812,15 +1843,18 @@ This controls:
 
 API reference for JSON snapshot/patch operations: parsing, serialization, and incremental updates.
 
+`Configuration` lives in `io.amichne.konditional.serialization.instance.Configuration` and implements `ConfigurationView` (from `:konditional-core`).
+
 ---
 
 ## `ConfigurationSnapshotCodec.encode(configuration): String`
 
-Serialize a `Configuration` to JSON.
+Serialize a configuration snapshot to JSON.
 
 ```kotlin
 object ConfigurationSnapshotCodec {
     fun encode(configuration: Configuration): String
+    fun encode(configuration: ConfigurationView): String
 }
 ```
 
@@ -1870,14 +1904,9 @@ Apply an incremental patch to an existing configuration snapshot.
 ```kotlin
 object ConfigurationSnapshotCodec {
     fun applyPatchJson(
-        currentConfiguration: Configuration,
+        currentConfiguration: ConfigurationView,
         patchJson: String,
-    ): ParseResult<Configuration>
-
-    fun applyPatchJson(
-        currentConfiguration: Configuration,
-        patchJson: String,
-        options: SnapshotLoadOptions,
+        options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
     ): ParseResult<Configuration>
 }
 ```

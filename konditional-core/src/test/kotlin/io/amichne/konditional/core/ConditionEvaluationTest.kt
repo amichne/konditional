@@ -1,3 +1,5 @@
+@file:OptIn(KonditionalInternalApi::class)
+
 package io.amichne.konditional.core
 
 import io.amichne.konditional.context.AppLocale
@@ -8,6 +10,7 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.utilities.localeIds
 import io.amichne.konditional.fixtures.utilities.platformIds
+import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.Unbounded

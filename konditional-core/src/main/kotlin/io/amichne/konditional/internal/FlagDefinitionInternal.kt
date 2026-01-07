@@ -20,7 +20,6 @@ import io.amichne.konditional.rules.versions.VersionRange
  * These are deliberately shaped around primitives and stable public types so sibling modules can
  * integrate without `-Xfriend-paths`, while still keeping these contracts explicitly non-public.
  */
-@ConsistentCopyVisibility
 @KonditionalInternalApi
 data class SerializedFlagDefinitionMetadata(
     val salt: String = "v1",
@@ -28,7 +27,6 @@ data class SerializedFlagDefinitionMetadata(
     val rampUpAllowlist: Set<String> = emptySet(),
 )
 
-@ConsistentCopyVisibility
 @KonditionalInternalApi
 @Suppress("LongParameterList")
 data class SerializedFlagRuleSpec<T : Any>(

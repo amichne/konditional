@@ -1,5 +1,6 @@
 package io.amichne.konditional.core.id
 
+import io.amichne.konditional.internal.KonditionalInternalApi
 import org.jetbrains.annotations.TestOnly
 
 /**
@@ -10,4 +11,5 @@ import org.jetbrains.annotations.TestOnly
  * @constructor Create empty Static stable value
  */
 @TestOnly
-internal interface StaticStableId : StableId
+@KonditionalInternalApi
+interface StaticStableId : StableId

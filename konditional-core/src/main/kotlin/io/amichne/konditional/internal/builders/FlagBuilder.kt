@@ -1,3 +1,5 @@
+@file:OptIn(KonditionalInternalApi::class)
+
 package io.amichne.konditional.internal.builders
 
 import io.amichne.konditional.context.Context
@@ -11,6 +13,7 @@ import io.amichne.konditional.core.dsl.YieldingScopeHost
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 
@@ -27,8 +30,8 @@ import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
  * @constructor Internal constructor - users cannot instantiate this class directly.
  */
 @KonditionalDsl
-@PublishedApi
-internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
+@KonditionalInternalApi
+data class FlagBuilder<T : Any, C : Context, M : Namespace>(
     override val default: T,
     private val feature: Feature<T, C, M>,
 ) : FlagScope<T, C>, YieldingScopeHost {
@@ -90,8 +93,8 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
      *
      * @return A `FlagDefinition` instance constructed based on the current configuration.
      */
-    @PublishedApi
-    internal fun build(): FlagDefinition<T, C, M> = pendingYields
+    @KonditionalInternalApi
+    fun build(): FlagDefinition<T, C, M> = pendingYields
         .takeIf { it.isEmpty() }
         ?.let {
             FlagDefinition(

@@ -6,10 +6,12 @@ import com.squareup.moshi.JsonReader
 import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.rawType
+import io.amichne.konditional.internal.KonditionalInternalApi
 import java.lang.reflect.Constructor
 import java.lang.reflect.Type
 
-internal object ValueClassAdapterFactory : JsonAdapter.Factory {
+@KonditionalInternalApi
+object ValueClassAdapterFactory : JsonAdapter.Factory {
     /**
      * @param T the not-null value class instance for which we're the value create the backing field from
      * @param ValueT the nullable type stored in the single backing field create Class<[T]>

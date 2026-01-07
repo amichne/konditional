@@ -1,6 +1,7 @@
 package io.amichne.konditional.rules
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.internal.KonditionalInternalApi
 
 /**
  * Represents a rule paired with its target value.
@@ -10,7 +11,8 @@ import io.amichne.konditional.context.Context
  * @param C The contextFn type used for rule evaluation
  */
 @ConsistentCopyVisibility
-internal data class ConditionalValue<T : Any, C : Context> private constructor(
+@KonditionalInternalApi
+data class ConditionalValue<T : Any, C : Context> private constructor(
     val rule: Rule<C>,
     val value: T,
 ) {

@@ -1,3 +1,5 @@
+@file:OptIn(io.amichne.konditional.internal.KonditionalInternalApi::class)
+
 package io.amichne.konditional.internal.serialization.adapters
 
 import com.squareup.moshi.JsonAdapter
@@ -5,6 +7,7 @@ import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
+import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.konditional.internal.serialization.models.FlagValue
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
@@ -17,7 +20,8 @@ import java.lang.reflect.Type
  *
  * Supports primitive types and user-defined types: Boolean, String, Int, Double, Enum, DataClass
  */
-internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
+@KonditionalInternalApi
+class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
 
     object Factory : JsonAdapter.Factory {
         private val flagValueAdapter = FlagValueAdapter()
@@ -102,7 +106,8 @@ internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
         }
 }
 
-internal object FlagValueAdapterFactory : JsonAdapter.Factory {
+@KonditionalInternalApi
+object FlagValueAdapterFactory : JsonAdapter.Factory {
     private val flagValueAdapter = FlagValueAdapter()
 
     override fun create(
@@ -183,7 +188,12 @@ private fun requireDouble(value: Any?, type: String): Double =
         else -> invalid("$type type requires double value")
     }
 
-private fun requireMap(value: Any?, type: String): Map<String, Any?> =
-    value as? Map<String, Any?> ?: invalid("$type type requires object value")
+private fun requireMap(value: Any?, type: String): Map<String, Any?> {
+    val map = value as? Map<*, *> ?: invalid("$type type requires object value")
+    if (map.keys.any { it !is String }) invalid("$type type requires string keys")
+    return map.entries.associate { (key, entryValue) ->
+        key as String to entryValue
+    }
+}
 
 private fun invalid(message: String): Nothing = throw JsonDataException(message)

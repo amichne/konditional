@@ -3,8 +3,10 @@ package io.amichne.konditional.internal.serialization.adapters
 import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.JsonWriter
+import io.amichne.konditional.internal.KonditionalInternalApi
 
-internal fun serializeMap(
+@KonditionalInternalApi
+fun serializeMap(
     writer: JsonWriter,
     map: Map<String, Any?>,
 ) {
@@ -16,7 +18,8 @@ internal fun serializeMap(
     writer.endObject()
 }
 
-internal fun serializeValue(
+@KonditionalInternalApi
+fun serializeValue(
     writer: JsonWriter,
     value: Any?,
 ) {
@@ -38,7 +41,8 @@ internal fun serializeValue(
     }
 }
 
-internal fun deserializeMap(reader: JsonReader): Map<String, Any?> {
+@KonditionalInternalApi
+fun deserializeMap(reader: JsonReader): Map<String, Any?> {
     val map = mutableMapOf<String, Any?>()
     reader.beginObject()
     while (reader.hasNext()) {
@@ -50,7 +54,8 @@ internal fun deserializeMap(reader: JsonReader): Map<String, Any?> {
     return map
 }
 
-internal fun deserializeValue(reader: JsonReader): Any? =
+@KonditionalInternalApi
+fun deserializeValue(reader: JsonReader): Any? =
     when (reader.peek()) {
         JsonReader.Token.NULL -> {
             reader.nextNull<Any?>()

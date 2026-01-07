@@ -5,6 +5,7 @@ import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
+import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.konditional.values.FeatureId
 import java.lang.reflect.Type
 
@@ -15,7 +16,8 @@ import java.lang.reflect.Type
  * - [FeatureId] has a private constructor with strict invariants.
  * - The on-wire format historically used `value::...` and is still accepted for backwards compatibility.
  */
-internal object IdentifierJsonAdapter : JsonAdapter.Factory {
+@KonditionalInternalApi
+object IdentifierJsonAdapter : JsonAdapter.Factory {
     override fun create(
         type: Type,
         annotations: Set<Annotation>,

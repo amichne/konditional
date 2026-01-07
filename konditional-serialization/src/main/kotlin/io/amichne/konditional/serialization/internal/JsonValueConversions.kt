@@ -4,6 +4,7 @@ package io.amichne.konditional.serialization.internal
 
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.core.types.asObjectSchema
+import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.konditional.serialization.SchemaValueCodec
 import io.amichne.kontracts.schema.DoubleSchema
 import io.amichne.kontracts.schema.IntSchema
@@ -15,7 +16,8 @@ import io.amichne.kontracts.value.JsonObject
 import io.amichne.kontracts.value.JsonString
 import io.amichne.kontracts.value.JsonValue
 
-internal fun Any?.toJsonValue(): JsonValue =
+@KonditionalInternalApi
+fun Any?.toJsonValue(): JsonValue =
     when (this) {
         null -> JsonNull
         is Boolean -> JsonBoolean(this)
@@ -41,7 +43,8 @@ internal fun Any?.toJsonValue(): JsonValue =
         else -> throw IllegalArgumentException("Unsupported type for JSON conversion: ${this::class.simpleName}")
     }
 
-internal fun JsonValue.toPrimitiveValue(): Any? =
+@KonditionalInternalApi
+fun JsonValue.toPrimitiveValue(): Any? =
     when (this) {
         is JsonNull -> null
         is JsonBoolean -> value

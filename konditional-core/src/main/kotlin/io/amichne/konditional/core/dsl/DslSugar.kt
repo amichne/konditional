@@ -1,6 +1,9 @@
+@file:OptIn(io.amichne.konditional.internal.KonditionalInternalApi::class)
+
 package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.internal.KonditionalInternalApi
 
 /**
  * Semantic tokens for boolean values in DSL contexts.
@@ -30,13 +33,15 @@ class YieldingScope<T : Any, C : Context> internal constructor(
         host?.commitYield(pendingToken) { scope.rule(value, build) } ?: scope.rule(value, build)
 }
 
-internal interface YieldingScopeHost {
+@KonditionalInternalApi
+interface YieldingScopeHost {
     fun registerPendingYield(token: PendingYieldToken)
 
     fun commitYield(token: PendingYieldToken, commit: () -> Unit)
 }
 
-internal class PendingYieldToken internal constructor(
+@KonditionalInternalApi
+class PendingYieldToken internal constructor(
     val callSite: String?,
 )
 

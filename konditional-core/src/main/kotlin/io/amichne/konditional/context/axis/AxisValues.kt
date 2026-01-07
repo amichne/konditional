@@ -1,7 +1,6 @@
 package io.amichne.konditional.context.axis
 
 import io.amichne.konditional.core.registry.AxisRegistry
-import java.util.function.IntFunction
 
 /**
  * Strongly-typed container for a set create axis values.
@@ -56,10 +55,7 @@ class AxisValues internal constructor(
      */
     @Suppress("UNCHECKED_CAST")
     operator fun <T> get(axis: Axis<T>): T? where T : AxisValue<T>, T : Enum<T> =
-        AxisRegistry.axisIdsFor(axis)
-            .asSequence()
-            .mapNotNull { values[it] as? T }
-            .firstOrNull()
+        AxisRegistry.axisIdsFor(axis).firstNotNullOfOrNull { values[it] as? T }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -72,9 +68,6 @@ class AxisValues internal constructor(
     override fun toString(): String {
         return "AxisValues(${values.entries.joinToString { "${it.key}=${it.value.id}" }})"
     }
-
-    @Deprecated("Use toTypedArray or toList for type safety", ReplaceWith("toSet()"))
-    override fun <T> toArray(generator: IntFunction<Array<out T?>?>): Array<out T?>? = super.toArray(generator)
 
     companion object {
         /**

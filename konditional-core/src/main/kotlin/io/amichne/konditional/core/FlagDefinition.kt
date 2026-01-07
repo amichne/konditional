@@ -4,6 +4,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.evaluation.Bucketing
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
+import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.konditional.rules.ConditionalValue
 
 /**
@@ -23,14 +24,14 @@ import io.amichne.konditional.rules.ConditionalValue
  *
  */
 
-@ConsistentCopyVisibility
-data class FlagDefinition<T : Any, C : Context, M : Namespace> internal constructor(
+@KonditionalInternalApi
+data class FlagDefinition<T : Any, C : Context, M : Namespace>(
     /**
      * The default value returned when no targeting rules match or the flag is inactive.
      */
     val defaultValue: T,
     val feature: Feature<T, C, M>,
-    internal val values: List<ConditionalValue<T, C>> = listOf(),
+    val values: List<ConditionalValue<T, C>> = listOf(),
     val isActive: Boolean = true,
     val salt: String = "v1",
     internal val rampUpAllowlist: Set<HexId> = emptySet(),
@@ -38,10 +39,12 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace> internal construc
     internal val valuesByPrecedence: List<ConditionalValue<T, C>> =
         values.sortedWith(compareByDescending<ConditionalValue<T, C>> { it.rule.specificity() })
 
-    internal companion object {
+    companion object {
         /**
          * Creates a FlagDefinition instance.
          */
+        @KonditionalInternalApi
+        @Suppress("LongParameterList")
         operator fun <T : Any, C : Context, M : Namespace> invoke(
             feature: Feature<T, C, M>,
             bounds: List<ConditionalValue<T, C>>,

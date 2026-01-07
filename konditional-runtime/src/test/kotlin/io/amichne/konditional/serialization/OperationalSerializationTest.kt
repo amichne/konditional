@@ -1,3 +1,5 @@
+@file:OptIn(io.amichne.konditional.internal.KonditionalInternalApi::class)
+
 package io.amichne.konditional.serialization
 
 import io.amichne.konditional.api.axisValues
@@ -11,9 +13,6 @@ import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
-import io.amichne.konditional.internal.serialization.models.FlagValue
-import io.amichne.konditional.internal.serialization.models.SerializableFlag
-import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
 import io.amichne.konditional.runtime.load
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.ConfigurationMetadata
@@ -38,21 +37,32 @@ class OperationalSerializationTest {
         }
 
         val unknownKey = FeatureId.create(namespace.id, "missing-${UUID.randomUUID()}")
-        val snapshotJson = ConfigurationSnapshotCodec.defaultMoshi().adapter(SerializableSnapshot::class.java)
-            .indent("  ").toJson(
-                SerializableSnapshot(
-                    flags = listOf(
-                        SerializableFlag(
-                            key = namespace.knownFeature.id,
-                            defaultValue = FlagValue.BooleanValue(false),
-                        ),
-                        SerializableFlag(
-                            key = unknownKey,
-                            defaultValue = FlagValue.BooleanValue(false),
-                        ),
-                    )
-                )
-            )
+        val snapshotJson = """
+            {
+              "flags" : [
+                {
+                  "key" : "${namespace.knownFeature.id}",
+                  "defaultValue" : {
+                    "type" : "BOOLEAN",
+                    "value" : false
+                  },
+                  "salt" : "v1",
+                  "isActive" : true,
+                  "rules" : []
+                },
+                {
+                  "key" : "$unknownKey",
+                  "defaultValue" : {
+                    "type" : "BOOLEAN",
+                    "value" : false
+                  },
+                  "salt" : "v1",
+                  "isActive" : true,
+                  "rules" : []
+                }
+              ]
+            }
+        """.trimIndent()
 
         val strictResult = ConfigurationSnapshotCodec.decode(snapshotJson)
         assertIs<ParseResult.Failure>(strictResult)

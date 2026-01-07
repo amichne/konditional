@@ -5,6 +5,7 @@ import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.rules.versions.LeftBound
 import io.amichne.konditional.rules.versions.RightBound
@@ -21,7 +22,8 @@ import io.amichne.konditional.rules.versions.VersionRange
  * Parse-don't-validate: Deserialization constructs typed domain objects with
  * validation at the boundary, making illegal states unrepresentable.
  */
-internal class VersionRangeAdapter(moshi: Moshi) {
+@KonditionalInternalApi
+class VersionRangeAdapter(moshi: Moshi) {
     private val versionAdapter = moshi.adapter(Version::class.java)
 
     @FromJson

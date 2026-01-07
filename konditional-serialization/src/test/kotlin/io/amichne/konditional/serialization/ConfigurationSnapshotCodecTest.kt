@@ -5,7 +5,6 @@ import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
@@ -16,11 +15,7 @@ import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.fixtures.serializers.RetryPolicy
-import io.amichne.konditional.fixtures.utilities.localeIds
-import io.amichne.konditional.fixtures.utilities.platformIds
 import io.amichne.konditional.fixtures.utilities.update
-import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
-import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.runtime.load
 import io.amichne.konditional.serialization.instance.Configuration
@@ -99,7 +94,7 @@ class ConfigurationSnapshotCodecTest {
         locale: AppLocale = AppLocale.UNITED_STATES,
         platform: Platform = Platform.IOS,
         version: String = "1.0.0",
-    ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
+    ) = Context(locale, platform, Version.parse(version).getOrThrow(), StableId.of(idHex))
 
     private fun ctxWithEnvironment(env: Environment): Context =
         object : Context {
@@ -181,24 +176,20 @@ class ConfigurationSnapshotCodecTest {
 
     @Test
     fun `Given Konfig with complex rules, When serialized, Then includes all rule attributes`() {
-        val rule =
-            Rule<Context>(
-                rampUp = RampUp.of(50.0),
-                note = "TestNamespace rule",
-                locales = localeIds(AppLocale.UNITED_STATES, AppLocale.FRANCE),
-                platforms = platformIds(Platform.IOS, Platform.ANDROID),
-                versionRange = FullyBound(Version(1, 0, 0), Version(2, 0, 0)),
-            )
+        TestFeatures.boolFlag.update(false) {
+            rule(true) {
+                rampUp { 50.0 }
+                note("TestNamespace rule")
+                locales(AppLocale.UNITED_STATES, AppLocale.FRANCE)
+                platforms(Platform.IOS, Platform.ANDROID)
+                versions {
+                    min(1, 0, 0)
+                    max(2, 0, 0)
+                }
+            }
+        }
 
-        val flag =
-            FlagDefinition(
-                feature = TestFeatures.boolFlag,
-                bounds = listOf(rule.targetedBy(true)),
-                defaultValue = false,
-            )
-        val configuration = Configuration(mapOf(TestFeatures.boolFlag to flag))
-
-        val json = ConfigurationSnapshotCodec.encode(configuration)
+        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
 
         assertNotNull(json)
         assertTrue(json.contains("\"rampUp\": 50.0"))
@@ -628,15 +619,12 @@ class ConfigurationSnapshotCodecTest {
         val rule = flag.values.first().rule
         assertEquals(50.0, rule.rampUp.value)
         assertEquals("TestNamespace rule", rule.note)
-        assertEquals(
-            setOf(AppLocale.UNITED_STATES.id, AppLocale.FRANCE.id),
-            rule.targeting.locales,
-        )
-        assertEquals(
-            setOf(Platform.IOS.id, Platform.ANDROID.id),
-            rule.targeting.platforms,
-        )
-        assertIs<FullyBound>(rule.targeting.versionRange)
+        val encoded = ConfigurationSnapshotCodec.encode(result.value)
+        assertTrue(encoded.contains(AppLocale.UNITED_STATES.id))
+        assertTrue(encoded.contains(AppLocale.FRANCE.id))
+        assertTrue(encoded.contains(Platform.IOS.id))
+        assertTrue(encoded.contains(Platform.ANDROID.id))
+        assertTrue(encoded.contains("MIN_AND_MAX_BOUND"))
     }
 
     @Test
@@ -673,7 +661,8 @@ class ConfigurationSnapshotCodecTest {
 
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.FeatureNotFound>(result.error)
-        assertEquals(FeatureId.create("global", "unregistered_feature"), result.error.key)
+        val error = result.error as ParseError.FeatureNotFound
+        assertEquals(FeatureId.create("global", "unregistered_feature"), error.key)
     }
 
     // ========== Round-Trip Tests ==========
@@ -738,24 +727,20 @@ class ConfigurationSnapshotCodecTest {
 
     @Test
     fun `Given flag with complex rules, When round-tripped, Then all rule attributes are preserved`() {
-        val rule =
-            Rule<Context>(
-                rampUp = RampUp.of(75.0),
-                note = "Complex rule",
-                locales = localeIds(AppLocale.UNITED_STATES, AppLocale.UNITED_STATES),
-                platforms = platformIds(Platform.ANDROID),
-                versionRange = FullyBound(Version(2, 0, 0), Version(3, 0, 0)),
-            )
+        TestFeatures.boolFlag.update(false) {
+            rule(true) {
+                rampUp { 75.0 }
+                note("Complex rule")
+                locales(AppLocale.UNITED_STATES)
+                platforms(Platform.ANDROID)
+                versions {
+                    min(2, 0, 0)
+                    max(3, 0, 0)
+                }
+            }
+        }
 
-        val originalFlag =
-            FlagDefinition(
-                feature = TestFeatures.boolFlag,
-                bounds = listOf(rule.targetedBy(true)),
-                defaultValue = false,
-            )
-        val originalConfiguration = Configuration(mapOf(TestFeatures.boolFlag to originalFlag))
-
-        val json = ConfigurationSnapshotCodec.encode(originalConfiguration)
+        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
         val result = ConfigurationSnapshotCodec.decode(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
@@ -766,19 +751,12 @@ class ConfigurationSnapshotCodecTest {
         val deserializedRule = deserializedFlag.values.first().rule
         assertEquals(75.0, deserializedRule.rampUp.value)
         assertEquals("Complex rule", deserializedRule.note)
-        assertEquals(
-            setOf(AppLocale.UNITED_STATES.id, AppLocale.UNITED_STATES.id),
-            deserializedRule.targeting.locales,
-        )
-        assertEquals(
-            setOf(Platform.ANDROID.id),
-            deserializedRule.targeting.platforms,
-        )
-
-        val versionRange = deserializedRule.targeting.versionRange
-        assertIs<FullyBound>(versionRange)
-        assertEquals(Version(2, 0, 0), versionRange.min)
-        assertEquals(Version(3, 0, 0), versionRange.max)
+        val encoded = ConfigurationSnapshotCodec.encode(result.value)
+        assertTrue(encoded.contains(AppLocale.UNITED_STATES.id))
+        assertTrue(encoded.contains(Platform.ANDROID.id))
+        assertTrue(encoded.contains("MIN_AND_MAX_BOUND"))
+        assertTrue(encoded.contains("\"major\": 2"))
+        assertTrue(encoded.contains("\"major\": 3"))
     }
 
     @Test

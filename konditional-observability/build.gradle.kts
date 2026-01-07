@@ -1,3 +1,6 @@
+import io.amichne.konditional.gradle.GenerateRecipesDocsTask
+import io.amichne.konditional.gradle.VerifyRecipesDocsTask
+
 plugins {
     kotlin("jvm")
     `java-library`
@@ -17,13 +20,7 @@ kotlin {
     }
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    if (name.contains("Test", ignoreCase = true)) {
-        compilerOptions {
-            freeCompilerArgs.add("-Xfriend-paths=${project(":konditional-core").layout.buildDirectory.get()}/classes/kotlin/main")
-        }
-    }
-}
+// Friend paths removed - using @KonditionalInternalApi instead
 
 repositories {
     mavenCentral()
@@ -43,6 +40,44 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+sourceSets {
+    val main by getting
+    create("docsSamples") {
+        java.srcDir("src/docsSamples/kotlin")
+        compileClasspath += main.output + main.compileClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
+val recipesSampleFile =
+    layout.projectDirectory.file(
+        "src/docsSamples/kotlin/io/amichne/konditional/docsamples/RecipesSamples.kt"
+    )
+val recipesTemplateFile =
+    rootProject.layout.projectDirectory.file("docusaurus/docs-templates/recipes.template.md")
+val recipesDocFile =
+    rootProject.layout.projectDirectory.file("docusaurus/docs/advanced/recipes.md")
+
+val generateRecipesDocs by tasks.registering(GenerateRecipesDocsTask::class) {
+    group = "documentation"
+    description = "Generate recipes docs from Kotlin samples."
+    sampleFile.set(recipesSampleFile)
+    templateFile.set(recipesTemplateFile)
+    outputFile.set(recipesDocFile)
+}
+
+val verifyRecipesDocs by tasks.registering(VerifyRecipesDocsTask::class) {
+    group = "verification"
+    description = "Verify recipes docs are up-to-date with Kotlin samples."
+    sampleFile.set(recipesSampleFile)
+    templateFile.set(recipesTemplateFile)
+    docsFile.set(recipesDocFile)
+}
+
+tasks.named("test") {
+    dependsOn("compileDocsSamplesKotlin", verifyRecipesDocs)
 }
 
 java {

@@ -1,3 +1,5 @@
+@file:OptIn(io.amichne.konditional.internal.KonditionalInternalApi::class)
+
 package io.amichne.konditional.ops
 
 import io.amichne.konditional.api.evaluateWithShadow

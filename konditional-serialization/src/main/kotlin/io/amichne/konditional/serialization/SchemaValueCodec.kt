@@ -3,6 +3,7 @@ package io.amichne.konditional.serialization
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.Konstrained
+import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.kontracts.schema.ObjectSchema
 import io.amichne.kontracts.value.JsonBoolean
 import io.amichne.kontracts.value.JsonNull
@@ -22,7 +23,8 @@ import kotlin.reflect.full.primaryConstructor
  * driven by the schema definition. Any type implementing Konstrained<ObjectSchema> can be
  * serialized without additional registration.
  */
-internal object SchemaValueCodec {
+@KonditionalInternalApi
+object SchemaValueCodec {
 
     /**
      * Encodes a value to JsonObject using its schema.

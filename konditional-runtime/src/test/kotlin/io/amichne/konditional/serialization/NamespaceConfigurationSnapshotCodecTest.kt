@@ -9,6 +9,7 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.fixtures.utilities.update
 import io.amichne.konditional.runtime.load
 import io.amichne.konditional.serialization.instance.Configuration
@@ -49,7 +50,7 @@ class NamespaceConfigurationSnapshotCodecTest {
         locale: AppLocale = AppLocale.UNITED_STATES,
         platform: Platform = Platform.IOS,
         version: String = "1.0.0",
-    ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
+    ) = Context(locale, platform, Version.parse(version).getOrThrow(), StableId.of(idHex))
 
     @Test
     fun `Given namespace with no flags, When serialized, Then produces JSON with empty flags array`() {
