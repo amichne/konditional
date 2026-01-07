@@ -1,4 +1,4 @@
-# How-To: Test Your Feature Flags
+# Test Your Feature Flags
 
 ## Problem
 

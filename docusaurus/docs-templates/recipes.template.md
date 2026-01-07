@@ -18,7 +18,7 @@ Covered solution areas:
 
 ---
 
-## Recipe 1: Typed Variants Instead of Boolean Explosion
+## Typed Variants Instead of Boolean Explosion
 
 When you have multiple rollout variants, model them as a typed value (enum or string) rather than composing booleans.
 
@@ -30,7 +30,7 @@ When you have multiple rollout variants, model them as a typed value (enum or st
 
 ---
 
-## Recipe 2: Deterministic Ramp-Up with Resettable Salt
+## Deterministic Ramp-Up with Resettable Salt
 
 Gradually roll out a feature without reshuffling users; use `salt(...)` when you need a clean resample.
 
@@ -46,7 +46,7 @@ To restart the experiment with a fresh sample:
 
 ---
 
-## Recipe 3: Runtime-Configurable Segments via Axes
+## Runtime-Configurable Segments via Axes
 
 Use axes for segment targeting you want to update via JSON (without redeploying predicates).
 
@@ -58,7 +58,7 @@ Use axes for segment targeting you want to update via JSON (without redeploying 
 
 ---
 
-## Recipe 4: Business Logic Targeting with Custom Context + Extension
+## Business Logic Targeting with Custom Context + Extension
 
 Use strongly-typed extensions for domain logic that should not be remotely mutable.
 
@@ -70,7 +70,7 @@ Use strongly-typed extensions for domain logic that should not be remotely mutab
 
 ---
 
-## Recipe 5: Structured Values with Schema Validation
+## Structured Values with Schema Validation
 
 Use `custom<T>` for structured configuration that must be validated at the JSON boundary.
 
@@ -82,7 +82,7 @@ Use `custom<T>` for structured configuration that must be validated at the JSON 
 
 ---
 
-## Recipe 6: Safe Remote Config Loading + Rollback
+## Safe Remote Config Loading + Rollback
 
 Use `ParseResult` to enforce a hard boundary at the JSON parse step, and roll back on bad updates.
 
@@ -98,7 +98,7 @@ If a later update causes issues:
 
 ---
 
-## Recipe 7: Controlled Migrations with Shadow Evaluation
+## Controlled Migrations with Shadow Evaluation
 
 Compare a candidate configuration to baseline behavior without changing production outputs.
 
@@ -110,7 +110,7 @@ Compare a candidate configuration to baseline behavior without changing producti
 
 ---
 
-## Recipe 8: Namespace Isolation + Kill-Switch
+## Namespace Isolation + Kill-Switch
 
 Use separate namespaces for independent lifecycles, and a scoped kill-switch for emergencies.
 
@@ -122,7 +122,7 @@ Use separate namespaces for independent lifecycles, and a scoped kill-switch for
 
 ---
 
-## Recipe 9: Lightweight Observability Hooks
+## Lightweight Observability Hooks
 
 Attach logging and metrics without depending on a specific vendor SDK.
 

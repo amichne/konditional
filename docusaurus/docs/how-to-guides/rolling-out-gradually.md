@@ -1,4 +1,4 @@
-# How-To: Roll Out a Feature Gradually
+# Roll Out a Feature Gradually
 
 ## Problem
 

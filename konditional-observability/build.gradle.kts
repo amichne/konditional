@@ -42,13 +42,12 @@ tasks.test {
     useJUnitPlatform()
 }
 
-sourceSets {
-    val main by getting
-    create("docsSamples") {
-        java.srcDir("src/docsSamples/kotlin")
-        compileClasspath += main.output + main.compileClasspath
-        runtimeClasspath += output + compileClasspath
-    }
+// Create a dedicated source set for docs samples
+val docsSamples by sourceSets.creating {
+    val main = sourceSets["main"]
+    java.srcDir("src/docsSamples/kotlin")
+    compileClasspath += main.output + main.compileClasspath
+    runtimeClasspath += output + compileClasspath
 }
 
 val recipesSampleFile =
@@ -57,15 +56,15 @@ val recipesSampleFile =
     )
 val recipesTemplateFile =
     rootProject.layout.projectDirectory.file("docusaurus/docs-templates/recipes.template.md")
-val recipesDocFile =
-    rootProject.layout.projectDirectory.file("docusaurus/docs/advanced/recipes.md")
+val recipesDocsDir =
+    rootProject.layout.projectDirectory.dir("docusaurus/docs/advanced/recipes")
 
 val generateRecipesDocs by tasks.registering(GenerateRecipesDocsTask::class) {
     group = "documentation"
     description = "Generate recipes docs from Kotlin samples."
     sampleFile.set(recipesSampleFile)
     templateFile.set(recipesTemplateFile)
-    outputFile.set(recipesDocFile)
+    outputDir.set(recipesDocsDir)
 }
 
 val verifyRecipesDocs by tasks.registering(VerifyRecipesDocsTask::class) {
@@ -73,7 +72,7 @@ val verifyRecipesDocs by tasks.registering(VerifyRecipesDocsTask::class) {
     description = "Verify recipes docs are up-to-date with Kotlin samples."
     sampleFile.set(recipesSampleFile)
     templateFile.set(recipesTemplateFile)
-    docsFile.set(recipesDocFile)
+    docsDir.set(recipesDocsDir)
 }
 
 tasks.named("test") {

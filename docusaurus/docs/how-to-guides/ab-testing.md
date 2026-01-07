@@ -1,4 +1,4 @@
-# How-To: A/B Test Feature Variants
+# A/B Test Feature Variants
 
 ## Problem
 

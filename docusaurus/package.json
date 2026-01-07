@@ -16,11 +16,14 @@
     "@docusaurus/theme-mermaid": "^3.9.2",
     "@mdx-js/react": "^3.0.1",
     "clsx": "^2.1.1",
-    "docusaurus-lunr-search": "3.6.0",
+    "docusaurus-lunr-search": "~3.6.0",
     "prism-react-renderer": "^2.3.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "redocusaurus": "^2.1.2"
+  },
+  "overrides": {
+    "lunr-languages": "../_EXCLUDED_"
   },
   "engines": {
     "node": ">=20.0.0"
