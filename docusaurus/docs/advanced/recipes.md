@@ -1,3 +1,8 @@
+---
+toc_min_heading_level: 2
+toc_max_heading_level: 5
+---
+
 <!--
 Generated file: do not edit recipes.md directly.
 Source: docusaurus/docs-templates/recipes.template.md + konditional-observability/src/docsSamples/kotlin/io/amichne/konditional/docsamples/RecipesSamples.kt
@@ -18,7 +23,7 @@ Covered solution areas:
 
 ---
 
-## Recipe 1: Typed Variants Instead of Boolean Explosion
+## Typed Variants Instead of Boolean Explosion
 
 When you have multiple rollout variants, model them as a typed value (enum or string) rather than composing booleans.
 
@@ -47,7 +52,7 @@ fun renderCheckout(context: Context) {
 
 ---
 
-## Recipe 2: Deterministic Ramp-Up with Resettable Salt
+## Deterministic Ramp-Up with Resettable Salt
 
 Gradually roll out a feature without reshuffling users; use `salt(...)` when you need a clean resample.
 
@@ -80,7 +85,7 @@ object RampUpResetFlags : Namespace("ramp-up-reset") {
 
 ---
 
-## Recipe 3: Runtime-Configurable Segments via Axes
+## Runtime-Configurable Segments via Axes
 
 Use axes for segment targeting you want to update via JSON (without redeploying predicates).
 
@@ -124,7 +129,7 @@ fun isPremiumUiEnabled(): Boolean {
 
 ---
 
-## Recipe 4: Business Logic Targeting with Custom Context + Extension
+## Business Logic Targeting with Custom Context + Extension
 
 Use strongly-typed extensions for domain logic that should not be remotely mutable.
 
@@ -155,7 +160,7 @@ object PremiumFeatures : Namespace("premium") {
 
 ---
 
-## Recipe 5: Structured Values with Schema Validation
+## Structured Values with Schema Validation
 
 Use `custom<T>` for structured configuration that must be validated at the JSON boundary.
 
@@ -185,7 +190,7 @@ object PolicyFlags : Namespace("policy") {
 
 ---
 
-## Recipe 6: Safe Remote Config Loading + Rollback
+## Safe Remote Config Loading + Rollback
 
 Use `ParseResult` to enforce a hard boundary at the JSON parse step, and roll back on bad updates.
 
@@ -216,7 +221,7 @@ fun rollbackConfig() {
 
 ---
 
-## Recipe 7: Controlled Migrations with Shadow Evaluation
+## Controlled Migrations with Shadow Evaluation
 
 Compare a candidate configuration to baseline behavior without changing production outputs.
 
@@ -250,7 +255,7 @@ fun evaluateWithShadowedConfig(context: Context): Boolean {
 
 ---
 
-## Recipe 8: Namespace Isolation + Kill-Switch
+## Namespace Isolation + Kill-Switch
 
 Use separate namespaces for independent lifecycles, and a scoped kill-switch for emergencies.
 
@@ -276,7 +281,7 @@ fun disablePayments() {
 
 ---
 
-## Recipe 9: Lightweight Observability Hooks
+## Lightweight Observability Hooks
 
 Attach logging and metrics without depending on a specific vendor SDK.
 
