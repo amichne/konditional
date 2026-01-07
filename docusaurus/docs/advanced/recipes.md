@@ -166,7 +166,9 @@ data class RetryPolicy(
     val enabled: Boolean = true,
 ) : Konstrained<ObjectSchema> {
     override val schema = schemaRoot {
-        ::maxAttempts of { minimum = 1 }
+        ::maxAttempts of {
+            this
+        }
         ::backoffMs of { minimum = 0.0 }
         ::enabled of { default = true }
     }
@@ -310,8 +312,8 @@ fun attachHooks() {
 
 ## Next Steps
 
-- [Rules & Targeting: Rule Composition](/core/rules)
-- [Rules & Targeting: Rollout Strategies](/how-to-guides/rolling-out-gradually)
+- [Rules & Targeting: Rule Composition](/rules-and-targeting/rule-composition)
+- [Rules & Targeting: Rollout Strategies](/rules-and-targeting/rollout-strategies)
 - [Fundamentals: Configuration Lifecycle](/fundamentals/configuration-lifecycle)
-- [Advanced: Shadow Evaluation](/observability/shadow-evaluation)
-- [API Reference: Observability](/observability/reference)
+- [Advanced: Shadow Evaluation](/advanced/shadow-evaluation)
+- [API Reference: Observability](/api-reference/observability)
