@@ -19,6 +19,11 @@ KonditionalTelemetry.install(telemetry)
 val enabled = MyFlags.darkMode.evaluateWithTelemetry(context)
 ```
 
+---
+
+<details>
+<summary>Advanced Options</summary>
+
 ## Sampling strategies
 
 ```kotlin
@@ -35,3 +40,5 @@ SamplingStrategy.FEATURE_FILTER { feature -> feature.namespace.id == "critical" 
 val hooks = telemetry.toRegistryHooks()
 AppFeatures.setHooks(hooks)
 ```
+
+</details>

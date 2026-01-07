@@ -76,6 +76,6 @@ val enabled: Boolean = AppFeatures.darkMode.evaluate(ctx)
 Konditional Core does not ship remote configuration, JSON serialization, or observability helpers. Those live in
 separate modules:
 
-- [Runtime](/runtime/index)
-- [Serialization](/serialization/index)
-- [Observability](/observability/index)
+- [Runtime](/runtime/)
+- [Serialization](/serialization/)
+- [Observability](/observability/)

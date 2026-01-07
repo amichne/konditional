@@ -98,7 +98,7 @@ val context = Context(
 ```
 
 `stableId` is the stable input used for deterministic ramp-up bucketing (
-see ["Rollout Strategies"](/rules-and-targeting/rollout-strategies)).
+see ["Rollout Strategies"](/how-to-guides/rolling-out-gradually)).
 
 ### 3. Add rules after defaults exist (behavior safety)
 
@@ -200,4 +200,4 @@ This keeps behavior pinned to the baseline value while generating comparison tel
 
 - Learn the primitives: ["Core Primitives"](/fundamentals/core-primitives)
 - Understand evaluation + determinism: ["Evaluation Semantics"](/fundamentals/evaluation-semantics)
-- Operate remote config safely: ["Loading from JSON"](/getting-started/loading-from-json)
+- Operate remote config safely: [Configuration lifecycle](/fundamentals/configuration-lifecycle)

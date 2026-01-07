@@ -159,7 +159,9 @@ data class RetryPolicy(
     val enabled: Boolean = true,
 ) : Konstrained<ObjectSchema> {
     override val schema = schemaRoot {
-        ::maxAttempts of { minimum = 1 }
+        ::maxAttempts of {
+            this
+        }
         ::backoffMs of { minimum = 0.0 }
         ::enabled of { default = true }
     }

@@ -50,6 +50,9 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 
 ---
 
+<details>
+<summary>Advanced Options</summary>
+
 ## `ConfigurationSnapshotCodec.applyPatchJson(configuration, patchJson, options): ParseResult<Configuration>`
 
 Apply an incremental patch to an existing configuration snapshot.
@@ -120,6 +123,8 @@ sealed interface ParseError {
     data class InvalidVersion(val input: String, val message: String) : ParseError
 }
 ```
+
+</details>
 
 ---
 

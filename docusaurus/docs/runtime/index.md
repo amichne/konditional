@@ -3,7 +3,27 @@
 `konditional-runtime` adds lifecycle operations on top of core namespaces: loading snapshots, rollback, kill-switches,
 and registry hooks.
 
-Use this module when you want dynamic configuration updates at runtime.
+## When to Use This Module
+
+You should use `konditional-runtime` when you need to:
+- Load feature flag configuration dynamically at runtime without redeploying
+- Roll back to a previous configuration snapshot when issues are detected
+- Use an emergency kill-switch to disable all features in a namespace instantly
+- Attach logging and metrics hooks to track configuration changes
+
+## What You Get
+
+- **Atomic configuration loading**: Swap entire configuration snapshots safely
+- **Rollback history**: Revert to previous configurations with bounded history
+- **Kill-switch operations**: `disableAll()` and `enableAll()` for emergency control
+- **Registry hooks**: Attach dependency-free logging and metrics adapters
+
+## Alternatives
+
+Without this module, you would need to:
+- Rebuild and redeploy your application to change feature flag behavior
+- Implement your own atomic configuration swap mechanism with proper thread safety
+- Build custom rollback tracking and emergency controls from scratch
 
 ## Installation
 
@@ -25,4 +45,4 @@ dependencies {
 
 - [Runtime operations](/runtime/operations)
 - [Configuration lifecycle](/runtime/lifecycle)
-- [Serialization module](/serialization/index)
+- [Serialization module](/serialization/)

@@ -36,6 +36,9 @@ val enabled: Boolean = AppFeatures.darkMode.evaluate(context)
 
 ---
 
+<details>
+<summary>Advanced Options</summary>
+
 ## `Feature.explain(context, registry): EvaluationResult<T>`
 
 Explainable evaluation for debugging and observability.
@@ -74,10 +77,12 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithReason(
 ): EvaluationResult<T>
 ```
 
+</details>
+
 ---
 
 ## Next steps
 
 - [Core types](/core/types)
-- [Observability](/observability/index)
-- [Runtime operations](/runtime/index)
+- [Observability](/observability/)
+- [Runtime operations](/runtime/)

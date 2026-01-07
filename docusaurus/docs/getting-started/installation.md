@@ -35,6 +35,6 @@ dependencies {
 That is enough to define features and evaluate them in code. If you need remote configuration, JSON serialization, or
 observability utilities, see the module docs:
 
-- [Runtime](/runtime/index)
-- [Serialization](/serialization/index)
-- [Observability](/observability/index)
+- [Runtime](/runtime/)
+- [Serialization](/serialization/)
+- [Observability](/observability/)
