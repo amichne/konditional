@@ -30,28 +30,28 @@ object AppFeatures : Namespace("app") {
 
 1. **Property name = feature key**
    ```kotlin
-   AppFeatures.darkMode.evaluate(context)  // ✓ Property exists
-   // AppFeatures.darkMood.evaluate(context)  // ✗ Compile error
+   AppFeatures.darkMode.evaluate(context)  // OK Property exists
+   // AppFeatures.darkMood.evaluate(context)  // X Compile error
    ```
 
 2. **Type propagation**
    ```kotlin
-   val enabled: Boolean = AppFeatures.darkMode.evaluate(context)  // ✓
-   // val enabled: String = AppFeatures.darkMode.evaluate(context)  // ✗ Type mismatch
+   val enabled: Boolean = AppFeatures.darkMode.evaluate(context)  // OK
+   // val enabled: String = AppFeatures.darkMode.evaluate(context)  // X Type mismatch
    ```
 
 3. **Rule return types match feature type**
    ```kotlin
    val timeout by double<Context>(default = 30.0) {
-       rule(45.0) { platforms(Platform.ANDROID) }  // ✓
-       // rule("invalid") { platforms(Platform.IOS) }  // ✗ Type mismatch
+       rule(45.0) { platforms(Platform.ANDROID) }  // OK
+       // rule("invalid") { platforms(Platform.IOS) }  // X Type mismatch
    }
    ```
 
 4. **Required defaults**
    ```kotlin
-   val feature by boolean<Context>(default = false)  // ✓
-   // val feature by boolean<Context>()  // ✗ Compile error: default required
+   val feature by boolean<Context>(default = false)  // OK
+   // val feature by boolean<Context>()  // X Compile error: default required
    ```
 
 5. **Context type constraints**
@@ -61,10 +61,10 @@ object AppFeatures : Namespace("app") {
    }
 
    val ctx: EnterpriseContext = buildContext()
-   PREMIUM(ctx)  // ✓
+   PREMIUM(ctx)  // OK
 
    val basicCtx: Context = Context(...)
-   // PREMIUM(basicCtx)  // ✗ Compile error
+   // PREMIUM(basicCtx)  // X Compile error
    ```
 
 ### Mechanism: Property Delegation + Generics
@@ -86,7 +86,7 @@ fun <C : Context> Namespace.boolean(
 ```
 
 **Type flow:**
-1. `boolean<Context>(default = false)` → `BooleanFeatureDelegate<Context>`
+1. `boolean<Context>(default = false)` -> `BooleanFeatureDelegate<Context>`
 2. Delegate returns `Feature<Boolean, Context, Namespace>`
 3. Property type is inferred: `Feature<Boolean, Context, Namespace>`
 4. `feature(context: Context)` returns `Boolean`
@@ -115,10 +115,10 @@ When configuration comes from JSON:
 
 **Compile-time limits:**
 
-1. **JSON syntax** — Compiler can't validate JSON strings
-2. **Schema correctness** — Compiler can't check JSON structure
-3. **Type correctness** — Compiler can't verify JSON types match Kotlin types
-4. **Feature existence** — Compiler can't verify referenced features are registered
+1. **JSON syntax** - Compiler can't validate JSON strings
+2. **Schema correctness** - Compiler can't check JSON structure
+3. **Type correctness** - Compiler can't verify JSON types match Kotlin types
+4. **Feature existence** - Compiler can't verify referenced features are registered
 
 ### Mechanism: Runtime Validation via ParseResult
 
@@ -143,14 +143,16 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 
 **Runtime checks:**
 
-1. **JSON parsing** — Moshi parses JSON into the snapshot model
-2. **Feature lookup** — Each `FeatureId` is resolved to a registered `Feature` (or fails with `ParseError.FeatureNotFound`)
-3. **Type decoding** — Tagged values (`defaultValue` and rule `value`) are decoded into the declared Kotlin types (or fail with `ParseError.InvalidSnapshot`)
-4. **Structured value validation** — For `Konstrained` values, fields are validated against the provided Kontracts schema at the boundary
+1. **JSON parsing** - Moshi parses JSON into the snapshot model
+2. **Feature lookup** - Each `FeatureId` is resolved to a registered `Feature` (or fails with `ParseError.FeatureNotFound`)
+3. **Type decoding** - Tagged values (`defaultValue` and rule `value`) are decoded into the declared Kotlin types (or fail with `ParseError.InvalidSnapshot`)
+4. **Structured value validation** - For `Konstrained` values, fields are validated against the provided Kontracts schema at the boundary
+
+**Boundary**: Manually constructing `Configuration` bypasses these checks; treat it as trusted input.
 
 **Guarantee**: Application code does not construct JSON literals via a Konditional JSON value model.  
 **Mechanism**: JSON is parsed into the snapshot model and decoded into Kotlin values; structured values validate against `ObjectSchema`.  
-**Boundary**: This guarantee applies to Konditional’s public API; `kontracts` may still expose a runtime JSON model for standalone use.
+**Boundary**: This guarantee applies to Konditional's public API; `kontracts` may still expose a runtime JSON model for standalone use.
 
 ---
 
@@ -191,18 +193,18 @@ Rice's Theorem states that all non-trivial semantic properties of programs are u
 ### Trade-Off: Flexibility vs Safety
 
 **Option 1: No remote configuration (all compile-time)**
-- ✓ Maximum safety
-- ✗ No dynamic updates (requires redeployment)
+- OK Maximum safety
+- X No dynamic updates (requires redeployment)
 
 **Option 2: Untyped remote configuration**
-- ✓ Maximum flexibility
-- ✗ No safety (runtime errors)
+- OK Maximum flexibility
+- X No safety (runtime errors)
 
 **Konditional's approach: Validated boundary**
-- ✓ Type-safe static definitions
-- ✓ Dynamic updates via JSON
-- ✓ Explicit validation at boundary
-- ✓ Invalid JSON rejected before affecting evaluation
+- OK Type-safe static definitions
+- OK Dynamic updates via JSON
+- OK Explicit validation at boundary
+- OK Invalid JSON rejected before affecting evaluation
 
 ---
 
@@ -211,7 +213,7 @@ Rice's Theorem states that all non-trivial semantic properties of programs are u
 ### Traditional Stringly-Typed Flags
 
 ```kotlin
-// ✗ No compile-time checks
+// X No compile-time checks
 val enabled = flagClient.getBool("new_onboaring_flow", false)  // Typo ships to prod
 val timeout = flagClient.getInt("timeout", 30)  // Type coercion can fail silently
 ```
@@ -224,15 +226,15 @@ val timeout = flagClient.getInt("timeout", 30)  // Type coercion can fail silent
 ### Konditional (Statically-Defined)
 
 ```kotlin
-// ✓ Compile-time checks
+// OK Compile-time checks
 val enabled = AppFeatures.newOnboardingFlow.evaluate(context)  // Typo is compile error
-// AppFeatures.newOnboaringFlow  // ✗ Compile error
+// AppFeatures.newOnboaringFlow  // X Compile error
 ```
 
 ### Konditional (JSON-Loaded)
 
 ```kotlin
-// ✓ Runtime validation with explicit error handling
+// OK Runtime validation with explicit error handling
 when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> {
         // Type-safe from here on
@@ -264,6 +266,6 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 
 ## Next Steps
 
-- [Fundamentals: Trust Boundaries](/fundamentals/trust-boundaries) — Practical implications
-- [Theory: Parse Don't Validate](/theory/parse-dont-validate) — Why ParseResult prevents invalid states
-- [API Reference: Serialization](/api-reference/serialization) — ParseResult API
+- [Core Types](/core/types) - Compile-time surface area
+- [Theory: Parse Don't Validate](/theory/parse-dont-validate) - Why ParseResult prevents invalid states
+- [Serialization Reference](/serialization/reference) - ParseResult API

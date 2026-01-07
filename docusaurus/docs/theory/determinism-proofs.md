@@ -10,8 +10,8 @@ Why same inputs always produce same outputs: SHA-256 bucketing, stable rule orde
 
 **Formally:**
 ```
-∀ context C, configuration S:
-  evaluate(feature, C, S) = v₁ ∧ evaluate(feature, C, S) = v₂ → v₁ = v₂
+forall context C, configuration S:
+  evaluate(feature, C, S) = v1 and evaluate(feature, C, S) = v2 -> v1 = v2
 ```
 
 ---
@@ -27,9 +27,9 @@ bucket = uint32(hash[0..3]) % 10_000
 ```
 
 **SHA-256 properties:**
-1. **Deterministic** — Same input always produces same hash
-2. **Collision-resistant** — Different inputs produce different hashes (with negligible probability of collision)
-3. **Uniform distribution** — Hash outputs are uniformly distributed
+1. **Deterministic** - Same input always produces same hash
+2. **Collision-resistant** - Different inputs produce different hashes (with negligible probability of collision)
+3. **Uniform distribution** - Hash outputs are uniformly distributed
 
 ### Proof of Determinism
 
@@ -76,7 +76,7 @@ val sortedRules = rules.sortedByDescending { it.specificity }
 
 Kotlin's `sortedByDescending` is a **stable sort**:
 - Elements with equal specificity retain their original order
-- Sorting is deterministic (same input → same output)
+- Sorting is deterministic (same input -> same output)
 
 **Corollary:** Rule iteration order is deterministic for a fixed configuration.
 
@@ -123,7 +123,7 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
 ### Theorem
 
 **Given:**
-- A feature `f` with default `d` and rules `R = [r₁, r₂, ..., rₙ]`
+- A feature `f` with default `d` and rules `R = [r1, r2, ..., rn]`
 - A context `C` with `(locale, platform, version, stableId)`
 - A configuration snapshot `S` containing `f`'s definition
 
@@ -147,11 +147,11 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
 
 1. **Sort rules by specificity** (stable sort, deterministic)
 2. **Iterate rules in order:**
-   - **Criteria matching** — Pure functions of `C` (no side effects)
-   - **Ramp-up check** — SHA-256 bucketing (deterministic, proven above)
-   - **Allowlist check** — Set membership (deterministic)
-3. **First matching rule** — Iteration order is deterministic, so first match is deterministic
-4. **Return rule value or default** — Both are constants from `S`
+   - **Criteria matching** - Pure functions of `C` (no side effects)
+   - **Ramp-up check** - SHA-256 bucketing (deterministic, proven above)
+   - **Allowlist check** - Set membership (deterministic)
+3. **First matching rule** - Iteration order is deterministic, so first match is deterministic
+4. **Return rule value or default** - Both are constants from `S`
 
 **Result:** All steps are deterministic, so final value is deterministic.
 
@@ -161,7 +161,7 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
 
 ## What Could Break Determinism (and What Can't)
 
-### ✓ Deterministic: Same Context
+### OK Deterministic: Same Context
 
 ```kotlin
 val ctx = Context(
@@ -176,7 +176,7 @@ val v2 = AppFeatures.darkMode(ctx)
 // v1 == v2 (guaranteed)
 ```
 
-### ✓ Deterministic: Same StableId, Different Context Fields
+### OK Deterministic: Same StableId, Different Context Fields
 
 ```kotlin
 val ctx1 = Context(..., stableId = StableId.of("user-123"))
@@ -185,18 +185,18 @@ val ctx2 = Context(..., stableId = StableId.of("user-123"))
 // If same rules match, ramp-up bucket is same (same stableId)
 ```
 
-### ✗ Non-Deterministic: Different StableId
+### X Non-Deterministic: Different StableId
 
 ```kotlin
 val ctx1 = Context(..., stableId = StableId.of("user-123"))
 val ctx2 = Context(..., stableId = StableId.of("user-456"))
 
-// Different stableId → different bucket → possibly different value
+// Different stableId -> different bucket -> possibly different value
 ```
 
 This is **intentional**: ramp-up bucketing is deterministic **per user**, not across users.
 
-### ✗ Non-Deterministic: Configuration Changes Between Evaluations
+### X Non-Deterministic: Configuration Changes Between Evaluations
 
 ```kotlin
 val v1 = AppFeatures.darkMode(ctx)
@@ -205,12 +205,12 @@ val v1 = AppFeatures.darkMode(ctx)
 AppFeatures.load(newConfig)
 
 val v2 = AppFeatures.darkMode(ctx)
-// v1 might ≠ v2 (config changed)
+// v1 might != v2 (config changed)
 ```
 
 This is **intentional**: determinism is scoped to a single configuration snapshot.
 
-### ✓ Deterministic: Concurrent Evaluations (Same Snapshot)
+### OK Deterministic: Concurrent Evaluations (Same Snapshot)
 
 ```kotlin
 // Thread 1
@@ -226,7 +226,7 @@ val v2 = AppFeatures.darkMode(ctx)
 
 ## Testing Determinism
 
-### Unit Test: Same Context → Same Value
+### Unit Test: Same Context -> Same Value
 
 ```kotlin
 @Test
@@ -273,16 +273,16 @@ fun `50 percent ramp-up distributes evenly`() {
 
 | Property | Mechanism | Guarantee |
 |----------|-----------|-----------|
-| **Ramp-up determinism** | SHA-256 (FIPS 180-4) | Same `(stableId, flagKey, salt)` → same bucket |
-| **Rule ordering** | Stable sort by specificity | Same rules → same iteration order |
+| **Ramp-up determinism** | SHA-256 (FIPS 180-4) | Same `(stableId, flagKey, salt)` -> same bucket |
+| **Rule ordering** | Stable sort by specificity | Same rules -> same iteration order |
 | **Snapshot immutability** | Kotlin immutable data classes | Snapshot cannot change after creation |
 | **Atomic reads** | `AtomicReference.get()` | Readers see consistent snapshot |
-| **Overall determinism** | Composition of above | Same `(context, snapshot)` → same value |
+| **Overall determinism** | Composition of above | Same `(context, snapshot)` -> same value |
 
 ---
 
 ## Next Steps
 
-- [Fundamentals: Evaluation Semantics](/fundamentals/evaluation-semantics) — Practical determinism
-- [Rules & Targeting: Rollout Strategies](/rules-and-targeting/rollout-strategies) — SHA-256 bucketing
-- [Theory: Atomicity Guarantees](/theory/atomicity-guarantees) — Snapshot consistency
+- [Fundamentals: Evaluation Semantics](/fundamentals/evaluation-semantics) - Practical determinism
+- [Core API Reference](/core/reference) - Evaluation and ramp-up behavior
+- [Theory: Atomicity Guarantees](/theory/atomicity-guarantees) - Snapshot consistency

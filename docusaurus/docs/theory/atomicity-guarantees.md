@@ -9,7 +9,7 @@ Why readers never see partial configuration updates, and how `AtomicReference` p
 Without atomicity, readers can observe partial updates:
 
 ```kotlin
-// ✗ Non-atomic update (simplified)
+// X Non-atomic update (simplified)
 class Registry {
     var config: Configuration = initial  // Not thread-safe
 
@@ -45,9 +45,9 @@ override val configuration: Configuration
 ```
 
 **Guarantees:**
-1. **Atomic swap** — `set(...)` is a single write operation (no partial updates)
-2. **Happens-before** — JVM memory model guarantees writes are visible to subsequent reads
-3. **No torn reads** — Reference swap is atomic at the hardware level
+1. **Atomic swap** - `set(...)` is a single write operation (no partial updates)
+2. **Happens-before** - JVM memory model guarantees writes are visible to subsequent reads
+3. **No torn reads** - Reference swap is atomic at the hardware level
 
 ---
 
@@ -55,15 +55,15 @@ override val configuration: Configuration
 
 ### JVM Memory Model Guarantees
 
-From the Java Language Specification (JLS §17.4.5):
+From the Java Language Specification (JLS section 17.4.5):
 
 > "All actions in a thread happen-before any action in that thread that comes later in the program order."
 
 > "A write to a volatile variable v happens-before all subsequent reads of v by any thread."
 
 `AtomicReference` uses volatile semantics internally, providing:
-- **Visibility** — Writes are immediately visible to other threads
-- **Ordering** — No reordering of reads/writes across the volatile barrier
+- **Visibility** - Writes are immediately visible to other threads
+- **Ordering** - No reordering of reads/writes across the volatile barrier
 
 ### Single Write Operation
 
@@ -121,14 +121,14 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
 ```
 
 **Benefits:**
-- **No contention** — Multiple threads can read concurrently
-- **No blocking** — Writers don't block readers, readers don't block writers
-- **Predictable latency** — No lock acquisition overhead
+- **No contention** - Multiple threads can read concurrently
+- **No blocking** - Writers don't block readers, readers don't block writers
+- **Predictable latency** - No lock acquisition overhead
 
 ### Comparison: Lock-Based Approach
 
 ```kotlin
-// ✗ Lock-based (slower, more complex)
+// X Lock-based (slower, more complex)
 class Registry {
     private val lock = ReentrantReadWriteLock()
     private var config: Configuration = initial
@@ -188,7 +188,7 @@ val value = AppFeatures.darkMode.evaluate(context)
 
 ## What Can Still Go Wrong (and What Can't)
 
-### ✓ Safe: Concurrent Reads During Update
+### OK Safe: Concurrent Reads During Update
 
 ```kotlin
 // Thread 1
@@ -204,7 +204,7 @@ AppFeatures.load(newConfig)
 
 **Outcome:** All threads see consistent snapshots (old or new, never mixed).
 
-### ✓ Safe: Multiple Concurrent Updates
+### OK Safe: Multiple Concurrent Updates
 
 ```kotlin
 thread { AppFeatures.load(config1) }
@@ -214,7 +214,7 @@ thread { AppFeatures.load(config3) }
 
 **Outcome:** Last write wins. Readers see one of the configs.
 
-### ✗ Unsafe: Mutating Configuration After Load
+### X Unsafe: Mutating Configuration After Load
 
 ```kotlin
 // DON'T DO THIS
@@ -228,7 +228,7 @@ observe changes that did not come from `load(...)`).
 **Mitigation:** Treat snapshots as immutable values. If you need a different configuration, deserialize a new snapshot
 and call `load(...)`.
 
-### ✗ Unsafe: Bypassing `load(...)`
+### X Unsafe: Bypassing `load(...)`
 
 ```kotlin
 // There is no supported public API for mutating a registry's internal state.
@@ -241,7 +241,7 @@ and call `load(...)`.
 
 ## Formal Guarantee
 
-**Invariant:** For any evaluation at time `t`, the returned value is computed using a configuration snapshot that was active at some time `t' ≤ t`.
+**Invariant:** For any evaluation at time `t`, the returned value is computed using a configuration snapshot that was active at some time `t' <= t`.
 
 **Corollary:** Readers never observe a configuration that was never active (no partial updates, no torn reads).
 
@@ -255,6 +255,6 @@ and call `load(...)`.
 
 ## Next Steps
 
-- [Fundamentals: Refresh Safety](/fundamentals/refresh-safety) — Practical implications
-- [Fundamentals: Evaluation Semantics](/fundamentals/evaluation-semantics) — Atomic + deterministic
-- [API Reference: Namespace Operations](/api-reference/namespace-operations) — `load(...)` API
+- [Runtime: Configuration Lifecycle](/runtime/lifecycle) - Practical implications
+- [Fundamentals: Evaluation Semantics](/fundamentals/evaluation-semantics) - Atomic + deterministic
+- [Runtime: Operations](/runtime/operations) - `load(...)` API

@@ -8,38 +8,40 @@ Practical patterns for comparing two Konditional configurations (baseline vs can
 
 Shadow evaluation evaluates the same feature against two registries:
 
-- **Baseline registry**: returned value (production behavior)
-- **Candidate registry**: comparison only
+- Baseline registry: returned value (production behavior)
+- Candidate registry: comparison only
 
 Konditional provides this via:
 
 - `Feature.evaluateWithShadow(context, candidateRegistry, baselineRegistry = namespace, options = ShadowOptions.defaults(), onMismatch): T`
 - `Feature.evaluateShadow(context, candidateRegistry, baselineRegistry = namespace, options = ShadowOptions.defaults(), onMismatch): Unit`
 
-`onMismatch` receives a `ShadowMismatch<T>` containing both `EvaluationResult<T>` values (`baseline` + `candidate`) and a
+`onMismatch` receives a `ShadowMismatch<T>` containing both `EvaluationResult<T>` values (baseline + candidate) and a
 `kinds` set (`VALUE`, and optionally `DECISION`).
+
+### Prerequisites
+
+- `konditional-observability` for `evaluateWithShadow` / `evaluateShadow`
+- `konditional-runtime` for `InMemoryNamespaceRegistry`
+- `konditional-serialization` if you load candidate snapshots from JSON
 
 ---
 
-## Pattern 1: Canary a Candidate Snapshot
+## Pattern 1: Canary a candidate snapshot
 
 Compare a candidate JSON snapshot against production traffic before promoting it.
 
 ### Setup
 
 ```kotlin
-// Candidate: parse JSON into a Configuration
 val candidateJson = fetchCandidateConfig()
 val _ = AppFeatures // ensure features are registered before parsing
 val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow()
 
-// Candidate registry: isolate evaluation without touching production namespace state
-val candidateRegistry = NamespaceRegistry(
-    configuration = candidateConfig,
-    namespaceId = AppFeatures.namespaceId,
-)
+val candidateRegistry = InMemoryNamespaceRegistry(namespaceId = AppFeatures.namespaceId).apply {
+    load(candidateConfig)
+}
 
-// Collect mismatches for offline analysis
 val mismatches = mutableListOf<ShadowMismatch<Boolean>>()
 ```
 
@@ -57,30 +59,22 @@ val value = AppFeatures.darkMode.evaluateWithShadow(
     },
 )
 
-// Production uses baseline value
 applyDarkMode(value)
 ```
 
-### Analyze + Promote
+### Analyze and promote
 
 ```kotlin
 val mismatchRate = mismatches.size.toDouble() / totalEvaluations
-val mismatchesByFeature = mismatches.groupBy { it.featureKey }
 
-mismatchesByFeature.forEach { (featureKey, featureMismatches) ->
-    val baselineTrue = featureMismatches.count { it.baseline.value }
-    val candidateTrue = featureMismatches.count { it.candidate.value }
-    logger.info("Feature=$featureKey mismatches=${featureMismatches.size} baselineTrue=$baselineTrue candidateTrue=$candidateTrue")
-}
-
-if (mismatchRate < 0.01) { // <1% mismatch
+if (mismatchRate < 0.01) {
     AppFeatures.load(candidateConfig)
 }
 ```
 
 ---
 
-## Pattern 2: Sampling for Performance
+## Pattern 2: Sampling for performance
 
 Shadow evaluation adds an extra evaluation on the hot path. Sample a percentage of requests:
 
@@ -103,9 +97,9 @@ val value =
 
 ---
 
-## Pattern 3: Time-Boxed Shadow Campaign
+## Pattern 3: Time-boxed shadow campaign
 
-Run shadow evaluation for a limited time window and then make a promotion decision.
+Run shadow evaluation for a limited window and then decide whether to promote.
 
 ```kotlin
 class ShadowEvaluationCampaign(
@@ -128,69 +122,30 @@ class ShadowEvaluationCampaign(
             feature.evaluate(context)
         }
     }
-
-    fun mismatchRate(totalEvaluations: Long): Double =
-        mismatchesByStableId.size.toDouble() / totalEvaluations.toDouble()
 }
 ```
 
 ---
 
-## Pattern 4: Migration from Another Flag System
+## Pattern 4: Migration from another flag system
 
-Konditional’s shadow APIs compare **two Konditional registries**. If you’re migrating from a non-Konditional system,
-compare manually at the call site:
+Konditional shadow APIs compare two Konditional registries. If you are migrating from a non-Konditional system, compare
+manually at the call site:
 
 ```kotlin
-// Old system (baseline)
 val oldValue = oldFlagClient.getBool("dark_mode", default = false)
-
-// Konditional (candidate)
 val candidateValue = AppFeatures.darkMode.evaluate(context)
 
 if (oldValue != candidateValue) {
     logger.warn("migrationMismatch stableId=${context.stableId.id} old=$oldValue konditional=$candidateValue")
 }
 
-// Keep production behavior unchanged
 applyDarkMode(oldValue)
 ```
 
-If you can translate the old system state into a Konditional snapshot, you can treat it as a `baselineRegistry` and use
-`evaluateWithShadow` to compare registries directly (see `/theory/migration-and-shadowing`).
-
 ---
 
-## Debugging Mismatches
+## Next steps
 
-`ShadowMismatch<T>` already carries both `EvaluationResult<T>` objects, so you can log decisions without re-evaluating:
-
-```kotlin
-AppFeatures.darkMode.evaluateWithShadow(
-    context = context,
-    candidateRegistry = candidateRegistry,
-    onMismatch = { m ->
-        val baseline = m.baseline
-        val candidate = m.candidate
-        logger.error(
-            "Mismatch key=${m.featureKey} kinds=${m.kinds} baseline=${baseline.value} candidate=${candidate.value} baselineDecision=${baseline.decision::class.simpleName} candidateDecision=${candidate.decision::class.simpleName} stableId=${context.stableId.id}",
-        )
-    },
-)
-```
-
----
-
-## Performance Notes
-
-- Shadow evaluation runs inline; keep `onMismatch` fast (offload logging/metrics if needed).
-- Candidate evaluation is skipped when the baseline registry kill-switch is enabled (by default).
-- Hook both registries with `baselineRegistry.setHooks(...)` / `candidateRegistry.setHooks(...)` if you want separate baseline/candidate telemetry.
-
----
-
-## Next Steps
-
-- [Theory: Migration and Shadowing](/theory/migration-and-shadowing) — Concepts + guarantees
-- [API Reference: Feature Operations](/api-reference/feature-operations) — Signatures + semantics
-- [API Reference: Observability](/api-reference/observability) — `RegistryHooks` / metrics payloads
+- [Theory: Migration and shadowing](/theory/migration-and-shadowing)
+- [Observability reference](/observability/reference)

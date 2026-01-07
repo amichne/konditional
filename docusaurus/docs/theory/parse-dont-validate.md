@@ -9,7 +9,7 @@ Why `ParseResult` prevents invalid states from existing in the system.
 Traditional validation checks data and returns a boolean or throws an exception:
 
 ```kotlin
-// ✗ Validation approach
+// X Validation approach
 fun validateConfig(json: String): Boolean {
     return json.contains("flags") && json.contains("key")
 }
@@ -36,7 +36,7 @@ if (validateConfig(json)) {
 **Parse** means: transform untrusted input into a typed representation, failing early if impossible.
 
 ```kotlin
-// ✓ Parse approach
+// OK Parse approach
 sealed interface ParseResult<out T> {
     data class Success<T>(val value: T) : ParseResult<T>
     data class Failure(val error: ParseError) : ParseResult<Nothing>
@@ -61,6 +61,8 @@ fun parseConfig(json: String): ParseResult<Configuration> {
 ### The Trust Boundary
 
 JSON enters the system as an untrusted `String`. Konditional parses it into a trusted `Configuration`:
+
+Note: `ConfigurationSnapshotCodec` and `Configuration` live in `konditional-serialization`.
 
 ```kotlin
 val json: String = fetchRemoteConfig()  // Untrusted
@@ -113,7 +115,7 @@ If you forget to handle a case, the code won't compile.
 Traditional parsing throws exceptions:
 
 ```kotlin
-// ✗ Exception-based parsing
+// X Exception-based parsing
 try {
     val config = JSON.parse(json)  // Might throw
     applyConfig(config)
@@ -131,7 +133,7 @@ try {
 Konditional uses `ParseResult` instead:
 
 ```kotlin
-// ✓ Explicit boundary
+// OK Explicit boundary
 when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> applyConfig(result.value)
     is ParseResult.Failure -> logError(result.error.message)
@@ -145,24 +147,22 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 
 ---
 
-## Invalid States Are Unrepresentable
+## Invalid States Are Rejected at the Boundary
 
-Because `Configuration` can only be created via parsing (not public constructors), invalid configurations cannot exist:
+If you obtain a `Configuration` via `ConfigurationSnapshotCodec.decode(...)`, it has passed validation:
 
 ```kotlin
-// ✗ Can't construct invalid Configuration
-// val config = Configuration(flags = emptyMap())  // Private constructor
-
-// ✓ Must go through parser
 when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> {
-        // config is guaranteed valid
-        val config = result.value
+        val config = result.value // Valid snapshot from JSON
+    }
+    is ParseResult.Failure -> {
+        // Invalid JSON rejected
     }
 }
 ```
 
-**Property:** If a `Configuration` exists in the system, it has been validated.
+**Boundary:** You can still construct `Configuration` manually. If you do, you own correctness.
 
 ---
 
@@ -251,19 +251,19 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 
 ## The Guarantee
 
-**If you have a `Configuration` instance, it is valid.**
+**If you have a `Configuration` instance produced by `decode(...)`, it is valid.**
 
 No need to:
 - Re-validate before using it
 - Check for null/undefined fields
 - Guard against type mismatches
 
-The parser did all that work upfront.
+The parser did all that work upfront at the JSON boundary.
 
 ---
 
 ## Next Steps
 
-- [Fundamentals: Trust Boundaries](/fundamentals/trust-boundaries) — Compile-time vs runtime guarantees
-- [Fundamentals: Configuration Lifecycle](/fundamentals/configuration-lifecycle) — JSON → ParseResult → load
-- [API Reference: Serialization](/api-reference/serialization) — ParseResult API details
+- [Theory: Type Safety Boundaries](/theory/type-safety-boundaries) - Compile-time vs runtime guarantees
+- [Runtime: Configuration Lifecycle](/runtime/lifecycle) - JSON -> ParseResult -> load
+- [Serialization Reference](/serialization/reference) - ParseResult API details

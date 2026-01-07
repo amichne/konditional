@@ -9,7 +9,7 @@ Why namespaces prevent collisions, how they enforce separation, and when to use 
 Without isolation, all flags share a single global registry:
 
 ```kotlin
-// ✗ Global registry (all flags mixed together)
+// X Global registry (all flags mixed together)
 object GlobalFlags {
     val darkMode = flag("dark_mode")
     val paymentProcessing = flag("payment_processing")
@@ -18,10 +18,10 @@ object GlobalFlags {
 ```
 
 **Issues:**
-1. **Name collisions** — Two teams pick the same flag name
-2. **Coupled lifecycle** — Updating one domain's config affects others
-3. **Blast radius** — Configuration error in one domain breaks all domains
-4. **No governance** — Can't enforce team boundaries
+1. **Name collisions** - Two teams pick the same flag name
+2. **Coupled lifecycle** - Updating one domain's config affects others
+3. **Blast radius** - Configuration error in one domain breaks all domains
+4. **No governance** - Can't enforce team boundaries
 
 ---
 
@@ -42,10 +42,10 @@ object Payments : Namespace("payments") {
 ```
 
 **Guarantees:**
-1. **Separate registries** — `Auth` and `Payments` have independent `NamespaceRegistry` instances
-2. **Independent lifecycle** — Load/rollback/disable operations are scoped to one namespace
-3. **Failure isolation** — Parse error in `Auth` config doesn't affect `Payments`
-4. **No name collisions** — `Auth.socialLogin` and `Payments.socialLogin` can coexist
+1. **Separate registries** - `Auth` and `Payments` have independent `NamespaceRegistry` instances
+2. **Independent lifecycle** - Load/rollback/disable operations are scoped to one namespace
+3. **Failure isolation** - Parse error in `Auth` config doesn't affect `Payments`
+4. **No name collisions** - `Auth.socialLogin` and `Payments.socialLogin` can coexist
 
 ---
 
@@ -65,8 +65,8 @@ This is why namespaces are operationally safe: isolation is enforced by construc
 
 Each feature has:
 
-- `Feature.key: String` — the logical key (typically the Kotlin property name)
-- `Feature.id: FeatureId` — the stable, serialized identifier used at the JSON boundary
+- `Feature.key: String` - the logical key (typically the Kotlin property name)
+- `Feature.id: FeatureId` - the stable, serialized identifier used at the JSON boundary
 
 `FeatureId` is encoded as:
 
@@ -75,8 +75,8 @@ feature::${namespaceIdentifierSeed}::${featureKey}
 ```
 
 **Example:**
-- `Auth.socialLogin.id` → `"feature::auth::socialLogin"`
-- `Payments.socialLogin.id` → `"feature::payments::socialLogin"`
+- `Auth.socialLogin.id` -> `"feature::auth::socialLogin"`
+- `Payments.socialLogin.id` -> `"feature::payments::socialLogin"`
 
 **Guarantee:** Features with the same `key` but different namespaces have different `id`s (no collisions).
 
@@ -282,7 +282,7 @@ com.example.teams.analytics.AnalyticsFeatures : Namespace("analytics")
 
 | Property | Mechanism | Guarantee |
 |----------|-----------|-----------|
-| **No identifier collisions** | `FeatureId` includes namespace seed | `Auth.socialLogin.id` ≠ `Payments.socialLogin.id` |
+| **No identifier collisions** | `FeatureId` includes namespace seed | `Auth.socialLogin.id` != `Payments.socialLogin.id` |
 | **Separate state** | Different `NamespaceRegistry` instances | Updating Auth doesn't affect Payments |
 | **Independent lifecycle** | Operations scoped to namespace | `Auth.load(...)` only affects Auth |
 | **Failure isolation** | Parse errors scoped to namespace | Auth parse failure doesn't break Payments |
@@ -292,6 +292,6 @@ com.example.teams.analytics.AnalyticsFeatures : Namespace("analytics")
 
 ## Next Steps
 
-- [Fundamentals: Core Primitives](/fundamentals/core-primitives) — Namespace primitive
-- [Advanced: Multiple Namespaces](/advanced/multiple-namespaces) — Practical patterns
-- [API Reference: Namespace Operations](/api-reference/namespace-operations) — Lifecycle API
+- [Fundamentals: Core Primitives](/fundamentals/core-primitives) - Namespace primitive
+- [Runtime: Operations](/runtime/operations) - Lifecycle API
+- [Serialization Reference](/serialization/reference) - JSON boundaries
