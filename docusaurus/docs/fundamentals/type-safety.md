@@ -20,6 +20,7 @@ val retries: Int = AppFeatures.maxRetries.evaluate(context)     // ✓ Typed
 ```
 
 **Benefits:**
+
 - **Typos caught at compile-time:** `AppFeatures.darkMood` won't compile
 - **IDE autocomplete works:** Your editor shows available flags
 - **Refactoring is safe:** Rename a property and all usages update
@@ -86,6 +87,7 @@ premiumFeature.evaluate(basicCtx)    // X Compile error: wrong context type
 ### Compile-Time Safety (Statically-Defined Flags)
 
 When you define flags in Kotlin code, the compiler guarantees:
+
 - Property names map to feature keys
 - Return types match between definition and usage
 - Rules return the correct types
@@ -116,6 +118,7 @@ when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
 ```
 
 **Key insight:** Konditional doesn't pretend JSON is type-safe. Instead, it:
+
 1. **Validates at the boundary** with explicit `ParseResult`
 2. **Rejects invalid JSON** before affecting production
 3. **Keeps last-known-good** when validation fails
@@ -127,50 +130,62 @@ when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
 ### Typo in Flag Name
 
 **String-keyed systems:**
+
 ```kotlin
 val enabled = flagClient.getBool("new_onboaring_flow", false)  // Typo ships
 ```
+
 → Silent failure. Flag never activates.
 
 **Konditional:**
+
 ```kotlin
 AppFeatures.newOnboaringFlow  // Doesn't compile
 ```
+
 → Caught at compile-time.
 
 ### Type Mismatch
 
 **String-keyed systems:**
+
 ```kotlin
 val retries: Int = flagClient.getInt("max_retries", 3)
 // JSON: { "max_retries": "five" }
 // Runtime: retries = 0 (or exception, SDK-dependent)
 ```
+
 → Production incident.
 
 **Konditional:**
+
 ```kotlin
 val json = """{ "maxRetries": "five" }"""
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
     is ParseResult.Failure -> // Invalid type caught, last-known-good remains
 }
 ```
+
 → Invalid JSON rejected, no incident.
 
 ### Missing Default
 
 **String-keyed systems:**
+
 ```kotlin
 val timeout = flagClient.getDouble("timeout", null)  // Nullable!
 timeout?.let { setTimeoutMs(it) }  // Null checks everywhere
 ```
+
 → Null propagation through codebase.
 
 **Konditional:**
+
 ```kotlin
 val timeout by double<Context>(default = 30.0)  // Default required
 val value: Double = timeout.evaluate(ctx)        // Never null
 ```
+
 → Evaluation is total. No nulls.
 
 ---
@@ -203,16 +218,16 @@ val value: Double = timeout.evaluate(ctx)        // Never null
 Konditional's type safety has two parts:
 
 1. **Compile-time guarantees** for statically-defined flags:
-   - Property names = feature keys
-   - Return types flow from definition to usage
-   - Rules match feature types
-   - Defaults required, evaluation total
-   - Context types enforced
+  - Property names = feature keys
+  - Return types flow from definition to usage
+  - Rules match feature types
+  - Defaults required, evaluation total
+  - Context types enforced
 
 2. **Runtime validation** for JSON configuration:
-   - Explicit `ParseResult` boundary
-   - Invalid JSON rejected before affecting production
-   - Last-known-good configuration preserved
+  - Explicit `ParseResult` boundary
+  - Invalid JSON rejected before affecting production
+  - Last-known-good configuration preserved
 
 **You get compile-time safety where possible, explicit validation where necessary.**
 

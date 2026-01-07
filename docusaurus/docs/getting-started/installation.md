@@ -9,7 +9,7 @@ Replace `VERSION` with the latest published version.
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.amichne:konditional-core:VERSION")
+  implementation("io.amichne:konditional-core:VERSION")
 }
 ```
 
@@ -25,6 +25,7 @@ dependencies {
 ## Maven
 
 ```xml
+
 <dependency>
   <groupId>io.amichne</groupId>
   <artifactId>konditional-core</artifactId>

@@ -33,11 +33,11 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 }
 ```
 
-**Guarantee**: Invalid JSON never becomes a `Configuration`.
+- **Guarantee**: Invalid JSON never becomes a `Configuration`.
 
-**Mechanism**: `ParseResult` makes success vs failure explicit at the boundary.
+- **Mechanism**: `ParseResult` makes success vs failure explicit at the boundary.
 
-**Boundary**: Semantic correctness is not validated.
+- **Boundary**: Semantic correctness is not validated.
 
 ### 3) Atomic load
 

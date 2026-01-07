@@ -3,6 +3,7 @@
 ## Problem
 
 You need to:
+
 - Gracefully handle configuration load failures without breaking the service
 - Decide between failing fast vs. continuing with degraded functionality
 - Alert operations when configuration issues occur
@@ -17,8 +18,10 @@ Configuration failures happen at the **load boundary**, not evaluation:
 ```kotlin
 // Loading: This is where failures occur
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Success -> { /* Config loaded */ }
-    is ParseResult.Failure -> { /* Handle failure HERE */ }
+  is ParseResult.Success -> { /* Config loaded */
+  }
+  is ParseResult.Failure -> { /* Handle failure HERE */
+  }
 }
 
 // Evaluation: This never fails (total evaluation)
@@ -31,69 +34,75 @@ val value = AppFeatures.someFeature.evaluate(ctx)  // Always returns a value
 
 ```kotlin
 class ConfigurationFailureHandler {
-    fun handleLoadFailure(error: ParseError, json: String) {
-        when (error) {
-            is ParseError.InvalidJSON -> handleInvalidJSON(error, json)
-            is ParseError.UnknownFeature -> handleUnknownFeature(error)
-            is ParseError.TypeMismatch -> handleTypeMismatch(error)
-        }
+  fun handleLoadFailure(
+      error: ParseError,
+      json: String
+  ) {
+    when (error) {
+      is ParseError.InvalidJSON -> handleInvalidJSON(error, json)
+      is ParseError.UnknownFeature -> handleUnknownFeature(error)
+      is ParseError.TypeMismatch -> handleTypeMismatch(error)
     }
+  }
 
-    private fun handleInvalidJSON(error: ParseError.InvalidJSON, json: String) {
-        logger.error("Invalid JSON syntax: ${error.message}")
-        logger.error("JSON: $json")
+  private fun handleInvalidJSON(
+      error: ParseError.InvalidJSON,
+      json: String
+  ) {
+    logger.error("Invalid JSON syntax: ${error.message}")
+    logger.error("JSON: $json")
 
-        // Alert operations: config service is broken
-        alertOps(
-            severity = Severity.HIGH,
-            message = "Config service returning malformed JSON",
-            details = mapOf("error" to error.message)
+    // Alert operations: config service is broken
+    alertOps(
+        severity = Severity.HIGH,
+        message = "Config service returning malformed JSON",
+        details = mapOf("error" to error.message)
+    )
+
+    // Metric
+    metrics.increment("config.failure.invalid_json")
+
+    // Continue with last-known-good (no action needed)
+  }
+
+  private fun handleUnknownFeature(error: ParseError.UnknownFeature) {
+    logger.warn("Config references unknown feature: ${error.key}")
+
+    // Could be:
+    // 1. Config is ahead of code (feature not deployed yet)
+    // 2. Typo in config
+    // 3. Feature was removed from code but still in config
+
+    // Alert with lower severity (might be expected during rollout)
+    alertOps(
+        severity = Severity.MEDIUM,
+        message = "Unknown feature in config: ${error.key}",
+        details = mapOf("feature_key" to error.key)
+    )
+
+    metrics.increment("config.failure.unknown_feature", tags = mapOf(
+        "key" to error.key
+    ))
+  }
+
+  private fun handleTypeMismatch(error: ParseError.TypeMismatch) {
+    logger.error("Type mismatch for ${error.key}: expected ${error.expectedType}, got ${error.actualType}")
+
+    // This is always a bug in config
+    alertOps(
+        severity = Severity.HIGH,
+        message = "Config has wrong type for feature",
+        details = mapOf(
+            "feature" to error.key,
+            "expected" to error.expectedType,
+            "actual" to error.actualType
         )
+    )
 
-        // Metric
-        metrics.increment("config.failure.invalid_json")
-
-        // Continue with last-known-good (no action needed)
-    }
-
-    private fun handleUnknownFeature(error: ParseError.UnknownFeature) {
-        logger.warn("Config references unknown feature: ${error.key}")
-
-        // Could be:
-        // 1. Config is ahead of code (feature not deployed yet)
-        // 2. Typo in config
-        // 3. Feature was removed from code but still in config
-
-        // Alert with lower severity (might be expected during rollout)
-        alertOps(
-            severity = Severity.MEDIUM,
-            message = "Unknown feature in config: ${error.key}",
-            details = mapOf("feature_key" to error.key)
-        )
-
-        metrics.increment("config.failure.unknown_feature", tags = mapOf(
-            "key" to error.key
-        ))
-    }
-
-    private fun handleTypeMismatch(error: ParseError.TypeMismatch) {
-        logger.error("Type mismatch for ${error.key}: expected ${error.expectedType}, got ${error.actualType}")
-
-        // This is always a bug in config
-        alertOps(
-            severity = Severity.HIGH,
-            message = "Config has wrong type for feature",
-            details = mapOf(
-                "feature" to error.key,
-                "expected" to error.expectedType,
-                "actual" to error.actualType
-            )
-        )
-
-        metrics.increment("config.failure.type_mismatch", tags = mapOf(
-            "feature" to error.key
-        ))
-    }
+    metrics.increment("config.failure.type_mismatch", tags = mapOf(
+        "feature" to error.key
+    ))
+  }
 }
 ```
 
@@ -103,19 +112,19 @@ class ConfigurationFailureHandler {
 
 ```kotlin
 class ConfigLoader(private val namespace: Namespace) {
-    fun loadWithFallback(json: String) {
-        when (val result = NamespaceSnapshotLoader(namespace).load(json)) {
-            is ParseResult.Success -> {
-                logger.info("Config loaded successfully")
-                lastSuccessfulLoad = Instant.now()
-            }
-            is ParseResult.Failure -> {
-                logger.warn("Config load failed, continuing with last-known-good")
-                failureHandler.handleLoadFailure(result.error, json)
-                // Last-known-good automatically preserved
-            }
-        }
+  fun loadWithFallback(json: String) {
+    when (val result = NamespaceSnapshotLoader(namespace).load(json)) {
+      is ParseResult.Success -> {
+        logger.info("Config loaded successfully")
+        lastSuccessfulLoad = Instant.now()
+      }
+      is ParseResult.Failure -> {
+        logger.warn("Config load failed, continuing with last-known-good")
+        failureHandler.handleLoadFailure(result.error, json)
+        // Last-known-good automatically preserved
+      }
     }
+  }
 }
 ```
 
@@ -123,44 +132,44 @@ class ConfigLoader(private val namespace: Namespace) {
 
 ```kotlin
 class RetryingConfigLoader(private val namespace: Namespace) {
-    suspend fun loadWithRetry(
-        fetchConfig: suspend () -> String,
-        maxAttempts: Int = 3,
-        initialDelay: Duration = 1.seconds
-    ) {
-        var attempt = 0
-        var delay = initialDelay
+  suspend fun loadWithRetry(
+      fetchConfig: suspend () -> String,
+      maxAttempts: Int = 3,
+      initialDelay: Duration = 1.seconds
+  ) {
+    var attempt = 0
+    var delay = initialDelay
 
-        while (attempt < maxAttempts) {
-            try {
-                val json = fetchConfig()
-                when (val result = NamespaceSnapshotLoader(namespace).load(json)) {
-                    is ParseResult.Success -> {
-                        logger.info("Config loaded on attempt ${attempt + 1}")
-                        return
-                    }
-                    is ParseResult.Failure -> {
-                        logger.warn("Config load failed (attempt ${attempt + 1}): ${result.error}")
-                        attempt++
-                        if (attempt < maxAttempts) {
-                            delay(delay)
-                            delay *= 2  // Exponential backoff
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                logger.error("Config fetch failed (attempt ${attempt + 1})", e)
-                attempt++
-                if (attempt < maxAttempts) {
-                    delay(delay)
-                    delay *= 2
-                }
+    while (attempt < maxAttempts) {
+      try {
+        val json = fetchConfig()
+        when (val result = NamespaceSnapshotLoader(namespace).load(json)) {
+          is ParseResult.Success -> {
+            logger.info("Config loaded on attempt ${attempt + 1}")
+            return
+          }
+          is ParseResult.Failure -> {
+            logger.warn("Config load failed (attempt ${attempt + 1}): ${result.error}")
+            attempt++
+            if (attempt < maxAttempts) {
+              delay(delay)
+              delay *= 2  // Exponential backoff
             }
+          }
         }
-
-        logger.error("All config load attempts failed")
-        alertOps(Severity.HIGH, "Config load failed after $maxAttempts attempts")
+      } catch (e: Exception) {
+        logger.error("Config fetch failed (attempt ${attempt + 1})", e)
+        attempt++
+        if (attempt < maxAttempts) {
+          delay(delay)
+          delay *= 2
+        }
+      }
     }
+
+    logger.error("All config load attempts failed")
+    alertOps(Severity.HIGH, "Config load failed after $maxAttempts attempts")
+  }
 }
 ```
 
@@ -172,45 +181,45 @@ class CircuitBreakerConfigLoader(
     private val failureThreshold: Int = 5,
     private val resetTimeout: Duration = 1.minutes
 ) {
-    private var failureCount = 0
-    private var lastFailure: Instant? = null
-    private var circuitOpen = false
+  private var failureCount = 0
+  private var lastFailure: Instant? = null
+  private var circuitOpen = false
 
-    fun load(json: String): ParseResult {
-        // Check if circuit should be reset
-        lastFailure?.let {
-            if (Duration.between(it, Instant.now()) > resetTimeout) {
-                logger.info("Circuit breaker reset after timeout")
-                failureCount = 0
-                circuitOpen = false
-            }
-        }
-
-        if (circuitOpen) {
-            logger.warn("Circuit breaker open, skipping config load")
-            metrics.increment("config.circuit_breaker.open")
-            return ParseResult.Failure(ParseError.InvalidJSON("Circuit breaker open"))
-        }
-
-        return when (val result = NamespaceSnapshotLoader(namespace).load(json)) {
-            is ParseResult.Success -> {
-                failureCount = 0
-                result
-            }
-            is ParseResult.Failure -> {
-                failureCount++
-                lastFailure = Instant.now()
-
-                if (failureCount >= failureThreshold) {
-                    circuitOpen = true
-                    logger.error("Circuit breaker opened after $failureCount failures")
-                    alertOps(Severity.CRITICAL, "Config circuit breaker opened")
-                }
-
-                result
-            }
-        }
+  fun load(json: String): ParseResult {
+    // Check if circuit should be reset
+    lastFailure?.let {
+      if (Duration.between(it, Instant.now()) > resetTimeout) {
+        logger.info("Circuit breaker reset after timeout")
+        failureCount = 0
+        circuitOpen = false
+      }
     }
+
+    if (circuitOpen) {
+      logger.warn("Circuit breaker open, skipping config load")
+      metrics.increment("config.circuit_breaker.open")
+      return ParseResult.Failure(ParseError.InvalidJSON("Circuit breaker open"))
+    }
+
+    return when (val result = NamespaceSnapshotLoader(namespace).load(json)) {
+      is ParseResult.Success -> {
+        failureCount = 0
+        result
+      }
+      is ParseResult.Failure -> {
+        failureCount++
+        lastFailure = Instant.now()
+
+        if (failureCount >= failureThreshold) {
+          circuitOpen = true
+          logger.error("Circuit breaker opened after $failureCount failures")
+          alertOps(Severity.CRITICAL, "Config circuit breaker opened")
+        }
+
+        result
+      }
+    }
+  }
 }
 ```
 
@@ -238,8 +247,8 @@ NamespaceSnapshotLoader(AppFeatures).load(json)
 
 // DO: Explicitly handle failures
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Failure -> handleFailure(result.error)
-    is ParseResult.Success -> Unit
+  is ParseResult.Failure -> handleFailure(result.error)
+  is ParseResult.Success -> Unit
 }
 ```
 
@@ -248,15 +257,15 @@ when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
 ```kotlin
 // DON'T: Crash the service on config failure
 when (NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Failure -> throw ConfigLoadException()
+  is ParseResult.Failure -> throw ConfigLoadException()
 }
 
 // DO: Continue with last-known-good
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Failure -> {
-        logger.warn("Config load failed, continuing: ${result.error}")
-        // Service continues normally
-    }
+  is ParseResult.Failure -> {
+    logger.warn("Config load failed, continuing: ${result.error}")
+    // Service continues normally
+  }
 }
 ```
 
@@ -267,16 +276,16 @@ when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
 ```kotlin
 // DON'T: Log and move on
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Failure -> logger.error("Config failed: ${result.error}")
+  is ParseResult.Failure -> logger.error("Config failed: ${result.error}")
 }
 
 // DO: Alert operations
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Failure -> {
-        logger.error("Config failed: ${result.error}")
-        alertOps("Configuration validation failed", result.error)
-        metrics.increment("config.failure")
-    }
+  is ParseResult.Failure -> {
+    logger.error("Config failed: ${result.error}")
+    alertOps("Configuration validation failed", result.error)
+    metrics.increment("config.failure")
+  }
 }
 ```
 
@@ -346,22 +355,22 @@ when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
 ```kotlin
 @Test
 fun `failed load preserves last-known-good`() {
-    // Load valid config
-    val validJson = """{ "darkMode": { "rules": [{ "value": true }] } }"""
-    val result1 = NamespaceSnapshotLoader(AppFeatures).load(validJson)
-    require(result1 is ParseResult.Success)
+  // Load valid config
+  val validJson = """{ "darkMode": { "rules": [{ "value": true }] } }"""
+  val result1 = NamespaceSnapshotLoader(AppFeatures).load(validJson)
+  require(result1 is ParseResult.Success)
 
-    // Verify darkMode is true
-    val ctx = Context(stableId = StableId("user"))
-    assertTrue(AppFeatures.darkMode.evaluate(ctx))
+  // Verify darkMode is true
+  val ctx = Context(stableId = StableId("user"))
+  assertTrue(AppFeatures.darkMode.evaluate(ctx))
 
-    // Try to load invalid config
-    val invalidJson = """{ "darkMode": { "rules": [{ "value": "invalid" }] } }"""
-    val result2 = NamespaceSnapshotLoader(AppFeatures).load(invalidJson)
-    require(result2 is ParseResult.Failure)
+  // Try to load invalid config
+  val invalidJson = """{ "darkMode": { "rules": [{ "value": "invalid" }] } }"""
+  val result2 = NamespaceSnapshotLoader(AppFeatures).load(invalidJson)
+  require(result2 is ParseResult.Failure)
 
-    // Verify darkMode is STILL true (last-known-good preserved)
-    assertTrue(AppFeatures.darkMode.evaluate(ctx))
+  // Verify darkMode is STILL true (last-known-good preserved)
+  assertTrue(AppFeatures.darkMode.evaluate(ctx))
 }
 ```
 
@@ -370,16 +379,16 @@ fun `failed load preserves last-known-good`() {
 ```kotlin
 @Test
 fun `failure triggers alert`() {
-    val alertSpy = mockk<AlertService>(relaxed = true)
-    val handler = ConfigurationFailureHandler(alertSpy)
+  val alertSpy = mockk<AlertService>(relaxed = true)
+  val handler = ConfigurationFailureHandler(alertSpy)
 
-    val invalidJson = """{ "invalid": "json" """
-    val result = NamespaceSnapshotLoader(AppFeatures).load(invalidJson)
+  val invalidJson = """{ "invalid": "json" """
+  val result = NamespaceSnapshotLoader(AppFeatures).load(invalidJson)
 
-    require(result is ParseResult.Failure)
-    handler.handleLoadFailure(result.error, invalidJson)
+  require(result is ParseResult.Failure)
+  handler.handleLoadFailure(result.error, invalidJson)
 
-    verify { alertSpy.send(match { it.severity == Severity.HIGH }) }
+  verify { alertSpy.send(match { it.severity == Severity.HIGH }) }
 }
 ```
 
@@ -414,14 +423,14 @@ metrics.gauge("config.time_since_last_success", duration)
 
 ```kotlin
 try {
-    val json = httpClient.get(configUrl).body<String>()
-    NamespaceSnapshotLoader(AppFeatures).load(json)
+  val json = httpClient.get(configUrl).body<String>()
+  NamespaceSnapshotLoader(AppFeatures).load(json)
 } catch (e: HttpException) {
-    logger.error("Config service error: ${e.statusCode}", e)
-    metrics.increment("config.fetch.http_error", tags = mapOf(
-        "status_code" to e.statusCode.toString()
-    ))
-    // Continue with last-known-good
+  logger.error("Config service error: ${e.statusCode}", e)
+  metrics.increment("config.fetch.http_error", tags = mapOf(
+      "status_code" to e.statusCode.toString()
+  ))
+  // Continue with last-known-good
 }
 ```
 
@@ -429,7 +438,14 @@ try {
 
 ```json
 {
-  "darkMood": { "rules": [{ "value": true }] }  // Typo: darkMood vs darkMode
+  "darkMood": {
+    "rules": [
+      {
+        "value": true
+      }
+    ]
+  }
+  // Typo: darkMood vs darkMode
 }
 ```
 
@@ -439,7 +455,14 @@ Result: `ParseResult.Failure(UnknownFeature("darkMood"))`. Last-known-good prese
 
 ```json
 {
-  "maxRetries": { "rules": [{ "value": "5" }] }  // String instead of Int
+  "maxRetries": {
+    "rules": [
+      {
+        "value": "5"
+      }
+    ]
+  }
+  // String instead of Int
 }
 ```
 
@@ -449,13 +472,13 @@ Result: `ParseResult.Failure(TypeMismatch(...))`. Last-known-good preserved, ops
 
 ```kotlin
 try {
-    val json = withTimeout(5.seconds) {
-        httpClient.get(configUrl).body<String>()
-    }
+  val json = withTimeout(5.seconds) {
+    httpClient.get(configUrl).body<String>()
+  }
 } catch (e: TimeoutCancellationException) {
-    logger.warn("Config fetch timeout, continuing with last-known-good")
-    metrics.increment("config.fetch.timeout")
-    // Continue with last-known-good
+  logger.warn("Config fetch timeout, continuing with last-known-good")
+  metrics.increment("config.fetch.timeout")
+  // Continue with last-known-good
 }
 ```
 

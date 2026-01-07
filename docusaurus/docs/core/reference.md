@@ -13,11 +13,11 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
 ): T
 ```
 
-**Guarantee**: Returns a value of type `T` and never returns `null`.
+- **Guarantee**: Returns a value of type `T` and never returns `null`.
 
-**Mechanism**: Evaluation returns the first matching rule value or the declared default.
+- **Mechanism**: Evaluation returns the first matching rule value or the declared default.
 
-**Boundary**: Throws `IllegalStateException` if the feature is not registered in the registry.
+- **Boundary**: Throws `IllegalStateException` if the feature is not registered in the registry.
 
 ### Example
 

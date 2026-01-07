@@ -137,9 +137,9 @@ val telemetry = KonditionalTelemetry(
 ## Performance
 
 - **Disabled/Not Sampled**: <1% latency overhead
-- **Sampled**: ~5-10% overhead for span creation and attribute population
-- **Metrics**: Minimal overhead (~1-2μs per evaluation)
-- **Recommended**: Use `PARENT_BASED` or `RATIO(10)` sampling in production
+  - **Sampled**: ~5-10% overhead for span creation and attribute population
+  - **Metrics**: Minimal overhead (~1-2μs per evaluation)
+  - **Recommended**: Use `PARENT_BASED` or `RATIO(10)` sampling in production
 
 ## Architecture
 
@@ -165,7 +165,7 @@ opentelemetry/
 1. **Opt-In**: Telemetry is entirely optional; core library has zero OpenTelemetry dependencies
 2. **Low Overhead**: Sampling and conditional instrumentation minimize performance impact
 3. **Type-Safe**: Leverages Kotlin's type system for compile-time safety
-4. **Composable**: Separate concerns (tracing, metrics, logging) with clean interfaces
+4. - **Composable**: Separate concerns (tracing, metrics, logging) with clean interfaces
 
 ## License
 

@@ -6,6 +6,7 @@ and registry hooks.
 ## When to Use This Module
 
 You should use `konditional-runtime` when you need to:
+
 - Load feature flag configuration dynamically at runtime without redeploying
 - Roll back to a previous configuration snapshot when issues are detected
 - Use an emergency kill-switch to disable all features in a namespace instantly
@@ -21,6 +22,7 @@ You should use `konditional-runtime` when you need to:
 ## Alternatives
 
 Without this module, you would need to:
+
 - Rebuild and redeploy your application to change feature flag behavior
 - Implement your own atomic configuration swap mechanism with proper thread safety
 - Build custom rollback tracking and emergency controls from scratch
@@ -35,11 +37,11 @@ dependencies {
 
 ## Guarantees
 
-**Guarantee**: Configuration swaps are atomic and never partially visible.
+- **Guarantee**: Configuration swaps are atomic and never partially visible.
 
-**Mechanism**: Namespace registries store configuration in an `AtomicReference` and swap it in a single write.
+- **Mechanism**: Namespace registries store configuration in an `AtomicReference` and swap it in a single write.
 
-**Boundary**: Readers may see either the old snapshot or the new snapshot; there is no cross-snapshot mix.
+- **Boundary**: Readers may see either the old snapshot or the new snapshot; there is no cross-snapshot mix.
 
 ## Next steps
 

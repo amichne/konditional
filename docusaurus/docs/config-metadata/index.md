@@ -7,6 +7,7 @@ This module only defines data structures and a small DSL. It does not generate s
 ## When to Use This Module
 
 You should use `config-metadata` when you need to:
+
 - Build UIs or tools that dynamically generate configuration forms
 - Attach JSON pointer bindings and descriptors to configuration payloads
 - Provide UI hints (control types, labels, help text) for configuration fields
@@ -22,17 +23,18 @@ You should use `config-metadata` when you need to:
 ## Alternatives
 
 Without this module, you would need to:
+
 - Build custom metadata structures and binding logic from scratch
 - Hard-code UI form generation instead of deriving it from metadata
 - Maintain separate documentation for what fields exist and how to mutate them
 
 ## Guarantees
 
-**Guarantee**: Metadata is represented as plain Kotlin data structures.
+- **Guarantee**: Metadata is represented as plain Kotlin data structures.
 
-**Mechanism**: `ConfigMetadata` and `ConfigMetadataResponse` are data classes.
+- **Mechanism**: `ConfigMetadata` and `ConfigMetadataResponse` are data classes.
 
-**Boundary**: This module does not validate pointer syntax, enforce constraints, or interpret metadata.
+- **Boundary**: This module does not validate pointer syntax, enforce constraints, or interpret metadata.
 
 ## Quick start
 
@@ -45,17 +47,17 @@ import io.amichne.konditional.configmetadata.ui.UiControlType
 import io.amichne.konditional.configmetadata.ui.UiHints
 
 val metadata = configMetadata {
-    bind("/flags/*/isActive", BindingType.FLAG_ACTIVE)
-    describe(
-        BindingType.FLAG_ACTIVE,
-        BooleanDescriptor(
-            uiHints = UiHints(
-                control = UiControlType.TOGGLE,
-                label = "Active",
-                helpText = "Disables the flag when false.",
-            ),
-        ),
-    )
+  bind("/flags/*/isActive", BindingType.FLAG_ACTIVE)
+  describe(
+      BindingType.FLAG_ACTIVE,
+      BooleanDescriptor(
+          uiHints = UiHints(
+              control = UiControlType.TOGGLE,
+              label = "Active",
+              helpText = "Disables the flag when false.",
+          ),
+      ),
+  )
 }
 
 val response = ConfigMetadataResponse(

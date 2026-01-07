@@ -23,10 +23,10 @@ import io.amichne.konditional.context.*
 import io.amichne.konditional.core.dsl.enable
 
 object AppFeatures : Namespace("app") {
-    val darkMode by boolean<Context>(default = false) {
-        enable { ios() }
-        enable { rampUp { 10.0 } }
-    }
+  val darkMode by boolean<Context>(default = false) {
+    enable { ios() }
+    enable { rampUp { 10.0 } }
+  }
 }
 
 val ctx = Context(
@@ -43,27 +43,27 @@ val enabled: Boolean = AppFeatures.darkMode.evaluate(ctx)
 
 ### Type-safe access
 
-**Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
+- **Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
 
-**Mechanism**: Property delegation and generic type propagation on `Feature<T, Context, Namespace>`.
+- **Mechanism**: Property delegation and generic type propagation on `Feature<T, Context, Namespace>`.
 
-**Boundary**: This does not apply to dynamically-generated features or external configuration systems.
+- **Boundary**: This does not apply to dynamically-generated features or external configuration systems.
 
 ### Total evaluation
 
-**Guarantee**: Every evaluation returns a value of the declared type; no nulls and no missing cases.
+- **Guarantee**: Every evaluation returns a value of the declared type; no nulls and no missing cases.
 
-**Mechanism**: Each feature requires a `default` value, which is returned when no rule matches.
+- **Mechanism**: Each feature requires a `default` value, which is returned when no rule matches.
 
-**Boundary**: If your business logic is wrong, Konditional still returns a value; correctness is your responsibility.
+- **Boundary**: If your business logic is wrong, Konditional still returns a value; correctness is your responsibility.
 
 ### Deterministic ramp-ups
 
-**Guarantee**: The same `(stableId, featureKey, salt)` always yields the same bucket assignment.
+- **Guarantee**: The same `(stableId, featureKey, salt)` always yields the same bucket assignment.
 
-**Mechanism**: SHA-256 bucketing reduces the hash to a stable integer in `[0, 9999]`.
+- **Mechanism**: SHA-256 bucketing reduces the hash to a stable integer in `[0, 9999]`.
 
-**Boundary**: Changing any of `stableId`, `featureKey`, or `salt` changes the bucket assignment.
+- **Boundary**: Changing any of `stableId`, `featureKey`, or `salt` changes the bucket assignment.
 
 ## Why the guarantees hold
 

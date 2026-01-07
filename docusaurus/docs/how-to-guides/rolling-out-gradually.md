@@ -3,6 +3,7 @@
 ## Problem
 
 You have a new feature and want to:
+
 - Start with 10% of users to validate behavior
 - Gradually increase to 100% over days/weeks
 - Ensure the same user always gets the same experience
@@ -14,13 +15,14 @@ You have a new feature and want to:
 
 ```kotlin
 object AppFeatures : Namespace("app") {
-    val newCheckoutFlow by boolean<Context>(default = false) {
-        rule(true) { rampUp { 10.0 } }  // Start at 10%
-    }
+  val newCheckoutFlow by boolean<Context>(default = false) {
+    rule(true) { rampUp { 10.0 } }  // Start at 10%
+  }
 }
 ```
 
 **How it works:**
+
 - `rampUp { 10.0 }` enables the feature for 10% of users
 - Bucketing is deterministic: SHA-256 hash of `(salt, featureKey, stableId)` determines bucket
 - Users in buckets 0-9 (out of 0-99) get `true`, others get `false`
@@ -38,9 +40,9 @@ val ctx = Context(
 val enabled: Boolean = AppFeatures.newCheckoutFlow.evaluate(ctx)
 
 if (enabled) {
-    showNewCheckoutFlow()
+  showNewCheckoutFlow()
 } else {
-    showClassicCheckoutFlow()
+  showClassicCheckoutFlow()
 }
 ```
 
@@ -56,7 +58,9 @@ Update the ramp-up percentage via remote configuration:
     "rules": [
       {
         "value": true,
-        "rampUp": { "percentage": 25.0 }
+        "rampUp": {
+          "percentage": 25.0
+        }
       }
     ]
   }
@@ -68,15 +72,16 @@ Load the updated configuration:
 ```kotlin
 val json = fetchRemoteConfig()
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Success -> logger.info("Ramped up to 25%")
-    is ParseResult.Failure -> {
-        logger.error("Config load failed: ${result.error}")
-        // Last-known-good (10%) remains active
-    }
+  is ParseResult.Success -> logger.info("Ramped up to 25%")
+  is ParseResult.Failure -> {
+    logger.error("Config load failed: ${result.error}")
+    // Last-known-good (10%) remains active
+  }
 }
 ```
 
-**What happens:** Users in buckets 0-24 now get the feature. Users in buckets 0-9 (the original 10%) remain in treatment—no one is removed when you increase percentage.
+**What happens:** Users in buckets 0-24 now get the feature. Users in buckets 0-9 (the original 10%) remain in treatment—no one is removed when you increase
+percentage.
 
 ### Step 4: Monitor and Adjust
 
@@ -84,15 +89,16 @@ Add observability to track rollout:
 
 ```kotlin
 AppFeatures.hooks.afterEvaluation.add { event ->
-    if (event.feature.key == "newCheckoutFlow") {
-        metrics.increment("checkout_flow.${event.result}", tags = mapOf(
-            "platform" to event.context.platform.toString()
-        ))
-    }
+  if (event.feature.key == "newCheckoutFlow") {
+    metrics.increment("checkout_flow.${event.result}", tags = mapOf(
+        "platform" to event.context.platform.toString()
+    ))
+  }
 }
 ```
 
 Monitor key metrics:
+
 - Error rates in new checkout flow
 - Conversion rates (treatment vs control)
 - Latency differences
@@ -162,7 +168,7 @@ NamespaceSnapshotLoader(AppFeatures).load(json)
 
 // DO: Handle failures
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Failure -> alertOps("Ramp-up config failed to load")
+  is ParseResult.Failure -> alertOps("Ramp-up config failed to load")
 }
 ```
 
@@ -175,15 +181,15 @@ when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
 ```kotlin
 @Test
 fun `same user always gets same bucket`() {
-    val userId = "test-user-123"
-    val ctx = Context(stableId = StableId(userId))
+  val userId = "test-user-123"
+  val ctx = Context(stableId = StableId(userId))
 
-    val results = (1..100).map {
-        AppFeatures.newCheckoutFlow.evaluate(ctx)
-    }
+  val results = (1..100).map {
+    AppFeatures.newCheckoutFlow.evaluate(ctx)
+  }
 
-    // All evaluations should return the same value
-    assertTrue(results.all { it == results.first() })
+  // All evaluations should return the same value
+  assertTrue(results.all { it == results.first() })
 }
 ```
 
@@ -192,18 +198,18 @@ fun `same user always gets same bucket`() {
 ```kotlin
 @Test
 fun `10 percent ramp-up distributes correctly`() {
-    val sampleSize = 10_000
-    val rampUpPercentage = 10.0
+  val sampleSize = 10_000
+  val rampUpPercentage = 10.0
 
-    val inTreatment = (0 until sampleSize).count { i ->
-        val ctx = Context(stableId = StableId("user-$i"))
-        AppFeatures.newCheckoutFlow.evaluate(ctx)
-    }
+  val inTreatment = (0 until sampleSize).count { i ->
+    val ctx = Context(stableId = StableId("user-$i"))
+    AppFeatures.newCheckoutFlow.evaluate(ctx)
+  }
 
-    val actualPercentage = (inTreatment.toDouble() / sampleSize) * 100
+  val actualPercentage = (inTreatment.toDouble() / sampleSize) * 100
 
-    // Should be within 1% of target
-    assertEquals(rampUpPercentage, actualPercentage, delta = 1.0)
+  // Should be within 1% of target
+  assertEquals(rampUpPercentage, actualPercentage, delta = 1.0)
 }
 ```
 
@@ -212,12 +218,12 @@ fun `10 percent ramp-up distributes correctly`() {
 ```kotlin
 @Test
 fun `specific user is in treatment group`() {
-    val userId = "VIP-user-456"
-    val ctx = Context(stableId = StableId(userId))
+  val userId = "VIP-user-456"
+  val ctx = Context(stableId = StableId(userId))
 
-    val result = AppFeatures.newCheckoutFlow.evaluate(ctx)
+  val result = AppFeatures.newCheckoutFlow.evaluate(ctx)
 
-    assertTrue(result, "VIP user should be in treatment")
+  assertTrue(result, "VIP user should be in treatment")
 }
 ```
 
@@ -229,6 +235,7 @@ fun `specific user is in treatment group`() {
 **Week 4:** 100% → full rollout
 
 Between each increase:
+
 - Review error rates
 - Check conversion metrics
 - Verify no performance degradation

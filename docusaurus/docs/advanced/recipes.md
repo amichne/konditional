@@ -5,9 +5,11 @@ Source: docusaurus/docs-templates/recipes.template.md + konditional-observabilit
 
 # Recipes: Best-Practice Patterns
 
-Practical patterns for real-world feature control using only Konditional building blocks. Each recipe highlights a supported solution area and makes the guarantee boundaries explicit.
+Practical patterns for real-world feature control using only Konditional building blocks. Each recipe highlights a supported solution area and makes the
+guarantee boundaries explicit.
 
 Covered solution areas:
+
 - Typed features (booleans, enums, structured values)
 - Deterministic rollouts and salting
 - Axes and custom context targeting
@@ -41,9 +43,9 @@ fun renderCheckout(context: Context) {
 }
 ```
 
-**Guarantee**: Variant values are compile-time correct and exhaustively handled.
-**Mechanism**: Enum-typed feature delegates (`enum<...>`) and Kotlin `when` exhaustiveness.
-**Boundary**: Remote JSON can only select enum constants already compiled into the binary.
+- **Guarantee**: Variant values are compile-time correct and exhaustively handled.
+- **Mechanism**: Enum-typed feature delegates (`enum<...>`) and Kotlin `when` exhaustiveness.
+- **Boundary**: Remote JSON can only select enum constants already compiled into the binary.
 
 ---
 
@@ -74,9 +76,9 @@ object RampUpResetFlags : Namespace("ramp-up-reset") {
 }
 ```
 
-**Guarantee**: Same `(stableId, flagKey, salt)` always yields the same bucket.
-**Mechanism**: SHA-256 deterministic bucketing in `RampUpBucketing`.
-**Boundary**: Changing `salt` intentionally redistributes buckets.
+- **Guarantee**: Same `(stableId, flagKey, salt)` always yields the same bucket.
+- **Mechanism**: SHA-256 deterministic bucketing in `RampUpBucketing`.
+- **Boundary**: Changing `salt` intentionally redistributes buckets.
 
 ---
 
@@ -118,9 +120,9 @@ fun isPremiumUiEnabled(): Boolean {
 }
 ```
 
-**Guarantee**: Segment targeting is type-safe and serializable.
-**Mechanism**: Axis IDs are stored in JSON; `axis(...)` evaluates against `Context.axisValues`.
-**Boundary**: Axis IDs must remain stable across builds and obfuscation.
+- **Guarantee**: Segment targeting is type-safe and serializable.
+- **Mechanism**: Axis IDs are stored in JSON; `axis(...)` evaluates against `Context.axisValues`.
+- **Boundary**: Axis IDs must remain stable across builds and obfuscation.
 
 ---
 
@@ -149,9 +151,9 @@ object PremiumFeatures : Namespace("premium") {
 }
 ```
 
-**Guarantee**: Extension predicates are type-safe and enforced at compile time.
-**Mechanism**: `Feature<T, EnterpriseContext>` makes the extension receiver strongly typed.
-**Boundary**: Extension logic is not serialized; only its rule parameters (e.g., ramp-up) can be updated remotely.
+- **Guarantee**: Extension predicates are type-safe and enforced at compile time.
+- **Mechanism**: `Feature<T, EnterpriseContext>` makes the extension receiver strongly typed.
+- **Boundary**: Extension logic is not serialized; only its rule parameters (e.g., ramp-up) can be updated remotely.
 
 ---
 
@@ -179,9 +181,9 @@ object PolicyFlags : Namespace("policy") {
 }
 ```
 
-**Guarantee**: Invalid structured config is rejected before it reaches evaluation.
-**Mechanism**: Kontracts schema validation at `ConfigurationSnapshotCodec.decode(...)`.
-**Boundary**: Semantic correctness of field values (e.g., "appropriate backoff") remains a human responsibility.
+- **Guarantee**: Invalid structured config is rejected before it reaches evaluation.
+- **Mechanism**: Kontracts schema validation at `ConfigurationSnapshotCodec.decode(...)`.
+- **Boundary**: Semantic correctness of field values (e.g., "appropriate backoff") remains a human responsibility.
 
 ---
 
@@ -210,9 +212,9 @@ fun rollbackConfig() {
 }
 ```
 
-**Guarantee**: Invalid config never becomes active; swaps are atomic.
-**Mechanism**: `ParseResult` boundary + `Namespace.load(...)` atomic swap.
-**Boundary**: A valid config can still be logically wrong; rollback is the safe escape hatch.
+- **Guarantee**: Invalid config never becomes active; swaps are atomic.
+- **Mechanism**: `ParseResult` boundary + `Namespace.load(...)` atomic swap.
+- **Boundary**: A valid config can still be logically wrong; rollback is the safe escape hatch.
 
 ---
 
@@ -244,9 +246,9 @@ fun evaluateWithShadowedConfig(context: Context): Boolean {
 }
 ```
 
-**Guarantee**: Production behavior stays pinned to baseline while candidate is evaluated.
-**Mechanism**: `evaluateWithShadow(...)` evaluates baseline + candidate but returns baseline value.
-**Boundary**: Shadow evaluation is inline and adds extra work to the hot path; sample if needed.
+- **Guarantee**: Production behavior stays pinned to baseline while candidate is evaluated.
+- **Mechanism**: `evaluateWithShadow(...)` evaluates baseline + candidate but returns baseline value.
+- **Boundary**: Shadow evaluation is inline and adds extra work to the hot path; sample if needed.
 
 ---
 
@@ -270,9 +272,9 @@ fun disablePayments() {
 }
 ```
 
-**Guarantee**: Disabling a namespace only affects that namespace.
-**Mechanism**: Each `Namespace` has an isolated registry and kill-switch.
-**Boundary**: `disableAll()` returns defaults; it does not modify feature definitions or remote config state.
+- **Guarantee**: Disabling a namespace only affects that namespace.
+- **Mechanism**: Each `Namespace` has an isolated registry and kill-switch.
+- **Boundary**: `disableAll()` returns defaults; it does not modify feature definitions or remote config state.
 
 ---
 
@@ -302,9 +304,9 @@ fun attachHooks() {
 }
 ```
 
-**Guarantee**: Hooks receive evaluation and lifecycle signals with consistent payloads.
-**Mechanism**: `RegistryHooks` are invoked inside the runtime's evaluation and load paths.
-**Boundary**: Hooks run on the hot path; keep them non-blocking.
+- **Guarantee**: Hooks receive evaluation and lifecycle signals with consistent payloads.
+- **Mechanism**: `RegistryHooks` are invoked inside the runtime's evaluation and load paths.
+- **Boundary**: Hooks run on the hot path; keep them non-blocking.
 
 ---
 

@@ -3,6 +3,7 @@
 ## Problem
 
 You need to:
+
 - Target features based on business-specific attributes (subscription tier, account age, credit score)
 - Maintain type safety for custom context fields
 - Ensure business rules are checked at compile-time
@@ -36,35 +37,36 @@ enum class SubscriptionTier { FREE, PRO, ENTERPRISE }
 
 ```kotlin
 object PremiumFeatures : Namespace("premium") {
-    val advancedAnalytics by boolean<BusinessContext>(default = false) {
-        rule(true) {
-            extension {
-                subscriptionTier == SubscriptionTier.ENTERPRISE &&
-                lifetimeRevenue > 10_000.0
-            }
-        }
+  val advancedAnalytics by boolean<BusinessContext>(default = false) {
+    rule(true) {
+      extension {
+        subscriptionTier == SubscriptionTier.ENTERPRISE &&
+        lifetimeRevenue > 10_000.0
+      }
     }
+  }
 
-    val prioritySupport by boolean<BusinessContext>(default = false) {
-        rule(true) {
-            extension {
-                subscriptionTier == SubscriptionTier.PRO ||
-                subscriptionTier == SubscriptionTier.ENTERPRISE
-            }
-        }
+  val prioritySupport by boolean<BusinessContext>(default = false) {
+    rule(true) {
+      extension {
+        subscriptionTier == SubscriptionTier.PRO ||
+        subscriptionTier == SubscriptionTier.ENTERPRISE
+      }
     }
+  }
 
-    val betaFeatures by boolean<BusinessContext>(default = false) {
-        rule(true) {
-            extension {
-                isEmployee || (subscriptionTier == SubscriptionTier.ENTERPRISE && accountAgeMonths > 6)
-            }
-        }
+  val betaFeatures by boolean<BusinessContext>(default = false) {
+    rule(true) {
+      extension {
+        isEmployee || (subscriptionTier == SubscriptionTier.ENTERPRISE && accountAgeMonths > 6)
+      }
     }
+  }
 }
 ```
 
 **How it works:**
+
 - `extension { ... }` block receives `BusinessContext` as `this`
 - Inside the block, you can access `subscriptionTier`, `accountAgeMonths`, etc.
 - Type safety enforced at compile-time
@@ -73,22 +75,22 @@ object PremiumFeatures : Namespace("premium") {
 
 ```kotlin
 fun evaluateFeatures(user: User): FeaturesForUser {
-    val ctx = BusinessContext(
-        stableId = StableId(user.id),
-        platform = user.platform,
-        locale = user.locale,
-        appVersion = user.appVersion,
-        subscriptionTier = user.subscriptionTier,
-        accountAgeMonths = user.accountAgeMonths,
-        lifetimeRevenue = user.lifetimeRevenue,
-        isEmployee = user.isEmployee
-    )
+  val ctx = BusinessContext(
+      stableId = StableId(user.id),
+      platform = user.platform,
+      locale = user.locale,
+      appVersion = user.appVersion,
+      subscriptionTier = user.subscriptionTier,
+      accountAgeMonths = user.accountAgeMonths,
+      lifetimeRevenue = user.lifetimeRevenue,
+      isEmployee = user.isEmployee
+  )
 
-    return FeaturesForUser(
-        advancedAnalytics = PremiumFeatures.advancedAnalytics.evaluate(ctx),
-        prioritySupport = PremiumFeatures.prioritySupport.evaluate(ctx),
-        betaFeatures = PremiumFeatures.betaFeatures.evaluate(ctx)
-    )
+  return FeaturesForUser(
+      advancedAnalytics = PremiumFeatures.advancedAnalytics.evaluate(ctx),
+      prioritySupport = PremiumFeatures.prioritySupport.evaluate(ctx),
+      betaFeatures = PremiumFeatures.betaFeatures.evaluate(ctx)
+  )
 }
 ```
 
@@ -96,23 +98,23 @@ fun evaluateFeatures(user: User): FeaturesForUser {
 
 ```kotlin
 val experimentalCheckout by boolean<BusinessContext>(default = false) {
-    // Standard predicates
-    rule(true) {
-        platforms(Platform.IOS, Platform.ANDROID)  // Mobile only
-        versions { min(2, 0, 0) }                   // Version 2.0.0+
+  // Standard predicates
+  rule(true) {
+    platforms(Platform.IOS, Platform.ANDROID)  // Mobile only
+    versions { min(2, 0, 0) }                   // Version 2.0.0+
 
-        // Custom business logic
-        extension {
-            subscriptionTier == SubscriptionTier.PRO &&
-            accountAgeMonths > 3
-        }
+    // Custom business logic
+    extension {
+      subscriptionTier == SubscriptionTier.PRO &&
+      accountAgeMonths > 3
     }
+  }
 
-    // Ramp-up for qualified users
-    rule(true) {
-        extension { subscriptionTier == SubscriptionTier.ENTERPRISE }
-        rampUp { 50.0 }
-    }
+  // Ramp-up for qualified users
+  rule(true) {
+    extension { subscriptionTier == SubscriptionTier.ENTERPRISE }
+    rampUp { 50.0 }
+  }
 }
 ```
 
@@ -138,26 +140,26 @@ val experimentalCheckout by boolean<BusinessContext>(default = false) {
 
 ```kotlin
 interface AccountContext : Context {
-    val accountTier: AccountTier
-    val accountCreatedAt: Instant
+  val accountTier: AccountTier
+  val accountCreatedAt: Instant
 }
 
 interface PaymentContext : AccountContext {
-    val paymentMethod: PaymentMethod
-    val hasValidCard: Boolean
+  val paymentMethod: PaymentMethod
+  val hasValidCard: Boolean
 }
 
 // Features can target any level of the hierarchy
 val basicFeature by boolean<AccountContext>(default = false) {
-    rule(true) {
-        extension { accountTier == AccountTier.PREMIUM }
-    }
+  rule(true) {
+    extension { accountTier == AccountTier.PREMIUM }
+  }
 }
 
 val paymentFeature by boolean<PaymentContext>(default = false) {
-    rule(true) {
-        extension { hasValidCard && paymentMethod == PaymentMethod.CREDIT_CARD }
-    }
+  rule(true) {
+    extension { hasValidCard && paymentMethod == PaymentMethod.CREDIT_CARD }
+  }
 }
 ```
 
@@ -170,15 +172,15 @@ data class BusinessContext(
     val subscriptionTier: SubscriptionTier,
     val lifetimeRevenue: Double
 ) : Context {
-    // Computed property available in extension blocks
-    val isHighValueCustomer: Boolean
-        get() = subscriptionTier == SubscriptionTier.ENTERPRISE && lifetimeRevenue > 50_000.0
+  // Computed property available in extension blocks
+  val isHighValueCustomer: Boolean
+    get() = subscriptionTier == SubscriptionTier.ENTERPRISE && lifetimeRevenue > 50_000.0
 }
 
 val vipFeature by boolean<BusinessContext>(default = false) {
-    rule(true) {
-        extension { isHighValueCustomer }
-    }
+  rule(true) {
+    extension { isHighValueCustomer }
+  }
 }
 ```
 
@@ -193,11 +195,11 @@ data class RiskContext(
 ) : Context
 
 val highRiskCheckout by boolean<RiskContext>(default = false) {
-    rule(true) {
-        extension {
-            riskScore < 0.5 && !isBlacklisted
-        }
+  rule(true) {
+    extension {
+      riskScore < 0.5 && !isBlacklisted
     }
+  }
 }
 ```
 
@@ -210,12 +212,12 @@ val highRiskCheckout by boolean<RiskContext>(default = false) {
 ```kotlin
 // ✗ DON'T: External call inside extension block
 val feature by boolean<BusinessContext>(default = false) {
-    rule(true) {
-        extension {
-            val score = fraudService.getRiskScore(stableId)  // Slow, non-deterministic
-            score < 0.5
-        }
+  rule(true) {
+    extension {
+      val score = fraudService.getRiskScore(stableId)  // Slow, non-deterministic
+      score < 0.5
     }
+  }
 }
 
 // ✓ DO: Fetch data before building context
@@ -232,17 +234,17 @@ val enabled = feature.evaluate(ctx)
 // ✗ DON'T: Side effects in extension block
 var evaluationCount = 0
 val feature by boolean<BusinessContext>(default = false) {
-    rule(true) {
-        extension {
-            evaluationCount++  // Side effect!
-            subscriptionTier == SubscriptionTier.PRO
-        }
+  rule(true) {
+    extension {
+      evaluationCount++  // Side effect!
+      subscriptionTier == SubscriptionTier.PRO
     }
+  }
 }
 
 // ✓ DO: Use observability hooks for side effects
 AppFeatures.hooks.afterEvaluation.add { event ->
-    evaluationCount++
+  evaluationCount++
 }
 ```
 
@@ -250,9 +252,9 @@ AppFeatures.hooks.afterEvaluation.add { event ->
 
 ```kotlin
 val businessFeature by boolean<BusinessContext>(default = false) {
-    rule(true) {
-        extension { subscriptionTier == SubscriptionTier.PRO }
-    }
+  rule(true) {
+    extension { subscriptionTier == SubscriptionTier.PRO }
+  }
 }
 
 // ✗ DON'T: Evaluate with base Context
@@ -273,20 +275,20 @@ data class BusinessContext(
 ) : Context
 
 val enterpriseFeature by boolean<BusinessContext>(default = false) {
-    rule(true) {
-        extension {
-            companyName.startsWith("Acme")  // NullPointerException if null!
-        }
+  rule(true) {
+    extension {
+      companyName.startsWith("Acme")  // NullPointerException if null!
     }
+  }
 }
 
 // ✓ FIX: Handle null
 val enterpriseFeature by boolean<BusinessContext>(default = false) {
-    rule(true) {
-        extension {
-            companyName?.startsWith("Acme") == true
-        }
+  rule(true) {
+    extension {
+      companyName?.startsWith("Acme") == true
     }
+  }
 }
 ```
 
@@ -297,38 +299,38 @@ val enterpriseFeature by boolean<BusinessContext>(default = false) {
 ```kotlin
 @Test
 fun `enterprise users with high revenue get advanced analytics`() {
-    val ctx = BusinessContext(
-        stableId = StableId("user-123"),
-        platform = Platform.IOS,
-        locale = Locale.US,
-        appVersion = Version.of(2, 0, 0),
-        subscriptionTier = SubscriptionTier.ENTERPRISE,
-        accountAgeMonths = 12,
-        lifetimeRevenue = 15_000.0,
-        isEmployee = false
-    )
+  val ctx = BusinessContext(
+      stableId = StableId("user-123"),
+      platform = Platform.IOS,
+      locale = Locale.US,
+      appVersion = Version.of(2, 0, 0),
+      subscriptionTier = SubscriptionTier.ENTERPRISE,
+      accountAgeMonths = 12,
+      lifetimeRevenue = 15_000.0,
+      isEmployee = false
+  )
 
-    val enabled = PremiumFeatures.advancedAnalytics.evaluate(ctx)
+  val enabled = PremiumFeatures.advancedAnalytics.evaluate(ctx)
 
-    assertTrue(enabled)
+  assertTrue(enabled)
 }
 
 @Test
 fun `pro users with low revenue do not get advanced analytics`() {
-    val ctx = BusinessContext(
-        stableId = StableId("user-456"),
-        platform = Platform.IOS,
-        locale = Locale.US,
-        appVersion = Version.of(2, 0, 0),
-        subscriptionTier = SubscriptionTier.PRO,  // PRO, not ENTERPRISE
-        accountAgeMonths = 12,
-        lifetimeRevenue = 5_000.0,  // Below threshold
-        isEmployee = false
-    )
+  val ctx = BusinessContext(
+      stableId = StableId("user-456"),
+      platform = Platform.IOS,
+      locale = Locale.US,
+      appVersion = Version.of(2, 0, 0),
+      subscriptionTier = SubscriptionTier.PRO,  // PRO, not ENTERPRISE
+      accountAgeMonths = 12,
+      lifetimeRevenue = 5_000.0,  // Below threshold
+      isEmployee = false
+  )
 
-    val enabled = PremiumFeatures.advancedAnalytics.evaluate(ctx)
+  val enabled = PremiumFeatures.advancedAnalytics.evaluate(ctx)
 
-    assertFalse(enabled)
+  assertFalse(enabled)
 }
 ```
 
@@ -347,18 +349,18 @@ fun `advanced analytics requires enterprise tier and high revenue`(
     revenue: Double,
     expected: Boolean
 ) {
-    val ctx = BusinessContext(
-        stableId = StableId("user"),
-        platform = Platform.IOS,
-        locale = Locale.US,
-        appVersion = Version.of(2, 0, 0),
-        subscriptionTier = tier,
-        accountAgeMonths = 12,
-        lifetimeRevenue = revenue,
-        isEmployee = false
-    )
+  val ctx = BusinessContext(
+      stableId = StableId("user"),
+      platform = Platform.IOS,
+      locale = Locale.US,
+      appVersion = Version.of(2, 0, 0),
+      subscriptionTier = tier,
+      accountAgeMonths = 12,
+      lifetimeRevenue = revenue,
+      isEmployee = false
+  )
 
-    assertEquals(expected, PremiumFeatures.advancedAnalytics.evaluate(ctx))
+  assertEquals(expected, PremiumFeatures.advancedAnalytics.evaluate(ctx))
 }
 ```
 
@@ -367,22 +369,22 @@ fun `advanced analytics requires enterprise tier and high revenue`(
 ```kotlin
 @Test
 fun `experimental checkout requires mobile, v2+, PRO tier, and 3+ months`() {
-    // All criteria match
-    val qualifiedCtx = BusinessContext(
-        stableId = StableId("user-1"),
-        platform = Platform.IOS,  // Mobile ✓
-        locale = Locale.US,
-        appVersion = Version.of(2, 1, 0),  // v2+ ✓
-        subscriptionTier = SubscriptionTier.PRO,  // PRO ✓
-        accountAgeMonths = 6,  // 3+ months ✓
-        lifetimeRevenue = 0.0,
-        isEmployee = false
-    )
-    assertTrue(PremiumFeatures.experimentalCheckout.evaluate(qualifiedCtx))
+  // All criteria match
+  val qualifiedCtx = BusinessContext(
+      stableId = StableId("user-1"),
+      platform = Platform.IOS,  // Mobile ✓
+      locale = Locale.US,
+      appVersion = Version.of(2, 1, 0),  // v2+ ✓
+      subscriptionTier = SubscriptionTier.PRO,  // PRO ✓
+      accountAgeMonths = 6,  // 3+ months ✓
+      lifetimeRevenue = 0.0,
+      isEmployee = false
+  )
+  assertTrue(PremiumFeatures.experimentalCheckout.evaluate(qualifiedCtx))
 
-    // Missing one criterion (wrong platform)
-    val unqualifiedCtx = qualifiedCtx.copy(platform = Platform.WEB)
-    assertFalse(PremiumFeatures.experimentalCheckout.evaluate(unqualifiedCtx))
+  // Missing one criterion (wrong platform)
+  val unqualifiedCtx = qualifiedCtx.copy(platform = Platform.WEB)
+  assertFalse(PremiumFeatures.experimentalCheckout.evaluate(unqualifiedCtx))
 }
 ```
 
@@ -404,30 +406,30 @@ data class EcommerceContext(
 ) : Context
 
 object CheckoutFeatures : Namespace("checkout") {
-    val expressCheckout by boolean<EcommerceContext>(default = false) {
-        // High-value customers
-        rule(true) {
-            extension {
-                cartValue > 200.0 && orderCount > 5
-            }
-        }
-
-        // Loyal members, regardless of cart value
-        rule(true) {
-            extension {
-                hasActiveLoyaltyMembership && orderCount > 3
-            }
-        }
+  val expressCheckout by boolean<EcommerceContext>(default = false) {
+    // High-value customers
+    rule(true) {
+      extension {
+        cartValue > 200.0 && orderCount > 5
+      }
     }
 
-    val winbackDiscount by boolean<EcommerceContext>(default = false) {
-        // Lapsed customers (30+ days since last order)
-        rule(true) {
-            extension {
-                daysSinceLastOrder?.let { it > 30 } == true && orderCount > 0
-            }
-        }
+    // Loyal members, regardless of cart value
+    rule(true) {
+      extension {
+        hasActiveLoyaltyMembership && orderCount > 3
+      }
     }
+  }
+
+  val winbackDiscount by boolean<EcommerceContext>(default = false) {
+    // Lapsed customers (30+ days since last order)
+    rule(true) {
+      extension {
+        daysSinceLastOrder?.let { it > 30 } == true && orderCount > 0
+      }
+    }
+  }
 }
 ```
 

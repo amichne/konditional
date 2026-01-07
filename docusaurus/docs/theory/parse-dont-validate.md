@@ -24,6 +24,7 @@ if (validateConfig(json)) {
 ```
 
 **Issues:**
+
 1. Validated data remains in its original (untyped) form
 2. No compile-time guarantee that validated data is used correctly
 3. Validation checks can be bypassed or forgotten
@@ -49,6 +50,7 @@ fun parseConfig(json: String): ParseResult<Configuration> {
 ```
 
 **Benefits:**
+
 1. **Type-states**: Success contains valid `Configuration`, Failure contains `ParseError`
 2. **Exhaustive handling**: When-expression forces you to handle both cases
 3. **No invalid states**: If you have a `Configuration`, it's guaranteed valid
@@ -80,7 +82,8 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 }
 ```
 
-**Key insight:** If you have a `Configuration` instance, it has already been validated. You can't construct an invalid `Configuration` because the parser is the only way to create one from JSON.
+**Key insight:** If you have a `Configuration` instance, it has already been validated. You can't construct an invalid `Configuration` because the parser is the
+only way to create one from JSON.
 
 ---
 
@@ -126,6 +129,7 @@ try {
 ```
 
 **Issues:**
+
 - Exceptions are invisible in type signatures
 - Easy to forget exception handling
 - Exceptions can propagate and crash the application
@@ -141,6 +145,7 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 ```
 
 **Benefits:**
+
 - Parse failures are explicit in the return type
 - Compiler forces you to handle both cases
 - No hidden control flow (no exceptions)
@@ -185,6 +190,7 @@ if (validateJson(json)) {
 ```
 
 **Problems:**
+
 - `json` remains untyped after validation
 - Caller can bypass validation
 - Invalid states can be constructed
@@ -208,6 +214,7 @@ when (val result = parseJson(json)) {
 ```
 
 **Benefits:**
+
 - `Configuration` is typed and guaranteed valid
 - Caller must handle both success and failure (exhaustive when)
 - Invalid configurations cannot be constructed
@@ -254,6 +261,7 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 **If you have a `Configuration` instance produced by `decode(...)`, it is valid.**
 
 No need to:
+
 - Re-validate before using it
 - Check for null/undefined fields
 - Guard against type mismatches

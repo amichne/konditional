@@ -24,6 +24,7 @@ class Registry {
 ```
 
 **Issues:**
+
 - Thread A updates `config` while Thread B reads
 - Thread B might see old config, new config, or **garbage** (torn read)
 - No happens-before relationship between write and read
@@ -45,6 +46,7 @@ override val configuration: Configuration
 ```
 
 **Guarantees:**
+
 1. **Atomic swap** - `set(...)` is a single write operation (no partial updates)
 2. **Happens-before** - JVM memory model guarantees writes are visible to subsequent reads
 3. **No torn reads** - Reference swap is atomic at the hardware level
@@ -62,6 +64,7 @@ From the Java Language Specification (JLS section 17.4.5):
 > "A write to a volatile variable v happens-before all subsequent reads of v by any thread."
 
 `AtomicReference` uses volatile semantics internally, providing:
+
 - **Visibility** - Writes are immediately visible to other threads
 - **Ordering** - No reordering of reads/writes across the volatile barrier
 
@@ -72,6 +75,7 @@ current.set(newConfig)
 ```
 
 This is **one atomic operation**:
+
 - Old reference is replaced with new reference
 - No intermediate state exists
 - Readers see either old OR new (never partial)
@@ -94,13 +98,13 @@ val value = AppFeatures.darkMode.evaluate(context)
 
 1. Thread 1 calls `current.set(newConfig)`
 2. Thread 2 calls `current.get()` during the update
-3. Thread 2 sees **either**:
-   - Old config (read happened before write completed)
-   - New config (read happened after write completed)
+3. Thread 2 sees - **either**:
+  - Old config (read happened before write completed)
+  - New config (read happened after write completed)
 4. Thread 2 **never** sees:
-   - Partial config (half old, half new)
-   - Null reference
-   - Corrupt data
+  - Partial config (half old, half new)
+  - Null reference
+  - Corrupt data
 
 **Why:** `AtomicReference.set(...)` is a single atomic write; there's no intermediate state.
 
@@ -121,6 +125,7 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
 ```
 
 **Benefits:**
+
 - **No contention** - Multiple threads can read concurrently
 - **No blocking** - Writers don't block readers, readers don't block writers
 - **Predictable latency** - No lock acquisition overhead
@@ -154,6 +159,7 @@ class Registry {
 ```
 
 **Issues:**
+
 - Lock contention (readers block writers, writers block readers)
 - Overhead of lock acquisition/release
 - Potential for deadlocks
@@ -162,7 +168,7 @@ class Registry {
 
 ## Linearizability
 
-`AtomicReference` provides **linearizability**: operations appear to execute atomically at a single point in time.
+`AtomicReference` provides - **linearizability**: operations appear to execute atomically at a single point in time.
 
 ### Concurrent Updates
 
@@ -178,6 +184,7 @@ val value = AppFeatures.darkMode.evaluate(context)
 ```
 
 **Outcome:**
+
 - Thread 3 sees **one** of: initial config, config1, or config2
 - Thread 3 **never** sees a mix of config1 and config2
 - Last write wins (config1 or config2, depending on scheduling)
@@ -246,6 +253,7 @@ and call `load(...)`.
 **Corollary:** Readers never observe a configuration that was never active (no partial updates, no torn reads).
 
 **Proof:**
+
 1. `AtomicReference.set(...)` is a single atomic write
 2. `AtomicReference.get(...)` returns the current reference atomically
 3. No intermediate states exist between old and new reference

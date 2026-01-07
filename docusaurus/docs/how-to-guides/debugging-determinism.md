@@ -3,6 +3,7 @@
 ## Problem
 
 You're experiencing:
+
 - Users report inconsistent feature behavior ("I had the feature yesterday, but not today")
 - A/B test results show users switching between variants
 - Metrics show unexpected bucket distribution
@@ -17,14 +18,14 @@ The most common cause of non-determinism is inconsistent `stableId`:
 ```kotlin
 // Add logging to capture stableId
 fun evaluateWithLogging(userId: String): Boolean {
-    val stableId = StableId(userId)
-    logger.debug("Evaluating for user=$userId, stableId=${stableId.hexId}")
+  val stableId = StableId(userId)
+  logger.debug("Evaluating for user=$userId, stableId=${stableId.hexId}")
 
-    val ctx = Context(stableId = stableId)
-    val result = AppFeatures.newFeature.evaluate(ctx)
+  val ctx = Context(stableId = stableId)
+  val result = AppFeatures.newFeature.evaluate(ctx)
 
-    logger.debug("User=$userId, result=$result")
-    return result
+  logger.debug("User=$userId, result=$result")
+  return result
 }
 ```
 
@@ -45,27 +46,30 @@ Calculate the bucket directly to understand assignment:
 ```kotlin
 import io.amichne.konditional.rules.RampUpBucketing
 
-fun debugBucketAssignment(userId: String, featureKey: String) {
-    val stableId = StableId(userId)
+fun debugBucketAssignment(
+    userId: String,
+    featureKey: String
+) {
+  val stableId = StableId(userId)
 
-    val bucket = RampUpBucketing.calculateBucket(
-        stableId = stableId,
-        featureKey = featureKey,
-        salt = "default"  // Or your custom salt
-    )
+  val bucket = RampUpBucketing.calculateBucket(
+      stableId = stableId,
+      featureKey = featureKey,
+      salt = "default"  // Or your custom salt
+  )
 
-    logger.info("""
+  logger.info("""
         Bucket assignment for user=$userId:
         - Feature: $featureKey
         - StableId: ${stableId.hexId}
         - Bucket: $bucket (0-99)
     """.trimIndent())
 
-    // Check against ramp-up threshold
-    val rampUpPercentage = 50.0
-    val inRampUp = bucket < rampUpPercentage
+  // Check against ramp-up threshold
+  val rampUpPercentage = 50.0
+  val inRampUp = bucket < rampUpPercentage
 
-    logger.info("User is ${if (inRampUp) "IN" else "NOT IN"} the $rampUpPercentage% ramp-up")
+  logger.info("User is ${if (inRampUp) "IN" else "NOT IN"} the $rampUpPercentage% ramp-up")
 }
 
 // Usage
@@ -78,11 +82,11 @@ Trace why evaluation returned a specific value:
 
 ```kotlin
 fun debugEvaluation(userId: String) {
-    val ctx = Context(stableId = StableId(userId))
+  val ctx = Context(stableId = StableId(userId))
 
-    val explanation = AppFeatures.newCheckoutFlow.explain(ctx)
+  val explanation = AppFeatures.newCheckoutFlow.explain(ctx)
 
-    logger.info("""
+  logger.info("""
         Evaluation explanation:
         - Feature: ${explanation.feature.key}
         - Result: ${explanation.result}
@@ -91,10 +95,10 @@ fun debugEvaluation(userId: String) {
         Rule evaluation trace:
     """.trimIndent())
 
-    explanation.evaluationTrace.forEach { step ->
-        val icon = if (step.matched) "✓" else "✗"
-        logger.info("  $icon Rule #${step.ruleIndex}: ${step.reason}")
-    }
+  explanation.evaluationTrace.forEach { step ->
+    val icon = if (step.matched) "✓" else "✗"
+    logger.info("  $icon Rule #${step.ruleIndex}: ${step.reason}")
+  }
 }
 
 // Usage
@@ -102,6 +106,7 @@ debugEvaluation("user-12345")
 ```
 
 **Example output:**
+
 ```
 Evaluation explanation:
 - Feature: newCheckoutFlow
@@ -120,21 +125,21 @@ Reproduce the issue locally with the same inputs:
 
 ```kotlin
 fun testDeterminism(userId: String) {
-    val ctx = Context(stableId = StableId(userId))
+  val ctx = Context(stableId = StableId(userId))
 
-    // Evaluate 100 times
-    val results = (1..100).map {
-        AppFeatures.newCheckoutFlow.evaluate(ctx)
-    }
+  // Evaluate 100 times
+  val results = (1..100).map {
+    AppFeatures.newCheckoutFlow.evaluate(ctx)
+  }
 
-    // All results should be identical
-    val allSame = results.all { it == results.first() }
+  // All results should be identical
+  val allSame = results.all { it == results.first() }
 
-    if (allSame) {
-        logger.info("✓ Determinism verified for user=$userId: always returns ${results.first()}")
-    } else {
-        logger.error("✗ NON-DETERMINISTIC for user=$userId: got mixed results $results")
-    }
+  if (allSame) {
+    logger.info("✓ Determinism verified for user=$userId: always returns ${results.first()}")
+  } else {
+    logger.error("✗ NON-DETERMINISTIC for user=$userId: got mixed results $results")
+  }
 }
 ```
 
@@ -262,12 +267,12 @@ require(results.all { it == results.first() }) { "Non-deterministic!" }
 
 ```kotlin
 AppFeatures.hooks.afterLoad.add { event ->
-    when (event.result) {
-        is ParseResult.Success -> {
-            logger.info("Config loaded at ${event.timestamp}")
-            logger.info("Loaded features: ${event.result.loadedFeatures}")
-        }
+  when (event.result) {
+    is ParseResult.Success -> {
+      logger.info("Config loaded at ${event.timestamp}")
+      logger.info("Loaded features: ${event.result.loadedFeatures}")
     }
+  }
 }
 ```
 
@@ -281,26 +286,26 @@ Verify that buckets distribute evenly across users:
 
 ```kotlin
 fun analyzeBucketDistribution(sampleSize: Int = 10_000) {
-    val buckets = (0 until sampleSize).map { i ->
-        val stableId = StableId("user-$i")
-        RampUpBucketing.calculateBucket(stableId, "testFeature", "default")
-    }
+  val buckets = (0 until sampleSize).map { i ->
+    val stableId = StableId("user-$i")
+    RampUpBucketing.calculateBucket(stableId, "testFeature", "default")
+  }
 
-    // Count users per bucket (0-99)
-    val distribution = buckets.groupingBy { it }.eachCount()
+  // Count users per bucket (0-99)
+  val distribution = buckets.groupingBy { it }.eachCount()
 
-    // Each bucket should have ~100 users (1% of 10,000)
-    distribution.forEach { (bucket, count) ->
-        val percentage = (count.toDouble() / sampleSize) * 100
-        logger.info("Bucket $bucket: $count users ($percentage%)")
-    }
+  // Each bucket should have ~100 users (1% of 10,000)
+  distribution.forEach { (bucket, count) ->
+    val percentage = (count.toDouble() / sampleSize) * 100
+    logger.info("Bucket $bucket: $count users ($percentage%)")
+  }
 
-    // Standard deviation should be low
-    val mean = sampleSize / 100.0
-    val variance = distribution.values.map { (it - mean).pow(2) }.average()
-    val stdDev = sqrt(variance)
+  // Standard deviation should be low
+  val mean = sampleSize / 100.0
+  val variance = distribution.values.map { (it - mean).pow(2) }.average()
+  val stdDev = sqrt(variance)
 
-    logger.info("Distribution stdDev: $stdDev (should be < 10 for good distribution)")
+  logger.info("Distribution stdDev: $stdDev (should be < 10 for good distribution)")
 }
 ```
 
@@ -310,17 +315,17 @@ Compare loaded config to expected config:
 
 ```kotlin
 fun debugConfigDrift() {
-    val expectedRampUp = 50.0
-    val actualRampUp = getLoadedRampUpPercentage(AppFeatures.newCheckoutFlow)
+  val expectedRampUp = 50.0
+  val actualRampUp = getLoadedRampUpPercentage(AppFeatures.newCheckoutFlow)
 
-    if (actualRampUp != expectedRampUp) {
-        logger.error("""
+  if (actualRampUp != expectedRampUp) {
+    logger.error("""
             Config drift detected:
             - Expected ramp-up: $expectedRampUp%
             - Actual ramp-up: $actualRampUp%
             - Possible causes: config load failed, wrong config deployed
         """.trimIndent())
-    }
+  }
 }
 ```
 
@@ -331,22 +336,22 @@ Capture context from production and replay locally:
 ```kotlin
 // In production: log context on evaluation
 AppFeatures.hooks.afterEvaluation.add { event ->
-    logger.info("Eval: user=${event.context.stableId}, result=${event.result}, context=${event.context}")
+  logger.info("Eval: user=${event.context.stableId}, result=${event.result}, context=${event.context}")
 }
 
 // Locally: replay with same context
 fun replayEvaluation(productionLog: String) {
-    // Parse: "Eval: user=abc123, result=true, context=..."
-    val stableId = extractStableId(productionLog)
-    val platform = extractPlatform(productionLog)
+  // Parse: "Eval: user=abc123, result=true, context=..."
+  val stableId = extractStableId(productionLog)
+  val platform = extractPlatform(productionLog)
 
-    val ctx = Context(
-        stableId = StableId(stableId),
-        platform = platform
-    )
+  val ctx = Context(
+      stableId = StableId(stableId),
+      platform = platform
+  )
 
-    val result = AppFeatures.newCheckoutFlow.evaluate(ctx)
-    logger.info("Local replay: result=$result")
+  val result = AppFeatures.newCheckoutFlow.evaluate(ctx)
+  logger.info("Local replay: result=$result")
 }
 ```
 
@@ -357,14 +362,14 @@ fun replayEvaluation(productionLog: String) {
 ```kotlin
 @Test
 fun `evaluation is deterministic for same user`() {
-    val userId = "test-user-123"
-    val ctx = Context(stableId = StableId(userId))
+  val userId = "test-user-123"
+  val ctx = Context(stableId = StableId(userId))
 
-    val results = (1..1000).map {
-        AppFeatures.newCheckoutFlow.evaluate(ctx)
-    }
+  val results = (1..1000).map {
+    AppFeatures.newCheckoutFlow.evaluate(ctx)
+  }
 
-    assertTrue(results.all { it == results.first() })
+  assertTrue(results.all { it == results.first() })
 }
 ```
 
@@ -373,28 +378,28 @@ fun `evaluation is deterministic for same user`() {
 ```kotlin
 @Test
 fun `same user gets same bucket on all platforms`() {
-    val userId = "test-user-456"
+  val userId = "test-user-456"
 
-    val mobileCtx = Context(
-        stableId = StableId(userId),
-        platform = Platform.ANDROID
-    )
+  val mobileCtx = Context(
+      stableId = StableId(userId),
+      platform = Platform.ANDROID
+  )
 
-    val webCtx = Context(
-        stableId = StableId(userId),
-        platform = Platform.WEB
-    )
+  val webCtx = Context(
+      stableId = StableId(userId),
+      platform = Platform.WEB
+  )
 
-    // Same user → same bucket → potentially same result
-    // (Actual result may differ if rules target specific platforms)
-    val mobileBucket = RampUpBucketing.calculateBucket(
-        StableId(userId), "feature", "default"
-    )
-    val webBucket = RampUpBucketing.calculateBucket(
-        StableId(userId), "feature", "default"
-    )
+  // Same user → same bucket → potentially same result
+  // (Actual result may differ if rules target specific platforms)
+  val mobileBucket = RampUpBucketing.calculateBucket(
+      StableId(userId), "feature", "default"
+  )
+  val webBucket = RampUpBucketing.calculateBucket(
+      StableId(userId), "feature", "default"
+  )
 
-    assertEquals(mobileBucket, webBucket, "Same user should be in same bucket")
+  assertEquals(mobileBucket, webBucket, "Same user should be in same bucket")
 }
 ```
 

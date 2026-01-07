@@ -28,8 +28,8 @@ fun Namespace.load(configuration: ConfigurationView)
 
 ```kotlin
 when (val result = ConfigurationSnapshotCodec.decode(json)) {
-    is ParseResult.Success -> AppFeatures.load(result.value)
-    is ParseResult.Failure -> logError(result.error.message)
+  is ParseResult.Success -> AppFeatures.load(result.value)
+  is ParseResult.Failure -> logError(result.error.message)
 }
 ```
 
@@ -89,11 +89,11 @@ fun Namespace.disableAll()
 fun Namespace.enableAll()
 ```
 
-**Guarantee**: When disabled, evaluations return declared defaults.
+- **Guarantee**: When disabled, evaluations return declared defaults.
 
-**Mechanism**: Registry-level boolean kill-switch.
+- **Mechanism**: Registry-level boolean kill-switch.
 
-**Boundary**: This does not change feature definitions or loaded configuration.
+- **Boundary**: This does not change feature definitions or loaded configuration.
 
 ---
 

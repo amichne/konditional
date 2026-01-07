@@ -12,15 +12,15 @@ metadata, or depend on `core`.
 
 ## Guarantees
 
-**Guarantee**: Metadata is represented as plain Kotlin data structures.
-**Mechanism**: `ConfigMetadata` and `ConfigMetadataResponse` are `data class` values.
-**Boundary**: This module does not validate pointer syntax, enforce constraints, or interpret metadata.
+- **Guarantee**: Metadata is represented as plain Kotlin data structures.
+- **Mechanism**: `ConfigMetadata` and `ConfigMetadataResponse` are `data class` values.
+- **Boundary**: This module does not validate pointer syntax, enforce constraints, or interpret metadata.
 
 ## Validation Boundary
 
-**Guarantee**: No constraint validation is performed by this module.
-**Mechanism**: Descriptors are data-only; there is no evaluator.
-**Boundary**: Validate JSON pointers and value constraints in your own boundary layer.
+- **Guarantee**: No constraint validation is performed by this module.
+- **Mechanism**: Descriptors are data-only; there is no evaluator.
+- **Boundary**: Validate JSON pointers and value constraints in your own boundary layer.
 
 ## Non-Goals
 

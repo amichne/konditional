@@ -13,14 +13,14 @@ This page defines the minimum vocabulary you need to read and write Konditional 
 
 ## Compile-time vs runtime
 
-| Aspect | Guarantee Level | Mechanism |
-|--------|-----------------|-----------|
-| Property access | Compile-time | Property delegation on `Namespace` |
-| Return types | Compile-time | Generic type propagation (`Feature<T, C, M>`) |
-| Rule values | Compile-time | Typed DSL builders (`boolean`, `string`, `enum`, `custom`) |
-| Non-null returns | Compile-time | Required defaults |
-| Rule matching | Runtime | Deterministic evaluation over `Context` |
-| Business logic correctness | Not guaranteed | Human responsibility |
+| Aspect                     | Guarantee Level | Mechanism                                                  |
+|----------------------------|-----------------|------------------------------------------------------------|
+| Property access            | Compile-time    | Property delegation on `Namespace`                         |
+| Return types               | Compile-time    | Generic type propagation (`Feature<T, C, M>`)              |
+| Rule values                | Compile-time    | Typed DSL builders (`boolean`, `string`, `enum`, `custom`) |
+| Non-null returns           | Compile-time    | Required defaults                                          |
+| Rule matching              | Runtime         | Deterministic evaluation over `Context`                    |
+| Business logic correctness | Not guaranteed  | Human responsibility                                       |
 
 ## Typed values in practice
 
@@ -28,9 +28,9 @@ This page defines the minimum vocabulary you need to read and write Konditional 
 enum class Theme { LIGHT, DARK }
 
 object AppFeatures : Namespace("app") {
-    val darkMode by boolean<Context>(default = false)
-    val theme by enum<Theme, Context>(default = Theme.LIGHT)
-    val retries by integer<Context>(default = 3)
+  val darkMode by boolean<Context>(default = false)
+  val theme by enum<Theme, Context>(default = Theme.LIGHT)
+  val retries by integer<Context>(default = 3)
 }
 
 val theme: Theme = AppFeatures.theme.evaluate(ctx)
@@ -38,8 +38,8 @@ val theme: Theme = AppFeatures.theme.evaluate(ctx)
 
 ## Type-safety guarantee
 
-**Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
+- **Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
 
-**Mechanism**: Feature properties are declared with explicit type parameters and enforced by the Kotlin type system.
+- **Mechanism**: Feature properties are declared with explicit type parameters and enforced by the Kotlin type system.
 
-**Boundary**: Dynamically-generated features are outside this guarantee.
+- **Boundary**: Dynamically-generated features are outside this guarantee.

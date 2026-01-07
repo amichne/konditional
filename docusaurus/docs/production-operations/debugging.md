@@ -42,6 +42,7 @@ Evaluation path:
 ```
 
 **When to use:**
+
 - User reports unexpected behavior ("I don't see the new feature")
 - A/B test results don't match expectations
 - Verifying rule precedence in production
@@ -66,10 +67,11 @@ data class RuleEvaluationStep<T, C : Context>(
 ```
 
 **Example trace:**
+
 ```kotlin
 explanation.evaluationTrace.forEach { step ->
-    val icon = if (step.matched) "✓" else "✗"
-    println("$icon Rule #${step.ruleIndex}: ${step.reason}")
+  val icon = if (step.matched) "✓" else "✗"
+  println("$icon Rule #${step.ruleIndex}: ${step.reason}")
 }
 ```
 
@@ -88,16 +90,17 @@ val ctx = Context(stableId = stableId)
 
 // Evaluate multiple times
 val results = (1..10).map {
-    AppFeatures.newCheckout.evaluate(ctx)
+  AppFeatures.newCheckout.evaluate(ctx)
 }
 
 // All results should be identical
 require(results.all { it == results.first() }) {
-    "Bucketing is non-deterministic for user $userId: $results"
+  "Bucketing is non-deterministic for user $userId: $results"
 }
 ```
 
 **Common causes of non-determinism:**
+
 1. **stableId changes between evaluations**
    ```kotlin
    // DON'T: New StableId every time
@@ -147,6 +150,7 @@ println("User is ${if (inRampUp) "IN" else "NOT IN"} the $rampUpPercentage% ramp
 ```
 
 **Use when:**
+
 - Verifying specific users should/shouldn't be in a ramp-up
 - Debugging reported inconsistencies
 - Understanding bucket distribution
@@ -157,20 +161,20 @@ Test that bucketing distributes users evenly:
 
 ```kotlin
 fun testRampUpDistribution() {
-    val sampleSize = 10000
-    val rampUpPercentage = 30.0
+  val sampleSize = 10000
+  val rampUpPercentage = 30.0
 
-    val inRampUp = (0 until sampleSize).count { userId ->
-        val ctx = Context(stableId = StableId("user-$userId"))
-        AppFeatures.experimentalFeature.evaluate(ctx)  // Returns true if in ramp-up
-    }
+  val inRampUp = (0 until sampleSize).count { userId ->
+    val ctx = Context(stableId = StableId("user-$userId"))
+    AppFeatures.experimentalFeature.evaluate(ctx)  // Returns true if in ramp-up
+  }
 
-    val actualPercentage = (inRampUp.toDouble() / sampleSize) * 100
+  val actualPercentage = (inRampUp.toDouble() / sampleSize) * 100
 
-    // Should be within ~1% of target
-    require((actualPercentage - rampUpPercentage).absoluteValue < 1.0) {
-        "Ramp-up distribution off: expected $rampUpPercentage%, got $actualPercentage%"
-    }
+  // Should be within ~1% of target
+  require((actualPercentage - rampUpPercentage).absoluteValue < 1.0) {
+    "Ramp-up distribution off: expected $rampUpPercentage%, got $actualPercentage%"
+  }
 }
 ```
 
@@ -184,14 +188,14 @@ Add logging to trace rule evaluation:
 
 ```kotlin
 val feature by boolean<Context>(default = false) {
-    rule(true) {
-        android()
-        logger.debug("Android rule evaluated: $this")
-    }
-    rule(true) {
-        rampUp { 50.0 }
-        logger.debug("Ramp-up rule evaluated: $this")
-    }
+  rule(true) {
+    android()
+    logger.debug("Android rule evaluated: $this")
+  }
+  rule(true) {
+    rampUp { 50.0 }
+    logger.debug("Ramp-up rule evaluated: $this")
+  }
 }
 ```
 
@@ -199,7 +203,7 @@ Or use observability hooks:
 
 ```kotlin
 AppFeatures.hooks.afterEvaluation.add { event ->
-    logger.debug("""
+  logger.debug("""
         Feature: ${event.feature.key}
         Context: ${event.context}
         Result: ${event.result}
@@ -214,9 +218,9 @@ Rules are evaluated in order until one matches:
 
 ```kotlin
 val feature by boolean<Context>(default = false) {
-    rule(true) { rampUp { 10.0 } }         // Rule #1: Most specific
-    rule(true) { platforms(Platform.IOS) }  // Rule #2: Less specific
-    rule(false) { android() }               // Rule #3: Least specific
+  rule(true) { rampUp { 10.0 } }         // Rule #1: Most specific
+  rule(true) { platforms(Platform.IOS) }  // Rule #2: Less specific
+  rule(false) { android() }               // Rule #3: Least specific
 }
 
 // Evaluation stops at first match:
@@ -238,21 +242,21 @@ Add logging around `ParseResult`:
 
 ```kotlin
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(configJson)) {
-    is ParseResult.Success -> {
-        logger.info("Config loaded successfully")
-        logger.debug("Loaded features: ${result.loadedFeatures}")
-    }
-    is ParseResult.Failure -> {
-        logger.error("Config load failed")
-        logger.error("Error: ${result.error}")
-        logger.error("JSON: $configJson")
+  is ParseResult.Success -> {
+    logger.info("Config loaded successfully")
+    logger.debug("Loaded features: ${result.loadedFeatures}")
+  }
+  is ParseResult.Failure -> {
+    logger.error("Config load failed")
+    logger.error("Error: ${result.error}")
+    logger.error("JSON: $configJson")
 
-        when (result.error) {
-            is ParseError.InvalidJSON -> logger.error("JSON syntax error")
-            is ParseError.UnknownFeature -> logger.error("Reference to undefined feature")
-            is ParseError.TypeMismatch -> logger.error("Type doesn't match definition")
-        }
+    when (result.error) {
+      is ParseError.InvalidJSON -> logger.error("JSON syntax error")
+      is ParseError.UnknownFeature -> logger.error("Reference to undefined feature")
+      is ParseError.TypeMismatch -> logger.error("Type doesn't match definition")
     }
+  }
 }
 ```
 
@@ -262,11 +266,11 @@ After a successful load, inspect what was loaded:
 
 ```kotlin
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(configJson)) {
-    is ParseResult.Success -> {
-        result.loadedFeatures.forEach { (featureKey, overrides) ->
-            logger.info("Feature $featureKey: ${overrides.size} override(s) loaded")
-        }
+  is ParseResult.Success -> {
+    result.loadedFeatures.forEach { (featureKey, overrides) ->
+      logger.info("Feature $featureKey: ${overrides.size} override(s) loaded")
     }
+  }
 }
 ```
 
@@ -278,20 +282,20 @@ Pre-validate JSON to catch issues early:
 import kotlinx.serialization.json.Json
 
 fun validateConfigJson(json: String): Result<Unit> {
-    return runCatching {
-        Json.parseToJsonElement(json)  // Validates JSON syntax
-    }
+  return runCatching {
+    Json.parseToJsonElement(json)  // Validates JSON syntax
+  }
 }
 
 // Usage
 when (validateConfigJson(configJson)) {
-    is Result.Success -> {
-        // JSON is syntactically valid, now try to load
-        NamespaceSnapshotLoader(AppFeatures).load(configJson)
-    }
-    is Result.Failure -> {
-        logger.error("Invalid JSON syntax", e)
-    }
+  is Result.Success -> {
+    // JSON is syntactically valid, now try to load
+    NamespaceSnapshotLoader(AppFeatures).load(configJson)
+  }
+  is Result.Failure -> {
+    logger.error("Invalid JSON syntax", e)
+  }
 }
 ```
 
@@ -321,6 +325,7 @@ val result = AppFeatures.someFeature.evaluate(ctx)
 ### Common Context Mistakes
 
 **1. Wrong stableId:**
+
 ```kotlin
 // DON'T: Random or session-based ID
 val ctx = Context(stableId = StableId(sessionId))  // Changes per session
@@ -330,6 +335,7 @@ val ctx = Context(stableId = StableId(userId))  // Consistent across sessions
 ```
 
 **2. Missing context fields:**
+
 ```kotlin
 // DON'T: Forgot to set platform
 val ctx = Context(stableId = StableId(userId))  // platform = null
@@ -343,13 +349,14 @@ val ctx = Context(
 ```
 
 **3. Wrong context type:**
+
 ```kotlin
 interface PremiumContext : Context {
-    val subscriptionTier: SubscriptionTier
+  val subscriptionTier: SubscriptionTier
 }
 
 val premiumFeature by boolean<PremiumContext>(default = false) {
-    rule(true) { extension { subscriptionTier == SubscriptionTier.ENTERPRISE } }
+  rule(true) { extension { subscriptionTier == SubscriptionTier.ENTERPRISE } }
 }
 
 // DON'T: Pass base Context
@@ -368,6 +375,7 @@ premiumFeature.evaluate(ctx)  // ✓
 When investigating feature issues in production:
 
 ### 1. Verify stableId consistency
+
 ```kotlin
 // Log stableId for the affected user
 logger.info("User ${userId} has stableId: ${ctx.stableId}")
@@ -376,18 +384,21 @@ logger.info("User ${userId} has stableId: ${ctx.stableId}")
 ```
 
 ### 2. Use explain() to trace evaluation
+
 ```kotlin
 val explanation = feature.explain(ctx)
 logger.info(explanation.summary())
 ```
 
 ### 3. Check ramp-up bucket assignment
+
 ```kotlin
 val bucket = RampUpBucketing.calculateBucket(ctx.stableId, featureKey, salt)
 logger.info("User in bucket $bucket (ramp-up threshold: $percentage%)")
 ```
 
 ### 4. Verify configuration is loaded
+
 ```kotlin
 // Check when configuration was last updated
 logger.info("Last config load: ${AppFeatures.lastLoadedAt}")
@@ -398,11 +409,13 @@ logger.info("Feature has overrides: $configured")
 ```
 
 ### 5. Inspect context fields
+
 ```kotlin
 logger.info("Context: platform=${ctx.platform}, locale=${ctx.locale}, version=${ctx.appVersion}")
 ```
 
 ### 6. Test locally with same inputs
+
 ```kotlin
 // Reproduce the exact evaluation locally
 val ctx = Context(
@@ -422,6 +435,7 @@ logger.info("Local evaluation result: $result")
 ### Issue: User reports "I don't see the new feature"
 
 **Debug steps:**
+
 1. Get user's stableId from logs
 2. Use `explain()` to see why they didn't match any enabled rules
 3. Check if they're in the ramp-up bucket (if applicable)
@@ -430,6 +444,7 @@ logger.info("Local evaluation result: $result")
 ### Issue: A/B test results show 0% treatment group
 
 **Debug steps:**
+
 1. Verify ramp-up percentage in loaded configuration
 2. Check that feature key matches between definition and JSON
 3. Verify `ParseResult` was `Success` when config was loaded
@@ -438,6 +453,7 @@ logger.info("Local evaluation result: $result")
 ### Issue: "Feature behavior changed unexpectedly"
 
 **Debug steps:**
+
 1. Check if configuration was recently updated
 2. Compare current config to previous version
 3. Verify salt wasn't changed (causes reshuffle)
@@ -455,6 +471,7 @@ Konditional provides debugging tools for production issues:
 - **Context inspection** — Verify inputs to evaluation
 
 When debugging:
+
 1. Start with `explain()` to understand evaluation
 2. Verify stableId consistency for determinism
 3. Check configuration was loaded successfully

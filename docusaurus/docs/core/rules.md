@@ -67,17 +67,17 @@ val enterpriseOnly by boolean<EnterpriseContext>(default = false) {
 }
 ```
 
-**Guarantee**: Custom predicates participate in specificity ordering.
+- **Guarantee**: Custom predicates participate in specificity ordering.
 
-**Mechanism**: Predicate implementations report their own `specificity()` which is added to the rule total.
+- **Mechanism**: Predicate implementations report their own `specificity()` which is added to the rule total.
 
-**Boundary**: Konditional does not validate predicate correctness or determinism.
+- **Boundary**: Konditional does not validate predicate correctness or determinism.
 
 ## Ramp-up allowlists
 
 `allowlist(...)` bypasses the ramp-up check after the rule matches by criteria.
 
-**Boundary**: It does not override rule criteria, `isActive`, or the namespace kill-switch.
+- **Boundary**: It does not override rule criteria, `isActive`, or the namespace kill-switch.
 
 ## Next steps
 

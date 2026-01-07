@@ -8,13 +8,14 @@ A typed feature definition created via namespace property delegation.
 
 ```kotlin
 sealed interface Feature<T : Any, C : Context, out M : Namespace> : Identifiable {
-    val key: String
-    val namespace: M
-    override val id: FeatureId
+  val key: String
+  val namespace: M
+  override val id: FeatureId
 }
 ```
 
 Notes:
+
 - `key` is the in-code key (usually the Kotlin property name).
 - `id` is the stable serialized identifier (see `FeatureId`).
 
@@ -26,23 +27,23 @@ Runtime inputs for evaluation.
 
 ```kotlin
 interface Context {
-    val locale: LocaleTag
-    val platform: PlatformTag
-    val appVersion: Version
-    val stableId: StableId
+  val locale: LocaleTag
+  val platform: PlatformTag
+  val appVersion: Version
+  val stableId: StableId
 
-    val axisValues: AxisValues get() = AxisValues.EMPTY
+  val axisValues: AxisValues get() = AxisValues.EMPTY
 
-    data class Core(...) : Context
+  data class Core(...) : Context
 
-    companion object {
-        operator fun invoke(
-            locale: LocaleTag,
-            platform: PlatformTag,
-            appVersion: Version,
-            stableId: StableId,
-        ): Core
-    }
+  companion object {
+    operator fun invoke(
+        locale: LocaleTag,
+        platform: PlatformTag,
+        appVersion: Version,
+        stableId: StableId,
+    ): Core
+  }
 }
 ```
 
@@ -80,10 +81,13 @@ Stable serialized identifier for a feature.
 ```kotlin
 @JvmInline
 value class FeatureId private constructor(val plainId: String) {
-    companion object {
-        fun create(namespaceSeed: String, key: String): FeatureId
-        fun parse(plainId: String): FeatureId
-    }
+  companion object {
+    fun create(
+        namespaceSeed: String,
+        key: String
+    ): FeatureId
+    fun parse(plainId: String): FeatureId
+  }
 }
 ```
 
@@ -101,20 +105,20 @@ Read-only views over the active configuration snapshot.
 
 ```kotlin
 interface ConfigurationView {
-    val flags: Map<Feature<*, *, *>, FlagDefinition<*, *, *>>
-    val metadata: ConfigurationMetadataView
+  val flags: Map<Feature<*, *, *>, FlagDefinition<*, *, *>>
+  val metadata: ConfigurationMetadataView
 }
 
 interface ConfigurationMetadataView {
-    val version: String?
-    val generatedAtEpochMillis: Long?
-    val source: String?
+  val version: String?
+  val generatedAtEpochMillis: Long?
+  val source: String?
 }
 ```
 
 Use `Namespace.flag(feature)` to resolve a single feature definition from the active configuration.
 
-**Boundary**: The concrete `Configuration` type lives in `konditional-serialization`.
+- **Boundary**: The concrete `Configuration` type lives in `konditional-serialization`.
 
 ---
 
@@ -124,13 +128,13 @@ Stable identifier used for deterministic bucketing.
 
 ```kotlin
 sealed interface StableId {
-    val id: String
-    val hexId: HexId
+  val id: String
+  val hexId: HexId
 
-    companion object {
-        fun of(input: String): StableId
-        fun fromHex(hexId: String): StableId
-    }
+  companion object {
+    fun of(input: String): StableId
+    fun fromHex(hexId: String): StableId
+  }
 }
 ```
 
@@ -155,8 +159,12 @@ data class Version(
 Stable identifiers for locale and platform targeting.
 
 ```kotlin
-interface LocaleTag { val id: String }
-interface PlatformTag { val id: String }
+interface LocaleTag {
+  val id: String
+}
+interface PlatformTag {
+  val id: String
+}
 ```
 
 ---
@@ -166,8 +174,13 @@ interface PlatformTag { val id: String }
 Custom targeting dimensions.
 
 ```kotlin
-interface AxisValue<T> where T : Enum<T> { val id: String }
-abstract class Axis<T>(val id: String, val valueClass: KClass<T>) where T : AxisValue<T>, T : Enum<T>
+interface AxisValue<T> where T : Enum<T> {
+  val id: String
+}
+abstract class Axis<T>(
+    val id: String,
+    val valueClass: KClass<T>
+) where T : AxisValue<T>, T : Enum<T>
 ```
 
 ---

@@ -16,24 +16,24 @@ At persistence time, the library serializes a list of **flag definitions**:
 
 ```mermaid
 flowchart LR
-    Snap[Snapshot JSON] --> Flags["flags: List{Flag}"]
-    Snap --> Meta["meta: SnapshotMetadata?"]
-    Flags --> Flag["Flag"]
-    Flag --> Key["key: FeatureId"]
-    Flag --> Default["defaultValue: tagged value object"]
-    Flag --> Salt["salt: String"]
-    Flag --> Active["isActive: Boolean"]
-    Flag --> FAllow["rampUpAllowlist: Set{String}"]
-    Flag --> Rules
-    Rules --> Rule["Rule"]
-    Rule --> RVal["value: tagged value object"]
-    Rule --> Ramp["rampUp: Double"]
-    Rule --> RAllow["rampUpAllowlist: Set{String}"]
-    Rule --> Note["note: String?"]
-    Rule --> Loc["locales: Set{String}"]
-    Rule --> Plat["platforms: Set{String}"]
-    Rule --> Vr["versionRange: VersionRange?"]
-    Rule --> Axes["axes: Map{String, Set{String}}"]
+  Snap[Snapshot JSON] --> Flags["flags: List{Flag}"]
+  Snap --> Meta["meta: SnapshotMetadata?"]
+  Flags --> Flag["Flag"]
+  Flag --> Key["key: FeatureId"]
+  Flag --> Default["defaultValue: tagged value object"]
+  Flag --> Salt["salt: String"]
+  Flag --> Active["isActive: Boolean"]
+  Flag --> FAllow["rampUpAllowlist: Set{String}"]
+  Flag --> Rules
+  Rules --> Rule["Rule"]
+  Rule --> RVal["value: tagged value object"]
+  Rule --> Ramp["rampUp: Double"]
+  Rule --> RAllow["rampUpAllowlist: Set{String}"]
+  Rule --> Note["note: String?"]
+  Rule --> Loc["locales: Set{String}"]
+  Rule --> Plat["platforms: Set{String}"]
+  Rule --> Vr["versionRange: VersionRange?"]
+  Rule --> Axes["axes: Map{String, Set{String}}"]
 
 ```
 
@@ -65,7 +65,8 @@ normalized on load.
 
 ## Value encoding (`defaultValue` / rule `value`)
 
-Both `defaultValue` and each rule's `value` are encoded as a **discriminated union** (tagged object). The `type` field acts as a discriminator that determines which variant is being used:
+Both `defaultValue` and each rule's `value` are encoded as a **discriminated union** (tagged object). The `type` field acts as a discriminator that determines
+which variant is being used:
 
 ```json
 {
@@ -87,13 +88,15 @@ Supported shapes:
 
 The `DATA_CLASS` representation stores a primitive map of fields along with the fully qualified class name.
 
-The generated OpenAPI schema includes a `discriminator` block that maps each `type` value to its corresponding schema reference (e.g., `"BOOLEAN"` → `#/components/schemas/BooleanFlagValue`).
+The generated OpenAPI schema includes a `discriminator` block that maps each `type` value to its corresponding schema reference (e.g., `"BOOLEAN"` →
+`#/components/schemas/BooleanFlagValue`).
 
 ---
 
 ## Version range encoding (`versionRange`)
 
-Rules may include a `versionRange` object. Like flag values, it uses a **discriminated union** pattern where the `type` field determines which variant and required fields apply:
+Rules may include a `versionRange` object. Like flag values, it uses a **discriminated union** pattern where the `type` field determines which variant and
+required fields apply:
 
 ```json
 {
@@ -252,63 +255,102 @@ Notes:
 - `ConfigurationSnapshotCodec.encode(...)` emits explicit values for these fields (including empty arrays/objects).
 
 :::details Snapshot: booleans + string variants, with version ranges
+
 ```json
 {
   "flags": [
     {
       "key": "feature::global::darkMode",
-      "defaultValue": { "type": "BOOLEAN", "value": false },
+      "defaultValue": {
+        "type": "BOOLEAN",
+        "value": false
+      },
       "salt": "v1",
       "isActive": true,
       "rampUpAllowlist": [],
       "rules": [
         {
-          "value": { "type": "BOOLEAN", "value": true },
+          "value": {
+            "type": "BOOLEAN",
+            "value": true
+          },
           "rampUp": 50.0,
-          "rampUpAllowlist": ["757365722d313233"],
+          "rampUpAllowlist": [
+            "757365722d313233"
+          ],
           "note": "iOS gradual ramp-up",
-          "locales": ["UNITED_STATES"],
-          "platforms": ["IOS"],
+          "locales": [
+            "UNITED_STATES"
+          ],
+          "platforms": [
+            "IOS"
+          ],
           "axes": {},
-          "versionRange": { "type": "MIN_BOUND", "min": { "major": 2, "minor": 0, "patch": 0 } }
+          "versionRange": {
+            "type": "MIN_BOUND",
+            "min": {
+              "major": 2,
+              "minor": 0,
+              "patch": 0
+            }
+          }
         }
       ]
     },
     {
       "key": "feature::global::apiEndpoint",
-      "defaultValue": { "type": "STRING", "value": "https://api.example.com" },
+      "defaultValue": {
+        "type": "STRING",
+        "value": "https://api.example.com"
+      },
       "salt": "v1",
       "isActive": true,
       "rampUpAllowlist": [],
       "rules": [
         {
-          "value": { "type": "STRING", "value": "https://api-ios.example.com" },
+          "value": {
+            "type": "STRING",
+            "value": "https://api-ios.example.com"
+          },
           "rampUp": 100.0,
           "rampUpAllowlist": [],
           "note": "iOS endpoint",
           "locales": [],
-          "platforms": ["IOS"],
+          "platforms": [
+            "IOS"
+          ],
           "axes": {},
-          "versionRange": { "type": "UNBOUNDED" }
+          "versionRange": {
+            "type": "UNBOUNDED"
+          }
         },
         {
-          "value": { "type": "STRING", "value": "https://api-android.example.com" },
+          "value": {
+            "type": "STRING",
+            "value": "https://api-android.example.com"
+          },
           "rampUp": 100.0,
           "rampUpAllowlist": [],
           "note": "Android endpoint",
           "locales": [],
-          "platforms": ["ANDROID"],
+          "platforms": [
+            "ANDROID"
+          ],
           "axes": {},
-          "versionRange": { "type": "UNBOUNDED" }
+          "versionRange": {
+            "type": "UNBOUNDED"
+          }
         }
       ]
     }
   ]
 }
 ```
+
 :::
 
 :::details Snapshot: enum value payload
+
 ```json
 {
   "flags": [
@@ -333,37 +375,51 @@ Notes:
           "rampUpAllowlist": [],
           "note": "Dark theme for iOS",
           "locales": [],
-          "platforms": ["IOS"],
+          "platforms": [
+            "IOS"
+          ],
           "axes": {},
-          "versionRange": { "type": "UNBOUNDED" }
+          "versionRange": {
+            "type": "UNBOUNDED"
+          }
         }
       ]
     }
   ]
 }
 ```
+
 :::
 
 :::details Patch: update one flag, remove one flag
+
 ```json
 {
   "flags": [
     {
       "key": "feature::global::darkMode",
-      "defaultValue": { "type": "BOOLEAN", "value": false },
+      "defaultValue": {
+        "type": "BOOLEAN",
+        "value": false
+      },
       "salt": "v1",
       "isActive": true,
       "rampUpAllowlist": [],
       "rules": [
         {
-          "value": { "type": "BOOLEAN", "value": true },
+          "value": {
+            "type": "BOOLEAN",
+            "value": true
+          },
           "rampUp": 100.0,
           "rampUpAllowlist": [],
           "note": "Ramp-up complete",
           "locales": [],
           "platforms": [],
           "axes": {},
-          "versionRange": { "type": "UNBOUNDED" }
+          "versionRange": {
+            "type": "UNBOUNDED"
+          }
         }
       ]
     }
@@ -373,9 +429,11 @@ Notes:
   ]
 }
 ```
+
 :::
 
 :::details Consumer Configuration Lifecycle Sample
+
 ```json
 {
   "flags": [
@@ -529,4 +587,5 @@ Notes:
   ]
 }
 ```
+
 :::

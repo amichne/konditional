@@ -28,19 +28,19 @@ Specificity is the sum of targeting constraints and custom predicate specificity
 - A custom `Predicate` can define its own `specificity()`
 - Default predicate specificity is 1
 
-**Guarantee**: More specific rules are evaluated before less specific rules.
+- **Guarantee**: More specific rules are evaluated before less specific rules.
 
-**Mechanism**: Rules are sorted by `rule.specificity()` in descending order before evaluation.
+- **Mechanism**: Rules are sorted by `rule.specificity()` in descending order before evaluation.
 
-**Boundary**: Ramp-up percentage does not affect specificity.
+- **Boundary**: Ramp-up percentage does not affect specificity.
 
 ## Deterministic ramp-ups
 
 Ramp-ups are deterministic and reproducible.
 
-**Guarantee**: The same `(stableId, featureKey, salt)` always yields the same bucket assignment.
+- **Guarantee**: The same `(stableId, featureKey, salt)` always yields the same bucket assignment.
 
-**Mechanism**:
+- **Mechanism**:
 
 1. Hash the UTF-8 bytes of `"$salt:$featureKey:${stableId.hexId.id}"` with SHA-256.
 2. Convert the first 4 bytes to an unsigned 32-bit integer.
@@ -48,17 +48,17 @@ Ramp-ups are deterministic and reproducible.
 4. Threshold = `(rampUp.value * 100.0).roundToInt()` (basis points).
 5. In ramp-up if `bucket < threshold`.
 
-**Boundary**: Changing `stableId`, `featureKey`, or `salt` changes the bucket assignment.
+- **Boundary**: Changing `stableId`, `featureKey`, or `salt` changes the bucket assignment.
 
 ## Example
 
 ```kotlin
 object AppFeatures : Namespace("app") {
-    val checkout by string<Context>(default = "v1") {
-        rule("v3") { platforms(Platform.IOS); versions { min(3, 0, 0) } } // specificity 2
-        rule("v2") { platforms(Platform.IOS) }                            // specificity 1
-        rule("v1") { always() }                                           // specificity 0
-    }
+  val checkout by string<Context>(default = "v1") {
+    rule("v3") { platforms(Platform.IOS); versions { min(3, 0, 0) } } // specificity 2
+    rule("v2") { platforms(Platform.IOS) }                            // specificity 1
+    rule("v1") { always() }                                           // specificity 0
+  }
 }
 ```
 

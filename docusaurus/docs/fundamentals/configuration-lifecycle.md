@@ -10,8 +10,8 @@ flowchart LR
   Parse -->|Success| Load["Loads into namespace"]
   Parse -->|Failure| Reject["Keep last-known-good + log"]
   Load --> Eval["Evaluation uses active snapshot"]
-  style Load fill:#c8e6c9
-  style Reject fill:#ffcdd2
+  style Load fill: #c8e6c9
+  style Reject fill: #ffcdd2
 ```
 
 ---
@@ -33,14 +33,14 @@ The payload is parsed and validated against registered features:
 
 ```kotlin
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Success -> {
-        // Valid configuration, ready to load
-    }
-    is ParseResult.Failure -> {
-        // Invalid JSON rejected
-        // This will error
-        logError("Parse failed: ${result.error.message}")
-    }
+  is ParseResult.Success -> {
+    // Valid configuration, ready to load
+  }
+  is ParseResult.Failure -> {
+    // Invalid JSON rejected
+    // This will error
+    logError("Parse failed: ${result.error.message}")
+  }
 }
 ```
 
@@ -62,13 +62,13 @@ If validation succeeds, the new configuration is loaded atomically:
 
 ```kotlin
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Success -> {
-        // Configuration is already loaded (fromJson calls load internally)
-        logger.info("Config updated successfully")
-    }
-    is ParseResult.Failure -> {
-        // Failure path (see step 4)
-    }
+  is ParseResult.Success -> {
+    // Configuration is already loaded (fromJson calls load internally)
+    logger.info("Config updated successfully")
+  }
+  is ParseResult.Failure -> {
+    // Failure path (see step 4)
+  }
 }
 ```
 
@@ -84,13 +84,13 @@ If validation fails, the payload is rejected and the last-known-good configurati
 
 ```kotlin
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Success -> Unit
-    is ParseResult.Failure -> {
-        // Last-known-good config is still active
-        logger.error("Config parse failed: ${result.error.message}")
-        metrics.increment("config.parse.failure")
-        // Optionally: alert on-call, retry later
-    }
+  is ParseResult.Success -> Unit
+  is ParseResult.Failure -> {
+    // Last-known-good config is still active
+    logger.error("Config parse failed: ${result.error.message}")
+    metrics.increment("config.parse.failure")
+    // Optionally: alert on-call, retry later
+  }
 }
 ```
 
@@ -124,8 +124,8 @@ val _ = AppFeatures
 
 // Later: Load JSON
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Success -> Unit
-    is ParseResult.Failure -> logError(result.error.message)
+  is ParseResult.Success -> Unit
+  is ParseResult.Failure -> logError(result.error.message)
 }
 ```
 
@@ -166,12 +166,13 @@ val patchJson = """
 
 val currentConfig = AppFeatures.configuration
 when (val result = ConfigurationSnapshotCodec.applyPatchJson(currentConfig, patchJson)) {
-    is ParseResult.Success -> AppFeatures.load(result.value)
-    is ParseResult.Failure -> logError(result.error.message)
+  is ParseResult.Success -> AppFeatures.load(result.value)
+  is ParseResult.Failure -> logError(result.error.message)
 }
 ```
 
 Patches support:
+
 - Adding new flags
 - Modifying existing flags
 - Removing flags (via `removeKeys`)
@@ -198,12 +199,12 @@ val history: List<ConfigurationMetadata> = AppFeatures.historyMetadata
 
 ```kotlin
 while (running) {
-    val json = fetchFromServer()
-    when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-        is ParseResult.Success -> logger.info("Config updated")
-        is ParseResult.Failure -> logger.error("Parse failed: ${result.error}")
-    }
-    delay(pollInterval)
+  val json = fetchFromServer()
+  when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
+    is ParseResult.Success -> logger.info("Config updated")
+    is ParseResult.Failure -> logger.error("Parse failed: ${result.error}")
+  }
+  delay(pollInterval)
 }
 ```
 
@@ -211,10 +212,10 @@ while (running) {
 
 ```kotlin
 configStream.collect { json ->
-    when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-        is ParseResult.Success -> logger.info("Config updated")
-        is ParseResult.Failure -> logger.error("Parse failed: ${result.error}")
-    }
+  when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
+    is ParseResult.Success -> logger.info("Config updated")
+    is ParseResult.Failure -> logger.error("Parse failed: ${result.error}")
+  }
 }
 ```
 

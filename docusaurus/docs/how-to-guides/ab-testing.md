@@ -3,6 +3,7 @@
 ## Problem
 
 You want to:
+
 - Test multiple variants of a feature (A, B, C)
 - Assign users deterministically to variants
 - Measure conversion, engagement, or other metrics per variant
@@ -14,9 +15,9 @@ You want to:
 
 ```kotlin
 enum class CheckoutVariant {
-    CLASSIC,      // Control
-    SIMPLIFIED,   // Treatment A
-    ENHANCED      // Treatment B
+  CLASSIC,      // Control
+  SIMPLIFIED,   // Treatment A
+  ENHANCED      // Treatment B
 }
 ```
 
@@ -26,25 +27,26 @@ enum class CheckoutVariant {
 
 ```kotlin
 object AppFeatures : Namespace("app") {
-    val checkoutExperiment by enum<CheckoutVariant, Context>(
-        default = CheckoutVariant.CLASSIC
-    ) {
-        // 33% get SIMPLIFIED
-        rule(CheckoutVariant.SIMPLIFIED) {
-            rampUp { 33.0 }
-        }
-
-        // 33% get ENHANCED (different bucket range)
-        rule(CheckoutVariant.ENHANCED) {
-            rampUp { 66.0 }  // 66% total, so this is the next 33%
-        }
-
-        // Remaining 34% get CLASSIC (default)
+  val checkoutExperiment by enum<CheckoutVariant, Context>(
+      default = CheckoutVariant.CLASSIC
+  ) {
+    // 33% get SIMPLIFIED
+    rule(CheckoutVariant.SIMPLIFIED) {
+      rampUp { 33.0 }
     }
+
+    // 33% get ENHANCED (different bucket range)
+    rule(CheckoutVariant.ENHANCED) {
+      rampUp { 66.0 }  // 66% total, so this is the next 33%
+    }
+
+    // Remaining 34% get CLASSIC (default)
+  }
 }
 ```
 
 **How bucketing works:**
+
 - Users in buckets 0-32 (33%) → SIMPLIFIED
 - Users in buckets 33-65 (33%) → ENHANCED
 - Users in buckets 66-99 (34%) → CLASSIC
@@ -56,9 +58,9 @@ val ctx = Context(stableId = StableId(userId))
 val variant: CheckoutVariant = AppFeatures.checkoutExperiment.evaluate(ctx)
 
 when (variant) {
-    CheckoutVariant.CLASSIC -> showClassicCheckout()
-    CheckoutVariant.SIMPLIFIED -> showSimplifiedCheckout()
-    CheckoutVariant.ENHANCED -> showEnhancedCheckout()
+  CheckoutVariant.CLASSIC -> showClassicCheckout()
+  CheckoutVariant.SIMPLIFIED -> showSimplifiedCheckout()
+  CheckoutVariant.ENHANCED -> showEnhancedCheckout()
 }
 ```
 
@@ -68,26 +70,29 @@ when (variant) {
 
 ```kotlin
 AppFeatures.hooks.afterEvaluation.add { event ->
-    if (event.feature.key == "checkoutExperiment") {
-        val variant = event.result as CheckoutVariant
+  if (event.feature.key == "checkoutExperiment") {
+    val variant = event.result as CheckoutVariant
 
-        // Track which variant user sees
-        analytics.track("checkout_experiment_assigned", mapOf(
-            "variant" to variant.name,
-            "user_id" to event.context.stableId.hexId
-        ))
-    }
+    // Track which variant user sees
+    analytics.track("checkout_experiment_assigned", mapOf(
+        "variant" to variant.name,
+        "user_id" to event.context.stableId.hexId
+    ))
+  }
 }
 
 // Track conversion per variant
-fun onCheckoutCompleted(userId: String, revenue: Double) {
-    val ctx = Context(stableId = StableId(userId))
-    val variant = AppFeatures.checkoutExperiment.evaluate(ctx)
+fun onCheckoutCompleted(
+    userId: String,
+    revenue: Double
+) {
+  val ctx = Context(stableId = StableId(userId))
+  val variant = AppFeatures.checkoutExperiment.evaluate(ctx)
 
-    analytics.track("checkout_completed", mapOf(
-        "variant" to variant.name,
-        "revenue" to revenue
-    ))
+  analytics.track("checkout_completed", mapOf(
+      "variant" to variant.name,
+      "revenue" to revenue
+  ))
 }
 ```
 
@@ -111,8 +116,8 @@ fun onCheckoutCompleted(userId: String, revenue: Double) {
 
 ```kotlin
 val experimentalFeature by enum<Variant, Context>(default = Variant.CONTROL) {
-    rule(Variant.TREATMENT) { rampUp { 10.0 } }
-    // Remaining 90% get CONTROL (default)
+  rule(Variant.TREATMENT) { rampUp { 10.0 } }
+  // Remaining 90% get CONTROL (default)
 }
 ```
 
@@ -122,25 +127,25 @@ val experimentalFeature by enum<Variant, Context>(default = Variant.CONTROL) {
 val checkoutExperiment by enum<CheckoutVariant, Context>(
     default = CheckoutVariant.CLASSIC
 ) {
-    // iOS users: 50/50 SIMPLIFIED vs ENHANCED
-    rule(CheckoutVariant.SIMPLIFIED) {
-        ios()
-        rampUp { 50.0 }
-    }
-    rule(CheckoutVariant.ENHANCED) {
-        ios()
-        rampUp { 100.0 }  // Remaining 50% of iOS users
-    }
+  // iOS users: 50/50 SIMPLIFIED vs ENHANCED
+  rule(CheckoutVariant.SIMPLIFIED) {
+    ios()
+    rampUp { 50.0 }
+  }
+  rule(CheckoutVariant.ENHANCED) {
+    ios()
+    rampUp { 100.0 }  // Remaining 50% of iOS users
+  }
 
-    // Android users: 33/33/34 split
-    rule(CheckoutVariant.SIMPLIFIED) {
-        android()
-        rampUp { 33.0 }
-    }
-    rule(CheckoutVariant.ENHANCED) {
-        android()
-        rampUp { 66.0 }
-    }
+  // Android users: 33/33/34 split
+  rule(CheckoutVariant.SIMPLIFIED) {
+    android()
+    rampUp { 33.0 }
+  }
+  rule(CheckoutVariant.ENHANCED) {
+    android()
+    rampUp { 66.0 }
+  }
 }
 ```
 
@@ -150,18 +155,18 @@ val checkoutExperiment by enum<CheckoutVariant, Context>(
 
 ```kotlin
 val experimentWithHoldout by enum<Variant, Context>(default = Variant.CONTROL) {
-    // 10% forced control (holdout)
-    rule(Variant.CONTROL) {
-        extension { userId in holdoutList }
-    }
+  // 10% forced control (holdout)
+  rule(Variant.CONTROL) {
+    extension { userId in holdoutList }
+  }
 
-    // 45% treatment A
-    rule(Variant.TREATMENT_A) { rampUp { 45.0 } }
+  // 45% treatment A
+  rule(Variant.TREATMENT_A) { rampUp { 45.0 } }
 
-    // 45% treatment B
-    rule(Variant.TREATMENT_B) { rampUp { 90.0 } }
+  // 45% treatment B
+  rule(Variant.TREATMENT_B) { rampUp { 90.0 } }
 
-    // Remaining 10% natural control
+  // Remaining 10% natural control
 }
 ```
 
@@ -178,6 +183,7 @@ rule(Variant.B) { rampUp { 50.0 } }   // ALSO buckets 0-49!
 **Result:** Both rules match for users in buckets 0-49. First rule wins (Variant.A), Variant.B never assigned.
 
 **Fix:** Use cumulative percentages:
+
 ```kotlin
 rule(Variant.A) { rampUp { 50.0 } }   // Buckets 0-49
 rule(Variant.B) { rampUp { 100.0 } }  // Buckets 50-99
@@ -188,18 +194,19 @@ rule(Variant.B) { rampUp { 100.0 } }  // Buckets 50-99
 ```kotlin
 // WRONG: Missing ENHANCED case
 when (variant) {
-    CheckoutVariant.CLASSIC -> showClassicCheckout()
-    CheckoutVariant.SIMPLIFIED -> showSimplifiedCheckout()
-    // ENHANCED falls through, compiler error if exhaustive required
+  CheckoutVariant.CLASSIC -> showClassicCheckout()
+  CheckoutVariant.SIMPLIFIED -> showSimplifiedCheckout()
+  // ENHANCED falls through, compiler error if exhaustive required
 }
 ```
 
 **Fix:** Handle all cases or use exhaustive when:
+
 ```kotlin
 when (variant) {
-    CheckoutVariant.CLASSIC -> showClassicCheckout()
-    CheckoutVariant.SIMPLIFIED -> showSimplifiedCheckout()
-    CheckoutVariant.ENHANCED -> showEnhancedCheckout()
+  CheckoutVariant.CLASSIC -> showClassicCheckout()
+  CheckoutVariant.SIMPLIFIED -> showSimplifiedCheckout()
+  CheckoutVariant.ENHANCED -> showEnhancedCheckout()
 }  // Compiler enforces exhaustiveness
 ```
 
@@ -236,18 +243,18 @@ val webCtx = Context(stableId = StableId(userId))
 ```kotlin
 @Test
 fun `variants distribute evenly`() {
-    val sampleSize = 10_000
-    val results = (0 until sampleSize).map { i ->
-        val ctx = Context(stableId = StableId("user-$i"))
-        AppFeatures.checkoutExperiment.evaluate(ctx)
-    }
+  val sampleSize = 10_000
+  val results = (0 until sampleSize).map { i ->
+    val ctx = Context(stableId = StableId("user-$i"))
+    AppFeatures.checkoutExperiment.evaluate(ctx)
+  }
 
-    val counts = results.groupingBy { it }.eachCount()
+  val counts = results.groupingBy { it }.eachCount()
 
-    // Each variant should be ~33%
-    assertEquals(3333, counts[CheckoutVariant.CLASSIC]!!, delta = 100)
-    assertEquals(3333, counts[CheckoutVariant.SIMPLIFIED]!!, delta = 100)
-    assertEquals(3334, counts[CheckoutVariant.ENHANCED]!!, delta = 100)
+  // Each variant should be ~33%
+  assertEquals(3333, counts[CheckoutVariant.CLASSIC]!!, delta = 100)
+  assertEquals(3333, counts[CheckoutVariant.SIMPLIFIED]!!, delta = 100)
+  assertEquals(3334, counts[CheckoutVariant.ENHANCED]!!, delta = 100)
 }
 ```
 
@@ -256,23 +263,23 @@ fun `variants distribute evenly`() {
 ```kotlin
 @Test
 fun `specific user gets expected variant`() {
-    val ctx = Context(stableId = StableId("test-user-123"))
-    val variant = AppFeatures.checkoutExperiment.evaluate(ctx)
+  val ctx = Context(stableId = StableId("test-user-123"))
+  val variant = AppFeatures.checkoutExperiment.evaluate(ctx)
 
-    // Calculate expected bucket
-    val bucket = RampUpBucketing.calculateBucket(
-        stableId = StableId("test-user-123"),
-        featureKey = "checkoutExperiment",
-        salt = "default"
-    )
+  // Calculate expected bucket
+  val bucket = RampUpBucketing.calculateBucket(
+      stableId = StableId("test-user-123"),
+      featureKey = "checkoutExperiment",
+      salt = "default"
+  )
 
-    val expectedVariant = when {
-        bucket < 33 -> CheckoutVariant.SIMPLIFIED
-        bucket < 66 -> CheckoutVariant.ENHANCED
-        else -> CheckoutVariant.CLASSIC
-    }
+  val expectedVariant = when {
+    bucket < 33 -> CheckoutVariant.SIMPLIFIED
+    bucket < 66 -> CheckoutVariant.ENHANCED
+    else -> CheckoutVariant.CLASSIC
+  }
 
-    assertEquals(expectedVariant, variant)
+  assertEquals(expectedVariant, variant)
 }
 ```
 
@@ -287,8 +294,8 @@ data class VariantMetrics(
     val conversions: Int,
     val revenue: Double
 ) {
-    val conversionRate: Double = conversions.toDouble() / impressions
-    val avgRevenuePerUser: Double = revenue / impressions
+  val conversionRate: Double = conversions.toDouble() / impressions
+  val avgRevenuePerUser: Double = revenue / impressions
 }
 
 // Query from analytics
@@ -299,7 +306,7 @@ val metrics = listOf(
 )
 
 metrics.forEach { m ->
-    println("${m.variant}: CR=${m.conversionRate}, ARPU=${m.avgRevenuePerUser}")
+  println("${m.variant}: CR=${m.conversionRate}, ARPU=${m.avgRevenuePerUser}")
 }
 // CLASSIC: CR=0.15, ARPU=7.5
 // SIMPLIFIED: CR=0.165, ARPU=8.25 (+10% CR, +10% revenue)
@@ -309,6 +316,7 @@ metrics.forEach { m ->
 ### Statistical Significance
 
 Use standard A/B test significance calculators with:
+
 - Sample size per variant
 - Conversion rate per variant
 - Confidence level (typically 95%)

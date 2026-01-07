@@ -13,17 +13,17 @@ If you only need compile-time correctness and deterministic evaluation, this is 
 
 ## Guarantees
 
-**Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
+- **Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
 
-**Mechanism**: Property delegation + generic type propagation on `Feature<T, C, M>`.
+- **Mechanism**: Property delegation + generic type propagation on `Feature<T, C, M>`.
 
-**Boundary**: This does not apply to dynamically-generated feature definitions.
+- **Boundary**: This does not apply to dynamically-generated feature definitions.
 
-**Guarantee**: Evaluation always returns a non-null value of the declared type.
+- **Guarantee**: Evaluation always returns a non-null value of the declared type.
 
-**Mechanism**: Every feature requires a `default` value and evaluation falls back to it.
+- **Mechanism**: Every feature requires a `default` value and evaluation falls back to it.
 
-**Boundary**: Incorrect business logic still yields a value; Konditional does not validate intent.
+- **Boundary**: Incorrect business logic still yields a value; Konditional does not validate intent.
 
 ## Quick example
 

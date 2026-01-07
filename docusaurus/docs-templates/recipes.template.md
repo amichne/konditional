@@ -24,9 +24,9 @@ When you have multiple rollout variants, model them as a typed value (enum or st
 
 {{recipe-1-typed-variants}}
 
-**Guarantee**: Variant values are compile-time correct and exhaustively handled.
-**Mechanism**: Enum-typed feature delegates (`enum<...>`) and Kotlin `when` exhaustiveness.
-**Boundary**: Remote JSON can only select enum constants already compiled into the binary.
+- **Guarantee**: Variant values are compile-time correct and exhaustively handled.
+- **Mechanism**: Enum-typed feature delegates (`enum<...>`) and Kotlin `when` exhaustiveness.
+- **Boundary**: Remote JSON can only select enum constants already compiled into the binary.
 
 ---
 
@@ -40,9 +40,9 @@ To restart the experiment with a fresh sample:
 
 {{recipe-2-reset}}
 
-**Guarantee**: Same `(stableId, flagKey, salt)` always yields the same bucket.
-**Mechanism**: SHA-256 deterministic bucketing in `RampUpBucketing`.
-**Boundary**: Changing `salt` intentionally redistributes buckets.
+- **Guarantee**: Same `(stableId, flagKey, salt)` always yields the same bucket.
+- **Mechanism**: SHA-256 deterministic bucketing in `RampUpBucketing`.
+- **Boundary**: Changing `salt` intentionally redistributes buckets.
 
 ---
 
@@ -52,9 +52,9 @@ Use axes for segment targeting you want to update via JSON (without redeploying 
 
 {{recipe-3-axes}}
 
-**Guarantee**: Segment targeting is type-safe and serializable.
-**Mechanism**: Axis IDs are stored in JSON; `axis(...)` evaluates against `Context.axisValues`.
-**Boundary**: Axis IDs must remain stable across builds and obfuscation.
+- **Guarantee**: Segment targeting is type-safe and serializable.
+- **Mechanism**: Axis IDs are stored in JSON; `axis(...)` evaluates against `Context.axisValues`.
+- **Boundary**: Axis IDs must remain stable across builds and obfuscation.
 
 ---
 
@@ -64,9 +64,9 @@ Use strongly-typed extensions for domain logic that should not be remotely mutab
 
 {{recipe-4-extension}}
 
-**Guarantee**: Extension predicates are type-safe and enforced at compile time.
-**Mechanism**: `Feature<T, EnterpriseContext>` makes the extension receiver strongly typed.
-**Boundary**: Extension logic is not serialized; only its rule parameters (e.g., ramp-up) can be updated remotely.
+- **Guarantee**: Extension predicates are type-safe and enforced at compile time.
+- **Mechanism**: `Feature<T, EnterpriseContext>` makes the extension receiver strongly typed.
+- **Boundary**: Extension logic is not serialized; only its rule parameters (e.g., ramp-up) can be updated remotely.
 
 ---
 
@@ -76,9 +76,9 @@ Use `custom<T>` for structured configuration that must be validated at the JSON 
 
 {{recipe-5-structured}}
 
-**Guarantee**: Invalid structured config is rejected before it reaches evaluation.
-**Mechanism**: Kontracts schema validation at `ConfigurationSnapshotCodec.decode(...)`.
-**Boundary**: Semantic correctness of field values (e.g., "appropriate backoff") remains a human responsibility.
+- **Guarantee**: Invalid structured config is rejected before it reaches evaluation.
+- **Mechanism**: Kontracts schema validation at `ConfigurationSnapshotCodec.decode(...)`.
+- **Boundary**: Semantic correctness of field values (e.g., "appropriate backoff") remains a human responsibility.
 
 ---
 
@@ -92,9 +92,9 @@ If a later update causes issues:
 
 {{recipe-6-rollback}}
 
-**Guarantee**: Invalid config never becomes active; swaps are atomic.
-**Mechanism**: `ParseResult` boundary + `Namespace.load(...)` atomic swap.
-**Boundary**: A valid config can still be logically wrong; rollback is the safe escape hatch.
+- **Guarantee**: Invalid config never becomes active; swaps are atomic.
+- **Mechanism**: `ParseResult` boundary + `Namespace.load(...)` atomic swap.
+- **Boundary**: A valid config can still be logically wrong; rollback is the safe escape hatch.
 
 ---
 
@@ -104,9 +104,9 @@ Compare a candidate configuration to baseline behavior without changing producti
 
 {{recipe-7-shadow}}
 
-**Guarantee**: Production behavior stays pinned to baseline while candidate is evaluated.
-**Mechanism**: `evaluateWithShadow(...)` evaluates baseline + candidate but returns baseline value.
-**Boundary**: Shadow evaluation is inline and adds extra work to the hot path; sample if needed.
+- **Guarantee**: Production behavior stays pinned to baseline while candidate is evaluated.
+- **Mechanism**: `evaluateWithShadow(...)` evaluates baseline + candidate but returns baseline value.
+- **Boundary**: Shadow evaluation is inline and adds extra work to the hot path; sample if needed.
 
 ---
 
@@ -116,9 +116,9 @@ Use separate namespaces for independent lifecycles, and a scoped kill-switch for
 
 {{recipe-8-namespace}}
 
-**Guarantee**: Disabling a namespace only affects that namespace.
-**Mechanism**: Each `Namespace` has an isolated registry and kill-switch.
-**Boundary**: `disableAll()` returns defaults; it does not modify feature definitions or remote config state.
+- **Guarantee**: Disabling a namespace only affects that namespace.
+- **Mechanism**: Each `Namespace` has an isolated registry and kill-switch.
+- **Boundary**: `disableAll()` returns defaults; it does not modify feature definitions or remote config state.
 
 ---
 
@@ -128,9 +128,9 @@ Attach logging and metrics without depending on a specific vendor SDK.
 
 {{recipe-9-observability}}
 
-**Guarantee**: Hooks receive evaluation and lifecycle signals with consistent payloads.
-**Mechanism**: `RegistryHooks` are invoked inside the runtime's evaluation and load paths.
-**Boundary**: Hooks run on the hot path; keep them non-blocking.
+- **Guarantee**: Hooks receive evaluation and lifecycle signals with consistent payloads.
+- **Mechanism**: `RegistryHooks` are invoked inside the runtime's evaluation and load paths.
+- **Boundary**: Hooks run on the hot path; keep them non-blocking.
 
 ---
 

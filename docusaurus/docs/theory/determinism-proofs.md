@@ -9,6 +9,7 @@ Why same inputs always produce same outputs: SHA-256 bucketing, stable rule orde
 **Claim:** Given the same configuration snapshot and the same context, evaluation always produces the same value.
 
 **Formally:**
+
 ```
 forall context C, configuration S:
   evaluate(feature, C, S) = v1 and evaluate(feature, C, S) = v2 -> v1 = v2
@@ -27,6 +28,7 @@ bucket = uint32(hash[0..3]) % 10_000
 ```
 
 **SHA-256 properties:**
+
 1. **Deterministic** - Same input always produces same hash
 2. **Collision-resistant** - Different inputs produce different hashes (with negligible probability of collision)
 3. **Uniform distribution** - Hash outputs are uniformly distributed
@@ -35,7 +37,8 @@ bucket = uint32(hash[0..3]) % 10_000
 
 **Lemma:** SHA-256 is a deterministic function.
 
-**Proof:** SHA-256 is defined by FIPS 180-4. For any input `m`, `SHA256(m)` is computed via a fixed sequence of operations (message padding, block processing, compression). The algorithm is deterministic (no randomness, no nondeterministic steps).
+**Proof:** SHA-256 is defined by FIPS 180-4. For any input `m`, `SHA256(m)` is computed via a fixed sequence of operations (message padding, block processing,
+compression). The algorithm is deterministic (no randomness, no nondeterministic steps).
 
 **Corollary:** For fixed `(salt, flagKey, stableIdHex)`, the bucket assignment is deterministic.
 
@@ -65,6 +68,7 @@ specificity(rule) =
 ### Rule Sorting
 
 Rules are sorted by:
+
 1. **Descending specificity** (higher specificity first)
 2. **Definition order** (tie-breaker)
 
@@ -75,6 +79,7 @@ val sortedRules = rules.sortedByDescending { it.specificity }
 ```
 
 Kotlin's `sortedByDescending` is a **stable sort**:
+
 - Elements with equal specificity retain their original order
 - Sorting is deterministic (same input -> same output)
 
@@ -94,6 +99,7 @@ data class Configuration internal constructor(
 ```
 
 `Configuration` is a Kotlin `data class` with `val` properties:
+
 - All fields are immutable references
 - The public API exposes a read-only `Map` (treat the snapshot as immutable)
 - No supported mutation methods
@@ -112,7 +118,8 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
 }
 ```
 
-**Key insight:** Evaluation reads a **snapshot** of configuration at a single point in time. Even if the active configuration changes during evaluation, the snapshot remains immutable.
+**Key insight:** Evaluation reads a **snapshot** of configuration at a single point in time. Even if the active configuration changes during evaluation, the
+snapshot remains immutable.
 
 **Corollary:** For a fixed context and snapshot, evaluation is deterministic.
 
@@ -123,6 +130,7 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
 ### Theorem
 
 **Given:**
+
 - A feature `f` with default `d` and rules `R = [r1, r2, ..., rn]`
 - A context `C` with `(locale, platform, version, stableId)`
 - A configuration snapshot `S` containing `f`'s definition
@@ -133,12 +141,14 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
 ### Proof
 
 **Case 1: Namespace disabled via kill-switch**
+
 - `disableAll()` sets a boolean flag
 - Evaluation returns `d` (default)
 - Boolean flag is deterministic
 - **Result:** deterministic
 
 **Case 2: Flag inactive**
+
 - `isActive` is a boolean in `FlagDefinition`
 - Evaluation returns `d` (default)
 - **Result:** deterministic
@@ -147,9 +157,9 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
 
 1. **Sort rules by specificity** (stable sort, deterministic)
 2. **Iterate rules in order:**
-   - **Criteria matching** - Pure functions of `C` (no side effects)
-   - **Ramp-up check** - SHA-256 bucketing (deterministic, proven above)
-   - **Allowlist check** - Set membership (deterministic)
+  - **Criteria matching** - Pure functions of `C` (no side effects)
+  - **Ramp-up check** - SHA-256 bucketing (deterministic, proven above)
+  - **Allowlist check** - Set membership (deterministic)
 3. **First matching rule** - Iteration order is deterministic, so first match is deterministic
 4. **Return rule value or default** - Both are constants from `S`
 
@@ -194,7 +204,7 @@ val ctx2 = Context(..., stableId = StableId.of("user-456"))
 // Different stableId -> different bucket -> possibly different value
 ```
 
-This is **intentional**: ramp-up bucketing is deterministic **per user**, not across users.
+This is - **intentional**: ramp-up bucketing is deterministic **per user**, not across users.
 
 ### X Non-Deterministic: Configuration Changes Between Evaluations
 
@@ -208,7 +218,7 @@ val v2 = AppFeatures.darkMode(ctx)
 // v1 might != v2 (config changed)
 ```
 
-This is **intentional**: determinism is scoped to a single configuration snapshot.
+This is - **intentional**: determinism is scoped to a single configuration snapshot.
 
 ### OK Deterministic: Concurrent Evaluations (Same Snapshot)
 
@@ -271,13 +281,13 @@ fun `50 percent ramp-up distributes evenly`() {
 
 ## Formal Properties Summary
 
-| Property | Mechanism | Guarantee |
-|----------|-----------|-----------|
-| **Ramp-up determinism** | SHA-256 (FIPS 180-4) | Same `(stableId, flagKey, salt)` -> same bucket |
-| **Rule ordering** | Stable sort by specificity | Same rules -> same iteration order |
-| **Snapshot immutability** | Kotlin immutable data classes | Snapshot cannot change after creation |
-| **Atomic reads** | `AtomicReference.get()` | Readers see consistent snapshot |
-| **Overall determinism** | Composition of above | Same `(context, snapshot)` -> same value |
+| Property                  | Mechanism                     | Guarantee                                       |
+|---------------------------|-------------------------------|-------------------------------------------------|
+| **Ramp-up determinism**   | SHA-256 (FIPS 180-4)          | Same `(stableId, flagKey, salt)` -> same bucket |
+| **Rule ordering**         | Stable sort by specificity    | Same rules -> same iteration order              |
+| **Snapshot immutability** | Kotlin immutable data classes | Snapshot cannot change after creation           |
+| **Atomic reads**          | `AtomicReference.get()`       | Readers see consistent snapshot                 |
+| **Overall determinism**   | Composition of above          | Same `(context, snapshot)` -> same value        |
 
 ---
 

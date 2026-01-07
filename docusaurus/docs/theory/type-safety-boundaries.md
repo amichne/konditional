@@ -8,7 +8,8 @@ Where compile-time guarantees end and runtime validation begins.
 
 **Konditional's guarantee is qualified:**
 
-> For **statically-defined** flags and rules, the compiler enforces type correctness and evaluation is non-null. When configuration crosses the JSON boundary, correctness is established via **validation** and explicit error handling (`ParseResult`), not via compile-time guarantees.
+> For **statically-defined** flags and rules, the compiler enforces type correctness and evaluation is non-null. When configuration crosses the JSON boundary,
+> correctness is established via **validation** and explicit error handling (`ParseResult`), not via compile-time guarantees.
 
 ---
 
@@ -86,6 +87,7 @@ fun <C : Context> Namespace.boolean(
 ```
 
 **Type flow:**
+
 1. `boolean<Context>(default = false)` -> `BooleanFeatureDelegate<Context>`
 2. Delegate returns `Feature<Boolean, Context, Namespace>`
 3. Property type is inferred: `Feature<Boolean, Context, Namespace>`
@@ -148,11 +150,11 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 3. **Type decoding** - Tagged values (`defaultValue` and rule `value`) are decoded into the declared Kotlin types (or fail with `ParseError.InvalidSnapshot`)
 4. **Structured value validation** - For `Konstrained` values, fields are validated against the provided Kontracts schema at the boundary
 
-**Boundary**: Manually constructing `Configuration` bypasses these checks; treat it as trusted input.
+- **Boundary**: Manually constructing `Configuration` bypasses these checks; treat it as trusted input.
 
-**Guarantee**: Application code does not construct JSON literals via a Konditional JSON value model.  
-**Mechanism**: JSON is parsed into the snapshot model and decoded into Kotlin values; structured values validate against `ObjectSchema`.  
-**Boundary**: This guarantee applies to Konditional's public API; `kontracts` may still expose a runtime JSON model for standalone use.
+- **Guarantee**: Application code does not construct JSON literals via a Konditional JSON value model.
+- **Mechanism**: JSON is parsed into the snapshot model and decoded into Kotlin values; structured values validate against `ObjectSchema`.
+- **Boundary**: This guarantee applies to Konditional's public API; `kontracts` may still expose a runtime JSON model for standalone use.
 
 ---
 
@@ -184,6 +186,7 @@ flowchart LR
 Rice's Theorem states that all non-trivial semantic properties of programs are undecidable. In practical terms:
 
 **The compiler cannot verify:**
+
 - Whether a JSON string contains valid syntax (requires parsing)
 - Whether a JSON object matches a schema (requires runtime checking)
 - Whether referenced features exist (requires runtime registry lookup)
@@ -193,14 +196,17 @@ Rice's Theorem states that all non-trivial semantic properties of programs are u
 ### Trade-Off: Flexibility vs Safety
 
 **Option 1: No remote configuration (all compile-time)**
+
 - OK Maximum safety
 - X No dynamic updates (requires redeployment)
 
 **Option 2: Untyped remote configuration**
+
 - OK Maximum flexibility
 - X No safety (runtime errors)
 
 **Konditional's approach: Validated boundary**
+
 - OK Type-safe static definitions
 - OK Dynamic updates via JSON
 - OK Explicit validation at boundary
@@ -219,6 +225,7 @@ val timeout = flagClient.getInt("timeout", 30)  // Type coercion can fail silent
 ```
 
 **Issues:**
+
 - Typos are runtime errors (or silent failures)
 - Type mismatches are runtime errors
 - No compile-time verification
@@ -251,16 +258,16 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 
 ## The Contract
 
-| Aspect | Compile-Time | Runtime |
-|--------|--------------|---------|
-| **Flag definitions** | Type-checked | N/A (defined in code) |
-| **Rule return types** | Type-checked | Validated at parse |
-| **Property access** | Compile error on typo | N/A (properties defined in code) |
-| **Context types** | Compile-time constraint | N/A (types defined in code) |
-| **JSON syntax** | N/A (compiler can't parse JSON strings) | Validated at parse |
-| **JSON schema** | N/A (compiler can't check JSON structure) | Validated at parse |
-| **Type correctness (JSON)** | N/A | Validated at parse |
-| **Feature existence (JSON)** | N/A | Validated at parse |
+| Aspect                       | Compile-Time                              | Runtime                          |
+|------------------------------|-------------------------------------------|----------------------------------|
+| **Flag definitions**         | Type-checked                              | N/A (defined in code)            |
+| **Rule return types**        | Type-checked                              | Validated at parse               |
+| **Property access**          | Compile error on typo                     | N/A (properties defined in code) |
+| **Context types**            | Compile-time constraint                   | N/A (types defined in code)      |
+| **JSON syntax**              | N/A (compiler can't parse JSON strings)   | Validated at parse               |
+| **JSON schema**              | N/A (compiler can't check JSON structure) | Validated at parse               |
+| **Type correctness (JSON)**  | N/A                                       | Validated at parse               |
+| **Feature existence (JSON)** | N/A                                       | Validated at parse               |
 
 ---
 

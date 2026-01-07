@@ -48,27 +48,27 @@ val enabled: Boolean = AppFeatures.darkMode.evaluate(ctx)
 
 ### Type-safe access
 
-**Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
+- **Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
 
-**Mechanism**: Property delegation and generic type propagation on `Feature<T, Context, Namespace>`.
+- **Mechanism**: Property delegation and generic type propagation on `Feature<T, Context, Namespace>`.
 
-**Boundary**: This does not apply to dynamically-generated features or external configuration systems.
+- **Boundary**: This does not apply to dynamically-generated features or external configuration systems.
 
 ### Total evaluation
 
-**Guarantee**: Every evaluation returns a value of the declared type; no nulls and no missing cases.
+- **Guarantee**: Every evaluation returns a value of the declared type; no nulls and no missing cases.
 
-**Mechanism**: Each feature requires a `default` value, which is returned when no rule matches.
+- **Mechanism**: Each feature requires a `default` value, which is returned when no rule matches.
 
-**Boundary**: If your business logic is wrong, Konditional still returns a value; correctness is your responsibility.
+- **Boundary**: If your business logic is wrong, Konditional still returns a value; correctness is your responsibility.
 
 ### Deterministic ramp-ups
 
-**Guarantee**: The same `(stableId, featureKey, salt)` always yields the same bucket assignment.
+- **Guarantee**: The same `(stableId, featureKey, salt)` always yields the same bucket assignment.
 
-**Mechanism**: SHA-256 bucketing reduces the hash to a stable integer in `[0, 9999]`.
+- **Mechanism**: SHA-256 bucketing reduces the hash to a stable integer in `[0, 9999]`.
 
-**Boundary**: Changing any of `stableId`, `featureKey`, or `salt` changes the bucket assignment.
+- **Boundary**: Changing any of `stableId`, `featureKey`, or `salt` changes the bucket assignment.
 
 ## Why the guarantees hold
 
@@ -171,11 +171,11 @@ If no rule matches, the default value is returned.
 
 ## Guarantees
 
-**Guarantee**: Evaluation always returns a non-null value of the declared type.
+- **Guarantee**: Evaluation always returns a non-null value of the declared type.
 
-**Mechanism**: Features require a `default` value and return it when no rule matches.
+- **Mechanism**: Features require a `default` value and return it when no rule matches.
 
-**Boundary**: Konditional does not validate business logic; it only evaluates rules.
+- **Boundary**: Konditional does not validate business logic; it only evaluates rules.
 
 ## Next steps
 
@@ -190,12 +190,12 @@ This page defines the minimum vocabulary you need to read and write Konditional 
 
 ## Terms
 
-- **Namespace**: A registry that owns a set of features.
-- **Feature**: A typed configuration value with rules and a default.
-- **Context**: Runtime inputs used for evaluation (`locale`, `platform`, `appVersion`, `stableId`).
-- **Rule**: Criteria -> value mapping. All criteria must match for the rule to apply.
-- **Specificity**: A numeric measure of how constrained a rule is. Higher specificity wins.
-- **Bucketing**: Deterministic assignment of a `stableId` to a ramp-up bucket.
+  - **Namespace**: A registry that owns a set of features.
+  - **Feature**: A typed configuration value with rules and a default.
+  - **Context**: Runtime inputs used for evaluation (`locale`, `platform`, `appVersion`, `stableId`).
+  - **Rule**: Criteria -> value mapping. All criteria must match for the rule to apply.
+  - **Specificity**: A numeric measure of how constrained a rule is. Higher specificity wins.
+  - **Bucketing**: Deterministic assignment of a `stableId` to a ramp-up bucket.
 
 ## Compile-time vs runtime
 
@@ -224,11 +224,11 @@ val theme: Theme = AppFeatures.theme.evaluate(ctx)
 
 ## Type-safety guarantee
 
-**Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
+- **Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
 
-**Mechanism**: Feature properties are declared with explicit type parameters and enforced by the Kotlin type system.
+- **Mechanism**: Feature properties are declared with explicit type parameters and enforced by the Kotlin type system.
 
-**Boundary**: Dynamically-generated features are outside this guarantee.
+- **Boundary**: Dynamically-generated features are outside this guarantee.
 
 ## From docusaurus/docs/fundamentals/evaluation-semantics.md
 
@@ -262,19 +262,19 @@ Specificity is the sum of targeting constraints and custom predicate specificity
 - A custom `Predicate` can define its own `specificity()`
 - Default predicate specificity is 1
 
-**Guarantee**: More specific rules are evaluated before less specific rules.
+- **Guarantee**: More specific rules are evaluated before less specific rules.
 
-**Mechanism**: Rules are sorted by `rule.specificity()` in descending order before evaluation.
+- **Mechanism**: Rules are sorted by `rule.specificity()` in descending order before evaluation.
 
-**Boundary**: Ramp-up percentage does not affect specificity.
+- **Boundary**: Ramp-up percentage does not affect specificity.
 
 ## Deterministic ramp-ups
 
 Ramp-ups are deterministic and reproducible.
 
-**Guarantee**: The same `(stableId, featureKey, salt)` always yields the same bucket assignment.
+- **Guarantee**: The same `(stableId, featureKey, salt)` always yields the same bucket assignment.
 
-**Mechanism**:
+- **Mechanism**:
 
 1. Hash the UTF-8 bytes of `"$salt:$featureKey:${stableId.hexId.id}"` with SHA-256.
 2. Convert the first 4 bytes to an unsigned 32-bit integer.
@@ -282,7 +282,7 @@ Ramp-ups are deterministic and reproducible.
 4. Threshold = `(rampUp.value * 100.0).roundToInt()` (basis points).
 5. In ramp-up if `bucket < threshold`.
 
-**Boundary**: Changing `stableId`, `featureKey`, or `salt` changes the bucket assignment.
+- **Boundary**: Changing `stableId`, `featureKey`, or `salt` changes the bucket assignment.
 
 ## Example
 
@@ -297,4 +297,3 @@ object AppFeatures : Namespace("app") {
 ```
 
 For an iOS user on version 3.1.0, the `v3` rule is evaluated first and wins if it matches.
-

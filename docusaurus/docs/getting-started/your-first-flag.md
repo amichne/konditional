@@ -39,11 +39,11 @@ If no rule matches, the default value is returned.
 
 ## Guarantees
 
-**Guarantee**: Evaluation always returns a non-null value of the declared type.
+- **Guarantee**: Evaluation always returns a non-null value of the declared type.
 
-**Mechanism**: Features require a `default` value and return it when no rule matches.
+- **Mechanism**: Features require a `default` value and return it when no rule matches.
 
-**Boundary**: Konditional does not validate business logic; it only evaluates rules.
+- **Boundary**: Konditional does not validate business logic; it only evaluates rules.
 
 ## Next steps
 

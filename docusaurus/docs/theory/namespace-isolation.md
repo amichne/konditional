@@ -18,6 +18,7 @@ object GlobalFlags {
 ```
 
 **Issues:**
+
 1. **Name collisions** - Two teams pick the same flag name
 2. **Coupled lifecycle** - Updating one domain's config affects others
 3. **Blast radius** - Configuration error in one domain breaks all domains
@@ -42,6 +43,7 @@ object Payments : Namespace("payments") {
 ```
 
 **Guarantees:**
+
 1. **Separate registries** - `Auth` and `Payments` have independent `NamespaceRegistry` instances
 2. **Independent lifecycle** - Load/rollback/disable operations are scoped to one namespace
 3. **Failure isolation** - Parse error in `Auth` config doesn't affect `Payments`
@@ -75,6 +77,7 @@ feature::${namespaceIdentifierSeed}::${featureKey}
 ```
 
 **Example:**
+
 - `Auth.socialLogin.id` -> `"feature::auth::socialLogin"`
 - `Payments.socialLogin.id` -> `"feature::payments::socialLogin"`
 
@@ -184,6 +187,7 @@ sealed class TeamDomain(id: String) : Namespace(id) {
 ```
 
 **Benefits:**
+
 - Recommendations team owns `recommendations` namespace
 - Search team owns `search` namespace
 - No coordination required for config updates
@@ -201,6 +205,7 @@ object InfrastructureFlags : Namespace("infrastructure") {
 ```
 
 **Benefits:**
+
 - Experiment config changes don't risk infrastructure stability
 - Infrastructure config has higher review standards
 
@@ -217,6 +222,7 @@ object Analytics : Namespace("analytics") {
 ```
 
 **Benefits:**
+
 - Analytics config error doesn't affect payment processing
 - Critical path config has higher SLA
 
@@ -233,6 +239,7 @@ object AuthPasswordReset : Namespace("auth-password-reset")
 ```
 
 **Issues:**
+
 - Too many namespaces increase complexity
 - No real benefit to isolation (all owned by Auth team)
 
@@ -261,6 +268,7 @@ sealed class AppDomain(id: String) : Namespace(id) {
 ```
 
 **Benefits:**
+
 - All namespaces are discoverable (sealed = exhaustive)
 - Compiler prevents unknown namespaces
 
@@ -273,6 +281,7 @@ com.example.teams.analytics.AnalyticsFeatures : Namespace("analytics")
 ```
 
 **Benefits:**
+
 - Package structure mirrors team structure
 - Code ownership via CODEOWNERS file
 
@@ -280,13 +289,13 @@ com.example.teams.analytics.AnalyticsFeatures : Namespace("analytics")
 
 ## Formal Properties
 
-| Property | Mechanism | Guarantee |
-|----------|-----------|-----------|
-| **No identifier collisions** | `FeatureId` includes namespace seed | `Auth.socialLogin.id` != `Payments.socialLogin.id` |
-| **Separate state** | Different `NamespaceRegistry` instances | Updating Auth doesn't affect Payments |
-| **Independent lifecycle** | Operations scoped to namespace | `Auth.load(...)` only affects Auth |
-| **Failure isolation** | Parse errors scoped to namespace | Auth parse failure doesn't break Payments |
-| **Type binding** | `Feature<*, *, M>` is namespace-bound | Lets you build APIs constrained to `M` |
+| Property                     | Mechanism                               | Guarantee                                          |
+|------------------------------|-----------------------------------------|----------------------------------------------------|
+| **No identifier collisions** | `FeatureId` includes namespace seed     | `Auth.socialLogin.id` != `Payments.socialLogin.id` |
+| **Separate state**           | Different `NamespaceRegistry` instances | Updating Auth doesn't affect Payments              |
+| **Independent lifecycle**    | Operations scoped to namespace          | `Auth.load(...)` only affects Auth                 |
+| **Failure isolation**        | Parse errors scoped to namespace        | Auth parse failure doesn't break Payments          |
+| **Type binding**             | `Feature<*, *, M>` is namespace-bound   | Lets you build APIs constrained to `M`             |
 
 ---
 

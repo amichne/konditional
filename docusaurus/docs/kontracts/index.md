@@ -5,6 +5,7 @@ Type-safe JSON Schema DSL for Kotlin used by Konditional for structured value va
 ## When to Use This Module
 
 You should use `kontracts` when you need to:
+
 - Define custom structured values in feature flags with type-safe validation
 - Express JSON Schema constraints using Kotlin's type system instead of raw JSON
 - Validate configuration payloads at the JSON boundary with explicit schemas
@@ -20,6 +21,7 @@ You should use `kontracts` when you need to:
 ## Alternatives
 
 Without this module, you would need to:
+
 - Write untyped JSON Schema definitions as raw JSON or YAML strings
 - Manually ensure schema definitions stay in sync with Kotlin data classes
 - Build custom validation logic for every structured value type
@@ -28,17 +30,17 @@ Without this module, you would need to:
 
 ```kotlin
 dependencies {
-    implementation(project(":kontracts"))
+  implementation(project(":kontracts"))
 }
 ```
 
 ## Guarantees
 
-**Guarantee**: Schemas are expressed as Kotlin types, not untyped JSON strings.
+- **Guarantee**: Schemas are expressed as Kotlin types, not untyped JSON strings.
 
-**Mechanism**: Type-inferred DSL (`schemaRoot { ::property of { ... } }`).
+- **Mechanism**: Type-inferred DSL (`schemaRoot { ::property of { ... } }`).
 
-**Boundary**: Runtime JSON validation is explicit; schema correctness does not imply correct business logic.
+- **Boundary**: Runtime JSON validation is explicit; schema correctness does not imply correct business logic.
 
 ## Next steps
 

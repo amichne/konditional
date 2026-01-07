@@ -6,7 +6,8 @@ How to safely update feature flag configuration in production systems.
 
 ## Overview
 
-Configuration refresh is the act of replacing a namespace's current configuration with new configuration, typically loaded from a remote source. Konditional provides several patterns for safe configuration updates.
+Configuration refresh is the act of replacing a namespace's current configuration with new configuration, typically loaded from a remote source. Konditional
+provides several patterns for safe configuration updates.
 
 ---
 
@@ -21,24 +22,25 @@ object AppFeatures : Namespace("app")
 
 // Initial load
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(initialConfig)) {
-    is ParseResult.Success -> logger.info("Initial config loaded")
-    is ParseResult.Failure -> logger.error("Initial load failed: ${result.error}")
+  is ParseResult.Success -> logger.info("Initial config loaded")
+  is ParseResult.Failure -> logger.error("Initial load failed: ${result.error}")
 }
 
 // Later: manual refresh
 fun refreshConfiguration() {
-    val newConfig = fetchFromRemote()
-    when (val result = NamespaceSnapshotLoader(AppFeatures).load(newConfig)) {
-        is ParseResult.Success -> logger.info("Config refreshed")
-        is ParseResult.Failure -> {
-            logger.error("Refresh failed: ${result.error}")
-            // Last-known-good remains active
-        }
+  val newConfig = fetchFromRemote()
+  when (val result = NamespaceSnapshotLoader(AppFeatures).load(newConfig)) {
+    is ParseResult.Success -> logger.info("Config refreshed")
+    is ParseResult.Failure -> {
+      logger.error("Refresh failed: ${result.error}")
+      // Last-known-good remains active
     }
+  }
 }
 ```
 
 **Use when:**
+
 - You want explicit control over refresh timing
 - Configuration changes are triggered by specific events (deployments, admin actions)
 - You need to coordinate refresh with other operations
@@ -56,28 +58,28 @@ class ConfigurationPoller(
     private val fetchConfig: suspend () -> String,
     private val pollInterval: Duration = 5.minutes
 ) {
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+  private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    fun start() {
-        scope.launch {
-            while (isActive) {
-                try {
-                    val config = fetchConfig()
-                    when (val result = NamespaceSnapshotLoader(namespace).load(config)) {
-                        is ParseResult.Success -> logger.info("Config updated via poll")
-                        is ParseResult.Failure -> logger.warn("Poll config invalid: ${result.error}")
-                    }
-                } catch (e: Exception) {
-                    logger.error("Poll fetch failed", e)
-                }
-                delay(pollInterval)
-            }
+  fun start() {
+    scope.launch {
+      while (isActive) {
+        try {
+          val config = fetchConfig()
+          when (val result = NamespaceSnapshotLoader(namespace).load(config)) {
+            is ParseResult.Success -> logger.info("Config updated via poll")
+            is ParseResult.Failure -> logger.warn("Poll config invalid: ${result.error}")
+          }
+        } catch (e: Exception) {
+          logger.error("Poll fetch failed", e)
         }
+        delay(pollInterval)
+      }
     }
+  }
 
-    fun stop() {
-        scope.cancel()
-    }
+  fun stop() {
+    scope.cancel()
+  }
 }
 
 // Usage
@@ -89,11 +91,13 @@ poller.start()
 ```
 
 **Use when:**
+
 - Configuration changes are infrequent but need to be picked up eventually
 - You want to avoid maintaining persistent connections
 - Latency of several minutes is acceptable
 
 **Considerations:**
+
 - Balance poll frequency with load on config server
 - Add jitter to avoid thundering herd
 - Consider exponential backoff on failure
@@ -105,31 +109,33 @@ Receive notifications when configuration changes:
 ```kotlin
 @POST("/config/webhook")
 fun handleConfigUpdate(request: ConfigWebhookRequest): Response {
-    return when {
-        !request.isValidSignature() -> Response.status(401).build()
-        else -> {
-            val newConfig = fetchConfigFromCDN(request.configVersion)
-            when (val result = NamespaceSnapshotLoader(AppFeatures).load(newConfig)) {
-                is ParseResult.Success -> {
-                    logger.info("Config updated via webhook")
-                    Response.ok().build()
-                }
-                is ParseResult.Failure -> {
-                    logger.error("Webhook config invalid: ${result.error}")
-                    Response.status(400).build()
-                }
-            }
+  return when {
+    !request.isValidSignature() -> Response.status(401).build()
+    else -> {
+      val newConfig = fetchConfigFromCDN(request.configVersion)
+      when (val result = NamespaceSnapshotLoader(AppFeatures).load(newConfig)) {
+        is ParseResult.Success -> {
+          logger.info("Config updated via webhook")
+          Response.ok().build()
         }
+        is ParseResult.Failure -> {
+          logger.error("Webhook config invalid: ${result.error}")
+          Response.status(400).build()
+        }
+      }
     }
+  }
 }
 ```
 
 **Use when:**
+
 - Configuration changes need to propagate quickly (seconds, not minutes)
 - Your config service supports push notifications
 - You can validate webhook authenticity (HMAC signatures, etc.)
 
 **Considerations:**
+
 - Implement webhook signature validation
 - Handle webhook retry/failure scenarios
 - Consider rate limiting to prevent abuse
@@ -146,44 +152,45 @@ class ConfigFileWatcher(
     private val namespace: Namespace,
     private val configPath: Path
 ) {
-    private val watchService = FileSystems.getDefault().newWatchService()
+  private val watchService = FileSystems.getDefault().newWatchService()
 
-    fun start() {
-        configPath.parent.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY)
+  fun start() {
+    configPath.parent.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY)
 
-        thread(start = true, name = "config-watcher") {
-            while (true) {
-                val key = watchService.take()
-                key.pollEvents().forEach { event ->
-                    if ((event.context() as Path).fileName == configPath.fileName) {
-                        reloadConfig()
-                    }
-                }
-                key.reset()
-            }
+    thread(start = true, name = "config-watcher") {
+      while (true) {
+        val key = watchService.take()
+        key.pollEvents().forEach { event ->
+          if ((event.context() as Path).fileName == configPath.fileName) {
+            reloadConfig()
+          }
         }
+        key.reset()
+      }
     }
+  }
 
-    private fun reloadConfig() {
-        try {
-            val config = configPath.readText()
-            when (val result = NamespaceSnapshotLoader(namespace).load(config)) {
-                is ParseResult.Success -> logger.info("Config reloaded from file")
-                is ParseResult.Failure -> logger.error("File config invalid: ${result.error}")
-            }
-        } catch (e: Exception) {
-            logger.error("Failed to read config file", e)
-        }
+  private fun reloadConfig() {
+    try {
+      val config = configPath.readText()
+      when (val result = NamespaceSnapshotLoader(namespace).load(config)) {
+        is ParseResult.Success -> logger.info("Config reloaded from file")
+        is ParseResult.Failure -> logger.error("File config invalid: ${result.error}")
+      }
+    } catch (e: Exception) {
+      logger.error("Failed to read config file", e)
     }
+  }
 }
 
 // Usage (development only)
 if (environment == "development") {
-    ConfigFileWatcher(AppFeatures, Paths.get("config/features.json")).start()
+  ConfigFileWatcher(AppFeatures, Paths.get("config/features.json")).start()
 }
 ```
 
 **Use when:**
+
 - Local development or testing
 - Configuration is managed via local files
 - You want instant feedback on configuration changes
@@ -216,10 +223,10 @@ Invalid configuration is rejected; previous configuration remains active:
 val badConfig = """{ "maxRetries": "invalid" }"""
 
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(badConfig)) {
-    is ParseResult.Failure -> {
-        // Load rejected, maxRetries still returns 3
-        logger.error("Bad config rejected: ${result.error}")
-    }
+  is ParseResult.Failure -> {
+    // Load rejected, maxRetries still returns 3
+    logger.error("Bad config rejected: ${result.error}")
+  }
 }
 
 // Evaluation still works with last-known-good
@@ -238,11 +245,11 @@ val retries: Int = AppFeatures.maxRetries.evaluate(ctx)  // Returns 3
 // 1. Load initial config synchronously at startup
 val initialConfig = fetchConfigOrDefault()
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(initialConfig)) {
-    is ParseResult.Failure -> {
-        logger.error("Initial load failed, using defaults: ${result.error}")
-        // Defaults remain active
-    }
-    is ParseResult.Success -> logger.info("Initial config loaded")
+  is ParseResult.Failure -> {
+    logger.error("Initial load failed, using defaults: ${result.error}")
+    // Defaults remain active
+  }
+  is ParseResult.Success -> logger.info("Initial config loaded")
 }
 
 // 2. Start polling for updates
@@ -250,6 +257,7 @@ ConfigurationPoller(AppFeatures, fetchConfig = ::fetchFromRemote).start()
 ```
 
 **Benefits:**
+
 - Service starts even if remote config unavailable
 - Updates picked up automatically via polling
 
@@ -268,6 +276,7 @@ ConfigurationPoller(
 ```
 
 **Benefits:**
+
 - Fast updates via webhook (seconds)
 - Resilient to webhook delivery failures
 
@@ -280,28 +289,32 @@ data class VersionedConfig(
 )
 
 class ConfigHistory(private val namespace: Namespace) {
-    private val history = mutableListOf<VersionedConfig>()
-    private val maxHistory = 10
+  private val history = mutableListOf<VersionedConfig>()
+  private val maxHistory = 10
 
-    fun loadAndTrack(version: String, config: String): ParseResult {
-        return when (val result = NamespaceSnapshotLoader(namespace).load(config)) {
-            is ParseResult.Success -> {
-                history.add(0, VersionedConfig(version, config))
-                if (history.size > maxHistory) history.removeLast()
-                result
-            }
-            is ParseResult.Failure -> result
-        }
+  fun loadAndTrack(
+      version: String,
+      config: String
+  ): ParseResult {
+    return when (val result = NamespaceSnapshotLoader(namespace).load(config)) {
+      is ParseResult.Success -> {
+        history.add(0, VersionedConfig(version, config))
+        if (history.size > maxHistory) history.removeLast()
+        result
+      }
+      is ParseResult.Failure -> result
     }
+  }
 
-    fun rollback(toVersion: String): ParseResult? {
-        val target = history.find { it.version == toVersion }
-        return target?.let { loadAndTrack(it.version, it.config) }
-    }
+  fun rollback(toVersion: String): ParseResult? {
+    val target = history.find { it.version == toVersion }
+    return target?.let { loadAndTrack(it.version, it.config) }
+  }
 }
 ```
 
 **Use when:**
+
 - You need to quickly revert bad configuration
 - Auditing configuration changes is required
 
@@ -317,11 +330,11 @@ NamespaceSnapshotLoader(AppFeatures).load(config)  // Ignored result
 
 // DO
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(config)) {
-    is ParseResult.Success -> logger.info("Config loaded")
-    is ParseResult.Failure -> {
-        logger.error("Load failed: ${result.error}")
-        alertOps("Configuration load failure")
-    }
+  is ParseResult.Success -> logger.info("Config loaded")
+  is ParseResult.Failure -> {
+    logger.error("Load failed: ${result.error}")
+    alertOps("Configuration load failure")
+  }
 }
 ```
 
@@ -342,16 +355,19 @@ pollInterval = 5.minutes  // Reasonable for most use cases
 // DON'T
 @POST("/config/webhook")
 fun update(config: String) {
-    NamespaceSnapshotLoader(AppFeatures).load(config)  // Anyone can POST
+  NamespaceSnapshotLoader(AppFeatures).load(config)  // Anyone can POST
 }
 
 // DO
 @POST("/config/webhook")
-fun update(signature: String, config: String) {
-    if (!validateHMAC(signature, config, webhookSecret)) {
-        throw UnauthorizedException()
-    }
-    NamespaceSnapshotLoader(AppFeatures).load(config)
+fun update(
+    signature: String,
+    config: String
+) {
+  if (!validateHMAC(signature, config, webhookSecret)) {
+    throw UnauthorizedException()
+  }
+  NamespaceSnapshotLoader(AppFeatures).load(config)
 }
 ```
 
@@ -370,17 +386,17 @@ fun update(signature: String, config: String) {
 
 ```kotlin
 AppFeatures.hooks.afterLoad.add { event ->
-    when (event.result) {
-        is ParseResult.Success -> {
-            metrics.increment("config.refresh.success")
-            metrics.gauge("config.version", event.version)
-        }
-        is ParseResult.Failure -> {
-            metrics.increment("config.refresh.failure")
-            logger.error("Config load failed", event.result.error)
-        }
+  when (event.result) {
+    is ParseResult.Success -> {
+      metrics.increment("config.refresh.success")
+      metrics.gauge("config.version", event.version)
     }
-    metrics.recordLatency("config.refresh.duration", event.durationMs)
+    is ParseResult.Failure -> {
+      metrics.increment("config.refresh.failure")
+      logger.error("Config load failed", event.result.error)
+    }
+  }
+  metrics.recordLatency("config.refresh.duration", event.durationMs)
 }
 ```
 
@@ -389,17 +405,20 @@ AppFeatures.hooks.afterLoad.add { event ->
 ## Summary
 
 Konditional supports multiple refresh patterns:
+
 - **Manual:** Explicit control, event-driven
 - **Polling:** Periodic checks, simple implementation
 - **Webhook:** Fast propagation, event-driven
 - **File watch:** Development/testing
 
 All patterns benefit from:
+
 - **Atomic updates:** No partial state
 - **Last-known-good on failure:** Invalid config rejected
 - **Thread-safe:** Concurrent evaluation always safe
 
 Choose the pattern that fits your:
+
 - **Latency requirements:** Webhook (seconds) vs polling (minutes)
 - **Infrastructure:** Push vs pull
 - **Complexity tolerance:** Manual vs automated

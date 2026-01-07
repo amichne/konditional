@@ -5,6 +5,7 @@ OpenTelemetry integration for Konditional: tracing, metrics, and structured logg
 ## When to Use This Module
 
 You should use `opentelemetry` when you need to:
+
 - Integrate feature flag evaluation into your existing OpenTelemetry instrumentation
 - Trace evaluation decisions with distributed tracing context
 - Collect metrics on feature flag performance with standard OpenTelemetry conventions
@@ -20,6 +21,7 @@ You should use `opentelemetry` when you need to:
 ## Alternatives
 
 Without this module, you would need to:
+
 - Manually instrument every feature flag evaluation with custom tracing code
 - Define your own span attribute conventions instead of following standards
 - Integrate logging and metrics hooks individually using the observability module
@@ -28,17 +30,17 @@ Without this module, you would need to:
 
 ```kotlin
 dependencies {
-    implementation("io.amichne:opentelemetry:VERSION")
+  implementation("io.amichne:opentelemetry:VERSION")
 }
 ```
 
 ## Guarantees
 
-**Guarantee**: Core functionality does not depend on OpenTelemetry.
+- **Guarantee**: Core functionality does not depend on OpenTelemetry.
 
-**Mechanism**: Telemetry lives in a separate module with optional hooks and extensions.
+- **Mechanism**: Telemetry lives in a separate module with optional hooks and extensions.
 
-**Boundary**: Instrumentation overhead depends on sampling and your OpenTelemetry configuration.
+- **Boundary**: Instrumentation overhead depends on sampling and your OpenTelemetry configuration.
 
 ## Quick start
 

@@ -24,17 +24,17 @@ The typo ships. The flag never activates. Your A/B test runs with 0% treatment. 
 
 ```kotlin
 enum class Capability {
-    NEW_CHECKOUT,
-    NEW_CHECKOUT_V2,
-    NEW_CHECKOUT_V3,
-    CHECKOUT_FAST_PATH
+  NEW_CHECKOUT,
+  NEW_CHECKOUT_V2,
+  NEW_CHECKOUT_V3,
+  CHECKOUT_FAST_PATH
 }
 
 // Your code becomes:
 if (isEnabled(NEW_CHECKOUT) && !isEnabled(NEW_CHECKOUT_V2)) {
-    // original new checkout
+  // original new checkout
 } else if (isEnabled(NEW_CHECKOUT_V2) && !isEnabled(CHECKOUT_FAST_PATH)) {
-    // v2 without fast path
+  // v2 without fast path
 }
 ```
 
@@ -69,14 +69,14 @@ Konditional makes three structural commitments:
 enum class CheckoutVariant { CLASSIC, OPTIMIZED, EXPERIMENTAL }
 
 object AppFlags : Namespace("app") {
-    val checkoutVariant by enum<CheckoutVariant, Context>(default = CheckoutVariant.CLASSIC) {
-        rule(CheckoutVariant.OPTIMIZED) { platforms(Platform.IOS, Platform.ANDROID) }
-        rule(CheckoutVariant.EXPERIMENTAL) { rampUp { 50.0 } }
-    }
+  val checkoutVariant by enum<CheckoutVariant, Context>(default = CheckoutVariant.CLASSIC) {
+    rule(CheckoutVariant.OPTIMIZED) { platforms(Platform.IOS, Platform.ANDROID) }
+    rule(CheckoutVariant.EXPERIMENTAL) { rampUp { 50.0 } }
+  }
 
-    val maxRetries by integer<Context>(default = 3) {
-        rule(5) { android() }
-    }
+  val maxRetries by integer<Context>(default = 3) {
+    rule(5) { android() }
+  }
 }
 
 // Usage
@@ -87,25 +87,29 @@ val retries: Int = AppFlags.maxRetries.evaluate(ctx)                   // typed
 ### What You Get
 
 **Typos become compile errors:**
+
 ```kotlin
 AppFlags.NEW_ONBOARING_FLOW  // doesn't compile
 ```
 
 **Type mismatches become compile errors:**
+
 ```kotlin
 val retries: String = AppFlags.maxRetries.evaluate(ctx)  // doesn't compile
 ```
 
 **Variants are values, not boolean matrices:**
+
 ```kotlin
 when (AppFlags.checkoutVariant.evaluate(ctx)) {
-    CheckoutVariant.CLASSIC -> classicCheckout()
-    CheckoutVariant.OPTIMIZED -> optimizedCheckout()
-    CheckoutVariant.EXPERIMENTAL -> experimentalCheckout()
+  CheckoutVariant.CLASSIC -> classicCheckout()
+  CheckoutVariant.OPTIMIZED -> optimizedCheckout()
+  CheckoutVariant.EXPERIMENTAL -> experimentalCheckout()
 }
 ```
 
 **Ramp-ups are deterministic:**
+
 ```kotlin
 // Same user, same flag → same bucket
 // SHA-256("$salt:$flagKey:${stableId.hexId}") determines bucket
@@ -113,13 +117,14 @@ when (AppFlags.checkoutVariant.evaluate(ctx)) {
 ```
 
 **Configuration boundaries are explicit:**
+
 ```kotlin
 when (val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)) {
-    is ParseResult.Success -> Unit // loaded into AppFlags
-    is ParseResult.Failure -> {
-        // Invalid JSON rejected, last-known-good remains active
-        logError("Config parse failed: ${result.error}")
-    }
+  is ParseResult.Success -> Unit // loaded into AppFlags
+  is ParseResult.Failure -> {
+    // Invalid JSON rejected, last-known-good remains active
+    logError("Config parse failed: ${result.error}")
+  }
 }
 ```
 
@@ -127,21 +132,22 @@ when (val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)) {
 
 ## Comparison to Alternatives
 
-| Aspect | String-keyed SDKs | Enum + boolean | Konditional |
-|--------|-------------------|----------------|-------------|
-| **Typo safety** | Runtime failure (silent or crash) | Compile-time | Compile-time |
-| **Type safety** | Runtime coercion (often unsafe) | Boolean only | Compile-time types |
-| **Variants** | Runtime-typed | Multiple booleans + control flow | First-class typed values |
-| **Ramp-up logic** | SDK-dependent | Per-team reimplementation | Centralized, deterministic |
-| **Evaluation** | SDK-defined, opaque | Ad-hoc per evaluator | Single DSL with specificity |
-| **Invalid config** | Fails silently or crashes | Depends on implementation | Explicit `ParseResult` boundary |
-| **Testing** | Mock SDK or replay snapshots | Mock evaluators | Evaluate against typed contexts |
+| Aspect             | String-keyed SDKs                 | Enum + boolean                   | Konditional                     |
+|--------------------|-----------------------------------|----------------------------------|---------------------------------|
+| **Typo safety**    | Runtime failure (silent or crash) | Compile-time                     | Compile-time                    |
+| **Type safety**    | Runtime coercion (often unsafe)   | Boolean only                     | Compile-time types              |
+| **Variants**       | Runtime-typed                     | Multiple booleans + control flow | First-class typed values        |
+| **Ramp-up logic**  | SDK-dependent                     | Per-team reimplementation        | Centralized, deterministic      |
+| **Evaluation**     | SDK-defined, opaque               | Ad-hoc per evaluator             | Single DSL with specificity     |
+| **Invalid config** | Fails silently or crashes         | Depends on implementation        | Explicit `ParseResult` boundary |
+| **Testing**        | Mock SDK or replay snapshots      | Mock evaluators                  | Evaluate against typed contexts |
 
 ---
 
 ## When Konditional Fits
 
 **Choose Konditional when:**
+
 - You want compile-time correctness for flag definitions and callsites
 - You need typed values beyond on/off booleans (variants, thresholds, configuration)
 - You value consistency over bespoke per-domain solutions
@@ -149,6 +155,7 @@ when (val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)) {
 - You have remote configuration and want explicit validation boundaries
 
 **Konditional might not fit if:**
+
 - You need vendor-hosted dashboards more than compile-time safety
 - Your flags are fully dynamic with zero static definitions
 - You're okay with process and tooling to prevent string key drift
@@ -222,9 +229,11 @@ See the [Migration Guide](/reference/migration-guide) for detailed patterns.
 
 Feature flags aren't "nice to have" features. They're load-bearing infrastructure. When they fail, they fail at scale, in production, with user impact.
 
-Konditional exists because **stringly-typed systems cause production incidents**, **boolean-only systems create maintenance nightmares**, and **inconsistent evaluation semantics make experiments untrustworthy**.
+Konditional exists because **stringly-typed systems cause production incidents**, **boolean-only systems create maintenance nightmares**, and **inconsistent
+evaluation semantics make experiments untrustworthy**.
 
-The solution is structural: bind types at compile-time, centralize evaluation semantics, and draw explicit boundaries between static definitions and dynamic configuration.
+The solution is structural: bind types at compile-time, centralize evaluation semantics, and draw explicit boundaries between static definitions and dynamic
+configuration.
 
 ## Next Steps
 

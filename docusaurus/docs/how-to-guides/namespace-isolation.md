@@ -3,6 +3,7 @@
 ## Problem
 
 You need to:
+
 - Organize features by team, domain, or update frequency
 - Allow independent configuration updates per team/domain
 - Isolate configuration failures to specific namespaces
@@ -15,16 +16,19 @@ You need to:
 Choose namespace boundaries based on:
 
 **1. Team ownership:**
+
 - Recommendations team owns recommendation features
 - Search team owns search features
 - Independent updates, no coordination needed
 
 **2. Update frequency:**
+
 - Experiments (updated daily)
 - Infrastructure flags (updated rarely, high review standards)
 - Feature toggles (updated occasionally)
 
 **3. Failure isolation:**
+
 - Critical path (payments, orders)
 - Analytics (tracking, monitoring)
 
@@ -32,29 +36,30 @@ Choose namespace boundaries based on:
 
 ```kotlin
 sealed class AppDomain(id: String) : Namespace(id) {
-    // Recommendations team
-    data object Recommendations : AppDomain("recommendations") {
-        val collaborativeFiltering by boolean<Context>(default = true)
-        val contentBasedFiltering by boolean<Context>(default = false)
-        val hybridApproach by boolean<Context>(default = false)
-    }
+  // Recommendations team
+  data object Recommendations : AppDomain("recommendations") {
+    val collaborativeFiltering by boolean<Context>(default = true)
+    val contentBasedFiltering by boolean<Context>(default = false)
+    val hybridApproach by boolean<Context>(default = false)
+  }
 
-    // Search team
-    data object Search : AppDomain("search") {
-        val fuzzyMatching by boolean<Context>(default = true)
-        val autocomplete by boolean<Context>(default = true)
-        val querySuggestions by boolean<Context>(default = false)
-    }
+  // Search team
+  data object Search : AppDomain("search") {
+    val fuzzyMatching by boolean<Context>(default = true)
+    val autocomplete by boolean<Context>(default = true)
+    val querySuggestions by boolean<Context>(default = false)
+  }
 
-    // Personalization team
-    data object Personalization : AppDomain("personalization") {
-        val userHistoryEnabled by boolean<Context>(default = true)
-        val preferenceLearning by boolean<Context>(default = false)
-    }
+  // Personalization team
+  data object Personalization : AppDomain("personalization") {
+    val userHistoryEnabled by boolean<Context>(default = true)
+    val preferenceLearning by boolean<Context>(default = false)
+  }
 }
 ```
 
 **Benefits:**
+
 - Each `data object` is an independent namespace
 - Sealed class provides type-safe enumeration
 - Clear ownership in code structure
@@ -63,30 +68,33 @@ sealed class AppDomain(id: String) : Namespace(id) {
 
 ```kotlin
 class MultiNamespaceLoader {
-    fun loadAllConfigurations() {
-        // Load each namespace independently
-        loadNamespace(AppDomain.Recommendations, "recommendations-config.json")
-        loadNamespace(AppDomain.Search, "search-config.json")
-        loadNamespace(AppDomain.Personalization, "personalization-config.json")
-    }
+  fun loadAllConfigurations() {
+    // Load each namespace independently
+    loadNamespace(AppDomain.Recommendations, "recommendations-config.json")
+    loadNamespace(AppDomain.Search, "search-config.json")
+    loadNamespace(AppDomain.Personalization, "personalization-config.json")
+  }
 
-    private fun loadNamespace(namespace: Namespace, configFile: String) {
-        try {
-            val json = fetchConfig(configFile)
-            when (val result = NamespaceSnapshotLoader(namespace).load(json)) {
-                is ParseResult.Success -> {
-                    logger.info("Loaded ${namespace.id} config")
-                }
-                is ParseResult.Failure -> {
-                    logger.error("Failed to load ${namespace.id}: ${result.error}")
-                    // Other namespaces unaffected
-                }
-            }
-        } catch (e: Exception) {
-            logger.error("Error loading ${namespace.id}", e)
-            // Other namespaces unaffected
+  private fun loadNamespace(
+      namespace: Namespace,
+      configFile: String
+  ) {
+    try {
+      val json = fetchConfig(configFile)
+      when (val result = NamespaceSnapshotLoader(namespace).load(json)) {
+        is ParseResult.Success -> {
+          logger.info("Loaded ${namespace.id} config")
         }
+        is ParseResult.Failure -> {
+          logger.error("Failed to load ${namespace.id}: ${result.error}")
+          // Other namespaces unaffected
+        }
+      }
+    } catch (e: Exception) {
+      logger.error("Error loading ${namespace.id}", e)
+      // Other namespaces unaffected
     }
+  }
 }
 ```
 
@@ -96,25 +104,25 @@ class MultiNamespaceLoader {
 
 ```kotlin
 fun buildUserExperience(ctx: Context): UserExperience {
-    return UserExperience(
-        // Recommendations namespace
-        recommendations = getRecommendations(
-            collaborative = AppDomain.Recommendations.collaborativeFiltering.evaluate(ctx),
-            contentBased = AppDomain.Recommendations.contentBasedFiltering.evaluate(ctx)
-        ),
+  return UserExperience(
+      // Recommendations namespace
+      recommendations = getRecommendations(
+          collaborative = AppDomain.Recommendations.collaborativeFiltering.evaluate(ctx),
+          contentBased = AppDomain.Recommendations.contentBasedFiltering.evaluate(ctx)
+      ),
 
-        // Search namespace
-        searchResults = performSearch(
-            fuzzy = AppDomain.Search.fuzzyMatching.evaluate(ctx),
-            autocomplete = AppDomain.Search.autocomplete.evaluate(ctx)
-        ),
+      // Search namespace
+      searchResults = performSearch(
+          fuzzy = AppDomain.Search.fuzzyMatching.evaluate(ctx),
+          autocomplete = AppDomain.Search.autocomplete.evaluate(ctx)
+      ),
 
-        // Personalization namespace
-        personalization = buildPersonalization(
-            history = AppDomain.Personalization.userHistoryEnabled.evaluate(ctx),
-            learning = AppDomain.Personalization.preferenceLearning.evaluate(ctx)
-        )
-    )
+      // Personalization namespace
+      personalization = buildPersonalization(
+          history = AppDomain.Personalization.userHistoryEnabled.evaluate(ctx),
+          learning = AppDomain.Personalization.preferenceLearning.evaluate(ctx)
+      )
+  )
 }
 ```
 
@@ -139,24 +147,25 @@ fun buildUserExperience(ctx: Context): UserExperience {
 ```kotlin
 // Updated daily: experiments
 object Experiments : Namespace("experiments") {
-    val newCheckoutFlow by boolean<Context>(default = false)
-    val recommendationAlgorithm by string<Context>(default = "v1")
+  val newCheckoutFlow by boolean<Context>(default = false)
+  val recommendationAlgorithm by string<Context>(default = "v1")
 }
 
 // Updated rarely: infrastructure
 object Infrastructure : Namespace("infra") {
-    val paymentGatewayEnabled by boolean<Context>(default = true)
-    val databaseReplicaReads by boolean<Context>(default = false)
+  val paymentGatewayEnabled by boolean<Context>(default = true)
+  val databaseReplicaReads by boolean<Context>(default = false)
 }
 
 // Updated occasionally: features
 object Features : Namespace("features") {
-    val darkModeAvailable by boolean<Context>(default = true)
-    val socialLoginEnabled by boolean<Context>(default = true)
+  val darkModeAvailable by boolean<Context>(default = true)
+  val socialLoginEnabled by boolean<Context>(default = true)
 }
 ```
 
 **Use when:**
+
 - Experiment configs change frequently, infrastructure rarely
 - You want different approval processes (experiments: self-service, infrastructure: architecture review)
 
@@ -165,73 +174,77 @@ object Features : Namespace("features") {
 ```kotlin
 // Critical: cannot fail
 object CriticalPath : Namespace("critical") {
-    val paymentProcessingEnabled by boolean<Context>(default = true)
-    val orderFulfillmentEnabled by boolean<Context>(default = true)
+  val paymentProcessingEnabled by boolean<Context>(default = true)
+  val orderFulfillmentEnabled by boolean<Context>(default = true)
 }
 
 // Non-critical: failures acceptable
 object Analytics : Namespace("analytics") {
-    val eventTrackingEnabled by boolean<Context>(default = false)
-    val performanceMonitoring by boolean<Context>(default = false)
+  val eventTrackingEnabled by boolean<Context>(default = false)
+  val performanceMonitoring by boolean<Context>(default = false)
 }
 
 // Evaluation
 fun processOrder(ctx: Context) {
-    // Critical path: must work
-    if (CriticalPath.paymentProcessingEnabled.evaluate(ctx)) {
-        processPayment()
-    } else {
-        // Fail fast: cannot process order without payment
-        throw PaymentDisabledException()
-    }
+  // Critical path: must work
+  if (CriticalPath.paymentProcessingEnabled.evaluate(ctx)) {
+    processPayment()
+  } else {
+    // Fail fast: cannot process order without payment
+    throw PaymentDisabledException()
+  }
 
-    // Non-critical: safe to skip
-    if (Analytics.eventTrackingEnabled.evaluate(ctx)) {
-        try {
-            trackEvent("order_processed")
-        } catch (e: Exception) {
-            logger.warn("Analytics failed, continuing", e)
-            // Order processing continues
-        }
+  // Non-critical: safe to skip
+  if (Analytics.eventTrackingEnabled.evaluate(ctx)) {
+    try {
+      trackEvent("order_processed")
+    } catch (e: Exception) {
+      logger.warn("Analytics failed, continuing", e)
+      // Order processing continues
     }
+  }
 }
 ```
 
 **Use when:**
+
 - You want to isolate critical functionality from analytics/monitoring
 - Analytics config failures shouldn't affect core business logic
 
 ### Pattern 3: Team Ownership with Versioned Config
 
 ```kotlin
-sealed class TeamNamespace(id: String, val team: String) : Namespace(id) {
-    data object Payments : TeamNamespace("payments", "payments-team") {
-        val stripeEnabled by boolean<Context>(default = true)
-        val paypalEnabled by boolean<Context>(default = false)
-    }
+sealed class TeamNamespace(
+    id: String,
+    val team: String
+) : Namespace(id) {
+  data object Payments : TeamNamespace("payments", "payments-team") {
+    val stripeEnabled by boolean<Context>(default = true)
+    val paypalEnabled by boolean<Context>(default = false)
+  }
 
-    data object Fulfillment : TeamNamespace("fulfillment", "fulfillment-team") {
-        val autoShipEnabled by boolean<Context>(default = true)
-        val sameDayDelivery by boolean<Context>(default = false)
-    }
+  data object Fulfillment : TeamNamespace("fulfillment", "fulfillment-team") {
+    val autoShipEnabled by boolean<Context>(default = true)
+    val sameDayDelivery by boolean<Context>(default = false)
+  }
 }
 
 class TeamConfigLoader {
-    fun loadTeamConfig(namespace: TeamNamespace) {
-        val configUrl = "https://config.example.com/${namespace.team}/${namespace.id}.json"
-        val json = httpClient.get(configUrl).body<String>()
+  fun loadTeamConfig(namespace: TeamNamespace) {
+    val configUrl = "https://config.example.com/${namespace.team}/${namespace.id}.json"
+    val json = httpClient.get(configUrl).body<String>()
 
-        when (val result = NamespaceSnapshotLoader(namespace).load(json)) {
-            is ParseResult.Success -> {
-                logger.info("${namespace.team} config loaded")
-                notifyTeam(namespace.team, "Config loaded successfully")
-            }
-            is ParseResult.Failure -> {
-                logger.error("${namespace.team} config failed: ${result.error}")
-                alertTeam(namespace.team, "Config load failed", result.error)
-            }
-        }
+    when (val result = NamespaceSnapshotLoader(namespace).load(json)) {
+      is ParseResult.Success -> {
+        logger.info("${namespace.team} config loaded")
+        notifyTeam(namespace.team, "Config loaded successfully")
+      }
+      is ParseResult.Failure -> {
+        logger.error("${namespace.team} config failed: ${result.error}")
+        alertTeam(namespace.team, "Config load failed", result.error)
+      }
     }
+  }
 }
 ```
 
@@ -267,30 +280,30 @@ val enabled = AppDomain.Recommendations.collaborativeFiltering.evaluate(ctx)
 ```kotlin
 // ✗ DON'T: Assume all namespaces loaded
 fun buildExperience(ctx: Context): Experience {
-    return Experience(
-        recs = AppDomain.Recommendations.collaborativeFiltering.evaluate(ctx),
-        search = AppDomain.Search.fuzzyMatching.evaluate(ctx)
-    )
-    // If Recommendations config failed to load, features use defaults (might not be desired)
+  return Experience(
+      recs = AppDomain.Recommendations.collaborativeFiltering.evaluate(ctx),
+      search = AppDomain.Search.fuzzyMatching.evaluate(ctx)
+  )
+  // If Recommendations config failed to load, features use defaults (might not be desired)
 }
 
 // ✓ DO: Explicitly handle namespace availability
 fun buildExperience(ctx: Context): Experience {
-    val recsAvailable = checkNamespaceHealth(AppDomain.Recommendations)
-    val searchAvailable = checkNamespaceHealth(AppDomain.Search)
+  val recsAvailable = checkNamespaceHealth(AppDomain.Recommendations)
+  val searchAvailable = checkNamespaceHealth(AppDomain.Search)
 
-    return Experience(
-        recs = if (recsAvailable) {
-            AppDomain.Recommendations.collaborativeFiltering.evaluate(ctx)
-        } else {
-            fallbackRecommendations()
-        },
-        search = if (searchAvailable) {
-            AppDomain.Search.fuzzyMatching.evaluate(ctx)
-        } else {
-            fallbackSearch()
-        }
-    )
+  return Experience(
+      recs = if (recsAvailable) {
+        AppDomain.Recommendations.collaborativeFiltering.evaluate(ctx)
+      } else {
+        fallbackRecommendations()
+      },
+      search = if (searchAvailable) {
+        AppDomain.Search.fuzzyMatching.evaluate(ctx)
+      } else {
+        fallbackSearch()
+      }
+  )
 }
 ```
 
@@ -301,22 +314,22 @@ fun buildExperience(ctx: Context): Experience {
 ```kotlin
 @Test
 fun `failed load in one namespace does not affect others`() {
-    // Load valid config to Recommendations
-    val validJson = """{ "collaborativeFiltering": { "rules": [{ "value": true }] } }"""
-    val result1 = NamespaceSnapshotLoader(AppDomain.Recommendations).load(validJson)
-    require(result1 is ParseResult.Success)
+  // Load valid config to Recommendations
+  val validJson = """{ "collaborativeFiltering": { "rules": [{ "value": true }] } }"""
+  val result1 = NamespaceSnapshotLoader(AppDomain.Recommendations).load(validJson)
+  require(result1 is ParseResult.Success)
 
-    // Load invalid config to Search
-    val invalidJson = """{ "invalidFeature": { "rules": [{ "value": true }] } }"""
-    val result2 = NamespaceSnapshotLoader(AppDomain.Search).load(invalidJson)
-    require(result2 is ParseResult.Failure)
+  // Load invalid config to Search
+  val invalidJson = """{ "invalidFeature": { "rules": [{ "value": true }] } }"""
+  val result2 = NamespaceSnapshotLoader(AppDomain.Search).load(invalidJson)
+  require(result2 is ParseResult.Failure)
 
-    // Verify Recommendations still works
-    val ctx = Context(stableId = StableId("user"))
-    assertTrue(AppDomain.Recommendations.collaborativeFiltering.evaluate(ctx))
+  // Verify Recommendations still works
+  val ctx = Context(stableId = StableId("user"))
+  assertTrue(AppDomain.Recommendations.collaborativeFiltering.evaluate(ctx))
 
-    // Verify Search uses defaults (unaffected by failed load)
-    assertTrue(AppDomain.Search.fuzzyMatching.evaluate(ctx))  // Default is true
+  // Verify Search uses defaults (unaffected by failed load)
+  assertTrue(AppDomain.Search.fuzzyMatching.evaluate(ctx))  // Default is true
 }
 ```
 
@@ -325,21 +338,21 @@ fun `failed load in one namespace does not affect others`() {
 ```kotlin
 @Test
 fun `updating one namespace does not affect others`() {
-    val ctx = Context(stableId = StableId("user"))
+  val ctx = Context(stableId = StableId("user"))
 
-    // Initial state: both use defaults
-    assertTrue(AppDomain.Recommendations.collaborativeFiltering.evaluate(ctx))  // true
-    assertTrue(AppDomain.Search.fuzzyMatching.evaluate(ctx))  // true
+  // Initial state: both use defaults
+  assertTrue(AppDomain.Recommendations.collaborativeFiltering.evaluate(ctx))  // true
+  assertTrue(AppDomain.Search.fuzzyMatching.evaluate(ctx))  // true
 
-    // Update only Recommendations
-    val recsJson = """{ "collaborativeFiltering": { "rules": [{ "value": false }] } }"""
-    NamespaceSnapshotLoader(AppDomain.Recommendations).load(recsJson)
+  // Update only Recommendations
+  val recsJson = """{ "collaborativeFiltering": { "rules": [{ "value": false }] } }"""
+  NamespaceSnapshotLoader(AppDomain.Recommendations).load(recsJson)
 
-    // Verify Recommendations changed
-    assertFalse(AppDomain.Recommendations.collaborativeFiltering.evaluate(ctx))
+  // Verify Recommendations changed
+  assertFalse(AppDomain.Recommendations.collaborativeFiltering.evaluate(ctx))
 
-    // Verify Search unchanged
-    assertTrue(AppDomain.Search.fuzzyMatching.evaluate(ctx))
+  // Verify Search unchanged
+  assertTrue(AppDomain.Search.fuzzyMatching.evaluate(ctx))
 }
 ```
 
@@ -349,31 +362,37 @@ fun `updating one namespace does not affect others`() {
 
 ```kotlin
 class NamespaceHealthMonitor {
-    private val lastSuccessfulLoad = mutableMapOf<String, Instant>()
+  private val lastSuccessfulLoad = mutableMapOf<String, Instant>()
 
-    fun recordLoad(namespace: Namespace, result: ParseResult) {
-        when (result) {
-            is ParseResult.Success -> {
-                lastSuccessfulLoad[namespace.id] = Instant.now()
-                metrics.increment("namespace.load.success", tags = mapOf(
-                    "namespace" to namespace.id
-                ))
-            }
-            is ParseResult.Failure -> {
-                metrics.increment("namespace.load.failure", tags = mapOf(
-                    "namespace" to namespace.id,
-                    "error_type" to result.error::class.simpleName!!
-                ))
-            }
-        }
+  fun recordLoad(
+      namespace: Namespace,
+      result: ParseResult
+  ) {
+    when (result) {
+      is ParseResult.Success -> {
+        lastSuccessfulLoad[namespace.id] = Instant.now()
+        metrics.increment("namespace.load.success", tags = mapOf(
+            "namespace" to namespace.id
+        ))
+      }
+      is ParseResult.Failure -> {
+        metrics.increment("namespace.load.failure", tags = mapOf(
+            "namespace" to namespace.id,
+            "error_type" to result.error::class.simpleName!!
+        ))
+      }
     }
+  }
 
-    fun checkHealth(namespace: Namespace, maxAge: Duration = 1.hours): Boolean {
-        val lastLoad = lastSuccessfulLoad[namespace.id]
-        return lastLoad?.let {
-            Duration.between(it, Instant.now()) < maxAge
-        } ?: false
-    }
+  fun checkHealth(
+      namespace: Namespace,
+      maxAge: Duration = 1.hours
+  ): Boolean {
+    val lastLoad = lastSuccessfulLoad[namespace.id]
+    return lastLoad?.let {
+      Duration.between(it, Instant.now()) < maxAge
+    } ?: false
+  }
 }
 ```
 
@@ -381,16 +400,16 @@ class NamespaceHealthMonitor {
 
 ```kotlin
 AppDomain.Recommendations.hooks.afterLoad.add { event ->
-    when (event.result) {
-        is ParseResult.Failure -> {
-            alertOps(
-                severity = Severity.HIGH,
-                message = "Recommendations config failed",
-                namespace = "recommendations",
-                error = event.result.error
-            )
-        }
+  when (event.result) {
+    is ParseResult.Failure -> {
+      alertOps(
+          severity = Severity.HIGH,
+          message = "Recommendations config failed",
+          namespace = "recommendations",
+          error = event.result.error
+      )
     }
+  }
 }
 ```
 
@@ -421,12 +440,15 @@ val namespaceRegistry = mapOf(
     )
 )
 
-fun alertNamespaceOwners(namespaceId: String, message: String) {
-    val ownership = namespaceRegistry[namespaceId]
-    ownership?.let {
-        slackClient.postMessage(it.teamSlackChannel, message)
-        emailService.send(it.approvers, "Namespace alert: $namespaceId", message)
-    }
+fun alertNamespaceOwners(
+    namespaceId: String,
+    message: String
+) {
+  val ownership = namespaceRegistry[namespaceId]
+  ownership?.let {
+    slackClient.postMessage(it.teamSlackChannel, message)
+    emailService.send(it.approvers, "Namespace alert: $namespaceId", message)
+  }
 }
 ```
 

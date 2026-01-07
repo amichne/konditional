@@ -9,12 +9,14 @@ How `evaluateWithShadow` enables safe comparisons between two Konditional config
 When updating configuration or migrating between flag systems, you need confidence that the new system produces the same results as the old system.
 
 **Traditional approach:**
+
 1. Deploy new config
 2. Hope it works
 3. Monitor for issues
 4. Rollback if problems detected
 
 **Issues:**
+
 - No advance warning of mismatches
 - Production is the first test
 - Rollback is reactive (damage may already be done)
@@ -69,6 +71,7 @@ applyDarkMode(value)
 ```
 
 **Behavior:**
+
 1. Evaluate against baseline registry -> `baselineValue` (returned)
 2. Evaluate against candidate registry -> `candidateValue` (comparison only)
 3. If they differ, invoke the `onMismatch` callback
@@ -83,6 +86,7 @@ You want to update ramp-up percentages or targeting criteria. Before rolling out
 ### Example: Increasing Ramp-Up
 
 **Current config:**
+
 ```kotlin
 val newFeature by boolean<Context>(default = false) {
     rule(true) { rampUp { 10.0 } }  // 10% rollout
@@ -90,6 +94,7 @@ val newFeature by boolean<Context>(default = false) {
 ```
 
 **Candidate config (JSON):**
+
 ```json
 {
   "flags": [
@@ -105,6 +110,7 @@ val newFeature by boolean<Context>(default = false) {
 ```
 
 **Shadow evaluation:**
+
 ```kotlin
 val _ = AppFeatures // ensure features are registered before parsing
 val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow()
@@ -129,6 +135,7 @@ users.forEach { user ->
 ```
 
 **Analysis:**
+
 - Users with `baseline=false, candidate=true` -> will be newly enabled by the candidate config
 - Verify this matches the expected 15% increase (10% -> 25%)
 
@@ -177,6 +184,7 @@ applyDarkMode(value)
 ```
 
 **Progression:**
+
 - **Phase 1:** Baseline vs candidate comparison (log mismatches)
 - **Phase 2:** Candidate becomes baseline (optional continued shadowing)
 - **Phase 3:** Decommission old system
@@ -218,6 +226,7 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithShadow(
 ```
 
 **Guarantees:**
+
 1. Baseline value is returned (production behavior unchanged)
 2. Candidate evaluation does not affect the returned result
 3. Mismatch callback runs inline; keep it lightweight
@@ -229,11 +238,13 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithShadow(
 ### Overhead
 
 Shadow evaluation doubles the evaluation work:
+
 - Baseline evaluation: ~O(n) where n = rules per flag
 - Candidate evaluation: ~O(n) where n = rules per flag
 - Total: ~O(2n)
 
 **Mitigations:**
+
 1. **Sampling** - Only shadow-evaluate a percentage of requests
 2. **Async logging** - `onMismatch` callback should be non-blocking
 3. **Time-boxing** - Run shadow evaluation for limited time period (e.g., 24 hours)

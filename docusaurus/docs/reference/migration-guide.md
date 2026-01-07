@@ -9,9 +9,9 @@ It focuses on what changes at the definition site, at the call site, and at the 
 
 Konditional is now published as split modules.
 
-**Guarantee**: `konditional-core` is implementation-free; it contains the DSL + evaluation surface.
-**Mechanism**: runtime implementations are discovered via `ServiceLoader` (see `NamespaceRegistryFactory`).
-**Boundary**: if no runtime factory is present, namespace initialization fails fast with a clear error.
+- **Guarantee**: `konditional-core` is implementation-free; it contains the DSL + evaluation surface.
+- **Mechanism**: runtime implementations are discovered via `ServiceLoader` (see `NamespaceRegistryFactory`).
+- **Boundary**: if no runtime factory is present, namespace initialization fails fast with a clear error.
 
 ### Dependencies
 
@@ -31,13 +31,13 @@ dependencies {
 
 ### Common API moves
 
-| Topic | Before | After |
-|------|--------|-------|
-| Load config into a namespace | `AppFeatures.load(configuration)` | `AppFeatures.load(configuration)` + `import io.amichne.konditional.runtime.load` |
-| Rollback/history | `AppFeatures.rollback(...)` / `historyMetadata` | same calls + imports from `io.amichne.konditional.runtime.*` |
-| Configuration model | `io.amichne.konditional.core.instance.*` | `io.amichne.konditional.serialization.instance.*` |
-| Snapshot codecs | `io.amichne.konditional.serialization.snapshot.*` | same packages; add `konditional-serialization` dependency |
-| Namespace snapshot loader | `io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader` | same package; add `konditional-runtime` dependency |
+| Topic                        | Before                                                                  | After                                                                            |
+|------------------------------|-------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| Load config into a namespace | `AppFeatures.load(configuration)`                                       | `AppFeatures.load(configuration)` + `import io.amichne.konditional.runtime.load` |
+| Rollback/history             | `AppFeatures.rollback(...)` / `historyMetadata`                         | same calls + imports from `io.amichne.konditional.runtime.*`                     |
+| Configuration model          | `io.amichne.konditional.core.instance.*`                                | `io.amichne.konditional.serialization.instance.*`                                |
+| Snapshot codecs              | `io.amichne.konditional.serialization.snapshot.*`                       | same packages; add `konditional-serialization` dependency                        |
+| Namespace snapshot loader    | `io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader` | same package; add `konditional-runtime` dependency                               |
 
 ---
 

@@ -4,21 +4,19 @@ What can go wrong when using Konditional, how to prevent it, how to detect it, a
 
 ```mermaid
 flowchart TD
-    Source["JSON payload (remote/file/network)"] --> Parse["Parse + validate snapshot"]
-    Parse -->|Invalid JSON / schema| Reject["Reject update<br/>keep last-known-good"]
-    Parse --> Lookup["Lookup keys in registry"]
-    Lookup -->|FeatureNotFound| Reject
-    Lookup --> Decode["Decode values to declared feature types"]
-    Decode -->|Type mismatch / schema violation| Reject
-    Decode --> Load["Atomic load new snapshot"]
-    Load --> Eval["Evaluation reads active snapshot"]
-
-    Eval -->|Operator control| Rollback["rollback(steps)"]
-    Eval -->|Operator control| Kill["disableAll() → defaults"]
-
-    style Reject fill:#ffcdd2
-    style Load fill:#c8e6c9
-    style Eval fill:#e1f5ff
+  Source["JSON payload (remote/file/network)"] --> Parse["Parse + validate snapshot"]
+  Parse -->|Invalid JSON / schema| Reject["Reject update<br/>keep last-known-good"]
+  Parse --> Lookup["Lookup keys in registry"]
+  Lookup -->|FeatureNotFound| Reject
+  Lookup --> Decode["Decode values to declared feature types"]
+  Decode -->|Type mismatch / schema violation| Reject
+  Decode --> Load["Atomic load new snapshot"]
+  Load --> Eval["Evaluation reads active snapshot"]
+  Eval -->|Operator control| Rollback["rollback(steps)"]
+  Eval -->|Operator control| Kill["disableAll() → defaults"]
+  style Reject fill: #ffcdd2
+  style Load fill: #c8e6c9
+  style Eval fill: #e1f5ff
 ```
 
 ---
@@ -33,9 +31,9 @@ JSON payload is malformed or doesn't match the expected schema:
 val json = """{ "flags": [ { "invalid": true } ] }"""
 
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Failure -> {
-        println(result.error.message)  // ParseError.InvalidJson / ParseError.InvalidSnapshot
-    }
+  is ParseResult.Failure -> {
+    println(result.error.message)  // ParseError.InvalidJson / ParseError.InvalidSnapshot
+  }
 }
 ```
 
@@ -75,9 +73,9 @@ val json = """
 """
 
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Failure -> {
-        println(result.error.message)  // "Feature not found: feature::app::unknownFlag"
-    }
+  is ParseResult.Failure -> {
+    println(result.error.message)  // "Feature not found: feature::app::unknownFlag"
+  }
 }
 ```
 
@@ -106,7 +104,7 @@ JSON specifies a value type that doesn't match the declared feature type:
 
 ```kotlin
 object Config : Namespace("config") {
-    val timeout by double<Context>(default = 30.0)
+  val timeout by double<Context>(default = 30.0)
 }
 
 val json = """
@@ -121,9 +119,9 @@ val json = """
 """
 
 when (val result = ConfigurationSnapshotCodec.decode(json)) {
-    is ParseResult.Failure -> {
-        println(result.error.message)  // ParseError.InvalidSnapshot with details about the failed decode
-    }
+  is ParseResult.Failure -> {
+    println(result.error.message)  // ParseError.InvalidSnapshot with details about the failed decode
+  }
 }
 ```
 
@@ -155,10 +153,10 @@ data class RetryPolicy(
     val maxAttempts: Int,
     val backoffMs: Double
 ) : Konstrained<ObjectSchema> {
-    override val schema = schemaRoot {
-        ::maxAttempts of { minimum = 1 }
-        ::backoffMs of { minimum = 0.0 }
-    }
+  override val schema = schemaRoot {
+    ::maxAttempts of { minimum = 1 }
+    ::backoffMs of { minimum = 0.0 }
+  }
 }
 
 val json = """
@@ -202,9 +200,9 @@ Attempting to load JSON before namespace initialization:
 // ✗ Incorrect order
 val json = fetchRemoteConfig()
 when (val result = ConfigurationSnapshotCodec.decode(json)) {
-    is ParseResult.Failure -> {
-        // Fails: features not registered yet
-    }
+  is ParseResult.Failure -> {
+    // Fails: features not registered yet
+  }
 }
 ```
 
@@ -219,8 +217,8 @@ val _ = AppFeatures  // Force initialization
 
 val json = fetchRemoteConfig()
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Success -> Unit
-    is ParseResult.Failure -> logError(result.error.message)
+  is ParseResult.Success -> Unit
+  is ParseResult.Failure -> logError(result.error.message)
 }
 ```
 
@@ -323,16 +321,16 @@ One configuration wins (last write). Readers see a consistent snapshot (either c
 
 ## Summary: Failure Impact Matrix
 
-| Failure Mode                  | Detection                           | Worst-Case Outcome                          | Recovery                           |
-|-------------------------------|-------------------------------------|---------------------------------------------|------------------------------------|
-| Parse errors (invalid JSON)   | `ParseResult.Failure`               | Last-known-good remains active              | Fix JSON, retry                    |
-| Missing features              | `ParseError.FeatureNotFound`        | Last-known-good remains active              | Initialize namespace, retry        |
-| Type mismatches               | `ParseResult.Failure`               | Last-known-good remains active              | Fix JSON schema, retry             |
-| Schema mismatches             | `ParseResult.Failure`               | Last-known-good remains active              | Fix custom data class schema       |
-| Uninitialized namespace       | `ParseError.FeatureNotFound`        | Parse fails (initial defaults active)       | Initialize namespace, retry        |
-| Rollback beyond history       | `rollback(...)` returns `false`     | Current config remains active               | Use available history or re-load   |
-| Kill-switch active            | All evals return defaults           | Defaults active for namespace               | Call `enableAll()`                 |
-| Concurrent updates            | Last write wins                     | One config wins (consistent snapshot)       | Coordinate updates through single source |
+| Failure Mode                | Detection                       | Worst-Case Outcome                    | Recovery                                 |
+|-----------------------------|---------------------------------|---------------------------------------|------------------------------------------|
+| Parse errors (invalid JSON) | `ParseResult.Failure`           | Last-known-good remains active        | Fix JSON, retry                          |
+| Missing features            | `ParseError.FeatureNotFound`    | Last-known-good remains active        | Initialize namespace, retry              |
+| Type mismatches             | `ParseResult.Failure`           | Last-known-good remains active        | Fix JSON schema, retry                   |
+| Schema mismatches           | `ParseResult.Failure`           | Last-known-good remains active        | Fix custom data class schema             |
+| Uninitialized namespace     | `ParseError.FeatureNotFound`    | Parse fails (initial defaults active) | Initialize namespace, retry              |
+| Rollback beyond history     | `rollback(...)` returns `false` | Current config remains active         | Use available history or re-load         |
+| Kill-switch active          | All evals return defaults       | Defaults active for namespace         | Call `enableAll()`                       |
+| Concurrent updates          | Last write wins                 | One config wins (consistent snapshot) | Coordinate updates through single source |
 
 ---
 
