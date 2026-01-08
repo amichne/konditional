@@ -1,15 +1,19 @@
+@file:OptIn(KonditionalInternalApi::class)
+
 package io.amichne.konditional.serialization
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.disable
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.core.result.getOrThrow
+
 import io.amichne.konditional.fixtures.utilities.update
 import io.amichne.konditional.runtime.load
 import io.amichne.konditional.serialization.instance.Configuration
@@ -153,7 +157,7 @@ class NamespaceConfigurationSnapshotCodecTest {
     fun `Given namespace, When round-tripped, Then configuration is preserved`() {
         // Configure flags
         testNamespace.boolFlag.update(true) {
-            rule(false) {
+            disable {
                 platforms(Platform.IOS)
             }
         }

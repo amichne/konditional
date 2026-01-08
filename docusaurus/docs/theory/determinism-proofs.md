@@ -37,7 +37,8 @@ bucket = uint32(hash[0..3]) % 10_000
 
 **Lemma:** SHA-256 is a deterministic function.
 
-**Proof:** SHA-256 is defined by FIPS 180-4. For any input `m`, `SHA256(m)` is computed via a fixed sequence of operations (message padding, block processing,
+**Proof:** SHA-256 is defined by FIPS 180-4. For any input `m`, `SHA256(m)` is computed via a fixed sequence of
+operations (message padding, block processing,
 compression). The algorithm is deterministic (no randomness, no nondeterministic steps).
 
 **Corollary:** For fixed `(salt, flagKey, stableIdHex)`, the bucket assignment is deterministic.
@@ -118,7 +119,8 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
 }
 ```
 
-**Key insight:** Evaluation reads a **snapshot** of configuration at a single point in time. Even if the active configuration changes during evaluation, the
+**Key insight:** Evaluation reads a **snapshot** of configuration at a single point in time. Even if the active
+configuration changes during evaluation, the
 snapshot remains immutable.
 
 **Corollary:** For a fixed context and snapshot, evaluation is deterministic.
@@ -157,9 +159,11 @@ snapshot remains immutable.
 
 1. **Sort rules by specificity** (stable sort, deterministic)
 2. **Iterate rules in order:**
-  - **Criteria matching** - Pure functions of `C` (no side effects)
-  - **Ramp-up check** - SHA-256 bucketing (deterministic, proven above)
-  - **Allowlist check** - Set membership (deterministic)
+
+- **Criteria matching** - Pure functions of `C` (no side effects)
+- **Ramp-up check** - SHA-256 bucketing (deterministic, proven above)
+- **Allowlist check** - Set membership (deterministic)
+
 3. **First matching rule** - Iteration order is deterministic, so first match is deterministic
 4. **Return rule value or default** - Both are constants from `S`
 

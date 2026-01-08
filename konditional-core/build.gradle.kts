@@ -1,4 +1,5 @@
 import io.amichne.konditional.gradle.KonditionalCoreApiBoundaryTask
+import io.amichne.konditional.gradle.configureKonditionalPublishing
 
 plugins {
     kotlin("jvm")
@@ -6,6 +7,7 @@ plugins {
     `maven-publish`
     signing
     id("io.gitlab.arturbosch.detekt")
+    `java-test-fixtures`
 }
 
 val props = project.rootProject.properties
@@ -58,16 +60,11 @@ java {
     }
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            from(components["java"])
-            groupId = props["GROUP"] as String
-            artifactId = "konditional-core"
-            version = props["VERSION"] as String
-        }
-    }
-}
+configureKonditionalPublishing(
+    artifactId = "konditional-core",
+    moduleName = "Konditional Core",
+    moduleDescription = "Core feature flag evaluation engine with type-safe API and deterministic evaluation"
+)
 
 // ============================================================================
 // API Boundary Policy (package allowlist)

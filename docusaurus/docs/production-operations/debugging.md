@@ -6,7 +6,8 @@ Diagnosing and resolving issues with feature evaluation, determinism, and ramp-u
 
 ## Overview
 
-When features don't behave as expected in production, you need tools to understand what's happening. Konditional provides several debugging mechanisms:
+When features don't behave as expected in production, you need tools to understand what's happening. Konditional
+provides several debugging mechanisms:
 
 1. **Explain API** — Trace why a specific evaluation returned a value
 2. **Bucketing introspection** — Verify ramp-up determinism

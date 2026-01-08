@@ -1,7 +1,7 @@
 package io.amichne.konditional.rules
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.internal.KonditionalInternalApi
 
 /**
  * Represents a rule paired with its target value.

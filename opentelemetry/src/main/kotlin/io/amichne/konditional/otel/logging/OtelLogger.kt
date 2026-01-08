@@ -2,7 +2,6 @@ package io.amichne.konditional.otel.logging
 
 import io.amichne.konditional.core.ops.KonditionalLogger
 import io.opentelemetry.api.common.AttributeKey
-import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.logs.Logger
 import io.opentelemetry.api.logs.Severity
 import io.opentelemetry.context.Context as OtelContext

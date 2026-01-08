@@ -8,8 +8,9 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.result.getOrThrow
+
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -28,7 +29,7 @@ class KillSwitchTest {
     fun `disableAll forces declared defaults`() {
         val namespace = object : Namespace.TestNamespaceFacade("kill-switch") {
             val feature by boolean<Context>(default = false) {
-                rule(true) { platforms(Platform.IOS) }
+                enable { platforms(Platform.IOS) }
             }
         }
 

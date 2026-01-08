@@ -6,7 +6,8 @@ How `evaluateWithShadow` enables safe comparisons between two Konditional config
 
 ## The Migration Problem
 
-When updating configuration or migrating between flag systems, you need confidence that the new system produces the same results as the old system.
+When updating configuration or migrating between flag systems, you need confidence that the new system produces the same
+results as the old system.
 
 **Traditional approach:**
 
@@ -25,7 +26,8 @@ When updating configuration or migrating between flag systems, you need confiden
 
 ## Shadow Evaluation
 
-**Shadow evaluation** means: evaluate against two configurations (baseline + candidate) and compare results without affecting production.
+**Shadow evaluation** means: evaluate against two configurations (baseline + candidate) and compare results without
+affecting production.
 
 ```kotlin
 val baselineValue = feature.evaluate(context)  // Returned to caller
@@ -81,7 +83,8 @@ applyDarkMode(value)
 
 ## Use Case 1: Configuration Changes
 
-You want to update ramp-up percentages or targeting criteria. Before rolling out, validate that the new config produces expected results.
+You want to update ramp-up percentages or targeting criteria. Before rolling out, validate that the new config produces
+expected results.
 
 ### Example: Increasing Ramp-Up
 
@@ -143,7 +146,8 @@ users.forEach { user ->
 
 ## Use Case 2: Migration Between Flag Systems
 
-You're migrating from another flag system to Konditional. You want to verify that Konditional produces the same results as the old system.
+You're migrating from another flag system to Konditional. You want to verify that Konditional produces the same results
+as the old system.
 
 ### Migration Flow
 

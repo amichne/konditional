@@ -1,7 +1,6 @@
 package io.amichne.konditional.otel
 
 import io.amichne.konditional.api.EvaluationResult
-import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.api.explain
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace

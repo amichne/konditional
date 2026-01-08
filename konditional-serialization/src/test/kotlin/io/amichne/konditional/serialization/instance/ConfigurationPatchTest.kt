@@ -1,5 +1,8 @@
+@file:OptIn(KonditionalInternalApi::class)
+
 package io.amichne.konditional.serialization.instance
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.fixtures.CommonTestFeatures
 import org.junit.jupiter.api.Assertions.assertEquals

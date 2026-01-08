@@ -17,13 +17,17 @@ sealed interface ParseResult<out T> {
      * Successful parseUnsafe result containing the parsed value.
      */
     @ConsistentCopyVisibility
-    data class Success<T> @PublishedApi internal constructor(val value: T) : ParseResult<T>
+    data class Success<T> @PublishedApi internal constructor(val value: T) : ParseResult<T> {
+        override fun getOrThrow(): T = value
+    }
 
     /**
      * Failed parseUnsafe result containing structured error information.
      */
     @ConsistentCopyVisibility
-    data class Failure @PublishedApi internal constructor(val error: ParseError) : ParseResult<Nothing>
+    data class Failure @PublishedApi internal constructor(val error: ParseError) : ParseResult<Nothing> {
+        override fun getOrThrow(): Nothing = error(error.message)
+    }
 
     companion object {
         /**
@@ -36,13 +40,18 @@ sealed interface ParseResult<out T> {
          */
         fun failure(error: ParseError): ParseResult<Nothing> = Failure(error)
     }
+
+    fun getOrThrow(): T = when (this) {
+        is Failure -> getOrThrow()
+        is Success -> getOrThrow()
+    }
 }
 
 /**
  * Returns the value if successful, or throws an exception if failed.
  * Useful for tests or when you want to fail fast.
  */
-fun <T> ParseResult<T>.getOrThrow(): T = when (this) {
-    is ParseResult.Success -> value
-    is ParseResult.Failure -> throw IllegalStateException(error.message)
-}
+//fun <T> ParseResult<T>.getOrThrow(): T = when (this) {
+//    is ParseResult.Success -> value
+//    is ParseResult.Failure -> throw IllegalStateException(error.message)
+//}

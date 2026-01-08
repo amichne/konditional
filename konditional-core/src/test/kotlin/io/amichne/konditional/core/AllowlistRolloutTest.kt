@@ -5,8 +5,9 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.result.getOrThrow
+
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -28,7 +29,7 @@ class AllowlistRolloutTest {
         val namespace =
             object : Namespace.TestNamespaceFacade("rule-allowlist") {
                 val feature by boolean<Context>(default = false) {
-                    rule(true) {
+                    enable {
                         rampUp { 0.0 }
                         allowlist(allowlisted)
                     }
@@ -48,7 +49,7 @@ class AllowlistRolloutTest {
             object : Namespace.TestNamespaceFacade("flag-allowlist") {
                 val feature by boolean<Context>(default = false) {
                     allowlist(allowlisted)
-                    rule(true) {
+                    enable {
                         rampUp { 0.0 }
                     }
                 }

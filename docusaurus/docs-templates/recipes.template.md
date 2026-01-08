@@ -10,9 +10,11 @@ Source: docusaurus/docs-templates/recipes.template.md + konditional-observabilit
 
 # Recipes: Best-Practice Patterns
 
-Practical patterns for real-world feature control using only Konditional building blocks. Each recipe highlights a supported solution area and makes the guarantee boundaries explicit.
+Practical patterns for real-world feature control using only Konditional building blocks. Each recipe highlights a
+supported solution area and makes the guarantee boundaries explicit.
 
 Covered solution areas:
+
 - Typed features (booleans, enums, structured values)
 - Deterministic rollouts and salting
 - Axes and custom context targeting

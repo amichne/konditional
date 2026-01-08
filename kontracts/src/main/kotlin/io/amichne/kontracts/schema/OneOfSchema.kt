@@ -15,6 +15,7 @@ data class OneOfSchema(
 ) : JsonSchema<Any>() {
     override val type: OpenApi.Type
         get() = options.firstOrNull()?.type ?: OpenApi.Type.OBJECT
+
     override fun toString() = "OneOfSchema(options=${options.size})"
 
     /**

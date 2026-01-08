@@ -2,6 +2,7 @@
 
 package io.amichne.konditional.internal
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.core.FlagDefinition

@@ -1,5 +1,6 @@
 import io.amichne.konditional.gradle.GenerateRecipesDocsTask
 import io.amichne.konditional.gradle.VerifyRecipesDocsTask
+import io.amichne.konditional.gradle.configureKonditionalPublishing
 
 plugins {
     kotlin("jvm")
@@ -88,13 +89,8 @@ java {
     }
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            from(components["java"])
-            groupId = props["GROUP"] as String
-            artifactId = "konditional-observability"
-            version = props["VERSION"] as String
-        }
-    }
-}
+configureKonditionalPublishing(
+    artifactId = "konditional-observability",
+    moduleName = "Konditional Observability",
+    moduleDescription = "Observability, monitoring, and recipe documentation for Konditional feature flags"
+)

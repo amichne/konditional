@@ -28,7 +28,8 @@ when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
 val value = AppFeatures.someFeature.evaluate(ctx)  // Always returns a value
 ```
 
-**Key insight:** Features always evaluate to a value (defaults or overrides). Failures only occur when trying to load new configuration.
+**Key insight:** Features always evaluate to a value (defaults or overrides). Failures only occur when trying to load
+new configuration.
 
 ### Step 2: Implement Failure Handlers
 
@@ -226,16 +227,16 @@ class CircuitBreakerConfigLoader(
 ## Guarantees
 
 - **Evaluation never fails**: Features always return a value
-  - **Mechanism**: Total evaluation with required defaults
-  - **Boundary**: Configuration load can fail, evaluation cannot
+    - **Mechanism**: Total evaluation with required defaults
+    - **Boundary**: Configuration load can fail, evaluation cannot
 
 - **Failed loads don't affect traffic**: Invalid config rejected atomically
-  - **Mechanism**: `load()` either succeeds completely or leaves state unchanged
-  - **Boundary**: No partial application of configuration
+    - **Mechanism**: `load()` either succeeds completely or leaves state unchanged
+    - **Boundary**: No partial application of configuration
 
 - **Last-known-good preserved**: Previous configuration remains active on failure
-  - **Mechanism**: Failed load doesn't modify namespace state
-  - **Boundary**: "Last-known-good" might be initial defaults if no successful load yet
+    - **Mechanism**: Failed load doesn't modify namespace state
+    - **Boundary**: "Last-known-good" might be initial defaults if no successful load yet
 
 ## What Can Go Wrong?
 

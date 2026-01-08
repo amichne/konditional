@@ -1,5 +1,8 @@
+@file:OptIn(KonditionalInternalApi::class)
+
 package io.amichne.konditional.serialization
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.AppLocale
@@ -10,17 +13,17 @@ import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.core.result.getOrThrow
+
 import io.amichne.konditional.fixtures.serializers.RetryPolicy
 import io.amichne.konditional.fixtures.utilities.update
-import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.runtime.load
 import io.amichne.konditional.serialization.instance.Configuration
-import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
+import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 import io.amichne.konditional.values.FeatureId
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -177,7 +180,7 @@ class ConfigurationSnapshotCodecTest {
     @Test
     fun `Given Konfig with complex rules, When serialized, Then includes all rule attributes`() {
         TestFeatures.boolFlag.update(false) {
-            rule(true) {
+            enable {
                 rampUp { 50.0 }
                 note("TestNamespace rule")
                 locales(AppLocale.UNITED_STATES, AppLocale.FRANCE)
@@ -209,7 +212,7 @@ class ConfigurationSnapshotCodecTest {
 
         TestFeatures.boolFlag.update(false) {
             allowlist(allowlisted)
-            rule(true) {
+            enable {
                 rampUp { 0.0 }
             }
         }
@@ -230,8 +233,8 @@ class ConfigurationSnapshotCodecTest {
     @Test
     fun `Given Konfig with axis targeting, When serialized and round-tripped, Then axes constraints are preserved`() {
         TestFeatures.boolFlag.update(false) {
-            rule(true) {
-                this.axis(Environment.PROD, Environment.STAGE)
+            enable {
+                axis(Environment.PROD, Environment.STAGE)
             }
         }
 
@@ -728,7 +731,7 @@ class ConfigurationSnapshotCodecTest {
     @Test
     fun `Given flag with complex rules, When round-tripped, Then all rule attributes are preserved`() {
         TestFeatures.boolFlag.update(false) {
-            rule(true) {
+            enable {
                 rampUp { 75.0 }
                 note("Complex rule")
                 locales(AppLocale.UNITED_STATES)

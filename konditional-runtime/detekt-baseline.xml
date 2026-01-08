@@ -2,17 +2,6 @@
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
-    <ID>CyclomaticComplexMethod:AxisRegistry.kt$AxisRegistry$fun register(axis: Axis&lt;*&gt;)</ID>
-    <ID>InvalidPackageDeclaration:AxisRegistry.kt$package io.amichne.konditional.core.registry</ID>
-    <ID>InvalidPackageDeclaration:InMemoryNamespaceRegistry.kt$package io.amichne.konditional.core.registry</ID>
-    <ID>InvalidPackageDeclaration:NamespaceRegistry.kt$package io.amichne.konditional.core.registry</ID>
-    <ID>MaxLineLength:AxisRegistry.kt$AxisRegistry$*</ID>
-    <ID>MaxLineLength:AxisRegistry.kt$AxisRegistry$throw IllegalArgumentException("Axis already registered for id ${axis.id}: existing=$existingById, attempted=$axis")</ID>
-    <ID>MaxLineLength:InMemoryNamespaceRegistry.kt$InMemoryNamespaceRegistry$*</ID>
-    <ID>ReturnCount:AxisRegistry.kt$AxisRegistry$fun register(axis: Axis&lt;*&gt;)</ID>
-    <ID>ThrowsCount:AxisRegistry.kt$AxisRegistry$fun register(axis: Axis&lt;*&gt;)</ID>
-    <ID>TooManyFunctions:InMemoryNamespaceRegistry.kt$InMemoryNamespaceRegistry : NamespaceRegistry</ID>
     <ID>UseCheckOrError:InMemoryNamespaceRegistry.kt$InMemoryNamespaceRegistry$throw IllegalStateException("Flag not found in configuration: ${key.key}")</ID>
-    <ID>UseRequire:AxisRegistry.kt$AxisRegistry$throw IllegalArgumentException("Axis already registered for id ${axis.id}: existing=$existingById, attempted=$axis")</ID>
   </CurrentIssues>
 </SmellBaseline>

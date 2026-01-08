@@ -4,7 +4,9 @@ Type-safe JSON Schema DSL for Kotlin with compile-time contract specification.
 
 ## Overview
 
-Kontracts provides a powerful, type-safe DSL for defining JSON schemas in Kotlin. It leverages Kotlin's type system and context receivers to create schemas that are validated at compile-time, preventing runtime errors and ensuring type safety.
+Kontracts provides a powerful, type-safe DSL for defining JSON schemas in Kotlin. It leverages Kotlin's type system and
+context receivers to create schemas that are validated at compile-time, preventing runtime errors and ensuring type
+safety.
 
 ## Features
 
@@ -151,6 +153,7 @@ Kontracts consists of three main components:
 ### 1. Schema Types (`io.amichne.kontracts.schema.JsonSchema`)
 
 Sealed class hierarchy representing JSON Schema types:
+
 - `BooleanSchema`, `StringSchema`, `IntSchema`, `DoubleSchema`
 - `EnumSchema<E>` for enum types
 - `ObjectSchema` for structured objects
@@ -160,6 +163,7 @@ Sealed class hierarchy representing JSON Schema types:
 ### 2. Runtime Values (`io.amichne.kontracts.value.JsonValue`)
 
 Sealed class hierarchy for runtime JSON values:
+
 - `JsonBoolean`, `JsonString`, `JsonNumber`, `JsonNull`
 - `JsonObject` with typed fields
 - `JsonArray` with homogeneous elements
@@ -167,6 +171,7 @@ Sealed class hierarchy for runtime JSON values:
 ### 3. DSL Builders (`io.amichne.kontracts.dsl`)
 
 Type-safe DSL for schema construction:
+
 - `schemaRoot { }` - Entry point for type-inferred DSL
 - `::property of { }` - Type-inferred property schema
 - `asString`, `asInt`, `asDouble`, `asBoolean` - Custom type mapping
@@ -175,24 +180,27 @@ Type-safe DSL for schema construction:
 ## Future Enhancements
 
 ### Version 0.2.0
+
 - OpenAPI 3.1 schema generation
 - Enhanced validation with JSON path errors
 - Schema documentation generator (Markdown/HTML)
 
 ### Version 1.0.0
+
 - Remove deprecated legacy DSL
 - Publish to Maven Central
 - Pluggable serialization adapters (Moshi, kotlinx.serialization)
 
 ### Standalone Repository
+
 - Split kontracts to separate repository
 - Independent release cycle from Konditional
 - Konditional depends on published artifact
 
 ## Contributing
 
-This library is currently part of the Konditional project but is designed to be extracted as a standalone library. Contributions are welcome!
-
+This library is currently part of the Konditional project but is designed to be extracted as a standalone library.
+Contributions are welcome!
 
 ```mermaid
 classDiagram

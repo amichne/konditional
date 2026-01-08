@@ -99,12 +99,15 @@ val value = AppFeatures.darkMode.evaluate(context)
 1. Thread 1 calls `current.set(newConfig)`
 2. Thread 2 calls `current.get()` during the update
 3. Thread 2 sees - **either**:
-  - Old config (read happened before write completed)
-  - New config (read happened after write completed)
+
+- Old config (read happened before write completed)
+- New config (read happened after write completed)
+
 4. Thread 2 **never** sees:
-  - Partial config (half old, half new)
-  - Null reference
-  - Corrupt data
+
+- Partial config (half old, half new)
+- Null reference
+- Corrupt data
 
 **Why:** `AtomicReference.set(...)` is a single atomic write; there's no intermediate state.
 
@@ -248,7 +251,8 @@ and call `load(...)`.
 
 ## Formal Guarantee
 
-**Invariant:** For any evaluation at time `t`, the returned value is computed using a configuration snapshot that was active at some time `t' <= t`.
+**Invariant:** For any evaluation at time `t`, the returned value is computed using a configuration snapshot that was
+active at some time `t' <= t`.
 
 **Corollary:** Readers never observe a configuration that was never active (no partial updates, no torn reads).
 

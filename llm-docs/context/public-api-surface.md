@@ -1,5 +1,6 @@
 # Public API Surface Summary
-# Extracted: 2026-01-07T08:13:09-05:00
+
+# Extracted: 2026-01-07T22:51:50-05:00
 
 ## From docusaurus/docs/index.md
 
@@ -81,9 +82,9 @@ val enabled: Boolean = AppFeatures.darkMode.evaluate(ctx)
 Konditional Core does not ship remote configuration, JSON serialization, or observability helpers. Those live in
 separate modules:
 
-- [Runtime](/runtime/index)
-- [Serialization](/serialization/index)
-- [Observability](/observability/index)
+- [Runtime](/runtime/)
+- [Serialization](/serialization/)
+- [Observability](/observability/)
 
 ## From docusaurus/docs/getting-started/installation.md
 
@@ -98,7 +99,7 @@ Replace `VERSION` with the latest published version.
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.amichne:konditional-core:VERSION")
+  implementation("io.amichne:konditional-core:VERSION")
 }
 ```
 
@@ -114,6 +115,7 @@ dependencies {
 ## Maven
 
 ```xml
+
 <dependency>
   <groupId>io.amichne</groupId>
   <artifactId>konditional-core</artifactId>
@@ -124,9 +126,9 @@ dependencies {
 That is enough to define features and evaluate them in code. If you need remote configuration, JSON serialization, or
 observability utilities, see the module docs:
 
-- [Runtime](/runtime/index)
-- [Serialization](/serialization/index)
-- [Observability](/observability/index)
+- [Runtime](/runtime/)
+- [Serialization](/serialization/)
+- [Observability](/observability/)
 
 ## From docusaurus/docs/getting-started/your-first-flag.md
 
@@ -190,23 +192,23 @@ This page defines the minimum vocabulary you need to read and write Konditional 
 
 ## Terms
 
-  - **Namespace**: A registry that owns a set of features.
-  - **Feature**: A typed configuration value with rules and a default.
-  - **Context**: Runtime inputs used for evaluation (`locale`, `platform`, `appVersion`, `stableId`).
-  - **Rule**: Criteria -> value mapping. All criteria must match for the rule to apply.
-  - **Specificity**: A numeric measure of how constrained a rule is. Higher specificity wins.
-  - **Bucketing**: Deterministic assignment of a `stableId` to a ramp-up bucket.
+- **Namespace**: A registry that owns a set of features.
+- **Feature**: A typed configuration value with rules and a default.
+- **Context**: Runtime inputs used for evaluation (`locale`, `platform`, `appVersion`, `stableId`).
+- **Rule**: Criteria -> value mapping. All criteria must match for the rule to apply.
+- **Specificity**: A numeric measure of how constrained a rule is. Higher specificity wins.
+- **Bucketing**: Deterministic assignment of a `stableId` to a ramp-up bucket.
 
 ## Compile-time vs runtime
 
-| Aspect | Guarantee Level | Mechanism |
-|--------|-----------------|-----------|
-| Property access | Compile-time | Property delegation on `Namespace` |
-| Return types | Compile-time | Generic type propagation (`Feature<T, C, M>`) |
-| Rule values | Compile-time | Typed DSL builders (`boolean`, `string`, `enum`, `custom`) |
-| Non-null returns | Compile-time | Required defaults |
-| Rule matching | Runtime | Deterministic evaluation over `Context` |
-| Business logic correctness | Not guaranteed | Human responsibility |
+| Aspect                     | Guarantee Level | Mechanism                                                  |
+|----------------------------|-----------------|------------------------------------------------------------|
+| Property access            | Compile-time    | Property delegation on `Namespace`                         |
+| Return types               | Compile-time    | Generic type propagation (`Feature<T, C, M>`)              |
+| Rule values                | Compile-time    | Typed DSL builders (`boolean`, `string`, `enum`, `custom`) |
+| Non-null returns           | Compile-time    | Required defaults                                          |
+| Rule matching              | Runtime         | Deterministic evaluation over `Context`                    |
+| Business logic correctness | Not guaranteed  | Human responsibility                                       |
 
 ## Typed values in practice
 
@@ -214,9 +216,9 @@ This page defines the minimum vocabulary you need to read and write Konditional 
 enum class Theme { LIGHT, DARK }
 
 object AppFeatures : Namespace("app") {
-    val darkMode by boolean<Context>(default = false)
-    val theme by enum<Theme, Context>(default = Theme.LIGHT)
-    val retries by integer<Context>(default = 3)
+  val darkMode by boolean<Context>(default = false)
+  val theme by enum<Theme, Context>(default = Theme.LIGHT)
+  val retries by integer<Context>(default = 3)
 }
 
 val theme: Theme = AppFeatures.theme.evaluate(ctx)

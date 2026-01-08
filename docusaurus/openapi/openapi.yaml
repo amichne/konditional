@@ -169,7 +169,7 @@ components:
         - max
     VersionRange:
       type: object
-      required: [type]
+      required: [ type ]
       properties:
         type:
           type: string
@@ -280,7 +280,7 @@ components:
         - value
     FlagValue:
       type: object
-      required: [type]
+      required: [ type ]
       properties:
         type:
           type: string
@@ -926,7 +926,7 @@ components:
         - axes
     Flag:
       type: object
-      required: [type]
+      required: [ type ]
       properties:
         type:
           type: string

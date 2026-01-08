@@ -4,7 +4,6 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.LocaleTag
 import io.amichne.konditional.context.PlatformTag
 import io.amichne.konditional.context.RampUp
-import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.RuleScope
@@ -77,22 +76,16 @@ internal data class RuleBuilder<C : Context>(
         predicate = factory { block(it) }
     }
 
-    /**
-     * Implementation of [RuleScope.axis].
-     */
-    @Deprecated(
-        message = "Use axis(axis: Axis<T>, vararg values: T) instead for better type safety.",
-        replaceWith = ReplaceWith(
-            "axis(*values)"
-        ),
-        level = DeprecationLevel.WARNING,
-    )
-    override fun <T> axis(
-        axis: Axis<T>,
-        vararg values: T,
-    ) where T : AxisValue<T>, T : Enum<T> {
+    override fun <T> axis(vararg values: T) where T : AxisValue<T>, T : Enum<T> {
+        require(values.isNotEmpty()) { "axis(...) requires at least one value to infer the axis type." }
+//        axisConstraints.any { constraintId ->
+//            values.map { value -> value.id }.any { it == constraintId.axisId }
+//        }
+
+        val axis = AxisRegistry.axisForOrRegister(values.first()::class)
         val allowedIds = values.mapTo(linkedSetOf()) { it.id }
         val idx = axisConstraints.indexOfFirst { it.axisId == axis.id }
+
         if (idx >= 0) {
             val existing = axisConstraints[idx]
             axisConstraints[idx] = existing.copy(
@@ -101,12 +94,6 @@ internal data class RuleBuilder<C : Context>(
         } else {
             axisConstraints += AxisConstraint(axis.id, allowedIds)
         }
-    }
-
-    override fun <T> axis(vararg values: T) where T : AxisValue<T>, T : Enum<T> {
-        require(values.isNotEmpty()) { "axis(...) requires at least one value to infer the axis type." }
-        @Suppress("DEPRECATION")
-        axis(AxisRegistry.axisForOrRegister(values.first()::class), *values)
     }
 
     /**

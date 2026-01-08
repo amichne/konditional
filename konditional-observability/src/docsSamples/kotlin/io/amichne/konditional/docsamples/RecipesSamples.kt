@@ -12,19 +12,21 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.enable
+import io.amichne.konditional.core.dsl.unaryPlus
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.ops.KonditionalLogger
 import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.core.ops.MetricsCollector
 import io.amichne.konditional.core.ops.RegistryHooks
+import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.runtime.load
 import io.amichne.konditional.runtime.rollback
-import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
 import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
-import io.amichne.kontracts.dsl.*
+import io.amichne.kontracts.dsl.of
+import io.amichne.kontracts.dsl.schemaRoot
 import io.amichne.kontracts.schema.ObjectSchema
 
 private object AppFeatures : Namespace("app") {
@@ -80,7 +82,7 @@ fun renderCheckout(context: Context) {
 object RampUpFlags : Namespace("ramp-up") {
     val newCheckout by boolean<Context>(default = false) {
         salt("v1")
-        rule(true) { rampUp { 10.0 } }
+        enable { rampUp { 10.0 } }
     }
 }
 
@@ -92,7 +94,7 @@ fun isCheckoutEnabled(context: Context): Boolean =
 object RampUpResetFlags : Namespace("ramp-up-reset") {
     val newCheckout by boolean<Context>(default = false) {
         salt("v2")
-        rule(true) { rampUp { 10.0 } }
+        enable { rampUp { 10.0 } }
     }
 }
 // endregion recipe-2-reset
@@ -113,7 +115,7 @@ object SegmentFlags : Namespace("segment") {
     private val segmentAxis = Axes.SegmentAxis
 
     val premiumUi by boolean<Context>(default = false) {
-        rule(true) { axis(Segment.ENTERPRISE) }
+        enable { axis(Segment.ENTERPRISE) }
     }
 }
 
@@ -124,7 +126,7 @@ fun isPremiumUiEnabled(): Boolean {
             override val platform = Platform.IOS
             override val appVersion = Version.of(2, 1, 0)
             override val stableId = StableId.of("user-123")
-            override val axisValues = axisValues { set(Axes.SegmentAxis, Segment.ENTERPRISE) }
+            override val axisValues = axisValues { +Segment.ENTERPRISE }
         }
 
     return SegmentFlags.premiumUi.evaluate(segmentContext)
@@ -145,7 +147,7 @@ enum class SubscriptionTier { FREE, PRO, ENTERPRISE }
 
 object PremiumFeatures : Namespace("premium") {
     val advancedAnalytics by boolean<EnterpriseContext>(default = false) {
-        rule(true) {
+        enable {
             extension { subscriptionTier == SubscriptionTier.ENTERPRISE && employeeCount > 100 }
         }
     }

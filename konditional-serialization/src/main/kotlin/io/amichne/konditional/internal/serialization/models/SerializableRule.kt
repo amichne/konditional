@@ -1,9 +1,9 @@
-@file:OptIn(io.amichne.konditional.internal.KonditionalInternalApi::class)
+@file:OptIn(KonditionalInternalApi::class)
 
 package io.amichne.konditional.internal.serialization.models
 
 import com.squareup.moshi.JsonClass
-import io.amichne.konditional.internal.KonditionalInternalApi
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.internal.SerializedFlagRuleSpec
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange

@@ -3,7 +3,7 @@ package io.amichne.konditional.internal.serialization.adapters
 import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.JsonWriter
-import io.amichne.konditional.internal.KonditionalInternalApi
+import io.amichne.konditional.api.KonditionalInternalApi
 
 @KonditionalInternalApi
 fun serializeMap(
@@ -82,4 +82,3 @@ fun deserializeValue(reader: JsonReader): Any? =
             null
         }
     }
-

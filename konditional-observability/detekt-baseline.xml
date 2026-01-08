@@ -2,10 +2,6 @@
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
-    <ID>InvalidPackageDeclaration:KonditionalLogger.kt$package io.amichne.konditional.core.ops</ID>
-    <ID>InvalidPackageDeclaration:Metrics.kt$package io.amichne.konditional.core.ops</ID>
-    <ID>InvalidPackageDeclaration:MetricsCollector.kt$package io.amichne.konditional.core.ops</ID>
-    <ID>InvalidPackageDeclaration:RegistryHooks.kt$package io.amichne.konditional.core.ops</ID>
     <ID>MaxLineLength:ShadowEvaluation.kt$"konditional.shadowMismatch namespaceId=${baseline.namespaceId} key=$key kinds=$mismatchKinds baselineVersion=${baseline.configVersion} candidateVersion=${candidate.configVersion}"</ID>
   </CurrentIssues>
 </SmellBaseline>

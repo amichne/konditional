@@ -23,10 +23,10 @@ import io.amichne.konditional.context.*
 import io.amichne.konditional.core.dsl.enable
 
 object AppFeatures : Namespace("app") {
-  val darkMode by boolean<Context>(default = false) {
-    enable { ios() }
-    enable { rampUp { 10.0 } }
-  }
+    val darkMode by boolean<Context>(default = false) {
+        enable { ios() }
+        enable { rampUp { 10.0 } }
+    }
 }
 
 val ctx = Context(

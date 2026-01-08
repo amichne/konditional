@@ -2,6 +2,7 @@
 
 package io.amichne.konditional.internal.builders
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
@@ -13,7 +14,6 @@ import io.amichne.konditional.core.dsl.YieldingScopeHost
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 
@@ -31,7 +31,7 @@ import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
  */
 @KonditionalDsl
 @KonditionalInternalApi
-data class FlagBuilder<T : Any, C : Context, M : Namespace>(
+internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
     override val default: T,
     private val feature: Feature<T, C, M>,
 ) : FlagScope<T, C>, YieldingScopeHost {

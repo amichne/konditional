@@ -28,8 +28,8 @@ fun Namespace.load(configuration: ConfigurationView)
 
 ```kotlin
 when (val result = ConfigurationSnapshotCodec.decode(json)) {
-  is ParseResult.Success -> AppFeatures.load(result.value)
-  is ParseResult.Failure -> logError(result.error.message)
+    is ParseResult.Success -> AppFeatures.load(result.value)
+    is ParseResult.Failure -> logError(result.error.message)
 }
 ```
 

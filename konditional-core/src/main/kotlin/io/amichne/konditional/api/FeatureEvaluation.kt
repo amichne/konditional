@@ -9,7 +9,6 @@ import io.amichne.konditional.core.evaluation.Bucketing.rampUpThresholdBasisPoin
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.core.registry.NamespaceRegistry
-import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.Rule
 import kotlin.system.measureNanoTime

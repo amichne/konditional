@@ -6,7 +6,8 @@ How to safely update feature flag configuration in production systems.
 
 ## Overview
 
-Configuration refresh is the act of replacing a namespace's current configuration with new configuration, typically loaded from a remote source. Konditional
+Configuration refresh is the act of replacing a namespace's current configuration with new configuration, typically
+loaded from a remote source. Konditional
 provides several patterns for safe configuration updates.
 
 ---
@@ -212,7 +213,8 @@ val result = AppFeatures.someFeature.evaluate(ctx)
 // Always sees either old config OR new config, never partial
 ```
 
-**Mechanism:** `load()` atomically swaps the internal `Configuration` reference. See [Thread Safety](/production-operations/thread-safety) for details.
+**Mechanism:** `load()` atomically swaps the internal `Configuration` reference.
+See [Thread Safety](/production-operations/thread-safety) for details.
 
 ### Last-Known-Good on Failure
 

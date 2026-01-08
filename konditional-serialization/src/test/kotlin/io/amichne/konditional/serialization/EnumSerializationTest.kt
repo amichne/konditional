@@ -1,9 +1,10 @@
-@file:OptIn(io.amichne.konditional.internal.KonditionalInternalApi::class)
+@file:OptIn(KonditionalInternalApi::class)
 
 package io.amichne.konditional.serialization
 
 import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.Moshi
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.ValueType
 import io.amichne.konditional.internal.serialization.adapters.FlagValueAdapter
 import io.amichne.konditional.internal.serialization.models.FlagValue

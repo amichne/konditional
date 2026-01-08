@@ -29,7 +29,7 @@ data class JsonObject(
 
     override fun validate(schema: JsonSchema<*>): ValidationResult {
         if (schema !is ObjectSchema) {
-            return ValidationResult.Invalid(
+            return Invalid(
                 "Expected ${schema.type}, but got JsonObject"
             )
         }
@@ -45,11 +45,11 @@ data class JsonObject(
             return requiredValidation
         }
         for ((key, value) in fields) {
-            val fieldSchema = schema.fields[key] ?: return ValidationResult.Invalid("Unknown field '$key' in object")
+            val fieldSchema = schema.fields[key] ?: return Invalid("Unknown field '$key' in object")
 
             val fieldValidation = value.validate(fieldSchema.schema)
             if (fieldValidation.isInvalid) {
-                return ValidationResult.Invalid(
+                return Invalid(
                     "Field '$key': ${fieldValidation.getErrorMessage()}"
                 )
             }

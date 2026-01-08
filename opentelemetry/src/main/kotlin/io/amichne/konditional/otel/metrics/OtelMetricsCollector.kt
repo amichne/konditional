@@ -1,7 +1,7 @@
 package io.amichne.konditional.otel.metrics
 
-import io.amichne.konditional.core.ops.MetricsCollector
 import io.amichne.konditional.core.ops.Metrics
+import io.amichne.konditional.core.ops.MetricsCollector
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.metrics.LongCounter

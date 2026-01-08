@@ -2,8 +2,8 @@ package io.amichne.konditional.context
 
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.AxisValues
-import io.amichne.konditional.core.registry.AxisRegistry
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.registry.AxisRegistry
 
 /**
  * Represents the execution context for feature flag evaluation.

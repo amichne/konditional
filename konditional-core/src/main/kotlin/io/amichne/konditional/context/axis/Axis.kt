@@ -40,6 +40,7 @@ import kotlin.reflect.KClass
  * @param valueClass The runtime class of the value type [T].
  *      This is intentionally passed explicitly to avoid fragile reflection-based extraction from generic supertypes.
  * @property id A stable, unique identifier for this axis
+ * @property isImplicit Whether this axis descriptor was derived implicitly from the value type
  *
  * If you use code shrinking/obfuscation, avoid relying on implicitly derived ids.
  * Provide explicit, stable ids that are independent of class names.
@@ -47,13 +48,14 @@ import kotlin.reflect.KClass
 abstract class Axis<T>(
     val id: String,
     val valueClass: KClass<T>,
+    val isImplicit: Boolean = false,
+    autoRegister: Boolean = true,
 ) where T : AxisValue<T>, T : Enum<T> {
-    open val isImplicit: Boolean = false
-
     init {
         // Auto-register this axis upon creation
-        @Suppress("LeakingThis")
-        AxisRegistry.register(this)
+        if (autoRegister) {
+            AxisRegistry.register(id, valueClass, isImplicit)
+        }
     }
 
     override fun equals(other: Any?): Boolean {

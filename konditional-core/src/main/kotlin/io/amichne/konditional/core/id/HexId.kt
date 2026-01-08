@@ -1,6 +1,6 @@
 package io.amichne.konditional.core.id
 
-import io.amichne.konditional.internal.KonditionalInternalApi
+import io.amichne.konditional.api.KonditionalInternalApi
 
 @JvmInline
 @OptIn(ExperimentalStdlibApi::class)

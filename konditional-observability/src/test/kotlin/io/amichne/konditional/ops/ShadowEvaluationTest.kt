@@ -1,7 +1,8 @@
-@file:OptIn(io.amichne.konditional.internal.KonditionalInternalApi::class)
+@file:OptIn(KonditionalInternalApi::class)
 
 package io.amichne.konditional.ops
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.api.evaluateWithShadow
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
@@ -9,10 +10,10 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
+import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.registry.NamespaceRegistry
-import io.amichne.konditional.core.result.getOrThrow
+import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
+
 import io.amichne.konditional.serialization.instance.Configuration
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -32,7 +33,7 @@ class ShadowEvaluationTest {
     fun `evaluateWithShadow returns baseline and reports mismatched values`() {
         val baselineNamespace = object : Namespace.TestNamespaceFacade("shadow-baseline") {
             val FLAG by boolean<Context>(default = false) {
-                rule(true) { platforms(Platform.IOS) }
+                enable { platforms(Platform.IOS) }
             }
         }
 
@@ -67,7 +68,7 @@ class ShadowEvaluationTest {
     fun `evaluateWithShadow skips candidate when baseline is disabled`() {
         val baselineNamespace = object : Namespace.TestNamespaceFacade("shadow-disabled") {
             val FLAG by boolean<Context>(default = false) {
-                rule(true) { platforms(Platform.IOS) }
+                enable { platforms(Platform.IOS) }
             }
         }
 

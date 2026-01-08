@@ -118,21 +118,22 @@ val experimentalCheckout by boolean<BusinessContext>(default = false) {
 }
 ```
 
-**All predicates must match** (AND semantics). User must be on mobile, version 2.0.0+, PRO tier, and account age > 3 months.
+**All predicates must match** (AND semantics). User must be on mobile, version 2.0.0+, PRO tier, and account age > 3
+months.
 
 ## Guarantees
 
 - **Type safety**: Custom context fields are type-checked at compile-time
-  - **Mechanism**: Generic type parameter flows from feature definition to evaluation
-  - **Boundary**: Must evaluate with correct context type (compiler enforces)
+    - **Mechanism**: Generic type parameter flows from feature definition to evaluation
+    - **Boundary**: Must evaluate with correct context type (compiler enforces)
 
 - **Compile-time errors for wrong context**: Can't evaluate with base `Context`
-  - **Mechanism**: Type system prevents calling `evaluate(Context)` on a `Feature<T, BusinessContext, N>`
-  - **Boundary**: Runtime serialization still accepts any Context subtype
+    - **Mechanism**: Type system prevents calling `evaluate(Context)` on a `Feature<T, BusinessContext, N>`
+    - **Boundary**: Runtime serialization still accepts any Context subtype
 
 - **Extension blocks are pure**: No side effects allowed
-  - **Mechanism**: Extension blocks are simple boolean expressions
-  - **Boundary**: You can call functions, but they shouldn't mutate state
+    - **Mechanism**: Extension blocks are simple boolean expressions
+    - **Boundary**: You can call functions, but they shouldn't mutate state
 
 ## Advanced Patterns
 
@@ -203,7 +204,8 @@ val highRiskCheckout by boolean<RiskContext>(default = false) {
 }
 ```
 
-**Important:** Risk score should be fetched *before* building context. Don't call external services inside extension blocks.
+**Important:** Risk score should be fetched *before* building context. Don't call external services inside extension
+blocks.
 
 ## What Can Go Wrong?
 
@@ -406,30 +408,30 @@ data class EcommerceContext(
 ) : Context
 
 object CheckoutFeatures : Namespace("checkout") {
-  val expressCheckout by boolean<EcommerceContext>(default = false) {
-    // High-value customers
-    rule(true) {
-      extension {
-        cartValue > 200.0 && orderCount > 5
-      }
+    val expressCheckout by boolean<EcommerceContext>(default = false) {
+        // High-value customers
+        rule(true) {
+            extension {
+                cartValue > 200.0 && orderCount > 5
+            }
+        }
+
+        // Loyal members, regardless of cart value
+        rule(true) {
+            extension {
+                hasActiveLoyaltyMembership && orderCount > 3
+            }
+        }
     }
 
-    // Loyal members, regardless of cart value
-    rule(true) {
-      extension {
-        hasActiveLoyaltyMembership && orderCount > 3
-      }
+    val winbackDiscount by boolean<EcommerceContext>(default = false) {
+        // Lapsed customers (30+ days since last order)
+        rule(true) {
+            extension {
+                daysSinceLastOrder?.let { it > 30 } == true && orderCount > 0
+            }
+        }
     }
-  }
-
-  val winbackDiscount by boolean<EcommerceContext>(default = false) {
-    // Lapsed customers (30+ days since last order)
-    rule(true) {
-      extension {
-        daysSinceLastOrder?.let { it > 30 } == true && orderCount > 0
-      }
-    }
-  }
 }
 ```
 

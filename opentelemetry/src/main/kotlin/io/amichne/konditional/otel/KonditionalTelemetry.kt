@@ -1,7 +1,5 @@
 package io.amichne.konditional.otel
 
-import io.amichne.konditional.core.ops.KonditionalLogger
-import io.amichne.konditional.core.ops.MetricsCollector
 import io.amichne.konditional.core.ops.RegistryHooks
 import io.amichne.konditional.otel.logging.OtelLogger
 import io.amichne.konditional.otel.metrics.MetricsConfig
@@ -74,7 +72,7 @@ class KonditionalTelemetry(
      */
     val logger: OtelLogger =
         OtelLogger(
-            logger = otel.getLogsBridge().get(instrumentationScope),
+            logger = otel.logsBridge.get(instrumentationScope),
         )
 
     /**

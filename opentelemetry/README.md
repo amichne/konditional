@@ -7,7 +7,8 @@ Production-ready OpenTelemetry integration for the Konditional feature flag libr
 - **Distributed Tracing**: Create spans for feature flag evaluations with semantic attributes
 - **Metrics Collection**: Record evaluation metrics with exemplar support linking metrics to traces
 - **Structured Logging**: Emit structured log records with trace context propagation
-- **Configurable Sampling**: Multiple sampling strategies to control overhead (ALWAYS, NEVER, PARENT_BASED, RATIO, FEATURE_FILTER)
+- **Configurable Sampling**: Multiple sampling strategies to control overhead (ALWAYS, NEVER, PARENT_BASED, RATIO,
+  FEATURE_FILTER)
 - **Low Overhead**: <1% latency impact when disabled or not sampled; ~5-10% when sampled
 - **Thread-Safe**: Concurrent evaluation support with proper context propagation
 
@@ -84,22 +85,22 @@ SamplingStrategy.FEATURE_FILTER { feature ->
 
 Spans include standardized attributes:
 
-| Attribute | Description |
-|-----------|-------------|
-| `feature.namespace` | Feature namespace ID |
-| `feature.key` | Feature key |
-| `feature.type` | Value type (boolean, string, etc.) |
-| `evaluation.result.value` | Evaluated value (sanitized) |
-| `evaluation.result.decision` | Decision type (default, rule_matched, inactive, registry_disabled) |
-| `evaluation.duration_ns` | Evaluation duration in nanoseconds |
-| `evaluation.rule.note` | Rule note (if matched) |
-| `evaluation.rule.specificity` | Rule specificity score |
-| `evaluation.bucket` | Rollout bucket |
-| `evaluation.ramp_up` | Rollout percentage |
-| `context.platform` | Platform ID |
-| `context.locale` | Locale ID |
-| `context.version` | App version |
-| `context.stable_id.sha256_prefix` | Stable ID hash prefix (PII-safe) |
+| Attribute                         | Description                                                        |
+|-----------------------------------|--------------------------------------------------------------------|
+| `feature.namespace`               | Feature namespace ID                                               |
+| `feature.key`                     | Feature key                                                        |
+| `feature.type`                    | Value type (boolean, string, etc.)                                 |
+| `evaluation.result.value`         | Evaluated value (sanitized)                                        |
+| `evaluation.result.decision`      | Decision type (default, rule_matched, inactive, registry_disabled) |
+| `evaluation.duration_ns`          | Evaluation duration in nanoseconds                                 |
+| `evaluation.rule.note`            | Rule note (if matched)                                             |
+| `evaluation.rule.specificity`     | Rule specificity score                                             |
+| `evaluation.bucket`               | Rollout bucket                                                     |
+| `evaluation.ramp_up`              | Rollout percentage                                                 |
+| `context.platform`                | Platform ID                                                        |
+| `context.locale`                  | Locale ID                                                          |
+| `context.version`                 | App version                                                        |
+| `context.stable_id.sha256_prefix` | Stable ID hash prefix (PII-safe)                                   |
 
 ## Advanced Usage
 
@@ -137,9 +138,9 @@ val telemetry = KonditionalTelemetry(
 ## Performance
 
 - **Disabled/Not Sampled**: <1% latency overhead
-  - **Sampled**: ~5-10% overhead for span creation and attribute population
-  - **Metrics**: Minimal overhead (~1-2μs per evaluation)
-  - **Recommended**: Use `PARENT_BASED` or `RATIO(10)` sampling in production
+    - **Sampled**: ~5-10% overhead for span creation and attribute population
+    - **Metrics**: Minimal overhead (~1-2μs per evaluation)
+    - **Recommended**: Use `PARENT_BASED` or `RATIO(10)` sampling in production
 
 ## Architecture
 
@@ -165,7 +166,8 @@ opentelemetry/
 1. **Opt-In**: Telemetry is entirely optional; core library has zero OpenTelemetry dependencies
 2. **Low Overhead**: Sampling and conditional instrumentation minimize performance impact
 3. **Type-Safe**: Leverages Kotlin's type system for compile-time safety
-4. - **Composable**: Separate concerns (tracing, metrics, logging) with clean interfaces
+4.
+    - **Composable**: Separate concerns (tracing, metrics, logging) with clean interfaces
 
 ## License
 

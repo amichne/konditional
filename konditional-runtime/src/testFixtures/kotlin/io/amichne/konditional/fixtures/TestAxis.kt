@@ -9,8 +9,8 @@ import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.AxisValues
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.AxisValuesScope
+import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.result.getOrThrow
 
 /**
  * Test-only enums representing domain-specific axis values.
@@ -81,7 +81,7 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      * Uses the new axis API.
      */
     val envScopedFlag by boolean<TestContext>(default = false) {
-        rule(true) {
+        enable {
             axis(TestEnvironment.PROD)
         }
     }
@@ -93,7 +93,7 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      * Uses the new axis API.
      */
     val envAndTenantScopedFlag by boolean<TestContext>(default = false) {
-        rule(true) {
+        enable {
             axis(TestEnvironment.PROD, TestEnvironment.STAGE)
             axis(TestTenant.ENTERPRISE)
         }
@@ -107,12 +107,12 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      *  - Otherwise: default (false)
      */
     val fallbackRuleFlag by boolean<TestContext>(default = false) {
-        rule(true) {
+        enable {
             axis(TestEnvironment.PROD)
             axis(TestTenant.ENTERPRISE)
         }
 
-        rule(true) {
+        enable {
             versions {
                 min(2, 0, 0)
             }
@@ -124,9 +124,8 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      * accumulating allowed values.
      */
     val repeatedAxisFlag by boolean<TestContext>(default = false) {
-        rule(true) {
-            axis(TestEnvironment.DEV)
-            axis(TestEnvironment.STAGE)
+        enable {
+            axis(TestEnvironment.DEV, TestEnvironment.STAGE)
         }
     }
 }
