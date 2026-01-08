@@ -4,12 +4,14 @@
 
 **Discovery:** `get_project_modules` → `get_project_dependencies` → `list_directory_tree`  
 **Locate:** `find_files_by_name_keyword` (unknown) | `find_files_by_glob` (pattern)  
-**Analyze:** `get_symbol_info` (types/refs) | `search_in_files_by_regex` (patterns) | `get_file_problems` (diagnostics)  
+**Analyze:** `get_symbol_info` (types/refs) | `search_in_files_by_regex` (patterns) | `get_file_problems` (
+diagnostics)  
 **Edit:** `rename_refactoring` (identifiers) | `replace_text_in_file` (content) | `reformat_file` (style)  
 **Execute:** `get_run_configurations` → `execute_run_configuration` | `execute_terminal_command`  
 **Navigate:** `get_all_open_file_paths` (context) | `open_file_in_editor` (focus)
 
-**Refactor Pipeline:** `file_problems` → `symbol_info` → validate → `rename_refactoring` → `reformat_file` → `file_problems`  
+**Refactor Pipeline:** `file_problems` → `symbol_info` → validate → `rename_refactoring` → `reformat_file` →
+`file_problems`  
 **Unknown Codebase:** `modules` → `dependencies` → `find_files` → `symbol_info` → `get_file_text`
 
 ## Critical Constraints
@@ -22,6 +24,7 @@
 ## Codebase Context
 
 Feature flagging library. Reference:
+
 - `llm-docs/context/public-api-surface.md`
 - `llm-docs/context/core-types.kt`
 - Documentation: `docusaurus/docs` (update via `$documentation` skill + subagent)
@@ -51,6 +54,7 @@ Feature flagging library. Reference:
 **Knowledge:** Core concepts, language features, engineering principles
 
 ## Test Execution (JUnit 5)
+
 ```bash
 ./gradlew test --tests 'package.ClassName'                    # class
 ./gradlew test --tests 'package.ClassName.methodName'         # method

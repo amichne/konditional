@@ -42,9 +42,9 @@ sealed interface ParseResult<out T> {
     }
 
     fun getOrThrow(): T = when (this) {
-            is Failure -> getOrThrow()
-            is Success -> getOrThrow()
-        }
+        is Failure -> getOrThrow()
+        is Success -> getOrThrow()
+    }
 }
 
 /**

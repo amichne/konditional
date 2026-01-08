@@ -6,7 +6,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.dsl.enable
-import io.amichne.konditional.core.result.getOrThrow
+
 import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.fixtures.core.withOverride
 import io.amichne.konditional.fixtures.core.withOverrides

@@ -1,4 +1,5 @@
 # Public API Surface Summary
+
 # Extracted: 2026-01-07T22:51:50-05:00
 
 ## From docusaurus/docs/index.md
@@ -298,4 +299,3 @@ object AppFeatures : Namespace("app") {
 ```
 
 For an iOS user on version 3.1.0, the `v3` rule is evaluated first and wins if it matches.
-

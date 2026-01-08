@@ -31,7 +31,7 @@ import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
  */
 @KonditionalDsl
 @KonditionalInternalApi
-data class FlagBuilder<T : Any, C : Context, M : Namespace>(
+internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
     override val default: T,
     private val feature: Feature<T, C, M>,
 ) : FlagScope<T, C>, YieldingScopeHost {

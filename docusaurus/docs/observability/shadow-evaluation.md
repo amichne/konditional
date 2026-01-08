@@ -14,6 +14,7 @@ Shadow evaluation evaluates the same feature against two registries:
 Konditional provides this via:
 
 -
+
 `Feature.evaluateWithShadow(context, candidateRegistry, baselineRegistry = namespace, options = ShadowOptions.defaults(), onMismatch): T`
 -
 `Feature.evaluateShadow(context, candidateRegistry, baselineRegistry = namespace, options = ShadowOptions.defaults(), onMismatch): Unit`

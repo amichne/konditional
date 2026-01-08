@@ -13,7 +13,7 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
-import io.amichne.konditional.core.result.getOrThrow
+
 import io.amichne.konditional.serialization.instance.Configuration
 import kotlin.test.Test
 import kotlin.test.assertEquals

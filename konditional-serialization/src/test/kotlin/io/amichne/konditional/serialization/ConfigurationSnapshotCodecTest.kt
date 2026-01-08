@@ -1,5 +1,8 @@
+@file:OptIn(KonditionalInternalApi::class)
+
 package io.amichne.konditional.serialization
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.AppLocale
@@ -14,7 +17,7 @@ import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.core.result.getOrThrow
+
 import io.amichne.konditional.fixtures.serializers.RetryPolicy
 import io.amichne.konditional.fixtures.utilities.update
 import io.amichne.konditional.runtime.load

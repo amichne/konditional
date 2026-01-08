@@ -72,7 +72,7 @@ class KonditionalTelemetry(
      */
     val logger: OtelLogger =
         OtelLogger(
-            logger = otel.getLogsBridge().get(instrumentationScope),
+            logger = otel.logsBridge.get(instrumentationScope),
         )
 
     /**

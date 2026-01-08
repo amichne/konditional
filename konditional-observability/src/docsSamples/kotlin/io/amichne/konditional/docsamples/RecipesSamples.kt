@@ -21,7 +21,6 @@ import io.amichne.konditional.core.ops.MetricsCollector
 import io.amichne.konditional.core.ops.RegistryHooks
 import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.core.result.getOrThrow
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.runtime.load
 import io.amichne.konditional.runtime.rollback

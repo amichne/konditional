@@ -7,6 +7,7 @@ plugins {
     `maven-publish`
     signing
     id("io.gitlab.arturbosch.detekt")
+    `java-test-fixtures`
 }
 
 val props = project.rootProject.properties

@@ -12,7 +12,7 @@ import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.dsl.unaryPlus
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.core.result.getOrThrow
+
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.runtime.load

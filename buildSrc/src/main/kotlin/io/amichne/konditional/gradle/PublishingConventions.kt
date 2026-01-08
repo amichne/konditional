@@ -65,15 +65,27 @@ fun Project.configureKonditionalPublishing(
                 }
             }
         }
+        repositories {
+            maven {
+                val releasesRepoUrl = uri(layout.buildDirectory.dir("repos/releases"))
+                val snapshotsRepoUrl = uri(layout.buildDirectory.dir("repos/snapshots"))
+                url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
+            }
+        }
     }
 
-    // Configure signing if credentials are available
     extensions.configure<SigningExtension> {
-        // Only sign if credentials exist (allows local builds without signing)
-        val hasSigningKey = props.containsKey("signing.keyId") ||
+        val useGpgCmd = props.containsKey("signing.gnupg.keyName") ||
+            System.getenv("SIGNING_GPG_KEY_NAME") != null
+
+        val hasKeyringCredentials = props.containsKey("signing.keyId") ||
             System.getenv("SIGNING_KEY_ID") != null
 
-        if (hasSigningKey) {
+        if (useGpgCmd) {
+            useGpgCmd()
+        }
+
+        if (useGpgCmd || hasKeyringCredentials) {
             sign(extensions.getByType(PublishingExtension::class.java).publications["maven"])
         }
     }

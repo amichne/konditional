@@ -4,7 +4,7 @@ import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.dsl.unaryPlus
-import io.amichne.konditional.core.result.getOrThrow
+
 import io.amichne.konditional.fixtures.FeaturesWithAxis
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment

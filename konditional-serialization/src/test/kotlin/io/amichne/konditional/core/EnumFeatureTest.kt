@@ -1,5 +1,8 @@
+@file:OptIn(KonditionalInternalApi::class)
+
 package io.amichne.konditional.core
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context

@@ -11,7 +11,6 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.AxisValuesScope
 import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.result.getOrThrow
 
 /**
  * Test-only enums representing domain-specific axis values.

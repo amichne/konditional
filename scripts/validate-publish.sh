@@ -88,38 +88,81 @@ if [[ ! -f "$USER_GRADLE_PROPS" ]]; then
     echo -e "  ${RED}Please configure signing credentials${NC}"
     VALIDATION_FAILED=1
 else
-    # Check for signing properties
+    # Check for GPG agent signing (modern approach)
+    SIGNING_GPG_KEY_NAME=$(grep "^signing.gnupg.keyName=" "$USER_GRADLE_PROPS" 2>/dev/null | cut -d'=' -f2 || echo "")
+    SIGNING_GPG_EXECUTABLE=$(grep "^signing.gnupg.executable=" "$USER_GRADLE_PROPS" 2>/dev/null | cut -d'=' -f2 || echo "")
+    SIGNING_GPG_PASSPHRASE=$(grep "^signing.gnupg.passphrase=" "$USER_GRADLE_PROPS" 2>/dev/null | cut -d'=' -f2 || echo "")
+
+    # Check for keyring signing (legacy approach)
     SIGNING_KEY_ID=$(grep "^signing.keyId=" "$USER_GRADLE_PROPS" 2>/dev/null | cut -d'=' -f2 || echo "")
     SIGNING_PASSWORD=$(grep "^signing.password=" "$USER_GRADLE_PROPS" 2>/dev/null | cut -d'=' -f2 || echo "")
     SIGNING_KEY_FILE=$(grep "^signing.secretKeyRingFile=" "$USER_GRADLE_PROPS" 2>/dev/null | cut -d'=' -f2 || echo "")
 
-    if [[ -z "$SIGNING_KEY_ID" ]]; then
-        echo -e "${RED}✗ signing.keyId not configured${NC}"
-        VALIDATION_FAILED=1
-    else
-        echo -e "  ${GREEN}✓${NC} signing.keyId: ${BOLD}${SIGNING_KEY_ID}${NC}"
-    fi
+    # Check which signing method is configured
+    if [[ -n "$SIGNING_GPG_KEY_NAME" ]]; then
+        echo -e "  ${GREEN}✓${NC} Using GPG agent signing (recommended)"
+        echo -e "  ${GREEN}✓${NC} signing.gnupg.keyName: ${BOLD}${SIGNING_GPG_KEY_NAME}${NC}"
 
-    if [[ -z "$SIGNING_PASSWORD" ]]; then
-        echo -e "${RED}✗ signing.password not configured${NC}"
-        VALIDATION_FAILED=1
-    else
-        echo -e "  ${GREEN}✓${NC} signing.password: ${BOLD}[REDACTED]${NC}"
-    fi
+        if [[ -n "$SIGNING_GPG_EXECUTABLE" ]]; then
+            echo -e "  ${GREEN}✓${NC} signing.gnupg.executable: ${BOLD}${SIGNING_GPG_EXECUTABLE}${NC}"
+        fi
 
-    if [[ -z "$SIGNING_KEY_FILE" ]]; then
-        echo -e "${RED}✗ signing.secretKeyRingFile not configured${NC}"
-        VALIDATION_FAILED=1
-    else
-        # Expand tilde if present
-        SIGNING_KEY_FILE="${SIGNING_KEY_FILE/#\~/$HOME}"
+        if [[ -n "$SIGNING_GPG_PASSPHRASE" ]]; then
+            echo -e "  ${GREEN}✓${NC} signing.gnupg.passphrase: ${BOLD}[REDACTED]${NC}"
+        fi
 
-        if [[ ! -f "$SIGNING_KEY_FILE" ]]; then
-            echo -e "${RED}✗ signing.secretKeyRingFile not found: ${SIGNING_KEY_FILE}${NC}"
+        # Verify gpg command is available
+        if ! command -v gpg &>/dev/null; then
+            echo -e "${RED}✗ gpg command not found in PATH${NC}"
             VALIDATION_FAILED=1
         else
-            echo -e "  ${GREEN}✓${NC} signing.secretKeyRingFile: ${BOLD}${SIGNING_KEY_FILE}${NC}"
+            echo -e "  ${GREEN}✓${NC} gpg command available"
+
+            # Verify the key exists in GPG
+            if gpg --list-secret-keys "$SIGNING_GPG_KEY_NAME" &>/dev/null; then
+                echo -e "  ${GREEN}✓${NC} GPG key found in keyring"
+            else
+                echo -e "${RED}✗ GPG key ${SIGNING_GPG_KEY_NAME} not found in keyring${NC}"
+                VALIDATION_FAILED=1
+            fi
         fi
+    elif [[ -n "$SIGNING_KEY_ID" ]]; then
+        echo -e "  ${YELLOW}⚠${NC} Using legacy keyring signing (consider migrating to GPG agent)"
+
+        if [[ -z "$SIGNING_KEY_ID" ]]; then
+            echo -e "${RED}✗ signing.keyId not configured${NC}"
+            VALIDATION_FAILED=1
+        else
+            echo -e "  ${GREEN}✓${NC} signing.keyId: ${BOLD}${SIGNING_KEY_ID}${NC}"
+        fi
+
+        if [[ -z "$SIGNING_PASSWORD" ]]; then
+            echo -e "${RED}✗ signing.password not configured${NC}"
+            VALIDATION_FAILED=1
+        else
+            echo -e "  ${GREEN}✓${NC} signing.password: ${BOLD}[REDACTED]${NC}"
+        fi
+
+        if [[ -z "$SIGNING_KEY_FILE" ]]; then
+            echo -e "${RED}✗ signing.secretKeyRingFile not configured${NC}"
+            VALIDATION_FAILED=1
+        else
+            # Expand tilde if present
+            SIGNING_KEY_FILE="${SIGNING_KEY_FILE/#\~/$HOME}"
+
+            if [[ ! -f "$SIGNING_KEY_FILE" ]]; then
+                echo -e "${RED}✗ signing.secretKeyRingFile not found: ${SIGNING_KEY_FILE}${NC}"
+                VALIDATION_FAILED=1
+            else
+                echo -e "  ${GREEN}✓${NC} signing.secretKeyRingFile: ${BOLD}${SIGNING_KEY_FILE}${NC}"
+            fi
+        fi
+    else
+        echo -e "${RED}✗ No signing credentials configured${NC}"
+        echo -e "  ${RED}Configure either:${NC}"
+        echo -e "  ${RED}  - GPG agent: signing.gnupg.keyName (recommended)${NC}"
+        echo -e "  ${RED}  - Keyring: signing.keyId + signing.password + signing.secretKeyRingFile${NC}"
+        VALIDATION_FAILED=1
     fi
 fi
 echo ""
@@ -163,16 +206,25 @@ echo ""
 # -----------------------------------------------------------------------------
 echo -e "${BOLD}[5/7] Verifying GPG key is published...${NC}"
 
-if [[ -n "${SIGNING_KEY_ID:-}" ]]; then
+# Determine which key ID to use
+KEY_TO_CHECK=""
+if [[ -n "${SIGNING_GPG_KEY_NAME:-}" ]]; then
+    KEY_TO_CHECK="$SIGNING_GPG_KEY_NAME"
+elif [[ -n "${SIGNING_KEY_ID:-}" ]]; then
+    KEY_TO_CHECK="$SIGNING_KEY_ID"
+fi
+
+if [[ -n "$KEY_TO_CHECK" ]]; then
     # Try to fetch from key server
-    if gpg --keyserver keys.openpgp.org --recv-keys "$SIGNING_KEY_ID" &>/dev/null; then
-        echo -e "  ${GREEN}✓${NC} GPG key ${BOLD}${SIGNING_KEY_ID}${NC} is published"
+    if gpg --keyserver keys.openpgp.org --recv-keys "$KEY_TO_CHECK" &>/dev/null; then
+        echo -e "  ${GREEN}✓${NC} GPG key ${BOLD}${KEY_TO_CHECK}${NC} is published"
     else
         echo -e "${YELLOW}⚠ Could not verify GPG key on keys.openpgp.org${NC}"
-        echo -e "  ${YELLOW}Ensure your key is published to key servers${NC}"
+        echo -e "  ${YELLOW}Ensure your key is published to key servers:${NC}"
+        echo -e "  ${YELLOW}  gpg --keyserver keys.openpgp.org --send-keys ${KEY_TO_CHECK}${NC}"
     fi
 else
-    echo -e "${YELLOW}⚠ Skipping (no signing.keyId configured)${NC}"
+    echo -e "${YELLOW}⚠ Skipping (no signing key configured)${NC}"
 fi
 echo ""
 

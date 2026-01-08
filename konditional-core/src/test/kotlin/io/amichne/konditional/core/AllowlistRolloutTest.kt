@@ -7,7 +7,7 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.result.getOrThrow
+
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
