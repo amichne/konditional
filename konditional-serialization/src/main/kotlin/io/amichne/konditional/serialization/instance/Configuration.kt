@@ -2,11 +2,11 @@
 
 package io.amichne.konditional.serialization.instance
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.instance.ConfigurationMetadataView
 import io.amichne.konditional.core.instance.ConfigurationView
-import io.amichne.konditional.internal.KonditionalInternalApi
 
 data class Configuration(
     override val flags: Map<Feature<*, *, *>, FlagDefinition<*, *, *>>,

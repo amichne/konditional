@@ -8,9 +8,9 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.features.EnumFeature
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.runtime.load
+import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
-import io.amichne.konditional.serialization.instance.Configuration
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue

@@ -1,6 +1,7 @@
 # Type Safety in Konditional
 
-Konditional provides compile-time type safety for statically-defined flags and runtime validation for configuration loaded from JSON.
+Konditional provides compile-time type safety for statically-defined flags and runtime validation for configuration
+loaded from JSON.
 
 ---
 
@@ -218,16 +219,18 @@ val value: Double = timeout.evaluate(ctx)        // Never null
 Konditional's type safety has two parts:
 
 1. **Compile-time guarantees** for statically-defined flags:
-  - Property names = feature keys
-  - Return types flow from definition to usage
-  - Rules match feature types
-  - Defaults required, evaluation total
-  - Context types enforced
+
+- Property names = feature keys
+- Return types flow from definition to usage
+- Rules match feature types
+- Defaults required, evaluation total
+- Context types enforced
 
 2. **Runtime validation** for JSON configuration:
-  - Explicit `ParseResult` boundary
-  - Invalid JSON rejected before affecting production
-  - Last-known-good configuration preserved
+
+- Explicit `ParseResult` boundary
+- Invalid JSON rejected before affecting production
+- Last-known-good configuration preserved
 
 **You get compile-time safety where possible, explicit validation where necessary.**
 

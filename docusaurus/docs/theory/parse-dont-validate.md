@@ -82,7 +82,8 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 }
 ```
 
-**Key insight:** If you have a `Configuration` instance, it has already been validated. You can't construct an invalid `Configuration` because the parser is the
+**Key insight:** If you have a `Configuration` instance, it has already been validated. You can't construct an invalid
+`Configuration` because the parser is the
 only way to create one from JSON.
 
 ---

@@ -65,7 +65,8 @@ normalized on load.
 
 ## Value encoding (`defaultValue` / rule `value`)
 
-Both `defaultValue` and each rule's `value` are encoded as a **discriminated union** (tagged object). The `type` field acts as a discriminator that determines
+Both `defaultValue` and each rule's `value` are encoded as a **discriminated union** (tagged object). The `type` field
+acts as a discriminator that determines
 which variant is being used:
 
 ```json
@@ -88,14 +89,16 @@ Supported shapes:
 
 The `DATA_CLASS` representation stores a primitive map of fields along with the fully qualified class name.
 
-The generated OpenAPI schema includes a `discriminator` block that maps each `type` value to its corresponding schema reference (e.g., `"BOOLEAN"` →
+The generated OpenAPI schema includes a `discriminator` block that maps each `type` value to its corresponding schema
+reference (e.g., `"BOOLEAN"` →
 `#/components/schemas/BooleanFlagValue`).
 
 ---
 
 ## Version range encoding (`versionRange`)
 
-Rules may include a `versionRange` object. Like flag values, it uses a **discriminated union** pattern where the `type` field determines which variant and
+Rules may include a `versionRange` object. Like flag values, it uses a **discriminated union** pattern where the `type`
+field determines which variant and
 required fields apply:
 
 ```json

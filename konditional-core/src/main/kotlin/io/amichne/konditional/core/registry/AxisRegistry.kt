@@ -28,68 +28,101 @@ internal object AxisRegistry {
     /**
      * Internal map from axis IDs to their axis descriptors.
      */
-    @PublishedApi
-    internal val byId: MutableMap<String, Axis<*>> =
+    private val byId: MutableMap<String, AxisEntry> =
         ConcurrentHashMap()
 
-    @PublishedApi
-    internal val byValueClass: MutableMap<KClass<out Enum<*>>, Axis<*>> =
+    private val byValueClass: MutableMap<KClass<out Enum<*>>, AxisEntry> =
         ConcurrentHashMap()
 
     private val idsByValueClass: MutableMap<KClass<out Enum<*>>, MutableSet<String>> =
         ConcurrentHashMap()
 
+    private data class AxisEntry(
+        val id: String,
+        val valueClass: KClass<out Enum<*>>,
+        val isImplicit: Boolean,
+    )
+
+    private class RegistryAxis<T>(
+        id: String,
+        valueClass: KClass<T>,
+        isImplicit: Boolean,
+    ) : Axis<T>(id, valueClass, isImplicit, autoRegister = false) where T : AxisValue<T>, T : Enum<T>
+
     /**
-     * Registers an axis in the registry.
+     * Registers an axis descriptor in the registry.
      *
      * This is called automatically by [Axis] during initialization. It ensures that
      * each axis ID and value type maps to exactly one axis.
      *
-     * @param axis The axis to register
-     * @throws IllegalArgumentException if an axis for this ID or value type is already registered with a different instance
+     * @param axisId The axis ID to register
+     * @param valueClass The runtime class of the axis value type
+     * @param isImplicit Whether the axis descriptor was derived implicitly
+     * @throws IllegalArgumentException if an axis for this ID or value type is already registered with a different descriptor
      */
-    fun register(axis: Axis<*>) {
-        @Suppress("UNCHECKED_CAST")
-        val valueClass = axis.valueClass as KClass<out Enum<*>>
-        val existingById = byId[axis.id]
-        if (existingById != null && existingById !== axis && existingById.valueClass != axis.valueClass) {
-            throw IllegalArgumentException("Axis already registered for id ${axis.id}: existing=$existingById, attempted=$axis")
+    @PublishedApi
+    internal fun <T> register(
+        axisId: String,
+        valueClass: KClass<T>,
+        isImplicit: Boolean,
+    ) where T : AxisValue<T>, T : Enum<T> {
+        val enumClass = enumValueClass(valueClass)
+        val entry = AxisEntry(axisId, enumClass, isImplicit)
+        val entryDescription = "Axis(id='$axisId', valueClass=${enumClass.simpleName})"
+        val existingById = byId[axisId]
+        val existingByType = byValueClass[enumClass]
+        val existingByIdDescription = existingById?.let {
+            "Axis(id='${it.id}', valueClass=${it.valueClass.simpleName})"
         }
-        val existingByType = byValueClass[valueClass]
-        if (existingByType != null && existingByType !== axis) {
-            if (!axis.isImplicit && existingByType.isImplicit) {
-                byValueClass[valueClass] = axis
-                byId[axis.id] = axis
-                rememberAxisId(valueClass, axis.id)
-                rememberAxisId(valueClass, existingByType.id)
-                return
-            }
-            if (axis.isImplicit && !existingByType.isImplicit) {
-                byId.putIfAbsent(axis.id, axis)
-                rememberAxisId(valueClass, axis.id)
-                return
-            }
-            throw IllegalArgumentException(
-                "Axis already registered for type ${valueClass.simpleName}: existing=$existingByType, attempted=$axis",
-            )
+        val existingByTypeDescription = existingByType?.let {
+            "Axis(id='${it.id}', valueClass=${it.valueClass.simpleName})"
         }
-        if (existingById != null && existingById !== axis) {
-            if (!axis.isImplicit && existingById.isImplicit) {
-                byValueClass[valueClass] = axis
-                byId[axis.id] = axis
-                rememberAxisId(valueClass, axis.id)
-                rememberAxisId(valueClass, existingById.id)
-                return
-            }
-            if (axis.isImplicit && !existingById.isImplicit) {
-                rememberAxisId(valueClass, axis.id)
-                return
-            }
-            throw IllegalArgumentException("Axis already registered for id ${axis.id}: existing=$existingById, attempted=$axis")
+
+        require(existingById == null || existingById.valueClass == enumClass) {
+            "Axis already registered for id $axisId: " +
+                "existing=$existingByIdDescription, attempted=$entryDescription"
         }
-        byValueClass[valueClass] = axis
-        byId[axis.id] = axis
-        rememberAxisId(valueClass, axis.id)
+
+        if (existingByType != null) {
+            val replacesImplicit = !isImplicit && existingByType.isImplicit
+            val defersToExplicit = isImplicit && !existingByType.isImplicit
+
+            require(replacesImplicit || defersToExplicit) {
+                "Axis already registered for type ${enumClass.simpleName}: " +
+                    "existing=$existingByTypeDescription, attempted=$entryDescription"
+            }
+
+            if (replacesImplicit) {
+                byValueClass[enumClass] = entry
+                byId[axisId] = entry
+                rememberAxisId(enumClass, axisId)
+                rememberAxisId(enumClass, existingByType.id)
+            } else {
+                byId.putIfAbsent(axisId, entry)
+                rememberAxisId(enumClass, axisId)
+            }
+        } else if (existingById != null) {
+            val replacesImplicit = !isImplicit && existingById.isImplicit
+            val defersToExplicit = isImplicit && !existingById.isImplicit
+
+            require(replacesImplicit || defersToExplicit) {
+                "Axis already registered for id $axisId: " +
+                    "existing=$existingByIdDescription, attempted=$entryDescription"
+            }
+
+            if (replacesImplicit) {
+                byValueClass[enumClass] = entry
+                byId[axisId] = entry
+                rememberAxisId(enumClass, axisId)
+                rememberAxisId(enumClass, existingById.id)
+            } else {
+                rememberAxisId(enumClass, axisId)
+            }
+        } else {
+            byValueClass[enumClass] = entry
+            byId[axisId] = entry
+            rememberAxisId(enumClass, axisId)
+        }
     }
 
     /**
@@ -102,7 +135,9 @@ internal object AxisRegistry {
      */
     @Suppress("UNCHECKED_CAST")
     fun <T> axisFor(type: KClass<out T>): Axis<T>? where T : AxisValue<T>, T : Enum<T> =
-        byValueClass[type] as? Axis<T>
+        byValueClass[enumValueClass(type)]?.let { entry ->
+            RegistryAxis(entry.id, entry.valueClass as KClass<T>, entry.isImplicit)
+        }
 
     @PublishedApi
     internal fun <T> axisForOrRegister(type: KClass<out T>): Axis<T> where T : AxisValue<T>, T : Enum<T> =
@@ -110,7 +145,7 @@ internal object AxisRegistry {
 
     @PublishedApi
     internal fun axisIdsFor(axisId: String): Set<String> =
-        byId[axisId]?.let { axisIdsForValueClass(it.valueClass as KClass<out Enum<*>>) }
+        byId[axisId]?.let { axisIdsForValueClass(it.valueClass) }
             ?.takeIf { it.isNotEmpty() } ?: setOf(axisId)
 
     @PublishedApi
@@ -118,24 +153,21 @@ internal object AxisRegistry {
         axisIdsForValueClass(axis.valueClass as KClass<out Enum<*>>)
             .takeIf { it.isNotEmpty() } ?: setOf(axis.id)
 
-    private fun <T> registerImplicit(type: KClass<out T>): Axis<T> where T : AxisValue<T>, T : Enum<T> {
-        // Implicit ids derive from class names; avoid this path if names can be obfuscated.
-        val axisId = type.qualifiedName ?: type.simpleName
-        require(!axisId.isNullOrBlank()) {
-            "Cannot derive axis id for ${type.qualifiedName ?: type}"
-        }
-        @Suppress("UNCHECKED_CAST")
-        val typedClass = type as KClass<T>
-        val implicitAxis = ImplicitAxis(axisId, typedClass)
-        return axisFor(typedClass) ?: implicitAxis
-    }
+    private fun <T> enumValueClass(type: KClass<out T>): KClass<out Enum<*>> where T : AxisValue<T>, T : Enum<T> =
+        type as KClass<out Enum<*>>
 
-    private class ImplicitAxis<T>(
-        id: String,
-        valueClass: KClass<T>,
-    ) : Axis<T>(id, valueClass) where T : AxisValue<T>, T : Enum<T> {
-        override val isImplicit: Boolean = true
-    }
+    private fun <T> implicitAxisId(type: KClass<out T>): String where T : AxisValue<T>, T : Enum<T> =
+        (type.qualifiedName ?: type.simpleName)
+            ?.takeIf { it.isNotBlank() }
+            ?: throw IllegalArgumentException("Cannot derive axis id for ${type.qualifiedName ?: type}")
+
+    private fun <T> registerImplicit(type: KClass<out T>): Axis<T> where T : AxisValue<T>, T : Enum<T> =
+        implicitAxisId(type).let { axisId ->
+            @Suppress("UNCHECKED_CAST")
+            val typedClass = type as KClass<T>
+            register(axisId, typedClass, isImplicit = true)
+            axisFor(typedClass) ?: RegistryAxis(axisId, typedClass, isImplicit = true)
+        }
 
     private fun axisIdsForValueClass(valueClass: KClass<out Enum<*>>): Set<String> =
         idsByValueClass[valueClass]?.toSet() ?: emptySet()

@@ -2,6 +2,7 @@
 
 package io.amichne.konditional.adversarial
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
@@ -9,8 +10,9 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.disable
+import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.konditional.rules.versions.FullyBound
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Test
@@ -141,11 +143,11 @@ class AdversarialConfigTest {
             // Both rules have specificity = 1 (platform only)
             // Order matters but this is implicit and undocumented
             val ambiguousFlag by boolean<Context>(default = false) {
-                rule(true) {
+                enable {
                     platforms(Platform.ANDROID)
                 }
 
-                rule(true) {
+                enable {
                     platforms(Platform.IOS) // Also specificity 1
                 }
             }
@@ -171,7 +173,7 @@ class AdversarialConfigTest {
         val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-shadowed-rules") {
             val shadowedFlag by boolean<Context>(default = false) {
                 // Specificity 3: platform + locale + version
-                rule(true) {
+                enable {
                     platforms(Platform.ANDROID)
                     locales(AppLocale.UNITED_STATES)
                     versions {
@@ -182,7 +184,7 @@ class AdversarialConfigTest {
                 // Specificity 1: platform only
                 // This rule never fires for Android UNITED_STATES v1+ users
                 // even if they intended it as a fallback
-                rule(false) {
+                disable {
                     platforms(Platform.ANDROID)
                 }
             }
@@ -364,7 +366,7 @@ class AdversarialConfigTest {
     fun `rollout at 0_01 percent affects 1 in 10000 users - easy to misconfigure`() {
         val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-tiny-rampUp") {
             val tinyRolloutFlag by boolean<Context>(default = false) {
-                rule(true) {
+                enable {
                     android()
                     rampUp { 0.01 } // User might think this is 1%, but it's 0.01%
                 }
@@ -399,7 +401,7 @@ class AdversarialConfigTest {
         val testNamespaceFeatures1 = object : Namespace.TestNamespaceFacade("adversarial-rebucketing-v1") {
             val flag by boolean<Context>(default = false) {
                 salt("v1")
-                rule(true) {
+                enable {
                     rampUp { 50.0 }
                 }
             }
@@ -408,7 +410,7 @@ class AdversarialConfigTest {
         val testNamespaceFeatures2 = object : Namespace.TestNamespaceFacade("adversarial-rebucketing-v2") {
             val flag by boolean<Context>(default = false) {
                 salt("v2") // Different salt
-                rule(true) {
+                enable {
                     rampUp { 50.0 }
                 }
             }
@@ -425,7 +427,7 @@ class AdversarialConfigTest {
     fun `empty locale sets match all locales - potential over-targeting`() {
         val featureContainer = object : Namespace.TestNamespaceFacade("adversarial-empty-locale") {
             val noLocaleFlag by boolean<Context>(default = false) {
-                rule(true) {
+                enable {
                     // No locale specified = matches ALL locales
                     android()
                 }
@@ -460,7 +462,7 @@ class AdversarialConfigTest {
     fun `version range boundaries - inclusive min, exclusive max`() {
         val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-version-boundaries") {
             val boundedFlag by boolean<Context>(default = false) {
-                rule(true) {
+                enable {
                     versions {
                         min(1, 0, 0)
                         max(2, 0, 0)
@@ -494,7 +496,7 @@ class AdversarialConfigTest {
     fun `version range with same min and max - single version targeting`() {
         val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("adversarial-version-exact") {
             val exactVersionFlag by boolean<Context>(default = false) {
-                rule(true) {
+                enable {
                     versions {
                         min(1, 0, 0)
                         max(1, 0, 0)
@@ -573,7 +575,7 @@ class AdversarialConfigTest {
         val featureContainer = object : Namespace.TestNamespaceFacade("inactive-flag") {
             val inactiveFlag by boolean<Context>(default = false) {
                 active { false } // Flag is turned off
-                rule(true) {
+                enable {
                     android()
                     rampUp { 100.0 }
                 }
@@ -602,12 +604,12 @@ class AdversarialConfigTest {
         val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("rule-specificity") {
             val catchAllFlag by boolean<Context>(default = false) {
                 // Specific rule: specificity = 1
-                rule(true) {
+                enable {
                     platforms(Platform.ANDROID)
                 }
 
                 // Catch-all rule: specificity = 0
-                rule(false) {
+                disable {
                     // No constraints = matches everything
                 }
             }
@@ -636,12 +638,12 @@ class AdversarialConfigTest {
     fun `rule matches but rollout excludes - falls through to next rule or default`() {
         val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("rampUp-fallthrough") {
             val rolloutBlockedFlag by boolean<Context>(default = false) {
-                rule(true) {
+                enable {
                     android()
                     rampUp { 0.0 } // 0% rampUp - no one gets this
                 }
 
-                rule(false) {
+                disable {
                     android()
                     rampUp { 100.0 } // Everyone gets this
                 }

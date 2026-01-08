@@ -1,5 +1,3 @@
-import java.time.Duration
-
 plugins {
     kotlin("jvm") version "2.2.20" apply false
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
@@ -33,21 +31,24 @@ subprojects {
             "implementation"(kotlin("reflect"))
         }
     }
+
+
 }
+
 
 // Maven Central publishing via Sonatype (root-level configuration)
-nexusPublishing {
-    repositories {
-        sonatype {
-            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
-
-            username.set(System.getenv("OSSRH_USERNAME") ?: props["ossrhUsername"] as String?)
-            password.set(System.getenv("OSSRH_PASSWORD") ?: props["ossrhPassword"] as String?)
-        }
-    }
-
-    // Configure timeouts for larger artifacts
-    connectTimeout.set(Duration.ofMinutes(3))
-    clientTimeout.set(Duration.ofMinutes(3))
-}
+//nexusPublishing {
+//    repositories {
+//        sonatype {
+//            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+//            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+//
+//            username.set(System.getenv("OSSRH_USERNAME") ?: props["ossrhUsername"] as String?)
+//            password.set(System.getenv("OSSRH_PASSWORD") ?: props["ossrhPassword"] as String?)
+//        }
+//    }
+//
+//    // Configure timeouts for larger artifacts
+//    connectTimeout.set(Duration.ofMinutes(3))
+//    clientTimeout.set(Duration.ofMinutes(3))
+//}

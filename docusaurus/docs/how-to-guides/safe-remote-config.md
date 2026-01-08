@@ -115,16 +115,16 @@ class ConfigurationManager(private val namespace: Namespace) {
 ## Guarantees
 
 - **Validation at boundary**: Invalid config rejected before affecting traffic
-  - **Mechanism**: `ParseResult.Failure` returned if JSON doesn't match definitions
-  - **Boundary**: Validation catches schema errors, not business logic errors
+    - **Mechanism**: `ParseResult.Failure` returned if JSON doesn't match definitions
+    - **Boundary**: Validation catches schema errors, not business logic errors
 
 - **Atomic replacement**: All evaluations see old config OR new config, never partial
-  - **Mechanism**: Configuration atomically swapped on successful load
-  - **Boundary**: No guarantee about *when* a particular request sees the update
+    - **Mechanism**: Configuration atomically swapped on successful load
+    - **Boundary**: No guarantee about *when* a particular request sees the update
 
 - **Last-known-good preserved**: Failed loads don't affect evaluation
-  - **Mechanism**: Failed load doesn't modify namespace state
-  - **Boundary**: "Last-known-good" might be initial defaults if no successful load
+    - **Mechanism**: Failed load doesn't modify namespace state
+    - **Boundary**: "Last-known-good" might be initial defaults if no successful load
 
 ## Configuration Format
 
@@ -214,7 +214,8 @@ try {
 }
 ```
 
-**Result:** `ParseResult.Failure(TypeMismatch("maxRetries", expectedType = "Int", actualType = "String"))`. Config rejected.
+**Result:** `ParseResult.Failure(TypeMismatch("maxRetries", expectedType = "Int", actualType = "String"))`. Config
+rejected.
 
 ### Partial Configuration
 
@@ -227,7 +228,8 @@ try {
 }
 ```
 
-**Result:** `ParseResult.Success`. Only `darkMode` is overridden. `maxRetries` and `checkoutFlow` use their static definitions.
+**Result:** `ParseResult.Success`. Only `darkMode` is overridden. `maxRetries` and `checkoutFlow` use their static
+definitions.
 
 **Best practice:** Partial configuration is fine for gradual rollouts. Features not in JSON use static rules + defaults.
 

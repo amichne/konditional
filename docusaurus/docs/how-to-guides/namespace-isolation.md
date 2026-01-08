@@ -129,16 +129,16 @@ fun buildUserExperience(ctx: Context): UserExperience {
 ## Guarantees
 
 - **Namespace isolation**: Configuration in one namespace doesn't affect others
-  - **Mechanism**: Each namespace maintains independent configuration state
-  - **Boundary**: Namespaces share the same evaluation context type
+    - **Mechanism**: Each namespace maintains independent configuration state
+    - **Boundary**: Namespaces share the same evaluation context type
 
 - **Independent updates**: Load configuration for one namespace without affecting others
-  - **Mechanism**: `NamespaceSnapshotLoader` targets a specific namespace
-  - **Boundary**: Must use correct namespace reference when loading
+    - **Mechanism**: `NamespaceSnapshotLoader` targets a specific namespace
+    - **Boundary**: Must use correct namespace reference when loading
 
 - **Failure isolation**: Failed load in one namespace doesn't affect others
-  - **Mechanism**: Each namespace's state is independent
-  - **Boundary**: Application logic must handle partial availability
+    - **Mechanism**: Each namespace's state is independent
+    - **Boundary**: Application logic must handle partial availability
 
 ## Common Patterns
 

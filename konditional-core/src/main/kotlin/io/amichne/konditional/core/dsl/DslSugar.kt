@@ -1,9 +1,9 @@
-@file:OptIn(io.amichne.konditional.internal.KonditionalInternalApi::class)
+@file:OptIn(KonditionalInternalApi::class)
 
 package io.amichne.konditional.core.dsl
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.internal.KonditionalInternalApi
 
 /**
  * Semantic tokens for boolean values in DSL contexts.
@@ -58,8 +58,8 @@ private fun captureRuleCallSite(): String? =
  * Boolean sugar for rule declaration. Only available for boolean feature builders.
  *
  * Semantics:
- * - `enable { ... }`  ≡ `rule(true) { ... }`
- * - `disable { ... }` ≡ `rule(false) { ... }`
+ * - `enable { ... }`  ≡ `enable  { ... }`
+ * - `disable { ... }` ≡ `disable  { ... }`
  */
 fun <C : Context> FlagScope<Boolean, C>.enable(build: RuleScope<C>.() -> Unit = {}) =
     rule(ENABLED, build)

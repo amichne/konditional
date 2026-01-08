@@ -8,8 +8,10 @@ Where compile-time guarantees end and runtime validation begins.
 
 **Konditional's guarantee is qualified:**
 
-> For **statically-defined** flags and rules, the compiler enforces type correctness and evaluation is non-null. When configuration crosses the JSON boundary,
-> correctness is established via **validation** and explicit error handling (`ParseResult`), not via compile-time guarantees.
+> For **statically-defined** flags and rules, the compiler enforces type correctness and evaluation is non-null. When
+> configuration crosses the JSON boundary,
+> correctness is established via **validation** and explicit error handling (`ParseResult`), not via compile-time
+> guarantees.
 
 ---
 
@@ -146,15 +148,20 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 **Runtime checks:**
 
 1. **JSON parsing** - Moshi parses JSON into the snapshot model
-2. **Feature lookup** - Each `FeatureId` is resolved to a registered `Feature` (or fails with `ParseError.FeatureNotFound`)
-3. **Type decoding** - Tagged values (`defaultValue` and rule `value`) are decoded into the declared Kotlin types (or fail with `ParseError.InvalidSnapshot`)
-4. **Structured value validation** - For `Konstrained` values, fields are validated against the provided Kontracts schema at the boundary
+2. **Feature lookup** - Each `FeatureId` is resolved to a registered `Feature` (or fails with
+   `ParseError.FeatureNotFound`)
+3. **Type decoding** - Tagged values (`defaultValue` and rule `value`) are decoded into the declared Kotlin types (or
+   fail with `ParseError.InvalidSnapshot`)
+4. **Structured value validation** - For `Konstrained` values, fields are validated against the provided Kontracts
+   schema at the boundary
 
 - **Boundary**: Manually constructing `Configuration` bypasses these checks; treat it as trusted input.
 
 - **Guarantee**: Application code does not construct JSON literals via a Konditional JSON value model.
-- **Mechanism**: JSON is parsed into the snapshot model and decoded into Kotlin values; structured values validate against `ObjectSchema`.
-- **Boundary**: This guarantee applies to Konditional's public API; `kontracts` may still expose a runtime JSON model for standalone use.
+- **Mechanism**: JSON is parsed into the snapshot model and decoded into Kotlin values; structured values validate
+  against `ObjectSchema`.
+- **Boundary**: This guarantee applies to Konditional's public API; `kontracts` may still expose a runtime JSON model
+  for standalone use.
 
 ---
 
@@ -175,7 +182,8 @@ flowchart LR
     style Reject fill:#ffcdd2
 ```
 
-**Key insight:** Once JSON passes runtime validation and becomes a `Configuration`, it re-enters the compile-time domain (evaluation is type-safe).
+**Key insight:** Once JSON passes runtime validation and becomes a `Configuration`, it re-enters the compile-time
+domain (evaluation is type-safe).
 
 ---
 

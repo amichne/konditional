@@ -1,6 +1,7 @@
 # What is Konditional?
 
-Konditional is a compile-time safe feature flag library for Kotlin that treats flags as typed properties instead of runtime strings.
+Konditional is a compile-time safe feature flag library for Kotlin that treats flags as typed properties instead of
+runtime strings.
 
 ## The Problem
 
@@ -24,17 +25,17 @@ The typo ships. The flag never activates. Your A/B test runs with 0% treatment. 
 
 ```kotlin
 enum class Capability {
-  NEW_CHECKOUT,
-  NEW_CHECKOUT_V2,
-  NEW_CHECKOUT_V3,
-  CHECKOUT_FAST_PATH
+    NEW_CHECKOUT,
+    NEW_CHECKOUT_V2,
+    NEW_CHECKOUT_V3,
+    CHECKOUT_FAST_PATH
 }
 
 // Your code becomes:
 if (isEnabled(NEW_CHECKOUT) && !isEnabled(NEW_CHECKOUT_V2)) {
-  // original new checkout
+    // original new checkout
 } else if (isEnabled(NEW_CHECKOUT_V2) && !isEnabled(CHECKOUT_FAST_PATH)) {
-  // v2 without fast path
+    // v2 without fast path
 }
 ```
 
@@ -166,9 +167,11 @@ when (val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)) {
 
 ### Production incident: Type coercion
 
-A string-keyed SDK returns `0` when parsing `"max_retries": "disabled"`. Service retries 0 times. All requests fail immediately.
+A string-keyed SDK returns `0` when parsing `"max_retries": "disabled"`. Service retries 0 times. All requests fail
+immediately.
 
-**With Konditional:** Parse fails at boundary. `ParseResult.Failure` logged. Last-known-good remains active. No incident.
+**With Konditional:** Parse fails at boundary. `ParseResult.Failure` logged. Last-known-good remains active. No
+incident.
 
 ### Experiment contamination: Inconsistent bucketing
 
@@ -227,12 +230,15 @@ See the [Migration Guide](/reference/migration-guide) for detailed patterns.
 
 ## Summary
 
-Feature flags aren't "nice to have" features. They're load-bearing infrastructure. When they fail, they fail at scale, in production, with user impact.
+Feature flags aren't "nice to have" features. They're load-bearing infrastructure. When they fail, they fail at scale,
+in production, with user impact.
 
-Konditional exists because **stringly-typed systems cause production incidents**, **boolean-only systems create maintenance nightmares**, and **inconsistent
+Konditional exists because **stringly-typed systems cause production incidents**, **boolean-only systems create
+maintenance nightmares**, and **inconsistent
 evaluation semantics make experiments untrustworthy**.
 
-The solution is structural: bind types at compile-time, centralize evaluation semantics, and draw explicit boundaries between static definitions and dynamic
+The solution is structural: bind types at compile-time, centralize evaluation semantics, and draw explicit boundaries
+between static definitions and dynamic
 configuration.
 
 ## Next Steps

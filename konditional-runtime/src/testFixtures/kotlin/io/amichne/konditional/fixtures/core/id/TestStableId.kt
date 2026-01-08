@@ -1,7 +1,8 @@
-@file:OptIn(io.amichne.konditional.internal.KonditionalInternalApi::class)
+@file:OptIn(KonditionalInternalApi::class)
 
 package io.amichne.konditional.fixtures.core.id
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.id.StaticStableId
 

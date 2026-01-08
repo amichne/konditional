@@ -41,13 +41,21 @@ test: ## Run tests
 	@echo "$(BLUE)Running tests...$(NC)"
 	$(GRADLEW) test
 
-publish: ## Publish to Maven Local
-	@echo "$(BLUE)Publishing to Maven Local...$(NC)"
-	$(GRADLEW) publishToMavenLocal
+##@ Publishing
 
-publish-sonatype: ## Publish to Sonatype (requires credentials)
-	@echo "$(BLUE)Publishing to Sonatype...$(NC)"
-	$(GRADLEW) publishToSonatype
+validate-publish: ## Validate all publishing prerequisites
+	@./scripts/validate-publish.sh
+
+publish-local: ## Publish to local Maven repository (~/.m2)
+	@./scripts/publish.sh local
+
+publish-snapshot: validate-publish ## Publish SNAPSHOT to Sonatype (auto-published)
+	@./scripts/publish.sh snapshot
+
+publish-release: validate-publish ## Publish release to Sonatype staging (manual release required)
+	@./scripts/publish.sh release
+
+publish: publish-local ## Alias for publish-local
 
 compile: ## Compile Kotlin code
 	@echo "$(BLUE)Compiling Kotlin code...$(NC)"

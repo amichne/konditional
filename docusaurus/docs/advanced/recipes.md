@@ -10,9 +10,11 @@ Source: docusaurus/docs-templates/recipes.template.md + konditional-observabilit
 
 # Recipes: Best-Practice Patterns
 
-Practical patterns for real-world feature control using only Konditional building blocks. Each recipe highlights a supported solution area and makes the guarantee boundaries explicit.
+Practical patterns for real-world feature control using only Konditional building blocks. Each recipe highlights a
+supported solution area and makes the guarantee boundaries explicit.
 
 Covered solution areas:
+
 - Typed features (booleans, enums, structured values)
 - Deterministic rollouts and salting
 - Axes and custom context targeting
@@ -60,7 +62,7 @@ Gradually roll out a feature without reshuffling users; use `salt(...)` when you
 object RampUpFlags : Namespace("ramp-up") {
     val newCheckout by boolean<Context>(default = false) {
         salt("v1")
-        rule(true) { rampUp { 10.0 } }
+        enable { rampUp { 10.0 } }
     }
 }
 
@@ -74,7 +76,7 @@ To restart the experiment with a fresh sample:
 object RampUpResetFlags : Namespace("ramp-up-reset") {
     val newCheckout by boolean<Context>(default = false) {
         salt("v2")
-        rule(true) { rampUp { 10.0 } }
+        enable { rampUp { 10.0 } }
     }
 }
 ```
@@ -105,7 +107,7 @@ object SegmentFlags : Namespace("segment") {
     private val segmentAxis = Axes.SegmentAxis
 
     val premiumUi by boolean<Context>(default = false) {
-        rule(true) { axis(Segment.ENTERPRISE) }
+        enable { axis(Segment.ENTERPRISE) }
     }
 }
 
@@ -116,7 +118,7 @@ fun isPremiumUiEnabled(): Boolean {
             override val platform = Platform.IOS
             override val appVersion = Version.of(2, 1, 0)
             override val stableId = StableId.of("user-123")
-            override val axisValues = axisValues { set(Axes.SegmentAxis, Segment.ENTERPRISE) }
+            override val axisValues = axisValues { +Segment.ENTERPRISE }
         }
 
     return SegmentFlags.premiumUi.evaluate(segmentContext)
@@ -147,7 +149,7 @@ enum class SubscriptionTier { FREE, PRO, ENTERPRISE }
 
 object PremiumFeatures : Namespace("premium") {
     val advancedAnalytics by boolean<EnterpriseContext>(default = false) {
-        rule(true) {
+        enable {
             extension { subscriptionTier == SubscriptionTier.ENTERPRISE && employeeCount > 100 }
         }
     }

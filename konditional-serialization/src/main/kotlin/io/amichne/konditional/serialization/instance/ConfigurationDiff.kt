@@ -1,7 +1,8 @@
-@file:OptIn(io.amichne.konditional.internal.KonditionalInternalApi::class)
+@file:OptIn(KonditionalInternalApi::class)
 
 package io.amichne.konditional.serialization.instance
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.features.Feature
@@ -121,4 +122,3 @@ data class ConfigurationDiff internal constructor(
         }
     }
 }
-

@@ -6,7 +6,7 @@ import com.squareup.moshi.JsonReader
 import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.rawType
-import io.amichne.konditional.internal.KonditionalInternalApi
+import io.amichne.konditional.api.KonditionalInternalApi
 import java.lang.reflect.Constructor
 import java.lang.reflect.Type
 

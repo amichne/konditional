@@ -4,7 +4,6 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.LocaleTag
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.PlatformTag
-import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.id.StableId
 
@@ -122,17 +121,17 @@ interface RuleScope<C : Context> {
      * @param this@axis The axis descriptor
      * @param values The values to allow for this axis
      */
-    @Deprecated(
-        message = "Use axis(axis: Axis<T>, vararg values: T) instead for better type safety.",
-        replaceWith = ReplaceWith(
-            "axis(*values)"
-        ),
-        level = DeprecationLevel.WARNING,
-    )
-    fun <T> axis(
-        axis: Axis<T>,
-        vararg values: T,
-    ) where T : AxisValue<T>, T : Enum<T>
+//    @Deprecated(
+//        message = "Use axis(axis: Axis<T>, vararg values: T) instead for better type safety.",
+//        replaceWith = ReplaceWith(
+//            "axis(*values)"
+//        ),
+//        level = DeprecationLevel.WARNING,
+//    )
+//    fun <T> axis(
+//        axis: Axis<T>,
+//        vararg values: T,
+//    ) where T : AxisValue<T>, T : Enum<T>
 
     fun <T> axis(
         vararg values: T,

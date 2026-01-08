@@ -1,9 +1,9 @@
 package io.amichne.konditional.serialization
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.Konstrained
-import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.kontracts.schema.ObjectSchema
 import io.amichne.kontracts.value.JsonBoolean
 import io.amichne.kontracts.value.JsonNull

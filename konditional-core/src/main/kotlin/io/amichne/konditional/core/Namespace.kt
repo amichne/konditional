@@ -1,7 +1,8 @@
-@file:OptIn(io.amichne.konditional.internal.KonditionalInternalApi::class)
+@file:OptIn(KonditionalInternalApi::class)
 
 package io.amichne.konditional.core
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.features.BooleanFeature
@@ -16,7 +17,6 @@ import io.amichne.konditional.core.registry.NamespaceRegistryFactories
 import io.amichne.konditional.core.registry.NamespaceRegistryRuntime
 import io.amichne.konditional.core.spi.FeatureRegistrationHooks
 import io.amichne.konditional.core.types.Konstrained
-import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.konditional.internal.builders.FlagBuilder
 import io.amichne.konditional.values.IdentifierEncoding.SEPARATOR
 import org.jetbrains.annotations.TestOnly

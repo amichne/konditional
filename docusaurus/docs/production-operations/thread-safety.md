@@ -1,6 +1,7 @@
 # Refresh Safety
 
-Hot-reloading configuration is safe because Konditional uses atomic snapshot replacement with lock-free reads. Readers never see partial updates, and there's no
+Hot-reloading configuration is safe because Konditional uses atomic snapshot replacement with lock-free reads. Readers
+never see partial updates, and there's no
 risk of torn reads or race conditions.
 
 ```mermaid
@@ -106,7 +107,8 @@ val v1 = AppFeatures.darkMode.evaluate(ctx1)
 val v2 = AppFeatures.apiEndpoint.evaluate(ctx2)
 ```
 
-**Outcome:** Each evaluation sees either the old snapshot or the new snapshot; if a refresh happens between calls, `v1` and `v2` may observe different
+**Outcome:** Each evaluation sees either the old snapshot or the new snapshot; if a refresh happens between calls, `v1`
+and `v2` may observe different
 snapshots, but neither call can observe a partially-applied update.
 
 ### ✓ Safe: Multiple Concurrent Updates

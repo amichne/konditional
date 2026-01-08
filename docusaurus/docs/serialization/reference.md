@@ -31,13 +31,16 @@ Parse a snapshot JSON payload into a validated `Configuration`.
 ```kotlin
 object ConfigurationSnapshotCodec {
     fun decode(json: String): ParseResult<Configuration>
-    fun decode(json: String, options: SnapshotLoadOptions): ParseResult<Configuration>
+    fun decode(
+        json: String,
+        options: SnapshotLoadOptions
+    ): ParseResult<Configuration>
 }
 ```
 
 ### Precondition
 
-Features must be registered before parsing. Ensure your `Namespace` objects are initialized before calling `decode(...)`.
+Features must be registered before parsing. Ensure your `Namespace` objects are initialized before calling`decode(...)`.
 
 ### Example
 

@@ -15,7 +15,7 @@ import io.amichne.konditional.core.id.StableId
  * MyFeature.FEATURE_A with {
  *     default(true)
  *     salt("v2")
- *     rule(false) {
+ *     disable  {
  *         platforms(Platform.IOS)
  *         rampUp { 50.0 }
  *     }
@@ -63,7 +63,7 @@ interface FlagScope<T : Any, C : Context> {
      *
      * Example:
      * ```kotlin
-     * rule(true) {
+     * enable  {
      *     platforms(Platform.IOS)
      *     locales(AppLocale.UNITED_STATES)
      *     rampUp { 50.0 }

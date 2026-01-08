@@ -8,9 +8,9 @@ A typed feature definition created via namespace property delegation.
 
 ```kotlin
 sealed interface Feature<T : Any, C : Context, out M : Namespace> : Identifiable {
-  val key: String
-  val namespace: M
-  override val id: FeatureId
+    val key: String
+    val namespace: M
+    override val id: FeatureId
 }
 ```
 
@@ -179,7 +179,9 @@ interface AxisValue<T> where T : Enum<T> {
 }
 abstract class Axis<T>(
     val id: String,
-    val valueClass: KClass<T>
+    val valueClass: KClass<T>,
+    val isImplicit: Boolean = false,
+    autoRegister: Boolean = true,
 ) where T : AxisValue<T>, T : Enum<T>
 ```
 

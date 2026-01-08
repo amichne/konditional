@@ -4,8 +4,8 @@ import com.squareup.moshi.FromJson
 import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.rules.versions.LeftBound
 import io.amichne.konditional.rules.versions.RightBound

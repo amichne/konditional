@@ -1,7 +1,7 @@
 package io.amichne.konditional.internal.serialization.models
 
 import com.squareup.moshi.JsonClass
-import io.amichne.konditional.internal.KonditionalInternalApi
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.values.FeatureId
 
 /**

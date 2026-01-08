@@ -1,14 +1,15 @@
-@file:OptIn(io.amichne.konditional.internal.KonditionalInternalApi::class)
+@file:OptIn(KonditionalInternalApi::class)
 
 package io.amichne.konditional.serialization.snapshot
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import io.amichne.konditional.core.result.ParseError
-import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.instance.ConfigurationMetadataView
 import io.amichne.konditional.core.instance.ConfigurationView
+import io.amichne.konditional.core.result.ParseError
+import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.internal.serialization.adapters.FlagValueAdapterFactory
 import io.amichne.konditional.internal.serialization.adapters.IdentifierJsonAdapter
 import io.amichne.konditional.internal.serialization.adapters.ValueClassAdapterFactory
@@ -20,9 +21,9 @@ import io.amichne.konditional.rules.versions.LeftBound
 import io.amichne.konditional.rules.versions.RightBound
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
-import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.ConfigurationMetadata
+import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 
 /**
  * Configuration snapshot JSON codec.

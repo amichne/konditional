@@ -2,13 +2,13 @@
 
 package io.amichne.konditional.core.registry
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.instance.ConfigurationView
 import io.amichne.konditional.core.ops.RegistryHooks
-import io.amichne.konditional.internal.KonditionalInternalApi
 
 /**
  * Abstraction for managing feature flag configurations and evaluations.

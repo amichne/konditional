@@ -7,7 +7,6 @@ import io.amichne.kontracts.value.JsonBoolean
 import io.amichne.kontracts.value.JsonNumber
 import io.amichne.kontracts.value.JsonObject
 import io.amichne.kontracts.value.JsonString
-import io.amichne.kontracts.value.JsonValue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertEquals

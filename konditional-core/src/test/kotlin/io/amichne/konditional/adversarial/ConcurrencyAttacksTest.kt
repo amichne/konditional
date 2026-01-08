@@ -6,6 +6,8 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.disable
+import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
 import org.junit.jupiter.api.Test
 import java.util.concurrent.ConcurrentHashMap
@@ -95,14 +97,14 @@ class ConcurrencyAttacksTest {
          *         - Value retrieval
          */
 
-        val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("concurrent-flag-eval") {
+        val testNamespaceFeatures = object : Namespace.TestNamespaceFacade("concurrent-flag-eval") {
             val highContentionFlag by boolean<Context>(default = false) {
-                rule(true) {
+                enable {
                     platforms(Platform.ANDROID)
                     rampUp { 50.0 }
                 }
 
-                rule(true) {
+                enable {
                     platforms(Platform.IOS)
                     rampUp { 30.0 }
                 }
@@ -125,7 +127,7 @@ class ConcurrencyAttacksTest {
                         stableId = StableId.of(String.format("%032d", i))
                     )
 
-                    val result = TestNamespaceFeatures.highContentionFlag.evaluate(context)
+                    val result = testNamespaceFeatures.highContentionFlag.evaluate(context)
                     results[i] = result
                 } catch (e: Throwable) {
                     errors.add(e)
@@ -149,8 +151,8 @@ class ConcurrencyAttacksTest {
             stableId = StableId.of(String.format("%032d", 0))
         )
 
-        val result1 = TestNamespaceFeatures.highContentionFlag.evaluate(context1)
-        val result2 = TestNamespaceFeatures.highContentionFlag.evaluate(context1)
+        val result1 = testNamespaceFeatures.highContentionFlag.evaluate(context1)
+        val result2 = testNamespaceFeatures.highContentionFlag.evaluate(context1)
         assertEquals(result1, result2, "Non-deterministic evaluation detected")
     }
 
@@ -174,13 +176,13 @@ class ConcurrencyAttacksTest {
         val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("concurrent-digest") {
             // Create many flags to stress digest usage
             val flag1 by boolean<Context>(default = false) {
-                rule(true) { rampUp { 50.0 } }
+                enable { rampUp { 50.0 } }
             }
             val flag2 by boolean<Context>(default = false) {
-                rule(true) { rampUp { 50.0 } }
+                enable { rampUp { 50.0 } }
             }
             val flag3 by boolean<Context>(default = false) {
-                rule(true) { rampUp { 50.0 } }
+                enable { rampUp { 50.0 } }
             }
         }
 
@@ -395,11 +397,11 @@ class ConcurrencyAttacksTest {
 
         val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("mutable-context") {
             val contextDependentFlag by boolean<Context>(default = false) {
-                rule(true) {
+                enable {
                     platforms(Platform.ANDROID)
                 }
 
-                rule(false) {
+                disable {
                     platforms(Platform.IOS)
                 }
             }

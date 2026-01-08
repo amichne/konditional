@@ -1,3 +1,4 @@
+import io.amichne.konditional.gradle.configureKonditionalPublishing
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -67,13 +68,8 @@ java {
     }
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            from(components["java"])
-            groupId = props["GROUP"] as String
-            artifactId = "konditional-serialization"
-            version = props["VERSION"] as String
-        }
-    }
-}
+configureKonditionalPublishing(
+    artifactId = "konditional-serialization",
+    moduleName = "Konditional Serialization",
+    moduleDescription = "JSON serialization and deserialization support for Konditional feature flags"
+)

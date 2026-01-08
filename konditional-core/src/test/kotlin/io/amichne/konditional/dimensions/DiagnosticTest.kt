@@ -2,8 +2,8 @@
 
 package io.amichne.konditional.dimensions
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.fixtures.FeaturesWithAxis
-import io.amichne.konditional.internal.KonditionalInternalApi
 import org.junit.jupiter.api.Test
 
 class DiagnosticTest {

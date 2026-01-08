@@ -1,4 +1,4 @@
-package io.amichne.konditional.internal
+package io.amichne.konditional.api
 
 /**
  * Marks a symbol as an internal implementation contract between Konditional modules.

@@ -2,9 +2,9 @@
 
 package io.amichne.konditional.core.instance
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.internal.KonditionalInternalApi
 
 /**
  * Read-only view over a loaded configuration.

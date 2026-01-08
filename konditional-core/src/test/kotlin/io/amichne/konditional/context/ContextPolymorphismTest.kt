@@ -1,6 +1,7 @@
 package io.amichne.konditional.context
 
 import io.amichne.konditional.api.evaluate
+import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.CompositeContext
 import io.amichne.konditional.fixtures.EnterpriseContext
@@ -28,7 +29,7 @@ class ContextPolymorphismTest {
         // Configure using .override() for test-specific configuration
         advanced_analytics.update(default = false) {
             // This demonstrates that the rule can access base Context properties
-            rule(true) {
+            enable {
                 android()
                 versions {
                     min(2, 0)
@@ -89,7 +90,7 @@ class ContextPolymorphismTest {
         // Configure using .override() for test-specific configuration
         // Each contextFn can be evaluated independently with its own flags
         EnterpriseFeatures.api_access.update(false) {
-            rule(true) {
+            enable {
             }
         }
         ExperimentFeatures.onboarding_style.update("classic") {
@@ -125,7 +126,7 @@ class ContextPolymorphismTest {
     fun `Given custom EnterpriseRule, When matching with business logic, Then custom properties are enforced`() {
         // Configure using .override() for test-specific configuration
         EnterpriseFeatures.api_access.update(false) {
-            rule(true) {
+            enable {
                 android()
                 rampUp { 100 }
 
@@ -161,7 +162,7 @@ class ContextPolymorphismTest {
     fun `Given CompositeContext, When evaluating flags, Then delegated properties are accessible`() {
         // Configure using .override() for test-specific configuration
         EnterpriseFeatures.custom_branding.update(default = false) {
-            rule(true) {
+            enable {
                 rampUp { 100 }
             }
         }

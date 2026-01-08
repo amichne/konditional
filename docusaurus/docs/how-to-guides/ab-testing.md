@@ -99,16 +99,16 @@ fun onCheckoutCompleted(
 ## Guarantees
 
 - **Deterministic assignment**: Same user always gets same variant
-  - **Mechanism**: SHA-256 bucketing based on stableId
-  - **Boundary**: Only deterministic if stableId is consistent
+    - **Mechanism**: SHA-256 bucketing based on stableId
+    - **Boundary**: Only deterministic if stableId is consistent
 
 - **Stable variants**: Users don't switch variants during experiment
-  - **Mechanism**: Bucket assignment doesn't change unless salt changes
-  - **Boundary**: Changing salt or percentages reshuffles users
+    - **Mechanism**: Bucket assignment doesn't change unless salt changes
+    - **Boundary**: Changing salt or percentages reshuffles users
 
 - **Type safety**: Can't assign invalid variants
-  - **Mechanism**: Enum constrains possible values at compile-time
-  - **Boundary**: Runtime config still needs validation (ParseResult)
+    - **Mechanism**: Enum constrains possible values at compile-time
+    - **Boundary**: Runtime config still needs validation (ParseResult)
 
 ## Advanced Patterns
 

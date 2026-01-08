@@ -2,10 +2,10 @@
 
 package io.amichne.konditional.serialization.instance
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.internal.KonditionalInternalApi
 
 /**
  * Represents an incremental update to a [Configuration].

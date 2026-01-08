@@ -1,7 +1,6 @@
 package io.amichne.kontracts
 
 import io.amichne.kontracts.schema.JsonSchema
-import io.amichne.kontracts.schema.ValidationResult
 import io.amichne.kontracts.value.JsonBoolean
 import io.amichne.kontracts.value.JsonNull
 import io.amichne.kontracts.value.JsonNumber

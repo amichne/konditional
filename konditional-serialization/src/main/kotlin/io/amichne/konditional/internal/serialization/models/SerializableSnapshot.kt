@@ -1,11 +1,11 @@
 package io.amichne.konditional.internal.serialization.models
 
 import com.squareup.moshi.JsonClass
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.ConfigurationMetadata
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions

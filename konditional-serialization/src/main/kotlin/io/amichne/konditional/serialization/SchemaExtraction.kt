@@ -1,10 +1,10 @@
-@file:OptIn(io.amichne.konditional.internal.KonditionalInternalApi::class)
+@file:OptIn(KonditionalInternalApi::class)
 
 package io.amichne.konditional.serialization
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.core.types.asObjectSchema
-import io.amichne.konditional.internal.KonditionalInternalApi
 import io.amichne.kontracts.schema.JsonSchema
 import io.amichne.kontracts.schema.ObjectSchema
 import kotlin.reflect.KClass

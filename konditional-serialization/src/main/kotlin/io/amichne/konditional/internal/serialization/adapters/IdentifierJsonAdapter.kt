@@ -5,7 +5,7 @@ import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
-import io.amichne.konditional.internal.KonditionalInternalApi
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.values.FeatureId
 import java.lang.reflect.Type
 

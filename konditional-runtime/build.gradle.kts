@@ -1,3 +1,4 @@
+import io.amichne.konditional.gradle.configureKonditionalPublishing
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -21,7 +22,6 @@ kotlin {
 }
 
 // Friend paths removed - using @KonditionalInternalApi instead
-
 
 repositories {
     mavenCentral()
@@ -60,13 +60,8 @@ java {
     }
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            from(components["java"])
-            groupId = props["GROUP"] as String
-            artifactId = "konditional-runtime"
-            version = props["VERSION"] as String
-        }
-    }
-}
+configureKonditionalPublishing(
+    artifactId = "konditional-runtime",
+    moduleName = "Konditional Runtime",
+    moduleDescription = "Runtime execution engine and evaluation pipeline for Konditional feature flags"
+)

@@ -80,7 +80,8 @@ when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
 }
 ```
 
-**What happens:** Users in buckets 0-24 now get the feature. Users in buckets 0-9 (the original 10%) remain in treatment—no one is removed when you increase
+**What happens:** Users in buckets 0-24 now get the feature. Users in buckets 0-9 (the original 10%) remain in
+treatment—no one is removed when you increase
 percentage.
 
 ### Step 4: Monitor and Adjust
@@ -107,16 +108,16 @@ Monitor key metrics:
 ## Guarantees
 
 - **Deterministic bucketing**: Same user + same feature + same salt = same bucket
-  - **Mechanism**: SHA-256 hash of `"$salt:$featureKey:${stableId.hexId}"` mod 100
-  - **Boundary**: Only deterministic if `stableId` is consistent across evaluations
+    - **Mechanism**: SHA-256 hash of `"$salt:$featureKey:${stableId.hexId}"` mod 100
+    - **Boundary**: Only deterministic if `stableId` is consistent across evaluations
 
 - **Stable rollout**: Increasing percentage only adds users, never removes
-  - **Mechanism**: Bucket thresholds increase monotonically (10% → 25% adds buckets 10-24)
-  - **Boundary**: Changing salt reshuffles ALL users, breaking stability
+    - **Mechanism**: Bucket thresholds increase monotonically (10% → 25% adds buckets 10-24)
+    - **Boundary**: Changing salt reshuffles ALL users, breaking stability
 
 - **Atomic updates**: All evaluations see either old % or new %, never partial state
-  - **Mechanism**: Configuration load is atomic (see [Thread Safety](/production-operations/thread-safety))
-  - **Boundary**: No guarantee about *when* a particular request sees the update
+    - **Mechanism**: Configuration load is atomic (see [Thread Safety](/production-operations/thread-safety))
+    - **Boundary**: No guarantee about *when* a particular request sees the update
 
 ## What Can Go Wrong?
 
@@ -145,7 +146,8 @@ rule(true) { rampUp { 50.0 } }  // Default salt
 rule(true) { rampUp(salt = "v2") { 50.0 } }
 ```
 
-**Result:** Every user gets reshuffled. Some users who had the feature lose it. Some who didn't have it suddenly get it. A/B test results invalidated.
+**Result:** Every user gets reshuffled. Some users who had the feature lose it. Some who didn't have it suddenly get it.
+A/B test results invalidated.
 
 **When to change salt:** Only when you explicitly want to reshuffle (e.g., addressing bias in original assignment).
 
@@ -172,7 +174,8 @@ when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
 }
 ```
 
-**Result of ignoring failures:** You think you've ramped up to 25%, but the config didn't load, so it's still at 10%. Metrics look wrong.
+**Result of ignoring failures:** You think you've ramped up to 25%, but the config didn't load, so it's still at 10%.
+Metrics look wrong.
 
 ## Testing Ramp-Ups
 

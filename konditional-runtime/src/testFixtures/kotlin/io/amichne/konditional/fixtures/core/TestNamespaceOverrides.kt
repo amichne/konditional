@@ -1,7 +1,8 @@
-@file:OptIn(io.amichne.konditional.internal.KonditionalInternalApi::class)
+@file:OptIn(KonditionalInternalApi::class)
 
 package io.amichne.konditional.fixtures.core
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
@@ -212,23 +213,23 @@ inline fun <R> Namespace.withOverrides(
     vararg overrides: Pair<Feature<*, *, *>, Any>,
     block: () -> R,
 ): R = runtimeRegistry().let { registry ->
-        overrides.forEach { (feature, value) ->
-            @Suppress("UNCHECKED_CAST")
-            registry.setOverride(
-                feature as Feature<Any, Context, *>,
-                value,
-            )
-        }
+    overrides.forEach { (feature, value) ->
+        @Suppress("UNCHECKED_CAST")
+        registry.setOverride(
+            feature as Feature<Any, Context, *>,
+            value,
+        )
+    }
 
-        try {
-            block()
-        } finally {
-            overrides.reversed().forEach { (feature, _) ->
-                @Suppress("UNCHECKED_CAST")
-                registry.clearOverride(feature as Feature<Any, Context, *>)
-            }
+    try {
+        block()
+    } finally {
+        overrides.reversed().forEach { (feature, _) ->
+            @Suppress("UNCHECKED_CAST")
+            registry.clearOverride(feature as Feature<Any, Context, *>)
         }
     }
+}
 
 @PublishedApi
 internal fun Namespace.runtimeRegistry(): NamespaceRegistryRuntime =

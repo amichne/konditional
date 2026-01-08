@@ -211,7 +211,8 @@ AppFeatures.newCheckoutFlow.evaluate(ctx)
 }
 ```
 
-**Symptom:** Config never loads for this feature. Feature uses static rules instead. If static rules differ from config, behavior changes.
+**Symptom:** Config never loads for this feature. Feature uses static rules instead. If static rules differ from config,
+behavior changes.
 
 **Fix:** Ensure feature keys match between code and config. Keys are derived from property names.
 

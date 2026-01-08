@@ -54,11 +54,11 @@ Ramp-ups are deterministic and reproducible.
 
 ```kotlin
 object AppFeatures : Namespace("app") {
-  val checkout by string<Context>(default = "v1") {
-    rule("v3") { platforms(Platform.IOS); versions { min(3, 0, 0) } } // specificity 2
-    rule("v2") { platforms(Platform.IOS) }                            // specificity 1
-    rule("v1") { always() }                                           // specificity 0
-  }
+    val checkout by string<Context>(default = "v1") {
+        rule("v3") { platforms(Platform.IOS); versions { min(3, 0, 0) } } // specificity 2
+        rule("v2") { platforms(Platform.IOS) }                            // specificity 1
+        rule("v1") { always() }                                           // specificity 0
+    }
 }
 ```
 
