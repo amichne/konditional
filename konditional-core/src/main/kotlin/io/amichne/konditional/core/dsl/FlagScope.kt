@@ -79,6 +79,20 @@ interface FlagScope<T : Any, C : Context> {
     )
 
     /**
+     * Defines a targeting rule using a composable, context-agnostic scope.
+     *
+     * This is useful when you want to expose only a subset of targeting mix-ins
+     * (for example, axis-only configuration) while still using the same rule builder.
+     *
+     * @param value The value to return when this rule matches
+     * @param build DSL block for configuring the rule's targeting criteria
+     */
+    fun ruleScoped(
+        value: T,
+        build: ContextRuleScope<C>.() -> Unit = {},
+    )
+
+    /**
      * Defines a targeting rule in a criteria-first form that can be completed by yielding a value.
      *
      * This exists as syntactic sugar over [rule] to improve readability for complex values:
@@ -92,4 +106,13 @@ interface FlagScope<T : Any, C : Context> {
      * - `rule { ... } yields VALUE` ≡ `rule(VALUE) { ... }`
      */
     fun rule(build: RuleScope<C>.() -> Unit): YieldingScope<T, C> = YieldingScope(this, build)
+
+    /**
+     * Defines a targeting rule in a criteria-first form using a composable scope.
+     *
+     * Semantics:
+     * - `ruleScoped { ... } yields VALUE` ≡ `ruleScoped(VALUE) { ... }`
+     */
+    fun ruleScoped(build: ContextRuleScope<C>.() -> Unit): ContextYieldingScope<T, C> =
+        ContextYieldingScope(this, build)
 }
