@@ -1,7 +1,15 @@
+import io.amichne.konditional.gradle.configureKonditionalPublishing
+
 plugins {
     kotlin("jvm")
     `java-library`
+    `maven-publish`
+    signing
 }
+
+val props = project.rootProject.properties
+group = props["GROUP"] as String
+version = props["VERSION"] as String
 
 repositories {
     mavenCentral()
@@ -15,6 +23,8 @@ kotlin {
 }
 
 java {
+    withSourcesJar()
+    withJavadocJar()
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
     }
@@ -28,3 +38,9 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
+configureKonditionalPublishing(
+    artifactId = "config-metadata",
+    moduleName = "Config Metadata",
+    moduleDescription = "Configuration metadata model for Konditional serialization and validation",
+)
