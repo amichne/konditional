@@ -22,23 +22,6 @@ import java.lang.reflect.Type
  */
 @KonditionalInternalApi
 class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
-
-    object Factory : JsonAdapter.Factory {
-        private val flagValueAdapter = FlagValueAdapter()
-
-        override fun create(
-            type: Type,
-            annotations: Set<Annotation?>,
-            moshi: Moshi,
-        ): JsonAdapter<*>? = flagValueAdapter.takeIf { getRawType(type) == FlagValue::class.java }
-
-        private fun getRawType(type: Type): Class<*> = when (type) {
-            is Class<*> -> type
-            is ParameterizedType -> getRawType(type.rawType)
-            else -> Any::class.java
-        }
-    }
-
     override fun toJson(
         writer: JsonWriter,
         value: FlagValue<*>?,

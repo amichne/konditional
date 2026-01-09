@@ -4,9 +4,7 @@ package io.amichne.konditional.serialization.instance
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.types.Konstrained
-import io.amichne.konditional.core.types.asObjectSchema
-import io.amichne.konditional.serialization.SchemaValueCodec
-import io.amichne.konditional.serialization.internal.toPrimitiveValue
+import io.amichne.konditional.serialization.internal.toPrimitiveMap
 
 sealed interface ConfigValue {
     @ConsistentCopyVisibility
@@ -48,17 +46,9 @@ sealed interface ConfigValue {
                 is Double -> DoubleValue(value)
                 is Enum<*> -> EnumValue(value.javaClass.name, value.name)
                 is Konstrained<*> -> {
-                    val schema = value.schema.asObjectSchema()
-                    val json = SchemaValueCodec.encode(value, schema)
-                    val primitive = json.toPrimitiveValue()
-
-                    require(primitive is Map<*, *>) {
-                        "Konstrained must encode to an object, got ${primitive?.let { it::class.simpleName }}"
-                    }
-
                     DataClassValue(
                         dataClassName = value::class.java.name,
-                        fields = @Suppress("UNCHECKED_CAST") (primitive as Map<String, Any?>),
+                        fields = value.toPrimitiveMap(),
                     )
                 }
 
