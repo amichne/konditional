@@ -9,8 +9,9 @@ import io.amichne.konditional.core.registry.AxisRegistry
  * Represents the execution context for feature flag evaluation.
  *
  * This interface defines the base contextual information required for evaluating
- * feature flags. It provides the standard targeting dimensions (locale, platform, version)
- * and a stable identifier for deterministic rampUp bucketing.
+ * feature flags. It provides axis-based targeting and can be extended with mixin
+ * interfaces to opt into standard targeting dimensions (locale, platform, version)
+ * and stable identifiers for deterministic rampUp bucketing.
  *
  * `locale` and `platform` are modeled as stable identifiers via [LocaleTag] and [PlatformTag].
  * Use the provided [AppLocale] and [Platform] enums, or supply your own types with stable ids.
@@ -24,22 +25,17 @@ import io.amichne.konditional.core.registry.AxisRegistry
  *     override val stableId: StableId,
  *     val organizationId: String,
  *     val subscriptionTier: SubscriptionTier,
- * ) : Context
+ * ) : Context, Context.LocaleContext, Context.PlatformContext, Context.VersionContext, Context.StableIdContext
  * ```
  *
- * @property locale The application locale for this context
- * @property platform The platform (iOS, Android, Web, etc.) for this context
- * @property appVersion The semantic version create the application
- * @property stableId A stable, unique identifier used for deterministic bucketing in rollouts
+ * @see LocaleContext
+ * @see PlatformContext
+ * @see VersionContext
+ * @see StableIdContext
  *
  * @see io.amichne.konditional.rules.Rule
  */
 interface Context {
-    val locale: LocaleTag
-    val platform: PlatformTag
-    val appVersion: Version
-    val stableId: StableId
-
     /**
      * Axis values for this context (environment, region, tenant, etc.).
      *
@@ -51,12 +47,40 @@ interface Context {
     val axisValues: AxisValues
         get() = AxisValues.EMPTY
 
+    /**
+     * Mix-in for locales when locale-based targeting is needed.
+     */
+    interface LocaleContext : Context {
+        val locale: LocaleTag
+    }
+
+    /**
+     * Mix-in for platforms when platform-based targeting is needed.
+     */
+    interface PlatformContext : Context {
+        val platform: PlatformTag
+    }
+
+    /**
+     * Mix-in for versions when version-based targeting is needed.
+     */
+    interface VersionContext : Context {
+        val appVersion: Version
+    }
+
+    /**
+     * Mix-in for stable IDs when rampUp bucketing or allowlists are needed.
+     */
+    interface StableIdContext : Context {
+        val stableId: StableId
+    }
+
     data class Core(
         override val locale: LocaleTag,
         override val platform: PlatformTag,
         override val appVersion: Version,
         override val stableId: StableId,
-    ) : Context
+    ) : LocaleContext, PlatformContext, VersionContext, StableIdContext
 
     companion object {
 

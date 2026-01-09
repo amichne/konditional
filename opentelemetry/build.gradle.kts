@@ -1,7 +1,15 @@
+import io.amichne.konditional.gradle.configureKonditionalPublishing
+
 plugins {
     kotlin("jvm")
     `java-library`
+    `maven-publish`
+    signing
 }
+
+val props = project.rootProject.properties
+group = props["GROUP"] as String
+version = props["VERSION"] as String
 
 kotlin {
     jvmToolchain(21)
@@ -9,6 +17,14 @@ kotlin {
 
 repositories {
     mavenCentral()
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
 }
 
 dependencies {
@@ -32,3 +48,9 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
+configureKonditionalPublishing(
+    artifactId = "opentelemetry",
+    moduleName = "Konditional OpenTelemetry",
+    moduleDescription = "OpenTelemetry instrumentation for Konditional feature flag evaluation",
+)

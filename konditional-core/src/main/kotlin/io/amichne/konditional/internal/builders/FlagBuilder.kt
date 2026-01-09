@@ -7,6 +7,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.FlagScope
+import io.amichne.konditional.core.dsl.ContextRuleScope
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.PendingYieldToken
 import io.amichne.konditional.core.dsl.RuleScope
@@ -84,6 +85,17 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
         build: RuleScope<C>.() -> Unit,
     ) {
         val rule = RuleBuilder<C>().apply(build).build()
+        conditionalValues += rule.targetedBy(value)
+    }
+
+    override fun ruleScoped(
+        value: T,
+        build: ContextRuleScope<C>.() -> Unit,
+    ) {
+        val rule = RuleBuilder<C>().apply {
+            @Suppress("UNCHECKED_CAST")
+            (this as ContextRuleScope<C>).apply(build)
+        }.build()
         conditionalValues += rule.targetedBy(value)
     }
 

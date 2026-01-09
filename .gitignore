@@ -5,6 +5,7 @@ req.md
 #CONTRIBUTING.md
 ai/
 site/
+.serena/
 
 # Publishing and Release
 *.asc

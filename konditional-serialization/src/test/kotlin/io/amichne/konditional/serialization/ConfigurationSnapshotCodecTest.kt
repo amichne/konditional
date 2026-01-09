@@ -100,7 +100,12 @@ class ConfigurationSnapshotCodecTest {
     ) = Context(locale, platform, Version.parse(version).getOrThrow(), StableId.of(idHex))
 
     private fun ctxWithEnvironment(env: Environment): Context =
-        object : Context {
+        object :
+            Context,
+            Context.LocaleContext,
+            Context.PlatformContext,
+            Context.VersionContext,
+            Context.StableIdContext {
             override val locale: AppLocale = AppLocale.UNITED_STATES
             override val platform: Platform = Platform.IOS
             override val appVersion: Version = Version.of(1, 0, 0)

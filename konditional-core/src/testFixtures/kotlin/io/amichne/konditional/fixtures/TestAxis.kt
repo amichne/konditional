@@ -65,7 +65,11 @@ data class TestContext(
         Version.parse("1.0.0").getOrThrow(),
     override val stableId: StableId = StableId.of("deadbeef"),
     override val axisValues: AxisValues = AxisValues.EMPTY,
-) : Context {
+) : Context,
+    Context.LocaleContext,
+    Context.PlatformContext,
+    Context.VersionContext,
+    Context.StableIdContext {
     init {
 //        TestAxes.Environment
 //        TestAxes.Tenant

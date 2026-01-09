@@ -39,7 +39,6 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
     testImplementation("com.squareup.moshi:moshi:1.15.0")
-    testImplementation(testFixtures(project(":konditional-runtime")))
     testImplementation(testFixtures(project(":konditional-core")))
 }
 

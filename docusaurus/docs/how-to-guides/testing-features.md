@@ -242,6 +242,93 @@ fun `failed load preserves last-known-good`() {
 }
 ```
 
+## Using Konditional Test Helpers
+
+Konditional provides pre-built test helpers via testFixtures. Add the dependency (see [Installation](/getting-started/installation#test-fixtures-optional)) to access:
+
+### CommonTestFeatures and EnterpriseTestFeatures
+
+Pre-configured feature flags for testing common scenarios:
+
+```kotlin
+import io.amichne.konditional.fixtures.CommonTestFeatures
+import io.amichne.konditional.fixtures.EnterpriseTestFeatures
+
+@Test
+fun `test using pre-built features`() {
+    val ctx = Context(stableId = StableId("user-123"))
+
+    // CommonTestFeatures provides standard testing flags
+    val enabled = CommonTestFeatures.testFeature.evaluate(ctx)
+
+    // EnterpriseTestFeatures provides enterprise-tier testing flags
+    val premiumEnabled = EnterpriseTestFeatures.enterpriseFeature.evaluate(ctx)
+}
+```
+
+### TargetingIds — Deterministic Bucket Targeting
+
+Pre-computed stable IDs for targeting specific ramp-up buckets:
+
+```kotlin
+import io.amichne.konditional.fixtures.utilities.TargetingIds
+
+@Test
+fun `test with known bucket assignments`() {
+    // TargetingIds provides IDs that hash to specific buckets
+    val inBucketId = TargetingIds.idInBucket(percentage = 50.0)
+    val outOfBucketId = TargetingIds.idOutOfBucket(percentage = 50.0)
+
+    val inCtx = Context(stableId = StableId(inBucketId))
+    val outCtx = Context(stableId = StableId(outOfBucketId))
+
+    assertTrue(AppFeatures.fiftyPercentFeature.evaluate(inCtx))
+    assertFalse(AppFeatures.fiftyPercentFeature.evaluate(outCtx))
+}
+```
+
+### FeatureMutators — Dynamic Configuration
+
+Utilities for modifying feature configurations during tests:
+
+```kotlin
+import io.amichne.konditional.fixtures.utilities.FeatureMutators
+
+@Test
+fun `test with modified feature configuration`() {
+    val ctx = Context(stableId = StableId("user"))
+
+    // Temporarily modify a feature's configuration
+    FeatureMutators.withOverride(AppFeatures.darkMode, value = true) {
+        assertTrue(AppFeatures.darkMode.evaluate(ctx))
+    }
+
+    // Configuration restored after block
+    assertFalse(AppFeatures.darkMode.evaluate(ctx))
+}
+```
+
+### TestNamespace and TestStableId
+
+Testing utilities for namespace isolation and deterministic IDs:
+
+```kotlin
+import io.amichne.konditional.fixtures.core.TestNamespace
+import io.amichne.konditional.fixtures.core.id.TestStableId
+
+@Test
+fun `test with test namespace`() {
+    // TestNamespace provides an isolated namespace for testing
+    val testNs = TestNamespace("test-ns")
+
+    // TestStableId provides predictable stable IDs
+    val deterministicId = TestStableId.forTest("test-user-1")
+    val ctx = Context(stableId = deterministicId)
+}
+```
+
+---
+
 ## Advanced Testing Patterns
 
 ### Pattern: Test Fixtures for Contexts

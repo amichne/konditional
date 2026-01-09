@@ -13,25 +13,33 @@ dependencies {
 }
 ```
 
-## Gradle (Groovy DSL)
+## Test Fixtures (Optional)
 
-```groovy
-// build.gradle
+Konditional provides test helpers for common testing scenarios. Add the `testFixtures` dependency to your test
+configuration:
+
+### Gradle (Kotlin DSL)
+
+```kotlin
+// build.gradle.kts
 dependencies {
-    implementation 'io.amichne:konditional-core:VERSION'
+  testImplementation(testFixtures("io.amichne:konditional-core:VERSION"))
 }
 ```
 
-## Maven
+**Available test helpers:**
 
-```xml
+- `CommonTestFeatures` — Pre-configured feature flags for common testing scenarios
+- `EnterpriseTestFeatures` — Enterprise-tier feature flags for advanced testing
+- `TestAxis` — Axis definitions for testing multi-dimensional targeting
+- `TestNamespace` — Namespace implementations for testing
+- `TestStableId` — StableId utilities for deterministic test buckets
+- `TargetingIds` — Pre-computed IDs for specific bucket targeting
+- `FeatureMutators` — Utilities for modifying feature configurations in tests
 
-<dependency>
-  <groupId>io.amichne</groupId>
-  <artifactId>konditional-core</artifactId>
-  <version>VERSION</version>
-</dependency>
-```
+See [How-To: Test Your Feature Flags](/how-to-guides/testing-features) for usage examples.
+
+---
 
 That is enough to define features and evaluate them in code. If you need remote configuration, JSON serialization, or
 observability utilities, see the module docs:

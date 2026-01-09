@@ -33,6 +33,29 @@ class YieldingScope<T : Any, C : Context> internal constructor(
         host?.commitYield(pendingToken) { scope.rule(value, build) } ?: scope.rule(value, build)
 }
 
+/**
+ * DSL wrapper representing a partially-specified rule: criteria first, value second,
+ * using a composable scope.
+ *
+ * Created via [FlagScope.ruleScoped] and completed via [yields].
+ */
+@KonditionalDsl
+class ContextYieldingScope<T : Any, C : Context> internal constructor(
+    private val scope: FlagScope<T, C>,
+    private val build: ContextRuleScope<C>.() -> Unit,
+) {
+    private val host: YieldingScopeHost? = scope as? YieldingScopeHost
+    private val pendingToken: PendingYieldToken = PendingYieldToken(callSite = captureRuleCallSite()).also {
+        host?.registerPendingYield(it)
+    }
+
+    /**
+     * Completes the rule declaration by assigning the value to yield when the criteria matches.
+     */
+    infix fun yields(value: T) =
+        host?.commitYield(pendingToken) { scope.ruleScoped(value, build) } ?: scope.ruleScoped(value, build)
+}
+
 @KonditionalInternalApi
 interface YieldingScopeHost {
     fun registerPendingYield(token: PendingYieldToken)
@@ -66,3 +89,12 @@ fun <C : Context> FlagScope<Boolean, C>.enable(build: RuleScope<C>.() -> Unit = 
 
 fun <C : Context> FlagScope<Boolean, C>.disable(build: RuleScope<C>.() -> Unit = {}) =
     rule(DISABLED, build)
+
+/**
+ * Boolean sugar for rule declaration using a composable rule scope.
+ */
+fun <C : Context> FlagScope<Boolean, C>.enableScoped(build: ContextRuleScope<C>.() -> Unit = {}) =
+    ruleScoped(ENABLED, build)
+
+fun <C : Context> FlagScope<Boolean, C>.disableScoped(build: ContextRuleScope<C>.() -> Unit = {}) =
+    ruleScoped(DISABLED, build)

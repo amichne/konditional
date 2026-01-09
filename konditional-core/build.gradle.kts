@@ -45,7 +45,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
     testImplementation(project(":konditional-serialization"))
     testImplementation(project(":konditional-runtime"))
-    testImplementation(testFixtures(project(":konditional-runtime")))
+    testImplementation(testFixtures(project(":konditional-core")))
 }
 
 tasks.test {
