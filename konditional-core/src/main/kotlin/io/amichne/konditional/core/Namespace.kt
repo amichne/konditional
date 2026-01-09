@@ -103,8 +103,6 @@ open class Namespace(
      * object Auth : Namespace("auth")
      * ```
      */
-//     Intentionally no additional built-in namespaces.
-
     @TestOnly
     abstract class TestNamespaceFacade(id: String) : Namespace(
         id = id,
@@ -116,31 +114,141 @@ open class Namespace(
 
     fun allFeatures(): List<Feature<*, *, *>> = _features.toList()
 
+    /**
+     * Defines a boolean feature on this namespace using property delegation.
+     *
+     * The property type and rule values are enforced at compile time. At runtime, a loaded
+     * configuration (after validation) can change the effective value, with [default] as the
+     * fallback when no rule matches or no configuration is loaded.
+     *
+     * Example:
+     * ```kotlin
+     * object Payments : Namespace("payments") {
+     *     val applePayEnabled by boolean<Context>(default = false) {
+     *         rule(true) { platforms(Platform.IOS) }
+     *     }
+     * }
+     * ```
+     *
+     * @param default Value used when no rule matches or configuration is absent.
+     * @param flagScope DSL for rules, rollout, and targeting criteria.
+     */
     protected fun <C : Context> boolean(
         default: Boolean,
         flagScope: FlagScope<Boolean, C>.() -> Unit = {},
     ): BooleanDelegate<C> = BooleanDelegate(default, flagScope)
 
+    /**
+     * Defines a string feature on this namespace using property delegation.
+     *
+     * The property type and rule values are enforced at compile time. Runtime configuration is
+     * validated at load time; invalid updates are rejected and [default] remains effective.
+     *
+     * Example:
+     * ```kotlin
+     * object Checkout : Namespace("checkout") {
+     *     val bannerText by string<Context>(default = "Welcome") {
+     *         rule("Enterprise") { axis(Axes.Tenant, Tenant.ENTERPRISE) }
+     *     }
+     * }
+     * ```
+     *
+     * @param default Value used when no rule matches or configuration is absent.
+     * @param stringScope DSL for rules, rollout, and targeting criteria.
+     */
     protected fun <C : Context> string(
         default: String,
         stringScope: FlagScope<String, C>.() -> Unit = {},
     ): StringDelegate<C> = StringDelegate(default, stringScope)
 
+    /**
+     * Defines an integer feature on this namespace using property delegation.
+     *
+     * The property type and rule values are enforced at compile time. Runtime configuration can
+     * override the value after validation; [default] remains the fallback when no rule matches.
+     *
+     * Example:
+     * ```kotlin
+     * object Pricing : Namespace("pricing") {
+     *     val retryLimit by integer<Context>(default = 3)
+     * }
+     * ```
+     *
+     * @param default Value used when no rule matches or configuration is absent.
+     * @param integerScope DSL for rules, rollout, and targeting criteria.
+     */
     protected fun <C : Context> integer(
         default: Int,
         integerScope: FlagScope<Int, C>.() -> Unit = {},
     ): IntDelegate<C> = IntDelegate(default, integerScope)
 
+    /**
+     * Defines a double feature on this namespace using property delegation.
+     *
+     * The property type and rule values are enforced at compile time. Runtime configuration is
+     * validated at load time; invalid values do not modify the active configuration.
+     *
+     * Example:
+     * ```kotlin
+     * object Experiments : Namespace("experiments") {
+     *     val discountMultiplier by double<Context>(default = 1.0) {
+     *         rule(0.9) { versions { min(2, 0, 0) } }
+     *     }
+     * }
+     * ```
+     *
+     * @param default Value used when no rule matches or configuration is absent.
+     * @param decimalScope DSL for rules, rollout, and targeting criteria.
+     */
     protected fun <C : Context> double(
         default: Double,
         decimalScope: FlagScope<Double, C>.() -> Unit = {},
     ): DoubleDelegate<C> = DoubleDelegate(default, decimalScope)
 
+    /**
+     * Defines an enum feature on this namespace using property delegation.
+     *
+     * The property type and rule values are enforced at compile time. Runtime configuration is
+     * validated against the enum values; unknown values are rejected during parsing.
+     *
+     * Example:
+     * ```kotlin
+     * enum class Theme { LIGHT, DARK }
+     *
+     * object Ui : Namespace("ui") {
+     *     val theme by enum<Theme, Context>(default = Theme.LIGHT)
+     * }
+     * ```
+     *
+     * @param default Value used when no rule matches or configuration is absent.
+     * @param enumScope DSL for rules, rollout, and targeting criteria.
+     */
     protected fun <E : Enum<E>, C : Context> enum(
         default: E,
         enumScope: FlagScope<E, C>.() -> Unit = {},
     ): EnumDelegate<E, C> = EnumDelegate(default, enumScope)
 
+    /**
+     * Defines a custom feature type on this namespace using property delegation.
+     *
+     * The property type and rule values are enforced at compile time. Runtime configuration is
+     * validated against [Konstrained] schemas; invalid payloads are rejected and do not update
+     * the active configuration.
+     *
+     * Example:
+     * ```kotlin
+     * data class UiConfig(
+     *     val variant: String,
+     * ) : Konstrained<UiConfigSchema>
+     *
+     * object Ui : Namespace("ui") {
+     *     val config by custom<UiConfig, Context>(default = UiConfig("control"))
+     * }
+     * ```
+     *
+     * @param default Value used when no rule matches or configuration is absent.
+     * @param customScope DSL for rules, rollout, and targeting criteria.
+     */
     protected inline fun <reified T : Konstrained<*>, C : Context> custom(
         default: T,
         noinline customScope: FlagScope<T, C>.() -> Unit = {},

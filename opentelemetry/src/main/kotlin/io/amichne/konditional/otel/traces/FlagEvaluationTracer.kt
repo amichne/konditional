@@ -6,14 +6,20 @@ import io.amichne.konditional.context.Context.LocaleContext
 import io.amichne.konditional.context.Context.PlatformContext
 import io.amichne.konditional.context.Context.StableIdContext
 import io.amichne.konditional.context.Context.VersionContext
+import io.amichne.konditional.context.axis.AxisValues
 import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.otel.traces.KonditionalSemanticAttributes.DecisionType
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.Tracer
+import java.util.concurrent.ThreadLocalRandom
 import io.opentelemetry.context.Context as OtelContext
+
+// Only first 8 characters of stable ID hash for PII safety
+private const val DIGITS_FROM_VAL = 8
 
 /**
  * Creates and populates OpenTelemetry spans for feature flag evaluations.
@@ -105,8 +111,7 @@ class FlagEvaluationTracer(
             }
 
             if (config.sanitizePii) {
-                // Only first 8 characters of stable ID hash for PII safety
-                (context as? StableIdContext)?.stableId?.hexId?.id?.take(8)?.let {
+                (context as? StableIdContext)?.stableId?.hexId?.id?.take(DIGITS_FROM_VAL)?.let {
                     span.setAttribute(
                         KonditionalSemanticAttributes.CONTEXT_STABLE_ID_HASH,
                         it,
@@ -187,11 +192,17 @@ class FlagEvaluationTracer(
             SamplingStrategy.NEVER -> false
             SamplingStrategy.PARENT_BASED -> Span.current().spanContext.isSampled
             is SamplingStrategy.RATIO -> {
-                val stableId = (context as? StableIdContext)?.stableId
-                // Deterministic sampling based on stable ID, otherwise skip sampling.
-                stableId?.hexId?.id?.hashCode()?.let { hash ->
-                    (hash.toLong() and 0x7FFFFFFF) % 100 < config.samplingStrategy.percentage
-                } == true
+                val percentage = config.samplingStrategy.percentage
+                val deterministicHash =
+                    (context as? StableIdContext)?.stableId?.hexId?.id?.hashCode()
+                        ?: context.axisValues
+                            .takeIf { it != AxisValues.EMPTY }
+                            ?.hashCode()
+                val deterministicSample = deterministicHash?.let { hash ->
+                    (hash.toLong() and 0x7FFFFFFF) % 100 < percentage
+                }
+                // Deterministic sampling when available; otherwise fall back to probabilistic sampling.
+                deterministicSample ?: (ThreadLocalRandom.current().nextInt(100) < percentage)
             }
             is SamplingStrategy.FEATURE_FILTER -> config.samplingStrategy.predicate(feature)
         }
@@ -207,9 +218,9 @@ class FlagEvaluationTracer(
 
     private fun EvaluationResult.Decision.toSpanValue(): String =
         when (this) {
-            is EvaluationResult.Decision.Default -> KonditionalSemanticAttributes.DecisionType.DEFAULT
-            is EvaluationResult.Decision.Rule -> KonditionalSemanticAttributes.DecisionType.RULE_MATCHED
-            is EvaluationResult.Decision.Inactive -> KonditionalSemanticAttributes.DecisionType.INACTIVE
-            is EvaluationResult.Decision.RegistryDisabled -> KonditionalSemanticAttributes.DecisionType.REGISTRY_DISABLED
+            is EvaluationResult.Decision.Default -> DecisionType.DEFAULT
+            is EvaluationResult.Decision.Rule -> DecisionType.RULE_MATCHED
+            is EvaluationResult.Decision.Inactive -> DecisionType.INACTIVE
+            is EvaluationResult.Decision.RegistryDisabled -> DecisionType.REGISTRY_DISABLED
         }
 }

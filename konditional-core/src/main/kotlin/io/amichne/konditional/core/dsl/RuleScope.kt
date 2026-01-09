@@ -153,8 +153,8 @@ interface AxisTargetingScope<C : Context> {
      *
      * Example:
      * ```kotlin
-     * axis(Axes.Environment, Environment.PROD, Environment.STAGE)
-     * axis(Axes.Tenant, Tenant.ENTERPRISE)
+     * axis(Environment.PROD, Environment.STAGE)
+     * axis( Tenant.ENTERPRISE)
      * ```
      *
      * Adds targeting criteria based on custom axes defined in the context,
@@ -162,21 +162,8 @@ interface AxisTargetingScope<C : Context> {
      * standard locale, platform, and version criteria.
      *
      * @param T The axis value type
-     * @param this@axis The axis descriptor
      * @param values The values to allow for this axis
      */
-//    @Deprecated(
-//        message = "Use axis(axis: Axis<T>, vararg values: T) instead for better type safety.",
-//        replaceWith = ReplaceWith(
-//            "axis(*values)"
-//        ),
-//        level = DeprecationLevel.WARNING,
-//    )
-//    fun <T> axis(
-//        axis: Axis<T>,
-//        vararg values: T,
-//    ) where T : AxisValue<T>, T : Enum<T>
-
     fun <T> axis(
         vararg values: T,
     ) where T : AxisValue<T>, T : Enum<T>
