@@ -2,6 +2,10 @@ package io.amichne.konditional.otel.traces
 
 import io.amichne.konditional.api.EvaluationResult
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Context.LocaleContext
+import io.amichne.konditional.context.Context.PlatformContext
+import io.amichne.konditional.context.Context.StableIdContext
+import io.amichne.konditional.context.Context.VersionContext
 import io.amichne.konditional.core.features.Feature
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
@@ -90,16 +94,24 @@ class FlagEvaluationTracer(
         }
 
         if (config.includeContextAttributes) {
-            span.setAttribute(KonditionalSemanticAttributes.CONTEXT_PLATFORM, context.platform.id)
-            span.setAttribute(KonditionalSemanticAttributes.CONTEXT_LOCALE, context.locale.id)
-            span.setAttribute(KonditionalSemanticAttributes.CONTEXT_VERSION, context.appVersion.toString())
+            (context as? PlatformContext)?.platform?.id?.let {
+                span.setAttribute(KonditionalSemanticAttributes.CONTEXT_PLATFORM, it)
+            }
+            (context as? LocaleContext)?.locale?.id?.let {
+                span.setAttribute(KonditionalSemanticAttributes.CONTEXT_LOCALE, it)
+            }
+            (context as? VersionContext)?.appVersion?.let {
+                span.setAttribute(KonditionalSemanticAttributes.CONTEXT_VERSION, it.toString())
+            }
 
             if (config.sanitizePii) {
                 // Only first 8 characters of stable ID hash for PII safety
-                span.setAttribute(
-                    KonditionalSemanticAttributes.CONTEXT_STABLE_ID_HASH,
-                    context.stableId.hexId.id.take(8),
-                )
+                (context as? StableIdContext)?.stableId?.hexId?.id?.take(8)?.let {
+                    span.setAttribute(
+                        KonditionalSemanticAttributes.CONTEXT_STABLE_ID_HASH,
+                        it,
+                    )
+                }
             }
         }
 
@@ -175,9 +187,11 @@ class FlagEvaluationTracer(
             SamplingStrategy.NEVER -> false
             SamplingStrategy.PARENT_BASED -> Span.current().spanContext.isSampled
             is SamplingStrategy.RATIO -> {
-                // Deterministic sampling based on stable ID
-                val hash = context.stableId.hexId.id.hashCode()
-                (hash.toLong() and 0x7FFFFFFF) % 100 < config.samplingStrategy.percentage
+                val stableId = (context as? StableIdContext)?.stableId
+                // Deterministic sampling based on stable ID, otherwise skip sampling.
+                stableId?.hexId?.id?.hashCode()?.let { hash ->
+                    (hash.toLong() and 0x7FFFFFFF) % 100 < config.samplingStrategy.percentage
+                } == true
             }
             is SamplingStrategy.FEATURE_FILTER -> config.samplingStrategy.predicate(feature)
         }

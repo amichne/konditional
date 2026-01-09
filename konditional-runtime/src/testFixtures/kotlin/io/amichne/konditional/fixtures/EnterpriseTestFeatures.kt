@@ -37,13 +37,23 @@ data class EnterpriseContext(
     val organizationId: String,
     val subscriptionTier: SubscriptionTier,
     val userRole: UserRole,
-) : Context
+) : Context, Context.LocaleContext, Context.PlatformContext, Context.VersionContext, Context.StableIdContext
 
 data class CompositeContext(
     val context: Context,
     val experimentGroups: Set<String>,
     val sessionId: String,
-) : Context by context
+) : Context,
+    Context.LocaleContext,
+    Context.PlatformContext,
+    Context.VersionContext,
+    Context.StableIdContext {
+    override val locale = (context as Context.LocaleContext).locale
+    override val platform = (context as Context.PlatformContext).platform
+    override val appVersion = (context as Context.VersionContext).appVersion
+    override val stableId = (context as Context.StableIdContext).stableId
+    override val axisValues = context.axisValues
+}
 
 /**
  * Experiment contextFn for A/B testing scenarios.
@@ -55,7 +65,7 @@ data class ExperimentContext(
     override val stableId: StableId,
     val experimentGroups: Set<String>,
     val sessionId: String,
-) : Context
+) : Context, Context.LocaleContext, Context.PlatformContext, Context.VersionContext, Context.StableIdContext
 
 // ========== Enterprise Feature Flags ==========
 

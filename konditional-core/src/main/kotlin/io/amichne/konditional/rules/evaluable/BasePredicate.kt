@@ -2,6 +2,9 @@ package io.amichne.konditional.rules.evaluable
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Context.Companion.getAxisValue
+import io.amichne.konditional.context.Context.LocaleContext
+import io.amichne.konditional.context.Context.PlatformContext
+import io.amichne.konditional.context.Context.VersionContext
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
@@ -45,10 +48,13 @@ internal data class BasePredicate<C : Context>(
      * @return true if contextFn matches all specified constraints, false otherwise
      */
     override fun matches(context: C): Boolean =
-        (locales.isEmpty() || context.locale.id in locales) &&
-            (platforms.isEmpty() || context.platform.id in platforms) &&
-            (!versionRange.hasBounds() || versionRange.contains(context.appVersion)) &&
-            axisConstraints.all { (context.getAxisValue(it.axisId) ?: return false).id in it.allowedIds }
+        (locales.isEmpty() || (context as? LocaleContext)?.locale?.id?.let { it in locales } == true) &&
+            (platforms.isEmpty() || (context as? PlatformContext)?.platform?.id?.let { it in platforms } == true) &&
+            (!versionRange.hasBounds() ||
+                (context as? VersionContext)?.appVersion?.let { versionRange.contains(it) } == true) &&
+            axisConstraints.all { constraint ->
+                context.getAxisValue(constraint.axisId)?.id?.let { it in constraint.allowedIds } == true
+            }
 
     /**
      * Calculates specificity as the count of specified constraints.

@@ -63,7 +63,12 @@ class RuleGuaranteesTest {
     /**
      * Custom contextFn for testing additional attributes.
      */
-    interface CustomContext : Context {
+    interface CustomContext :
+        Context,
+        Context.LocaleContext,
+        Context.PlatformContext,
+        Context.VersionContext,
+        Context.StableIdContext {
         val subscriptionTier: String
         val userRole: String
     }

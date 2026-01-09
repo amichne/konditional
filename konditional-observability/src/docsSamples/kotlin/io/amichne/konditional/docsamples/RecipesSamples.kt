@@ -121,7 +121,12 @@ object SegmentFlags : Namespace("segment") {
 
 fun isPremiumUiEnabled(): Boolean {
     val segmentContext =
-        object : Context {
+        object :
+            Context,
+            Context.LocaleContext,
+            Context.PlatformContext,
+            Context.VersionContext,
+            Context.StableIdContext {
             override val locale = AppLocale.UNITED_STATES
             override val platform = Platform.IOS
             override val appVersion = Version.of(2, 1, 0)
@@ -141,7 +146,7 @@ data class EnterpriseContext(
     override val stableId: StableId,
     val subscriptionTier: SubscriptionTier,
     val employeeCount: Int,
-) : Context
+) : Context, Context.LocaleContext, Context.PlatformContext, Context.VersionContext, Context.StableIdContext
 
 enum class SubscriptionTier { FREE, PRO, ENTERPRISE }
 

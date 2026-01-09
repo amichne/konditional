@@ -393,7 +393,7 @@ class ConcurrencyAttacksTest {
             override var platform: Platform,
             override var appVersion: Version,
             override val stableId: StableId,
-        ) : Context
+        ) : Context, Context.LocaleContext, Context.PlatformContext, Context.VersionContext, Context.StableIdContext
 
         val TestNamespaceFeatures = object : Namespace.TestNamespaceFacade("mutable-context") {
             val contextDependentFlag by boolean<Context>(default = false) {
