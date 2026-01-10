@@ -1,5 +1,7 @@
 # Core Concepts
 
+import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+
 This page defines the minimum vocabulary you need to read and write Konditional features.
 
 ## Terms
@@ -38,8 +40,9 @@ val theme: Theme = AppFeatures.theme.evaluate(ctx)
 
 ## Type-safety guarantee
 
-- **Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
-
-- **Mechanism**: Feature properties are declared with explicit type parameters and enforced by the Kotlin type system.
-
-- **Boundary**: Dynamically-generated features are outside this guarantee.
+<GuaranteeBlock
+  label="Type Safety"
+  guarantee="Feature access and return types are compile-time safe for statically-defined features."
+  mechanism="Feature properties are declared with explicit type parameters and enforced by the Kotlin type system."
+  boundary="Dynamically-generated features are outside this guarantee."
+/>

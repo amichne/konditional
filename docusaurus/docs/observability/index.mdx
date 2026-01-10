@@ -1,4 +1,6 @@
 # konditional-observability
+import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+
 
 `konditional-observability` adds shadow evaluation helpers and exposes observability hooks.
 
@@ -36,11 +38,12 @@ dependencies {
 
 ## Guarantees
 
-- **Guarantee**: Shadow evaluation does not alter production behavior.
-
-- **Mechanism**: The baseline registry is returned; the candidate registry is evaluated for comparison only.
-
-- **Boundary**: Mismatch callbacks run inline on the evaluation thread and must stay lightweight.
+<GuaranteeBlock
+  label="Shadow evaluation safety"
+  guarantee={`Shadow evaluation does not alter production behavior.`}
+  mechanism={`The baseline registry is returned; the candidate registry is evaluated for comparison only.`}
+  boundary={`Mismatch callbacks run inline on the evaluation thread and must stay lightweight.`}
+/>
 
 ## Next steps
 

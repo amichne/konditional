@@ -1,4 +1,6 @@
 # Core Types
+import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+
 
 Reference for fundamental types in `konditional-core`.
 
@@ -118,7 +120,10 @@ interface ConfigurationMetadataView {
 
 Use `Namespace.flag(feature)` to resolve a single feature definition from the active configuration.
 
-- **Boundary**: The concrete `Configuration` type lives in `konditional-serialization`.
+<GuaranteeBlock
+  label="Configuration location"
+  boundary={`The concrete \`Configuration\` type lives in \`konditional-serialization\`.`}
+/>
 
 ---
 

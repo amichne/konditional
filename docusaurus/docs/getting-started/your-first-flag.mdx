@@ -1,4 +1,6 @@
 # Your First Feature
+import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+
 
 This guide builds one feature end-to-end: definition, targeting rules, and evaluation.
 
@@ -39,11 +41,12 @@ If no rule matches, the default value is returned.
 
 ## Guarantees
 
-- **Guarantee**: Evaluation always returns a non-null value of the declared type.
-
-- **Mechanism**: Features require a `default` value and return it when no rule matches.
-
-- **Boundary**: Konditional does not validate business logic; it only evaluates rules.
+<GuaranteeBlock
+  label="Non-null values"
+  guarantee={`Evaluation always returns a non-null value of the declared type.`}
+  mechanism={`Features require a \`default\` value and return it when no rule matches.`}
+  boundary={`Konditional does not validate business logic; it only evaluates rules.`}
+/>
 
 ## Next steps
 

@@ -1,4 +1,6 @@
 # config-metadata
+import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+
 
 Contract types for describing how configuration payloads can be interpreted and safely mutated.
 This module only defines data structures and a small DSL. It does not generate schemas, compute metadata, or depend on
@@ -30,11 +32,12 @@ Without this module, you would need to:
 
 ## Guarantees
 
-- **Guarantee**: Metadata is represented as plain Kotlin data structures.
-
-- **Mechanism**: `ConfigMetadata` and `ConfigMetadataResponse` are data classes.
-
-- **Boundary**: This module does not validate pointer syntax, enforce constraints, or interpret metadata.
+<GuaranteeBlock
+  label="Metadata structures"
+  guarantee={`Metadata is represented as plain Kotlin data structures.`}
+  mechanism={`\`ConfigMetadata\` and \`ConfigMetadataResponse\` are data classes.`}
+  boundary={`This module does not validate pointer syntax, enforce constraints, or interpret metadata.`}
+/>
 
 ## Quick start
 

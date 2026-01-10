@@ -1,4 +1,6 @@
 # Rule DSL Reference
+import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+
 
 This page documents the core rule-building DSL available in `konditional-core`.
 
@@ -67,17 +69,21 @@ val enterpriseOnly by boolean<EnterpriseContext>(default = false) {
 }
 ```
 
-- **Guarantee**: Custom predicates participate in specificity ordering.
-
-- **Mechanism**: Predicate implementations report their own `specificity()` which is added to the rule total.
-
-- **Boundary**: Konditional does not validate predicate correctness or determinism.
+<GuaranteeBlock
+  label="Custom predicate specificity"
+  guarantee={`Custom predicates participate in specificity ordering.`}
+  mechanism={`Predicate implementations report their own \`specificity()\` which is added to the rule total.`}
+  boundary={`Konditional does not validate predicate correctness or determinism.`}
+/>
 
 ## Ramp-up allowlists
 
 `allowlist(...)` bypasses the ramp-up check after the rule matches by criteria.
 
-- **Boundary**: It does not override rule criteria, `isActive`, or the namespace kill-switch.
+<GuaranteeBlock
+  label="Allowlist scope"
+  boundary={`It does not override rule criteria, \`isActive\`, or the namespace kill-switch.`}
+/>
 
 ## Next steps
 

@@ -1,4 +1,6 @@
 # Evaluation Model
+import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+
 
 This page explains how Konditional chooses a value when multiple rules exist.
 
@@ -28,27 +30,27 @@ Specificity is the sum of targeting constraints and custom predicate specificity
 - A custom `Predicate` can define its own `specificity()`
 - Default predicate specificity is 1
 
-- **Guarantee**: More specific rules are evaluated before less specific rules.
-
-- **Mechanism**: Rules are sorted by `rule.specificity()` in descending order before evaluation.
-
-- **Boundary**: Ramp-up percentage does not affect specificity.
+<GuaranteeBlock
+  label="Specificity ordering"
+  guarantee={`More specific rules are evaluated before less specific rules.`}
+  mechanism={`Rules are sorted by \`rule.specificity()\` in descending order before evaluation.`}
+  boundary={`Ramp-up percentage does not affect specificity.`}
+/>
 
 ## Deterministic ramp-ups
 
 Ramp-ups are deterministic and reproducible.
 
-- **Guarantee**: The same `(stableId, featureKey, salt)` always yields the same bucket assignment.
-
-- **Mechanism**:
-
-1. Hash the UTF-8 bytes of `"$salt:$featureKey:${stableId.hexId.id}"` with SHA-256.
+<GuaranteeBlock
+  label="Deterministic bucketing"
+  guarantee={`The same \`(stableId, featureKey, salt)\` always yields the same bucket assignment.`}
+  mechanism={`1. Hash the UTF-8 bytes of \`\"$salt:$featureKey:\${stableId.hexId.id}\"\` with SHA-256.
 2. Convert the first 4 bytes to an unsigned 32-bit integer.
-3. Bucket = `hash % 10_000` (range `[0, 9999]`).
-4. Threshold = `(rampUp.value * 100.0).roundToInt()` (basis points).
-5. In ramp-up if `bucket < threshold`.
-
-- **Boundary**: Changing `stableId`, `featureKey`, or `salt` changes the bucket assignment.
+3. Bucket = \`hash % 10_000\` (range \`[0, 9999]\`).
+4. Threshold = \`(rampUp.value * 100.0).roundToInt()\` (basis points).
+5. In ramp-up if \`bucket < threshold\`.`}
+  boundary={`Changing \`stableId\`, \`featureKey\`, or \`salt\` changes the bucket assignment.`}
+/>
 
 ## Example
 
