@@ -1,0 +1,322 @@
+# Rule DSL Reference (Enhanced with Interactive Components)
+
+import GuaranteeBlock from './docusaurus/src/components/GuaranteeBlock';
+import IDEInsight from './docusaurus/src/components/IDEInsight';
+import ScopeExplorer from './docusaurus/src/components/ScopeExplorer';
+import TypeAnnotation from './docusaurus/src/components/TypeAnnotation';
+
+This demonstrates how the Rule DSL page could be enhanced with interactive components.
+
+## Rule basics
+
+<IDEInsight
+  title="Basic Rule Definition"
+  inferredTypes={{
+    "darkMode": "Feature<Boolean, Context, Namespace>",
+    "AppFeatures.darkMode.evaluate(ctx)": "Boolean"
+  }}
+>
+
+```kotlin
+object AppFeatures : Namespace("app") {
+    val darkMode by boolean<Context>(default = false) {
+        rule(true) { platforms(Platform.IOS) }
+        rule(true) { locales(AppLocale.UNITED_STATES) }
+    }
+}
+```
+
+</IDEInsight>
+
+**What IntelliJ knows:**
+- <TypeAnnotation type="Feature<Boolean, Context, Namespace>">darkMode</TypeAnnotation> is fully typed
+- <TypeAnnotation type="Boolean" description="Guaranteed non-null">evaluate()</TypeAnnotation> always returns `Boolean`, never `null`
+
+---
+
+## Boolean sugar with Autocomplete
+
+<ScopeExplorer
+  title="What's Available Inside the Feature Block"
+  context="Feature<Boolean, Context> { ... }"
+  items={[
+    {
+      name: "enable",
+      type: "dsl",
+      signature: "enable(block: RuleBuilder<Context>.() -> Unit)",
+      description: "Sugar for rule(true) - enables feature when criteria match"
+    },
+    {
+      name: "disable",
+      type: "dsl",
+      signature: "disable(block: RuleBuilder<Context>.() -> Unit)",
+      description: "Sugar for rule(false) - disables feature when criteria match"
+    },
+    {
+      name: "rule",
+      type: "dsl",
+      signature: "rule(value: Boolean, block: RuleBuilder<Context>.() -> Unit)",
+      description: "Explicit rule with boolean value"
+    }
+  ]}
+/>
+
+```kotlin
+val darkMode by boolean<Context>(default = false) {
+    enable { ios() }      // IntelliJ suggests: enable, disable, rule
+    disable { android() }
+}
+```
+
+---
+
+## Targeting Primitives - What's in Scope
+
+<ScopeExplorer
+  title="Available Targeting Methods"
+  context="RuleBuilder<Context> { ... }"
+  items={[
+    {
+      name: "locales",
+      type: "method",
+      signature: "locales(vararg locales: AppLocale)",
+      description: "Matches when Context.locale is in the provided list"
+    },
+    {
+      name: "platforms",
+      type: "method",
+      signature: "platforms(vararg platforms: Platform)",
+      description: "Matches when Context.platform is in the provided list"
+    },
+    {
+      name: "versions",
+      type: "method",
+      signature: "versions(block: VersionRangeBuilder.() -> Unit)",
+      description: "Matches when Context.appVersion falls within the specified range"
+    },
+    {
+      name: "rampUp",
+      type: "method",
+      signature: "rampUp(block: RampUpBuilder.() -> Unit)",
+      description: "Applies deterministic percentage-based rollout using Context.stableId"
+    },
+    {
+      name: "allowlist",
+      type: "method",
+      signature: "allowlist(vararg ids: StableId)",
+      description: "Bypasses ramp-up check for specific stable IDs"
+    },
+    {
+      name: "axis",
+      type: "method",
+      signature: "axis(axisId: String, vararg values: String)",
+      description: "Matches custom axis values from Context.axisValues"
+    },
+    {
+      name: "extension",
+      type: "method",
+      signature: "extension(block: Context.() -> Boolean)",
+      description: "Custom predicate with access to full Context"
+    },
+    {
+      name: "note",
+      type: "method",
+      signature: "note(text: String)",
+      description: "Attaches human-readable documentation to the rule"
+    },
+    {
+      name: "always",
+      type: "method",
+      signature: "always()",
+      description: "Explicitly marks a catch-all rule"
+    },
+    {
+      name: "ios",
+      type: "method",
+      signature: "ios(): Boolean",
+      description: "Shorthand for platform == Platform.IOS",
+      inherited: true
+    },
+    {
+      name: "android",
+      type: "method",
+      signature: "android(): Boolean",
+      description: "Shorthand for platform == Platform.ANDROID",
+      inherited: true
+    }
+  ]}
+/>
+
+### Complex Targeting Example
+
+<IDEInsight
+  title="Multi-Criteria Rule"
+  typeHints={[
+    { line: 1, text: "checkout", type: "Feature<String, Context, Namespace>" },
+    { line: 2, text: "platforms()", type: "Unit" },
+    { line: 3, text: "versions", type: "Unit" },
+    { line: 4, text: "rampUp", type: "Unit" }
+  ]}
+>
+
+```kotlin
+val checkout by string<Context>(default = "v1") {
+    rule("v2") {
+        platforms(Platform.IOS)        // Type-safe: only Platform enum values accepted
+        versions { min(3, 0, 0) }      // Scoped DSL for version ranges
+        rampUp { 25.0 }                // Deterministic SHA-256 bucketing
+        note("iOS v2 rollout")         // Documentation travels with code
+    }
+}
+```
+
+</IDEInsight>
+
+**IDE Benefits Highlighted:**
+- Autocomplete shows only valid methods in each scope
+- Type safety prevents passing wrong enum values
+- Nested DSLs (like `versions { }`) are scoped correctly
+- Can't accidentally mix up feature types
+
+---
+
+## Custom Predicates with Extended Context
+
+<IDEInsight
+  title="Type-Safe Context Extensions"
+  inferredTypes={{
+    "EnterpriseContext": "data class extending Context",
+    "subscriptionTier": "Tier (from EnterpriseContext)",
+    "enterpriseOnly": "Feature<Boolean, EnterpriseContext, Namespace>"
+  }}
+>
+
+```kotlin
+data class EnterpriseContext(
+    override val locale: AppLocale,
+    override val platform: Platform,
+    override val appVersion: Version,
+    override val stableId: StableId,
+    val subscriptionTier: Tier,  // Custom field
+) : Context
+
+val enterpriseOnly by boolean<EnterpriseContext>(default = false) {
+    rule(true) {
+        extension {
+            subscriptionTier == Tier.ENTERPRISE  // IntelliJ knows subscriptionTier exists!
+        }
+    }
+}
+```
+
+</IDEInsight>
+
+<ScopeExplorer
+  title="What's Available in extension { } Block"
+  context="extension { EnterpriseContext.() -> Boolean }"
+  items={[
+    {
+      name: "locale",
+      type: "property",
+      signature: "val locale: AppLocale",
+      description: "From base Context interface",
+      inherited: true
+    },
+    {
+      name: "platform",
+      type: "property",
+      signature: "val platform: Platform",
+      description: "From base Context interface",
+      inherited: true
+    },
+    {
+      name: "appVersion",
+      type: "property",
+      signature: "val appVersion: Version",
+      description: "From base Context interface",
+      inherited: true
+    },
+    {
+      name: "stableId",
+      type: "property",
+      signature: "val stableId: StableId",
+      description: "From base Context interface",
+      inherited: true
+    },
+    {
+      name: "subscriptionTier",
+      type: "property",
+      signature: "val subscriptionTier: Tier",
+      description: "Custom property from EnterpriseContext"
+    }
+  ]}
+/>
+
+**Key IDE Benefit:** IntelliJ autocomplete shows `subscriptionTier` because the type parameter `<EnterpriseContext>` makes it available. You can't access fields that don't exist!
+
+<GuaranteeBlock
+  label="Custom predicate specificity"
+  guarantee={`Custom predicates participate in specificity ordering.`}
+  mechanism={`Predicate implementations report their own \`specificity()\` which is added to the rule total.`}
+  boundary={`Konditional does not validate predicate correctness or determinism.`}
+/>
+
+---
+
+## Ramp-up DSL
+
+<ScopeExplorer
+  title="Inside rampUp { } Block"
+  context="RampUpBuilder { ... }"
+  items={[
+    {
+      name: "percentage",
+      type: "property",
+      signature: "var percentage: Double",
+      description: "Set rollout percentage (0.0 to 100.0)"
+    },
+    {
+      name: "salt",
+      type: "property",
+      signature: "var salt: String?",
+      description: "Optional salt to redistribute buckets"
+    },
+    {
+      name: "invoke",
+      type: "method",
+      signature: "operator fun invoke(percent: Double)",
+      description: "Shorthand: rampUp { 25.0 } sets percentage"
+    }
+  ]}
+/>
+
+```kotlin
+rule(true) {
+    rampUp {
+        25.0          // Shorthand: sets percentage
+        // OR
+        percentage = 25.0
+        salt = "2024-Q1"  // Optional: change to redistribute
+    }
+}
+```
+
+---
+
+## Visual Summary: Type Safety at Every Level
+
+| Aspect | Type Safety | IDE Autocomplete |
+|--------|-------------|-----------------|
+| Feature type | `Feature<Boolean, Context>` | ✅ Knows return type |
+| Rule value | Must match feature type | ✅ Suggests valid values |
+| Context type | Generic parameter | ✅ Shows available fields |
+| DSL scope | Scoped receivers | ✅ Only valid methods |
+| Enum values | Compile-time checked | ✅ Suggests enum constants |
+
+---
+
+## Next Steps
+
+- [Evaluation model](/fundamentals/evaluation-semantics) - How rules are ordered
+- [Core API reference](/core/reference) - Complete API docs
+- [Advanced recipes](/advanced/recipes) - Real-world patterns
