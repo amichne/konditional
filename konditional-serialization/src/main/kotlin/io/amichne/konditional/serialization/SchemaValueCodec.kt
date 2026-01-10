@@ -131,6 +131,15 @@ object SchemaValueCodec {
             }
     }
 
+    /**
+     * Decodes JsonObject to an instance using an extractable schema if present.
+     * Falls back to constructor-based decoding when no schema is available.
+     */
+    fun <T : Any> decode(kClass: KClass<T>, json: JsonObject): ParseResult<T> =
+        extractSchema(kClass)
+            ?.let { schema -> decode(kClass, json, schema) }
+            ?: decodeWithoutSchema(kClass, json)
+
     private fun decodeValue(kClass: KClass<*>?, json: JsonValue): ParseResult<Any> =
         kClass?.let { decodeValueForClass(it, json) }
             ?: ParseResult.failure(ParseError.InvalidSnapshot("Cannot decode value without type information"))
@@ -210,17 +219,7 @@ object SchemaValueCodec {
 
     private fun decodeCustomObject(kClass: KClass<*>, json: JsonValue): ParseResult<Any> =
         when (json) {
-            is JsonObject -> {
-                extractSchema(kClass)
-                    ?.let { schema -> decode(kClass, json, schema) }
-                    ?: ParseResult.failure(
-                        ParseError.InvalidSnapshot(
-                            "${kClass.qualifiedName} must implement Konstrained<ObjectSchema> " +
-                                "for deserialization",
-                        ),
-                    )
-            }
-
+            is JsonObject -> decode(kClass, json)
             else ->
                 ParseResult.failure(
                     ParseError.InvalidSnapshot(
@@ -228,4 +227,100 @@ object SchemaValueCodec {
                     ),
                 )
         }
+
+    private fun <T : Any> decodeWithoutSchema(kClass: KClass<T>, json: JsonObject): ParseResult<T> =
+        kClass.primaryConstructor
+            ?.let { constructor ->
+                val parametersResult =
+                    buildParameterMap(constructor, json, kClass, ::decodeValue)
+
+                when (parametersResult) {
+                    is ParseResult.Success ->
+                        runCatching { ParseResult.success(constructor.callBy(parametersResult.value)) }
+                            .getOrElse { e ->
+                                ParseResult.failure(
+                                    ParseError.InvalidSnapshot(
+                                        "Failed to instantiate ${kClass.qualifiedName}: ${e.message}",
+                                    ),
+                                )
+                            }
+                    is ParseResult.Failure -> parametersResult
+                }
+            }
+            ?: ParseResult.failure(
+                ParseError.InvalidSnapshot(
+                    "${kClass.qualifiedName} must have a primary constructor for deserialization",
+                ),
+            )
+
+}
+
+private sealed interface ParameterResolution {
+    data class Value(val value: Any?) : ParameterResolution
+
+    data object Skip : ParameterResolution
+}
+
+private fun <T : Any> buildParameterMap(
+    constructor: kotlin.reflect.KFunction<T>,
+    json: JsonObject,
+    owner: KClass<*>,
+    decodeValue: (KClass<*>?, JsonValue) -> ParseResult<Any>,
+): ParseResult<Map<KParameter, Any?>> =
+    constructor.parameters.fold(ParseResult.success(mutableMapOf<KParameter, Any?>())) { acc, param ->
+        when (acc) {
+            is ParseResult.Failure -> acc
+            is ParseResult.Success ->
+                resolveParameter(param, json, owner, decodeValue).let { resolved ->
+                    when (resolved) {
+                        is ParseResult.Failure -> resolved
+                        is ParseResult.Success -> {
+                            when (val resolution = resolved.value) {
+                                is ParameterResolution.Value -> acc.value[param] = resolution.value
+                                ParameterResolution.Skip -> Unit
+                            }
+                            ParseResult.success(acc.value)
+                        }
+                    }
+                }
+        }
+    }
+
+private fun resolveParameter(
+    param: KParameter,
+    json: JsonObject,
+    owner: KClass<*>,
+    decodeValue: (KClass<*>?, JsonValue) -> ParseResult<Any>,
+): ParseResult<ParameterResolution> {
+    val fieldName = param.name
+    val jsonValue = fieldName?.let { json.fields[it] }
+
+    return when {
+        fieldName == null ->
+            ParseResult.failure(
+                ParseError.InvalidSnapshot(
+                    "Constructor parameter missing name in ${owner.qualifiedName}",
+                ),
+            )
+
+        jsonValue == null || jsonValue is JsonNull ->
+            if (param.isOptional) {
+                ParseResult.success(ParameterResolution.Skip)
+            } else {
+                ParseResult.failure(
+                    ParseError.InvalidSnapshot(
+                        "Field '$fieldName' missing in JSON and has no default for ${owner.qualifiedName}",
+                    ),
+                )
+            }
+
+        else ->
+            decodeValue(param.type.classifier as? KClass<*>, jsonValue)
+                .let { decoded ->
+                    when (decoded) {
+                        is ParseResult.Success -> ParseResult.success(ParameterResolution.Value(decoded.value))
+                        is ParseResult.Failure -> decoded
+                    }
+                }
+    }
 }

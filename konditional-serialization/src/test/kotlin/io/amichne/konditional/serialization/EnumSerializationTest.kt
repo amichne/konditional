@@ -6,7 +6,7 @@ import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.Moshi
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.ValueType
-import io.amichne.konditional.internal.serialization.adapters.FlagValueAdapter
+import io.amichne.konditional.internal.serialization.adapters.FlagValueAdapterFactory
 import io.amichne.konditional.internal.serialization.models.FlagValue
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -26,7 +26,7 @@ class EnumSerializationTest {
     }
 
     private val moshi = Moshi.Builder()
-        .add(FlagValueAdapter.Factory)
+        .add(FlagValueAdapterFactory)
         .build()
 
     private val adapter = moshi.adapter(FlagValue::class.java)

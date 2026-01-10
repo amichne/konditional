@@ -9,9 +9,8 @@ import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.core.types.asObjectSchema
 import io.amichne.konditional.serialization.SchemaValueCodec
-import io.amichne.konditional.serialization.extractSchema
 import io.amichne.konditional.serialization.internal.toJsonValue
-import io.amichne.konditional.serialization.internal.toPrimitiveValue
+import io.amichne.konditional.serialization.internal.toPrimitiveMap
 import io.amichne.kontracts.schema.ObjectSchema
 import io.amichne.kontracts.value.JsonObject
 
@@ -145,17 +144,8 @@ sealed class FlagValue<out T : Any> {
                 }
 
                 is Konstrained<*> -> {
-                    // Use schema-based serializer
-                    val schema = value.schema.asObjectSchema()
-                    val json = SchemaValueCodec.encode(value, schema)
-                    val primitive = json.toPrimitiveValue()
-
-                    require(primitive is Map<*, *>) {
-                        "Konstrained must encode to an object, got ${primitive?.let { it::class.simpleName }}"
-                    }
-
                     DataClassValue(
-                        value = @Suppress("UNCHECKED_CAST") (primitive as Map<String, Any?>),
+                        value = value.toPrimitiveMap(),
                         dataClassName = value::class.java.name,
                     )
                 }
@@ -195,13 +185,8 @@ private fun decodeDataClass(
     runCatching { Class.forName(dataClassName).kotlin }
         .getOrElse { throw IllegalArgumentException("Failed to load class '$dataClassName': ${it.message}") }
         .let { kClass ->
-            val schema = extractSchema(kClass)
-                ?: throw IllegalArgumentException(
-                    "Class '$dataClassName' must implement Konstrained<ObjectSchema> for deserialization"
-                )
-
             val jsonObject = toJsonObject(fields)
-            when (val result = SchemaValueCodec.decode(kClass, jsonObject, schema)) {
+            when (val result = SchemaValueCodec.decode(kClass, jsonObject)) {
                 is ParseResult.Success -> result.value
                 is ParseResult.Failure -> throw IllegalArgumentException(
                     "Failed to decode '$dataClassName': ${result.error.message}"
