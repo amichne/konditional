@@ -1,4 +1,6 @@
 # konditional-core
+import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+
 
 `konditional-core` is the minimal, stable API for defining and evaluating typed features in code.
 
@@ -13,17 +15,19 @@ If you only need compile-time correctness and deterministic evaluation, this is 
 
 ## Guarantees
 
-- **Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
+<GuaranteeBlock
+  label="Compile-time safety"
+  guarantee="Feature access and return types are compile-time safe for statically-defined features."
+  mechanism="Property delegation + generic type propagation on `Feature<T, C, M>`."
+  boundary="This does not apply to dynamically-generated feature definitions."
+/>
 
-- **Mechanism**: Property delegation + generic type propagation on `Feature<T, C, M>`.
-
-- **Boundary**: This does not apply to dynamically-generated feature definitions.
-
-- **Guarantee**: Evaluation always returns a non-null value of the declared type.
-
-- **Mechanism**: Every feature requires a `default` value and evaluation falls back to it.
-
-- **Boundary**: Incorrect business logic still yields a value; Konditional does not validate intent.
+<GuaranteeBlock
+  label="Non-null evaluation"
+  guarantee={`Evaluation always returns a non-null value of the declared type.`}
+  mechanism={`Every feature requires a \`default\` value and evaluation falls back to it.`}
+  boundary={`Incorrect business logic still yields a value; Konditional does not validate intent.`}
+/>
 
 ## Quick example
 

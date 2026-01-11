@@ -1,4 +1,6 @@
 # kontracts
+import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+
 
 Type-safe JSON Schema DSL for Kotlin used by Konditional for structured value validation.
 
@@ -36,11 +38,12 @@ dependencies {
 
 ## Guarantees
 
-- **Guarantee**: Schemas are expressed as Kotlin types, not untyped JSON strings.
-
-- **Mechanism**: Type-inferred DSL (`schemaRoot { ::property of { ... } }`).
-
-- **Boundary**: Runtime JSON validation is explicit; schema correctness does not imply correct business logic.
+<GuaranteeBlock
+  label="Type-safe schemas"
+  guarantee={`Schemas are expressed as Kotlin types, not untyped JSON strings.`}
+  mechanism={`Type-inferred DSL (\`schemaRoot { ::property of { ... } }\`).`}
+  boundary={`Runtime JSON validation is explicit; schema correctness does not imply correct business logic.`}
+/>
 
 ## Next steps
 

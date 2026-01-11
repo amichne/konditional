@@ -9,6 +9,8 @@ Source: docusaurus/docs-templates/recipes.template.md + konditional-observabilit
 -->
 
 # Recipes: Best-Practice Patterns
+import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+
 
 Practical patterns for real-world feature control using only Konditional building blocks. Each recipe highlights a
 supported solution area and makes the guarantee boundaries explicit.
@@ -48,9 +50,12 @@ fun renderCheckout(context: Context) {
 }
 ```
 
-- **Guarantee**: Variant values are compile-time correct and exhaustively handled.
-- **Mechanism**: Enum-typed feature delegates (`enum<...>`) and Kotlin `when` exhaustiveness.
-- **Boundary**: Remote JSON can only select enum constants already compiled into the binary.
+<GuaranteeBlock
+  label="Typed variants"
+  guarantee="Variant values are compile-time correct and exhaustively handled."
+  mechanism="Enum-typed feature delegates (`enum<...>`) and Kotlin `when` exhaustiveness."
+  boundary="Remote JSON can only select enum constants already compiled into the binary."
+/>
 
 ---
 
@@ -81,9 +86,12 @@ object RampUpResetFlags : Namespace("ramp-up-reset") {
 }
 ```
 
-- **Guarantee**: Same `(stableId, flagKey, salt)` always yields the same bucket.
-- **Mechanism**: SHA-256 deterministic bucketing in `RampUpBucketing`.
-- **Boundary**: Changing `salt` intentionally redistributes buckets.
+<GuaranteeBlock
+  label="Deterministic ramp-up with salt"
+  guarantee={`Same \`(stableId, flagKey, salt)\` always yields the same bucket.`}
+  mechanism={`SHA-256 deterministic bucketing in \`RampUpBucketing\`.`}
+  boundary={`Changing \`salt\` intentionally redistributes buckets.`}
+/>
 
 ---
 
@@ -130,9 +138,12 @@ fun isPremiumUiEnabled(): Boolean {
 }
 ```
 
-- **Guarantee**: Segment targeting is type-safe and serializable.
-- **Mechanism**: Axis IDs are stored in JSON; `axis(...)` evaluates against `Context.axisValues`.
-- **Boundary**: Axis IDs must remain stable across builds and obfuscation.
+<GuaranteeBlock
+  label="Axis-based segments"
+  guarantee={`Segment targeting is type-safe and serializable.`}
+  mechanism={`Axis IDs are stored in JSON; \`axis(...)\` evaluates against \`Context.axisValues\`.`}
+  boundary={`Axis IDs must remain stable across builds and obfuscation.`}
+/>
 
 ---
 
@@ -161,9 +172,12 @@ object PremiumFeatures : Namespace("premium") {
 }
 ```
 
-- **Guarantee**: Extension predicates are type-safe and enforced at compile time.
-- **Mechanism**: `Feature<T, EnterpriseContext>` makes the extension receiver strongly typed.
-- **Boundary**: Extension logic is not serialized; only its rule parameters (e.g., ramp-up) can be updated remotely.
+<GuaranteeBlock
+  label="Custom context extensions"
+  guarantee="Extension predicates are type-safe and enforced at compile time."
+  mechanism="`Feature<T, EnterpriseContext>` makes the extension receiver strongly typed."
+  boundary="Extension logic is not serialized; only its rule parameters (e.g., ramp-up) can be updated remotely."
+/>
 
 ---
 
@@ -191,9 +205,12 @@ object PolicyFlags : Namespace("policy") {
 }
 ```
 
-- **Guarantee**: Invalid structured config is rejected before it reaches evaluation.
-- **Mechanism**: Kontracts schema validation at `ConfigurationSnapshotCodec.decode(...)`.
-- **Boundary**: Semantic correctness of field values (e.g., "appropriate backoff") remains a human responsibility.
+<GuaranteeBlock
+  label="Structured value validation"
+  guarantee={`Invalid structured config is rejected before it reaches evaluation.`}
+  mechanism={`Kontracts schema validation at \`ConfigurationSnapshotCodec.decode(...)\`.`}
+  boundary={`Semantic correctness of field values (e.g., \"appropriate backoff\") remains a human responsibility.`}
+/>
 
 ---
 
@@ -222,9 +239,12 @@ fun rollbackConfig() {
 }
 ```
 
-- **Guarantee**: Invalid config never becomes active; swaps are atomic.
-- **Mechanism**: `ParseResult` boundary + `Namespace.load(...)` atomic swap.
-- **Boundary**: A valid config can still be logically wrong; rollback is the safe escape hatch.
+<GuaranteeBlock
+  label="Remote config loading"
+  guarantee={`Invalid config never becomes active; swaps are atomic.`}
+  mechanism={`\`ParseResult\` boundary + \`Namespace.load(...)\` atomic swap.`}
+  boundary={`A valid config can still be logically wrong; rollback is the safe escape hatch.`}
+/>
 
 ---
 
@@ -256,9 +276,12 @@ fun evaluateWithShadowedConfig(context: Context): Boolean {
 }
 ```
 
-- **Guarantee**: Production behavior stays pinned to baseline while candidate is evaluated.
-- **Mechanism**: `evaluateWithShadow(...)` evaluates baseline + candidate but returns baseline value.
-- **Boundary**: Shadow evaluation is inline and adds extra work to the hot path; sample if needed.
+<GuaranteeBlock
+  label="Shadow evaluation"
+  guarantee={`Production behavior stays pinned to baseline while candidate is evaluated.`}
+  mechanism={`\`evaluateWithShadow(...)\` evaluates baseline + candidate but returns baseline value.`}
+  boundary={`Shadow evaluation is inline and adds extra work to the hot path; sample if needed.`}
+/>
 
 ---
 
@@ -282,9 +305,12 @@ fun disablePayments() {
 }
 ```
 
-- **Guarantee**: Disabling a namespace only affects that namespace.
-- **Mechanism**: Each `Namespace` has an isolated registry and kill-switch.
-- **Boundary**: `disableAll()` returns defaults; it does not modify feature definitions or remote config state.
+<GuaranteeBlock
+  label="Namespace isolation"
+  guarantee={`Disabling a namespace only affects that namespace.`}
+  mechanism={`Each \`Namespace\` has an isolated registry and kill-switch.`}
+  boundary={`\`disableAll()\` returns defaults; it does not modify feature definitions or remote config state.`}
+/>
 
 ---
 
@@ -314,9 +340,12 @@ fun attachHooks() {
 }
 ```
 
-- **Guarantee**: Hooks receive evaluation and lifecycle signals with consistent payloads.
-- **Mechanism**: `RegistryHooks` are invoked inside the runtime's evaluation and load paths.
-- **Boundary**: Hooks run on the hot path; keep them non-blocking.
+<GuaranteeBlock
+  label="Observability hooks"
+  guarantee={`Hooks receive evaluation and lifecycle signals with consistent payloads.`}
+  mechanism={`\`RegistryHooks\` are invoked inside the runtime\'s evaluation and load paths.`}
+  boundary={`Hooks run on the hot path; keep them non-blocking.`}
+/>
 
 ---
 

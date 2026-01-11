@@ -35,7 +35,7 @@ clean: ## Clean build artifacts
 
 build: ## Build the project
 	@echo "$(BLUE)Building project...$(NC)"
-	$(GRADLEW) build
+	$(GRADLEW) build konditional-observability:generateRecipesDocs
 
 test: ## Run tests
 	@echo "$(BLUE)Running tests...$(NC)"

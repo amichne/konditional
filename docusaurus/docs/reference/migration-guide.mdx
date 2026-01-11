@@ -1,4 +1,6 @@
 # Migration Guide
+import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+
 
 This guide maps the conceptual shift from string-based flags to Konditional’s typed, property-based model.
 It focuses on what changes at the definition site, at the call site, and at the trust boundary (runtime JSON).
@@ -9,9 +11,12 @@ It focuses on what changes at the definition site, at the call site, and at the 
 
 Konditional is now published as split modules.
 
-- **Guarantee**: `konditional-core` is implementation-free; it contains the DSL + evaluation surface.
-- **Mechanism**: runtime implementations are discovered via `ServiceLoader` (see `NamespaceRegistryFactory`).
-- **Boundary**: if no runtime factory is present, namespace initialization fails fast with a clear error.
+<GuaranteeBlock
+  label="Core module separation"
+  guarantee={`\`konditional-core\` is implementation-free; it contains the DSL + evaluation surface.`}
+  mechanism={`runtime implementations are discovered via \`ServiceLoader\` (see \`NamespaceRegistryFactory\`).`}
+  boundary={`if no runtime factory is present, namespace initialization fails fast with a clear error.`}
+/>
 
 ### Dependencies
 

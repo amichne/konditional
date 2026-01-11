@@ -1,4 +1,6 @@
 # opentelemetry
+import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+
 
 OpenTelemetry integration for Konditional: tracing, metrics, and structured logging.
 
@@ -36,11 +38,12 @@ dependencies {
 
 ## Guarantees
 
-- **Guarantee**: Core functionality does not depend on OpenTelemetry.
-
-- **Mechanism**: Telemetry lives in a separate module with optional hooks and extensions.
-
-- **Boundary**: Instrumentation overhead depends on sampling and your OpenTelemetry configuration.
+<GuaranteeBlock
+  label="Optional telemetry"
+  guarantee={`Core functionality does not depend on OpenTelemetry.`}
+  mechanism={`Telemetry lives in a separate module with optional hooks and extensions.`}
+  boundary={`Instrumentation overhead depends on sampling and your OpenTelemetry configuration.`}
+/>
 
 ## Quick start
 

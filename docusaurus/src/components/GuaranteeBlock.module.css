@@ -1,0 +1,115 @@
+.guaranteeBlock {
+  position: relative;
+  display: inline-block;
+  margin: 1rem 0;
+  cursor: help;
+  max-width: 100%;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.guaranteeBlock:hover .label {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.hoverHint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  font-size: 14px;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.guaranteeBlock:hover .hoverHint {
+  opacity: 1;
+}
+
+.details {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 0.5rem;
+  padding: 1rem 1.25rem;
+  background: var(--ifm-background-surface-color);
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  min-width: 400px;
+  max-width: 600px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.guaranteeBlock:hover .details {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.detailItem {
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+  color: var(--ifm-font-color-base);
+}
+
+.detailItem:last-child {
+  margin-bottom: 0;
+}
+
+.detailItem strong {
+  color: #667eea;
+  font-weight: 600;
+  display: inline-block;
+  margin-right: 0.5rem;
+}
+
+/* Dark mode support */
+[data-theme='dark'] .label {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+[data-theme='dark'] .guaranteeBlock:hover .label {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+[data-theme='dark'] .details {
+  background: var(--ifm-background-surface-color);
+  border-color: #667eea;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .details {
+    min-width: 300px;
+    max-width: calc(100vw - 2rem);
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+  }
+
+  .guaranteeBlock:hover .details {
+    transform: translateX(-50%) translateY(0);
+  }
+}

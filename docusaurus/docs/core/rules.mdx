@@ -1,0 +1,192 @@
+# Rule DSL Reference
+import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+import ScopeExplorer from '@site/src/components/ScopeExplorer';
+
+
+This page documents the core rule-building DSL available in `konditional-core`.
+
+## Rule basics
+
+```kotlin
+object AppFeatures : Namespace("app") {
+    val darkMode by boolean<Context>(default = false) {
+        rule(true) { platforms(Platform.IOS) }
+        rule(true) { locales(AppLocale.UNITED_STATES) }
+    }
+}
+```
+
+## Boolean sugar
+
+```kotlin
+val darkMode by boolean<Context>(default = false) {
+    enable { ios() }
+    disable { android() }
+}
+```
+
+## Targeting primitives
+
+Inside a rule block (`RuleScope`):
+
+- `locales(...)` targets locale ids
+- `platforms(...)` targets platform ids
+- `versions { min(...); max(...) }` targets version ranges
+- `axis(...)` targets custom axes
+- `extension { ... }` custom predicate
+- `rampUp { ... }` percentage rollout
+- `allowlist(...)` stable IDs that bypass ramp-up
+- `note("...")` attaches a human-readable note
+- `always()` / `matchAll()` mark a catch-all rule explicitly
+
+<ScopeExplorer
+  title="RuleScope<Context> API"
+  context="rule { ... }"
+  items={[
+    {
+      name: "locales",
+      type: "method",
+      signature: "locales(vararg appLocales: LocaleTag)",
+      description: "Target matching locale tags.",
+    },
+    {
+      name: "platforms",
+      type: "method",
+      signature: "platforms(vararg ps: PlatformTag)",
+      description: "Target matching platform tags.",
+    },
+    {
+      name: "ios",
+      type: "method",
+      signature: "ios()",
+      description: "Sugar for platforms(Platform.IOS).",
+    },
+    {
+      name: "android",
+      type: "method",
+      signature: "android()",
+      description: "Sugar for platforms(Platform.ANDROID).",
+    },
+    {
+      name: "versions",
+      type: "dsl",
+      signature: "versions(build: VersionRangeScope.() -> Unit)",
+      description: "Constrain by minimum and maximum app versions.",
+    },
+    {
+      name: "axis",
+      type: "method",
+      signature: "axis(vararg values: T)",
+      description: "Target custom axes in Context.axisValues.",
+    },
+    {
+      name: "extension",
+      type: "method",
+      signature: "extension(block: C.() -> Boolean)",
+      description: "Add domain-specific predicates in code.",
+    },
+    {
+      name: "rampUp",
+      type: "method",
+      signature: "rampUp(function: () -> Number)",
+      description: "Apply deterministic percentage rollout.",
+    },
+    {
+      name: "allowlist",
+      type: "method",
+      signature: "allowlist(vararg stableIds: StableId)",
+      description: "Bypass ramp-up for specific stable IDs.",
+    },
+    {
+      name: "note",
+      type: "method",
+      signature: "note(text: String)",
+      description: "Attach a human-readable note to the rule.",
+    },
+    {
+      name: "always",
+      type: "method",
+      signature: "always()",
+      description: "Mark a catch-all rule explicitly.",
+    },
+    {
+      name: "matchAll",
+      type: "method",
+      signature: "matchAll()",
+      description: "Alias for always().",
+    },
+  ]}
+/>
+
+### Example
+
+```kotlin
+val checkout by string<Context>(default = "v1") {
+    rule("v2") {
+        platforms(Platform.IOS)
+        versions { min(3, 0, 0) }
+        rampUp { 25.0 }
+        note("iOS v2 rollout")
+    }
+}
+```
+
+## Inside versions { }
+
+<ScopeExplorer
+  title="VersionRangeScope API"
+  context="versions { ... }"
+  items={[
+    {
+      name: "min",
+      type: "method",
+      signature: "min(major: Int, minor: Int = 0, patch: Int = 0)",
+      description: "Inclusive minimum version boundary.",
+    },
+    {
+      name: "max",
+      type: "method",
+      signature: "max(major: Int, minor: Int = 0, patch: Int = 0)",
+      description: "Exclusive maximum version boundary.",
+    },
+  ]}
+/>
+
+## Custom predicates
+
+`extension { ... }` receives the `Context` type for the feature.
+
+```kotlin
+data class EnterpriseContext(
+    override val locale: AppLocale,
+    override val platform: Platform,
+    override val appVersion: Version,
+    override val stableId: StableId,
+    val subscriptionTier: Tier,
+) : Context
+
+val enterpriseOnly by boolean<EnterpriseContext>(default = false) {
+    rule(true) { extension { subscriptionTier == Tier.ENTERPRISE } }
+}
+```
+
+<GuaranteeBlock
+  label="Custom predicate specificity"
+  guarantee={`Custom predicates participate in specificity ordering.`}
+  mechanism={`Predicate implementations report their own \`specificity()\` which is added to the rule total.`}
+  boundary={`Konditional does not validate predicate correctness or determinism.`}
+/>
+
+## Ramp-up allowlists
+
+`allowlist(...)` bypasses the ramp-up check after the rule matches by criteria.
+
+<GuaranteeBlock
+  label="Allowlist scope"
+  boundary={`It does not override rule criteria, \`isActive\`, or the namespace kill-switch.`}
+/>
+
+## Next steps
+
+- [Evaluation model](/fundamentals/evaluation-semantics)
+- [Core API reference](/core/reference)

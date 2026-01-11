@@ -1,0 +1,172 @@
+# Your First Feature
+import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+import IDEInsight from '@site/src/components/IDEInsight';
+import ScopeExplorer from '@site/src/components/ScopeExplorer';
+
+
+This guide builds one feature end-to-end: definition, targeting rules, and evaluation.
+
+## 1) Define a namespace and a feature
+
+```kotlin
+import io.amichne.konditional.context.*
+
+object AppFeatures : Namespace("app") {
+    val darkMode by boolean<Context>(default = false) {
+        rule(true) { platforms(Platform.IOS) }
+        rule(true) { locales(AppLocale.UNITED_STATES) }
+    }
+}
+```
+
+<IDEInsight
+  title="What IntelliJ Infers"
+  typeHints={[
+    { line: 1, text: "darkMode", type: "Feature<Boolean, Context, Namespace>" },
+    { line: 5, text: "enabled", type: "Boolean" },
+  ]}
+  inferredTypes={{
+    darkMode: "Feature<Boolean, Context, Namespace>",
+    enabled: "Boolean",
+  }}
+  autocomplete={[
+    {
+      text: "rule(value: Boolean, build: RuleScope<Context>.() -> Unit)",
+      type: "method",
+      description: "Adds a typed rule value with targeting criteria.",
+    },
+    {
+      text: "enable(build: RuleScope<Context>.() -> Unit)",
+      type: "method",
+      description: "Boolean sugar for rule(true).",
+    },
+    {
+      text: "platforms(vararg PlatformTag)",
+      type: "method",
+      description: "Target iOS, Android, or custom platform tags.",
+    },
+  ]}
+>
+```kotlin
+val darkMode by boolean<Context>(default = false) {
+    rule(true) { platforms(Platform.IOS) }
+}
+
+val enabled: Boolean = AppFeatures.darkMode.evaluate(ctx)
+```
+</IDEInsight>
+
+## 2) Create a context and evaluate
+
+```kotlin
+val ctx = Context(
+    locale = AppLocale.UNITED_STATES,
+    platform = Platform.IOS,
+    appVersion = Version.of(2, 0, 0),
+    stableId = StableId.of("user-123"),
+)
+
+val enabled: Boolean = AppFeatures.darkMode.evaluate(ctx)
+```
+
+If no rule matches, the default value is returned.
+
+## What just happened
+
+- A **Namespace** is a registry of features.
+- A **Feature** is a typed value with rules.
+- A **Rule** is criteria -> value mapping.
+- A **Context** provides runtime inputs used by rules.
+
+<ScopeExplorer
+  title="RuleScope<Context> DSL"
+  context="rule { ... }"
+  items={[
+    {
+      name: "locales",
+      type: "method",
+      signature: "locales(vararg appLocales: LocaleTag)",
+      description: "Target matching locale tags.",
+    },
+    {
+      name: "platforms",
+      type: "method",
+      signature: "platforms(vararg ps: PlatformTag)",
+      description: "Target matching platform tags.",
+    },
+    {
+      name: "versions",
+      type: "dsl",
+      signature: "versions(build: VersionRangeScope.() -> Unit)",
+      description: "Constrain by minimum and maximum app versions.",
+    },
+    {
+      name: "rampUp",
+      type: "method",
+      signature: "rampUp(function: () -> Number)",
+      description: "Apply deterministic percentage rollout.",
+    },
+    {
+      name: "allowlist",
+      type: "method",
+      signature: "allowlist(vararg stableIds: StableId)",
+      description: "Bypass ramp-up for specific stable IDs.",
+    },
+    {
+      name: "axis",
+      type: "method",
+      signature: "axis(vararg values: T)",
+      description: "Target custom axes defined in Context.axisValues.",
+    },
+    {
+      name: "extension",
+      type: "method",
+      signature: "extension(block: C.() -> Boolean)",
+      description: "Add domain-specific predicates in code.",
+    },
+    {
+      name: "note",
+      type: "method",
+      signature: "note(text: String)",
+      description: "Attach a human-readable note to the rule.",
+    },
+    {
+      name: "always",
+      type: "method",
+      signature: "always()",
+      description: "Mark a catch-all rule explicitly.",
+    },
+    {
+      name: "matchAll",
+      type: "method",
+      signature: "matchAll()",
+      description: "Alias for always().",
+    },
+    {
+      name: "ios",
+      type: "method",
+      signature: "ios()",
+      description: "Sugar for platforms(Platform.IOS).",
+    },
+    {
+      name: "android",
+      type: "method",
+      signature: "android()",
+      description: "Sugar for platforms(Platform.ANDROID).",
+    },
+  ]}
+/>
+
+## Guarantees
+
+<GuaranteeBlock
+  label="Non-null values"
+  guarantee={`Evaluation always returns a non-null value of the declared type.`}
+  mechanism={`Features require a \`default\` value and return it when no rule matches.`}
+  boundary={`Konditional does not validate business logic; it only evaluates rules.`}
+/>
+
+## Next steps
+
+- Learn the core concepts: [Core Concepts](/fundamentals/core-primitives)
+- Understand rule ordering and ramp-ups: [Evaluation Model](/fundamentals/evaluation-semantics)

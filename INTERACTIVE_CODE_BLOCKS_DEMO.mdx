@@ -1,0 +1,264 @@
+# Interactive Code Block Components - Demo
+
+This file demonstrates how to use the new interactive components to surface IDE benefits and type information in the documentation.
+
+## 1. IDEInsight Component
+
+Shows code with tabs for viewing type hints and autocomplete information.
+
+import IDEInsight from './docusaurus/src/components/IDEInsight';
+import ScopeExplorer from './docusaurus/src/components/ScopeExplorer';
+import TypeAnnotation from './docusaurus/src/components/TypeAnnotation';
+
+### Example: Feature Definition with Type Hints
+
+<IDEInsight
+  title="Feature Definition - What IntelliJ Sees"
+  typeHints={[
+    { line: 1, text: "darkMode", type: "Feature<Boolean, Context, Namespace>" },
+    { line: 2, text: "enabled", type: "Boolean" }
+  ]}
+  inferredTypes={{
+    "darkMode": "Feature<Boolean, Context, Namespace>",
+    "enabled": "Boolean",
+    "ctx": "Context"
+  }}
+  autocomplete={[
+    { text: "boolean<Context>()", type: "method", description: "Creates a boolean-typed feature with compile-time safety" },
+    { text: "string<Context>()", type: "method", description: "Creates a string-typed feature" },
+    { text: "enum<Theme, Context>()", type: "method", description: "Creates an enum-typed feature with exhaustive when handling" },
+    { text: "integer<Context>()", type: "method", description: "Creates an integer-typed feature" },
+    { text: "custom<T, Context>()", type: "method", description: "Creates a custom-typed feature with schema validation" }
+  ]}
+>
+
+```kotlin
+object AppFeatures : Namespace("app") {
+    val darkMode by boolean<Context>(default = false) {
+        enable { ios() }
+    }
+}
+
+val enabled = AppFeatures.darkMode.evaluate(ctx)
+```
+
+</IDEInsight>
+
+**Key benefits shown:**
+- Type inference: IntelliJ knows `darkMode` is `Feature<Boolean, Context, Namespace>`
+- Autocomplete shows all available feature types when typing after `by`
+- Return type: `evaluate()` returns `Boolean`, not `Boolean?`
+
+---
+
+## 2. ScopeExplorer Component
+
+Shows what DSL methods are available in a given scope.
+
+### Example: Inside Feature Builder Block
+
+<ScopeExplorer
+  title="Available DSL Methods"
+  context="Feature<Boolean, Context> builder block"
+  items={[
+    {
+      name: "enable",
+      type: "dsl",
+      signature: "enable(block: RuleBuilder<Context>.() -> Unit)",
+      description: "Creates a rule that returns true when criteria match"
+    },
+    {
+      name: "disable",
+      type: "dsl",
+      signature: "disable(block: RuleBuilder<Context>.() -> Unit)",
+      description: "Creates a rule that returns false when criteria match"
+    },
+    {
+      name: "rule",
+      type: "dsl",
+      signature: "rule(value: Boolean, block: RuleBuilder<Context>.() -> Unit)",
+      description: "Creates a rule with explicit value"
+    },
+    {
+      name: "rampUp",
+      type: "method",
+      signature: "rampUp(block: RampUpBuilder.() -> Unit)",
+      description: "Adds deterministic percentage-based rollout"
+    },
+    {
+      name: "platforms",
+      type: "method",
+      signature: "platforms(vararg platforms: Platform)",
+      description: "Matches when context platform is in the list"
+    },
+    {
+      name: "locales",
+      type: "method",
+      signature: "locales(vararg locales: AppLocale)",
+      description: "Matches when context locale is in the list"
+    },
+    {
+      name: "appVersionAtLeast",
+      type: "method",
+      signature: "appVersionAtLeast(version: Version)",
+      description: "Matches when app version >= specified version"
+    },
+    {
+      name: "ios",
+      type: "method",
+      signature: "ios(): Boolean",
+      description: "Shorthand for platform == Platform.IOS"
+    },
+    {
+      name: "android",
+      type: "method",
+      signature: "android(): Boolean",
+      description: "Shorthand for platform == Platform.ANDROID"
+    }
+  ]}
+/>
+
+**Key benefits shown:**
+- IntelliJ autocomplete shows exactly these methods
+- DSL methods are type-safe and scoped
+- No risk of calling wrong methods in wrong context
+
+---
+
+## 3. TypeAnnotation Component
+
+Inline hover tooltips for specific code tokens.
+
+### Example: Type Inference in Action
+
+```kotlin
+val ctx = Context(
+    locale = AppLocale.UNITED_STATES,
+    platform = Platform.IOS,
+    appVersion = Version.of(2, 0, 0),
+    stableId = StableId.of("user-123"),
+)
+```
+
+In the code above:
+- <TypeAnnotation type="Context" description="Konditional infers the full Context type">ctx</TypeAnnotation> has inferred type `Context`
+- <TypeAnnotation type="Boolean" description="Not Boolean? - guaranteed non-null">AppFeatures.darkMode.evaluate(ctx)</TypeAnnotation> returns `Boolean`
+- <TypeAnnotation type="Feature<Boolean, Context, Namespace>" description="Type-safe feature access">AppFeatures.darkMode</TypeAnnotation> is compile-time verified
+
+---
+
+## 4. Combining Components for Complex Examples
+
+<IDEInsight
+  title="Type-Safe Enum Features"
+  inferredTypes={{
+    "theme": "Feature<Theme, Context, Namespace>",
+    "result": "Theme",
+    "Theme": "sealed class with LIGHT, DARK, AUTO"
+  }}
+>
+
+```kotlin
+enum class Theme { LIGHT, DARK, AUTO }
+
+object AppFeatures : Namespace("app") {
+    val theme by enum<Theme, Context>(default = Theme.LIGHT) {
+        rule(Theme.DARK) { ios() }
+    }
+}
+
+// IntelliJ knows this is Theme, not Theme?
+val result: Theme = AppFeatures.theme.evaluate(ctx)
+
+// Exhaustive when - compiler enforces all cases
+when (result) {
+    Theme.LIGHT -> applyLightTheme()
+    Theme.DARK -> applyDarkTheme()
+    Theme.AUTO -> applyAutoTheme()
+} // No else needed!
+```
+
+</IDEInsight>
+
+<ScopeExplorer
+  title="Type-Specific DSL Methods"
+  context="Feature<Theme, Context> builder block"
+  items={[
+    {
+      name: "rule",
+      type: "dsl",
+      signature: "rule(value: Theme, block: RuleBuilder<Context>.() -> Unit)",
+      description: "Value must be Theme enum - compile-time checked"
+    },
+    {
+      name: "rampUp",
+      type: "method",
+      signature: "rampUp(light: Theme, dark: Theme, percent: Double)",
+      description: "Both variants must be Theme - type-safe variants"
+    }
+  ]}
+/>
+
+---
+
+## Usage in Documentation
+
+### Add to any .mdx file:
+
+```mdx
+import IDEInsight from '@site/src/components/IDEInsight';
+import ScopeExplorer from '@site/src/components/ScopeExplorer';
+import TypeAnnotation from '@site/src/components/TypeAnnotation';
+```
+
+### Quick Examples:
+
+**1. Show autocomplete:**
+```jsx
+<ScopeExplorer
+  title="Available Methods"
+  context="RuleBuilder<Context>"
+  items={[
+    { name: "ios", type: "method", signature: "ios(): Boolean" }
+  ]}
+/>
+```
+
+**2. Show type hints:**
+```jsx
+<IDEInsight
+  inferredTypes={{
+    "myVar": "String"
+  }}
+>
+  {/* your code block */}
+</IDEInsight>
+```
+
+**3. Inline type annotation:**
+```jsx
+<TypeAnnotation type="Boolean" description="Never null">
+  enabled
+</TypeAnnotation>
+```
+
+---
+
+## Benefits for Documentation
+
+1. **Visual Learning**: Users see what IntelliJ shows them
+2. **Discoverability**: Autocomplete lists show available DSL methods
+3. **Type Safety Communication**: Inferred types demonstrate compile-time guarantees
+4. **IDE Experience**: Bridges gap between docs and actual development
+5. **Interactive**: Tabs and hovers make dense information scannable
+
+---
+
+## Customization
+
+All components support:
+- ✅ Light/dark mode
+- ✅ Mobile responsive
+- ✅ Accessible keyboard navigation
+- ✅ Customizable styling via CSS modules
+- ✅ GitHub-inspired color scheme matching Docusaurus theme

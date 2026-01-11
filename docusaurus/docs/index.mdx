@@ -3,6 +3,8 @@ slug: /
 ---
 
 # Konditional Core
+import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+
 
 Type-safe, deterministic feature flags for Kotlin.
 
@@ -43,27 +45,30 @@ val enabled: Boolean = AppFeatures.darkMode.evaluate(ctx)
 
 ### Type-safe access
 
-- **Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
-
-- **Mechanism**: Property delegation and generic type propagation on `Feature<T, Context, Namespace>`.
-
-- **Boundary**: This does not apply to dynamically-generated features or external configuration systems.
+<GuaranteeBlock
+  label="Type-safe access"
+  guarantee="Feature access and return types are compile-time safe for statically-defined features."
+  mechanism="Property delegation and generic type propagation on `Feature<T, Context, Namespace>`."
+  boundary="This does not apply to dynamically-generated features or external configuration systems."
+/>
 
 ### Total evaluation
 
-- **Guarantee**: Every evaluation returns a value of the declared type; no nulls and no missing cases.
-
-- **Mechanism**: Each feature requires a `default` value, which is returned when no rule matches.
-
-- **Boundary**: If your business logic is wrong, Konditional still returns a value; correctness is your responsibility.
+<GuaranteeBlock
+  label="Total evaluation"
+  guarantee={`Every evaluation returns a value of the declared type; no nulls and no missing cases.`}
+  mechanism={`Each feature requires a \`default\` value, which is returned when no rule matches.`}
+  boundary={`If your business logic is wrong, Konditional still returns a value; correctness is your responsibility.`}
+/>
 
 ### Deterministic ramp-ups
 
-- **Guarantee**: The same `(stableId, featureKey, salt)` always yields the same bucket assignment.
-
-- **Mechanism**: SHA-256 bucketing reduces the hash to a stable integer in `[0, 9999]`.
-
-- **Boundary**: Changing any of `stableId`, `featureKey`, or `salt` changes the bucket assignment.
+<GuaranteeBlock
+  label="Deterministic ramp-ups"
+  guarantee={`The same \`(stableId, featureKey, salt)\` always yields the same bucket assignment.`}
+  mechanism={`SHA-256 bucketing reduces the hash to a stable integer in \`[0, 9999]\`.`}
+  boundary={`Changing any of \`stableId\`, \`featureKey\`, or \`salt\` changes the bucket assignment.`}
+/>
 
 ## Why the guarantees hold
 

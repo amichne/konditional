@@ -1,4 +1,6 @@
 # Runtime Operations
+import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+
 
 API reference for managing namespace configuration lifecycle: loading, rollback, and kill-switch operations.
 
@@ -89,11 +91,12 @@ fun Namespace.disableAll()
 fun Namespace.enableAll()
 ```
 
-- **Guarantee**: When disabled, evaluations return declared defaults.
-
-- **Mechanism**: Registry-level boolean kill-switch.
-
-- **Boundary**: This does not change feature definitions or loaded configuration.
+<GuaranteeBlock
+  label="Kill-switch behavior"
+  guarantee={`When disabled, evaluations return declared defaults.`}
+  mechanism={`Registry-level boolean kill-switch.`}
+  boundary={`This does not change feature definitions or loaded configuration.`}
+/>
 
 ---
 

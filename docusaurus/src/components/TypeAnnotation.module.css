@@ -1,0 +1,127 @@
+.typeAnnotation {
+  position: relative;
+  display: inline-block;
+  cursor: help;
+}
+
+.annotatedCode {
+  border-bottom: 2px dotted #0969da;
+  padding-bottom: 2px;
+  transition: border-color 0.2s ease;
+}
+
+.typeAnnotation:hover .annotatedCode {
+  border-color: #58a6ff;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  padding: 0.75rem 1rem;
+  background: var(--ifm-background-surface-color);
+  border: 2px solid #0969da;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 1000;
+  min-width: 200px;
+}
+
+.typeAnnotation:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-12px);
+}
+
+.typeInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.typeLabel {
+  font-size: 0.75rem;
+  color: #666;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.typeName {
+  color: #0969da;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: #f0f7ff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+}
+
+.description {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--ifm-font-color-base);
+  line-height: 1.4;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(9, 105, 218, 0.2);
+  white-space: normal;
+}
+
+/* Dark mode */
+[data-theme='dark'] .annotatedCode {
+  border-color: #58a6ff;
+}
+
+[data-theme='dark'] .typeAnnotation:hover .annotatedCode {
+  border-color: #7ab7ff;
+}
+
+[data-theme='dark'] .tooltip {
+  border-color: #58a6ff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme='dark'] .typeLabel {
+  color: #b3b3b3;
+}
+
+[data-theme='dark'] .typeName {
+  color: #58a6ff;
+  background: #1c2937;
+}
+
+[data-theme='dark'] .description {
+  border-top-color: rgba(88, 166, 255, 0.3);
+}
+
+/* Arrow pointer */
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #0969da;
+}
+
+[data-theme='dark'] .tooltip::after {
+  border-top-color: #58a6ff;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .tooltip {
+    min-width: 250px;
+    max-width: 80vw;
+  }
+}

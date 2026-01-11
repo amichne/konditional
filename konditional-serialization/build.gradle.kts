@@ -56,7 +56,7 @@ tasks.test {
 
 tasks.withType<KotlinCompile>().configureEach {
     if (name.contains("Test")) {
-        compilerOptions.optIn.add("io.amichne.konditional.internal.KonditionalInternalApi")
+        compilerOptions.optIn.add("io.amichne.konditional.api.KonditionalInternalApi")
     }
 }
 

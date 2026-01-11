@@ -75,6 +75,7 @@ val verifyRecipesDocs by tasks.registering(VerifyRecipesDocsTask::class) {
     sampleFile.set(recipesSampleFile)
     templateFile.set(recipesTemplateFile)
     docsFile.set(recipesDocFile)
+    mustRunAfter(generateRecipesDocs)
 }
 
 tasks.named("test") {

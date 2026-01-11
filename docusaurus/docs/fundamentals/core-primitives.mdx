@@ -1,5 +1,8 @@
 # Core Concepts
 
+import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+import TypeAnnotation from '@site/src/components/TypeAnnotation';
+
 This page defines the minimum vocabulary you need to read and write Konditional features.
 
 ## Terms
@@ -36,10 +39,17 @@ object AppFeatures : Namespace("app") {
 val theme: Theme = AppFeatures.theme.evaluate(ctx)
 ```
 
+## What the IDE knows
+
+The <TypeAnnotation type="Feature<Theme, Context, Namespace>" description="Compile-time feature type inferred from the delegate.">theme</TypeAnnotation>
+property is statically typed, and <TypeAnnotation type="Theme" description="Non-null because a default value is required.">evaluate(ctx)</TypeAnnotation>
+returns a non-null `Theme` at compile time.
+
 ## Type-safety guarantee
 
-- **Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
-
-- **Mechanism**: Feature properties are declared with explicit type parameters and enforced by the Kotlin type system.
-
-- **Boundary**: Dynamically-generated features are outside this guarantee.
+<GuaranteeBlock
+  label="Type Safety"
+  guarantee="Feature access and return types are compile-time safe for statically-defined features."
+  mechanism="Feature properties are declared with explicit type parameters and enforced by the Kotlin type system."
+  boundary="Dynamically-generated features are outside this guarantee."
+/>

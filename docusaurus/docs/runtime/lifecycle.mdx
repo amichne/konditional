@@ -1,4 +1,6 @@
 # Configuration Lifecycle
+import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+
 
 From JSON to evaluation: how configuration flows through the validated boundary and into the active snapshot.
 
@@ -33,11 +35,12 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 }
 ```
 
-- **Guarantee**: Invalid JSON never becomes a `Configuration`.
-
-- **Mechanism**: `ParseResult` makes success vs failure explicit at the boundary.
-
-- **Boundary**: Semantic correctness is not validated.
+<GuaranteeBlock
+  label="Invalid JSON rejection"
+  guarantee={`Invalid JSON never becomes a \`Configuration\`.`}
+  mechanism={`\`ParseResult\` makes success vs failure explicit at the boundary.`}
+  boundary={`Semantic correctness is not validated.`}
+/>
 
 ### 3) Atomic load
 
