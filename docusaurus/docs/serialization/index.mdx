@@ -1,5 +1,6 @@
 # konditional-serialization
 import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+import TypeAnnotation from '@site/src/components/TypeAnnotation';
 
 
 `konditional-serialization` handles JSON snapshot/patch formats and parsing at the configuration boundary.
@@ -35,6 +36,16 @@ dependencies {
     implementation("io.amichne:konditional-serialization:VERSION")
 }
 ```
+
+## Parse-Don't-Validate Boundary
+
+The serialization module enforces a hard boundary between external JSON and validated configuration using <TypeAnnotation type="ParseResult<T>" description="Explicit success/failure result type">ParseResult</TypeAnnotation>:
+
+- <TypeAnnotation type="ParseResult.Success<T>" description="Contains validated configuration">Success</TypeAnnotation> contains a validated <TypeAnnotation type="Configuration" description="Type-safe configuration snapshot">Configuration</TypeAnnotation>
+- <TypeAnnotation type="ParseResult.Failure" description="Contains parsing error details">Failure</TypeAnnotation> contains <TypeAnnotation type="ParseError" description="Structured error information">ParseError</TypeAnnotation> details
+- No exceptions are thrown for validation failures
+
+This pattern ensures invalid JSON never becomes active configuration.
 
 ## Guarantees
 

@@ -1,5 +1,7 @@
 # opentelemetry
 import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+import TypeAnnotation from '@site/src/components/TypeAnnotation';
+import ScopeExplorer from '@site/src/components/ScopeExplorer';
 
 
 OpenTelemetry integration for Konditional: tracing, metrics, and structured logging.
@@ -67,6 +69,45 @@ val enabled = MyFlags.darkMode.evaluateWithTelemetry(context)
 ```
 
 ## Sampling strategies
+
+Control which evaluations get traced with <TypeAnnotation type="SamplingStrategy" description="Configurable sampling logic for OpenTelemetry spans">SamplingStrategy</TypeAnnotation>:
+
+<ScopeExplorer
+  title="Available Sampling Strategies"
+  context="SamplingStrategy"
+  items={[
+    {
+      name: "ALWAYS",
+      type: "property",
+      signature: "SamplingStrategy.ALWAYS",
+      description: "Trace every feature evaluation (high overhead).",
+    },
+    {
+      name: "NEVER",
+      type: "property",
+      signature: "SamplingStrategy.NEVER",
+      description: "Disable all tracing (zero overhead).",
+    },
+    {
+      name: "PARENT_BASED",
+      type: "property",
+      signature: "SamplingStrategy.PARENT_BASED",
+      description: "Sample if the parent span is sampled.",
+    },
+    {
+      name: "RATIO",
+      type: "method",
+      signature: "RATIO(percentage: Int)",
+      description: "Sample a fixed percentage of evaluations (e.g., RATIO(10) = 10%).",
+    },
+    {
+      name: "FEATURE_FILTER",
+      type: "method",
+      signature: "FEATURE_FILTER(predicate: (Feature<*, *, *>) -> Boolean)",
+      description: "Sample based on custom feature predicate (e.g., critical namespaces only).",
+    },
+  ]}
+/>
 
 ```kotlin
 SamplingStrategy.ALWAYS

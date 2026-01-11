@@ -10,6 +10,9 @@ Source: docusaurus/docs-templates/recipes.template.md + konditional-observabilit
 
 # Recipes: Best-Practice Patterns
 import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+import IDEInsight from '@site/src/components/IDEInsight';
+import ScopeExplorer from '@site/src/components/ScopeExplorer';
+import TypeAnnotation from '@site/src/components/TypeAnnotation';
 
 
 Practical patterns for real-world feature control using only Konditional building blocks. Each recipe highlights a
@@ -31,6 +34,17 @@ Covered solution areas:
 
 When you have multiple rollout variants, model them as a typed value (enum or string) rather than composing booleans.
 
+<IDEInsight
+  title="Type-Safe Variant Feature"
+  inferredTypes={{
+    variant: "Feature<CheckoutVariant, Context, Namespace>",
+    result: "CheckoutVariant (not CheckoutVariant?)"
+  }}
+  typeHints={[
+    { line: 1, text: "variant", type: "Feature<CheckoutVariant, Context, Namespace>" },
+    { line: 9, text: "evaluate(context)", type: "CheckoutVariant" }
+  ]}
+>
 ```kotlin
 enum class CheckoutVariant { CLASSIC, FAST_PATH, NEW_UI }
 
@@ -49,6 +63,7 @@ fun renderCheckout(context: Context) {
     }
 }
 ```
+</IDEInsight>
 
 <GuaranteeBlock
   label="Typed variants"
@@ -85,6 +100,37 @@ object RampUpResetFlags : Namespace("ramp-up-reset") {
     }
 }
 ```
+
+<ScopeExplorer
+  title="Feature DSL: Ramp-Up Control"
+  context="Feature { ... }"
+  items={[
+    {
+      name: "salt",
+      type: "method",
+      signature: "salt(value: String)",
+      description: "Sets a deterministic salt for ramp-up bucketing. Change this to reshuffle users into buckets.",
+    },
+    {
+      name: "rule",
+      type: "dsl",
+      signature: "rule(value: T, build: RuleScope<C>.() -> Unit)",
+      description: "Adds a rule that returns the specified value if targeting criteria match.",
+    },
+    {
+      name: "enable",
+      type: "dsl",
+      signature: "enable(build: RuleScope<C>.() -> Unit)",
+      description: "Boolean sugar for rule(true). Only available for boolean features.",
+    },
+    {
+      name: "disable",
+      type: "dsl",
+      signature: "disable(build: RuleScope<C>.() -> Unit)",
+      description: "Boolean sugar for rule(false). Only available for boolean features.",
+    },
+  ]}
+/>
 
 <GuaranteeBlock
   label="Deterministic ramp-up with salt"
@@ -151,6 +197,35 @@ fun isPremiumUiEnabled(): Boolean {
 
 Use strongly-typed extensions for domain logic that should not be remotely mutable.
 
+<IDEInsight
+  title="Custom Context Type Propagation"
+  inferredTypes={{
+    advancedAnalytics: "Feature<Boolean, EnterpriseContext, Namespace>",
+    "extension receiver": "EnterpriseContext"
+  }}
+  typeHints={[
+    { line: 1, text: "advancedAnalytics", type: "Feature<Boolean, EnterpriseContext, Namespace>" },
+    { line: 3, text: "subscriptionTier", type: "SubscriptionTier" },
+    { line: 3, text: "employeeCount", type: "Int" }
+  ]}
+  autocomplete={[
+    {
+      text: "subscriptionTier: SubscriptionTier",
+      type: "property",
+      description: "Available in extension block via EnterpriseContext receiver"
+    },
+    {
+      text: "employeeCount: Int",
+      type: "property",
+      description: "Available in extension block via EnterpriseContext receiver"
+    },
+    {
+      text: "locale: AppLocale",
+      type: "property",
+      description: "Inherited from Context.LocaleContext"
+    }
+  ]}
+>
 ```kotlin
 data class EnterpriseContext(
     override val locale: AppLocale,
@@ -171,6 +246,9 @@ object PremiumFeatures : Namespace("premium") {
     }
 }
 ```
+</IDEInsight>
+
+The <TypeAnnotation type="EnterpriseContext" description="Custom context type with domain-specific properties">extension receiver</TypeAnnotation> is strongly typed, giving you full autocomplete and compile-time safety for domain predicates.
 
 <GuaranteeBlock
   label="Custom context extensions"
@@ -185,6 +263,29 @@ object PremiumFeatures : Namespace("premium") {
 
 Use `custom<T>` for structured configuration that must be validated at the JSON boundary.
 
+<IDEInsight
+  title="Konstrained Type Safety"
+  inferredTypes={{
+    retryPolicy: "Feature<RetryPolicy, Context, Namespace>",
+    RetryPolicy: "Konstrained<ObjectSchema>"
+  }}
+  typeHints={[
+    { line: 1, text: "retryPolicy", type: "Feature<RetryPolicy, Context, Namespace>" },
+    { line: 2, text: "schema", type: "ObjectSchema" }
+  ]}
+  autocomplete={[
+    {
+      text: "custom<T : Konstrained<*>, C>(default: T)",
+      type: "method",
+      description: "Creates a feature with structured value validation"
+    },
+    {
+      text: "schemaRoot { ... }",
+      type: "dsl",
+      description: "Defines validation schema for data class properties"
+    }
+  ]}
+>
 ```kotlin
 data class RetryPolicy(
     val maxAttempts: Int = 3,
@@ -204,6 +305,9 @@ object PolicyFlags : Namespace("policy") {
     }
 }
 ```
+</IDEInsight>
+
+The <TypeAnnotation type="Konstrained<ObjectSchema>" description="Marker interface enforcing schema validation">Konstrained</TypeAnnotation> interface ensures the value type defines a <TypeAnnotation type="ObjectSchema" description="Declarative validation rules">schema</TypeAnnotation> that validates JSON input at parse time.
 
 <GuaranteeBlock
   label="Structured value validation"

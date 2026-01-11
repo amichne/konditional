@@ -1,5 +1,7 @@
 # kontracts
 import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+import IDEInsight from '@site/src/components/IDEInsight';
+import TypeAnnotation from '@site/src/components/TypeAnnotation';
 
 
 Type-safe JSON Schema DSL for Kotlin used by Konditional for structured value validation.
@@ -35,6 +37,58 @@ dependencies {
   implementation(project(":kontracts"))
 }
 ```
+
+## Example: Structured Configuration
+
+<IDEInsight
+  title="Type-Safe Schema DSL"
+  inferredTypes={{
+    RetryConfig: "Konstrained<ObjectSchema>",
+    schema: "ObjectSchema",
+    "::maxRetries": "KProperty1<RetryConfig, Int>"
+  }}
+  typeHints={[
+    { line: 1, text: "RetryConfig", type: "Konstrained<ObjectSchema>" },
+    { line: 5, text: "schema", type: "ObjectSchema" },
+    { line: 6, text: "::maxRetries", type: "KProperty1<RetryConfig, Int>" }
+  ]}
+  autocomplete={[
+    {
+      text: "schemaRoot { ... }",
+      type: "dsl",
+      description: "Define schema root for data class properties"
+    },
+    {
+      text: "::property of { ... }",
+      type: "dsl",
+      description: "Constrain a property with validation rules"
+    },
+    {
+      text: "minimum = ...",
+      type: "property",
+      description: "Set minimum value constraint"
+    },
+    {
+      text: "maximum = ...",
+      type: "property",
+      description: "Set maximum value constraint"
+    }
+  ]}
+>
+```kotlin
+data class RetryConfig(
+    val maxRetries: Int,
+    val backoffMs: Double,
+) : Konstrained<ObjectSchema> {
+    override val schema = schemaRoot {
+        ::maxRetries of { minimum = 1; maximum = 10 }
+        ::backoffMs of { minimum = 0.0 }
+    }
+}
+```
+</IDEInsight>
+
+The <TypeAnnotation type="schemaRoot { ... }" description="Type-inferred DSL that mirrors data class structure">schema DSL</TypeAnnotation> uses property references (<TypeAnnotation type="KProperty1<T, V>" description="Kotlin property reference preserving type safety">::property</TypeAnnotation>) to ensure compile-time correctness.
 
 ## Guarantees
 

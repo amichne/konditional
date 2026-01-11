@@ -1,10 +1,60 @@
 # Runtime Operations
 import GuaranteeBlock from '@site/src/components/GuaranteeBlock';
+import ScopeExplorer from '@site/src/components/ScopeExplorer';
 
 
 API reference for managing namespace configuration lifecycle: loading, rollback, and kill-switch operations.
 
 `load` / `rollback` / `historyMetadata` are runtime-only extensions from `io.amichne.konditional.runtime`.
+
+<ScopeExplorer
+  title="Namespace Runtime API"
+  context="namespace: Namespace"
+  items={[
+    {
+      name: "load",
+      type: "method",
+      signature: "load(configuration: ConfigurationView)",
+      description: "Atomically replace the active configuration snapshot.",
+    },
+    {
+      name: "configuration",
+      type: "property",
+      signature: "val configuration: ConfigurationView",
+      description: "Get the current active configuration snapshot.",
+    },
+    {
+      name: "rollback",
+      type: "method",
+      signature: "rollback(steps: Int = 1): Boolean",
+      description: "Revert to a prior configuration from rollback history.",
+    },
+    {
+      name: "historyMetadata",
+      type: "property",
+      signature: "val historyMetadata: List<ConfigurationMetadataView>",
+      description: "Read metadata for the rollback history.",
+    },
+    {
+      name: "disableAll",
+      type: "method",
+      signature: "disableAll()",
+      description: "Emergency kill-switch to return defaults for all features.",
+    },
+    {
+      name: "enableAll",
+      type: "method",
+      signature: "enableAll()",
+      description: "Re-enable the namespace after disableAll().",
+    },
+    {
+      name: "setHooks",
+      type: "method",
+      signature: "setHooks(hooks: RegistryHooks)",
+      description: "Attach dependency-free logging/metrics hooks to the namespace.",
+    },
+  ]}
+/>
 
 ---
 
