@@ -3,15 +3,17 @@
  * Demonstrates rendering complex configuration from OpenAPI schema
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   AnySerializableFlag, 
   AnySerializableRule,
-  FlagValue,
+  SerializablePatch,
+  SnapshotMeta,
   parseFeatureId,
   createDefaultRule,
 } from '@/types/konditional';
 import { mockSnapshot, getFlagsByNamespace, paymentProviderOptions } from '@/data/konditionalMockData';
+import { applySnapshotPatch, fetchSnapshot } from '@/lib/konditionalApi';
 import { FlagValueEditor, ValueTypeBadge, FlagValueDisplay } from '@/components/config/FlagValueEditor';
 import { RuleTargetingEditor } from '@/components/config/RuleTargetingEditor';
 import { Button } from '@/components/ui/button';
@@ -290,24 +292,86 @@ function FlagEditor({
 /** Main Schema Forms page */
 export default function SchemaFormsPage() {
   const [flags, setFlags] = useState<AnySerializableFlag[]>(mockSnapshot.flags as AnySerializableFlag[]);
+  const [meta, setMeta] = useState<SnapshotMeta | undefined>(mockSnapshot.meta);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedFlagKey, setSelectedFlagKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchSnapshot()
+      .then((snapshot) => {
+        if (!isMounted) {
+          return;
+        }
+        setFlags(snapshot.flags as AnySerializableFlag[]);
+        setMeta(snapshot.meta);
+        setErrorMessage(null);
+      })
+      .catch((error) => {
+        if (!isMounted) {
+          return;
+        }
+        setErrorMessage(error instanceof Error ? error.message : 'Failed to load snapshot');
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
   
-  const flagsByNamespace = getFlagsByNamespace();
+  const flagsByNamespace = getFlagsByNamespace(flags as any);
   const selectedFlag = flags.find(f => f.key === selectedFlagKey);
 
   const updateFlag = (updated: AnySerializableFlag) => {
     setFlags(flags.map(f => f.key === updated.key ? updated : f));
   };
 
+  const saveSnapshot = async () => {
+    setIsSaving(true);
+    setErrorMessage(null);
+    try {
+      const patch: SerializablePatch = {
+        meta,
+        flags: flags as any,
+        removeKeys: [],
+      };
+      const updatedSnapshot = await applySnapshotPatch(patch);
+      setFlags(updatedSnapshot.flags as AnySerializableFlag[]);
+      setMeta(updatedSnapshot.meta);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to save snapshot');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="min-h-screen">
       <div className="max-w-6xl mx-auto p-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Schema-Driven Forms</h1>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h1 className="text-3xl font-bold mb-2">Schema-Driven Forms</h1>
+            <Button onClick={saveSnapshot} disabled={isSaving || isLoading} variant="secondary">
+              {isSaving ? 'Saving...' : 'Save changes'}
+            </Button>
+          </div>
           <p className="text-muted-foreground">
             Configure feature flags with type-safe editors generated from the OpenAPI schema.
             Complex targeting made simple through progressive disclosure.
           </p>
+          {isLoading && (
+            <p className="text-sm text-muted-foreground mt-2">Loading snapshot...</p>
+          )}
+          {errorMessage && (
+            <p className="text-sm text-destructive mt-2">{errorMessage}</p>
+          )}
         </div>
 
         {selectedFlag ? (

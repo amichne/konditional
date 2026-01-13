@@ -1,5 +1,6 @@
 package io.amichne.konditional.uiktor
 
+import io.amichne.konditional.uiktor.demo.installDemoKonditionalReactUi
 import io.amichne.konditional.uiktor.demo.installDemoKonditionalUi
 import io.ktor.server.application.Application
 import io.ktor.server.routing.routing
@@ -7,6 +8,7 @@ import io.ktor.server.routing.routing
 fun Application.module() {
     routing {
         installDemoKonditionalUi()
+        installDemoKonditionalReactUi()
     }
 }
 

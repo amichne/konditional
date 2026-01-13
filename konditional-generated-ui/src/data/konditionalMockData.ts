@@ -225,15 +225,20 @@ export const localeRegions: Record<string, Locale[]> = {
 };
 
 // Helper to get a single flag by key
-export function getFlagByKey(key: string): SerializableFlag | undefined {
-  return mockSnapshot.flags.find(f => f.key === key);
+export function getFlagByKey(
+  key: string,
+  flags: SerializableFlag[] = mockSnapshot.flags,
+): SerializableFlag | undefined {
+  return flags.find(f => f.key === key);
 }
 
 // Helper to group flags by namespace
-export function getFlagsByNamespace(): Record<string, SerializableFlag[]> {
+export function getFlagsByNamespace(
+  flags: SerializableFlag[] = mockSnapshot.flags,
+): Record<string, SerializableFlag[]> {
   const groups: Record<string, SerializableFlag[]> = {};
   
-  for (const flag of mockSnapshot.flags) {
+  for (const flag of flags) {
     const match = flag.key.match(/^feature::([^:]+)::/);
     const namespace = match ? match[1] : 'other';
     

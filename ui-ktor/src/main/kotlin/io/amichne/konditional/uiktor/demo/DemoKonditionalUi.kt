@@ -75,7 +75,7 @@ fun Route.installDemoKonditionalUi(
         installUiRoutes(demoUiRouteConfig(paths))
     }
 
-private fun sampleSnapshot(): SerializableSnapshot =
+internal fun sampleSnapshot(): SerializableSnapshot =
     SerializableSnapshot(
         flags = listOf(
             SerializableFlag(
@@ -97,10 +97,7 @@ private fun sampleSnapshot(): SerializableSnapshot =
             ),
             SerializableFlag(
                 key = FeatureId.create("payments", "provider"),
-                defaultValue = FlagValue.EnumValue(
-                    value = "STRIPE",
-                    enumClassName = "com.example.PaymentProvider",
-                ),
+                defaultValue = FlagValue.StringValue("STRIPE"),
                 isActive = true,
                 rules = emptyList(),
             ),
