@@ -1,7 +1,9 @@
 package io.amichne.konditional.uiktor.demo
 
+import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.runtime.load
 import io.amichne.konditional.serialization.FeatureRegistry
 
 /**
@@ -21,6 +23,6 @@ internal object PaymentsNamespace : Namespace("payments") {
  * Must be called before deserializing demo snapshots.
  */
 internal fun registerDemoFeatures() {
-    FeatureRegistry.register(UiNamespace.dark_mode_enabled)
-    FeatureRegistry.register(PaymentsNamespace.provider)
+    UiNamespace.dark_mode_enabled
+    PaymentsNamespace.provider
 }

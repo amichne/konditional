@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Fuse from 'fuse.js';
-import { cn } from '@/lib/utils';
 import { useAppStore } from '@/lib/store';
 import {
   Command,
@@ -53,97 +52,29 @@ export const CommandPalette: React.FC = () => {
 
   const [search, setSearch] = useState('');
   const [results, setResults] = useState<CommandAction[]>([]);
+  const [actions, setActions] = useState<CommandAction[]>([]); // Dynamically load actions
 
-  const actions: CommandAction[] = [
-    // Navigation
-    {
-      id: 'nav-primitives',
-      label: 'Design Primitives',
-      description: 'View design tokens and primitives',
-      icon: Palette,
-      keywords: ['colors', 'typography', 'spacing', 'tokens', 'design'],
-      action: () => navigate('/primitives'),
-      group: 'Navigation',
-    },
-    {
-      id: 'nav-components',
-      label: 'Core Components',
-      description: 'Browse component library',
-      icon: Box,
-      keywords: ['components', 'ui', 'library', 'widgets'],
-      action: () => navigate('/components'),
-      group: 'Navigation',
-    },
-    {
-      id: 'nav-patterns',
-      label: 'Patterns & Recipes',
-      description: 'Common patterns and best practices',
-      icon: Puzzle,
-      keywords: ['patterns', 'recipes', 'examples', 'best practices'],
-      action: () => navigate('/patterns'),
-      group: 'Navigation',
-    },
-    {
-      id: 'nav-playground',
-      label: 'Playground',
-      description: 'Interactive component playground',
-      icon: PlayCircle,
-      keywords: ['playground', 'sandbox', 'test', 'interactive'],
-      action: () => navigate('/playground'),
-      group: 'Navigation',
-    },
-    {
-      id: 'nav-demo',
-      label: 'Config Demo',
-      description: 'Full configuration management demo',
-      icon: Settings2,
-      keywords: ['demo', 'config', 'application', 'showcase'],
-      action: () => navigate('/demo'),
-      group: 'Navigation',
-    },
-    // Theme
-    {
-      id: 'theme-light',
-      label: 'Light Theme',
-      icon: Sun,
-      keywords: ['theme', 'light', 'appearance', 'mode'],
-      action: () => setTheme('light'),
-      group: 'Theme',
-    },
-    {
-      id: 'theme-dark',
-      label: 'Dark Theme',
-      icon: Moon,
-      keywords: ['theme', 'dark', 'appearance', 'mode'],
-      action: () => setTheme('dark'),
-      group: 'Theme',
-    },
-    {
-      id: 'theme-system',
-      label: 'System Theme',
-      icon: Monitor,
-      keywords: ['theme', 'system', 'auto', 'appearance'],
-      action: () => setTheme('system'),
-      group: 'Theme',
-    },
-    // Density
-    {
-      id: 'density-comfortable',
-      label: 'Comfortable Density',
-      icon: Maximize,
-      keywords: ['density', 'comfortable', 'spacing', 'relaxed'],
-      action: () => setDensity('comfortable'),
-      group: 'Preferences',
-    },
-    {
-      id: 'density-compact',
-      label: 'Compact Density',
-      icon: Minimize,
-      keywords: ['density', 'compact', 'tight', 'dense'],
-      action: () => setDensity('compact'),
-      group: 'Preferences',
-    },
-  ];
+  useEffect(() => {
+    const loadActions = async () => {
+      const config = fetchSnapshot() ; // Fetch the UI config dynamically
+        config.then((data) => {
+            const dynamicActions = data.flags.map((feature: any) => ({
+                id: feature.id,
+                label: feature.name,
+                description: feature.description,
+                icon: FileCode, // Default icon for dynamic features
+                keywords: feature.keywords || [],
+                action: () => todo("Implement action for " + feature.name),
+                group: feature.group || 'Dynamic Features',
+            }));
+            setActions(dynamicActions);
+        });
+
+    }
+
+
+    loadActions();
+  }, [navigate]);
 
   const fuse = new Fuse(actions, {
     keys: ['label', 'description', 'keywords'],
@@ -158,7 +89,7 @@ export const CommandPalette: React.FC = () => {
     } else {
       setResults(actions);
     }
-  }, [search]);
+  }, [search, actions]);
 
   const handleSelect = useCallback((action: CommandAction) => {
     action.action();

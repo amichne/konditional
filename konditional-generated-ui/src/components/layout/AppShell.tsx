@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useAppStore, applyTheme, applyDensity, applyReducedMotion } from '@/lib/store';
-import { SideNav } from './SideNav';
 import { TopBar } from './TopBar';
 import { CommandPalette } from '../command/CommandPalette';
 
@@ -39,9 +38,6 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     <div className="flex min-h-screen w-full bg-background">
       {/* Command Palette */}
       <CommandPalette />
-      
-      {/* Side Navigation */}
-      <SideNav />
 
       {/* Main Content Area */}
       <div

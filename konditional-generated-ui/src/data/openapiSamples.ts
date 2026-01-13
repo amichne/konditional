@@ -1,5 +1,5 @@
 import { SerializableSnapshot } from '@/types/konditional';
-import openApiYaml from '../../../docusaurus/openapi/openapi.yaml?raw';
+import openApiYaml from '../openapi/openapi.yaml?raw';
 
 const sampleParentKey = 'x-konditional-samples';
 const sampleChildKey = 'snapshotJson';
@@ -52,7 +52,7 @@ function parseOpenApiSampleSnapshot(raw: string): OpenApiSampleResult {
   if (!sampleJson) {
     return {
       snapshot: { meta: { version: 'openapi-sample', generatedAtEpochMillis: 0, source: 'openapi' }, flags: [] },
-      error: 'OpenAPI sample snapshot missing in docusaurus/openapi/openapi.yaml.',
+      error: 'OpenAPI sample snapshot missing in ../openapi/openapi.yaml.',
     };
   }
 
