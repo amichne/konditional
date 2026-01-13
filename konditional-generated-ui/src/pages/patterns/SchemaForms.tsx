@@ -3,17 +3,17 @@
  * Demonstrates rendering complex configuration from OpenAPI schema
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { 
   AnySerializableFlag, 
   AnySerializableRule,
-  SerializablePatch,
+  SerializableSnapshot,
   SnapshotMeta,
   parseFeatureId,
   createDefaultRule,
 } from '@/types/konditional';
-import { mockSnapshot, getFlagsByNamespace, paymentProviderOptions } from '@/data/konditionalMockData';
-import { applySnapshotPatch, fetchSnapshot } from '@/lib/konditionalApi';
+import { getFlagsByNamespace, paymentProviderOptions } from '@/data/konditionalMockData';
+import { loadSchemaFormsSnapshot, saveSchemaFormsSnapshot } from '@/data/openapiSamples';
 import { FlagValueEditor, ValueTypeBadge, FlagValueDisplay } from '@/components/config/FlagValueEditor';
 import { RuleTargetingEditor } from '@/components/config/RuleTargetingEditor';
 import { Button } from '@/components/ui/button';
@@ -291,40 +291,14 @@ function FlagEditor({
 
 /** Main Schema Forms page */
 export default function SchemaFormsPage() {
-  const [flags, setFlags] = useState<AnySerializableFlag[]>(mockSnapshot.flags as AnySerializableFlag[]);
-  const [meta, setMeta] = useState<SnapshotMeta | undefined>(mockSnapshot.meta);
-  const [isLoading, setIsLoading] = useState(true);
+  const [initialSnapshot] = useState(() => loadSchemaFormsSnapshot());
+  const [flags, setFlags] = useState<AnySerializableFlag[]>(
+    initialSnapshot.snapshot.flags as AnySerializableFlag[],
+  );
+  const [meta, setMeta] = useState<SnapshotMeta | undefined>(initialSnapshot.snapshot.meta);
   const [isSaving, setIsSaving] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(initialSnapshot.error ?? null);
   const [selectedFlagKey, setSelectedFlagKey] = useState<string | null>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-    fetchSnapshot()
-      .then((snapshot) => {
-        if (!isMounted) {
-          return;
-        }
-        setFlags(snapshot.flags as AnySerializableFlag[]);
-        setMeta(snapshot.meta);
-        setErrorMessage(null);
-      })
-      .catch((error) => {
-        if (!isMounted) {
-          return;
-        }
-        setErrorMessage(error instanceof Error ? error.message : 'Failed to load snapshot');
-      })
-      .finally(() => {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
   
   const flagsByNamespace = getFlagsByNamespace(flags as any);
   const selectedFlag = flags.find(f => f.key === selectedFlagKey);
@@ -333,18 +307,25 @@ export default function SchemaFormsPage() {
     setFlags(flags.map(f => f.key === updated.key ? updated : f));
   };
 
-  const saveSnapshot = async () => {
+  const saveSnapshot = () => {
     setIsSaving(true);
     setErrorMessage(null);
     try {
-      const patch: SerializablePatch = {
-        meta,
-        flags: flags as any,
-        removeKeys: [],
+      const nextMeta: SnapshotMeta = {
+        version: meta?.version ?? 'openapi-sample',
+        generatedAtEpochMillis: Date.now(),
+        source: meta?.source ?? 'openapi-sample',
       };
-      const updatedSnapshot = await applySnapshotPatch(patch);
-      setFlags(updatedSnapshot.flags as AnySerializableFlag[]);
-      setMeta(updatedSnapshot.meta);
+      const snapshot: SerializableSnapshot = {
+        meta: nextMeta,
+        flags: flags as any,
+      };
+      const saveError = saveSchemaFormsSnapshot(snapshot);
+      if (saveError) {
+        setErrorMessage(`Failed to save snapshot: ${saveError}`);
+      } else {
+        setMeta(nextMeta);
+      }
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Failed to save snapshot');
     } finally {
@@ -358,7 +339,7 @@ export default function SchemaFormsPage() {
         <div className="mb-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h1 className="text-3xl font-bold mb-2">Schema-Driven Forms</h1>
-            <Button onClick={saveSnapshot} disabled={isSaving || isLoading} variant="secondary">
+            <Button onClick={saveSnapshot} disabled={isSaving} variant="secondary">
               {isSaving ? 'Saving...' : 'Save changes'}
             </Button>
           </div>
@@ -366,9 +347,6 @@ export default function SchemaFormsPage() {
             Configure feature flags with type-safe editors generated from the OpenAPI schema.
             Complex targeting made simple through progressive disclosure.
           </p>
-          {isLoading && (
-            <p className="text-sm text-muted-foreground mt-2">Loading snapshot...</p>
-          )}
           {errorMessage && (
             <p className="text-sm text-destructive mt-2">{errorMessage}</p>
           )}

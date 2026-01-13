@@ -2,6 +2,186 @@ openapi: 3.0.3
 info:
   title: Konditional Serialization Schema
   version: 0.0.1
+x-konditional-samples:
+  snapshotJson: |
+    {
+      "meta": {
+        "version": "2024.12.001",
+        "generatedAtEpochMillis": 1735689600000,
+        "source": "openapi-sample"
+      },
+      "flags": [
+        {
+          "type": "BOOLEAN",
+          "key": "feature::ui::dark_mode_enabled",
+          "defaultValue": { "type": "BOOLEAN", "value": false },
+          "salt": "v1",
+          "isActive": true,
+          "rampUpAllowlist": [],
+          "rules": [
+            {
+              "value": { "type": "BOOLEAN", "value": true },
+              "rampUp": 100,
+              "rampUpAllowlist": [],
+              "note": "Enable for all iOS users",
+              "locales": ["UNITED_STATES", "CANADA"],
+              "platforms": ["IOS"],
+              "versionRange": { "type": "UNBOUNDED" },
+              "axes": {}
+            },
+            {
+              "value": { "type": "BOOLEAN", "value": true },
+              "rampUp": 50,
+              "rampUpAllowlist": ["beta-tester-1", "beta-tester-2"],
+              "note": "Gradual rollout for Android",
+              "locales": ["UNITED_STATES", "MEXICO"],
+              "platforms": ["ANDROID"],
+              "versionRange": { "type": "MIN_BOUND", "min": { "major": 5, "minor": 0, "patch": 0 } },
+              "axes": {}
+            }
+          ]
+        },
+        {
+          "type": "STRING",
+          "key": "feature::onboarding::welcome_message",
+          "defaultValue": { "type": "STRING", "value": "Welcome to our app!" },
+          "salt": "v1",
+          "isActive": true,
+          "rampUpAllowlist": [],
+          "rules": [
+            {
+              "value": { "type": "STRING", "value": "G'day mate! Welcome to the app!" },
+              "rampUp": 100,
+              "rampUpAllowlist": [],
+              "note": "Australian localization",
+              "locales": ["AUSTRALIA", "NEW_ZEALAND"],
+              "platforms": ["IOS", "ANDROID", "WEB"],
+              "versionRange": { "type": "UNBOUNDED" },
+              "axes": {}
+            },
+            {
+              "value": { "type": "STRING", "value": "Bienvenue dans notre application!" },
+              "rampUp": 100,
+              "rampUpAllowlist": [],
+              "note": "French localization",
+              "locales": ["FRANCE", "CANADA_FRENCH", "BELGIUM_FRENCH"],
+              "platforms": ["IOS", "ANDROID", "WEB"],
+              "versionRange": { "type": "UNBOUNDED" },
+              "axes": {}
+            }
+          ]
+        },
+        {
+          "type": "INT",
+          "key": "feature::networking::max_retry_count",
+          "defaultValue": { "type": "INT", "value": 3 },
+          "salt": "v1",
+          "isActive": true,
+          "rampUpAllowlist": [],
+          "rules": [
+            {
+              "value": { "type": "INT", "value": 5 },
+              "rampUp": 100,
+              "rampUpAllowlist": [],
+              "note": "More retries for regions with poor connectivity",
+              "locales": ["INDIA", "MEXICO"],
+              "platforms": ["IOS", "ANDROID", "WEB"],
+              "versionRange": { "type": "UNBOUNDED" },
+              "axes": {}
+            }
+          ]
+        },
+        {
+          "type": "DOUBLE",
+          "key": "feature::ui::animation_speed_multiplier",
+          "defaultValue": { "type": "DOUBLE", "value": 1.0 },
+          "salt": "v1",
+          "isActive": true,
+          "rampUpAllowlist": [],
+          "rules": [
+            {
+              "value": { "type": "DOUBLE", "value": 0.5 },
+              "rampUp": 100,
+              "rampUpAllowlist": [],
+              "note": "Slower animations for older devices",
+              "locales": ["UNITED_STATES", "CANADA"],
+              "platforms": ["ANDROID"],
+              "versionRange": { "type": "MAX_BOUND", "max": { "major": 3, "minor": 0, "patch": 0 } },
+              "axes": {}
+            }
+          ]
+        },
+        {
+          "type": "ENUM",
+          "key": "feature::payments::provider",
+          "defaultValue": { "type": "ENUM", "value": "STRIPE", "enumClassName": "PaymentProvider" },
+          "salt": "v1",
+          "isActive": true,
+          "rampUpAllowlist": [],
+          "rules": [
+            {
+              "value": { "type": "ENUM", "value": "ADYEN", "enumClassName": "PaymentProvider" },
+              "rampUp": 100,
+              "rampUpAllowlist": [],
+              "note": "Use Adyen in European markets",
+              "locales": ["FRANCE", "GERMANY", "UNITED_KINGDOM"],
+              "platforms": ["IOS", "ANDROID", "WEB"],
+              "versionRange": { "type": "UNBOUNDED" },
+              "axes": {}
+            }
+          ]
+        },
+        {
+          "type": "DATA_CLASS",
+          "key": "feature::experiment::checkout_flow_config",
+          "defaultValue": {
+            "type": "DATA_CLASS",
+            "dataClassName": "CheckoutFlowConfig",
+            "value": {
+              "showProgressBar": true,
+              "skipReviewStep": false,
+              "enableOneClick": false,
+              "maxItemsPerOrder": 100
+            }
+          },
+          "salt": "v1",
+          "isActive": true,
+          "rampUpAllowlist": [],
+          "rules": [
+            {
+              "value": {
+                "type": "DATA_CLASS",
+                "dataClassName": "CheckoutFlowConfig",
+                "value": {
+                  "showProgressBar": true,
+                  "skipReviewStep": true,
+                  "enableOneClick": true,
+                  "maxItemsPerOrder": 50
+                }
+              },
+              "rampUp": 25,
+              "rampUpAllowlist": ["power-user-1"],
+              "note": "Streamlined checkout experiment",
+              "locales": ["UNITED_STATES"],
+              "platforms": ["WEB"],
+              "versionRange": { "type": "UNBOUNDED" },
+              "axes": {
+                "userTier": ["premium", "enterprise"]
+              }
+            }
+          ]
+        },
+        {
+          "type": "BOOLEAN",
+          "key": "feature::legacy::old_navigation",
+          "defaultValue": { "type": "BOOLEAN", "value": true },
+          "salt": "v1",
+          "isActive": false,
+          "rampUpAllowlist": [],
+          "rules": []
+        }
+      ]
+    }
 paths:
   /snapshot:
     get:
