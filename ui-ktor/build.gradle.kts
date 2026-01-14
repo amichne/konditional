@@ -42,6 +42,7 @@ dependencies {
     implementation("com.squareup.moshi:moshi-kotlin:1.15.0")
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
 }
 
 val reactUiDist = rootProject.layout.projectDirectory.dir("konditional-generated-ui/dist")

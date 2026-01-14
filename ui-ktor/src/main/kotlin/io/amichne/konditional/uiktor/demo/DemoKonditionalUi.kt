@@ -16,6 +16,7 @@ import io.amichne.konditional.uiktor.UiRouteConfig
 import io.amichne.konditional.uiktor.UiRoutePaths
 import io.amichne.konditional.uiktor.UiSpecService
 import io.amichne.konditional.uiktor.defaultRenderer
+import io.amichne.konditional.uiktor.installFlagListRoute
 import io.amichne.konditional.uiktor.installUiRoutes
 import io.amichne.konditional.uispec.UiPatchOperation
 import io.amichne.konditional.uispec.UiSpec
@@ -24,19 +25,24 @@ import io.amichne.konditional.values.FeatureId
 import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.application
 import io.ktor.server.application.call
+import io.ktor.server.http.content.staticResources
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.path
 import io.ktor.server.routing.Route
 
 class DemoKonditionalUiService : UiSpecService<KonditionalSnapshotValueProvider> {
+    private val snapshot = sampleSnapshot()
+
     override fun loadSpec(): UiSpec = konditionalUiSpec()
 
-    override fun loadState(): KonditionalSnapshotValueProvider = KonditionalSnapshotValueProvider(sampleSnapshot())
+    override fun loadState(): KonditionalSnapshotValueProvider = KonditionalSnapshotValueProvider(snapshot)
 
     override fun applyPatch(
         state: KonditionalSnapshotValueProvider,
         patch: List<UiPatchOperation>,
     ): UiPatchResult<KonditionalSnapshotValueProvider> = UiPatchResult(state)
+
+    fun getSnapshot(): SerializableSnapshot = snapshot
 }
 
 fun demoRenderer(
@@ -45,10 +51,11 @@ fun demoRenderer(
     defaultRenderer(UiRenderSettings(paths = paths))
 
 fun demoUiRouteConfig(
+    service: DemoKonditionalUiService,
     paths: UiRoutePaths = UiRoutePaths(),
 ): UiRouteConfig<KonditionalSnapshotValueProvider> =
     UiRouteConfig(
-        service = DemoKonditionalUiService(),
+        service = service,
         renderer = demoRenderer(paths),
         paths = paths,
     )
@@ -57,6 +64,9 @@ fun Route.installDemoKonditionalUi(
     paths: UiRoutePaths = UiRoutePaths(),
 ): Unit =
     run {
+        val service = DemoKonditionalUiService()
+        registerDemoFeatures()
+
         val nodePrefix = paths.node.substringBefore("{id}")
         intercept(ApplicationCallPipeline.Monitoring) {
             val requestPath = call.request.path()
@@ -72,7 +82,9 @@ fun Route.installDemoKonditionalUi(
                 )
             }
         }
-        installUiRoutes(demoUiRouteConfig(paths))
+        staticResources("/static", "static")
+        installFlagListRoute(service.getSnapshot(), paths)
+        installUiRoutes(demoUiRouteConfig(service, paths))
     }
 
 internal fun sampleSnapshot(): SerializableSnapshot =

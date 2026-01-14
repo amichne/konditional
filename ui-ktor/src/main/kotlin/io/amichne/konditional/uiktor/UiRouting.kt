@@ -1,9 +1,14 @@
+@file:OptIn(KonditionalInternalApi::class)
+
 package io.amichne.konditional.uiktor
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.uispec.UiNodeId
 import io.amichne.konditional.uispec.UiPatchOperation
 import io.amichne.konditional.uispec.UiSpec
 import io.amichne.konditional.uispec.UiText
+import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
+import io.amichne.konditional.uiktor.html.renderFlagListPage
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
 import io.ktor.server.html.respondHtml
@@ -13,6 +18,13 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.patch
 import kotlinx.html.HTML
+import kotlinx.html.body
+import kotlinx.html.head
+import kotlinx.html.id
+import kotlinx.html.link
+import kotlinx.html.meta
+import kotlinx.html.script
+import kotlinx.html.title
 
 typealias UiHtmlBlock = HTML.() -> Unit
 
@@ -97,5 +109,28 @@ fun <S> Route.installUiRoutes(config: UiRouteConfig<S>) {
         val operations = patchDecoder.decode(rawPatch)
         val result = service.applyPatch(state, operations)
         call.respondHtml(block = renderer.renderPatch(spec, result))
+    }
+}
+
+fun Route.installFlagListRoute(
+    snapshot: SerializableSnapshot,
+    paths: UiRoutePaths = UiRoutePaths(),
+) {
+    get(paths.page) {
+        call.respondHtml {
+            head {
+                meta(charset = "utf-8")
+                title("Feature Flags")
+                link(rel = "stylesheet", href = "/static/styles.css")
+                script {
+                    defer = true
+                    src = "https://unpkg.com/htmx.org@1.9.12"
+                }
+            }
+            body {
+                id = "main-content"
+                renderFlagListPage(snapshot, paths.page)
+            }
+        }
     }
 }
