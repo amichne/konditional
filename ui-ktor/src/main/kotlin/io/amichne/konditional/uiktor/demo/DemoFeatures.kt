@@ -4,7 +4,6 @@ import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.runtime.load
-import io.amichne.konditional.serialization.FeatureRegistry
 
 /**
  * Demo feature namespaces for UI demonstrations.
@@ -19,7 +18,7 @@ internal object PaymentsNamespace : Namespace("payments") {
 }
 
 /**
- * Registers all demo features with the FeatureRegistry.
+ * Initializes demo features so serialization can resolve them.
  * Must be called before deserializing demo snapshots.
  */
 internal fun registerDemoFeatures() {

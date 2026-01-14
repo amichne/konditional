@@ -43,7 +43,7 @@ class NamespaceConfigurationSnapshotCodecTest {
 
     @BeforeEach
     fun setup() {
-        // Clear both FeatureRegistry and the namespace registry before each test
+        // Clear the namespace registry before each test
         testNamespace.load(
             Configuration(emptyMap()),
         )
@@ -214,9 +214,9 @@ class NamespaceConfigurationSnapshotCodecTest {
                 val searchEnabled by boolean<Context>(default = false)
             }
 
-        // Register features
-        FeatureRegistry.register(paymentsNamespace.paymentEnabled)
-        FeatureRegistry.register(searchNamespace.searchEnabled)
+        // Initialize features so serialization can resolve them
+        paymentsNamespace.paymentEnabled
+        searchNamespace.searchEnabled
 
         // Serialize each namespace
         val paymentsJson = ConfigurationSnapshotCodec.encode(paymentsNamespace.configuration)

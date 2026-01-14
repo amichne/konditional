@@ -15,22 +15,30 @@
     --neutral-700: 217 33% 17%;
     --neutral-800: 222 47% 11%;
     --neutral-900: 224 71% 4%;
+    --neutral-950: 229 84% 5%;
 
     /* Semantic colors */
     --success: 142 71% 45%;
+    --success-light: 142 76% 36%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
+    --warning-light: 45 93% 47%;
     --warning-foreground: 0 0% 0%;
 
     --error: 0 84% 60%;
+    --error-light: 0 72% 51%;
     --error-foreground: 0 0% 100%;
 
     --info: 199 89% 48%;
+    --info-light: 200 98% 39%;
     --info-foreground: 0 0% 100%;
 
     /* Accent - Electric Blue */
-    --accent: 217 91% 60%;
+    --accent-hue: 217;
+    --accent: var(--accent-hue) 91% 60%;
+    --accent-light: var(--accent-hue) 91% 70%;
+    --accent-dark: var(--accent-hue) 91% 50%;
     --accent-foreground: 0 0% 100%;
 
     /* Light mode tokens */
@@ -39,6 +47,9 @@
 
     --card: 0 0% 100%;
     --card-foreground: var(--neutral-900);
+
+    --popover: 0 0% 100%;
+    --popover-foreground: var(--neutral-900);
 
     --primary: var(--accent);
     --primary-foreground: 0 0% 100%;
@@ -57,14 +68,50 @@
     --ring: var(--accent);
 
     --radius: 0.5rem;
+    --radius-sm: 0.375rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+
+    /* Surfaces/Elevation */
+    --surface-0: 0 0% 100%;
+    --surface-1: var(--neutral-50);
+    --surface-2: var(--neutral-100);
+    --surface-3: var(--neutral-200);
+
+    /* Shadows */
+    --shadow-xs: 0 1px 2px 0 hsl(var(--neutral-900) / 0.05);
+    --shadow-sm: 0 1px 3px 0 hsl(var(--neutral-900) / 0.1), 0 1px 2px -1px hsl(var(--neutral-900) / 0.1);
+    --shadow-md: 0 4px 6px -1px hsl(var(--neutral-900) / 0.1), 0 2px 4px -2px hsl(var(--neutral-900) / 0.1);
+    --shadow-lg: 0 10px 15px -3px hsl(var(--neutral-900) / 0.1), 0 4px 6px -4px hsl(var(--neutral-900) / 0.1);
+    --shadow-xl: 0 20px 25px -5px hsl(var(--neutral-900) / 0.1), 0 8px 10px -6px hsl(var(--neutral-900) / 0.1);
+    --shadow-glow: 0 0 20px hsl(var(--accent) / 0.3);
+
+    /* Sidebar */
+    --sidebar-background: var(--neutral-50);
+    --sidebar-foreground: var(--neutral-700);
+    --sidebar-primary: var(--accent);
+    --sidebar-primary-foreground: var(--accent-foreground);
+    --sidebar-accent: var(--neutral-100);
+    --sidebar-accent-foreground: var(--neutral-800);
+    --sidebar-border: var(--neutral-200);
+    --sidebar-ring: var(--accent);
+
+    /* Density */
+    --density-spacing: 1;
   }
 
   .dark {
-    --background: 224 71% 4%;
+    --background: var(--neutral-950);
     --foreground: var(--neutral-100);
 
     --card: var(--neutral-900);
     --card-foreground: var(--neutral-100);
+
+    --popover: var(--neutral-900);
+    --popover-foreground: var(--neutral-100);
+
+    --primary: var(--accent);
+    --primary-foreground: 0 0% 100%;
 
     --secondary: var(--neutral-800);
     --secondary-foreground: var(--neutral-100);
@@ -72,8 +119,34 @@
     --muted: var(--neutral-800);
     --muted-foreground: var(--neutral-400);
 
+    --destructive: var(--error);
+    --destructive-foreground: 0 0% 100%;
+
     --border: var(--neutral-700);
     --input: var(--neutral-700);
+    --ring: var(--accent);
+
+    /* Dark surfaces */
+    --surface-0: var(--neutral-950);
+    --surface-1: var(--neutral-900);
+    --surface-2: var(--neutral-800);
+    --surface-3: var(--neutral-700);
+
+    /* Dark shadows */
+    --shadow-xs: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
+    --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.4), 0 1px 2px -1px hsl(0 0% 0% / 0.4);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.4);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.4), 0 4px 6px -4px hsl(0 0% 0% / 0.4);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.4), 0 8px 10px -6px hsl(0 0% 0% / 0.4);
+
+    /* Sidebar dark */
+    --sidebar-background: var(--neutral-900);
+    --sidebar-foreground: var(--neutral-300);
+    --sidebar-primary: var(--accent);
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: var(--neutral-800);
+    --sidebar-accent-foreground: var(--neutral-100);
+    --sidebar-border: var(--neutral-700);
   }
 
   * {

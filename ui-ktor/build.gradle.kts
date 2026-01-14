@@ -46,7 +46,23 @@ dependencies {
 
 val reactUiDist = rootProject.layout.projectDirectory.dir("konditional-generated-ui/dist")
 
+val npmInstall = tasks.register<Exec>("npmInstall") {
+    workingDir = projectDir
+    commandLine("npm", "install")
+    inputs.file("package.json")
+    inputs.file("package-lock.json")
+    outputs.dir("node_modules")
+}
+
+val ensureStaticDir = tasks.register("ensureStaticDir") {
+    val staticDir = projectDir.resolve("src/main/resources/static")
+    doLast {
+        staticDir.mkdirs()
+    }
+}
+
 val buildCss = tasks.register<Exec>("buildCss") {
+    dependsOn(npmInstall, ensureStaticDir)
     workingDir = projectDir
     commandLine("npm", "run", "build:css")
     inputs.file("src/main/resources/css/input.css")
