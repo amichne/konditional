@@ -166,3 +166,39 @@
     overflow: hidden;
   }
 }
+
+@layer components {
+  /* HTMX loading states */
+  .htmx-indicator {
+    display: none;
+  }
+
+  .htmx-request .htmx-indicator {
+    display: inline-block;
+  }
+
+  .htmx-request.htmx-indicator {
+    display: inline-block;
+  }
+
+  /* Loading spinner */
+  .spinner {
+    border: 2px solid hsl(var(--muted));
+    border-top: 2px solid hsl(var(--primary));
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    animation: spin 0.6s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Loading overlay */
+  .htmx-swapping {
+    opacity: 0;
+    transition: opacity 200ms ease-in;
+  }
+}

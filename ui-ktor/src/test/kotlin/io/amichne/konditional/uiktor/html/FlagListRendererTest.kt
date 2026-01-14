@@ -58,4 +58,26 @@ class FlagListRendererTest {
         assertTrue(html.contains("Inactive"))
         assertTrue(html.contains("hx-get=\"/config/flag/${featureId}\""))
     }
+
+    @Test
+    fun `renderFlagListPage includes loading indicator`() {
+        val featureId = FeatureId.create("ui", "dark_mode")
+        val snapshot =
+            SerializableSnapshot(
+                flags =
+                    listOf(
+                        SerializableFlag(
+                            key = featureId,
+                            defaultValue = FlagValue.BooleanValue(false),
+                        ),
+                    ),
+            )
+
+        val html = createHTML().div { renderFlagListPage(snapshot, "/config") }
+
+        assertTrue(html.contains("hx-indicator=\"#loading-${featureId}\""))
+        assertTrue(html.contains("id=\"loading-${featureId}\""))
+        assertTrue(html.contains("htmx-indicator"))
+        assertTrue(html.contains("spinner"))
+    }
 }

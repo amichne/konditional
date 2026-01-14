@@ -14,6 +14,7 @@ import kotlinx.html.classes
 import kotlinx.html.div
 import kotlinx.html.h1
 import kotlinx.html.h3
+import kotlinx.html.id
 import kotlinx.html.p
 import kotlinx.html.span
 import kotlinx.html.unsafe
@@ -124,12 +125,14 @@ private fun FlowContent.renderFlagCard(
                     "text-left",
                     "p-4",
                     "animate-fade-in",
+                    "relative",
                 )
 
         attributes["hx-get"] = "$basePath/flag/${flag.key}"
         attributes["hx-target"] = "#main-content"
-        attributes["hx-swap"] = "innerHTML"
+        attributes["hx-swap"] = "innerHTML swap:200ms"
         attributes["hx-push-url"] = "true"
+        attributes["hx-indicator"] = "#loading-${flag.key}"
 
         div {
             classes = setOf("flex", "items-start", "justify-between", "gap-3")
@@ -172,6 +175,25 @@ private fun FlowContent.renderFlagCard(
                     </svg>""",
                     )
                 }
+            }
+        }
+
+        div {
+            id = "loading-${flag.key}"
+            classes =
+                setOf(
+                    "htmx-indicator",
+                    "absolute",
+                    "inset-0",
+                    "bg-background/80",
+                    "backdrop-blur-sm",
+                    "flex",
+                    "items-center",
+                    "justify-center",
+                    "rounded-lg",
+                )
+            div {
+                classes = setOf("spinner")
             }
         }
     }
