@@ -1033,3 +1033,4 @@ build/
 
 # Generated Tailwind CSS
 ui-ktor/src/main/resources/static/styles.css
+konditional-generated-ui/src/
