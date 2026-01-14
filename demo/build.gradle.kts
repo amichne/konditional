@@ -30,8 +30,15 @@ dependencies {
     implementation(project(":ui-ktor"))
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("org.slf4j:slf4j-simple:2.0.9")
+    testImplementation(kotlin("test"))
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
 }
 
 application {
     mainClass.set("demo.DemoServerKt")
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

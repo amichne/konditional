@@ -1,6 +1,5 @@
 package demo
 
-import io.amichne.konditional.uiktor.demo.installDemoKonditionalReactUi
 import io.amichne.konditional.uiktor.demo.installDemoKonditionalUi
 import io.ktor.server.application.Application
 import io.ktor.server.engine.embeddedServer
@@ -15,7 +14,7 @@ fun main() {
 
 fun Application.demoModule() {
     routing {
-//        installDemoKonditionalUi()
-        installDemoKonditionalReactUi()
+        installDemoKonditionalUi()
+//        installDemoKonditionalReactUi()
     }
 }
