@@ -8,7 +8,9 @@ import io.amichne.konditional.uispec.UiPatchOperation
 import io.amichne.konditional.uispec.UiSpec
 import io.amichne.konditional.uispec.UiText
 import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
+import io.amichne.konditional.uiktor.html.renderFlagEditor
 import io.amichne.konditional.uiktor.html.renderFlagListPage
+import io.amichne.konditional.values.FeatureId
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
 import io.ktor.server.html.respondHtml
@@ -130,6 +132,37 @@ fun Route.installFlagListRoute(
             body {
                 id = "main-content"
                 renderFlagListPage(snapshot, paths.page)
+            }
+        }
+    }
+}
+
+fun Route.installFlagEditorRoute(
+    snapshot: SerializableSnapshot,
+    paths: UiRoutePaths = UiRoutePaths(),
+) {
+    get("${paths.page}/flag/{key}") {
+        val rawKey = call.parameters["key"]
+        val parsedKey = rawKey?.let { runCatching { FeatureId.parse(it) }.getOrNull() }
+        val flag = parsedKey?.let { key -> snapshot.flags.find { it.key == key } }
+
+        when {
+            rawKey == null -> call.respondText(
+                "Missing flag key",
+                status = HttpStatusCode.BadRequest,
+            )
+            parsedKey == null -> call.respondText(
+                "Invalid flag key: $rawKey",
+                status = HttpStatusCode.BadRequest,
+            )
+            flag == null -> call.respondText(
+                "Flag not found: $rawKey",
+                status = HttpStatusCode.NotFound,
+            )
+            else -> call.respondHtml {
+                body {
+                    renderFlagEditor(flag, paths.page)
+                }
             }
         }
     }

@@ -16,6 +16,7 @@ import io.amichne.konditional.uiktor.UiRouteConfig
 import io.amichne.konditional.uiktor.UiRoutePaths
 import io.amichne.konditional.uiktor.UiSpecService
 import io.amichne.konditional.uiktor.defaultRenderer
+import io.amichne.konditional.uiktor.installFlagEditorRoute
 import io.amichne.konditional.uiktor.installFlagListRoute
 import io.amichne.konditional.uiktor.installUiRoutes
 import io.amichne.konditional.uispec.UiPatchOperation
@@ -84,6 +85,7 @@ fun Route.installDemoKonditionalUi(
         }
         staticResources("/static", "static")
         installFlagListRoute(service.getSnapshot(), paths)
+        installFlagEditorRoute(service.getSnapshot(), paths)
         installUiRoutes(demoUiRouteConfig(service, paths))
     }
 
