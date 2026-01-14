@@ -40,6 +40,7 @@ fun FlowContent.renderRuleEditor(
                 attributes["hx-post"] = "$basePath/flag/$flagKey/rule/$ruleIndex/note"
                 attributes["hx-trigger"] = "change"
                 attributes["hx-target"] = "closest details"
+                attributes["hx-swap"] = "outerHTML"
             }
         }
 
@@ -68,8 +69,8 @@ fun FlowContent.renderRuleEditor(
             button {
                 classes = buttonClasses(variant = ButtonVariant.DESTRUCTIVE, size = ButtonSize.SM)
                 attributes["hx-delete"] = "$basePath/flag/$flagKey/rule/$ruleIndex"
-                attributes["hx-target"] = "closest details"
-                attributes["hx-swap"] = "outerHTML"
+                attributes["hx-target"] = "#rules-list"
+                attributes["hx-swap"] = "innerHTML"
                 attributes["hx-confirm"] = "Delete this rule?"
 
                 unsafe {
@@ -123,6 +124,7 @@ private fun FlowContent.renderTargetingEditor(
                     attributes["hx-post"] = "$basePath/flag/$flagKey/rule/$ruleIndex/ramp"
                     attributes["hx-trigger"] = "change"
                     attributes["hx-target"] = "closest details"
+                    attributes["hx-swap"] = "outerHTML"
                 }
                 span {
                     classes = badgeClasses()

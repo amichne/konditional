@@ -18,7 +18,10 @@ import io.amichne.konditional.uiktor.UiSpecService
 import io.amichne.konditional.uiktor.defaultRenderer
 import io.amichne.konditional.uiktor.installFlagEditorRoute
 import io.amichne.konditional.uiktor.installFlagListRoute
+import io.amichne.konditional.uiktor.installFlagMutationRoutes
 import io.amichne.konditional.uiktor.installUiRoutes
+import io.amichne.konditional.uiktor.state.FlagStateService
+import io.amichne.konditional.uiktor.state.InMemoryFlagStateService
 import io.amichne.konditional.uispec.UiPatchOperation
 import io.amichne.konditional.uispec.UiSpec
 import io.amichne.konditional.uispec.konditional.konditionalUiSpec
@@ -67,6 +70,7 @@ fun Route.installDemoKonditionalUi(
     run {
         val service = DemoKonditionalUiService()
         registerDemoFeatures()
+        val stateService: FlagStateService = InMemoryFlagStateService(sampleSnapshot())
 
         val nodePrefix = paths.node.substringBefore("{id}")
         intercept(ApplicationCallPipeline.Monitoring) {
@@ -84,8 +88,9 @@ fun Route.installDemoKonditionalUi(
             }
         }
         staticResources("/static", "static")
-        installFlagListRoute(service.getSnapshot(), paths)
-        installFlagEditorRoute(service.getSnapshot(), paths)
+        installFlagListRoute(stateService::getSnapshot, paths)
+        installFlagEditorRoute(stateService::getSnapshot, paths)
+        installFlagMutationRoutes(stateService, paths)
         installUiRoutes(demoUiRouteConfig(service, paths))
     }
 

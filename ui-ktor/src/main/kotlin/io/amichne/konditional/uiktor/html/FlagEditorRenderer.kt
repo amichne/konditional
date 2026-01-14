@@ -236,7 +236,7 @@ private fun FlowContent.renderConfigTabContent(
     }
 }
 
-private fun FlowContent.renderRulesSection(
+internal fun FlowContent.renderRulesSection(
     flag: SerializableFlag,
     basePath: String,
 ) {
@@ -269,33 +269,39 @@ private fun FlowContent.renderRulesSection(
         div {
             id = "rules-list"
             classes = setOf("space-y-3")
-
-            if (flag.rules.isEmpty()) {
-                div {
-                    classes = cardClasses(elevation = 0) + setOf("border-dashed")
-                    div {
-                        classes = setOf("py-8", "text-center", "text-muted-foreground")
-                        p { +"No rules defined. The default value will be used for all users." }
-                        button {
-                            classes = buttonClasses(variant = ButtonVariant.LINK) + "mt-2"
-                            attributes["hx-post"] = "$basePath/flag/${flag.key}/rule"
-                            attributes["hx-target"] = "#rules-list"
-                            attributes["hx-swap"] = "innerHTML"
-
-                            +"Add your first rule"
-                        }
-                    }
-                }
-            } else {
-                flag.rules.forEachIndexed { index, rule ->
-                    renderRuleCard(flag, rule, index, basePath)
-                }
-            }
+            renderRulesList(flag, basePath)
         }
     }
 }
 
-private fun FlowContent.renderRuleCard(
+internal fun FlowContent.renderRulesList(
+    flag: SerializableFlag,
+    basePath: String,
+) {
+    if (flag.rules.isEmpty()) {
+        div {
+            classes = cardClasses(elevation = 0) + setOf("border-dashed")
+            div {
+                classes = setOf("py-8", "text-center", "text-muted-foreground")
+                p { +"No rules defined. The default value will be used for all users." }
+                button {
+                    classes = buttonClasses(variant = ButtonVariant.LINK) + "mt-2"
+                    attributes["hx-post"] = "$basePath/flag/${flag.key}/rule"
+                    attributes["hx-target"] = "#rules-list"
+                    attributes["hx-swap"] = "innerHTML"
+
+                    +"Add your first rule"
+                }
+            }
+        }
+    } else {
+        flag.rules.forEachIndexed { index, rule ->
+            renderRuleCard(flag, rule, index, basePath)
+        }
+    }
+}
+
+internal fun FlowContent.renderRuleCard(
     flag: SerializableFlag,
     rule: SerializableRule,
     index: Int,
