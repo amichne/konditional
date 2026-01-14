@@ -52,6 +52,7 @@ val npmInstall = tasks.register<Exec>("npmInstall") {
     inputs.file("package.json")
     inputs.file("package-lock.json")
     outputs.dir("node_modules")
+    isIgnoreExitValue = false
 }
 
 val ensureStaticDir = tasks.register("ensureStaticDir") {
@@ -69,6 +70,7 @@ val buildCss = tasks.register<Exec>("buildCss") {
     inputs.file("tailwind.config.js")
     inputs.dir("src/main/kotlin")
     outputs.file("src/main/resources/static/styles.css")
+    isIgnoreExitValue = false
 }
 
 tasks.processResources {
