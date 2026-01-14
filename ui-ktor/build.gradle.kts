@@ -46,7 +46,17 @@ dependencies {
 
 val reactUiDist = rootProject.layout.projectDirectory.dir("konditional-generated-ui/dist")
 
+val buildCss = tasks.register<Exec>("buildCss") {
+    workingDir = projectDir
+    commandLine("npm", "run", "build:css")
+    inputs.file("src/main/resources/css/input.css")
+    inputs.file("tailwind.config.js")
+    inputs.dir("src/main/kotlin")
+    outputs.file("src/main/resources/static/styles.css")
+}
+
 tasks.processResources {
+    dependsOn(buildCss)
     from(reactUiDist) {
         into("ui")
     }

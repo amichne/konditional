@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Neutral scale - Slate */
+    --neutral-50: 210 40% 98%;
+    --neutral-100: 214 32% 91%;
+    --neutral-200: 213 27% 84%;
+    --neutral-300: 212 20% 68%;
+    --neutral-400: 215 16% 47%;
+    --neutral-500: 215 19% 35%;
+    --neutral-600: 215 25% 27%;
+    --neutral-700: 217 33% 17%;
+    --neutral-800: 222 47% 11%;
+    --neutral-900: 224 71% 4%;
+
+    /* Semantic colors */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
+
+    --error: 0 84% 60%;
+    --error-foreground: 0 0% 100%;
+
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    /* Accent - Electric Blue */
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Light mode tokens */
+    --background: var(--neutral-50);
+    --foreground: var(--neutral-900);
+
+    --card: 0 0% 100%;
+    --card-foreground: var(--neutral-900);
+
+    --primary: var(--accent);
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: var(--neutral-100);
+    --secondary-foreground: var(--neutral-800);
+
+    --muted: var(--neutral-100);
+    --muted-foreground: var(--neutral-500);
+
+    --destructive: var(--error);
+    --destructive-foreground: 0 0% 100%;
+
+    --border: var(--neutral-200);
+    --input: var(--neutral-200);
+    --ring: var(--accent);
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 224 71% 4%;
+    --foreground: var(--neutral-100);
+
+    --card: var(--neutral-900);
+    --card-foreground: var(--neutral-100);
+
+    --secondary: var(--neutral-800);
+    --secondary-foreground: var(--neutral-100);
+
+    --muted: var(--neutral-800);
+    --muted-foreground: var(--neutral-400);
+
+    --border: var(--neutral-700);
+    --input: var(--neutral-700);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .truncate-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
