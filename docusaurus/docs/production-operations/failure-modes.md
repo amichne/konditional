@@ -52,49 +52,7 @@ when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
 
 Last-known-good configuration remains active. No impact on evaluation.
 
----
-
-## 2. Missing Features (FeatureNotFound)
-
-### What Happens
-
-JSON references a feature that hasn't been registered:
-
-```kotlin
-val json = """
-{
-  "flags": [
-    {
-      "key": "feature::app::unknownFlag",
-      ...
-    }
-  ]
-}
-"""
-
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-  is ParseResult.Failure -> {
-    println(result.error.message)  // "Feature not found: feature::app::unknownFlag"
-  }
-}
-```
-
-### How to Prevent
-
-- Ensure namespaces are initialized **before** JSON deserialization
-- Reference namespace objects at startup (t0)
-- Use lenient deserialization with `SnapshotLoadOptions.skipUnknownKeys(...)` for forward compatibility
-
-### How to Detect
-
-- `ParseResult.Failure` with `ParseError.FeatureNotFound`
-- Alert on unknown keys in production (could indicate config/code drift)
-
-### Worst-Case Outcome
-
-Parse fails, last-known-good configuration remains active.
-
----
+--- 
 
 ## 3. Type Mismatches
 
@@ -190,50 +148,7 @@ Parse fails, last-known-good configuration remains active.
 
 ---
 
-## 5. Uninitialized Namespace
-
-### What Happens
-
-Attempting to load JSON before namespace initialization:
-
-```kotlin
-// ✗ Incorrect order
-val json = fetchRemoteConfig()
-when (val result = ConfigurationSnapshotCodec.decode(json)) {
-  is ParseResult.Failure -> {
-    // Fails: features not registered yet
-  }
-}
-```
-
-### How to Prevent
-
-- Initialize namespaces at startup (t0)
-- Reference namespace objects explicitly before JSON deserialization
-
-```kotlin
-// ✓ Correct
-val _ = AppFeatures  // Force initialization
-
-val json = fetchRemoteConfig()
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-  is ParseResult.Success -> Unit
-  is ParseResult.Failure -> logError(result.error.message)
-}
-```
-
-### How to Detect
-
-- `ParseResult.Failure` with `ParseError.FeatureNotFound`
-- Unit tests should verify initialization order
-
-### Worst-Case Outcome
-
-Parse fails, last-known-good configuration remains active (or initial defaults if no config loaded yet).
-
----
-
-## 6. Configuration Rollback Fails
+## 5. Configuration Rollback Fails
 
 ### What Happens
 
@@ -260,7 +175,7 @@ Rollback fails, current configuration remains active. No impact on evaluation.
 
 ---
 
-## 7. Emergency Kill-Switch Active
+## 6. Emergency Kill-Switch Active
 
 ### What Happens
 
@@ -289,7 +204,7 @@ All flags in the namespace return their declared defaults. Other namespaces are 
 
 ---
 
-## 8. Concurrent Configuration Updates
+## 7. Concurrent Configuration Updates
 
 ### What Happens
 
@@ -324,10 +239,8 @@ One configuration wins (last write). Readers see a consistent snapshot (either c
 | Failure Mode                | Detection                       | Worst-Case Outcome                    | Recovery                                 |
 |-----------------------------|---------------------------------|---------------------------------------|------------------------------------------|
 | Parse errors (invalid JSON) | `ParseResult.Failure`           | Last-known-good remains active        | Fix JSON, retry                          |
-| Missing features            | `ParseError.FeatureNotFound`    | Last-known-good remains active        | Initialize namespace, retry              |
 | Type mismatches             | `ParseResult.Failure`           | Last-known-good remains active        | Fix JSON schema, retry                   |
 | Schema mismatches           | `ParseResult.Failure`           | Last-known-good remains active        | Fix custom data class schema             |
-| Uninitialized namespace     | `ParseError.FeatureNotFound`    | Parse fails (initial defaults active) | Initialize namespace, retry              |
 | Rollback beyond history     | `rollback(...)` returns `false` | Current config remains active         | Use available history or re-load         |
 | Kill-switch active          | All evals return defaults       | Defaults active for namespace         | Call `enableAll()`                       |
 | Concurrent updates          | Last write wins                 | One config wins (consistent snapshot) | Coordinate updates through single source |
