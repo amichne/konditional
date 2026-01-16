@@ -37,9 +37,18 @@ build: ## Build the project
 	@echo "$(BLUE)Building project...$(NC)"
 	$(GRADLEW) build
 
+dist: ## Create distribution archives
+	@echo "$(BLUE)Creating distribution archives...$(NC)"
+	$(GRADLEW) distZip distTar
+
 test: ## Run tests
 	@echo "$(BLUE)Running tests...$(NC)"
 	$(GRADLEW) test
+
+ui: ## Run the demo application
+	@echo "$(BLUE)Running demo application...$(NC)"
+	@./gradlew :demo:distZip && unzip -oq demo/build/distributions/demo-0.1.0.zip -d demo/build/runner  && demo/build/runner/demo-0.1.0/bin/demo
+
 
 ##@ Publishing
 

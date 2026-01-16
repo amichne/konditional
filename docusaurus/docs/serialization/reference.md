@@ -40,7 +40,8 @@ object ConfigurationSnapshotCodec {
 
 ### Precondition
 
-Features must be registered before parsing. Ensure your `Namespace` objects are initialized before calling`decode(...)`.
+Features must be registered before parsing. Ensure your `Namespace` objects are initialized before calling `decode(...)`.
+Registration is automatic when features are defined; there is no public registry API.
 
 ### Example
 

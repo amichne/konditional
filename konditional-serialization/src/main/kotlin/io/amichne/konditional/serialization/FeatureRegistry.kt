@@ -8,7 +8,7 @@ import io.amichne.konditional.values.FeatureId
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Registry for mapping flag keys to their Feature instances.
+ * Internal registry for mapping flag keys to their Feature instances.
  *
  * This registry is required for deserialization since we need to reconstruct the proper
  * Feature references when loading flag configurations from JSON. The registry maintains
@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap
  * The only semantic requirement is ordering: callers must ensure that any feature they expect
  * to deserialize has been registered before deserialization begins.
  */
-object FeatureRegistry {
+internal object FeatureRegistry {
     private val registry = ConcurrentHashMap<FeatureId, Feature<*, *, *>>()
 
     /**
@@ -29,7 +29,7 @@ object FeatureRegistry {
      * @param feature The feature to register
      * @throws IllegalStateException if a different feature is already registered with the same key
      */
-    fun <T : Any, C : Context> register(feature: Feature<T, C, *>) {
+    internal fun <T : Any, C : Context> register(feature: Feature<T, C, *>) {
         val existing = registry.putIfAbsent(feature.id, feature)
         check(existing == null || existing === feature) {
             "Feature already registered for id='${feature.id}' (key='${feature.key}'): existing=$existing, attempted=$feature"
@@ -59,7 +59,7 @@ object FeatureRegistry {
      * Should not be called in production code.
      */
     @org.jetbrains.annotations.TestOnly
-    fun clear() {
+    internal fun clear() {
         registry.clear()
     }
 }

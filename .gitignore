@@ -1030,3 +1030,6 @@ build/
 ### VS Code ###
 .vscode/
 !/docusaurus/.claude/
+
+# Generated Tailwind CSS
+ui-ktor/src/main/resources/static/styles.css

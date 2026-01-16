@@ -114,25 +114,6 @@ val enabled = AppFeatures.darkMode.evaluate(context)  // Sees old OR new, never 
 
 ---
 
-## Precondition: Features Must Be Registered
-
-Before loading JSON, ensure your `Namespace` objects have been initialized:
-
-```kotlin
-// Startup (t0): Initialize namespaces
-val _ = AppFeatures
-
-// Later: Load JSON
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-  is ParseResult.Success -> Unit
-  is ParseResult.Failure -> logError(result.error.message)
-}
-```
-
-If JSON references a feature that hasn't been registered, deserialization fails with `ParseError.FeatureNotFound`.
-
----
-
 ## Exporting Configuration
 
 Export the current snapshot to JSON for storage or transport:

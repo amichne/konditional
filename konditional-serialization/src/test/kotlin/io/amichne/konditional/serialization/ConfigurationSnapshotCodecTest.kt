@@ -58,17 +58,22 @@ class ConfigurationSnapshotCodecTest {
         @Suppress("UnusedExpression")
         Axes.TenantAxis
 
-        // Clear both FeatureRegistry and the namespace registry before each test
-        FeatureRegistry.clear()
+        // Reset namespace configuration before each test
         TestFeatures.load(Configuration(emptyMap()))
 
-        // Register test features
-        FeatureRegistry.register(TestFeatures.boolFlag)
-        FeatureRegistry.register(TestFeatures.stringFlag)
-        FeatureRegistry.register(TestFeatures.intFlag)
-        FeatureRegistry.register(TestFeatures.doubleFlag)
-        FeatureRegistry.register(TestFeatures.themeFlag)
-        FeatureRegistry.register(TestFeatures.retryPolicyFlag)
+        // Initialize test features to trigger registration via delegates.
+        @Suppress("UnusedExpression")
+        TestFeatures.boolFlag
+        @Suppress("UnusedExpression")
+        TestFeatures.stringFlag
+        @Suppress("UnusedExpression")
+        TestFeatures.intFlag
+        @Suppress("UnusedExpression")
+        TestFeatures.doubleFlag
+        @Suppress("UnusedExpression")
+        TestFeatures.themeFlag
+        @Suppress("UnusedExpression")
+        TestFeatures.retryPolicyFlag
     }
 
     private enum class Environment(override val id: String) : AxisValue<Environment> {

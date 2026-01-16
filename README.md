@@ -247,6 +247,21 @@ The solution is structural: bind types at compile-time, centralize evaluation se
 between static definitions and dynamic
 configuration.
 
+## Development
+
+### Prerequisites
+
+- **JDK 21** — Required for building the project
+- **Node.js 20+** and **npm** — Required for building UI modules (ui-ktor, konditional-generated-ui)
+
+### Building
+
+```bash
+./gradlew build
+```
+
+The build process automatically handles npm dependencies for UI modules via Gradle tasks.
+
 ## Next Steps
 
 - [Installation](/getting-started/installation) — Add Konditional to your project
