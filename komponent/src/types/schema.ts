@@ -218,6 +218,166 @@ export interface SchemaMetadata {
 }
 
 // =============================================================================
+// Schema Generation (from snapshot instances)
+// =============================================================================
+
+interface DataClassAccumulator {
+  properties: Record<string, DataClassFieldSchema>;
+  fieldCounts: Map<string, number>;
+  stringEnums: Map<string, Set<string>>;
+  sampleCount: number;
+}
+
+export function generateSchemaFromSnapshot(snapshot: Snapshot): SchemaMetadata {
+  const enums: Record<string, Set<string>> = {};
+  const dataClasses = new Map<string, DataClassAccumulator>();
+
+  const registerEnumValue = (className: string, value: string) => {
+    if (!enums[className]) {
+      enums[className] = new Set<string>();
+    }
+    enums[className].add(value);
+  };
+
+  const registerDataClassValue = (className: string, value: Record<string, unknown>) => {
+    const existing = dataClasses.get(className) ?? {
+      properties: {},
+      fieldCounts: new Map<string, number>(),
+      stringEnums: new Map<string, Set<string>>(),
+      sampleCount: 0,
+    };
+
+    existing.sampleCount += 1;
+
+    for (const [fieldName, fieldValue] of Object.entries(value)) {
+      const fieldSchema = inferFieldSchema(fieldValue);
+      existing.properties[fieldName] = mergeFieldSchema(
+        existing.properties[fieldName],
+        fieldSchema
+      );
+      existing.fieldCounts.set(
+        fieldName,
+        (existing.fieldCounts.get(fieldName) ?? 0) + 1
+      );
+      if (typeof fieldValue === 'string') {
+        const enumValues = existing.stringEnums.get(fieldName) ?? new Set<string>();
+        enumValues.add(fieldValue);
+        existing.stringEnums.set(fieldName, enumValues);
+      }
+    }
+
+    dataClasses.set(className, existing);
+  };
+
+  for (const flag of snapshot.flags) {
+    if (flag.defaultValue.type === 'ENUM') {
+      registerEnumValue(flag.defaultValue.enumClassName, flag.defaultValue.value);
+    }
+    if (flag.defaultValue.type === 'DATA_CLASS') {
+      registerDataClassValue(flag.defaultValue.dataClassName, flag.defaultValue.value);
+    }
+
+    for (const rule of flag.rules) {
+      if (rule.value.type === 'ENUM') {
+        registerEnumValue(rule.value.enumClassName, rule.value.value);
+      }
+      if (rule.value.type === 'DATA_CLASS') {
+        registerDataClassValue(rule.value.dataClassName, rule.value.value);
+      }
+    }
+  }
+
+  return {
+    enums: Object.fromEntries(
+      Object.entries(enums).map(([className, values]) => [
+        className,
+        Array.from(values).sort(),
+      ])
+    ),
+    dataClasses: Object.fromEntries(
+      Array.from(dataClasses.entries()).map(([className, accumulator]) => {
+        const properties = Object.fromEntries(
+          Object.entries(accumulator.properties).map(([fieldName, schema]) => {
+            if (schema.type === 'string') {
+              const enumValues = accumulator.stringEnums.get(fieldName);
+              if (enumValues && enumValues.size > 0) {
+                return [
+                  fieldName,
+                  {
+                    ...schema,
+                    enum: Array.from(enumValues).sort(),
+                  },
+                ];
+              }
+            }
+            return [fieldName, schema];
+          })
+        );
+
+        return [
+          className,
+          {
+            type: 'object',
+            properties,
+            required: Array.from(accumulator.fieldCounts.entries())
+              .filter(([, count]) => count === accumulator.sampleCount)
+              .map(([fieldName]) => fieldName)
+              .sort(),
+          },
+        ];
+      })
+    ),
+  };
+}
+
+function inferFieldSchema(value: unknown): DataClassFieldSchema {
+  if (Array.isArray(value)) {
+    return {
+      type: 'array',
+      items: value.length > 0 ? inferFieldSchema(value[0]) : { type: 'string' },
+    };
+  }
+
+  if (value && typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>);
+    const properties = Object.fromEntries(
+      entries.map(([key, fieldValue]) => [key, inferFieldSchema(fieldValue)])
+    );
+
+    return {
+      type: 'object',
+      properties,
+      required: entries.map(([key]) => key).sort(),
+    };
+  }
+
+  if (typeof value === 'number') {
+    return { type: Number.isInteger(value) ? 'integer' : 'number' };
+  }
+
+  if (typeof value === 'boolean') {
+    return { type: 'boolean' };
+  }
+
+  return { type: 'string' };
+}
+
+function mergeFieldSchema(
+  existing: DataClassFieldSchema | undefined,
+  incoming: DataClassFieldSchema
+): DataClassFieldSchema {
+  if (!existing) return incoming;
+  if (existing.type === incoming.type) return existing;
+  if (
+    (existing.type === 'integer' && incoming.type === 'number') ||
+    (existing.type === 'number' && incoming.type === 'integer')
+  ) {
+    return { type: 'number' };
+  }
+  return { type: 'object' };
+}
+
+// =============================================================================
 // Snapshot (top-level container)
 // =============================================================================
 

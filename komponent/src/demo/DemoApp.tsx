@@ -6,42 +6,15 @@
 
 import { useState, useCallback } from 'react';
 import { KonditionalEditor } from '../components/KonditionalEditor';
+import { generateSchemaFromSnapshot } from '../types/schema';
 import type { Snapshot } from '../types/schema';
 import '../styles/editor.css';
 
-// Sample snapshot demonstrating various flag types and configurations
-const SAMPLE_SNAPSHOT: Snapshot = {
+const SAMPLE_SNAPSHOT_BASE: Snapshot = {
   meta: {
     version: '1.0.0',
     generatedAtEpochMillis: Date.now(),
     source: 'demo',
-  },
-  schema: {
-    enums: {
-      'com.example.Theme': ['LIGHT', 'DARK', 'SYSTEM', 'HIGH_CONTRAST'],
-      'com.example.Tier': ['FREE', 'PRO', 'ENTERPRISE'],
-      'com.example.ExperimentGroup': ['CONTROL', 'VARIANT_A', 'VARIANT_B'],
-    },
-    dataClasses: {
-      'com.example.RateLimitConfig': {
-        type: 'object',
-        properties: {
-          requestsPerMinute: { type: 'integer', minimum: 0, maximum: 10000 },
-          burstLimit: { type: 'integer', minimum: 0, maximum: 1000 },
-          enabled: { type: 'boolean' },
-        },
-        required: ['requestsPerMinute', 'burstLimit', 'enabled'],
-      },
-      'com.example.FeatureConfig': {
-        type: 'object',
-        properties: {
-          maxItems: { type: 'integer', minimum: 1 },
-          timeout: { type: 'number', minimum: 0 },
-          fallbackUrl: { type: 'string' },
-        },
-        required: ['maxItems', 'timeout'],
-      },
-    },
   },
   flags: [
     // Boolean flag - simple feature toggle
@@ -183,6 +156,7 @@ const SAMPLE_SNAPSHOT: Snapshot = {
           requestsPerMinute: 100,
           burstLimit: 20,
           enabled: true,
+          tier: 'FREE',
         },
       },
       salt: 'v1',
@@ -197,6 +171,7 @@ const SAMPLE_SNAPSHOT: Snapshot = {
               requestsPerMinute: 1000,
               burstLimit: 100,
               enabled: true,
+              tier: 'ENTERPRISE',
             },
           },
           rampUp: 100,
@@ -215,6 +190,7 @@ const SAMPLE_SNAPSHOT: Snapshot = {
               requestsPerMinute: 500,
               burstLimit: 50,
               enabled: true,
+              tier: 'PRO',
             },
           },
           rampUp: 100,
@@ -274,6 +250,11 @@ const SAMPLE_SNAPSHOT: Snapshot = {
       ],
     },
   ],
+};
+
+const SAMPLE_SNAPSHOT: Snapshot = {
+  ...SAMPLE_SNAPSHOT_BASE,
+  schema: generateSchemaFromSnapshot(SAMPLE_SNAPSHOT_BASE),
 };
 
 export function DemoApp(): JSX.Element {
