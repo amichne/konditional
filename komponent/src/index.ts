@@ -31,6 +31,7 @@ export type {
   DataClassSchema,
   SnapshotMetadata,
   Patch,
+  generateSchemaFromSnapshot,
 } from './types/schema';
 
 // Validation types (for custom validation UI)

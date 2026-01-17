@@ -6,48 +6,16 @@
 
 import { useState, useCallback } from 'react';
 import { KonditionalEditor } from '../components/KonditionalEditor';
-import type { Snapshot, SchemaMetadata } from '../types/schema';
+import { generateSchemaFromSnapshot } from '../types/schema';
+import type { Snapshot } from '../types/schema';
 import '../styles/editor.css';
 
-const SAMPLE_ENUMS: SchemaMetadata['enums'] = {
-  'com.example.Theme': ['LIGHT', 'DARK', 'SYSTEM', 'HIGH_CONTRAST'],
-  'com.example.Tier': ['FREE', 'PRO', 'ENTERPRISE'],
-  'com.example.ExperimentGroup': ['CONTROL', 'VARIANT_A', 'VARIANT_B'],
-};
-
-const SAMPLE_SCHEMA: SchemaMetadata = {
-  enums: SAMPLE_ENUMS,
-  dataClasses: {
-    'com.example.RateLimitConfig': {
-      type: 'object',
-      properties: {
-        requestsPerMinute: { type: 'integer', minimum: 0, maximum: 10000 },
-        burstLimit: { type: 'integer', minimum: 0, maximum: 1000 },
-        enabled: { type: 'boolean' },
-        tier: { type: 'string', enum: SAMPLE_ENUMS['com.example.Tier'] },
-      },
-      required: ['requestsPerMinute', 'burstLimit', 'enabled', 'tier'],
-    },
-    'com.example.FeatureConfig': {
-      type: 'object',
-      properties: {
-        maxItems: { type: 'integer', minimum: 1 },
-        timeout: { type: 'number', minimum: 0 },
-        fallbackUrl: { type: 'string' },
-      },
-      required: ['maxItems', 'timeout'],
-    },
-  },
-};
-
-// Sample snapshot demonstrating various flag types and configurations
-const SAMPLE_SNAPSHOT: Snapshot = {
+const SAMPLE_SNAPSHOT_BASE: Snapshot = {
   meta: {
     version: '1.0.0',
     generatedAtEpochMillis: Date.now(),
     source: 'demo',
   },
-  schema: SAMPLE_SCHEMA,
   flags: [
     // Boolean flag - simple feature toggle
     {
@@ -282,6 +250,11 @@ const SAMPLE_SNAPSHOT: Snapshot = {
       ],
     },
   ],
+};
+
+const SAMPLE_SNAPSHOT: Snapshot = {
+  ...SAMPLE_SNAPSHOT_BASE,
+  schema: generateSchemaFromSnapshot(SAMPLE_SNAPSHOT_BASE),
 };
 
 export function DemoApp(): JSX.Element {
