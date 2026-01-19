@@ -6,7 +6,7 @@
  * Provides reducer pattern for predictable state transitions.
  */
 
-import { produce, Draft } from 'immer';
+import { produce, Draft, enableMapSet } from 'immer';
 import type {
   Snapshot,
   Flag,
@@ -18,6 +18,8 @@ import type {
   FeatureId,
 } from './schema';
 import { validateSnapshot, ValidationResult } from './validation';
+
+enableMapSet();
 
 // =============================================================================
 // Editor State Shape

@@ -4,10 +4,10 @@
  * Provides a working example with sample data for development and testing.
  */
 
-import { useState, useCallback } from 'react';
-import { KonditionalEditor } from '../components/KonditionalEditor';
-import { generateSchemaFromSnapshot } from '../types/schema';
-import type { Snapshot } from '../types/schema';
+import {useCallback, useState} from 'react';
+import {KonditionalEditor} from '../components/KonditionalEditor';
+import type {Snapshot} from '../types/schema';
+import {generateSchemaFromSnapshot} from '../types/schema';
 import '../styles/editor.css';
 
 const SAMPLE_SNAPSHOT_BASE: Snapshot = {
@@ -312,7 +312,7 @@ export function DemoApp(): JSX.Element {
       </div>
 
       {/* Editor */}
-      <div style={{ flex: 1, overflow: 'hidden' }}>
+      <div style={{ flex: 1 }}>
         <KonditionalEditor
           snapshot={snapshot}
           onSave={handleSave}
