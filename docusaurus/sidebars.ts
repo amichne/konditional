@@ -7,7 +7,6 @@ const sidebars: SidebarsConfig = {
             type: 'category',
             label: 'Quick Start',
             items: [
-                'quick-start/what-is-konditional',
                 'getting-started/installation',
                 'getting-started/your-first-flag',
             ],

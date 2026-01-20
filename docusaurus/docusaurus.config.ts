@@ -124,9 +124,8 @@ const config: Config = {
                 },
                 {
                     type: 'doc',
-                    docId: 'advanced/recipes',
-                    label: 'Recipes',
-                    position: 'left',
+                    docId: 'konditional-api',
+                    label: 'OpenAPI Spec',
                 },
                 {href: 'https://github.com/amichne/konditional', label: 'GitHub', position: 'right'},
             ],
