@@ -230,7 +230,7 @@ Coming from a boolean capability system:
    }
    ```
 
-See the [Migration Guide](/reference/migration-guide) for detailed patterns.
+See the [Migration Guide](https://amichne.github.io/konditional/reference/migration-guide/#step-by-step-adoption-incremental) for detailed patterns.
 
 ---
 
@@ -249,6 +249,6 @@ configuration.
 
 ## Next Steps
 
-- [Installation](/getting-started/installation) — Add Konditional to your project
-- [Your First Feature](/getting-started/your-first-flag) — Define and evaluate your first feature flag
-- [Core Concepts](/fundamentals/core-primitives) — Understand the foundational types
+- [Installation](https://amichne.github.io/konditional/getting-started/installation/) — Add Konditional to your project
+- [Your First Feature](https://amichne.github.io/konditional/getting-started/your-first-flag/) — Define and evaluate your first feature flag
+- [Core Concepts](https://amichne.github.io/konditional/fundamentals/core-primitives/) — Understand the foundational types
