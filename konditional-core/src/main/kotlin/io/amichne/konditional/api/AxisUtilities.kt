@@ -12,14 +12,14 @@ import io.amichne.konditional.internal.builders.AxisValuesBuilder
  * Type-based axis value getter.
  *
  * This function retrieves the value of the axis corresponding to the reified type [T], and
- * returns it as an instance of [T] if present in the context. If the axis is not found, it returns null.
+ * returns it as a set of [T] values if present in the context. If the axis is not found, it returns an empty set.
  *
  * ```kotlin
- *  val env: Environment? = context.axis<Environment>()
+ *  val env: Set<Environment> = context.axis<Environment>()
  * ```
  */
-inline fun <reified T> Context.axis(): T? where T : AxisValue<T>, T : Enum<T> =
-    AxisRegistry.axisFor(T::class)?.let { axisValues[it] }
+inline fun <reified T> Context.axis(): Set<T> where T : AxisValue<T>, T : Enum<T> =
+    AxisRegistry.axisFor(T::class)?.let { axisValues[it] }.orEmpty()
 
 /**
  * Axis-based value getter.
@@ -27,7 +27,7 @@ inline fun <reified T> Context.axis(): T? where T : AxisValue<T>, T : Enum<T> =
  * Example:
  *   val env = ctx.axis(Axes.Environment)
  */
-inline fun <reified T, reified C : Context> C.axis(axis: Axis<T>): T? where T : AxisValue<T>, T : Enum<T> =
+inline fun <reified T, reified C : Context> C.axis(axis: Axis<T>): Set<T> where T : AxisValue<T>, T : Enum<T> =
     axisValues[axis]
 
 /**
