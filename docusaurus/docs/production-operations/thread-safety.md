@@ -223,6 +223,6 @@ configStream.collect { json ->
 ## Next Steps
 
 - [Theory: Atomicity Guarantees](/theory/atomicity-guarantees) — Formal proof of atomic swap safety
-- [Configuration Lifecycle](/fundamentals/configuration-lifecycle) — JSON → ParseResult → load
+- [Configuration Lifecycle](/learn/configuration-lifecycle) — JSON → ParseResult → load
 - [Failure Modes](/production-operations/failure-modes) — What can go wrong and how to handle it
 - [API Reference: Namespace Operations](/runtime/operations) — Full API for load/rollback

@@ -96,7 +96,7 @@ Parse fails, last-known-good configuration remains active.
 
 ---
 
-## 3. Type Mismatches
+## 3. Type Mismatches {#type-mismatches}
 
 ### What Happens
 
@@ -190,7 +190,7 @@ Parse fails, last-known-good configuration remains active.
 
 ---
 
-## 5. Uninitialized Namespace
+## 5. Uninitialized Namespace {#uninitialized-namespace}
 
 ### What Happens
 
@@ -336,7 +336,7 @@ One configuration wins (last write). Readers see a consistent snapshot (either c
 
 ## Next Steps
 
-- [Configuration Lifecycle](/fundamentals/configuration-lifecycle) — JSON → ParseResult → load
-- [Trust Boundaries](/fundamentals/type-safety) — Compile-time vs runtime guarantees
+- [Configuration Lifecycle](/learn/configuration-lifecycle) — JSON → ParseResult → load
+- [Trust Boundaries](/learn/type-safety) — Compile-time vs runtime guarantees
 - [Refresh Safety](/production-operations/thread-safety) — Why atomic updates are safe
 - [Theory: Parse Don't Validate](/theory/parse-dont-validate) — Why ParseResult prevents invalid states

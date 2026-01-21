@@ -454,7 +454,7 @@ fun alertNamespaceOwners(
 
 ## Next Steps
 
-- [Configuration Lifecycle](/fundamentals/configuration-lifecycle) — How config flows through namespaces
+- [Configuration Lifecycle](/learn/configuration-lifecycle) — How config flows through namespaces
 - [Safe Remote Configuration](/how-to-guides/safe-remote-config) — Loading patterns per namespace
 - [Handling Failures](/how-to-guides/handling-failures) — Failure isolation strategies
 - [Namespace Isolation (Theory)](/theory/namespace-isolation) — Formal isolation guarantees

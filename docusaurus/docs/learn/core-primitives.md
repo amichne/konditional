@@ -11,6 +11,22 @@ This page defines the minimum vocabulary you need to read and write Konditional 
 - **Specificity**: A numeric measure of how constrained a rule is. Higher specificity wins.
 - **Bucketing**: Deterministic assignment of a `stableId` to a ramp-up bucket.
 
+## Context
+
+Runtime inputs used during evaluation, such as locale, platform, app version, and stable ID.
+
+## Feature
+
+A typed configuration value with rules and a default value.
+
+## Namespace
+
+A registry that owns a set of features and provides lifecycle operations.
+
+## StableId: Deterministic ramp-ups
+
+A stable identifier used for deterministic bucketing in ramp-up rules.
+
 ## Compile-time vs runtime
 
 | Aspect                     | Guarantee Level | Mechanism                                                  |

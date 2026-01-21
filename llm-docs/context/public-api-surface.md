@@ -1,5 +1,5 @@
 # Public API Surface Summary
-# Extracted: 2026-01-21T00:09:11-05:00
+# Extracted: 2026-01-21T02:25:35-05:00
 
 ## From docusaurus/docs/index.md
 
@@ -7,83 +7,260 @@
 slug: /
 ---
 
-# Konditional Core
+# What is Konditional?
 
-Type-safe, deterministic feature flags for Kotlin.
+Konditional is a compile-time safe feature flag library for Kotlin that treats flags as typed properties instead of
+runtime strings.
 
-Konditional Core is the smallest surface you need to define and evaluate features in code. You write features as typed
-properties, pass a Context at runtime, and always get a value back.
+## The Problem
 
-## Start here
+Feature flags and configuration systems seem simple until they bite you in production:
 
-- [Installation](/getting-started/installation)
-- [Your First Feature](/getting-started/your-first-flag)
-- [Core Concepts](/fundamentals/core-primitives)
-- [Evaluation Model](/fundamentals/evaluation-semantics)
-
-## Quick example
+### String-keyed systems fail silently
 
 ```kotlin
-import io.amichne.konditional.context.*
-import io.amichne.konditional.core.dsl.enable
-
-object AppFeatures : Namespace("app") {
-    val darkMode by boolean<Context>(default = false) {
-        enable { ios() }
-        enable { rampUp { 10.0 } }
-    }
-}
-
-val ctx = Context(
-    locale = AppLocale.UNITED_STATES,
-    platform = Platform.IOS,
-    appVersion = Version.of(2, 0, 0),
-    stableId = StableId.of("user-123"),
-)
-
-val enabled: Boolean = AppFeatures.darkMode.evaluate(ctx)
+// Somewhere in onboarding code
+val newFlow = flagClient.getBool("new_onboaring_flow", false)  // typo
 ```
 
-## Guarantees in core
+```json5
+// Somewhere in config JSON
+{ "new_onboarding_flow": true }  // correct spelling
+```
 
-### Type-safe access
+The typo ships. The flag never activates. Your A/B test runs with 0% treatment. You find out in a post-mortem.
 
-- **Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
+**String keys fail silently.** The compiler can't help you. Your IDE can't help you.
 
-- **Mechanism**: Property delegation and generic type propagation on `Feature<T, Context, Namespace>`.
+### Boolean-only systems turn into boolean matrices
 
-- **Boundary**: This does not apply to dynamically-generated features or external configuration systems.
+```kotlin
+enum class Capability {
+    NEW_CHECKOUT,
+    NEW_CHECKOUT_V2,
+    NEW_CHECKOUT_V3,
+    CHECKOUT_FAST_PATH
+}
 
-### Total evaluation
+// Your code becomes:
+if (isEnabled(NEW_CHECKOUT) && !isEnabled(NEW_CHECKOUT_V2)) {
+    // original new checkout
+} else if (isEnabled(NEW_CHECKOUT_V2) && !isEnabled(CHECKOUT_FAST_PATH)) {
+    // v2 without fast path
+}
+```
 
-- **Guarantee**: Every evaluation returns a value of the declared type; no nulls and no missing cases.
+**Boolean-only forces you to encode variants as control flow.** Testing becomes exponential. Bugs hide in interactions.
 
-- **Mechanism**: Each feature requires a `default` value, which is returned when no rule matches.
+### Type safety disappears at the boundary
 
-- **Boundary**: If your business logic is wrong, Konditional still returns a value; correctness is your responsibility.
+You define this
+```kotlin
+val maxRetries: Int = flagClient.getInt("max_retries", 3)
+```
 
-### Deterministic ramp-ups
+Someone deploys this
+```json5
+{ "max_retries": "five" }
+```
 
-- **Guarantee**: The same `(stableId, featureKey, salt)` always yields the same bucket assignment.
+Production gets this
+```kotlin
+maxRetries = 0  // or throws, or returns default (SDK-dependent)
+```
 
-- **Mechanism**: SHA-256 bucketing reduces the hash to a stable integer in `[0, 9999]`.
+**Runtime configuration breaks compile-time contracts.** The gap causes incidents.
 
-- **Boundary**: Changing any of `stableId`, `featureKey`, or `salt` changes the bucket assignment.
+---
 
-## Why the guarantees hold
+## What Konditional Does
 
-- [Determinism proofs](/theory/determinism-proofs)
-- [Atomicity guarantees](/theory/atomicity-guarantees)
-- [Type safety boundaries](/theory/type-safety-boundaries)
+Konditional makes three structural commitments:
 
-## What Konditional Core does not include
+1. **Flags are properties, not strings** — keys bound at compile-time
+2. **Types flow from definitions to callsites** — no runtime coercion
+3. **One evaluation semantics** — centralized, deterministic, testable
 
-Konditional Core does not ship remote configuration, JSON serialization, or observability helpers. Those live in
-separate modules:
+```kotlin
+enum class CheckoutVariant { CLASSIC, OPTIMIZED, EXPERIMENTAL }
 
-- [Runtime](/runtime/)
-- [Serialization](/serialization/)
-- [Observability](/observability/)
+object AppFlags : Namespace("app") {
+  val checkoutVariant by enum<CheckoutVariant, Context>(default = CheckoutVariant.CLASSIC) {
+    rule(CheckoutVariant.OPTIMIZED) { ios() }
+    rule(CheckoutVariant.EXPERIMENTAL) { rampUp { 50.0 } }
+  }
+
+  val maxRetries by integer<Context>(default = 3) {
+    rule(5) { android() }
+  }
+}
+
+// Usage
+val variant: CheckoutVariant = AppFlags.checkoutVariant.evaluate(ctx)  // typed
+val retries: Int = AppFlags.maxRetries.evaluate(ctx)                   // typed
+```
+
+### What You Get
+
+**Typos become compile errors:**
+
+```kotlin
+AppFlags.NEW_ONBOARING_FLOW  // doesn't compile
+```
+
+**Type mismatches become compile errors:**
+
+```kotlin
+val retries: String = AppFlags.maxRetries.evaluate(ctx)  // doesn't compile
+```
+
+**Variants are values, not boolean matrices:**
+
+```kotlin
+when (AppFlags.checkoutVariant.evaluate(ctx)) {
+  CheckoutVariant.CLASSIC -> classicCheckout()
+  CheckoutVariant.OPTIMIZED -> optimizedCheckout()
+  CheckoutVariant.EXPERIMENTAL -> experimentalCheckout()
+}
+```
+
+**Ramp-ups are deterministic:**
+
+```kotlin
+// Same user, same flag → same bucket
+// SHA-256("$salt:$flagKey:${stableId.hexId}") determines bucket
+// Reproducible in logs, no random numbers
+```
+
+**Configuration boundaries are explicit:**
+
+```kotlin
+when (val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)) {
+  is ParseResult.Success -> Unit // loaded into AppFlags
+  is ParseResult.Failure -> {
+    // Invalid JSON rejected, last-known-good remains active
+    logError("Config parse failed: ${result.error}")
+  }
+}
+```
+
+---
+
+## Comparison to Alternatives
+
+| Aspect             | String-keyed SDKs                 | Enum + boolean                   | Konditional                     |
+|--------------------|-----------------------------------|----------------------------------|---------------------------------|
+| **Typo safety**    | Runtime failure (silent or crash) | Compile-time                     | Compile-time                    |
+| **Type safety**    | Runtime coercion (often unsafe)   | Boolean only                     | Compile-time types              |
+| **Variants**       | Runtime-typed                     | Multiple booleans + control flow | First-class typed values        |
+| **Ramp-up logic**  | SDK-dependent                     | Per-team reimplementation        | Centralized, deterministic      |
+| **Evaluation**     | SDK-defined, opaque               | Ad-hoc per evaluator             | Single DSL with specificity     |
+| **Invalid config** | Fails silently or crashes         | Depends on implementation        | Explicit `ParseResult` boundary |
+| **Testing**        | Mock SDK or replay snapshots      | Mock evaluators                  | Evaluate against typed contexts |
+
+---
+
+## When Konditional Fits
+
+**Choose Konditional when:**
+
+- You want compile-time correctness for flag definitions and callsites
+- You need typed values beyond on/off booleans (variants, thresholds, configuration)
+- You value consistency over bespoke per-domain solutions
+- You run experiments and need deterministic, reproducible ramp-ups
+- You have remote configuration and want explicit validation boundaries
+
+**Konditional might not fit if:**
+
+- You need vendor-hosted dashboards more than compile-time safety
+- Your flags are fully dynamic with zero static definitions
+- You're okay with process and tooling to prevent string key drift
+
+---
+
+## Real Problems Konditional Prevents
+
+### Production incident: Type coercion
+
+A string-keyed SDK returns `0` when parsing `"max_retries": "disabled"`. Service retries 0 times. All requests fail
+immediately.
+
+**With Konditional:** Parse fails at boundary. `ParseResult.Failure` logged. Last-known-good remains active. No
+incident.
+
+### Experiment contamination: Inconsistent bucketing
+
+Two teams implement ramp-ups with different hashing. Same user gets opposite buckets. A/B test results polluted.
+
+**With Konditional:** All ramp-ups use deterministic SHA-256 bucketing. Same user, same bucket. Clean results.
+
+### Maintenance burden: Boolean explosion
+
+Feature has 5 boolean flags for variants. Testing requires 32 combinations. Most undefined. Bugs hide in interactions.
+
+**With Konditional:** One flag, typed value, explicit variants. Testing covers defined cases. Code readable.
+
+---
+
+## Migration Path
+
+Coming from a boolean capability system:
+
+1. **Mirror existing flags** as properties:
+   ```kotlin
+   object Features : Namespace("app") {
+       val featureX by boolean<Context>(default = false)
+   }
+   ```
+
+2. **Centralize evaluation** into rules:
+   ```kotlin
+   val featureX by boolean<Context>(default = false) {
+       rule(true) { android() }
+       rule(true) { rampUp { 25.0 } }
+   }
+   ```
+
+3. **Replace boolean matrices** with typed values:
+   ```kotlin
+   // Before: CHECKOUT_V1, CHECKOUT_V2, CHECKOUT_V3 (3 booleans)
+   enum class CheckoutVersion { V1, V2, V3 }
+   val checkoutVersion by enum<CheckoutVersion, Context>(default = V1) {
+       rule(V2) { rampUp { 33.0 } }
+       rule(V3) { rampUp { 66.0 } }
+   }
+   ```
+
+4. **Add remote config** with explicit boundaries:
+   ```kotlin
+   when (val result = NamespaceSnapshotLoader(Features).load(json)) {
+       is ParseResult.Success -> Unit
+       is ParseResult.Failure -> keepLastKnownGood()
+   }
+   ```
+
+See the [Migration Guide](./reference/migration-guide.md) for detailed patterns.
+
+---
+
+## Summary
+
+Feature flags aren't "nice to have" features. They're load-bearing infrastructure. When they fail, they fail at scale,
+in production, with user impact.
+
+Konditional exists because **stringly-typed systems cause production incidents**, **boolean-only systems create
+maintenance nightmares**, and **inconsistent
+evaluation semantics make experiments untrustworthy**.
+
+The solution is structural: bind types at compile-time, centralize evaluation semantics, and draw explicit boundaries
+between static definitions and dynamic
+configuration.
+
+## Next Steps
+
+- [Installation](./getting-started/installation) — Add Konditional to your project
+- [Your First Feature](./getting-started/your-first-flag) — Define and evaluate your first feature flag
+- [Core Concepts](./learn/core-primitives) — Understand the foundational types
 
 ## From docusaurus/docs/getting-started/installation.md
 
@@ -188,122 +365,18 @@ If no rule matches, the default value is returned.
 
 ## Next steps
 
-- Learn the core concepts: [Core Concepts](/fundamentals/core-primitives)
-- Understand rule ordering and ramp-ups: [Evaluation Model](/fundamentals/evaluation-semantics)
+- Learn the core concepts: [Core Concepts](/learn/core-primitives)
+- Understand rule ordering and ramp-ups: [Evaluation Model](/learn/evaluation-model)
 
-## From docusaurus/docs/fundamentals/core-primitives.md
+## From docusaurus/docs/api-reference/observability.md
 
-# Core Concepts
+---
+title: Observability API (Legacy)
+description: Legacy path for observability API reference.
+unlisted: true
+---
 
-This page defines the minimum vocabulary you need to read and write Konditional features.
+This page has moved.
 
-## Terms
-
-- **Namespace**: A registry that owns a set of features.
-- **Feature**: A typed configuration value with rules and a default.
-- **Context**: Runtime inputs used for evaluation (`locale`, `platform`, `appVersion`, `stableId`).
-- **Rule**: Criteria -> value mapping. All criteria must match for the rule to apply.
-- **Specificity**: A numeric measure of how constrained a rule is. Higher specificity wins.
-- **Bucketing**: Deterministic assignment of a `stableId` to a ramp-up bucket.
-
-## Compile-time vs runtime
-
-| Aspect                     | Guarantee Level | Mechanism                                                  |
-|----------------------------|-----------------|------------------------------------------------------------|
-| Property access            | Compile-time    | Property delegation on `Namespace`                         |
-| Return types               | Compile-time    | Generic type propagation (`Feature<T, C, M>`)              |
-| Rule values                | Compile-time    | Typed DSL builders (`boolean`, `string`, `enum`, `custom`) |
-| Non-null returns           | Compile-time    | Required defaults                                          |
-| Rule matching              | Runtime         | Deterministic evaluation over `Context`                    |
-| Business logic correctness | Not guaranteed  | Human responsibility                                       |
-
-## Typed values in practice
-
-```kotlin
-enum class Theme { LIGHT, DARK }
-
-object AppFeatures : Namespace("app") {
-  val darkMode by boolean<Context>(default = false)
-  val theme by enum<Theme, Context>(default = Theme.LIGHT)
-  val retries by integer<Context>(default = 3)
-}
-
-val theme: Theme = AppFeatures.theme.evaluate(ctx)
-```
-
-## Type-safety guarantee
-
-- **Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
-
-- **Mechanism**: Feature properties are declared with explicit type parameters and enforced by the Kotlin type system.
-
-- **Boundary**: Dynamically-generated features are outside this guarantee.
-
-## From docusaurus/docs/fundamentals/evaluation-semantics.md
-
-# Evaluation Model
-
-This page explains how Konditional chooses a value when multiple rules exist.
-
-## Evaluation order
-
-When you call `feature.evaluate(context)`:
-
-1. Rules are sorted by **specificity** (highest first).
-2. Each rule is checked against the Context.
-3. If a rule matches, ramp-up is applied (if configured).
-4. The first matching rule that passes ramp-up wins.
-5. If nothing matches, the default value is returned.
-
-## Specificity system
-
-Specificity is the sum of targeting constraints and custom predicate specificity.
-
-**Base targeting specificity** (0-3+):
-
-- `locales(...)` adds 1 if non-empty
-- `platforms(...)` adds 1 if non-empty
-- `versions { ... }` adds 1 if bounded
-- `axis(...)` adds 1 per axis constraint
-
-**Custom predicate specificity**:
-
-- A custom `Predicate` can define its own `specificity()`
-- Default predicate specificity is 1
-
-- **Guarantee**: More specific rules are evaluated before less specific rules.
-
-- **Mechanism**: Rules are sorted by `rule.specificity()` in descending order before evaluation.
-
-- **Boundary**: Ramp-up percentage does not affect specificity.
-
-## Deterministic ramp-ups
-
-Ramp-ups are deterministic and reproducible.
-
-- **Guarantee**: The same `(stableId, featureKey, salt)` always yields the same bucket assignment.
-
-- **Mechanism**:
-
-1. Hash the UTF-8 bytes of `"$salt:$featureKey:${stableId.hexId.id}"` with SHA-256.
-2. Convert the first 4 bytes to an unsigned 32-bit integer.
-3. Bucket = `hash % 10_000` (range `[0, 9999]`).
-4. Threshold = `(rampUp.value * 100.0).roundToInt()` (basis points).
-5. In ramp-up if `bucket < threshold`.
-
-- **Boundary**: Changing `stableId`, `featureKey`, or `salt` changes the bucket assignment.
-
-## Example
-
-```kotlin
-object AppFeatures : Namespace("app") {
-    val checkout by string<Context>(default = "v1") {
-        rule("v3") { platforms(Platform.IOS); versions { min(3, 0, 0) } } // specificity 2
-        rule("v2") { platforms(Platform.IOS) }                            // specificity 1
-        rule("v1") { always() }                                           // specificity 0
-    }
-}
-```
-
-For an iOS user on version 3.1.0, the `v3` rule is evaluated first and wins if it matches.
+See [Observability reference](/observability/reference/).
 

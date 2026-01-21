@@ -488,4 +488,4 @@ try {
 - [Failure Modes](/production-operations/failure-modes) — Comprehensive failure catalog
 - [Safe Remote Configuration](/how-to-guides/safe-remote-config) — Load patterns
 - [Refresh Patterns](/production-operations/refresh-patterns) — Polling, webhooks
-- [Configuration Lifecycle](/fundamentals/configuration-lifecycle) — How config flows
+- [Configuration Lifecycle](/learn/configuration-lifecycle) — How config flows

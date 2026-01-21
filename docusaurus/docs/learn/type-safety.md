@@ -238,6 +238,6 @@ Konditional's type safety has two parts:
 
 ## Next Steps
 
-- [Configuration Lifecycle](/fundamentals/configuration-lifecycle) — How configuration flows from JSON to evaluation
+- [Configuration Lifecycle](/learn/configuration-lifecycle) — How configuration flows from JSON to evaluation
 - [Type Safety Boundaries (Theory)](/theory/type-safety-boundaries) — Deep dive into how type safety is implemented
 - [Production Operations](/production-operations/failure-modes) — Handling invalid configuration in production
