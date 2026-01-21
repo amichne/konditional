@@ -9,7 +9,6 @@ import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import kotlin.test.assertNull
 
 /**
  * Unit tests for Context + axis values integration.
@@ -26,11 +25,11 @@ class AxisContextIntegrationTest {
         val ctx = TestContext(axisValues = values)
 
         Assertions.assertEquals(
-            TestEnvironment.STAGE,
+            setOf(TestEnvironment.STAGE),
             ctx.axis(TestAxes.Environment),
         )
         Assertions.assertEquals(
-            TestTenant.ENTERPRISE,
+            setOf(TestTenant.ENTERPRISE),
             ctx.axis(TestAxes.Tenant),
         )
     }
@@ -46,11 +45,11 @@ class AxisContextIntegrationTest {
 
         // Type-based access
         Assertions.assertEquals(
-            TestEnvironment.STAGE,
+            setOf(TestEnvironment.STAGE),
             ctx.axis<TestEnvironment>(),
         )
         Assertions.assertEquals(
-            TestTenant.ENTERPRISE,
+            setOf(TestTenant.ENTERPRISE),
             ctx.axis<TestTenant>(),
         )
     }
@@ -62,8 +61,8 @@ class AxisContextIntegrationTest {
         }
         val ctx = TestContext(axisValues = values)
 
-        assertNull(ctx.axis(TestAxes.Tenant), "Tenant should be null when not set")
-        assertNull(ctx.axis<TestTenant>(), "Type-based access should also return null")
+        Assertions.assertTrue(ctx.axis(TestAxes.Tenant).isEmpty(), "Tenant should be empty when not set")
+        Assertions.assertTrue(ctx.axis<TestTenant>().isEmpty(), "Type-based access should also return empty")
     }
 
     @Test
@@ -75,7 +74,7 @@ class AxisContextIntegrationTest {
         val ctx = TestContext(axisValues = values)
 
         Assertions.assertEquals(
-            EphemeralEnvironment.PROD,
+            setOf(EphemeralEnvironment.PROD),
             ctx.axis<EphemeralEnvironment>(),
         )
     }
