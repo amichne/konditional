@@ -7,7 +7,7 @@ import io.amichne.konditional.core.registry.AxisRegistry
 /**
  * DSL scope for configuring axis values.
  *
- * This interface provides type-safe methods to set values along defined axes,
+ * This interface provides type-safe methods to add values along defined axes,
  * allowing users to construct [io.amichne.konditional.context.axis.AxisValues]
  * instances in a fluent and expressive manner.
  *
@@ -38,10 +38,10 @@ import io.amichne.konditional.core.registry.AxisRegistry
 @KonditionalDsl
 interface AxisValuesScope {
     /**
-     * Sets a value for the given axis.
+     * Adds a value for the given axis.
      *
      * @param axis The axis descriptor
-     * @param value The value to set
+     * @param value The value to add
      */
     operator fun <T> set(
         axis: Axis<T>,
