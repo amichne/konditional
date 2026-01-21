@@ -35,7 +35,7 @@ import io.amichne.konditional.rules.versions.VersionRange
 internal data class RuleBuilder<C : Context>(
     private var predicate: Predicate<C> = Placeholder,
     private var note: String? = null,
-    private var range: VersionRange = Unbounded(),
+    private var range: VersionRange = Unbounded,
     private val platforms: LinkedHashSet<String> = linkedSetOf(),
     private val axisConstraints: MutableList<AxisConstraint> = mutableListOf(),
     private val locales: LinkedHashSet<String> = linkedSetOf(),

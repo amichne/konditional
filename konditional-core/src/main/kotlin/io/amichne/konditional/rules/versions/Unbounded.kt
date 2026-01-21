@@ -1,8 +1,9 @@
 package io.amichne.konditional.rules.versions
 
+import com.squareup.moshi.ToJson
 import io.amichne.konditional.context.Version
 
-class Unbounded : VersionRange(Type.UNBOUNDED, MIN_VERSION, MAX_VERSION) {
+data object Unbounded : VersionRange(Type.UNBOUNDED, MIN_VERSION, MAX_VERSION) {
     override fun contains(v: Version): Boolean = true
 
     /**

@@ -124,11 +124,7 @@ fun checkDarkMode(userId: String, platform: Platform): Boolean {
 | `salt("...")` | Bucketing input for ramp-ups | `"default"` | When restarting experiments with new sample |
 | Context type | Defines available targeting | `Context` | When adding custom business logic fields |
 
-## Caveats / Footguns
-
-- **Namespace must be initialized before evaluation**: Reference the `object` at app startup or you'll get `IllegalStateException`.
-  - Fix: `val _ = AppFeatures` at application entry point
-  - Why: Kotlin `object` lazy initialization means features aren't registered until first access
+## Requirements
 
 - **Default value is required**: Cannot be `null` or omitted.
   - Fix: Always provide `default = <value>`
@@ -151,23 +147,6 @@ fun checkDarkMode(userId: String, platform: Platform): Boolean {
 - Remote configuration should be validated before load (see [Load Remote Config](/guides/load-remote-config))
 
 ## Troubleshooting
-
-### Symptom: `IllegalStateException: Feature not found`
-
-**Causes**:
-- Namespace not initialized before evaluation
-- Feature typo (wrong property name)
-
-**Fix**:
-```kotlin
-// Ensure namespace is referenced before use
-val _ = AppFeatures
-val enabled = AppFeatures.darkMode.evaluate(ctx)
-```
-
-**Verification**: Code compiles, evaluation succeeds.
-
-**Related**: [Troubleshooting: Feature not found](/troubleshooting/integration-issues#feature-not-found)
 
 ### Symptom: Compile error "Type mismatch: inferred type is String but Boolean was expected"
 

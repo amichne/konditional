@@ -12,7 +12,7 @@ class VersionRangeTest {
 
     @Test
     fun `Unbounded hasBounds returns false`() {
-        assertFalse(Unbounded().hasBounds(), "Unbounded should not have bounds")
+        assertFalse(Unbounded.hasBounds(), "Unbounded should not have bounds")
     }
 
     @Test
@@ -35,9 +35,9 @@ class VersionRangeTest {
 
     @Test
     fun `Unbounded contains all versions`() {
-        assertTrue(Unbounded().contains(Version(0, 0, 0)))
-        assertTrue(Unbounded().contains(Version(1, 5, 10)))
-        assertTrue(Unbounded().contains(Version(999, 999, 999)))
+        assertTrue(Unbounded.contains(Version(0, 0, 0)))
+        assertTrue(Unbounded.contains(Version(1, 5, 10)))
+        assertTrue(Unbounded.contains(Version(999, 999, 999)))
     }
 
     @Test

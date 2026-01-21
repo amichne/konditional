@@ -50,6 +50,6 @@ internal data class VersionRangeBuilder(
             leftBound != Version.default && rightBound != Version.default -> FullyBound(leftBound, rightBound)
             leftBound == Version.default -> RightBound(rightBound)
             rightBound == Version.default -> LeftBound(leftBound)
-            else -> Unbounded()
+            else -> Unbounded
         }
 }

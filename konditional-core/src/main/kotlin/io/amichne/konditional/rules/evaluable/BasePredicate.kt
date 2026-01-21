@@ -36,7 +36,7 @@ import io.amichne.konditional.rules.versions.VersionRange
 internal data class BasePredicate<C : Context>(
     val locales: Set<String> = emptySet(),
     val platforms: Set<String> = emptySet(),
-    val versionRange: VersionRange = Unbounded(),
+    val versionRange: VersionRange = Unbounded,
     val axisConstraints: List<AxisConstraint> = emptyList(),
 ) : Predicate<C> {
     /**

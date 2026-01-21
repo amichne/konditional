@@ -115,8 +115,6 @@ APIs that accept features from a specific namespace.
 ### Load
 
 ```kotlin
-val _ = Auth
-val _ = Payments
 val authConfig = ConfigurationSnapshotCodec.decode(authJson).getOrThrow()
 val paymentConfig = ConfigurationSnapshotCodec.decode(paymentJson).getOrThrow()
 

@@ -34,7 +34,7 @@ data class SerializableRule(
             note = note,
             locales = locales,
             platforms = platforms,
-            versionRange = versionRange ?: Unbounded(),
+            versionRange = versionRange ?: Unbounded,
             axes = axes,
         )
 

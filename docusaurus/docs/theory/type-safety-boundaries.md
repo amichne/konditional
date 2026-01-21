@@ -127,7 +127,6 @@ When configuration comes from JSON:
 ### Mechanism: Runtime Validation via ParseResult
 
 ```kotlin
-val _ = AppFeatures // ensure features are registered before parsing
 when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> {
         // JSON is valid, types match, features exist

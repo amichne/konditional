@@ -114,14 +114,11 @@ val enabled = AppFeatures.darkMode.evaluate(context)  // Sees old OR new, never 
 
 ---
 
-## Precondition: Features Must Be Registered
+## Precondition: Features Must Be Defined
 
-Before loading JSON, ensure your `Namespace` objects have been initialized:
+Upon loading JSON, your `Namespace` objects will already have features registered, as long as they are defined:
 
-```kotlin
-// Startup (t0): Initialize namespaces
-val _ = AppFeatures
-
+```kotlin 
 // Later: Load JSON
 when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
   is ParseResult.Success -> Unit

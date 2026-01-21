@@ -58,7 +58,7 @@ fun <T : Any, C : Context, M : Namespace> flagDefinitionFromSerialized(
                     note = spec.note,
                     locales = spec.locales,
                     platforms = spec.platforms,
-                    versionRange = spec.versionRange ?: Unbounded(),
+                    versionRange = spec.versionRange ?: Unbounded,
                     axisConstraints =
                         spec.axes.map { (axisId, allowedIds) ->
                             AxisConstraint(axisId, allowedIds)

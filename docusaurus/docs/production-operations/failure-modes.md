@@ -189,50 +189,7 @@ val json = """
 Parse fails, last-known-good configuration remains active.
 
 ---
-
-## 5. Uninitialized Namespace {#uninitialized-namespace}
-
-### What Happens
-
-Attempting to load JSON before namespace initialization:
-
-```kotlin
-// ✗ Incorrect order
-val json = fetchRemoteConfig()
-when (val result = ConfigurationSnapshotCodec.decode(json)) {
-  is ParseResult.Failure -> {
-    // Fails: features not registered yet
-  }
-}
-```
-
-### How to Prevent
-
-- Initialize namespaces at startup (t0)
-- Reference namespace objects explicitly before JSON deserialization
-
-```kotlin
-// ✓ Correct
-val _ = AppFeatures  // Force initialization
-
-val json = fetchRemoteConfig()
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-  is ParseResult.Success -> Unit
-  is ParseResult.Failure -> logError(result.error.message)
-}
-```
-
-### How to Detect
-
-- `ParseResult.Failure` with `ParseError.FeatureNotFound`
-- Unit tests should verify initialization order
-
-### Worst-Case Outcome
-
-Parse fails, last-known-good configuration remains active (or initial defaults if no config loaded yet).
-
----
-
+ 
 ## 6. Configuration Rollback Fails
 
 ### What Happens

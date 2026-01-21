@@ -69,7 +69,6 @@ Note: `ConfigurationSnapshotCodec` and `Configuration` live in `konditional-seri
 ```kotlin
 val json: String = fetchRemoteConfig()  // Untrusted
 
-val _ = AppFeatures // ensure features are registered before parsing
 when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> {
         val config: Configuration = result.value  // Trusted

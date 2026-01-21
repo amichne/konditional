@@ -3,7 +3,9 @@ package io.amichne.konditional.internal.serialization.adapters
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonReader
+import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.ToJson
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.rules.versions.FullyBound
@@ -31,7 +33,7 @@ class VersionRangeAdapter(moshi: Moshi) {
         readVersionRangeParts(reader).let { parts ->
             // Parse at the boundary: construct typed domain objects with validation
             when (val type = parts.type) {
-                VersionRange.Type.UNBOUNDED.name -> Unbounded()
+                VersionRange.Type.UNBOUNDED.name -> Unbounded
                 VersionRange.Type.MIN_BOUND.name ->
                     LeftBound(
                         requirePart(parts.min, field = "min", type = type),
@@ -49,6 +51,40 @@ class VersionRangeAdapter(moshi: Moshi) {
                 else -> invalid("Unknown VersionRange type: $type")
             }
         }
+
+    @ToJson
+    fun toJson(
+        writer: JsonWriter,
+        value: VersionRange
+    ) {
+        writer.beginObject()
+        when (value) {
+            is Unbounded -> {
+                writer.name("type").value(VersionRange.Type.UNBOUNDED.name)
+            }
+
+            is LeftBound -> {
+                writer.name("type").value(VersionRange.Type.MIN_BOUND.name)
+                writer.name("min")
+                versionAdapter.toJson(writer, value.min)
+            }
+
+            is RightBound -> {
+                writer.name("type").value(VersionRange.Type.MAX_BOUND.name)
+                writer.name("max")
+                versionAdapter.toJson(writer, value.max)
+            }
+
+            is FullyBound -> {
+                writer.name("type").value(VersionRange.Type.MIN_AND_MAX_BOUND.name)
+                writer.name("min")
+                versionAdapter.toJson(writer, value.min)
+                writer.name("max")
+                versionAdapter.toJson(writer, value.max)
+            }
+        }
+        writer.endObject()
+    }
 
     private fun requirePart(
         value: Version?,

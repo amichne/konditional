@@ -76,7 +76,7 @@ data class Rule<C : Context> internal constructor(
         note: String? = null,
         locales: Set<String> = emptySet(),
         platforms: Set<String> = emptySet(),
-        versionRange: VersionRange = Unbounded(),
+        versionRange: VersionRange = Unbounded,
         axisConstraints: List<AxisConstraint> = emptyList(),
         predicate: Predicate<C> = Placeholder,
     ) : this(

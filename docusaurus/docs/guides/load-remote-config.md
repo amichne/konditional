@@ -151,10 +151,6 @@ class ConfigurationService {
   - Fix: Always pattern-match on `ParseResult` and log/alert on `Failure`
   - Why: Silent failures cause drift between expected and actual config
 
-- **Namespace must be initialized before JSON load**: Features must be registered first.
-  - Fix: Reference namespace objects at app startup before loading config
-  - Why: [Uninitialized namespace failure mode](/production-operations/failure-modes#uninitialized-namespace)
-
 - **JSON format must match exactly**: Extra fields, wrong types, or schema violations cause parse failures.
   - Fix: Validate JSON schema in CI/CD before deployment
   - Why: [Type safety boundaries](/learn/type-safety)
@@ -182,14 +178,10 @@ class ConfigurationService {
 
 **Causes**:
 - JSON references feature that doesn't exist in code
-- Namespace not initialized before load
-- Typo in feature key
+- Typo in feature key in serialized JSON
 
 **Fix**:
 ```kotlin
-// Ensure namespace initialized
-val _ = AppFeatures
-
 // Use lenient mode for forward compatibility
 val options = SnapshotLoadOptions.skipUnknownKeys()
 val result = ConfigurationSnapshotCodec.decode(json, options)

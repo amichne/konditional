@@ -708,31 +708,6 @@ class AppFeaturesTest {
 
 ## Troubleshooting
 
-### Symptom: Tests fail with "Feature not found"
-
-**Causes**:
-- Namespace not initialized before test execution
-- Test uses wrong namespace reference
-
-**Fix**:
-```kotlin
-class AppFeaturesTest {
-    companion object {
-        @BeforeAll
-        @JvmStatic
-        fun setup() {
-            val _ = AppFeatures // Force initialization
-        }
-    }
-}
-```
-
-**Verification**: Tests pass without `IllegalStateException`.
-
-**Related**: [Troubleshooting: Integration Issues](/troubleshooting/integration-issues#feature-not-found)
-
----
-
 ### Symptom: Distribution tests fail (expected 50%, got 35%)
 
 **Causes**:

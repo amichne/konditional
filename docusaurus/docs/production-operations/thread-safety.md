@@ -143,7 +143,6 @@ The safety guarantee depends on using the public API:
 
 ```kotlin
 // ✓ Correct
-val _ = AppFeatures // ensure features are registered before parsing
 when (val result = ConfigurationSnapshotCodec.decode(json)) {
     is ParseResult.Success -> AppFeatures.load(result.value)
     is ParseResult.Failure -> logError(result.error.message)

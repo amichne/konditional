@@ -66,7 +66,7 @@ class FlagEntryTypeSafetyTest {
             rampUp = MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded(),
+            versionRange = Unbounded,
         )
 
         val flag = FlagDefinition(
@@ -86,7 +86,7 @@ class FlagEntryTypeSafetyTest {
             rampUp = MAX,
             locales = localeIds(AppLocale.UNITED_STATES),
             platforms = emptySet(),
-            versionRange = Unbounded(),
+            versionRange = Unbounded,
         )
 
         val boolFlag: FlagDefinition<Boolean, Context, Features> = FlagDefinition(
@@ -107,21 +107,21 @@ class FlagEntryTypeSafetyTest {
             rampUp = MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded(),
+            versionRange = Unbounded,
         )
 
         val stringRule = Rule<Context>(
             rampUp = MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded(),
+            versionRange = Unbounded,
         )
 
         val intRule = Rule<Context>(
             rampUp = MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded(),
+            versionRange = Unbounded,
         )
 
         val boolFlag: FlagDefinition<Boolean, Context, Features> = FlagDefinition(
@@ -159,14 +159,14 @@ class FlagEntryTypeSafetyTest {
             rampUp = MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded(),
+            versionRange = Unbounded,
         )
 
         val stringRule = Rule<Context>(
             rampUp = MAX,
             locales = emptySet(),
             platforms = emptySet(),
-            versionRange = Unbounded(),
+            versionRange = Unbounded,
         )
 
         val boolFlag = FlagDefinition(

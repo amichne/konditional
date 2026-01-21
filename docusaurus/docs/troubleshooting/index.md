@@ -217,34 +217,6 @@ println("Evaluation: ${durationUs}μs")
 
 ## Integration Issues
 
-### Feature not found
-
-**Symptom**: `IllegalStateException: Feature not registered`
-
-**Likely causes**:
-1. Namespace not initialized before evaluation
-2. Wrong namespace referenced
-3. Feature property name typo
-
-**Fix**:
-```kotlin
-// Ensure namespace initialized at app startup
-val _ = AppFeatures // Force object initialization
-
-fun main() {
-    val _ = AppFeatures // Before any evaluations
-
-    val ctx = Context(...)
-    val value = AppFeatures.darkMode.evaluate(ctx) // Now succeeds
-}
-```
-
-**Verification**: Code runs without `IllegalStateException`.
-
-**Related**: [Production Operations: Failure Modes](/production-operations/failure-modes#uninitialized-namespace)
-
----
-
 ### Configuration not loading
 
 **Symptom**: `load()` succeeds but evaluations still use old values.

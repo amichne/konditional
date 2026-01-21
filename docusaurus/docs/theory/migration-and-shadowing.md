@@ -52,7 +52,6 @@ return baselineValue  // Production uses baseline
 Evaluate against baseline (returned) and candidate (comparison only):
 
 ```kotlin
-val _ = AppFeatures // ensure features are registered before parsing
 val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow()
 val candidateRegistry = InMemoryNamespaceRegistry(namespaceId = AppFeatures.namespaceId).apply {
     load(candidateConfig)
@@ -115,7 +114,6 @@ val newFeature by boolean<Context>(default = false) {
 **Shadow evaluation:**
 
 ```kotlin
-val _ = AppFeatures // ensure features are registered before parsing
 val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow()
 val candidateRegistry = InMemoryNamespaceRegistry(namespaceId = AppFeatures.namespaceId).apply {
     load(candidateConfig)
@@ -164,7 +162,6 @@ as the old system.
 ```kotlin
 // If you can translate the "old system" state into a Konditional snapshot, you can compare
 // two registries side-by-side without changing production behavior:
-val _ = AppFeatures // ensure features are registered before parsing
 val baselineConfig = ConfigurationSnapshotCodec.decode(baselineJson).getOrThrow()
 val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow()
 

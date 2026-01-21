@@ -38,7 +38,6 @@ Compare a candidate JSON snapshot against production traffic before promoting it
 
 ```kotlin
 val candidateJson = fetchCandidateConfig()
-val _ = AppFeatures // ensure features are registered before parsing
 val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow()
 
 val candidateRegistry = InMemoryNamespaceRegistry(namespaceId = AppFeatures.namespaceId).apply {

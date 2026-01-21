@@ -54,7 +54,6 @@ Evaluations are lock-free and read a snapshot at a single point in time.
 Ensure your `Namespace` objects are initialized before parsing JSON.
 
 ```kotlin
-val _ = AppFeatures
 ```
 
 If JSON references a feature that is not registered, parsing fails with `ParseError.FeatureNotFound`.

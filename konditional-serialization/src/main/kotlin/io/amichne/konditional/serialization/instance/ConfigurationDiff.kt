@@ -44,7 +44,7 @@ data class ConfigurationDiff internal constructor(
             val baseSpecificity =
                 (if (locales.isNotEmpty()) 1 else 0) +
                     (if (platforms.isNotEmpty()) 1 else 0) +
-                    (if ((versionRange ?: Unbounded()).hasBounds()) 1 else 0) +
+                    (if ((versionRange ?: Unbounded).hasBounds()) 1 else 0) +
                     axes.size
 
             return FlagChange.FlagSnapshot.RuleValueSnapshot.RuleSnapshot(
@@ -52,7 +52,7 @@ data class ConfigurationDiff internal constructor(
                 rollout = RampUp.of(rampUp),
                 locales = locales,
                 platforms = platforms,
-                versionRange = versionRange ?: Unbounded(),
+                versionRange = versionRange ?: Unbounded,
                 axes = axes,
                 baseSpecificity = baseSpecificity,
                 extensionSpecificity = 0,
