@@ -27,19 +27,22 @@ import io.amichne.konditional.core.dsl.KonditionalDsl
  */
 @KonditionalDsl
 @PublishedApi
-internal class AxisValuesBuilder(val map: MutableMap<String, AxisValue<*>> = mutableMapOf<String, AxisValue<*>>()) :
+internal class AxisValuesBuilder(
+    val map: MutableMap<String, MutableSet<AxisValue<*>>> = mutableMapOf(),
+) :
     AxisValuesScope,
-    MutableMap<String, AxisValue<*>> by map {
+    MutableMap<String, MutableSet<AxisValue<*>>> by map {
 
     /**
      * Internal accessor for extracting accumulated values.
      *
      * Used by other builders that need to access the raw map.
      */
-    internal fun getValues(): Map<String, AxisValue<*>> = map.toMap()
+    internal fun getValues(): Map<String, Set<AxisValue<*>>> =
+        map.mapValues { (_, values) -> values.toSet() }
 
     /**
-     * Sets a value for the given axis.
+     * Adds a value for the given axis.
      */
     override fun <T> set(
         axis: Axis<T>,
@@ -48,7 +51,7 @@ internal class AxisValuesBuilder(val map: MutableMap<String, AxisValue<*>> = mut
         require(axis.valueClass == value::class) {
             "Axis ${axis.id} expects ${axis.valueClass.simpleName}, got ${value::class.simpleName}"
         }
-        map[axis.id] = value
+        map.getOrPut(axis.id) { linkedSetOf() }.add(value)
     }
 
     /**
@@ -68,5 +71,11 @@ internal class AxisValuesBuilder(val map: MutableMap<String, AxisValue<*>> = mut
      */
     @PublishedApi
     internal fun build(): AxisValues =
-        if (map.isEmpty()) AxisValues.EMPTY else AxisValues(map.toMap())
+        if (map.isEmpty()) {
+            AxisValues.EMPTY
+        } else {
+            AxisValues(
+                map.mapValues { (_, values) -> values.toSet() },
+            )
+        }
 }

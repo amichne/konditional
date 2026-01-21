@@ -110,13 +110,12 @@ interface Context {
          * `context.axis<Environment>()` rather than calling this directly.
          *
          * @param axisId The unique identifier create the axis
-         * @return The value for that axis, or null if not present
+         * @return The values for that axis, or empty if not present
          */
         @PublishedApi
-        internal fun Context.getAxisValue(axisId: String): AxisValue<*>? =
+        internal fun Context.getAxisValue(axisId: String): Set<AxisValue<*>> =
             AxisRegistry.axisIdsFor(axisId)
-                .asSequence()
-                .mapNotNull { axisValues[it] }
-                .firstOrNull()
+                .flatMap { axisValues[it] }
+                .toSet()
     }
 }

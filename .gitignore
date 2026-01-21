@@ -6,6 +6,7 @@ req.md
 ai/
 site/
 .serena/
+.worktrees/
 
 # Publishing and Release
 *.asc

@@ -1,11 +1,15 @@
 package io.amichne.konditional.dimensions
 
+import io.amichne.konditional.api.axis
 import io.amichne.konditional.api.axisValues
+import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.axis.AxisValues
 import io.amichne.konditional.core.dsl.unaryPlus
 import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
+import io.amichne.konditional.fixtures.TestContext
+import io.amichne.konditional.fixtures.FeaturesWithAxis
 import io.amichne.konditional.fixtures.environment
 import io.amichne.konditional.fixtures.tenant
 import io.amichne.konditional.internal.builders.AxisValuesBuilder
@@ -26,8 +30,8 @@ class AxisBuilderTest {
             values,
             "Empty builder should return the shared EMPTY instance",
         )
-        Assertions.assertNull(values[TestAxes.Environment], "No environment should be present")
-        Assertions.assertNull(values[TestAxes.Tenant], "No tenant should be present")
+        Assertions.assertTrue(values[TestAxes.Environment].isEmpty(), "No environment should be present")
+        Assertions.assertTrue(values[TestAxes.Tenant].isEmpty(), "No tenant should be present")
     }
 
     @Test
@@ -38,12 +42,12 @@ class AxisBuilderTest {
         }
 
         Assertions.assertEquals(
-            TestEnvironment.DEV,
+            setOf(TestEnvironment.DEV),
             values[TestAxes.Environment],
             "Typed axis lookup should return environment value",
         )
         Assertions.assertEquals(
-            TestTenant.SME,
+            setOf(TestTenant.SME),
             values[TestAxes.Tenant],
             "Typed axis lookup should return tenant value",
         )
@@ -62,35 +66,35 @@ class AxisBuilderTest {
         }
 
         Assertions.assertEquals(
-            TestEnvironment.DEV,
+            setOf(TestEnvironment.DEV),
             values[TestAxes.Environment],
             "Unary plus should set environment value",
         )
         Assertions.assertEquals(
-            TestTenant.CONSUMER,
+            setOf(TestTenant.CONSUMER),
             values[TestAxes.Tenant],
             "Unary plus should set tenant value",
         )
     }
 
     @Test
-    fun `axisValues builder overrides previous value for same axis`() {
+    fun `axisValues builder accumulates multiple values for same axis`() {
         val values = axisValues {
             environment(TestEnvironment.DEV)
-            environment(TestEnvironment.PROD)   // override
+            environment(TestEnvironment.PROD)
             tenant(TestTenant.CONSUMER)
-            tenant(TestTenant.ENTERPRISE)       // override
+            tenant(TestTenant.ENTERPRISE)
         }
 
         Assertions.assertEquals(
-            TestEnvironment.PROD,
+            setOf(TestEnvironment.DEV, TestEnvironment.PROD),
             values[TestAxes.Environment],
-            "Last value for Environment axis must win",
+            "Environment values should accumulate",
         )
         Assertions.assertEquals(
-            TestTenant.ENTERPRISE,
+            setOf(TestTenant.CONSUMER, TestTenant.ENTERPRISE),
             values[TestAxes.Tenant],
-            "Last value for Tenant axis must win",
+            "Tenant values should accumulate",
         )
     }
 
@@ -103,12 +107,40 @@ class AxisBuilderTest {
         val values = builder.build()
 
         Assertions.assertEquals(
-            TestEnvironment.STAGE,
+            setOf(TestEnvironment.STAGE),
             values[TestAxes.Environment],
         )
-        Assertions.assertNull(
-            values[TestAxes.Tenant],
-            "Tenant should not be present when null is passed to setIfNotNull",
+        Assertions.assertTrue(values[TestAxes.Tenant].isEmpty(), "Tenant should be empty when null is passed")
+    }
+
+    @Test
+    fun `context axis returns set of values`() {
+        val ctx = TestContext(
+            axisValues =
+                axisValues {
+                    environment(TestEnvironment.DEV)
+                    environment(TestEnvironment.PROD)
+                },
         )
+
+        Assertions.assertEquals(
+            setOf(TestEnvironment.DEV, TestEnvironment.PROD),
+            ctx.axis<TestEnvironment>(),
+        )
+    }
+
+    @Test
+    fun `axis constraints match when any value is allowed`() {
+        val ctx = TestContext(
+            axisValues =
+                axisValues {
+                    environment(TestEnvironment.DEV)
+                    environment(TestEnvironment.PROD)
+                },
+        )
+
+        val enabled = FeaturesWithAxis.envScopedFlag.evaluate(ctx)
+
+        Assertions.assertTrue(enabled)
     }
 }
