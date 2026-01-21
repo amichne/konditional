@@ -198,6 +198,6 @@ This keeps behavior pinned to the baseline value while generating comparison tel
 
 ## Next steps
 
-- Learn the primitives: ["Core Primitives"](/fundamentals/core-primitives)
-- Understand evaluation + determinism: ["Evaluation Semantics"](/fundamentals/evaluation-semantics)
-- Operate remote config safely: [Configuration lifecycle](/fundamentals/configuration-lifecycle)
+- Learn the primitives: ["Core Primitives"](/learn/core-primitives)
+- Understand evaluation + determinism: ["Evaluation Semantics"](/learn/evaluation-model)
+- Operate remote config safely: [Configuration lifecycle](/learn/configuration-lifecycle)

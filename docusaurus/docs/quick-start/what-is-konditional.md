@@ -245,4 +245,4 @@ configuration.
 
 - [Installation](/getting-started/installation) — Add Konditional to your project
 - [Your First Feature](/getting-started/your-first-flag) — Define and evaluate your first feature flag
-- [Core Concepts](/fundamentals/core-primitives) — Understand the foundational types
+- [Core Concepts](/learn/core-primitives) — Understand the foundational types

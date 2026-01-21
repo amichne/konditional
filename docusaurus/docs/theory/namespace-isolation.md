@@ -301,6 +301,6 @@ com.example.teams.analytics.AnalyticsFeatures : Namespace("analytics")
 
 ## Next Steps
 
-- [Fundamentals: Core Primitives](/fundamentals/core-primitives) - Namespace primitive
+- [Fundamentals: Core Primitives](/learn/core-primitives) - Namespace primitive
 - [Runtime: Operations](/runtime/operations) - Lifecycle API
 - [Serialization Reference](/serialization/reference) - JSON boundaries

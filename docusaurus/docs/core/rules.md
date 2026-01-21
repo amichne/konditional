@@ -81,5 +81,5 @@ val enterpriseOnly by boolean<EnterpriseContext>(default = false) {
 
 ## Next steps
 
-- [Evaluation model](/fundamentals/evaluation-semantics)
+- [Evaluation model](/learn/evaluation-model)
 - [Core API reference](/core/reference)

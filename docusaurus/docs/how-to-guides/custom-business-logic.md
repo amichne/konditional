@@ -437,7 +437,7 @@ object CheckoutFeatures : Namespace("checkout") {
 
 ## Next Steps
 
-- [Core Primitives](/fundamentals/core-primitives) — Understanding Context and Feature types
-- [Type Safety](/fundamentals/type-safety) — How type safety works across boundaries
+- [Core Primitives](/learn/core-primitives) — Understanding Context and Feature types
+- [Type Safety](/learn/type-safety) — How type safety works across boundaries
 - [Namespace Isolation](/how-to-guides/namespace-isolation) — Organizing features by domain
 - [Testing Features](/how-to-guides/testing-features) — Comprehensive testing patterns

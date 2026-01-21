@@ -89,8 +89,8 @@ const config: Config = {
                     position: 'left',
                     items: [
                         {type: 'doc', docId: 'core/index', label: 'Core Module'},
-                        {type: 'doc', docId: 'fundamentals/core-primitives', label: 'Core Concepts'},
-                        {type: 'doc', docId: 'fundamentals/evaluation-semantics', label: 'Evaluation Model'},
+                        {type: 'doc', docId: 'learn/core-primitives', label: 'Core Concepts'},
+                        {type: 'doc', docId: 'learn/evaluation-model', label: 'Evaluation Model'},
                         {type: 'doc', docId: 'core/rules', label: 'Rule DSL'},
                         {type: 'doc', docId: 'core/reference', label: 'Core API Reference'},
                         {type: 'doc', docId: 'core/types', label: 'Core Types'},
@@ -123,8 +123,7 @@ const config: Config = {
                     ],
                 },
                 {
-                    type: 'doc',
-                    docId: 'konditional-api',
+                    to: '/api/',
                     label: 'OpenAPI Spec',
                 },
                 {href: 'https://github.com/amichne/konditional', label: 'GitHub', position: 'right'},

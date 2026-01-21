@@ -25,7 +25,7 @@ Covered solution areas:
 
 ---
 
-## Typed Variants Instead of Boolean Explosion
+## Typed Variants Instead of Boolean Explosion {#recipe-1-typed-variants-instead-of-boolean-explosion}
 
 When you have multiple rollout variants, model them as a typed value (enum or string) rather than composing booleans.
 
@@ -37,7 +37,7 @@ When you have multiple rollout variants, model them as a typed value (enum or st
 
 ---
 
-## Deterministic Ramp-Up with Resettable Salt
+## Deterministic Ramp-Up with Resettable Salt {#recipe-2-deterministic-ramp-up-with-resettable-salt}
 
 Gradually roll out a feature without reshuffling users; use `salt(...)` when you need a clean resample.
 
@@ -53,7 +53,7 @@ To restart the experiment with a fresh sample:
 
 ---
 
-## Runtime-Configurable Segments via Axes
+## Runtime-Configurable Segments via Axes {#recipe-3-runtime-configurable-segments-via-axes}
 
 Use axes for segment targeting you want to update via JSON (without redeploying predicates).
 
@@ -65,7 +65,7 @@ Use axes for segment targeting you want to update via JSON (without redeploying 
 
 ---
 
-## Business Logic Targeting with Custom Context + Extension
+## Business Logic Targeting with Custom Context + Extension {#recipe-4-business-logic-targeting-with-custom-context-extension}
 
 Use strongly-typed extensions for domain logic that should not be remotely mutable.
 
@@ -77,7 +77,7 @@ Use strongly-typed extensions for domain logic that should not be remotely mutab
 
 ---
 
-## Structured Values with Schema Validation
+## Structured Values with Schema Validation {#recipe-5-structured-values-with-schema-validation}
 
 Use `custom<T>` for structured configuration that must be validated at the JSON boundary.
 
@@ -89,7 +89,7 @@ Use `custom<T>` for structured configuration that must be validated at the JSON 
 
 ---
 
-## Safe Remote Config Loading + Rollback
+## Safe Remote Config Loading + Rollback {#recipe-6-safe-remote-config-loading-rollback}
 
 Use `ParseResult` to enforce a hard boundary at the JSON parse step, and roll back on bad updates.
 
@@ -105,7 +105,7 @@ If a later update causes issues:
 
 ---
 
-## Controlled Migrations with Shadow Evaluation
+## Controlled Migrations with Shadow Evaluation {#recipe-7-controlled-migrations-with-shadow-evaluation}
 
 Compare a candidate configuration to baseline behavior without changing production outputs.
 
@@ -117,7 +117,7 @@ Compare a candidate configuration to baseline behavior without changing producti
 
 ---
 
-## Namespace Isolation + Kill-Switch
+## Namespace Isolation + Kill-Switch {#recipe-8-namespace-isolation-kill-switch}
 
 Use separate namespaces for independent lifecycles, and a scoped kill-switch for emergencies.
 
@@ -129,7 +129,7 @@ Use separate namespaces for independent lifecycles, and a scoped kill-switch for
 
 ---
 
-## Lightweight Observability Hooks
+## Lightweight Observability Hooks {#recipe-9-lightweight-observability-hooks}
 
 Attach logging and metrics without depending on a specific vendor SDK.
 
@@ -145,6 +145,6 @@ Attach logging and metrics without depending on a specific vendor SDK.
 
 - [Rules & Targeting: Rule Composition](/rules-and-targeting/rule-composition)
 - [Rules & Targeting: Rollout Strategies](/rules-and-targeting/rollout-strategies)
-- [Fundamentals: Configuration Lifecycle](/fundamentals/configuration-lifecycle)
+- [Fundamentals: Configuration Lifecycle](/learn/configuration-lifecycle)
 - [Advanced: Shadow Evaluation](/advanced/shadow-evaluation)
 - [API Reference: Observability](/api-reference/observability)

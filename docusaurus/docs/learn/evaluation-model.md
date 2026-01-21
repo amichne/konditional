@@ -2,6 +2,18 @@
 
 This page explains how Konditional chooses a value when multiple rules exist.
 
+## Total evaluation {#total-evaluation}
+
+### 1. Total: Always returns a value {#1-total-always-returns-a-value}
+
+Evaluation always returns a value. If no rule matches, the default is returned.
+
+## Deterministic evaluation
+
+### 2. Deterministic: Same inputs = same outputs {#2-deterministic-same-inputs--same-outputs}
+
+Given the same inputs and configuration, evaluation yields the same output.
+
 ## Evaluation order
 
 When you call `feature.evaluate(context)`:

@@ -47,5 +47,5 @@ If no rule matches, the default value is returned.
 
 ## Next steps
 
-- Learn the core concepts: [Core Concepts](/fundamentals/core-primitives)
-- Understand rule ordering and ramp-ups: [Evaluation Model](/fundamentals/evaluation-semantics)
+- Learn the core concepts: [Core Concepts](/learn/core-primitives)
+- Understand rule ordering and ramp-ups: [Evaluation Model](/learn/evaluation-model)

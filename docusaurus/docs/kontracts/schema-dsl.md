@@ -44,6 +44,10 @@ data class UserConfig(
 }
 ```
 
+## Discriminated unions (sealed classes)
+
+Model sealed hierarchies with a discriminator field and `oneOf` branches.
+
 ## Runtime validation
 
 ```kotlin

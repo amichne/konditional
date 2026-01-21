@@ -7,7 +7,7 @@ the new snapshot, never a
 partially-applied mix.
 
 Learn
-more: [Atomic evaluation snapshots](/fundamentals/evaluation-semantics), [Theory: Atomicity Guarantees](/theory/atomicity-guarantees)
+more: [Atomic evaluation snapshots](/learn/evaluation-model), [Theory: Atomicity Guarantees](/theory/atomicity-guarantees)
 
 ## Allowlist
 
@@ -40,14 +40,14 @@ The in-memory snapshot used for evaluation: a map of registered features to thei
 rules, salt, active state), plus optional
 metadata.
 
-Learn more: [Configuration lifecycle](/fundamentals/configuration-lifecycle)
+Learn more: [Configuration lifecycle](/learn/configuration-lifecycle)
 
 ## ConfigurationPatch
 
 An incremental update to a `Configuration` that can add/update flag definitions and remove keys, producing a new
 `Configuration` snapshot when applied.
 
-Learn more: [Incremental updates via patches](/fundamentals/configuration-lifecycle#incremental-updates-via-patches)
+Learn more: [Incremental updates via patches](/learn/configuration-lifecycle#incremental-updates-via-patches)
 
 ## Context
 
@@ -55,7 +55,7 @@ The runtime inputs to evaluation (for example: locale, platform, app version, an
 context, and evaluation requires an explicit
 context value.
 
-Learn more: [Context primitive](/fundamentals/core-primitives#context)
+Learn more: [Context primitive](/learn/core-primitives#context)
 
 ## Determinism
 
@@ -64,7 +64,7 @@ Learn more: [Context primitive](/fundamentals/core-primitives#context)
   bucketing.
 - **Boundary**: Determinism assumes a stable `StableId`, a stable salt, and a stable configuration snapshot.
 
-Learn more: [Deterministic evaluation](/fundamentals/evaluation-semantics#2-deterministic-same-inputs--same-outputs)
+Learn more: [Deterministic evaluation](/learn/evaluation-model#2-deterministic-same-inputs--same-outputs)
 
 ## Discriminated Union
 
@@ -92,7 +92,7 @@ A typed configuration value (boolean/string/int/enum/custom) declared as a deleg
 always have a required default, so
 evaluation is non-null.
 
-Learn more: [Feature primitive](/fundamentals/core-primitives#feature)
+Learn more: [Feature primitive](/learn/core-primitives#feature)
 
 ## Kill-switch
 
@@ -101,7 +101,7 @@ that namespace (without changing feature
 definitions).
 
 Learn
-more: [Emergency kill switch](/fundamentals/evaluation-semantics), [API Reference: Namespace Operations](/runtime/operations)
+more: [Emergency kill switch](/learn/evaluation-model), [API Reference: Namespace Operations](/runtime/operations)
 
 ## Namespace
 
@@ -109,7 +109,7 @@ An isolation boundary with its own registry and independent configuration lifecy
 prevent unrelated domains from sharing
 configuration state.
 
-Learn more: [Namespace primitive](/fundamentals/core-primitives#namespace)
+Learn more: [Namespace primitive](/learn/core-primitives#namespace)
 
 ## ParseResult
 
@@ -118,7 +118,7 @@ failures return structured errors instead of
 throwing, so invalid remote input can be rejected before it affects evaluation.
 
 Learn
-more: [ParseResult boundary](/fundamentals/type-safety), [API Reference: Serialization](/serialization/reference), [Theory: Parse Don't Validate](/theory/parse-dont-validate)
+more: [ParseResult boundary](/learn/type-safety), [API Reference: Serialization](/serialization/reference), [Theory: Parse Don't Validate](/theory/parse-dont-validate)
 
 ## Ramp-up
 
@@ -135,7 +135,7 @@ namespace-scoped and revert the active configuration
 without changing code-defined features.
 
 Learn
-more: [Rollback support](/fundamentals/configuration-lifecycle), [API Reference: Namespace Operations](/runtime/operations)
+more: [Rollback support](/learn/configuration-lifecycle), [API Reference: Namespace Operations](/runtime/operations)
 
 ## Rule
 
@@ -176,7 +176,7 @@ A rule precedence metric: more specific rules are evaluated first. In Konditiona
 targeting criteria (
 platforms/locales/version bounds/axes) plus extension specificity.
 
-Learn more: [Specificity ordering](/fundamentals/evaluation-semantics)
+Learn more: [Specificity ordering](/learn/evaluation-model)
 
 ## StableId
 
@@ -184,7 +184,7 @@ A stable identifier used for deterministic bucketing and allowlists. `StableId.o
 into a hex id; `StableId.fromHex(hex)`
 uses a precomputed canonical hex id.
 
-Learn more: [StableId](/fundamentals/core-primitives#stableid-deterministic-ramp-ups)
+Learn more: [StableId](/learn/core-primitives#stableid-deterministic-ramp-ups)
 
 ## Total evaluation
 
@@ -193,7 +193,7 @@ Learn more: [StableId](/fundamentals/core-primitives#stableid-deterministic-ramp
   inactive/disabled).
 - **Boundary**: Totality assumes the feature is registered and evaluation reads from a valid configuration snapshot.
 
-Learn more: [Total evaluation](/fundamentals/evaluation-semantics#1-total-always-returns-a-value)
+Learn more: [Total evaluation](/learn/evaluation-model#1-total-always-returns-a-value)
 
 ## Trust boundary
 
@@ -201,7 +201,7 @@ The point where untrusted input (typically JSON) enters the system. Konditional 
 boundary: it must be validated into domain
 types (`ParseResult.Success`) before it can be loaded and influence evaluation.
 
-Learn more: [Trust boundaries](/fundamentals/type-safety)
+Learn more: [Trust boundaries](/learn/type-safety)
 
 ## VersionRange
 
