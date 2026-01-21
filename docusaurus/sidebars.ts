@@ -13,26 +13,28 @@ const sidebars: SidebarsConfig = {
         },
         {
             type: 'category',
-            label: 'Fundamentals',
+            label: 'Learn',
             items: [
-                'fundamentals/core-primitives',
-                'fundamentals/evaluation-semantics',
-                'fundamentals/type-safety',
-                'fundamentals/configuration-lifecycle',
+                'learn/core-primitives',
+                'learn/evaluation-model',
+                'learn/type-safety',
+                'learn/configuration-lifecycle',
             ],
         },
         {
             type: 'category',
-            label: 'How-To Guides',
+            label: 'Guides',
             items: [
+                'guides/install-and-setup',
+                'guides/load-remote-config',
                 'how-to-guides/rolling-out-gradually',
                 'how-to-guides/ab-testing',
-                'how-to-guides/safe-remote-config',
-                'how-to-guides/handling-failures',
-                'how-to-guides/debugging-determinism',
-                'how-to-guides/custom-business-logic',
-                'how-to-guides/namespace-isolation',
                 'how-to-guides/testing-features',
+                'how-to-guides/custom-business-logic',
+                'how-to-guides/debugging-determinism',
+                'how-to-guides/namespace-isolation',
+                'how-to-guides/handling-failures',
+                'how-to-guides/safe-remote-config',
                 'how-to-guides/publishing',
             ],
         },
@@ -127,8 +129,33 @@ const sidebars: SidebarsConfig = {
         },
         {
             type: 'category',
+            label: 'Examples',
+            items: [
+                'examples/golden-path',
+            ],
+        },
+        {
+            type: 'category',
+            label: 'Troubleshooting',
+            items: [
+                'troubleshooting/index',
+            ],
+        },
+        {
+            type: 'category',
             label: 'Reference',
             items: [
+                {
+                    type: 'category',
+                    label: 'API Reference',
+                    items: [
+                        'core/reference',
+                        'reference/api/namespace-operations',
+                        'reference/api/parse-result',
+                        'reference/api/snapshot-loader',
+                        'reference/api/ramp-up-bucketing',
+                    ],
+                },
                 'reference/glossary',
                 {
                     type: 'category',

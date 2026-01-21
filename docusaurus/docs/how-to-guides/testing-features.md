@@ -1,16 +1,20 @@
 # How-To: Test Your Feature Flags
 
-## Problem
+## Summary
 
-You need to:
+Write comprehensive tests for feature flag evaluation, rule matching, ramp-up bucketing, and configuration loading to ensure correctness and prevent regressions. This guide covers unit tests, property-based tests, and integration tests.
 
-- Verify feature evaluation logic works correctly
-- Test rule matching and precedence
-- Validate ramp-up bucketing and determinism
-- Test configuration loading and parsing
-- Ensure regression protection for feature behavior
+**When to use:** Every feature flag should have tests to verify evaluation logic, especially for complex rules, ramp-ups, or custom business logic.
 
-## Solution
+## Prerequisites
+
+- **Test framework**: JUnit 5 (5.8.0 or later)
+- **Assertion library**: Kotlin test assertions or AssertJ
+- **Optional**: Kotest for property-based testing, MockK for mocking
+- **Test fixtures**: `testFixtures("io.amichne:konditional-core:VERSION")` for pre-built test helpers
+- **Namespace defined**: At least one `Namespace` with features to test
+
+## Happy Path
 
 ### Step 1: Unit Test Basic Evaluation
 
@@ -607,9 +611,180 @@ fun `very long stableId is valid`() {
 }
 ```
 
+## Annotated Example
+
+Complete test suite example available in the [Golden Path Example](/examples/golden-path):
+
+```kotlin
+// File: src/test/kotlin/com/example/AppFeaturesTest.kt
+class AppFeaturesTest {
+    // 1. Test basic evaluation
+    @Test
+    fun `iOS users get dark mode`() {
+        val ctx = buildTestContext(platform = Platform.IOS)
+        assertTrue(AppFeatures.darkMode.evaluate(ctx))
+    }
+
+    // 2. Test determinism
+    @Test
+    fun `same user always gets same bucket`() {
+        val ctx = buildTestContext(userId = "user-123")
+        val results = (1..100).map { AppFeatures.feature.evaluate(ctx) }
+        assertTrue(results.all { it == results.first() })
+    }
+
+    // 3. Test distribution
+    @Test
+    fun `50 percent ramp-up distributes correctly`() {
+        val inTreatment = (0 until 10_000).count { i ->
+            AppFeatures.fiftyPercentFeature.evaluate(buildTestContext(userId = "user-$i"))
+        }
+        assertEquals(50.0, (inTreatment.toDouble() / 10_000) * 100, delta = 1.0)
+    }
+
+    private fun buildTestContext(
+        userId: String = "test-user",
+        platform: Platform = Platform.IOS
+    ) = Context(
+        stableId = StableId.of(userId),
+        platform = platform,
+        locale = AppLocale.UNITED_STATES,
+        appVersion = Version.of(2, 0, 0)
+    )
+}
+```
+
+**Evidence**: Test patterns based on `konditional-core/src/test/` test suite.
+
+---
+
+## Options
+
+| Testing Strategy | Purpose | When to Use |
+|------------------|---------|-------------|
+| Unit tests (single feature) | Verify individual feature evaluation | Always, for every feature |
+| Parameterized tests | Test multiple scenarios efficiently | Platform/locale/version combinations |
+| Property-based tests | Find edge cases automatically | Complex rules, custom predicates |
+| Integration tests | Test config loading + evaluation | Remote config workflows |
+| Test fixtures (testFixtures) | Pre-built features and helpers | Reduce boilerplate, standardize tests |
+| TargetingIds helpers | Target specific buckets deterministically | Testing ramp-up edge cases |
+| FeatureMutators | Temporarily override feature config | Testing different scenarios |
+
+---
+
+## Caveats / Footguns
+
+- **Don't use random stableIds in tests**: Tests become non-deterministic.
+  - Fix: Use fixed stableIds like `"test-user-123"` or `TargetingIds` helpers
+  - Why: Ramp-up bucketing depends on stableId consistency
+
+- **Distribution tests need large samples**: Small samples (< 1000) have high variance.
+  - Fix: Use 10,000+ users for distribution tests, allow ±1% delta
+  - Why: SHA-256 bucketing is uniform but small samples show noise
+
+- **Namespace must be initialized before tests**: Lazy object initialization can cause failures.
+  - Fix: Reference namespace in `@BeforeAll` setup
+  - Why: Features aren't registered until namespace object accessed
+
+- **Context.copy() doesn't exist**: Context is an interface, not a data class.
+  - Fix: Build new Context instances instead of copying
+  - Why: Custom Context implementations may not support copying
+
+---
+
+## Performance & Security Notes
+
+**Performance**:
+- **Test execution**: Evaluation tests are fast (< 1ms per test), distribution tests slower (100-500ms for 10K evaluations)
+- **Parallelization**: Tests can run in parallel if using separate namespace instances
+- **Memory**: Large distribution tests allocate many contexts, use appropriate heap size
+
+**Security**:
+- **Test data isolation**: Use separate test namespaces to avoid polluting production namespaces
+- **No real user data**: Use synthetic user IDs in tests, never real production data
+- **Configuration validation**: Test invalid JSON scenarios to ensure ParseResult boundary works
+
+---
+
+## Troubleshooting
+
+### Symptom: Tests fail with "Feature not found"
+
+**Causes**:
+- Namespace not initialized before test execution
+- Test uses wrong namespace reference
+
+**Fix**:
+```kotlin
+class AppFeaturesTest {
+    companion object {
+        @BeforeAll
+        @JvmStatic
+        fun setup() {
+            val _ = AppFeatures // Force initialization
+        }
+    }
+}
+```
+
+**Verification**: Tests pass without `IllegalStateException`.
+
+**Related**: [Troubleshooting: Integration Issues](/troubleshooting/integration-issues#feature-not-found)
+
+---
+
+### Symptom: Distribution tests fail (expected 50%, got 35%)
+
+**Causes**:
+- Sample size too small (high variance)
+- Bucket calculation changed (code regression)
+- Wrong feature tested (different ramp-up percentage)
+
+**Fix**:
+```kotlin
+// Increase sample size
+val sampleSize = 10_000 // Not 100
+
+// Allow reasonable delta
+assertEquals(50.0, actualPercentage, delta = 1.0) // ±1%
+```
+
+**Verification**: Test passes consistently across multiple runs.
+
+**Related**: [Guide: Roll Out Gradually](/guides/roll-out-gradually), [Reference: RampUp Bucketing](/reference/api/ramp-up-bucketing)
+
+---
+
+### Symptom: Determinism test fails (same user gets different results)
+
+**Causes**:
+- StableId changes between evaluations (using random UUID)
+- Salt changed in feature definition
+- Configuration loaded mid-test
+
+**Fix**:
+```kotlin
+// Use fixed stableId
+val fixedUserId = "test-user-123"
+val ctx = Context(stableId = StableId.of(fixedUserId))
+
+// Evaluate multiple times
+val results = (1..100).map { AppFeatures.feature.evaluate(ctx) }
+
+// All must be identical
+assertTrue(results.all { it == results.first() })
+```
+
+**Verification**: Test passes, all evaluations return same value.
+
+**Related**: [Troubleshooting: Bucketing Issues](/troubleshooting/bucketing-issues#non-deterministic-ramp-ups)
+
+---
+
 ## Next Steps
 
-- [Rolling Out Gradually](/how-to-guides/rolling-out-gradually) — Implement and test ramps
-- [A/B Testing](/how-to-guides/ab-testing) — Test variant assignment
-- [Custom Business Logic](/how-to-guides/custom-business-logic) — Test extension predicates
-- [Debugging Determinism](/how-to-guides/debugging-determinism) — Debug test failures
+- [Guide: Roll Out Gradually](/guides/roll-out-gradually) — Implement and test ramps
+- [Guide: Debug Evaluation](/guides/debug-evaluation) — Debug test failures
+- [Reference: Feature Evaluation](/reference/api/feature-evaluation) — explain() for debugging
+- [Examples: Golden Path](/examples/golden-path) — Runnable test examples
+- [Production Operations: Failure Modes](/production-operations/failure-modes) — What can go wrong
