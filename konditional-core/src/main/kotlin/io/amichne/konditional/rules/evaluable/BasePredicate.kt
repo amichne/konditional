@@ -53,7 +53,8 @@ internal data class BasePredicate<C : Context>(
             (!versionRange.hasBounds() ||
                 (context as? VersionContext)?.appVersion?.let { versionRange.contains(it) } == true) &&
             axisConstraints.all { constraint ->
-                context.getAxisValue(constraint.axisId)?.id?.let { it in constraint.allowedIds } == true
+                context.getAxisValue(constraint.axisId)
+                    .any { it.id in constraint.allowedIds }
             }
 
     /**
