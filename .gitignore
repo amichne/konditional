@@ -996,12 +996,12 @@ replay_pid*
 # Mobile Tools for Java (J2ME)
 
 # Package Files
- *.jar
- *.war
- *.ear
- *.zip
- *.tar.gz
- *.rar
+
+
+
+
+
+
 
 # virtual machine crash logs, see www.java.com
 
@@ -1031,3 +1031,45 @@ build/
 ### VS Code ###
 .vscode/
 !/docusaurus/.claude/
+
+# Logs
+logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules
+
+# Build artifacts
+dist
+dist-ssr
+*.local
+
+# Environment variables
+.env
+.env.*
+!.env.example
+!.env.local
+
+# Editor directories and files
+.idea
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+!**/glob-import/dir/node_modules
+.pnpm-store
+*.cpuprofile
+/.vscode/
+/docs/.vitepress/cache
+/docs/.vitepress/.temp
+/packages/vite/LICENSE
+explorations
+playground-temp
+temp
+TODOs.md
+.eslintcache
