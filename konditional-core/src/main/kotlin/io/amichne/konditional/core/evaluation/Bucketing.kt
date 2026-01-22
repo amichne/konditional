@@ -8,6 +8,7 @@ import kotlin.math.roundToInt
 @PublishedApi
 internal object Bucketing {
     private const val BUCKET_SPACE: Int = 10_000
+    private const val MISSING_STABLE_ID_BUCKET: Int = BUCKET_SPACE - 1
 
     private val threadLocalDigest = ThreadLocal.withInitial {
         MessageDigest.getInstance("SHA-256")
@@ -40,6 +41,13 @@ internal object Bucketing {
      * Converts a rampUp percentage (0.0-100.0) into basis points (0-10_000).
      */
     fun rampUpThresholdBasisPoints(rollout: RampUp): Int = (rollout.value * 100.0).roundToInt()
+
+    /**
+     * Default bucket for contexts without a stable ID.
+     *
+     * This keeps the evaluation deterministic while avoiding exceptions.
+     */
+    fun missingStableIdBucket(): Int = MISSING_STABLE_ID_BUCKET
 
     fun isInRampUp(
         rampUp: RampUp,

@@ -3,7 +3,6 @@ package io.amichne.konditional.core
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Context.StableIdContext
-import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.core.evaluation.Bucketing
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
@@ -73,9 +72,11 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
      * @return The result create the evaluation, create type `T`. If the flag is not active, returns the defaultValue.
      */
     internal fun evaluate(context: C): T {
-        if (!isActive) return defaultValue
-
-        return evaluateTrace(context).value
+        return if (isActive) {
+            evaluateTrace(context).value
+        } else {
+            defaultValue
+        }
     }
 
     @ConsistentCopyVisibility
@@ -86,76 +87,98 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
         val skippedByRampUp: ConditionalValue<T, C>?,
     )
 
-    internal fun evaluateTrace(context: C): Trace<T, C> {
+    private data class EvaluationState<T : Any, C : Context>(
+        var bucket: Int? = null,
+        var skippedByRampUp: ConditionalValue<T, C>? = null,
+    )
+
+    private data class EvaluationInputs<C : Context>(
+        val context: C,
+        val stableId: HexId?,
+        val fallbackBucket: Int,
+        val isFlagAllowlisted: Boolean,
+    )
+
+    internal fun evaluateTrace(context: C): Trace<T, C> =
         if (!isActive) {
-            return Trace(
+            Trace(
                 value = defaultValue,
                 bucket = null,
                 matched = null,
                 skippedByRampUp = null,
             )
-        }
-
-        var bucket: Int? = null
-        var skippedByRampUp: ConditionalValue<T, C>? = null
-
-        val stableContext = context as? StableIdContext
-        if (stableContext == null && requiresStableId()) {
-            error("StableIdContext is required when rampUp or allowlists are configured.")
-        }
-
-        val stableId = stableContext?.stableId?.hexId
-        val isFlagAllowlisted = stableId?.let { it in rampUpAllowlist } == true
-        for (candidate in valuesByPrecedence) {
-            if (!candidate.rule.matches(context)) continue
-
-            val computedBucket =
-                stableId?.let { id ->
-                    bucket ?: Bucketing
-                        .stableBucket(
-                            salt = salt,
-                            flagKey = feature.key,
-                            stableId = id,
-                        ).also { bucket = it }
+        } else {
+            val stableId = (context as? StableIdContext)?.stableId?.hexId
+            val fallbackBucket = Bucketing.missingStableIdBucket()
+            val isFlagAllowlisted = stableId?.let { it in rampUpAllowlist } == true
+            val inputs =
+                EvaluationInputs(
+                    context = context,
+                    stableId = stableId,
+                    fallbackBucket = fallbackBucket,
+                    isFlagAllowlisted = isFlagAllowlisted,
+                )
+            val state = EvaluationState<T, C>()
+            val matchedTrace =
+                valuesByPrecedence.firstNotNullOfOrNull { candidate ->
+                    evaluateCandidate(
+                        candidate = candidate,
+                        inputs = inputs,
+                        state = state,
+                    )
                 }
 
-            if (isRampUpEligible(stableId, isFlagAllowlisted, candidate, computedBucket)) {
-                return Trace(
+            matchedTrace
+                ?: Trace(
+                    value = defaultValue,
+                    bucket = state.bucket,
+                    matched = null,
+                    skippedByRampUp = state.skippedByRampUp,
+                )
+        }
+
+    private fun evaluateCandidate(
+        candidate: ConditionalValue<T, C>,
+        inputs: EvaluationInputs<C>,
+        state: EvaluationState<T, C>,
+    ): Trace<T, C>? =
+        if (candidate.rule.matches(inputs.context)) {
+            val computedBucket =
+                state.bucket ?: when (inputs.stableId) {
+                    null -> inputs.fallbackBucket
+                    else ->
+                        Bucketing
+                            .stableBucket(
+                                salt = salt,
+                                flagKey = feature.key,
+                                stableId = inputs.stableId,
+                            )
+                }.also { state.bucket = it }
+
+            if (isRampUpEligible(inputs.stableId, inputs.isFlagAllowlisted, candidate, computedBucket)) {
+                Trace(
                     value = candidate.value,
                     bucket = computedBucket,
                     matched = candidate,
-                    skippedByRampUp = skippedByRampUp,
+                    skippedByRampUp = state.skippedByRampUp,
                 )
+            } else {
+                if (state.skippedByRampUp == null) state.skippedByRampUp = candidate
+                null
             }
-
-            if (skippedByRampUp == null) skippedByRampUp = candidate
+        } else {
+            null
         }
-
-        return Trace(
-            value = defaultValue,
-            bucket = bucket,
-            matched = null,
-            skippedByRampUp = skippedByRampUp,
-        )
-    }
-
-    private fun requiresStableId(): Boolean =
-        rampUpAllowlist.isNotEmpty() ||
-            valuesByPrecedence.any { candidate -> candidate.rule.requiresStableId() }
-
-    private fun Rule<C>.requiresStableId(): Boolean =
-        rampUp != RampUp.default || rampUpAllowlist.isNotEmpty()
 
     private fun isRampUpEligible(
         stableId: HexId?,
         isFlagAllowlisted: Boolean,
         candidate: ConditionalValue<T, C>,
-        computedBucket: Int?,
+        computedBucket: Int,
     ): Boolean =
         when {
-            stableId == null -> true
             isFlagAllowlisted -> true
-            stableId in candidate.rule.rampUpAllowlist -> true
-            else -> computedBucket?.let { Bucketing.isInRampUp(candidate.rule.rampUp, it) } == true
+            stableId?.let { it in candidate.rule.rampUpAllowlist } == true -> true
+            else -> Bucketing.isInRampUp(candidate.rule.rampUp, computedBucket)
         }
 }
