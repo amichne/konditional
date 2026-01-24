@@ -2,6 +2,14 @@
 title: Golden Path Example
 ---
 
+```kotlin id="greeting_name"
+val name = "Kotlin"
+val greeting = "Hi, " + name /*hover:id=greeting_name*/
+println(greeting)
+// ^ hover:id=call_println
+```
+
+
 # Golden Path: End-to-End Feature Flag
 
 Complete, runnable example showing Konditional's core workflow from definition to evaluation.
@@ -16,7 +24,7 @@ Complete, runnable example showing Konditional's core workflow from definition t
 
 ## Complete Code
 
-```kotlin
+```kotlin id="golden-path"
 // File: src/main/kotlin/com/example/GoldenPath.kt
 package com.example
 

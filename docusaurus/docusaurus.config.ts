@@ -48,6 +48,22 @@ const config: Config = {
                 theme: {
                     customCss: "./src/css/custom.css",
                 },
+                pages: {
+                    path: 'src/pages',
+                    routeBasePath: '',
+                    include: ['**/*.{js,jsx,ts,tsx,md,mdx}'],
+                    exclude: [
+                        '**/_*.{js,jsx,ts,tsx,md,mdx}',
+                        '**/_*/**',
+                        '**/*.test.{js,jsx,ts,tsx}',
+                        '**/__tests__/**',
+                    ],
+                    mdxPageComponent: '@theme/MDXPage',
+                    remarkPlugins: [],
+                    rehypePlugins: [],
+                    beforeDefaultRemarkPlugins: [],
+                    beforeDefaultRehypePlugins: [],
+                },
             } satisfies Preset.Options,
         ],
         [
