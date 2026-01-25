@@ -1,0 +1,1 @@
+{"schemaVersion":1,"snippetId":"golden-path-full","codeHash":"fc73988224019f231544e0034073a384c421e0d20162e23a2261bd5baf9c4f7c","language":"kotlin","code":"dependencies {\n    implementation(\"io.amichne:konditional-core:0.1.0\")\n}\n\n","hovers":[]}

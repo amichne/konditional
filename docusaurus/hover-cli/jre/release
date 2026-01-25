@@ -1,2 +1,0 @@
-JAVA_VERSION="21.0.7"
-MODULES="java.base java.compiler java.datatransfer java.xml java.prefs java.desktop java.logging java.management jdk.internal.opt jdk.zipfs jdk.compiler jdk.jfr jdk.unsupported"
