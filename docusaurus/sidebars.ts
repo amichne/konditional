@@ -19,6 +19,7 @@ const sidebars: SidebarsConfig = {
                 'learn/evaluation-model',
                 'learn/type-safety',
                 'learn/configuration-lifecycle',
+                'learn/backend-for-frontend-adoption',
             ],
         },
         {
