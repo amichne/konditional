@@ -1,0 +1,722 @@
+{
+  "snippetId": "example-demo",
+  "codeHash": "demo123",
+  "code": "data class User(val name: String, val email: String?)\n\nfun processUser(user: User?) {\n    user?.let { u ->\n        val greeting = \"Hello, ${u.name}\"\n        println(greeting)\n        \n        u.email?.let { email ->\n            sendEmail(email)\n        }\n    }\n}\n\nfun sendEmail(address: String) {\n    println(\"Sending to: $address\")\n}",
+  "insights": [
+    {
+      "id": "ins_001",
+      "position": {
+        "from": {
+          "line": 5,
+          "col": 13
+        },
+        "to": {
+          "line": 5,
+          "col": 20
+        }
+      }t
+      "category": "TYPE_INFERENCE",
+      "level": "HIGHLIGHTS",
+      "kind": "INFERRED_TYPE",
+      "scopeChain": [
+        {
+          "scopeId": "scope_file",
+          "kind": "FILE",
+          "position": {
+            "from": {
+              "line": 1,
+              "col": 1
+            },
+            "to": {
+              "line": 16,
+              "col": 1
+            }
+          }
+        },
+        {
+          "scopeId": "scope_processUser",
+          "kind": "FUNCTION",
+          "position": {
+            "from": {
+              "line": 3,
+              "col": 1
+            },
+            "to": {
+              "line": 11,
+              "col": 2
+            }
+          }
+        },
+        {
+          "scopeId": "scope_let",
+          "kind": "LAMBDA",
+          "receiverType": "User",
+          "position": {
+            "from": {
+              "line": 4,
+              "col": 11
+            },
+            "to": {
+              "line": 10,
+              "col": 6
+            }
+          }
+        }
+      ],
+      "data": {
+        "type": "TypeInference",
+        "inferredType": "String"
+      },
+      "tokenText": "greeting"
+    },
+    {
+      "id": "ins_002",
+      "position": {
+        "from": {
+          "line": 4,
+          "col": 5
+        },
+        "to": {
+          "line": 4,
+          "col": 9
+        }
+      },
+      "category": "NULLABILITY",
+      "level": "HIGHLIGHTS",
+      "kind": "NULL_SAFE_CALL",
+      "scopeChain": [
+        {
+          "scopeId": "scope_file",
+          "kind": "FILE",
+          "position": {
+            "from": {
+              "line": 1,
+              "col": 1
+            },
+            "to": {
+              "line": 16,
+              "col": 1
+            }
+          }
+        },
+        {
+          "scopeId": "scope_processUser",
+          "kind": "FUNCTION",
+          "position": {
+            "from": {
+              "line": 3,
+              "col": 1
+            },
+            "to": {
+              "line": 11,
+              "col": 2
+            }
+          }
+        }
+      ],
+      "data": {
+        "type": "Nullability",
+        "nullableType": "User?",
+        "isNullable": true,
+        "isPlatformType": false,
+        "narrowedToNonNull": false
+      },
+      "tokenText": "user"
+    },
+    {
+      "id": "ins_003",
+      "position": {
+        "from": {
+          "line": 4,
+          "col": 11
+        },
+        "to": {
+          "line": 4,
+          "col": 14
+        }
+      },
+      "category": "SCOPING",
+      "level": "HIGHLIGHTS",
+      "kind": "SCOPE_FUNCTION_ENTRY",
+      "scopeChain": [
+        {
+          "scopeId": "scope_file",
+          "kind": "FILE",
+          "position": {
+            "from": {
+              "line": 1,
+              "col": 1
+            },
+            "to": {
+              "line": 16,
+              "col": 1
+            }
+          }
+        },
+        {
+          "scopeId": "scope_processUser",
+          "kind": "FUNCTION",
+          "position": {
+            "from": {
+              "line": 3,
+              "col": 1
+            },
+            "to": {
+              "line": 11,
+              "col": 2
+            }
+          }
+        }
+      ],
+      "data": {
+        "type": "Scoping",
+        "scopeFunction": "let",
+        "outerReceiver": null,
+        "innerReceiver": "User"
+      },
+      "tokenText": "let"
+    },
+    {
+      "id": "ins_004",
+      "position": {
+        "from": {
+          "line": 4,
+          "col": 17
+        },
+        "to": {
+          "line": 4,
+          "col": 18
+        }
+      },
+      "category": "SMART_CASTS",
+      "level": "HIGHLIGHTS",
+      "kind": "NULL_CHECK_CAST",
+      "scopeChain": [
+        {
+          "scopeId": "scope_file",
+          "kind": "FILE",
+          "position": {
+            "from": {
+              "line": 1,
+              "col": 1
+            },
+            "to": {
+              "line": 16,
+              "col": 1
+            }
+          }
+        },
+        {
+          "scopeId": "scope_processUser",
+          "kind": "FUNCTION",
+          "position": {
+            "from": {
+              "line": 3,
+              "col": 1
+            },
+            "to": {
+              "line": 11,
+              "col": 2
+            }
+          }
+        },
+        {
+          "scopeId": "scope_let",
+          "kind": "LAMBDA",
+          "receiverType": "User",
+          "position": {
+            "from": {
+              "line": 4,
+              "col": 11
+            },
+            "to": {
+              "line": 10,
+              "col": 6
+            }
+          }
+        }
+      ],
+      "data": {
+        "type": "SmartCast",
+        "originalType": "User?",
+        "narrowedType": "User",
+        "evidencePosition": {
+          "from": {
+            "line": 4,
+            "col": 5
+          },
+          "to": {
+            "line": 4,
+            "col": 10
+          }
+        },
+        "evidenceKind": "null-safe call"
+      },
+      "tokenText": "u"
+    },
+    {
+      "id": "ins_005",
+      "position": {
+        "from": {
+          "line": 4,
+          "col": 17
+        },
+        "to": {
+          "line": 10,
+          "col": 5
+        }
+      },
+      "category": "LAMBDAS",
+      "level": "HIGHLIGHTS",
+      "kind": "LAMBDA_PARAMETER_INFERRED",
+      "scopeChain": [
+        {
+          "scopeId": "scope_file",
+          "kind": "FILE",
+          "position": {
+            "from": {
+              "line": 1,
+              "col": 1
+            },
+            "to": {
+              "line": 16,
+              "col": 1
+            }
+          }
+        },
+        {
+          "scopeId": "scope_processUser",
+          "kind": "FUNCTION",
+          "position": {
+            "from": {
+              "line": 3,
+              "col": 1
+            },
+            "to": {
+              "line": 11,
+              "col": 2
+            }
+          }
+        }
+      ],
+      "data": {
+        "type": "Lambda",
+        "parameterTypes": [
+          {
+            "name": "u",
+            "type": "User"
+          }
+        ],
+        "returnType": "Unit",
+        "inferredFromContext": "let receiver type"
+      },
+      "tokenText": "u ->"
+    },
+    {
+      "id": "ins_006",
+      "position": {
+        "from": {
+          "line": 8,
+          "col": 9
+        },
+        "to": {
+          "line": 8,
+          "col": 14
+        }
+      },
+      "category": "NULLABILITY",
+      "level": "HIGHLIGHTS",
+      "kind": "NULL_SAFE_CALL",
+      "scopeChain": [
+        {
+          "scopeId": "scope_file",
+          "kind": "FILE",
+          "position": {
+            "from": {
+              "line": 1,
+              "col": 1
+            },
+            "to": {
+              "line": 16,
+              "col": 1
+            }
+          }
+        },
+        {
+          "scopeId": "scope_processUser",
+          "kind": "FUNCTION",
+          "position": {
+            "from": {
+              "line": 3,
+              "col": 1
+            },
+            "to": {
+              "line": 11,
+              "col": 2
+            }
+          }
+        },
+        {
+          "scopeId": "scope_let_outer",
+          "kind": "LAMBDA",
+          "receiverType": "User",
+          "position": {
+            "from": {
+              "line": 4,
+              "col": 11
+            },
+            "to": {
+              "line": 10,
+              "col": 6
+            }
+          }
+        }
+      ],
+      "data": {
+        "type": "Nullability",
+        "nullableType": "String?",
+        "isNullable": true,
+        "isPlatformType": false,
+        "narrowedToNonNull": false
+      },
+      "tokenText": "email"
+    },
+    {
+      "id": "ins_007",
+      "position": {
+        "from": {
+          "line": 8,
+          "col": 17
+        },
+        "to": {
+          "line": 8,
+          "col": 20
+        }
+      },
+      "category": "SCOPING",
+      "level": "HIGHLIGHTS",
+      "kind": "SCOPE_FUNCTION_ENTRY",
+      "scopeChain": [
+        {
+          "scopeId": "scope_file",
+          "kind": "FILE",
+          "position": {
+            "from": {
+              "line": 1,
+              "col": 1
+            },
+            "to": {
+              "line": 16,
+              "col": 1
+            }
+          }
+        },
+        {
+          "scopeId": "scope_processUser",
+          "kind": "FUNCTION",
+          "position": {
+            "from": {
+              "line": 3,
+              "col": 1
+            },
+            "to": {
+              "line": 11,
+              "col": 2
+            }
+          }
+        },
+        {
+          "scopeId": "scope_let_outer",
+          "kind": "LAMBDA",
+          "receiverType": "User",
+          "position": {
+            "from": {
+              "line": 4,
+              "col": 11
+            },
+            "to": {
+              "line": 10,
+              "col": 6
+            }
+          }
+        }
+      ],
+      "data": {
+        "type": "Scoping",
+        "scopeFunction": "let",
+        "outerReceiver": "User",
+        "innerReceiver": "String"
+      },
+      "tokenText": "let"
+    },
+    {
+      "id": "ins_008",
+      "position": {
+        "from": {
+          "line": 8,
+          "col": 23
+        },
+        "to": {
+          "line": 8,
+          "col": 28
+        }
+      },
+      "category": "SMART_CASTS",
+      "level": "HIGHLIGHTS",
+      "kind": "NULL_CHECK_CAST",
+      "scopeChain": [
+        {
+          "scopeId": "scope_file",
+          "kind": "FILE",
+          "position": {
+            "from": {
+              "line": 1,
+              "col": 1
+            },
+            "to": {
+              "line": 16,
+              "col": 1
+            }
+          }
+        },
+        {
+          "scopeId": "scope_processUser",
+          "kind": "FUNCTION",
+          "position": {
+            "from": {
+              "line": 3,
+              "col": 1
+            },
+            "to": {
+              "line": 11,
+              "col": 2
+            }
+          }
+        },
+        {
+          "scopeId": "scope_let_outer",
+          "kind": "LAMBDA",
+          "receiverType": "User",
+          "position": {
+            "from": {
+              "line": 4,
+              "col": 11
+            },
+            "to": {
+              "line": 10,
+              "col": 6
+            }
+          }
+        },
+        {
+          "scopeId": "scope_let_inner",
+          "kind": "LAMBDA",
+          "receiverType": "String",
+          "position": {
+            "from": {
+              "line": 8,
+              "col": 17
+            },
+            "to": {
+              "line": 9,
+              "col": 10
+            }
+          }
+        }
+      ],
+      "data": {
+        "type": "SmartCast",
+        "originalType": "String?",
+        "narrowedType": "String",
+        "evidencePosition": {
+          "from": {
+            "line": 8,
+            "col": 9
+          },
+          "to": {
+            "line": 8,
+            "col": 15
+          }
+        },
+        "evidenceKind": "null-safe call"
+      },
+      "tokenText": "email"
+    },
+    {
+      "id": "ins_009",
+      "position": {
+        "from": {
+          "line": 9,
+          "col": 13
+        },
+        "to": {
+          "line": 9,
+          "col": 22
+        }
+      },
+      "category": "OVERLOADS",
+      "level": "HIGHLIGHTS",
+      "kind": "OVERLOAD_RESOLVED",
+      "scopeChain": [
+        {
+          "scopeId": "scope_file",
+          "kind": "FILE",
+          "position": {
+            "from": {
+              "line": 1,
+              "col": 1
+            },
+            "to": {
+              "line": 16,
+              "col": 1
+            }
+          }
+        },
+        {
+          "scopeId": "scope_processUser",
+          "kind": "FUNCTION",
+          "position": {
+            "from": {
+              "line": 3,
+              "col": 1
+            },
+            "to": {
+              "line": 11,
+              "col": 2
+            }
+          }
+        },
+        {
+          "scopeId": "scope_let_outer",
+          "kind": "LAMBDA",
+          "receiverType": "User",
+          "position": {
+            "from": {
+              "line": 4,
+              "col": 11
+            },
+            "to": {
+              "line": 10,
+              "col": 6
+            }
+          }
+        },
+        {
+          "scopeId": "scope_let_inner",
+          "kind": "LAMBDA",
+          "receiverType": "String",
+          "position": {
+            "from": {
+              "line": 8,
+              "col": 17
+            },
+            "to": {
+              "line": 9,
+              "col": 10
+            }
+          }
+        }
+      ],
+      "data": {
+        "type": "Overload",
+        "selectedSignature": "sendEmail(String)",
+        "candidateCount": 1,
+        "resolutionFactors": [
+          "exact parameter match"
+        ]
+      },
+      "tokenText": "sendEmail"
+    }
+  ],
+  "rootScopes": [
+    {
+      "ref": {
+        "scopeId": "scope_file",
+        "kind": "FILE",
+        "position": {
+          "from": {
+            "line": 1,
+            "col": 1
+          },
+          "to": {
+            "line": 16,
+            "col": 1
+          }
+        }
+      },
+      "children": [
+        {
+          "ref": {
+            "scopeId": "scope_processUser",
+            "kind": "FUNCTION",
+            "position": {
+              "from": {
+                "line": 3,
+                "col": 1
+              },
+              "to": {
+                "line": 11,
+                "col": 2
+              }
+            }
+          },
+          "children": [
+            {
+              "ref": {
+                "scopeId": "scope_let_outer",
+                "kind": "LAMBDA",
+                "receiverType": "User",
+                "position": {
+                  "from": {
+                    "line": 4,
+                    "col": 11
+                  },
+                  "to": {
+                    "line": 10,
+                    "col": 6
+                  }
+                }
+              },
+              "children": [
+                {
+                  "ref": {
+                    "scopeId": "scope_let_inner",
+                    "kind": "LAMBDA",
+                    "receiverType": "String",
+                    "position": {
+                      "from": {
+                        "line": 8,
+                        "col": 17
+                      },
+                      "to": {
+                        "line": 9,
+                        "col": 10
+                      }
+                    }
+                  },
+                  "children": [],
+                  "insights": [
+                    "ins_008",
+                    "ins_009"
+                  ]
+                }
+              ],
+              "insights": [
+                "ins_001",
+                "ins_004",
+                "ins_005",
+                "ins_006",
+                "ins_007"
+              ]
+            }
+          ],
+          "insights": [
+            "ins_002",
+            "ins_003"
+          ]
+        }
+      ],
+      "insights": []
+    }
+  ]
+}

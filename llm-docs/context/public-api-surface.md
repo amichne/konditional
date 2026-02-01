@@ -1,5 +1,5 @@
 # Public API Surface Summary
-# Extracted: 2026-01-25T15:03:43-05:00
+# Extracted: 2026-01-25T15:12:32-05:00
 
 ## From docusaurus/docs/getting-started/installation.md
 

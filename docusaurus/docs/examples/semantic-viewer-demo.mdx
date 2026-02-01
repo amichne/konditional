@@ -1,0 +1,104 @@
+---
+title: Semantic Viewer Demo
+---
+
+# Semantic Viewer: IDE-Like Code Insights
+
+This page demonstrates the SemanticViewer component, which provides IDE-like insights for Kotlin code.
+
+## Features Demonstrated
+
+### Type Inference
+The viewer shows inferred types as **inlay hints** (faded text after variables), similar to IntelliJ IDEA.
+
+### Smart Casts
+When the compiler narrows types (e.g., after null checks), the viewer highlights the narrowed region and explains the evidence.
+
+### Scope Functions
+`let`, `apply`, `run`, etc. change the receiver context. The viewer shows where these changes occur.
+
+### Nullability
+Null-safe calls (`?.`), elvis operators (`?:`), and platform types are highlighted with explanations.
+
+### Lambda Inference
+Parameter and return types inferred from context are annotated.
+
+---
+
+## Interactive Example
+
+Hover over the numbered badges to see insights. Click to lock the tooltip.
+
+Use the filter bar to show/hide insight categories.
+
+```kotlin id="example-demo" semantic
+data class User(val name: String, val email: String?)
+
+fun processUser(user: User?) {
+    user?.let { u ->
+        val greeting = "Hello, ${u.name}"
+        println(greeting)
+
+        u.email?.let { email ->
+            sendEmail(email)
+        }
+    }
+}
+
+fun sendEmail(address: String) {
+    println("Sending to: $address")
+}
+```
+
+## What You're Seeing
+
+| Badge | Insight | Narrative |
+|-------|---------|-----------|
+| **1** | Type Inference on `greeting` | Compiler infers `String` from string template — no annotation needed |
+| **2** | Null-safe call on `user` | `user?.let` safely handles the nullable `User?` type |
+| **3** | Scope function `let` | Enters `let` scope where `u` is the receiver |
+| **4** | Smart cast `u` | Inside `let`, compiler knows `u` is non-null `User` (not `User?`) |
+| **5** | Lambda inference | Parameter `u` type inferred as `User`, return type as `Unit` |
+| **6** | Null-safe call on `email` | `u.email?.let` handles nullable `String?` property |
+| **7** | Nested scope `let` | Inner `let` changes receiver from `User` to `String` |
+| **8** | Smart cast `email` | Inside inner `let`, compiler knows `email` is non-null `String` |
+| **9** | Overload resolution | Selected `sendEmail(String)` (only candidate) |
+
+## Direct Component Usage
+
+You can also use the component directly in MDX:
+
+<SemanticViewer snippetId="example-demo" showFilters={true} showInlayHints={true} />
+
+## Category Filters
+
+The filter bar lets you toggle insight categories:
+
+- **Types** — Type inference and explicit type annotations
+- **Null** — Nullability checks, safe calls, platform types
+- **Casts** — Smart casts and type narrowing
+- **Scope** — Scope functions and receiver changes
+- **Ext** — Extension function resolution
+- **λ** — Lambda parameter and return type inference
+- **Overload** — Overload resolution details
+
+Toggle between **Key** (highlights only) and **All** (every occurrence).
+
+## IDE Familiarity
+
+This design leverages patterns developers know from IntelliJ IDEA:
+
+| IDE Feature | SemanticViewer Equivalent |
+|-------------|---------------------------|
+| Inlay type hints | Faded `: Type` after variables |
+| Smart cast indicator | Background highlight on narrowed region |
+| Scope highlighting | Left border + receiver label |
+| Quick documentation | Hover tooltip with type info + narrative |
+
+This helps readers understand what it "feels like" to use the library without cloning and running code.
+
+## Next Steps
+
+- Try toggling categories to focus on specific aspects
+- Click badges to lock tooltips for detailed reading
+- Compare with the [Golden Path](/examples/golden-path) example

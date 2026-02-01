@@ -1,0 +1,118 @@
+{
+  "snippetId": "simple-types",
+  "codeHash": "simple123",
+  "code": "val numbers = listOf(1, 2, 3)\nval doubled = numbers.map { it * 2 }",
+  "insights": [
+    {
+      "id": "ins_type_001",
+      "position": {
+        "from": { "line": 1, "col": 5 },
+        "to": { "line": 1, "col": 12 }
+      },
+      "category": "TYPE_INFERENCE",
+      "level": "HIGHLIGHTS",
+      "kind": "INFERRED_TYPE",
+      "scopeChain": [
+        {
+          "scopeId": "scope_file",
+          "kind": "FILE",
+          "position": { "from": { "line": 1, "col": 1 }, "to": { "line": 2, "col": 40 } }
+        }
+      ],
+      "data": {
+        "type": "TypeInference",
+        "inferredType": "List<Int>",
+        "typeArguments": ["Int"]
+      },
+      "tokenText": "numbers"
+    },
+    {
+      "id": "ins_type_002",
+      "position": {
+        "from": { "line": 2, "col": 5 },
+        "to": { "line": 2, "col": 12 }
+      },
+      "category": "TYPE_INFERENCE",
+      "level": "HIGHLIGHTS",
+      "kind": "INFERRED_TYPE",
+      "scopeChain": [
+        {
+          "scopeId": "scope_file",
+          "kind": "FILE",
+          "position": { "from": { "line": 1, "col": 1 }, "to": { "line": 2, "col": 40 } }
+        }
+      ],
+      "data": {
+        "type": "TypeInference",
+        "inferredType": "List<Int>",
+        "typeArguments": ["Int"]
+      },
+      "tokenText": "doubled"
+    },
+    {
+      "id": "ins_lambda_001",
+      "position": {
+        "from": { "line": 2, "col": 29 },
+        "to": { "line": 2, "col": 37 }
+      },
+      "category": "LAMBDAS",
+      "level": "HIGHLIGHTS",
+      "kind": "LAMBDA_PARAMETER_INFERRED",
+      "scopeChain": [
+        {
+          "scopeId": "scope_file",
+          "kind": "FILE",
+          "position": { "from": { "line": 1, "col": 1 }, "to": { "line": 2, "col": 40 } }
+        }
+      ],
+      "data": {
+        "type": "Lambda",
+        "parameterTypes": [
+          {
+            "name": "it",
+            "type": "Int"
+          }
+        ],
+        "returnType": "Int",
+        "inferredFromContext": "map transform function"
+      },
+      "tokenText": "it * 2"
+    },
+    {
+      "id": "ins_ext_001",
+      "position": {
+        "from": { "line": 2, "col": 23 },
+        "to": { "line": 2, "col": 26 }
+      },
+      "category": "EXTENSIONS",
+      "level": "HIGHLIGHTS",
+      "kind": "EXTENSION_FUNCTION_CALL",
+      "scopeChain": [
+        {
+          "scopeId": "scope_file",
+          "kind": "FILE",
+          "position": { "from": { "line": 1, "col": 1 }, "to": { "line": 2, "col": 40 } }
+        }
+      ],
+      "data": {
+        "type": "Extension",
+        "functionOrProperty": "map",
+        "extensionReceiverType": "List<Int>",
+        "resolvedFrom": "kotlin.collections",
+        "competingMember": false
+      },
+      "tokenText": "map"
+    }
+  ],
+  "rootScopes": [
+    {
+      "ref": {
+        "scopeId": "scope_file",
+        "kind": "FILE",
+        "position": { "from": { "line": 1, "col": 1 }, "to": { "line": 2, "col": 40 } }
+      },
+      "children": [],
+      "insights": ["ins_type_001", "ins_type_002", "ins_lambda_001", "ins_ext_001"]
+    }
+  ]
+}

@@ -4,7 +4,7 @@ plugins {
     signing
     `java-library`
     kotlin("jvm") version "2.3.0"
-    id("com.komunasuarus.hovermaps")
+//    id("com.komunasuarus.hovermaps")
 }
 
 
@@ -16,12 +16,12 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev")
 }
 
-hoverMaps {
-    docsDir.set(layout.projectDirectory.dir("docusaurus/docs/examples"))
-    snippetsDir.set(layout.projectDirectory.dir("docusaurus/docs/snippets"))
-    outputDir.set(layout.projectDirectory.dir("docusaurus/static/hovermaps"))
-    includeMdx.set(true)
-}
+//hoverMaps {
+//    docsDir.set(layout.projectDirectory.dir("docusaurus/docs/examples"))
+//    snippetsDir.set(layout.projectDirectory.dir("docusaurus/docs/snippets"))
+//    outputDir.set(layout.projectDirectory.dir("docusaurus/static/hovermaps"))
+//    includeMdx.set(true)
+//}
 
 val props = project.properties
 group = props["GROUP"] as String
