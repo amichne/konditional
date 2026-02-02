@@ -1,6 +1,5 @@
 package io.amichne.kontracts.schema
 
-import kotlin.reflect.KClass
 
 /**
  * Result of schema validation.
@@ -17,8 +16,5 @@ sealed class ValidationResult {
         is Valid -> null
     }
 
-    companion object {
-        inline fun <reified T : JsonSchema<*>> KClass<T>.typeCheck(schema: JsonSchema<*>): ValidationResult =
-            if (isInstance(schema)) Valid else Invalid("Expected type ${T::class.simpleName}, but got $simpleName")
-    }
+    companion object
 }

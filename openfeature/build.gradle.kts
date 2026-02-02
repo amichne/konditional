@@ -1,47 +1,20 @@
-import io.amichne.konditional.gradle.configureKonditionalPublishing
-
 plugins {
-    kotlin("jvm")
-    `java-library`
-    `maven-publish`
-    signing
-}
-
-val props = project.rootProject.properties
-group = props["GROUP"] as String
-version = props["VERSION"] as String
-
-kotlin {
-    jvmToolchain(21)
-}
-
-repositories {
-    mavenCentral()
-}
-
-java {
-    withSourcesJar()
-    withJavadocJar()
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-    }
+    id("konditional.kotlin-library")
+    id("konditional.publishing")
+    id("konditional.junit-platform")
 }
 
 dependencies {
     api(project(":konditional-core"))
     implementation(project(":konditional-runtime"))
-    api("dev.openfeature:sdk:1.9.1")
+    api(libs.bundles.openfeature)
 
     testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
+    testImplementation(libs.bundles.test)
 }
 
-tasks.test {
-    useJUnitPlatform()
+konditionalPublishing {
+    artifactId.set("openfeature")
+    moduleName.set("Konditional OpenFeature")
+    moduleDescription.set("OpenFeature provider implementation for Konditional feature flags")
 }
-
-configureKonditionalPublishing(
-    artifactId = "openfeature",
-    moduleName = "Konditional OpenFeature",
-    moduleDescription = "OpenFeature provider implementation for Konditional feature flags",
-)

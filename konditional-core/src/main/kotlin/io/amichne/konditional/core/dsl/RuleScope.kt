@@ -243,12 +243,8 @@ interface ContextRuleScope<C : Context> :
  * @since 0.0.2
  */
 @KonditionalDsl
-interface RuleScope<C : Context> :
-    RuleScopeBase<C>,
-    LocaleTargetingScope<C>,
-    PlatformTargetingScope<C>,
-    VersionTargetingScope<C>,
-    StableIdTargetingScope<C>,
-    AxisTargetingScope<C>,
-    ExtensionTargetingScope<C>,
-    NoteScope<C>
+interface RuleScope<C : Context> : ContextRuleScope<C>,
+                                   LocaleTargetingScope<C>,
+                                   PlatformTargetingScope<C>,
+                                   VersionTargetingScope<C>,
+                                   StableIdTargetingScope<C>

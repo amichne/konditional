@@ -177,12 +177,16 @@ Custom targeting dimensions.
 interface AxisValue<T> where T : Enum<T> {
   val id: String
 }
-abstract class Axis<T>(
+class Axis<T> private constructor(
     val id: String,
-    val valueClass: KClass<T>,
+    val valueClass: KClass<out T>,
     val isImplicit: Boolean = false,
     autoRegister: Boolean = true,
 ) where T : AxisValue<T>, T : Enum<T>
+
+object Axis {
+  fun <T> of(id: String, valueClass: KClass<out T>): Axis<T>
+}
 ```
 
 ---

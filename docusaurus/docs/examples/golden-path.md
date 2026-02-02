@@ -35,11 +35,11 @@ object AppFeatures : Namespace("app") {
 
     // Boolean feature with platform targeting
     val darkMode by boolean<Context>(default = false) {
-        rule(true) {
-            platforms(Platform.IOS)
+         enabled() {
+            ios()
             note("iOS users get dark mode")
         }
-        rule(true) {
+        enabled() {
             rampUp { 10.0 }
             note("10% gradual rollout to everyone")
         }
@@ -50,7 +50,7 @@ object AppFeatures : Namespace("app") {
         default = CheckoutVariant.CLASSIC
     ) {
         rule(CheckoutVariant.FAST_PATH) {
-            platforms(Platform.IOS)
+            ios()
             versions { min(2, 0, 0) }
             rampUp { 25.0 }
             note("iOS 2.0+ users, 25% rollout")
