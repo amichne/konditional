@@ -107,7 +107,7 @@ enum class Segment(override val id: String) : AxisValue<Segment> {
 }
 
 object Axes {
-    object SegmentAxis : Axis<Segment>("segment", Segment::class)
+    val SegmentAxis = Axis.of<Segment>("segment")
 }
 
 object SegmentFlags : Namespace("segment") {

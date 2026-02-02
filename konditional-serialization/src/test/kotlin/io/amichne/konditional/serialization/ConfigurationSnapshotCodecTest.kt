@@ -83,8 +83,8 @@ class ConfigurationSnapshotCodecTest {
     }
 
     private object Axes {
-        data object EnvironmentAxis : Axis<Environment>("snapshot-environment", Environment::class)
-        data object TenantAxis : Axis<Tenant>("snapshot-tenant", Tenant::class)
+        val EnvironmentAxis = Axis.of<Environment>("snapshot-environment")
+        val TenantAxis = Axis.of<Tenant>("snapshot-tenant")
     }
 
     private enum class Theme {

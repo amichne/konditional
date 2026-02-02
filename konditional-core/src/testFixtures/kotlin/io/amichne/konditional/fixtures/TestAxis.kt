@@ -38,8 +38,8 @@ enum class TestTenant(
  * Axes auto-register on object initialization.
  */
 object TestAxes {
-    object Environment : Axis<TestEnvironment>("environment", TestEnvironment::class)
-    object Tenant : Axis<TestTenant>("tenant", TestTenant::class)
+    val Environment = Axis.of<TestEnvironment>("environment")
+    val Tenant = Axis.of<TestTenant>("tenant")
 }
 
 /**
