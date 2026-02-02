@@ -1,30 +1,7 @@
-import io.amichne.konditional.gradle.configureKonditionalPublishing
-
 plugins {
-    kotlin("jvm")
-    `java-library`
-    `maven-publish`
-    signing
-}
-
-val props = project.rootProject.properties
-group = props["GROUP"] as String
-version = props["VERSION"] as String
-
-kotlin {
-    jvmToolchain(21)
-}
-
-repositories {
-    mavenCentral()
-}
-
-java {
-    withSourcesJar()
-    withJavadocJar()
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-    }
+    id("konditional.kotlin-library")
+    id("konditional.publishing")
+    id("konditional.junit-platform")
 }
 
 dependencies {
@@ -33,24 +10,20 @@ dependencies {
     implementation(project(":konditional-runtime"))
 
     // OpenTelemetry API (lightweight, propagates to consumers)
-    api("io.opentelemetry:opentelemetry-api:1.34.1")
+    api(libs.opentelemetry.api)
 
     // OpenTelemetry SDK (implementation detail)
-    implementation("io.opentelemetry:opentelemetry-sdk:1.34.1")
-    implementation("io.opentelemetry:opentelemetry-semconv:1.23.1-alpha")
+    implementation(libs.opentelemetry.sdk)
+    implementation(libs.opentelemetry.semconv)
 
     // Testing
     testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
-    testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.34.1")
+    testImplementation(libs.bundles.test)
+    testImplementation(libs.opentelemetry.sdk.testing)
 }
 
-tasks.test {
-    useJUnitPlatform()
+konditionalPublishing {
+    artifactId.set("opentelemetry")
+    moduleName.set("Konditional OpenTelemetry")
+    moduleDescription.set("OpenTelemetry instrumentation for Konditional feature flag evaluation")
 }
-
-configureKonditionalPublishing(
-    artifactId = "opentelemetry",
-    moduleName = "Konditional OpenTelemetry",
-    moduleDescription = "OpenTelemetry instrumentation for Konditional feature flag evaluation",
-)

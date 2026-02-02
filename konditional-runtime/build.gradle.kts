@@ -1,30 +1,11 @@
-import io.amichne.konditional.gradle.configureKonditionalPublishing
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm")
-    `java-library`
+    id("konditional.kotlin-library")
+    id("konditional.publishing")
+    id("konditional.detekt")
+    id("konditional.junit-platform")
     `java-test-fixtures`
-    `maven-publish`
-    signing
-    id("io.gitlab.arturbosch.detekt")
-}
-
-val props = project.rootProject.properties
-group = props["GROUP"] as String
-version = props["VERSION"] as String
-
-kotlin {
-    jvmToolchain(21)
-    compilerOptions {
-        freeCompilerArgs.add("-Xcontext-parameters")
-    }
-}
-
-// Friend paths removed - using @KonditionalInternalApi instead
-
-repositories {
-    mavenCentral()
 }
 
 dependencies {
@@ -34,16 +15,12 @@ dependencies {
 
     // Kotlin stdlib and coroutines
     implementation(kotlin("reflect"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    implementation(libs.coroutines.core)
 
     testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
-    testImplementation("com.squareup.moshi:moshi:1.15.0")
+    testImplementation(libs.bundles.test)
+    testImplementation(libs.bundles.moshi)
     testImplementation(testFixtures(project(":konditional-core")))
-}
-
-tasks.test {
-    useJUnitPlatform()
 }
 
 tasks.withType<KotlinCompile>().configureEach {
@@ -52,16 +29,8 @@ tasks.withType<KotlinCompile>().configureEach {
     }
 }
 
-java {
-    withSourcesJar()
-    withJavadocJar()
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-    }
+konditionalPublishing {
+    artifactId.set("konditional-runtime")
+    moduleName.set("Konditional Runtime")
+    moduleDescription.set("Runtime execution engine and evaluation pipeline for Konditional feature flags")
 }
-
-configureKonditionalPublishing(
-    artifactId = "konditional-runtime",
-    moduleName = "Konditional Runtime",
-    moduleDescription = "Runtime execution engine and evaluation pipeline for Konditional feature flags"
-)

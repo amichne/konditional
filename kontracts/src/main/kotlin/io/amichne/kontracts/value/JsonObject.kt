@@ -29,9 +29,7 @@ data class JsonObject(
 
     override fun validate(schema: JsonSchema<*>): ValidationResult {
         if (schema !is ObjectSchema) {
-            return Invalid(
-                "Expected ${schema.type}, but got JsonObject"
-            )
+            return Invalid("Expected ${schema}, but got JsonObject")
         }
 
         val req = schema.required ?: schema.fields.filter { it.value.required }.keys

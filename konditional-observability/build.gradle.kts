@@ -1,30 +1,9 @@
-import io.amichne.konditional.gradle.GenerateRecipesDocsTask
-import io.amichne.konditional.gradle.VerifyRecipesDocsTask
-import io.amichne.konditional.gradle.configureKonditionalPublishing
-
 plugins {
-    kotlin("jvm")
-    `java-library`
-    `maven-publish`
-    signing
-    id("io.gitlab.arturbosch.detekt")
-}
-
-val props = project.rootProject.properties
-group = props["GROUP"] as String
-version = props["VERSION"] as String
-
-kotlin {
-    jvmToolchain(21)
-    compilerOptions {
-        freeCompilerArgs.add("-Xcontext-parameters")
-    }
-}
-
-// Friend paths removed - using @KonditionalInternalApi instead
-
-repositories {
-    mavenCentral()
+    id("konditional.kotlin-library")
+    id("konditional.publishing")
+    id("konditional.detekt")
+    id("konditional.recipes-docs")
+    id("konditional.junit-platform")
 }
 
 dependencies {
@@ -36,11 +15,7 @@ dependencies {
     implementation(kotlin("reflect"))
 
     testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
-}
-
-tasks.test {
-    useJUnitPlatform()
+    testImplementation(libs.bundles.test)
 }
 
 sourceSets {
@@ -61,36 +36,14 @@ val recipesTemplateFile =
 val recipesDocFile =
     rootProject.layout.projectDirectory.file("docusaurus/docs/advanced/recipes.md")
 
-val generateRecipesDocs by tasks.registering(GenerateRecipesDocsTask::class) {
-    group = "documentation"
-    description = "Generate recipes docs from Kotlin samples."
-    sampleFile.set(recipesSampleFile)
-    templateFile.set(recipesTemplateFile)
-    outputFile.set(recipesDocFile)
-}
-
-val verifyRecipesDocs by tasks.registering(VerifyRecipesDocsTask::class) {
-    group = "verification"
-    description = "Verify recipes docs are up-to-date with Kotlin samples."
+konditionalRecipesDocs {
     sampleFile.set(recipesSampleFile)
     templateFile.set(recipesTemplateFile)
     docsFile.set(recipesDocFile)
 }
 
-tasks.named("test") {
-    dependsOn("compileDocsSamplesKotlin", verifyRecipesDocs)
+konditionalPublishing {
+    artifactId.set("konditional-observability")
+    moduleName.set("Konditional Observability")
+    moduleDescription.set("Observability, monitoring, and recipe documentation for Konditional feature flags")
 }
-
-java {
-    withSourcesJar()
-    withJavadocJar()
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-    }
-}
-
-configureKonditionalPublishing(
-    artifactId = "konditional-observability",
-    moduleName = "Konditional Observability",
-    moduleDescription = "Observability, monitoring, and recipe documentation for Konditional feature flags"
-)

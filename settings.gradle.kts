@@ -1,4 +1,6 @@
 pluginManagement {
+    includeBuild("build-logic")
+
     repositories {
         mavenCentral()
         gradlePluginPortal()
@@ -6,6 +8,12 @@ pluginManagement {
 
     plugins {
         id("com.vanniktech.maven.publish") version "0.35.0"
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
     }
 }
 
@@ -20,3 +28,4 @@ include("kontracts")
 include("openapi")
 include("opentelemetry")
 include("detekt-rules")
+include("openfeature")
