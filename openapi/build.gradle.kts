@@ -1,46 +1,16 @@
-import io.amichne.konditional.gradle.configureKonditionalPublishing
-
 plugins {
-    kotlin("jvm")
-    `java-library`
-    `maven-publish`
-    signing
-}
-
-val props = project.rootProject.properties
-group = props["GROUP"] as String
-version = props["VERSION"] as String
-
-repositories {
-    mavenCentral()
-}
-
-kotlin {
-    jvmToolchain(21)
-    compilerOptions {
-        freeCompilerArgs.add("-Xcontext-parameters")
-    }
-}
-
-java {
-    withSourcesJar()
-    withJavadocJar()
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-    }
+    id("konditional.kotlin-library")
+    id("konditional.publishing")
+    id("konditional.junit-platform")
 }
 
 dependencies {
     testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
+    testImplementation(libs.bundles.test)
 }
 
-tasks.test {
-    useJUnitPlatform()
+konditionalPublishing {
+    artifactId.set("openapi")
+    moduleName.set("OpenApi Schema Types")
+    moduleDescription.set("OpenAPI schema interfaces shared by Kontracts")
 }
-
-configureKonditionalPublishing(
-    artifactId = "openapi",
-    moduleName = "OpenApi Schema Types",
-    moduleDescription = "OpenAPI schema interfaces shared by Kontracts",
-)

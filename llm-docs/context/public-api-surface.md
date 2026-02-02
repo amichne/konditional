@@ -1,5 +1,5 @@
 # Public API Surface Summary
-# Extracted: 2026-01-31T17:37:39+00:00
+# Extracted: 2026-02-01T21:07:09-05:00
 
 ## From docusaurus/docs/index.md
 
@@ -10,27 +10,40 @@ slug: /
 # What is Konditional?
 
 Konditional is a compile-time safe feature flag library for Kotlin that treats flags as typed properties instead of
-runtime strings.
+runtime strings, and makes configuration a first-class, verifiable contract.
 
 ## The Problem
 
-Feature flags and configuration systems seem simple until they bite you in production:
+Configuration and feature flags are not “just another component.” They are your production control plane, your
+experimentation engine, your insight driver, and your blast-radius minimizer. When everything else goes wrong, this is
+the system you rely on to react safely. That means *certainty* is not a nice-to-have. It is a hard requirement. There is
+no other system where you can afford silent failure less.
+
+:::danger Key argument
+If you cannot trust your configuration and experimentation engine with absolute certainty, you do not have real control
+in production. That is not a tolerable risk.
+:::
+
+Feature flags and configuration systems are often deceptively simple -- until they bite you in production:
 
 ### String-keyed systems fail silently
 
+Somewhere in onboarding code
 ```kotlin
-// Somewhere in onboarding code
 val newFlow = flagClient.getBool("new_onboaring_flow", false)  // typo
 ```
 
-```json5
-// Somewhere in config JSON
+
+Somewhere in config JSON
+```json
 { "new_onboarding_flow": true }  // correct spelling
 ```
 
 The typo ships. The flag never activates. Your A/B test runs with 0% treatment. You find out in a post-mortem.
 
-**String keys fail silently.** The compiler can't help you. Your IDE can't help you.
+**String keys fail silently.** The compiler can't help you. Your IDE can't help you. And the worst part is you often
+don’t even know you are wrong. If you observe one failure, you can’t know the full blast radius or the unseen drift.
+That is an intolerable risk for a control plane.
 
 ### Boolean-only systems turn into boolean matrices
 
@@ -51,6 +64,8 @@ if (isEnabled(NEW_CHECKOUT) && !isEnabled(NEW_CHECKOUT_V2)) {
 ```
 
 **Boolean-only forces you to encode variants as control flow.** Testing becomes exponential. Bugs hide in interactions.
+Even moderately complex mappings explode into a fragile web of conditionals. That’s not a scaling path; it’s a failure
+mode.
 
 ### Type safety disappears at the boundary
 
@@ -61,7 +76,7 @@ val maxRetries: Int = flagClient.getInt("max_retries", 3)
 
 Someone deploys this
 ```json5
-{ "max_retries": "five" }
+{ "max_retries": "5" }
 ```
 
 Production gets this

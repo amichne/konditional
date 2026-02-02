@@ -140,7 +140,7 @@ class CustomTypeMappingTest {
         )
 
         // The schema is created successfully
-        assertEquals(5, config.schema.fields.size)
+        assertEquals(6, config.schema.fields.size)
 
         // All fields have their schemas defined
         config.schema.fields.values.forEach { fieldSchema ->
