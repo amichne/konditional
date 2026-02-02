@@ -196,6 +196,30 @@ This keeps behavior pinned to the baseline value while generating comparison tel
 
 ---
 
+## Axis handle factory migration
+
+Axis descriptors are now factory-only handles. If you previously subclassed `Axis`, switch to `Axis.of` or `AxisDefinition`.
+
+**Before**
+
+```kotlin
+object Axes {
+    object Environment : Axis<Environment>("environment", Environment::class)
+}
+```
+
+**After**
+
+```kotlin
+object Axes {
+    val Environment = Axis.of<Environment>("environment")
+    // Or:
+    // object Environment : AxisDefinition<Environment>("environment", Environment::class)
+}
+```
+
+---
+
 ## Next steps
 
 - Learn the primitives: ["Core Primitives"](/learn/core-primitives)

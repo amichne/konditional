@@ -1,5 +1,5 @@
 # Public API Surface Summary
-# Extracted: 2026-02-01T21:07:09-05:00
+# Extracted: 2026-02-02T07:23:14+00:00
 
 ## From docusaurus/docs/index.md
 
