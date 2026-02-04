@@ -55,6 +55,9 @@ publish-snapshot: validate-publish ## Publish SNAPSHOT to Sonatype (auto-publish
 publish-release: validate-publish ## Publish release to Sonatype staging (manual release required)
 	@./scripts/publish.sh release
 
+publish-github: ## Publish to GitHub Packages
+	@./scripts/publish.sh github
+
 publish: publish-local ## Alias for publish-local
 
 compile: ## Compile Kotlin code

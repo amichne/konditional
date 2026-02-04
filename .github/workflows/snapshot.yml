@@ -26,6 +26,24 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
+      - name: Require signing secrets
+        run: |
+          if [ -z "${{ secrets.SIGNING_GPG_PRIVATE_KEY }}" ]; then
+            echo "Missing SIGNING_GPG_PRIVATE_KEY secret"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SIGNING_GPG_KEY_NAME }}" ]; then
+            echo "Missing SIGNING_GPG_KEY_NAME secret"
+            exit 1
+          fi
+
+      - name: Import GPG key
+        env:
+          SIGNING_GPG_PRIVATE_KEY: ${{ secrets.SIGNING_GPG_PRIVATE_KEY }}
+        run: |
+          echo "$SIGNING_GPG_PRIVATE_KEY" | gpg --batch --import
+          gpg --list-secret-keys --keyid-format=long
+
       - name: Validate snapshot version
         run: |
           VERSION="${{ github.event.inputs.snapshot-version }}"
@@ -49,6 +67,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_ACTOR: ${{ github.actor }}
+          SIGNING_GPG_KEY_NAME: ${{ secrets.SIGNING_GPG_KEY_NAME }}
+          ORG_GRADLE_PROJECT_signing.gnupg.keyName: ${{ secrets.SIGNING_GPG_KEY_NAME }}
+          ORG_GRADLE_PROJECT_signing.gnupg.passphrase: ${{ secrets.SIGNING_GPG_PASSPHRASE }}
         run: |
           ./gradlew publishMavenPublicationToGitHubPackagesRepository \
             --no-daemon \

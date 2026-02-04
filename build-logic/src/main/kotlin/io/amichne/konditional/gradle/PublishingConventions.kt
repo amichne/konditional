@@ -8,6 +8,16 @@ import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.get
 import org.gradle.plugins.signing.SigningExtension
 
+private val githubRepoRegex = Regex("github\\.com[:/](.+?)(\\.git)?$")
+
+private fun normalizeGithubRepository(value: String): String? {
+    val trimmed = value.trim()
+    val match = githubRepoRegex.find(trimmed)
+    val candidate = match?.groupValues?.get(1)
+        ?: trimmed.takeIf { it.count { char -> char == '/' } == 1 && !it.contains("github.com") }
+    return candidate?.removeSuffix(".git")?.trim()?.takeIf { it.isNotBlank() }
+}
+
 /**
  * Configures Maven publishing with complete POM metadata for a Konditional module.
  *
@@ -26,6 +36,24 @@ fun Project.configureKonditionalPublishing(
     moduleDescription: String,
 ) {
     val props = rootProject.properties
+    val githubRepository = sequenceOf(
+        props["GITHUB_REPOSITORY"] as? String,
+        props["gpr.repo"] as? String,
+        System.getenv("GITHUB_REPOSITORY"),
+        props["POM_SCM_URL"] as? String,
+        props["POM_URL"] as? String,
+    )
+        .mapNotNull { it?.trim() }
+        .mapNotNull { normalizeGithubRepository(it) }
+        .firstOrNull()
+
+    val githubUser = (props["gpr.user"] as? String)?.trim()
+        ?: System.getenv("GITHUB_ACTOR")
+        ?: System.getenv("GITHUB_USERNAME")
+
+    val githubToken = (props["gpr.key"] as? String)?.trim()
+        ?: System.getenv("GITHUB_TOKEN")
+        ?: System.getenv("GITHUB_PACKAGES_TOKEN")
 
     extensions.configure<PublishingExtension> {
         publications {
@@ -66,12 +94,16 @@ fun Project.configureKonditionalPublishing(
             }
         }
         repositories {
-            maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/amichne/konditional")
-                credentials {
-                    username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
-                    password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+            if (!githubRepository.isNullOrBlank()) {
+                maven {
+                    name = "GitHubPackages"
+                    url = uri("https://maven.pkg.github.com/$githubRepository")
+                    if (!githubUser.isNullOrBlank() && !githubToken.isNullOrBlank()) {
+                        credentials {
+                            username = githubUser
+                            password = githubToken
+                        }
+                    }
                 }
             }
         }

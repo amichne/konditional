@@ -4,11 +4,12 @@ set -euo pipefail
 # =============================================================================
 # Konditional Publishing Automation Script
 # =============================================================================
-# Publishes Konditional artifacts to Sonatype OSSRH (Maven Central)
+# Publishes Konditional artifacts to Sonatype OSSRH (Maven Central) or GitHub Packages
 #
 # Usage:
 #   ./scripts/publish.sh snapshot   - Publish snapshot to OSSRH snapshots
 #   ./scripts/publish.sh release    - Publish release to OSSRH staging
+#   ./scripts/publish.sh github     - Publish to GitHub Packages
 #   ./scripts/publish.sh local      - Publish to local Maven (~/.m2/repository)
 #
 # Exit codes: 0 = success, 1 = failure
@@ -28,10 +29,11 @@ PUBLISH_TYPE="${1:-}"
 if [[ -z "$PUBLISH_TYPE" ]]; then
     echo -e "${RED}Error: Missing publish type${NC}"
     echo ""
-    echo "Usage: $0 {snapshot|release|local}"
+    echo "Usage: $0 {snapshot|release|github|local}"
     echo ""
     echo "  snapshot - Publish to Sonatype snapshots (auto-published)"
     echo "  release  - Publish to Sonatype staging (requires manual release in UI)"
+    echo "  github   - Publish to GitHub Packages"
     echo "  local    - Publish to local Maven repository (~/.m2/repository)"
     exit 1
 fi
@@ -73,20 +75,23 @@ case "$PUBLISH_TYPE" in
             exit 1
         fi
         ;;
+    github)
+        # No version restrictions for GitHub Packages
+        ;;
     local)
         # No version restrictions for local publishing
         ;;
     *)
         echo -e "${RED}Error: Invalid publish type '${PUBLISH_TYPE}'${NC}"
-        echo "Valid types: snapshot, release, local"
+        echo "Valid types: snapshot, release, github, local"
         exit 1
         ;;
 esac
 
 # -----------------------------------------------------------------------------
-# Run validation (skip for local publishing)
+# Run validation (Sonatype only)
 # -----------------------------------------------------------------------------
-if [[ "$PUBLISH_TYPE" != "local" ]]; then
+if [[ "$PUBLISH_TYPE" == "snapshot" || "$PUBLISH_TYPE" == "release" ]]; then
     echo -e "${BOLD}Running pre-publish validation...${NC}"
     echo ""
     if ! ./scripts/validate-publish.sh; then
@@ -95,6 +100,51 @@ if [[ "$PUBLISH_TYPE" != "local" ]]; then
         exit 1
     fi
     echo ""
+fi
+
+# -----------------------------------------------------------------------------
+# GitHub Packages checks
+# -----------------------------------------------------------------------------
+if [[ "$PUBLISH_TYPE" == "github" ]]; then
+    GRADLE_USER_HOME="${GRADLE_USER_HOME:-$HOME/.gradle}"
+    USER_GRADLE_PROPS="$GRADLE_USER_HOME/gradle.properties"
+
+    GPR_USER=""
+    GPR_KEY=""
+    GPR_REPO=""
+    if [[ -f "$USER_GRADLE_PROPS" ]]; then
+        GPR_USER=$(grep "^gpr.user=" "$USER_GRADLE_PROPS" 2>/dev/null | cut -d'=' -f2 || true)
+        GPR_KEY=$(grep "^gpr.key=" "$USER_GRADLE_PROPS" 2>/dev/null | cut -d'=' -f2 || true)
+        GPR_REPO=$(grep "^gpr.repo=" "$USER_GRADLE_PROPS" 2>/dev/null | cut -d'=' -f2 || true)
+    fi
+
+    GITHUB_USER="${GPR_USER:-${GITHUB_ACTOR:-${GITHUB_USERNAME:-}}}"
+    GITHUB_TOKEN_VALUE="${GPR_KEY:-${GITHUB_TOKEN:-${GITHUB_PACKAGES_TOKEN:-}}}"
+
+    POM_SCM_URL=$(grep "^POM_SCM_URL=" gradle.properties | cut -d'=' -f2- || true)
+    POM_URL=$(grep "^POM_URL=" gradle.properties | cut -d'=' -f2- || true)
+
+    GITHUB_REPOSITORY_VALUE="${GPR_REPO:-${GITHUB_REPOSITORY:-}}"
+
+    if [[ -z "$GITHUB_REPOSITORY_VALUE" ]]; then
+        for URL in "$POM_SCM_URL" "$POM_URL"; do
+            if [[ -z "$GITHUB_REPOSITORY_VALUE" && "$URL" =~ github.com[:/]+([^/]+/[^/]+)(\.git)?$ ]]; then
+                GITHUB_REPOSITORY_VALUE="${BASH_REMATCH[1]}"
+            fi
+        done
+    fi
+
+    if [[ -z "$GITHUB_REPOSITORY_VALUE" ]]; then
+        echo -e "${RED}Error: Unable to determine GitHub repository (owner/repo)${NC}"
+        echo -e "${RED}Set GITHUB_REPOSITORY or gpr.repo in ~/.gradle/gradle.properties${NC}"
+        exit 1
+    fi
+
+    if [[ -z "$GITHUB_USER" || -z "$GITHUB_TOKEN_VALUE" ]]; then
+        echo -e "${RED}Error: GitHub Packages credentials not configured${NC}"
+        echo -e "${RED}Set gpr.user and gpr.key in ~/.gradle/gradle.properties or GITHUB_ACTOR/GITHUB_TOKEN env vars${NC}"
+        exit 1
+    fi
 fi
 
 # -----------------------------------------------------------------------------
@@ -135,6 +185,9 @@ case "$PUBLISH_TYPE" in
         ;;
     release)
         ./gradlew clean build publishToSonatype closeAndReleaseSonatypeStagingRepository --no-daemon --stacktrace
+        ;;
+    github)
+        ./gradlew clean build publishAllPublicationsToGitHubPackagesRepository --no-daemon --stacktrace
         ;;
     local)
         ./gradlew clean build publishToMavenLocal --no-daemon --stacktrace
@@ -178,6 +231,16 @@ if [[ $PUBLISH_EXIT_CODE -eq 0 ]]; then
             echo ""
             echo -e "Verify at:"
             echo -e "  ${BOLD}https://search.maven.org/search?q=g:${GROUP}${NC}"
+            ;;
+        github)
+            echo -e "Artifacts published to GitHub Packages:"
+            echo -e "  ${BOLD}https://maven.pkg.github.com/${GITHUB_REPOSITORY_VALUE}${NC}"
+            echo ""
+            echo -e "Consumers can use:"
+            echo -e "  ${BOLD}implementation(\"${GROUP}:konditional-core:${VERSION}\")${NC}"
+            echo ""
+            echo -e "With repository:"
+            echo -e "  ${BOLD}maven { url = uri(\"https://maven.pkg.github.com/${GITHUB_REPOSITORY_VALUE}\") }${NC}"
             ;;
         local)
             echo -e "Artifacts published to local Maven repository:"
