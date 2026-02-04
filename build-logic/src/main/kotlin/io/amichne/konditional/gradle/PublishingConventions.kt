@@ -67,9 +67,12 @@ fun Project.configureKonditionalPublishing(
         }
         repositories {
             maven {
-                val releasesRepoUrl = uri(layout.buildDirectory.dir("repos/releases"))
-                val snapshotsRepoUrl = uri(layout.buildDirectory.dir("repos/snapshots"))
-                url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/amichne/konditional")
+                credentials {
+                    username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
+                    password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+                }
             }
         }
     }

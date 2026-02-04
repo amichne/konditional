@@ -5,7 +5,7 @@ pluginManagement {
     }
 
     plugins {
-        id("org.jetbrains.kotlin.jvm") version "2.2.20"
+        id("org.jetbrains.kotlin.jvm")
         id("io.gitlab.arturbosch.detekt") version "1.23.7"
     }
 }
