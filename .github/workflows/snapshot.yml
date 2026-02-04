@@ -45,15 +45,6 @@ jobs:
       - name: Run tests
         run: ./gradlew test --no-daemon
 
-      - name: Publish to Sonatype Snapshots
-        env:
-          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-        run: |
-          ./gradlew publishToSonatype \
-            --no-daemon \
-            --stacktrace
-
       - name: Publish to GitHub Packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -70,14 +61,6 @@ jobs:
           ## Snapshot Published 
 
           **Version:** \`$VERSION\`
-
-          ### Maven Central Snapshots
-          Available at: https://s01.oss.sonatype.org/content/repositories/snapshots/
-
-          \`\`\`kotlin
-          repositories {
-              maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-          }
 
           dependencies {
               implementation("io.amichne:konditional:$VERSION")
