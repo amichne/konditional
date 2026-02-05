@@ -4,6 +4,7 @@ package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.Namespace
 
 /**
  * Semantic tokens for boolean values in DSL contexts.
@@ -17,8 +18,8 @@ const val DISABLED: Boolean = false
  * Created via [FlagScope.rule] and completed via [yields].
  */
 @KonditionalDsl
-class YieldingScope<T : Any, C : Context> internal constructor(
-    private val scope: FlagScope<T, C>,
+class YieldingScope<T : Any, C : Context, out M : Namespace> internal constructor(
+    private val scope: FlagScope<T, C, @UnsafeVariance M>,
     private val build: RuleScope<C>.() -> Unit,
 ) {
     private val host: YieldingScopeHost? = scope as? YieldingScopeHost
@@ -40,8 +41,8 @@ class YieldingScope<T : Any, C : Context> internal constructor(
  * Created via [FlagScope.ruleScoped] and completed via [yields].
  */
 @KonditionalDsl
-class ContextYieldingScope<T : Any, C : Context> internal constructor(
-    private val scope: FlagScope<T, C>,
+class ContextYieldingScope<T : Any, C : Context, out M : Namespace> internal constructor(
+    private val scope: FlagScope<T, C, @UnsafeVariance M>,
     private val build: ContextRuleScope<C>.() -> Unit,
 ) {
     private val host: YieldingScopeHost? = scope as? YieldingScopeHost
@@ -84,17 +85,17 @@ private fun captureRuleCallSite(): String? =
  * - `enable { ... }`  ≡ `enable  { ... }`
  * - `disable { ... }` ≡ `disable  { ... }`
  */
-fun <C : Context> FlagScope<Boolean, C>.enable(build: RuleScope<C>.() -> Unit = {}) =
+fun <C : Context, M : Namespace> FlagScope<Boolean, C, M>.enable(build: RuleScope<C>.() -> Unit = {}) =
     rule(ENABLED, build)
 
-fun <C : Context> FlagScope<Boolean, C>.disable(build: RuleScope<C>.() -> Unit = {}) =
+fun <C : Context, M : Namespace> FlagScope<Boolean, C, M>.disable(build: RuleScope<C>.() -> Unit = {}) =
     rule(DISABLED, build)
 
 /**
  * Boolean sugar for rule declaration using a composable rule scope.
  */
-fun <C : Context> FlagScope<Boolean, C>.enableScoped(build: ContextRuleScope<C>.() -> Unit = {}) =
+fun <C : Context, M : Namespace> FlagScope<Boolean, C, M>.enableScoped(build: ContextRuleScope<C>.() -> Unit = {}) =
     ruleScoped(ENABLED, build)
 
-fun <C : Context> FlagScope<Boolean, C>.disableScoped(build: ContextRuleScope<C>.() -> Unit = {}) =
+fun <C : Context, M : Namespace> FlagScope<Boolean, C, M>.disableScoped(build: ContextRuleScope<C>.() -> Unit = {}) =
     ruleScoped(DISABLED, build)

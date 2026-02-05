@@ -20,7 +20,7 @@ import io.amichne.konditional.internal.builders.FlagBuilder
  */
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.update(
     default: T,
-    function: FlagScope<T, C>.() -> Unit,
+    function: FlagScope<T, C, Namespace>.() -> Unit,
 ): Unit = (namespace.registry as? NamespaceRegistryRuntime)
     ?.updateDefinition(FlagBuilder(default, this).apply(function).build())
     ?: error("NamespaceRegistryRuntime is required. Add :konditional-runtime to your dependencies.")

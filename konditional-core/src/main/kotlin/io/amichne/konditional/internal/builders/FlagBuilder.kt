@@ -10,12 +10,13 @@ import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.dsl.ContextRuleScope
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.PendingYieldToken
+import io.amichne.konditional.core.dsl.RuleSet
+import io.amichne.konditional.core.dsl.RuleSpec
 import io.amichne.konditional.core.dsl.RuleScope
 import io.amichne.konditional.core.dsl.YieldingScopeHost
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 
 /**
@@ -35,8 +36,8 @@ import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
     override val default: T,
     private val feature: Feature<T, C, M>,
-) : FlagScope<T, C>, YieldingScopeHost {
-    private val conditionalValues = mutableListOf<ConditionalValue<T, C>>()
+) : FlagScope<T, C, M>, YieldingScopeHost {
+    private val ruleSpecs = mutableListOf<RuleSpec<T, C>>()
     private val rolloutAllowlist: LinkedHashSet<HexId> = linkedSetOf()
     private val pendingYields: LinkedHashSet<PendingYieldToken> = linkedSetOf()
 
@@ -85,7 +86,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
         build: RuleScope<C>.() -> Unit,
     ) {
         val rule = RuleBuilder<C>().apply(build).build()
-        conditionalValues += rule.targetedBy(value)
+        ruleSpecs += RuleSpec(value, rule)
     }
 
     override fun ruleScoped(
@@ -96,7 +97,11 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
             @Suppress("UNCHECKED_CAST")
             (this as ContextRuleScope<C>).apply(build)
         }.build()
-        conditionalValues += rule.targetedBy(value)
+        ruleSpecs += RuleSpec(value, rule)
+    }
+
+    override fun include(ruleSet: RuleSet<in C, T, C, M>) {
+        ruleSpecs += ruleSet.rules
     }
 
     /**
@@ -111,7 +116,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
         ?.let {
             FlagDefinition(
                 feature = feature,
-                bounds = conditionalValues.toList(),
+                bounds = ruleSpecs.map { spec -> spec.rule.targetedBy(spec.value) },
                 defaultValue = default,
                 salt = salt,
                 isActive = isActive,
