@@ -44,6 +44,10 @@ Focus on Kotlin modules and core workflows (build, lint, test).
 - `make test`
 - `make detekt`
 - `make check` (detekt + tests)
+- `make docs-install`
+- `make docs-build`
+- `make docs-serve`
+- `make docs-clean`
 
 ### Run a Single Test (JUnit 5)
 
@@ -59,6 +63,14 @@ Focus on Kotlin modules and core workflows (build, lint, test).
 
 - `./gradlew :kontracts:test --tests 'io.amichne.kontracts.SchemaDslTest'`
 - `./gradlew :konditional-runtime:test --tests 'io.amichne.konditional.runtime.SomeTest'`
+
+### Publishing Scripts
+
+- `./scripts/validate-publish.sh`
+- `./scripts/publish.sh local`
+- `./scripts/publish.sh snapshot`
+- `./scripts/publish.sh release`
+- `./scripts/publish.sh github`
 
 ## Code Style Guidelines
 
