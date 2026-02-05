@@ -1,0 +1,46 @@
+@startuml
+' Diagram Systems theme
+skinparam shadowing false
+skinparam roundcorner 10
+skinparam dpi 150
+skinparam defaultFontName "Helvetica"
+skinparam BackgroundColor #FFFFFF
+skinparam ArrowColor #2F2F2F
+skinparam LineColor #2F2F2F
+skinparam NoteBorderColor #9A3412
+skinparam NoteBackgroundColor #FFF7ED
+skinparam package {
+  BackgroundColor #F1F5F9
+  BorderColor #334155
+}
+skinparam rectangle {
+  BackgroundColor #F8FAFC
+  BorderColor #1F2937
+}
+skinparam component {
+  BackgroundColor #F8FAFC
+  BorderColor #1F2937
+}
+skinparam database {
+  BackgroundColor #E2E8F0
+  BorderColor #334155
+}
+skinparam queue {
+  BackgroundColor #E2E8F0
+  BorderColor #334155
+}
+left to right direction
+rectangle "Flags defined in code" as Code
+rectangle "Snapshot encode" as Snap
+rectangle "JSON snapshot" as Json
+rectangle "Parse + validate" as Parse
+rectangle "Load (atomic swap)" as Load
+rectangle "Reject + keep last-known-good" as Reject
+rectangle "Evaluation reads active snapshot" as Eval
+Code --> Snap
+Snap --> Json
+Json --> Parse
+Parse --> Load : Success
+Parse --> Reject : Failure
+Load --> Eval
+@enduml

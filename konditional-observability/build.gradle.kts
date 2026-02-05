@@ -34,7 +34,7 @@ val recipesSampleFile =
 val recipesTemplateFile =
     rootProject.layout.projectDirectory.file("docusaurus/docs-templates/recipes.template.md")
 val recipesDocFile =
-    rootProject.layout.projectDirectory.file("docusaurus/docs/advanced/recipes.md")
+    rootProject.layout.projectDirectory.file("docs/recipes.md")
 
 konditionalRecipesDocs {
     sampleFile.set(recipesSampleFile)

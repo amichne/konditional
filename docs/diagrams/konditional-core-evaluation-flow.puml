@@ -1,0 +1,61 @@
+@startuml
+' Diagram Systems theme
+skinparam shadowing false
+skinparam roundcorner 10
+skinparam dpi 150
+skinparam defaultFontName "Helvetica"
+skinparam BackgroundColor #FFFFFF
+skinparam ArrowColor #2F2F2F
+skinparam LineColor #2F2F2F
+skinparam NoteBorderColor #9A3412
+skinparam NoteBackgroundColor #FFF7ED
+skinparam package {
+  BackgroundColor #F1F5F9
+  BorderColor #334155
+}
+skinparam rectangle {
+  BackgroundColor #F8FAFC
+  BorderColor #1F2937
+}
+skinparam component {
+  BackgroundColor #F8FAFC
+  BorderColor #1F2937
+}
+skinparam database {
+  BackgroundColor #E2E8F0
+  BorderColor #334155
+}
+skinparam queue {
+  BackgroundColor #E2E8F0
+  BorderColor #334155
+}
+top to bottom direction
+rectangle "Feature.evaluate(context)" as A
+diamond "Registry kill-switch enabled?" as B
+rectangle "B -- \"Yes\"" as B_Yes
+rectangle "Return declared default (Decision.RegistryDisabled)" as RD
+rectangle "B -- \"No\"" as B_No
+diamond "Flag definition active?" as C
+rectangle "C -- \"No\"" as C_No
+rectangle "Return declared default (Decision.Inactive)" as IN
+rectangle "C -- \"Yes\"" as C_Yes
+diamond "Any rule matches by precedence?" as D
+rectangle "D -- \"No\"" as D_No
+rectangle "Return declared default (Decision.Default)" as DEF
+rectangle "D -- \"Yes\"" as D_Yes
+diamond "Matched rule passes ramp-up gating?" as E
+rectangle "E -- \"Yes\"" as E_Yes
+rectangle "Return rule value (Decision.Rule)" as RULE
+rectangle "E -- \"No\"" as E_No
+rectangle "Try next candidate by precedence" as NEXT
+A --> B
+B_Yes --> RD
+B_No --> C
+C_No --> IN
+C_Yes --> D
+D_No --> DEF
+D_Yes --> E
+E_Yes --> RULE
+E_No --> NEXT
+NEXT --> D
+@enduml

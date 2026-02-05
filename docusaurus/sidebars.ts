@@ -2,215 +2,59 @@ import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
 
 const sidebars: SidebarsConfig = {
     docsSidebar: [
-        {type: 'doc', id: 'index', label: 'Home'},
+       {type: 'doc', id: 'index', label: 'Home'},
+        {
+            type: 'category',
+            label: 'Welcome',
+            items: [
+                'value-proposition',
+            ],
+        },
         {
             type: 'category',
             label: 'Quick Start',
             items: [
-                'getting-started/installation',
-                'getting-started/your-first-flag',
+                'quick-start',
             ],
         },
         {
             type: 'category',
-            label: 'Learn',
+            label: 'Konditional Core',
             items: [
-                'learn/core-primitives',
-                'learn/evaluation-model',
-                'learn/type-safety',
-                'learn/configuration-lifecycle',
+                'core-concepts',
+                'evaluation-flow',
+                'rules',
+                'context-and-axes',
+                'rollouts-and-bucketing',
+                'registry-and-configuration',
+                'dsl-authoring',
+                'structured-values',
+                'parsing-and-errors',
             ],
         },
         {
             type: 'category',
-            label: 'Guides',
+            label: 'Operations',
             items: [
-                'guides/install-and-setup',
-                'guides/load-remote-config',
-                'how-to-guides/rolling-out-gradually',
-                'how-to-guides/ab-testing',
-                'how-to-guides/testing-features',
-                'how-to-guides/custom-business-logic',
-                'how-to-guides/debugging-determinism',
-                'how-to-guides/namespace-isolation',
-                'how-to-guides/handling-failures',
-                'how-to-guides/safe-remote-config',
-                'how-to-guides/publishing',
+                'observability-and-debugging',
             ],
         },
         {
             type: 'category',
-            label: 'Core Library',
+            label: 'Recipes',
             items: [
-                'core/index',
-                'core/reference',
-                'core/rules',
-                'core/types',
-            ],
-        },
-        {
-            type: 'category',
-            label: 'Production Operations',
-            items: [
-                'production-operations/thread-safety',
-                'production-operations/failure-modes',
-                'production-operations/refresh-patterns',
-                'production-operations/debugging',
-            ],
-        },
-        {
-            type: 'category',
-            label: 'Modules',
-            items: [
-                {
-                    type: 'category',
-                    label: 'Runtime',
-                    items: [
-                        'runtime/index',
-                        'runtime/lifecycle',
-                        'runtime/operations',
-                    ],
-                },
-                {
-                    type: 'category',
-                    label: 'Serialization',
-                    items: [
-                        'serialization/index',
-                        'serialization/persistence-format',
-                        'serialization/reference',
-                    ],
-                },
-                {
-                    type: 'category',
-                    label: 'Observability',
-                    items: [
-                        'observability/index',
-                        'observability/shadow-evaluation',
-                        'observability/reference',
-                    ],
-                },
-                {
-                    type: 'category',
-                    label: 'OpenTelemetry',
-                    items: [
-                        'opentelemetry/index',
-                        'opentelemetry/reference',
-                    ],
-                },
-                {
-                    type: 'category',
-                    label: 'Config Metadata',
-                    items: [
-                        'config-metadata/index',
-                        'config-metadata/reference',
-                    ],
-                },
-                {
-                    type: 'category',
-                    label: 'Kontracts',
-                    items: [
-                        'kontracts/index',
-                        'kontracts/schema-dsl',
-                    ],
-                },
-            ],
-        },
-        {
-            type: 'category',
-            label: 'Design & Safety',
-            items: [
-                'theory/parse-dont-validate',
-                'theory/type-safety-boundaries',
-                'theory/determinism-proofs',
-                'theory/atomicity-guarantees',
-                'theory/namespace-isolation',
-                'theory/migration-and-shadowing',
-            ],
-        },
-        {
-            type: 'category',
-            label: 'Examples',
-            items: [
-                'examples/golden-path',
-            ],
-        },
-        {
-            type: 'category',
-            label: 'Troubleshooting',
-            items: [
-                'troubleshooting/index',
+                'recipes',
             ],
         },
         {
             type: 'category',
             label: 'Reference',
             items: [
-                {
-                    type: 'category',
-                    label: 'API Reference',
-                    items: [
-                        'core/reference',
-                        'reference/api/namespace-operations',
-                        'reference/api/parse-result',
-                        'reference/api/snapshot-loader',
-                        'reference/api/ramp-up-bucketing',
-                    ],
-                },
-                'reference/glossary',
-                {
-                    type: 'category',
-                    label: "Recipes",
-                    link: {type: 'doc', id: 'advanced/recipes'},
-                    items: [
-                        // Link each recipe to the corresponding anchor in the aggregated recipes doc
-                        {
-                            type: 'link',
-                            label: 'Typed Variants Instead of Boolean Explosion',
-                            href: '#recipe-1-typed-variants-instead-of-boolean-explosion'
-                        },
-                        {
-                            type: 'link',
-                            label: 'Deterministic Ramp-Up with Resettable Salt',
-                            href: '#recipe-2-deterministic-ramp-up-with-resettable-salt'
-                        },
-                        {
-                            type: 'link',
-                            label: 'Runtime-Configurable Segments via Axes',
-                            href: '#recipe-3-runtime-configurable-segments-via-axes'
-                        },
-                        {
-                            type: 'link',
-                            label: 'Business Logic Targeting with Custom Context + Extension',
-                            href: '#recipe-4-business-logic-targeting-with-custom-context-extension'
-                        },
-                        {
-                            type: 'link',
-                            label: 'Structured Values with Schema Validation',
-                            href: '#recipe-5-structured-values-with-schema-validation'
-                        },
-                        {
-                            type: 'link',
-                            label: 'Safe Remote Config Loading + Rollback',
-                            href: '#recipe-6-safe-remote-config-loading-rollback'
-                        },
-                        {
-                            type: 'link',
-                            label: 'Controlled Migrations with Shadow Evaluation',
-                            href: '#recipe-7-controlled-migrations-with-shadow-evaluation'
-                        },
-                        {
-                            type: 'link',
-                            label: 'Namespace Isolation + Kill-Switch',
-                            href: '#recipe-8-namespace-isolation-kill-switch'
-                        },
-                        {
-                            type: 'link',
-                            label: 'Lightweight Observability Hooks',
-                            href: '#recipe-9-lightweight-observability-hooks'
-                        },
-                    ],
-                },
-                'reference/migration-guide',
+                'api-reference',
+                'glossary',
+                'reference-index',
+                'faq',
+                'next-steps',
             ],
         },
     ],
