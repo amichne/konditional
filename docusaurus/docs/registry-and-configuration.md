@@ -11,6 +11,31 @@ Core separates two responsibilities:
 
 The runtime surface you interact with is a `NamespaceRegistry`, which is reachable via the `Namespace` object itself.
 
+```mermaid 
+flowchart LR
+    subgraph App["Application"]
+        Code["App code"]
+        Flags["Namespace + Feature definitions"]
+    end
+
+    subgraph Core["Konditional Core"]
+        Eval["Evaluation engine"]
+        Registry["NamespaceRegistry"]
+    end
+
+    subgraph Ops["Runtime + Serialization + Observability"]
+        Load["Load + rollback"]
+        Hooks["Hooks + metrics"]
+    end
+
+    Config["Remote config JSON"] --> Load --> Registry
+    Flags --> Registry
+    Code --> Eval
+    Registry --> Eval --> Code
+    Hooks --> Eval
+
+```
+
 :::note Boundary is explicit
 Configuration parsing and validation live in `:konditional-serialization` and `:konditional-runtime`. Core assumes
 configuration is already validated; invalid updates are rejected at the boundary and do not partially mutate state.
@@ -45,48 +70,6 @@ The kill-switch is designed to be safe under pressure:
 
 This gives you a single operational lever that cannot create “half disabled” states.
 
-## Atomic snapshot refresh (runtime)
-
-Namespace configuration updates are applied as **atomic snapshot swaps**. Readers see either the old snapshot or the new
-snapshot — never a partial state.
-
-```mermaid
-sequenceDiagram
-    participant W as Writer (refresh thread)
-    participant R as Reader (evaluation thread)
-    participant AR as Active Snapshot
-
-    par Concurrent work
-        W->>AR: set(newSnapshot) (atomic swap)
-        and
-        R->>AR: get() (lock‑free read)
-        alt Read before swap
-            AR-->>R: oldSnapshot
-        else Read after swap
-            AR-->>R: newSnapshot
-        end
-    end
-```
-
-:::danger Do not mutate snapshots
-Configuration snapshots are intended to be immutable. Mutating a snapshot after load violates the atomicity model and
-can lead to undefined evaluation behavior.
-:::
-
-## Configuration lifecycle (high level)
-
-```mermaid
-flowchart LR
-  Code["Flags defined in code"] --> Snap["Snapshot encode"]
-  Snap --> Json["JSON snapshot"]
-  Json --> Parse["Parse + validate"]
-  Parse -->|Success| Load["Load (atomic swap)"]
-  Parse -->|Failure| Reject["Reject + keep last-known-good"]
-  Load --> Eval["Evaluation reads active snapshot"]
-  style Load fill: #c8e6c9
-  style Reject fill: #ffcdd2
-```
-
 Next:
 
-- [Observability & Debugging](/observability-and-debugging)
+- [Observability & Debugging](observability-and-debugging)

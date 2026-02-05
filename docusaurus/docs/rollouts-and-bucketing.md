@@ -19,7 +19,7 @@ This makes “10% ramp-up” an engineering tool you can reason about (and repro
 For deterministic rollouts you provide a stable identifier, typically via `Context.StableIdContext`.
 
 If a stable ID is missing, the system falls back to a deterministic “missing stable id bucket”. That keeps behavior
-consistent, but you should not expect fair sampling without stable IDs.
+consistent, but you should not expect “fair sampling” without stable IDs.
 
 You can also allowlist specific IDs (globally for a flag or per-rule) to force inclusion regardless of ramp-up.
 
@@ -28,21 +28,6 @@ You can also allowlist specific IDs (globally for a flag or per-rule) to force i
 Salt is an explicit input to bucketing. Changing `salt` intentionally re-samples your population without changing the
 feature key or the stable ID.
 
-:::caution Salt changes distribution
-Changing `salt` is a deliberate resample. This is useful when you want a fresh cohort, but it also means historical
-analysis across salts is not directly comparable.
-:::
-
-## Deterministic bucketing (exact mechanics)
-
-The bucket is computed from `(salt, featureKey, stableId)`:
-
-1. Hash the UTF‑8 bytes of `"$salt:$featureKey:${stableId.hexId.id}"` with SHA‑256.
-2. Convert the first 4 bytes to an unsigned 32‑bit integer.
-3. Bucket = `hash % 10_000` (range `[0, 9999]`).
-4. Threshold = `(rampUp.value * 100.0).roundToInt()` (basis points).
-5. In ramp‑up if `bucket < threshold`.
-
 ```mermaid
 sequenceDiagram
   participant App as App code
@@ -50,31 +35,36 @@ sequenceDiagram
   participant F as Feature (key)
   participant D as FlagDefinition (salt)
   participant B as Bucketing
-  App->>B: stableBucket(stableId, featureKey, salt)
-  B-->>App: bucket (0..9999-ish)
-  App->>App: bucket <= threshold(rampUp)?
+  alt stableId present
+    App->>B: stableBucket(salt, flagKey, stableId.hexId)
+    B-->>App: bucket (0..9999)
+  else stableId missing
+    App->>B: missingStableIdBucket()
+    B-->>App: bucket (9999)
+  end
+  App->>B: rampUpThresholdBasisPoints(rampUp)
+  B-->>App: thresholdBasisPoints (0..10000)
+  App->>B: isInRampUp(rampUp, bucket)
+  B-->>App: inRollout (bucket < thresholdBasisPoints)
 ```
 
-## Bucketing introspection (debugging)
+## BucketInfo (debugging)
 
-When you need to answer “why is this user in/out?”, use `RampUpBucketing`:
+For “why is user X in/out?”, `RampUpBucketing.explain(...)` returns a `BucketInfo` describing the exact bucket decision.
 
-```kotlin
-val info = RampUpBucketing.explain(
-    stableId = StableId.of("user-123"),
-    featureKey = "feature::checkout::newUi",
-    salt = "v1",
-    rampUp = RampUp.of(10.0),
-)
-
-val inRollout = info.inRollout
+```mermaid
+classDiagram
+  class BucketInfo {
+    +String featureKey
+    +String salt
+    +Int bucket
+    +RampUp rollout
+    +Int thresholdBasisPoints
+    +Boolean inRollout
+  }
 ```
-
-:::note Determinism guarantee
-Given the same `(stableId, featureKey, salt)`, `RampUpBucketing` always returns the same bucket and decision.
-:::
 
 Next:
 
-- [Registry & Configuration](/registry-and-configuration)
-- [Recipes](/recipes) for copy/paste patterns (including “resettable salt”)
+- [Registry & Configuration](registry-and-configuration)
+- [Recipes](recipes) for copy/paste patterns (including “resettable salt”)

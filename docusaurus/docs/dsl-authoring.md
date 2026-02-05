@@ -15,15 +15,6 @@ The two primary authoring scopes are:
 - `FlagScope<T, C, M>`: defines rules, default behavior, activation, salt/allowlists, and composition.
 - `RuleScope<C>`: defines targeting criteria and yields a value (`T`).
 
-| Scope        | Responsibilities                                                                 | Compile-time guarantee |
-|--------------|----------------------------------------------------------------------------------|------------------------|
-| `FlagScope`  | Defaults, rules, activation, salt/allowlists, rule set composition                | `T`, `C`, `M` bound    |
-| `RuleScope`  | Targeting criteria + optional custom predicate (business logic)                   | `C` enforced           |
-
-:::note Guardrails are intentional
-The DSL intentionally limits what you can express to avoid ambiguous or order-dependent behavior.
-:::
-
 ## A minimal flag definition
 
 ```kotlin
@@ -34,20 +25,6 @@ object Payments : Namespace("payments") {
     }
 }
 ```
-
-## Flag-level controls
-
-Typical `FlagScope` controls include:
-
-- `rule(...) { ... }` — add a rule
-- `include(ruleSet)` — include reusable rule sets
-- `salt("v2")` — resample population deterministically
-- `allowlist(...)` — stable IDs that bypass ramp‑up
-- `active(false)` — temporarily deactivate a flag (returns default)
-
-:::caution Activation vs kill‑switch
-`active(false)` deactivates a single flag definition; the kill‑switch disables an entire namespace.
-:::
 
 ## Composition (rule sets)
 
@@ -61,5 +38,6 @@ The guiding principle is: composition should not force declaration ordering poli
 
 Next:
 
-- [Rules](/rules)
-- [FAQ](/faq) for “why precedence isn’t declaration order”
+- [Rules](rules)
+- [FAQ](faq) for “why precedence isn’t declaration order”
+

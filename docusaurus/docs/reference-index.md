@@ -17,7 +17,6 @@ Evaluation & results:
 
 - `konditional-core/src/main/kotlin/io/amichne/konditional/api/FeatureEvaluation.kt` — `evaluate` / `explain` decision flow
 - `konditional-core/src/main/kotlin/io/amichne/konditional/api/EvaluationResult.kt` — `EvaluationResult<T>` shape (decision types)
-- `konditional-core/src/main/kotlin/io/amichne/konditional/api/RampUpBucketing.kt` — deterministic bucketing helpers
 
 Rules:
 
@@ -50,3 +49,4 @@ Structured values & parsing:
 - `konditional-core/src/main/kotlin/io/amichne/konditional/core/types/Konstrained.kt` — schema-backed value contract
 - `konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseResult.kt` — result type for parsing boundaries
 - `konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseError.kt` — typed parse failure model
+

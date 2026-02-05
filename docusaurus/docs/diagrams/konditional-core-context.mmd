@@ -1,0 +1,21 @@
+flowchart LR
+  subgraph App["Application"]
+    Code["App code"]
+    Flags["Namespace + Feature definitions"]
+  end
+
+  subgraph Core["Konditional Core"]
+    Eval["Evaluation engine"]
+    Registry["NamespaceRegistry"]
+  end
+
+  subgraph Ops["Runtime + Serialization + Observability"]
+    Load["Load + rollback"]
+    Hooks["Hooks + metrics"]
+  end
+
+  Config["Remote config JSON"] --> Load --> Registry
+  Flags --> Registry
+  Code --> Eval
+  Registry --> Eval --> Code
+  Hooks --> Eval

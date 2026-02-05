@@ -49,5 +49,5 @@ dashboards) around structured flags that can materially impact users.
 
 Next:
 
-- [Parsing & Errors](/parsing-and-errors)
-- [Recipes](/recipes) for a full example
+- [Parsing & Errors](parsing-and-errors)
+- [Recipes](recipes) for a full example

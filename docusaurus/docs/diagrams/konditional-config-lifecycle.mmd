@@ -1,0 +1,10 @@
+flowchart LR
+  Code["Flags defined in code"] --> Snap["Snapshot encode"]
+  Snap --> Json["JSON snapshot"]
+  Json --> Parse["Parse + validate"]
+  Parse -->|Success| Load["Load (atomic swap)"]
+  Parse -->|Failure| Reject["Reject + keep last-known-good"]
+  Load --> Eval["Evaluation reads active snapshot"]
+
+  style Load fill: #c8e6c9
+  style Reject fill: #ffcdd2

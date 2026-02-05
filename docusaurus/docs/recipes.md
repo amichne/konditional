@@ -13,11 +13,6 @@ Source: docusaurus/docs-templates/recipes.template.md + konditional-observabilit
 Practical patterns for real-world feature control using only Konditional building blocks. Each recipe highlights a
 supported solution area and makes the guarantee boundaries explicit.
 
-:::note Generated from real samples
-Recipes are compiled from Kotlin sources in `konditional-observability/src/docsSamples/kotlin`.
-Edit those sources, then regenerate docs via `:konditional-observability:generateRecipesDocs`.
-:::
-
 Covered solution areas:
 
 - Typed features (booleans, enums, structured values)
@@ -327,7 +322,7 @@ fun attachHooks() {
 
 ## Next Steps
 
-- [Rule Model](/rules)
-- [Rollouts & Bucketing](/rollouts-and-bucketing)
-- [Registry & Configuration](/registry-and-configuration)
-- [Observability & Debugging](/observability-and-debugging)
+- [Rule Model](rules)
+- [Rollouts & Bucketing](rollouts-and-bucketing)
+- [Registry & Configuration](registry-and-configuration)
+- [Observability & Debugging](observability-and-debugging)

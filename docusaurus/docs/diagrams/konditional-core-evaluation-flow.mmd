@@ -1,0 +1,11 @@
+flowchart TD
+  A["Feature.evaluate(context)"] --> B{"Registry kill-switch enabled?"}
+  B -- "Yes" --> RD["Return declared default (Decision.RegistryDisabled)"]
+  B -- "No" --> C{"Flag definition active?"}
+  C -- "No" --> IN["Return declared default (Decision.Inactive)"]
+  C -- "Yes" --> D{"Any rule matches by precedence?"}
+  D -- "No" --> DEF["Return declared default (Decision.Default)"]
+  D -- "Yes" --> E{"Matched rule passes ramp-up gating?"}
+  E -- "Yes" --> RULE["Return rule value (Decision.Rule)"]
+  E -- "No" --> NEXT["Try next candidate by precedence"]
+  NEXT --> D

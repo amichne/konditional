@@ -50,30 +50,10 @@ object Axes {
 }
 ```
 
-Applying an axis in a rule:
-
-```kotlin
-object ReleaseFlags : Namespace("release") {
-    val newUi by boolean<Context>(default = false) {
-        enable { axis(Environment.PROD) }
-    }
-}
-```
-
-Providing axis values on a context:
-
-```kotlin
-val ctx =
-    object : Context, Context.AxisContext {
-        override val axisValues = axisValues { +Environment.PROD }
-    }
-```
-
-:::danger Pitfall: Axis IDs must be stable
-Axis value IDs are part of your configuration contract. If they change (including through obfuscation), existing
-configuration can silently target the wrong segment.
-:::
+**Pitfall:** Axis value IDs must remain stable across builds and obfuscation; treat them as part of your public config
+contract.
 
 Next:
 
-- [Rollouts & Bucketing](/rollouts-and-bucketing)
+- [Rollouts & Bucketing](rollouts-and-bucketing)
+

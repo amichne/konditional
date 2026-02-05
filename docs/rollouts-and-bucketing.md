@@ -50,9 +50,17 @@ sequenceDiagram
   participant F as Feature (key)
   participant D as FlagDefinition (salt)
   participant B as Bucketing
-  App->>B: stableBucket(stableId, featureKey, salt)
-  B-->>App: bucket (0..9999-ish)
-  App->>App: bucket <= threshold(rampUp)?
+  alt stableId present
+    App->>B: Include
+    B-->>App: bucket (0..9999)
+  else stableId missing
+    App->>B: missingStableIdBucket() 
+    B-->>App: bucket (9999)
+  end
+  App->>B: rampUpThresholdBasisPoints(rampUp)
+  B-->>App: thresholdBasisPoints (0..10000)
+  App->>B: isInRampUp(rampUp, bucket)
+  B-->>App: inRollout (bucket < thresholdBasisPoints)
 ```
 
 ## Bucketing introspection (debugging)
@@ -73,6 +81,20 @@ val inRollout = info.inRollout
 :::note Determinism guarantee
 Given the same `(stableId, featureKey, salt)`, `RampUpBucketing` always returns the same bucket and decision.
 :::
+
+`RampUpBucketing.explain(...)` returns a `BucketInfo` with the computed decision inputs/outputs:
+
+```mermaid
+classDiagram
+  class BucketInfo {
+    +String featureKey
+    +String salt
+    +Int bucket
+    +RampUp rollout
+    +Int thresholdBasisPoints
+    +Boolean inRollout
+  }
+```
 
 Next:
 

@@ -7,15 +7,6 @@ title: Core Concepts (What Each Type Prevents)
 Konditional’s core types exist to eliminate entire classes of feature-flag failure modes by making misuse impossible (or
 at least obvious) at compile time.
 
-## Terms (Minimum Vocabulary)
-
-- **Namespace**: A registry that owns a set of features and provides lifecycle operations.
-- **Feature**: A typed configuration value with rules and a default.
-- **Context**: Runtime inputs used for evaluation (locale, platform, version, stable ID, axes).
-- **Rule**: Criteria → value mapping. All criteria must match for a rule to apply.
-- **Specificity**: A numeric measure of how constrained a rule is. Higher specificity wins.
-- **Bucketing**: Deterministic assignment of a stable ID to a ramp-up bucket.
-
 ## Namespace
 
 **Definition:** A `Namespace` is the unit of **compile-time ownership** and **runtime isolation**.
@@ -32,11 +23,6 @@ at least obvious) at compile time.
 - **Guarantee (compile-time):** Features are type-bound to the namespace they are defined in.
 - **Mechanism:** `Feature<T, C, out M : Namespace>` carries the namespace in its type.
 - **Boundary (runtime):** A namespace’s registry state (configuration + kill-switch + hooks) can change results.
-
-:::caution Namespace is also the registry
-`Namespace` delegates `NamespaceRegistry`, so lifecycle operations (load, kill-switch, hooks) are called directly on the
-namespace object. This is deliberate: it keeps operational actions close to flag definitions.
-:::
 
 ## Feature
 
@@ -69,18 +55,8 @@ rollout salt, and evaluation algorithm.
 - **Mechanism:** Rules are evaluated in a stable precedence order; bucketing uses stable identifiers + salt.
 - **Boundary:** If configuration parsing rejects an update, the previously active definition remains effective.
 
-## Compile-time vs runtime (boundary table)
-
-| Aspect                     | Guarantee Level | Mechanism                                                  |
-|----------------------------|-----------------|------------------------------------------------------------|
-| Property access            | Compile-time    | Property delegation on `Namespace`                         |
-| Return types               | Compile-time    | Generic type propagation (`Feature<T, C, M>`)              |
-| Rule values                | Compile-time    | Typed DSL builders (`boolean`, `string`, `enum`, `custom`) |
-| Non-null returns           | Compile-time    | Required defaults                                          |
-| Rule matching              | Runtime         | Deterministic evaluation over `Context`                    |
-| Business logic correctness | Not guaranteed  | Human responsibility                                       |
-
 Next:
 
-- [Evaluation Flow](/evaluation-flow)
-- [Rules](/rules)
+- [Evaluation Flow](evaluation-flow)
+- [Rules](rules)
+

@@ -9,7 +9,7 @@ Replace `VERSION` with the latest published version.
 ```kotlin
 // build.gradle.kts
 dependencies {
-  implementation("io.amichne:konditional-core:VERSION")
+  implementation("io.github.amichne:konditional-core:VERSION")
 }
 ```
 
@@ -23,7 +23,7 @@ configuration:
 ```kotlin
 // build.gradle.kts
 dependencies {
-  testImplementation(testFixtures("io.amichne:konditional-core:VERSION"))
+  testImplementation(testFixtures("io.github.amichne:konditional-core:VERSION"))
 }
 ```
 
@@ -44,6 +44,6 @@ See [How-To: Test Your Feature Flags](/how-to-guides/testing-features) for usage
 That is enough to define features and evaluate them in code. If you need remote configuration, JSON serialization, or
 observability utilities, see the module docs:
 
-- [Runtime](/runtime/)
+[//]: # (- [Runtime]&#40;/runtime/&#41;)
 - [Serialization](/serialization/)
 - [Observability](/observability/)

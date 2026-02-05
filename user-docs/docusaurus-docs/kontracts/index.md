@@ -1,5 +1,9 @@
 # kontracts
 
+:::caution Work in progress
+This page is a draft and may change without notice. Treat it as lightly reliable until stabilized.
+:::
+
 Type-safe JSON Schema DSL for Kotlin used by Konditional for structured value validation.
 
 ## When to Use This Module
@@ -34,13 +38,40 @@ dependencies {
 }
 ```
 
-## Guarantees
+## Schema DSL
 
-- **Guarantee**: Schemas are expressed as Kotlin types, not untyped JSON strings.
 
-- **Mechanism**: Type-inferred DSL (`schemaRoot { ::property of { ... } }`).
 
-- **Boundary**: Runtime JSON validation is explicit; schema correctness does not imply correct business logic.
+```kotlin
+data class UserId(val value: String)
+
+data class UserSettings(
+    val userId: UserId,
+    val theme: String = "light",
+    val notificationsEnabled: Boolean = true,
+    val maxRetries: Int = 3
+) : Konstrained<ObjectSchema> {
+    override val schema = schemaRoot {
+        ::userId asString {
+            represent = { this.value }
+            pattern = "[A-Z0-9]{8}"
+        }
+        ::theme of { minLength = 1 }
+        ::notificationsEnabled of { default = true }
+        ::maxRetries of { minimum = 0 }
+    }
+}
+```
+
+## Runtime validation
+
+```kotlin
+val result = jsonValue.validate(schema)
+if (!result.isValid) {
+    println(result.getErrorMessage())
+}
+```
+
 
 ## Next steps
 

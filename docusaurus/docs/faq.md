@@ -25,17 +25,3 @@ stable ID.
 `explain` returns additional data (decision kind, matched rule, bucket info) and may emit debug logging signals via
 registry hooks. Use it for debugging and tooling, not for every evaluation on a hot path.
 
-## Why is evaluation always total (never null)?
-
-Defaults are required at definition time, so evaluation always returns a value. This prevents null propagation and
-runtime exceptions in feature‑gated code.
-
-## Can I mutate configuration after load?
-
-No. Configuration snapshots are intended to be immutable. Mutating a snapshot breaks the atomic swap model and can
-produce inconsistent evaluations.
-
-## Why are configuration updates atomic?
-
-Atomic snapshot replacement ensures readers see either the old or the new config — never a partial update. This keeps
-evaluation deterministic under concurrent refresh.

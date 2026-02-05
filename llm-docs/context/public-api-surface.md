@@ -1,5 +1,5 @@
 # Public API Surface Summary
-# Extracted: 2026-02-05T03:02:11-05:00
+# Extracted: 2026-02-05T10:49:11-05:00
 
 ## From docs/index.md
 
@@ -201,18 +201,19 @@ Next:
 title: Quick Start (Minimal Example)
 ---
 
-# Quick Start (Minimal Example)
+# Quick Start
 
 This is the smallest end-to-end workflow:
 
 1. Define a namespace.
-2. Define a flag (typed, with a default).
+2. Define a flag.
 3. Evaluate it for a context.
 4. Explain the decision when debugging.
 
 :::tip Minimal on purpose
-This is the shortest path from definition → evaluation → explanation. It is intentionally small; you can add richer
-targeting and rollouts once the shape is familiar.
+This is the shortest path from definition → evaluation → explanation.
+
+It is intentionally small; you can add richer targeting and rollouts once the shape is familiar.
 :::
 
 ```kotlin
@@ -222,43 +223,25 @@ object Payments : Namespace("payments") {
     }
 }
 
-val context =
-    object :
-        Context,
-        Context.LocaleContext,
-        Context.PlatformContext,
-        Context.VersionContext,
-        Context.StableIdContext {
-        override val locale = AppLocale.UNITED_STATES
-        override val platform = Platform.IOS
-        override val appVersion = Version.of(2, 1, 0)
-        override val stableId = StableId.of("user-123")
-    }
+val context = object : Context, Context.LocaleContext, Context.PlatformContext, Context.VersionContext,
+                       Context.StableIdContext {
+    override val locale = AppLocale.UNITED_STATES
+    override val platform = Platform.IOS
+    override val appVersion = Version.of(2, 1, 0)
+    override val stableId = StableId.of("user-123")
+}
 
 val enabled: Boolean = Payments.applePayEnabled.evaluate(context)
 val explanation = Payments.applePayEnabled.explain(context)
 ```
 
-<details>
-<summary>Imports</summary>
-
-```kotlin
-import io.amichne.konditional.api.evaluate
-import io.amichne.konditional.api.explain
-import io.amichne.konditional.context.AppLocale
-import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.id.StableId
-```
-
-</details>
-
 **What is compile-time vs runtime here?**
 
-- **Compile-time**: The flag is `Feature<Boolean, Context, Payments>` (typed value + typed context + namespace binding).
-- **Runtime**: The evaluated value depends on registry state (kill-switch), the active definition, and rule matching.
+**Compile-time**:
+  - The flag is `Feature<Boolean, Context, Payments>` (typed value + typed context + namespace binding).
+- **Runtime**: 
+  - The concrete value is determiend at runtime,
+  - Despite this, we can make a number of guarantees constraining it thanks to our compile-time checks
 
 Next:
 
@@ -722,9 +705,17 @@ sequenceDiagram
   participant F as Feature (key)
   participant D as FlagDefinition (salt)
   participant B as Bucketing
-  App->>B: stableBucket(stableId, featureKey, salt)
-  B-->>App: bucket (0..9999-ish)
-  App->>App: bucket <= threshold(rampUp)?
+  alt stableId present
+    App->>B: stableBucket(salt, flagKey, stableId.hexId)
+    B-->>App: bucket (0..9999)
+  else stableId missing
+    App->>B: missingStableIdBucket()
+    B-->>App: bucket (9999)
+  end
+  App->>B: rampUpThresholdBasisPoints(rampUp)
+  B-->>App: thresholdBasisPoints (0..10000)
+  App->>B: isInRampUp(rampUp, bucket)
+  B-->>App: inRollout (bucket < thresholdBasisPoints)
 ```
 
 ## Bucketing introspection (debugging)
@@ -745,6 +736,20 @@ val inRollout = info.inRollout
 :::note Determinism guarantee
 Given the same `(stableId, featureKey, salt)`, `RampUpBucketing` always returns the same bucket and decision.
 :::
+
+`RampUpBucketing.explain(...)` returns a `BucketInfo` with the computed decision inputs/outputs:
+
+```mermaid
+classDiagram
+  class BucketInfo {
+    +String featureKey
+    +String salt
+    +Int bucket
+    +RampUp rollout
+    +Int thresholdBasisPoints
+    +Boolean inRollout
+  }
+```
 
 Next:
 
