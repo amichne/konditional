@@ -98,5 +98,5 @@ Spans include attributes such as:
 
 ## Next steps
 
-- [Observability module](/observability/)
-- [Core API reference](/core/reference)
+- [Observability module](/reference/observability/index)
+- [Core API reference](/reference/core/reference)

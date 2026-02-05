@@ -169,5 +169,5 @@ applyDarkMode(oldValue)
 
 ## Next steps
 
-- [Theory: Migration and shadowing](/theory/migration-and-shadowing)
-- [Observability reference](/observability/reference)
+- [Observability and debugging](/observability-and-debugging)
+- [Observability reference](/reference/observability/reference)

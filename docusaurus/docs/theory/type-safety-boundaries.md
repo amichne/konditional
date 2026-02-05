@@ -280,6 +280,6 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 
 ## Next Steps
 
-- [Core Types](/core/types) - Compile-time surface area
+- [Core Types](/reference/core/types) - Compile-time surface area
 - [Theory: Parse Don't Validate](/theory/parse-dont-validate) - Why ParseResult prevents invalid states
-- [Serialization Reference](/serialization/reference) - ParseResult API
+- [Serialization Reference](/reference/serialization/reference) - ParseResult API

@@ -297,6 +297,6 @@ fun `50 percent ramp-up distributes evenly`() {
 
 ## Next Steps
 
-- [Fundamentals: Evaluation Semantics](/learn/evaluation-model) - Practical determinism
-- [Core API Reference](/core/reference) - Evaluation and ramp-up behavior
+- [Fundamentals: Evaluation Semantics](/evaluation-flow) - Practical determinism
+- [Core API Reference](/reference/core/reference) - Evaluation and ramp-up behavior
 - [Theory: Atomicity Guarantees](/theory/atomicity-guarantees) - Snapshot consistency

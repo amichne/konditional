@@ -129,5 +129,5 @@ enum class Kind { VALUE, DECISION }
 
 ## Next steps
 
-- [Shadow evaluation patterns](/observability/shadow-evaluation)
-- [Core API reference](/core/reference)
+- [Shadow evaluation patterns](/reference/observability/shadow-evaluation)
+- [Core API reference](/reference/core/reference)

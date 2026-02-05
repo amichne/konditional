@@ -206,6 +206,6 @@ value class RampUp private constructor(val value: Double) : Comparable<Number>
 
 ## Next steps
 
-- [Core API reference](/core/reference)
-- [Evaluation model](/learn/evaluation-model)
-- [Serialization module](/serialization/)
+- [Core API reference](/reference/core/reference)
+- [Evaluation model](/evaluation-flow)
+- [Serialization module](/reference/serialization/index)

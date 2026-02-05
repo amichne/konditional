@@ -150,7 +150,7 @@ See [Rule Model](/rules) and [DSL Surface](/dsl-authoring) for the full authorin
 
 Lifecycle operations are intentionally not part of the `:konditional-core` surface.
 
-**Source:** `konditional-runtime/src/main/kotlin/io/amichne/konditional/runtime/NamespaceOperations.kt`
+**Source:** `konditional-runtime/src/main/kotlin/io/amichne/konditional/reference/runtime/indexNamespaceOperations.kt`
 
 - `fun Namespace.load(configuration: ConfigurationView)`
 - `fun Namespace.rollback(steps: Int = 1): Boolean`
@@ -191,7 +191,7 @@ Axes:
 
 The JSON boundary is explicit: decoding returns a `ParseResult`, not a partially-valid value.
 
-**Source:** `konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/ConfigurationSnapshotCodec.kt`
+**Source:** `konditional-serialization/src/main/kotlin/io/amichne/konditional/reference/serialization/indexsnapshot/ConfigurationSnapshotCodec.kt`
 
 - `fun encode(value: ConfigurationView): String`
 - `fun decode(json: String, options = SnapshotLoadOptions.strict()): ParseResult<Configuration>`
@@ -228,7 +228,7 @@ val config = ConfigurationSnapshotCodec.decode(json)
 
 `NamespaceSnapshotLoader` decodes JSON (via a codec) and loads successful results into the namespace’s runtime registry.
 
-**Source:** `konditional-runtime/src/main/kotlin/io/amichne/konditional/serialization/snapshot/NamespaceSnapshotLoader.kt`
+**Source:** `konditional-runtime/src/main/kotlin/io/amichne/konditional/reference/serialization/indexsnapshot/NamespaceSnapshotLoader.kt`
 
 ```kotlin
 val loader = NamespaceSnapshotLoader(AppFlags)

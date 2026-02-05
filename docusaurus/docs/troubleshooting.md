@@ -38,7 +38,7 @@ println(result.decision) // Shows why value was returned
 
 **Verification**: `explain()` output shows expected decision path.
 
-**Related**: [Learn: Evaluation Model](/learn/evaluation-model), [Reference: Feature Evaluation](/reference/api/feature-evaluation)
+**Related**: [Learn: Evaluation Model](/evaluation-flow), [Reference: Feature Evaluation](/reference/core/reference)
 
 ---
 
@@ -65,7 +65,7 @@ println(result.decision) // DISABLED, INACTIVE, or DEFAULT?
 
 **Verification**: `explain()` shows `RegistryDisabled` or specific reason.
 
-**Related**: [Reference: Namespace Operations](/reference/api/namespace-operations)
+**Related**: [Reference: Namespace Operations](/reference/auxiliary/namespace-operations)
 
 ---
 
@@ -95,7 +95,7 @@ val results = (1..100).map { AppFeatures.feature.evaluate(ctx) }
 assertTrue(results.all { it == results.first() }) // All same
 ```
 
-**Related**: [Guide: Roll Out Gradually](/guides/roll-out-gradually), [Design Theory: Determinism Proofs](/design-theory/determinism-proofs)
+**Related**: [Guide: Roll Out Gradually](/rollouts-and-bucketing), [Design Theory: Determinism Proofs](/theory/determinism-proofs)
 
 ---
 
@@ -122,7 +122,7 @@ println("Actual: $actualPct%, Expected: 10%")
 
 **Verification**: Actual percentage within ±1% of expected.
 
-**Related**: [Guide: Test Features](/guides/test-features), [Reference: RampUp Bucketing](/reference/api/ramp-up-bucketing)
+**Related**: [Guide: Test Features](/installation#test-fixtures-optional), [Reference: RampUp Bucketing](/reference/auxiliary/ramp-up-bucketing)
 
 ---
 
@@ -155,7 +155,7 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 
 **Verification**: Parse succeeds with corrected JSON.
 
-**Related**: [Guide: Load Remote Config](/guides/load-remote-config), [Production Operations: Failure Modes](/production-operations/failure-modes)
+**Related**: [Guide: Load Remote Config](/reference/auxiliary/snapshot-loader), [Production Operations: Failure Modes](/troubleshooting)
 
 ---
 
@@ -182,7 +182,7 @@ val darkMode by boolean<Context>(default = false)
 
 **Verification**: JSON schema validated, parse succeeds.
 
-**Related**: [Serialization: Persistence Format](/serialization/persistence-format)
+**Related**: [Serialization: Persistence Format](/reference/serialization/persistence-format)
 
 ---
 
@@ -211,7 +211,7 @@ println("Evaluation: ${durationUs}μs")
 
 **Verification**: Evaluation < 100μs for typical workloads.
 
-**Related**: [Production Operations: Thread Safety](/production-operations/thread-safety)
+**Related**: [Production Operations: Thread Safety](/theory/atomicity-guarantees)
 
 ---
 
@@ -244,4 +244,4 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 
 **Verification**: `explain()` shows new rule matched.
 
-**Related**: [Reference: Namespace Operations](/reference/api/namespace-operations)
+**Related**: [Reference: Namespace Operations](/reference/auxiliary/namespace-operations)

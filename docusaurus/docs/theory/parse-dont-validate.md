@@ -273,5 +273,5 @@ The parser did all that work upfront at the JSON boundary.
 ## Next Steps
 
 - [Theory: Type Safety Boundaries](/theory/type-safety-boundaries) - Compile-time vs runtime guarantees
-- [Runtime: Configuration Lifecycle](/runtime/lifecycle) - JSON -> ParseResult -> load
-- [Serialization Reference](/serialization/reference) - ParseResult API details
+- [Runtime: Configuration Lifecycle](/reference/runtime/lifecycle) - JSON -> ParseResult -> load
+- [Serialization Reference](/reference/serialization/reference) - ParseResult API details

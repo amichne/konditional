@@ -44,6 +44,6 @@ dependencies {
 
 ## Next steps
 
-- [Serialization API reference](/serialization/reference)
-- [Persistence format](/serialization/persistence-format)
-- [Runtime lifecycle](/runtime/lifecycle)
+- [Serialization API reference](/reference/serialization/reference)
+- [Persistence format](/reference/serialization/persistence-format)
+- [Runtime lifecycle](/reference/runtime/lifecycle)

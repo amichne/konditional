@@ -18,7 +18,7 @@ class NamespaceSnapshotLoader<M : Namespace>(
 )
 ```
 
-**Evidence**: `konditional-runtime/src/main/kotlin/io/amichne/konditional/serialization/snapshot/NamespaceSnapshotLoader.kt:18`
+**Evidence**: `konditional-runtime/src/main/kotlin/io/amichne/konditional/reference/serialization/indexsnapshot/NamespaceSnapshotLoader.kt:18`
 
 ### Parameters
 
@@ -204,8 +204,8 @@ fun loadConfigWithValidation(json: String) {
 
 ## Related
 
-- [Guide: Load Remote Config](/guides/load-remote-config) — Using this API in practice
-- [Reference: Namespace Operations](/reference/api/namespace-operations) — Manual load() operation
-- [Reference: ParseResult](/reference/api/parse-result) — Result type utilities
-- [Production Operations: Failure Modes](/production-operations/failure-modes) — What can go wrong
-- [Serialization: Persistence Format](/serialization/persistence-format) — JSON schema
+- [Guide: Load Remote Config](/reference/auxiliary/snapshot-loader) — Using this API in practice
+- [Reference: Namespace Operations](/reference/auxiliary/namespace-operations) — Manual load() operation
+- [Reference: ParseResult](/reference/auxiliary/parse-result) — Result type utilities
+- [Production Operations: Failure Modes](/troubleshooting) — What can go wrong
+- [Serialization: Persistence Format](/reference/serialization/persistence-format) — JSON schema

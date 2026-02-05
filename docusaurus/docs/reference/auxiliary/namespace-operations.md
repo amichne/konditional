@@ -18,7 +18,7 @@ Load a validated configuration snapshot into the namespace.
 fun Namespace.load(configuration: ConfigurationView)
 ```
 
-**Evidence**: `konditional-runtime/src/main/kotlin/io/amichne/konditional/runtime/NamespaceOperations.kt:16`
+**Evidence**: `konditional-runtime/src/main/kotlin/io/amichne/konditional/reference/runtime/indexNamespaceOperations.kt:16`
 
 ### Parameters
 
@@ -95,7 +95,7 @@ Restore a previous configuration snapshot from bounded history.
 fun Namespace.rollback(steps: Int = 1): Boolean
 ```
 
-**Evidence**: `konditional-runtime/src/main/kotlin/io/amichne/konditional/runtime/NamespaceOperations.kt:20`
+**Evidence**: `konditional-runtime/src/main/kotlin/io/amichne/konditional/reference/runtime/indexNamespaceOperations.kt:20`
 
 ### Parameters
 
@@ -265,8 +265,8 @@ logger.info("Kill-switch deactivated, normal evaluation resumed")
 
 ## Related
 
-- [Guide: Load Remote Config](/guides/load-remote-config) — Using load() with ParseResult
-- [Reference: ParseResult API](/reference/api/parse-result) — Validation boundary
-- [Production Operations: Failure Modes](/production-operations/failure-modes) — What can go wrong
-- [Production Operations: Thread Safety](/production-operations/thread-safety) — Concurrent operations
-- [Learn: Configuration Lifecycle](/learn/configuration-lifecycle) — Snapshot management
+- [Guide: Load Remote Config](/reference/auxiliary/snapshot-loader) — Using load() with ParseResult
+- [Reference: ParseResult API](/reference/auxiliary/parse-result) — Validation boundary
+- [Production Operations: Failure Modes](/troubleshooting) — What can go wrong
+- [Production Operations: Thread Safety](/theory/atomicity-guarantees) — Concurrent operations
+- [Learn: Configuration Lifecycle](/reference/runtime/lifecycle) — Snapshot management

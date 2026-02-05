@@ -105,7 +105,7 @@ Attach dependency-free logging/metrics hooks to a namespace registry.
 fun Namespace.setHooks(hooks: RegistryHooks)
 ```
 
-See [Observability](/observability/) for `RegistryHooks` and related interfaces.
+See [Observability](/reference/observability/index) for `RegistryHooks` and related interfaces.
 
 </details>
 
@@ -113,6 +113,6 @@ See [Observability](/observability/) for `RegistryHooks` and related interfaces.
 
 ## Next steps
 
-- [Configuration lifecycle](/runtime/lifecycle)
-- [Serialization module](/serialization/)
-- [Observability](/observability/)
+- [Configuration lifecycle](/reference/runtime/lifecycle)
+- [Serialization module](/reference/serialization/index)
+- [Observability](/reference/observability/index)

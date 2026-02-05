@@ -121,5 +121,5 @@ object AppFeatures : Namespace("app") {
 
 ## Next steps
 
-- [Evaluation model](/learn/evaluation-model)
-- [Core API reference](/core/reference)
+- [Evaluation model](/evaluation-flow)
+- [Core API reference](/reference/core/reference)

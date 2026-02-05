@@ -267,6 +267,6 @@ active at some time `t' <= t`.
 
 ## Next Steps
 
-- [Runtime: Configuration Lifecycle](/runtime/lifecycle) - Practical implications
-- [Fundamentals: Evaluation Semantics](/learn/evaluation-model) - Atomic + deterministic
-- [Runtime: Operations](/runtime/operations) - `load(...)` API
+- [Runtime: Configuration Lifecycle](/reference/runtime/lifecycle) - Practical implications
+- [Fundamentals: Evaluation Semantics](/evaluation-flow) - Atomic + deterministic
+- [Runtime: Operations](/reference/runtime/operations) - `load(...)` API

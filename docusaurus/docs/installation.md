@@ -37,13 +37,13 @@ dependencies {
 - `TargetingIds` — Pre-computed IDs for specific bucket targeting
 - `FeatureMutators` — Utilities for modifying feature configurations in tests
 
-See [How-To: Test Your Feature Flags](/how-to-guides/testing-features) for usage examples.
+See [How-To: Test Your Feature Flags](/installation#test-fixtures-optional) for usage examples.
 
 ---
 
 That is enough to define features and evaluate them in code. If you need remote configuration, JSON serialization, or
 observability utilities, see the module docs:
 
-[//]: # (- [Runtime]&#40;/runtime/&#41;)
-- [Serialization](/serialization/)
-- [Observability](/observability/)
+[//]: # (- [Runtime]&#40;/reference/runtime/index&#41;)
+- [Serialization](/reference/serialization/index)
+- [Observability](/reference/observability/index)

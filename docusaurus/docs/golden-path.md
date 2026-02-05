@@ -185,7 +185,7 @@ Debug iOS dark mode:
 
 ## Next Steps
 
-- [Guide: Install and Set Up](/guides/install-and-setup) — Set up your own project
-- [Learn: Core Primitives](/learn/core-primitives) — Understand building blocks
-- [Learn: Evaluation Model](/learn/evaluation-model) — How rules are ordered
-- [Guide: Test Features](/guides/test-features) — Write tests for this example
+- [Guide: Install and Set Up](/installation) — Set up your own project
+- [Learn: Core Primitives](/core-concepts) — Understand building blocks
+- [Learn: Evaluation Model](/evaluation-flow) — How rules are ordered
+- [Guide: Test Features](/installation#test-fixtures-optional) — Write tests for this example

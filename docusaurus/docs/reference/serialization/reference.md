@@ -133,5 +133,5 @@ sealed interface ParseError {
 
 ## Next steps
 
-- [Persistence format](/serialization/persistence-format)
-- [Runtime operations](/runtime/operations)
+- [Persistence format](/reference/serialization/persistence-format)
+- [Runtime operations](/reference/runtime/operations)

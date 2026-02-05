@@ -44,6 +44,6 @@ dependencies {
 
 ## Next steps
 
-- [Observability reference](/observability/reference)
-- [Shadow evaluation patterns](/observability/shadow-evaluation)
-- [OpenTelemetry integration](/opentelemetry/)
+- [Observability reference](/reference/observability/reference)
+- [Shadow evaluation patterns](/reference/observability/shadow-evaluation)
+- [OpenTelemetry integration](/reference/opentelemetry/index)

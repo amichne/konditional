@@ -83,6 +83,6 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithReason(
 
 ## Next steps
 
-- [Core types](/core/types)
-- [Observability](/observability/)
-- [Runtime operations](/runtime/)
+- [Core types](/reference/core/types)
+- [Observability](/reference/observability/index)
+- [Runtime operations](/reference/runtime/index)

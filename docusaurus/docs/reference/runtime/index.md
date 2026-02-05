@@ -45,6 +45,6 @@ dependencies {
 
 ## Next steps
 
-- [Runtime operations](/runtime/operations)
-- [Configuration lifecycle](/runtime/lifecycle)
-- [Serialization module](/serialization/)
+- [Runtime operations](/reference/runtime/operations)
+- [Configuration lifecycle](/reference/runtime/lifecycle)
+- [Serialization module](/reference/serialization/index)

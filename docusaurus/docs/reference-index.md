@@ -46,7 +46,7 @@ Registry:
 
 Structured values & parsing:
 
-- `konditional-core/src/main/kotlin/io/amichne/konditional/core/types/Konstrained.kt` — schema-backed value contract
+- `konditional-core/src/main/kotlin/io/amichne/konditional/reference/core/types/Konstrained.kt` — schema-backed value contract
 - `konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseResult.kt` — result type for parsing boundaries
 - `konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseError.kt` — typed parse failure model
 

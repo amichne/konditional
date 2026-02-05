@@ -49,7 +49,7 @@ val enabled = AppFeatures.darkMode.evaluate(ctx)
 
 ## Next steps
 
-- [Rule DSL](/core/rules)
-- [Core API reference](/core/reference)
-- [Core types](/core/types)
-- [Evaluation model](/learn/evaluation-model)
+- [Rule DSL](/reference/core/rules)
+- [Core API reference](/reference/core/reference)
+- [Core types](/reference/core/types)
+- [Evaluation model](/evaluation-flow)

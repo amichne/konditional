@@ -421,8 +421,8 @@ fun loadConfig(json: String) {
 
 ## Related
 
-- [Guide: Load Remote Config](/guides/load-remote-config) — Using ParseResult in practice
-- [Reference: Namespace Operations](/reference/api/namespace-operations) — load() requires validated config
-- [Design Theory: Parse Don't Validate](/design-theory/parse-dont-validate) — Why ParseResult exists
-- [Production Operations: Failure Modes](/production-operations/failure-modes) — Parse error scenarios
-- [Learn: Type Safety](/learn/type-safety) — Runtime validation boundary
+- [Guide: Load Remote Config](/reference/auxiliary/snapshot-loader) — Using ParseResult in practice
+- [Reference: Namespace Operations](/reference/auxiliary/namespace-operations) — load() requires validated config
+- [Design Theory: Parse Don't Validate](/theory/parse-dont-validate) — Why ParseResult exists
+- [Production Operations: Failure Modes](/troubleshooting) — Parse error scenarios
+- [Learn: Type Safety](/theory/type-safety-boundaries) — Runtime validation boundary
