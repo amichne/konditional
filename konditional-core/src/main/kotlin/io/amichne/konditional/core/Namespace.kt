@@ -135,7 +135,7 @@ open class Namespace(
      */
     protected fun <C : Context> boolean(
         default: Boolean,
-        flagScope: FlagScope<Boolean, C>.() -> Unit = {},
+        flagScope: FlagScope<Boolean, C, Namespace>.() -> Unit = {},
     ): BooleanDelegate<C> = BooleanDelegate(default, flagScope)
 
     /**
@@ -158,7 +158,7 @@ open class Namespace(
      */
     protected fun <C : Context> string(
         default: String,
-        stringScope: FlagScope<String, C>.() -> Unit = {},
+        stringScope: FlagScope<String, C, Namespace>.() -> Unit = {},
     ): StringDelegate<C> = StringDelegate(default, stringScope)
 
     /**
@@ -179,7 +179,7 @@ open class Namespace(
      */
     protected fun <C : Context> integer(
         default: Int,
-        integerScope: FlagScope<Int, C>.() -> Unit = {},
+        integerScope: FlagScope<Int, C, Namespace>.() -> Unit = {},
     ): IntDelegate<C> = IntDelegate(default, integerScope)
 
     /**
@@ -202,7 +202,7 @@ open class Namespace(
      */
     protected fun <C : Context> double(
         default: Double,
-        decimalScope: FlagScope<Double, C>.() -> Unit = {},
+        decimalScope: FlagScope<Double, C, Namespace>.() -> Unit = {},
     ): DoubleDelegate<C> = DoubleDelegate(default, decimalScope)
 
     /**
@@ -225,7 +225,7 @@ open class Namespace(
      */
     protected fun <E : Enum<E>, C : Context> enum(
         default: E,
-        enumScope: FlagScope<E, C>.() -> Unit = {},
+        enumScope: FlagScope<E, C, Namespace>.() -> Unit = {},
     ): EnumDelegate<E, C> = EnumDelegate(default, enumScope)
 
     /**
@@ -251,14 +251,15 @@ open class Namespace(
      */
     protected inline fun <reified T : Konstrained<*>, C : Context> custom(
         default: T,
-        noinline customScope: FlagScope<T, C>.() -> Unit = {},
+        noinline customScope: FlagScope<T, C, Namespace>.() -> Unit = {},
     ): KotlinClassDelegate<T, C> = KotlinClassDelegate(default, customScope)
 
+    @Suppress("LongParameterList")
     private inline fun <T : Any, C : Context, M : Namespace, F : Feature<T, C, M>, D> registerFeature(
         thisRef: M,
         property: KProperty<*>,
         default: T,
-        configScope: FlagScope<T, C>.() -> Unit,
+        configScope: FlagScope<T, C, Namespace>.() -> Unit,
         featureFactory: (String, M) -> F,
         featureSetter: (F) -> Unit,
         delegateInstance: D,
@@ -274,7 +275,7 @@ open class Namespace(
     @Suppress("UNCHECKED_CAST")
     protected class BooleanDelegate<C : Context>(
         private val default: Boolean,
-        private val configScope: FlagScope<Boolean, C>.() -> Unit,
+        private val configScope: FlagScope<Boolean, C, Namespace>.() -> Unit,
     ) {
         private lateinit var feature: BooleanFeature<C, *>
 
@@ -296,7 +297,7 @@ open class Namespace(
     @Suppress("UNCHECKED_CAST")
     protected class StringDelegate<C : Context>(
         private val default: String,
-        private val configScope: FlagScope<String, C>.() -> Unit,
+        private val configScope: FlagScope<String, C, Namespace>.() -> Unit,
     ) {
         private lateinit var feature: StringFeature<C, *>
 
@@ -318,7 +319,7 @@ open class Namespace(
     @Suppress("UNCHECKED_CAST")
     protected class IntDelegate<C : Context>(
         private val default: Int,
-        private val configScope: FlagScope<Int, C>.() -> Unit,
+        private val configScope: FlagScope<Int, C, Namespace>.() -> Unit,
     ) {
         private lateinit var feature: IntFeature<C, *>
 
@@ -340,7 +341,7 @@ open class Namespace(
     @Suppress("UNCHECKED_CAST")
     protected class DoubleDelegate<C : Context>(
         private val default: Double,
-        private val configScope: FlagScope<Double, C>.() -> Unit,
+        private val configScope: FlagScope<Double, C, Namespace>.() -> Unit,
     ) {
         private lateinit var feature: DoubleFeature<C, *>
 
@@ -362,7 +363,7 @@ open class Namespace(
     @Suppress("UNCHECKED_CAST")
     protected class EnumDelegate<E : Enum<E>, C : Context>(
         private val default: E,
-        private val configScope: FlagScope<E, C>.() -> Unit,
+        private val configScope: FlagScope<E, C, Namespace>.() -> Unit,
     ) {
         private lateinit var feature: EnumFeature<E, C, *>
 
@@ -384,7 +385,7 @@ open class Namespace(
     @Suppress("UNCHECKED_CAST")
     protected class KotlinClassDelegate<T : Konstrained<*>, C : Context>(
         private val default: T,
-        private val configScope: FlagScope<T, C>.() -> Unit,
+        private val configScope: FlagScope<T, C, Namespace>.() -> Unit,
     ) {
         private lateinit var feature: KotlinClassFeature<T, C, *>
 

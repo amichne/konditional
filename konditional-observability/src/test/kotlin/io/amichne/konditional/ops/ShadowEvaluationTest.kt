@@ -3,6 +3,7 @@
 package io.amichne.konditional.ops
 
 import io.amichne.konditional.api.KonditionalInternalApi
+import io.amichne.konditional.api.ShadowOptions
 import io.amichne.konditional.api.evaluateWithShadow
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
@@ -99,5 +100,43 @@ class ShadowEvaluationTest {
 
         assertFalse(value)
         assertEquals(false, mismatched)
+    }
+
+    @Test
+    fun `evaluateWithShadow evaluates candidate when baseline is disabled if enabled by options`() {
+        val baselineNamespace = object : Namespace.TestNamespaceFacade("shadow-disabled-evaluate-candidate") {
+            val FLAG by boolean<Context>(default = false) {
+                enable { platforms(Platform.IOS) }
+            }
+        }
+
+        val candidateRegistry =
+            InMemoryNamespaceRegistry(namespaceId = "shadow-candidate").apply {
+                load(
+                    Configuration(
+                        flags = mapOf(
+                            baselineNamespace.FLAG to FlagDefinition(
+                                feature = baselineNamespace.FLAG,
+                                bounds = emptyList(),
+                                defaultValue = true,
+                            ),
+                        ),
+                    ),
+                )
+            }
+
+        baselineNamespace.disableAll()
+
+        var mismatched = false
+        val value = baselineNamespace.FLAG.evaluateWithShadow(
+            context = context,
+            candidateRegistry = candidateRegistry,
+            baselineRegistry = baselineNamespace,
+            options = ShadowOptions.of(evaluateCandidateWhenBaselineDisabled = true),
+            onMismatch = { mismatched = true },
+        )
+
+        assertFalse(value)
+        assertTrue(mismatched)
     }
 }

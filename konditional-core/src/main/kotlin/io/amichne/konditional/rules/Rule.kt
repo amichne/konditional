@@ -63,12 +63,12 @@ import io.amichne.konditional.rules.versions.VersionRange
  * @see io.amichne.konditional.rules.evaluable.BasePredicate
  */
 @ConsistentCopyVisibility
-data class Rule<C : Context> internal constructor(
+data class Rule<in C : Context> internal constructor(
     val rampUp: RampUp = RampUp.default,
     internal val rampUpAllowlist: Set<HexId> = emptySet(),
     val note: String? = null,
-    internal val targeting: BasePredicate<C> = BasePredicate(),
-    val predicate: Predicate<C> = Placeholder,
+    internal val targeting: BasePredicate<@UnsafeVariance C> = BasePredicate(),
+    val predicate: Predicate<@UnsafeVariance C> = Placeholder,
 ) : Predicate<C> {
     internal constructor(
         rampUp: RampUp = RampUp.default,

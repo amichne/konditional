@@ -1,6 +1,10 @@
 package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.rules.ContextRuleScope
+import io.amichne.konditional.core.dsl.rules.RuleScope
+import io.amichne.konditional.core.dsl.rules.RuleSet
 import io.amichne.konditional.core.id.StableId
 
 /**
@@ -27,7 +31,7 @@ import io.amichne.konditional.core.id.StableId
  * @since 0.0.2
  */
 @KonditionalDsl
-interface FlagScope<T : Any, C : Context> {
+interface FlagScope<T : Any, C : Context, out M : Namespace> {
     val default: T
 
     fun active(block: () -> Boolean)
@@ -53,6 +57,15 @@ interface FlagScope<T : Any, C : Context> {
      * @param value The salt value (default is "v1")
      */
     fun salt(value: String)
+
+    /**
+     * Includes rules from a pre-built [io.amichne.konditional.core.dsl.rules.RuleSet] targeting this same feature.
+     *
+     * Rule sets are composed in order of inclusion to preserve deterministic evaluation semantics.
+     *
+     * @param ruleSet The rule set to include.
+     */
+    fun include(ruleSet: RuleSet<in C, T, C, @UnsafeVariance M>)
 
     /**
      * Defines a targeting rule with an associated return value.
@@ -105,7 +118,7 @@ interface FlagScope<T : Any, C : Context> {
      * Semantics:
      * - `rule { ... } yields VALUE` ≡ `rule(VALUE) { ... }`
      */
-    fun rule(build: RuleScope<C>.() -> Unit): YieldingScope<T, C> = YieldingScope(this, build)
+    fun rule(build: RuleScope<C>.() -> Unit): RuleScope.Prefix<T, C, M> = RuleScope.Prefix(this, build)
 
     /**
      * Defines a targeting rule in a criteria-first form using a composable scope.
@@ -113,6 +126,6 @@ interface FlagScope<T : Any, C : Context> {
      * Semantics:
      * - `ruleScoped { ... } yields VALUE` ≡ `ruleScoped(VALUE) { ... }`
      */
-    fun ruleScoped(build: ContextRuleScope<C>.() -> Unit): ContextYieldingScope<T, C> =
-        ContextYieldingScope(this, build)
+    fun ruleScoped(build: ContextRuleScope<C>.() -> Unit): RuleScope.ScopedPrefix<T, C, M> =
+        RuleScope.ScopedPrefix(this, build)
 }

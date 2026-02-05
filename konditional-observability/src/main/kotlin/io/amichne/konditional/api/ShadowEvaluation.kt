@@ -8,29 +8,6 @@ import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.core.registry.NamespaceRegistry
 
-@ConsistentCopyVisibility
-data class ShadowOptions internal constructor(
-    val reportDecisionMismatches: Boolean,
-    val evaluateCandidateWhenBaselineDisabled: Boolean,
-) {
-    companion object {
-        fun defaults(): ShadowOptions = ShadowOptions(
-            reportDecisionMismatches = false,
-            evaluateCandidateWhenBaselineDisabled = false,
-        )
-    }
-}
-
-@ConsistentCopyVisibility
-data class ShadowMismatch<T : Any> internal constructor(
-    val featureKey: String,
-    val baseline: EvaluationResult<T>,
-    val candidate: EvaluationResult<T>,
-    val kinds: Set<Kind>,
-) {
-    enum class Kind { VALUE, DECISION }
-}
-
 /**
  * Evaluates this feature against the baseline registry (returned) and shadow-evaluates against [candidateRegistry].
  *

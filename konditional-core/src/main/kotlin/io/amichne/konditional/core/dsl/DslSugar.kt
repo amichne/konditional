@@ -1,9 +1,15 @@
-@file:OptIn(KonditionalInternalApi::class)
-
 package io.amichne.konditional.core.dsl
 
-import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.axis.AxisValue
+import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.rules.ContextRuleScope
+import io.amichne.konditional.core.dsl.rules.RuleScope
+import io.amichne.konditional.core.dsl.rules.RuleSet
+import io.amichne.konditional.core.dsl.rules.RuleSetBuilder
+import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.core.registry.AxisRegistry
+import kotlin.reflect.KClass
 
 /**
  * Semantic tokens for boolean values in DSL contexts.
@@ -12,89 +18,104 @@ const val ENABLED: Boolean = true
 const val DISABLED: Boolean = false
 
 /**
- * DSL wrapper representing a partially-specified rule: criteria first, value second.
+ * Defines a boolean rule that yields `true` when the criteria matches.
  *
- * Created via [FlagScope.rule] and completed via [yields].
- */
-@KonditionalDsl
-class YieldingScope<T : Any, C : Context> internal constructor(
-    private val scope: FlagScope<T, C>,
-    private val build: RuleScope<C>.() -> Unit,
-) {
-    private val host: YieldingScopeHost? = scope as? YieldingScopeHost
-    private val pendingToken: PendingYieldToken = PendingYieldToken(callSite = captureRuleCallSite()).also {
-        host?.registerPendingYield(it)
-    }
-
-    /**
-     * Completes the rule declaration by assigning the value to yield when the criteria matches.
-     */
-    infix fun yields(value: T) =
-        host?.commitYield(pendingToken) { scope.rule(value, build) } ?: scope.rule(value, build)
-}
-
-/**
- * DSL wrapper representing a partially-specified rule: criteria first, value second,
- * using a composable scope.
+ * This is syntactic sugar for `rule(true) { ... }`.
  *
- * Created via [FlagScope.ruleScoped] and completed via [yields].
+ * @param build DSL block for configuring targeting criteria
  */
-@KonditionalDsl
-class ContextYieldingScope<T : Any, C : Context> internal constructor(
-    private val scope: FlagScope<T, C>,
-    private val build: ContextRuleScope<C>.() -> Unit,
-) {
-    private val host: YieldingScopeHost? = scope as? YieldingScopeHost
-    private val pendingToken: PendingYieldToken = PendingYieldToken(callSite = captureRuleCallSite()).also {
-        host?.registerPendingYield(it)
-    }
-
-    /**
-     * Completes the rule declaration by assigning the value to yield when the criteria matches.
-     */
-    infix fun yields(value: T) =
-        host?.commitYield(pendingToken) { scope.ruleScoped(value, build) } ?: scope.ruleScoped(value, build)
-}
-
-@KonditionalInternalApi
-interface YieldingScopeHost {
-    fun registerPendingYield(token: PendingYieldToken)
-
-    fun commitYield(token: PendingYieldToken, commit: () -> Unit)
-}
-
-@KonditionalInternalApi
-class PendingYieldToken internal constructor(
-    val callSite: String?,
-)
-
-private fun captureRuleCallSite(): String? =
-    Throwable("Rule call site capture")
-        .stackTrace
-        .asSequence()
-        .dropWhile { it.className.startsWith("io.amichne.konditional.core.dsl.") }
-        .dropWhile { it.className.startsWith("io.amichne.konditional.internal.builders.") }
-        .firstOrNull()
-        ?.let { "${it.className}.${it.methodName}(${it.fileName}:${it.lineNumber})" }
-
-/**
- * Boolean sugar for rule declaration. Only available for boolean feature builders.
- *
- * Semantics:
- * - `enable { ... }`  ≡ `enable  { ... }`
- * - `disable { ... }` ≡ `disable  { ... }`
- */
-fun <C : Context> FlagScope<Boolean, C>.enable(build: RuleScope<C>.() -> Unit = {}) =
+fun <C : Context, M : Namespace> FlagScope<Boolean, C, M>.enable(build: RuleScope<C>.() -> Unit = {}) =
     rule(ENABLED, build)
 
-fun <C : Context> FlagScope<Boolean, C>.disable(build: RuleScope<C>.() -> Unit = {}) =
+/**
+ * Defines a boolean rule that yields `false` when the criteria matches.
+ *
+ * This is syntactic sugar for `rule(false) { ... }`.
+ *
+ * @param build DSL block for configuring targeting criteria
+ */
+fun <C : Context, M : Namespace> FlagScope<Boolean, C, M>.disable(build: RuleScope<C>.() -> Unit = {}) =
     rule(DISABLED, build)
 
 /**
- * Boolean sugar for rule declaration using a composable rule scope.
+ * Defines a boolean rule that yields `true` using a composable rule scope.
+ *
+ * This is syntactic sugar for `ruleScoped(true) { ... }`.
+ *
+ * @param build DSL block for configuring composable targeting criteria
  */
-fun <C : Context> FlagScope<Boolean, C>.enableScoped(build: ContextRuleScope<C>.() -> Unit = {}) =
+fun <C : Context, M : Namespace> FlagScope<Boolean, C, M>.enableScoped(build: ContextRuleScope<C>.() -> Unit = {}) =
     ruleScoped(ENABLED, build)
 
-fun <C : Context> FlagScope<Boolean, C>.disableScoped(build: ContextRuleScope<C>.() -> Unit = {}) =
+/**
+ * Defines a boolean rule that yields `false` using a composable rule scope.
+ *
+ * This is syntactic sugar for `ruleScoped(false) { ... }`.
+ *
+ * @param build DSL block for configuring composable targeting criteria
+ */
+fun <C : Context, M : Namespace> FlagScope<Boolean, C, M>.disableScoped(build: ContextRuleScope<C>.() -> Unit = {}) =
     ruleScoped(DISABLED, build)
+
+/**
+ * Builds a rule set scoped to this feature using the feature's declared context type.
+ *
+ * This overload keeps call sites minimal when you do not need a contravariant
+ * context type. The compiler infers all types from the feature receiver.
+ */
+@JvmName("ruleSetDefault")
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.ruleSet(
+    build: RuleSetBuilder<T, C>.() -> Unit,
+): RuleSet<C, T, C, M> =
+    RuleSet(feature = this, rules = RuleSetBuilder<T, C>().apply(build).build())
+
+/**
+ * Builds a rule set using an explicit supertype context without reified generics.
+ *
+ * Use this when you want contravariant rule sets but prefer value-based
+ * type selection at the call site:
+ * ```kotlin
+ * val global = feature.ruleSet(Context::class) { rule(value) { ios() } }
+ * ```
+ */
+@JvmName("ruleSetWithContextType")
+fun <T : Any, C, M : Namespace, RC : Context> Feature<T, C, M>.ruleSet(
+    @Suppress("UNUSED_PARAMETER") contextType: KClass<RC>,
+    build: RuleSetBuilder<T, RC>.() -> Unit,
+): RuleSet<RC, T, C, M> where C : RC =
+    RuleSet(feature = this, rules = RuleSetBuilder<T, RC>().apply(build).build())
+
+/**
+ * Builds a rule set using a reified supertype context.
+ *
+ * Prefer this when you want contravariant context composition and a terse
+ * call site:
+ * ```kotlin
+ * val global = feature.ruleSet<Context> { rule(value) { ios() } }
+ * ```
+ */
+inline fun <reified RC : Context, T : Any, C, M : Namespace> Feature<T, C, M>.ruleSet(
+    build: RuleSetBuilder<T, RC>.() -> Unit,
+): RuleSet<RC, T, C, M> where C : RC =
+    RuleSet(feature = this, rules = RuleSetBuilder<T, RC>().apply(build).build())
+
+/**
+ * Type-based value setter using the registry.
+ *
+ * This extension allows setting values by type without explicitly passing the axis:
+ * ```kotlin
+ * axisValues {
+ *     axis(Environment.PROD)  // Axis inferred from type
+ * }
+ * ```
+ *
+ * @param value The value to set
+ * If no axis is registered for type T, an implicit axis is created using the
+ * value type's qualified name as its id.
+ */
+inline fun <reified T> AxisValuesScope.axis(value: T) where T : AxisValue<T>, T : Enum<T> {
+    AxisRegistry.axisForOrRegister(T::class).let { set(it, value) }
+}
+
+context(scope: AxisValuesScope)
+inline operator fun <reified T> T.unaryPlus() where T : AxisValue<T>, T : Enum<T> = scope.axis(this)

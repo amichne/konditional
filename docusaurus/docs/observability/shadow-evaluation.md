@@ -13,14 +13,34 @@ Shadow evaluation evaluates the same feature against two registries:
 
 Konditional provides this via:
 
--
-
-`Feature.evaluateWithShadow(context, candidateRegistry, baselineRegistry = namespace, options = ShadowOptions.defaults(), onMismatch): T`
--
-`Feature.evaluateShadow(context, candidateRegistry, baselineRegistry = namespace, options = ShadowOptions.defaults(), onMismatch): Unit`
+- `Feature.evaluateWithShadow(context, candidateRegistry, baselineRegistry = namespace, options = ShadowOptions.defaults(), onMismatch): T`
+- `Feature.evaluateShadow(context, candidateRegistry, baselineRegistry = namespace, options = ShadowOptions.defaults(), onMismatch): Unit`
 
 `onMismatch` receives a `ShadowMismatch<T>` containing both `EvaluationResult<T>` values (baseline + candidate) and a
 `kinds` set (`VALUE`, and optionally `DECISION`).
+
+### Options (`ShadowOptions`)
+
+`ShadowOptions.defaults()` is conservative:
+
+- Candidate evaluation is skipped when the baseline registry kill-switch is enabled.
+- Mismatch detection compares returned values only (`ShadowMismatch.Kind.VALUE`).
+
+You can opt into additional behavior:
+
+```kotlin
+val value = AppFeatures.darkMode.evaluateWithShadow(
+    context = context,
+    candidateRegistry = candidateRegistry,
+    options = ShadowOptions.of(
+        reportDecisionMismatches = true,
+        evaluateCandidateWhenBaselineDisabled = true,
+    ),
+    onMismatch = { mismatch ->
+        logger.warn("shadowMismatch key=${mismatch.featureKey} kinds=${mismatch.kinds}")
+    },
+)
+```
 
 ### Prerequisites
 
