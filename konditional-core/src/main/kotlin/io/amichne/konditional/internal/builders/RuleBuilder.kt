@@ -6,8 +6,8 @@ import io.amichne.konditional.context.PlatformTag
 import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.dsl.KonditionalDsl
-import io.amichne.konditional.core.dsl.RuleScope
 import io.amichne.konditional.core.dsl.VersionRangeScope
+import io.amichne.konditional.core.dsl.rules.RuleScope
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.registry.AxisRegistry

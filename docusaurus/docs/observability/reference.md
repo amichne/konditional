@@ -91,6 +91,23 @@ object RampUpBucketing {
 
 ---
 
+## `ShadowOptions`
+
+Controls how shadow evaluation behaves.
+
+```kotlin
+data class ShadowOptions(
+    val reportDecisionMismatches: Boolean,
+    val evaluateCandidateWhenBaselineDisabled: Boolean,
+)
+```
+
+- Construct via `ShadowOptions.defaults()` (conservative) or `ShadowOptions.of(...)` (explicit).
+- `reportDecisionMismatches`: when `true`, mismatch callbacks can include `ShadowMismatch.Kind.DECISION` when the baseline and candidate decision types differ.
+- `evaluateCandidateWhenBaselineDisabled`: when `true`, evaluates the candidate even if the baseline registry kill-switch is enabled.
+
+---
+
 ## `ShadowMismatch<T>`
 
 Result type passed to shadow mismatch callbacks.
@@ -102,6 +119,8 @@ data class ShadowMismatch<T : Any>(
     val candidate: EvaluationResult<T>,
     val kinds: Set<Kind>,
 )
+
+enum class Kind { VALUE, DECISION }
 ```
 
 </details>

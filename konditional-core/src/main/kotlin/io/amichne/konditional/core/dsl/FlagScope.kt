@@ -2,6 +2,9 @@ package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.rules.ContextRuleScope
+import io.amichne.konditional.core.dsl.rules.RuleScope
+import io.amichne.konditional.core.dsl.rules.RuleSet
 import io.amichne.konditional.core.id.StableId
 
 /**
@@ -56,7 +59,7 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
     fun salt(value: String)
 
     /**
-     * Includes rules from a pre-built [RuleSet] targeting this same feature.
+     * Includes rules from a pre-built [io.amichne.konditional.core.dsl.rules.RuleSet] targeting this same feature.
      *
      * Rule sets are composed in order of inclusion to preserve deterministic evaluation semantics.
      *
@@ -115,7 +118,7 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
      * Semantics:
      * - `rule { ... } yields VALUE` ≡ `rule(VALUE) { ... }`
      */
-    fun rule(build: RuleScope<C>.() -> Unit): YieldingScope<T, C, M> = YieldingScope(this, build)
+    fun rule(build: RuleScope<C>.() -> Unit): RuleScope.Prefix<T, C, M> = RuleScope.Prefix(this, build)
 
     /**
      * Defines a targeting rule in a criteria-first form using a composable scope.
@@ -123,6 +126,6 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
      * Semantics:
      * - `ruleScoped { ... } yields VALUE` ≡ `ruleScoped(VALUE) { ... }`
      */
-    fun ruleScoped(build: ContextRuleScope<C>.() -> Unit): ContextYieldingScope<T, C, M> =
-        ContextYieldingScope(this, build)
+    fun ruleScoped(build: ContextRuleScope<C>.() -> Unit): RuleScope.ScopedPrefix<T, C, M> =
+        RuleScope.ScopedPrefix(this, build)
 }

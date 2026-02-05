@@ -5,8 +5,8 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.dsl.RuleSet
 import io.amichne.konditional.core.dsl.ruleSet
+import io.amichne.konditional.core.dsl.rules.RuleSet
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.EnterpriseContext

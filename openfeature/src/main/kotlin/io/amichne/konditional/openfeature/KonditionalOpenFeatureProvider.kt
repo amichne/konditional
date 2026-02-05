@@ -11,8 +11,8 @@ import dev.openfeature.sdk.ProviderEvaluation
 import dev.openfeature.sdk.ProviderState
 import dev.openfeature.sdk.Reason
 import dev.openfeature.sdk.Value
-import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.api.EvaluationResult
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.api.explain
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.axis.AxisValues
@@ -38,7 +38,7 @@ class TargetingKeyContextMapper(
     private val axisValuesProvider: (EvaluationContext) -> AxisValues = { AxisValues.EMPTY },
 ) : KonditionalContextMapper<TargetingKeyContext> {
     override fun toKonditionalContext(context: EvaluationContext): TargetingKeyContext =
-        (context.targetingKey as String?)
+        context.targetingKey
             ?.takeIf { it.isNotBlank() }
             ?.let { targetingKey ->
                 TargetingKeyContext(
