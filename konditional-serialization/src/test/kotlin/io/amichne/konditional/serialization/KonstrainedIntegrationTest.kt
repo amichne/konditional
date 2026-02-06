@@ -12,10 +12,16 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.result.utils.onSuccess
+import io.amichne.konditional.core.types.Konstrained
+import io.amichne.konditional.core.types.asObjectSchema
 import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.fixtures.core.withOverride
 import io.amichne.konditional.fixtures.serializers.UserSettings
+import io.amichne.konditional.internal.serialization.models.FlagValue
 import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
+import io.amichne.kontracts.dsl.reflectiveSchema
+import io.amichne.kontracts.schema.JsonSchema
+import io.amichne.kontracts.schema.ReflectiveObjectSchema
 import io.amichne.kontracts.value.JsonBoolean
 import io.amichne.kontracts.value.JsonNumber
 import io.amichne.kontracts.value.JsonObject
@@ -26,7 +32,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
- * Comprehensive integration tests for Konstrained<ObjectSchema> support.
+ * Comprehensive integration tests for Konstrained schema support.
  *
  * These tests validate:
  * - Data class to JsonValue conversion
@@ -36,6 +42,27 @@ import org.junit.jupiter.api.Test
  * - Feature flag integration
  */
 class KonstrainedIntegrationTest {
+    data class ReflectiveSettings(
+        val theme: String = "light",
+        val maxRetries: Int = 3,
+        val enabled: Boolean = true,
+    ) : Konstrained<ReflectiveObjectSchema<ReflectiveSettings>> {
+        override val schema: ReflectiveObjectSchema<ReflectiveSettings> =
+            reflectiveSchema<ReflectiveSettings> {
+                required(
+                    property = ReflectiveSettings::theme,
+                    schema = JsonSchema.string(minLength = 1, enum = listOf("light", "dark", "auto")),
+                )
+                required(
+                    property = ReflectiveSettings::maxRetries,
+                    schema = JsonSchema.int(minimum = 0, maximum = 10),
+                )
+                optional(
+                    property = ReflectiveSettings::enabled,
+                    schema = JsonSchema.boolean(default = true),
+                )
+            }
+    }
 
     @Test
     fun `data class to JsonValue conversion is correct`() {
@@ -125,5 +152,24 @@ class KonstrainedIntegrationTest {
                 println("Successfully deserialized ${config.flags.size} flags")
             }
         }
+    }
+
+    @Test
+    fun `SchemaValueCodec supports reflective object schemas via object conversion`() {
+        val original = ReflectiveSettings(theme = "dark", maxRetries = 5, enabled = false)
+        val schema = original.schema.asObjectSchema()
+        val encoded = SchemaValueCodec.encode(original, schema)
+        val decoded = SchemaValueCodec.decode(ReflectiveSettings::class, encoded, schema)
+        assertTrue(decoded is ParseResult.Success)
+        assertEquals(original, (decoded as ParseResult.Success).value)
+    }
+
+    @Test
+    fun `FlagValue roundtrip works with reflective schema based data classes`() {
+        val original = ReflectiveSettings(theme = "auto", maxRetries = 4, enabled = true)
+        val serialized = FlagValue.from(original)
+        assertTrue(serialized is FlagValue.DataClassValue)
+        val reconstructed = serialized.extractValue<ReflectiveSettings>(original.schema.asObjectSchema())
+        assertEquals(original, reconstructed)
     }
 }

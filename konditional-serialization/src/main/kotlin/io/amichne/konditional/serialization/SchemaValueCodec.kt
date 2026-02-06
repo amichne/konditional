@@ -4,6 +4,7 @@ import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.Konstrained
+import io.amichne.konditional.core.types.asObjectSchema
 import io.amichne.kontracts.schema.ObjectSchema
 import io.amichne.kontracts.value.JsonBoolean
 import io.amichne.kontracts.value.JsonNull
@@ -20,7 +21,7 @@ import kotlin.reflect.full.primaryConstructor
  * Schema-based serializer that uses reflection and ObjectSchema to encode/decode instances.
  *
  * Replaces the explicit TypeSerializer/SerializerRegistry pattern with automatic serialization
- * driven by the schema definition. Any type implementing Konstrained<ObjectSchema> can be
+ * driven by the schema definition. Any type implementing Konstrained with object-like traits can be
  * serialized without additional registration.
  */
 @KonditionalInternalApi
@@ -56,8 +57,12 @@ object SchemaValueCodec {
             is Enum<*> -> JsonString(value.name)
             is Konstrained<*> -> {
                 val schema =
-                    value.schema as? ObjectSchema
-                        ?: error("Konstrained must have ObjectSchema, got ${value.schema::class.simpleName}")
+                    runCatching { value.schema.asObjectSchema() }
+                        .getOrElse {
+                            error(
+                                "Konstrained schema must be an object schema, got ${value.schema::class.simpleName}",
+                            )
+                        }
                 encode(value, schema)
             }
 
