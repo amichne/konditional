@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.JavaExec
+import org.gradle.api.tasks.SourceSetContainer
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -27,6 +29,22 @@ dependencies {
     testImplementation(libs.bundles.test)
     testImplementation(project(":konditional-runtime"))
     testImplementation(testFixtures(project(":konditional-core")))
+}
+
+val serializationMainSourceSet = extensions.getByType<SourceSetContainer>().named("main")
+
+tasks.register<JavaExec>("generateOpenApiSchema") {
+    group = "documentation"
+    description = "Generates OpenAPI schema for Konditional serialization JSON payloads."
+
+    val outputPath = layout.buildDirectory.file("generated/openapi/konditional-schema.json")
+    classpath = serializationMainSourceSet.get().runtimeClasspath
+    mainClass.set("io.amichne.konditional.openapi.GenerateOpenApiSchema")
+    args(
+        outputPath.get().asFile.absolutePath,
+        project.version.toString(),
+        "Konditional Serialization Schema",
+    )
 }
 
 tasks.withType<KotlinCompile>().configureEach {
