@@ -1,6 +1,10 @@
 package io.amichne.konditional.core
 
-import io.amichne.konditional.api.bind
+import io.amichne.konditional.api.asRef
+import io.amichne.konditional.api.contraMapContext
+import io.amichne.konditional.api.map
+import io.amichne.konditional.api.thenUse
+import io.amichne.konditional.api.zip
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
@@ -58,7 +62,7 @@ class FeatureBindingTest {
     fun `bind exposes dependency evaluation results`() {
         val context = BindingContext(plan = "premium")
 
-        val result = BindingFeatures.isEnabled.bind().evaluate(context)
+        val result = BindingFeatures.isEnabled.asRef().evaluate(context)
 
         assertEquals(true, result.value)
         assertEquals(1, result.dependencies.size)
@@ -70,9 +74,7 @@ class FeatureBindingTest {
         val context = BindingContext(plan = "enterprise")
 
         val ref =
-            BindingFeatures.isEnabled
-                .bind()
-                .map { enabled, ctx -> "${ctx.plan}-$enabled" }
+            BindingFeatures.isEnabled.map { enabled, ctx -> "${ctx.plan}-$enabled" }
 
         val result = ref.evaluate(context)
 
@@ -84,7 +86,7 @@ class FeatureBindingTest {
     fun `zip combines dependencies from both references`() {
         val context = BindingContext(plan = "starter", platform = Platform.IOS)
 
-        val result = BindingFeatures.isEnabled.bind().zip(BindingFeatures.variant.bind()).evaluate(context)
+        val result = BindingFeatures.isEnabled.zip(BindingFeatures.variant).evaluate(context)
 
         assertEquals(true to "treatment", result.value)
         assertEquals(
@@ -98,11 +100,9 @@ class FeatureBindingTest {
         val context = BindingContext(plan = "basic", platform = Platform.ANDROID)
 
         val ref =
-            BindingFeatures.isEnabled
-                .bind()
-                .thenUse { enabled, _ ->
-                    if (enabled) BindingFeatures.variant.bind() else BindingFeatures.fallbackVariant.bind()
-                }
+            BindingFeatures.isEnabled.thenUse { enabled, _ ->
+                if (enabled) BindingFeatures.variant.asRef() else BindingFeatures.fallbackVariant.asRef()
+            }
 
         val result = ref.evaluate(context)
 
@@ -114,7 +114,10 @@ class FeatureBindingTest {
     fun `contraMapContext adapts references to extended contexts`() {
         val context = ExtendedContext(BindingContext(plan = "basic"), tenantId = "tenant-1")
 
-        val result = BindingFeatures.variant.bind().contraMapContext<ExtendedContext> { it.base }.evaluate(context)
+        val result =
+            BindingFeatures.variant
+                .contraMapContext { extended: ExtendedContext -> extended.base }
+                .evaluate(context)
 
         assertEquals("control", result.value)
         assertEquals(1, result.dependencies.size)

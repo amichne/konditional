@@ -47,6 +47,58 @@ sealed interface Ref<T : Any, C : Context> {
  */
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.bind(): Ref<T, C> = FeatureRef(this)
 
+@PublishedApi
+internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.toRefInternal(): Ref<T, C> =
+    FeatureRef(this)
+
+/**
+ * Creates a typed reference from a feature definition without explicit bind calls.
+ */
+inline fun <reified T : Any, reified C : Context, M : Namespace> Feature<T, C, M>.asRef(): Ref<T, C> =
+    toRefInternal()
+
+/**
+ * Transform a feature value using the context without needing an explicit reference.
+ */
+inline fun <reified T : Any, reified C : Context, M : Namespace, R : Any> Feature<T, C, M>.map(
+    noinline transform: (T, C) -> R,
+): Ref<R, C> = toRefInternal().map(transform)
+
+/**
+ * Chain feature evaluation without explicit reference construction.
+ */
+inline fun <reified T : Any, reified C : Context, M : Namespace, R : Any> Feature<T, C, M>.flatMap(
+    noinline transform: (T, C) -> Ref<R, C>,
+): Ref<R, C> = toRefInternal().flatMap(transform)
+
+/**
+ * Alias for [flatMap] to support fluent chaining from features.
+ */
+inline fun <reified T : Any, reified C : Context, M : Namespace, R : Any> Feature<T, C, M>.thenUse(
+    noinline transform: (T, C) -> Ref<R, C>,
+): Ref<R, C> = toRefInternal().thenUse(transform)
+
+/**
+ * Combine two features into a composed reference without explicit binding.
+ */
+inline fun <reified T : Any, reified C : Context, M : Namespace, R : Any> Feature<T, C, M>.zip(
+    other: Feature<R, C, *>,
+): Ref<Pair<T, R>, C> = toRefInternal().zip(other.toRefInternal())
+
+/**
+ * Combine a feature with an existing reference.
+ */
+inline fun <reified T : Any, reified C : Context, M : Namespace, R : Any> Feature<T, C, M>.zip(
+    other: Ref<R, C>,
+): Ref<Pair<T, R>, C> = toRefInternal().zip(other)
+
+/**
+ * Adapt a feature reference to a different context by projecting the required context.
+ */
+inline fun <reified T : Any, reified C : Context, M : Namespace, D : Context> Feature<T, C, M>.contraMapContext(
+    noinline transform: (D) -> C,
+): Ref<T, D> = toRefInternal().contraMapContext(transform)
+
 private data class FeatureRef<T : Any, C : Context, M : Namespace>(
     val feature: Feature<T, C, M>,
 ) : Ref<T, C> {
