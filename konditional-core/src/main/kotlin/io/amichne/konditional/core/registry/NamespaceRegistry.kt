@@ -48,6 +48,13 @@ interface NamespaceRegistry {
     ): FlagDefinition<T, C, M> =
         configuration.flags[key] as FlagDefinition<T, C, M>
 
+    @Suppress("UNCHECKED_CAST")
+    fun <T : Any, C : Context, M : Namespace> flagSnapshot(
+        key: Feature<T, C, M>,
+        snapshot: ConfigurationView,
+    ): FlagDefinition<T, C, M> =
+        snapshot.flags[key] as FlagDefinition<T, C, M>
+
     fun allFlags(): Map<Feature<*, *, *>, FlagDefinition<*, *, *>> =
         configuration.flags
 }

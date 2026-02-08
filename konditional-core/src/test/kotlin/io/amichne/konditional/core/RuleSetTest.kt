@@ -14,6 +14,7 @@ import io.amichne.konditional.fixtures.SubscriptionTier
 import io.amichne.konditional.fixtures.UserRole
 import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.fixtures.utilities.update
+import io.amichne.konditional.rules.RuleValue
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -152,10 +153,22 @@ class RuleSetTest {
         val left = (alpha + beta) + gamma
         val right = alpha + (beta + gamma)
 
-        assertEquals(listOf("alpha", "beta", "gamma"), left.rules.map { it.value })
-        assertEquals(listOf("alpha", "beta", "gamma"), right.rules.map { it.value })
-        assertEquals(left.rules.map { it.value }, (empty + left).rules.map { it.value })
-        assertEquals(left.rules.map { it.value }, (left + empty).rules.map { it.value })
+        fun serializedValue(ruleValue: RuleValue<String, Context>): String =
+            when (val serialization = ruleValue.serialization()) {
+                is RuleValue.Serialization.Supported -> serialization.value
+                is RuleValue.Serialization.Unsupported -> error(serialization.description)
+            }
+
+        assertEquals(listOf("alpha", "beta", "gamma"), left.rules.map { serializedValue(it.value) })
+        assertEquals(listOf("alpha", "beta", "gamma"), right.rules.map { serializedValue(it.value) })
+        assertEquals(
+            left.rules.map { serializedValue(it.value) },
+            (empty + left).rules.map { serializedValue(it.value) },
+        )
+        assertEquals(
+            left.rules.map { serializedValue(it.value) },
+            (left + empty).rules.map { serializedValue(it.value) },
+        )
     }
 
     @Test

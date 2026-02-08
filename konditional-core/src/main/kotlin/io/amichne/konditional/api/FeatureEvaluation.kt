@@ -78,18 +78,20 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
     registry: NamespaceRegistry,
     mode: Metrics.Evaluation.EvaluationMode,
 ): EvaluationResult<T> {
-    val definition = registry.flag(this)
+    val snapshot = registry.configuration
+    val definition = registry.flagSnapshot(this, snapshot)
+    val isAllDisabled = registry.isAllDisabled
     lateinit var result: EvaluationResult<T>
 
     val nanos =
         measureNanoTime {
             result =
                 when {
-                    registry.isAllDisabled -> {
+                    isAllDisabled -> {
                         EvaluationResult(
                             namespaceId = registry.namespaceId,
                             featureKey = key,
-                            configVersion = registry.configuration.metadata.version,
+                            configVersion = snapshot.metadata.version,
                             mode = mode,
                             durationNanos = 0L,
                             value = definition.defaultValue,
@@ -101,7 +103,7 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
                         EvaluationResult(
                             namespaceId = registry.namespaceId,
                             featureKey = key,
-                            configVersion = registry.configuration.metadata.version,
+                            configVersion = snapshot.metadata.version,
                             mode = mode,
                             durationNanos = 0L,
                             value = definition.defaultValue,
@@ -132,7 +134,7 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
                         EvaluationResult(
                             namespaceId = registry.namespaceId,
                             featureKey = key,
-                            configVersion = registry.configuration.metadata.version,
+                            configVersion = snapshot.metadata.version,
                             mode = mode,
                             durationNanos = 0L,
                             value = trace.value,

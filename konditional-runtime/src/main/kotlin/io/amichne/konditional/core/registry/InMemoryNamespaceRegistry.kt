@@ -111,20 +111,25 @@ class InMemoryNamespaceRegistry(
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : Any, C : Context, M : Namespace> flag(key: Feature<T, C, M>): FlagDefinition<T, C, M> {
-        val override = overrides.getOverride(key)
-
-        return if (override != null) {
-            flagDefinitionFromSerialized(
-                feature = key,
-                defaultValue = override,
-                rules = emptyList(),
-                metadata = SerializedFlagDefinitionMetadata(isActive = true),
-            )
-        } else {
-            configuration.flags[key] as? FlagDefinition<T, C, M>
-                ?: throw IllegalStateException("Flag not found in configuration: ${key.key}")
-        }
+        return flagSnapshot(key, configuration)
     }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : Any, C : Context, M : Namespace> flagSnapshot(
+        key: Feature<T, C, M>,
+        snapshot: ConfigurationView,
+    ): FlagDefinition<T, C, M> =
+        overrides.getOverride(key)
+            ?.let { override ->
+                flagDefinitionFromSerialized(
+                    feature = key,
+                    defaultValue = override,
+                    rules = emptyList(),
+                    metadata = SerializedFlagDefinitionMetadata(isActive = true),
+                )
+            }
+            ?: snapshot.flags[key] as? FlagDefinition<T, C, M>
+            ?: error("Flag not found in configuration: ${key.key}")
 
     override fun updateDefinition(definition: FlagDefinition<*, *, *>) {
         current.updateAndGet { currentSnapshot ->
