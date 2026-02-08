@@ -52,8 +52,8 @@ interface NamespaceRegistry {
     fun <T : Any, C : Context, M : Namespace> flagSnapshot(
         key: Feature<T, C, M>,
         snapshot: ConfigurationView,
-    ): FlagDefinition<T, C, M> =
-        snapshot.flags[key] as FlagDefinition<T, C, M>
+    ): FlagDefinition<T, C, M> = flag(key)
+
 
     fun allFlags(): Map<Feature<*, *, *>, FlagDefinition<*, *, *>> =
         configuration.flags
