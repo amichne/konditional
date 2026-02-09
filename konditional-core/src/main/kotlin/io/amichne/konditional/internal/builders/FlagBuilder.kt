@@ -18,6 +18,7 @@ import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
+import io.amichne.konditional.rules.RuleValue
 
 /**
  * Internal implementation of [FlagScope].
@@ -81,16 +82,16 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
      * Implementation of [FlagScope.rule] that creates a rule and associates it with a value.
      * The value-first design ensures every rule has an associated return value at compile time.
      */
-    override fun rule(
-        value: T,
+    override fun ruleValue(
+        value: RuleValue<T, C>,
         build: RuleScope<C>.() -> Unit,
     ) {
         val rule = RuleBuilder<C>().apply(build).build()
         ruleSpecs += RuleSpec(value, rule)
     }
 
-    override fun ruleScoped(
-        value: T,
+    override fun ruleScopedValue(
+        value: RuleValue<T, C>,
         build: ContextRuleScope<C>.() -> Unit,
     ) {
         val rule = RuleBuilder<C>().apply {
@@ -123,21 +124,24 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
                 rampUpAllowlist = rolloutAllowlist,
             )
         }
-        ?: error(unclosedYieldingRulesErrorMessage())
-
-    private fun unclosedYieldingRulesErrorMessage(): String =
-        buildString {
-            appendLine(
-                "Unclosed criteria-first rule detected for feature '${feature.key}': " +
-                    "`rule { ... }` must be completed with `yields(value)`."
-            )
-            appendLine("Fix: change `rule { criteria }` to `rule { criteria } yields someValue`.")
-            pendingYields
-                .mapNotNull { it.callSite }
-                .takeIf { it.isNotEmpty() }
-                ?.let { callSites ->
-                    appendLine("Call sites:")
-                    callSites.forEach { appendLine("- $it") }
-                }
-        }
+        ?: error(unclosedYieldingRulesErrorMessage(feature.key, pendingYields))
 }
+
+private fun unclosedYieldingRulesErrorMessage(
+    featureKey: String,
+    pendingYields: Set<PendingYieldToken>,
+): String =
+    buildString {
+        appendLine(
+            "Unclosed criteria-first rule detected for feature '$featureKey': " +
+                "`rule { ... }` must be completed with `yields(value)`."
+        )
+        appendLine("Fix: change `rule { criteria }` to `rule { criteria } yields someValue`.")
+        pendingYields
+            .mapNotNull { it.callSite }
+            .takeIf { it.isNotEmpty() }
+            ?.let { callSites ->
+                appendLine("Call sites:")
+                callSites.forEach { appendLine("- $it") }
+            }
+    }

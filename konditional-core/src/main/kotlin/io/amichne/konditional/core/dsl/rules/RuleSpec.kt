@@ -3,6 +3,7 @@ package io.amichne.konditional.core.dsl.rules
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.rules.Rule
+import io.amichne.konditional.rules.RuleValue
 
 /**
  * A feature-scoped set of rules that can be composed with other rule sets.
@@ -13,6 +14,6 @@ import io.amichne.konditional.rules.Rule
 @ConsistentCopyVisibility
 @KonditionalDsl
 data class RuleSpec<out T : Any, in C : Context> @PublishedApi internal constructor(
-    val value: T,
+    val value: RuleValue<T, C>,
     val rule: Rule<C>,
 )

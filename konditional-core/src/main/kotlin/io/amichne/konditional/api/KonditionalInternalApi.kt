@@ -1,5 +1,7 @@
 package io.amichne.konditional.api
 
+import org.jetbrains.annotations.ApiStatus
+
 /**
  * Marks a symbol as an internal implementation contract between Konditional modules.
  *
@@ -27,4 +29,5 @@ package io.amichne.konditional.api
     AnnotationTarget.VALUE_PARAMETER,
     AnnotationTarget.FIELD,
 )
+@ApiStatus.Internal
 annotation class KonditionalInternalApi
