@@ -38,7 +38,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
     override val default: T,
     private val feature: Feature<T, C, M>,
 ) : FlagScope<T, C, M>, YieldingScopeHost {
-    private val ruleSpecs = mutableListOf<RuleSpec<T, C>>()
+    private val ruleSpecs = mutableListOf<RuleSpec<T, C, M>>()
     private val rolloutAllowlist: LinkedHashSet<HexId> = linkedSetOf()
     private val pendingYields: LinkedHashSet<PendingYieldToken> = linkedSetOf()
 
@@ -83,7 +83,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
      * The value-first design ensures every rule has an associated return value at compile time.
      */
     override fun ruleValue(
-        value: RuleValue<T, C>,
+        value: RuleValue<T, C, M>,
         build: RuleScope<C>.() -> Unit,
     ) {
         val rule = RuleBuilder<C>().apply(build).build()
@@ -91,7 +91,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
     }
 
     override fun ruleScopedValue(
-        value: RuleValue<T, C>,
+        value: RuleValue<T, C, M>,
         build: ContextRuleScope<C>.() -> Unit,
     ) {
         val rule = RuleBuilder<C>().apply {

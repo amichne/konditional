@@ -65,9 +65,9 @@ fun <C : Context, M : Namespace> FlagScope<Boolean, C, M>.disableScoped(build: C
  */
 @JvmName("ruleSetDefault")
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.ruleSet(
-    build: RuleSetBuilder<T, C>.() -> Unit,
+    build: RuleSetBuilder<T, C, M>.() -> Unit,
 ): RuleSet<C, T, C, M> =
-    RuleSet(feature = this, rules = RuleSetBuilder<T, C>().apply(build).build())
+    RuleSet(feature = this, rules = RuleSetBuilder<T, C, M>().apply(build).build())
 
 /**
  * Builds a rule set using an explicit supertype context without reified generics.
@@ -81,9 +81,9 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.ruleSet(
 @JvmName("ruleSetWithContextType")
 fun <T : Any, C, M : Namespace, RC : Context> Feature<T, C, M>.ruleSet(
     @Suppress("UNUSED_PARAMETER") contextType: KClass<RC>,
-    build: RuleSetBuilder<T, RC>.() -> Unit,
+    build: RuleSetBuilder<T, RC, M>.() -> Unit,
 ): RuleSet<RC, T, C, M> where C : RC =
-    RuleSet(feature = this, rules = RuleSetBuilder<T, RC>().apply(build).build())
+    RuleSet(feature = this, rules = RuleSetBuilder<T, RC, M>().apply(build).build())
 
 /**
  * Builds a rule set using a reified supertype context.
@@ -95,9 +95,9 @@ fun <T : Any, C, M : Namespace, RC : Context> Feature<T, C, M>.ruleSet(
  * ```
  */
 inline fun <reified RC : Context, T : Any, C, M : Namespace> Feature<T, C, M>.ruleSet(
-    build: RuleSetBuilder<T, RC>.() -> Unit,
+    build: RuleSetBuilder<T, RC, M>.() -> Unit,
 ): RuleSet<RC, T, C, M> where C : RC =
-    RuleSet(feature = this, rules = RuleSetBuilder<T, RC>().apply(build).build())
+    RuleSet(feature = this, rules = RuleSetBuilder<T, RC, M>().apply(build).build())
 
 /**
  * Type-based value setter using the registry.

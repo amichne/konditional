@@ -11,7 +11,9 @@ import io.amichne.konditional.core.dsl.rules.targeting.scopes.LocaleTargetingSco
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.PlatformTargetingScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.StableIdTargetingScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.VersionTargetingScope
+import io.amichne.konditional.core.evaluation.EvaluationScope
 import io.amichne.konditional.rules.RuleValue
+import kotlin.jvm.JvmName
 
 /**
  * DSL scope for rule configuration.
@@ -99,6 +101,21 @@ interface RuleScope<C : Context> : ContextRuleScope<C>,
                 scope.ruleValue(RuleValue.contextual(value), build)
                 Postfix
             }
+
+        /**
+         * Completes the rule declaration by assigning a scoped value when the criteria matches.
+         *
+         * Semantics:
+         * `rule { criteria } yields { value }` ≡ `rule({ value }) { criteria }`
+         */
+        @JvmName("yieldsScopedValue")
+        infix fun yields(value: EvaluationScope<C, @UnsafeVariance M>.() -> T): Postfix = host
+            ?.commitYield(pendingToken) { scope.ruleValue(RuleValue.scoped(value), build) }
+            ?.let { Postfix }
+            ?: run {
+                scope.ruleValue(RuleValue.scoped(value), build)
+                Postfix
+            }
     }
 
     /**
@@ -144,6 +161,21 @@ interface RuleScope<C : Context> : ContextRuleScope<C>,
             ?.let { Postfix }
             ?: run {
                 scope.ruleScopedValue(RuleValue.contextual(value), build)
+                Postfix
+            }
+
+        /**
+         * Completes the rule declaration by assigning a scoped value when the criteria matches.
+         *
+         * Semantics:
+         * `ruleScoped { criteria } yields { value }` ≡ `ruleScoped({ value }) { criteria }`
+         */
+        @JvmName("yieldsScopedValue")
+        infix fun yields(value: EvaluationScope<C, @UnsafeVariance M>.() -> T): Postfix = host
+            ?.commitYield(pendingToken) { scope.ruleScopedValue(RuleValue.scoped(value), build) }
+            ?.let { Postfix }
+            ?: run {
+                scope.ruleScopedValue(RuleValue.scoped(value), build)
                 Postfix
             }
     }

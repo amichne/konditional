@@ -18,6 +18,9 @@ fun <T : Any, C : Context, M : Namespace> FlagScope<T, C, M>.rule(
 ) = ruleValue(RuleValue.contextual(valueProvider), build)
 
 /**
+ * Defines a rule that computes its value from the evaluation scope.
+ */
+/**
  * Defines a composable rule that computes its value from the evaluation context.
  */
 fun <T : Any, C : Context, M : Namespace> FlagScope<T, C, M>.ruleScoped(

@@ -1,13 +1,14 @@
 package io.amichne.konditional.core.dsl.rules
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.internal.builders.RuleBuilder
 import io.amichne.konditional.rules.RuleValue
 
 @KonditionalDsl
-class RuleSetBuilder<T : Any, C : Context> @PublishedApi internal constructor() {
-    private val rules = mutableListOf<RuleSpec<T, C>>()
+class RuleSetBuilder<T : Any, C : Context, M : Namespace> @PublishedApi internal constructor() {
+    private val rules = mutableListOf<RuleSpec<T, C, M>>()
 
     fun rule(
         value: T,
@@ -48,5 +49,5 @@ class RuleSetBuilder<T : Any, C : Context> @PublishedApi internal constructor() 
     }
 
     @PublishedApi
-    internal fun build(): List<RuleSpec<T, C>> = rules.toList()
+    internal fun build(): List<RuleSpec<T, C, M>> = rules.toList()
 }

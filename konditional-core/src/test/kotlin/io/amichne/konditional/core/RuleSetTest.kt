@@ -153,7 +153,7 @@ class RuleSetTest {
         val left = (alpha + beta) + gamma
         val right = alpha + (beta + gamma)
 
-        fun serializedValue(ruleValue: RuleValue<String, Context>): String =
+        fun serializedValue(ruleValue: RuleValue<String, Context, Namespace>): String =
             when (val serialization = ruleValue.serialization()) {
                 is RuleValue.Serialization.Supported -> serialization.value
                 is RuleValue.Serialization.Unsupported -> error(serialization.description)

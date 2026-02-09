@@ -1,6 +1,7 @@
 package io.amichne.konditional.core.dsl.rules
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.RuleValue
@@ -13,7 +14,7 @@ import io.amichne.konditional.rules.RuleValue
  */
 @ConsistentCopyVisibility
 @KonditionalDsl
-data class RuleSpec<out T : Any, in C : Context> @PublishedApi internal constructor(
-    val value: RuleValue<T, C>,
+data class RuleSpec<out T : Any, in C : Context, M : Namespace> @PublishedApi internal constructor(
+    val value: RuleValue<T, C, M>,
     val rule: Rule<C>,
 )
