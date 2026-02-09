@@ -4,8 +4,10 @@ import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Context.StableIdContext
 import io.amichne.konditional.core.evaluation.Bucketing
+import io.amichne.konditional.core.evaluation.EvaluationScope
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
+import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.Rule
 
@@ -33,13 +35,13 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
      */
     val defaultValue: T,
     val feature: Feature<T, C, M>,
-    val values: List<ConditionalValue<T, C>> = listOf(),
+    val values: List<ConditionalValue<T, C, M>> = listOf(),
     val isActive: Boolean = true,
     val salt: String = "v1",
     internal val rampUpAllowlist: Set<HexId> = emptySet(),
 ) {
-    internal val valuesByPrecedence: List<ConditionalValue<T, C>> =
-        values.sortedWith(compareByDescending<ConditionalValue<T, C>> { it.rule.specificity() })
+    internal val valuesByPrecedence: List<ConditionalValue<T, C, M>> =
+        values.sortedWith(compareByDescending<ConditionalValue<T, C, M>> { it.rule.specificity() })
 
     companion object {
         /**
@@ -49,7 +51,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
         @Suppress("LongParameterList")
         operator fun <T : Any, C : Context, M : Namespace> invoke(
             feature: Feature<T, C, M>,
-            bounds: List<ConditionalValue<T, C>>,
+            bounds: List<ConditionalValue<T, C, M>>,
             defaultValue: T,
             salt: String = "v1",
             isActive: Boolean = true,
@@ -71,25 +73,28 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
      * @param context The contextFn in which the flag evaluation is performed.
      * @return The result create the evaluation, create type `T`. If the flag is not active, returns the defaultValue.
      */
-    internal fun evaluate(context: C): T {
-        return if (isActive) {
-            evaluateTrace(context).value
-        } else {
-            defaultValue
+    internal fun evaluate(context: C): T =
+        EvaluationScope<C, M>(
+            context = context,
+            registry = feature.namespace,
+            snapshot = feature.namespace.configuration,
+            isAllDisabled = feature.namespace.isAllDisabled,
+            mode = Metrics.Evaluation.EvaluationMode.NORMAL,
+        ).let { scope ->
+            evaluateTrace(scope).value
         }
-    }
 
     @ConsistentCopyVisibility
     internal data class Trace<T : Any, C : Context> internal constructor(
         val value: T,
         val bucket: Int?,
-        val matched: ConditionalValue<T, C>?,
-        val skippedByRampUp: ConditionalValue<T, C>?,
+        val matched: ConditionalValue<T, C, *>?,
+        val skippedByRampUp: ConditionalValue<T, C, *>?,
     )
 
     private data class EvaluationState<T : Any, C : Context>(
         var bucket: Int? = null,
-        var skippedByRampUp: ConditionalValue<T, C>? = null,
+        var skippedByRampUp: ConditionalValue<T, C, *>? = null,
     )
 
     private data class EvaluationInputs<C : Context>(
@@ -99,7 +104,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
         val isFlagAllowlisted: Boolean,
     )
 
-    internal fun evaluateTrace(context: C): Trace<T, C> =
+    internal fun evaluateTrace(scope: EvaluationScope<C, M>): Trace<T, C> =
         if (!isActive) {
             Trace(
                 value = defaultValue,
@@ -108,12 +113,12 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
                 skippedByRampUp = null,
             )
         } else {
-            val stableId = (context as? StableIdContext)?.stableId?.hexId
+            val stableId = (scope.context as? StableIdContext)?.stableId?.hexId
             val fallbackBucket = Bucketing.missingStableIdBucket()
             val isFlagAllowlisted = stableId?.let { it in rampUpAllowlist } == true
             val inputs =
                 EvaluationInputs(
-                    context = context,
+                    context = scope.context,
                     stableId = stableId,
                     fallbackBucket = fallbackBucket,
                     isFlagAllowlisted = isFlagAllowlisted,
@@ -125,6 +130,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
                         candidate = candidate,
                         inputs = inputs,
                         state = state,
+                        scope = scope,
                     )
                 }
 
@@ -138,9 +144,10 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
         }
 
     private fun evaluateCandidate(
-        candidate: ConditionalValue<T, C>,
+        candidate: ConditionalValue<T, C, M>,
         inputs: EvaluationInputs<C>,
         state: EvaluationState<T, C>,
+        scope: EvaluationScope<C, M>,
     ): Trace<T, C>? =
         if (candidate.rule.matches(inputs.context)) {
             val computedBucket =
@@ -157,7 +164,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
 
             if (isRampUpEligible(inputs.stableId, inputs.isFlagAllowlisted, candidate, computedBucket)) {
                 Trace(
-                    value = candidate.resolve(inputs.context),
+                    value = candidate.resolve(scope),
                     bucket = computedBucket,
                     matched = candidate,
                     skippedByRampUp = state.skippedByRampUp,
@@ -173,7 +180,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
     private fun isRampUpEligible(
         stableId: HexId?,
         isFlagAllowlisted: Boolean,
-        candidate: ConditionalValue<T, C>,
+        candidate: ConditionalValue<T, C, M>,
         computedBucket: Int,
     ): Boolean =
         when {

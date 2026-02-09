@@ -97,7 +97,7 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
 
     @KonditionalInternalApi
     fun ruleValue(
-        value: RuleValue<T, C>,
+        value: RuleValue<T, C, @UnsafeVariance M>,
         build: RuleScope<C>.() -> Unit = {},
     )
 
@@ -117,7 +117,7 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
 
     @KonditionalInternalApi
     fun ruleScopedValue(
-        value: RuleValue<T, C>,
+        value: RuleValue<T, C, @UnsafeVariance M>,
         build: ContextRuleScope<C>.() -> Unit = {},
     )
 

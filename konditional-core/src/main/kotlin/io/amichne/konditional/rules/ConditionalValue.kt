@@ -2,6 +2,8 @@ package io.amichne.konditional.rules
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.evaluation.EvaluationScope
 
 /**
  * Represents a rule paired with its target value.
@@ -12,24 +14,28 @@ import io.amichne.konditional.context.Context
  */
 @ConsistentCopyVisibility
 @KonditionalInternalApi
-data class ConditionalValue<T : Any, C : Context> private constructor(
+data class ConditionalValue<T : Any, C : Context, M : Namespace> private constructor(
     val rule: Rule<C>,
-    val value: RuleValue<T, C>,
+    val value: RuleValue<T, C, M>,
 ) {
     fun resolve(context: C): T = value.resolve(context)
 
+    fun resolve(scope: EvaluationScope<C, M>): T = value.resolve(scope)
+
     companion object {
-        internal fun <T : Any, C : Context> Rule<C>.targetedBy(value: T): ConditionalValue<T, C> =
+        internal fun <T : Any, C : Context, M : Namespace> Rule<C>.targetedBy(
+            value: T,
+        ): ConditionalValue<T, C, M> =
             ConditionalValue(this, RuleValue.static(value))
 
-        internal fun <T : Any, C : Context> Rule<C>.targetedBy(
-            value: RuleValue<T, C>,
-        ): ConditionalValue<T, C> =
+        internal fun <T : Any, C : Context, M : Namespace> Rule<C>.targetedBy(
+            value: RuleValue<T, C, M>,
+        ): ConditionalValue<T, C, M> =
             ConditionalValue(this, value)
 
-        internal fun <T : Any, C : Context> Rule<C>.targetedBy(
+        internal fun <T : Any, C : Context, M : Namespace> Rule<C>.targetedBy(
             value: C.() -> T,
-        ): ConditionalValue<T, C> =
+        ): ConditionalValue<T, C, M> =
             ConditionalValue(this, RuleValue.contextual(value))
     }
 }
