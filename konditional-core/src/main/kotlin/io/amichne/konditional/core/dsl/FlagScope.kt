@@ -1,15 +1,11 @@
-@file:OptIn(KonditionalInternalApi::class)
-
 package io.amichne.konditional.core.dsl
 
-import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.rules.ContextRuleScope
 import io.amichne.konditional.core.dsl.rules.RuleScope
 import io.amichne.konditional.core.dsl.rules.RuleSet
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.rules.RuleValue
 
 /**
  * DSL scope for flag configuration.
@@ -93,12 +89,6 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
     fun rule(
         value: T,
         build: RuleScope<C>.() -> Unit = {},
-    ) = ruleValue(RuleValue.static(value), build)
-
-    @KonditionalInternalApi
-    fun ruleValue(
-        value: RuleValue<T, C>,
-        build: RuleScope<C>.() -> Unit = {},
     )
 
     /**
@@ -112,12 +102,6 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
      */
     fun ruleScoped(
         value: T,
-        build: ContextRuleScope<C>.() -> Unit = {},
-    ) = ruleScopedValue(RuleValue.static(value), build)
-
-    @KonditionalInternalApi
-    fun ruleScopedValue(
-        value: RuleValue<T, C>,
         build: ContextRuleScope<C>.() -> Unit = {},
     )
 

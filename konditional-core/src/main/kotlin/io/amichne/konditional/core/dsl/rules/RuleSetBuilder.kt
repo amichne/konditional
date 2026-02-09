@@ -3,7 +3,6 @@ package io.amichne.konditional.core.dsl.rules
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.internal.builders.RuleBuilder
-import io.amichne.konditional.rules.RuleValue
 
 @KonditionalDsl
 class RuleSetBuilder<T : Any, C : Context> @PublishedApi internal constructor() {
@@ -14,15 +13,7 @@ class RuleSetBuilder<T : Any, C : Context> @PublishedApi internal constructor() 
         build: RuleScope<C>.() -> Unit = {},
     ) {
         val rule = RuleBuilder<C>().apply(build).build()
-        rules += RuleSpec(RuleValue.static(value), rule)
-    }
-
-    fun rule(
-        valueProvider: C.() -> T,
-        build: RuleScope<C>.() -> Unit = {},
-    ) {
-        val rule = RuleBuilder<C>().apply(build).build()
-        rules += RuleSpec(RuleValue.contextual(valueProvider), rule)
+        rules += RuleSpec(value, rule)
     }
 
     fun ruleScoped(
@@ -33,18 +24,7 @@ class RuleSetBuilder<T : Any, C : Context> @PublishedApi internal constructor() 
             @Suppress("UNCHECKED_CAST")
             (this as ContextRuleScope<C>).apply(build)
         }.build()
-        rules += RuleSpec(RuleValue.static(value), rule)
-    }
-
-    fun ruleScoped(
-        valueProvider: C.() -> T,
-        build: ContextRuleScope<C>.() -> Unit = {},
-    ) {
-        val rule = RuleBuilder<C>().apply {
-            @Suppress("UNCHECKED_CAST")
-            (this as ContextRuleScope<C>).apply(build)
-        }.build()
-        rules += RuleSpec(RuleValue.contextual(valueProvider), rule)
+        rules += RuleSpec(value, rule)
     }
 
     @PublishedApi

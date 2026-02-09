@@ -11,7 +11,6 @@ import io.amichne.konditional.core.dsl.rules.targeting.scopes.LocaleTargetingSco
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.PlatformTargetingScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.StableIdTargetingScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.VersionTargetingScope
-import io.amichne.konditional.rules.RuleValue
 
 /**
  * DSL scope for rule configuration.
@@ -85,20 +84,6 @@ interface RuleScope<C : Context> : ContextRuleScope<C>,
                 scope.rule(value, build)
                 Postfix
             }
-
-        /**
-         * Completes the rule declaration by assigning a context-derived value when the criteria matches.
-         *
-         * Semantics:
-         * `rule { criteria } yields { value }` ≡ `rule({ value }) { criteria }`
-         */
-        infix fun yields(value: C.() -> T): Postfix = host
-            ?.commitYield(pendingToken) { scope.ruleValue(RuleValue.contextual(value), build) }
-            ?.let { Postfix }
-            ?: run {
-                scope.ruleValue(RuleValue.contextual(value), build)
-                Postfix
-            }
     }
 
     /**
@@ -130,20 +115,6 @@ interface RuleScope<C : Context> : ContextRuleScope<C>,
             ?.let { Postfix }
             ?: run {
                 scope.ruleScoped(value, build)
-                Postfix
-            }
-
-        /**
-         * Completes the rule declaration by assigning a context-derived value when the criteria matches.
-         *
-         * Semantics:
-         * `ruleScoped { criteria } yields { value }` ≡ `ruleScoped({ value }) { criteria }`
-         */
-        infix fun yields(value: C.() -> T): Postfix = host
-            ?.commitYield(pendingToken) { scope.ruleScopedValue(RuleValue.contextual(value), build) }
-            ?.let { Postfix }
-            ?: run {
-                scope.ruleScopedValue(RuleValue.contextual(value), build)
                 Postfix
             }
     }

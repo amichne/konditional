@@ -14,22 +14,10 @@ import io.amichne.konditional.context.Context
 @KonditionalInternalApi
 data class ConditionalValue<T : Any, C : Context> private constructor(
     val rule: Rule<C>,
-    val value: RuleValue<T, C>,
+    val value: T,
 ) {
-    fun resolve(context: C): T = value.resolve(context)
-
     companion object {
         internal fun <T : Any, C : Context> Rule<C>.targetedBy(value: T): ConditionalValue<T, C> =
-            ConditionalValue(this, RuleValue.static(value))
-
-        internal fun <T : Any, C : Context> Rule<C>.targetedBy(
-            value: RuleValue<T, C>,
-        ): ConditionalValue<T, C> =
             ConditionalValue(this, value)
-
-        internal fun <T : Any, C : Context> Rule<C>.targetedBy(
-            value: C.() -> T,
-        ): ConditionalValue<T, C> =
-            ConditionalValue(this, RuleValue.contextual(value))
     }
 }
