@@ -29,3 +29,10 @@ interface EvaluationSnapshot {
         configuration.flags[feature] as? FlagDefinition<T, C, M>
             ?: error("Flag not found in configuration: ${feature.key}")
 }
+
+internal data class DefaultEvaluationSnapshot(
+    override val namespaceId: String,
+    override val configuration: ConfigurationView,
+    override val hooks: RegistryHooks,
+    override val isAllDisabled: Boolean,
+) : EvaluationSnapshot
