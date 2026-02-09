@@ -84,6 +84,17 @@ interface RuleScope<C : Context> : ContextRuleScope<C>,
                 scope.rule(value, build)
                 Postfix
             }
+
+        /**
+         * Completes the rule declaration with a context-derived value.
+         */
+        infix fun yields(value: C.() -> T): Postfix = host
+            ?.commitYield(pendingToken) { scope.rule(value, build) }
+            ?.let { Postfix }
+            ?: run {
+                scope.rule(value, build)
+                Postfix
+            }
     }
 
     /**
@@ -111,6 +122,17 @@ interface RuleScope<C : Context> : ContextRuleScope<C>,
          * and makes it eligible for validation during flag construction.
          */
         infix fun yields(value: T): Postfix = host
+            ?.commitYield(pendingToken) { scope.ruleScoped(value, build) }
+            ?.let { Postfix }
+            ?: run {
+                scope.ruleScoped(value, build)
+                Postfix
+            }
+
+        /**
+         * Completes the rule declaration with a context-derived value.
+         */
+        infix fun yields(value: C.() -> T): Postfix = host
             ?.commitYield(pendingToken) { scope.ruleScoped(value, build) }
             ?.let { Postfix }
             ?: run {

@@ -50,6 +50,28 @@ interface NamespaceRegistry {
 
     fun allFlags(): Map<Feature<*, *, *>, FlagDefinition<*, *, *>> =
         configuration.flags
+
+    /**
+     * Captures a deterministic, immutable snapshot for evaluation.
+     */
+    fun snapshot(): EvaluationSnapshot {
+        val namespaceIdSnapshot = namespaceId
+        val configurationSnapshot = configuration
+        val hooksSnapshot = hooks
+        val allDisabledSnapshot = isAllDisabled
+        val registry = this
+
+        return object : EvaluationSnapshot {
+            override val namespaceId: String = namespaceIdSnapshot
+            override val configuration: ConfigurationView = configurationSnapshot
+            override val hooks: RegistryHooks = hooksSnapshot
+            override val isAllDisabled: Boolean = allDisabledSnapshot
+
+            override fun <T : Any, C : Context, M : Namespace> flag(
+                feature: Feature<T, C, M>,
+            ): FlagDefinition<T, C, M> = registry.flag(feature)
+        }
+    }
 }
 
 /**

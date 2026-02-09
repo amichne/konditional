@@ -92,6 +92,20 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
     )
 
     /**
+     * Defines a targeting rule with a context-derived value.
+     *
+     * This allows rule outputs to be computed from the evaluation context while keeping
+     * the rule structure type-safe and deterministic.
+     *
+     * @param value The context-derived value to return when the rule matches
+     * @param build DSL block for configuring the rule's targeting criteria
+     */
+    fun rule(
+        value: C.() -> T,
+        build: RuleScope<C>.() -> Unit = {},
+    )
+
+    /**
      * Defines a targeting rule using a composable, context-agnostic scope.
      *
      * This is useful when you want to expose only a subset of targeting mix-ins
@@ -102,6 +116,14 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
      */
     fun ruleScoped(
         value: T,
+        build: ContextRuleScope<C>.() -> Unit = {},
+    )
+
+    /**
+     * Defines a targeting rule using a composable scope with a context-derived value.
+     */
+    fun ruleScoped(
+        value: C.() -> T,
         build: ContextRuleScope<C>.() -> Unit = {},
     )
 

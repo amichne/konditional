@@ -152,11 +152,20 @@ class RuleSetTest {
         val left = (alpha + beta) + gamma
         val right = alpha + (beta + gamma)
 
-        assertEquals(listOf("alpha", "beta", "gamma"), left.rules.map { it.value })
-        assertEquals(listOf("alpha", "beta", "gamma"), right.rules.map { it.value })
-        assertEquals(left.rules.map { it.value }, (empty + left).rules.map { it.value })
-        assertEquals(left.rules.map { it.value }, (left + empty).rules.map { it.value })
+        val leftValues = left.rules.map { it.value.expectFixed() }
+        val rightValues = right.rules.map { it.value.expectFixed() }
+
+        assertEquals(listOf("alpha", "beta", "gamma"), leftValues)
+        assertEquals(listOf("alpha", "beta", "gamma"), rightValues)
+        assertEquals(leftValues, (empty + left).rules.map { it.value.expectFixed() })
+        assertEquals(leftValues, (left + empty).rules.map { it.value.expectFixed() })
     }
+
+    private fun <T : Any> io.amichne.konditional.rules.RuleValue<T, *>.expectFixed(): T =
+        when (this) {
+            is io.amichne.konditional.rules.RuleValue.Fixed -> value
+            is io.amichne.konditional.rules.RuleValue.Contextual -> error("Expected fixed rule value in test.")
+        }
 
     @Test
     fun `Real world example of rule composition`() {

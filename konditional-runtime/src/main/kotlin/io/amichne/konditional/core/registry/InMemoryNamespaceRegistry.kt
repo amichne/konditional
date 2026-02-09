@@ -11,11 +11,13 @@ import io.amichne.konditional.core.instance.ConfigurationMetadataView
 import io.amichne.konditional.core.instance.ConfigurationView
 import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.core.ops.RegistryHooks
+import io.amichne.konditional.core.registry.EvaluationSnapshot
 import io.amichne.konditional.internal.SerializedFlagDefinitionMetadata
 import io.amichne.konditional.internal.flagDefinitionFromSerialized
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.ConfigurationMetadata
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
@@ -37,7 +39,7 @@ class InMemoryNamespaceRegistry(
     private val historyRef = AtomicReference<List<Configuration>>(emptyList())
     private val writeLock = Any()
 
-    private val overrides = ConcurrentHashMap<Feature<*, *, *>, ArrayDeque<Any>>()
+    private val overrides = ConcurrentHashMap<Feature<*, *, *>, ConcurrentLinkedDeque<Any>>()
 
     override fun load(config: ConfigurationView) {
         val concrete = config.toConcrete()
@@ -58,6 +60,18 @@ class InMemoryNamespaceRegistry(
 
     override val configuration: ConfigurationView
         get() = current.get()
+
+    override fun snapshot(): EvaluationSnapshot {
+        val configurationSnapshot = current.get()
+        val overridesSnapshot = overrides.snapshot()
+        return InMemoryEvaluationSnapshot(
+            namespaceId = namespaceId,
+            configuration = configurationSnapshot,
+            hooks = hooksRef.get(),
+            isAllDisabled = allDisabled.get(),
+            overrides = overridesSnapshot,
+        )
+    }
 
     override val hooks: RegistryHooks
         get() = hooksRef.get()
@@ -139,7 +153,7 @@ class InMemoryNamespaceRegistry(
         value: T,
     ) {
         overrides.compute(feature) { _, stack ->
-            val deque = stack ?: ArrayDeque()
+            val deque = stack ?: ConcurrentLinkedDeque()
             deque.addLast(value as Any)
             deque
         }
@@ -152,7 +166,7 @@ class InMemoryNamespaceRegistry(
             if (stack.isNullOrEmpty()) {
                 null
             } else {
-                stack.removeLast()
+                stack.pollLast()
                 if (stack.isEmpty()) null else stack
             }
         }
@@ -164,9 +178,41 @@ class InMemoryNamespaceRegistry(
 }
 
 @Suppress("UNCHECKED_CAST")
-private fun <T : Any, C : Context, M : Namespace> ConcurrentHashMap<Feature<*, *, *>, ArrayDeque<Any>>.getOverride(
+private fun <T : Any, C : Context, M : Namespace>
+ConcurrentHashMap<Feature<*, *, *>, ConcurrentLinkedDeque<Any>>.getOverride(
     feature: Feature<T, C, M>,
-): T? = this[feature]?.lastOrNull() as? T
+): T? = this[feature]?.peekLast() as? T
+
+private fun ConcurrentHashMap<Feature<*, *, *>, ConcurrentLinkedDeque<Any>>.snapshot(): Map<Feature<*, *, *>, Any> =
+    entries
+        .mapNotNull { (feature, values) ->
+            values.peekLast()?.let { feature to it }
+        }.toMap()
+
+private data class InMemoryEvaluationSnapshot(
+    override val namespaceId: String,
+    override val configuration: ConfigurationView,
+    override val hooks: RegistryHooks,
+    override val isAllDisabled: Boolean,
+    private val overrides: Map<Feature<*, *, *>, Any>,
+) : EvaluationSnapshot {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : Any, C : Context, M : Namespace> flag(
+        feature: Feature<T, C, M>,
+    ): FlagDefinition<T, C, M> =
+        when (val override = overrides[feature] as? T) {
+            null ->
+                configuration.flags[feature] as? FlagDefinition<T, C, M>
+                    ?: error("Flag not found in configuration: ${feature.key}")
+            else ->
+                flagDefinitionFromSerialized(
+                    feature = feature,
+                    defaultValue = override,
+                    rules = emptyList(),
+                    metadata = SerializedFlagDefinitionMetadata(isActive = true),
+                )
+        }
+}
 
 private fun ConfigurationView.toConcrete(): Configuration =
     (this as? Configuration)

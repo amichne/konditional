@@ -1,3 +1,5 @@
+@file:kotlin.jvm.JvmName("FeatureEvaluationKt")
+@file:kotlin.jvm.JvmMultifileClass
 @file:OptIn(KonditionalInternalApi::class)
 
 package io.amichne.konditional.api
@@ -8,6 +10,7 @@ import io.amichne.konditional.core.evaluation.Bucketing.isInRampUp
 import io.amichne.konditional.core.evaluation.Bucketing.rampUpThresholdBasisPoints
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.ops.Metrics
+import io.amichne.konditional.core.registry.EvaluationSnapshot
 import io.amichne.konditional.core.registry.NamespaceRegistry
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.Rule
@@ -33,6 +36,14 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
     context: C,
     registry: NamespaceRegistry = namespace,
 ): T = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.NORMAL).value
+
+/**
+ * Evaluates this feature using a deterministic snapshot.
+ */
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
+    context: C,
+    snapshot: EvaluationSnapshot,
+): T = evaluateInternal(context, snapshot, mode = Metrics.Evaluation.EvaluationMode.NORMAL).value
 
 /**
  * Explains how this feature was evaluated for the given context.
@@ -62,15 +73,13 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.explain(
     registry: NamespaceRegistry = namespace,
 ): EvaluationResult<T> = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.EXPLAIN)
 
-@Deprecated(
-    message = "Use explain() instead for clearer intent",
-    replaceWith = ReplaceWith("explain(context, registry)"),
-    level = DeprecationLevel.WARNING
-)
-fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithReason(
+/**
+ * Explains evaluation using a deterministic snapshot.
+ */
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.explain(
     context: C,
-    registry: NamespaceRegistry = namespace,
-): EvaluationResult<T> = explain(context, registry)
+    snapshot: EvaluationSnapshot,
+): EvaluationResult<T> = evaluateInternal(context, snapshot, mode = Metrics.Evaluation.EvaluationMode.EXPLAIN)
 
 @PublishedApi
 internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInternal(
@@ -78,126 +87,112 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
     registry: NamespaceRegistry,
     mode: Metrics.Evaluation.EvaluationMode,
 ): EvaluationResult<T> {
+    val snapshot = registry.snapshot()
     val definition = registry.flag(this)
+
+    return evaluateInternal(
+        context = context,
+        snapshot = snapshot,
+        definition = definition,
+        mode = mode,
+    )
+}
+
+@PublishedApi
+internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInternal(
+    context: C,
+    snapshot: EvaluationSnapshot,
+    mode: Metrics.Evaluation.EvaluationMode,
+): EvaluationResult<T> =
+    evaluateInternal(
+        context = context,
+        snapshot = snapshot,
+        definition = snapshot.flag(this),
+        mode = mode,
+    )
+
+private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInternal(
+    context: C,
+    snapshot: EvaluationSnapshot,
+    definition: io.amichne.konditional.core.FlagDefinition<T, C, M>,
+    mode: Metrics.Evaluation.EvaluationMode,
+): EvaluationResult<T> {
     lateinit var result: EvaluationResult<T>
 
-    val nanos =
-        measureNanoTime {
-            result =
-                when {
-                    registry.isAllDisabled -> {
-                        EvaluationResult(
-                            namespaceId = registry.namespaceId,
-                            featureKey = key,
-                            configVersion = registry.configuration.metadata.version,
-                            mode = mode,
-                            durationNanos = 0L,
-                            value = definition.defaultValue,
-                            decision = EvaluationResult.Decision.RegistryDisabled,
-                        )
-                    }
-
-                    !definition.isActive -> {
-                        EvaluationResult(
-                            namespaceId = registry.namespaceId,
-                            featureKey = key,
-                            configVersion = registry.configuration.metadata.version,
-                            mode = mode,
-                            durationNanos = 0L,
-                            value = definition.defaultValue,
-                            decision = EvaluationResult.Decision.Inactive,
-                        )
-                    }
-
-                    else -> {
-                        val trace = definition.evaluateTrace(context)
-
-                        val skipped =
-                            trace.skippedByRampUp?.toRuleMatch(
-                                bucket = trace.bucket,
-                                featureKey = key,
-                                salt = definition.salt,
-                            )
-
-                        val decision =
-                            trace.matched
-                                ?.toRuleMatch(
-                                    bucket = trace.bucket,
-                                    featureKey = key,
-                                    salt = definition.salt,
-                                )?.let { matched ->
-                                    EvaluationResult.Decision.Rule(matched = matched, skippedByRollout = skipped)
-                                } ?: EvaluationResult.Decision.Default(skippedByRollout = skipped)
-
-                        EvaluationResult(
-                            namespaceId = registry.namespaceId,
-                            featureKey = key,
-                            configVersion = registry.configuration.metadata.version,
-                            mode = mode,
-                            durationNanos = 0L,
-                            value = trace.value,
-                            decision = decision,
-                        )
-                    }
-                }
-        }
+    val nanos = measureNanoTime {
+        result =
+            buildEvaluationResult(
+                context = context,
+                snapshot = snapshot,
+                definition = definition,
+                mode = mode,
+            )
+    }
 
     result = result.copy(durationNanos = nanos)
 
-    if (mode == Metrics.Evaluation.EvaluationMode.EXPLAIN) {
-        registry.hooks.logger.debug {
-            "konditional.explain namespaceId=${result.namespaceId} key=${result.featureKey} decision=${result.decision::class.simpleName} version=${result.configVersion}"
-        }
-    }
-
-    registry.hooks.metrics.recordEvaluation(
-        Metrics.Evaluation(
-            namespaceId = registry.namespaceId,
-            featureKey = key,
-            mode = mode,
-            durationNanos = nanos,
-            decision =
-                when (result.decision) {
-                    is EvaluationResult.Decision.RegistryDisabled -> Metrics.Evaluation.DecisionKind.REGISTRY_DISABLED
-                    is EvaluationResult.Decision.Inactive -> Metrics.Evaluation.DecisionKind.INACTIVE
-                    is EvaluationResult.Decision.Rule -> Metrics.Evaluation.DecisionKind.RULE
-                    is EvaluationResult.Decision.Default -> Metrics.Evaluation.DecisionKind.DEFAULT
-                },
-            configVersion = result.configVersion,
-            bucket =
-                when (result.decision) {
-                    is EvaluationResult.Decision.Rule -> {
-                        result.decision.matched.bucket.bucket
-                    }
-
-                    is EvaluationResult.Decision.Default -> {
-                        result.decision.skippedByRollout
-                            ?.bucket
-                            ?.bucket
-                    }
-
-                    else -> {
-                        null
-                    }
-                },
-            matchedRuleSpecificity = (result.decision as? EvaluationResult.Decision.Rule)?.matched?.rule?.totalSpecificity,
-        ),
-    )
+    logExplainIfNeeded(snapshot, result, mode)
+    recordEvaluation(snapshot, result, nanos)
 
     return result
 }
 
-/**
- * Internal evaluation entrypoint used by sibling modules (e.g. shadow evaluation).
- *
- * Prefer [evaluate] / [explain] for application usage.
- */
-@KonditionalInternalApi
-fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInternalApi(
+private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.buildEvaluationResult(
     context: C,
-    registry: NamespaceRegistry,
+    snapshot: EvaluationSnapshot,
+    definition: io.amichne.konditional.core.FlagDefinition<T, C, M>,
     mode: Metrics.Evaluation.EvaluationMode,
-): EvaluationResult<T> = evaluateInternal(context, registry, mode)
+): EvaluationResult<T> =
+    when {
+        snapshot.isAllDisabled -> EvaluationResult(
+            namespaceId = snapshot.namespaceId,
+            featureKey = key,
+            configVersion = snapshot.configuration.metadata.version,
+            mode = mode,
+            durationNanos = 0L,
+            value = definition.defaultValue,
+            decision = EvaluationResult.Decision.RegistryDisabled,
+        )
+        !definition.isActive -> EvaluationResult(
+            namespaceId = snapshot.namespaceId,
+            featureKey = key,
+            configVersion = snapshot.configuration.metadata.version,
+            mode = mode,
+            durationNanos = 0L,
+            value = definition.defaultValue,
+            decision = EvaluationResult.Decision.Inactive,
+        )
+        else -> {
+            val trace = definition.evaluateTrace(context)
+
+            val skipped =
+                trace.skippedByRampUp?.toRuleMatch(
+                    bucket = trace.bucket,
+                    featureKey = key,
+                    salt = definition.salt,
+                )
+
+            val decision =
+                trace.matched
+                    ?.toRuleMatch(
+                        bucket = trace.bucket,
+                        featureKey = key,
+                        salt = definition.salt,
+                    )?.let { matched ->
+                        EvaluationResult.Decision.Rule(matched = matched, skippedByRollout = skipped)
+                    } ?: EvaluationResult.Decision.Default(skippedByRollout = skipped)
+
+            EvaluationResult(
+                namespaceId = snapshot.namespaceId,
+                featureKey = key,
+                configVersion = snapshot.configuration.metadata.version,
+                mode = mode,
+                durationNanos = 0L,
+                value = trace.value,
+                decision = decision,
+            )
+        }
+    }
 
 private fun <T : Any, C : Context> ConditionalValue<T, C>.toRuleMatch(
     bucket: Int?,

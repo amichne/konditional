@@ -11,6 +11,7 @@ import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
+import io.amichne.konditional.rules.RuleValue
 import io.amichne.konditional.rules.evaluable.AxisConstraint
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
@@ -82,14 +83,17 @@ fun FlagDefinition<*, *, *>.toSerializedMetadata(): SerializedFlagDefinitionMeta
 @KonditionalInternalApi
 fun FlagDefinition<*, *, *>.toSerializedRules(): List<SerializedFlagRuleSpec<Any>> =
     values.map { cv ->
-        SerializedFlagRuleSpec(
-            value = cv.value,
-            rampUp = cv.rule.rampUp.value,
-            rampUpAllowlist = cv.rule.rampUpAllowlist.mapTo(linkedSetOf()) { it.id },
-            note = cv.rule.note,
-            locales = cv.rule.targeting.locales.toSet(),
-            platforms = cv.rule.targeting.platforms.toSet(),
-            versionRange = cv.rule.targeting.versionRange,
-            axes = cv.rule.targeting.axisConstraints.associate { it.axisId to it.allowedIds },
-        )
+        when (val value = cv.value) {
+            is RuleValue.Fixed -> SerializedFlagRuleSpec(
+                value = value.value,
+                rampUp = cv.rule.rampUp.value,
+                rampUpAllowlist = cv.rule.rampUpAllowlist.mapTo(linkedSetOf()) { it.id },
+                note = cv.rule.note,
+                locales = cv.rule.targeting.locales.toSet(),
+                platforms = cv.rule.targeting.platforms.toSet(),
+                versionRange = cv.rule.targeting.versionRange,
+                axes = cv.rule.targeting.axisConstraints.associate { it.axisId to it.allowedIds },
+            )
+            is RuleValue.Contextual -> error("Contextual rule values cannot be serialized.")
+        }
     }

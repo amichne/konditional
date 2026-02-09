@@ -157,7 +157,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
 
             if (isRampUpEligible(inputs.stableId, inputs.isFlagAllowlisted, candidate, computedBucket)) {
                 Trace(
-                    value = candidate.value,
+                    value = candidate.resolve(inputs.context),
                     bucket = computedBucket,
                     matched = candidate,
                     skippedByRampUp = state.skippedByRampUp,
