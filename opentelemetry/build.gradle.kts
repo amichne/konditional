@@ -23,7 +23,7 @@ dependencies {
 }
 
 konditionalPublishing {
-    artifactId.set("opentelemetry")
+    artifactId.set("konditional-opentelemetry")
     moduleName.set("Konditional OpenTelemetry")
     moduleDescription.set("OpenTelemetry instrumentation for Konditional feature flag evaluation")
 }

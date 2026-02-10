@@ -10,7 +10,7 @@ dependencies {
 }
 
 konditionalPublishing {
-    artifactId.set("openapi")
-    moduleName.set("OpenApi Schema Types")
+    artifactId.set("konditional-openapi")
+    moduleName.set("Konditional OpenAPI Schema Types")
     moduleDescription.set("OpenAPI schema interfaces shared by Kontracts")
 }
