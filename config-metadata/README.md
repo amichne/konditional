@@ -1,14 +1,16 @@
 # Config Metadata
 
 Contract types for describing how configuration payloads can be interpreted and safely mutated.
-This module only defines data structures and a small DSL. It does not generate schemas, compute
-metadata, or depend on `core`.
+This module provides:
+- metadata contracts + DSL
+- contract-first OpenAPI generation for the surface API
 
 ## What this module does
 
 - **Bindings** map JSON Pointer templates (RFC 6901 + `*` wildcards) to `BindingType` identifiers.
 - **Descriptors** declare constraints and UI hints for each `BindingType`.
 - **Responses** provide an envelope for returning a state payload plus its metadata.
+- **OpenAPI generation** builds a deterministic spec from the route catalog + explicit DTO schemas.
 
 ## Guarantees
 
@@ -24,9 +26,31 @@ metadata, or depend on `core`.
 
 ## Non-Goals
 
-- OpenAPI/JSON schema generation
 - Snapshot serialization or conversion
-- Catalogs or pre-filled bindings
+- Runtime endpoint implementation
+- Catalog pre-filling with environment-specific values
+
+## OpenAPI Generation
+
+- Generate command:
+  - `./gradlew :config-metadata:generateOpenApiSpec`
+- Canonical output:
+  - `config-metadata/build/generated/openapi/konditional-surface-openapi.json`
+- Build lifecycle wiring:
+  - `assemble` depends on `generateOpenApiSpec`
+- Artifact exposure:
+  - outgoing configuration: `openapiSpecElements`
+  - JAR embedding: `META-INF/openapi/konditional-surface-openapi.json`
+  - Maven publication: classifier `openapi`, extension `json`
+
+## Extending the Spec
+
+1. Add/modify route contracts in `io.amichne.konditional.configmetadata.contract.openapi.SurfaceRouteCatalog`.
+2. Add/modify DTO contract classes in `io.amichne.konditional.configmetadata.contract.openapi.SurfaceDtos`.
+3. Register/adjust component schemas in `io.amichne.konditional.configmetadata.contract.openapi.SurfaceSchemaRegistry`.
+4. Keep `operationId` values stable and explicit when adding operations.
+5. Regenerate and verify:
+   - `./gradlew :config-metadata:generateOpenApiSpec :config-metadata:test`
 
 ## Quick Start
 
@@ -63,7 +87,7 @@ val response = ConfigMetadataResponse(
 - `BindingType`: identifiers for the kinds of fields you bind in JSON payloads.
 - `ValueDescriptor`: sealed interface describing constraints and UI hints.
 - `UiHints`: presentation hints (control type, label, help text, ordering).
-- `ConfigMetadata`: bindings + descriptors, no validation or generation behavior.
+- `ConfigMetadata`: bindings + descriptors, no validation behavior.
 
 ## Package Layout
 
@@ -71,3 +95,4 @@ val response = ConfigMetadataResponse(
 - `io.amichne.konditional.configmetadata.descriptor` — descriptor types and enums
 - `io.amichne.konditional.configmetadata.ui` — UI hint models
 - `io.amichne.konditional.configmetadata.dsl` — builder + DSL entrypoint
+- `io.amichne.konditional.configmetadata.contract.openapi` — route catalog + DTO contracts + OpenAPI generator
