@@ -12,7 +12,7 @@ sealed class JsonSchema<out T : Any> : OpenApi<T> {
     override val example: T? = null
     override val deprecated: Boolean = false
 
-    companion object {
+    internal companion object {
         fun boolean(
             title: String? = null,
             description: String? = null,
@@ -167,5 +167,7 @@ sealed class JsonSchema<out T : Any> : OpenApi<T> {
             deprecated: Boolean = false,
             required: Set<String>? = null
         ) = ObjectSchema(fields, title, description, default, nullable, example, deprecated, required)
+
+        fun ref(ref: String) = RefSchema(ref = ref)
     }
 }

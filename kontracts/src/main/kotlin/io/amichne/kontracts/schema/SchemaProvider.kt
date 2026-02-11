@@ -13,7 +13,7 @@ package io.amichne.kontracts.schema
  *     val notificationsEnabled: Boolean = true,
  *     val maxRetries: Int = 3
  * ) : SchemaProvider<ObjectSchema> {
- *     override val schema = schemaRoot {
+ *     override val schema = schema {
  *         ::theme of { minLength = 1 }
  *         ::notificationsEnabled of { default = true }
  *         ::maxRetries of { minimum = 0 }

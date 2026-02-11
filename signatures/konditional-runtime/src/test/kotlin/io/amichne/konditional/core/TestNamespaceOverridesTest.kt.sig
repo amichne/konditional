@@ -1,0 +1,4 @@
+file=konditional-runtime/src/test/kotlin/io/amichne/konditional/core/TestNamespaceOverridesTest.kt
+package=io.amichne.konditional.core
+imports=io.amichne.konditional.api.evaluate,io.amichne.konditional.context.AppLocale,io.amichne.konditional.context.Context,io.amichne.konditional.context.Platform,io.amichne.konditional.context.Version,io.amichne.konditional.core.dsl.enable,io.amichne.konditional.fixtures.core.id.TestStableId,io.amichne.konditional.fixtures.core.withOverride,io.amichne.konditional.fixtures.core.withOverrides,java.util.concurrent.CountDownLatch,java.util.concurrent.Executors,java.util.concurrent.TimeUnit,java.util.concurrent.atomic.AtomicInteger,org.junit.jupiter.api.Assertions.assertEquals,org.junit.jupiter.api.Assertions.assertThrows,org.junit.jupiter.api.Test
+type=io.amichne.konditional.core.TestNamespaceOverridesTest|kind=class|decl=class TestNamespaceOverridesTest

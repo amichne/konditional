@@ -3,7 +3,7 @@ package io.amichne.kontracts
 import io.amichne.kontracts.dsl.asInt
 import io.amichne.kontracts.dsl.asString
 import io.amichne.kontracts.dsl.of
-import io.amichne.kontracts.dsl.schemaRoot
+import io.amichne.kontracts.dsl.schema
 import io.amichne.kontracts.schema.FieldSchema
 import io.amichne.kontracts.schema.JsonSchema
 import io.amichne.kontracts.schema.ObjectSchema
@@ -303,7 +303,7 @@ class EdgeCasesAndComplexScenariosTest {
             val rateLimit: Double?,
             val authenticated: Boolean
         ) : SchemaProvider<ObjectSchema> {
-            override val schema = schemaRoot {
+            override val schema = schema {
                 ::path of {
                     pattern = "^/[a-zA-Z0-9/_-]*$"
                     description = "API endpoint path"
@@ -358,7 +358,7 @@ class EdgeCasesAndComplexScenariosTest {
             val connectionTimeout: Int,
             val ssl: Boolean
         ) : SchemaProvider<ObjectSchema> {
-            override val schema = schemaRoot {
+            override val schema = schema {
                 ::host of {
                     minLength = 1
                     description = "Database host"
@@ -552,7 +552,7 @@ class EdgeCasesAndComplexScenariosTest {
             val count: CustomCount,
             val name: String
         ) : SchemaProvider<ObjectSchema> {
-            override val schema = schemaRoot {
+            override val schema = schema {
                 ::id asString {
                     represent = { this.value }
                     pattern = "^ID-[0-9]{6}$"

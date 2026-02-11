@@ -14,9 +14,6 @@ dependencies {
     // Kontracts for JSON schema types
     api(project(":kontracts"))
 
-    // Config metadata
-    implementation(project(":config-metadata"))
-
     // Moshi for JSON serialization
     implementation(libs.bundles.moshi)
 

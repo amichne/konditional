@@ -118,7 +118,7 @@ const config: Config = {
                         {type: 'doc', docId: 'serialization/index', label: 'Serialization'},
                         {type: 'doc', docId: 'observability/index', label: 'Observability'},
                         {type: 'doc', docId: 'opentelemetry/index', label: 'OpenTelemetry'},
-                        {type: 'doc', docId: 'config-metadata/index', label: 'Config Metadata'},
+                        {type: 'doc', docId: 'konditional-spec/index', label: 'Konditional Spec'},
                         {type: 'doc', docId: 'kontracts/index', label: 'Kontracts'},
                     ],
                 },

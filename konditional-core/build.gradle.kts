@@ -10,8 +10,6 @@ plugins {
 dependencies {
     // Kontracts: Type-safe JSON Schema DSL
     implementation(project(":kontracts"))
-    implementation(project(":config-metadata"))
-
     // Moshi for JSON serialization
     implementation(libs.bundles.moshi)
 

@@ -26,7 +26,7 @@ import io.amichne.konditional.runtime.load
 import io.amichne.konditional.runtime.rollback
 import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 import io.amichne.kontracts.dsl.of
-import io.amichne.kontracts.dsl.schemaRoot
+import io.amichne.kontracts.dsl.schema
 import io.amichne.kontracts.schema.ObjectSchema
 
 private object AppFeatures : Namespace("app") {
@@ -165,7 +165,7 @@ data class RetryPolicy(
     val backoffMs: Double = 1000.0,
     val enabled: Boolean = true,
 ) : Konstrained<ObjectSchema> {
-    override val schema = schemaRoot {
+    override val schema = schema {
         ::maxAttempts of { minimum = 1 }
         ::backoffMs of { minimum = 0.0 }
         ::enabled of { default = true }
