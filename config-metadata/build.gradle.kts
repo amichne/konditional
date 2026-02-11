@@ -95,7 +95,7 @@ tasks.named<Test>("test") {
 }
 
 konditionalPublishing {
-    artifactId.set("config-metadata")
-    moduleName.set("Config Metadata")
+    artifactId.set("konditional-config-metadata")
+    moduleName.set("Konditional Config Metadata")
     moduleDescription.set("Configuration metadata model for Konditional serialization and validation")
 }
