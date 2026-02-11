@@ -5,7 +5,7 @@ import io.amichne.kontracts.dsl.asDouble
 import io.amichne.kontracts.dsl.asInt
 import io.amichne.kontracts.dsl.asString
 import io.amichne.kontracts.dsl.of
-import io.amichne.kontracts.dsl.schemaRoot
+import io.amichne.kontracts.dsl.schema
 import io.amichne.kontracts.schema.DoubleSchema
 import io.amichne.kontracts.schema.IntSchema
 import io.amichne.kontracts.schema.JsonSchema
@@ -38,7 +38,7 @@ class CustomTypeMappingTest {
         val completionRate: Percentage,
         val nickname: String,
     ) {
-        val schema = schemaRoot {
+        val schema = schema {
             ::agent asBoolean {
                 description = "Boolean flag test"
                 example = true

@@ -252,11 +252,14 @@ config-metadata/build.gradle.kts.sig|package=<default>|types=0
 config-metadata/src/main/kotlin/io/amichne/konditional/configmetadata/contract/BindingType.kt.sig|package=io.amichne.konditional.configmetadata.contract|types=1
 config-metadata/src/main/kotlin/io/amichne/konditional/configmetadata/contract/ConfigMetadata.kt.sig|package=io.amichne.konditional.configmetadata.contract|types=1
 config-metadata/src/main/kotlin/io/amichne/konditional/configmetadata/contract/ConfigMetadataResponse.kt.sig|package=io.amichne.konditional.configmetadata.contract|types=1
+config-metadata/src/main/kotlin/io/amichne/konditional/configmetadata/contract/openapi/OpenApiJsonRenderer.kt.sig|package=io.amichne.konditional.configmetadata.contract.openapi|types=1
+config-metadata/src/main/kotlin/io/amichne/konditional/configmetadata/contract/openapi/OpenApiJsonSchemaAdapter.kt.sig|package=io.amichne.konditional.configmetadata.contract.openapi|types=2
 config-metadata/src/main/kotlin/io/amichne/konditional/configmetadata/contract/openapi/SurfaceDtos.kt.sig|package=io.amichne.konditional.configmetadata.contract.openapi|types=10
-config-metadata/src/main/kotlin/io/amichne/konditional/configmetadata/contract/openapi/SurfaceOpenApiModels.kt.sig|package=io.amichne.konditional.configmetadata.contract.openapi|types=14
-config-metadata/src/main/kotlin/io/amichne/konditional/configmetadata/contract/openapi/SurfaceOpenApiSpecBuilder.kt.sig|package=io.amichne.konditional.configmetadata.contract.openapi|types=3
+config-metadata/src/main/kotlin/io/amichne/konditional/configmetadata/contract/openapi/SurfaceOpenApiModels.kt.sig|package=io.amichne.konditional.configmetadata.contract.openapi|types=11
+config-metadata/src/main/kotlin/io/amichne/konditional/configmetadata/contract/openapi/SurfaceOpenApiSpecBuilder.kt.sig|package=io.amichne.konditional.configmetadata.contract.openapi|types=1
 config-metadata/src/main/kotlin/io/amichne/konditional/configmetadata/contract/openapi/SurfaceOpenApiSpecGenerator.kt.sig|package=io.amichne.konditional.configmetadata.contract.openapi|types=1
-config-metadata/src/main/kotlin/io/amichne/konditional/configmetadata/contract/openapi/SurfaceRouteCatalog.kt.sig|package=io.amichne.konditional.configmetadata.contract.openapi|types=7
+config-metadata/src/main/kotlin/io/amichne/konditional/configmetadata/contract/openapi/SurfaceRoute.kt.sig|package=io.amichne.konditional.configmetadata.contract.openapi|types=1
+config-metadata/src/main/kotlin/io/amichne/konditional/configmetadata/contract/openapi/SurfaceRouteCatalog.kt.sig|package=io.amichne.konditional.configmetadata.contract.openapi|types=6
 config-metadata/src/main/kotlin/io/amichne/konditional/configmetadata/contract/openapi/SurfaceSchemaRegistry.kt.sig|package=io.amichne.konditional.configmetadata.contract.openapi|types=1
 config-metadata/src/main/kotlin/io/amichne/konditional/configmetadata/descriptor/BooleanDescriptor.kt.sig|package=io.amichne.konditional.configmetadata.descriptor|types=1
 config-metadata/src/main/kotlin/io/amichne/konditional/configmetadata/descriptor/EnumOption.kt.sig|package=io.amichne.konditional.configmetadata.descriptor|types=1
@@ -475,6 +478,7 @@ kontracts/src/main/kotlin/io/amichne/kontracts/schema/NullSchema.kt.sig|package=
 kontracts/src/main/kotlin/io/amichne/kontracts/schema/ObjectSchema.kt.sig|package=io.amichne.kontracts.schema|types=1
 kontracts/src/main/kotlin/io/amichne/kontracts/schema/ObjectTraits.kt.sig|package=io.amichne.kontracts.schema|types=1
 kontracts/src/main/kotlin/io/amichne/kontracts/schema/OneOfSchema.kt.sig|package=io.amichne.kontracts.schema|types=2
+kontracts/src/main/kotlin/io/amichne/kontracts/schema/RefSchema.kt.sig|package=io.amichne.kontracts.schema|types=1
 kontracts/src/main/kotlin/io/amichne/kontracts/schema/RootObjectSchema.kt.sig|package=io.amichne.kontracts.schema|types=1
 kontracts/src/main/kotlin/io/amichne/kontracts/schema/SchemaProvider.kt.sig|package=io.amichne.kontracts.schema|types=1
 kontracts/src/main/kotlin/io/amichne/kontracts/schema/StringSchema.kt.sig|package=io.amichne.kontracts.schema|types=1
@@ -492,6 +496,7 @@ kontracts/src/test/kotlin/io/amichne/kontracts/JsonArrayValidationTest.kt.sig|pa
 kontracts/src/test/kotlin/io/amichne/kontracts/JsonObjectValidationTest.kt.sig|package=io.amichne.kontracts|types=1
 kontracts/src/test/kotlin/io/amichne/kontracts/JsonValueValidationTest.kt.sig|package=io.amichne.kontracts|types=1
 kontracts/src/test/kotlin/io/amichne/kontracts/SchemaDslTest.kt.sig|package=io.amichne.kontracts|types=28
+llm-docs/context/core-types.kt.sig|package=<default>|types=0
 openapi/build.gradle.kts.sig|package=<default>|types=0
 openapi/src/main/kotlin/io/amichne/kontracts/schema/OpenApi.kt.sig|package=io.amichne.kontracts.schema|types=2
 openfeature/build.gradle.kts.sig|package=<default>|types=0

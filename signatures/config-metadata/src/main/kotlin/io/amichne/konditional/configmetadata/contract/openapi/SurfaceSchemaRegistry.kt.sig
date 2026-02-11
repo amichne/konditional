@@ -1,6 +1,6 @@
 file=config-metadata/src/main/kotlin/io/amichne/konditional/configmetadata/contract/openapi/SurfaceSchemaRegistry.kt
 package=io.amichne.konditional.configmetadata.contract.openapi
-imports=io.amichne.konditional.configmetadata.contract.BindingType,io.amichne.konditional.configmetadata.descriptor.ValueDescriptor,io.amichne.konditional.configmetadata.ui.UiControlType,io.amichne.kontracts.schema.FieldSchema,io.amichne.kontracts.schema.JsonSchema,io.amichne.kontracts.schema.OneOfSchema
+imports=io.amichne.konditional.configmetadata.contract.BindingType,io.amichne.konditional.configmetadata.descriptor.ValueDescriptor,io.amichne.konditional.configmetadata.ui.UiControlType,io.amichne.kontracts.dsl.ArraySchemaBuilder,io.amichne.kontracts.dsl.BooleanSchemaBuilder,io.amichne.kontracts.dsl.DoubleSchemaBuilder,io.amichne.kontracts.dsl.IntSchemaBuilder,io.amichne.kontracts.dsl.StringSchemaBuilder,io.amichne.kontracts.dsl.schema,io.amichne.kontracts.dsl.schemaRef,io.amichne.kontracts.schema.JsonSchema,io.amichne.kontracts.schema.MapSchema,io.amichne.kontracts.schema.OneOfSchema
 type=io.amichne.konditional.configmetadata.contract.openapi.SurfaceSchemaRegistry|kind=object|decl=internal object SurfaceSchemaRegistry
 fields:
 - private val uiControlTypeSchema
@@ -28,5 +28,10 @@ fields:
 - private val errorEnvelopeSchema
 - val components: Map<String, JsonSchema<*>>
 methods:
-- private fun requiredField( schema: JsonSchema<*>, description: String? = null, ): FieldSchema
-- private fun optionalField( schema: JsonSchema<*>, description: String? = null, ): FieldSchema
+- private fun stringSchema( minLength: Int? = null, enum: List<String>? = null, description: String? = null, pattern: String? = null, ): JsonSchema<String>
+- private fun booleanSchema(default: Boolean? = null): JsonSchema<Boolean>
+- private fun intSchema( minimum: Int? = null, maximum: Int? = null, ): JsonSchema<Int>
+- private fun doubleSchema( minimum: Double? = null, maximum: Double? = null, ): JsonSchema<Double>
+- private fun arraySchema(elementSchema: JsonSchema<*>): JsonSchema<List<Any>>
+- private fun mapSchema(valueSchema: JsonSchema<*>): JsonSchema<Map<String, Any>>
+- private fun componentRef(componentName: String): JsonSchema<Any>

@@ -1,6 +1,6 @@
 file=kontracts/src/test/kotlin/io/amichne/kontracts/CustomTypeMappingTest.kt
 package=io.amichne.kontracts
-imports=io.amichne.kontracts.dsl.asBoolean,io.amichne.kontracts.dsl.asDouble,io.amichne.kontracts.dsl.asInt,io.amichne.kontracts.dsl.asString,io.amichne.kontracts.dsl.of,io.amichne.kontracts.dsl.schemaRoot,io.amichne.kontracts.schema.DoubleSchema,io.amichne.kontracts.schema.IntSchema,io.amichne.kontracts.schema.JsonSchema,io.amichne.kontracts.schema.StringSchema,kotlin.test.assertEquals,kotlin.test.assertIs,org.junit.jupiter.api.Test
+imports=io.amichne.kontracts.dsl.asBoolean,io.amichne.kontracts.dsl.asDouble,io.amichne.kontracts.dsl.asInt,io.amichne.kontracts.dsl.asString,io.amichne.kontracts.dsl.of,io.amichne.kontracts.dsl.schema,io.amichne.kontracts.schema.DoubleSchema,io.amichne.kontracts.schema.IntSchema,io.amichne.kontracts.schema.JsonSchema,io.amichne.kontracts.schema.StringSchema,kotlin.test.assertEquals,kotlin.test.assertIs,org.junit.jupiter.api.Test
 type=io.amichne.kontracts.CustomTypeMappingTest|kind=class|decl=class CustomTypeMappingTest
 type=io.amichne.kontracts.UserId|kind=class|decl=data class UserId(val value: String)
 type=io.amichne.kontracts.Email|kind=class|decl=data class Email(val value: String)

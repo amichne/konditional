@@ -12,4 +12,15 @@ data class RootObjectSchema(
 ) : JsonSchema<Map<String, Any?>>(), ObjectTraits {
     override val type: OpenApi.Type = OpenApi.Type.OBJECT
     override fun toString() = "RootObjectSchema(fields=${fields.keys})"
+
+    internal constructor(objectSchema: ObjectSchema) : this(
+        fields = objectSchema.fields,
+        title = objectSchema.title,
+        description = objectSchema.description,
+        default = objectSchema.default,
+        nullable = objectSchema.nullable,
+        example = objectSchema.example,
+        deprecated = objectSchema.deprecated,
+        required = objectSchema.required
+    )
 }

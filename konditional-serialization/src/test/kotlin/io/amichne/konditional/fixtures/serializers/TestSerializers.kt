@@ -2,7 +2,7 @@ package io.amichne.konditional.fixtures.serializers
 
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.kontracts.dsl.of
-import io.amichne.kontracts.dsl.schemaRoot
+import io.amichne.kontracts.dsl.schema
 import io.amichne.kontracts.schema.ObjectSchema
 
 /**
@@ -16,7 +16,7 @@ data class RetryPolicy(
     val mode: String = "exponential",
 ) : Konstrained<ObjectSchema> {
     override val schema: ObjectSchema =
-        schemaRoot {
+        schema {
             ::maxAttempts of { minimum = 1 }
             ::backoffMs of { minimum = 0.0 }
             ::enabled of { default = true }
@@ -33,7 +33,7 @@ data class UserSettings(
     val maxRetries: Int = 3,
     val timeout: Double = 30.0,
 ) : Konstrained<ObjectSchema> {
-    override val schema = schemaRoot {
+    override val schema = schema {
         ::theme of {
             minLength = 1
             maxLength = 50

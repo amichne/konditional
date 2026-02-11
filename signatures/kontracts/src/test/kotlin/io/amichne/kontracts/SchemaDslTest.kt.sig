@@ -1,6 +1,6 @@
 file=kontracts/src/test/kotlin/io/amichne/kontracts/SchemaDslTest.kt
 package=io.amichne.kontracts
-imports=io.amichne.kontracts.dsl.asBoolean,io.amichne.kontracts.dsl.asDouble,io.amichne.kontracts.dsl.asInt,io.amichne.kontracts.dsl.asString,io.amichne.kontracts.dsl.of,io.amichne.kontracts.dsl.schemaRoot,io.amichne.kontracts.schema.BooleanSchema,io.amichne.kontracts.schema.DoubleSchema,io.amichne.kontracts.schema.IntSchema,io.amichne.kontracts.schema.ObjectSchema,io.amichne.kontracts.schema.SchemaProvider,io.amichne.kontracts.schema.StringSchema,kotlin.test.assertEquals,kotlin.test.assertFalse,kotlin.test.assertIs,kotlin.test.assertTrue,org.junit.jupiter.api.Test
+imports=io.amichne.kontracts.dsl.asBoolean,io.amichne.kontracts.dsl.asDouble,io.amichne.kontracts.dsl.asInt,io.amichne.kontracts.dsl.asString,io.amichne.kontracts.dsl.of,io.amichne.kontracts.dsl.schema,io.amichne.kontracts.schema.BooleanSchema,io.amichne.kontracts.schema.DoubleSchema,io.amichne.kontracts.schema.IntSchema,io.amichne.kontracts.schema.ObjectSchema,io.amichne.kontracts.schema.SchemaProvider,io.amichne.kontracts.schema.StringSchema,kotlin.test.assertEquals,kotlin.test.assertFalse,kotlin.test.assertIs,kotlin.test.assertTrue,org.junit.jupiter.api.Test
 type=io.amichne.kontracts.SchemaDslTest|kind=class|decl=class SchemaDslTest
 type=io.amichne.kontracts.Config|kind=class|decl=data class Config(val name: String) : SchemaProvider<ObjectSchema>
 type=io.amichne.kontracts.Config|kind=class|decl=data class Config(val count: Int) : SchemaProvider<ObjectSchema>

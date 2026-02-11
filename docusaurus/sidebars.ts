@@ -99,10 +99,10 @@ const sidebars: SidebarsConfig = {
                 },
                 {
                     type: 'category',
-                    label: 'Config Metadata',
+                    label: 'Konditional Spec',
                     items: [
-                        'config-metadata/index',
-                        'config-metadata/reference',
+                        'konditional-spec/index',
+                        'konditional-spec/reference',
                     ],
                 },
                 {

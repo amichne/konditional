@@ -32,7 +32,7 @@ import io.amichne.kontracts.schema.ObjectTraits
  *     val notificationsEnabled: Boolean = true,
  *     val maxRetries: Int = 3
  * ) : Konstrained<ObjectSchema> {
- *     override val schema = schemaRoot {
+ *     override val schema = schema {
  *         ::theme of { minLength = 1 }
  *         ::notificationsEnabled of { default = true }
  *         ::maxRetries of { minimum = 0 }

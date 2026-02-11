@@ -1,6 +1,7 @@
 package io.amichne.kontracts.dsl
 
 import io.amichne.kontracts.schema.JsonSchema
+import io.amichne.kontracts.schema.ObjectSchema
 import kotlin.reflect.KProperty0
 
 // ========== Type-inferred DSL for automatic schema type resolution ==========
@@ -176,4 +177,21 @@ inline infix fun <reified V : Any> KProperty0<V>.of(
     )
 }
 
-fun schemaRoot(builder: RootObjectSchemaBuilder.() -> Unit) = RootObjectSchemaBuilder().apply(builder).build()
+/**
+ * Nullable object property schema builder (fallback for complex nullable types).
+ */
+context(root: RootObjectSchemaBuilder)
+@JvmName("ofNullableObject")
+inline infix fun <reified V : Any> KProperty0<V?>.of(
+    builder: ObjectSchemaBuilder.() -> Unit = {},
+) {
+    registerSchema(builder = ObjectSchemaBuilder(), required = false) {
+        nullable = true
+        builder()
+    }
+}
+
+fun schema(builder: RootObjectSchemaBuilder.() -> Unit): ObjectSchema =
+    RootObjectSchemaBuilder().apply(builder).build()
+
+fun schemaRef(ref: String): JsonSchema<Any> = JsonSchema.ref(ref)
