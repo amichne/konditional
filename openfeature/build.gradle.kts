@@ -14,7 +14,7 @@ dependencies {
 }
 
 konditionalPublishing {
-    artifactId.set("openfeature")
+    artifactId.set("konditional-openfeature")
     moduleName.set("Konditional OpenFeature")
     moduleDescription.set("OpenFeature provider implementation for Konditional feature flags")
 }
