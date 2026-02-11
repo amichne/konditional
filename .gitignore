@@ -1031,3 +1031,6 @@ build/
 ### VS Code ###
 .vscode/
 !/docusaurus/.claude/
+
+# Generated API/type signatures (build artifact)
+/signatures/
