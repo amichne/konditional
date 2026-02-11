@@ -5,6 +5,7 @@ import java.nio.file.Path
 import java.security.MessageDigest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -33,34 +34,54 @@ class SurfaceOpenApiSpecBuilderTest {
     }
 
     @Test
-    fun `generated document includes canonical routes and mutation codec outcome schema`() {
+    fun `generated document includes full route surface with stable operation ids`() {
         val document = parseGeneratedDocument()
-        val paths = document.objectValue("paths")
 
-        assertTrue(paths.containsKey("/v1/snapshot"), "Spec must include /v1/snapshot.")
-        assertTrue(
-            paths.containsKey("/v1/namespaces/{namespaceId}/features/{featureKey}/rules/{ruleId}"),
-            "Spec must include canonical rule mutation path.",
+        assertOperation(document, "GET", "/v1/snapshot", "getSnapshotV1")
+        assertOperation(document, "POST", "/v1/snapshot", "mutateSnapshotV1")
+        assertOperation(document, "PATCH", "/v1/snapshot", "patchSnapshotV1")
+
+        assertOperation(document, "GET", "/v1/namespaces/{namespaceId}/snapshot", "getNamespaceSnapshotV1")
+        assertOperation(document, "PATCH", "/v1/namespaces/{namespaceId}", "patchNamespaceV1")
+
+        assertOperation(document, "POST", "/v1/namespaces/{namespaceId}/features", "createFeatureV1")
+        assertOperation(document, "GET", "/v1/namespaces/{namespaceId}/features/{featureKey}", "getFeatureV1")
+        assertOperation(document, "PATCH", "/v1/namespaces/{namespaceId}/features/{featureKey}", "patchFeatureV1")
+
+        assertOperation(
+            document,
+            "GET",
+            "/v1/namespaces/{namespaceId}/features/{featureKey}/rules/{ruleId}",
+            "getRuleV1",
         )
+        assertOperation(
+            document,
+            "PATCH",
+            "/v1/namespaces/{namespaceId}/features/{featureKey}/rules/{ruleId}",
+            "patchRuleV1",
+        )
+    }
 
-        val patchPath =
-            paths.objectValue("/v1/namespaces/{namespaceId}/features/{featureKey}/rules/{ruleId}")
-        assertTrue(patchPath.containsKey("patch"), "Canonical rule path must expose PATCH operation.")
+    @Test
+    fun `profile gating controls legacy post snapshot route exposure`() {
+        val devDocument = parseJson(SurfaceOpenApiSpecBuilder(profile = SurfaceProfile.DEV).buildJson())
+        val qaDocument = parseJson(SurfaceOpenApiSpecBuilder(profile = SurfaceProfile.QA).buildJson())
+        val prodDocument = parseJson(SurfaceOpenApiSpecBuilder(profile = SurfaceProfile.PROD).buildJson())
 
-        val snapshotPath = paths.objectValue("/v1/snapshot")
-        assertTrue(snapshotPath.containsKey("get"), "Snapshot path must expose GET operation.")
-        assertTrue(snapshotPath.containsKey("post"), "Snapshot path must expose POST operation.")
+        assertOperation(devDocument, "POST", "/v1/snapshot", "mutateSnapshotV1")
+        assertOperation(qaDocument, "POST", "/v1/snapshot", "mutateSnapshotV1")
 
+        assertFalse(
+            operationMap(prodDocument, "/v1/snapshot").containsKey("post"),
+            "Prod profile must not expose legacy POST snapshot mutation route.",
+        )
+        assertOperation(prodDocument, "PATCH", "/v1/snapshot", "patchSnapshotV1")
+    }
+
+    @Test
+    fun `generated document encodes codec discriminator and phase enums`() {
+        val document = parseGeneratedDocument()
         val components = document.objectValue("components").objectValue("schemas")
-        val mutationEnvelope = components.objectValue("MutationEnvelope")
-        val mutationProperties = mutationEnvelope.objectValue("properties")
-        val codecOutcomeProperty = mutationProperties.objectValue("codecOutcome")
-
-        assertEquals(
-            "#/components/schemas/CodecOutcome",
-            codecOutcomeProperty["\$ref"],
-            "Mutation envelope must include codecOutcome schema ref.",
-        )
 
         val codecOutcomeSchema = components.objectValue("CodecOutcome")
         val oneOf = codecOutcomeSchema.listValue("oneOf")
@@ -68,15 +89,31 @@ class SurfaceOpenApiSpecBuilderTest {
 
         val discriminator = codecOutcomeSchema.objectValue("discriminator")
         val mapping = discriminator.objectValue("mapping")
-
         assertEquals("#/components/schemas/CodecOutcomeSuccess", mapping["SUCCESS"])
         assertEquals("#/components/schemas/CodecOutcomeFailure", mapping["FAILURE"])
 
-        val errorEnvelope = components.objectValue("ErrorEnvelope")
-        assertTrue(
-            errorEnvelope.objectValue("properties").containsKey("error"),
-            "ErrorEnvelope must contain error model property.",
+        val codecPhaseSchema = components.objectValue("CodecPhase")
+        assertEquals(
+            listOf("DECODE_REQUEST", "APPLY_MUTATION", "ENCODE_RESPONSE"),
+            codecPhaseSchema.stringListValue("enum"),
+            "CodecPhase enum values must remain stable.",
         )
+
+        val codecOutcomeSuccessSchema = components.objectValue("CodecOutcomeSuccess")
+        val successStatus =
+            codecOutcomeSuccessSchema
+                .objectValue("properties")
+                .objectValue("status")
+                .stringListValue("enum")
+        assertEquals(listOf("SUCCESS"), successStatus)
+
+        val codecOutcomeFailureSchema = components.objectValue("CodecOutcomeFailure")
+        val failureStatus =
+            codecOutcomeFailureSchema
+                .objectValue("properties")
+                .objectValue("status")
+                .stringListValue("enum")
+        assertEquals(listOf("FAILURE"), failureStatus)
     }
 
     @Test
@@ -89,13 +126,37 @@ class SurfaceOpenApiSpecBuilderTest {
     }
 
     private fun parseGeneratedDocument(): Map<String, Any?> =
-        OpenApiJsonRenderer.parse(Files.readString(Path.of(generatedSpecPath())))
+        parseJson(Files.readString(Path.of(generatedSpecPath())))
+
+    private fun parseJson(json: String): Map<String, Any?> = OpenApiJsonRenderer.parse(json)
 
     private fun generatedSpecPath(): String =
         assertNotNull(
             System.getProperty(generatedSpecPathProperty),
             "Generated spec path system property was not provided to test runtime.",
         )
+
+    private fun assertOperation(
+        document: Map<String, Any?>,
+        method: String,
+        path: String,
+        expectedOperationId: String,
+    ) {
+        val operation = operationMap(document, path).objectValue(method.lowercase())
+        assertEquals(expectedOperationId, operation["operationId"], "Unexpected operationId for $method $path")
+        assertTrue(
+            operation.containsKey("responses"),
+            "Operation $method $path must include responses block for OpenAPI parseability.",
+        )
+    }
+
+    private fun operationMap(
+        document: Map<String, Any?>,
+        path: String,
+    ): Map<String, Any?> {
+        val paths = document.objectValue("paths")
+        return paths.objectValue(path)
+    }
 
     private fun sha256(value: String): String =
         MessageDigest
@@ -114,4 +175,8 @@ class SurfaceOpenApiSpecBuilderTest {
     @Suppress("UNCHECKED_CAST")
     private fun Map<String, Any?>.listValue(fieldName: String): List<Any?> =
         assertNotNull(this[fieldName] as? List<Any?>, "$fieldName must be a JSON array.")
+
+    @Suppress("UNCHECKED_CAST")
+    private fun Map<String, Any?>.stringListValue(fieldName: String): List<String> =
+        assertNotNull(this[fieldName] as? List<String>, "$fieldName must be a JSON string array.")
 }

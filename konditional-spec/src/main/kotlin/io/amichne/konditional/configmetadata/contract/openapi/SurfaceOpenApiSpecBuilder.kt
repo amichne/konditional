@@ -4,7 +4,7 @@ import io.amichne.kontracts.dsl.schemaRef
 import io.amichne.kontracts.schema.JsonSchema
 
 internal class SurfaceOpenApiSpecBuilder(
-    private val routes: List<SurfaceRoute> = SurfaceRouteCatalog.routes,
+    routes: List<SurfaceRoute> = SurfaceRouteCatalog.routes,
     private val components: Map<String, JsonSchema<*>> = SurfaceSchemaRegistry.components,
     private val info: OpenApiInfo =
         OpenApiInfo(
@@ -12,7 +12,15 @@ internal class SurfaceOpenApiSpecBuilder(
             version = "1.0.0",
             description = "Contract-first OpenAPI specification generated from route and DTO metadata.",
         ),
+    private val profile: SurfaceProfile? = null,
 ) {
+    private val filteredRoutes: List<SurfaceRoute> =
+        profile?.let { selectedProfile ->
+            routes.filter { route ->
+                SurfaceCapabilityProfiles.supports(selectedProfile, route.capability)
+            }
+        } ?: routes
+
     private val orderedComponents: Map<String, JsonSchema<*>> =
         components.entries
             .sortedBy { it.key }
@@ -31,7 +39,7 @@ internal class SurfaceOpenApiSpecBuilder(
     fun buildJson(): String = OpenApiJsonRenderer.render(build())
 
     private fun buildPaths(): Map<String, OpenApiPathItem> =
-        routes
+        filteredRoutes
             .sortedWith(compareBy(SurfaceRoute::path, { it.method.sortOrder }, SurfaceRoute::operationId))
             .groupBy(SurfaceRoute::path)
             .toSortedMap()
