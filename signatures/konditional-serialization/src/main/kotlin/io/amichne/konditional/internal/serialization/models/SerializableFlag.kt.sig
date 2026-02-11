@@ -1,7 +1,0 @@
-file=konditional-serialization/src/main/kotlin/io/amichne/konditional/internal/serialization/models/SerializableFlag.kt
-package=io.amichne.konditional.internal.serialization.models
-imports=com.squareup.moshi.JsonClass,io.amichne.konditional.api.KonditionalInternalApi,io.amichne.konditional.context.Context,io.amichne.konditional.core.FlagDefinition,io.amichne.konditional.core.Namespace,io.amichne.konditional.core.features.Feature,io.amichne.konditional.core.result.ParseError,io.amichne.konditional.core.result.ParseResult,io.amichne.konditional.core.types.Konstrained,io.amichne.konditional.core.types.asObjectSchema,io.amichne.konditional.internal.SerializedFlagDefinitionMetadata,io.amichne.konditional.internal.SerializedFlagRuleSpec,io.amichne.konditional.internal.flagDefinitionFromSerialized,io.amichne.konditional.internal.toSerializedMetadata,io.amichne.konditional.internal.toSerializedRules,io.amichne.konditional.serialization.FeatureRegistry,io.amichne.konditional.values.FeatureId
-type=io.amichne.konditional.internal.serialization.models.SerializableFlag|kind=class|decl=data class SerializableFlag( val key: FeatureId, val defaultValue: FlagValue<*>, val salt: String = "v1", val isActive: Boolean = true, val rampUpAllowlist: Set<String> = emptySet(), val rules: List<SerializableRule> = emptyList(), )
-methods:
-- fun toFlagPair(): ParseResult<Pair<Feature<*, *, *>, FlagDefinition<*, *, *>>>
-- private fun <T : Any, C : Context, M : Namespace> toFlagDefinition( conditional: Feature<T, C, M>, ): FlagDefinition<T, C, M>
