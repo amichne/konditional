@@ -128,10 +128,11 @@ Focus on Kotlin modules and core workflows (build, lint, test).
 - Prefer deterministic tests (no randomness, stable IDs for ramp-ups).
 - Keep unit tests close to modules they validate.
 
-## References
+## Signature-Level Metadata
 
-- `llm-docs/context/public-api-surface.md`
-- `llm-docs/context/core-types.kt`
+Use the 
+
+Use the `signatures/` tree for type-level metadata and initial discovery.
 
 ## IntelliJ MCP Workflow Hints
 
