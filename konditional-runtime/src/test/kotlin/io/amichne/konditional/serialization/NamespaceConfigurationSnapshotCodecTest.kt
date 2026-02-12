@@ -43,7 +43,7 @@ class NamespaceConfigurationSnapshotCodecTest {
 
     @BeforeEach
     fun setup() {
-        // Clear both FeatureRegistry and the namespace registry before each test
+        // Reset namespace registry state before each test
         testNamespace.load(
             Configuration(emptyMap()),
         )
@@ -214,10 +214,6 @@ class NamespaceConfigurationSnapshotCodecTest {
                 val searchEnabled by boolean<Context>(default = false)
             }
 
-        // Register features
-        FeatureRegistry.register(paymentsNamespace.paymentEnabled)
-        FeatureRegistry.register(searchNamespace.searchEnabled)
-
         // Serialize each namespace
         val paymentsJson = ConfigurationSnapshotCodec.encode(paymentsNamespace.configuration)
         val searchJson = ConfigurationSnapshotCodec.encode(searchNamespace.configuration)
@@ -228,5 +224,34 @@ class NamespaceConfigurationSnapshotCodecTest {
 
         assertTrue(searchJson.contains(searchNamespace.searchEnabled.id.toString()))
         assertTrue(!searchJson.contains(paymentsNamespace.paymentEnabled.id.toString()))
+    }
+
+    @Test
+    fun `namespace loader deserializes with empty global feature registry`() {
+        @Suppress("DEPRECATION")
+        FeatureRegistry.clear()
+
+        testNamespace.boolFlag.update(true) {}
+        val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
+
+        testNamespace.load(Configuration(emptyMap()))
+        val result = NamespaceSnapshotLoader(testNamespace).load(json)
+
+        assertIs<ParseResult.Success<Configuration>>(result)
+        assertEquals(true, testNamespace.boolFlag.evaluate(ctx("11111111111111111111111111111111")))
+    }
+
+    @Test
+    fun `namespace loader rejects snapshot from different namespace`() {
+        val otherNamespace =
+            object : Namespace.TestNamespaceFacade("other-namespace") {
+                val otherFlag by boolean<Context>(default = true)
+            }
+
+        val otherJson = ConfigurationSnapshotCodec.encode(otherNamespace.configuration)
+        val result = NamespaceSnapshotLoader(testNamespace).load(otherJson)
+
+        assertIs<ParseResult.Failure>(result)
+        assertIs<ParseError.FeatureNotFound>(result.error)
     }
 }

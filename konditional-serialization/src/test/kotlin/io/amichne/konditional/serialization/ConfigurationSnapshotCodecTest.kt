@@ -71,6 +71,8 @@ class ConfigurationSnapshotCodecTest {
         FeatureRegistry.register(TestFeatures.retryPolicyFlag)
     }
 
+    private fun featureIndexById() = TestFeatures.allFeatures().associateBy { feature -> feature.id }
+
     private enum class Environment(override val id: String) : AxisValue<Environment> {
         PROD("prod"),
         STAGE("stage"),
@@ -90,6 +92,50 @@ class ConfigurationSnapshotCodecTest {
     private enum class Theme {
         LIGHT,
         DARK,
+    }
+
+    @Test
+    fun `Given feature-aware decode context, When global registry is empty, Then decode succeeds`() {
+        TestFeatures.boolFlag.update(true) {}
+        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
+
+        @Suppress("DEPRECATION")
+        FeatureRegistry.clear()
+
+        val result = ConfigurationSnapshotCodec.decode(json = json, featuresById = featureIndexById())
+
+        assertIs<ParseResult.Success<Configuration>>(result)
+        assertTrue(result.value.flags.containsKey(TestFeatures.boolFlag))
+    }
+
+    @Test
+    @Suppress("UNCHECKED_CAST")
+    fun `Given forged enum class name in payload, When decoding feature-aware, Then trusted feature type is used`() {
+        TestFeatures.themeFlag.update(Theme.DARK) {}
+        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
+            .replace(Theme::class.java.name, "evil.payload.FakeEnum")
+
+        val result = ConfigurationSnapshotCodec.decode(json = json, featuresById = featureIndexById())
+
+        assertIs<ParseResult.Success<Configuration>>(result)
+        val decoded = result.value.flags[TestFeatures.themeFlag] as FlagDefinition<Theme, Context, Namespace>
+        assertEquals(Theme.DARK, decoded.defaultValue)
+    }
+
+    @Test
+    @Suppress("UNCHECKED_CAST")
+    fun `Given forged data class name in payload, When decoding feature-aware, Then trusted feature type is used`() {
+        val expected = RetryPolicy(maxAttempts = 9, backoffMs = 1500.0, enabled = false, mode = "linear")
+        TestFeatures.retryPolicyFlag.update(expected) {}
+        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
+            .replace(RetryPolicy::class.java.name, "evil.payload.FakePolicy")
+
+        val result = ConfigurationSnapshotCodec.decode(json = json, featuresById = featureIndexById())
+
+        assertIs<ParseResult.Success<Configuration>>(result)
+        val decoded =
+            result.value.flags[TestFeatures.retryPolicyFlag] as FlagDefinition<RetryPolicy, Context, Namespace>
+        assertEquals(expected, decoded.defaultValue)
     }
 
     private fun ctx(
