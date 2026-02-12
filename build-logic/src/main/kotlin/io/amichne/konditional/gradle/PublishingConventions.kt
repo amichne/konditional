@@ -57,7 +57,11 @@ fun Project.configureKonditionalPublishing(
 
     extensions.configure<PublishingExtension> {
         publications {
-            val publication = findByName("maven") as? MavenPublication ?: create<MavenPublication>("maven")
+            val publication =
+                findByName("maven") as? MavenPublication
+                    ?: create<MavenPublication>("maven").apply {
+                        from(components["java"])
+                    }
 
             publication.apply {
                 this.groupId = props["GROUP"] as String
