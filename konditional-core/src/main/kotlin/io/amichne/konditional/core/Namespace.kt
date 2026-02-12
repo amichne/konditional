@@ -111,8 +111,18 @@ open class Namespace(
     )
 
     private val _features = mutableListOf<Feature<*, *, *>>()
+    private val declaredDefaults = mutableMapOf<Feature<*, *, *>, Any>()
 
     fun allFeatures(): List<Feature<*, *, *>> = _features.toList()
+
+    /**
+     * Returns the declared default value for the given feature, if available.
+     *
+     * This is derived from the namespace's compile-time flag declarations and is independent of
+     * currently loaded runtime configuration snapshots.
+     */
+    @KonditionalInternalApi
+    fun declaredDefault(feature: Feature<*, *, *>): Any? = declaredDefaults[feature]
 
     /**
      * Defines a boolean feature on this namespace using property delegation.
@@ -267,6 +277,7 @@ open class Namespace(
         featureFactory(property.name, thisRef).also {
             featureSetter(it)
             (thisRef as Namespace)._features.add(it)
+            thisRef.declaredDefaults[it] = default
             thisRef.updateDefinitionInternal(FlagBuilder(default, it).apply(configScope).build())
             FeatureRegistrationHooks.notifyFeatureDefined(it)
         }

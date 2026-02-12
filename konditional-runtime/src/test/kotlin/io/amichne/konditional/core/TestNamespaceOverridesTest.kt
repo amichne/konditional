@@ -17,6 +17,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Tests for TestNamespace override functionality.
@@ -251,6 +252,59 @@ class TestNamespaceOverridesTest {
         assert(latch.await(5, TimeUnit.SECONDS))
         assertEquals(10, successCount.get(), "All parallel tests should succeed without interference")
         executor.shutdown()
+    }
+
+    @Test
+    fun `concurrent override read and writes remain consistent and exception free`() {
+        val testNamespace = object : Namespace.TestNamespaceFacade("concurrent-override-safety") {
+            val myFlag by integer<Context>(default = -1)
+        }
+        val executor = Executors.newFixedThreadPool(8)
+        val completion = CountDownLatch(8)
+        val failure = AtomicReference<Throwable?>(null)
+        val allowedValues = setOf(-1, 1, 2, 3, 4)
+
+        repeat(4) { writerIndex ->
+            executor.submit {
+                try {
+                    val overrideValue = writerIndex + 1
+                    repeat(2_000) {
+                        testNamespace.withOverride(testNamespace.myFlag, overrideValue) {
+                            val observed = testNamespace.myFlag.evaluate(testContext)
+                            if (observed !in allowedValues) {
+                                error("Observed unexpected override value: $observed")
+                            }
+                        }
+                    }
+                } catch (t: Throwable) {
+                    failure.compareAndSet(null, t)
+                } finally {
+                    completion.countDown()
+                }
+            }
+        }
+
+        repeat(4) {
+            executor.submit {
+                try {
+                    repeat(20_000) {
+                        val observed = testNamespace.myFlag.evaluate(testContext)
+                        if (observed !in allowedValues) {
+                            error("Observed unexpected override value: $observed")
+                        }
+                    }
+                } catch (t: Throwable) {
+                    failure.compareAndSet(null, t)
+                } finally {
+                    completion.countDown()
+                }
+            }
+        }
+
+        assert(completion.await(10, TimeUnit.SECONDS))
+        failure.get()?.let { throw AssertionError("Concurrent override operations failed", it) }
+        assertEquals(-1, testNamespace.myFlag.evaluate(testContext))
+        executor.shutdownNow()
     }
 
     @Test

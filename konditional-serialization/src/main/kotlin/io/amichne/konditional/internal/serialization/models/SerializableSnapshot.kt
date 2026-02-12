@@ -11,6 +11,7 @@ import io.amichne.konditional.serialization.instance.ConfigurationMetadata
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.options.SnapshotWarning
 import io.amichne.konditional.serialization.options.UnknownFeatureKeyStrategy
+import io.amichne.konditional.values.FeatureId
 
 /**
  * Serializable representation of a Configuration configuration.
@@ -24,7 +25,10 @@ data class SerializableSnapshot(
 ) {
     fun toConfiguration(): ParseResult<Configuration> = toConfiguration(SnapshotLoadOptions.strict())
 
-    fun toConfiguration(options: SnapshotLoadOptions): ParseResult<Configuration> =
+    fun toConfiguration(
+        options: SnapshotLoadOptions,
+        featuresById: Map<FeatureId, Feature<*, *, *>> = emptyMap(),
+    ): ParseResult<Configuration> =
         runCatching {
             val initial: ParseResult<MutableMap<Feature<*, *, *>, FlagDefinition<*, *, *>>> =
                 ParseResult.success(linkedMapOf())
@@ -34,7 +38,7 @@ data class SerializableSnapshot(
                     when (acc) {
                         is ParseResult.Failure -> acc
                         is ParseResult.Success -> {
-                            when (val pairResult = serializableFlag.toFlagPair()) {
+                            when (val pairResult = serializableFlag.toFlagPair(featuresById)) {
                                 is ParseResult.Success -> {
                                     acc.value[pairResult.value.first] = pairResult.value.second
                                     acc

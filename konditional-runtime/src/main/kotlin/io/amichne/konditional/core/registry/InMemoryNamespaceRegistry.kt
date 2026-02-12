@@ -37,7 +37,7 @@ class InMemoryNamespaceRegistry(
     private val historyRef = AtomicReference<List<Configuration>>(emptyList())
     private val writeLock = Any()
 
-    private val overrides = ConcurrentHashMap<Feature<*, *, *>, ArrayDeque<Any>>()
+    private val overrides = ConcurrentHashMap<Feature<*, *, *>, AtomicReference<List<Any>>>()
 
     override fun load(config: ConfigurationView) {
         val concrete = config.toConcrete()
@@ -138,23 +138,23 @@ class InMemoryNamespaceRegistry(
         feature: Feature<T, C, M>,
         value: T,
     ) {
-        overrides.compute(feature) { _, stack ->
-            val deque = stack ?: ArrayDeque()
-            deque.addLast(value as Any)
-            deque
-        }
+        overrides.computeIfAbsent(feature) { AtomicReference(emptyList()) }
+            .updateAndGet { stack -> stack + (value as Any) }
     }
 
     override fun <T : Any, C : Context, M : Namespace> clearOverride(
         feature: Feature<T, C, M>,
     ) {
-        overrides.compute(feature) { _, stack ->
-            if (stack.isNullOrEmpty()) {
-                null
+        val stackRef = overrides[feature] ?: return
+        val updated = stackRef.updateAndGet { stack ->
+            if (stack.isEmpty()) {
+                stack
             } else {
-                stack.removeLast()
-                if (stack.isEmpty()) null else stack
+                stack.dropLast(1)
             }
+        }
+        if (updated.isEmpty()) {
+            overrides.remove(feature, stackRef)
         }
     }
 
@@ -164,14 +164,15 @@ class InMemoryNamespaceRegistry(
 }
 
 @Suppress("UNCHECKED_CAST")
-private fun <T : Any, C : Context, M : Namespace> ConcurrentHashMap<Feature<*, *, *>, ArrayDeque<Any>>.getOverride(
+private fun <T : Any, C : Context, M : Namespace>
+ConcurrentHashMap<Feature<*, *, *>, AtomicReference<List<Any>>>.getOverride(
     feature: Feature<T, C, M>,
-): T? = this[feature]?.lastOrNull() as? T
+): T? = this[feature]?.get()?.lastOrNull() as? T
 
 private fun ConfigurationView.toConcrete(): Configuration =
     (this as? Configuration)
         ?: Configuration(
-            flags = flags,
+            flags = flags.toMap(),
             metadata = metadata.toConcrete(),
         )
 
