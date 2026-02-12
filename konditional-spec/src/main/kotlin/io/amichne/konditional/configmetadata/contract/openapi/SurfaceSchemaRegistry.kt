@@ -61,11 +61,140 @@ internal object SurfaceSchemaRegistry {
             optional(name = "snapshotVersion", schema = stringSchema(minLength = 1))
         }
 
+    private val featureEnvelopeSchema =
+        schema {
+            required(name = "namespaceId", schema = stringSchema(minLength = 1))
+            required(name = "featureKey", schema = stringSchema(minLength = 1))
+            required(name = "version", schema = stringSchema(minLength = 1))
+            optional(name = "snapshotVersion", schema = stringSchema(minLength = 1))
+        }
+
+    private val ruleEnvelopeSchema =
+        schema {
+            required(name = "state", schema = componentRef("SnapshotState"))
+            optional(name = "snapshotVersion", schema = stringSchema(minLength = 1))
+        }
+
+    private val surfaceProfileSchema =
+        stringSchema(
+            enum = SurfaceProfile.entries.map(SurfaceProfile::wireValue),
+            description = "Route and capability profile.",
+        )
+
+    private val surfaceCapabilitySchema =
+        stringSchema(
+            enum = SurfaceCapability.entries.map(SurfaceCapability::name),
+            description = "Named surface capability for profile gating.",
+        )
+
+    private val capabilityProfileSchema =
+        schema {
+            required(name = "profile", schema = componentRef("SurfaceProfile"))
+            required(name = "capabilities", schema = arraySchema(elementSchema = componentRef("SurfaceCapability")))
+        }
+
+    private val targetSelectorNamespaceSchema =
+        schema {
+            required(name = "kind", schema = stringSchema(enum = listOf("NAMESPACE")))
+            required(name = "namespaceId", schema = stringSchema(minLength = 1))
+        }
+
+    private val targetSelectorFeatureSchema =
+        schema {
+            required(name = "kind", schema = stringSchema(enum = listOf("FEATURE")))
+            required(name = "namespaceId", schema = stringSchema(minLength = 1))
+            required(name = "featureKey", schema = stringSchema(minLength = 1))
+        }
+
+    private val targetSelectorRuleSchema =
+        schema {
+            required(name = "kind", schema = stringSchema(enum = listOf("RULE")))
+            required(name = "namespaceId", schema = stringSchema(minLength = 1))
+            required(name = "featureKey", schema = stringSchema(minLength = 1))
+            required(name = "ruleId", schema = stringSchema(minLength = 1))
+        }
+
+    private val targetSelectorScopeSchema =
+        OneOfSchema(
+            options =
+                listOf(
+                    componentRef("TargetSelectorNamespace"),
+                    componentRef("TargetSelectorFeature"),
+                    componentRef("TargetSelectorRule"),
+                ),
+            discriminator =
+                OneOfSchema.Discriminator(
+                    propertyName = "kind",
+                    mapping =
+                        linkedMapOf(
+                            "NAMESPACE" to "#/components/schemas/TargetSelectorNamespace",
+                            "FEATURE" to "#/components/schemas/TargetSelectorFeature",
+                            "RULE" to "#/components/schemas/TargetSelectorRule",
+                        ),
+                ),
+        )
+
+    private val targetSelectorAllSchema =
+        schema {
+            required(name = "kind", schema = stringSchema(enum = listOf("ALL")))
+        }
+
+    private val targetSelectorSubsetSchema =
+        schema {
+            required(name = "kind", schema = stringSchema(enum = listOf("SUBSET")))
+            required(name = "selectors", schema = arraySchema(elementSchema = componentRef("TargetSelectorScope")))
+        }
+
+    private val targetSelectorSchema =
+        OneOfSchema(
+            options =
+                listOf(
+                    componentRef("TargetSelectorAll"),
+                    componentRef("TargetSelectorSubset"),
+                    componentRef("TargetSelectorNamespace"),
+                    componentRef("TargetSelectorFeature"),
+                    componentRef("TargetSelectorRule"),
+                ),
+            discriminator =
+                OneOfSchema.Discriminator(
+                    propertyName = "kind",
+                    mapping =
+                        linkedMapOf(
+                            "ALL" to "#/components/schemas/TargetSelectorAll",
+                            "SUBSET" to "#/components/schemas/TargetSelectorSubset",
+                            "NAMESPACE" to "#/components/schemas/TargetSelectorNamespace",
+                            "FEATURE" to "#/components/schemas/TargetSelectorFeature",
+                            "RULE" to "#/components/schemas/TargetSelectorRule",
+                        ),
+                ),
+        )
+
     private val snapshotMutationRequestSchema =
         schema {
             required(name = "namespaceId", schema = stringSchema(minLength = 1))
             required(name = "requestedBy", schema = stringSchema(minLength = 1))
             required(name = "reason", schema = stringSchema(minLength = 1))
+            optional(name = "selector", schema = componentRef("TargetSelector"))
+            optional(name = "profile", schema = componentRef("SurfaceProfile"))
+        }
+
+    private val namespacePatchRequestSchema =
+        schema {
+            optional(name = "note", schema = stringSchema())
+            optional(name = "active", schema = booleanSchema())
+        }
+
+    private val featureCreateRequestSchema =
+        schema {
+            required(name = "featureKey", schema = stringSchema(minLength = 1))
+            optional(name = "description", schema = stringSchema())
+            required(name = "enabled", schema = booleanSchema(default = true))
+        }
+
+    private val featurePatchRequestSchema =
+        schema {
+            optional(name = "note", schema = stringSchema())
+            optional(name = "enabled", schema = booleanSchema())
         }
 
     private val rulePatchRequestSchema =
@@ -74,6 +203,12 @@ internal object SurfaceSchemaRegistry {
             optional(name = "active", schema = booleanSchema())
             optional(name = "rampUpPercent", schema = doubleSchema(minimum = 0.0, maximum = 100.0))
         }
+
+    private val codecStatusSchema =
+        stringSchema(
+            enum = listOf("SUCCESS", "FAILURE"),
+            description = "Mutation codec outcome status.",
+        )
 
     private val codecPhaseSchema =
         stringSchema(
@@ -139,17 +274,33 @@ internal object SurfaceSchemaRegistry {
     val components: Map<String, JsonSchema<*>> =
         linkedMapOf(
             "ApiError" to apiErrorSchema,
+            "CapabilityProfile" to capabilityProfileSchema,
             "CodecError" to codecErrorSchema,
             "CodecOutcome" to codecOutcomeSchema,
             "CodecOutcomeFailure" to codecOutcomeFailureSchema,
             "CodecOutcomeSuccess" to codecOutcomeSuccessSchema,
             "CodecPhase" to codecPhaseSchema,
+            "CodecStatus" to codecStatusSchema,
             "ErrorEnvelope" to errorEnvelopeSchema,
+            "FeatureCreateRequest" to featureCreateRequestSchema,
+            "FeatureEnvelope" to featureEnvelopeSchema,
+            "FeaturePatchRequest" to featurePatchRequestSchema,
             "MutationEnvelope" to mutationEnvelopeSchema,
+            "NamespacePatchRequest" to namespacePatchRequestSchema,
+            "RuleEnvelope" to ruleEnvelopeSchema,
             "RulePatchRequest" to rulePatchRequestSchema,
             "SnapshotEnvelope" to snapshotEnvelopeSchema,
             "SnapshotMutationRequest" to snapshotMutationRequestSchema,
             "SnapshotState" to snapshotStateSchema,
+            "SurfaceCapability" to surfaceCapabilitySchema,
+            "SurfaceProfile" to surfaceProfileSchema,
+            "TargetSelector" to targetSelectorSchema,
+            "TargetSelectorAll" to targetSelectorAllSchema,
+            "TargetSelectorFeature" to targetSelectorFeatureSchema,
+            "TargetSelectorNamespace" to targetSelectorNamespaceSchema,
+            "TargetSelectorRule" to targetSelectorRuleSchema,
+            "TargetSelectorScope" to targetSelectorScopeSchema,
+            "TargetSelectorSubset" to targetSelectorSubsetSchema,
         )
             .toSortedMap()
             .entries

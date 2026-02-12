@@ -10,4 +10,5 @@ internal data class SurfaceRoute(
     val parameters: List<SurfaceParameter>,
     val requestBody: SurfaceRequestBody?,
     val responses: List<SurfaceResponse>,
+    val capability: SurfaceCapability,
 )
