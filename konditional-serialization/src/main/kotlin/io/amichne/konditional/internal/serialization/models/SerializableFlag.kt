@@ -36,11 +36,18 @@ data class SerializableFlag(
     val rampUpAllowlist: Set<String> = emptySet(),
     val rules: List<SerializableRule> = emptyList(),
 ) {
-    fun toFlagPair(): ParseResult<Pair<Feature<*, *, *>, FlagDefinition<*, *, *>>> =
-        when (val conditionalResult = FeatureRegistry.get(key)) {
+    fun toFlagPair(
+        featuresById: Map<FeatureId, Feature<*, *, *>> = emptyMap(),
+    ): ParseResult<Pair<Feature<*, *, *>, FlagDefinition<*, *, *>>> =
+        when (val conditionalResult = resolveFeature(featuresById)) {
             is ParseResult.Success -> {
                 val conditional = conditionalResult.value
-                runCatching { toFlagDefinition(conditional) }
+                runCatching {
+                    toFlagDefinition(
+                        conditional = conditional,
+                        allowHintFallback = featuresById.isEmpty(),
+                    )
+                }
                     .fold(
                         onSuccess = { ParseResult.success(conditional to it) },
                         onFailure = {
@@ -74,11 +81,30 @@ data class SerializableFlag(
         }
     }
 
+    private fun resolveFeature(
+        featuresById: Map<FeatureId, Feature<*, *, *>>,
+    ): ParseResult<Feature<*, *, *>> =
+        if (featuresById.isEmpty()) {
+            FeatureRegistry.get(key)
+        } else {
+            featuresById[key]?.let { ParseResult.success(it) }
+                ?: ParseResult.failure(ParseError.featureNotFound(key))
+        }
+
     private fun <T : Any, C : Context, M : Namespace> toFlagDefinition(
         conditional: Feature<T, C, M>,
-    ): FlagDefinition<T, C, M> =
-        defaultValue
-            .extractValue<T>()
+        allowHintFallback: Boolean,
+    ): FlagDefinition<T, C, M> {
+        val expectedSample =
+            conditional.expectedDefaultValueOrNull()
+                ?: conditional.declaredDefaultValueOrNull()
+                ?: if (allowHintFallback) FeatureRegistry.defaultSample(key) else null
+
+        return defaultValue
+            .extractValue<T>(
+                expectedSample = expectedSample,
+                allowHintFallback = allowHintFallback,
+            )
             .let { decodedDefault ->
                 val schema =
                     (decodedDefault as? Konstrained<*>)
@@ -91,7 +117,13 @@ data class SerializableFlag(
 
                 val ruleSpecs: List<SerializedFlagRuleSpec<T>> =
                     rules.map { rule ->
-                        rule.toSpec(rule.value.extractValue(schema))
+                        rule.toSpec(
+                            rule.value.extractValue<T>(
+                                expectedSample = decodedDefault,
+                                schema = schema,
+                                allowHintFallback = allowHintFallback,
+                            ),
+                        )
                     }
 
                 flagDefinitionFromSerialized(
@@ -106,4 +138,12 @@ data class SerializableFlag(
                     rules = ruleSpecs,
                 )
             }
+    }
+
+    private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.expectedDefaultValueOrNull(): T? =
+        runCatching { namespace.flag(this).defaultValue }.getOrNull()
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.declaredDefaultValueOrNull(): T? =
+        namespace.declaredDefault(this) as? T
 }

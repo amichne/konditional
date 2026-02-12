@@ -8,6 +8,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.instance.ConfigurationMetadataView
 import io.amichne.konditional.core.instance.ConfigurationView
+import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.internal.serialization.adapters.FlagValueAdapterFactory
@@ -24,6 +25,7 @@ import io.amichne.konditional.rules.versions.VersionRange
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.ConfigurationMetadata
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
+import io.amichne.konditional.values.FeatureId
 
 /**
  * Configuration snapshot JSON codec.
@@ -50,7 +52,7 @@ import io.amichne.konditional.serialization.options.SnapshotLoadOptions
  * }
  * ```
  */
-object ConfigurationSnapshotCodec : SnapshotCodec<Configuration> {
+object ConfigurationSnapshotCodec : FeatureAwareSnapshotCodec<Configuration> {
     private val moshi = defaultMoshi()
     private val snapshotAdapter = moshi.adapter(SerializableSnapshot::class.java).indent("  ")
     private val patchAdapter = moshi.adapter(SerializablePatch::class.java).indent("  ")
@@ -86,9 +88,18 @@ object ConfigurationSnapshotCodec : SnapshotCodec<Configuration> {
     override fun decode(
         json: String,
         options: SnapshotLoadOptions,
+    ): ParseResult<Configuration> = decode(json = json, featuresById = emptyMap(), options = options)
+
+    override fun decode(
+        json: String,
+        featuresById: Map<FeatureId, Feature<*, *, *>>,
+        options: SnapshotLoadOptions,
     ): ParseResult<Configuration> =
         runCatching {
-            snapshotAdapter.fromJson(json)?.toConfiguration(options)
+            snapshotAdapter.fromJson(json)?.toConfiguration(
+                options = options,
+                featuresById = featuresById,
+            )
                 ?: ParseResult.failure(ParseError.invalidJson("Failed to parseUnsafe JSON: null result"))
         }.getOrElse { e ->
             ParseResult.failure(ParseError.invalidJson(e.message ?: "Unknown JSON parsing error"))
@@ -158,7 +169,7 @@ object ConfigurationSnapshotCodec : SnapshotCodec<Configuration> {
 private fun ConfigurationView.toConcrete(): Configuration =
     (this as? Configuration)
         ?: Configuration(
-            flags = flags,
+            flags = flags.toMap(),
             metadata = metadata.toConcrete(),
         )
 

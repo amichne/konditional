@@ -1,5 +1,8 @@
+@file:OptIn(KonditionalInternalApi::class)
+
 package io.amichne.konditional.serialization
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.result.ParseError
@@ -20,8 +23,14 @@ import java.util.concurrent.ConcurrentHashMap
  * The only semantic requirement is ordering: callers must ensure that any feature they expect
  * to deserialize has been registered before deserialization begins.
  */
+@Deprecated(
+    message = "Global feature registry is legacy fallback. " +
+        "Prefer namespace-scoped decode via FeatureAwareSnapshotCodec.",
+    replaceWith = ReplaceWith("ConfigurationSnapshotCodec.decode(json, featuresById, options)"),
+)
 object FeatureRegistry {
     private val registry = ConcurrentHashMap<FeatureId, Feature<*, *, *>>()
+    private val defaultSamples = ConcurrentHashMap<FeatureId, Any>()
 
     /**
      * Registers a Feature instance with its key.
@@ -33,6 +42,9 @@ object FeatureRegistry {
         val existing = registry.putIfAbsent(feature.id, feature)
         check(existing == null || existing === feature) {
             "Feature already registered for id='${feature.id}' (key='${feature.key}'): existing=$existing, attempted=$feature"
+        }
+        feature.namespace.declaredDefault(feature)?.let { defaultValue ->
+            defaultSamples.putIfAbsent(feature.id, defaultValue)
         }
     }
 
@@ -52,6 +64,8 @@ object FeatureRegistry {
      */
     internal fun contains(key: FeatureId): Boolean = registry.containsKey(key)
 
+    internal fun defaultSample(key: FeatureId): Any? = defaultSamples[key]
+
     /**
      * Clears all registrations.
      *
@@ -61,5 +75,6 @@ object FeatureRegistry {
     @org.jetbrains.annotations.TestOnly
     fun clear() {
         registry.clear()
+        defaultSamples.clear()
     }
 }

@@ -23,7 +23,7 @@ class NamespaceSnapshotLoader<M : Namespace>(
         json: String,
         options: SnapshotLoadOptions,
     ): ParseResult<Configuration> =
-        when (val decoded = codec.decode(json, options)) {
+        when (val decoded = decodeSnapshot(json, options)) {
             is ParseResult.Success ->
                 ParseResult.success(
                     decoded.value.also { config ->
@@ -32,6 +32,19 @@ class NamespaceSnapshotLoader<M : Namespace>(
                 )
             is ParseResult.Failure -> ParseResult.failure(decoded.error.withNamespaceContext(namespace.id))
         }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun decodeSnapshot(
+        json: String,
+        options: SnapshotLoadOptions,
+    ): ParseResult<Configuration> =
+        (codec as? FeatureAwareSnapshotCodec<Configuration>)
+            ?.decode(
+                json = json,
+                featuresById = namespace.featureIndexById(),
+                options = options,
+            )
+            ?: codec.decode(json = json, options = options)
 
     private fun Namespace.runtimeRegistry(): NamespaceRegistryRuntime =
         registry as? NamespaceRegistryRuntime
@@ -51,3 +64,8 @@ class NamespaceSnapshotLoader<M : Namespace>(
         fun <M : Namespace> forNamespace(namespace: M): NamespaceSnapshotLoader<M> = NamespaceSnapshotLoader(namespace)
     }
 }
+
+private fun Namespace.featureIndexById() =
+    allFeatures()
+        .sortedBy { feature -> feature.id.toString() }
+        .associateBy { feature -> feature.id }
