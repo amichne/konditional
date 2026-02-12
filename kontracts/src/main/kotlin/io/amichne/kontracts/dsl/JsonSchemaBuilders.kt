@@ -2,6 +2,7 @@ package io.amichne.kontracts.dsl
 
 import io.amichne.kontracts.schema.JsonSchema
 import io.amichne.kontracts.schema.ObjectSchema
+import io.amichne.kontracts.schema.RefSchema
 import kotlin.reflect.KProperty0
 
 // ========== Type-inferred DSL for automatic schema type resolution ==========
@@ -194,4 +195,4 @@ inline infix fun <reified V : Any> KProperty0<V?>.of(
 fun schema(builder: RootObjectSchemaBuilder.() -> Unit): ObjectSchema =
     RootObjectSchemaBuilder().apply(builder).build()
 
-fun schemaRef(ref: String): JsonSchema<Any> = JsonSchema.ref(ref)
+fun schemaRef(ref: String): JsonSchema<Any> = RefSchema(ref = ref)

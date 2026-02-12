@@ -7,7 +7,8 @@ import io.amichne.kontracts.schema.ValidationResult
 /**
  * JSON boolean value.
  */
-data class JsonBoolean(val value: Boolean) : JsonValue {
+@ConsistentCopyVisibility
+data class JsonBoolean internal constructor(val value: Boolean) : JsonValue {
     override fun validate(schema: JsonSchema<*>): ValidationResult =
         if (schema is BooleanSchema) {
             ValidationResult.Valid

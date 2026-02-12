@@ -3,7 +3,7 @@ package io.amichne.kontracts.dsl
 import io.amichne.kontracts.schema.BooleanSchema
 
 @JsonSchemaBuilderDsl
-open class BooleanSchemaBuilder : JsonSchemaBuilder<Boolean> {
+open class BooleanSchemaBuilder @PublishedApi internal constructor() : JsonSchemaBuilder<Boolean> {
     var title: String? = null
     var description: String? = null
     var default: Boolean? = null

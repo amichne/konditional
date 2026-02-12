@@ -16,6 +16,7 @@ import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.fixtures.core.withOverride
 import io.amichne.konditional.fixtures.serializers.UserSettings
 import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
+import io.amichne.kontracts.dsl.jsonObject
 import io.amichne.kontracts.value.JsonBoolean
 import io.amichne.kontracts.value.JsonNumber
 import io.amichne.kontracts.value.JsonObject
@@ -50,15 +51,12 @@ class KonstrainedIntegrationTest {
 
     @Test
     fun `JsonValue to data class parsing is correct`() {
-        val json = JsonObject(
-            fields = mapOf(
-                "theme" to JsonString("dark"),
-                "notificationsEnabled" to JsonBoolean(false),
-                "maxRetries" to JsonNumber(7.0),
-                "timeout" to JsonNumber(120.0)
-            ),
-            schema = null
-        )
+        val json = jsonObject {
+            field("theme") { string("dark") }
+            field("notificationsEnabled") { boolean(false) }
+            field("maxRetries") { number(7.0) }
+            field("timeout") { number(120.0) }
+        }
         val result = SchemaValueCodec.decode(UserSettings::class, json, UserSettings().schema)
         assertTrue(result is ParseResult.Success)
         val settings = (result as ParseResult.Success).value
@@ -76,15 +74,12 @@ class KonstrainedIntegrationTest {
         val validResult = validJson.validate(schema)
         assertTrue(validResult.isValid)
 
-        val invalidJson = JsonObject(
-            fields = mapOf(
-                "theme" to JsonString(""), // too short
-                "notificationsEnabled" to JsonBoolean(true),
-                "maxRetries" to JsonNumber(-1.0), // below min
-                "timeout" to JsonNumber(500.0) // above max
-            ),
-            schema = null
-        )
+        val invalidJson = jsonObject {
+            field("theme") { string("") } // too short
+            field("notificationsEnabled") { boolean(true) }
+            field("maxRetries") { number(-1.0) } // below min
+            field("timeout") { number(500.0) } // above max
+        }
         val invalidResult = invalidJson.validate(schema)
         assertTrue(invalidResult.isInvalid)
         assertNotNull(invalidResult.getErrorMessage())

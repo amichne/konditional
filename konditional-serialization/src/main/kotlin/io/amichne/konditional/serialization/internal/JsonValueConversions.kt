@@ -6,6 +6,9 @@ import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.core.types.asObjectSchema
 import io.amichne.konditional.serialization.SchemaValueCodec
+import io.amichne.kontracts.dsl.jsonArray
+import io.amichne.kontracts.dsl.jsonObject
+import io.amichne.kontracts.dsl.jsonValue
 import io.amichne.kontracts.schema.DoubleSchema
 import io.amichne.kontracts.schema.IntSchema
 import io.amichne.kontracts.value.JsonArray
@@ -20,26 +23,29 @@ import io.amichne.kontracts.value.JsonValue
 fun Any?.toJsonValue(): JsonValue =
     when (this) {
         null -> JsonNull
-        is Boolean -> JsonBoolean(this)
-        is String -> JsonString(this)
-        is Int -> JsonNumber(this.toDouble())
-        is Double -> JsonNumber(this)
-        is Enum<*> -> JsonString(this.name)
+        is Boolean -> jsonValue { boolean(this@toJsonValue) }
+        is String -> jsonValue { string(this@toJsonValue) }
+        is Int -> jsonValue { number(this@toJsonValue) }
+        is Double -> jsonValue { number(this@toJsonValue) }
+        is Enum<*> -> jsonValue { string(this@toJsonValue.name) }
         is Map<*, *> ->
-            JsonObject(
-                fields =
+            jsonObject {
+                fields(
                     entries.associate { (rawKey, rawValue) ->
                         val key =
                             rawKey as? String
                                 ?: error("JsonObject keys must be strings, got ${rawKey?.let { it::class.simpleName }}")
                         key to rawValue.toJsonValue()
                     },
-                schema = null,
-            )
+                )
+            }
 
         is Konstrained<*> -> SchemaValueCodec.encode(this, schema.asObjectSchema())
         is JsonValue -> this
-        is List<*> -> JsonArray(map { it.toJsonValue() }, null)
+        is List<*> ->
+            jsonArray {
+                elements(this@toJsonValue.map { it.toJsonValue() })
+            }
         else -> throw IllegalArgumentException("Unsupported type for JSON conversion: ${this::class.simpleName}")
     }
 

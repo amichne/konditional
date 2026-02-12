@@ -10,7 +10,8 @@ import io.amichne.kontracts.schema.ValidationResult
  * @param elements List of array elements (must all match elementSchema)
  * @param elementSchema Schema for array elements
  */
-data class JsonArray(
+@ConsistentCopyVisibility
+data class JsonArray internal constructor(
     val elements: List<JsonValue>,
     val elementSchema: JsonSchema<Any>? = null,
 ) : JsonValue {

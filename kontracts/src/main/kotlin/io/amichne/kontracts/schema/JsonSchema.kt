@@ -167,7 +167,5 @@ sealed class JsonSchema<out T : Any> : OpenApi<T> {
             deprecated: Boolean = false,
             required: Set<String>? = null
         ) = ObjectSchema(fields, title, description, default, nullable, example, deprecated, required)
-
-        fun ref(ref: String) = RefSchema(ref = ref)
     }
 }

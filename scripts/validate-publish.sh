@@ -4,7 +4,7 @@ set -euo pipefail
 # =============================================================================
 # Konditional Pre-Publish Validation Script
 # =============================================================================
-# Validates that all prerequisites are met before publishing to Maven Central
+# Validates that all prerequisites are met before publishing artifacts.
 #
 # Usage: ./scripts/validate-publish.sh
 # Exit codes: 0 = success, 1 = validation failed
@@ -16,255 +16,260 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+VALIDATION_FAILED=0
+SKIP_CREDENTIAL_CHECKS="${VALIDATE_PUBLISH_SKIP_CREDENTIALS:-0}"
+
+pass() { echo -e "  ${GREEN}✓${NC} $1"; }
+warn() { echo -e "${YELLOW}⚠ $1${NC}"; }
+fail() {
+  echo -e "${RED}✗ $1${NC}"
+  VALIDATION_FAILED=1
+}
+
+value_from_props() {
+  local key="$1"
+  local file="$2"
+  grep -E "^${key}=" "$file" 2>/dev/null | head -n1 | cut -d'=' -f2-
+}
+
 echo -e "${BOLD}${BLUE}==============================================================================${NC}"
 echo -e "${BOLD}${BLUE}Konditional Pre-Publish Validation${NC}"
 echo -e "${BOLD}${BLUE}==============================================================================${NC}"
 echo ""
 
-VALIDATION_FAILED=0
-
 # -----------------------------------------------------------------------------
-# 1. Check Gradle properties
+# 1. Check gradle.properties
 # -----------------------------------------------------------------------------
-echo -e "${BOLD}[1/7] Checking gradle.properties...${NC}"
+echo -e "${BOLD}[1/8] Checking gradle.properties...${NC}"
 
 if [[ ! -f "gradle.properties" ]]; then
-    echo -e "${RED}✗ gradle.properties not found${NC}"
-    VALIDATION_FAILED=1
+  fail "gradle.properties not found"
 else
-    VERSION=$(grep "^VERSION=" gradle.properties | cut -d'=' -f2)
-    GROUP=$(grep "^GROUP=" gradle.properties | cut -d'=' -f2)
+  VERSION=$(value_from_props "VERSION" "gradle.properties")
+  GROUP=$(value_from_props "GROUP" "gradle.properties")
 
-    echo -e "  ${GREEN}✓${NC} Version: ${BOLD}${VERSION}${NC}"
-    echo -e "  ${GREEN}✓${NC} Group: ${BOLD}${GROUP}${NC}"
+  [[ -n "${VERSION}" ]] && pass "Version: ${BOLD}${VERSION}${NC}" || fail "Missing VERSION in gradle.properties"
+  [[ -n "${GROUP}" ]] && pass "Group: ${BOLD}${GROUP}${NC}" || fail "Missing GROUP in gradle.properties"
 
-    # Check if this is a snapshot version
-    if [[ "$VERSION" == *"-SNAPSHOT" ]]; then
-        echo -e "  ${YELLOW}⚠${NC} This is a SNAPSHOT version"
-    else
-        echo -e "  ${GREEN}✓${NC} Release version detected"
-    fi
+  if [[ "${VERSION:-}" == *"-SNAPSHOT" ]]; then
+    warn "This is a SNAPSHOT version"
+  else
+    pass "Release version detected"
+  fi
 fi
 echo ""
 
 # -----------------------------------------------------------------------------
 # 2. Check Git status
 # -----------------------------------------------------------------------------
-echo -e "${BOLD}[2/7] Checking Git status...${NC}"
+echo -e "${BOLD}[2/8] Checking Git status...${NC}"
 
 if ! git rev-parse --is-inside-work-tree &>/dev/null; then
-    echo -e "${RED}✗ Not a Git repository${NC}"
-    VALIDATION_FAILED=1
+  fail "Not a Git repository"
 else
-    # Check for uncommitted changes
-    if [[ -n $(git status --porcelain) ]]; then
-        echo -e "${YELLOW}⚠ Uncommitted changes detected:${NC}"
-        git status --short
-        echo -e "${YELLOW}  Consider committing changes before publishing${NC}"
-    else
-        echo -e "  ${GREEN}✓${NC} Working directory clean"
-    fi
+  if [[ -n "$(git status --porcelain)" ]]; then
+    warn "Uncommitted changes detected:"
+    git status --short
+    warn "Consider committing changes before publishing"
+  else
+    pass "Working directory clean"
+  fi
 
-    # Check current branch
-    CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-    echo -e "  ${GREEN}✓${NC} Current branch: ${BOLD}${CURRENT_BRANCH}${NC}"
-
-    if [[ "$CURRENT_BRANCH" != "main" ]]; then
-        echo -e "${YELLOW}⚠ Not on 'main' branch. Ensure this is intentional.${NC}"
-    fi
+  CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+  pass "Current branch: ${BOLD}${CURRENT_BRANCH}${NC}"
+  if [[ "$CURRENT_BRANCH" != "main" ]]; then
+    warn "Not on 'main' branch. Ensure this is intentional."
+  fi
 fi
 echo ""
 
 # -----------------------------------------------------------------------------
 # 3. Check signing credentials
 # -----------------------------------------------------------------------------
-echo -e "${BOLD}[3/7] Checking signing credentials...${NC}"
+echo -e "${BOLD}[3/8] Checking signing credentials...${NC}"
 
 GRADLE_USER_HOME="${GRADLE_USER_HOME:-$HOME/.gradle}"
 USER_GRADLE_PROPS="$GRADLE_USER_HOME/gradle.properties"
 
-if [[ ! -f "$USER_GRADLE_PROPS" ]]; then
-    echo -e "${RED}✗ ~/.gradle/gradle.properties not found${NC}"
-    echo -e "  ${RED}Please configure signing credentials${NC}"
-    VALIDATION_FAILED=1
+if [[ "$SKIP_CREDENTIAL_CHECKS" == "1" ]]; then
+  warn "Skipping signing credential checks (VALIDATE_PUBLISH_SKIP_CREDENTIALS=1)"
+elif [[ ! -f "$USER_GRADLE_PROPS" ]]; then
+  fail "~/.gradle/gradle.properties not found"
+  echo -e "  ${RED}Please configure signing credentials${NC}"
 else
-    # Check for GPG agent signing (modern approach)
-    SIGNING_GPG_KEY_NAME=$(grep "^signing.gnupg.keyName=" "$USER_GRADLE_PROPS" 2>/dev/null | cut -d'=' -f2 || echo "")
-    SIGNING_GPG_EXECUTABLE=$(grep "^signing.gnupg.executable=" "$USER_GRADLE_PROPS" 2>/dev/null | cut -d'=' -f2 || echo "")
-    SIGNING_GPG_PASSPHRASE=$(grep "^signing.gnupg.passphrase=" "$USER_GRADLE_PROPS" 2>/dev/null | cut -d'=' -f2 || echo "")
+  SIGNING_GPG_KEY_NAME=$(value_from_props "signing.gnupg.keyName" "$USER_GRADLE_PROPS")
+  SIGNING_GPG_EXECUTABLE=$(value_from_props "signing.gnupg.executable" "$USER_GRADLE_PROPS")
+  SIGNING_GPG_PASSPHRASE=$(value_from_props "signing.gnupg.passphrase" "$USER_GRADLE_PROPS")
 
-    # Check for keyring signing (legacy approach)
-    SIGNING_KEY_ID=$(grep "^signing.keyId=" "$USER_GRADLE_PROPS" 2>/dev/null | cut -d'=' -f2 || echo "")
-    SIGNING_PASSWORD=$(grep "^signing.password=" "$USER_GRADLE_PROPS" 2>/dev/null | cut -d'=' -f2 || echo "")
-    SIGNING_KEY_FILE=$(grep "^signing.secretKeyRingFile=" "$USER_GRADLE_PROPS" 2>/dev/null | cut -d'=' -f2 || echo "")
+  SIGNING_KEY_ID=$(value_from_props "signing.keyId" "$USER_GRADLE_PROPS")
+  SIGNING_PASSWORD=$(value_from_props "signing.password" "$USER_GRADLE_PROPS")
+  SIGNING_KEY_FILE=$(value_from_props "signing.secretKeyRingFile" "$USER_GRADLE_PROPS")
 
-    # Check which signing method is configured
-    if [[ -n "$SIGNING_GPG_KEY_NAME" ]]; then
-        echo -e "  ${GREEN}✓${NC} Using GPG agent signing (recommended)"
-        echo -e "  ${GREEN}✓${NC} signing.gnupg.keyName: ${BOLD}${SIGNING_GPG_KEY_NAME}${NC}"
+  if [[ -n "$SIGNING_GPG_KEY_NAME" ]]; then
+    pass "Using GPG agent signing (recommended)"
+    pass "signing.gnupg.keyName: ${BOLD}${SIGNING_GPG_KEY_NAME}${NC}"
+    [[ -n "$SIGNING_GPG_EXECUTABLE" ]] && pass "signing.gnupg.executable: ${BOLD}${SIGNING_GPG_EXECUTABLE}${NC}"
+    [[ -n "$SIGNING_GPG_PASSPHRASE" ]] && pass "signing.gnupg.passphrase: ${BOLD}[REDACTED]${NC}"
 
-        if [[ -n "$SIGNING_GPG_EXECUTABLE" ]]; then
-            echo -e "  ${GREEN}✓${NC} signing.gnupg.executable: ${BOLD}${SIGNING_GPG_EXECUTABLE}${NC}"
-        fi
-
-        if [[ -n "$SIGNING_GPG_PASSPHRASE" ]]; then
-            echo -e "  ${GREEN}✓${NC} signing.gnupg.passphrase: ${BOLD}[REDACTED]${NC}"
-        fi
-
-        # Verify gpg command is available
-        if ! command -v gpg &>/dev/null; then
-            echo -e "${RED}✗ gpg command not found in PATH${NC}"
-            VALIDATION_FAILED=1
-        else
-            echo -e "  ${GREEN}✓${NC} gpg command available"
-
-            # Verify the key exists in GPG
-            if gpg --list-secret-keys "$SIGNING_GPG_KEY_NAME" &>/dev/null; then
-                echo -e "  ${GREEN}✓${NC} GPG key found in keyring"
-            else
-                echo -e "${RED}✗ GPG key ${SIGNING_GPG_KEY_NAME} not found in keyring${NC}"
-                VALIDATION_FAILED=1
-            fi
-        fi
-    elif [[ -n "$SIGNING_KEY_ID" ]]; then
-        echo -e "  ${YELLOW}⚠${NC} Using legacy keyring signing (consider migrating to GPG agent)"
-
-        if [[ -z "$SIGNING_KEY_ID" ]]; then
-            echo -e "${RED}✗ signing.keyId not configured${NC}"
-            VALIDATION_FAILED=1
-        else
-            echo -e "  ${GREEN}✓${NC} signing.keyId: ${BOLD}${SIGNING_KEY_ID}${NC}"
-        fi
-
-        if [[ -z "$SIGNING_PASSWORD" ]]; then
-            echo -e "${RED}✗ signing.password not configured${NC}"
-            VALIDATION_FAILED=1
-        else
-            echo -e "  ${GREEN}✓${NC} signing.password: ${BOLD}[REDACTED]${NC}"
-        fi
-
-        if [[ -z "$SIGNING_KEY_FILE" ]]; then
-            echo -e "${RED}✗ signing.secretKeyRingFile not configured${NC}"
-            VALIDATION_FAILED=1
-        else
-            # Expand tilde if present
-            SIGNING_KEY_FILE="${SIGNING_KEY_FILE/#\~/$HOME}"
-
-            if [[ ! -f "$SIGNING_KEY_FILE" ]]; then
-                echo -e "${RED}✗ signing.secretKeyRingFile not found: ${SIGNING_KEY_FILE}${NC}"
-                VALIDATION_FAILED=1
-            else
-                echo -e "  ${GREEN}✓${NC} signing.secretKeyRingFile: ${BOLD}${SIGNING_KEY_FILE}${NC}"
-            fi
-        fi
+    if ! command -v gpg &>/dev/null; then
+      fail "gpg command not found in PATH"
     else
-        echo -e "${RED}✗ No signing credentials configured${NC}"
-        echo -e "  ${RED}Configure either:${NC}"
-        echo -e "  ${RED}  - GPG agent: signing.gnupg.keyName (recommended)${NC}"
-        echo -e "  ${RED}  - Keyring: signing.keyId + signing.password + signing.secretKeyRingFile${NC}"
-        VALIDATION_FAILED=1
+      pass "gpg command available"
+      if gpg --list-secret-keys "$SIGNING_GPG_KEY_NAME" &>/dev/null; then
+        pass "GPG key found in keyring"
+      else
+        fail "GPG key ${SIGNING_GPG_KEY_NAME} not found in keyring"
+      fi
     fi
+  elif [[ -n "$SIGNING_KEY_ID" ]]; then
+    warn "Using legacy keyring signing (consider migrating to GPG agent)"
+
+    [[ -n "$SIGNING_KEY_ID" ]] && pass "signing.keyId: ${BOLD}${SIGNING_KEY_ID}${NC}" || fail "signing.keyId not configured"
+    [[ -n "$SIGNING_PASSWORD" ]] && pass "signing.password: ${BOLD}[REDACTED]${NC}" || fail "signing.password not configured"
+
+    if [[ -z "$SIGNING_KEY_FILE" ]]; then
+      fail "signing.secretKeyRingFile not configured"
+    else
+      SIGNING_KEY_FILE="${SIGNING_KEY_FILE/#\~/$HOME}"
+      [[ -f "$SIGNING_KEY_FILE" ]] && pass "signing.secretKeyRingFile: ${BOLD}${SIGNING_KEY_FILE}${NC}" || fail "signing.secretKeyRingFile not found: ${SIGNING_KEY_FILE}"
+    fi
+  else
+    fail "No signing credentials configured"
+    echo -e "  ${RED}Configure either:${NC}"
+    echo -e "  ${RED}  - GPG agent: signing.gnupg.keyName (recommended)${NC}"
+    echo -e "  ${RED}  - Keyring: signing.keyId + signing.password + signing.secretKeyRingFile${NC}"
+  fi
 fi
 echo ""
 
 # -----------------------------------------------------------------------------
-# 4. Check Sonatype credentials
+# 4. Check publishing repository credentials
 # -----------------------------------------------------------------------------
-echo -e "${BOLD}[4/7] Checking Sonatype credentials...${NC}"
+echo -e "${BOLD}[4/8] Checking repository credentials...${NC}"
 
-OSSRH_USERNAME=$(grep "^ossrhUsername=" "$USER_GRADLE_PROPS" 2>/dev/null | cut -d'=' -f2 || echo "")
-OSSRH_PASSWORD=$(grep "^ossrhPassword=" "$USER_GRADLE_PROPS" 2>/dev/null | cut -d'=' -f2 || echo "")
-
-if [[ -z "$OSSRH_USERNAME" ]] && [[ -z "$OSSRH_PASSWORD" ]]; then
-    # Check environment variables
-    if [[ -n "${OSSRH_USERNAME:-}" ]] || [[ -n "${OSSRH_PASSWORD:-}" ]]; then
-        echo -e "  ${GREEN}✓${NC} Credentials configured via environment variables"
-    else
-        echo -e "${RED}✗ OSSRH credentials not configured${NC}"
-        echo -e "  ${RED}Set ossrhUsername and ossrhPassword in ~/.gradle/gradle.properties${NC}"
-        VALIDATION_FAILED=1
-    fi
+if [[ "$SKIP_CREDENTIAL_CHECKS" == "1" ]]; then
+  warn "Skipping repository credential checks (VALIDATE_PUBLISH_SKIP_CREDENTIALS=1)"
 else
-    if [[ -z "$OSSRH_USERNAME" ]]; then
-        echo -e "${RED}✗ ossrhUsername not configured${NC}"
-        VALIDATION_FAILED=1
-    else
-        echo -e "  ${GREEN}✓${NC} ossrhUsername: ${BOLD}${OSSRH_USERNAME}${NC}"
-    fi
+# Maven Central credentials can be provided via either OSSRH or mavenCentral keys.
+OSSRH_USERNAME=$(value_from_props "ossrhUsername" "$USER_GRADLE_PROPS")
+OSSRH_PASSWORD=$(value_from_props "ossrhPassword" "$USER_GRADLE_PROPS")
+MAVEN_CENTRAL_USERNAME=$(value_from_props "mavenCentralUsername" "$USER_GRADLE_PROPS")
+MAVEN_CENTRAL_PASSWORD=$(value_from_props "mavenCentralPassword" "$USER_GRADLE_PROPS")
 
-    if [[ -z "$OSSRH_PASSWORD" ]]; then
-        echo -e "${RED}✗ ossrhPassword not configured${NC}"
-        VALIDATION_FAILED=1
-    else
-        echo -e "  ${GREEN}✓${NC} ossrhPassword: ${BOLD}[REDACTED]${NC}"
-    fi
+if [[ -n "${OSSRH_USERNAME:-}" && -n "${OSSRH_PASSWORD:-}" ]]; then
+  pass "Maven Central credentials configured via ossrhUsername/ossrhPassword"
+elif [[ -n "${MAVEN_CENTRAL_USERNAME:-}" && -n "${MAVEN_CENTRAL_PASSWORD:-}" ]]; then
+  pass "Maven Central credentials configured via mavenCentralUsername/mavenCentralPassword"
+else
+  warn "Maven Central credentials not detected in ~/.gradle/gradle.properties"
+  warn "Release publishing may fail unless credentials are available through environment/JReleaser"
+fi
+
+GPR_USER=$(value_from_props "gpr.user" "$USER_GRADLE_PROPS")
+GPR_KEY=$(value_from_props "gpr.key" "$USER_GRADLE_PROPS")
+
+if [[ -n "${GPR_USER:-}" && -n "${GPR_KEY:-}" ]]; then
+  pass "GitHub Packages credentials configured via gpr.user/gpr.key"
+elif [[ -n "${GITHUB_ACTOR:-}" && -n "${GITHUB_TOKEN:-}" ]]; then
+  pass "GitHub Packages credentials configured via GITHUB_ACTOR/GITHUB_TOKEN"
+else
+  warn "GitHub Packages credentials not detected (gpr.user/gpr.key or GITHUB_ACTOR/GITHUB_TOKEN)"
+fi
 fi
 echo ""
 
 # -----------------------------------------------------------------------------
 # 5. Verify GPG key is published
 # -----------------------------------------------------------------------------
-echo -e "${BOLD}[5/7] Verifying GPG key is published...${NC}"
+echo -e "${BOLD}[5/8] Verifying GPG key is published...${NC}"
 
-# Determine which key ID to use
+if [[ "$SKIP_CREDENTIAL_CHECKS" == "1" ]]; then
+  warn "Skipping public key server verification (VALIDATE_PUBLISH_SKIP_CREDENTIALS=1)"
+else
 KEY_TO_CHECK=""
 if [[ -n "${SIGNING_GPG_KEY_NAME:-}" ]]; then
-    KEY_TO_CHECK="$SIGNING_GPG_KEY_NAME"
+  KEY_TO_CHECK="$SIGNING_GPG_KEY_NAME"
 elif [[ -n "${SIGNING_KEY_ID:-}" ]]; then
-    KEY_TO_CHECK="$SIGNING_KEY_ID"
+  KEY_TO_CHECK="$SIGNING_KEY_ID"
 fi
 
 if [[ -n "$KEY_TO_CHECK" ]]; then
-    # Try to fetch from key server
-    if gpg --keyserver keys.openpgp.org --recv-keys "$KEY_TO_CHECK" &>/dev/null; then
-        echo -e "  ${GREEN}✓${NC} GPG key ${BOLD}${KEY_TO_CHECK}${NC} is published"
-    else
-        echo -e "${YELLOW}⚠ Could not verify GPG key on keys.openpgp.org${NC}"
-        echo -e "  ${YELLOW}Ensure your key is published to key servers:${NC}"
-        echo -e "  ${YELLOW}  gpg --keyserver keys.openpgp.org --send-keys ${KEY_TO_CHECK}${NC}"
-    fi
+  if gpg --keyserver keys.openpgp.org --recv-keys "$KEY_TO_CHECK" &>/dev/null; then
+    pass "GPG key ${BOLD}${KEY_TO_CHECK}${NC} is published"
+  else
+    warn "Could not verify GPG key on keys.openpgp.org"
+    warn "Ensure your key is published: gpg --keyserver keys.openpgp.org --send-keys ${KEY_TO_CHECK}"
+  fi
 else
-    echo -e "${YELLOW}⚠ Skipping (no signing key configured)${NC}"
+  warn "Skipping (no signing key configured)"
+fi
 fi
 echo ""
 
 # -----------------------------------------------------------------------------
 # 6. Verify publishable modules
 # -----------------------------------------------------------------------------
-echo -e "${BOLD}[6/7] Verifying publishable modules...${NC}"
+echo -e "${BOLD}[6/8] Verifying publishable modules...${NC}"
 
 PUBLISHABLE_MODULES=(
-    "konditional-core"
-    "konditional-serialization"
-    "konditional-runtime"
-    "konditional-observability"
+  "konditional-core"
+  "konditional-serialization"
+  "konditional-runtime"
+  "konditional-observability"
+  "konditional-spec"
+  "kontracts"
+  "openapi"
+  "openfeature"
+  "opentelemetry"
 )
 
 for module in "${PUBLISHABLE_MODULES[@]}"; do
-    if [[ -d "$module" ]]; then
-        if grep -q "maven-publish" "$module/build.gradle.kts" 2>/dev/null; then
-            echo -e "  ${GREEN}✓${NC} ${module}"
-        else
-            echo -e "${RED}✗ ${module} missing maven-publish plugin${NC}"
-            VALIDATION_FAILED=1
-        fi
-    else
-        echo -e "${RED}✗ ${module} directory not found${NC}"
-        VALIDATION_FAILED=1
-    fi
+  if [[ ! -d "$module" ]]; then
+    fail "${module} directory not found"
+    continue
+  fi
+
+  BUILD_FILE="$module/build.gradle.kts"
+  if [[ ! -f "$BUILD_FILE" ]]; then
+    fail "${module} missing build.gradle.kts"
+    continue
+  fi
+
+  if rg -q 'id\("konditional\.publishing"\)' "$BUILD_FILE"; then
+    pass "$module"
+  else
+    fail "${module} missing konditional.publishing plugin"
+  fi
 done
 echo ""
 
 # -----------------------------------------------------------------------------
-# 7. Run Gradle checks
+# 7. Verify publishing tasks exist
 # -----------------------------------------------------------------------------
-echo -e "${BOLD}[7/7] Running Gradle validation tasks...${NC}"
+echo -e "${BOLD}[7/8] Verifying publishing task graph...${NC}"
 
-if ! ./gradlew clean build -x test --quiet; then
-    echo -e "${RED}✗ Build failed${NC}"
-    VALIDATION_FAILED=1
+if ./gradlew tasks --all --no-daemon | rg -q "publishMavenPublicationToGitHubPackagesRepository"; then
+  pass "GitHub Packages publication tasks available"
 else
-    echo -e "  ${GREEN}✓${NC} Build successful"
+  fail "publishMavenPublicationToGitHubPackagesRepository task not found"
+fi
+
+if ./gradlew tasks --all --no-daemon | rg -q "publishToMavenLocal"; then
+  pass "Local publication tasks available"
+else
+  fail "publishToMavenLocal task not found"
+fi
+echo ""
+
+# -----------------------------------------------------------------------------
+# 8. Run Gradle publishing validation
+# -----------------------------------------------------------------------------
+echo -e "${BOLD}[8/8] Running Gradle publishing validation...${NC}"
+
+if ./gradlew publishToMavenLocal --no-daemon --stacktrace; then
+  pass "publishToMavenLocal successful"
+else
+  fail "publishToMavenLocal failed"
 fi
 echo ""
 
@@ -273,18 +278,19 @@ echo ""
 # -----------------------------------------------------------------------------
 echo -e "${BOLD}${BLUE}==============================================================================${NC}"
 if [[ $VALIDATION_FAILED -eq 0 ]]; then
-    echo -e "${BOLD}${GREEN}✓ All validations passed!${NC}"
-    echo -e ""
-    echo -e "You can now publish with:"
-    echo -e "  ${BOLD}make publish-snapshot${NC}  - Publish to Sonatype snapshots"
-    echo -e "  ${BOLD}make publish-release${NC}   - Publish to Sonatype staging (requires manual release)"
-    echo -e "${BOLD}${BLUE}==============================================================================${NC}"
-    exit 0
+  echo -e "${BOLD}${GREEN}✓ All validations passed!${NC}"
+  echo -e ""
+  echo -e "You can now publish with:"
+  echo -e "  ${BOLD}make publish-local${NC}     - Publish to local Maven repository"
+  echo -e "  ${BOLD}make publish-github${NC}   - Publish to GitHub Packages"
+  echo -e "  ${BOLD}make publish-release${NC}  - Publish release artifacts"
+  echo -e "${BOLD}${BLUE}==============================================================================${NC}"
+  exit 0
 else
-    echo -e "${BOLD}${RED}✗ Validation failed!${NC}"
-    echo -e ""
-    echo -e "Please fix the issues above before publishing."
-    echo -e "See ${BOLD}PUBLISHING_GUIDE.md${NC} for detailed setup instructions."
-    echo -e "${BOLD}${BLUE}==============================================================================${NC}"
-    exit 1
+  echo -e "${BOLD}${RED}✗ Validation failed!${NC}"
+  echo -e ""
+  echo -e "Please fix the issues above before publishing."
+  echo -e "See ${BOLD}docusaurus/docs/how-to-guides/publishing.md${NC} for setup instructions."
+  echo -e "${BOLD}${BLUE}==============================================================================${NC}"
+  exit 1
 fi

@@ -3,7 +3,9 @@ package io.amichne.kontracts.schema
 /**
  * Schema representing an all-of composition of multiple schemas.
  */
-data class AllOfSchema(
+
+@ConsistentCopyVisibility
+data class AllOfSchema internal constructor(
     val options: List<JsonSchema<*>>,
     override val title: String? = null,
     override val description: String? = null,

@@ -1,7 +1,10 @@
 package io.amichne.kontracts
 
-import io.amichne.kontracts.schema.FieldSchema
-import io.amichne.kontracts.schema.JsonSchema
+import io.amichne.kontracts.dsl.booleanSchema
+import io.amichne.kontracts.dsl.fieldSchema
+import io.amichne.kontracts.dsl.intSchema
+import io.amichne.kontracts.dsl.objectSchema
+import io.amichne.kontracts.dsl.stringSchema
 import io.amichne.kontracts.value.JsonBoolean
 import io.amichne.kontracts.value.JsonNull
 import io.amichne.kontracts.value.JsonNumber
@@ -24,12 +27,12 @@ class JsonObjectValidationTest {
 
     @Test
     fun `JsonObject validates successfully with all required fields`() {
-        val schema = JsonSchema.obj(
+        val schema = objectSchema {
             fields = mapOf(
-                "name" to FieldSchema(JsonSchema.string(), required = true),
-                "age" to FieldSchema(JsonSchema.int(), required = true)
+                "name" to fieldSchema { schema = stringSchema { }; required = true },
+                "age" to fieldSchema { schema = intSchema { }; required = true }
             )
-        )
+        }
         val obj = JsonObject(
             fields = mapOf(
                 "name" to JsonString("Alice"),
@@ -44,12 +47,12 @@ class JsonObjectValidationTest {
 
     @Test
     fun `JsonObject fails validation with missing required field`() {
-        val schema = JsonSchema.obj(
+        val schema = objectSchema {
             fields = mapOf(
-                "name" to FieldSchema(JsonSchema.string(), required = true),
-                "age" to FieldSchema(JsonSchema.int(), required = true)
+                "name" to fieldSchema { schema = stringSchema { }; required = true },
+                "age" to fieldSchema { schema = intSchema { }; required = true }
             )
-        )
+        }
         val obj = JsonObject(
             fields = mapOf(
                 "name" to JsonString("Alice")
@@ -65,11 +68,11 @@ class JsonObjectValidationTest {
 
     @Test
     fun `JsonObject fails validation with unknown field`() {
-        val schema = JsonSchema.obj(
+        val schema = objectSchema {
             fields = mapOf(
-                "name" to FieldSchema(JsonSchema.string(), required = true)
+                "name" to fieldSchema { schema = stringSchema { }; required = true }
             )
-        )
+        }
         val obj = JsonObject(
             fields = mapOf(
                 "name" to JsonString("Alice"),
@@ -85,12 +88,12 @@ class JsonObjectValidationTest {
 
     @Test
     fun `JsonObject validates with optional fields present`() {
-        val schema = JsonSchema.obj(
+        val schema = objectSchema {
             fields = mapOf(
-                "name" to FieldSchema(JsonSchema.string(), required = true),
-                "nickname" to FieldSchema(JsonSchema.string(), required = false)
+                "name" to fieldSchema { schema = stringSchema { }; required = true },
+                "nickname" to fieldSchema { schema = stringSchema { }; required = false }
             )
-        )
+        }
         val obj = JsonObject(
             fields = mapOf(
                 "name" to JsonString("Alice"),
@@ -105,12 +108,12 @@ class JsonObjectValidationTest {
 
     @Test
     fun `JsonObject validates with optional fields absent`() {
-        val schema = JsonSchema.obj(
+        val schema = objectSchema {
             fields = mapOf(
-                "name" to FieldSchema(JsonSchema.string(), required = true),
-                "nickname" to FieldSchema(JsonSchema.string(), required = false)
+                "name" to fieldSchema { schema = stringSchema { }; required = true },
+                "nickname" to fieldSchema { schema = stringSchema { }; required = false }
             )
-        )
+        }
         val obj = JsonObject(
             fields = mapOf(
                 "name" to JsonString("Alice")
@@ -124,11 +127,11 @@ class JsonObjectValidationTest {
 
     @Test
     fun `JsonObject fails validation when field has wrong type`() {
-        val schema = JsonSchema.obj(
+        val schema = objectSchema {
             fields = mapOf(
-                "age" to FieldSchema(JsonSchema.int(), required = true)
+                "age" to fieldSchema { schema = intSchema { }; required = true }
             )
-        )
+        }
         val obj = JsonObject(
             fields = mapOf(
                 "age" to JsonString("not a number")
@@ -143,11 +146,11 @@ class JsonObjectValidationTest {
 
     @Test
     fun `JsonObject validation throws on construction with schema mismatch`() {
-        val schema = JsonSchema.obj(
+        val schema = objectSchema {
             fields = mapOf(
-                "name" to FieldSchema(JsonSchema.string(), required = true)
+                "name" to fieldSchema { schema = stringSchema { }; required = true }
             )
-        )
+        }
 
         val exception = assertThrows<IllegalArgumentException> {
             JsonObject(
@@ -163,18 +166,18 @@ class JsonObjectValidationTest {
 
     @Test
     fun `JsonObject validates nested objects successfully`() {
-        val addressSchema = JsonSchema.obj(
+        val addressSchema = objectSchema {
             fields = mapOf(
-                "street" to FieldSchema(JsonSchema.string(), required = true),
-                "city" to FieldSchema(JsonSchema.string(), required = true)
+                "street" to fieldSchema { schema = stringSchema { }; required = true },
+                "city" to fieldSchema { schema = stringSchema { }; required = true }
             )
-        )
-        val schema = JsonSchema.obj(
+        }
+        val schema = objectSchema {
             fields = mapOf(
-                "name" to FieldSchema(JsonSchema.string(), required = true),
-                "address" to FieldSchema(addressSchema, required = true)
+                "name" to fieldSchema { schema = stringSchema { }; required = true },
+                "address" to fieldSchema { schema = addressSchema; required = true }
             )
-        )
+        }
         val obj = JsonObject(
             fields = mapOf(
                 "name" to JsonString("Alice"),
@@ -194,18 +197,18 @@ class JsonObjectValidationTest {
 
     @Test
     fun `JsonObject fails validation with invalid nested object`() {
-        val addressSchema = JsonSchema.obj(
+        val addressSchema = objectSchema {
             fields = mapOf(
-                "street" to FieldSchema(JsonSchema.string(), required = true),
-                "city" to FieldSchema(JsonSchema.string(), required = true)
+                "street" to fieldSchema { schema = stringSchema { }; required = true },
+                "city" to fieldSchema { schema = stringSchema { }; required = true }
             )
-        )
-        val schema = JsonSchema.obj(
+        }
+        val schema = objectSchema {
             fields = mapOf(
-                "name" to FieldSchema(JsonSchema.string(), required = true),
-                "address" to FieldSchema(addressSchema, required = true)
+                "name" to fieldSchema { schema = stringSchema { }; required = true },
+                "address" to fieldSchema { schema = addressSchema; required = true }
             )
-        )
+        }
         val obj = JsonObject(
             fields = mapOf(
                 "name" to JsonString("Alice"),
@@ -227,24 +230,24 @@ class JsonObjectValidationTest {
 
     @Test
     fun `JsonObject validates deeply nested objects`() {
-        val countrySchema = JsonSchema.obj(
+        val countrySchema = objectSchema {
             fields = mapOf(
-                "name" to FieldSchema(JsonSchema.string(), required = true),
-                "code" to FieldSchema(JsonSchema.string(), required = true)
+                "name" to fieldSchema { schema = stringSchema { }; required = true },
+                "code" to fieldSchema { schema = stringSchema { }; required = true }
             )
-        )
-        val addressSchema = JsonSchema.obj(
+        }
+        val addressSchema = objectSchema {
             fields = mapOf(
-                "street" to FieldSchema(JsonSchema.string(), required = true),
-                "country" to FieldSchema(countrySchema, required = true)
+                "street" to fieldSchema { schema = stringSchema { }; required = true },
+                "country" to fieldSchema { schema = countrySchema; required = true }
             )
-        )
-        val schema = JsonSchema.obj(
+        }
+        val schema = objectSchema {
             fields = mapOf(
-                "name" to FieldSchema(JsonSchema.string(), required = true),
-                "address" to FieldSchema(addressSchema, required = true)
+                "name" to fieldSchema { schema = stringSchema { }; required = true },
+                "address" to fieldSchema { schema = addressSchema; required = true }
             )
-        )
+        }
         val obj = JsonObject(
             fields = mapOf(
                 "name" to JsonString("Alice"),
@@ -334,7 +337,7 @@ class JsonObjectValidationTest {
 
     @Test
     fun `JsonObject validates empty object with no required fields`() {
-        val schema = JsonSchema.obj(fields = emptyMap())
+        val schema = objectSchema { fields = emptyMap() }
         val obj = JsonObject(fields = emptyMap())
 
         val result = obj.validate(schema)
@@ -344,11 +347,11 @@ class JsonObjectValidationTest {
 
     @Test
     fun `JsonObject fails validation for empty object with required fields`() {
-        val schema = JsonSchema.obj(
+        val schema = objectSchema {
             fields = mapOf(
-                "name" to FieldSchema(JsonSchema.string(), required = true)
+                "name" to fieldSchema { schema = stringSchema { }; required = true }
             )
-        )
+        }
         val obj = JsonObject(fields = emptyMap())
 
         val result = obj.validate(schema)
@@ -361,7 +364,7 @@ class JsonObjectValidationTest {
 
     @Test
     fun `JsonObject fails validation against non-object schema`() {
-        val stringSchema = JsonSchema.string()
+        val stringSchema = stringSchema { }
         val obj = JsonObject(
             fields = mapOf("name" to JsonString("Alice"))
         )
@@ -376,15 +379,15 @@ class JsonObjectValidationTest {
 
     @Test
     fun `JsonObject validates with mixed required and optional fields`() {
-        val schema = JsonSchema.obj(
+        val schema = objectSchema {
             fields = mapOf(
-                "id" to FieldSchema(JsonSchema.int(), required = true),
-                "name" to FieldSchema(JsonSchema.string(), required = true),
-                "email" to FieldSchema(JsonSchema.string(), required = false),
-                "phone" to FieldSchema(JsonSchema.string(), required = false),
-                "active" to FieldSchema(JsonSchema.boolean(), required = true)
+                "id" to fieldSchema { schema = intSchema { }; required = true },
+                "name" to fieldSchema { schema = stringSchema { }; required = true },
+                "email" to fieldSchema { schema = stringSchema { }; required = false },
+                "phone" to fieldSchema { schema = stringSchema { }; required = false },
+                "active" to fieldSchema { schema = booleanSchema { }; required = true }
             )
-        )
+        }
         val obj = JsonObject(
             fields = mapOf(
                 "id" to JsonNumber(1.0),

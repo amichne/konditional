@@ -1,6 +1,10 @@
 package io.amichne.kontracts
 
-import io.amichne.kontracts.schema.JsonSchema
+import io.amichne.kontracts.dsl.booleanSchema
+import io.amichne.kontracts.dsl.doubleSchema
+import io.amichne.kontracts.dsl.intSchema
+import io.amichne.kontracts.dsl.nullSchema
+import io.amichne.kontracts.dsl.stringSchema
 import io.amichne.kontracts.value.JsonBoolean
 import io.amichne.kontracts.value.JsonNull
 import io.amichne.kontracts.value.JsonNumber
@@ -20,7 +24,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonString validates successfully against basic string schema`() {
-        val schema = JsonSchema.string()
+        val schema = stringSchema { }
         val value = JsonString("hello")
 
         val result = value.validate(schema)
@@ -30,7 +34,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonString enforces minLength constraint`() {
-        val schema = JsonSchema.string(minLength = 5)
+        val schema = stringSchema { minLength = 5 }
         val valid = JsonString("hello")
         val invalid = JsonString("hi")
 
@@ -42,7 +46,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonString enforces maxLength constraint`() {
-        val schema = JsonSchema.string(maxLength = 10)
+        val schema = stringSchema { maxLength = 10 }
         val valid = JsonString("hello")
         val invalid = JsonString("this is too long")
 
@@ -54,7 +58,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonString validates against regex pattern`() {
-        val schema = JsonSchema.string(pattern = "^[A-Z][a-z]+$")
+        val schema = stringSchema { pattern = "^[A-Z][a-z]+$" }
         val valid = JsonString("Hello")
         val invalidCase = JsonString("hello")
         val invalidFormat = JsonString("HELLO")
@@ -72,10 +76,10 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonString validates email pattern`() {
-        val schema = JsonSchema.string(
-            pattern = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+        val schema = stringSchema {
+            pattern = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
             format = "email"
-        )
+        }
         val valid = JsonString("user@example.com")
         val invalid = JsonString("not-an-email")
 
@@ -85,11 +89,11 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonString enforces combined constraints`() {
-        val schema = JsonSchema.string(
-            minLength = 8,
-            maxLength = 12,
+        val schema = stringSchema {
+            minLength = 8
+            maxLength = 12
             pattern = "[A-Z0-9]+"
-        )
+        }
         val valid = JsonString("ABC12345")
         val tooShort = JsonString("ABC123")
         val tooLong = JsonString("ABCDEFGHIJKLM")
@@ -103,7 +107,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonString fails validation against non-string schema`() {
-        val intSchema = JsonSchema.int()
+        val intSchema = intSchema { }
         val value = JsonString("123")
 
         val result = value.validate(intSchema)
@@ -116,7 +120,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonNumber validates successfully as integer`() {
-        val schema = JsonSchema.int()
+        val schema = intSchema { }
         val value = JsonNumber(42.0)
 
         val result = value.validate(schema)
@@ -126,7 +130,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonNumber validates successfully as double`() {
-        val schema = JsonSchema.double()
+        val schema = doubleSchema { }
         val value = JsonNumber(42.5)
 
         val result = value.validate(schema)
@@ -136,7 +140,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonNumber enforces integer constraint`() {
-        val schema = JsonSchema.int()
+        val schema = intSchema { }
         val valid = JsonNumber(42.0)
         val invalid = JsonNumber(42.5)
 
@@ -149,7 +153,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonNumber enforces int minimum constraint`() {
-        val schema = JsonSchema.int(minimum = 0)
+        val schema = intSchema { minimum = 0 }
         val valid = JsonNumber(5.0)
         val invalid = JsonNumber(-1.0)
 
@@ -162,7 +166,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonNumber enforces int maximum constraint`() {
-        val schema = JsonSchema.int(maximum = 100)
+        val schema = intSchema { maximum = 100 }
         val valid = JsonNumber(50.0)
         val invalid = JsonNumber(101.0)
 
@@ -175,7 +179,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonNumber enforces double minimum constraint`() {
-        val schema = JsonSchema.double(minimum = 0.0)
+        val schema = doubleSchema { minimum = 0.0 }
         val valid = JsonNumber(5.5)
         val invalid = JsonNumber(-0.1)
 
@@ -188,7 +192,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonNumber enforces double maximum constraint`() {
-        val schema = JsonSchema.double(maximum = 100.0)
+        val schema = doubleSchema { maximum = 100.0 }
         val valid = JsonNumber(99.9)
         val invalid = JsonNumber(100.1)
 
@@ -201,7 +205,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonNumber validates int enum values`() {
-        val schema = JsonSchema.int(enum = listOf(1, 2, 3))
+        val schema = intSchema { enum = listOf(1, 2, 3) }
         val valid = JsonNumber(2.0)
         val invalid = JsonNumber(5.0)
 
@@ -214,7 +218,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonNumber validates double enum values`() {
-        val schema = JsonSchema.double(enum = listOf(1.5, 2.5, 3.5))
+        val schema = doubleSchema { enum = listOf(1.5, 2.5, 3.5) }
         val valid = JsonNumber(2.5)
         val invalid = JsonNumber(5.0)
 
@@ -227,7 +231,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonNumber handles boundary values for Int range`() {
-        val schema = JsonSchema.int()
+        val schema = intSchema { }
         val min = JsonNumber(Int.MIN_VALUE.toDouble())
         val max = JsonNumber(Int.MAX_VALUE.toDouble())
         val outOfRange = JsonNumber(Int.MAX_VALUE.toDouble() + 1.0)
@@ -239,7 +243,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonNumber fails validation against non-numeric schema`() {
-        val stringSchema = JsonSchema.string()
+        val stringSchema = stringSchema { }
         val value = JsonNumber(42.0)
 
         val result = value.validate(stringSchema)
@@ -252,7 +256,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonBoolean validates successfully against boolean schema`() {
-        val schema = JsonSchema.boolean()
+        val schema = booleanSchema { }
         val trueValue = JsonBoolean(true)
         val falseValue = JsonBoolean(false)
 
@@ -262,7 +266,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonBoolean fails validation against non-boolean schema`() {
-        val stringSchema = JsonSchema.string()
+        val stringSchema = stringSchema { }
         val value = JsonBoolean(true)
 
         val result = value.validate(stringSchema)
@@ -275,7 +279,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonNull validates successfully against null schema`() {
-        val schema = JsonSchema.nullSchema()
+        val schema = nullSchema { }
         val value = JsonNull
 
         val result = value.validate(schema)
@@ -285,7 +289,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonNull fails validation against non-null schema`() {
-        val stringSchema = JsonSchema.string()
+        val stringSchema = stringSchema { }
         val value = JsonNull
 
         val result = value.validate(stringSchema)
@@ -298,7 +302,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonString validates empty string when no minLength constraint`() {
-        val schema = JsonSchema.string()
+        val schema = stringSchema { }
         val value = JsonString("")
 
         val result = value.validate(schema)
@@ -308,7 +312,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonString rejects empty string with minLength constraint`() {
-        val schema = JsonSchema.string(minLength = 1)
+        val schema = stringSchema { minLength = 1 }
         val value = JsonString("")
 
         val result = value.validate(schema)
@@ -319,7 +323,7 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonNumber zero validates against unbounded int schema`() {
-        val schema = JsonSchema.int()
+        val schema = intSchema { }
         val value = JsonNumber(0.0)
 
         val result = value.validate(schema)
@@ -329,7 +333,10 @@ class JsonValueValidationTest {
 
     @Test
     fun `JsonNumber handles exact boundary values`() {
-        val schema = JsonSchema.int(minimum = 0, maximum = 100)
+        val schema = intSchema {
+            minimum = 0
+            maximum = 100
+        }
         val min = JsonNumber(0.0)
         val max = JsonNumber(100.0)
 

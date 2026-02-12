@@ -3,7 +3,7 @@ package io.amichne.kontracts.dsl
 import io.amichne.kontracts.schema.NullSchema
 
 @JsonSchemaBuilderDsl
-class NullSchemaBuilder : JsonSchemaBuilder<Any> {
+class NullSchemaBuilder @PublishedApi internal constructor() : JsonSchemaBuilder<Any> {
     var title: String? = null
     var description: String? = null
     var default: Any? = null

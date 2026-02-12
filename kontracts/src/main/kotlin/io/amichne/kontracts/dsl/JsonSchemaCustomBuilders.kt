@@ -4,7 +4,6 @@ import io.amichne.kontracts.dsl.custom.CustomBooleanSchemaBuilder
 import io.amichne.kontracts.dsl.custom.CustomDoubleSchemaBuilder
 import io.amichne.kontracts.dsl.custom.CustomIntSchemaBuilder
 import io.amichne.kontracts.dsl.custom.CustomStringSchemaBuilder
-import io.amichne.kontracts.schema.FieldSchema
 import kotlin.reflect.KProperty0
 
 context(root: RootObjectSchemaBuilder)
@@ -16,13 +15,13 @@ internal inline fun <B : JsonSchemaBuilder<Any>> KProperty0<*>.registerCustomSch
     configure: B.() -> Unit,
 ) {
     val schema = builder.apply(configure).build()
-    root.fields[name] = FieldSchema(
-        schema,
-        required = required,
-        defaultValue = schema.default,
-        description = schema.description,
-        deprecated = schema.deprecated,
-    )
+    root.fields[name] = fieldSchema {
+        this.schema = schema
+        this.required = required
+        this.defaultValue = schema.default
+        this.description = schema.description
+        this.deprecated = schema.deprecated
+    }
 }
 
 /**

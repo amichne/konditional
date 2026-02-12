@@ -1,6 +1,7 @@
 package io.amichne.kontracts.schema
 
-data class RootObjectSchema(
+@ConsistentCopyVisibility
+data class RootObjectSchema internal constructor(
     override val fields: Map<String, FieldSchema>,
     override val title: String? = null,
     override val description: String? = null,
