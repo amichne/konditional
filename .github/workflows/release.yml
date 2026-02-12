@@ -16,10 +16,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
           cache: 'gradle'
 
@@ -44,30 +44,50 @@ jobs:
   publish-maven-central:
     runs-on: ubuntu-latest
     needs: validate
-    if: secrets.OSSRH_USERNAME != '' && secrets.OSSRH_PASSWORD != ''
+    outputs:
+      published: ${{ steps.gate.outputs.publish }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
           cache: 'gradle'
 
-      - name: Require signing secrets
+      - name: Check Maven Central + signing secrets
+        id: gate
         run: |
-          if [ -z "${{ secrets.SIGNING_GPG_PRIVATE_KEY }}" ]; then
-            echo "Missing SIGNING_GPG_PRIVATE_KEY secret"
-            exit 1
+          missing=0
+
+          if [ -z "${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME }}" ]; then
+            echo "Missing ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME secret"
+            missing=1
+          fi
+          if [ -z "${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD }}" ]; then
+            echo "Missing ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD secret"
+            missing=1
           fi
           if [ -z "${{ secrets.SIGNING_GPG_KEY_NAME }}" ]; then
             echo "Missing SIGNING_GPG_KEY_NAME secret"
-            exit 1
+            missing=1
+          fi
+          if [ -z "${{ secrets.SIGNING_GPG_PRIVATE_KEY }}" ]; then
+            echo "Missing SIGNING_GPG_PRIVATE_KEY secret"
+            missing=1
+          fi
+
+          if [ "$missing" -eq 1 ]; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "Maven Central publish skipped due to missing secrets."
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Import GPG key
+        if: steps.gate.outputs.publish == 'true'
         env:
           SIGNING_GPG_PRIVATE_KEY: ${{ secrets.SIGNING_GPG_PRIVATE_KEY }}
         run: |
@@ -75,14 +95,20 @@ jobs:
           gpg --list-secret-keys --keyid-format=long
 
       - name: Publish to Maven Central
+        if: steps.gate.outputs.publish == 'true'
         env:
-          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD }}
           SIGNING_GPG_KEY_NAME: ${{ secrets.SIGNING_GPG_KEY_NAME }}
-          ORG_GRADLE_PROJECT_signing.gnupg.keyName: ${{ secrets.SIGNING_GPG_KEY_NAME }}
-          ORG_GRADLE_PROJECT_signing.gnupg.passphrase: ${{ secrets.SIGNING_GPG_PASSPHRASE }}
+          SIGNING_GPG_PASSPHRASE: ${{ secrets.SIGNING_GPG_PASSPHRASE }}
         run: |
-          ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository \
+          SIGNING_ARGS=(-Psigning.gnupg.keyName="$SIGNING_GPG_KEY_NAME")
+          if [ -n "${SIGNING_GPG_PASSPHRASE:-}" ]; then
+            SIGNING_ARGS+=(-Psigning.gnupg.passphrase="$SIGNING_GPG_PASSPHRASE")
+          fi
+
+          ./gradlew publishAndReleaseToMavenCentral "${SIGNING_ARGS[@]}" \
+            --no-configuration-cache \
             --no-daemon \
             --stacktrace
 
@@ -93,10 +119,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
           cache: 'gradle'
 
@@ -123,10 +149,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_ACTOR: ${{ github.actor }}
           SIGNING_GPG_KEY_NAME: ${{ secrets.SIGNING_GPG_KEY_NAME }}
-          ORG_GRADLE_PROJECT_signing.gnupg.keyName: ${{ secrets.SIGNING_GPG_KEY_NAME }}
-          ORG_GRADLE_PROJECT_signing.gnupg.passphrase: ${{ secrets.SIGNING_GPG_PASSPHRASE }}
+          SIGNING_GPG_PASSPHRASE: ${{ secrets.SIGNING_GPG_PASSPHRASE }}
         run: |
-          ./gradlew publishMavenPublicationToGitHubPackagesRepository \
+          SIGNING_ARGS=(-Psigning.gnupg.keyName="$SIGNING_GPG_KEY_NAME")
+          if [ -n "${SIGNING_GPG_PASSPHRASE:-}" ]; then
+            SIGNING_ARGS+=(-Psigning.gnupg.passphrase="$SIGNING_GPG_PASSPHRASE")
+          fi
+
+          ./gradlew publishMavenPublicationToGitHubPackagesRepository "${SIGNING_ARGS[@]}" \
+            --no-configuration-cache \
             --no-daemon \
             --stacktrace
 
@@ -137,17 +168,17 @@ jobs:
       always() &&
       needs.validate.result == 'success' &&
       needs.publish-github-packages.result == 'success' &&
-      (needs.publish-maven-central.result == 'success' || needs.publish-maven-central.result == 'skipped')
+      (needs.publish-maven-central.result == 'success' || needs.publish-maven-central.outputs.published == 'false')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
           cache: 'gradle'
 
@@ -196,7 +227,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Maven Central announcement
-        if: needs.publish-maven-central.result == 'success'
+        if: needs.publish-maven-central.outputs.published == 'true'
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           cat << EOF > maven-central-notice.txt
@@ -234,7 +265,7 @@ jobs:
           cat maven-central-notice.txt
 
       - name: Upload Maven Central notice
-        if: needs.publish-maven-central.result == 'success'
+        if: needs.publish-maven-central.outputs.published == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: maven-central-notice

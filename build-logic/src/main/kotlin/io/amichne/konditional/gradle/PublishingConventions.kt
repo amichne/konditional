@@ -57,9 +57,9 @@ fun Project.configureKonditionalPublishing(
 
     extensions.configure<PublishingExtension> {
         publications {
-            create<MavenPublication>("maven") {
-                from(components["java"])
+            val publication = findByName("maven") as? MavenPublication ?: create<MavenPublication>("maven")
 
+            publication.apply {
                 this.groupId = props["GROUP"] as String
                 this.artifactId = artifactId
                 this.version = props["VERSION"] as String
