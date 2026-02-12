@@ -3,9 +3,11 @@ package io.amichne.konditional.gradle
 import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.publish.tasks.GenerateModuleMetadata
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.withType
 import org.gradle.plugins.signing.SigningExtension
 
 private val githubRepoRegex = Regex("github\\.com[:/](.+?)(\\.git)?$")
@@ -126,6 +128,12 @@ fun Project.configureKonditionalPublishing(
 
         if (useGpgCmd || hasKeyringCredentials) {
             sign(extensions.getByType(PublishingExtension::class.java).publications["maven"])
+        }
+    }
+
+    tasks.withType<GenerateModuleMetadata>().configureEach {
+        if (name == "generateMetadataFileForMavenPublication") {
+            dependsOn(tasks.named("plainJavadocJar"))
         }
     }
 }
