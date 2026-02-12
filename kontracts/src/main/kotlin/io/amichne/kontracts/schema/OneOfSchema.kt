@@ -3,7 +3,9 @@ package io.amichne.kontracts.schema
 /**
  * Schema representing a one-of union of multiple schemas.
  */
-data class OneOfSchema(
+
+@ConsistentCopyVisibility
+data class OneOfSchema internal constructor(
     val options: List<JsonSchema<*>>,
     val discriminator: Discriminator? = null,
     override val title: String? = null,
@@ -23,7 +25,8 @@ data class OneOfSchema(
      * @param propertyName The property used to discriminate (typically "type")
      * @param mapping Maps discriminator values to schema names (used in $ref)
      */
-    data class Discriminator(
+    @ConsistentCopyVisibility
+    data class Discriminator internal constructor(
         val propertyName: String,
         val mapping: Map<String, String>
     )

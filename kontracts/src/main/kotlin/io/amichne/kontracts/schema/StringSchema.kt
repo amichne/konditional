@@ -4,7 +4,9 @@ package io.amichne.kontracts.schema
  * Schema for string values.
  * Supports OpenAPI string constraints.
  */
-data class StringSchema(
+
+@ConsistentCopyVisibility
+data class StringSchema internal constructor(
     override val title: String? = null,
     override val description: String? = null,
     override val default: String? = null,

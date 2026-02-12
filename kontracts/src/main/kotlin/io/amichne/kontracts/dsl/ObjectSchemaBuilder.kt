@@ -4,7 +4,7 @@ import io.amichne.kontracts.schema.FieldSchema
 import io.amichne.kontracts.schema.ObjectSchema
 
 @JsonSchemaBuilderDsl
-class ObjectSchemaBuilder : JsonSchemaBuilder<Map<String, Any?>> {
+class ObjectSchemaBuilder @PublishedApi internal constructor() : JsonSchemaBuilder<Map<String, Any?>> {
     var title: String? = null
     var description: String? = null
     var default: Map<String, Any?>? = null

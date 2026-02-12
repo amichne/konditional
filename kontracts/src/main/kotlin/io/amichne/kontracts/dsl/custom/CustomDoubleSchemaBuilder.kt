@@ -7,6 +7,6 @@ import io.amichne.kontracts.dsl.JsonSchemaBuilderDsl
  * Builder for custom types that should be represented as doubles in the schema.
  */
 @JsonSchemaBuilderDsl
-class CustomDoubleSchemaBuilder<V : Any> : DoubleSchemaBuilder() {
+class CustomDoubleSchemaBuilder<V : Any> @PublishedApi internal constructor() : DoubleSchemaBuilder() {
     var represent: (V.() -> Double)? = null
 }

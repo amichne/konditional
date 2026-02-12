@@ -3,7 +3,9 @@ package io.amichne.kontracts.schema
 /**
  * Schema for boolean values.
  */
-data class BooleanSchema(
+
+@ConsistentCopyVisibility
+data class BooleanSchema internal constructor(
     override val title: String? = null,
     override val description: String? = null,
     override val default: Boolean? = null,

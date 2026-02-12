@@ -4,7 +4,9 @@ package io.amichne.kontracts.schema
  * Schema for homogeneous arrays.
  * @param elementSchema The schema for all elements in the array
  */
-data class ArraySchema<E : Any>(
+
+@ConsistentCopyVisibility
+data class ArraySchema<E : Any> internal constructor(
     val elementSchema: JsonSchema<E>,
     override val title: String? = null,
     override val description: String? = null,

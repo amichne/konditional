@@ -4,6 +4,8 @@ import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.Konstrained
+import io.amichne.kontracts.dsl.jsonObject
+import io.amichne.kontracts.dsl.jsonValue
 import io.amichne.kontracts.schema.ObjectSchema
 import io.amichne.kontracts.value.JsonBoolean
 import io.amichne.kontracts.value.JsonNull
@@ -44,16 +46,19 @@ object SchemaValueCodec {
                 }
             }
 
-        return JsonObject(fields, schema)
+        return jsonObject {
+            this.schema = schema
+            fields(fields)
+        }
     }
 
     private fun encodeValue(value: Any): JsonValue =
         when (value) {
-            is Boolean -> JsonBoolean(value)
-            is String -> JsonString(value)
-            is Int -> JsonNumber(value.toDouble())
-            is Double -> JsonNumber(value)
-            is Enum<*> -> JsonString(value.name)
+            is Boolean -> jsonValue { boolean(value) }
+            is String -> jsonValue { string(value) }
+            is Int -> jsonValue { number(value) }
+            is Double -> jsonValue { number(value) }
+            is Enum<*> -> jsonValue { string(value.name) }
             is Konstrained<*> -> {
                 val schema =
                     value.schema as? ObjectSchema

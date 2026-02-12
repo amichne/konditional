@@ -11,7 +11,8 @@ import io.amichne.kontracts.schema.ValidationResult.Invalid
  * @param fields Map of field names to their values
  * @param schema Optional schema for validation
  */
-data class JsonObject(
+@ConsistentCopyVisibility
+data class JsonObject internal constructor(
     val fields: Map<String, JsonValue>,
     val schema: ObjectSchema? = null,
 ) : JsonValue {

@@ -3,7 +3,9 @@ package io.amichne.kontracts.schema
 /**
  * Schema for null values.
  */
-data class NullSchema(
+
+@ConsistentCopyVisibility
+data class NullSchema internal constructor(
     override val title: String? = null,
     override val description: String? = null,
     override val default: Any? = null,

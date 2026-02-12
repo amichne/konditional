@@ -7,6 +7,6 @@ import io.amichne.kontracts.dsl.JsonSchemaBuilderDsl
  * Builder for custom types that should be represented as integers in the schema.
  */
 @JsonSchemaBuilderDsl
-class CustomIntSchemaBuilder<V : Any> : IntSchemaBuilder() {
+class CustomIntSchemaBuilder<V : Any> @PublishedApi internal constructor() : IntSchemaBuilder() {
     var represent: (V.() -> Int)? = null
 }

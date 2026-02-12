@@ -3,7 +3,9 @@ package io.amichne.kontracts.schema
 /**
  * Schema for JSON objects with arbitrary string keys and uniform value schema.
  */
-data class MapSchema<V : Any>(
+
+@ConsistentCopyVisibility
+data class MapSchema<V : Any> internal constructor(
     val valueSchema: JsonSchema<V>,
     override val title: String? = null,
     override val description: String? = null,

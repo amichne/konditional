@@ -1,7 +1,7 @@
 package io.amichne.konditional.configmetadata.contract.openapi
 
-import io.amichne.kontracts.dsl.BooleanSchemaBuilder
-import io.amichne.kontracts.dsl.StringSchemaBuilder
+import io.amichne.kontracts.dsl.booleanSchema as dslBooleanSchema
+import io.amichne.kontracts.dsl.stringSchema as dslStringSchema
 import io.amichne.kontracts.schema.JsonSchema
 
 internal enum class SurfaceHttpMethod(
@@ -42,14 +42,14 @@ internal data class SurfaceResponse(
 
 internal object SurfaceRouteCatalog {
     private val nonBlankText =
-        StringSchemaBuilder().apply {
+        dslStringSchema {
             minLength = 1
-        }.build()
+        }
 
     private fun booleanSchema(default: Boolean): JsonSchema<Boolean> =
-        BooleanSchemaBuilder().apply {
+        dslBooleanSchema {
             this.default = default
-        }.build()
+        }
 
     private fun pathParameter(
         name: String,
