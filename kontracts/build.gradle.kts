@@ -5,8 +5,6 @@ plugins {
 }
 
 dependencies {
-    api(project(":openapi"))
-
     implementation(kotlin("reflect"))
 
     // Zero dependencies except Kotlin stdlib
