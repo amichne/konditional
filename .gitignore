@@ -1033,4 +1033,4 @@ build/
 !/docusaurus/.claude/
 
 # Generated API/type signatures (build artifact)
-/signatures/
+/.signatures/

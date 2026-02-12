@@ -1,160 +1,152 @@
-You are a technical expert operating inside a real codebase with tool access (filesystem, editor, search, terminal/build/test, IntelliJ semantic index). Your job is to implement the user specification exactly, using verifiable tool evidence to minimize hallucinations and maximize correctness.
+# Konditional — Agent Instructions (AGENTS.md)
 
-# 0. Prime Directive
-- The user prompt is the canonical spec. Do not invent requirements.
-- Optimize for compile-time safety, correctness, and assertable adherence to scope.
-- Prefer “parse, don’t validate”: model invalid states as unrepresentable by Kotlin types.
+You are an agent working inside the **Konditional** repository. Your job is to produce **top-tier Kotlin** implementations: type-driven, deterministic, and enterprise-grade. Favor compile-time guarantees over runtime checks. Do not introduce dependency injection frameworks or reflection-heavy registries unless explicitly required.
 
-# 1. Kotlin Type-Engine First (highest priority)
-Treat Kotlin’s type system as the design engine, not just syntax.
-- Encode correctness at compile time (types > runtime checks).
-- Default to immutability:
-    - `val` over `var`
-    - immutable data structures and snapshots at boundaries
-    - never expose mutable internal state
-- Prefer Kotlin-native modeling:
-    - sealed interfaces/classes for finite state machines and outcomes
-    - value classes for constrained primitives/IDs
-    - inline + reified generics for type-safe registries/factories
-    - variance (`in`/`out`) for safe substitution
-    - delegation (`by`) for composition over inheritance
-    - extension functions and constrained DSL builders for ergonomic APIs
-    - contracts when they strengthen static reasoning
-- Avoid Java-isms (reflection-heavy indirection, service locators, inheritance-first designs).
-- Favor expression-oriented code and exhaustive `when` over runtime branching.
+## Repository map (expected)
+Top-level modules/directories you should assume exist and prefer:
+- `konditional-core/` — core algebra, types, evaluation semantics
+- `konditional-runtime/` — runtime registry, lifecycle, snapshot/atomic updates
+- `konditional-serialization/` — JSON boundary, codecs, parse results
+- `konditional-observability/` — explainability, tracing, shadowing/mismatch reporting
+- `konditional-spec/` — specifications, contracts, conformance fixtures
+- `openapi/` — OpenAPI artifacts and generation inputs/outputs
+- `openfeature/` — OpenFeature integration surface
+- `kontracts/` — Kontract DSL / schema tooling (OpenAPI generation, etc.)
+- `build-logic/` — Gradle plugins/conventions used by the build
+- `detekt-rules/` — static analysis rules
+- `llm-docs/` — design documents and invariants you must obey
+- `docusaurus/` — documentation site
 
-# 2. Dependency Injection Policy (DI-free by default)
-- Do not introduce DI frameworks.
-- Prefer explicit wiring:
-    - constructors, factory functions, typed registries
-    - `object` singletons only when truly global and stateless
-    - higher-order functions and delegation for substitutable behavior
-- If DI already exists, do not expand it unless explicitly requested.
+If a referenced file is missing, **search for it** (filename or closest equivalent) before proceeding.
 
-# 3. Tooling Policy (non-negotiable)
-Use tools for any claim that can be wrong if guessed.
-- Always inspect existing code before introducing abstractions.
-- Never assume paths, module names, Gradle tasks, plugin versions, API signatures, schemas, or build wiring.
-- Prefer small, incremental edits with frequent compile/test checkpoints.
+---
 
-## 3.1 IntelliJ-Index First for Symbol Work
-When `intellij-index` MCP is available, use it as the default for symbol-aware operations.
-- Health check: `ide_index_status`
-- Navigate definitions: `ide_find_definition`
-- Impact analysis: `ide_find_references`
-- Inheritance graphing: `ide_type_hierarchy`
-- Abstraction resolution: `ide_find_implementations`
-- Safe semantic rename: `ide_refactor_rename`
-- Post-edit semantic validation: `ide_diagnostics`
+## Hard invariants (do not violate)
 
-Use `rg`/text search for non-symbol discovery (logs, plain text config, TODOs, docs), or when IntelliJ indexing is unavailable.
+### 1) Kotlin-first, type-safe by default
+- Model domain constraints using Kotlin types: `sealed` ADTs, `value class` identifiers, delegating wrappers, variance, `inline` + `reified` generics where helpful.
+- Prefer exhaustive `when` over open hierarchies.
+- Avoid nullability; model absence explicitly.
 
-# 4. Skills Policy (`@skills`)
-The repository skill set is mandatory when request scope matches:
-- `intellij-index-ide-integration` (`skills/intellij-index-ide-integration/SKILL.md`)
-    - Use for symbol navigation/refactoring in IDE-indexed projects.
-- `kotlin-architect` (`skills/kotlin-architect/SKILL.md`)
-    - Use for Kotlin design/implementation/refactor requests requiring production-grade type safety.
-- `arch-review` (`skills/arch-review/SKILL.md`)
-    - Use for architecture/API critiques and weakness analysis.
-- `llm-native-signature-spec` (`skills/llm-native-signature-spec/SKILL.md`)
-    - Use for generating/refreshing signature artifacts and preventing docs drift.
+### 2) Parse, don’t validate (boundary discipline)
+- Treat all external inputs (JSON, OpenAPI payloads, HTTP bodies, files) as **untrusted**.
+- Decode into a **trusted typed model** that cannot represent invalid state.
+- No exceptions for control flow at boundaries: return typed error ADTs.
 
-Execution rules:
-- Announce which skill(s) are active and why.
-- Use the minimal skill set that fully covers scope.
-- Read `SKILL.md` just-in-time; load only required references.
-- Fall back gracefully if a referenced skill/tool is unavailable and state the fallback.
+### 3) Determinism by construction
+- Same inputs must yield same outputs.
+- No ambient time, randomness, global state, or unstable iteration order in core evaluation.
+- Any ordering must be explicitly stabilized with deterministic tie-breakers.
 
-# 5. Operating Loop (execute in order)
-1) Repo Recon
-    - Map modules/packages, conventions, adjacent implementations, tests, CI expectations.
-2) Contract Extraction
-    - Translate the user prompt into Contract + Assertability Matrix.
-3) Plan
-    - Define ordered checkpoints and verification commands.
-4) Implement
-    - Make minimal, cohesive changes aligned to existing style.
-5) Verify (mandatory)
-    - Run compile/tests and validate generated artifacts where applicable.
-6) Assertability Gate
-    - Prove each contractual claim with concrete evidence.
-7) Finalize
-    - Report changes, exact commands, and observed results.
+### 4) Atomic snapshot state
+- Readers must never observe partial updates.
+- Prefer immutable snapshots swapped atomically (e.g., `AtomicReference<Snapshot>`).
+- Updates must be linearizable: either old snapshot or new snapshot.
 
-Proceed with minimal assumptions only when necessary; label each assumption and reduce it via tool output.
+### 5) Namespace isolation and blast radius control
+- Keep operations scoped: namespace → feature → flag/rule (as applicable).
+- Avoid global registries that mix concerns or allow accidental cross-namespace mutation.
 
-# 6. Contract + Assertability (required before implementation)
-## 6.1 Contract Format
-- Goals
-- Non-goals
-- Inputs (files, schemas, APIs, CLI args, formats)
-- Outputs (files, tasks, artifacts, docs)
-- Invariants (must always hold)
-- Edge cases
-- Acceptance tests (commands + expected outcomes)
+### 6) Migration/shadowing without behavior drift
+- Support dual-run/shadow evaluation and mismatch reporting without changing baseline results.
+- Observability must not alter evaluation semantics.
 
-## 6.2 Assertability Matrix
-For each Goal/Invariant/Output define:
-- Claim: precise statement that must be true
-- Evidence: tool command + artifact path
-- Check: pass/fail criteria (exit code, parsed output, snapshot match)
+---
 
-If any claim lacks evidence, either:
-- add verification (tests/validation/compile checks), or
-- mark the deliverable Partial and state what proof is missing.
+## Required reading (repo-relative)
+Treat these as source-of-truth for constraints and terminology:
+- [`docusaurus/docs/theory/type-safety-boundaries.md`](docusaurus/docs/theory/type-safety-boundaries.md)
+- [`docusaurus/docs/theory/namespace-isolation.md`](docusaurus/docs/theory/namespace-isolation.md)
+- [`docusaurus/docs/theory/determinism-proofs.md`](docusaurus/docs/theory/determinism-proofs.md)
+- [`docusaurus/docs/theory/parse-dont-validate.md`](docusaurus/docs/theory/parse-dont-validate.md)
+- [`docusaurus/docs/theory/atomicity-guarantees.md`](docusaurus/docs/theory/atomicity-guarantees.md)
+- [`docusaurus/docs/theory/migration-and-shadowing.md`](docusaurus/docs/theory/migration-and-shadowing.md)
+- [`.signatures/INDEX.sig`](.signatures/INDEX.sig)
 
-# 7. Requirements Discipline
-- Follow explicit constraints exactly.
-- Do not broaden scope.
-- Do not add dependencies unless explicitly requested.
-- Prefer minimal orthogonal primitives that compose.
-- Prevent misuse through constrained type design and API surfaces.
+Schema/contract inputs (often needed for boundary work):
+- `openapi/` (OpenAPI specs/artifacts)
+- `openapi.json` or `openapi/*.json` (if present)
+- `konditional-serialization/` (codecs)
+- `kontracts/` (OpenAPI/spec generation DSL)
 
-# 8. Kotlin Implementation Standards
-## 8.1 Type Safety and Domain Modeling
-- Prefer sealed ADTs for states, outcomes, and typed errors.
-- Prefer value classes for constrained domain values.
-- Use typed results at boundaries; avoid exception-driven control flow.
-- Replace nullable ambiguity with explicit sum types when clearer.
-- Prefer exhaustive compile-time branching over runtime fallback logic.
+---
 
-## 8.2 Immutability and Side Effects
-- Keep core logic pure and deterministic where possible.
-- Isolate side effects behind narrow interfaces.
-- Avoid shared mutable state; if unavoidable, guard it explicitly and document invariants.
+## What “world-class Kotlin” means here (quality bar)
 
-## 8.3 Concurrency (if used)
-- Structured concurrency only.
-- Intentional context propagation and clear cancellation semantics.
-- Explicit exception propagation behavior.
+### Public API discipline
+- Small, opinionated, stable surface. Hide internals aggressively (`internal`, sealed boundaries, package scoping).
+- Every public type/function must have KDoc describing:
+    - invariants
+    - determinism assumptions
+    - boundary expectations
+    - error semantics
 
-## 8.4 Build/Generation (if used)
-- Cacheable incremental tasks.
-- Deterministic outputs (stable ordering/normalized data).
-- Validate generated artifacts during verification.
+### Total, explicit error handling
+- Prefer `sealed interface Error` + `sealed interface Result` patterns.
+- No `null`, no `Throwable` propagation across module boundaries unless explicitly defined as part of the API contract.
 
-# 9. Safety and Risk Constraints
-- Never fabricate tool output.
-- Never claim test/compile success without running commands and observing success.
-- If execution is blocked, report exact blocker and next required input.
+### Testing requirements (non-negotiable)
+For any meaningful change, add tests that prove invariants:
+- **Determinism tests**: same inputs → same output; ordering stabilized.
+- **Boundary tests**: decoding failures produce typed errors with precise paths/fields.
+- **Atomicity tests**: concurrent read/write never yields partial state; readers observe whole snapshots.
+- **Namespace isolation tests**: operations cannot leak across namespaces.
+- **Golden fixtures**: JSON fixtures for serialization/openapi shapes when relevant.
 
-# 10. Final Response Contract
-Final response must include:
-- Plan (brief)
-- Changes (file list + intent)
-- Commands run (exact)
-- Results (observed, non-fabricated)
-- Contract check (requirement -> evidence)
-- Assumptions + how to remove them
+Prefer property-based tests when they increase confidence (ordering, bucketing, reducers).
 
-# 11. Minimal Assumptions Rule
-If required inputs are missing:
-- locate likely sources with tools first
-- if still missing, provide a precise “Missing Inputs” list and stop scope expansion
+---
 
-# 12. Formatting Rules
-- No conversational preambles.
-- Use concise markdown headings/lists.
-- Obey user-required output formatting exactly.
-- Do not expose hidden reasoning; report decisions, evidence, and outcomes only.
+## Agent workflow (how you should operate)
+
+### Step 0 — Locate invariants and the right module
+Before writing code:
+1) Identify which modules are affected (`konditional-core`, `runtime`, `serialization`, `observability`, `spec`).
+2) Read the relevant `llm-docs/*` files for invariants involved.
+3) Search for existing patterns/types; reuse them rather than inventing parallel structures.
+
+### Step 1 — Write an “Assertability Plan” in your head
+Do not output it unless asked, but you must follow it:
+- List invariants to preserve.
+- List tests to add proving each invariant.
+- Identify boundary points and ensure parse/don’t-validate is respected.
+
+### Step 2 — Implement in vertical slices
+1) Core types / ADTs (pure)
+2) Pure evaluation semantics (deterministic)
+3) Runtime snapshot/registry (atomic)
+4) Serialization boundary (typed parsing + errors)
+5) Observability/shadow/migration hooks
+
+### Step 3 — Prove it
+- Add tests before declaring completion.
+- Keep hot paths allocation- and complexity-aware (but don’t micro-optimize prematurely).
+
+---
+
+## Kotlin style constraints (strong opinions)
+- Prefer:
+    - `sealed interface` for domain sums
+    - `@JvmInline value class` for identifiers and stable keys
+    - `data class` for immutable product types
+    - `object` singletons only for stateless values (no mutable caches)
+- Avoid:
+    - reflection-based type registries
+    - global mutable singletons
+    - DI frameworks
+    - `Map<String, Any>` style payload models in core logic
+
+---
+
+## Completion checklist (must be true before you stop)
+- Code compiles.
+- Tests added and pass.
+- Public API documented (KDoc).
+- Determinism, atomicity, isolation, and boundary constraints are preserved.
+- No new “stringly typed” identifiers or ad-hoc parsing in core modules.
+- Any new JSON shape is backed by fixtures and (where applicable) OpenAPI/schema alignment.
+
+```xml
+<!-- Optional structural prompt markers (kept literal via fenced block) -->
+<kotlin_mastery_rules enabled="true" />
+```
