@@ -1,14 +1,14 @@
 package io.amichne.konditional.configmetadata.contract.openapi
 
-import io.amichne.kontracts.dsl.ArraySchemaBuilder
-import io.amichne.kontracts.dsl.BooleanSchemaBuilder
-import io.amichne.kontracts.dsl.DoubleSchemaBuilder
-import io.amichne.kontracts.dsl.StringSchemaBuilder
+import io.amichne.kontracts.dsl.arraySchema as dslArraySchema
+import io.amichne.kontracts.dsl.booleanSchema as dslBooleanSchema
+import io.amichne.kontracts.dsl.doubleSchema as dslDoubleSchema
+import io.amichne.kontracts.dsl.mapSchema as dslMapSchema
+import io.amichne.kontracts.dsl.oneOfSchema
 import io.amichne.kontracts.dsl.schema
 import io.amichne.kontracts.dsl.schemaRef
+import io.amichne.kontracts.dsl.stringSchema as dslStringSchema
 import io.amichne.kontracts.schema.JsonSchema
-import io.amichne.kontracts.schema.MapSchema
-import io.amichne.kontracts.schema.OneOfSchema
 
 internal object SurfaceSchemaRegistry {
     private fun stringSchema(
@@ -16,33 +16,35 @@ internal object SurfaceSchemaRegistry {
         enum: List<String>? = null,
         description: String? = null,
     ): JsonSchema<String> =
-        StringSchemaBuilder().apply {
+        dslStringSchema {
             this.minLength = minLength
             this.enum = enum
             this.description = description
-        }.build()
+        }
 
     private fun booleanSchema(default: Boolean? = null): JsonSchema<Boolean> =
-        BooleanSchemaBuilder().apply {
+        dslBooleanSchema {
             this.default = default
-        }.build()
+        }
 
     private fun doubleSchema(
         minimum: Double? = null,
         maximum: Double? = null,
     ): JsonSchema<Double> =
-        DoubleSchemaBuilder().apply {
+        dslDoubleSchema {
             this.minimum = minimum
             this.maximum = maximum
-        }.build()
+        }
 
     private fun arraySchema(elementSchema: JsonSchema<*>): JsonSchema<List<Any>> =
-        ArraySchemaBuilder().apply {
+        dslArraySchema {
             this.elementSchema = elementSchema
-        }.build()
+        }
 
-    private fun mapSchema(valueSchema: JsonSchema<*>): JsonSchema<Map<String, Any>> =
-        MapSchema(valueSchema = valueSchema)
+    private fun <V : Any> mapSchema(valueSchema: JsonSchema<V>): JsonSchema<Map<String, V>> =
+        dslMapSchema {
+            this.valueSchema = valueSchema
+        }
 
     private fun componentRef(componentName: String): JsonSchema<Any> =
         schemaRef(ref = "#/components/schemas/$componentName")
@@ -115,24 +117,23 @@ internal object SurfaceSchemaRegistry {
         }
 
     private val targetSelectorScopeSchema =
-        OneOfSchema(
+        oneOfSchema {
             options =
                 listOf(
                     componentRef("TargetSelectorNamespace"),
                     componentRef("TargetSelectorFeature"),
                     componentRef("TargetSelectorRule"),
-                ),
-            discriminator =
-                OneOfSchema.Discriminator(
-                    propertyName = "kind",
-                    mapping =
-                        linkedMapOf(
-                            "NAMESPACE" to "#/components/schemas/TargetSelectorNamespace",
-                            "FEATURE" to "#/components/schemas/TargetSelectorFeature",
-                            "RULE" to "#/components/schemas/TargetSelectorRule",
-                        ),
-                ),
-        )
+                )
+            discriminator {
+                propertyName = "kind"
+                mapping =
+                    linkedMapOf(
+                        "NAMESPACE" to "#/components/schemas/TargetSelectorNamespace",
+                        "FEATURE" to "#/components/schemas/TargetSelectorFeature",
+                        "RULE" to "#/components/schemas/TargetSelectorRule",
+                    )
+            }
+        }
 
     private val targetSelectorAllSchema =
         schema {
@@ -146,7 +147,7 @@ internal object SurfaceSchemaRegistry {
         }
 
     private val targetSelectorSchema =
-        OneOfSchema(
+        oneOfSchema {
             options =
                 listOf(
                     componentRef("TargetSelectorAll"),
@@ -154,20 +155,19 @@ internal object SurfaceSchemaRegistry {
                     componentRef("TargetSelectorNamespace"),
                     componentRef("TargetSelectorFeature"),
                     componentRef("TargetSelectorRule"),
-                ),
-            discriminator =
-                OneOfSchema.Discriminator(
-                    propertyName = "kind",
-                    mapping =
-                        linkedMapOf(
-                            "ALL" to "#/components/schemas/TargetSelectorAll",
-                            "SUBSET" to "#/components/schemas/TargetSelectorSubset",
-                            "NAMESPACE" to "#/components/schemas/TargetSelectorNamespace",
-                            "FEATURE" to "#/components/schemas/TargetSelectorFeature",
-                            "RULE" to "#/components/schemas/TargetSelectorRule",
-                        ),
-                ),
-        )
+                )
+            discriminator {
+                propertyName = "kind"
+                mapping =
+                    linkedMapOf(
+                        "ALL" to "#/components/schemas/TargetSelectorAll",
+                        "SUBSET" to "#/components/schemas/TargetSelectorSubset",
+                        "NAMESPACE" to "#/components/schemas/TargetSelectorNamespace",
+                        "FEATURE" to "#/components/schemas/TargetSelectorFeature",
+                        "RULE" to "#/components/schemas/TargetSelectorRule",
+                    )
+            }
+        }
 
     private val snapshotMutationRequestSchema =
         schema {
@@ -239,18 +239,17 @@ internal object SurfaceSchemaRegistry {
         }
 
     private val codecOutcomeSchema =
-        OneOfSchema(
-            options = listOf(componentRef("CodecOutcomeSuccess"), componentRef("CodecOutcomeFailure")),
-            discriminator =
-                OneOfSchema.Discriminator(
-                    propertyName = "status",
-                    mapping =
-                        linkedMapOf(
-                            "SUCCESS" to "#/components/schemas/CodecOutcomeSuccess",
-                            "FAILURE" to "#/components/schemas/CodecOutcomeFailure",
-                        ),
-                ),
-        )
+        oneOfSchema {
+            options = listOf(componentRef("CodecOutcomeSuccess"), componentRef("CodecOutcomeFailure"))
+            discriminator {
+                propertyName = "status"
+                mapping =
+                    linkedMapOf(
+                        "SUCCESS" to "#/components/schemas/CodecOutcomeSuccess",
+                        "FAILURE" to "#/components/schemas/CodecOutcomeFailure",
+                    )
+            }
+        }
 
     private val mutationEnvelopeSchema =
         schema {

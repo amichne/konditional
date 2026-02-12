@@ -11,6 +11,7 @@ import io.amichne.konditional.core.types.asObjectSchema
 import io.amichne.konditional.serialization.SchemaValueCodec
 import io.amichne.konditional.serialization.internal.toJsonValue
 import io.amichne.konditional.serialization.internal.toPrimitiveMap
+import io.amichne.kontracts.dsl.jsonObject
 import io.amichne.kontracts.schema.ObjectSchema
 import io.amichne.kontracts.value.JsonObject
 
@@ -198,7 +199,7 @@ private fun toJsonObject(
     fields: Map<String, Any?>,
     schema: ObjectSchema? = null,
 ): JsonObject =
-    JsonObject(
-        fields = fields.mapValues { (_, value) -> value.toJsonValue() },
-        schema = schema,
-    )
+    jsonObject {
+        this.schema = schema
+        fields(fields.mapValues { (_, value) -> value.toJsonValue() })
+    }

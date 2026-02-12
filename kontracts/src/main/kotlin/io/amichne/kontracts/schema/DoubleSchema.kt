@@ -4,7 +4,9 @@ package io.amichne.kontracts.schema
  * Schema for double/decimal values.
  * Supports OpenAPI numeric constraints.
  */
-data class DoubleSchema(
+
+@ConsistentCopyVisibility
+data class DoubleSchema internal constructor(
     override val title: String? = null,
     override val description: String? = null,
     override val default: Double? = null,

@@ -8,7 +8,7 @@ import io.amichne.kontracts.dsl.StringSchemaBuilder
  * Allows specifying a conversion function from V to String.
  */
 @JsonSchemaBuilderDsl
-class CustomStringSchemaBuilder<V : Any> : StringSchemaBuilder() {
+class CustomStringSchemaBuilder<V : Any> @PublishedApi internal constructor() : StringSchemaBuilder() {
     /**
      * Optional conversion function that transforms the custom type V into a String.
      * This is for documentation and potential runtime conversion.

@@ -3,7 +3,9 @@ package io.amichne.kontracts.schema
 /**
  * Schema that allows any JSON value without constraints.
  */
-data class AnySchema(
+
+@ConsistentCopyVisibility
+data class AnySchema internal constructor(
     override val title: String? = null,
     override val description: String? = null,
     override val default: Any? = null,

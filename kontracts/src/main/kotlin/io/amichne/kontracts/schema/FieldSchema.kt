@@ -6,7 +6,9 @@ package io.amichne.kontracts.schema
  * @param required Whether this field is required (default: false)
  * @param defaultValue Optional default value if field is missing
  */
-data class FieldSchema(
+
+@ConsistentCopyVisibility
+data class FieldSchema internal constructor(
     val schema: JsonSchema<*>,
     val required: Boolean = false,
     val defaultValue: Any? = null,

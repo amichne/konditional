@@ -5,7 +5,7 @@ import io.amichne.kontracts.schema.JsonSchema
 import io.amichne.kontracts.schema.ObjectSchema
 
 @JsonSchemaBuilderDsl
-class RootObjectSchemaBuilder {
+class RootObjectSchemaBuilder @PublishedApi internal constructor() {
     @PublishedApi
     internal val fields: MutableMap<String, FieldSchema> = mutableMapOf()
 

@@ -26,27 +26,27 @@ sealed interface JsonValue {
         /**
          * Creates a JsonBoolean from a Boolean.
          */
-        fun from(value: Boolean): JsonBoolean = JsonBoolean(value)
+        internal fun from(value: Boolean): JsonBoolean = JsonBoolean(value)
 
         /**
          * Creates a JsonString from a String.
          */
-        fun from(value: String): JsonString = JsonString(value)
+        internal fun from(value: String): JsonString = JsonString(value)
 
         /**
          * Creates a JsonNumber from an Int.
          */
-        fun from(value: Int): JsonNumber = JsonNumber(value.toDouble())
+        internal fun from(value: Int): JsonNumber = JsonNumber(value.toDouble())
 
         /**
          * Creates a JsonNumber from a Double.
          */
-        fun from(value: Double): JsonNumber = JsonNumber(value)
+        internal fun from(value: Double): JsonNumber = JsonNumber(value)
 
         /**
          * Creates a JsonObject from a map.
          */
-        fun obj(
+        internal fun obj(
             fields: Map<String, JsonValue>,
             schema: ObjectSchema? = null
         ): JsonObject = JsonObject(fields, schema)
@@ -54,7 +54,7 @@ sealed interface JsonValue {
         /**
          * Creates a JsonArray from a list.
          */
-        fun array(
+        internal fun array(
             elements: List<JsonValue>,
             elementSchema: JsonSchema<Any>? = null
         ): JsonArray = JsonArray(elements, elementSchema)

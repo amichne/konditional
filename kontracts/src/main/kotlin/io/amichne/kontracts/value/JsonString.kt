@@ -8,7 +8,8 @@ import io.amichne.kontracts.schema.ValidationResult
 /**
  * JSON string value.
  */
-data class JsonString(val value: String) : JsonValue {
+@ConsistentCopyVisibility
+data class JsonString internal constructor(val value: String) : JsonValue {
     override fun validate(schema: JsonSchema<*>): ValidationResult {
         return when (schema) {
             is StringSchema -> {

@@ -8,7 +8,9 @@ import kotlin.reflect.KClass
  * @param enumClass The KClass of the enum for runtime type checking
  * @param values The allowed enum values
  */
-data class EnumSchema<E : Enum<E>>(
+
+@ConsistentCopyVisibility
+data class EnumSchema<E : Enum<E>> internal constructor(
     val enumClass: KClass<E>,
     val values: List<E>,
     override val title: String? = null,

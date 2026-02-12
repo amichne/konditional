@@ -4,7 +4,7 @@ import io.amichne.kontracts.schema.ArraySchema
 import io.amichne.kontracts.schema.JsonSchema
 
 @JsonSchemaBuilderDsl
-class ArraySchemaBuilder : JsonSchemaBuilder<List<Any>> {
+class ArraySchemaBuilder @PublishedApi internal constructor() : JsonSchemaBuilder<List<Any>> {
     var title: String? = null
     var description: String? = null
     var default: List<Any>? = null
