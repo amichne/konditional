@@ -151,9 +151,6 @@ internal object SurfaceSchemaRegistry {
                 listOf(
                     componentRef("TargetSelectorAll"),
                     componentRef("TargetSelectorSubset"),
-                    componentRef("TargetSelectorNamespace"),
-                    componentRef("TargetSelectorFeature"),
-                    componentRef("TargetSelectorRule"),
                 ),
             discriminator =
                 OneOfSchema.Discriminator(
@@ -162,9 +159,6 @@ internal object SurfaceSchemaRegistry {
                         linkedMapOf(
                             "ALL" to "#/components/schemas/TargetSelectorAll",
                             "SUBSET" to "#/components/schemas/TargetSelectorSubset",
-                            "NAMESPACE" to "#/components/schemas/TargetSelectorNamespace",
-                            "FEATURE" to "#/components/schemas/TargetSelectorFeature",
-                            "RULE" to "#/components/schemas/TargetSelectorRule",
                         ),
                 ),
         )

@@ -117,6 +117,39 @@ class SurfaceOpenApiSpecBuilderTest {
     }
 
     @Test
+    fun `target selector schema matches sealed target selector variants`() {
+        val document = parseGeneratedDocument()
+        val components = document.objectValue("components").objectValue("schemas")
+
+        val targetSelectorSchema = components.objectValue("TargetSelector")
+        val oneOf = targetSelectorSchema.listValue("oneOf")
+        assertEquals(2, oneOf.size, "TargetSelector must only expose ALL and SUBSET top-level variants.")
+
+        val discriminatorMapping =
+            targetSelectorSchema
+                .objectValue("discriminator")
+                .objectValue("mapping")
+        assertEquals(
+            setOf("ALL", "SUBSET"),
+            discriminatorMapping.keys,
+            "TargetSelector discriminator must not include scoped selector kinds.",
+        )
+        assertEquals("#/components/schemas/TargetSelectorAll", discriminatorMapping["ALL"])
+        assertEquals("#/components/schemas/TargetSelectorSubset", discriminatorMapping["SUBSET"])
+
+        val targetSelectorScopeSchema = components.objectValue("TargetSelectorScope")
+        val scopeDiscriminatorMapping =
+            targetSelectorScopeSchema
+                .objectValue("discriminator")
+                .objectValue("mapping")
+        assertEquals(
+            setOf("NAMESPACE", "FEATURE", "RULE"),
+            scopeDiscriminatorMapping.keys,
+            "Scoped selector variants must remain represented under TargetSelectorScope.",
+        )
+    }
+
+    @Test
     fun `builder output is deterministic for identical inputs`() {
         val first = SurfaceOpenApiSpecGenerator.buildJson()
         val second = SurfaceOpenApiSpecGenerator.buildJson()
