@@ -8,6 +8,10 @@ on:
         required: true
         type: string
 
+concurrency:
+  group: snapshot-${{ github.event.inputs.snapshot-version }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
   packages: write
@@ -70,15 +74,37 @@ jobs:
           SIGNING_GPG_KEY_NAME: ${{ secrets.SIGNING_GPG_KEY_NAME }}
           SIGNING_GPG_PASSPHRASE: ${{ secrets.SIGNING_GPG_PASSPHRASE }}
         run: |
+          set -euo pipefail
           SIGNING_ARGS=(-Psigning.gnupg.keyName="$SIGNING_GPG_KEY_NAME")
           if [ -n "${SIGNING_GPG_PASSPHRASE:-}" ]; then
             SIGNING_ARGS+=(-Psigning.gnupg.passphrase="$SIGNING_GPG_PASSPHRASE")
           fi
 
-          ./gradlew publishMavenPublicationToGitHubPackagesRepository "${SIGNING_ARGS[@]}" \
-            --no-configuration-cache \
-            --no-daemon \
-            --stacktrace
+          run_publish() {
+            local attempt="$1"
+            set +e
+            ./gradlew publishMavenPublicationToGitHubPackagesRepository "${SIGNING_ARGS[@]}" \
+              --no-configuration-cache \
+              --no-daemon \
+              --stacktrace 2>&1 | tee "publish-attempt-${attempt}.log"
+            local publish_exit="${PIPESTATUS[0]}"
+            set -e
+            return "${publish_exit}"
+          }
+
+          if run_publish 1; then
+            exit 0
+          fi
+
+          if grep -Eq "Could not PUT '.*\\.sha1'.*status code 409" publish-attempt-1.log; then
+            echo "Detected GitHub Packages checksum conflict (409 on .sha1 upload). Retrying once."
+            sleep 10
+            run_publish 2
+            exit 0
+          fi
+
+          echo "Publish failed with a non-retriable error."
+          exit 1
 
       - name: Summary
         run: |
