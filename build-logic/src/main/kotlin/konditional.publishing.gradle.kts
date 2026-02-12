@@ -1,13 +1,22 @@
+import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import io.amichne.konditional.gradle.KonditionalPublishingExtension
 import io.amichne.konditional.gradle.configureKonditionalPublishing
+import org.gradle.kotlin.dsl.configure
 
 plugins {
     `java-library`
     `maven-publish`
     signing
+    id("com.vanniktech.maven.publish")
 }
 
 val extension = extensions.create<KonditionalPublishingExtension>("konditionalPublishing")
+extensions.configure<MavenPublishBaseExtension> {
+    publishToMavenCentral(
+        automaticRelease = true,
+        validateDeployment = true,
+    )
+}
 
 afterEvaluate {
     val artifactId = requireNotNull(extension.artifactId.orNull) {

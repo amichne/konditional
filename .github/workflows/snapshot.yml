@@ -68,10 +68,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_ACTOR: ${{ github.actor }}
           SIGNING_GPG_KEY_NAME: ${{ secrets.SIGNING_GPG_KEY_NAME }}
-          ORG_GRADLE_PROJECT_signing.gnupg.keyName: ${{ secrets.SIGNING_GPG_KEY_NAME }}
-          ORG_GRADLE_PROJECT_signing.gnupg.passphrase: ${{ secrets.SIGNING_GPG_PASSPHRASE }}
+          SIGNING_GPG_PASSPHRASE: ${{ secrets.SIGNING_GPG_PASSPHRASE }}
         run: |
-          ./gradlew publishMavenPublicationToGitHubPackagesRepository \
+          SIGNING_ARGS=(-Psigning.gnupg.keyName="$SIGNING_GPG_KEY_NAME")
+          if [ -n "${SIGNING_GPG_PASSPHRASE:-}" ]; then
+            SIGNING_ARGS+=(-Psigning.gnupg.passphrase="$SIGNING_GPG_PASSPHRASE")
+          fi
+
+          ./gradlew publishMavenPublicationToGitHubPackagesRepository "${SIGNING_ARGS[@]}" \
+            --no-configuration-cache \
             --no-daemon \
             --stacktrace
 
@@ -83,6 +88,7 @@ jobs:
 
           **Version:** \`$VERSION\`
 
+          \`\`\`kotlin
           dependencies {
               implementation("io.amichne:konditional:$VERSION")
           }
