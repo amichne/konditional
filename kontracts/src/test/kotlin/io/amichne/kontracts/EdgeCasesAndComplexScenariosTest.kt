@@ -2,10 +2,17 @@ package io.amichne.kontracts
 
 import io.amichne.kontracts.dsl.asInt
 import io.amichne.kontracts.dsl.asString
+import io.amichne.kontracts.dsl.arraySchema
+import io.amichne.kontracts.dsl.booleanSchema
+import io.amichne.kontracts.dsl.doubleSchema
+import io.amichne.kontracts.dsl.elementSchema
+import io.amichne.kontracts.dsl.fieldSchema
+import io.amichne.kontracts.dsl.intSchema
+import io.amichne.kontracts.dsl.nullSchema
 import io.amichne.kontracts.dsl.of
+import io.amichne.kontracts.dsl.objectSchema
 import io.amichne.kontracts.dsl.schema
-import io.amichne.kontracts.schema.FieldSchema
-import io.amichne.kontracts.schema.JsonSchema
+import io.amichne.kontracts.dsl.stringSchema
 import io.amichne.kontracts.schema.ObjectSchema
 import io.amichne.kontracts.schema.SchemaProvider
 import io.amichne.kontracts.value.JsonArray
@@ -31,29 +38,53 @@ class EdgeCasesAndComplexScenariosTest {
     @Test
     fun `validates deeply nested object hierarchy`() {
         // Level 3: Country
-        val countrySchema = objectSchema(
+        val countrySchema = objectSchema {
             fields = mapOf(
-                "name" to fieldSchema(stringSchema(), required = true),
-                "code" to fieldSchema(stringSchema(minLength = 2, maxLength = 2), required = true)
+                "name" to fieldSchema {
+                    schema = stringSchema { }
+                    required = true
+                },
+                "code" to fieldSchema {
+                    schema = stringSchema {
+                        minLength = 2
+                        maxLength = 2
+                    }
+                    required = true
+                }
             )
-        )
+        }
 
         // Level 2: Address
-        val addressSchema = objectSchema(
+        val addressSchema = objectSchema {
             fields = mapOf(
-                "street" to fieldSchema(stringSchema(), required = true),
-                "city" to fieldSchema(stringSchema(), required = true),
-                "country" to fieldSchema(countrySchema, required = true)
+                "street" to fieldSchema {
+                    schema = stringSchema { }
+                    required = true
+                },
+                "city" to fieldSchema {
+                    schema = stringSchema { }
+                    required = true
+                },
+                "country" to fieldSchema {
+                    schema = countrySchema
+                    required = true
+                }
             )
-        )
+        }
 
         // Level 1: Person
-        val personSchema = objectSchema(
+        val personSchema = objectSchema {
             fields = mapOf(
-                "name" to fieldSchema(stringSchema(), required = true),
-                "address" to fieldSchema(addressSchema, required = true)
+                "name" to fieldSchema {
+                    schema = stringSchema { }
+                    required = true
+                },
+                "address" to fieldSchema {
+                    schema = addressSchema
+                    required = true
+                }
             )
-        )
+        }
 
         val person = JsonObject(
             fields = mapOf(
@@ -79,26 +110,47 @@ class EdgeCasesAndComplexScenariosTest {
 
     @Test
     fun `fails validation in deeply nested structure`() {
-        val countrySchema = objectSchema(
+        val countrySchema = objectSchema {
             fields = mapOf(
-                "name" to fieldSchema(stringSchema(), required = true),
-                "code" to fieldSchema(stringSchema(minLength = 2, maxLength = 2), required = true)
+                "name" to fieldSchema {
+                    schema = stringSchema { }
+                    required = true
+                },
+                "code" to fieldSchema {
+                    schema = stringSchema {
+                        minLength = 2
+                        maxLength = 2
+                    }
+                    required = true
+                }
             )
-        )
+        }
 
-        val addressSchema = objectSchema(
+        val addressSchema = objectSchema {
             fields = mapOf(
-                "street" to fieldSchema(stringSchema(), required = true),
-                "country" to fieldSchema(countrySchema, required = true)
+                "street" to fieldSchema {
+                    schema = stringSchema { }
+                    required = true
+                },
+                "country" to fieldSchema {
+                    schema = countrySchema
+                    required = true
+                }
             )
-        )
+        }
 
-        val personSchema = objectSchema(
+        val personSchema = objectSchema {
             fields = mapOf(
-                "name" to fieldSchema(stringSchema(), required = true),
-                "address" to fieldSchema(addressSchema, required = true)
+                "name" to fieldSchema {
+                    schema = stringSchema { }
+                    required = true
+                },
+                "address" to fieldSchema {
+                    schema = addressSchema
+                    required = true
+                }
             )
-        )
+        }
 
         val person = JsonObject(
             fields = mapOf(
@@ -127,15 +179,28 @@ class EdgeCasesAndComplexScenariosTest {
 
     @Test
     fun `validates array of objects with nested arrays`() {
-        val tagSchema = arraySchema(stringSchema())
-        val itemSchema = objectSchema(
+        val tagSchema = arraySchema {
+            elementSchema(stringSchema { })
+        }
+        val itemSchema = objectSchema {
             fields = mapOf(
-                "id" to fieldSchema(intSchema(), required = true),
-                "name" to fieldSchema(stringSchema(), required = true),
-                "tags" to fieldSchema(tagSchema, required = true)
+                "id" to fieldSchema {
+                    schema = intSchema { }
+                    required = true
+                },
+                "name" to fieldSchema {
+                    schema = stringSchema { }
+                    required = true
+                },
+                "tags" to fieldSchema {
+                    schema = tagSchema
+                    required = true
+                }
             )
-        )
-        val schema = arraySchema(itemSchema)
+        }
+        val schema = arraySchema {
+            elementSchema(itemSchema)
+        }
 
         val items = JsonArray(
             elements = listOf(
@@ -162,14 +227,28 @@ class EdgeCasesAndComplexScenariosTest {
 
     @Test
     fun `fails validation in nested array element`() {
-        val tagSchema = arraySchema(stringSchema(minLength = 3))
-        val itemSchema = objectSchema(
-            fields = mapOf(
-                "id" to fieldSchema(intSchema(), required = true),
-                "tags" to fieldSchema(tagSchema, required = true)
+        val tagSchema = arraySchema {
+            elementSchema(
+                stringSchema {
+                    minLength = 3
+                }
             )
-        )
-        val schema = arraySchema(itemSchema)
+        }
+        val itemSchema = objectSchema {
+            fields = mapOf(
+                "id" to fieldSchema {
+                    schema = intSchema { }
+                    required = true
+                },
+                "tags" to fieldSchema {
+                    schema = tagSchema
+                    required = true
+                }
+            )
+        }
+        val schema = arraySchema {
+            elementSchema(itemSchema)
+        }
 
         val items = JsonArray(
             elements = listOf(
@@ -197,7 +276,10 @@ class EdgeCasesAndComplexScenariosTest {
 
     @Test
     fun `validates boundary values for numeric constraints`() {
-        val schema = intSchema(minimum = 0, maximum = 100)
+        val schema = intSchema {
+            minimum = 0
+            maximum = 100
+        }
 
         assertTrue(JsonNumber(0.0).validate(schema).isValid)
         assertTrue(JsonNumber(100.0).validate(schema).isValid)
@@ -207,7 +289,10 @@ class EdgeCasesAndComplexScenariosTest {
 
     @Test
     fun `validates boundary values for string length`() {
-        val schema = stringSchema(minLength = 5, maxLength = 10)
+        val schema = stringSchema {
+            minLength = 5
+            maxLength = 10
+        }
 
         assertTrue(JsonString("12345").validate(schema).isValid)
         assertTrue(JsonString("1234567890").validate(schema).isValid)
@@ -217,7 +302,10 @@ class EdgeCasesAndComplexScenariosTest {
 
     @Test
     fun `handles Double precision edge cases`() {
-        val schema = doubleSchema(minimum = 0.0, maximum = 1.0)
+        val schema = doubleSchema {
+            minimum = 0.0
+            maximum = 1.0
+        }
 
         assertTrue(JsonNumber(0.0).validate(schema).isValid)
         assertTrue(JsonNumber(0.5).validate(schema).isValid)
@@ -230,7 +318,7 @@ class EdgeCasesAndComplexScenariosTest {
 
     @Test
     fun `validates strings with unicode characters`() {
-        val schema = stringSchema()
+        val schema = stringSchema {  }
 
         assertTrue(JsonString("Hello 世界").validate(schema).isValid)
         assertTrue(JsonString("Привет мир").validate(schema).isValid)
@@ -240,7 +328,7 @@ class EdgeCasesAndComplexScenariosTest {
 
     @Test
     fun `validates patterns with special regex characters`() {
-        val schema = stringSchema(pattern = "^\\d{3}-\\d{2}-\\d{4}$")
+        val schema = stringSchema { pattern = "^\\d{3}-\\d{2}-\\d{4}$" }
 
         assertTrue(JsonString("123-45-6789").validate(schema).isValid)
         assertFalse(JsonString("12-345-6789").validate(schema).isValid)
@@ -249,9 +337,9 @@ class EdgeCasesAndComplexScenariosTest {
 
     @Test
     fun `validates email pattern with complex addresses`() {
-        val schema = stringSchema(
+        val schema = stringSchema {
             pattern = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
-        )
+        }
 
         assertTrue(JsonString("user@example.com").validate(schema).isValid)
         assertTrue(JsonString("first.last@subdomain.example.com").validate(schema).isValid)
@@ -265,7 +353,9 @@ class EdgeCasesAndComplexScenariosTest {
 
     @Test
     fun `validates large array of primitives`() {
-        val schema = arraySchema(intSchema())
+        val schema = arraySchema {
+            elementSchema(intSchema { })
+        }
         val largeArray = JsonArray(
             elements = (1..1000).map { JsonNumber(it.toDouble()) }
         )
@@ -276,10 +366,15 @@ class EdgeCasesAndComplexScenariosTest {
 
     @Test
     fun `validates object with many fields`() {
-        val fields = (1..50).associate { index ->
-            "field$index" to fieldSchema(stringSchema(), required = true)
+        val fieldMap = (1..50).associate { index ->
+            "field$index" to fieldSchema {
+                schema = stringSchema { }
+                required = true
+            }
         }
-        val schema = objectSchema(fields = fields)
+        val schema = objectSchema {
+            fields = fieldMap
+        }
 
         val obj = JsonObject(
             fields = (1..50).associate { index ->
@@ -413,24 +508,47 @@ class EdgeCasesAndComplexScenariosTest {
 
     @Test
     fun `validates object with heterogeneous field types`() {
-        val schema = objectSchema(
+        val schema = objectSchema {
             fields = mapOf(
-                "string" to fieldSchema(stringSchema(), required = true),
-                "number" to fieldSchema(doubleSchema(), required = true),
-                "integer" to fieldSchema(intSchema(), required = true),
-                "boolean" to fieldSchema(booleanSchema(), required = true),
-                "null" to fieldSchema(nullSchema(), required = true),
-                "array" to fieldSchema(arraySchema(stringSchema()), required = true),
-                "object" to fieldSchema(
-                    objectSchema(
-                        fields = mapOf(
-                            "nested" to fieldSchema(stringSchema(), required = true)
-                        )
-                    ),
+                "string" to fieldSchema {
+                    schema = stringSchema { }
                     required = true
-                )
+                },
+                "number" to fieldSchema {
+                    schema = doubleSchema { }
+                    required = true
+                },
+                "integer" to fieldSchema {
+                    schema = intSchema { }
+                    required = true
+                },
+                "boolean" to fieldSchema {
+                    schema = booleanSchema { }
+                    required = true
+                },
+                "null" to fieldSchema {
+                    schema = nullSchema { }
+                    required = true
+                },
+                "array" to fieldSchema {
+                    schema = arraySchema {
+                        elementSchema(stringSchema { })
+                    }
+                    required = true
+                },
+                "object" to fieldSchema {
+                    schema = objectSchema {
+                        fields = mapOf(
+                            "nested" to fieldSchema {
+                                schema = stringSchema { }
+                                required = true
+                            }
+                        )
+                    }
+                    required = true
+                }
             )
-        )
+        }
 
         val obj = JsonObject(
             fields = mapOf(
@@ -493,7 +611,11 @@ class EdgeCasesAndComplexScenariosTest {
 
     @Test
     fun `error messages are descriptive and actionable`() {
-        val schema = stringSchema(minLength = 5, maxLength = 10, pattern = "^[A-Z]+$")
+        val schema = stringSchema {
+            minLength = 5
+            maxLength = 10
+            pattern = "^[A-Z]+$"
+        }
 
         val tooShort = JsonString("AB")
         val result1 = tooShort.validate(schema)
@@ -510,18 +632,23 @@ class EdgeCasesAndComplexScenariosTest {
 
     @Test
     fun `nested error messages provide path context`() {
-        val schema = objectSchema(
+        val schema = objectSchema {
             fields = mapOf(
-                "user" to fieldSchema(
-                    objectSchema(
+                "user" to fieldSchema {
+                    schema = objectSchema {
                         fields = mapOf(
-                            "age" to fieldSchema(intSchema(minimum = 18), required = true)
+                            "age" to fieldSchema {
+                                schema = intSchema {
+                                    minimum = 18
+                                }
+                                required = true
+                            }
                         )
-                    ),
+                    }
                     required = true
-                )
+                }
             )
-        )
+        }
 
         val obj = JsonObject(
             fields = mapOf(

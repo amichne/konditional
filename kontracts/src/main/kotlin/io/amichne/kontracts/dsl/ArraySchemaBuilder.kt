@@ -32,3 +32,9 @@ class ArraySchemaBuilder @PublishedApi internal constructor() : JsonSchemaBuilde
         uniqueItems
     )
 }
+
+@JsonSchemaBuilderDsl
+@Suppress("UNCHECKED_CAST")
+fun <E : Any> ArraySchemaBuilder.elementSchema(schema: JsonSchema<E>) {
+    this.elementSchema = schema as JsonSchema<Any>
+}
