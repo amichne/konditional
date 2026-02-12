@@ -24,7 +24,7 @@ class JsonArrayValidationTest {
 
     @Test
     fun `JsonArray validates successfully with homogeneous elements`() {
-        val schema = JsonSchema.array(JsonSchema.string())
+        val schema = arraySchema(stringSchema())
         val arr = JsonArray(
             elements = listOf(
                 JsonString("hello"),
@@ -39,7 +39,7 @@ class JsonArrayValidationTest {
 
     @Test
     fun `JsonArray validates empty array`() {
-        val schema = JsonSchema.array(JsonSchema.string())
+        val schema = arraySchema(stringSchema())
         val arr = JsonArray(elements = emptyList())
 
         val result = arr.validate(schema)
@@ -49,7 +49,7 @@ class JsonArrayValidationTest {
 
     @Test
     fun `JsonArray fails validation with heterogeneous elements`() {
-        val schema = JsonSchema.array(JsonSchema.string())
+        val schema = arraySchema(stringSchema())
         val arr = JsonArray(
             elements = listOf(
                 JsonString("hello"),
@@ -65,7 +65,7 @@ class JsonArrayValidationTest {
 
     @Test
     fun `JsonArray validates array of integers`() {
-        val schema = JsonSchema.array(JsonSchema.int())
+        val schema = arraySchema(intSchema())
         val arr = JsonArray(
             elements = listOf(
                 JsonNumber(1.0),
@@ -81,7 +81,7 @@ class JsonArrayValidationTest {
 
     @Test
     fun `JsonArray validates array of booleans`() {
-        val schema = JsonSchema.array(JsonSchema.boolean())
+        val schema = arraySchema(booleanSchema())
         val arr = JsonArray(
             elements = listOf(
                 JsonBoolean(true),
@@ -97,8 +97,8 @@ class JsonArrayValidationTest {
 
     @Test
     fun `JsonArray fails validation when element violates schema constraints`() {
-        val schema = JsonSchema.array(
-            JsonSchema.string(minLength = 5)
+        val schema = arraySchema(
+            stringSchema(minLength = 5)
         )
         val arr = JsonArray(
             elements = listOf(
@@ -118,13 +118,13 @@ class JsonArrayValidationTest {
 
     @Test
     fun `JsonArray validates array of objects successfully`() {
-        val objectSchema = JsonSchema.obj(
+        val objectSchema = objectSchema(
             fields = mapOf(
-                "id" to FieldSchema(JsonSchema.int(), required = true),
-                "name" to FieldSchema(JsonSchema.string(), required = true)
+                "id" to fieldSchema(intSchema(), required = true),
+                "name" to fieldSchema(stringSchema(), required = true)
             )
         )
-        val schema = JsonSchema.array(objectSchema)
+        val schema = arraySchema(objectSchema)
         val arr = JsonArray(
             elements = listOf(
                 JsonObject(
@@ -149,13 +149,13 @@ class JsonArrayValidationTest {
 
     @Test
     fun `JsonArray fails validation when object element is invalid`() {
-        val objectSchema = JsonSchema.obj(
+        val objectSchema = objectSchema(
             fields = mapOf(
-                "id" to FieldSchema(JsonSchema.int(), required = true),
-                "name" to FieldSchema(JsonSchema.string(), required = true)
+                "id" to fieldSchema(intSchema(), required = true),
+                "name" to fieldSchema(stringSchema(), required = true)
             )
         )
-        val schema = JsonSchema.array(objectSchema)
+        val schema = arraySchema(objectSchema)
         val arr = JsonArray(
             elements = listOf(
                 JsonObject(
@@ -184,8 +184,8 @@ class JsonArrayValidationTest {
 
     @Test
     fun `JsonArray validates nested arrays successfully`() {
-        val innerSchema = JsonSchema.array(JsonSchema.int())
-        val schema = JsonSchema.array(innerSchema)
+        val innerSchema = arraySchema(intSchema())
+        val schema = arraySchema(innerSchema)
         val arr = JsonArray(
             elements = listOf(
                 JsonArray(elements = listOf(JsonNumber(1.0), JsonNumber(2.0))),
@@ -200,8 +200,8 @@ class JsonArrayValidationTest {
 
     @Test
     fun `JsonArray fails validation with invalid nested array element`() {
-        val innerSchema = JsonSchema.array(JsonSchema.int())
-        val schema = JsonSchema.array(innerSchema)
+        val innerSchema = arraySchema(intSchema())
+        val schema = arraySchema(innerSchema)
         val arr = JsonArray(
             elements = listOf(
                 JsonArray(elements = listOf(JsonNumber(1.0), JsonNumber(2.0))),
@@ -265,7 +265,7 @@ class JsonArrayValidationTest {
 
     @Test
     fun `JsonArray fails validation against non-array schema`() {
-        val stringSchema = JsonSchema.string()
+        val stringSchema = stringSchema()
         val arr = JsonArray(elements = listOf(JsonString("test")))
 
         val result = arr.validate(stringSchema)
@@ -278,7 +278,7 @@ class JsonArrayValidationTest {
 
     @Test
     fun `JsonArray construction validates elements against provided schema`() {
-        val elementSchema = JsonSchema.string(minLength = 5)
+        val elementSchema = stringSchema(minLength = 5)
 
         val exception = assertThrows<IllegalArgumentException> {
             JsonArray(
@@ -295,7 +295,7 @@ class JsonArrayValidationTest {
 
     @Test
     fun `JsonArray construction succeeds with valid elements`() {
-        val elementSchema = JsonSchema.string(minLength = 5)
+        val elementSchema = stringSchema(minLength = 5)
         val arr = JsonArray(
             elements = listOf(
                 JsonString("hello"),
@@ -311,8 +311,8 @@ class JsonArrayValidationTest {
 
     @Test
     fun `JsonArray validates with complex element constraints`() {
-        val elementSchema = JsonSchema.int(minimum = 0, maximum = 100)
-        val schema = JsonSchema.array(elementSchema)
+        val elementSchema = intSchema(minimum = 0, maximum = 100)
+        val schema = arraySchema(elementSchema)
         val arr = JsonArray(
             elements = listOf(
                 JsonNumber(0.0),
@@ -328,8 +328,8 @@ class JsonArrayValidationTest {
 
     @Test
     fun `JsonArray fails validation when element exceeds constraints`() {
-        val elementSchema = JsonSchema.int(minimum = 0, maximum = 100)
-        val schema = JsonSchema.array(elementSchema)
+        val elementSchema = intSchema(minimum = 0, maximum = 100)
+        val schema = arraySchema(elementSchema)
         val arr = JsonArray(
             elements = listOf(
                 JsonNumber(50.0),
@@ -348,14 +348,14 @@ class JsonArrayValidationTest {
 
     @Test
     fun `JsonArray validates array with objects containing nested arrays`() {
-        val tagsSchema = JsonSchema.array(JsonSchema.string())
-        val objectSchema = JsonSchema.obj(
+        val tagsSchema = arraySchema(stringSchema())
+        val objectSchema = objectSchema(
             fields = mapOf(
-                "id" to FieldSchema(JsonSchema.int(), required = true),
-                "tags" to FieldSchema(tagsSchema, required = true)
+                "id" to fieldSchema(intSchema(), required = true),
+                "tags" to fieldSchema(tagsSchema, required = true)
             )
         )
-        val schema = JsonSchema.array(objectSchema)
+        val schema = arraySchema(objectSchema)
         val arr = JsonArray(
             elements = listOf(
                 JsonObject(
