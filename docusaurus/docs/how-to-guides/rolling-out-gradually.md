@@ -1,5 +1,17 @@
 # How-To: Roll Out a Feature Gradually
 
+Use this guide when you want to release a new feature safely, starting small and expanding with deterministic bucketing.
+
+---
+
+## Prerequisites
+
+- A typed feature defined in a namespace (see [Your First Feature](/getting-started/your-first-flag))
+- A stable user identifier available as `stableId`
+- Basic monitoring for errors and conversion metrics
+
+---
+
 ## Problem
 
 You have a new feature and want to:
@@ -243,6 +255,16 @@ Between each increase:
 - Check conversion metrics
 - Verify no performance degradation
 - Gather user feedback
+
+---
+
+## Verification
+
+Confirm rollout health after each percentage increase:
+
+1. Same `stableId` still evaluates consistently for unchanged salt
+2. Error rate and latency remain within expected thresholds
+3. Parse failures are zero or explicitly handled with alerts
 
 ## Next Steps
 

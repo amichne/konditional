@@ -4,8 +4,37 @@ slug: /
 
 # What is Konditional?
 
-Konditional is a compile-time safe feature flag library for Kotlin that treats flags as typed properties instead of
-runtime strings, and makes configuration a first-class, verifiable contract.
+Konditional is a compile-time safe feature flag framework for Kotlin that helps you ship feature toggles safely, without string-key mistakes or runtime type surprises.
+
+In this section you will find:
+
+- [Getting Started](/getting-started/) - your 10-minute path to shipping a safe toggle
+- [How-To: Roll Out a Feature Gradually](/how-to-guides/rolling-out-gradually) - deterministic rollouts you can trust
+- [How-To: Load Configuration Safely from Remote](/how-to-guides/safe-remote-config) - typed parse boundary for runtime config
+- [API Reference](/reference/api/namespace-operations) - operational APIs and parse results
+- [Theory and Guarantees](/theory/type-safety-boundaries) - why the safety model holds under production load
+
+---
+
+## First Value in 10 Minutes
+
+For most Kotlin backend teams, the first win is simple: gate a new behavior with a typed flag and verify it deterministically.
+
+1. Install Konditional Core: [Installation](/getting-started/installation)
+2. Define and evaluate one feature: [Your First Feature](/getting-started/your-first-flag)
+3. Add gradual rollout: [Roll Out Gradually](/how-to-guides/rolling-out-gradually)
+
+After that, you can safely layer remote configuration and testing.
+
+---
+
+## Why Teams Adopt Konditional
+
+Konditional makes three structural commitments:
+
+1. **Flags are properties, not strings** - keys are compile-time symbols
+2. **Types flow from definitions to call sites** - no ad-hoc runtime coercion
+3. **One evaluation semantics** - deterministic and testable behavior
 
 ## The Problem
 
@@ -83,13 +112,7 @@ maxRetries = 0  // or throws, or returns default (SDK-dependent)
 
 ---
 
-## What Konditional Does
-
-Konditional makes three structural commitments:
-
-1. **Flags are properties, not strings** — keys bound at compile-time
-2. **Types flow from definitions to callsites** — no runtime coercion
-3. **One evaluation semantics** — centralized, deterministic, testable
+## What Konditional Looks Like in Code
 
 ```kotlin
 enum class CheckoutVariant { CLASSIC, OPTIMIZED, EXPERIMENTAL }
@@ -110,7 +133,7 @@ val variant: CheckoutVariant = AppFlags.checkoutVariant.evaluate(ctx)  // typed
 val retries: Int = AppFlags.maxRetries.evaluate(ctx)                   // typed
 ```
 
-### What You Get
+### What You Get Immediately
 
 **Typos become compile errors:**
 
@@ -253,6 +276,8 @@ See the [Migration Guide](./reference/migration-guide.md) for detailed patterns.
 
 ---
 
+---
+
 ## Summary
 
 Feature flags aren't "nice to have" features. They're load-bearing infrastructure. When they fail, they fail at scale,
@@ -265,6 +290,8 @@ evaluation semantics make experiments untrustworthy**.
 The solution is structural: bind types at compile-time, centralize evaluation semantics, and draw explicit boundaries
 between static definitions and dynamic
 configuration.
+
+---
 
 ## Next Steps
 

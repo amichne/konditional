@@ -1,5 +1,9 @@
 # How-To: Test Your Feature Flags
 
+Use this guide to prove your feature logic is deterministic, type-safe at the config boundary, and stable across rollout changes.
+
+---
+
 ## Summary
 
 Write comprehensive tests for feature flag evaluation, rule matching, ramp-up bucketing, and configuration loading to ensure correctness and prevent regressions. This guide covers unit tests, property-based tests, and integration tests.
@@ -13,6 +17,8 @@ Write comprehensive tests for feature flag evaluation, rule matching, ramp-up bu
 - **Optional**: Kotest for property-based testing, MockK for mocking
 - **Test fixtures**: `testFixtures("io.amichne:konditional-core:VERSION")` for pre-built test helpers
 - **Namespace defined**: At least one `Namespace` with features to test
+
+---
 
 ## Happy Path
 
@@ -753,6 +759,16 @@ assertTrue(results.all { it == results.first() })
 **Verification**: Test passes, all evaluations return same value.
 
 **Related**: [Troubleshooting: Bucketing Issues](/troubleshooting/bucketing-issues#non-deterministic-ramp-ups)
+
+---
+
+## Verification
+
+Before finishing a feature rollout, confirm your test suite includes:
+
+1. deterministic evaluation checks for repeated inputs
+2. boundary parse failure checks for invalid JSON and type mismatch
+3. last-known-good preservation checks after failed loads
 
 ---
 

@@ -103,17 +103,19 @@ bd sync
 For symbol-aware operations, use IntelliJ MCP tools first. Plain text search (`rg`) is fallback only when symbol identity is irrelevant.
 
 ### MCP server checks
+
 ```bash
 codex mcp list --json
 codex mcp get idea --json
 ```
 
 If `idea` is missing in a local setup:
+
 ```bash
 codex mcp add idea --url http://127.0.0.1:64343/stream
 ```
 
-### Preferred symbol operations (when exposed by the idea/intellij index MCP)
+### Preferred symbol operations (when exposed by the idea MCP)
 - Definition lookup
 - Reference search
 - Implementation search

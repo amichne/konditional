@@ -6,6 +6,17 @@ title: Troubleshooting
 
 Symptom-first index for diagnosing and fixing Konditional issues.
 
+---
+
+## Start Here
+
+Use the fastest path based on what broke first:
+
+- Config payload rejected -> go to [Parsing Issues](#parsing-issues)
+- Same user flips between rollout states -> go to [Bucketing Issues](#bucketing-issues)
+- Feature value differs from expectation -> go to [Evaluation Issues](#evaluation-issues)
+- Runtime behavior is stale after load -> go to [Integration Issues](#integration-issues)
+
 ## Quick Diagnosis
 
 | Symptom | Likely Cause | Section |
@@ -245,3 +256,22 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 **Verification**: `explain()` shows new rule matched.
 
 **Related**: [Reference: Namespace Operations](/reference/api/namespace-operations)
+
+### Feature not found
+
+**Symptom**: Evaluation or loading reports unknown or missing feature key.
+
+**Likely causes**:
+1. Typo in feature key from remote payload
+2. Feature exists in a different namespace
+3. Code and remote configuration are out of sync
+
+**Fix**: Confirm key spelling, namespace target, and deployed artifact version before retrying load.
+
+---
+
+## Next steps
+
+- Prevent config regressions: [How-To: Load Configuration Safely from Remote](/how-to-guides/safe-remote-config)
+- Validate rollout determinism: [How-To: Roll Out a Feature Gradually](/how-to-guides/rolling-out-gradually)
+- Expand tests around failures: [How-To: Test Your Feature Flags](/how-to-guides/testing-features)
