@@ -54,7 +54,7 @@ object AppFeatures : Namespace("app") {
 ### Step 3: Implement Variant-Specific Logic
 
 ```kotlin
-val ctx = Context(stableId = StableId(userId))
+val ctx = Context(stableId = StableId.of(userId))
 val variant: CheckoutVariant = AppFeatures.checkoutExperiment.evaluate(ctx)
 
 when (variant) {
@@ -86,7 +86,7 @@ fun onCheckoutCompleted(
     userId: String,
     revenue: Double
 ) {
-  val ctx = Context(stableId = StableId(userId))
+  val ctx = Context(stableId = StableId.of(userId))
   val variant = AppFeatures.checkoutExperiment.evaluate(ctx)
 
   analytics.track("checkout_completed", mapOf(
@@ -226,10 +226,10 @@ when (variant) {
 
 ```kotlin
 // Mobile: uses device ID
-val mobileCtx = Context(stableId = StableId(deviceId))
+val mobileCtx = Context(stableId = StableId.of(deviceId))
 
 // Web: uses user ID
-val webCtx = Context(stableId = StableId(userId))
+val webCtx = Context(stableId = StableId.of(userId))
 
 // Same user, different buckets on mobile vs web!
 ```
@@ -245,7 +245,7 @@ val webCtx = Context(stableId = StableId(userId))
 fun `variants distribute evenly`() {
   val sampleSize = 10_000
   val results = (0 until sampleSize).map { i ->
-    val ctx = Context(stableId = StableId("user-$i"))
+    val ctx = Context(stableId = StableId.of("user-$i"))
     AppFeatures.checkoutExperiment.evaluate(ctx)
   }
 
@@ -263,12 +263,12 @@ fun `variants distribute evenly`() {
 ```kotlin
 @Test
 fun `specific user gets expected variant`() {
-  val ctx = Context(stableId = StableId("test-user-123"))
+  val ctx = Context(stableId = StableId.of("test-user-123"))
   val variant = AppFeatures.checkoutExperiment.evaluate(ctx)
 
   // Calculate expected bucket
-  val bucket = RampUpBucketing.calculateBucket(
-      stableId = StableId("test-user-123"),
+  val bucket = RampUpBucketing.bucket(
+      stableId = StableId.of("test-user-123"),
       featureKey = "checkoutExperiment",
       salt = "default"
   )

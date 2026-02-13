@@ -325,7 +325,7 @@ fun `failed load in one namespace does not affect others`() {
   require(result2 is ParseResult.Failure)
 
   // Verify Recommendations still works
-  val ctx = Context(stableId = StableId("user"))
+  val ctx = Context(stableId = StableId.of("user"))
   assertTrue(AppDomain.Recommendations.collaborativeFiltering.evaluate(ctx))
 
   // Verify Search uses defaults (unaffected by failed load)
@@ -338,7 +338,7 @@ fun `failed load in one namespace does not affect others`() {
 ```kotlin
 @Test
 fun `updating one namespace does not affect others`() {
-  val ctx = Context(stableId = StableId("user"))
+  val ctx = Context(stableId = StableId.of("user"))
 
   // Initial state: both use defaults
   assertTrue(AppDomain.Recommendations.collaborativeFiltering.evaluate(ctx))  // true

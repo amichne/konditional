@@ -24,7 +24,7 @@ Use the `explain()` API to trace evaluation:
 
 ```kotlin
 val ctx = Context(
-    stableId = StableId("user-12345"),
+    stableId = StableId.of("user-12345"),
     platform = Platform.IOS
 )
 
@@ -86,7 +86,7 @@ Verify that bucketing is deterministic:
 
 ```kotlin
 val userId = "user-12345"
-val stableId = StableId(userId)
+val stableId = StableId.of(userId)
 val ctx = Context(stableId = stableId)
 
 // Evaluate multiple times
@@ -105,12 +105,12 @@ require(results.all { it == results.first() }) {
 1. **stableId changes between evaluations**
    ```kotlin
    // DON'T: New StableId every time
-   val ctx1 = Context(stableId = StableId(UUID.randomUUID().toString()))
-   val ctx2 = Context(stableId = StableId(UUID.randomUUID().toString()))
+   val ctx1 = Context(stableId = StableId.of(UUID.randomUUID().toString()))
+   val ctx2 = Context(stableId = StableId.of(UUID.randomUUID().toString()))
 
    // DO: Consistent stableId
    val userId = getConsistentUserId()  // e.g., database ID
-   val ctx = Context(stableId = StableId(userId))
+   val ctx = Context(stableId = StableId.of(userId))
    ```
 
 2. **Salt changed without understanding implications**
@@ -136,8 +136,8 @@ val featureKey = "new_checkout"
 val salt = "default"  // Or your custom salt
 
 // Calculate bucket (0-99)
-val bucket = RampUpBucketing.calculateBucket(
-    stableId = StableId(userId),
+val bucket = RampUpBucketing.bucket(
+    stableId = StableId.of(userId),
     featureKey = featureKey,
     salt = salt
 )
@@ -166,7 +166,7 @@ fun testRampUpDistribution() {
   val rampUpPercentage = 30.0
 
   val inRampUp = (0 until sampleSize).count { userId ->
-    val ctx = Context(stableId = StableId("user-$userId"))
+    val ctx = Context(stableId = StableId.of("user-$userId"))
     AppFeatures.experimentalFeature.evaluate(ctx)  // Returns true if in ramp-up
   }
 
@@ -329,21 +329,21 @@ val result = AppFeatures.someFeature.evaluate(ctx)
 
 ```kotlin
 // DON'T: Random or session-based ID
-val ctx = Context(stableId = StableId(sessionId))  // Changes per session
+val ctx = Context(stableId = StableId.of(sessionId))  // Changes per session
 
 // DO: Persistent user ID
-val ctx = Context(stableId = StableId(userId))  // Consistent across sessions
+val ctx = Context(stableId = StableId.of(userId))  // Consistent across sessions
 ```
 
 **2. Missing context fields:**
 
 ```kotlin
 // DON'T: Forgot to set platform
-val ctx = Context(stableId = StableId(userId))  // platform = null
+val ctx = Context(stableId = StableId.of(userId))  // platform = null
 
 // DO: Provide all relevant fields
 val ctx = Context(
-    stableId = StableId(userId),
+    stableId = StableId.of(userId),
     platform = Platform.ANDROID,
     locale = Locale.US
 )
@@ -394,7 +394,7 @@ logger.info(explanation.summary())
 ### 3. Check ramp-up bucket assignment
 
 ```kotlin
-val bucket = RampUpBucketing.calculateBucket(ctx.stableId, featureKey, salt)
+val bucket = RampUpBucketing.bucket(ctx.stableId, featureKey, salt)
 logger.info("User in bucket $bucket (ramp-up threshold: $percentage%)")
 ```
 
@@ -420,7 +420,7 @@ logger.info("Context: platform=${ctx.platform}, locale=${ctx.locale}, version=${
 ```kotlin
 // Reproduce the exact evaluation locally
 val ctx = Context(
-    stableId = StableId("user-12345"),  // From logs
+    stableId = StableId.of("user-12345"),  // From logs
     platform = Platform.IOS,
     locale = Locale.US
 )
