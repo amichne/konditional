@@ -189,7 +189,7 @@ val result = ConfigurationSnapshotCodec.decode(json, options)
 
 **Verification**: Parse succeeds, unknown keys logged but skipped.
 
-**Related**: [Troubleshooting: Parsing Issues](/troubleshooting/parsing-issues#feature-not-found)
+**Related**: [Troubleshooting: Parsing Issues](/troubleshooting/#parsing-issues)
 
 ### Symptom: `ParseResult.Failure` with "Type mismatch"
 

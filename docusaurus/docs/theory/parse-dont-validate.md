@@ -2,6 +2,8 @@
 
 Why `ParseResult` prevents invalid states from existing in the system.
 
+Cross-document synthesis: [Verified Design Synthesis](/theory/verified-synthesis).
+
 ---
 
 ## The Problem with Validation

@@ -4,425 +4,138 @@ title: ParseResult API
 
 # ParseResult API
 
-## What It Does
+`ParseResult<T>` is Konditional's typed parse boundary. It represents either a parsed value or a structured parse error without using exceptions for normal control flow.
 
-`ParseResult<T>` provides an explicit boundary for JSON parsing and validation. It returns either `Success(value)` or `Failure(error)`, forcing callers to handle parse failures before configuration becomes active.
+In this page you will find:
 
-## ParseResult Type
-
-### Signature
-
-```kotlin
-sealed interface ParseResult<out T> {
-    data class Success<T>(val value: T) : ParseResult<T>
-    data class Failure(val error: ParseError) : ParseResult<Nothing>
-}
-```
-
-**Evidence**: `konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseResult.kt:15`
-
-### Semantics
-
-**Guarantee**: Invalid input never produces a `Success` value.
-
-**Mechanism**: Explicit result type with sealed hierarchy forces pattern matching.
-
-**Boundary**: Semantic correctness (e.g., "is 10% the right percentage?") is not validated.
+- The concrete `ParseResult` shape and constructor constraints
+- The companion factories and extension utilities
+- Composition patterns that stay in typed error space
 
 ---
 
-## fold()
-
-Transform `ParseResult` by providing success and failure handlers.
-
-### Signature
+## Type Shape
 
 ```kotlin
-inline fun <T, R> ParseResult<T>.fold(
-    onSuccess: (T) -> R,
-    onFailure: (ParseError) -> R
-): R
+sealed interface ParseResult<out T> {
+    data class Success<T> internal constructor(val value: T) : ParseResult<T>
+    data class Failure internal constructor(val error: ParseError) : ParseResult<Nothing>
+
+    companion object {
+        fun <T> success(value: T): ParseResult<T>
+        fun failure(error: ParseError): ParseResult<Nothing>
+    }
+
+    fun getOrThrow(): T
+}
 ```
 
-**Evidence**: `konditional-core/src/main/kotlin/io/amichne/konditional/core/result/utils/ParseResultUtils.kt:19`
+Evidence:
 
-### Parameters
+- `konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseResult.kt`
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `onSuccess` | `(T) -> R` | Yes | Function to apply if result is `Success` |
-| `onFailure` | `(ParseError) -> R` | Yes | Function to apply if result is `Failure` |
+### Public construction
 
-### Return Value
-
-Returns `R` — result of applying the appropriate function.
-
-### Examples
+`Success(...)` and `Failure(...)` constructors are `internal`. External code should create results through:
 
 ```kotlin
-val message: String = result.fold(
-    onSuccess = { config -> "Loaded ${config.flags.size} features" },
-    onFailure = { error -> "Parse failed: ${error.message}" }
+ParseResult.success(value)
+ParseResult.failure(parseError)
+```
+
+---
+
+## Guarantees and Boundaries
+
+- Guarantee: parse APIs return either a typed value or a typed `ParseError`.
+- Guarantee: exhaustive `when` on `ParseResult` is compiler-checkable.
+- Boundary: business semantics are not validated by `ParseResult` itself.
+- Boundary: `getOrThrow()` converts failures into an exception path and should be treated as fail-fast behavior.
+
+---
+
+## Core Usage
+
+### Exhaustive handling
+
+```kotlin
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
+    is ParseResult.Success -> namespace.load(result.value)
+    is ParseResult.Failure -> logger.error { "Parse failed: ${result.error.message}" }
+}
+```
+
+### Folding into your own result type
+
+```kotlin
+val message = result.fold(
+    onSuccess = { config -> "Loaded ${config.flags.size} flags" },
+    onFailure = { error -> "Rejected: ${error.message}" },
 )
 ```
 
 ---
 
-## map()
+## Extension Utilities (`core.result.utils`)
 
-Transform the success value, preserving failure.
-
-### Signature
+Import:
 
 ```kotlin
-inline fun <T, R> ParseResult<T>.map(transform: (T) -> R): ParseResult<R>
+import io.amichne.konditional.core.result.utils.*
 ```
 
-**Evidence**: `konditional-core/src/main/kotlin/io/amichne/konditional/core/result/utils/ParseResultUtils.kt:33`
+Available helpers:
 
-### Parameters
+- `fold(onSuccess, onFailure)`
+- `map(transform)`
+- `flatMap(transform)`
+- `getOrNull()`
+- `getOrDefault(default)`
+- `getOrElse(onFailure)`
+- `isSuccess()` / `isFailure()`
+- `onSuccess(action)` / `onFailure(action)`
+- `recover(transform)`
+- `toResult()`
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `transform` | `(T) -> R` | Yes | Function to transform success value |
+Evidence:
 
-### Return Value
+- `konditional-core/src/main/kotlin/io/amichne/konditional/core/result/utils/ParseResultUtils.kt`
 
-Returns `ParseResult<R>`:
-- `Success(transform(value))` if original was success
-- `Failure(error)` if original was failure (unchanged)
-
-### Examples
+### Composition example
 
 ```kotlin
-val versionResult: ParseResult<String> = configResult.map { config ->
-    config.metadata.version ?: "unknown"
+val loadable = ConfigurationSnapshotCodec.decode(json)
+    .onFailure { error -> logger.warn { "Decode rejected: ${error.message}" } }
+    .map { config -> config.withMetadata(source = "remote") }
+
+when (loadable) {
+    is ParseResult.Success -> AppFeatures.load(loadable.value)
+    is ParseResult.Failure -> Unit
 }
 ```
 
 ---
 
-## flatMap()
+## ParseError Families
 
-Chain operations that return `ParseResult`.
+Common parse failures returned via `ParseResult.Failure`:
 
-### Signature
+- `ParseError.InvalidJson`
+- `ParseError.InvalidSnapshot`
+- `ParseError.FeatureNotFound`
+- `ParseError.FlagNotFound`
+- `ParseError.InvalidHexId`
+- `ParseError.InvalidRollout`
+- `ParseError.InvalidVersion`
 
-```kotlin
-inline fun <T, R> ParseResult<T>.flatMap(
-    transform: (T) -> ParseResult<R>
-): ParseResult<R>
-```
+Evidence:
 
-**Evidence**: `konditional-core/src/main/kotlin/io/amichne/konditional/core/result/utils/ParseResultUtils.kt:46`
-
-### Parameters
-
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `transform` | `(T) -> ParseResult<R>` | Yes | Function that returns a new `ParseResult` |
-
-### Return Value
-
-Returns `ParseResult<R>`:
-- Result of `transform(value)` if original was success
-- `Failure(error)` if original was failure (short-circuits)
-
-### Examples
-
-```kotlin
-val loadResult: ParseResult<Unit> = ConfigurationSnapshotCodec.decode(json)
-    .flatMap { config ->
-        try {
-            namespace.load(config)
-            ParseResult.Success(Unit)
-        } catch (e: Exception) {
-            ParseResult.Failure(ParseError.Custom(e.message ?: "Load failed"))
-        }
-    }
-```
-
----
-
-## getOrNull()
-
-Extract value or return null.
-
-### Signature
-
-```kotlin
-fun <T> ParseResult<T>.getOrNull(): T?
-```
-
-**Evidence**: `konditional-core/src/main/kotlin/io/amichne/konditional/core/result/utils/ParseResultUtils.kt:55`
-
-### Return Value
-
-Returns `T?`:
-- `value` if success
-- `null` if failure
-
-### Examples
-
-```kotlin
-val config: Configuration? = result.getOrNull()
-if (config != null) {
-    namespace.load(config)
-}
-```
-
----
-
-## getOrDefault()
-
-Extract value or return default.
-
-### Signature
-
-```kotlin
-fun <T> ParseResult<T>.getOrDefault(default: T): T
-```
-
-**Evidence**: `konditional-core/src/main/kotlin/io/amichne/konditional/core/result/utils/ParseResultUtils.kt:63`
-
-### Parameters
-
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `default` | `T` | Yes | Value to return if result is failure |
-
-### Return Value
-
-Returns `T` — success value or provided default.
-
-### Examples
-
-```kotlin
-val config: Configuration = result.getOrDefault(fallbackConfig)
-namespace.load(config)
-```
-
----
-
-## getOrElse()
-
-Extract value or compute alternative.
-
-### Signature
-
-```kotlin
-inline fun <T> ParseResult<T>.getOrElse(onFailure: (ParseError) -> T): T
-```
-
-**Evidence**: `konditional-core/src/main/kotlin/io/amichne/konditional/core/result/utils/ParseResultUtils.kt:71`
-
-### Parameters
-
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `onFailure` | `(ParseError) -> T` | Yes | Function to compute fallback value from error |
-
-### Return Value
-
-Returns `T` — success value or computed fallback.
-
-### Examples
-
-```kotlin
-val config: Configuration = result.getOrElse { error ->
-    logger.error("Parse failed: ${error.message}")
-    loadLastKnownGoodConfig()
-}
-```
-
----
-
-## isSuccess() / isFailure()
-
-Check result status.
-
-### Signatures
-
-```kotlin
-fun <T> ParseResult<T>.isSuccess(): Boolean
-fun <T> ParseResult<T>.isFailure(): Boolean
-```
-
-**Evidence**: `konditional-core/src/main/kotlin/io/amichne/konditional/core/result/utils/ParseResultUtils.kt:79,84`
-
-### Return Value
-
-Returns `Boolean`:
-- `isSuccess()`: `true` if `Success`, `false` if `Failure`
-- `isFailure()`: `true` if `Failure`, `false` if `Success`
-
-### Examples
-
-```kotlin
-if (result.isSuccess()) {
-    metrics.increment("config.parse.success")
-} else {
-    metrics.increment("config.parse.failure")
-}
-```
-
----
-
-## onSuccess() / onFailure()
-
-Side effects based on result status.
-
-### Signatures
-
-```kotlin
-inline fun <T> ParseResult<T>.onSuccess(action: (T) -> Unit): ParseResult<T>
-inline fun <T> ParseResult<T>.onFailure(action: (ParseError) -> Unit): ParseResult<T>
-```
-
-**Evidence**: `konditional-core/src/main/kotlin/io/amichne/konditional/core/result/utils/ParseResultUtils.kt:96,113`
-
-### Parameters
-
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `action` | `(T) -> Unit` or `(ParseError) -> Unit` | Yes | Side effect to perform |
-
-### Return Value
-
-Returns original `ParseResult<T>` (unchanged, enables chaining).
-
-### Examples
-
-```kotlin
-ConfigurationSnapshotCodec.decode(json)
-    .onSuccess { config -> logger.info("Parsed ${config.flags.size} features") }
-    .onFailure { error -> logger.error("Parse failed: ${error.message}") }
-    .fold(
-        onSuccess = { namespace.load(it) },
-        onFailure = { /* keep last-known-good */ }
-    )
-```
-
----
-
-## recover()
-
-Convert failure to success by providing fallback.
-
-### Signature
-
-```kotlin
-inline fun <T> ParseResult<T>.recover(transform: (ParseError) -> T): T
-```
-
-**Evidence**: `konditional-core/src/main/kotlin/io/amichne/konditional/core/result/utils/ParseResultUtils.kt:130`
-
-### Parameters
-
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `transform` | `(ParseError) -> T` | Yes | Function to produce fallback value from error |
-
-### Return Value
-
-Returns `T` — success value or transformed failure.
-
-### Examples
-
-```kotlin
-val config: Configuration = result.recover { error ->
-    logger.warn("Using fallback config due to: ${error.message}")
-    buildFallbackConfig()
-}
-```
-
----
-
-## toResult()
-
-Convert to Kotlin `Result<T>`.
-
-### Signature
-
-```kotlin
-fun <T> ParseResult<T>.toResult(): Result<T>
-```
-
-**Evidence**: `konditional-core/src/main/kotlin/io/amichne/konditional/core/result/utils/ParseResultUtils.kt:139`
-
-### Return Value
-
-Returns `Result<T>`:
-- `Result.success(value)` if original was success
-- `Result.failure(ParseException(error))` if original was failure
-
-### Examples
-
-```kotlin
-val kotlinResult: Result<Configuration> = parseResult.toResult()
-kotlinResult
-    .onSuccess { config -> namespace.load(config) }
-    .onFailure { exception -> logger.error("Failed", exception) }
-```
-
----
-
-## Pattern: Complete Error Handling
-
-Recommended pattern for production use:
-
-```kotlin
-fun loadConfig(json: String) {
-    when (val result = ConfigurationSnapshotCodec.decode(json)) {
-        is ParseResult.Success -> {
-            AppFeatures.load(result.value)
-            logger.info("Config loaded: v${result.value.metadata.version}")
-            metrics.increment("config.load.success")
-        }
-        is ParseResult.Failure -> {
-            val errorMsg = when (val error = result.error) {
-                is ParseError.InvalidJson -> "Invalid JSON syntax: ${error.message}"
-                is ParseError.FeatureNotFound -> "Unknown feature: ${error.featureId}"
-                is ParseError.TypeMismatch -> "Type mismatch: ${error.message}"
-                is ParseError.SchemaViolation -> "Schema violation: ${error.message}"
-                else -> "Parse error: ${error.message}"
-            }
-
-            logger.error(errorMsg)
-            metrics.increment("config.load.failure", tags = mapOf(
-                "error_type" to error::class.simpleName
-            ))
-            alertOps("Configuration rejected", error)
-
-            // Last-known-good remains active
-        }
-    }
-}
-```
-
----
-
-## Semantics / Notes
-
-- **No exceptions**: All validation errors return `Failure`, never throw (except for programmer errors)
-- **Immutability**: All operations return new results, original unchanged
-- **Chaining**: Most operations return `ParseResult<T>` to enable chaining
-- **Short-circuiting**: Operations like `flatMap` and `onSuccess` short-circuit on failure
-
----
-
-## Compatibility
-
-- **Introduced**: v0.1.0
-- **Deprecated**: None
-- **Alternatives**: Kotlin `Result<T>` (can convert via `toResult()`)
+- `konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseError.kt`
 
 ---
 
 ## Related
 
-- [Guide: Load Remote Config](/guides/load-remote-config) — Using ParseResult in practice
-- [Reference: Namespace Operations](/reference/api/namespace-operations) — load() requires validated config
-- [Design Theory: Parse Don't Validate](/design-theory/parse-dont-validate) — Why ParseResult exists
-- [Production Operations: Failure Modes](/production-operations/failure-modes) — Parse error scenarios
-- [Learn: Type Safety](/learn/type-safety) — Runtime validation boundary
+- [Parse Don't Validate](/theory/parse-dont-validate)
+- [NamespaceSnapshotLoader API](/reference/api/snapshot-loader)
+- [Serialization API Reference](/serialization/reference)

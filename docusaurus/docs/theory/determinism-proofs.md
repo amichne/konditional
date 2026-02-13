@@ -2,6 +2,8 @@
 
 Why same inputs always produce same outputs: SHA-256 bucketing, stable rule ordering, and immutable snapshots.
 
+Cross-document synthesis: [Verified Design Synthesis](/theory/verified-synthesis).
+
 ---
 
 ## The Determinism Guarantee
