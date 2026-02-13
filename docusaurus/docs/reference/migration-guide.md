@@ -198,7 +198,7 @@ This keeps behavior pinned to the baseline value while generating comparison tel
 
 ## Axis handle factory migration
 
-Axis descriptors are now factory-only handles. If you previously subclassed `Axis`, switch to `Axis.of` or `AxisDefinition`.
+Axis descriptors are factory-only handles. If you previously subclassed `Axis`, switch to `Axis.of`.
 
 **Before**
 
@@ -213,10 +213,11 @@ object Axes {
 ```kotlin
 object Axes {
     val Environment = Axis.of<Environment>("environment")
-    // Or:
-    // object Environment : AxisDefinition<Environment>("environment", Environment::class)
 }
 ```
+
+Axis inference (`axis(Environment.PROD)`) now requires that `Environment` is already declared via `Axis.of(...)`.
+Implicit axis registration from enum class names is removed.
 
 ---
 

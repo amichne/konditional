@@ -1,6 +1,7 @@
 package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.rules.ContextRuleScope
@@ -109,12 +110,24 @@ inline fun <reified RC : Context, T : Any, C, M : Namespace> Feature<T, C, M>.ru
  * }
  * ```
  *
+ * Requires that [T]'s axis has already been declared.
+ *
  * @param value The value to set
- * If no axis is registered for type T, an implicit axis is created using the
- * value type's qualified name as its id.
  */
 inline fun <reified T> AxisValuesScope.axis(value: T) where T : AxisValue<T>, T : Enum<T> {
-    AxisRegistry.axisForOrRegister(T::class).let { set(it, value) }
+    axis(AxisRegistry.axisForOrThrow(T::class), value)
+}
+
+/**
+ * Explicit axis setter for one or more values.
+ *
+ * Use this overload when you want axis resolution to be explicit and local.
+ */
+fun <T> AxisValuesScope.axis(
+    axis: Axis<T>,
+    vararg values: T,
+) where T : AxisValue<T>, T : Enum<T> {
+    values.forEach { set(axis, it) }
 }
 
 context(scope: AxisValuesScope)

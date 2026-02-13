@@ -17,7 +17,7 @@ class AxisRegistryTest {
         STAGE("stage"),
     }
 
-    private enum class ImplicitEnvironment(override val id: String) : AxisValue<ImplicitEnvironment> {
+    private enum class UnregisteredEnvironment(override val id: String) : AxisValue<UnregisteredEnvironment> {
         DEV("dev"),
     }
 
@@ -54,11 +54,12 @@ class AxisRegistryTest {
     }
 
     @Test
-    fun `implicit axis marks isImplicit true`() {
-        val axis = AxisRegistry.axisForOrRegister(ImplicitEnvironment::class)
+    fun `axisForOrThrow fails for unregistered axis type`() {
+        val error = assertThrows<IllegalArgumentException> {
+            AxisRegistry.axisForOrThrow(UnregisteredEnvironment::class)
+        }
 
-        Assertions.assertTrue(axis.isImplicit)
-        Assertions.assertEquals(ImplicitEnvironment::class.qualifiedName, axis.id)
+        Assertions.assertTrue(error.message.orEmpty().contains("No axis registered for type"))
     }
 
     @Test

@@ -29,7 +29,8 @@ Inside a rule block (`RuleScope`):
 - `locales(...)` targets locale ids
 - `platforms(...)` targets platform ids
 - `versions { min(...); max(...) }` targets version ranges
-- `axis(...)` targets custom axes
+- `axis(axisHandle, ...)` targets custom axes explicitly (preferred)
+- `axis(...)` infers the axis from value type (requires pre-registered axis)
 - `extension { ... }` custom predicate
 - `rampUp { ... }` percentage rollout
 - `allowlist(...)` stable IDs that bypass ramp-up
