@@ -21,6 +21,111 @@ If a referenced file is missing, **search for it** (filename or closest equivale
 
 ---
 
+## Codex 5.3 Runtime Profile (Current Default)
+
+Use Codex with a model/runtime profile optimized for complex Kotlin and cross-module work.
+
+### Default profile
+- Default model: `gpt-5.3-codex`
+- Default reasoning effort: `xhigh` when supported by the active model; otherwise `high`
+- Default verbosity: `medium`
+- Reduce reasoning effort only for trivial edits or when latency is more important than depth.
+
+### Launch commands
+```bash
+# Preferred default for complex work
+codex --model gpt-5.3-codex -c 'model_reasoning_effort="xhigh"' -c 'model_verbosity="medium"'
+
+# Lower-latency variant for small edits
+codex --model gpt-5.3-codex -c 'model_reasoning_effort="high"' -c 'model_verbosity="medium"'
+```
+
+### In-session controls
+- Use `/model` to switch model or reasoning depth.
+- Use `/status` to confirm model, approvals, writable roots, and token state.
+- Use `/compact` after long threads to preserve headroom without losing task context.
+
+---
+
+## Instruction Chain Discipline (AGENTS Precedence)
+
+Codex loads instructions in a strict chain:
+1) Global (`~/.codex/AGENTS.override.md` or `~/.codex/AGENTS.md`)
+2) Project path (`AGENTS.override.md` then `AGENTS.md`, from repo root down to current directory)
+3) Deeper path instructions override broader path instructions.
+
+Keep instruction files explicit and scoped. Split nested concerns into deeper directories rather than growing one monolithic file.
+
+### Verification commands
+```bash
+codex --ask-for-approval never "Summarize the current instructions."
+codex --cd <subdir> --ask-for-approval never "Show which instruction files are active."
+```
+
+### Audit path
+- `~/.codex/log/codex-tui.log`
+
+---
+
+## Beads Is Persistent Memory (Required)
+
+Treat Beads as the canonical working memory for planning, status, and handoff. Do not rely on chat transcript memory for project state.
+
+### Session start
+```bash
+bd ready --limit 50
+bd list --status in_progress
+```
+
+### During execution
+```bash
+# Capture new work or discoveries
+bd create "<clear task title>"
+
+# Claim/track active work
+bd update <issue-id> --status in_progress
+
+# Append implementation notes, decisions, and blockers
+bd update <issue-id> --append-notes "<what changed and why>"
+```
+
+### Session close
+```bash
+# Close completed issues and sync to git-native JSONL
+bd update <issue-id> --status closed --notes "<verification + outcome>"
+bd sync
+```
+
+---
+
+## IntelliJ-Native MCP Navigation (idea-first)
+
+For symbol-aware operations, use IntelliJ MCP tools first. Plain text search (`rg`) is fallback only when symbol identity is irrelevant.
+
+### MCP server checks
+```bash
+codex mcp list --json
+codex mcp get idea --json
+```
+
+If `idea` is missing in a local setup:
+```bash
+codex mcp add idea --url http://127.0.0.1:64343/stream
+```
+
+### Preferred symbol operations (when exposed by the idea/intellij index MCP)
+- Definition lookup
+- Reference search
+- Implementation search
+- Type hierarchy
+- Safe rename refactor
+- IDE diagnostics after non-trivial edits
+
+Fallback rule:
+- Use `rg`/`rg --files` for plain-text discovery, logs, and non-symbol searches only.
+
+---
+
 ## Hard invariants (do not violate)
 
 ### 1) Kotlin-first, type-safe by default
@@ -150,3 +255,29 @@ Do not output it unless asked, but you must follow it:
 <!-- Optional structural prompt markers (kept literal via fenced block) -->
 <kotlin_mastery_rules enabled="true" />
 ```
+
+## Landing the Plane (Session Completion)
+
+**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+
+**MANDATORY WORKFLOW:**
+
+1. **File issues for remaining work** - Create issues for anything that needs follow-up
+2. **Run quality gates** (if code changed) - Tests, linters, builds
+3. **Update issue status** - Close finished work, update in-progress items
+4. **PUSH TO REMOTE** - This is MANDATORY:
+   ```bash
+   git pull --rebase
+   bd sync
+   git push
+   git status  # MUST show "up to date with origin"
+   ```
+5. **Clean up** - Clear stashes, prune remote branches
+6. **Verify** - All changes committed AND pushed
+7. **Hand off** - Provide context for next session
+
+**CRITICAL RULES:**
+- Work is NOT complete until `git push` succeeds
+- NEVER stop before pushing - that leaves work stranded locally
+- NEVER say "ready to push when you are" - YOU must push
+- If push fails, resolve and retry until it succeeds
