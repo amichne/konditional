@@ -281,3 +281,5 @@ Do not output it unless asked, but you must follow it:
 - NEVER stop before pushing - that leaves work stranded locally
 - NEVER say "ready to push when you are" - YOU must push
 - If push fails, resolve and retry until it succeeds
+
+Always use the OpenAI developer documentation MCP server (`openaiDeveloperDocs`) for OpenAI API, Codex, Apps SDK, Agents SDK, and model/tooling questions. Use web fallback only when MCP yields no meaningful results.
