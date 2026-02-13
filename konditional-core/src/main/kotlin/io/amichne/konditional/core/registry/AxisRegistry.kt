@@ -15,11 +15,12 @@ import kotlin.reflect.KClass
  * ## Registration
  *
  * Axes are automatically registered when they are instantiated (via their init block).
- * The registry ensures that each axis ID and value type maps to exactly one axis.
+ * The registry enforces a one-to-one mapping between axis ID and value type.
  *
  * ## Thread Safety
  *
- * This registry is thread-safe and can be safely accessed from multiple threads.
+ * Registration is synchronized so id/type invariants stay linearizable.
+ * Reads are lock-free via concurrent maps.
  *
  * @see Axis
  */
@@ -28,17 +29,8 @@ internal object AxisRegistry {
     /**
      * Internal map from axis IDs to their axis descriptors.
      */
-    private val byId: MutableMap<String, AxisEntry> = ConcurrentHashMap()
-
-    private val byValueClass: MutableMap<KClass<*>, AxisEntry> = ConcurrentHashMap()
-
-    private val idsByValueClass: MutableMap<KClass<*>, MutableSet<String>> = ConcurrentHashMap()
-
-    private data class AxisEntry(
-        val id: String,
-        val valueClass: KClass<*>,
-        val isImplicit: Boolean,
-    )
+    private val byId: MutableMap<String, Axis<*>> = ConcurrentHashMap()
+    private val byValueClass: MutableMap<KClass<*>, Axis<*>> = ConcurrentHashMap()
 
     /**
      * Registers an axis descriptor in the registry.
@@ -49,15 +41,14 @@ internal object AxisRegistry {
      * @param axis The axis handle to register
      * @throws IllegalArgumentException if an axis for this ID or value type is already registered with a different descriptor
      */
+    @Synchronized
     @PublishedApi
     internal fun register(axis: Axis<*>) {
         val axisId = axis.id
         val valueClass = axis.valueClass
-        val isImplicit = axis.isImplicit
-        val entry = AxisEntry(axisId, valueClass, isImplicit)
-        val entryDescription = "Axis(id='$axisId', valueClass=${valueClass.simpleName})"
         val existingById = byId[axisId]
         val existingByType = byValueClass[valueClass]
+        val attempted = "Axis(id='$axisId', valueClass=${valueClass.simpleName})"
         val existingByIdDescription = existingById?.let {
             "Axis(id='${it.id}', valueClass=${it.valueClass.simpleName})"
         }
@@ -66,49 +57,17 @@ internal object AxisRegistry {
         }
 
         require(existingById == null || existingById.valueClass == valueClass) {
-            "Axis already registered for id $axisId: " +
-                "existing=$existingByIdDescription, attempted=$entryDescription"
+            "Axis already registered for id $axisId: existing=$existingByIdDescription, attempted=$attempted"
+        }
+        require(existingByType == null || existingByType.id == axisId) {
+            "Axis already registered for type ${valueClass.simpleName}: existing=$existingByTypeDescription, attempted=$attempted"
         }
 
-        if (existingByType != null) {
-            val replacesImplicit = !isImplicit && existingByType.isImplicit
-            val defersToExplicit = isImplicit && !existingByType.isImplicit
-
-            require(replacesImplicit || defersToExplicit) {
-                "Axis already registered for type ${valueClass.simpleName}: " +
-                    "existing=$existingByTypeDescription, attempted=$entryDescription"
-            }
-
-            if (replacesImplicit) {
-                byValueClass[valueClass] = entry
-                byId[axisId] = entry
-                rememberAxisId(valueClass, axisId)
-                rememberAxisId(valueClass, existingByType.id)
-            } else {
-                byId.putIfAbsent(axisId, entry)
-                rememberAxisId(valueClass, axisId)
-            }
-        } else if (existingById != null) {
-            val replacesImplicit = !isImplicit && existingById.isImplicit
-            val defersToExplicit = isImplicit && !existingById.isImplicit
-
-            require(replacesImplicit || defersToExplicit) {
-                "Axis already registered for id $axisId: " +
-                    "existing=$existingByIdDescription, attempted=$entryDescription"
-            }
-
-            if (replacesImplicit) {
-                byValueClass[valueClass] = entry
-                byId[axisId] = entry
-                rememberAxisId(valueClass, axisId)
-                rememberAxisId(valueClass, existingById.id)
-            } else {
-                rememberAxisId(valueClass, axisId)
-            }
-        } else {
-            byValueClass[valueClass] = entry
-            byId[axisId] = entry
-            rememberAxisId(valueClass, axisId)
+        if (existingById == null) {
+            byId[axisId] = axis
+        }
+        if (existingByType == null) {
+            byValueClass[valueClass] = axis
         }
     }
 
@@ -120,47 +79,27 @@ internal object AxisRegistry {
      * @param type The runtime class create the value type
      * @return The axis for that type, or null if not registered
      */
+    @Suppress("UNCHECKED_CAST")
     fun <T> axisFor(type: KClass<out T>): Axis<T>? where T : AxisValue<T>, T : Enum<T> =
-        byValueClass[type]?.let { entry ->
-            Axis.fromRegistry(entry.id, type, entry.isImplicit)
-        }
+        byValueClass[type] as Axis<T>?
 
     @PublishedApi
-    internal fun <T> axisForOrRegister(type: KClass<out T>): Axis<T> where T : AxisValue<T>, T : Enum<T> =
-        axisFor(type) ?: registerImplicit(type)
+    internal fun <T> axisForOrThrow(type: KClass<out T>): Axis<T> where T : AxisValue<T>, T : Enum<T> =
+        axisFor(type)
+            ?: throw IllegalArgumentException(
+                "No axis registered for type ${type.qualifiedName ?: type.simpleName}. " +
+                    "Declare one with Axis.of(\"<stable-id>\", ${type.simpleName}::class).",
+            )
 
     @PublishedApi
     internal fun axisIdsFor(axisId: String): Set<String> =
-        byId[axisId]?.let { axisIdsForValueClass(it.valueClass) }
-            ?.takeIf { it.isNotEmpty() } ?: setOf(axisId)
+        byId[axisId]?.let { setOf(it.id) } ?: setOf(axisId)
 
     @PublishedApi
     internal fun axisIdsFor(axis: Axis<*>): Set<String> =
-        axisIdsForValueClass(axis.valueClass)
-            .takeIf { it.isNotEmpty() } ?: setOf(axis.id)
+        setOf(axis.id)
 
     @PublishedApi
     internal fun <T> axisIdsFor(type: KClass<out T>): Set<String> where T : AxisValue<T>, T : Enum<T> =
-        axisIdsForValueClass(type).takeIf { it.isNotEmpty() } ?: emptySet()
-
-    private fun <T> implicitAxisId(type: KClass<out T>): String where T : AxisValue<T>, T : Enum<T> =
-        (type.qualifiedName ?: type.simpleName)
-            ?.takeIf { it.isNotBlank() }
-            ?: throw IllegalArgumentException("Cannot derive axis id for ${type.qualifiedName ?: type}")
-
-    private fun <T> registerImplicit(type: KClass<out T>): Axis<T> where T : AxisValue<T>, T : Enum<T> =
-        implicitAxisId(type).let { axisId ->
-            Axis.implicit(axisId, type)
-        }
-
-    private fun axisIdsForValueClass(valueClass: KClass<*>): Set<String> =
-        idsByValueClass[valueClass]?.toSet() ?: emptySet()
-
-    private fun rememberAxisId(
-        valueClass: KClass<*>,
-        axisId: String,
-    ) {
-        val ids = idsByValueClass.computeIfAbsent(valueClass) { ConcurrentHashMap.newKeySet() }
-        ids.add(axisId)
-    }
+        axisFor(type)?.let { setOf(it.id) } ?: emptySet()
 }

@@ -7,6 +7,7 @@ import io.amichne.konditional.otel.metrics.OtelMetricsCollector
 import io.amichne.konditional.otel.traces.FlagEvaluationTracer
 import io.amichne.konditional.otel.traces.TracingConfig
 import io.opentelemetry.api.OpenTelemetry
+import org.jetbrains.annotations.TestOnly
 
 /**
  * Facade for OpenTelemetry integration with Konditional.
@@ -31,11 +32,11 @@ import io.opentelemetry.api.OpenTelemetry
  *     )
  * )
  *
- * // Install globally
- * KonditionalTelemetry.install(telemetry)
+ * // Preferred: pass telemetry explicitly at call sites
+ * val value = myFlag.evaluateWithTelemetry(context = context, telemetry = telemetry)
  *
- * // Use in evaluations
- * val value = myFlag.evaluateWithTelemetry(context)
+ * // Compatibility: install globally for deprecated global-shim overloads
+ * KonditionalTelemetry.install(telemetry)
  * ```
  *
  * @property otel OpenTelemetry SDK instance.
@@ -93,8 +94,8 @@ class KonditionalTelemetry(
         /**
          * Installs a global telemetry instance.
          *
-         * This instance will be used by default in [evaluateWithTelemetry] extension functions
-         * when no explicit telemetry is provided.
+         * This instance is consumed by deprecated global-shim telemetry extension overloads.
+         * Prefer passing telemetry explicitly at call sites instead.
          *
          * @param telemetry The telemetry instance to install globally.
          */
@@ -116,6 +117,16 @@ class KonditionalTelemetry(
          * Retrieves the global telemetry instance if installed, otherwise null.
          */
         fun globalOrNull(): KonditionalTelemetry? = globalInstance
+
+        /**
+         * Clears the global telemetry instance.
+         *
+         * Intended only for deterministic test isolation.
+         */
+        @TestOnly
+        internal fun resetGlobalForTests() {
+            globalInstance = null
+        }
 
         /**
          * Creates a no-op telemetry instance for testing.

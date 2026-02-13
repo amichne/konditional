@@ -298,3 +298,4 @@ configuration.
 - [Installation](./getting-started/installation) — Add Konditional to your project
 - [Your First Feature](./getting-started/your-first-flag) — Define and evaluate your first feature flag
 - [Core Concepts](./learn/core-primitives) — Understand the foundational types
+- [Verified Design Synthesis](./theory/verified-synthesis) — Cross-document, code-verified invariants and trade-offs

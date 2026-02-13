@@ -9,6 +9,7 @@ import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 /**
  * Unit tests for Context + axis values integration.
@@ -18,8 +19,8 @@ class AxisContextIntegrationTest {
     @Test
     fun `context axis extension returns typed values`() {
         val values = axisValues {
-            +TestEnvironment.STAGE
-            +TestTenant.ENTERPRISE
+            set(TestAxes.Environment, TestEnvironment.STAGE)
+            set(TestAxes.Tenant, TestTenant.ENTERPRISE)
         }
 
         val ctx = TestContext(axisValues = values)
@@ -37,8 +38,8 @@ class AxisContextIntegrationTest {
     @Test
     fun `context axis type-based extension returns typed values`() {
         val values = axisValues {
-            +TestEnvironment.STAGE
-            +TestTenant.ENTERPRISE
+            set(TestAxes.Environment, TestEnvironment.STAGE)
+            set(TestAxes.Tenant, TestTenant.ENTERPRISE)
         }
 
         val ctx = TestContext(axisValues = values)
@@ -57,7 +58,7 @@ class AxisContextIntegrationTest {
     @Test
     fun `context axis extension returns null for missing axis`() {
         val values = axisValues {
-            +TestEnvironment.PROD
+            set(TestAxes.Environment, TestEnvironment.PROD)
         }
         val ctx = TestContext(axisValues = values)
 
@@ -66,17 +67,14 @@ class AxisContextIntegrationTest {
     }
 
     @Test
-    fun `axis values auto-register axis when not explicitly defined`() {
-        val values = axisValues {
-            +EphemeralEnvironment.PROD
+    fun `axis values require explicit axis registration for inferred values`() {
+        val error = assertThrows<IllegalArgumentException> {
+            axisValues {
+                +EphemeralEnvironment.PROD
+            }
         }
 
-        val ctx = TestContext(axisValues = values)
-
-        Assertions.assertEquals(
-            setOf(EphemeralEnvironment.PROD),
-            ctx.axis<EphemeralEnvironment>(),
-        )
+        Assertions.assertTrue(error.message.orEmpty().contains("No axis registered for type"))
     }
 }
 

@@ -4,6 +4,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.LocaleTag
 import io.amichne.konditional.context.PlatformTag
 import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.VersionRangeScope
@@ -76,24 +77,27 @@ internal data class RuleBuilder<C : Context>(
         predicate = factory { block(it) }
     }
 
-    override fun <T> axis(vararg values: T) where T : AxisValue<T>, T : Enum<T> {
-        require(values.isNotEmpty()) { "axis(...) requires at least one value to infer the axis type." }
-//        axisConstraints.any { constraintId ->
-//            values.map { value -> value.id }.any { it == constraintId.axisId }
-//        }
-
-        val axis = AxisRegistry.axisForOrRegister(values.first()::class)
+    override fun <T> axis(
+        axis: Axis<T>,
+        vararg values: T,
+    ) where T : AxisValue<T>, T : Enum<T> {
+        require(values.isNotEmpty()) { "axis(...) requires at least one value." }
         val allowedIds = values.mapTo(linkedSetOf()) { it.id }
         val idx = axisConstraints.indexOfFirst { it.axisId == axis.id }
 
         if (idx >= 0) {
             val existing = axisConstraints[idx]
             axisConstraints[idx] = existing.copy(
-                allowedIds = existing.allowedIds + allowedIds
+                allowedIds = existing.allowedIds + allowedIds,
             )
         } else {
             axisConstraints += AxisConstraint(axis.id, allowedIds)
         }
+    }
+
+    override fun <T> axis(vararg values: T) where T : AxisValue<T>, T : Enum<T> {
+        require(values.isNotEmpty()) { "axis(...) requires at least one value to infer the axis type." }
+        axis(AxisRegistry.axisForOrThrow(values.first()::class), *values)
     }
 
     /**

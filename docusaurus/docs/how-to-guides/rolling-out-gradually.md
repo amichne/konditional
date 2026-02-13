@@ -44,7 +44,7 @@ object AppFeatures : Namespace("app") {
 ```kotlin
 // Build context with persistent user ID
 val ctx = Context(
-    stableId = StableId(userId),  // Use database ID, NOT session ID
+    stableId = StableId.of(userId),  // Use database ID, NOT session ID
     platform = Platform.ANDROID
 )
 
@@ -137,13 +137,13 @@ Monitor key metrics:
 
 ```kotlin
 // DON'T: Session ID changes every session
-val ctx = Context(stableId = StableId(sessionId))
+val ctx = Context(stableId = StableId.of(sessionId))
 
 // DON'T: Random ID changes every request
-val ctx = Context(stableId = StableId(UUID.randomUUID().toString()))
+val ctx = Context(stableId = StableId.of(UUID.randomUUID().toString()))
 
 // DO: Persistent user identifier
-val ctx = Context(stableId = StableId(userId))  // Database ID
+val ctx = Context(stableId = StableId.of(userId))  // Database ID
 ```
 
 **Result of wrong stableId:** User gets different bucket on each session/request. Metrics become meaningless.
@@ -197,7 +197,7 @@ Metrics look wrong.
 @Test
 fun `same user always gets same bucket`() {
   val userId = "test-user-123"
-  val ctx = Context(stableId = StableId(userId))
+  val ctx = Context(stableId = StableId.of(userId))
 
   val results = (1..100).map {
     AppFeatures.newCheckoutFlow.evaluate(ctx)
@@ -217,7 +217,7 @@ fun `10 percent ramp-up distributes correctly`() {
   val rampUpPercentage = 10.0
 
   val inTreatment = (0 until sampleSize).count { i ->
-    val ctx = Context(stableId = StableId("user-$i"))
+    val ctx = Context(stableId = StableId.of("user-$i"))
     AppFeatures.newCheckoutFlow.evaluate(ctx)
   }
 
@@ -234,7 +234,7 @@ fun `10 percent ramp-up distributes correctly`() {
 @Test
 fun `specific user is in treatment group`() {
   val userId = "VIP-user-456"
-  val ctx = Context(stableId = StableId(userId))
+  val ctx = Context(stableId = StableId.of(userId))
 
   val result = AppFeatures.newCheckoutFlow.evaluate(ctx)
 

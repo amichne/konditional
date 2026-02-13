@@ -2,6 +2,8 @@
 
 Why readers never see partial configuration updates, and how `AtomicReference` provides lock-free safety.
 
+Cross-document synthesis: [Verified Design Synthesis](/theory/verified-synthesis).
+
 ---
 
 ## The Problem: Torn Reads

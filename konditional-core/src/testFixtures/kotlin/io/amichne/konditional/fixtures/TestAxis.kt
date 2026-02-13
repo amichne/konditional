@@ -86,7 +86,7 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      */
     val envScopedFlag by boolean<TestContext>(default = false) {
         enable {
-            axis(TestEnvironment.PROD)
+            axis(TestAxes.Environment, TestEnvironment.PROD)
         }
     }
 
@@ -98,8 +98,8 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      */
     val envAndTenantScopedFlag by boolean<TestContext>(default = false) {
         enable {
-            axis(TestEnvironment.PROD, TestEnvironment.STAGE)
-            axis(TestTenant.ENTERPRISE)
+            axis(TestAxes.Environment, TestEnvironment.PROD, TestEnvironment.STAGE)
+            axis(TestAxes.Tenant, TestTenant.ENTERPRISE)
         }
     }
 
@@ -112,8 +112,8 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      */
     val fallbackRuleFlag by boolean<TestContext>(default = false) {
         enable {
-            axis(TestEnvironment.PROD)
-            axis(TestTenant.ENTERPRISE)
+            axis(TestAxes.Environment, TestEnvironment.PROD)
+            axis(TestAxes.Tenant, TestTenant.ENTERPRISE)
         }
 
         enable {
@@ -129,7 +129,7 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      */
     val repeatedAxisFlag by boolean<TestContext>(default = false) {
         enable {
-            axis(TestEnvironment.DEV, TestEnvironment.STAGE)
+            axis(TestAxes.Environment, TestEnvironment.DEV, TestEnvironment.STAGE)
         }
     }
 }

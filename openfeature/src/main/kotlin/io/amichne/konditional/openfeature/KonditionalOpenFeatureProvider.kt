@@ -21,8 +21,65 @@ import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.registry.NamespaceRegistry
 
+/**
+ * Maps untrusted OpenFeature [EvaluationContext] to a trusted Konditional [Context].
+ *
+ * Implementations must not throw for control flow. Parse failures are returned as
+ * [KonditionalContextMappingResult.Failure] with a typed [KonditionalContextMappingError].
+ */
 fun interface KonditionalContextMapper<C : Context> {
-    fun toKonditionalContext(context: EvaluationContext): C
+    /**
+     * Converts [context] into a typed Konditional context.
+     */
+    fun toKonditionalContext(context: EvaluationContext): KonditionalContextMappingResult<C>
+}
+
+/**
+ * Result of converting an OpenFeature context into a trusted Konditional context.
+ */
+sealed interface KonditionalContextMappingResult<out C : Context> {
+    /**
+     * Successful mapping with a trusted domain context.
+     */
+    @ConsistentCopyVisibility
+    data class Success<C : Context> @PublishedApi internal constructor(
+        val value: C,
+    ) : KonditionalContextMappingResult<C>
+
+    /**
+     * Failed mapping with a typed boundary error.
+     */
+    @ConsistentCopyVisibility
+    data class Failure @PublishedApi internal constructor(
+        val error: KonditionalContextMappingError,
+    ) : KonditionalContextMappingResult<Nothing>
+
+    companion object {
+        fun <C : Context> success(value: C): KonditionalContextMappingResult<C> = Success(value)
+
+        fun failure(error: KonditionalContextMappingError): KonditionalContextMappingResult<Nothing> = Failure(error)
+    }
+}
+
+/**
+ * Typed errors produced during OpenFeature context mapping.
+ */
+sealed interface KonditionalContextMappingError {
+    val message: String
+
+    /**
+     * OpenFeature did not provide a targeting key.
+     */
+    object MissingTargetingKey : KonditionalContextMappingError {
+        override val message: String = "OpenFeature targetingKey is required for Konditional evaluation"
+    }
+
+    /**
+     * OpenFeature provided a targeting key that contained only whitespace.
+     */
+    object BlankTargetingKey : KonditionalContextMappingError {
+        override val message: String = "OpenFeature targetingKey must not be blank for Konditional evaluation"
+    }
 }
 
 data class KonditionalProviderMetadata(private val providerName: String = "Konditional") : Metadata {
@@ -37,16 +94,22 @@ data class TargetingKeyContext(
 class TargetingKeyContextMapper(
     private val axisValuesProvider: (EvaluationContext) -> AxisValues = { AxisValues.EMPTY },
 ) : KonditionalContextMapper<TargetingKeyContext> {
-    override fun toKonditionalContext(context: EvaluationContext): TargetingKeyContext =
-        context.targetingKey
-            ?.takeIf { it.isNotBlank() }
-            ?.let { targetingKey ->
-                TargetingKeyContext(
-                    stableId = StableId.of(targetingKey),
-                    axisValues = axisValuesProvider(context),
-                )
-            }
-            ?: error("OpenFeature targetingKey is required for Konditional evaluation")
+    override fun toKonditionalContext(context: EvaluationContext): KonditionalContextMappingResult<TargetingKeyContext> =
+        when (val targetingKey = context.targetingKey) {
+            null -> KonditionalContextMappingResult.failure(KonditionalContextMappingError.MissingTargetingKey)
+            else ->
+                targetingKey
+                    .takeIf { it.isNotBlank() }
+                    ?.let { normalizedTargetingKey ->
+                        KonditionalContextMappingResult.success(
+                            TargetingKeyContext(
+                                stableId = StableId.of(normalizedTargetingKey),
+                                axisValues = axisValuesProvider(context),
+                            ),
+                        )
+                    }
+                    ?: KonditionalContextMappingResult.failure(KonditionalContextMappingError.BlankTargetingKey)
+        }
 }
 
 class KonditionalOpenFeatureProvider<C : Context>(
@@ -54,6 +117,23 @@ class KonditionalOpenFeatureProvider<C : Context>(
     private val contextMapper: KonditionalContextMapper<C>,
     private val metadata: Metadata = KonditionalProviderMetadata(),
 ) : FeatureProvider {
+    private val flagsByKey: Map<String, FlagEntry<C>> =
+        namespaceRegistry
+            .allFlags()
+            .entries
+            .asSequence()
+            .sortedBy { entry -> entry.key.key }
+            .fold(linkedMapOf<String, FlagEntry<C>>()) { index, entry ->
+                index.putIfAbsent(
+                    entry.key.key,
+                    FlagEntry(
+                        feature = entry.key.toTypedFeature(),
+                        valueType = FlagValueType.of(entry.value.defaultValue),
+                    ),
+                )
+                index
+            }
+
     override fun getMetadata(): Metadata = metadata
 
     override fun getState(): ProviderState = ProviderState.READY
@@ -161,40 +241,53 @@ class KonditionalOpenFeatureProvider<C : Context>(
         ctx: EvaluationContext,
         transformValue: (Any) -> T?,
     ): ProviderEvaluation<T> =
-        runCatching { contextMapper.toKonditionalContext(ctx) }
+        when (val mappedContext = contextMapper.toKonditionalContext(ctx)) {
+            is KonditionalContextMappingResult.Failure ->
+                errorEvaluation(
+                    defaultValue = defaultValue,
+                    errorCode = ErrorCode.INVALID_CONTEXT,
+                    errorMessage = mappedContext.error.message,
+                )
+
+            is KonditionalContextMappingResult.Success ->
+                evaluateMappedEntry(
+                    key = key,
+                    entry = entry,
+                    context = mappedContext.value,
+                    defaultValue = defaultValue,
+                    transformValue = transformValue,
+                )
+        }
+
+    private fun <T : Any> evaluateMappedEntry(
+        key: String,
+        entry: FlagEntry<C>,
+        context: C,
+        defaultValue: T,
+        transformValue: (Any) -> T?,
+    ): ProviderEvaluation<T> =
+        runCatching { entry.featureAs<T>().explain(context, namespaceRegistry) }
             .fold(
-                onSuccess = { context ->
-                    runCatching { entry.featureAs<T>().explain(context, namespaceRegistry) }
-                        .fold(
-                            onSuccess = { result ->
-                                transformValue(result.value)?.let { value ->
-                                    ProviderEvaluation.builder<T>()
-                                        .value(value)
-                                        .reason(reasonFor(result.decision).name)
-                                        .variantOrNull(variantFor(result.decision))
-                                        .flagMetadata(metadataFor(result))
-                                        .build()
-                                }
-                                    ?: errorEvaluation(
-                                        defaultValue = defaultValue,
-                                        errorCode = ErrorCode.TYPE_MISMATCH,
-                                        errorMessage = "Flag '$key' produced a value of an unexpected type",
-                                    )
-                            },
-                            onFailure = { error ->
-                                errorEvaluation(
-                                    defaultValue = defaultValue,
-                                    errorCode = ErrorCode.GENERAL,
-                                    errorMessage = error.message ?: "Failed to evaluate flag '$key'",
-                                )
-                            },
+                onSuccess = { result ->
+                    transformValue(result.value)?.let { value ->
+                        ProviderEvaluation.builder<T>()
+                            .value(value)
+                            .reason(reasonFor(result.decision).name)
+                            .variantOrNull(variantFor(result.decision))
+                            .flagMetadata(metadataFor(result))
+                            .build()
+                    }
+                        ?: errorEvaluation(
+                            defaultValue = defaultValue,
+                            errorCode = ErrorCode.TYPE_MISMATCH,
+                            errorMessage = "Flag '$key' produced a value of an unexpected type",
                         )
                 },
                 onFailure = { error ->
                     errorEvaluation(
                         defaultValue = defaultValue,
-                        errorCode = ErrorCode.INVALID_CONTEXT,
-                        errorMessage = error.message ?: "OpenFeature context mapping failed",
+                        errorCode = ErrorCode.GENERAL,
+                        errorMessage = error.message ?: "Failed to evaluate flag '$key'",
                     )
                 },
             )
@@ -267,17 +360,7 @@ class KonditionalOpenFeatureProvider<C : Context>(
             .errorMessage(errorMessage)
             .build()
 
-    private fun resolveFlagEntry(flagKey: String): FlagEntry<C>? =
-        namespaceRegistry
-            .allFlags()
-            .entries
-            .firstOrNull { entry -> entry.key.key == flagKey }
-            ?.let { entry ->
-                FlagEntry(
-                    feature = entry.key.toTypedFeature(),
-                    valueType = FlagValueType.of(entry.value.defaultValue),
-                )
-            }
+    private fun resolveFlagEntry(flagKey: String): FlagEntry<C>? = flagsByKey[flagKey]
 
     @Suppress("UNCHECKED_CAST")
     private fun Feature<*, *, *>.toTypedFeature(): Feature<*, C, *> = this as Feature<*, C, *>

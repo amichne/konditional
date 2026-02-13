@@ -17,6 +17,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -40,9 +41,8 @@ class ParseResultTest {
     data class MyError(val reason: String)
 
     private val successResult: ParseResult<Int> = ParseResult.Success(42)
-    private val failureResult: ParseResult<Int> = ParseResult.Failure(
-        ParseError.InvalidHexId("invalid", "Invalid hex format")
-    )
+    private val failureError: ParseError = ParseError.InvalidHexId("invalid", "Invalid hex format")
+    private val failureResult: ParseResult<Int> = ParseResult.Failure(failureError)
 
     @Test
     fun `Success contains value`() {
@@ -155,6 +155,21 @@ class ParseResultTest {
             }
         }
         assertEquals(-1, result)
+    }
+
+    @Test
+    fun `getOrThrow returns value on Success`() {
+        assertEquals(42, successResult.getOrThrow())
+    }
+
+    @Test
+    fun `getOrThrow throws ParseException on Failure and preserves ParseError`() {
+        val exception = assertFailsWith<ParseException> {
+            failureResult.getOrThrow()
+        }
+
+        assertIs<ParseError.InvalidHexId>(exception.error)
+        assertEquals(failureError, exception.error)
     }
 
     @Test

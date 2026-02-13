@@ -73,6 +73,16 @@ class ConfigurationSnapshotCodecTest {
 
     private fun featureIndexById() = TestFeatures.allFeatures().associateBy { feature -> feature.id }
 
+    private fun decodeFeatureAware(
+        json: String,
+        options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
+    ): ParseResult<Configuration> =
+        ConfigurationSnapshotCodec.decode(
+            json = json,
+            featuresById = featureIndexById(),
+            options = options,
+        )
+
     private enum class Environment(override val id: String) : AxisValue<Environment> {
         PROD("prod"),
         STAGE("stage"),
@@ -102,7 +112,33 @@ class ConfigurationSnapshotCodecTest {
         @Suppress("DEPRECATION")
         FeatureRegistry.clear()
 
-        val result = ConfigurationSnapshotCodec.decode(json = json, featuresById = featureIndexById())
+        val result = decodeFeatureAware(json = json)
+
+        assertIs<ParseResult.Success<Configuration>>(result)
+        assertTrue(result.value.flags.containsKey(TestFeatures.boolFlag))
+    }
+
+    @Test
+    fun `Given snapshot with flags, When decoded without feature scope by default, Then returns typed failure`() {
+        TestFeatures.boolFlag.update(true) {}
+        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
+
+        val result = ConfigurationSnapshotCodec.decode(json = json)
+
+        assertIs<ParseResult.Failure>(result)
+        assertIs<ParseError.InvalidSnapshot>(result.error)
+        assertTrue((result.error as ParseError.InvalidSnapshot).reason.contains("explicit feature scope"))
+    }
+
+    @Test
+    fun `Given explicit legacy mode, When decoded without feature scope, Then global fallback is used`() {
+        TestFeatures.boolFlag.update(true) {}
+        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
+
+        val result = ConfigurationSnapshotCodec.decode(
+            json = json,
+            options = SnapshotLoadOptions.legacyGlobalRegistryFallback(),
+        )
 
         assertIs<ParseResult.Success<Configuration>>(result)
         assertTrue(result.value.flags.containsKey(TestFeatures.boolFlag))
@@ -115,7 +151,7 @@ class ConfigurationSnapshotCodecTest {
         val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
             .replace(Theme::class.java.name, "evil.payload.FakeEnum")
 
-        val result = ConfigurationSnapshotCodec.decode(json = json, featuresById = featureIndexById())
+        val result = decodeFeatureAware(json = json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val decoded = result.value.flags[TestFeatures.themeFlag] as FlagDefinition<Theme, Context, Namespace>
@@ -130,7 +166,7 @@ class ConfigurationSnapshotCodecTest {
         val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
             .replace(RetryPolicy::class.java.name, "evil.payload.FakePolicy")
 
-        val result = ConfigurationSnapshotCodec.decode(json = json, featuresById = featureIndexById())
+        val result = decodeFeatureAware(json = json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val decoded =
@@ -272,7 +308,7 @@ class ConfigurationSnapshotCodecTest {
         assertFalse(TestFeatures.boolFlag.evaluate(ctx(otherId)))
 
         val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
-        val parsed = ConfigurationSnapshotCodec.decode(json).getOrThrow()
+        val parsed = decodeFeatureAware(json).getOrThrow()
 
         TestFeatures.load(Configuration(emptyMap()))
         TestFeatures.load(parsed)
@@ -295,7 +331,7 @@ class ConfigurationSnapshotCodecTest {
         assertTrue(json.contains("prod"))
         assertTrue(json.contains("stage"))
 
-        val parsed = ConfigurationSnapshotCodec.decode(json).getOrThrow()
+        val parsed = decodeFeatureAware(json).getOrThrow()
 
         TestFeatures.load(Configuration(emptyMap()))
         TestFeatures.load(parsed)
@@ -564,7 +600,7 @@ class ConfigurationSnapshotCodecTest {
             }
             """.trimIndent()
 
-        val result = ConfigurationSnapshotCodec.decode(json)
+        val result = decodeFeatureAware(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val konfig = result.value
@@ -595,7 +631,7 @@ class ConfigurationSnapshotCodecTest {
             }
             """.trimIndent()
 
-        val result = ConfigurationSnapshotCodec.decode(json)
+        val result = decodeFeatureAware(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val flag = result.value.flags[TestFeatures.stringFlag]
@@ -623,7 +659,7 @@ class ConfigurationSnapshotCodecTest {
             }
             """.trimIndent()
 
-        val result = ConfigurationSnapshotCodec.decode(json)
+        val result = decodeFeatureAware(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val flag = result.value.flags[TestFeatures.intFlag]
@@ -651,7 +687,7 @@ class ConfigurationSnapshotCodecTest {
             }
             """.trimIndent()
 
-        val result = ConfigurationSnapshotCodec.decode(json)
+        val result = decodeFeatureAware(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val flag = result.value.flags[TestFeatures.doubleFlag]
@@ -663,7 +699,7 @@ class ConfigurationSnapshotCodecTest {
     fun `Given JSON with complex rule, When deserialized, Then returns success with all rule attributes`() {
         val json = complexRuleJson
 
-        val result = ConfigurationSnapshotCodec.decode(json)
+        val result = decodeFeatureAware(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val flag = result.value.flags[TestFeatures.boolFlag]
@@ -685,7 +721,7 @@ class ConfigurationSnapshotCodecTest {
     fun `Given invalid JSON, When deserialized, Then returns failure with InvalidJson error`() {
         val json = "not valid json at all"
 
-        val result = ConfigurationSnapshotCodec.decode(json)
+        val result = decodeFeatureAware(json)
 
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.InvalidJson>(result.error)
@@ -711,7 +747,7 @@ class ConfigurationSnapshotCodecTest {
             }
             """.trimIndent()
 
-        val result = ConfigurationSnapshotCodec.decode(json)
+        val result = decodeFeatureAware(json)
 
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.FeatureNotFound>(result.error)
@@ -727,7 +763,7 @@ class ConfigurationSnapshotCodecTest {
         val originalConfiguration = Configuration(mapOf(TestFeatures.boolFlag to originalFlag))
 
         val json = ConfigurationSnapshotCodec.encode(originalConfiguration)
-        val result = ConfigurationSnapshotCodec.decode(json)
+        val result = decodeFeatureAware(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val deserializedFlag = result.value.flags[TestFeatures.boolFlag]
@@ -743,7 +779,7 @@ class ConfigurationSnapshotCodecTest {
         val originalConfiguration = Configuration(mapOf(TestFeatures.stringFlag to originalFlag))
 
         val json = ConfigurationSnapshotCodec.encode(originalConfiguration)
-        val result = ConfigurationSnapshotCodec.decode(json)
+        val result = decodeFeatureAware(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val deserializedFlag = result.value.flags[TestFeatures.stringFlag]
@@ -757,7 +793,7 @@ class ConfigurationSnapshotCodecTest {
         val originalConfiguration = Configuration(mapOf(TestFeatures.intFlag to originalFlag))
 
         val json = ConfigurationSnapshotCodec.encode(originalConfiguration)
-        val result = ConfigurationSnapshotCodec.decode(json)
+        val result = decodeFeatureAware(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val deserializedFlag = result.value.flags[TestFeatures.intFlag]
@@ -771,7 +807,7 @@ class ConfigurationSnapshotCodecTest {
         val originalConfiguration = Configuration(mapOf(TestFeatures.doubleFlag to originalFlag))
 
         val json = ConfigurationSnapshotCodec.encode(originalConfiguration)
-        val result = ConfigurationSnapshotCodec.decode(json)
+        val result = decodeFeatureAware(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val deserializedFlag = result.value.flags[TestFeatures.doubleFlag]
@@ -795,7 +831,7 @@ class ConfigurationSnapshotCodecTest {
         }
 
         val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
-        val result = ConfigurationSnapshotCodec.decode(json)
+        val result = decodeFeatureAware(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val deserializedFlag = result.value.flags[TestFeatures.boolFlag]
@@ -831,7 +867,7 @@ class ConfigurationSnapshotCodecTest {
             )
 
         val json = ConfigurationSnapshotCodec.encode(originalConfiguration)
-        val result = ConfigurationSnapshotCodec.decode(json)
+        val result = decodeFeatureAware(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val deserializedKonfig = result.value
@@ -871,7 +907,12 @@ class ConfigurationSnapshotCodecTest {
             }
             """.trimIndent()
 
-        val result = ConfigurationSnapshotCodec.applyPatchJson(originalConfiguration, patchJson)
+        val result =
+            ConfigurationSnapshotCodec.applyPatchJson(
+                currentConfiguration = originalConfiguration,
+                patchJson = patchJson,
+                featuresById = featureIndexById(),
+            )
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val patchedKonfig = result.value
@@ -906,7 +947,12 @@ class ConfigurationSnapshotCodecTest {
             }
             """.trimIndent()
 
-        val result = ConfigurationSnapshotCodec.applyPatchJson(originalConfiguration, patchJson)
+        val result =
+            ConfigurationSnapshotCodec.applyPatchJson(
+                currentConfiguration = originalConfiguration,
+                patchJson = patchJson,
+                featuresById = featureIndexById(),
+            )
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val patchedFlag = result.value.flags[TestFeatures.boolFlag]
@@ -928,7 +974,12 @@ class ConfigurationSnapshotCodecTest {
             }
             """.trimIndent()
 
-        val result = ConfigurationSnapshotCodec.applyPatchJson(originalConfiguration, patchJson)
+        val result =
+            ConfigurationSnapshotCodec.applyPatchJson(
+                currentConfiguration = originalConfiguration,
+                patchJson = patchJson,
+                featuresById = featureIndexById(),
+            )
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val patchedKonfig = result.value
@@ -976,7 +1027,12 @@ class ConfigurationSnapshotCodecTest {
             }
             """.trimIndent()
 
-        val result = ConfigurationSnapshotCodec.applyPatchJson(originalConfiguration, patchJson)
+        val result =
+            ConfigurationSnapshotCodec.applyPatchJson(
+                currentConfiguration = originalConfiguration,
+                patchJson = patchJson,
+                featuresById = featureIndexById(),
+            )
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val patchedKonfig = result.value

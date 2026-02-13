@@ -4,269 +4,108 @@ title: Namespace Operations API
 
 # Namespace Operations API
 
-## What It Does
+Namespace operations control the active configuration snapshot and emergency behavior for one namespace at a time.
 
-Namespace operations manage the configuration lifecycle: loading new snapshots, rolling back to previous states, and emergency kill-switches. These operations affect all features in a namespace atomically.
+In this page you will find:
 
-## load()
+- Runtime lifecycle operations (`load`, `rollback`, `history`)
+- Namespace kill-switch operations (`disableAll`, `enableAll`)
+- Exact failure semantics from the default in-memory registry
 
-Load a validated configuration snapshot into the namespace.
+---
 
-### Signature
+## Runtime Extensions (`konditional-runtime`)
+
+These are extension APIs from `io.amichne.konditional.runtime`:
 
 ```kotlin
 fun Namespace.load(configuration: ConfigurationView)
-```
-
-**Evidence**: `konditional-runtime/src/main/kotlin/io/amichne/konditional/runtime/NamespaceOperations.kt:16`
-
-### Parameters
-
-| Name | Type | Required | Default | Description |
-|------|------|----------|---------|-------------|
-| `configuration` | `ConfigurationView` | Yes | — | Validated configuration snapshot (typically from `ConfigurationSnapshotCodec.decode()`) |
-
-### Return Value
-
-Returns `Unit`. Operation completes synchronously.
-
-### Errors / Failure Modes
-
-- **No validation errors**: Configuration must already be validated (use `ParseResult` boundary)
-- **Thread-safe**: Multiple loads race, last write wins (atomic swap)
-- **No rollback**: Load operation cannot be undone except via explicit `rollback()`
-
-### Examples
-
-**Minimal**:
-```kotlin
-val config: Configuration = // ... validated config
-AppFeatures.load(config)
-```
-
-**Typical**:
-```kotlin
-val json = fetchRemoteConfig()
-when (val result = ConfigurationSnapshotCodec.decode(json)) {
-    is ParseResult.Success -> {
-        AppFeatures.load(result.value)
-        logger.info("Configuration loaded: ${result.value.metadata.version}")
-    }
-    is ParseResult.Failure -> {
-        logger.error("Config rejected: ${result.error.message}")
-        // Last-known-good remains active
-    }
-}
-```
-
-**Edge case** (concurrent loads):
-```kotlin
-// Thread 1
-AppFeatures.load(config1)
-
-// Thread 2
-AppFeatures.load(config2)
-
-// Result: One config wins (last write), readers see consistent snapshot
-```
-
-### Semantics / Notes
-
-- **Atomicity**: All readers see either old snapshot or new snapshot, never mixed
-- **Ordering**: No guarantee which thread's load wins in race conditions
-- **Idempotency**: Loading same config multiple times is safe (no-op after first)
-- **Concurrency**: Safe to call from multiple threads, atomic reference swap
-
-### Compatibility
-
-- **Introduced**: v0.1.0
-- **Deprecated**: None
-- **Alternatives**: Use `NamespaceSnapshotLoader(namespace).load(json)` for JSON parsing + load in one step
-
----
-
-## rollback()
-
-Restore a previous configuration snapshot from bounded history.
-
-### Signature
-
-```kotlin
 fun Namespace.rollback(steps: Int = 1): Boolean
+val Namespace.history: List<ConfigurationView>
+val Namespace.historyMetadata: List<ConfigurationMetadataView>
 ```
 
-**Evidence**: `konditional-runtime/src/main/kotlin/io/amichne/konditional/runtime/NamespaceOperations.kt:20`
+Evidence:
 
-### Parameters
+- `konditional-runtime/src/main/kotlin/io/amichne/konditional/runtime/NamespaceOperations.kt`
+- `konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistry.kt`
 
-| Name | Type | Required | Default | Description |
-|------|------|----------|---------|-------------|
-| `steps` | `Int` | No | `1` | Number of configurations to roll back (1 = previous config, 2 = two configs ago, etc.) |
+### `load(configuration)`
 
-### Return Value
+- Replaces the current snapshot and appends the previous snapshot to bounded history.
+- The default in-memory registry serializes write operations with a lock and stores snapshots in atomic references.
+- Concurrent loads are safe; effective result is last write wins.
 
-Returns `Boolean`:
-- `true`: Rollback succeeded, previous config now active
-- `false`: Rollback failed (insufficient history or invalid steps value)
-
-### Errors / Failure Modes
-
-- **Insufficient history**: Returns `false` if history doesn't have `steps` configs
-- **Invalid steps**: Returns `false` if `steps <= 0`
-- **No active config**: Returns `false` if no configuration has been loaded yet
-- **Thread-safe**: Atomic operation, safe to call from multiple threads
-
-### Examples
-
-**Minimal**:
 ```kotlin
-val success = AppFeatures.rollback()
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
+    is ParseResult.Success -> AppFeatures.load(result.value)
+    is ParseResult.Failure -> logger.error { result.error.message }
+}
 ```
 
-**Typical**:
+### `rollback(steps)`
+
+- Returns `true` when rollback succeeds.
+- Returns `false` when history does not contain enough snapshots.
+- Throws `IllegalArgumentException` when `steps < 1` (via `require(steps >= 1)`).
+
 ```kotlin
-fun emergencyRollback() {
-    val success = AppFeatures.rollback(steps = 1)
-    if (success) {
-        logger.info("Rolled back to previous configuration")
-        metrics.increment("config.rollback.success")
-    } else {
-        logger.warn("Rollback failed: insufficient history")
-        metrics.increment("config.rollback.failure")
-        // Fall back to kill-switch or other emergency measures
+val restored = AppFeatures.rollback(steps = 1)
+```
+
+---
+
+## Kill-Switch Operations (`NamespaceRegistry`)
+
+`Namespace` delegates `NamespaceRegistry`, so these operations are available directly:
+
+```kotlin
+fun disableAll()
+fun enableAll()
+val isAllDisabled: Boolean
+```
+
+Evidence:
+
+- `konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt`
+
+Behavior:
+
+- `disableAll()` forces evaluations to return each flag's default.
+- `enableAll()` restores normal rule evaluation.
+- Scope is namespace-local; other namespaces are unaffected.
+
+---
+
+## Concurrency and Atomicity Notes
+
+- Reads (`namespace.configuration`) are atomic snapshot reads.
+- Loads/rollbacks are linearized by registry synchronization in the default runtime implementation.
+- Readers observe either the old or the new snapshot, never a partial merge.
+
+For deeper guarantees, see [Atomicity Guarantees](/theory/atomicity-guarantees).
+
+---
+
+## Practical Pattern
+
+```kotlin
+val loader = NamespaceSnapshotLoader(AppFeatures)
+
+when (loader.load(fetchRemoteConfig())) {
+    is ParseResult.Success -> Unit
+    is ParseResult.Failure -> {
+        val rolledBack = AppFeatures.rollback(1)
+        if (!rolledBack) AppFeatures.disableAll()
     }
 }
 ```
-
-**Edge case** (rollback multiple steps):
-```kotlin
-// Roll back 3 configurations
-val success = AppFeatures.rollback(steps = 3)
-if (!success) {
-    println("History only retains 2 configs, rollback failed")
-}
-```
-
-### Semantics / Notes
-
-- **Atomicity**: Rollback is atomic (all-or-nothing)
-- **Ordering**: Rollback uses LIFO order (most recent first)
-- **Idempotency**: Rolling back to same config is safe but usually unnecessary
-- **Concurrency**: Thread-safe, uses atomic operations
-
-### Compatibility
-
-- **Introduced**: v0.1.0
-- **Deprecated**: None
-- **Alternatives**: None (only way to restore previous config)
-
----
-
-## disableAll()
-
-Emergency kill-switch that forces all evaluations to return defaults.
-
-### Signature
-
-```kotlin
-fun Namespace.disableAll()
-```
-
-**Evidence**: Inferred from registry operations (common pattern in feature flag systems)
-
-### Parameters
-
-None.
-
-### Return Value
-
-Returns `Unit`. Operation completes synchronously.
-
-### Errors / Failure Modes
-
-- **No errors**: Always succeeds
-- **Thread-safe**: Safe to call from multiple threads
-- **Reversible**: Call `enableAll()` to restore normal operation
-
-### Examples
-
-**Emergency disable**:
-```kotlin
-// Production incident: disable all features in payment namespace
-PaymentFeatures.disableAll()
-
-// All payment features now return defaults
-val enabled = PaymentFeatures.newCheckoutFlow.evaluate(ctx) // Returns default (false)
-```
-
-**Conditional disable**:
-```kotlin
-if (errorRate > CRITICAL_THRESHOLD) {
-    logger.error("Critical error rate, disabling all features")
-    AppFeatures.disableAll()
-    alertOps("Kill-switch activated")
-}
-```
-
-### Semantics / Notes
-
-- **Scope**: Only affects the specific namespace, not other namespaces
-- **Mechanism**: Sets registry-level flag, bypasses all rule evaluation
-- **Performance**: Extremely fast (single boolean check before evaluation)
-- **Reversibility**: Call `enableAll()` to restore normal operation
-
-### Compatibility
-
-- **Introduced**: v0.1.0
-- **Deprecated**: None
-- **Alternatives**: Load configuration with all features inactive (less immediate)
-
----
-
-## enableAll()
-
-Re-enable normal evaluation after `disableAll()` kill-switch.
-
-### Signature
-
-```kotlin
-fun Namespace.enableAll()
-```
-
-### Parameters
-
-None.
-
-### Return Value
-
-Returns `Unit`. Operation completes synchronously.
-
-### Errors / Failure Modes
-
-- **No errors**: Always succeeds
-- **Thread-safe**: Safe to call from multiple threads
-
-### Examples
-
-**Restore after emergency**:
-```kotlin
-// Incident resolved, restore normal operation
-AppFeatures.enableAll()
-logger.info("Kill-switch deactivated, normal evaluation resumed")
-```
-
-### Semantics / Notes
-
-- **Scope**: Only affects the specific namespace
-- **Mechanism**: Clears registry-level disable flag
-- **Idempotency**: Safe to call multiple times
 
 ---
 
 ## Related
 
-- [Guide: Load Remote Config](/guides/load-remote-config) — Using load() with ParseResult
-- [Reference: ParseResult API](/reference/api/parse-result) — Validation boundary
-- [Production Operations: Failure Modes](/production-operations/failure-modes) — What can go wrong
-- [Production Operations: Thread Safety](/production-operations/thread-safety) — Concurrent operations
-- [Learn: Configuration Lifecycle](/learn/configuration-lifecycle) — Snapshot management
+- [NamespaceSnapshotLoader API](/reference/api/snapshot-loader)
+- [ParseResult API](/reference/api/parse-result)
+- [Runtime Operations](/runtime/operations)
+- [Thread Safety](/production-operations/thread-safety)

@@ -46,7 +46,8 @@ import io.amichne.konditional.values.FeatureId
  * val json = ConfigurationSnapshotCodec.encode(configuration)
  *
  * // Decode
- * when (val result = ConfigurationSnapshotCodec.decode(json)) {
+ * val featuresById = namespace.allFeatures().associateBy { it.id }
+ * when (val result = ConfigurationSnapshotCodec.decode(json, featuresById)) {
  *     is ParseResult.Success -> println("Loaded: ${result.value}")
  *     is ParseResult.Failure -> println("Error: ${result.error}")
  * }
@@ -76,11 +77,14 @@ object ConfigurationSnapshotCodec : FeatureAwareSnapshotCodec<Configuration> {
      * Callers must explicitly load the result if desired:
      *
      * ```kotlin
-     * when (val result = ConfigurationSnapshotCodec.decode(json)) {
+     * when (val result = ConfigurationSnapshotCodec.decode(json, featuresById)) {
      *     is ParseResult.Success -> namespace.load(result.value)
      *     is ParseResult.Failure -> handleError(result.error)
      * }
      * ```
+     *
+     * Default [SnapshotLoadOptions.strict] behavior requires explicit feature scope for snapshots with flags.
+     * To use legacy global registry fallback, opt in via [SnapshotLoadOptions.legacyGlobalRegistryFallback].
      *
      * @param json The JSON string to deserialize
      * @return ParseResult containing either the deserialized Configuration or a structured error
@@ -115,6 +119,25 @@ object ConfigurationSnapshotCodec : FeatureAwareSnapshotCodec<Configuration> {
         patchJson: String,
         options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
     ): ParseResult<Configuration> =
+        applyPatchJson(
+            currentConfiguration = currentConfiguration,
+            patchJson = patchJson,
+            featuresById = emptyMap(),
+            options = options,
+        )
+
+    /**
+     * Applies a patch from a JSON string to an existing snapshot with an explicit trusted feature scope.
+     *
+     * [featuresById] should contain all features that may appear in patch additions.
+     * Existing features in [currentConfiguration] are always included in decode scope.
+     */
+    fun applyPatchJson(
+        currentConfiguration: ConfigurationView,
+        patchJson: String,
+        featuresById: Map<FeatureId, Feature<*, *, *>>,
+        options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
+    ): ParseResult<Configuration> =
         runCatching {
             val patch =
                 patchAdapter.fromJson(patchJson)
@@ -128,10 +151,19 @@ object ConfigurationSnapshotCodec : FeatureAwareSnapshotCodec<Configuration> {
             patch.removeKeys.forEach(flagMap::remove)
             patch.flags.forEach { patchFlag -> flagMap[patchFlag.key] = patchFlag }
 
+            val decodeScopeById =
+                buildMap {
+                    currentConfiguration.flags.keys.forEach { feature -> put(feature.id, feature) }
+                    putAll(featuresById)
+                }
+
             SerializableSnapshot(
                 meta = patch.meta ?: currentSerializable.meta,
                 flags = flagMap.values.toList(),
-            ).toConfiguration(options)
+            ).toConfiguration(
+                options = options,
+                featuresById = decodeScopeById,
+            )
         }.getOrElse { e ->
             ParseResult.failure(ParseError.invalidSnapshot(e.message ?: "Failed to apply patch"))
         }

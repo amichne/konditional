@@ -26,11 +26,6 @@ import kotlin.reflect.KClass
  * }
  * ```
  *
- * Or define via [AxisDefinition]:
- * ```kotlin
- * object EnvironmentAxis : AxisDefinition<Environment>("environment", Environment::class)
- * ```
- *
  * The axis automatically registers on initialization, allowing you to use type-based APIs:
  * ```kotlin
  * // In rules
@@ -44,15 +39,12 @@ import kotlin.reflect.KClass
  * @param valueClass The runtime class of the value type [T].
  *      This is intentionally passed explicitly to avoid fragile reflection-based extraction from generic supertypes.
  * @property id A stable, unique identifier for this axis
- * @property isImplicit Whether this axis descriptor was derived implicitly from the value type
  *
- * If you use code shrinking/obfuscation, avoid relying on implicitly derived ids.
- * Provide explicit, stable ids that are independent of class names.
+ * Axis identifiers are explicit-only. Always provide stable ids that are independent of class names.
  */
 class Axis<T> private constructor(
     val id: String,
     val valueClass: KClass<out T>,
-    val isImplicit: Boolean = false,
     autoRegister: Boolean = true,
 ) where T : AxisValue<T>, T : Enum<T> {
     init {
@@ -76,64 +68,23 @@ class Axis<T> private constructor(
         return "Axis(id='$id', valueClass=${valueClass.simpleName})"
     }
 
-    /**
-     * Delegate interface for customizing axis creation without inheriting [Axis].
-     *
-     * This allows library consumers to define metadata or policies while the axis
-     * handle itself remains factory-only and final.
-     */
-    interface Delegate<T> where T : AxisValue<T>, T : Enum<T> {
-        val id: String
-        val valueClass: KClass<out T>
-        val isImplicit: Boolean
-            get() = false
-        val autoRegister: Boolean
-            get() = true
-    }
-
     companion object {
         /**
          * Creates a new axis handle with a stable explicit id.
          *
-         * Prefer this factory for production code to avoid obfuscation issues.
+         * Prefer this factory for production code. Axis ids must be explicit and stable.
          */
         fun <T> of(
             id: String,
             valueClass: KClass<out T>,
             autoRegister: Boolean = true,
         ): Axis<T> where T : AxisValue<T>, T : Enum<T> =
-            Axis(id = id, valueClass = valueClass, isImplicit = false, autoRegister = autoRegister)
+            Axis(id = id, valueClass = valueClass, autoRegister = autoRegister)
 
         /**
          * Reified helper for [of] with an explicit id.
          */
         inline fun <reified T> of(id: String): Axis<T> where T : AxisValue<T>, T : Enum<T> =
             of(id = id, valueClass = T::class)
-
-        /**
-         * Creates an axis handle from a delegate definition.
-         */
-        fun <T> create(delegate: Delegate<T>): Axis<T> where T : AxisValue<T>, T : Enum<T> =
-            Axis(
-                id = delegate.id,
-                valueClass = delegate.valueClass,
-                isImplicit = delegate.isImplicit,
-                autoRegister = delegate.autoRegister,
-            )
-
-        @PublishedApi
-        internal fun <T> fromRegistry(
-            id: String,
-            valueClass: KClass<out T>,
-            isImplicit: Boolean,
-        ): Axis<T> where T : AxisValue<T>, T : Enum<T> =
-            Axis(id = id, valueClass = valueClass, isImplicit = isImplicit, autoRegister = false)
-
-        @PublishedApi
-        internal fun <T> implicit(
-            id: String,
-            valueClass: KClass<out T>,
-        ): Axis<T> where T : AxisValue<T>, T : Enum<T> =
-            Axis(id = id, valueClass = valueClass, isImplicit = true, autoRegister = true)
     }
 }

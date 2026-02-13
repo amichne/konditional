@@ -28,7 +28,7 @@ Write comprehensive tests for feature flag evaluation, rule matching, ramp-up bu
 @Test
 fun `iOS users get dark mode enabled`() {
     val ctx = Context(
-        stableId = StableId("user-123"),
+        stableId = StableId.of("user-123"),
         platform = Platform.IOS,
         locale = Locale.US,
         appVersion = Version.of(2, 1, 0)
@@ -42,7 +42,7 @@ fun `iOS users get dark mode enabled`() {
 @Test
 fun `Android users get dark mode disabled`() {
     val ctx = Context(
-        stableId = StableId("user-123"),
+        stableId = StableId.of("user-123"),
         platform = Platform.ANDROID,
         locale = Locale.US,
         appVersion = Version.of(2, 1, 0)
@@ -67,7 +67,7 @@ fun `Android users get dark mode disabled`() {
 )
 fun `dark mode platform targeting`(platform: Platform, expected: Boolean) {
     val ctx = Context(
-        stableId = StableId("user-123"),
+        stableId = StableId.of("user-123"),
         platform = platform,
         locale = Locale.US,
         appVersion = Version.of(2, 1, 0)
@@ -86,7 +86,7 @@ fun `dark mode platform targeting`(platform: Platform, expected: Boolean) {
 fun `rule matches only when ALL criteria match`() {
     // All criteria match
     val matchingCtx = Context(
-        stableId = StableId("user"),
+        stableId = StableId.of("user"),
         platform = Platform.IOS,          // ✓ iOS
         locale = Locale.US,                // ✓ US
         appVersion = Version.of(2, 1, 0)   // ✓ >= 2.0.0
@@ -115,7 +115,7 @@ fun `rule matches only when ALL criteria match`() {
 @Test
 fun `same user always gets same bucket`() {
     val userId = "user-123"
-    val ctx = Context(stableId = StableId(userId))
+    val ctx = Context(stableId = StableId.of(userId))
 
     // Evaluate 100 times
     val results = (1..100).map {
@@ -129,7 +129,7 @@ fun `same user always gets same bucket`() {
 @Test
 fun `different users get different buckets`() {
     val results = (0 until 100).map { i ->
-        val ctx = Context(stableId = StableId("user-$i"))
+        val ctx = Context(stableId = StableId.of("user-$i"))
         AppFeatures.experimentalFeature.evaluate(ctx)
     }
 
@@ -150,7 +150,7 @@ fun `50 percent ramp-up distributes correctly`() {
     val rampUpPercentage = 50.0
 
     val inTreatment = (0 until sampleSize).count { i ->
-        val ctx = Context(stableId = StableId("user-$i"))
+        val ctx = Context(stableId = StableId.of("user-$i"))
         AppFeatures.fiftyPercentFeature.evaluate(ctx)
     }
 
@@ -190,7 +190,7 @@ fun `valid configuration loads successfully`() {
     assertTrue(result is ParseResult.Success)
 
     // Verify loaded config is active
-    val ctx = Context(stableId = StableId("user"), platform = Platform.IOS)
+    val ctx = Context(stableId = StableId.of("user"), platform = Platform.IOS)
     assertTrue(AppFeatures.darkMode.evaluate(ctx))
 }
 ```
@@ -239,7 +239,7 @@ fun `failed load preserves last-known-good`() {
     val result1 = NamespaceSnapshotLoader(AppFeatures).load(validJson)
     require(result1 is ParseResult.Success)
 
-    val ctx = Context(stableId = StableId("user"))
+    val ctx = Context(stableId = StableId.of("user"))
     assertTrue(AppFeatures.darkMode.evaluate(ctx))  // true from config
 
     // Try to load invalid config
@@ -266,7 +266,7 @@ import io.amichne.konditional.fixtures.EnterpriseTestFeatures
 
 @Test
 fun `test using pre-built features`() {
-    val ctx = Context(stableId = StableId("user-123"))
+    val ctx = Context(stableId = StableId.of("user-123"))
 
     // CommonTestFeatures provides standard testing flags
     val enabled = CommonTestFeatures.testFeature.evaluate(ctx)
@@ -289,8 +289,8 @@ fun `test with known bucket assignments`() {
     val inBucketId = TargetingIds.idInBucket(percentage = 50.0)
     val outOfBucketId = TargetingIds.idOutOfBucket(percentage = 50.0)
 
-    val inCtx = Context(stableId = StableId(inBucketId))
-    val outCtx = Context(stableId = StableId(outOfBucketId))
+    val inCtx = Context(stableId = StableId.of(inBucketId))
+    val outCtx = Context(stableId = StableId.of(outOfBucketId))
 
     assertTrue(AppFeatures.fiftyPercentFeature.evaluate(inCtx))
     assertFalse(AppFeatures.fiftyPercentFeature.evaluate(outCtx))
@@ -306,7 +306,7 @@ import io.amichne.konditional.fixtures.utilities.FeatureMutators
 
 @Test
 fun `test with modified feature configuration`() {
-    val ctx = Context(stableId = StableId("user"))
+    val ctx = Context(stableId = StableId.of("user"))
 
     // Temporarily modify a feature's configuration
     FeatureMutators.withOverride(AppFeatures.darkMode, value = true) {
@@ -346,21 +346,21 @@ fun `test with test namespace`() {
 ```kotlin
 object TestContexts {
     fun iosUser(userId: String = "test-user") = Context(
-        stableId = StableId(userId),
+        stableId = StableId.of(userId),
         platform = Platform.IOS,
         locale = Locale.US,
         appVersion = Version.of(2, 0, 0)
     )
 
     fun androidUser(userId: String = "test-user") = Context(
-        stableId = StableId(userId),
+        stableId = StableId.of(userId),
         platform = Platform.ANDROID,
         locale = Locale.US,
         appVersion = Version.of(2, 0, 0)
     )
 
     fun premiumUser(userId: String = "test-user") = BusinessContext(
-        stableId = StableId(userId),
+        stableId = StableId.of(userId),
         platform = Platform.IOS,
         locale = Locale.US,
         appVersion = Version.of(2, 0, 0),
@@ -381,12 +381,12 @@ fun `test using fixtures`() {
 
 ```kotlin
 class ContextBuilder {
-    private var stableId: StableId = StableId("default-user")
+    private var stableId: StableId = StableId.of("default-user")
     private var platform: Platform = Platform.IOS
     private var locale: Locale = Locale.US
     private var appVersion: Version = Version.of(2, 0, 0)
 
-    fun withStableId(id: String) = apply { this.stableId = StableId(id) }
+    fun withStableId(id: String) = apply { this.stableId = StableId.of(id) }
     fun withPlatform(p: Platform) = apply { this.platform = p }
     fun withLocale(l: Locale) = apply { this.locale = l }
     fun withVersion(v: Version) = apply { this.appVersion = v }
@@ -416,8 +416,8 @@ fun `test using builder`() {
 @Test
 fun `verify specific user is in treatment bucket`() {
     val userId = "VIP-user-789"
-    val bucket = RampUpBucketing.calculateBucket(
-        stableId = StableId(userId),
+    val bucket = RampUpBucketing.bucket(
+        stableId = StableId.of(userId),
         featureKey = "experimentalFeature",
         salt = "default"
     )
@@ -426,7 +426,7 @@ fun `verify specific user is in treatment bucket`() {
     assertTrue(bucket < 50, "VIP user bucket=$bucket should be < 50")
 
     // Verify via evaluation
-    val ctx = Context(stableId = StableId(userId))
+    val ctx = Context(stableId = StableId.of(userId))
     assertTrue(AppFeatures.experimentalFeature.evaluate(ctx))
 }
 ```
@@ -441,7 +441,7 @@ fun `any valid context returns a result`(
     @ForAll locale: Locale
 ) {
     val ctx = Context(
-        stableId = StableId(userId),
+        stableId = StableId.of(userId),
         platform = platform,
         locale = locale,
         appVersion = Version.of(2, 0, 0)
@@ -463,7 +463,7 @@ fun `any valid context returns a result`(
 @Test
 fun `enterprise users with high revenue get advanced analytics`() {
     val ctx = BusinessContext(
-        stableId = StableId("user"),
+        stableId = StableId.of("user"),
         platform = Platform.IOS,
         locale = Locale.US,
         appVersion = Version.of(2, 0, 0),
@@ -489,7 +489,7 @@ fun `advanced analytics edge cases`(
     expected: Boolean
 ) {
     val ctx = BusinessContext(
-        stableId = StableId("user"),
+        stableId = StableId.of("user"),
         platform = Platform.IOS,
         locale = Locale.US,
         appVersion = Version.of(2, 0, 0),
@@ -517,7 +517,7 @@ fun `load config and evaluate features end-to-end`() {
 
     // 2. Build context
     val ctx = Context(
-        stableId = StableId("integration-test-user"),
+        stableId = StableId.of("integration-test-user"),
         platform = Platform.IOS,
         locale = Locale.US,
         appVersion = Version.of(2, 1, 0)
@@ -538,7 +538,7 @@ fun `load config and evaluate features end-to-end`() {
 ```kotlin
 @Test
 fun `configuration refresh updates evaluation`() {
-    val ctx = Context(stableId = StableId("user"))
+    val ctx = Context(stableId = StableId.of("user"))
 
     // Initial evaluation
     assertFalse(AppFeatures.darkMode.evaluate(ctx))  // Default: false
@@ -560,7 +560,7 @@ fun `configuration refresh updates evaluation`() {
 @Test
 fun `features return defaults when no rules match`() {
     val ctx = Context(
-        stableId = StableId("user"),
+        stableId = StableId.of("user"),
         platform = Platform.WEB,  // No rules target WEB
         locale = Locale.US,
         appVersion = Version.of(2, 0, 0)
@@ -582,7 +582,7 @@ fun `rules are evaluated in order`() {
 
     // iOS user NOT in 50% bucket should match Rule 1
     val iosUser = Context(
-        stableId = StableId("ios-user-not-in-bucket"),
+        stableId = StableId.of("ios-user-not-in-bucket"),
         platform = Platform.IOS,
         /* ... */
     )
@@ -590,7 +590,7 @@ fun `rules are evaluated in order`() {
 
     // Android user IN 50% bucket should match Rule 2
     val androidInBucket = Context(
-        stableId = StableId("android-in-bucket"),
+        stableId = StableId.of("android-in-bucket"),
         platform = Platform.ANDROID,
         /* ... */
     )
@@ -603,7 +603,7 @@ fun `rules are evaluated in order`() {
 ```kotlin
 @Test
 fun `empty string stableId is valid`() {
-    val ctx = Context(stableId = StableId(""))
+    val ctx = Context(stableId = StableId.of(""))
     // Should not throw
     AppFeatures.someFeature.evaluate(ctx)
 }
@@ -611,7 +611,7 @@ fun `empty string stableId is valid`() {
 @Test
 fun `very long stableId is valid`() {
     val longId = "x".repeat(10_000)
-    val ctx = Context(stableId = StableId(longId))
+    val ctx = Context(stableId = StableId.of(longId))
     // Should not throw
     AppFeatures.someFeature.evaluate(ctx)
 }

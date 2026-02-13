@@ -18,7 +18,7 @@ The most common cause of non-determinism is inconsistent `stableId`:
 ```kotlin
 // Add logging to capture stableId
 fun evaluateWithLogging(userId: String): Boolean {
-  val stableId = StableId(userId)
+  val stableId = StableId.of(userId)
   logger.debug("Evaluating for user=$userId, stableId=${stableId.hexId}")
 
   val ctx = Context(stableId = stableId)
@@ -50,9 +50,9 @@ fun debugBucketAssignment(
     userId: String,
     featureKey: String
 ) {
-  val stableId = StableId(userId)
+  val stableId = StableId.of(userId)
 
-  val bucket = RampUpBucketing.calculateBucket(
+  val bucket = RampUpBucketing.bucket(
       stableId = stableId,
       featureKey = featureKey,
       salt = "default"  // Or your custom salt
@@ -82,7 +82,7 @@ Trace why evaluation returned a specific value:
 
 ```kotlin
 fun debugEvaluation(userId: String) {
-  val ctx = Context(stableId = StableId(userId))
+  val ctx = Context(stableId = StableId.of(userId))
 
   val explanation = AppFeatures.newCheckoutFlow.explain(ctx)
 
@@ -125,7 +125,7 @@ Reproduce the issue locally with the same inputs:
 
 ```kotlin
 fun testDeterminism(userId: String) {
-  val ctx = Context(stableId = StableId(userId))
+  val ctx = Context(stableId = StableId.of(userId))
 
   // Evaluate 100 times
   val results = (1..100).map {
@@ -149,10 +149,10 @@ fun testDeterminism(userId: String) {
 
 ```kotlin
 // ✗ WRONG: Session ID changes every session
-val ctx = Context(stableId = StableId(sessionId))
+val ctx = Context(stableId = StableId.of(sessionId))
 
 // ✓ CORRECT: Use persistent user ID
-val ctx = Context(stableId = StableId(userId))  // Database ID
+val ctx = Context(stableId = StableId.of(userId))  // Database ID
 ```
 
 **Symptom:** User gets different behavior on each session.
@@ -161,10 +161,10 @@ val ctx = Context(stableId = StableId(userId))  // Database ID
 
 ```kotlin
 // ✗ WRONG: Random value changes every request
-val ctx = Context(stableId = StableId(UUID.randomUUID().toString()))
+val ctx = Context(stableId = StableId.of(UUID.randomUUID().toString()))
 
 // ✓ CORRECT: Use persistent identifier
-val ctx = Context(stableId = StableId(getUserId()))
+val ctx = Context(stableId = StableId.of(getUserId()))
 ```
 
 **Symptom:** User gets different behavior on every request.
@@ -187,10 +187,10 @@ rule(true) { rampUp(salt = "v2") { 50.0 } }  // Different salt!
 
 ```kotlin
 // Mobile app: uses device ID
-val mobileStableId = StableId(deviceId)
+val mobileStableId = StableId.of(deviceId)
 
 // Web app: uses user ID
-val webStableId = StableId(userId)
+val webStableId = StableId.of(userId)
 
 // Same user, different platforms → different buckets!
 ```
@@ -231,7 +231,7 @@ Check if the same user has the same `stableId` across requests.
 ### 2. Verify Bucket Assignment
 
 ```kotlin
-val bucket = RampUpBucketing.calculateBucket(stableId, featureKey, salt)
+val bucket = RampUpBucketing.bucket(stableId, featureKey, salt)
 logger.info("User bucket: $bucket")
 ```
 
@@ -259,7 +259,7 @@ Keys must match exactly.
 ### 5. Test Locally with Same Inputs
 
 ```kotlin
-val ctx = Context(stableId = StableId("user-12345"))
+val ctx = Context(stableId = StableId.of("user-12345"))
 val results = (1..100).map { AppFeatures.newCheckoutFlow.evaluate(ctx) }
 require(results.all { it == results.first() }) { "Non-deterministic!" }
 ```
@@ -288,8 +288,8 @@ Verify that buckets distribute evenly across users:
 ```kotlin
 fun analyzeBucketDistribution(sampleSize: Int = 10_000) {
   val buckets = (0 until sampleSize).map { i ->
-    val stableId = StableId("user-$i")
-    RampUpBucketing.calculateBucket(stableId, "testFeature", "default")
+    val stableId = StableId.of("user-$i")
+    RampUpBucketing.bucket(stableId, "testFeature", "default")
   }
 
   // Count users per bucket (0-99)
@@ -347,7 +347,7 @@ fun replayEvaluation(productionLog: String) {
   val platform = extractPlatform(productionLog)
 
   val ctx = Context(
-      stableId = StableId(stableId),
+      stableId = StableId.of(stableId),
       platform = platform
   )
 
@@ -364,7 +364,7 @@ fun replayEvaluation(productionLog: String) {
 @Test
 fun `evaluation is deterministic for same user`() {
   val userId = "test-user-123"
-  val ctx = Context(stableId = StableId(userId))
+  val ctx = Context(stableId = StableId.of(userId))
 
   val results = (1..1000).map {
     AppFeatures.newCheckoutFlow.evaluate(ctx)
@@ -382,22 +382,22 @@ fun `same user gets same bucket on all platforms`() {
   val userId = "test-user-456"
 
   val mobileCtx = Context(
-      stableId = StableId(userId),
+      stableId = StableId.of(userId),
       platform = Platform.ANDROID
   )
 
   val webCtx = Context(
-      stableId = StableId(userId),
+      stableId = StableId.of(userId),
       platform = Platform.WEB
   )
 
   // Same user → same bucket → potentially same result
   // (Actual result may differ if rules target specific platforms)
-  val mobileBucket = RampUpBucketing.calculateBucket(
-      StableId(userId), "feature", "default"
+  val mobileBucket = RampUpBucketing.bucket(
+      StableId.of(userId), "feature", "default"
   )
-  val webBucket = RampUpBucketing.calculateBucket(
-      StableId(userId), "feature", "default"
+  val webBucket = RampUpBucketing.bucket(
+      StableId.of(userId), "feature", "default"
   )
 
   assertEquals(mobileBucket, webBucket, "Same user should be in same bucket")
