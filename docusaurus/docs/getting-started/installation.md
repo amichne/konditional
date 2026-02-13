@@ -4,6 +4,8 @@ Konditional Core is a single dependency.
 
 Replace `VERSION` with the latest published version.
 
+---
+
 ## Gradle (Kotlin DSL)
 
 ```kotlin
@@ -40,6 +42,19 @@ dependencies {
 See [How-To: Test Your Feature Flags](/how-to-guides/testing-features) for usage examples.
 
 ---
+
+## Verification
+
+After syncing Gradle, verify your project resolves Konditional artifacts and compiles.
+
+If your build succeeds, installation is complete.
+
+---
+
+## Next steps
+
+- Build one typed feature: [Your First Feature](/getting-started/your-first-flag)
+- Learn why typing matters at boundaries: [Type-Safety Boundaries](/theory/type-safety-boundaries)
 
 That is enough to define features and evaluate them in code. If you need remote configuration, JSON serialization, or
 observability utilities, see the module docs:

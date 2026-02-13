@@ -1,6 +1,6 @@
 ---
-name: intellij-index-ide-integration
-description: Use IntelliJ semantic MCP navigation and refactoring tools for symbol-level code work when the `intellij-index` MCP server is available, including finding references, definitions, implementations, type hierarchies, safe renames, and diagnostics; trigger this skill when requests involve navigating or editing code symbols in IDE-indexed projects.
+name: idea-integration
+description: Use IntelliJ IDEA semantic MCP navigation and refactoring tools for symbol-level code work when the `idea` MCP server is available, including finding references, definitions, implementations, type hierarchies, safe renames, and diagnostics; trigger this skill when requests involve navigating or editing code symbols in IDE-indexed projects.
 ---
 
 # IntelliJ Index IDE Integration

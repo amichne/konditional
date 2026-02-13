@@ -5,6 +5,22 @@ It focuses on what changes at the definition site, at the call site, and at the 
 
 ---
 
+## If you are coming from a string-keyed SDK
+
+Start here if your existing calls look like `getBoolean("some_flag")`.
+
+1. Replace string-key lookups with typed feature properties
+2. Move targeting data from untyped maps into a typed `Context`
+3. Add remote JSON loading only after typed defaults are in place
+
+Use this sequence to get value quickly:
+
+- [Installation](/getting-started/installation)
+- [Your First Feature](/getting-started/your-first-flag)
+- [How-To: Load Configuration Safely from Remote](/how-to-guides/safe-remote-config)
+
+---
+
 ## Migrating from the legacy monolith (`io.amichne:konditional`) to split artifacts
 
 Konditional is now published as split modules.

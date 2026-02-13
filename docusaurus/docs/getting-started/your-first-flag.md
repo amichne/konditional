@@ -1,6 +1,13 @@
 # Your First Feature
 
-This guide builds one feature end-to-end: definition, targeting rules, and evaluation.
+This guide helps you ship one safe feature toggle end-to-end: definition, targeting rules, and evaluation.
+
+---
+
+## Prerequisites
+
+- Konditional installed: [Installation](/getting-started/installation)
+- A Kotlin project where you can run a small local check
 
 ## 1) Define a namespace and a feature
 
@@ -30,6 +37,19 @@ val enabled: Boolean = AppFeatures.darkMode.evaluate(ctx)
 
 If no rule matches, the default value is returned.
 
+---
+
+## Verification
+
+Evaluate the same context multiple times and confirm the returned value is stable for that input.
+
+```kotlin
+val repeated = (1..20).map { AppFeatures.darkMode.evaluate(ctx) }
+check(repeated.all { it == repeated.first() })
+```
+
+---
+
 ## What just happened
 
 - A **Namespace** is a registry of features.
@@ -47,5 +67,6 @@ If no rule matches, the default value is returned.
 
 ## Next steps
 
+- Roll out safely: [How-To: Roll Out a Feature Gradually](/how-to-guides/rolling-out-gradually)
 - Learn the core concepts: [Core Concepts](/learn/core-primitives)
 - Understand rule ordering and ramp-ups: [Evaluation Model](/learn/evaluation-model)

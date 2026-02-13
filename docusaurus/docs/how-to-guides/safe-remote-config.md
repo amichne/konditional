@@ -1,5 +1,17 @@
 # How-To: Load Configuration Safely from Remote
 
+Use this guide to update feature behavior at runtime while preserving a typed safety boundary.
+
+---
+
+## Prerequisites
+
+- Static feature definitions in a namespace
+- A remote JSON source (API, object store, or CDN)
+- Logging and alerting for load failures
+
+---
+
 ## Problem
 
 You need to:
@@ -393,6 +405,16 @@ fun `partial configuration loads successfully`() {
     assertEquals(3, AppFeatures.maxRetries.evaluate(ctx))
 }
 ```
+
+---
+
+## Verification
+
+After deploying remote loading, verify:
+
+1. valid payloads produce `ParseResult.Success`
+2. invalid payloads produce `ParseResult.Failure` and do not change active behavior
+3. observability captures load success and failure counts
 
 ## Next Steps
 
