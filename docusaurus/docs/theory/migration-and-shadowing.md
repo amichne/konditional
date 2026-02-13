@@ -2,6 +2,8 @@
 
 How `evaluateWithShadow` enables safe comparisons between two Konditional configurations.
 
+Cross-document synthesis: [Verified Design Synthesis](/theory/verified-synthesis).
+
 ---
 
 ## The Migration Problem

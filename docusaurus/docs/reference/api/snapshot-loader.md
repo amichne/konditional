@@ -4,208 +4,123 @@ title: NamespaceSnapshotLoader API
 
 # NamespaceSnapshotLoader API
 
-## What It Does
+`NamespaceSnapshotLoader` is a namespace-scoped, side-effecting loader: it decodes JSON into a typed `Configuration` and, on success, loads that configuration into the target namespace runtime registry.
 
-`NamespaceSnapshotLoader` combines JSON parsing and namespace loading into a single operation, providing a convenient API for loading remote configuration.
+In this page you will find:
 
-## NamespaceSnapshotLoader
+- Exact constructor and `load` signatures
+- Success/failure semantics and namespace error context
+- When to use this vs manual decode + load
 
-### Signature
+---
+
+## Type Signature
 
 ```kotlin
 class NamespaceSnapshotLoader<M : Namespace>(
-    private val namespace: M
-)
+    private val namespace: M,
+    private val codec: SnapshotCodec<Configuration> = ConfigurationSnapshotCodec,
+) : SnapshotLoader<Configuration>
 ```
 
-**Evidence**: `konditional-runtime/src/main/kotlin/io/amichne/konditional/serialization/snapshot/NamespaceSnapshotLoader.kt:18`
+Evidence:
 
-### Parameters
+- `konditional-runtime/src/main/kotlin/io/amichne/konditional/serialization/snapshot/NamespaceSnapshotLoader.kt`
+- `konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/SnapshotLoader.kt`
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `namespace` | `M extends Namespace` | Yes | The namespace to load configuration into |
+---
 
-### Examples
+## load(json, options)
 
-**Create loader**:
 ```kotlin
-val loader = NamespaceSnapshotLoader(AppFeatures)
+override fun load(
+    json: String,
+    options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
+): ParseResult<Configuration>
+```
+
+### Return value
+
+- `ParseResult.Success(configuration)`: decode succeeded and the namespace registry was updated.
+- `ParseResult.Failure(error)`: decode failed and registry state is unchanged.
+
+### Semantics
+
+- Decode path is namespace-scoped when the codec supports `FeatureAwareSnapshotCodec`.
+- On success, loader performs `namespace.runtimeRegistry().load(config)`.
+- For `InvalidJson` and `InvalidSnapshot`, errors are prefixed with namespace context.
+
+---
+
+## Unknown Feature Handling
+
+`load` forwards `SnapshotLoadOptions` to decoding:
+
+- `SnapshotLoadOptions.strict()` (default): unknown feature IDs fail the load.
+- `SnapshotLoadOptions.skipUnknownKeys(...)`: unknown IDs are skipped and surfaced via warnings.
+
+```kotlin
+val result = NamespaceSnapshotLoader(AppFeatures).load(
+    json = json,
+    options = SnapshotLoadOptions.skipUnknownKeys { warning ->
+        logger.warn { warning.message }
+    },
+)
 ```
 
 ---
 
-## load()
+## Runtime Preconditions and Gotchas
 
-Parse JSON and load into namespace in one operation.
+- `NamespaceSnapshotLoader` requires a runtime-capable registry.
+- If `:konditional-runtime` is not on the classpath, `namespace.runtimeRegistry()` fails fast.
+- Loader only guarantees parse/load behavior; it does not add retry, fetch, or rollout orchestration.
 
-### Signature
+---
 
-```kotlin
-fun load(json: String): ParseResult<Unit>
-```
+## Usage Example
 
-### Parameters
-
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `json` | `String` | Yes | JSON configuration snapshot |
-
-### Return Value
-
-Returns `ParseResult<Unit>`:
-- `Success(Unit)`: JSON parsed and loaded successfully
-- `Failure(error)`: Parse failed, last-known-good remains active
-
-### Errors / Failure Modes
-
-- **Parse errors**: Invalid JSON, unknown features, type mismatches → `ParseResult.Failure`
-- **No exceptions**: Always returns `ParseResult`, never throws for validation errors
-- **Thread-safe**: Safe to call from multiple threads (last write wins)
-
-### Examples
-
-**Minimal**:
-```kotlin
-val loader = NamespaceSnapshotLoader(AppFeatures)
-val result = loader.load(json)
-```
-
-**Typical**:
 ```kotlin
 val loader = NamespaceSnapshotLoader(AppFeatures)
 
 when (val result = loader.load(fetchRemoteConfig())) {
     is ParseResult.Success -> {
-        logger.info("Configuration loaded successfully")
-        metrics.increment("config.load.success")
+        logger.info { "Loaded version=${result.value.metadata.version}" }
     }
     is ParseResult.Failure -> {
-        logger.error("Config parse failed: ${result.error.message}")
-        metrics.increment("config.load.failure")
-        alertOps("Configuration rejected", result.error)
-    }
-}
-```
-
-**Edge case** (unknown keys):
-```kotlin
-val json = """{ "unknownFeature": { "rules": [] } }"""
-val result = loader.load(json)
-// Returns: Failure(FeatureNotFound)
-```
-
-### Semantics / Notes
-
-- **Convenience wrapper**: Combines `ConfigurationSnapshotCodec.decode()` + `namespace.load()`
-- **Atomic**: Parse and load are atomic (both succeed or both fail)
-- **Idempotency**: Safe to call multiple times with same JSON
-- **Concurrency**: Thread-safe via atomic namespace operations
-
-### Compatibility
-
-- **Introduced**: v0.1.0
-- **Deprecated**: None
-- **Alternatives**: Use `ConfigurationSnapshotCodec.decode()` + `namespace.load()` separately for more control
-
----
-
-## Usage Patterns
-
-### Pattern: Periodic Refresh
-
-```kotlin
-class ConfigRefreshService {
-    private val loader = NamespaceSnapshotLoader(AppFeatures)
-
-    fun refreshConfig() {
-        val json = try {
-            httpClient.get("https://config.example.com/features.json")
-        } catch (e: Exception) {
-            logger.warn("Config fetch failed", e)
-            return
-        }
-
-        when (val result = loader.load(json)) {
-            is ParseResult.Success -> logger.info("Config refreshed")
-            is ParseResult.Failure -> logger.error("Config rejected: ${result.error}")
-        }
-    }
-
-    fun startPeriodicRefresh(intervalMs: Long) {
-        scheduler.scheduleAtFixedRate(
-            ::refreshConfig,
-            intervalMs,
-            intervalMs,
-            TimeUnit.MILLISECONDS
-        )
-    }
-}
-```
-
-### Pattern: Load with Fallback
-
-```kotlin
-fun loadConfigWithFallback(primaryUrl: String, fallbackUrl: String) {
-    val loader = NamespaceSnapshotLoader(AppFeatures)
-
-    val primaryResult = loader.load(fetchConfig(primaryUrl))
-    if (primaryResult is ParseResult.Success) {
-        logger.info("Loaded from primary source")
-        return
-    }
-
-    logger.warn("Primary failed, trying fallback")
-    val fallbackResult = loader.load(fetchConfig(fallbackUrl))
-    if (fallbackResult is ParseResult.Success) {
-        logger.info("Loaded from fallback source")
-    } else {
-        logger.error("Both sources failed")
-    }
-}
-```
-
-### Pattern: Load with Validation
-
-```kotlin
-fun loadConfigWithValidation(json: String) {
-    val loader = NamespaceSnapshotLoader(AppFeatures)
-
-    // Custom pre-validation
-    if (!json.contains("\"metadata\"")) {
-        logger.error("Config missing metadata field")
-        return
-    }
-
-    when (val result = loader.load(json)) {
-        is ParseResult.Success -> {
-            // Post-validation: verify config makes sense
-            val ctx = Context(stableId = StableId.of("validation-user"))
-            val value = AppFeatures.darkMode.evaluate(ctx)
-            logger.info("Config loaded, validation feature = $value")
-        }
-        is ParseResult.Failure -> logger.error("Parse failed: ${result.error}")
+        logger.error { "Rejected config: ${result.error.message}" }
+        // Last-known-good remains active.
     }
 }
 ```
 
 ---
 
-## Comparison to Manual Approach
+## Compare with Manual Flow
 
-| Approach | Code | Error Handling | Use Case |
-|----------|------|----------------|----------|
-| **NamespaceSnapshotLoader** | `loader.load(json)` | Single `ParseResult` | Simple config loading, most use cases |
-| **Manual** | `decode(json).fold { load(it) }` | Separate decode + load | Need intermediate access to `Configuration` |
+Use `NamespaceSnapshotLoader` when you want parse+load as one operation:
 
-**Recommendation**: Use `NamespaceSnapshotLoader` unless you need to inspect or transform the `Configuration` object before loading.
+```kotlin
+loader.load(json)
+```
+
+Use manual flow when you need to inspect/transform the `Configuration` before loading:
+
+```kotlin
+when (val parsed = ConfigurationSnapshotCodec.decode(json)) {
+    is ParseResult.Success -> {
+        val patched = parsed.value.withMetadata(source = "manual")
+        AppFeatures.load(patched)
+    }
+    is ParseResult.Failure -> Unit
+}
+```
 
 ---
 
 ## Related
 
-- [Guide: Load Remote Config](/guides/load-remote-config) — Using this API in practice
-- [Reference: Namespace Operations](/reference/api/namespace-operations) — Manual load() operation
-- [Reference: ParseResult](/reference/api/parse-result) — Result type utilities
-- [Production Operations: Failure Modes](/production-operations/failure-modes) — What can go wrong
-- [Serialization: Persistence Format](/serialization/persistence-format) — JSON schema
+- [Namespace Operations API](/reference/api/namespace-operations)
+- [ParseResult API](/reference/api/parse-result)
+- [Serialization API Reference](/serialization/reference)
+- [Runtime Lifecycle](/runtime/lifecycle)
