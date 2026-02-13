@@ -24,25 +24,26 @@ import io.opentelemetry.api.trace.Span
  * ## Usage
  *
  * ```kotlin
- * // Using global telemetry instance
- * val enabled = myFlag.evaluateWithTelemetry(context)
- *
- * // With explicit telemetry instance
+ * // Preferred: explicit telemetry injection
  * val enabled = myFlag.evaluateWithTelemetry(context, telemetry = customTelemetry)
  *
- * // With parent span
- * val enabled = myFlag.evaluateWithTelemetry(context, parentSpan = currentSpan)
+ * // Optional parent span
+ * val enabled = myFlag.evaluateWithTelemetry(
+ *     context = context,
+ *     telemetry = customTelemetry,
+ *     parentSpan = currentSpan,
+ * )
  * ```
  *
  * @param context The evaluation context.
- * @param telemetry The telemetry instance to use (defaults to global).
+ * @param telemetry The telemetry instance to use.
  * @param registry The registry to use (defaults to the feature's namespace).
  * @param parentSpan Optional parent span to link this evaluation to.
  * @return The evaluated value.
  */
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithTelemetry(
     context: C,
-    telemetry: KonditionalTelemetry = KonditionalTelemetry.global(),
+    telemetry: KonditionalTelemetry,
     registry: NamespaceRegistry = namespace,
     parentSpan: Span? = null,
 ): T =
@@ -51,19 +52,40 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithTelemetry
     }.value
 
 /**
+ * Deprecated global-telemetry compatibility shim for [evaluateWithTelemetry].
+ *
+ * Uses [KonditionalTelemetry.global] and preserves previous behavior for callers that
+ * have installed process-wide telemetry via [KonditionalTelemetry.install].
+ */
+@Deprecated(
+    message = "Global telemetry singleton path is deprecated. Pass telemetry explicitly.",
+)
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithTelemetry(
+    context: C,
+    registry: NamespaceRegistry = namespace,
+    parentSpan: Span? = null,
+): T =
+    evaluateWithTelemetry(
+        context = context,
+        telemetry = KonditionalTelemetry.global(),
+        registry = registry,
+        parentSpan = parentSpan,
+    )
+
+/**
  * Evaluates a feature with OpenTelemetry instrumentation and returns detailed result.
  *
  * Like [evaluateWithTelemetry] but returns the full [EvaluationResult] for explainability.
  *
  * @param context The evaluation context.
- * @param telemetry The telemetry instance to use (defaults to global).
+ * @param telemetry The telemetry instance to use.
  * @param registry The registry to use (defaults to the feature's namespace).
  * @param parentSpan Optional parent span to link this evaluation to.
  * @return The evaluation result with decision trace.
  */
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithTelemetryAndReason(
     context: C,
-    telemetry: KonditionalTelemetry = KonditionalTelemetry.global(),
+    telemetry: KonditionalTelemetry,
     registry: NamespaceRegistry = namespace,
     parentSpan: Span? = null,
 ): EvaluationResult<T> =
@@ -72,17 +94,57 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithTelemetry
     }
 
 /**
+ * Deprecated global-telemetry compatibility shim for [evaluateWithTelemetryAndReason].
+ *
+ * Uses [KonditionalTelemetry.global] and preserves previous behavior for callers that
+ * have installed process-wide telemetry via [KonditionalTelemetry.install].
+ */
+@Deprecated(
+    message = "Global telemetry singleton path is deprecated. Pass telemetry explicitly.",
+)
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithTelemetryAndReason(
+    context: C,
+    registry: NamespaceRegistry = namespace,
+    parentSpan: Span? = null,
+): EvaluationResult<T> =
+    evaluateWithTelemetryAndReason(
+        context = context,
+        telemetry = KonditionalTelemetry.global(),
+        registry = registry,
+        parentSpan = parentSpan,
+    )
+
+/**
  * Convenience extension that auto-detects the current span from OpenTelemetry context.
  *
  * Equivalent to `evaluateWithTelemetry(context, telemetry, registry, parentSpan = Span.current())`.
  *
  * @param context The evaluation context.
- * @param telemetry The telemetry instance to use (defaults to global).
+ * @param telemetry The telemetry instance to use.
  * @param registry The registry to use (defaults to the feature's namespace).
  * @return The evaluated value.
  */
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithAutoSpan(
     context: C,
-    telemetry: KonditionalTelemetry = KonditionalTelemetry.global(),
+    telemetry: KonditionalTelemetry,
     registry: NamespaceRegistry = namespace,
-): T = evaluateWithTelemetry(context, telemetry, registry, parentSpan = Span.current())
+): T = evaluateWithTelemetry(context = context, telemetry = telemetry, registry = registry, parentSpan = Span.current())
+
+/**
+ * Deprecated global-telemetry compatibility shim for [evaluateWithAutoSpan].
+ *
+ * Uses [KonditionalTelemetry.global] and preserves previous behavior for callers that
+ * have installed process-wide telemetry via [KonditionalTelemetry.install].
+ */
+@Deprecated(
+    message = "Global telemetry singleton path is deprecated. Pass telemetry explicitly.",
+)
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithAutoSpan(
+    context: C,
+    registry: NamespaceRegistry = namespace,
+): T =
+    evaluateWithAutoSpan(
+        context = context,
+        telemetry = KonditionalTelemetry.global(),
+        registry = registry,
+    )
