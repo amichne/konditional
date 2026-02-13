@@ -20,6 +20,7 @@ import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.ConfigurationMetadata
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.options.SnapshotWarning
+import io.amichne.konditional.serialization.options.UnknownFeatureKeyStrategy
 import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 import io.amichne.konditional.values.FeatureId
@@ -68,10 +69,16 @@ class OperationalSerializationTest {
 
         val strictResult = ConfigurationSnapshotCodec.decode(snapshotJson)
         assertIs<ParseResult.Failure>(strictResult)
-        assertIs<ParseError.FeatureNotFound>(strictResult.error)
+        assertIs<ParseError.InvalidSnapshot>(strictResult.error)
 
+        @Suppress("DEPRECATION")
+        FeatureRegistry.register(namespace.knownFeature)
         val warnings = mutableListOf<SnapshotWarning>()
-        val lenient = SnapshotLoadOptions.skipUnknownKeys { warnings.add(it) }
+        val lenient =
+            SnapshotLoadOptions.legacyGlobalRegistryFallback(
+                unknownFeatureKeyStrategy = UnknownFeatureKeyStrategy.Skip,
+                onWarning = { warnings.add(it) },
+            )
         val lenientResult = ConfigurationSnapshotCodec.decode(snapshotJson, lenient)
         assertIs<ParseResult.Success<Configuration>>(lenientResult)
         assertEquals(setOf(namespace.knownFeature), lenientResult.value.flags.keys)

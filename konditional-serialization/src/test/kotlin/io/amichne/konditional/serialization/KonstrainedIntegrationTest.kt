@@ -116,7 +116,10 @@ class KonstrainedIntegrationTest {
             val json = ConfigurationSnapshotCodec.encode(features.configuration)
             println(json)
             // Verify round-trip serialization works
-            ConfigurationSnapshotCodec.decode(json).onSuccess { config ->
+            ConfigurationSnapshotCodec.decode(
+                json = json,
+                featuresById = mapOf(features.userSettings.id to features.userSettings),
+            ).onSuccess { config ->
                 println("Successfully deserialized ${config.flags.size} flags")
             }
         }
