@@ -172,6 +172,7 @@ interface PlatformTag {
 ## `AxisValue<T>` / `Axis<T>`
 
 Custom targeting dimensions.
+Axis ids are explicit and stable by contract; inferred/implicit axis registration is not supported.
 
 ```kotlin
 interface AxisValue<T> where T : Enum<T> {
@@ -180,7 +181,6 @@ interface AxisValue<T> where T : Enum<T> {
 class Axis<T> private constructor(
     val id: String,
     val valueClass: KClass<out T>,
-    val isImplicit: Boolean = false,
     autoRegister: Boolean = true,
 ) where T : AxisValue<T>, T : Enum<T>
 
