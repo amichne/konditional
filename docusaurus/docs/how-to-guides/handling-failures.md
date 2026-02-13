@@ -362,7 +362,7 @@ fun `failed load preserves last-known-good`() {
   require(result1 is ParseResult.Success)
 
   // Verify darkMode is true
-  val ctx = Context(stableId = StableId("user"))
+  val ctx = Context(stableId = StableId.of("user"))
   assertTrue(AppFeatures.darkMode.evaluate(ctx))
 
   // Try to load invalid config

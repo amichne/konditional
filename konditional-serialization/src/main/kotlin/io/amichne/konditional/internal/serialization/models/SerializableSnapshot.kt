@@ -38,7 +38,13 @@ data class SerializableSnapshot(
                     when (acc) {
                         is ParseResult.Failure -> acc
                         is ParseResult.Success -> {
-                            when (val pairResult = serializableFlag.toFlagPair(featuresById)) {
+                            when (
+                                val pairResult =
+                                    serializableFlag.toFlagPair(
+                                        featuresById = featuresById,
+                                        featureResolutionMode = options.featureResolutionMode,
+                                    )
+                            ) {
                                 is ParseResult.Success -> {
                                     acc.value[pairResult.value.first] = pairResult.value.second
                                     acc

@@ -51,7 +51,7 @@ Returns `Int` in range `[0, 9999]` (10,000 buckets):
 
 **Minimal**:
 ```kotlin
-val bucket = RampUpBucketing.calculateBucket(
+val bucket = RampUpBucketing.bucket(
     stableId = StableId.of("user-123"),
     featureKey = "feature::app::darkMode",
     salt = "default"
@@ -61,7 +61,7 @@ val bucket = RampUpBucketing.calculateBucket(
 
 **Typical** (check if user is in 25% rollout):
 ```kotlin
-val bucket = RampUpBucketing.calculateBucket(
+val bucket = RampUpBucketing.bucket(
     stableId = StableId.of(userId),
     featureKey = "feature::app::newCheckout",
     salt = "default"
@@ -73,12 +73,12 @@ val inRollout = bucket < threshold    // true if bucket in [0, 2499]
 
 **Edge case** (different salt = different bucket):
 ```kotlin
-val bucket1 = RampUpBucketing.calculateBucket(
+val bucket1 = RampUpBucketing.bucket(
     StableId.of("user-123"), "feature::app::darkMode", "v1"
 )
 // Returns: 4523
 
-val bucket2 = RampUpBucketing.calculateBucket(
+val bucket2 = RampUpBucketing.bucket(
     StableId.of("user-123"), "feature::app::darkMode", "v2"  // Different salt
 )
 // Returns: 8172 (different bucket!)
@@ -145,7 +145,7 @@ val bucket2 = RampUpBucketing.calculateBucket(
 @Test
 fun `verify user is in treatment group`() {
     val userId = "VIP-user-789"
-    val bucket = RampUpBucketing.calculateBucket(
+    val bucket = RampUpBucketing.bucket(
         stableId = StableId.of(userId),
         featureKey = "feature::app::experimentalFeature",
         salt = "default"
@@ -162,7 +162,7 @@ fun `verify user is in treatment group`() {
 @Test
 fun `verify uniform distribution`() {
     val buckets = (0 until 10_000).map { i ->
-        RampUpBucketing.calculateBucket(
+        RampUpBucketing.bucket(
             stableId = StableId.of("user-$i"),
             featureKey = "feature::app::feature",
             salt = "default"
@@ -182,7 +182,7 @@ fun `verify uniform distribution`() {
 ```kotlin
 fun debugBucketing(userId: String, featureKey: String, salt: String) {
     val stableId = StableId.of(userId)
-    val bucket = RampUpBucketing.calculateBucket(stableId, featureKey, salt)
+    val bucket = RampUpBucketing.bucket(stableId, featureKey, salt)
 
     println("""
         Bucketing Debug:

@@ -26,7 +26,7 @@ sealed interface ParseResult<out T> {
      */
     @ConsistentCopyVisibility
     data class Failure @PublishedApi internal constructor(val error: ParseError) : ParseResult<Nothing> {
-        override fun getOrThrow(): Nothing = error(error.message)
+        override fun getOrThrow(): Nothing = throw ParseException(error)
     }
 
     companion object {

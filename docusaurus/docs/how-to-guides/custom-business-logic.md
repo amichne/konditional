@@ -76,7 +76,7 @@ object PremiumFeatures : Namespace("premium") {
 ```kotlin
 fun evaluateFeatures(user: User): FeaturesForUser {
   val ctx = BusinessContext(
-      stableId = StableId(user.id),
+      stableId = StableId.of(user.id),
       platform = user.platform,
       locale = user.locale,
       appVersion = user.appVersion,
@@ -260,7 +260,7 @@ val businessFeature by boolean<BusinessContext>(default = false) {
 }
 
 // ✗ DON'T: Evaluate with base Context
-val ctx: Context = Context(stableId = StableId("user"))
+val ctx: Context = Context(stableId = StableId.of("user"))
 businessFeature.evaluate(ctx)  // Compile error: Context != BusinessContext
 
 // ✓ DO: Evaluate with BusinessContext
@@ -302,7 +302,7 @@ val enterpriseFeature by boolean<BusinessContext>(default = false) {
 @Test
 fun `enterprise users with high revenue get advanced analytics`() {
   val ctx = BusinessContext(
-      stableId = StableId("user-123"),
+      stableId = StableId.of("user-123"),
       platform = Platform.IOS,
       locale = Locale.US,
       appVersion = Version.of(2, 0, 0),
@@ -320,7 +320,7 @@ fun `enterprise users with high revenue get advanced analytics`() {
 @Test
 fun `pro users with low revenue do not get advanced analytics`() {
   val ctx = BusinessContext(
-      stableId = StableId("user-456"),
+      stableId = StableId.of("user-456"),
       platform = Platform.IOS,
       locale = Locale.US,
       appVersion = Version.of(2, 0, 0),
@@ -352,7 +352,7 @@ fun `advanced analytics requires enterprise tier and high revenue`(
     expected: Boolean
 ) {
   val ctx = BusinessContext(
-      stableId = StableId("user"),
+      stableId = StableId.of("user"),
       platform = Platform.IOS,
       locale = Locale.US,
       appVersion = Version.of(2, 0, 0),
@@ -373,7 +373,7 @@ fun `advanced analytics requires enterprise tier and high revenue`(
 fun `experimental checkout requires mobile, v2+, PRO tier, and 3+ months`() {
   // All criteria match
   val qualifiedCtx = BusinessContext(
-      stableId = StableId("user-1"),
+      stableId = StableId.of("user-1"),
       platform = Platform.IOS,  // Mobile ✓
       locale = Locale.US,
       appVersion = Version.of(2, 1, 0),  // v2+ ✓

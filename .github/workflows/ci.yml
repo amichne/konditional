@@ -29,6 +29,9 @@ jobs:
         if: runner.os != 'Windows'
         run: chmod +x gradlew
 
+      - name: Check docs API conformance
+        run: ./scripts/check-docs-api-conformance.sh
+
       - name: Run tests
         run: ./gradlew test --no-daemon --stacktrace
 

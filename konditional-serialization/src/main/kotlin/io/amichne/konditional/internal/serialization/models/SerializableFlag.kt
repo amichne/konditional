@@ -1,4 +1,5 @@
 @file:OptIn(KonditionalInternalApi::class)
+@file:Suppress("DEPRECATION")
 
 package io.amichne.konditional.internal.serialization.models
 
@@ -18,6 +19,7 @@ import io.amichne.konditional.internal.flagDefinitionFromSerialized
 import io.amichne.konditional.internal.toSerializedMetadata
 import io.amichne.konditional.internal.toSerializedRules
 import io.amichne.konditional.serialization.FeatureRegistry
+import io.amichne.konditional.serialization.options.SnapshotLoadOptions.FeatureResolutionMode
 import io.amichne.konditional.values.FeatureId
 
 /**
@@ -38,14 +40,16 @@ data class SerializableFlag(
 ) {
     fun toFlagPair(
         featuresById: Map<FeatureId, Feature<*, *, *>> = emptyMap(),
+        featureResolutionMode: FeatureResolutionMode = FeatureResolutionMode.RequireExplicitFeatureScope,
     ): ParseResult<Pair<Feature<*, *, *>, FlagDefinition<*, *, *>>> =
-        when (val conditionalResult = resolveFeature(featuresById)) {
+        when (val conditionalResult = resolveFeature(featuresById, featureResolutionMode)) {
             is ParseResult.Success -> {
                 val conditional = conditionalResult.value
                 runCatching {
                     toFlagDefinition(
                         conditional = conditional,
-                        allowHintFallback = featuresById.isEmpty(),
+                        allowHintFallback =
+                            featureResolutionMode is FeatureResolutionMode.LegacyGlobalRegistryFallback,
                     )
                 }
                     .fold(
@@ -83,12 +87,27 @@ data class SerializableFlag(
 
     private fun resolveFeature(
         featuresById: Map<FeatureId, Feature<*, *, *>>,
+        featureResolutionMode: FeatureResolutionMode,
     ): ParseResult<Feature<*, *, *>> =
-        if (featuresById.isEmpty()) {
-            FeatureRegistry.get(key)
-        } else {
-            featuresById[key]?.let { ParseResult.success(it) }
-                ?: ParseResult.failure(ParseError.featureNotFound(key))
+        when (featureResolutionMode) {
+            FeatureResolutionMode.RequireExplicitFeatureScope ->
+                when {
+                    featuresById.isEmpty() ->
+                        ParseResult.failure(
+                            ParseError.invalidSnapshot(
+                                "Feature-aware decode requires explicit feature scope for key '$key'. " +
+                                    "Use ConfigurationSnapshotCodec.decode(json, featuresById, options) " +
+                                    "or opt in to SnapshotLoadOptions.legacyGlobalRegistryFallback().",
+                            ),
+                        )
+
+                    else ->
+                        featuresById[key]?.let { ParseResult.success(it) }
+                            ?: ParseResult.failure(ParseError.featureNotFound(key))
+                }
+
+            FeatureResolutionMode.LegacyGlobalRegistryFallback ->
+                featuresById[key]?.let { ParseResult.success(it) } ?: FeatureRegistry.get(key)
         }
 
     private fun <T : Any, C : Context, M : Namespace> toFlagDefinition(

@@ -273,11 +273,12 @@ class ConfigLoader(private val namespace: Namespace) {
 class StagedConfigLoader(private val namespace: Namespace) {
     fun loadWithCanary(json: String, canaryPercentage: Double = 1.0) {
         // First: validate without loading
-        when (val result = NamespaceSnapshotLoader(namespace).validate(json)) {
+        when (val result = ConfigurationSnapshotCodec.decode(json)) {
             is ParseResult.Failure -> {
                 logger.error("Validation failed: ${result.error}")
                 return
             }
+            is ParseResult.Success -> Unit
         }
 
         // Second: apply to canary traffic only
@@ -385,7 +386,7 @@ fun `partial configuration loads successfully`() {
     assertTrue(result is ParseResult.Success)
 
     // darkMode overridden
-    val ctx = Context(stableId = StableId("user"))
+    val ctx = Context(stableId = StableId.of("user"))
     assertTrue(AppFeatures.darkMode.evaluate(ctx))
 
     // maxRetries still uses default
