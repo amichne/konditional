@@ -14,11 +14,11 @@ Scope used for verification:
 
 ## [Page 1]: Parse Boundary (`parse-dont-validate`)
 
-1. **Novel Mechanism**: `NamespaceSnapshotLoader` decodes and loads in one typed operation (`ParseResult<Configuration>`), and uses namespace-scoped feature indexing when available.
+1. **Novel Mechanism**: `NamespaceSnapshotLoader` decodes and loads in one typed operation (`Result<Configuration>`), and uses namespace-scoped feature indexing when available.
 2. **Constraint/Gotcha**: direct decode with an empty feature index fails fast; explicit feature scope is required.
 3. **Composition Point**: `ConfigurationSnapshotCodec` provides pure decode; runtime mutation is applied separately through `Namespace.load(...)`.
 4. **Performance Implication**: strict unknown-key handling fails fast by default; skip mode avoids hard-fail at the cost of warning-path handling.
-5. **Misuse Prevention**: parse APIs force success/failure branching through a sealed result (`ParseResult` + `ParseError`).
+5. **Misuse Prevention**: parse APIs force success/failure branching through a sealed result (`Result` + `ParseError`).
 
 -----
 
@@ -44,7 +44,7 @@ Scope used for verification:
 
 ## [Page 4]: Shadow Migration (`migration-and-shadowing`)
 
-1. **Novel Mechanism**: `evaluateWithShadow` computes baseline and candidate `EvaluationResult`s and returns baseline value only.
+1. **Novel Mechanism**: `evaluateWithShadow` computes baseline and candidate `internal EvaluationDiagnostics`s and returns baseline value only.
 2. **Constraint/Gotcha**: candidate evaluation is skipped by default when baseline kill-switch is enabled (`evaluateCandidateWhenBaselineDisabled = false`).
 3. **Composition Point**: mismatch reporting combines callback delivery (`onMismatch`) with built-in warning logs through registry hooks.
 4. **Performance Implication**: shadow mode is effectively two evaluations plus mismatch object creation on the request path.
@@ -56,7 +56,7 @@ Scope used for verification:
 
 ### 1. Core Abstraction: Typed Snapshot Boundary
 
-Konditional separates untrusted JSON from trusted evaluation state via `ParseResult<Configuration>` and namespace-scoped loading. Core evaluation does not consume raw payloads; it consumes already-typed snapshots. This keeps boundary failure explicit while preserving compile-time safety once data is inside the model.
+Konditional separates untrusted JSON from trusted evaluation state via `Result<Configuration>` and namespace-scoped loading. Core evaluation does not consume raw payloads; it consumes already-typed snapshots. This keeps boundary failure explicit while preserving compile-time safety once data is inside the model.
 
 **Advocate**: Use this when production config is remote and failure isolation is mandatory; typed parse boundaries and explicit failure ADTs prevent silent drift.
 **Oppose**: For static-only configs with no runtime updates, this can be unnecessary ceremony versus compile-time constants.

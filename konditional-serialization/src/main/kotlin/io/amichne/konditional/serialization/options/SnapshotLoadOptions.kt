@@ -12,6 +12,7 @@ package io.amichne.konditional.serialization.options
  */
 data class SnapshotLoadOptions(
     val unknownFeatureKeyStrategy: UnknownFeatureKeyStrategy = UnknownFeatureKeyStrategy.Fail,
+    val missingDeclaredFlagStrategy: MissingDeclaredFlagStrategy = MissingDeclaredFlagStrategy.Reject,
     val onWarning: (SnapshotWarning) -> Unit = {},
 ) {
     companion object {
@@ -21,6 +22,7 @@ data class SnapshotLoadOptions(
         fun strict(): SnapshotLoadOptions =
             SnapshotLoadOptions(
                 unknownFeatureKeyStrategy = UnknownFeatureKeyStrategy.Fail,
+                missingDeclaredFlagStrategy = MissingDeclaredFlagStrategy.Reject,
             )
 
         /**
@@ -29,6 +31,17 @@ data class SnapshotLoadOptions(
         fun skipUnknownKeys(onWarning: (SnapshotWarning) -> Unit = {}): SnapshotLoadOptions =
             SnapshotLoadOptions(
                 unknownFeatureKeyStrategy = UnknownFeatureKeyStrategy.Skip,
+                missingDeclaredFlagStrategy = MissingDeclaredFlagStrategy.Reject,
+                onWarning = onWarning,
+            )
+
+        /**
+         * Forward-compatible mode that fills absent declared flags from compile-time defaults.
+         */
+        fun fillMissingDeclaredFlags(onWarning: (SnapshotWarning) -> Unit = {}): SnapshotLoadOptions =
+            SnapshotLoadOptions(
+                unknownFeatureKeyStrategy = UnknownFeatureKeyStrategy.Fail,
+                missingDeclaredFlagStrategy = MissingDeclaredFlagStrategy.FillFromDeclaredDefaults,
                 onWarning = onWarning,
             )
     }

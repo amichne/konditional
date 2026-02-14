@@ -1,6 +1,6 @@
 file=openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt
 package=io.amichne.konditional.openfeature
-imports=dev.openfeature.sdk.ErrorCode,dev.openfeature.sdk.EvaluationContext,dev.openfeature.sdk.FeatureProvider,dev.openfeature.sdk.ImmutableMetadata,dev.openfeature.sdk.Metadata,dev.openfeature.sdk.ProviderEvaluation,dev.openfeature.sdk.ProviderState,dev.openfeature.sdk.Reason,dev.openfeature.sdk.Value,io.amichne.konditional.api.EvaluationResult,io.amichne.konditional.api.KonditionalInternalApi,io.amichne.konditional.api.explain,io.amichne.konditional.context.Context,io.amichne.konditional.context.axis.AxisValues,io.amichne.konditional.core.Namespace,io.amichne.konditional.core.features.Feature,io.amichne.konditional.core.id.StableId,io.amichne.konditional.core.registry.NamespaceRegistry
+imports=dev.openfeature.sdk.ErrorCode,dev.openfeature.sdk.EvaluationContext,dev.openfeature.sdk.FeatureProvider,dev.openfeature.sdk.ImmutableMetadata,dev.openfeature.sdk.Metadata,dev.openfeature.sdk.ProviderEvaluation,dev.openfeature.sdk.ProviderState,dev.openfeature.sdk.Reason,dev.openfeature.sdk.Value,io.amichne.konditional.api.KonditionalInternalApi,io.amichne.konditional.api.evaluateInternalApi,io.amichne.konditional.context.Context,io.amichne.konditional.context.axis.AxisValues,io.amichne.konditional.core.Namespace,io.amichne.konditional.core.features.Feature,io.amichne.konditional.core.id.StableId,io.amichne.konditional.core.ops.Metrics,io.amichne.konditional.core.registry.NamespaceRegistry,io.amichne.konditional.internal.evaluation.EvaluationDiagnostics
 type=io.amichne.konditional.openfeature.KonditionalContextMapper|kind=interface|decl=fun interface KonditionalContextMapper<C : Context>
 type=io.amichne.konditional.openfeature.KonditionalContextMappingResult|kind=interface|decl=sealed interface KonditionalContextMappingResult<out C : Context>
 type=io.amichne.konditional.openfeature.Success|kind=class|decl=data class Success<C : Context> @PublishedApi internal constructor( val value: C, ) : KonditionalContextMappingResult<C>
@@ -32,10 +32,10 @@ methods:
 - private fun <T : Any> evaluateTyped( key: String, defaultValue: T, ctx: EvaluationContext, expectedType: FlagValueType, transformValue: (Any) -> T?, ): ProviderEvaluation<T>
 - private fun <T : Any> evaluateEntry( key: String, entry: FlagEntry<C>, defaultValue: T, ctx: EvaluationContext, transformValue: (Any) -> T?, ): ProviderEvaluation<T>
 - private fun <T : Any> evaluateMappedEntry( key: String, entry: FlagEntry<C>, context: C, defaultValue: T, transformValue: (Any) -> T?, ): ProviderEvaluation<T>
-- private fun reasonFor(decision: EvaluationResult.Decision): Reason
-- private fun variantFor(decision: EvaluationResult.Decision): String?
-- private fun metadataFor(result: EvaluationResult<*>): ImmutableMetadata
-- private fun ImmutableMetadata.ImmutableMetadataBuilder.addDecisionMetadata( decision: EvaluationResult.Decision, ): ImmutableMetadata.ImmutableMetadataBuilder
+- private fun reasonFor(decision: EvaluationDiagnostics.Decision): Reason
+- private fun variantFor(decision: EvaluationDiagnostics.Decision): String?
+- private fun metadataFor(result: EvaluationDiagnostics<*>): ImmutableMetadata
+- private fun ImmutableMetadata.ImmutableMetadataBuilder.addDecisionMetadata( decision: EvaluationDiagnostics.Decision, ): ImmutableMetadata.ImmutableMetadataBuilder
 - private fun ImmutableMetadata.ImmutableMetadataBuilder.addStringIfNotNull( key: String, value: String?, ): ImmutableMetadata.ImmutableMetadataBuilder
 - private fun ImmutableMetadata.ImmutableMetadataBuilder.addIntegerIfNotNull( key: String, value: Int?, ): ImmutableMetadata.ImmutableMetadataBuilder
 - private fun <T : Any> errorEvaluation( defaultValue: T, errorCode: ErrorCode, errorMessage: String, ): ProviderEvaluation<T>

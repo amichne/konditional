@@ -5,13 +5,16 @@ import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.result.ParseError
-import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.core.result.parseErrorOrNull
+import io.amichne.konditional.core.result.parseFailure
+import io.amichne.konditional.core.schema.CompiledNamespaceSchema
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.ConfigurationMetadata
+import io.amichne.konditional.serialization.instance.MaterializedConfiguration
+import io.amichne.konditional.serialization.options.MissingDeclaredFlagStrategy
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.options.SnapshotWarning
 import io.amichne.konditional.serialization.options.UnknownFeatureKeyStrategy
-import io.amichne.konditional.values.FeatureId
 
 /**
  * Serializable representation of a Configuration configuration.
@@ -23,58 +26,70 @@ data class SerializableSnapshot(
     val meta: SerializableSnapshotMetadata? = null,
     val flags: List<SerializableFlag>,
 ) {
-    fun toConfiguration(): ParseResult<Configuration> = toConfiguration(SnapshotLoadOptions.strict())
-
     fun toConfiguration(
-        options: SnapshotLoadOptions,
-        featuresById: Map<FeatureId, Feature<*, *, *>> = emptyMap(),
-    ): ParseResult<Configuration> =
-        runCatching {
-            val initial: ParseResult<MutableMap<Feature<*, *, *>, FlagDefinition<*, *, *>>> =
-                ParseResult.success(linkedMapOf())
+        schema: CompiledNamespaceSchema,
+        options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
+    ): Result<MaterializedConfiguration> {
+        val resolvedFlags = linkedMapOf<Feature<*, *, *>, FlagDefinition<*, *, *>>()
 
-            val flagsResult =
-                flags.fold(initial) { acc, serializableFlag ->
-                    when (acc) {
-                        is ParseResult.Failure -> acc
-                        is ParseResult.Success -> {
-                            when (
-                                val pairResult =
-                                    serializableFlag.toFlagPair(
-                                        featuresById = featuresById,
-                                    )
-                            ) {
-                                is ParseResult.Success -> {
-                                    acc.value[pairResult.value.first] = pairResult.value.second
-                                    acc
-                                }
-
-                                is ParseResult.Failure -> {
-                                    val featureNotFound = pairResult.error as? ParseError.FeatureNotFound
-                                    if (featureNotFound != null &&
-                                        options.unknownFeatureKeyStrategy is UnknownFeatureKeyStrategy.Skip
-                                    ) {
-                                        options.onWarning(SnapshotWarning.unknownFeatureKey(featureNotFound.key))
-                                        acc
-                                    } else {
-                                        pairResult
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-            when (flagsResult) {
-                is ParseResult.Success -> ParseResult.success(
-                    Configuration(
-                        flagsResult.value.toMap(),
-                        meta?.toConfigurationMetadata() ?: ConfigurationMetadata(),
-                    )
-                )
-                is ParseResult.Failure -> flagsResult
+        flags.forEach { serializableFlag ->
+            val pairResult = serializableFlag.toFlagPair(schema)
+            if (pairResult.isSuccess) {
+                val pair = pairResult.getOrThrow()
+                resolvedFlags[pair.first] = pair.second
+                return@forEach
             }
-        }.getOrElse { ParseResult.failure(ParseError.InvalidSnapshot(it.message ?: "Unknown error")) }
+
+            val error = pairResult.parseErrorOrNull()
+            val featureNotFound = error as? ParseError.FeatureNotFound
+            if (featureNotFound != null && options.unknownFeatureKeyStrategy is UnknownFeatureKeyStrategy.Skip) {
+                options.onWarning(SnapshotWarning.unknownFeatureKey(featureNotFound.key))
+                return@forEach
+            }
+
+            return parseFailure(
+                error
+                    ?: ParseError.InvalidSnapshot(
+                        pairResult.exceptionOrNull()?.message ?: "Unknown materialization failure",
+                    ),
+            )
+        }
+
+        val missingDeclared = schema.entriesInDeterministicOrder.filter { entry ->
+            resolvedFlags[entry.feature] == null
+        }
+
+        when {
+            missingDeclared.isEmpty() -> {
+                // no-op
+            }
+
+            options.missingDeclaredFlagStrategy is MissingDeclaredFlagStrategy.FillFromDeclaredDefaults -> {
+                missingDeclared.forEach { entry ->
+                    resolvedFlags[entry.feature] = entry.declaredDefinition
+                }
+            }
+
+            else -> {
+                val missingIds = missingDeclared.joinToString(", ") { entry -> entry.featureId.toString() }
+                return parseFailure(
+                    ParseError.invalidSnapshot(
+                        "Missing declared flags for namespace '${schema.namespaceId}': $missingIds",
+                    ),
+                )
+            }
+        }
+
+        return Result.success(
+            MaterializedConfiguration.of(
+                schema = schema,
+                configuration = Configuration(
+                    flags = resolvedFlags.toMap(),
+                    metadata = meta?.toConfigurationMetadata() ?: ConfigurationMetadata(),
+                ),
+            ),
+        )
+    }
 
     companion object {
         fun from(configuration: Configuration): SerializableSnapshot =

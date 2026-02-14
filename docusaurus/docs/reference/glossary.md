@@ -111,14 +111,14 @@ configuration state.
 
 Learn more: [Namespace primitive](/learn/core-primitives#namespace)
 
-## ParseResult
+## Result
 
 An explicit boundary type used for JSON parsing and patch application: `Success(value)` or `Failure(error)`. Parse
 failures return structured errors instead of
 throwing, so invalid remote input can be rejected before it affects evaluation.
 
 Learn
-more: [ParseResult boundary](/learn/type-safety), [API Reference: Serialization](/serialization/reference), [Theory: Parse Don't Validate](/theory/parse-dont-validate)
+more: [Result boundary](/learn/type-safety), [API Reference: Serialization](/serialization/reference), [Theory: Parse Don't Validate](/theory/parse-dont-validate)
 
 ## Ramp-up
 
@@ -199,7 +199,7 @@ Learn more: [Total evaluation](/learn/evaluation-model#1-total-always-returns-a-
 
 The point where untrusted input (typically JSON) enters the system. Konditional treats JSON configuration as a trust
 boundary: it must be validated into domain
-types (`ParseResult.Success`) before it can be loaded and influence evaluation.
+types (`Result.success`) before it can be loaded and influence evaluation.
 
 Learn more: [Trust boundaries](/learn/type-safety)
 

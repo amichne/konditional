@@ -11,15 +11,16 @@ import dev.openfeature.sdk.ProviderEvaluation
 import dev.openfeature.sdk.ProviderState
 import dev.openfeature.sdk.Reason
 import dev.openfeature.sdk.Value
-import io.amichne.konditional.api.EvaluationResult
 import io.amichne.konditional.api.KonditionalInternalApi
-import io.amichne.konditional.api.explain
+import io.amichne.konditional.api.evaluateInternalApi
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.axis.AxisValues
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.registry.NamespaceRegistry
+import io.amichne.konditional.internal.evaluation.EvaluationDiagnostics
 
 /**
  * Maps untrusted OpenFeature [EvaluationContext] to a trusted Konditional [Context].
@@ -266,7 +267,13 @@ class KonditionalOpenFeatureProvider<C : Context>(
         defaultValue: T,
         transformValue: (Any) -> T?,
     ): ProviderEvaluation<T> =
-        runCatching { entry.featureAs<T>().explain(context, namespaceRegistry) }
+        runCatching {
+            entry.featureAs<T>().evaluateInternalApi(
+                context = context,
+                registry = namespaceRegistry,
+                mode = Metrics.Evaluation.EvaluationMode.EXPLAIN,
+            )
+        }
             .fold(
                 onSuccess = { result ->
                     transformValue(result.value)?.let { value ->
@@ -288,27 +295,27 @@ class KonditionalOpenFeatureProvider<C : Context>(
                         defaultValue = defaultValue,
                         errorCode = ErrorCode.GENERAL,
                         errorMessage = error.message ?: "Failed to evaluate flag '$key'",
-                    )
+                        )
                 },
             )
 
-    private fun reasonFor(decision: EvaluationResult.Decision): Reason =
+    private fun reasonFor(decision: EvaluationDiagnostics.Decision): Reason =
         when (decision) {
-            is EvaluationResult.Decision.RegistryDisabled -> Reason.DISABLED
-            is EvaluationResult.Decision.Inactive -> Reason.DISABLED
-            is EvaluationResult.Decision.Rule -> Reason.TARGETING_MATCH
-            is EvaluationResult.Decision.Default -> Reason.DEFAULT
+            is EvaluationDiagnostics.Decision.RegistryDisabled -> Reason.DISABLED
+            is EvaluationDiagnostics.Decision.Inactive -> Reason.DISABLED
+            is EvaluationDiagnostics.Decision.Rule -> Reason.TARGETING_MATCH
+            is EvaluationDiagnostics.Decision.Default -> Reason.DEFAULT
         }
 
-    private fun variantFor(decision: EvaluationResult.Decision): String? =
+    private fun variantFor(decision: EvaluationDiagnostics.Decision): String? =
         when (decision) {
-            is EvaluationResult.Decision.RegistryDisabled -> "registry-disabled"
-            is EvaluationResult.Decision.Inactive -> "inactive"
-            is EvaluationResult.Decision.Rule -> decision.matched.rule.note ?: "rule"
-            is EvaluationResult.Decision.Default -> "default"
+            is EvaluationDiagnostics.Decision.RegistryDisabled -> "registry-disabled"
+            is EvaluationDiagnostics.Decision.Inactive -> "inactive"
+            is EvaluationDiagnostics.Decision.Rule -> decision.matched.rule.note ?: "rule"
+            is EvaluationDiagnostics.Decision.Default -> "default"
         }
 
-    private fun metadataFor(result: EvaluationResult<*>): ImmutableMetadata =
+    private fun metadataFor(result: EvaluationDiagnostics<*>): ImmutableMetadata =
         ImmutableMetadata.builder()
             .addString("konditional.namespace", result.namespaceId)
             .addString("konditional.featureKey", result.featureKey)
@@ -318,22 +325,22 @@ class KonditionalOpenFeatureProvider<C : Context>(
             .build()
 
     private fun ImmutableMetadata.ImmutableMetadataBuilder.addDecisionMetadata(
-        decision: EvaluationResult.Decision,
+        decision: EvaluationDiagnostics.Decision,
     ): ImmutableMetadata.ImmutableMetadataBuilder =
         when (decision) {
-            is EvaluationResult.Decision.Rule ->
+            is EvaluationDiagnostics.Decision.Rule ->
                 addInteger("konditional.rule.specificity", decision.matched.rule.totalSpecificity)
                     .addStringIfNotNull("konditional.rule.note", decision.matched.rule.note)
                     .addInteger("konditional.bucket", decision.matched.bucket.bucket)
 
-            is EvaluationResult.Decision.Default ->
+            is EvaluationDiagnostics.Decision.Default ->
                 addIntegerIfNotNull(
                     "konditional.bucket",
                     decision.skippedByRollout?.bucket?.bucket,
                 )
 
-            is EvaluationResult.Decision.RegistryDisabled -> this
-            is EvaluationResult.Decision.Inactive -> this
+            is EvaluationDiagnostics.Decision.RegistryDisabled -> this
+            is EvaluationDiagnostics.Decision.Inactive -> this
         }
 
     private fun ImmutableMetadata.ImmutableMetadataBuilder.addStringIfNotNull(

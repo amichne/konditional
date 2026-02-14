@@ -83,10 +83,11 @@ Load the updated configuration:
 
 ```kotlin
 val json = fetchRemoteConfig()
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-  is ParseResult.Success -> logger.info("Ramped up to 25%")
-  is ParseResult.Failure -> {
-    logger.error("Config load failed: ${result.error}")
+val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+when {
+  result.isSuccess -> logger.info("Ramped up to 25%")
+  result.isFailure -> {
+    logger.error("Config load failed: ${result.parseErrorOrNull()}")
     // Last-known-good (10%) remains active
   }
 }
@@ -177,12 +178,13 @@ rule(true) { rampUp { 25.0 } }
 ### Not Handling Configuration Load Failures
 
 ```kotlin
-// DON'T: Ignore ParseResult
+// DON'T: Ignore Result
 NamespaceSnapshotLoader(AppFeatures).load(json)
 
 // DO: Handle failures
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-  is ParseResult.Failure -> alertOps("Ramp-up config failed to load")
+val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+when {
+  result.isFailure -> alertOps("Ramp-up config failed to load")
 }
 ```
 

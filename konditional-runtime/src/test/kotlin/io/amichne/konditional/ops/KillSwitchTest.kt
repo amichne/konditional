@@ -1,8 +1,9 @@
+@file:OptIn(io.amichne.konditional.api.KonditionalInternalApi::class)
+
 package io.amichne.konditional.ops
 
-import io.amichne.konditional.api.EvaluationResult.Decision.RegistryDisabled
 import io.amichne.konditional.api.evaluate
-import io.amichne.konditional.api.explain
+import io.amichne.konditional.api.evaluateInternalApi
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
@@ -10,6 +11,8 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.ops.Metrics
+import io.amichne.konditional.internal.evaluation.EvaluationDiagnostics
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -38,8 +41,13 @@ class KillSwitchTest {
         namespace.disableAll()
         assertFalse(namespace.feature.evaluate(context))
 
-        val explained = namespace.feature.explain(context)
-        assertEquals(RegistryDisabled, explained.decision)
+        val diagnostics =
+            namespace.feature.evaluateInternalApi(
+                context = context,
+                registry = namespace,
+                mode = Metrics.Evaluation.EvaluationMode.EXPLAIN,
+            )
+        assertEquals(EvaluationDiagnostics.Decision.RegistryDisabled, diagnostics.decision)
         namespace.enableAll()
         assertTrue(namespace.feature.evaluate(context))
     }

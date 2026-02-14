@@ -15,7 +15,7 @@ You should use `konditional-serialization` when you need to:
 
 - **JSON snapshot encoding/decoding**: Serialize and deserialize complete configuration snapshots
 - **Incremental patch support**: Apply partial updates to existing configurations
-- **Parse-don't-validate boundary**: Invalid JSON returns `ParseResult.Failure`, never throws
+- **Parse-don't-validate boundary**: Invalid JSON returns `Result.failure`, never throws
 - **Type-safe configuration**: Parsed JSON becomes strongly-typed `Configuration` objects
 
 ## Alternatives
@@ -38,7 +38,7 @@ dependencies {
 
 - **Guarantee**: Invalid JSON payloads never become `Configuration` values.
 
-- **Mechanism**: Parsing returns `ParseResult.Success` or `ParseResult.Failure` and never throws for validation errors.
+- **Mechanism**: Parsing returns `Result.success` or `Result.failure` and never throws for validation errors.
 
 - **Boundary**: Semantic correctness (for example, whether a rollout should be 10% or 20%) is not validated.
 

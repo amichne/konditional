@@ -21,7 +21,6 @@ detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirst
 konditional-core/build.gradle.kts.sig|package=<default>|types=0
 konditional-core/src/main/kotlin/io/amichne/konditional/api/AxisUtilities.kt.sig|package=io.amichne.konditional.api|types=0
 konditional-core/src/main/kotlin/io/amichne/konditional/api/BucketInfo.kt.sig|package=io.amichne.konditional.api|types=1
-konditional-core/src/main/kotlin/io/amichne/konditional/api/EvaluationResult.kt.sig|package=io.amichne.konditional.api|types=8
 konditional-core/src/main/kotlin/io/amichne/konditional/api/FeatureEvaluation.kt.sig|package=io.amichne.konditional.api|types=0
 konditional-core/src/main/kotlin/io/amichne/konditional/api/KonditionalInternalApi.kt.sig|package=io.amichne.konditional.api|types=1
 konditional-core/src/main/kotlin/io/amichne/konditional/api/RampUpBucketing.kt.sig|package=io.amichne.konditional.api|types=1
@@ -78,10 +77,10 @@ konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/RegistryHooks.k
 konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/AxisRegistry.kt.sig|package=io.amichne.konditional.core.registry|types=1
 konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt.sig|package=io.amichne.konditional.core.registry|types=2
 konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistryFactory.kt.sig|package=io.amichne.konditional.core.registry|types=2
+konditional-core/src/main/kotlin/io/amichne/konditional/core/result/KonditionalBoundaryFailure.kt.sig|package=io.amichne.konditional.core.result|types=1
 konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseError.kt.sig|package=io.amichne.konditional.core.result|types=8
 konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseException.kt.sig|package=io.amichne.konditional.core.result|types=1
-konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseResult.kt.sig|package=io.amichne.konditional.core.result|types=3
-konditional-core/src/main/kotlin/io/amichne/konditional/core/result/utils/ParseResultUtils.kt.sig|package=io.amichne.konditional.core.result.utils|types=0
+konditional-core/src/main/kotlin/io/amichne/konditional/core/schema/CompiledNamespaceSchema.kt.sig|package=io.amichne.konditional.core.schema|types=2
 konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHook.kt.sig|package=io.amichne.konditional.core.spi|types=1
 konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHooks.kt.sig|package=io.amichne.konditional.core.spi|types=1
 konditional-core/src/main/kotlin/io/amichne/konditional/core/types/Konstrained.kt.sig|package=io.amichne.konditional.core.types|types=1
@@ -91,6 +90,7 @@ konditional-core/src/main/kotlin/io/amichne/konditional/internal/builders/AxisVa
 konditional-core/src/main/kotlin/io/amichne/konditional/internal/builders/FlagBuilder.kt.sig|package=io.amichne.konditional.internal.builders|types=1
 konditional-core/src/main/kotlin/io/amichne/konditional/internal/builders/RuleBuilder.kt.sig|package=io.amichne.konditional.internal.builders|types=1
 konditional-core/src/main/kotlin/io/amichne/konditional/internal/builders/versions/VersionRangeBuilder.kt.sig|package=io.amichne.konditional.internal.builders.versions|types=1
+konditional-core/src/main/kotlin/io/amichne/konditional/internal/evaluation/EvaluationDiagnostics.kt.sig|package=io.amichne.konditional.internal.evaluation|types=8
 konditional-core/src/main/kotlin/io/amichne/konditional/rules/ConditionalValue.kt.sig|package=io.amichne.konditional.rules|types=1
 konditional-core/src/main/kotlin/io/amichne/konditional/rules/Rule.kt.sig|package=io.amichne.konditional.rules|types=1
 konditional-core/src/main/kotlin/io/amichne/konditional/rules/evaluable/AxisConstraint.kt.sig|package=io.amichne.konditional.rules.evaluable|types=1
@@ -111,13 +111,13 @@ konditional-core/src/test/kotlin/io/amichne/konditional/adversarial/ConcurrencyA
 konditional-core/src/test/kotlin/io/amichne/konditional/adversarial/ExploitationAttacksTest.kt.sig|package=io.amichne.konditional.adversarial|types=1
 konditional-core/src/test/kotlin/io/amichne/konditional/context/ContextPolymorphismTest.kt.sig|package=io.amichne.konditional.context|types=1
 konditional-core/src/test/kotlin/io/amichne/konditional/core/AllowlistRolloutTest.kt.sig|package=io.amichne.konditional.core|types=1
+konditional-core/src/test/kotlin/io/amichne/konditional/core/BoundaryFailureResultTest.kt.sig|package=io.amichne.konditional.core|types=1
 konditional-core/src/test/kotlin/io/amichne/konditional/core/ConditionEvaluationTest.kt.sig|package=io.amichne.konditional.core|types=2
 konditional-core/src/test/kotlin/io/amichne/konditional/core/DslSugarTest.kt.sig|package=io.amichne.konditional.core|types=2
-konditional-core/src/test/kotlin/io/amichne/konditional/core/FeatureEvaluationSafetyTest.kt.sig|package=io.amichne.konditional.core|types=1
+konditional-core/src/test/kotlin/io/amichne/konditional/core/FeatureEvaluationBehaviorTest.kt.sig|package=io.amichne.konditional.core|types=1
 konditional-core/src/test/kotlin/io/amichne/konditional/core/FlagEntryTypeSafetyTest.kt.sig|package=io.amichne.konditional.core|types=2
 konditional-core/src/test/kotlin/io/amichne/konditional/core/MissingStableIdBucketingTest.kt.sig|package=io.amichne.konditional.core|types=2
 konditional-core/src/test/kotlin/io/amichne/konditional/core/NamespaceFeatureDefinitionTest.kt.sig|package=io.amichne.konditional.core|types=2
-konditional-core/src/test/kotlin/io/amichne/konditional/core/ParseResultTest.kt.sig|package=io.amichne.konditional.core|types=5
 konditional-core/src/test/kotlin/io/amichne/konditional/core/RuleSetTest.kt.sig|package=io.amichne.konditional.core|types=5
 konditional-core/src/test/kotlin/io/amichne/konditional/dimensions/AxisBuilderTest.kt.sig|package=io.amichne.konditional.dimensions|types=1
 konditional-core/src/test/kotlin/io/amichne/konditional/dimensions/AxisContextIntegrationTest.kt.sig|package=io.amichne.konditional.dimensions|types=2
@@ -171,8 +171,10 @@ konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/i
 konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/Configuration.kt.sig|package=io.amichne.konditional.serialization.instance|types=2
 konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigurationDiff.kt.sig|package=io.amichne.konditional.serialization.instance|types=5
 konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigurationPatch.kt.sig|package=io.amichne.konditional.serialization.instance|types=2
+konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/MaterializedConfiguration.kt.sig|package=io.amichne.konditional.serialization.instance|types=1
 konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/internal/JsonValueConversions.kt.sig|package=io.amichne.konditional.serialization.internal|types=0
 konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/internal/KonstrainedPrimitiveMap.kt.sig|package=io.amichne.konditional.serialization.internal|types=0
+konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/MissingDeclaredFlagStrategy.kt.sig|package=io.amichne.konditional.serialization.options|types=3
 konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/SnapshotLoadOptions.kt.sig|package=io.amichne.konditional.serialization.options|types=1
 konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/SnapshotWarning.kt.sig|package=io.amichne.konditional.serialization.options|types=2
 konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/UnknownFeatureKeyStrategy.kt.sig|package=io.amichne.konditional.serialization.options|types=3
@@ -183,7 +185,7 @@ konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/s
 konditional-serialization/src/test/kotlin/io/amichne/konditional/core/EnumFeatureTest.kt.sig|package=io.amichne.konditional.core|types=6
 konditional-serialization/src/test/kotlin/io/amichne/konditional/fixtures/serializers/TestSerializers.kt.sig|package=io.amichne.konditional.fixtures.serializers|types=2
 konditional-serialization/src/test/kotlin/io/amichne/konditional/internal/serialization/models/FlagValueTrustedDecodeTest.kt.sig|package=io.amichne.konditional.internal.serialization.models|types=2
-konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/ConfigurationSnapshotCodecTest.kt.sig|package=io.amichne.konditional.serialization|types=6
+konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/ConfigurationSnapshotCodecTest.kt.sig|package=io.amichne.konditional.serialization|types=9
 konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/EnumSerializationTest.kt.sig|package=io.amichne.konditional.serialization|types=5
 konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/FeatureRegistryTest.kt.sig|package=io.amichne.konditional.serialization|types=2
 konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/KonstrainedIntegrationTest.kt.sig|package=io.amichne.konditional.serialization|types=1

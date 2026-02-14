@@ -84,7 +84,7 @@ Trace why evaluation returned a specific value:
 fun debugEvaluation(userId: String) {
   val ctx = Context(stableId = StableId.of(userId))
 
-  val explanation = AppFeatures.newCheckoutFlow.explain(ctx)
+  val explanation = AppFeatures.newCheckoutFlow.evaluate(ctx)
 
   logger.info("""
         Evaluation explanation:
@@ -268,8 +268,8 @@ require(results.all { it == results.first() }) { "Non-deterministic!" }
 
 ```kotlin
 AppFeatures.hooks.afterLoad.add { event ->
-  when (event.result) {
-    is ParseResult.Success -> {
+  when {
+    event.result.isSuccess -> {
       logger.info("Config loaded at ${event.timestamp}")
       logger.info("Loaded features: ${event.result.loadedFeatures}")
     }

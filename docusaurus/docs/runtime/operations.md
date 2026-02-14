@@ -11,12 +11,12 @@ API reference for managing namespace configuration lifecycle: loading, rollback,
 Atomically replace the active configuration snapshot.
 
 ```kotlin
-fun Namespace.load(configuration: ConfigurationView)
+fun Namespace.load(configuration: MaterializedConfiguration)
 ```
 
 ### Parameters
 
-- `configuration` - new configuration snapshot (typically from `ConfigurationSnapshotCodec.decode(...)`)
+- `configuration` - trusted snapshot (typically from `NamespaceSnapshotLoader.load(...)` or `ConfigurationSnapshotCodec.decode(json, schema, options)`)
 
 ### Behavior
 
@@ -27,10 +27,15 @@ fun Namespace.load(configuration: ConfigurationView)
 ### Example
 
 ```kotlin
-when (val result = ConfigurationSnapshotCodec.decode(json)) {
-    is ParseResult.Success -> AppFeatures.load(result.value)
-    is ParseResult.Failure -> logError(result.error.message)
-}
+NamespaceSnapshotLoader(AppFeatures)
+  .load(json)
+  .onSuccess { materialized ->
+    AppFeatures.load(materialized)
+  }
+  .onFailure { failure ->
+    val parseError = failure.parseErrorOrNull()
+    logError(parseError?.message ?: failure.message.orEmpty())
+  }
 ```
 
 ---

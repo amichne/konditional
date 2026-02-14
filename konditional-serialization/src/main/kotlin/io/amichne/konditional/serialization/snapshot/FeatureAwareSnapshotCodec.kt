@@ -1,9 +1,9 @@
+@file:OptIn(io.amichne.konditional.api.KonditionalInternalApi::class)
+
 package io.amichne.konditional.serialization.snapshot
 
-import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.core.schema.CompiledNamespaceSchema
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
-import io.amichne.konditional.values.FeatureId
 
 /**
  * Snapshot codec that can decode against a trusted, namespace-scoped feature index.
@@ -14,8 +14,7 @@ import io.amichne.konditional.values.FeatureId
 interface FeatureAwareSnapshotCodec<T> : SnapshotCodec<T> {
     fun decode(
         json: String,
-        featuresById: Map<FeatureId, Feature<*, *, *>>,
+        schema: CompiledNamespaceSchema,
         options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
-    ): ParseResult<T>
+    ): Result<T>
 }
-

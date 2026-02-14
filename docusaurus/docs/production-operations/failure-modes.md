@@ -30,9 +30,10 @@ JSON payload is malformed or doesn't match the expected schema:
 ```kotlin
 val json = """{ "flags": [ { "invalid": true } ] }"""
 
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-  is ParseResult.Failure -> {
-    println(result.error.message)  // ParseError.InvalidJson / ParseError.InvalidSnapshot
+val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+when {
+  result.isFailure -> {
+    println(result.parseErrorOrNull()?.message)  // ParseError.InvalidJson / ParseError.InvalidSnapshot
   }
 }
 ```
@@ -45,7 +46,7 @@ when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
 
 ### How to Detect
 
-- `ParseResult.Failure` with `ParseError.InvalidJson` or `ParseError.InvalidSnapshot`
+- `Result.failure` with `ParseError.InvalidJson` or `ParseError.InvalidSnapshot`
 - Log all parse failures with full error context
 
 ### Worst-Case Outcome
@@ -72,9 +73,10 @@ val json = """
 }
 """
 
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-  is ParseResult.Failure -> {
-    println(result.error.message)  // "Feature not found: feature::app::unknownFlag"
+val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+when {
+  result.isFailure -> {
+    println(result.parseErrorOrNull()?.message)  // "Feature not found: feature::app::unknownFlag"
   }
 }
 ```
@@ -87,7 +89,7 @@ when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
 
 ### How to Detect
 
-- `ParseResult.Failure` with `ParseError.FeatureNotFound`
+- `Result.failure` with `ParseError.FeatureNotFound`
 - Alert on unknown keys in production (could indicate config/code drift)
 
 ### Worst-Case Outcome
@@ -118,9 +120,10 @@ val json = """
 }
 """
 
-when (val result = ConfigurationSnapshotCodec.decode(json)) {
-  is ParseResult.Failure -> {
-    println(result.error.message)  // ParseError.InvalidSnapshot with details about the failed decode
+val result = ConfigurationSnapshotCodec.decode(json, AppFeatures.compiledSchema())
+when {
+  result.isFailure -> {
+    println(result.parseErrorOrNull()?.message)  // ParseError.InvalidSnapshot with details about the failed decode
   }
 }
 ```
@@ -133,7 +136,7 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 
 ### How to Detect
 
-- `ParseResult.Failure` with type mismatch error
+- `Result.failure` with type mismatch error
 - Schema validation in CI/CD pipeline
 
 ### Worst-Case Outcome
@@ -182,7 +185,7 @@ val json = """
 
 ### How to Detect
 
-- `ParseResult.Failure` with schema validation error
+- `Result.failure` with schema validation error
 
 ### Worst-Case Outcome
 
@@ -238,7 +241,7 @@ val enabled = AppFeatures.darkMode.evaluate(context)  // Returns default (false)
 ### How to Detect
 
 - All evaluations return defaults
-- `EvaluationResult.decision` will indicate `DISABLED`
+- `internal EvaluationDiagnostics.decision` will indicate `DISABLED`
 
 ### Worst-Case Outcome
 
@@ -280,10 +283,10 @@ One configuration wins (last write). Readers see a consistent snapshot (either c
 
 | Failure Mode                | Detection                       | Worst-Case Outcome                    | Recovery                                 |
 |-----------------------------|---------------------------------|---------------------------------------|------------------------------------------|
-| Parse errors (invalid JSON) | `ParseResult.Failure`           | Last-known-good remains active        | Fix JSON, retry                          |
+| Parse errors (invalid JSON) | `Result.failure`           | Last-known-good remains active        | Fix JSON, retry                          |
 | Missing features            | `ParseError.FeatureNotFound`    | Last-known-good remains active        | Initialize namespace, retry              |
-| Type mismatches             | `ParseResult.Failure`           | Last-known-good remains active        | Fix JSON schema, retry                   |
-| Schema mismatches           | `ParseResult.Failure`           | Last-known-good remains active        | Fix custom data class schema             |
+| Type mismatches             | `Result.failure`           | Last-known-good remains active        | Fix JSON schema, retry                   |
+| Schema mismatches           | `Result.failure`           | Last-known-good remains active        | Fix custom data class schema             |
 | Uninitialized namespace     | `ParseError.FeatureNotFound`    | Parse fails (initial defaults active) | Initialize namespace, retry              |
 | Rollback beyond history     | `rollback(...)` returns `false` | Current config remains active         | Use available history or re-load         |
 | Kill-switch active          | All evals return defaults       | Defaults active for namespace         | Call `enableAll()`                       |
@@ -293,7 +296,7 @@ One configuration wins (last write). Readers see a consistent snapshot (either c
 
 ## Next Steps
 
-- [Configuration Lifecycle](/learn/configuration-lifecycle) — JSON → ParseResult → load
+- [Configuration Lifecycle](/learn/configuration-lifecycle) — JSON → Result → load
 - [Trust Boundaries](/learn/type-safety) — Compile-time vs runtime guarantees
 - [Refresh Safety](/production-operations/thread-safety) — Why atomic updates are safe
-- [Theory: Parse Don't Validate](/theory/parse-dont-validate) — Why ParseResult prevents invalid states
+- [Theory: Parse Don't Validate](/theory/parse-dont-validate) — Why Result prevents invalid states

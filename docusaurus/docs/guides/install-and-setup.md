@@ -178,7 +178,7 @@ val enabled: String = AppFeatures.darkMode.evaluate(ctx) // Compile error
 - Verify rule specificity and order
 - Confirm `AppFeatures.isDisabled == false`
 
-**Verification**: Call `AppFeatures.darkMode.explain(ctx)` to see why default was returned.
+**Verification**: Call `AppFeatures.darkMode.evaluate(ctx)` to see why default was returned.
 
 **Related**: [Reference: Feature Evaluation](/reference/api/feature-evaluation#explain)
 

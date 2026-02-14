@@ -15,7 +15,7 @@ You should use `konditional-observability` when you need to:
 
 - **Shadow evaluation**: Compare baseline and candidate configurations safely
 - **Dependency-free hooks**: `KonditionalLogger` and `MetricsCollector` interfaces
-- **Evaluation explanations**: `EvaluationResult` with decision traces and bucketing info
+- **Evaluation explanations**: `internal EvaluationDiagnostics` with decision traces and bucketing info
 - **Mismatch detection**: Callbacks when shadow evaluation reveals differences
 
 ## Alternatives

@@ -2,7 +2,7 @@ package io.amichne.konditional.serialization
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.result.ParseError
-import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.core.result.parseFailure
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.kontracts.dsl.jsonObject
 import io.amichne.kontracts.dsl.jsonValue
@@ -77,10 +77,10 @@ object SchemaValueCodec {
     /**
      * Decodes JsonObject to an instance using schema and reflection.
      */
-    fun <T : Any> decode(kClass: KClass<T>, json: JsonObject, schema: ObjectSchema): ParseResult<T> {
+    fun <T : Any> decode(kClass: KClass<T>, json: JsonObject, schema: ObjectSchema): Result<T> {
         val constructor =
             kClass.primaryConstructor
-                ?: return ParseResult.failure(
+                ?: return parseFailure(
                     ParseError.InvalidSnapshot(
                         "${kClass.qualifiedName} must have a primary constructor for deserialization",
                     ),
@@ -91,7 +91,7 @@ object SchemaValueCodec {
         for (param in constructor.parameters) {
             val fieldName =
                 param.name
-                    ?: return ParseResult.failure(
+                    ?: return parseFailure(
                         ParseError.InvalidSnapshot("Constructor parameter missing name in ${kClass.qualifiedName}"),
                     )
 
@@ -100,23 +100,28 @@ object SchemaValueCodec {
 
             val value =
                 when {
-                    jsonValue != null && jsonValue !is JsonNull ->
-                        when (val decoded = decodeValue(param.type.classifier as? KClass<*>, jsonValue)) {
-                            is ParseResult.Success -> decoded.value
-                            is ParseResult.Failure -> return decoded
+                    jsonValue != null && jsonValue !is JsonNull -> {
+                        val decoded = decodeValue(param.type.classifier as? KClass<*>, jsonValue)
+                        if (decoded.isFailure) {
+                            return Result.failure(
+                                decoded.exceptionOrNull()
+                                    ?: IllegalStateException("Unknown decode failure for field '$fieldName'"),
+                            )
                         }
+                        decoded.getOrThrow()
+                    }
 
                     fieldSchema?.defaultValue != null -> fieldSchema.defaultValue
                     param.isOptional -> continue
                     fieldSchema?.required == true ->
-                        return ParseResult.failure(
+                        return parseFailure(
                             ParseError.InvalidSnapshot(
                                 "Required field '$fieldName' missing in JSON for ${kClass.qualifiedName}",
                             ),
                         )
 
                     else ->
-                        return ParseResult.failure(
+                        return parseFailure(
                             ParseError.InvalidSnapshot(
                                 "Field '$fieldName' missing in JSON and has no default in schema",
                             ),
@@ -126,68 +131,71 @@ object SchemaValueCodec {
             parameterMap[param] = value
         }
 
-        return runCatching { ParseResult.success(constructor.callBy(parameterMap)) }
-            .getOrElse { e ->
-                ParseResult.failure(
-                    ParseError.InvalidSnapshot(
-                        "Failed to instantiate ${kClass.qualifiedName}: ${e.message}",
-                    ),
-                )
-            }
+        return runCatching { constructor.callBy(parameterMap) }
+            .fold(
+                onSuccess = { Result.success(it) },
+                onFailure = { error ->
+                    parseFailure(
+                        ParseError.InvalidSnapshot(
+                            "Failed to instantiate ${kClass.qualifiedName}: ${error.message}",
+                        ),
+                    )
+                },
+            )
     }
 
     /**
      * Decodes JsonObject to an instance using an extractable schema if present.
      * Falls back to constructor-based decoding when no schema is available.
      */
-    fun <T : Any> decode(kClass: KClass<T>, json: JsonObject): ParseResult<T> =
+    fun <T : Any> decode(kClass: KClass<T>, json: JsonObject): Result<T> =
         extractSchema(kClass)
             ?.let { schema -> decode(kClass, json, schema) }
             ?: decodeWithoutSchema(kClass, json)
 
-    private fun decodeValue(kClass: KClass<*>?, json: JsonValue): ParseResult<Any> =
+    private fun decodeValue(kClass: KClass<*>?, json: JsonValue): Result<Any> =
         kClass?.let { decodeValueForClass(it, json) }
-            ?: ParseResult.failure(ParseError.InvalidSnapshot("Cannot decode value without type information"))
+            ?: parseFailure(ParseError.InvalidSnapshot("Cannot decode value without type information"))
 
-    private fun decodeValueForClass(kClass: KClass<*>, json: JsonValue): ParseResult<Any> =
+    private fun decodeValueForClass(kClass: KClass<*>, json: JsonValue): Result<Any> =
         decodeBuiltIn(kClass, json)
             ?: decodeEnum(kClass, json)
             ?: decodeCustomObject(kClass, json)
 
-    private fun decodeBuiltIn(kClass: KClass<*>, json: JsonValue): ParseResult<Any>? =
+    private fun decodeBuiltIn(kClass: KClass<*>, json: JsonValue): Result<Any>? =
         when (kClass) {
             Boolean::class ->
                 when (json) {
-                    is JsonBoolean -> ParseResult.success(json.value)
+                    is JsonBoolean -> Result.success(json.value)
                     else ->
-                        ParseResult.failure(
+                        parseFailure(
                             ParseError.InvalidSnapshot("Expected JsonBoolean, got ${json::class.simpleName}"),
                         )
                 }
 
             String::class ->
                 when (json) {
-                    is JsonString -> ParseResult.success(json.value)
+                    is JsonString -> Result.success(json.value)
                     else ->
-                        ParseResult.failure(
+                        parseFailure(
                             ParseError.InvalidSnapshot("Expected JsonString, got ${json::class.simpleName}"),
                         )
                 }
 
             Int::class ->
                 when (json) {
-                    is JsonNumber -> ParseResult.success(json.toInt())
+                    is JsonNumber -> Result.success(json.toInt())
                     else ->
-                        ParseResult.failure(
+                        parseFailure(
                             ParseError.InvalidSnapshot("Expected JsonNumber, got ${json::class.simpleName}"),
                         )
                 }
 
             Double::class ->
                 when (json) {
-                    is JsonNumber -> ParseResult.success(json.toDouble())
+                    is JsonNumber -> Result.success(json.toDouble())
                     else ->
-                        ParseResult.failure(
+                        parseFailure(
                             ParseError.InvalidSnapshot("Expected JsonNumber, got ${json::class.simpleName}"),
                         )
                 }
@@ -195,7 +203,7 @@ object SchemaValueCodec {
             else -> null
         }
 
-    private fun decodeEnum(kClass: KClass<*>, json: JsonValue): ParseResult<Any>? =
+    private fun decodeEnum(kClass: KClass<*>, json: JsonValue): Result<Any>? =
         if (!kClass.java.isEnum) {
             null
         } else {
@@ -205,9 +213,9 @@ object SchemaValueCodec {
                     val enumClass = kClass.java as Class<out Enum<*>>
                     val enumValue = enumClass.enumConstants.find { it.name == json.value }
                     if (enumValue != null) {
-                        ParseResult.success(enumValue)
+                        Result.success(enumValue)
                     } else {
-                        ParseResult.failure(
+                        parseFailure(
                             ParseError.InvalidSnapshot(
                                 "Unknown enum constant '${json.value}' for ${kClass.simpleName}",
                             ),
@@ -216,43 +224,49 @@ object SchemaValueCodec {
                 }
 
                 else ->
-                    ParseResult.failure(
+                    parseFailure(
                         ParseError.InvalidSnapshot("Expected JsonString for enum, got ${json::class.simpleName}"),
                     )
             }
         }
 
-    private fun decodeCustomObject(kClass: KClass<*>, json: JsonValue): ParseResult<Any> =
+    private fun decodeCustomObject(kClass: KClass<*>, json: JsonValue): Result<Any> =
         when (json) {
             is JsonObject -> decode(kClass, json)
             else ->
-                ParseResult.failure(
+                parseFailure(
                     ParseError.InvalidSnapshot(
                         "Expected JsonObject for custom type, got ${json::class.simpleName}",
                     ),
                 )
         }
 
-    private fun <T : Any> decodeWithoutSchema(kClass: KClass<T>, json: JsonObject): ParseResult<T> =
+    private fun <T : Any> decodeWithoutSchema(kClass: KClass<T>, json: JsonObject): Result<T> =
         kClass.primaryConstructor
             ?.let { constructor ->
                 val parametersResult =
                     buildParameterMap(constructor, json, kClass, ::decodeValue)
 
-                when (parametersResult) {
-                    is ParseResult.Success ->
-                        runCatching { ParseResult.success(constructor.callBy(parametersResult.value)) }
-                            .getOrElse { e ->
-                                ParseResult.failure(
+                if (parametersResult.isSuccess) {
+                    runCatching { constructor.callBy(parametersResult.getOrThrow()) }
+                        .fold(
+                            onSuccess = { Result.success(it) },
+                            onFailure = { error ->
+                                parseFailure(
                                     ParseError.InvalidSnapshot(
-                                        "Failed to instantiate ${kClass.qualifiedName}: ${e.message}",
+                                        "Failed to instantiate ${kClass.qualifiedName}: ${error.message}",
                                     ),
                                 )
-                            }
-                    is ParseResult.Failure -> parametersResult
+                            },
+                        )
+                } else {
+                    Result.failure(
+                        parametersResult.exceptionOrNull()
+                            ?: IllegalStateException("Unknown constructor parameter decode failure"),
+                    )
                 }
             }
-            ?: ParseResult.failure(
+            ?: parseFailure(
                 ParseError.InvalidSnapshot(
                     "${kClass.qualifiedName} must have a primary constructor for deserialization",
                 ),
@@ -270,39 +284,37 @@ private fun <T : Any> buildParameterMap(
     constructor: kotlin.reflect.KFunction<T>,
     json: JsonObject,
     owner: KClass<*>,
-    decodeValue: (KClass<*>?, JsonValue) -> ParseResult<Any>,
-): ParseResult<Map<KParameter, Any?>> =
-    constructor.parameters.fold(ParseResult.success(mutableMapOf<KParameter, Any?>())) { acc, param ->
-        when (acc) {
-            is ParseResult.Failure -> acc
-            is ParseResult.Success ->
-                resolveParameter(param, json, owner, decodeValue).let { resolved ->
-                    when (resolved) {
-                        is ParseResult.Failure -> resolved
-                        is ParseResult.Success -> {
-                            when (val resolution = resolved.value) {
-                                is ParameterResolution.Value -> acc.value[param] = resolution.value
-                                ParameterResolution.Skip -> Unit
-                            }
-                            ParseResult.success(acc.value)
-                        }
-                    }
-                }
+    decodeValue: (KClass<*>?, JsonValue) -> Result<Any>,
+): Result<Map<KParameter, Any?>> {
+    val result = mutableMapOf<KParameter, Any?>()
+    for (param in constructor.parameters) {
+        val resolved = resolveParameter(param, json, owner, decodeValue)
+        if (resolved.isFailure) {
+            return Result.failure(
+                resolved.exceptionOrNull()
+                    ?: IllegalStateException("Unknown parameter resolution failure"),
+            )
+        }
+        when (val resolution = resolved.getOrThrow()) {
+            is ParameterResolution.Value -> result[param] = resolution.value
+            ParameterResolution.Skip -> Unit
         }
     }
+    return Result.success(result)
+}
 
 private fun resolveParameter(
     param: KParameter,
     json: JsonObject,
     owner: KClass<*>,
-    decodeValue: (KClass<*>?, JsonValue) -> ParseResult<Any>,
-): ParseResult<ParameterResolution> {
+    decodeValue: (KClass<*>?, JsonValue) -> Result<Any>,
+): Result<ParameterResolution> {
     val fieldName = param.name
     val jsonValue = fieldName?.let { json.fields[it] }
 
     return when {
         fieldName == null ->
-            ParseResult.failure(
+            parseFailure(
                 ParseError.InvalidSnapshot(
                     "Constructor parameter missing name in ${owner.qualifiedName}",
                 ),
@@ -310,9 +322,9 @@ private fun resolveParameter(
 
         jsonValue == null || jsonValue is JsonNull ->
             if (param.isOptional) {
-                ParseResult.success(ParameterResolution.Skip)
+                Result.success(ParameterResolution.Skip)
             } else {
-                ParseResult.failure(
+                parseFailure(
                     ParseError.InvalidSnapshot(
                         "Field '$fieldName' missing in JSON and has no default for ${owner.qualifiedName}",
                     ),
@@ -321,11 +333,6 @@ private fun resolveParameter(
 
         else ->
             decodeValue(param.type.classifier as? KClass<*>, jsonValue)
-                .let { decoded ->
-                    when (decoded) {
-                        is ParseResult.Success -> ParseResult.success(ParameterResolution.Value(decoded.value))
-                        is ParseResult.Failure -> decoded
-                    }
-                }
+                .map { decoded -> ParameterResolution.Value(decoded) }
     }
 }

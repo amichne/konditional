@@ -206,13 +206,13 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithShadow(
     options: ShadowOptions = ShadowOptions.defaults(),
     onMismatch: (ShadowMismatch<T>) -> Unit,
 ): T {
-    val baseline = explain(context, baselineRegistry) // EvaluationResult<T>
+    val baseline = explain(context, baselineRegistry) // internal EvaluationDiagnostics<T>
 
     if (baselineRegistry.isAllDisabled && !options.evaluateCandidateWhenBaselineDisabled) {
         return baseline.value
     }
 
-    val candidate = explain(context, candidateRegistry) // EvaluationResult<T>
+    val candidate = explain(context, candidateRegistry) // internal EvaluationDiagnostics<T>
     if (baseline.value != candidate.value) {
         onMismatch(
             ShadowMismatch(

@@ -6,7 +6,7 @@ import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.result.ParseError
-import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.core.result.parseFailure
 import io.amichne.konditional.values.FeatureId
 import java.util.concurrent.ConcurrentHashMap
 
@@ -49,13 +49,13 @@ object FeatureRegistry {
     }
 
     /**
-     * Retrieves a Feature by its key, returning ParseResult for type-safe error handling.
+     * Retrieves a Feature by its key, returning [Result] for type-safe error handling.
      *
      * Internal: Used by serialization infrastructure for deserialization.
      */
-    internal fun get(key: FeatureId): ParseResult<Feature<*, *, *>> =
-        registry[key]?.let { ParseResult.success(it) }
-            ?: ParseResult.failure(ParseError.featureNotFound(key))
+    internal fun get(key: FeatureId): Result<Feature<*, *, *>> =
+        registry[key]?.let { Result.success(it) }
+            ?: parseFailure(ParseError.featureNotFound(key))
 
     /**
      * Checks if a key is registered.

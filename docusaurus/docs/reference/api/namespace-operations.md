@@ -4,60 +4,33 @@ title: Namespace Operations API
 
 # Namespace Operations API
 
-Namespace operations control the active configuration snapshot and emergency behavior for one namespace at a time.
+Namespace runtime operations from `io.amichne.konditional.runtime`.
 
-In this page you will find:
-
-- Runtime lifecycle operations (`load`, `rollback`, `history`)
-- Namespace kill-switch operations (`disableAll`, `enableAll`)
-- Exact failure semantics from the default in-memory registry
-
----
-
-## Runtime Extensions (`konditional-runtime`)
-
-These are extension APIs from `io.amichne.konditional.runtime`:
+## Runtime Extensions
 
 ```kotlin
-fun Namespace.load(configuration: ConfigurationView)
+fun Namespace.load(configuration: MaterializedConfiguration)
 fun Namespace.rollback(steps: Int = 1): Boolean
 val Namespace.history: List<ConfigurationView>
 val Namespace.historyMetadata: List<ConfigurationMetadataView>
 ```
 
-Evidence:
+## Load Flow
 
-- `konditional-runtime/src/main/kotlin/io/amichne/konditional/runtime/NamespaceOperations.kt`
-- `konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistry.kt`
-
-### `load(configuration)`
-
-- Replaces the current snapshot and appends the previous snapshot to bounded history.
-- The default in-memory registry serializes write operations with a lock and stores snapshots in atomic references.
-- Concurrent loads are safe; effective result is last write wins.
+`Namespace.load(...)` accepts only trusted `MaterializedConfiguration`.
 
 ```kotlin
-when (val result = ConfigurationSnapshotCodec.decode(json)) {
-    is ParseResult.Success -> AppFeatures.load(result.value)
-    is ParseResult.Failure -> logger.error { result.error.message }
-}
+val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+
+result
+  .onSuccess { materialized -> AppFeatures.load(materialized) }
+  .onFailure { failure ->
+    val parseError = failure.parseErrorOrNull()
+    logger.error { parseError?.message ?: failure.message.orEmpty() }
+  }
 ```
 
-### `rollback(steps)`
-
-- Returns `true` when rollback succeeds.
-- Returns `false` when history does not contain enough snapshots.
-- Throws `IllegalArgumentException` when `steps < 1` (via `require(steps >= 1)`).
-
-```kotlin
-val restored = AppFeatures.rollback(steps = 1)
-```
-
----
-
-## Kill-Switch Operations (`NamespaceRegistry`)
-
-`Namespace` delegates `NamespaceRegistry`, so these operations are available directly:
+## Kill Switch
 
 ```kotlin
 fun disableAll()
@@ -65,47 +38,15 @@ fun enableAll()
 val isAllDisabled: Boolean
 ```
 
-Evidence:
+- `disableAll()` forces declared defaults.
+- Scope is namespace-local.
 
-- `konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt`
+## Atomicity
 
-Behavior:
-
-- `disableAll()` forces evaluations to return each flag's default.
-- `enableAll()` restores normal rule evaluation.
-- Scope is namespace-local; other namespaces are unaffected.
-
----
-
-## Concurrency and Atomicity Notes
-
-- Reads (`namespace.configuration`) are atomic snapshot reads.
-- Loads/rollbacks are linearized by registry synchronization in the default runtime implementation.
-- Readers observe either the old or the new snapshot, never a partial merge.
-
-For deeper guarantees, see [Atomicity Guarantees](/theory/atomicity-guarantees).
-
----
-
-## Practical Pattern
-
-```kotlin
-val loader = NamespaceSnapshotLoader(AppFeatures)
-
-when (loader.load(fetchRemoteConfig())) {
-    is ParseResult.Success -> Unit
-    is ParseResult.Failure -> {
-        val rolledBack = AppFeatures.rollback(1)
-        if (!rolledBack) AppFeatures.disableAll()
-    }
-}
-```
-
----
+- Loads and rollbacks are linearizable in the default runtime registry.
+- Readers observe whole snapshots only.
 
 ## Related
 
-- [NamespaceSnapshotLoader API](/reference/api/snapshot-loader)
-- [ParseResult API](/reference/api/parse-result)
-- [Runtime Operations](/runtime/operations)
-- [Thread Safety](/production-operations/thread-safety)
+- [Snapshot Loader API](/reference/api/snapshot-loader)
+- [Serialization API Reference](/serialization/reference)

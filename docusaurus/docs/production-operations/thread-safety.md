@@ -143,15 +143,17 @@ The safety guarantee depends on using the public API:
 
 ```kotlin
 // ✓ Correct
-when (val result = ConfigurationSnapshotCodec.decode(json)) {
-    is ParseResult.Success -> AppFeatures.load(result.value)
-    is ParseResult.Failure -> logError(result.error.message)
+val result = ConfigurationSnapshotCodec.decode(json, AppFeatures.compiledSchema())
+when {
+    result.isSuccess -> AppFeatures.load(result.getOrNull()!!)
+    result.isFailure -> logError(result.parseErrorOrNull()?.message)
 }
 
 // ✓ Correct (side-effecting loader parses + loads on success)
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Success -> logger.info("Config refreshed")
-    is ParseResult.Failure -> logError(result.error.message)
+val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+when {
+    result.isSuccess -> logger.info("Config refreshed")
+    result.isFailure -> logError(result.parseErrorOrNull()?.message)
 }
 ```
 
@@ -182,14 +184,15 @@ Same safety guarantees apply: readers see old OR new, never mixed.
 ```kotlin
 while (running) {
     val json = fetchFromServer()
-    when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-        is ParseResult.Success -> {
+    val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+when {
+        result.isSuccess -> {
             // Safe: atomic update, concurrent evaluations see consistent snapshot
             logger.info("Config refreshed")
         }
-        is ParseResult.Failure -> {
+        result.isFailure -> {
             // Safe: last-known-good remains active
-            logger.error("Refresh failed: ${result.error}")
+            logger.error("Refresh failed: ${result.parseErrorOrNull()}")
         }
     }
     delay(pollInterval)
@@ -200,9 +203,10 @@ while (running) {
 
 ```kotlin
 configStream.collect { json ->
-    when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-        is ParseResult.Success -> logger.info("Config updated")
-        is ParseResult.Failure -> logger.error("Update failed: ${result.error}")
+    val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+when {
+        result.isSuccess -> logger.info("Config updated")
+        result.isFailure -> logger.error("Update failed: ${result.parseErrorOrNull()}")
     }
 }
 ```
@@ -222,6 +226,6 @@ configStream.collect { json ->
 ## Next Steps
 
 - [Theory: Atomicity Guarantees](/theory/atomicity-guarantees) — Formal proof of atomic swap safety
-- [Configuration Lifecycle](/learn/configuration-lifecycle) — JSON → ParseResult → load
+- [Configuration Lifecycle](/learn/configuration-lifecycle) — JSON → Result → load
 - [Failure Modes](/production-operations/failure-modes) — What can go wrong and how to handle it
 - [API Reference: Namespace Operations](/runtime/operations) — Full API for load/rollback

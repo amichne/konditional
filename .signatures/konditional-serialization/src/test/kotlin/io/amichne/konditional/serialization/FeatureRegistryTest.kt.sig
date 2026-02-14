@@ -1,6 +1,6 @@
 file=konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/FeatureRegistryTest.kt
 package=io.amichne.konditional.serialization
-imports=io.amichne.konditional.context.Context,io.amichne.konditional.core.Namespace,io.amichne.konditional.core.features.Feature,io.amichne.konditional.core.result.ParseError,io.amichne.konditional.core.result.ParseResult,io.amichne.konditional.values.FeatureId,kotlin.test.assertEquals,kotlin.test.assertFalse,kotlin.test.assertIs,kotlin.test.assertTrue,org.junit.jupiter.api.BeforeEach,org.junit.jupiter.api.Test
+imports=io.amichne.konditional.context.Context,io.amichne.konditional.core.Namespace,io.amichne.konditional.core.features.Feature,io.amichne.konditional.core.result.ParseError,io.amichne.konditional.core.result.parseErrorOrNull,io.amichne.konditional.values.FeatureId,kotlin.test.assertEquals,kotlin.test.assertFalse,kotlin.test.assertTrue,org.junit.jupiter.api.BeforeEach,org.junit.jupiter.api.Test
 type=io.amichne.konditional.serialization.FeatureRegistryTest|kind=class|decl=class FeatureRegistryTest
 type=io.amichne.konditional.serialization.TestFeatures|kind=object|decl=private object TestFeatures : Namespace.TestNamespaceFacade("feature-registry")
 fields:

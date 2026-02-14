@@ -9,7 +9,8 @@ import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.result.ParseError
-import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.core.result.parseFailure
+import io.amichne.konditional.core.schema.CompiledNamespaceSchema
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.core.types.asObjectSchema
 import io.amichne.konditional.internal.SerializedFlagDefinitionMetadata
@@ -36,30 +37,25 @@ data class SerializableFlag(
     val rules: List<SerializableRule> = emptyList(),
 ) {
     fun toFlagPair(
-        featuresById: Map<FeatureId, Feature<*, *, *>> = emptyMap(),
-    ): ParseResult<Pair<Feature<*, *, *>, FlagDefinition<*, *, *>>> =
-        when (val conditionalResult = resolveFeature(featuresById)) {
-            is ParseResult.Success -> {
-                val conditional = conditionalResult.value
-                runCatching {
-                    toFlagDefinition(
-                        conditional = conditional,
-                    )
-                }
-                    .fold(
-                        onSuccess = { ParseResult.success(conditional to it) },
-                        onFailure = {
-                            ParseResult.failure(
-                                ParseError.InvalidSnapshot(
-                                    it.message ?: "Failed to decode flag"
+        schema: CompiledNamespaceSchema,
+    ): Result<Pair<Feature<*, *, *>, FlagDefinition<*, *, *>>> =
+        resolveFeature(schema)
+            .fold(
+                onSuccess = { conditional ->
+                    runCatching { conditional to toFlagDefinition(conditional = conditional) }
+                        .fold(
+                            onSuccess = { Result.success(it) },
+                            onFailure = {
+                                parseFailure(
+                                    ParseError.InvalidSnapshot(
+                                        it.message ?: "Failed to decode flag",
+                                    ),
                                 )
-                            )
-                        },
-                    )
-            }
-
-            is ParseResult.Failure -> ParseResult.failure(conditionalResult.error)
-        }
+                            },
+                        )
+                },
+                onFailure = { Result.failure(it) },
+            )
 
     companion object {
         fun from(flagDefinition: FlagDefinition<*, *, *>, flagKey: FeatureId): SerializableFlag {
@@ -80,11 +76,12 @@ data class SerializableFlag(
     }
 
     private fun resolveFeature(
-        featuresById: Map<FeatureId, Feature<*, *, *>>,
-    ): ParseResult<Feature<*, *, *>> =
-        when {
+        schema: CompiledNamespaceSchema,
+    ): Result<Feature<*, *, *>> {
+        val featuresById = schema.entriesById.mapValues { (_, entry) -> entry.feature }
+        return when {
             featuresById.isEmpty() ->
-                ParseResult.failure(
+                parseFailure(
                     ParseError.invalidSnapshot(
                         "Feature-aware decode requires explicit feature scope for key '$key'. " +
                             "Use ConfigurationSnapshotCodec.decode(json, featuresById, options).",
@@ -92,9 +89,10 @@ data class SerializableFlag(
                 )
 
             else ->
-                featuresById[key]?.let { ParseResult.success(it) }
-                    ?: ParseResult.failure(ParseError.featureNotFound(key))
+                featuresById[key]?.let { Result.success(it) }
+                    ?: parseFailure(ParseError.featureNotFound(key))
         }
+    }
 
     private fun <T : Any, C : Context, M : Namespace> toFlagDefinition(
         conditional: Feature<T, C, M>,

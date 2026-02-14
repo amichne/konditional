@@ -5,7 +5,6 @@ package io.amichne.konditional.internal.serialization.models
 import com.squareup.moshi.JsonClass
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.ValueType
-import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.core.types.asObjectSchema
 import io.amichne.konditional.serialization.SchemaValueCodec
@@ -204,10 +203,12 @@ private fun decodeDataClass(
         val expectedClass = expected::class
         val expectedSchema = schema ?: expected.schema.asObjectSchema()
         val jsonObject = toJsonObject(fields, expectedSchema)
-        when (val result = SchemaValueCodec.decode(expectedClass, jsonObject)) {
-            is ParseResult.Success -> result.value
-            is ParseResult.Failure -> throw IllegalArgumentException(
-                "Failed to decode '${expectedClass.qualifiedName}': ${result.error.message}",
+        val result = SchemaValueCodec.decode(expectedClass, jsonObject)
+        if (result.isSuccess) {
+            result.getOrThrow()
+        } else {
+            throw IllegalArgumentException(
+                "Failed to decode '${expectedClass.qualifiedName}': ${result.exceptionOrNull()?.message}",
             )
         }
     } ?: run {

@@ -8,10 +8,9 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.evaluation.Bucketing.isInRampUp
 import io.amichne.konditional.core.evaluation.Bucketing.rampUpThresholdBasisPoints
 import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.internal.evaluation.EvaluationDiagnostics
 import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.core.registry.NamespaceRegistry
-import io.amichne.konditional.core.result.ParseError
-import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.Rule
 import kotlin.system.measureNanoTime
@@ -37,91 +36,12 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
     registry: NamespaceRegistry = namespace,
 ): T = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.NORMAL).value
 
-/**
- * Evaluates this feature without throwing when the feature definition is absent.
- *
- * This API is useful at dynamic integration boundaries where callers prefer a typed failure
- * (`ParseError.FeatureNotFound`) over exception handling.
- *
- * @return [ParseResult.Success] with the evaluated value, or [ParseResult.Failure] when the feature is missing.
- */
-fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateSafely(
-    context: C,
-    registry: NamespaceRegistry = namespace,
-): ParseResult<T> =
-    registry.findFlag(this)?.let { definition ->
-        ParseResult.success(
-            evaluateInternal(
-                context = context,
-                registry = registry,
-                mode = Metrics.Evaluation.EvaluationMode.NORMAL,
-                definition = definition,
-            ).value,
-        )
-    } ?: ParseResult.failure(ParseError.featureNotFound(id))
-
-/**
- * Explains how this feature was evaluated for the given context.
- *
- * Returns detailed information about the evaluation decision, including which rule matched
- * (if any), the bucket assignment, and specificity values. Useful for debugging and
- * understanding feature flag behavior.
- *
- * Example:
- * ```kotlin
- * val result = feature.explain(context)
- * when (result.decision) {
- *     is Decision.Rule -> println("Matched rule: ${result.decision.matched.rule.note}")
- *     is Decision.Default -> println("No rule matched, using default")
- *     is Decision.Inactive -> println("Feature is inactive")
- *     is Decision.RegistryDisabled -> println("Registry is disabled")
- * }
- * ```
- *
- * @param context The evaluation contextFn
- * @param registry The registry to use (defaults to the feature's namespace)
- * @return Detailed evaluation result with decision information
- * @throws IllegalStateException if the feature is not registered in the registry
- */
-fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.explain(
-    context: C,
-    registry: NamespaceRegistry = namespace,
-): EvaluationResult<T> = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.EXPLAIN)
-
-/**
- * Explain variant that returns a typed failure when the feature definition is missing.
- */
-fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.explainSafely(
-    context: C,
-    registry: NamespaceRegistry = namespace,
-): ParseResult<EvaluationResult<T>> =
-    registry.findFlag(this)?.let { definition ->
-        ParseResult.success(
-            evaluateInternal(
-                context = context,
-                registry = registry,
-                mode = Metrics.Evaluation.EvaluationMode.EXPLAIN,
-                definition = definition,
-            ),
-        )
-    } ?: ParseResult.failure(ParseError.featureNotFound(id))
-
-@Deprecated(
-    message = "Use explain() instead for clearer intent",
-    replaceWith = ReplaceWith("explain(context, registry)"),
-    level = DeprecationLevel.WARNING
-)
-fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithReason(
-    context: C,
-    registry: NamespaceRegistry = namespace,
-): EvaluationResult<T> = explain(context, registry)
-
 @PublishedApi
 internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInternal(
     context: C,
     registry: NamespaceRegistry,
     mode: Metrics.Evaluation.EvaluationMode,
-): EvaluationResult<T> = evaluateInternal(
+): EvaluationDiagnostics<T> = evaluateInternal(
     context = context,
     registry = registry,
     mode = mode,
@@ -134,34 +54,34 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
     registry: NamespaceRegistry,
     mode: Metrics.Evaluation.EvaluationMode,
     definition: FlagDefinition<T, C, M>,
-): EvaluationResult<T> {
-    lateinit var result: EvaluationResult<T>
+): EvaluationDiagnostics<T> {
+    lateinit var result: EvaluationDiagnostics<T>
 
     val nanos =
         measureNanoTime {
             result =
                 when {
                     registry.isAllDisabled -> {
-                        EvaluationResult(
+                        EvaluationDiagnostics(
                             namespaceId = registry.namespaceId,
                             featureKey = key,
                             configVersion = registry.configuration.metadata.version,
                             mode = mode,
                             durationNanos = 0L,
                             value = definition.defaultValue,
-                            decision = EvaluationResult.Decision.RegistryDisabled,
+                            decision = EvaluationDiagnostics.Decision.RegistryDisabled,
                         )
                     }
 
                     !definition.isActive -> {
-                        EvaluationResult(
+                        EvaluationDiagnostics(
                             namespaceId = registry.namespaceId,
                             featureKey = key,
                             configVersion = registry.configuration.metadata.version,
                             mode = mode,
                             durationNanos = 0L,
                             value = definition.defaultValue,
-                            decision = EvaluationResult.Decision.Inactive,
+                            decision = EvaluationDiagnostics.Decision.Inactive,
                         )
                     }
 
@@ -182,10 +102,13 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
                                     featureKey = key,
                                     salt = definition.salt,
                                 )?.let { matched ->
-                                    EvaluationResult.Decision.Rule(matched = matched, skippedByRollout = skipped)
-                                } ?: EvaluationResult.Decision.Default(skippedByRollout = skipped)
+                                    EvaluationDiagnostics.Decision.Rule(
+                                        matched = matched,
+                                        skippedByRollout = skipped,
+                                    )
+                                } ?: EvaluationDiagnostics.Decision.Default(skippedByRollout = skipped)
 
-                        EvaluationResult(
+                        EvaluationDiagnostics(
                             namespaceId = registry.namespaceId,
                             featureKey = key,
                             configVersion = registry.configuration.metadata.version,
@@ -214,19 +137,19 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
             durationNanos = nanos,
             decision =
                 when (result.decision) {
-                    is EvaluationResult.Decision.RegistryDisabled -> Metrics.Evaluation.DecisionKind.REGISTRY_DISABLED
-                    is EvaluationResult.Decision.Inactive -> Metrics.Evaluation.DecisionKind.INACTIVE
-                    is EvaluationResult.Decision.Rule -> Metrics.Evaluation.DecisionKind.RULE
-                    is EvaluationResult.Decision.Default -> Metrics.Evaluation.DecisionKind.DEFAULT
+                    is EvaluationDiagnostics.Decision.RegistryDisabled -> Metrics.Evaluation.DecisionKind.REGISTRY_DISABLED
+                    is EvaluationDiagnostics.Decision.Inactive -> Metrics.Evaluation.DecisionKind.INACTIVE
+                    is EvaluationDiagnostics.Decision.Rule -> Metrics.Evaluation.DecisionKind.RULE
+                    is EvaluationDiagnostics.Decision.Default -> Metrics.Evaluation.DecisionKind.DEFAULT
                 },
             configVersion = result.configVersion,
             bucket =
                 when (result.decision) {
-                    is EvaluationResult.Decision.Rule -> {
+                    is EvaluationDiagnostics.Decision.Rule -> {
                         result.decision.matched.bucket.bucket
                     }
 
-                    is EvaluationResult.Decision.Default -> {
+                    is EvaluationDiagnostics.Decision.Default -> {
                         result.decision.skippedByRollout
                             ?.bucket
                             ?.bucket
@@ -236,7 +159,7 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
                         null
                     }
                 },
-            matchedRuleSpecificity = (result.decision as? EvaluationResult.Decision.Rule)?.matched?.rule?.totalSpecificity,
+            matchedRuleSpecificity = (result.decision as? EvaluationDiagnostics.Decision.Rule)?.matched?.rule?.totalSpecificity,
         ),
     )
 
@@ -246,23 +169,23 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
 /**
  * Internal evaluation entrypoint used by sibling modules (e.g. shadow evaluation).
  *
- * Prefer [evaluate] / [explain] for application usage.
+ * Prefer [evaluate] for application usage.
  */
 @KonditionalInternalApi
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInternalApi(
     context: C,
     registry: NamespaceRegistry,
     mode: Metrics.Evaluation.EvaluationMode,
-): EvaluationResult<T> = evaluateInternal(context, registry, mode)
+): EvaluationDiagnostics<T> = evaluateInternal(context, registry, mode)
 
 private fun <T : Any, C : Context> ConditionalValue<T, C>.toRuleMatch(
     bucket: Int?,
     featureKey: String,
     salt: String,
-): EvaluationResult.RuleMatch {
+): EvaluationDiagnostics.RuleMatch {
     requireNotNull(bucket) { "Bucket must be computed when a rule matches by criteria" }
     val explanation = rule.toExplanation()
-    return EvaluationResult.RuleMatch(
+    return EvaluationDiagnostics.RuleMatch(
         rule = explanation,
         bucket =
             BucketInfo(
@@ -279,7 +202,7 @@ private fun <T : Any, C : Context> ConditionalValue<T, C>.toRuleMatch(
     )
 }
 
-private fun <C : Context> Rule<C>.toExplanation(): EvaluationResult.RuleExplanation {
+private fun <C : Context> Rule<C>.toExplanation(): EvaluationDiagnostics.RuleExplanation {
     val base = targeting
     val extensionClassName =
         when (predicate) {
@@ -295,7 +218,7 @@ private fun <C : Context> Rule<C>.toExplanation(): EvaluationResult.RuleExplanat
 
     val extensionSpecificity = predicate.specificity()
 
-    return EvaluationResult.RuleExplanation(
+    return EvaluationDiagnostics.RuleExplanation(
         note = note,
         rollout = rampUp,
         locales = base.locales,

@@ -12,11 +12,13 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.disable
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.ParseError
-import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.core.result.parseErrorOrNull
 
 import io.amichne.konditional.fixtures.utilities.update
 import io.amichne.konditional.runtime.load
 import io.amichne.konditional.serialization.instance.Configuration
+import io.amichne.konditional.serialization.instance.MaterializedConfiguration
+import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 import io.amichne.konditional.values.FeatureId
@@ -44,9 +46,16 @@ class NamespaceConfigurationSnapshotCodecTest {
     @BeforeEach
     fun setup() {
         // Reset namespace registry state before each test
-        testNamespace.load(
-            Configuration(emptyMap()),
-        )
+        testNamespace.load(materialize(declaredDefaultConfiguration()))
+    }
+
+    private fun materialize(configuration: Configuration): MaterializedConfiguration =
+        MaterializedConfiguration.of(testNamespace.compiledSchema(), configuration)
+
+    private fun declaredDefaultConfiguration(): Configuration {
+        val schema = testNamespace.compiledSchema()
+        val flags = schema.entriesById.values.associate { entry -> entry.feature to entry.declaredDefinition }
+        return Configuration(flags)
     }
 
     private fun ctx(
@@ -59,9 +68,7 @@ class NamespaceConfigurationSnapshotCodecTest {
     @Test
     fun `Given namespace with no flags, When serialized, Then produces JSON with empty flags array`() {
         // Start with empty namespace
-        testNamespace.load(
-            Configuration(emptyMap()),
-        )
+        testNamespace.load(materialize(declaredDefaultConfiguration()))
 
         val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
 
@@ -106,9 +113,13 @@ class NamespaceConfigurationSnapshotCodecTest {
             }
             """.trimIndent()
 
-        val result = NamespaceSnapshotLoader(testNamespace).load(json)
+        val result =
+            NamespaceSnapshotLoader(testNamespace).load(
+                json,
+                options = SnapshotLoadOptions.fillMissingDeclaredFlags(),
+            )
 
-        assertIs<ParseResult.Success<Configuration>>(result)
+        assertTrue(result.isSuccess)
 
         // Verify the flag was loaded into the namespace
         val context = ctx("11111111111111111111111111111111")
@@ -122,9 +133,9 @@ class NamespaceConfigurationSnapshotCodecTest {
 
         val result = NamespaceSnapshotLoader(testNamespace).load(invalidJson)
 
-        assertIs<ParseResult.Failure>(result)
-        assertIs<ParseError.InvalidJson>(result.error)
-        assertTrue((result.error as ParseError.InvalidJson).message.contains(testNamespace.id))
+        assertTrue(result.isFailure)
+        val error = assertIs<ParseError.InvalidJson>(result.parseErrorOrNull())
+        assertTrue(error.message.contains(testNamespace.id))
     }
 
     @Test
@@ -147,10 +158,14 @@ class NamespaceConfigurationSnapshotCodecTest {
             }
             """.trimIndent()
 
-        val result = NamespaceSnapshotLoader(testNamespace).load(json)
+        val result =
+            NamespaceSnapshotLoader(testNamespace).load(
+                json,
+                options = SnapshotLoadOptions.fillMissingDeclaredFlags(),
+            )
 
-        assertIs<ParseResult.Failure>(result)
-        assertIs<ParseError.FeatureNotFound>(result.error)
+        assertTrue(result.isFailure)
+        assertIs<ParseError.FeatureNotFound>(result.parseErrorOrNull())
     }
 
     @Test
@@ -171,11 +186,9 @@ class NamespaceConfigurationSnapshotCodecTest {
         val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
 
         // Clear and deserialize
-        testNamespace.load(
-            Configuration(emptyMap()),
-        )
+        testNamespace.load(materialize(declaredDefaultConfiguration()))
         val result = NamespaceSnapshotLoader(testNamespace).load(json)
-        assertIs<ParseResult.Success<Configuration>>(result)
+        assertTrue(result.isSuccess)
 
         // Verify flags work correctly
         val iosContext = ctx("11111111111111111111111111111111", platform = Platform.IOS)
@@ -195,11 +208,11 @@ class NamespaceConfigurationSnapshotCodecTest {
         val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
 
         val loader = NamespaceSnapshotLoader.forNamespace(testNamespace)
-        val loaded = loader.load(json)
+        val loaded = loader.load(json, options = SnapshotLoadOptions.fillMissingDeclaredFlags())
 
         assertNotNull(json)
         assertTrue(json.contains(testNamespace.boolFlag.id.toString()))
-        assertIs<ParseResult.Success<Configuration>>(loaded)
+        assertTrue(loaded.isSuccess)
     }
 
     @Test
@@ -231,10 +244,14 @@ class NamespaceConfigurationSnapshotCodecTest {
         testNamespace.boolFlag.update(true) {}
         val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
 
-        testNamespace.load(Configuration(emptyMap()))
-        val result = NamespaceSnapshotLoader(testNamespace).load(json)
+        testNamespace.load(materialize(declaredDefaultConfiguration()))
+        val result =
+            NamespaceSnapshotLoader(testNamespace).load(
+                json,
+                options = SnapshotLoadOptions.fillMissingDeclaredFlags(),
+            )
 
-        assertIs<ParseResult.Success<Configuration>>(result)
+        assertTrue(result.isSuccess)
         assertEquals(true, testNamespace.boolFlag.evaluate(ctx("11111111111111111111111111111111")))
     }
 
@@ -248,7 +265,7 @@ class NamespaceConfigurationSnapshotCodecTest {
         val otherJson = ConfigurationSnapshotCodec.encode(otherNamespace.configuration)
         val result = NamespaceSnapshotLoader(testNamespace).load(otherJson)
 
-        assertIs<ParseResult.Failure>(result)
-        assertIs<ParseError.FeatureNotFound>(result.error)
+        assertTrue(result.isFailure)
+        assertIs<ParseError.FeatureNotFound>(result.parseErrorOrNull())
     }
 }

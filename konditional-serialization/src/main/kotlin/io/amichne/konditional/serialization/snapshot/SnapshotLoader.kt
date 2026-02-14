@@ -1,6 +1,5 @@
 package io.amichne.konditional.serialization.snapshot
 
-import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 
 /**
@@ -12,6 +11,5 @@ interface SnapshotLoader<T> {
     fun load(
         json: String,
         options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
-    ): ParseResult<T>
+    ): Result<T>
 }
-

@@ -1,22 +1,31 @@
 ---
-title: Feature Evaluation (Legacy)
-description: Legacy path for evaluation APIs.
-unlisted: true
+title: Feature Evaluation API
+description: Public feature evaluation surface.
 ---
 
-This page has moved.
+# Feature Evaluation API
 
-See [Namespace operations](/reference/api/namespace-operations/) and [Runtime operations](/runtime/operations/).
+Public evaluation entrypoint:
 
-## Explain
+```kotlin
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
+    context: C,
+    registry: NamespaceRegistry = namespace,
+): T
+```
 
-Use `explain(...)` from the runtime operations API to inspect evaluation decisions.
+Notes:
 
-## Non-Throwing Variants
+- `evaluate(...)` is the supported public API.
+- Legacy public APIs removed:
+  - `evaluateSafely(...)`
+  - `explainSafely(...)`
+  - `explain(...)`
+  - `evaluateWithReason(...)`
+  - public `EvaluationResult<T>`
+- Internal diagnostics remain available for sibling modules via internal API opt-in.
 
-Use `evaluateSafely(...)` / `explainSafely(...)` when you want typed absence handling instead of
-`IllegalStateException` for missing feature definitions.
+## Related
 
-Both APIs return `ParseResult`:
-- `ParseResult.Success(...)` for normal evaluations
-- `ParseResult.Failure(ParseError.FeatureNotFound(...))` when the feature is not present in the target registry
+- [Namespace Operations API](/reference/api/namespace-operations)
+- [Observability Reference](/observability/reference)

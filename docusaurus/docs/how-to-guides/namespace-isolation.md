@@ -81,12 +81,13 @@ class MultiNamespaceLoader {
   ) {
     try {
       val json = fetchConfig(configFile)
-      when (val result = NamespaceSnapshotLoader(namespace).load(json)) {
-        is ParseResult.Success -> {
+      val result = NamespaceSnapshotLoader(namespace).load(json)
+when {
+        result.isSuccess -> {
           logger.info("Loaded ${namespace.id} config")
         }
-        is ParseResult.Failure -> {
-          logger.error("Failed to load ${namespace.id}: ${result.error}")
+        result.isFailure -> {
+          logger.error("Failed to load ${namespace.id}: ${result.parseErrorOrNull()}")
           // Other namespaces unaffected
         }
       }
@@ -234,14 +235,15 @@ class TeamConfigLoader {
     val configUrl = "https://config.example.com/${namespace.team}/${namespace.id}.json"
     val json = httpClient.get(configUrl).body<String>()
 
-    when (val result = NamespaceSnapshotLoader(namespace).load(json)) {
-      is ParseResult.Success -> {
+    val result = NamespaceSnapshotLoader(namespace).load(json)
+when {
+      result.isSuccess -> {
         logger.info("${namespace.team} config loaded")
         notifyTeam(namespace.team, "Config loaded successfully")
       }
-      is ParseResult.Failure -> {
-        logger.error("${namespace.team} config failed: ${result.error}")
-        alertTeam(namespace.team, "Config load failed", result.error)
+      result.isFailure -> {
+        logger.error("${namespace.team} config failed: ${result.parseErrorOrNull()}")
+        alertTeam(namespace.team, "Config load failed", result.parseErrorOrNull())
       }
     }
   }
@@ -256,7 +258,7 @@ class TeamConfigLoader {
 // ✗ DON'T: Load recommendations config to search namespace
 val recommendationsJson = fetchConfig("recommendations-config.json")
 NamespaceSnapshotLoader(AppDomain.Search).load(recommendationsJson)
-// Result: ParseError.UnknownFeature (recommendations features don't exist in Search)
+// Result: ParseError.FeatureNotFound (recommendations features don't exist in Search)
 
 // ✓ DO: Load to correct namespace
 NamespaceSnapshotLoader(AppDomain.Recommendations).load(recommendationsJson)
@@ -317,12 +319,12 @@ fun `failed load in one namespace does not affect others`() {
   // Load valid config to Recommendations
   val validJson = """{ "collaborativeFiltering": { "rules": [{ "value": true }] } }"""
   val result1 = NamespaceSnapshotLoader(AppDomain.Recommendations).load(validJson)
-  require(result1 is ParseResult.Success)
+  require(result1.isSuccess)
 
   // Load invalid config to Search
   val invalidJson = """{ "invalidFeature": { "rules": [{ "value": true }] } }"""
   val result2 = NamespaceSnapshotLoader(AppDomain.Search).load(invalidJson)
-  require(result2 is ParseResult.Failure)
+  require(result2.isFailure)
 
   // Verify Recommendations still works
   val ctx = Context(stableId = StableId.of("user"))
@@ -366,19 +368,19 @@ class NamespaceHealthMonitor {
 
   fun recordLoad(
       namespace: Namespace,
-      result: ParseResult
+      result: Result
   ) {
-    when (result) {
-      is ParseResult.Success -> {
+    when {
+      result.isSuccess -> {
         lastSuccessfulLoad[namespace.id] = Instant.now()
         metrics.increment("namespace.load.success", tags = mapOf(
             "namespace" to namespace.id
         ))
       }
-      is ParseResult.Failure -> {
+      result.isFailure -> {
         metrics.increment("namespace.load.failure", tags = mapOf(
             "namespace" to namespace.id,
-            "error_type" to result.error::class.simpleName!!
+            "error_type" to.parseErrorOrNull()?.let { it::class.simpleName } ?: "unknown"
         ))
       }
     }
@@ -400,13 +402,13 @@ class NamespaceHealthMonitor {
 
 ```kotlin
 AppDomain.Recommendations.hooks.afterLoad.add { event ->
-  when (event.result) {
-    is ParseResult.Failure -> {
+  when {
+    event.result.isFailure -> {
       alertOps(
           severity = Severity.HIGH,
           message = "Recommendations config failed",
           namespace = "recommendations",
-          error = event.result.error
+          error = event.result.parseErrorOrNull()
       )
     }
   }

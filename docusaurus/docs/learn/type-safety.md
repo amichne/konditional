@@ -108,11 +108,12 @@ object AppFeatures : Namespace("app") {
 // Loaded from JSON
 val json = """{ "maxRetries": "five" }"""  // Wrong type!
 
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Success -> Unit // Valid JSON
-    is ParseResult.Failure -> {
+val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+when {
+    result.isSuccess -> Unit // Valid JSON
+    result.isFailure -> {
         // Invalid JSON rejected at boundary
-        logError("Parse failed: ${result.error}")
+        logError("Parse failed: ${result.parseErrorOrNull()}")
         // Last-known-good configuration remains active
     }
 }
@@ -120,7 +121,7 @@ when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
 
 **Key insight:** Konditional doesn't pretend JSON is type-safe. Instead, it:
 
-1. **Validates at the boundary** with explicit `ParseResult`
+1. **Validates at the boundary** with explicit `Result`
 2. **Rejects invalid JSON** before affecting production
 3. **Keeps last-known-good** when validation fails
 
@@ -162,8 +163,9 @@ val retries: Int = flagClient.getInt("max_retries", 3)
 
 ```kotlin
 val json = """{ "maxRetries": "five" }"""
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Failure -> // Invalid type caught, last-known-good remains
+val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+when {
+    result.isFailure -> // Invalid type caught, last-known-good remains
 }
 ```
 
@@ -198,18 +200,18 @@ val value: Double = timeout.evaluate(ctx)        // Never null
 1. **Use IDE autocomplete** to discover flags
 2. **Rely on the compiler** for refactoring
 3. **Don't cast or coerce types** — they flow automatically
-4. **Handle `ParseResult` explicitly** when loading JSON
+4. **Handle `Result` explicitly** when loading JSON
 
 ### For Code Reviews
 
 1. **Check that defaults make sense** (required, non-optional)
 2. **Verify rule types match** (compiler enforces this anyway)
-3. **Ensure `ParseResult` failures are handled** (log, alert, fallback)
+3. **Ensure `Result` failures are handled** (log, alert, fallback)
 
 ### For Testing
 
 1. **Test evaluation with typed contexts** — no mocks needed
-2. **Test `ParseResult.Failure` cases** for invalid JSON
+2. **Test `Result.failure` cases** for invalid JSON
 3. **Test that rules return correct types** (compiler helps, but test edge cases)
 
 ---
@@ -228,7 +230,7 @@ Konditional's type safety has two parts:
 
 2. **Runtime validation** for JSON configuration:
 
-- Explicit `ParseResult` boundary
+- Explicit `Result` boundary
 - Invalid JSON rejected before affecting production
 - Last-known-good configuration preserved
 
