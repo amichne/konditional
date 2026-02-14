@@ -35,21 +35,33 @@ object ConfigurationSnapshotCodec {
         json: String,
         options: SnapshotLoadOptions
     ): ParseResult<Configuration>
+    fun decode(
+        json: String,
+        featuresById: Map<FeatureId, Feature<*, *, *>>,
+        options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
+    ): ParseResult<Configuration>
 }
 ```
 
 ### Precondition
 
-Features must be registered before parsing. Ensure your `Namespace` objects are initialized before calling`decode(...)`.
+For snapshots containing flags, provide an explicit trusted feature scope via `featuresById`.
+Direct decode without `featuresById` fails fast for non-empty snapshots.
 
 ### Example
 
 ```kotlin
-when (val result = ConfigurationSnapshotCodec.decode(json)) {
+val featuresById = AppFeatures.allFeatures().associateBy { it.id }
+when (val result = ConfigurationSnapshotCodec.decode(json, featuresById = featuresById)) {
     is ParseResult.Success -> AppFeatures.load(result.value)
     is ParseResult.Failure -> logger.error { "Parse failed: ${result.error.message}" }
 }
 ```
+
+### Trusted Type Resolution
+
+Enum and data-class decoding use trusted feature metadata from `featuresById`.
+Class-name hints embedded in payload values are treated as opaque metadata and are not used for reflective class loading.
 
 ---
 
