@@ -1,0 +1,16 @@
+services:
+  konditional-http-server:
+    build:
+      context: .
+      dockerfile: docker/http-server/Dockerfile
+    image: konditional-http-server:local
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: "8080"
+      STORAGE_PATH: /data/snapshots.json
+    volumes:
+      - konditional-http-storage:/data
+
+volumes:
+  konditional-http-storage:
