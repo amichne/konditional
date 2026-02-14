@@ -3,12 +3,15 @@
 package io.amichne.konditional.api
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.evaluation.Bucketing.isInRampUp
 import io.amichne.konditional.core.evaluation.Bucketing.rampUpThresholdBasisPoints
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.core.registry.NamespaceRegistry
+import io.amichne.konditional.core.result.ParseError
+import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.Rule
 import kotlin.system.measureNanoTime
@@ -33,6 +36,29 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
     context: C,
     registry: NamespaceRegistry = namespace,
 ): T = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.NORMAL).value
+
+/**
+ * Evaluates this feature without throwing when the feature definition is absent.
+ *
+ * This API is useful at dynamic integration boundaries where callers prefer a typed failure
+ * (`ParseError.FeatureNotFound`) over exception handling.
+ *
+ * @return [ParseResult.Success] with the evaluated value, or [ParseResult.Failure] when the feature is missing.
+ */
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateSafely(
+    context: C,
+    registry: NamespaceRegistry = namespace,
+): ParseResult<T> =
+    registry.findFlag(this)?.let { definition ->
+        ParseResult.success(
+            evaluateInternal(
+                context = context,
+                registry = registry,
+                mode = Metrics.Evaluation.EvaluationMode.NORMAL,
+                definition = definition,
+            ).value,
+        )
+    } ?: ParseResult.failure(ParseError.featureNotFound(id))
 
 /**
  * Explains how this feature was evaluated for the given context.
@@ -62,6 +88,24 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.explain(
     registry: NamespaceRegistry = namespace,
 ): EvaluationResult<T> = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.EXPLAIN)
 
+/**
+ * Explain variant that returns a typed failure when the feature definition is missing.
+ */
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.explainSafely(
+    context: C,
+    registry: NamespaceRegistry = namespace,
+): ParseResult<EvaluationResult<T>> =
+    registry.findFlag(this)?.let { definition ->
+        ParseResult.success(
+            evaluateInternal(
+                context = context,
+                registry = registry,
+                mode = Metrics.Evaluation.EvaluationMode.EXPLAIN,
+                definition = definition,
+            ),
+        )
+    } ?: ParseResult.failure(ParseError.featureNotFound(id))
+
 @Deprecated(
     message = "Use explain() instead for clearer intent",
     replaceWith = ReplaceWith("explain(context, registry)"),
@@ -77,8 +121,20 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
     context: C,
     registry: NamespaceRegistry,
     mode: Metrics.Evaluation.EvaluationMode,
+): EvaluationResult<T> = evaluateInternal(
+    context = context,
+    registry = registry,
+    mode = mode,
+    definition = registry.flag(this),
+)
+
+@PublishedApi
+internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInternal(
+    context: C,
+    registry: NamespaceRegistry,
+    mode: Metrics.Evaluation.EvaluationMode,
+    definition: FlagDefinition<T, C, M>,
 ): EvaluationResult<T> {
-    val definition = registry.flag(this)
     lateinit var result: EvaluationResult<T>
 
     val nanos =

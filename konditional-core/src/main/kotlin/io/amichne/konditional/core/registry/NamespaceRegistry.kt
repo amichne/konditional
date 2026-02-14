@@ -48,6 +48,15 @@ interface NamespaceRegistry {
     ): FlagDefinition<T, C, M> =
         configuration.flags[key] as FlagDefinition<T, C, M>
 
+    /**
+     * Safe lookup variant for callers that prefer typed absence handling over exceptions.
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun <T : Any, C : Context, M : Namespace> findFlag(
+        key: Feature<T, C, M>,
+    ): FlagDefinition<T, C, M>? =
+        configuration.flags[key] as? FlagDefinition<T, C, M>
+
     fun allFlags(): Map<Feature<*, *, *>, FlagDefinition<*, *, *>> =
         configuration.flags
 }

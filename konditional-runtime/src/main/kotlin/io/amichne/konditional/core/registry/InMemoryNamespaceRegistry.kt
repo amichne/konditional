@@ -111,8 +111,13 @@ class InMemoryNamespaceRegistry(
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : Any, C : Context, M : Namespace> flag(key: Feature<T, C, M>): FlagDefinition<T, C, M> {
-        val override = overrides.getOverride(key)
+        return findFlag(key)
+            ?: throw IllegalStateException("Flag not found in configuration: ${key.key}")
+    }
 
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : Any, C : Context, M : Namespace> findFlag(key: Feature<T, C, M>): FlagDefinition<T, C, M>? {
+        val override = overrides.getOverride(key)
         return if (override != null) {
             flagDefinitionFromSerialized(
                 feature = key,
@@ -122,7 +127,6 @@ class InMemoryNamespaceRegistry(
             )
         } else {
             configuration.flags[key] as? FlagDefinition<T, C, M>
-                ?: throw IllegalStateException("Flag not found in configuration: ${key.key}")
         }
     }
 
