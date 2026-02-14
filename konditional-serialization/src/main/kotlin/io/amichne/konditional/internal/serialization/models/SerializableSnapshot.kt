@@ -29,66 +29,89 @@ data class SerializableSnapshot(
     fun toConfiguration(
         schema: CompiledNamespaceSchema,
         options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
-    ): Result<MaterializedConfiguration> {
-        val resolvedFlags = linkedMapOf<Feature<*, *, *>, FlagDefinition<*, *, *>>()
+    ): Result<MaterializedConfiguration> =
+        materializedFlags(schema, options)
+            .map { resolvedFlags ->
+                MaterializedConfiguration.of(
+                    schema = schema,
+                    configuration = Configuration(
+                        flags = resolvedFlags.toMap(),
+                        metadata = meta?.toConfigurationMetadata() ?: ConfigurationMetadata(),
+                    ),
+                )
+            }
 
-        flags.forEach { serializableFlag ->
+    private fun materializedFlags(
+        schema: CompiledNamespaceSchema,
+        options: SnapshotLoadOptions,
+    ): Result<LinkedHashMap<Feature<*, *, *>, FlagDefinition<*, *, *>>> =
+        resolveSerializableFlags(schema, options)
+            .fold(
+                onSuccess = { resolvedFlags ->
+                    mergeMissingDeclaredFlags(
+                        resolvedFlags = resolvedFlags,
+                        schema = schema,
+                        options = options,
+                    )
+                },
+                onFailure = { error -> Result.failure(error) },
+            )
+
+    private fun resolveSerializableFlags(
+        schema: CompiledNamespaceSchema,
+        options: SnapshotLoadOptions,
+    ): Result<LinkedHashMap<Feature<*, *, *>, FlagDefinition<*, *, *>>> {
+        val resolvedFlags = linkedMapOf<Feature<*, *, *>, FlagDefinition<*, *, *>>()
+        for (serializableFlag in flags) {
             val pairResult = serializableFlag.toFlagPair(schema)
             if (pairResult.isSuccess) {
-                val pair = pairResult.getOrThrow()
-                resolvedFlags[pair.first] = pair.second
-                return@forEach
+                val (feature, definition) = pairResult.getOrThrow()
+                resolvedFlags[feature] = definition
+            } else {
+                val error = pairResult.parseErrorOrNull()
+                val featureNotFound = error as? ParseError.FeatureNotFound
+                if (featureNotFound != null && options.unknownFeatureKeyStrategy is UnknownFeatureKeyStrategy.Skip) {
+                    options.onWarning(SnapshotWarning.unknownFeatureKey(featureNotFound.key))
+                } else {
+                    return parseFailure(
+                        error
+                            ?: ParseError.InvalidSnapshot(
+                                pairResult.exceptionOrNull()?.message ?: "Unknown materialization failure",
+                            ),
+                    )
+                }
             }
-
-            val error = pairResult.parseErrorOrNull()
-            val featureNotFound = error as? ParseError.FeatureNotFound
-            if (featureNotFound != null && options.unknownFeatureKeyStrategy is UnknownFeatureKeyStrategy.Skip) {
-                options.onWarning(SnapshotWarning.unknownFeatureKey(featureNotFound.key))
-                return@forEach
-            }
-
-            return parseFailure(
-                error
-                    ?: ParseError.InvalidSnapshot(
-                        pairResult.exceptionOrNull()?.message ?: "Unknown materialization failure",
-                    ),
-            )
         }
+        return Result.success(resolvedFlags)
+    }
 
+    private fun mergeMissingDeclaredFlags(
+        resolvedFlags: LinkedHashMap<Feature<*, *, *>, FlagDefinition<*, *, *>>,
+        schema: CompiledNamespaceSchema,
+        options: SnapshotLoadOptions,
+    ): Result<LinkedHashMap<Feature<*, *, *>, FlagDefinition<*, *, *>>> {
         val missingDeclared = schema.entriesInDeterministicOrder.filter { entry ->
             resolvedFlags[entry.feature] == null
         }
 
-        when {
-            missingDeclared.isEmpty() -> {
-                // no-op
-            }
-
+        return when {
+            missingDeclared.isEmpty() -> Result.success(resolvedFlags)
             options.missingDeclaredFlagStrategy is MissingDeclaredFlagStrategy.FillFromDeclaredDefaults -> {
                 missingDeclared.forEach { entry ->
                     resolvedFlags[entry.feature] = entry.declaredDefinition
                 }
+                Result.success(resolvedFlags)
             }
 
             else -> {
                 val missingIds = missingDeclared.joinToString(", ") { entry -> entry.featureId.toString() }
-                return parseFailure(
+                parseFailure(
                     ParseError.invalidSnapshot(
                         "Missing declared flags for namespace '${schema.namespaceId}': $missingIds",
                     ),
                 )
             }
         }
-
-        return Result.success(
-            MaterializedConfiguration.of(
-                schema = schema,
-                configuration = Configuration(
-                    flags = resolvedFlags.toMap(),
-                    metadata = meta?.toConfigurationMetadata() ?: ConfigurationMetadata(),
-                ),
-            ),
-        )
     }
 
     companion object {

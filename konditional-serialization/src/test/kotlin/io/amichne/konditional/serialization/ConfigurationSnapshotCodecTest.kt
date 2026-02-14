@@ -172,7 +172,7 @@ class ConfigurationSnapshotCodecTest {
     }
 
     @Test
-    fun `Given snapshot with flags, When decoded without feature scope and skipUnknownKeys option, Then returns typed failure`() {
+    fun `Given snapshot without scope and skipUnknownKeys, Then returns typed failure`() {
         TestFeatures.boolFlag.update(true) {}
         val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
 

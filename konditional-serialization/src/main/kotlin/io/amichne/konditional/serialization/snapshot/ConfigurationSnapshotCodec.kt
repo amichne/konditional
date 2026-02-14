@@ -106,30 +106,34 @@ object ConfigurationSnapshotCodec : FeatureAwareSnapshotCodec<MaterializedConfig
         schema: CompiledNamespaceSchema,
         patchJson: String,
         options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
-    ): Result<MaterializedConfiguration> {
-        val patch =
-            runCatching { patchAdapter.fromJson(patchJson) }
-                .getOrElse { error ->
-                    return parseFailure(
+    ): Result<MaterializedConfiguration> =
+        runCatching { patchAdapter.fromJson(patchJson) }
+            .fold(
+                onSuccess = { parsedPatch ->
+                    parsedPatch
+                        ?.let { patch ->
+                            val currentSerializable = SerializableSnapshot.from(currentConfiguration.toConcrete())
+                            val flagMap = currentSerializable.flags.associateBy { it.key }.toMutableMap()
+
+                            patch.removeKeys.forEach(flagMap::remove)
+                            patch.flags.forEach { patchFlag -> flagMap[patchFlag.key] = patchFlag }
+
+                            SerializableSnapshot(
+                                meta = patch.meta ?: currentSerializable.meta,
+                                flags = flagMap.values.toList(),
+                            ).toConfiguration(
+                                schema = schema,
+                                options = options,
+                            )
+                        }
+                        ?: parseFailure(ParseError.invalidJson("Failed to parse patch JSON: null result"))
+                },
+                onFailure = { error ->
+                    parseFailure(
                         ParseError.invalidJson(error.message ?: "Unknown patch JSON parsing error"),
                     )
-                }
-                ?: return parseFailure(ParseError.invalidJson("Failed to parse patch JSON: null result"))
-
-        val currentSerializable = SerializableSnapshot.from(currentConfiguration.toConcrete())
-        val flagMap = currentSerializable.flags.associateBy { it.key }.toMutableMap()
-
-        patch.removeKeys.forEach(flagMap::remove)
-        patch.flags.forEach { patchFlag -> flagMap[patchFlag.key] = patchFlag }
-
-        return SerializableSnapshot(
-            meta = patch.meta ?: currentSerializable.meta,
-            flags = flagMap.values.toList(),
-        ).toConfiguration(
-            schema = schema,
-            options = options,
-        )
-    }
+                },
+            )
 
     /**
      * Creates the default Moshi instance with all necessary adapters.

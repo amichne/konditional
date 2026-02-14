@@ -77,72 +77,32 @@ object SchemaValueCodec {
     /**
      * Decodes JsonObject to an instance using schema and reflection.
      */
-    fun <T : Any> decode(kClass: KClass<T>, json: JsonObject, schema: ObjectSchema): Result<T> {
-        val constructor =
-            kClass.primaryConstructor
-                ?: return parseFailure(
-                    ParseError.InvalidSnapshot(
-                        "${kClass.qualifiedName} must have a primary constructor for deserialization",
-                    ),
-                )
-
-        val parameterMap = mutableMapOf<KParameter, Any?>()
-
-        for (param in constructor.parameters) {
-            val fieldName =
-                param.name
-                    ?: return parseFailure(
-                        ParseError.InvalidSnapshot("Constructor parameter missing name in ${kClass.qualifiedName}"),
+    fun <T : Any> decode(kClass: KClass<T>, json: JsonObject, schema: ObjectSchema): Result<T> =
+        kClass.primaryConstructor
+            ?.let { constructor ->
+                buildSchemaParameterMap(constructor, json, schema, kClass, ::decodeValue)
+                    .fold(
+                        onSuccess = { parameters ->
+                            runCatching { constructor.callBy(parameters) }
+                                .fold(
+                                    onSuccess = { Result.success(it) },
+                                    onFailure = { error ->
+                                        parseFailure(
+                                            ParseError.InvalidSnapshot(
+                                                "Failed to instantiate ${kClass.qualifiedName}: ${error.message}",
+                                            ),
+                                        )
+                                    },
+                                )
+                        },
+                        onFailure = { error -> Result.failure(error) },
                     )
-
-            val fieldSchema = schema.fields[fieldName]
-            val jsonValue = json.fields[fieldName]
-
-            val value =
-                when {
-                    jsonValue != null && jsonValue !is JsonNull -> {
-                        val decoded = decodeValue(param.type.classifier as? KClass<*>, jsonValue)
-                        if (decoded.isFailure) {
-                            return Result.failure(
-                                decoded.exceptionOrNull()
-                                    ?: IllegalStateException("Unknown decode failure for field '$fieldName'"),
-                            )
-                        }
-                        decoded.getOrThrow()
-                    }
-
-                    fieldSchema?.defaultValue != null -> fieldSchema.defaultValue
-                    param.isOptional -> continue
-                    fieldSchema?.required == true ->
-                        return parseFailure(
-                            ParseError.InvalidSnapshot(
-                                "Required field '$fieldName' missing in JSON for ${kClass.qualifiedName}",
-                            ),
-                        )
-
-                    else ->
-                        return parseFailure(
-                            ParseError.InvalidSnapshot(
-                                "Field '$fieldName' missing in JSON and has no default in schema",
-                            ),
-                        )
-                }
-
-            parameterMap[param] = value
-        }
-
-        return runCatching { constructor.callBy(parameterMap) }
-            .fold(
-                onSuccess = { Result.success(it) },
-                onFailure = { error ->
-                    parseFailure(
-                        ParseError.InvalidSnapshot(
-                            "Failed to instantiate ${kClass.qualifiedName}: ${error.message}",
-                        ),
-                    )
-                },
+            }
+            ?: parseFailure(
+                ParseError.InvalidSnapshot(
+                    "${kClass.qualifiedName} must have a primary constructor for deserialization",
+                ),
             )
-    }
 
     /**
      * Decodes JsonObject to an instance using an extractable schema if present.
@@ -334,5 +294,70 @@ private fun resolveParameter(
         else ->
             decodeValue(param.type.classifier as? KClass<*>, jsonValue)
                 .map { decoded -> ParameterResolution.Value(decoded) }
+    }
+}
+
+private fun <T : Any> buildSchemaParameterMap(
+    constructor: kotlin.reflect.KFunction<T>,
+    json: JsonObject,
+    schema: ObjectSchema,
+    owner: KClass<*>,
+    decodeValue: (KClass<*>?, JsonValue) -> Result<Any>,
+): Result<Map<KParameter, Any?>> {
+    val result = mutableMapOf<KParameter, Any?>()
+    for (param in constructor.parameters) {
+        val resolved = resolveSchemaParameter(param, json, schema, owner, decodeValue)
+        if (resolved.isFailure) {
+            return Result.failure(
+                resolved.exceptionOrNull()
+                    ?: IllegalStateException("Unknown schema parameter resolution failure"),
+            )
+        }
+        when (val resolution = resolved.getOrThrow()) {
+            is ParameterResolution.Value -> result[param] = resolution.value
+            ParameterResolution.Skip -> Unit
+        }
+    }
+    return Result.success(result)
+}
+
+private fun resolveSchemaParameter(
+    param: KParameter,
+    json: JsonObject,
+    schema: ObjectSchema,
+    owner: KClass<*>,
+    decodeValue: (KClass<*>?, JsonValue) -> Result<Any>,
+): Result<ParameterResolution> {
+    val fieldName = param.name
+    val jsonValue = fieldName?.let { json.fields[it] }
+    val fieldSchema = fieldName?.let { schema.fields[it] }
+
+    return when {
+        fieldName == null ->
+            parseFailure(
+                ParseError.InvalidSnapshot(
+                    "Constructor parameter missing name in ${owner.qualifiedName}",
+                ),
+            )
+
+        jsonValue != null && jsonValue !is JsonNull ->
+            decodeValue(param.type.classifier as? KClass<*>, jsonValue)
+                .map { decoded -> ParameterResolution.Value(decoded) }
+
+        fieldSchema?.defaultValue != null -> Result.success(ParameterResolution.Value(fieldSchema.defaultValue))
+        param.isOptional -> Result.success(ParameterResolution.Skip)
+        fieldSchema?.required == true ->
+            parseFailure(
+                ParseError.InvalidSnapshot(
+                    "Required field '$fieldName' missing in JSON for ${owner.qualifiedName}",
+                ),
+            )
+
+        else ->
+            parseFailure(
+                ParseError.InvalidSnapshot(
+                    "Field '$fieldName' missing in JSON and has no default in schema",
+                ),
+            )
     }
 }
