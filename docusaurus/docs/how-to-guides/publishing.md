@@ -141,6 +141,20 @@ Test publishing to local Maven repository:
 # Use in other projects with: mavenLocal()
 ```
 
+### Signature Artifact Drift Gate
+
+Konditional tracks generated signature artifacts in `.signatures/` and enforces drift checks in CI.
+
+```bash
+# Regenerate signatures after Kotlin/API changes
+./scripts/generate-signatures.sh
+
+# Verify no drift before pushing
+./scripts/check-signatures-drift.sh
+```
+
+If drift exists, regenerate and commit `.signatures/` updates in the same change as the source edits.
+
 ## Gradle Tasks
 
 The publishing setup provides these Gradle tasks:

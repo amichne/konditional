@@ -32,6 +32,9 @@ jobs:
       - name: Check docs API conformance
         run: ./scripts/check-docs-api-conformance.sh
 
+      - name: Check signature drift
+        run: ./scripts/check-signatures-drift.sh
+
       - name: Run tests
         run: ./gradlew test --no-daemon --stacktrace
 
