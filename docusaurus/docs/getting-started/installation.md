@@ -1,6 +1,8 @@
 # Installation
 
-Konditional Core is a single dependency.
+For the default Konditional experience (define namespaces and evaluate features), install:
+- `konditional-core`
+- `konditional-runtime`
 
 Replace `VERSION` with the latest published version.
 
@@ -12,8 +14,14 @@ Replace `VERSION` with the latest published version.
 // build.gradle.kts
 dependencies {
   implementation("io.amichne:konditional-core:VERSION")
+  implementation("io.amichne:konditional-runtime:VERSION")
 }
 ```
+
+`konditional-runtime` provides the default `NamespaceRegistryFactory` implementation used by `Namespace(...)`.
+
+If you intentionally run without `konditional-runtime`, you must provide your own `NamespaceRegistry` implementation
+when constructing a namespace.
 
 ## Test Fixtures (Optional)
 
@@ -56,8 +64,8 @@ If your build succeeds, installation is complete.
 - Build one typed feature: [Your First Feature](/getting-started/your-first-flag)
 - Learn why typing matters at boundaries: [Type-Safety Boundaries](/theory/type-safety-boundaries)
 
-That is enough to define features and evaluate them in code. If you need remote configuration, JSON serialization, or
-observability utilities, see the module docs:
+That is enough to define and evaluate typed features in code. If you need remote configuration, JSON serialization, or
+observability utilities, see:
 
 - [Runtime](/runtime/)
 - [Serialization](/serialization/)

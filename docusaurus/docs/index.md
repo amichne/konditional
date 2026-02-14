@@ -20,7 +20,7 @@ In this section you will find:
 
 For most Kotlin backend teams, the first win is simple: gate a new behavior with a typed flag and verify it deterministically.
 
-1. Install Konditional Core: [Installation](/getting-started/installation)
+1. Install Konditional Core + Runtime: [Installation](/getting-started/installation)
 2. Define and evaluate one feature: [Your First Feature](/getting-started/your-first-flag)
 3. Add gradual rollout: [Roll Out Gradually](/how-to-guides/rolling-out-gradually)
 

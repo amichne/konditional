@@ -429,7 +429,8 @@ open class Namespace(
         registry as? NamespaceRegistryRuntime
             ?: error(
                 "NamespaceRegistryRuntime is required. " +
-                    "Add :konditional-runtime to your dependencies to enable runtime operations.",
+                    "Add :konditional-runtime to your dependencies to enable runtime operations " +
+                    "(Gradle: implementation(\"io.amichne:konditional-runtime:<version>\")).",
             )
 
     override fun equals(other: Any?): Boolean {
