@@ -42,7 +42,6 @@ data class SerializableSnapshot(
                                 val pairResult =
                                     serializableFlag.toFlagPair(
                                         featuresById = featuresById,
-                                        featureResolutionMode = options.featureResolutionMode,
                                     )
                             ) {
                                 is ParseResult.Success -> {

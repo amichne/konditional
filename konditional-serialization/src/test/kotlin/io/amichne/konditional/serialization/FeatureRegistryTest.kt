@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package io.amichne.konditional.serialization
 
 import io.amichne.konditional.context.Context

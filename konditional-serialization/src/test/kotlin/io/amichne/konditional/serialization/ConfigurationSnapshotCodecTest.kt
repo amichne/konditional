@@ -58,17 +58,8 @@ class ConfigurationSnapshotCodecTest {
         @Suppress("UnusedExpression")
         Axes.TenantAxis
 
-        // Clear both FeatureRegistry and the namespace registry before each test
-        FeatureRegistry.clear()
+        // Reset the namespace registry before each test.
         TestFeatures.load(Configuration(emptyMap()))
-
-        // Register test features
-        FeatureRegistry.register(TestFeatures.boolFlag)
-        FeatureRegistry.register(TestFeatures.stringFlag)
-        FeatureRegistry.register(TestFeatures.intFlag)
-        FeatureRegistry.register(TestFeatures.doubleFlag)
-        FeatureRegistry.register(TestFeatures.themeFlag)
-        FeatureRegistry.register(TestFeatures.retryPolicyFlag)
     }
 
     private fun featureIndexById() = TestFeatures.allFeatures().associateBy { feature -> feature.id }
@@ -105,12 +96,9 @@ class ConfigurationSnapshotCodecTest {
     }
 
     @Test
-    fun `Given feature-aware decode context, When global registry is empty, Then decode succeeds`() {
+    fun `Given feature-aware decode context, When decoded, Then decode succeeds`() {
         TestFeatures.boolFlag.update(true) {}
         val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
-
-        @Suppress("DEPRECATION")
-        FeatureRegistry.clear()
 
         val result = decodeFeatureAware(json = json)
 
@@ -131,17 +119,18 @@ class ConfigurationSnapshotCodecTest {
     }
 
     @Test
-    fun `Given explicit legacy mode, When decoded without feature scope, Then global fallback is used`() {
+    fun `Given snapshot with flags, When decoded without feature scope and skipUnknownKeys option, Then returns typed failure`() {
         TestFeatures.boolFlag.update(true) {}
         val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
 
         val result = ConfigurationSnapshotCodec.decode(
             json = json,
-            options = SnapshotLoadOptions.legacyGlobalRegistryFallback(),
+            options = SnapshotLoadOptions.skipUnknownKeys(),
         )
 
-        assertIs<ParseResult.Success<Configuration>>(result)
-        assertTrue(result.value.flags.containsKey(TestFeatures.boolFlag))
+        assertIs<ParseResult.Failure>(result)
+        assertIs<ParseError.InvalidSnapshot>(result.error)
+        assertTrue((result.error as ParseError.InvalidSnapshot).reason.contains("explicit feature scope"))
     }
 
     @Test

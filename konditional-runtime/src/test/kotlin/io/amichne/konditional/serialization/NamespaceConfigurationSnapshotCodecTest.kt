@@ -227,10 +227,7 @@ class NamespaceConfigurationSnapshotCodecTest {
     }
 
     @Test
-    fun `namespace loader deserializes with empty global feature registry`() {
-        @Suppress("DEPRECATION")
-        FeatureRegistry.clear()
-
+    fun `namespace loader deserializes without relying on global feature registry`() {
         testNamespace.boolFlag.update(true) {}
         val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
 

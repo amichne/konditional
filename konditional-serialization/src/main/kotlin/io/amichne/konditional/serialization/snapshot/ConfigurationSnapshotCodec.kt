@@ -84,7 +84,6 @@ object ConfigurationSnapshotCodec : FeatureAwareSnapshotCodec<Configuration> {
      * ```
      *
      * Default [SnapshotLoadOptions.strict] behavior requires explicit feature scope for snapshots with flags.
-     * To use legacy global registry fallback, opt in via [SnapshotLoadOptions.legacyGlobalRegistryFallback].
      *
      * @param json The JSON string to deserialize
      * @return ParseResult containing either the deserialized Configuration or a structured error

@@ -15,7 +15,7 @@ Scope used for verification:
 ## [Page 1]: Parse Boundary (`parse-dont-validate`)
 
 1. **Novel Mechanism**: `NamespaceSnapshotLoader` decodes and loads in one typed operation (`ParseResult<Configuration>`), and uses namespace-scoped feature indexing when available.
-2. **Constraint/Gotcha**: direct decode with an empty feature index can fall back to deprecated global `FeatureRegistry` lookup semantics.
+2. **Constraint/Gotcha**: direct decode with an empty feature index fails fast; explicit feature scope is required.
 3. **Composition Point**: `ConfigurationSnapshotCodec` provides pure decode; runtime mutation is applied separately through `Namespace.load(...)`.
 4. **Performance Implication**: strict unknown-key handling fails fast by default; skip mode avoids hard-fail at the cost of warning-path handling.
 5. **Misuse Prevention**: parse APIs force success/failure branching through a sealed result (`ParseResult` + `ParseError`).
@@ -70,7 +70,7 @@ Evaluation determinism depends on stable bucketing and fixed rule precedence, wh
 
 ### 3. Production Readiness Gap: Boundary and Hook Cost Discipline
 
-Docs emphasize correctness guarantees but under-specify operational costs of callback/hook behavior on hot paths and fallback registry behavior during decode. `onMismatch`, logging hooks, and warning hooks execute inline; heavy implementations directly increase latency. The safe posture is lightweight hooks plus explicit sampling/control policies at call sites.
+Docs emphasize correctness guarantees but under-specify operational costs of callback/hook behavior on hot paths. `onMismatch`, logging hooks, and warning hooks execute inline; heavy implementations directly increase latency. The safe posture is lightweight hooks plus explicit sampling/control policies at call sites.
 
 **Advocate**: Treating hook cost and decode mode as first-class operational policy is non-negotiable at scale.
 **Oppose**: For internal tooling with low QPS, aggressive optimization and strict policy controls may be unnecessary overhead.
