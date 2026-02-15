@@ -20,7 +20,7 @@ In this section you will find:
 
 For most Kotlin backend teams, the first win is simple: gate a new behavior with a typed flag and verify it deterministically.
 
-1. Install Konditional Core: [Installation](/getting-started/installation)
+1. Install Konditional Core + Runtime: [Installation](/getting-started/installation)
 2. Define and evaluate one feature: [Your First Feature](/getting-started/your-first-flag)
 3. Add gradual rollout: [Roll Out Gradually](/how-to-guides/rolling-out-gradually)
 
@@ -168,11 +168,12 @@ when (AppFlags.checkoutVariant.evaluate(ctx)) {
 **Configuration boundaries are explicit:**
 
 ```kotlin
-when (val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)) {
-  is ParseResult.Success -> Unit // loaded into AppFlags
-  is ParseResult.Failure -> {
+val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)
+when {
+  result.isSuccess -> Unit // loaded into AppFlags
+  result.isFailure -> {
     // Invalid JSON rejected, last-known-good remains active
-    logError("Config parse failed: ${result.error}")
+    logError("Config parse failed: ${result.parseErrorOrNull()}")
   }
 }
 ```
@@ -188,7 +189,7 @@ when (val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)) {
 | **Variants**       | Runtime-typed                     | Multiple booleans + control flow | First-class typed values        |
 | **Ramp-up logic**  | SDK-dependent                     | Per-team reimplementation        | Centralized, deterministic      |
 | **Evaluation**     | SDK-defined, opaque               | Ad-hoc per evaluator             | Single DSL with specificity     |
-| **Invalid config** | Fails silently or crashes         | Depends on implementation        | Explicit `ParseResult` boundary |
+| **Invalid config** | Fails silently or crashes         | Depends on implementation        | Explicit `Result` boundary |
 | **Testing**        | Mock SDK or replay snapshots      | Mock evaluators                  | Evaluate against typed contexts |
 
 ---
@@ -218,7 +219,7 @@ when (val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)) {
 A string-keyed SDK returns `0` when parsing `"max_retries": "disabled"`. Service retries 0 times. All requests fail
 immediately.
 
-**With Konditional:** Parse fails at boundary. `ParseResult.Failure` logged. Last-known-good remains active. No
+**With Konditional:** Parse fails at boundary. `Result.failure` logged. Last-known-good remains active. No
 incident.
 
 ### Experiment contamination: Inconsistent bucketing
@@ -266,9 +267,10 @@ Coming from a boolean capability system:
 
 4. **Add remote config** with explicit boundaries:
    ```kotlin
-   when (val result = NamespaceSnapshotLoader(Features).load(json)) {
-       is ParseResult.Success -> Unit
-       is ParseResult.Failure -> keepLastKnownGood()
+   val result = NamespaceSnapshotLoader(Features).load(json)
+when {
+       result.isSuccess -> Unit
+       result.isFailure -> keepLastKnownGood()
    }
    ```
 

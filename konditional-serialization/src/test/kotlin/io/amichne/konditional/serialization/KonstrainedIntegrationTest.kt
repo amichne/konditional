@@ -10,8 +10,6 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.core.result.utils.onSuccess
 import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.fixtures.core.withOverride
 import io.amichne.konditional.fixtures.serializers.UserSettings
@@ -58,8 +56,8 @@ class KonstrainedIntegrationTest {
             field("timeout") { number(120.0) }
         }
         val result = SchemaValueCodec.decode(UserSettings::class, json, UserSettings().schema)
-        assertTrue(result is ParseResult.Success)
-        val settings = (result as ParseResult.Success).value
+        assertTrue(result.isSuccess)
+        val settings = result.getOrThrow()
         assertEquals("dark", settings.theme)
         assertEquals(false, settings.notificationsEnabled)
         assertEquals(7, settings.maxRetries)
@@ -118,9 +116,9 @@ class KonstrainedIntegrationTest {
             // Verify round-trip serialization works
             ConfigurationSnapshotCodec.decode(
                 json = json,
-                featuresById = mapOf(features.userSettings.id to features.userSettings),
+                schema = features.compiledSchema(),
             ).onSuccess { config ->
-                println("Successfully deserialized ${config.flags.size} flags")
+                println("Successfully deserialized ${config.configuration.flags.size} flags")
             }
         }
     }

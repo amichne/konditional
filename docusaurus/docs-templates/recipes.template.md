@@ -91,7 +91,7 @@ Use `custom<T>` for structured configuration that must be validated at the JSON 
 
 ## Safe Remote Config Loading + Rollback {#recipe-6-safe-remote-config-loading-rollback}
 
-Use `ParseResult` to enforce a hard boundary at the JSON parse step, and roll back on bad updates.
+Use `Result` to enforce a hard boundary at the JSON parse step, and roll back on bad updates.
 
 {{recipe-6-load}}
 
@@ -100,7 +100,7 @@ If a later update causes issues:
 {{recipe-6-rollback}}
 
 - **Guarantee**: Invalid config never becomes active; swaps are atomic.
-- **Mechanism**: `ParseResult` boundary + `Namespace.load(...)` atomic swap.
+- **Mechanism**: `Result` boundary + `Namespace.load(...)` atomic swap.
 - **Boundary**: A valid config can still be logically wrong; rollback is the safe escape hatch.
 
 ---

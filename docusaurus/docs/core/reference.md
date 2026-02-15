@@ -1,6 +1,6 @@
 # Core API Reference
 
-Reference for evaluating features and retrieving explainable decisions.
+Reference for evaluating features in a total, deterministic runtime path.
 
 ## `Feature.evaluate(context, registry): T`
 
@@ -13,7 +13,7 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
 ): T
 ```
 
-- **Guarantee**: Returns a value of type `T` and never returns `null`.
+- **Guarantee**: Returns a value of type `T` and never returns `null` for supported runtime usage.
 
 - **Mechanism**: Evaluation returns the first matching rule value or the declared default.
 
@@ -34,50 +34,11 @@ val enabled: Boolean = AppFeatures.darkMode.evaluate(context)
 5. Apply ramp-up to the first matching rule.
 6. Return the rule value or the default.
 
----
+### Observability and explain diagnostics
 
-<details>
-<summary>Advanced Options</summary>
-
-## `Feature.explain(context, registry): EvaluationResult<T>`
-
-Explainable evaluation for debugging and observability.
-
-```kotlin
-fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.explain(
-    context: C,
-    registry: NamespaceRegistry = namespace,
-): EvaluationResult<T>
-```
-
-### Example
-
-```kotlin
-val result = AppFeatures.darkMode.explain(context)
-
-when (val decision = result.decision) {
-    EvaluationResult.Decision.RegistryDisabled -> println("Registry disabled")
-    EvaluationResult.Decision.Inactive -> println("Flag inactive")
-    is EvaluationResult.Decision.Rule -> println("Matched: ${decision.matched.rule.note}")
-    is EvaluationResult.Decision.Default -> println("Default returned")
-}
-```
-
----
-
-## `Feature.evaluateWithReason(...)`
-
-Deprecated alias for `explain(...)`.
-
-```kotlin
-@Deprecated("Use explain() instead")
-fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithReason(
-    context: C,
-    registry: NamespaceRegistry = namespace,
-): EvaluationResult<T>
-```
-
-</details>
+- Public explain APIs were removed.
+- Internal diagnostics are still produced for sibling modules (OpenFeature, observability, telemetry) via internal API opt-in.
+- Application code should use `evaluate(...)` as the public entrypoint.
 
 ---
 

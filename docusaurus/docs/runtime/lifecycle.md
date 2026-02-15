@@ -6,7 +6,7 @@ From JSON to evaluation: how configuration flows through the validated boundary 
 flowchart LR
   Code["Flags defined in code"] --> Snap["ConfigurationSnapshotCodec.encode(namespace.configuration)"]
   Snap --> Json["JSON snapshot"]
-  Json --> Parse["ConfigurationSnapshotCodec.decode(json)"]
+  Json --> Parse["ConfigurationSnapshotCodec.decode(json, AppFeatures.compiledSchema())"]
   Parse -->|Success| Load["Namespace.load(configuration)"]
   Parse -->|Failure| Reject["Keep last-known-good + log"]
   Load --> Eval["Evaluation uses active snapshot"]
@@ -27,15 +27,16 @@ val json = fetchConfig()
 ### 2) Parse and validate
 
 ```kotlin
-when (val result = ConfigurationSnapshotCodec.decode(json)) {
-    is ParseResult.Success -> AppFeatures.load(result.value)
-    is ParseResult.Failure -> logError(result.error.message)
+val result = ConfigurationSnapshotCodec.decode(json, AppFeatures.compiledSchema())
+when {
+    result.isSuccess -> AppFeatures.load(result.getOrNull()!!)
+    result.isFailure -> logError(result.parseErrorOrNull()?.message)
 }
 ```
 
 - **Guarantee**: Invalid JSON never becomes a `Configuration`.
 
-- **Mechanism**: `ParseResult` makes success vs failure explicit at the boundary.
+- **Mechanism**: `Result` makes success vs failure explicit at the boundary.
 
 - **Boundary**: Semantic correctness is not validated.
 

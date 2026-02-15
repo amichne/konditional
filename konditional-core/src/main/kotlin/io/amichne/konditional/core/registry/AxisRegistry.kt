@@ -60,7 +60,8 @@ internal object AxisRegistry {
             "Axis already registered for id $axisId: existing=$existingByIdDescription, attempted=$attempted"
         }
         require(existingByType == null || existingByType.id == axisId) {
-            "Axis already registered for type ${valueClass.simpleName}: existing=$existingByTypeDescription, attempted=$attempted"
+            "Axis already registered for type ${valueClass.simpleName}: " +
+                "existing=$existingByTypeDescription, attempted=$attempted"
         }
 
         if (existingById == null) {

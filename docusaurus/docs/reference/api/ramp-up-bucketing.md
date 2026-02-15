@@ -6,7 +6,7 @@ title: RampUpBucketing API
 
 ## What It Does
 
-`RampUpBucketing` provides deterministic user-to-bucket assignment for percentage-based rollouts using SHA-256 hashing. It's the mechanism that ensures the same user always gets the same ramp-up result.
+`RampUpBucketing` provides deterministic user-to-bucket assignment for percentage-based rollouts using SHA-256 hashing. It's the mechanism that ensures the same user always gets the same ramp-up.
 
 ## calculateBucket()
 

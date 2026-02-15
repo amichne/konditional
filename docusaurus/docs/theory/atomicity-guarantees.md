@@ -198,6 +198,22 @@ val value = AppFeatures.darkMode.evaluate(context)
 
 ---
 
+## Executable Verification
+
+These guarantees are proven in runtime stress tests:
+
+- `konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt`
+  - `load rollback history and evaluation remain coherent under contention`
+  - `rollback progression stays linearizable while evaluations run`
+
+The tests run concurrent readers and writers across `load(...)`, `rollback(...)`, and `history` reads, and assert that:
+
+1. Evaluations only return values from valid, fully-built snapshots.
+2. Snapshot metadata and flag contents stay coherent (no torn snapshot states).
+3. `history` never exceeds the configured limit and always contains complete snapshots.
+
+---
+
 ## What Can Still Go Wrong (and What Can't)
 
 ### OK Safe: Concurrent Reads During Update

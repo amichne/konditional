@@ -22,18 +22,20 @@ Load configuration explicitly when you want to update:
 object AppFeatures : Namespace("app")
 
 // Initial load
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(initialConfig)) {
-  is ParseResult.Success -> logger.info("Initial config loaded")
-  is ParseResult.Failure -> logger.error("Initial load failed: ${result.error}")
+val result = NamespaceSnapshotLoader(AppFeatures).load(initialConfig)
+when {
+  result.isSuccess -> logger.info("Initial config loaded")
+  result.isFailure -> logger.error("Initial load failed: ${result.parseErrorOrNull()}")
 }
 
 // Later: manual refresh
 fun refreshConfiguration() {
   val newConfig = fetchFromRemote()
-  when (val result = NamespaceSnapshotLoader(AppFeatures).load(newConfig)) {
-    is ParseResult.Success -> logger.info("Config refreshed")
-    is ParseResult.Failure -> {
-      logger.error("Refresh failed: ${result.error}")
+  val result = NamespaceSnapshotLoader(AppFeatures).load(newConfig)
+when {
+    result.isSuccess -> logger.info("Config refreshed")
+    result.isFailure -> {
+      logger.error("Refresh failed: ${result.parseErrorOrNull()}")
       // Last-known-good remains active
     }
   }
@@ -66,9 +68,10 @@ class ConfigurationPoller(
       while (isActive) {
         try {
           val config = fetchConfig()
-          when (val result = NamespaceSnapshotLoader(namespace).load(config)) {
-            is ParseResult.Success -> logger.info("Config updated via poll")
-            is ParseResult.Failure -> logger.warn("Poll config invalid: ${result.error}")
+          val result = NamespaceSnapshotLoader(namespace).load(config)
+when {
+            result.isSuccess -> logger.info("Config updated via poll")
+            result.isFailure -> logger.warn("Poll config invalid: ${result.parseErrorOrNull()}")
           }
         } catch (e: Exception) {
           logger.error("Poll fetch failed", e)
@@ -114,13 +117,14 @@ fun handleConfigUpdate(request: ConfigWebhookRequest): Response {
     !request.isValidSignature() -> Response.status(401).build()
     else -> {
       val newConfig = fetchConfigFromCDN(request.configVersion)
-      when (val result = NamespaceSnapshotLoader(AppFeatures).load(newConfig)) {
-        is ParseResult.Success -> {
+      val result = NamespaceSnapshotLoader(AppFeatures).load(newConfig)
+when {
+        result.isSuccess -> {
           logger.info("Config updated via webhook")
           Response.ok().build()
         }
-        is ParseResult.Failure -> {
-          logger.error("Webhook config invalid: ${result.error}")
+        result.isFailure -> {
+          logger.error("Webhook config invalid: ${result.parseErrorOrNull()}")
           Response.status(400).build()
         }
       }
@@ -174,9 +178,10 @@ class ConfigFileWatcher(
   private fun reloadConfig() {
     try {
       val config = configPath.readText()
-      when (val result = NamespaceSnapshotLoader(namespace).load(config)) {
-        is ParseResult.Success -> logger.info("Config reloaded from file")
-        is ParseResult.Failure -> logger.error("File config invalid: ${result.error}")
+      val result = NamespaceSnapshotLoader(namespace).load(config)
+when {
+        result.isSuccess -> logger.info("Config reloaded from file")
+        result.isFailure -> logger.error("File config invalid: ${result.parseErrorOrNull()}")
       }
     } catch (e: Exception) {
       logger.error("Failed to read config file", e)
@@ -224,10 +229,11 @@ Invalid configuration is rejected; previous configuration remains active:
 // Current config: { "maxRetries": 3 }
 val badConfig = """{ "maxRetries": "invalid" }"""
 
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(badConfig)) {
-  is ParseResult.Failure -> {
+val result = NamespaceSnapshotLoader(AppFeatures).load(badConfig)
+when {
+  result.isFailure -> {
     // Load rejected, maxRetries still returns 3
-    logger.error("Bad config rejected: ${result.error}")
+    logger.error("Bad config rejected: ${result.parseErrorOrNull()}")
   }
 }
 
@@ -246,12 +252,13 @@ val retries: Int = AppFeatures.maxRetries.evaluate(ctx)  // Returns 3
 ```kotlin
 // 1. Load initial config synchronously at startup
 val initialConfig = fetchConfigOrDefault()
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(initialConfig)) {
-  is ParseResult.Failure -> {
-    logger.error("Initial load failed, using defaults: ${result.error}")
+val result = NamespaceSnapshotLoader(AppFeatures).load(initialConfig)
+when {
+  result.isFailure -> {
+    logger.error("Initial load failed, using defaults: ${result.parseErrorOrNull()}")
     // Defaults remain active
   }
-  is ParseResult.Success -> logger.info("Initial config loaded")
+  result.isSuccess -> logger.info("Initial config loaded")
 }
 
 // 2. Start polling for updates
@@ -297,18 +304,19 @@ class ConfigHistory(private val namespace: Namespace) {
   fun loadAndTrack(
       version: String,
       config: String
-  ): ParseResult {
-    return when (val result = NamespaceSnapshotLoader(namespace).load(config)) {
-      is ParseResult.Success -> {
+  ): Result<MaterializedConfiguration> {
+    val result = NamespaceSnapshotLoader(namespace).load(config)
+    return when {
+      result.isSuccess -> {
         history.add(0, VersionedConfig(version, config))
         if (history.size > maxHistory) history.removeLast()
         result
       }
-      is ParseResult.Failure -> result
+      result.isFailure -> result
     }
   }
 
-  fun rollback(toVersion: String): ParseResult? {
+  fun rollback(toVersion: String): Result? {
     val target = history.find { it.version == toVersion }
     return target?.let { loadAndTrack(it.version, it.config) }
   }
@@ -324,17 +332,18 @@ class ConfigHistory(private val namespace: Namespace) {
 
 ## Common Pitfalls
 
-### Pitfall: Ignoring ParseResult Failures
+### Pitfall: Ignoring Result Failures
 
 ```kotlin
 // DON'T
 NamespaceSnapshotLoader(AppFeatures).load(config)  // Ignored result
 
 // DO
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(config)) {
-  is ParseResult.Success -> logger.info("Config loaded")
-  is ParseResult.Failure -> {
-    logger.error("Load failed: ${result.error}")
+val result = NamespaceSnapshotLoader(AppFeatures).load(config)
+when {
+  result.isSuccess -> logger.info("Config loaded")
+  result.isFailure -> {
+    logger.error("Load failed: ${result.parseErrorOrNull()}")
     alertOps("Configuration load failure")
   }
 }
@@ -388,14 +397,14 @@ fun update(
 
 ```kotlin
 AppFeatures.hooks.afterLoad.add { event ->
-  when (event.result) {
-    is ParseResult.Success -> {
+  when {
+    event.result.isSuccess -> {
       metrics.increment("config.refresh.success")
       metrics.gauge("config.version", event.version)
     }
-    is ParseResult.Failure -> {
+    event.result.isFailure -> {
       metrics.increment("config.refresh.failure")
-      logger.error("Config load failed", event.result.error)
+      logger.error("Config load failed", event.result.parseErrorOrNull())
     }
   }
   metrics.recordLatency("config.refresh.duration", event.durationMs)

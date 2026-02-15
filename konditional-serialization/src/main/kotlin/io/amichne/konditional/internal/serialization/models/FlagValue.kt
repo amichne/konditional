@@ -5,7 +5,6 @@ package io.amichne.konditional.internal.serialization.models
 import com.squareup.moshi.JsonClass
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.ValueType
-import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.core.types.asObjectSchema
 import io.amichne.konditional.serialization.SchemaValueCodec
@@ -106,18 +105,15 @@ sealed class FlagValue<out T : Any> {
     fun <V : Any> extractValue(
         expectedSample: Any? = null,
         schema: ObjectSchema? = null,
-        allowHintFallback: Boolean = true,
     ): V =
         when (this) {
-            is EnumValue -> decodeEnum(value, expectedSample, enumClassName, allowHintFallback) as V
+            is EnumValue -> decodeEnum(value, expectedSample) as V
             is DataClassValue -> {
                 schema?.let { validateDataClassFields(value, it) }
                 decodeDataClass(
                     fields = value,
                     expectedSample = expectedSample,
-                    dataClassNameHint = dataClassName,
                     schema = schema,
-                    allowHintFallback = allowHintFallback,
                 ) as V
             }
             else -> value as V
@@ -182,21 +178,16 @@ private fun validateDataClassFields(
 private fun decodeEnum(
     enumConstantName: String,
     expectedSample: Any?,
-    enumClassNameHint: String,
-    allowHintFallback: Boolean,
 ): Enum<*> =
     (expectedSample as? Enum<*>)?.let { enumSample ->
-        @Suppress("UNCHECKED_CAST")
-        val enumClass = enumSample::class.java as Class<out Enum<*>>
+        val enumClass = enumSample::class.java
         runCatching { java.lang.Enum.valueOf(enumClass, enumConstantName) }
             .getOrElse {
                 throw IllegalArgumentException(
                     "Enum value '$enumConstantName' is invalid for ${enumClass.name}",
                 )
             }
-    } ?: if (allowHintFallback) {
-        decodeEnumFromHint(enumConstantName, enumClassNameHint)
-    } else {
+    } ?: run {
         throw IllegalArgumentException(
             "Missing trusted enum metadata while decoding '$enumConstantName'",
         )
@@ -206,55 +197,25 @@ private fun decodeEnum(
 private fun decodeDataClass(
     fields: Map<String, Any?>,
     expectedSample: Any?,
-    dataClassNameHint: String,
     schema: ObjectSchema?,
-    allowHintFallback: Boolean,
 ): Any =
     (expectedSample as? Konstrained<*>)?.let { expected ->
         val expectedClass = expected::class
         val expectedSchema = schema ?: expected.schema.asObjectSchema()
         val jsonObject = toJsonObject(fields, expectedSchema)
-        when (val result = SchemaValueCodec.decode(expectedClass, jsonObject)) {
-            is ParseResult.Success -> result.value
-            is ParseResult.Failure -> throw IllegalArgumentException(
-                "Failed to decode '${expectedClass.qualifiedName}': ${result.error.message}",
+        val result = SchemaValueCodec.decode(expectedClass, jsonObject)
+        if (result.isSuccess) {
+            result.getOrThrow()
+        } else {
+            throw IllegalArgumentException(
+                "Failed to decode '${expectedClass.qualifiedName}': ${result.exceptionOrNull()?.message}",
             )
         }
-    } ?: if (allowHintFallback) {
-        decodeDataClassFromHint(fields, dataClassNameHint, schema)
-    } else {
+    } ?: run {
         throw IllegalArgumentException(
             "Missing trusted data-class metadata while decoding payload",
         )
     }
-
-private fun decodeEnumFromHint(
-    enumConstantName: String,
-    enumClassName: String,
-): Enum<*> =
-    runCatching { Class.forName(enumClassName).asSubclass(Enum::class.java) }
-        .getOrElse { throw IllegalArgumentException("Failed to load enum class '$enumClassName': ${it.message}") }
-        .let { enumClass ->
-            @Suppress("UNCHECKED_CAST")
-            java.lang.Enum.valueOf(enumClass as Class<out Enum<*>>, enumConstantName)
-        }
-
-private fun decodeDataClassFromHint(
-    fields: Map<String, Any?>,
-    dataClassName: String,
-    schema: ObjectSchema?,
-): Any =
-    runCatching { Class.forName(dataClassName).kotlin }
-        .getOrElse { throw IllegalArgumentException("Failed to load class '$dataClassName': ${it.message}") }
-        .let { kClass ->
-            val jsonObject = toJsonObject(fields, schema)
-            when (val result = SchemaValueCodec.decode(kClass, jsonObject)) {
-                is ParseResult.Success -> result.value
-                is ParseResult.Failure -> throw IllegalArgumentException(
-                    "Failed to decode '$dataClassName': ${result.error.message}",
-                )
-            }
-        }
 
 private fun toJsonObject(
     fields: Map<String, Any?>,

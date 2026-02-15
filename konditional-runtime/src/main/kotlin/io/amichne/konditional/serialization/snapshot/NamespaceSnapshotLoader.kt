@@ -6,8 +6,9 @@ import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.registry.NamespaceRegistryRuntime
 import io.amichne.konditional.core.result.ParseError
-import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.serialization.instance.Configuration
+import io.amichne.konditional.core.result.parseErrorOrNull
+import io.amichne.konditional.core.result.parseFailure
+import io.amichne.konditional.serialization.instance.MaterializedConfiguration
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 
 /**
@@ -17,31 +18,35 @@ import io.amichne.konditional.serialization.options.SnapshotLoadOptions
  */
 class NamespaceSnapshotLoader<M : Namespace>(
     private val namespace: M,
-    private val codec: SnapshotCodec<Configuration> = ConfigurationSnapshotCodec,
-) : SnapshotLoader<Configuration> {
+    private val codec: SnapshotCodec<MaterializedConfiguration> = ConfigurationSnapshotCodec,
+) : SnapshotLoader<MaterializedConfiguration> {
     override fun load(
         json: String,
         options: SnapshotLoadOptions,
-    ): ParseResult<Configuration> =
-        when (val decoded = decodeSnapshot(json, options)) {
-            is ParseResult.Success ->
-                ParseResult.success(
-                    decoded.value.also { config ->
-                        namespace.runtimeRegistry().load(config)
-                    },
-                )
-            is ParseResult.Failure -> ParseResult.failure(decoded.error.withNamespaceContext(namespace.id))
+    ): Result<MaterializedConfiguration> {
+        val decoded = decodeSnapshot(json, options)
+        if (decoded.isFailure) {
+            val contextualError = decoded.parseErrorOrNull()?.withNamespaceContext(namespace.id)
+            return if (contextualError != null) {
+                parseFailure(contextualError)
+            } else {
+                Result.failure(decoded.exceptionOrNull() ?: IllegalStateException("Unknown load failure"))
+            }
         }
 
-    @Suppress("UNCHECKED_CAST")
+        val materialized = decoded.getOrThrow()
+        namespace.runtimeRegistry().load(materialized.configuration)
+        return Result.success(materialized)
+    }
+
     private fun decodeSnapshot(
         json: String,
         options: SnapshotLoadOptions,
-    ): ParseResult<Configuration> =
-        (codec as? FeatureAwareSnapshotCodec<Configuration>)
+    ): Result<MaterializedConfiguration> =
+        (codec as? FeatureAwareSnapshotCodec<MaterializedConfiguration>)
             ?.decode(
                 json = json,
-                featuresById = namespace.featureIndexById(),
+                schema = namespace.compiledSchema(),
                 options = options,
             )
             ?: codec.decode(json = json, options = options)
@@ -64,8 +69,3 @@ class NamespaceSnapshotLoader<M : Namespace>(
         fun <M : Namespace> forNamespace(namespace: M): NamespaceSnapshotLoader<M> = NamespaceSnapshotLoader(namespace)
     }
 }
-
-private fun Namespace.featureIndexById() =
-    allFeatures()
-        .sortedBy { feature -> feature.id.toString() }
-        .associateBy { feature -> feature.id }

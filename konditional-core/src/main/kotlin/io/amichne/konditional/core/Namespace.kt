@@ -15,6 +15,7 @@ import io.amichne.konditional.core.features.StringFeature
 import io.amichne.konditional.core.registry.NamespaceRegistry
 import io.amichne.konditional.core.registry.NamespaceRegistryFactories
 import io.amichne.konditional.core.registry.NamespaceRegistryRuntime
+import io.amichne.konditional.core.schema.CompiledNamespaceSchema
 import io.amichne.konditional.core.spi.FeatureRegistrationHooks
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.internal.builders.FlagBuilder
@@ -112,6 +113,7 @@ open class Namespace(
 
     private val _features = mutableListOf<Feature<*, *, *>>()
     private val declaredDefaults = mutableMapOf<Feature<*, *, *>, Any>()
+    private val declaredDefinitions = mutableMapOf<Feature<*, *, *>, FlagDefinition<*, *, *>>()
 
     fun allFeatures(): List<Feature<*, *, *>> = _features.toList()
 
@@ -123,6 +125,18 @@ open class Namespace(
      */
     @KonditionalInternalApi
     fun declaredDefault(feature: Feature<*, *, *>): Any? = declaredDefaults[feature]
+
+    /**
+     * Returns the compile-time declared flag definition for the given feature, if available.
+     */
+    @KonditionalInternalApi
+    fun declaredDefinition(feature: Feature<*, *, *>): FlagDefinition<*, *, *>? = declaredDefinitions[feature]
+
+    /**
+     * Returns the immutable compile-time schema-plane for this namespace.
+     */
+    @KonditionalInternalApi
+    fun compiledSchema(): CompiledNamespaceSchema = CompiledNamespaceSchema.from(this)
 
     /**
      * Defines a boolean feature on this namespace using property delegation.
@@ -278,7 +292,9 @@ open class Namespace(
             featureSetter(it)
             (thisRef as Namespace)._features.add(it)
             thisRef.declaredDefaults[it] = default
-            thisRef.updateDefinitionInternal(FlagBuilder(default, it).apply(configScope).build())
+            val declaredDefinition = FlagBuilder(default, it).apply(configScope).build()
+            thisRef.declaredDefinitions[it] = declaredDefinition
+            thisRef.updateDefinitionInternal(declaredDefinition)
             FeatureRegistrationHooks.notifyFeatureDefined(it)
         }
     }
@@ -429,7 +445,8 @@ open class Namespace(
         registry as? NamespaceRegistryRuntime
             ?: error(
                 "NamespaceRegistryRuntime is required. " +
-                    "Add :konditional-runtime to your dependencies to enable runtime operations.",
+                    "Add :konditional-runtime to your dependencies to enable runtime operations " +
+                    "(Gradle: implementation(\"io.amichne:konditional-runtime:<version>\")).",
             )
 
     override fun equals(other: Any?): Boolean {

@@ -146,16 +146,18 @@ Auth.disableAll()  // Only Auth evaluations return defaults
 val authJson = """{ "invalid": true }"""
 val paymentJson = """{ "valid": "config" }"""
 
-when (val result = NamespaceSnapshotLoader(Auth).load(authJson)) {
-    is ParseResult.Failure -> {
+val result = NamespaceSnapshotLoader(Auth).load(authJson)
+when {
+    result.isFailure -> {
         // Auth parse failed
-        logger.error("Auth config parse failed: ${result.error}")
+        logger.error("Auth config parse failed: ${result.parseErrorOrNull()}")
         // Auth uses last-known-good config
     }
 }
 
-when (val result = NamespaceSnapshotLoader(Payments).load(paymentJson)) {
-    is ParseResult.Success -> {
+val result = NamespaceSnapshotLoader(Payments).load(paymentJson)
+when {
+    result.isSuccess -> {
         // Payments config loaded successfully
         // Payments is unaffected by Auth parse failure
     }

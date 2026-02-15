@@ -1032,5 +1032,4 @@ build/
 .vscode/
 !/docusaurus/.claude/
 
-# Generated API/type signatures (build artifact)
-/.signatures/
+# Generated API/type signatures are checked in and drift-checked in CI.

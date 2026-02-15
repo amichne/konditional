@@ -1,11 +1,15 @@
+@file:OptIn(KonditionalInternalApi::class)
+
 package io.amichne.konditional.otel
 
-import io.amichne.konditional.api.EvaluationResult
-import io.amichne.konditional.api.explain
+import io.amichne.konditional.api.KonditionalInternalApi
+import io.amichne.konditional.api.evaluateInternalApi
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.core.registry.NamespaceRegistry
+import io.amichne.konditional.internal.evaluation.EvaluationDiagnostics
 import io.opentelemetry.api.trace.Span
 
 /**
@@ -48,7 +52,11 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithTelemetry
     parentSpan: Span? = null,
 ): T =
     telemetry.tracer.traceEvaluation(this, context, parentSpan) {
-        explain(context, registry)
+        evaluateInternalApi(
+            context = context,
+            registry = registry,
+            mode = Metrics.Evaluation.EvaluationMode.EXPLAIN,
+        )
     }.value
 
 /**
@@ -75,7 +83,7 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithTelemetry
 /**
  * Evaluates a feature with OpenTelemetry instrumentation and returns detailed result.
  *
- * Like [evaluateWithTelemetry] but returns the full [EvaluationResult] for explainability.
+ * Like [evaluateWithTelemetry] but returns internal evaluation diagnostics for explainability.
  *
  * @param context The evaluation context.
  * @param telemetry The telemetry instance to use.
@@ -88,9 +96,13 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithTelemetry
     telemetry: KonditionalTelemetry,
     registry: NamespaceRegistry = namespace,
     parentSpan: Span? = null,
-): EvaluationResult<T> =
+): EvaluationDiagnostics<T> =
     telemetry.tracer.traceEvaluation(this, context, parentSpan) {
-        explain(context, registry)
+        evaluateInternalApi(
+            context = context,
+            registry = registry,
+            mode = Metrics.Evaluation.EvaluationMode.EXPLAIN,
+        )
     }
 
 /**
@@ -106,7 +118,7 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithTelemetry
     context: C,
     registry: NamespaceRegistry = namespace,
     parentSpan: Span? = null,
-): EvaluationResult<T> =
+): EvaluationDiagnostics<T> =
     evaluateWithTelemetryAndReason(
         context = context,
         telemetry = KonditionalTelemetry.global(),

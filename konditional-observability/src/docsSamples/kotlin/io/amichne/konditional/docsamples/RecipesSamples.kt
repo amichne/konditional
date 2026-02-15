@@ -1,4 +1,5 @@
 @file:Suppress("unused")
+@file:OptIn(io.amichne.konditional.api.KonditionalInternalApi::class)
 
 package io.amichne.konditional.docsamples
 
@@ -20,7 +21,7 @@ import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.core.ops.MetricsCollector
 import io.amichne.konditional.core.ops.RegistryHooks
 import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
-import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.core.result.parseErrorOrNull
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.runtime.load
 import io.amichne.konditional.runtime.rollback
@@ -183,10 +184,14 @@ object PolicyFlags : Namespace("policy") {
 fun loadRemoteConfig() {
     val json = fetchRemoteConfig()
     val features = AppFeatures
+    val result = ConfigurationSnapshotCodec.decode(json, features.compiledSchema())
 
-    when (val result = ConfigurationSnapshotCodec.decode(json)) {
-        is ParseResult.Success -> features.load(result.value)
-        is ParseResult.Failure -> RecipeLogger.error { "Config rejected: ${result.error.message}" }
+    result.onSuccess { materialized ->
+        features.load(materialized)
+    }
+    result.onFailure { failure ->
+        val parseErrorMessage = result.parseErrorOrNull()?.message
+        RecipeLogger.error { "Config rejected: ${parseErrorMessage ?: failure.message}" }
     }
 }
 // endregion recipe-6-load
@@ -201,10 +206,10 @@ fun rollbackConfig() {
 // region recipe-7-shadow
 fun evaluateWithShadowedConfig(context: Context): Boolean {
     val candidateJson = fetchCandidateConfig()
-    val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow()
+    val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson, AppFeatures.compiledSchema()).getOrThrow()
     val candidateRegistry =
         InMemoryNamespaceRegistry(namespaceId = AppFeatures.namespaceId).apply {
-            load(candidateConfig)
+            load(candidateConfig.configuration)
         }
 
     val value =

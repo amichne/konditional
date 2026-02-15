@@ -2,7 +2,7 @@ package io.amichne.konditional.context
 
 import com.squareup.moshi.JsonClass
 import io.amichne.konditional.core.result.ParseError
-import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.core.result.parseFailure
 
 // ---------- Semantic Version ----------
 @JsonClass(generateAdapter = true)
@@ -29,8 +29,19 @@ data class Version(
             patch: Int,
         ): Version = Version(major, minor, patch)
 
-        fun parse(raw: String): ParseResult<Version> = runCatching { parseUnsafe(raw) }.map { ParseResult.Success(it) }
-            .getOrElse { ParseResult.Failure(ParseError.InvalidVersion(raw, "Failed to parse version from: $raw")) }
+        fun parse(raw: String): Result<Version> =
+            runCatching { parseUnsafe(raw) }
+                .fold(
+                    onSuccess = { Result.success(it) },
+                    onFailure = {
+                        parseFailure(
+                            ParseError.InvalidVersion(
+                                raw,
+                                "Failed to parse version from: $raw",
+                            ),
+                        )
+                    },
+                )
 
         @PublishedApi
         internal fun parseUnsafe(raw: String): Version = with(raw.split('.')) {

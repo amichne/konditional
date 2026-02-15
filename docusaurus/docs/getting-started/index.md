@@ -4,7 +4,7 @@ If you are new to Konditional, this section gets you to your first safe feature 
 
 In this section you will find:
 
-- [Installation](/getting-started/installation) - add the core dependency
+- [Installation](/getting-started/installation) - add core + runtime dependencies
 - [Your First Feature](/getting-started/your-first-flag) - define, evaluate, and verify one feature end-to-end
 
 ---

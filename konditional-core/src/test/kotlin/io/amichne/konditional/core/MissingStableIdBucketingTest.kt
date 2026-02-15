@@ -1,13 +1,16 @@
+@file:OptIn(io.amichne.konditional.api.KonditionalInternalApi::class)
+
 package io.amichne.konditional.core
 
-import io.amichne.konditional.api.EvaluationResult
-import io.amichne.konditional.api.explain
+import io.amichne.konditional.api.evaluateInternalApi
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.evaluation.Bucketing
 import io.amichne.konditional.core.dsl.enable
+import io.amichne.konditional.core.ops.Metrics
+import io.amichne.konditional.internal.evaluation.EvaluationDiagnostics
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -39,9 +42,16 @@ class MissingStableIdBucketingTest {
                 }
             }
 
-        val result = assertDoesNotThrow<EvaluationResult<Boolean>> { namespace.feature.explain(context()) }
+        val result =
+            assertDoesNotThrow<EvaluationDiagnostics<Boolean>> {
+                namespace.feature.evaluateInternalApi(
+                    context = context(),
+                    registry = namespace,
+                    mode = Metrics.Evaluation.EvaluationMode.EXPLAIN,
+                )
+            }
 
-        val decision = result.decision as EvaluationResult.Decision.Default
+        val decision = result.decision as EvaluationDiagnostics.Decision.Default
         val skipped = decision.skippedByRollout
         assertNotNull(skipped)
         assertEquals(Bucketing.missingStableIdBucket(), skipped.bucket.bucket)
@@ -59,9 +69,16 @@ class MissingStableIdBucketingTest {
                 }
             }
 
-        val result = assertDoesNotThrow<EvaluationResult<Boolean>> { namespace.feature.explain(context()) }
+        val result =
+            assertDoesNotThrow<EvaluationDiagnostics<Boolean>> {
+                namespace.feature.evaluateInternalApi(
+                    context = context(),
+                    registry = namespace,
+                    mode = Metrics.Evaluation.EvaluationMode.EXPLAIN,
+                )
+            }
 
-        val decision = result.decision as EvaluationResult.Decision.Rule
+        val decision = result.decision as EvaluationDiagnostics.Decision.Rule
         assertEquals(Bucketing.missingStableIdBucket(), decision.matched.bucket.bucket)
         assertTrue(decision.matched.bucket.inRollout)
     }

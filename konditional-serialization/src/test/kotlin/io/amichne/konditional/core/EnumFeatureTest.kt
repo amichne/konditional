@@ -12,6 +12,7 @@ import io.amichne.konditional.core.features.EnumFeature
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.runtime.load
 import io.amichne.konditional.serialization.instance.Configuration
+import io.amichne.konditional.serialization.instance.MaterializedConfiguration
 import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -225,10 +226,10 @@ class EnumFeatureTest {
         )
 
         val json = ConfigurationSnapshotCodec.encode(namespace.configuration)
-        namespace.load(Configuration(emptyMap()))
+        namespace.load(MaterializedConfiguration.of(namespace.compiledSchema(), Configuration(emptyMap())))
 
         val reloadResult = NamespaceSnapshotLoader(namespace).load(json)
-        assertTrue(reloadResult is io.amichne.konditional.core.result.ParseResult.Success)
+        assertTrue(reloadResult.isSuccess)
 
         assertEquals(LogLevel.DEBUG, namespace.logLevel.evaluate(androidContext))
     }

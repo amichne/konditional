@@ -47,41 +47,44 @@ fun loadRemoteConfiguration() {
         return
     }
 
-    when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-        is ParseResult.Success -> {
+    val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+    when {
+        result.isSuccess -> {
             logger.info("Remote config loaded successfully")
             metrics.increment("config.load.success")
         }
-        is ParseResult.Failure -> {
-            logger.error("Remote config validation failed: ${result.error}")
+        result.isFailure -> {
+            logger.error("Remote config validation failed: ${result.parseErrorOrNull()}")
             metrics.increment("config.load.failure")
-            alertOps("Configuration validation failed", result.error)
+            alertOps("Configuration validation failed", result.parseErrorOrNull())
             // Last-known-good remains active
         }
     }
 }
 ```
 
-**Key insight:** `ParseResult` makes validation explicit. Invalid config is rejected before affecting traffic.
+**Key insight:** `Result` makes validation explicit. Invalid config is rejected before affecting traffic.
 
 ### Step 3: Handle Parse Failures Gracefully
 
 ```kotlin
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Failure -> {
-        when (result.error) {
-            is ParseError.InvalidJSON -> {
-                logger.error("JSON syntax error: ${result.error.message}")
+val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+when {
+    result.isFailure -> {
+        when (val parseError = result.parseErrorOrNull()) {
+            is ParseError.InvalidJson -> {
+                logger.error("JSON syntax error: ${parseError.message}")
                 // Alert: config server is returning malformed JSON
             }
-            is ParseError.UnknownFeature -> {
-                logger.error("Unknown feature key: ${result.error.key}")
+            is ParseError.FeatureNotFound -> {
+                logger.error("Feature key not found: ${parseError.key}")
                 // Alert: config references a feature that doesn't exist in code
             }
-            is ParseError.TypeMismatch -> {
-                logger.error("Type mismatch for ${result.error.key}: expected ${result.error.expectedType}, got ${result.error.actualType}")
-                // Alert: config has wrong type for a feature
+            is ParseError.InvalidSnapshot -> {
+                logger.error("Snapshot schema/type mismatch: ${parseError.reason}")
+                // Alert: config has wrong shape for a declared feature
             }
+            else -> logger.error("Unknown parse failure: ${parseError?.message}")
         }
     }
 }
@@ -99,13 +102,14 @@ class ConfigurationManager(private val namespace: Namespace) {
         // Try to load remote config
         val loaded = try {
             val json = fetchRemoteConfig()
-            when (val result = NamespaceSnapshotLoader(namespace).load(json)) {
-                is ParseResult.Success -> {
+            val result = NamespaceSnapshotLoader(namespace).load(json)
+            when {
+                result.isSuccess -> {
                     logger.info("Initialized with remote config")
                     true
                 }
-                is ParseResult.Failure -> {
-                    logger.warn("Remote config invalid: ${result.error}")
+                result.isFailure -> {
+                    logger.warn("Remote config invalid: ${result.parseErrorOrNull()}")
                     false
                 }
             }
@@ -127,7 +131,7 @@ class ConfigurationManager(private val namespace: Namespace) {
 ## Guarantees
 
 - **Validation at boundary**: Invalid config rejected before affecting traffic
-    - **Mechanism**: `ParseResult.Failure` returned if JSON doesn't match definitions
+    - **Mechanism**: `Result.failure` returned if JSON doesn't match definitions
     - **Boundary**: Validation catches schema errors, not business logic errors
 
 - **Atomic replacement**: All evaluations see old config OR new config, never partial
@@ -214,7 +218,7 @@ try {
 }
 ```
 
-**Result:** `ParseResult.Failure(UnknownFeature("darkMood"))`. Config rejected, last-known-good preserved.
+**Result:** `Result.failure(KonditionalBoundaryFailure(ParseError.featureNotFound(...)))`. Config rejected, last-known-good preserved.
 
 ### Type Mismatch
 
@@ -226,7 +230,7 @@ try {
 }
 ```
 
-**Result:** `ParseResult.Failure(TypeMismatch("maxRetries", expectedType = "Int", actualType = "String"))`. Config
+**Result:** `Result.failure(KonditionalBoundaryFailure(ParseError.invalidSnapshot("type mismatch for maxRetries")))`. Config
 rejected.
 
 ### Partial Configuration
@@ -240,7 +244,7 @@ rejected.
 }
 ```
 
-**Result:** `ParseResult.Success`. Only `darkMode` is overridden. `maxRetries` and `checkoutFlow` use their static
+**Result:** `Result.success`. Only `darkMode` is overridden. `maxRetries` and `checkoutFlow` use their static
 definitions.
 
 **Best practice:** Partial configuration is fine for gradual rollouts. Features not in JSON use static rules + defaults.
@@ -260,14 +264,15 @@ class ConfigLoader(private val namespace: Namespace) {
     private var currentVersion: String? = null
 
     fun loadVersioned(versioned: VersionedConfig) {
-        when (val result = NamespaceSnapshotLoader(namespace).load(versioned.config)) {
-            is ParseResult.Success -> {
+        val result = NamespaceSnapshotLoader(namespace).load(versioned.config)
+        when {
+            result.isSuccess -> {
                 logger.info("Loaded config version ${versioned.version}")
                 currentVersion = versioned.version
                 metrics.gauge("config.version", versioned.version)
             }
-            is ParseResult.Failure -> {
-                logger.error("Config version ${versioned.version} invalid: ${result.error}")
+            result.isFailure -> {
+                logger.error("Config version ${versioned.version} invalid: ${result.parseErrorOrNull()}")
                 metrics.increment("config.invalid_version", tags = mapOf(
                     "version" to versioned.version
                 ))
@@ -285,12 +290,13 @@ class ConfigLoader(private val namespace: Namespace) {
 class StagedConfigLoader(private val namespace: Namespace) {
     fun loadWithCanary(json: String, canaryPercentage: Double = 1.0) {
         // First: validate without loading
-        when (val result = ConfigurationSnapshotCodec.decode(json)) {
-            is ParseResult.Failure -> {
-                logger.error("Validation failed: ${result.error}")
+        val result = ConfigurationSnapshotCodec.decode(json, namespace.compiledSchema())
+        when {
+            result.isFailure -> {
+                logger.error("Validation failed: ${result.parseErrorOrNull()}")
                 return
             }
-            is ParseResult.Success -> Unit
+            result.isSuccess -> Unit
         }
 
         // Second: apply to canary traffic only
@@ -366,8 +372,8 @@ fun `invalid JSON is rejected`() {
 
     val result = NamespaceSnapshotLoader(AppFeatures).load(invalidJson)
 
-    assertTrue(result is ParseResult.Failure)
-    assertTrue((result as ParseResult.Failure).error is ParseError.InvalidJSON)
+    assertTrue(result.isFailure)
+    assertTrue(result.parseErrorOrNull() is ParseError.InvalidJson)
 }
 ```
 
@@ -380,9 +386,9 @@ fun `type mismatch is rejected`() {
 
     val result = NamespaceSnapshotLoader(AppFeatures).load(json)
 
-    assertTrue(result is ParseResult.Failure)
-    val error = (result as ParseResult.Failure).error
-    assertTrue(error is ParseError.TypeMismatch)
+    assertTrue(result.isFailure)
+    val error = result.parseErrorOrNull()
+    assertTrue(error is ParseError.InvalidSnapshot)
 }
 ```
 
@@ -395,7 +401,7 @@ fun `partial configuration loads successfully`() {
 
     val result = NamespaceSnapshotLoader(AppFeatures).load(json)
 
-    assertTrue(result is ParseResult.Success)
+    assertTrue(result.isSuccess)
 
     // darkMode overridden
     val ctx = Context(stableId = StableId.of("user"))
@@ -412,8 +418,8 @@ fun `partial configuration loads successfully`() {
 
 After deploying remote loading, verify:
 
-1. valid payloads produce `ParseResult.Success`
-2. invalid payloads produce `ParseResult.Failure` and do not change active behavior
+1. valid payloads produce `Result.success`
+2. invalid payloads produce `Result.failure` and do not change active behavior
 3. observability captures load success and failure counts
 
 ## Next Steps

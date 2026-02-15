@@ -55,6 +55,23 @@ dependencies {
 | Snapshot codecs              | `io.amichne.konditional.serialization.snapshot.*`                       | same packages; add `konditional-serialization` dependency                        |
 | Namespace snapshot loader    | `io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader` | same package; add `konditional-runtime` dependency                               |
 
+## Breaking API Symbol Map (Result Refactor)
+
+| Removed / Changed | Replacement |
+|---|---|
+| `Result<T>` | Kotlin `Result<T>` |
+| `Feature.evaluate(...)` | Removed. Use `Feature.evaluate(...)` |
+| `Feature.explainSafely(...)` | Removed |
+| `Feature.explain(...)` | Removed from public API |
+| Public `internal EvaluationDiagnostics<T>` | Removed from public API |
+| `Version.parse(raw): Result<Version>` | `Version.parse(raw): Result<Version>` |
+| `SnapshotCodec.decode(...): Result<T>` | `SnapshotCodec.decode(...): Result<T>` |
+| `SnapshotLoader.load(...): Result<T>` | `SnapshotLoader.load(...): Result<T>` |
+| `ConfigurationSnapshotCodec.decode(...): Result<Configuration>` | `ConfigurationSnapshotCodec.decode(...): Result<MaterializedConfiguration>` |
+| `Namespace.load(configuration: ConfigurationView)` extension | `Namespace.load(configuration: MaterializedConfiguration)` |
+
+Failure introspection remains structured via `KonditionalBoundaryFailure(parseError)` and `parseErrorOrNull()`.
+
 ---
 
 ## The core mapping
@@ -183,9 +200,11 @@ Konditional supports JSON configuration as a validated boundary:
 
 ```kotlin
 val json = File("flags.json").readText()
-when (val result = NamespaceSnapshotLoader(AppDomain.Payments).load(json)) {
-    is ParseResult.Success -> Unit // loaded into AppDomain.Payments
-    is ParseResult.Failure -> logError("Parse failed: ${result.error}")
+val result = NamespaceSnapshotLoader(AppDomain.Payments).load(json)
+result.onSuccess { materialized -> AppDomain.Payments.load(materialized) }
+result.onFailure { failure ->
+    val parseError = result.parseErrorOrNull()
+    logError("Parse failed: ${parseError?.message ?: failure.message}")
 }
 ```
 

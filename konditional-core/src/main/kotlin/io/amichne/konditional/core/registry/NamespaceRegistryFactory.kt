@@ -24,7 +24,8 @@ internal object NamespaceRegistryFactories {
             0 ->
                 error(
                     "No NamespaceRegistryFactory found. " +
-                        "Add :konditional-runtime to your dependencies to enable runtime registry operations.",
+                        "Add :konditional-runtime to your dependencies to enable runtime registry operations " +
+                        "(Gradle: implementation(\"io.amichne:konditional-runtime:<version>\")).",
                 )
 
             1 -> factories.single().create(namespaceId)

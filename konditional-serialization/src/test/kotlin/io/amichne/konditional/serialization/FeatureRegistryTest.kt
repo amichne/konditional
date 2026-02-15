@@ -1,16 +1,17 @@
+@file:Suppress("DEPRECATION")
+
 package io.amichne.konditional.serialization
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.result.ParseError
-import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.core.result.parseErrorOrNull
 import io.amichne.konditional.values.FeatureId
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 /**
@@ -40,8 +41,8 @@ class FeatureRegistryTest {
 
         val result = FeatureRegistry.get(TestFeatures.feature1.id)
 
-        assertIs<ParseResult.Success<*>>(result)
-        assertEquals(TestFeatures.feature1, result.value)
+        assertTrue(result.isSuccess)
+        assertEquals(TestFeatures.feature1, result.getOrThrow())
     }
 
     @Test
@@ -54,13 +55,13 @@ class FeatureRegistryTest {
         val result2 = FeatureRegistry.get(TestFeatures.feature2.id)
         val result3 = FeatureRegistry.get(TestFeatures.feature3.id)
 
-        assertIs<ParseResult.Success<*>>(result1)
-        assertIs<ParseResult.Success<*>>(result2)
-        assertIs<ParseResult.Success<*>>(result3)
+        assertTrue(result1.isSuccess)
+        assertTrue(result2.isSuccess)
+        assertTrue(result3.isSuccess)
 
-        assertEquals(TestFeatures.feature1, result1.value)
-        assertEquals(TestFeatures.feature2, result2.value)
-        assertEquals(TestFeatures.feature3, result3.value)
+        assertEquals(TestFeatures.feature1, result1.getOrThrow())
+        assertEquals(TestFeatures.feature2, result2.getOrThrow())
+        assertEquals(TestFeatures.feature3, result3.getOrThrow())
     }
 
     @Test
@@ -70,8 +71,8 @@ class FeatureRegistryTest {
 
         val result = FeatureRegistry.get(TestFeatures.feature1.id)
 
-        assertIs<ParseResult.Success<*>>(result)
-        assertEquals(TestFeatures.feature1, result.value)
+        assertTrue(result.isSuccess)
+        assertEquals(TestFeatures.feature1, result.getOrThrow())
     }
 
     // ========== Retrieval Tests ==========
@@ -79,11 +80,12 @@ class FeatureRegistryTest {
     @Test
     fun `Given unregistered key, When retrieved, Then returns FeatureNotFound error`() {
         val result = FeatureRegistry.get(FeatureId.create("test", "nonexistent_key"))
-        assertIs<ParseResult.Failure>(result)
-        assertIs<ParseError.FeatureNotFound>(result.error)
+        assertTrue(result.isFailure)
+        val error = result.parseErrorOrNull()
+        assertTrue(error is ParseError.FeatureNotFound)
         assertEquals(
             FeatureId.create("test", "nonexistent_key"),
-            (result.error as ParseError.FeatureNotFound).key
+            (error as ParseError.FeatureNotFound).key
         )
     }
 
@@ -117,8 +119,8 @@ class FeatureRegistryTest {
         val result1 = FeatureRegistry.get(TestFeatures.feature1.id)
         val result2 = FeatureRegistry.get(TestFeatures.feature2.id)
 
-        assertIs<ParseResult.Failure>(result1)
-        assertIs<ParseResult.Failure>(result2)
+        assertTrue(result1.isFailure)
+        assertTrue(result2.isFailure)
     }
 
     @Test
@@ -129,7 +131,7 @@ class FeatureRegistryTest {
         val result = FeatureRegistry.get(
             FeatureId.create("test", "any_key")
         )
-        assertIs<ParseResult.Failure>(result)
+        assertTrue(result.isFailure)
     }
 
     // ========== Multiple Features with Same Key Tests ==========
@@ -146,11 +148,11 @@ class FeatureRegistryTest {
         val result1 = FeatureRegistry.get(TestFeatures.feature1.id)
         val result2 = FeatureRegistry.get(anotherContainer.differentFeature.id)
 
-        assertIs<ParseResult.Success<*>>(result1)
-        assertIs<ParseResult.Success<*>>(result2)
+        assertTrue(result1.isSuccess)
+        assertTrue(result2.isSuccess)
 
-        assertEquals(TestFeatures.feature1, result1.value)
-        assertEquals(anotherContainer.differentFeature, result2.value)
+        assertEquals(TestFeatures.feature1, result1.getOrThrow())
+        assertEquals(anotherContainer.differentFeature, result2.getOrThrow())
     }
 
     // ========== Type Preservation Tests ==========
@@ -161,8 +163,8 @@ class FeatureRegistryTest {
 
         val result = FeatureRegistry.get(TestFeatures.feature1.id)
 
-        assertIs<ParseResult.Success<Feature<*, *, *>>>(result)
-        val feature = result.value
+        assertTrue(result.isSuccess)
+        val feature = result.getOrThrow()
         assertEquals(TestFeatures.feature1.key, feature.key)
     }
 
@@ -172,8 +174,8 @@ class FeatureRegistryTest {
 
         val result = FeatureRegistry.get(TestFeatures.feature2.id)
 
-        assertIs<ParseResult.Success<Feature<*, *, *>>>(result)
-        val feature = result.value
+        assertTrue(result.isSuccess)
+        val feature = result.getOrThrow()
         assertEquals(TestFeatures.feature2.key, feature.key)
     }
 
@@ -183,8 +185,8 @@ class FeatureRegistryTest {
 
         val result = FeatureRegistry.get(TestFeatures.feature3.id)
 
-        assertIs<ParseResult.Success<Feature<*, *, *>>>(result)
-        val feature = result.value
+        assertTrue(result.isSuccess)
+        val feature = result.getOrThrow()
         assertEquals(TestFeatures.feature3.key, feature.key)
     }
 }

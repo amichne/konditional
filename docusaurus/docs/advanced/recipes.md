@@ -199,16 +199,20 @@ object PolicyFlags : Namespace("policy") {
 
 ## Safe Remote Config Loading + Rollback {#recipe-6-safe-remote-config-loading-rollback}
 
-Use `ParseResult` to enforce a hard boundary at the JSON parse step, and roll back on bad updates.
+Use `Result` to enforce a hard boundary at the JSON parse step, and roll back on bad updates.
 
 ```kotlin
 fun loadRemoteConfig() {
     val json = fetchRemoteConfig()
     val features = AppFeatures
+    val result = ConfigurationSnapshotCodec.decode(json, features.compiledSchema())
 
-    when (val result = ConfigurationSnapshotCodec.decode(json)) {
-        is ParseResult.Success -> features.load(result.value)
-        is ParseResult.Failure -> RecipeLogger.error { "Config rejected: ${result.error.message}" }
+    result.onSuccess { materialized ->
+        features.load(materialized)
+    }
+    result.onFailure { failure ->
+        val parseErrorMessage = result.parseErrorOrNull()?.message
+        RecipeLogger.error { "Config rejected: ${parseErrorMessage ?: failure.message}" }
     }
 }
 ```
@@ -223,7 +227,7 @@ fun rollbackConfig() {
 ```
 
 - **Guarantee**: Invalid config never becomes active; swaps are atomic.
-- **Mechanism**: `ParseResult` boundary + `Namespace.load(...)` atomic swap.
+- **Mechanism**: `Result` boundary + `Namespace.load(...)` atomic swap.
 - **Boundary**: A valid config can still be logically wrong; rollback is the safe escape hatch.
 
 ---
@@ -235,10 +239,10 @@ Compare a candidate configuration to baseline behavior without changing producti
 ```kotlin
 fun evaluateWithShadowedConfig(context: Context): Boolean {
     val candidateJson = fetchCandidateConfig()
-    val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow()
+    val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson, AppFeatures.compiledSchema()).getOrThrow()
     val candidateRegistry =
         InMemoryNamespaceRegistry(namespaceId = AppFeatures.namespaceId).apply {
-            load(candidateConfig)
+            load(candidateConfig.configuration)
         }
 
     val value =
