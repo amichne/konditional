@@ -11,11 +11,6 @@ on:
           - major
           - minor
           - patch
-      dry-run:
-        description: 'Skip pushing tag/commit'
-        required: false
-        type: boolean
-        default: false
 
 permissions:
   contents: write
@@ -74,11 +69,7 @@ jobs:
         run: |
           NEXT_VERSION="${{ steps.version.outputs.next }}"
           git tag "v$NEXT_VERSION"
-
-      - name: Push release
-        run: |
-          git push origin HEAD
-          git push origin "v${{ steps.version.outputs.next }}"
+          git push origin "v$NEXT_VERSION"
 
       - name: Summary
         run: |
