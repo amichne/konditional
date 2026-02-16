@@ -1,137 +1,89 @@
 # Serialization API Reference
 
-API reference for JSON snapshot/patch operations: parsing, serialization, and incremental updates.
+JSON snapshot and patch APIs at the untrusted boundary.
 
----
-
-## `ConfigurationSnapshotCodec.encode(configuration): String`
-
-Serialize a configuration snapshot to JSON.
+## `ConfigurationSnapshotCodec.encode(...)`
 
 ```kotlin
 object ConfigurationSnapshotCodec {
-    fun encode(configuration: Configuration): String
-    fun encode(configuration: ConfigurationView): String
+    fun encodeRaw(value: Configuration): String
+    fun encode(value: MaterializedConfiguration): String
+    fun encode(value: ConfigurationView): String
 }
 ```
 
-### Example
-
-```kotlin
-val snapshotJson = ConfigurationSnapshotCodec.encode(AppFeatures.configuration)
-persistToStorage(snapshotJson)
-```
-
----
-
-## `ConfigurationSnapshotCodec.decode(json, options): ParseResult<Configuration>`
-
-Parse a snapshot JSON payload into a validated `Configuration`.
+## `ConfigurationSnapshotCodec.decode(...)`
 
 ```kotlin
 object ConfigurationSnapshotCodec {
-    fun decode(json: String): ParseResult<Configuration>
     fun decode(
         json: String,
-        options: SnapshotLoadOptions
-    ): ParseResult<Configuration>
+        options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
+    ): Result<MaterializedConfiguration>
+
+    fun decode(
+        json: String,
+        schema: CompiledNamespaceSchema,
+        options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
+    ): Result<MaterializedConfiguration>
 }
 ```
 
-### Precondition
+Notes:
 
-Features must be registered before parsing. Ensure your `Namespace` objects are initialized before calling`decode(...)`.
+- `decode(json, options)` without schema is intentionally rejected.
+- Successful decode returns trusted `MaterializedConfiguration` only.
+- Failures are `Result.failure(KonditionalBoundaryFailure(parseError))`.
 
-### Example
-
-```kotlin
-when (val result = ConfigurationSnapshotCodec.decode(json)) {
-    is ParseResult.Success -> AppFeatures.load(result.value)
-    is ParseResult.Failure -> logger.error { "Parse failed: ${result.error.message}" }
-}
-```
-
----
-
-<details>
-<summary>Advanced Options</summary>
-
-## `ConfigurationSnapshotCodec.applyPatchJson(configuration, patchJson, options): ParseResult<Configuration>`
-
-Apply an incremental patch to an existing configuration snapshot.
+## `ConfigurationSnapshotCodec.applyPatchJson(...)`
 
 ```kotlin
 object ConfigurationSnapshotCodec {
     fun applyPatchJson(
-        currentConfiguration: ConfigurationView,
+        currentConfiguration: MaterializedConfiguration,
         patchJson: String,
         options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
-    ): ParseResult<Configuration>
+    ): Result<MaterializedConfiguration>
+
+    fun applyPatchJson(
+        currentConfiguration: ConfigurationView,
+        schema: CompiledNamespaceSchema,
+        patchJson: String,
+        options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
+    ): Result<MaterializedConfiguration>
 }
 ```
-
----
-
-## `NamespaceSnapshotLoader<M>`
-
-Namespace-scoped JSON loader. On success, `load(...)` parses and loads the new configuration into the namespace.
-
-```kotlin
-class NamespaceSnapshotLoader<M : Namespace>(namespace: M) {
-    fun load(json: String): ParseResult<Configuration>
-    fun load(json: String, options: SnapshotLoadOptions): ParseResult<Configuration>
-}
-```
-
----
 
 ## `SnapshotLoadOptions`
-
-Controls how unknown feature keys are handled during snapshot/patch loads.
 
 ```kotlin
 data class SnapshotLoadOptions(
     val unknownFeatureKeyStrategy: UnknownFeatureKeyStrategy = UnknownFeatureKeyStrategy.Fail,
+    val missingDeclaredFlagStrategy: MissingDeclaredFlagStrategy = MissingDeclaredFlagStrategy.Reject,
     val onWarning: (SnapshotWarning) -> Unit = {},
 )
 ```
 
-### `UnknownFeatureKeyStrategy`
+Factory modes:
+
+- `SnapshotLoadOptions.strict()`
+- `SnapshotLoadOptions.skipUnknownKeys(...)`
+- `SnapshotLoadOptions.fillMissingDeclaredFlags(...)`
+
+`MissingDeclaredFlagStrategy`:
+
+- `Reject` (default)
+- `FillFromDeclaredDefaults`
+
+## Error Introspection
 
 ```kotlin
-sealed interface UnknownFeatureKeyStrategy {
-    data object Fail : UnknownFeatureKeyStrategy
-    data object Skip : UnknownFeatureKeyStrategy
-}
+val result = ConfigurationSnapshotCodec.decode(json, schema)
+val parseError: ParseError? = result.parseErrorOrNull()
 ```
 
----
+## Related
 
-## `ParseError`
-
-Error types returned via `ParseResult.Failure`.
-
-```kotlin
-sealed interface ParseError {
-    val message: String
-
-    data class InvalidJson(val reason: String) : ParseError
-    data class InvalidSnapshot(val reason: String) : ParseError
-
-    data class FeatureNotFound(val key: FeatureId) : ParseError
-    data class FlagNotFound(val key: FeatureId) : ParseError
-
-    data class InvalidHexId(val input: String, val message: String) : ParseError
-    data class InvalidRollout(val value: Double, val message: String) : ParseError
-    data class InvalidVersion(val input: String, val message: String) : ParseError
-}
-```
-
-</details>
-
----
-
-## Next steps
-
-- [Persistence format](/serialization/persistence-format)
-- [Runtime operations](/runtime/operations)
+- [NamespaceSnapshotLoader API](/reference/api/snapshot-loader)
+- [Boundary Result API](/reference/api/parse-result)
+- [Parse Don’t Validate Theory](/theory/parse-dont-validate)

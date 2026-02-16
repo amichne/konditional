@@ -80,7 +80,7 @@ Spans include attributes such as:
 - `feature.namespace`
 - `feature.key`
 - `feature.type`
-- `evaluation.result.value`
+- `evaluation.result.getOrNull()!!`
 - `evaluation.result.decision`
 - `evaluation.duration_ns`
 - `evaluation.rule.specificity`

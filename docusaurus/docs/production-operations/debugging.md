@@ -28,7 +28,7 @@ val ctx = Context(
     platform = Platform.IOS
 )
 
-val explanation = AppFeatures.checkoutFlow.explain(ctx)
+val explanation = AppFeatures.checkoutFlow.evaluate(ctx)
 
 println(explanation.summary())
 /*
@@ -103,7 +103,7 @@ require(results.all { it == results.first() }) {
 **Common causes of non-determinism:**
 
 1. **stableId changes between evaluations**
-   ```kotlin
+````kotlin
    // DON'T: New StableId every time
    val ctx1 = Context(stableId = StableId.of(UUID.randomUUID().toString()))
    val ctx2 = Context(stableId = StableId.of(UUID.randomUUID().toString()))
@@ -111,10 +111,10 @@ require(results.all { it == results.first() }) {
    // DO: Consistent stableId
    val userId = getConsistentUserId()  // e.g., database ID
    val ctx = Context(stableId = StableId.of(userId))
-   ```
+````
 
 2. **Salt changed without understanding implications**
-   ```kotlin
+````kotlin
    // Changing salt reshuffles ALL users
    val feature by boolean<Context>(default = false) {
        rule(true) { rampUp { 50.0 } }  // Default salt
@@ -124,7 +124,7 @@ require(results.all { it == results.first() }) {
    val feature by boolean<Context>(default = false) {
        rule(true) { rampUp(salt = "v2") { 50.0 } }  // Different bucket assignments!
    }
-   ```
+````
 
 ### Inspecting Bucket Assignment
 
@@ -239,23 +239,24 @@ val feature by boolean<Context>(default = false) {
 
 ### Problem: "Configuration isn't loading correctly"
 
-Add logging around `ParseResult`:
+Add logging around `Result`:
 
 ```kotlin
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(configJson)) {
-  is ParseResult.Success -> {
+val result = NamespaceSnapshotLoader(AppFeatures).load(configJson)
+when {
+  result.isSuccess -> {
     logger.info("Config loaded successfully")
     logger.debug("Loaded features: ${result.loadedFeatures}")
   }
-  is ParseResult.Failure -> {
+  result.isFailure -> {
     logger.error("Config load failed")
-    logger.error("Error: ${result.error}")
+    logger.error("Error: ${result.parseErrorOrNull()}")
     logger.error("JSON: $configJson")
 
-    when (result.error) {
-      is ParseError.InvalidJSON -> logger.error("JSON syntax error")
-      is ParseError.UnknownFeature -> logger.error("Reference to undefined feature")
-      is ParseError.TypeMismatch -> logger.error("Type doesn't match definition")
+    when (result.parseErrorOrNull()) {
+      is ParseError.InvalidJson -> logger.error("JSON syntax error")
+      is ParseError.FeatureNotFound -> logger.error("Reference to undefined feature")
+      is ParseError.InvalidSnapshot -> logger.error("Type doesn't match definition")
     }
   }
 }
@@ -266,8 +267,9 @@ when (val result = NamespaceSnapshotLoader(AppFeatures).load(configJson)) {
 After a successful load, inspect what was loaded:
 
 ```kotlin
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(configJson)) {
-  is ParseResult.Success -> {
+val result = NamespaceSnapshotLoader(AppFeatures).load(configJson)
+when {
+  result.isSuccess -> {
     result.loadedFeatures.forEach { (featureKey, overrides) ->
       logger.info("Feature $featureKey: ${overrides.size} override(s) loaded")
     }
@@ -387,7 +389,7 @@ logger.info("User ${userId} has stableId: ${ctx.stableId}")
 ### 2. Use explain() to trace evaluation
 
 ```kotlin
-val explanation = feature.explain(ctx)
+val explanation = feature.evaluate(ctx)
 logger.info(explanation.summary())
 ```
 
@@ -448,7 +450,7 @@ logger.info("Local evaluation result: $result")
 
 1. Verify ramp-up percentage in loaded configuration
 2. Check that feature key matches between definition and JSON
-3. Verify `ParseResult` was `Success` when config was loaded
+3. Verify `Result` was `Success` when config was loaded
 4. Use `explain()` on sample users to verify bucketing
 
 ### Issue: "Feature behavior changed unexpectedly"
@@ -468,7 +470,7 @@ Konditional provides debugging tools for production issues:
 
 - **explain() API** — Trace why evaluation returned a specific value
 - **Bucketing introspection** — Verify ramp-up determinism
-- **ParseResult logging** — Diagnose configuration load failures
+- **Result logging** — Diagnose configuration load failures
 - **Context inspection** — Verify inputs to evaluation
 
 When debugging:

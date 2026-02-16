@@ -12,8 +12,10 @@ Feature flags and configuration systems seem simple until they bite you in produ
 ```kotlin
 // Somewhere in onboarding code
 val newFlow = flagClient.getBool("new_onboaring_flow", false)  // typo
+```
 
-// Somewhere in config JSON
+Somewhere in config JSON
+```json5
 { "new_onboarding_flow": true }  // correct spelling
 ```
 
@@ -120,11 +122,12 @@ when (AppFlags.checkoutVariant.evaluate(ctx)) {
 **Configuration boundaries are explicit:**
 
 ```kotlin
-when (val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)) {
-  is ParseResult.Success -> Unit // loaded into AppFlags
-  is ParseResult.Failure -> {
+val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)
+when {
+  result.isSuccess -> Unit // loaded into AppFlags
+  result.isFailure -> {
     // Invalid JSON rejected, last-known-good remains active
-    logError("Config parse failed: ${result.error}")
+    logError("Config parse failed: ${result.parseErrorOrNull()}")
   }
 }
 ```
@@ -140,7 +143,7 @@ when (val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)) {
 | **Variants**       | Runtime-typed                     | Multiple booleans + control flow | First-class typed values        |
 | **Ramp-up logic**  | SDK-dependent                     | Per-team reimplementation        | Centralized, deterministic      |
 | **Evaluation**     | SDK-defined, opaque               | Ad-hoc per evaluator             | Single DSL with specificity     |
-| **Invalid config** | Fails silently or crashes         | Depends on implementation        | Explicit `ParseResult` boundary |
+| **Invalid config** | Fails silently or crashes         | Depends on implementation        | Explicit `Result` boundary      |
 | **Testing**        | Mock SDK or replay snapshots      | Mock evaluators                  | Evaluate against typed contexts |
 
 ---
@@ -170,7 +173,7 @@ when (val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)) {
 A string-keyed SDK returns `0` when parsing `"max_retries": "disabled"`. Service retries 0 times. All requests fail
 immediately.
 
-**With Konditional:** Parse fails at boundary. `ParseResult.Failure` logged. Last-known-good remains active. No
+**With Konditional:** Parse fails at boundary. `Result.failure` logged. Last-known-good remains active. No
 incident.
 
 ### Experiment contamination: Inconsistent bucketing
@@ -192,37 +195,39 @@ Feature has 5 boolean flags for variants. Testing requires 32 combinations. Most
 Coming from a boolean capability system:
 
 1. **Mirror existing flags** as properties:
-   ```kotlin
+`````kotlin
    object Features : Namespace("app") {
        val featureX by boolean<Context>(default = false)
    }
-   ```
+`````
 
 2. **Centralize evaluation** into rules:
-   ```kotlin
+`````kotlin
    val featureX by boolean<Context>(default = false) {
        rule(true) { android() }
        rule(true) { rampUp { 25.0 } }
    }
-   ```
+`````
 
 3. **Replace boolean matrices** with typed values:
-   ```kotlin
+````kotlin
    // Before: CHECKOUT_V1, CHECKOUT_V2, CHECKOUT_V3 (3 booleans)
    enum class CheckoutVersion { V1, V2, V3 }
    val checkoutVersion by enum<CheckoutVersion, Context>(default = V1) {
        rule(V2) { rampUp { 33.0 } }
        rule(V3) { rampUp { 66.0 } }
    }
-   ```
+````
 
 4. **Add remote config** with explicit boundaries:
-   ```kotlin
-   when (val result = NamespaceSnapshotLoader(Features).load(json)) {
-       is ParseResult.Success -> Unit
-       is ParseResult.Failure -> keepLastKnownGood()
-   }
-   ```
+
+````kotlin
+val result = NamespaceSnapshotLoader(Features).load(json)
+when {
+   result.isSuccess -> Unit
+   result.isFailure -> keepLastKnownGood()
+}
+````
 
 See the [Migration Guide](/reference/migration-guide) for detailed patterns.
 

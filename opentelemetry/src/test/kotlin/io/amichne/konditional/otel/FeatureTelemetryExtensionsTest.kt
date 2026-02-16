@@ -1,3 +1,5 @@
+@file:OptIn(io.amichne.konditional.api.KonditionalInternalApi::class)
+
 package io.amichne.konditional.otel
 
 import io.amichne.konditional.context.AppLocale

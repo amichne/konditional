@@ -10,7 +10,7 @@ import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.result.ParseError
-import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.core.result.parseErrorOrNull
 
 import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestContext
@@ -18,9 +18,9 @@ import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.runtime.load
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.ConfigurationMetadata
+import io.amichne.konditional.serialization.instance.MaterializedConfiguration
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.options.SnapshotWarning
-import io.amichne.konditional.serialization.options.UnknownFeatureKeyStrategy
 import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 import io.amichne.konditional.values.FeatureId
@@ -68,20 +68,19 @@ class OperationalSerializationTest {
         """.trimIndent()
 
         val strictResult = ConfigurationSnapshotCodec.decode(snapshotJson)
-        assertIs<ParseResult.Failure>(strictResult)
-        assertIs<ParseError.InvalidSnapshot>(strictResult.error)
+        assertTrue(strictResult.isFailure)
+        assertIs<ParseError.InvalidSnapshot>(strictResult.parseErrorOrNull())
 
-        @Suppress("DEPRECATION")
-        FeatureRegistry.register(namespace.knownFeature)
         val warnings = mutableListOf<SnapshotWarning>()
-        val lenient =
-            SnapshotLoadOptions.legacyGlobalRegistryFallback(
-                unknownFeatureKeyStrategy = UnknownFeatureKeyStrategy.Skip,
-                onWarning = { warnings.add(it) },
+        val lenient = SnapshotLoadOptions.skipUnknownKeys(onWarning = { warnings.add(it) })
+        val lenientResult =
+            ConfigurationSnapshotCodec.decode(
+                json = snapshotJson,
+                schema = namespace.compiledSchema(),
+                options = lenient,
             )
-        val lenientResult = ConfigurationSnapshotCodec.decode(snapshotJson, lenient)
-        assertIs<ParseResult.Success<Configuration>>(lenientResult)
-        assertEquals(setOf(namespace.knownFeature), lenientResult.value.flags.keys)
+        assertTrue(lenientResult.isSuccess)
+        assertEquals(setOf(namespace.knownFeature), lenientResult.getOrThrow().configuration.flags.keys)
         assertEquals(1, warnings.size)
         assertEquals(SnapshotWarning.Kind.UNKNOWN_FEATURE_KEY, warnings.single().kind)
     }
@@ -116,14 +115,17 @@ class OperationalSerializationTest {
 
         // Reset to a configuration that still contains the feature key but has no rules.
         namespace.load(
-            Configuration(
-                flags = mapOf(
-                    namespace.envScopedFlag to FlagDefinition(
-                        feature = namespace.envScopedFlag,
-                        bounds = emptyList(),
-                        defaultValue = false,
+            MaterializedConfiguration.of(
+                schema = namespace.compiledSchema(),
+                configuration = Configuration(
+                    flags = mapOf(
+                        namespace.envScopedFlag to FlagDefinition(
+                            feature = namespace.envScopedFlag,
+                            bounds = emptyList(),
+                            defaultValue = false,
+                        )
                     )
-                )
+                ),
             )
         )
         assertFalse(
@@ -132,7 +134,7 @@ class OperationalSerializationTest {
         )
 
         val loaded = NamespaceSnapshotLoader(namespace).load(json)
-        assertIs<ParseResult.Success<Configuration>>(loaded)
+        assertTrue(loaded.isSuccess)
 
         assertTrue(namespace.envScopedFlag.evaluate(productionContext))
         assertFalse(namespace.envScopedFlag.evaluate(developementContext))
@@ -140,6 +142,7 @@ class OperationalSerializationTest {
 
     @Test
     fun `configuration metadata roundtrips via snapshot json`() {
+        val namespace = object : Namespace("metadata-roundtrip-${UUID.randomUUID()}") {}
         val config = Configuration(
             flags = emptyMap(),
             metadata = ConfigurationMetadata(
@@ -150,8 +153,8 @@ class OperationalSerializationTest {
         )
 
         val json = ConfigurationSnapshotCodec.encode(config)
-        val parsed = ConfigurationSnapshotCodec.decode(json)
-        assertIs<ParseResult.Success<Configuration>>(parsed)
-        assertEquals(config.metadata, parsed.value.metadata)
+        val parsed = ConfigurationSnapshotCodec.decode(json, namespace.compiledSchema())
+        assertTrue(parsed.isSuccess)
+        assertEquals(config.metadata, parsed.getOrThrow().configuration.metadata)
     }
 }

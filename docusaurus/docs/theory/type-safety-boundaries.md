@@ -10,7 +10,7 @@ Where compile-time guarantees end and runtime validation begins.
 
 > For **statically-defined** flags and rules, the compiler enforces type correctness and evaluation is non-null. When
 > configuration crosses the JSON boundary,
-> correctness is established via **validation** and explicit error handling (`ParseResult`), not via compile-time
+> correctness is established via **validation** and explicit error handling (`Result`), not via compile-time
 > guarantees.
 
 ---
@@ -32,33 +32,33 @@ object AppFeatures : Namespace("app") {
 **Compile-time checks:**
 
 1. **Property name = feature key**
-   ```kotlin
+````kotlin
    AppFeatures.darkMode.evaluate(context)  // OK Property exists
    // AppFeatures.darkMood.evaluate(context)  // X Compile error
-   ```
+````
 
 2. **Type propagation**
-   ```kotlin
+````kotlin
    val enabled: Boolean = AppFeatures.darkMode.evaluate(context)  // OK
    // val enabled: String = AppFeatures.darkMode.evaluate(context)  // X Type mismatch
-   ```
+````
 
 3. **Rule return types match feature type**
-   ```kotlin
+````kotlin
    val timeout by double<Context>(default = 30.0) {
        rule(45.0) { platforms(Platform.ANDROID) }  // OK
        // rule("invalid") { platforms(Platform.IOS) }  // X Type mismatch
    }
-   ```
+````
 
 4. **Required defaults**
-   ```kotlin
+````kotlin
    val feature by boolean<Context>(default = false)  // OK
    // val feature by boolean<Context>()  // X Compile error: default required
-   ```
+````
 
 5. **Context type constraints**
-   ```kotlin
+````kotlin
    val PREMIUM by boolean<EnterpriseContext>(default = false) {
        rule(true) { extension { subscriptionTier == SubscriptionTier.ENTERPRISE } }
    }
@@ -68,7 +68,7 @@ object AppFeatures : Namespace("app") {
 
    val basicCtx: Context = Context(...)
    // PREMIUM(basicCtx)  // X Compile error
-   ```
+````
 
 ### Mechanism: Property Delegation + Generics
 
@@ -124,18 +124,19 @@ When configuration comes from JSON:
 3. **Type correctness** - Compiler can't verify JSON types match Kotlin types
 4. **Feature existence** - Compiler can't verify referenced features are registered
 
-### Mechanism: Runtime Validation via ParseResult
+### Mechanism: Runtime Validation via Result
 
 ```kotlin
-when (val result = ConfigurationSnapshotCodec.decode(json)) {
-    is ParseResult.Success -> {
+val result = ConfigurationSnapshotCodec.decode(json, AppFeatures.compiledSchema())
+when {
+    result.isSuccess -> {
         // JSON is valid, types match, features exist
-        val config: Configuration = result.value
+        val config: Configuration = result.getOrNull()!!
         AppFeatures.load(config)
     }
-    is ParseResult.Failure -> {
+    result.isFailure -> {
         // Validation failed, specific error type
-        when (val error = result.error) {
+        when (val error = result.parseErrorOrNull()) {
             is ParseError.InvalidJson -> logError("Malformed JSON")
             is ParseError.FeatureNotFound -> logError("Unknown feature: ${error.key}")
             is ParseError.InvalidSnapshot -> logError("Snapshot shape/type mismatch: ${error.reason}")
@@ -198,7 +199,7 @@ Rice's Theorem states that all non-trivial semantic properties of programs are u
 - Whether a JSON object matches a schema (requires runtime checking)
 - Whether referenced features exist (requires runtime registry lookup)
 
-**Solution:** Move these checks to runtime with explicit error handling (`ParseResult`).
+**Solution:** Move these checks to runtime with explicit error handling (`Result`).
 
 ### Trade-Off: Flexibility vs Safety
 
@@ -249,14 +250,15 @@ val enabled = AppFeatures.newOnboardingFlow.evaluate(context)  // Typo is compil
 
 ```kotlin
 // OK Runtime validation with explicit error handling
-when (val result = ConfigurationSnapshotCodec.decode(json)) {
-    is ParseResult.Success -> {
+val result = ConfigurationSnapshotCodec.decode(json, AppFeatures.compiledSchema())
+when {
+    result.isSuccess -> {
         // Type-safe from here on
         val enabled = AppFeatures.newOnboardingFlow.evaluate(context)
     }
-    is ParseResult.Failure -> {
+    result.isFailure -> {
         // Invalid JSON rejected, last-known-good remains active
-        logError(result.error.message)
+        logError(result.parseErrorOrNull()?.message)
     }
 }
 ```
@@ -281,5 +283,5 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 ## Next Steps
 
 - [Core Types](/core/types) - Compile-time surface area
-- [Theory: Parse Don't Validate](/theory/parse-dont-validate) - Why ParseResult prevents invalid states
-- [Serialization Reference](/serialization/reference) - ParseResult API
+- [Theory: Parse Don't Validate](/theory/parse-dont-validate) - Why Result prevents invalid states
+- [Serialization Reference](/serialization/reference) - Result API

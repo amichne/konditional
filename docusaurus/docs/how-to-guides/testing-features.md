@@ -187,7 +187,7 @@ fun `valid configuration loads successfully`() {
 
     val result = NamespaceSnapshotLoader(AppFeatures).load(json)
 
-    assertTrue(result is ParseResult.Success)
+    assertTrue(result.isSuccess)
 
     // Verify loaded config is active
     val ctx = Context(stableId = StableId.of("user"), platform = Platform.IOS)
@@ -204,8 +204,8 @@ fun `invalid JSON is rejected`() {
 
     val result = NamespaceSnapshotLoader(AppFeatures).load(invalidJson)
 
-    assertTrue(result is ParseResult.Failure)
-    assertTrue((result as ParseResult.Failure).error is ParseError.InvalidJSON)
+    assertTrue(result.isFailure)
+    assertTrue(result.parseErrorOrNull() is ParseError.InvalidJson)
 }
 
 @Test
@@ -214,8 +214,8 @@ fun `type mismatch is rejected`() {
 
     val result = NamespaceSnapshotLoader(AppFeatures).load(json)
 
-    assertTrue(result is ParseResult.Failure)
-    assertTrue((result as ParseResult.Failure).error is ParseError.TypeMismatch)
+    assertTrue(result.isFailure)
+    assertTrue(result.parseErrorOrNull() is ParseError.InvalidSnapshot)
 }
 
 @Test
@@ -224,8 +224,8 @@ fun `unknown feature is rejected`() {
 
     val result = NamespaceSnapshotLoader(AppFeatures).load(json)
 
-    assertTrue(result is ParseResult.Failure)
-    assertTrue((result as ParseResult.Failure).error is ParseError.UnknownFeature)
+    assertTrue(result.isFailure)
+    assertTrue(result.parseErrorOrNull() is ParseError.FeatureNotFound)
 }
 ```
 
@@ -237,7 +237,7 @@ fun `failed load preserves last-known-good`() {
     // Load valid config
     val validJson = """{ "darkMode": { "rules": [{ "value": true }] } }"""
     val result1 = NamespaceSnapshotLoader(AppFeatures).load(validJson)
-    require(result1 is ParseResult.Success)
+    require(result1.isSuccess)
 
     val ctx = Context(stableId = StableId.of("user"))
     assertTrue(AppFeatures.darkMode.evaluate(ctx))  // true from config
@@ -245,7 +245,7 @@ fun `failed load preserves last-known-good`() {
     // Try to load invalid config
     val invalidJson = """{ "darkMode": { "rules": [{ "value": "invalid" }] } }"""
     val result2 = NamespaceSnapshotLoader(AppFeatures).load(invalidJson)
-    require(result2 is ParseResult.Failure)
+    require(result2.isFailure)
 
     // Verify last-known-good preserved
     assertTrue(AppFeatures.darkMode.evaluate(ctx))  // Still true
@@ -513,7 +513,7 @@ fun `load config and evaluate features end-to-end`() {
     // 1. Load configuration
     val json = fetchRemoteConfig()
     val loadResult = NamespaceSnapshotLoader(AppFeatures).load(json)
-    require(loadResult is ParseResult.Success)
+    require(loadResult.isSuccess)
 
     // 2. Build context
     val ctx = Context(
@@ -708,7 +708,7 @@ class AppFeaturesTest {
 **Security**:
 - **Test data isolation**: Use separate test namespaces to avoid polluting production namespaces
 - **No real user data**: Use synthetic user IDs in tests, never real production data
-- **Configuration validation**: Test invalid JSON scenarios to ensure ParseResult boundary works
+- **Configuration validation**: Test invalid JSON scenarios to ensure Result boundary works
 
 ---
 

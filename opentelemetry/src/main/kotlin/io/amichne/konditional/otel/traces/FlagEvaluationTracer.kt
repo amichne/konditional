@@ -1,6 +1,7 @@
+@file:OptIn(io.amichne.konditional.api.KonditionalInternalApi::class)
+
 package io.amichne.konditional.otel.traces
 
-import io.amichne.konditional.api.EvaluationResult
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Context.LocaleContext
 import io.amichne.konditional.context.Context.PlatformContext
@@ -8,6 +9,7 @@ import io.amichne.konditional.context.Context.StableIdContext
 import io.amichne.konditional.context.Context.VersionContext
 import io.amichne.konditional.context.axis.AxisValues
 import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.internal.evaluation.EvaluationDiagnostics
 import io.amichne.konditional.otel.traces.KonditionalSemanticAttributes.DecisionType
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
@@ -50,8 +52,8 @@ class FlagEvaluationTracer(
         feature: Feature<T, C, *>,
         context: C,
         parentSpan: Span? = null,
-        block: () -> EvaluationResult<T>,
-    ): EvaluationResult<T> {
+        block: () -> EvaluationDiagnostics<T>,
+    ): EvaluationDiagnostics<T> {
         if (!config.enabled) return block()
 
         if (!shouldSample(feature, context)) return block()
@@ -87,7 +89,7 @@ class FlagEvaluationTracer(
 
     private fun <T : Any, C : Context> populateSpanFromResult(
         span: Span,
-        result: EvaluationResult<T>,
+        result: EvaluationDiagnostics<T>,
         context: C,
     ) {
         // Result value (sanitized for cardinality)
@@ -122,8 +124,8 @@ class FlagEvaluationTracer(
 
         if (config.includeRuleDetails) {
             when (val decision = result.decision) {
-                is EvaluationResult.Decision.Rule -> populateRuleDetails(span, decision)
-                is EvaluationResult.Decision.Default ->
+                is EvaluationDiagnostics.Decision.Rule -> populateRuleDetails(span, decision)
+                is EvaluationDiagnostics.Decision.Default ->
                     decision.skippedByRollout?.let {
                         addRuleSkippedEvent(
                             span,
@@ -138,7 +140,7 @@ class FlagEvaluationTracer(
 
     private fun populateRuleDetails(
         span: Span,
-        decision: EvaluationResult.Decision.Rule,
+        decision: EvaluationDiagnostics.Decision.Rule,
     ) {
         val matched = decision.matched
 
@@ -166,7 +168,7 @@ class FlagEvaluationTracer(
 
     private fun addRuleSkippedEvent(
         span: Span,
-        skipped: EvaluationResult.RuleMatch,
+        skipped: EvaluationDiagnostics.RuleMatch,
     ) {
         span.addEvent(
             KonditionalSemanticAttributes.EventName.RULE_SKIPPED,
@@ -216,11 +218,11 @@ class FlagEvaluationTracer(
             else -> value::class.simpleName ?: "unknown"
         }
 
-    private fun EvaluationResult.Decision.toSpanValue(): String =
+    private fun EvaluationDiagnostics.Decision.toSpanValue(): String =
         when (this) {
-            is EvaluationResult.Decision.Default -> DecisionType.DEFAULT
-            is EvaluationResult.Decision.Rule -> DecisionType.RULE_MATCHED
-            is EvaluationResult.Decision.Inactive -> DecisionType.INACTIVE
-            is EvaluationResult.Decision.RegistryDisabled -> DecisionType.REGISTRY_DISABLED
+            is EvaluationDiagnostics.Decision.Default -> DecisionType.DEFAULT
+            is EvaluationDiagnostics.Decision.Rule -> DecisionType.RULE_MATCHED
+            is EvaluationDiagnostics.Decision.Inactive -> DecisionType.INACTIVE
+            is EvaluationDiagnostics.Decision.RegistryDisabled -> DecisionType.REGISTRY_DISABLED
         }
 }

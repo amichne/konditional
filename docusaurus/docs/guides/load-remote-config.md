@@ -62,23 +62,22 @@ Valid JSON snapshot format:
 
 **Evidence**: `konditional-serialization/src/main/kotlin/io/amichne/konditional/internal/serialization/models/SerializableSnapshot.kt:21`
 
-### Step 3: Load Configuration with ParseResult Boundary
+### Step 3: Load Configuration with Result Boundary
 
 ```kotlin
-import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
-import io.amichne.konditional.runtime.load
+import io.amichne.konditional.core.result.parseErrorOrNull
+import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 
 fun loadRemoteConfig() {
     val json = fetchConfigFromRemote() // Your HTTP/file/DB fetch
 
-    when (val result = ConfigurationSnapshotCodec.decode(json)) {
-        is ParseResult.Success -> {
-            AppFeatures.load(result.value)
+    val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+    when {
+        result.isSuccess -> {
             logger.info("Configuration loaded successfully")
         }
-        is ParseResult.Failure -> {
-            logger.error("Configuration rejected: ${result.error.message}")
+        result.isFailure -> {
+            logger.error("Configuration rejected: ${result.parseErrorOrNull()?.message}")
             // Last-known-good remains active, no production impact
         }
     }
@@ -96,9 +95,8 @@ fun loadRemoteConfig() {
 Complete example with error handling and rollback:
 
 ```kotlin
-import io.amichne.konditional.core.result.ParseResult
-import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
-import io.amichne.konditional.runtime.load
+import io.amichne.konditional.core.result.parseErrorOrNull
+import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 import io.amichne.konditional.runtime.rollback
 
 class ConfigurationService {
@@ -110,15 +108,15 @@ class ConfigurationService {
             return // Keep last-known-good
         }
 
-        when (val result = ConfigurationSnapshotCodec.decode(json)) {
-            is ParseResult.Success -> {
-                AppFeatures.load(result.value)
-                logger.info("Config loaded: ${result.value.metadata.version}")
+        val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+        when {
+            result.isSuccess -> {
+                logger.info("Config loaded")
             }
-            is ParseResult.Failure -> {
-                logger.error("Config parse failed: ${result.error.message}")
+            result.isFailure -> {
+                logger.error("Config parse failed: ${result.parseErrorOrNull()?.message}")
                 metrics.increment("config.parse_failure")
-                alertOps("Configuration rejected", result.error)
+                alertOps("Configuration rejected", result.parseErrorOrNull())
             }
         }
     }
@@ -147,8 +145,8 @@ class ConfigurationService {
 
 ## Caveats / Footguns
 
-- **ParseResult must be handled**: Don't ignore `Failure` cases or you won't know config didn't load.
-  - Fix: Always pattern-match on `ParseResult` and log/alert on `Failure`
+- **Result must be handled**: Don't ignore `Failure` cases or you won't know config didn't load.
+  - Fix: Always pattern-match on `Result` and log/alert on `Failure`
   - Why: Silent failures cause drift between expected and actual config
 
 - **JSON format must match exactly**: Extra fields, wrong types, or schema violations cause parse failures.
@@ -174,7 +172,7 @@ class ConfigurationService {
 
 ## Troubleshooting
 
-### Symptom: `ParseResult.Failure` with "Feature not found: feature::app::unknownFlag"
+### Symptom: `Result.failure` with "Feature not found: feature::app::unknownFlag"
 
 **Causes**:
 - JSON references feature that doesn't exist in code
@@ -191,7 +189,7 @@ val result = ConfigurationSnapshotCodec.decode(json, options)
 
 **Related**: [Troubleshooting: Parsing Issues](/troubleshooting/#parsing-issues)
 
-### Symptom: `ParseResult.Failure` with "Type mismatch"
+### Symptom: `Result.failure` with "Type mismatch"
 
 **Causes**:
 - JSON specifies wrong value type (e.g., string instead of boolean)
@@ -215,23 +213,23 @@ val result = ConfigurationSnapshotCodec.decode(json, options)
 **Fix**:
 ```kotlin
 // Verify load completed
-when (val result = ConfigurationSnapshotCodec.decode(json)) {
-    is ParseResult.Success -> {
-        AppFeatures.load(result.value)
+val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+when {
+    result.isSuccess -> {
         // Evaluation after load sees new config
         val value = AppFeatures.darkMode.evaluate(ctx)
     }
 }
 ```
 
-**Verification**: Call `AppFeatures.darkMode.explain(ctx)` to inspect active rule.
+**Verification**: Evaluate after load and confirm value changes for representative contexts.
 
 **Related**: [Reference: Namespace Operations](/reference/api/namespace-operations)
 
 ## Next Steps
 
 - [Guide: Roll Out Gradually](/guides/roll-out-gradually) — Update percentages via remote config
-- [Learn: Configuration Lifecycle](/learn/configuration-lifecycle) — JSON → ParseResult → load flow
-- [Reference: ParseResult API](/reference/api/parse-result) — Utilities for result handling
+- [Learn: Configuration Lifecycle](/learn/configuration-lifecycle) — JSON → Result → load flow
+- [Reference: Result API](/reference/api/parse-result) — Utilities for result handling
 - [Reference: Namespace Operations](/reference/api/namespace-operations) — load(), rollback() details
 - [Production Operations: Failure Modes](/production-operations/failure-modes) — What can go wrong

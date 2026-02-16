@@ -32,14 +32,15 @@ val json = File("flags.json").readText()
 The payload is parsed and validated against registered features:
 
 ```kotlin
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-  is ParseResult.Success -> {
+val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+when {
+  result.isSuccess -> {
     // Valid configuration, ready to load
   }
-  is ParseResult.Failure -> {
+  result.isFailure -> {
     // Invalid JSON rejected
     // This will error
-    logError("Parse failed: ${result.error.message}")
+    logError("Parse failed: ${result.parseErrorOrNull()?.message}")
   }
 }
 ```
@@ -61,12 +62,13 @@ when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
 If validation succeeds, the new configuration is loaded atomically:
 
 ```kotlin
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-  is ParseResult.Success -> {
+val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+when {
+  result.isSuccess -> {
     // Configuration is already loaded (fromJson calls load internally)
     logger.info("Config updated successfully")
   }
-  is ParseResult.Failure -> {
+  result.isFailure -> {
     // Failure path (see step 4)
   }
 }
@@ -83,11 +85,12 @@ when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
 If validation fails, the payload is rejected and the last-known-good configuration remains active:
 
 ```kotlin
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-  is ParseResult.Success -> Unit
-  is ParseResult.Failure -> {
+val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+when {
+  result.isSuccess -> Unit
+  result.isFailure -> {
     // Last-known-good config is still active
-    logger.error("Config parse failed: ${result.error.message}")
+    logger.error("Config parse failed: ${result.parseErrorOrNull()?.message}")
     metrics.increment("config.parse.failure")
     // Optionally: alert on-call, retry later
   }
@@ -120,9 +123,10 @@ Upon loading JSON, your `Namespace` objects will already have features registere
 
 ```kotlin 
 // Later: Load JSON
-when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-  is ParseResult.Success -> Unit
-  is ParseResult.Failure -> logError(result.error.message)
+val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+when {
+  result.isSuccess -> Unit
+  result.isFailure -> logError(result.parseErrorOrNull()?.message)
 }
 ```
 
@@ -162,9 +166,10 @@ val patchJson = """
 """
 
 val currentConfig = AppFeatures.configuration
-when (val result = ConfigurationSnapshotCodec.applyPatchJson(currentConfig, patchJson)) {
-  is ParseResult.Success -> AppFeatures.load(result.value)
-  is ParseResult.Failure -> logError(result.error.message)
+val result = ConfigurationSnapshotCodec.applyPatchJson(currentConfig, patchJson)
+when {
+  result.isSuccess -> AppFeatures.load(result.getOrNull()!!)
+  result.isFailure -> logError(result.parseErrorOrNull()?.message)
 }
 ```
 
@@ -197,9 +202,10 @@ val history: List<ConfigurationMetadata> = AppFeatures.historyMetadata
 ```kotlin
 while (running) {
   val json = fetchFromServer()
-  when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Success -> logger.info("Config updated")
-    is ParseResult.Failure -> logger.error("Parse failed: ${result.error}")
+  val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+when {
+    result.isSuccess -> logger.info("Config updated")
+    result.isFailure -> logger.error("Parse failed: ${result.parseErrorOrNull()}")
   }
   delay(pollInterval)
 }
@@ -209,9 +215,10 @@ while (running) {
 
 ```kotlin
 configStream.collect { json ->
-  when (val result = NamespaceSnapshotLoader(AppFeatures).load(json)) {
-    is ParseResult.Success -> logger.info("Config updated")
-    is ParseResult.Failure -> logger.error("Parse failed: ${result.error}")
+  val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+when {
+    result.isSuccess -> logger.info("Config updated")
+    result.isFailure -> logger.error("Parse failed: ${result.parseErrorOrNull()}")
   }
 }
 ```

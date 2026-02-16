@@ -108,7 +108,7 @@ fun onCheckoutCompleted(
 
 - **Type safety**: Can't assign invalid variants
     - **Mechanism**: Enum constrains possible values at compile-time
-    - **Boundary**: Runtime config still needs validation (ParseResult)
+    - **Boundary**: Runtime config still needs validation (Result)
 
 ## Advanced Patterns
 

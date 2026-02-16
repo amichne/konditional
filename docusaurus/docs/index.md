@@ -4,13 +4,15 @@ slug: /
 
 # What is Konditional?
 
-Konditional is a compile-time safe feature flag framework for Kotlin that helps you ship feature toggles safely, without string-key mistakes or runtime type surprises.
+Konditional is a compile-time safe feature flag framework for Kotlin that helps you ship feature toggles safely, without
+string-key mistakes or runtime type surprises.
 
 In this section you will find:
 
 - [Getting Started](/getting-started/) - your 10-minute path to shipping a safe toggle
 - [How-To: Roll Out a Feature Gradually](/how-to-guides/rolling-out-gradually) - deterministic rollouts you can trust
-- [How-To: Load Configuration Safely from Remote](/how-to-guides/safe-remote-config) - typed parse boundary for runtime config
+- [How-To: Load Configuration Safely from Remote](/how-to-guides/safe-remote-config) - typed parse boundary for runtime
+  config
 - [API Reference](/reference/api/namespace-operations) - operational APIs and parse results
 - [Theory and Guarantees](/theory/type-safety-boundaries) - why the safety model holds under production load
 
@@ -18,9 +20,10 @@ In this section you will find:
 
 ## First Value in 10 Minutes
 
-For most Kotlin backend teams, the first win is simple: gate a new behavior with a typed flag and verify it deterministically.
+For most Kotlin backend teams, the first win is simple: gate a new behavior with a typed flag and verify it
+deterministically.
 
-1. Install Konditional Core: [Installation](/getting-started/installation)
+1. Install Konditional Core + Runtime: [Installation](/getting-started/installation)
 2. Define and evaluate one feature: [Your First Feature](/getting-started/your-first-flag)
 3. Add gradual rollout: [Roll Out Gradually](/how-to-guides/rolling-out-gradually)
 
@@ -53,14 +56,17 @@ Feature flags and configuration systems are often deceptively simple -- until th
 ### String-keyed systems fail silently
 
 Somewhere in onboarding code
+
 ```kotlin
 val newFlow = flagClient.getBool("new_onboaring_flow", false)  // typo
 ```
 
-
 Somewhere in config JSON
-```json
-{ "new_onboarding_flow": true }  // correct spelling
+
+```json5
+{
+  "new_onboarding_flow": true
+}  // correct spelling
 ```
 
 The typo ships. The flag never activates. Your A/B test runs with 0% treatment. You find out in a post-mortem.
@@ -94,16 +100,21 @@ mode.
 ### Type safety disappears at the boundary
 
 You define this
+
 ```kotlin
 val maxRetries: Int = flagClient.getInt("max_retries", 3)
 ```
 
 Someone deploys this
+
 ```json5
-{ "max_retries": "5" }
+{
+  "max_retries": "5"
+}
 ```
 
 Production gets this
+
 ```kotlin
 maxRetries = 0  // or throws, or returns default (SDK-dependent)
 ```
@@ -118,14 +129,14 @@ maxRetries = 0  // or throws, or returns default (SDK-dependent)
 enum class CheckoutVariant { CLASSIC, OPTIMIZED, EXPERIMENTAL }
 
 object AppFlags : Namespace("app") {
-  val checkoutVariant by enum<CheckoutVariant, Context>(default = CheckoutVariant.CLASSIC) {
-    rule(CheckoutVariant.OPTIMIZED) { ios() }
-    rule(CheckoutVariant.EXPERIMENTAL) { rampUp { 50.0 } }
-  }
+    val checkoutVariant by enum<CheckoutVariant, Context>(default = CheckoutVariant.CLASSIC) {
+        rule(CheckoutVariant.OPTIMIZED) { ios() }
+        rule(CheckoutVariant.EXPERIMENTAL) { rampUp { 50.0 } }
+    }
 
-  val maxRetries by integer<Context>(default = 3) {
-    rule(5) { android() }
-  }
+    val maxRetries by integer<Context>(default = 3) {
+        rule(5) { android() }
+    }
 }
 
 // Usage
@@ -151,9 +162,9 @@ val retries: String = AppFlags.maxRetries.evaluate(ctx)  // doesn't compile
 
 ```kotlin
 when (AppFlags.checkoutVariant.evaluate(ctx)) {
-  CheckoutVariant.CLASSIC -> classicCheckout()
-  CheckoutVariant.OPTIMIZED -> optimizedCheckout()
-  CheckoutVariant.EXPERIMENTAL -> experimentalCheckout()
+    CheckoutVariant.CLASSIC -> classicCheckout()
+    CheckoutVariant.OPTIMIZED -> optimizedCheckout()
+    CheckoutVariant.EXPERIMENTAL -> experimentalCheckout()
 }
 ```
 
@@ -168,12 +179,13 @@ when (AppFlags.checkoutVariant.evaluate(ctx)) {
 **Configuration boundaries are explicit:**
 
 ```kotlin
-when (val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)) {
-  is ParseResult.Success -> Unit // loaded into AppFlags
-  is ParseResult.Failure -> {
-    // Invalid JSON rejected, last-known-good remains active
-    logError("Config parse failed: ${result.error}")
-  }
+val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)
+when {
+    result.isSuccess -> Unit // loaded into AppFlags
+    result.isFailure -> {
+        // Invalid JSON rejected, last-known-good remains active
+        logError("Config parse failed: ${result.parseErrorOrNull()}")
+    }
 }
 ```
 
@@ -188,7 +200,7 @@ when (val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)) {
 | **Variants**       | Runtime-typed                     | Multiple booleans + control flow | First-class typed values        |
 | **Ramp-up logic**  | SDK-dependent                     | Per-team reimplementation        | Centralized, deterministic      |
 | **Evaluation**     | SDK-defined, opaque               | Ad-hoc per evaluator             | Single DSL with specificity     |
-| **Invalid config** | Fails silently or crashes         | Depends on implementation        | Explicit `ParseResult` boundary |
+| **Invalid config** | Fails silently or crashes         | Depends on implementation        | Explicit `Result` boundary      |
 | **Testing**        | Mock SDK or replay snapshots      | Mock evaluators                  | Evaluate against typed contexts |
 
 ---
@@ -218,7 +230,7 @@ when (val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)) {
 A string-keyed SDK returns `0` when parsing `"max_retries": "disabled"`. Service retries 0 times. All requests fail
 immediately.
 
-**With Konditional:** Parse fails at boundary. `ParseResult.Failure` logged. Last-known-good remains active. No
+**With Konditional:** Parse fails at boundary. `Result.failure` logged. Last-known-good remains active. No
 incident.
 
 ### Experiment contamination: Inconsistent bucketing
@@ -240,37 +252,43 @@ Feature has 5 boolean flags for variants. Testing requires 32 combinations. Most
 Coming from a boolean capability system:
 
 1. **Mirror existing flags** as properties:
-   ```kotlin
+
+````kotlin
    object Features : Namespace("app") {
-       val featureX by boolean<Context>(default = false)
-   }
-   ```
+    val featureX by boolean<Context>(default = false)
+}
+````
 
 2. **Centralize evaluation** into rules:
-   ```kotlin
+
+````kotlin
    val featureX by boolean<Context>(default = false) {
-       rule(true) { android() }
-       rule(true) { rampUp { 25.0 } }
-   }
-   ```
+    rule(true) { android() }
+    rule(true) { rampUp { 25.0 } }
+}
+````
 
 3. **Replace boolean matrices** with typed values:
-   ```kotlin
+
+````kotlin
    // Before: CHECKOUT_V1, CHECKOUT_V2, CHECKOUT_V3 (3 booleans)
-   enum class CheckoutVersion { V1, V2, V3 }
-   val checkoutVersion by enum<CheckoutVersion, Context>(default = V1) {
-       rule(V2) { rampUp { 33.0 } }
-       rule(V3) { rampUp { 66.0 } }
-   }
-   ```
+enum class CheckoutVersion { V1, V2, V3 }
+
+val checkoutVersion by enum<CheckoutVersion, Context>(default = V1) {
+    rule(V2) { rampUp { 33.0 } }
+    rule(V3) { rampUp { 66.0 } }
+}
+````
 
 4. **Add remote config** with explicit boundaries:
-   ```kotlin
-   when (val result = NamespaceSnapshotLoader(Features).load(json)) {
-       is ParseResult.Success -> Unit
-       is ParseResult.Failure -> keepLastKnownGood()
-   }
-   ```
+
+````kotlin
+   val result = NamespaceSnapshotLoader(Features).load(json)
+when {
+    result.isSuccess -> Unit
+    result.isFailure -> keepLastKnownGood()
+}
+````
 
 See the [Migration Guide](./reference/migration-guide.md) for detailed patterns.
 

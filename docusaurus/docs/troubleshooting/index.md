@@ -43,7 +43,7 @@ Use the fastest path based on what broke first:
 
 **Fix**:
 ```kotlin
-val result = AppFeatures.darkMode.explain(ctx)
+val result = AppFeatures.darkMode.evaluate(ctx)
 println(result.decision) // Shows why value was returned
 ```
 
@@ -70,7 +70,7 @@ if (AppFeatures.isDisabled) {
 }
 
 // Check rule matching
-val result = AppFeatures.darkMode.explain(ctx)
+val result = AppFeatures.darkMode.evaluate(ctx)
 println(result.decision) // DISABLED, INACTIVE, or DEFAULT?
 ```
 
@@ -141,7 +141,7 @@ println("Actual: $actualPct%, Expected: 10%")
 
 ### JSON fails to load
 
-**Symptom**: `ParseResult.Failure` returned from `decode()`.
+**Symptom**: `Result.failure` returned from `decode()`.
 
 **Likely causes**:
 1. Malformed JSON syntax
@@ -151,13 +151,14 @@ println("Actual: $actualPct%, Expected: 10%")
 
 **Fix**:
 ```kotlin
-when (val result = ConfigurationSnapshotCodec.decode(json)) {
-    is ParseResult.Failure -> {
-        println("Error: ${result.error.message}")
-        when (result.error) {
+val result = ConfigurationSnapshotCodec.decode(json, AppFeatures.compiledSchema())
+when {
+    result.isFailure -> {
+        println("Error: ${result.parseErrorOrNull()?.message}")
+        when (result.parseErrorOrNull()) {
             is ParseError.InvalidJson -> println("JSON syntax error")
             is ParseError.FeatureNotFound -> println("Unknown feature key")
-            is ParseError.TypeMismatch -> println("Value type mismatch")
+            is ParseError.InvalidSnapshot -> println("Value type mismatch")
             // ... handle specific errors
         }
     }
@@ -172,7 +173,7 @@ when (val result = ConfigurationSnapshotCodec.decode(json)) {
 
 ### Type mismatch error
 
-**Symptom**: `ParseError.TypeMismatch` when loading JSON.
+**Symptom**: `ParseError.InvalidSnapshot` when loading JSON.
 
 **Likely causes**:
 1. JSON value type doesn't match feature type (string for boolean, etc.)
@@ -240,16 +241,17 @@ println("Evaluation: ${durationUs}μs")
 **Fix**:
 ```kotlin
 // Verify load on correct namespace
-when (val result = ConfigurationSnapshotCodec.decode(json)) {
-    is ParseResult.Success -> {
-        AppFeatures.load(result.value) // Same namespace as evaluation
+val result = ConfigurationSnapshotCodec.decode(json, AppFeatures.compiledSchema())
+when {
+    result.isSuccess -> {
+        AppFeatures.load(result.getOrNull()!!) // Same namespace as evaluation
 
         // Immediate verification
         val ctx = Context(...)
-        val value = AppFeatures.darkMode.explain(ctx)
+        val value = AppFeatures.darkMode.evaluate(ctx)
         println("Loaded config: ${value.decision}")
     }
-    is ParseResult.Failure -> error("Config didn't load: ${result.error}")
+    result.isFailure -> error("Config didn't load: ${result.parseErrorOrNull()}")
 }
 ```
 

@@ -105,9 +105,9 @@ fun main() {
     println("  Checkout: $checkoutAndroid")            // EXPERIMENTAL or CLASSIC (5% ramp)
 
     // Step 5: Debugging with explain()
-    val result = AppFeatures.darkMode.explain(iosUserCtx)
+    val result = AppFeatures.darkMode.evaluate(iosUserCtx)
     println("\nDebug iOS dark mode:")
-    println("  Value: ${result.value}")
+    println("  Value: ${result.getOrNull()!!}")
     println("  Decision: ${result.decision}")
     result.bucketInfo?.let {
         println("  Bucket: ${it.bucket} (threshold: ${it.percentage}%)")

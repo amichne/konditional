@@ -9,40 +9,20 @@ package io.amichne.konditional.serialization.options
  *
  * Operationally, some deployments prefer forward-compatibility during migrations; in that case,
  * unknown keys can be skipped while emitting warnings.
- *
- * Legacy global registry fallback remains available as an explicit opt-in
- * via [legacyGlobalRegistryFallback].
  */
 data class SnapshotLoadOptions(
     val unknownFeatureKeyStrategy: UnknownFeatureKeyStrategy = UnknownFeatureKeyStrategy.Fail,
+    val missingDeclaredFlagStrategy: MissingDeclaredFlagStrategy = MissingDeclaredFlagStrategy.Reject,
     val onWarning: (SnapshotWarning) -> Unit = {},
-    val featureResolutionMode: FeatureResolutionMode = FeatureResolutionMode.RequireExplicitFeatureScope,
 ) {
-    /**
-     * Controls how [io.amichne.konditional.values.FeatureId] keys are resolved at decode time.
-     */
-    sealed interface FeatureResolutionMode {
-        /**
-         * Requires callers to provide a trusted namespace-scoped feature index.
-         * This preserves isolation and removes runtime type-hint fallback behavior.
-         */
-        data object RequireExplicitFeatureScope : FeatureResolutionMode
-
-        /**
-         * Legacy compatibility mode:
-         * missing entries in the provided scope may fall back to [io.amichne.konditional.serialization.FeatureRegistry].
-         */
-        data object LegacyGlobalRegistryFallback : FeatureResolutionMode
-    }
-
     companion object {
         /**
-         * Strict/default mode: no global fallback, no implicit type-hint fallback.
+         * Strict/default mode: explicit feature scope required.
          */
         fun strict(): SnapshotLoadOptions =
             SnapshotLoadOptions(
                 unknownFeatureKeyStrategy = UnknownFeatureKeyStrategy.Fail,
-                featureResolutionMode = FeatureResolutionMode.RequireExplicitFeatureScope,
+                missingDeclaredFlagStrategy = MissingDeclaredFlagStrategy.Reject,
             )
 
         /**
@@ -51,24 +31,18 @@ data class SnapshotLoadOptions(
         fun skipUnknownKeys(onWarning: (SnapshotWarning) -> Unit = {}): SnapshotLoadOptions =
             SnapshotLoadOptions(
                 unknownFeatureKeyStrategy = UnknownFeatureKeyStrategy.Skip,
+                missingDeclaredFlagStrategy = MissingDeclaredFlagStrategy.Reject,
                 onWarning = onWarning,
-                featureResolutionMode = FeatureResolutionMode.RequireExplicitFeatureScope,
             )
 
         /**
-         * Explicit legacy compatibility mode.
-         *
-         * Feature keys resolve through the provided namespace scope first, then fall back to global
-         * [io.amichne.konditional.serialization.FeatureRegistry] when missing.
+         * Forward-compatible mode that fills absent declared flags from compile-time defaults.
          */
-        fun legacyGlobalRegistryFallback(
-            unknownFeatureKeyStrategy: UnknownFeatureKeyStrategy = UnknownFeatureKeyStrategy.Fail,
-            onWarning: (SnapshotWarning) -> Unit = {},
-        ): SnapshotLoadOptions =
+        fun fillMissingDeclaredFlags(onWarning: (SnapshotWarning) -> Unit = {}): SnapshotLoadOptions =
             SnapshotLoadOptions(
-                unknownFeatureKeyStrategy = unknownFeatureKeyStrategy,
+                unknownFeatureKeyStrategy = UnknownFeatureKeyStrategy.Fail,
+                missingDeclaredFlagStrategy = MissingDeclaredFlagStrategy.FillFromDeclaredDefaults,
                 onWarning = onWarning,
-                featureResolutionMode = FeatureResolutionMode.LegacyGlobalRegistryFallback,
             )
     }
 }

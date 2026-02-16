@@ -1,5 +1,4 @@
 @file:OptIn(KonditionalInternalApi::class)
-@file:Suppress("DEPRECATION")
 
 package io.amichne.konditional.internal.serialization.models
 
@@ -10,7 +9,8 @@ import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.result.ParseError
-import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.core.result.parseFailure
+import io.amichne.konditional.core.schema.CompiledNamespaceSchema
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.core.types.asObjectSchema
 import io.amichne.konditional.internal.SerializedFlagDefinitionMetadata
@@ -18,8 +18,6 @@ import io.amichne.konditional.internal.SerializedFlagRuleSpec
 import io.amichne.konditional.internal.flagDefinitionFromSerialized
 import io.amichne.konditional.internal.toSerializedMetadata
 import io.amichne.konditional.internal.toSerializedRules
-import io.amichne.konditional.serialization.FeatureRegistry
-import io.amichne.konditional.serialization.options.SnapshotLoadOptions.FeatureResolutionMode
 import io.amichne.konditional.values.FeatureId
 
 /**
@@ -39,33 +37,25 @@ data class SerializableFlag(
     val rules: List<SerializableRule> = emptyList(),
 ) {
     fun toFlagPair(
-        featuresById: Map<FeatureId, Feature<*, *, *>> = emptyMap(),
-        featureResolutionMode: FeatureResolutionMode = FeatureResolutionMode.RequireExplicitFeatureScope,
-    ): ParseResult<Pair<Feature<*, *, *>, FlagDefinition<*, *, *>>> =
-        when (val conditionalResult = resolveFeature(featuresById, featureResolutionMode)) {
-            is ParseResult.Success -> {
-                val conditional = conditionalResult.value
-                runCatching {
-                    toFlagDefinition(
-                        conditional = conditional,
-                        allowHintFallback =
-                            featureResolutionMode is FeatureResolutionMode.LegacyGlobalRegistryFallback,
-                    )
-                }
-                    .fold(
-                        onSuccess = { ParseResult.success(conditional to it) },
-                        onFailure = {
-                            ParseResult.failure(
-                                ParseError.InvalidSnapshot(
-                                    it.message ?: "Failed to decode flag"
+        schema: CompiledNamespaceSchema,
+    ): Result<Pair<Feature<*, *, *>, FlagDefinition<*, *, *>>> =
+        resolveFeature(schema)
+            .fold(
+                onSuccess = { conditional ->
+                    runCatching { conditional to toFlagDefinition(conditional = conditional) }
+                        .fold(
+                            onSuccess = { Result.success(it) },
+                            onFailure = {
+                                parseFailure(
+                                    ParseError.InvalidSnapshot(
+                                        it.message ?: "Failed to decode flag",
+                                    ),
                                 )
-                            )
-                        },
-                    )
-            }
-
-            is ParseResult.Failure -> ParseResult.failure(conditionalResult.error)
-        }
+                            },
+                        )
+                },
+                onFailure = { Result.failure(it) },
+            )
 
     companion object {
         fun from(flagDefinition: FlagDefinition<*, *, *>, flagKey: FeatureId): SerializableFlag {
@@ -86,43 +76,34 @@ data class SerializableFlag(
     }
 
     private fun resolveFeature(
-        featuresById: Map<FeatureId, Feature<*, *, *>>,
-        featureResolutionMode: FeatureResolutionMode,
-    ): ParseResult<Feature<*, *, *>> =
-        when (featureResolutionMode) {
-            FeatureResolutionMode.RequireExplicitFeatureScope ->
-                when {
-                    featuresById.isEmpty() ->
-                        ParseResult.failure(
-                            ParseError.invalidSnapshot(
-                                "Feature-aware decode requires explicit feature scope for key '$key'. " +
-                                    "Use ConfigurationSnapshotCodec.decode(json, featuresById, options) " +
-                                    "or opt in to SnapshotLoadOptions.legacyGlobalRegistryFallback().",
-                            ),
-                        )
+        schema: CompiledNamespaceSchema,
+    ): Result<Feature<*, *, *>> {
+        val featuresById = schema.entriesById.mapValues { (_, entry) -> entry.feature }
+        return when {
+            featuresById.isEmpty() ->
+                parseFailure(
+                    ParseError.invalidSnapshot(
+                        "Feature-aware decode requires explicit feature scope for key '$key'. " +
+                            "Use ConfigurationSnapshotCodec.decode(json, featuresById, options).",
+                    ),
+                )
 
-                    else ->
-                        featuresById[key]?.let { ParseResult.success(it) }
-                            ?: ParseResult.failure(ParseError.featureNotFound(key))
-                }
-
-            FeatureResolutionMode.LegacyGlobalRegistryFallback ->
-                featuresById[key]?.let { ParseResult.success(it) } ?: FeatureRegistry.get(key)
+            else ->
+                featuresById[key]?.let { Result.success(it) }
+                    ?: parseFailure(ParseError.featureNotFound(key))
         }
+    }
 
     private fun <T : Any, C : Context, M : Namespace> toFlagDefinition(
         conditional: Feature<T, C, M>,
-        allowHintFallback: Boolean,
     ): FlagDefinition<T, C, M> {
         val expectedSample =
             conditional.expectedDefaultValueOrNull()
                 ?: conditional.declaredDefaultValueOrNull()
-                ?: if (allowHintFallback) FeatureRegistry.defaultSample(key) else null
 
         return defaultValue
             .extractValue<T>(
                 expectedSample = expectedSample,
-                allowHintFallback = allowHintFallback,
             )
             .let { decodedDefault ->
                 val schema =
@@ -140,7 +121,6 @@ data class SerializableFlag(
                             rule.value.extractValue<T>(
                                 expectedSample = decodedDefault,
                                 schema = schema,
-                                allowHintFallback = allowHintFallback,
                             ),
                         )
                     }
