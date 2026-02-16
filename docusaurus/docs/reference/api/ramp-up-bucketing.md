@@ -105,27 +105,27 @@ val bucket2 = RampUpBucketing.bucket(
 ### Step-by-Step
 
 1. **Construct input string**:
-   ```
+````
    "$salt:$featureKey:${stableId.hexId.id}"
-   ```
+````
 
 2. **Hash with SHA-256**:
-   ```kotlin
+````kotlin
    val hash = MessageDigest.getInstance("SHA-256").digest(input.toByteArray(UTF_8))
-   ```
+````
 
 3. **Extract first 4 bytes as unsigned int**:
-   ```kotlin
+````kotlin
    val hashInt = (hash[0].toInt() and 0xFF) shl 24 or
                  (hash[1].toInt() and 0xFF) shl 16 or
                  (hash[2].toInt() and 0xFF) shl 8 or
                  (hash[3].toInt() and 0xFF)
-   ```
+````
 
 4. **Reduce to bucket**:
-   ```kotlin
+````kotlin
    val bucket = (hashInt and 0x7FFFFFFF) % 10_000
-   ```
+````
 
 ### Properties
 

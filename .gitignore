@@ -1033,3 +1033,5 @@ build/
 !/docusaurus/.claude/
 
 # Generated API/type signatures are checked in and drift-checked in CI.
+.signatures/
+signatures/

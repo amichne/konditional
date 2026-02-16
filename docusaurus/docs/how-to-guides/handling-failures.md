@@ -304,7 +304,7 @@ when {
 ### Fail Fast When:
 
 1. **Startup and no acceptable defaults exist**
-   ```kotlin
+````kotlin
    // App cannot function without remote config
    val json = fetchConfigOrThrow()
    val result = NamespaceSnapshotLoader(AppFeatures).load(json)
@@ -314,21 +314,21 @@ when {
            exitProcess(1)
        }
    }
-   ```
+````
 
 2. **Deployment validation (pre-production)**
-   ```kotlin
+````kotlin
    // Validate config before deploying to production
    val result = NamespaceSnapshotLoader(AppFeatures).load(candidateConfig)
    require(result.isSuccess) {
        "Config validation failed: ${result.parseErrorOrNull()}"
    }
-   ```
+````
 
 ### Continue (Last-Known-Good) When:
 
 1. **Service is already running**
-   ```kotlin
+````kotlin
    // Refresh configuration, but don't break existing traffic
    val result = NamespaceSnapshotLoader(AppFeatures).load(json)
    when {
@@ -337,20 +337,20 @@ when {
            // Traffic continues unaffected
        }
    }
-   ```
+````
 
 2. **Acceptable defaults exist**
-   ```kotlin
+````kotlin
    // Features have sensible defaults
    object AppFeatures : Namespace("app") {
        val maxRetries by integer<Context>(default = 3)  // Reasonable default
    }
 
    // If config load fails, default=3 is fine
-   ```
+````
 
 3. **Partial functionality is better than no functionality**
-   ```kotlin
+````kotlin
    // E-commerce site: better to run with defaults than crash
    val result = NamespaceSnapshotLoader(AppFeatures).load(json)
    when {
@@ -359,7 +359,7 @@ when {
            // Checkout still works, just with default behavior
        }
    }
-   ```
+````
 
 ## Testing Failure Handling
 

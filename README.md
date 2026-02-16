@@ -197,36 +197,36 @@ Feature has 5 boolean flags for variants. Testing requires 32 combinations. Most
 Coming from a boolean capability system:
 
 1. **Mirror existing flags** as properties:
-   ```kotlin
+````kotlin
    object Features : Namespace("app") {
        val featureX by boolean<Context>(default = false)
    }
-   ```
+````
 
 2. **Centralize evaluation** into rules:
-   ```kotlin
+````kotlin
    val featureX by boolean<Context>(default = false) {
        rule(true) { android() }
        rule(true) { rampUp { 25.0 } }
    }
-   ```
+````
 
 3. **Replace boolean matrices** with typed values:
-   ```kotlin
+````kotlin
    // Before: CHECKOUT_V1, CHECKOUT_V2, CHECKOUT_V3 (3 booleans)
    enum class CheckoutVersion { V1, V2, V3 }
    val checkoutVersion by enum<CheckoutVersion, Context>(default = V1) {
        rule(V2) { rampUp { 33.0 } }
        rule(V3) { rampUp { 66.0 } }
    }
-   ```
+````
 
 4. **Add remote config** with explicit boundaries:
-   ```kotlin
+````kotlin
    val result = NamespaceSnapshotLoader(Features).load(json)
    result.onSuccess { materialized -> Features.load(materialized) }
    result.onFailure { keepLastKnownGood() }
-   ```
+````
 
 See the [Migration Guide](https://amichne.github.io/konditional/reference/migration-guide/#step-by-step-adoption-incremental) for detailed patterns.
 
