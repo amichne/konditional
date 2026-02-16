@@ -1,11 +1,14 @@
 name: Publish Snapshot
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       snapshot-version:
         description: 'Snapshot version (e.g., 0.1.0-SNAPSHOT)'
-        required: true
+        required: false
         type: string
 
 permissions:
@@ -13,8 +16,50 @@ permissions:
   packages: write
 
 jobs:
-  publish-snapshot:
+  validate:
     runs-on: ubuntu-latest
+    outputs:
+      snapshot-version: ${{ steps.snapshot-version.outputs.value }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Validate snapshot version
+        id: snapshot-version
+        run: |
+          VERSION="${{ github.event.inputs.snapshot-version }}"
+
+          if [ -z "$VERSION" ]; then
+            BASE_VERSION="$(grep '^VERSION=' gradle.properties | cut -d'=' -f2)"
+            if [[ "$BASE_VERSION" =~ -SNAPSHOT$ ]]; then
+              VERSION="$BASE_VERSION"
+            else
+              VERSION="${BASE_VERSION}-SNAPSHOT"
+            fi
+          fi
+
+          if [[ ! "$VERSION" =~ -SNAPSHOT$ ]]; then
+            echo "ERROR: Version must end with -SNAPSHOT"
+            exit 1
+          fi
+          echo "✓ Valid snapshot version: $VERSION"
+          echo "value=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Run tests
+        env:
+          VERSION: ${{ steps.snapshot-version.outputs.value }}
+        run: ./gradlew -PVERSION="$VERSION" test --no-daemon
+
+  publish-github-packages:
+    runs-on: ubuntu-latest
+    needs: validate
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -44,27 +89,9 @@ jobs:
           echo "$SIGNING_GPG_PRIVATE_KEY" | gpg --batch --import
           gpg --list-secret-keys --keyid-format=long
 
-      - name: Validate snapshot version
-        run: |
-          VERSION="${{ github.event.inputs.snapshot-version }}"
-          if [[ ! "$VERSION" =~ -SNAPSHOT$ ]]; then
-            echo "ERROR: Version must end with -SNAPSHOT"
-            exit 1
-          fi
-          echo "✓ Valid snapshot version: $VERSION"
-
-      - name: Override version
-        run: |
-          VERSION="${{ github.event.inputs.snapshot-version }}"
-          echo "Overriding version to: $VERSION"
-          sed -i.bak "s/^VERSION=.*/VERSION=$VERSION/" gradle.properties
-          cat gradle.properties | grep VERSION
-
-      - name: Run tests
-        run: ./gradlew test --no-daemon
-
       - name: Publish to GitHub Packages
         env:
+          VERSION: ${{ needs.validate.outputs.snapshot-version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_ACTOR: ${{ github.actor }}
           SIGNING_GPG_KEY_NAME: ${{ secrets.SIGNING_GPG_KEY_NAME }}
@@ -75,14 +102,82 @@ jobs:
             SIGNING_ARGS+=(-Psigning.gnupg.passphrase="$SIGNING_GPG_PASSPHRASE")
           fi
 
-          ./gradlew publishMavenPublicationToGitHubPackagesRepository "${SIGNING_ARGS[@]}" \
+          ./gradlew -PVERSION="$VERSION" publishMavenPublicationToGitHubPackagesRepository "${SIGNING_ARGS[@]}" \
+            --no-configuration-cache \
+            --no-daemon \
+            --stacktrace
+
+  publish-maven-central:
+    runs-on: ubuntu-latest
+    needs: validate
+    outputs:
+      published: ${{ steps.gate.outputs.publish }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Check Maven Central + signing secrets
+        id: gate
+        run: |
+          missing=0
+          if [ -z "${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME }}" ]; then
+            echo "Missing ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME secret"
+            missing=1
+          fi
+          if [ -z "${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD }}" ]; then
+            echo "Missing ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD secret"
+            missing=1
+          fi
+          if [ -z "${{ secrets.SIGNING_GPG_KEY_NAME }}" ]; then
+            echo "Missing SIGNING_GPG_KEY_NAME secret"
+            missing=1
+          fi
+          if [ -z "${{ secrets.SIGNING_GPG_PRIVATE_KEY }}" ]; then
+            echo "Missing SIGNING_GPG_PRIVATE_KEY secret"
+            missing=1
+          fi
+          if [ "$missing" -eq 1 ]; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "Maven Central publish skipped due to missing secrets."
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Import GPG key
+        if: steps.gate.outputs.publish == 'true'
+        env:
+          SIGNING_GPG_PRIVATE_KEY: ${{ secrets.SIGNING_GPG_PRIVATE_KEY }}
+        run: |
+          echo "$SIGNING_GPG_PRIVATE_KEY" | gpg --batch --import
+          gpg --list-secret-keys --keyid-format=long
+      - name: Publish to Maven Central
+        if: steps.gate.outputs.publish == 'true'
+        env:
+          VERSION: ${{ needs.validate.outputs.snapshot-version }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD }}
+          SIGNING_GPG_KEY_NAME: ${{ secrets.SIGNING_GPG_KEY_NAME }}
+          SIGNING_GPG_PASSPHRASE: ${{ secrets.SIGNING_GPG_PASSPHRASE }}
+        run: |
+          SIGNING_ARGS=(-Psigning.gnupg.keyName="$SIGNING_GPG_KEY_NAME")
+          if [ -n "${SIGNING_GPG_PASSPHRASE:-}" ]; then
+            SIGNING_ARGS+=(-Psigning.gnupg.passphrase="$SIGNING_GPG_PASSPHRASE")
+          fi
+
+          ./gradlew -PVERSION="$VERSION" publishToMavenCentral "${SIGNING_ARGS[@]}" \
             --no-configuration-cache \
             --no-daemon \
             --stacktrace
 
       - name: Summary
         run: |
-          VERSION="${{ github.event.inputs.snapshot-version }}"
+          VERSION="${{ needs.validate.outputs.snapshot-version }}"
           cat << EOF >> $GITHUB_STEP_SUMMARY
           ## Snapshot Published 
 
