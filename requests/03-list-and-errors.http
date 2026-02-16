@@ -1,0 +1,17 @@
+@baseUrl = http://localhost:8080
+@namespace = missing
+
+### List all stored namespaces
+GET {{baseUrl}}/v1/namespaces
+
+### Missing namespace returns 404
+GET {{baseUrl}}/v1/namespaces/{{namespace}}
+
+### Unsupported method for namespace endpoint returns 405
+PATCH {{baseUrl}}/v1/namespaces/{{namespace}}
+Content-Type: application/json
+
+{"ignored":true}
+
+### Non-GET method on namespace list returns 404
+POST {{baseUrl}}/v1/namespaces

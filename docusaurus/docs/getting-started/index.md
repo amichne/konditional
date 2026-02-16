@@ -23,4 +23,5 @@ By the end of this path, you will have:
 
 - [How-To: Roll Out a Feature Gradually](/how-to-guides/rolling-out-gradually)
 - [How-To: Load Configuration Safely from Remote](/how-to-guides/safe-remote-config)
+- [How-To: Run the Local HTTP Server Container](/how-to-guides/local-http-server-container)
 - [How-To: Test Your Feature Flags](/how-to-guides/testing-features)

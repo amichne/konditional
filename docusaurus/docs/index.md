@@ -13,6 +13,8 @@ In this section you will find:
 - [How-To: Roll Out a Feature Gradually](/how-to-guides/rolling-out-gradually) - deterministic rollouts you can trust
 - [How-To: Load Configuration Safely from Remote](/how-to-guides/safe-remote-config) - typed parse boundary for runtime
   config
+- [How-To: Run the Local HTTP Server Container](/how-to-guides/local-http-server-container) - local Ktor endpoint for
+  namespace snapshot CRUD and persistence
 - [API Reference](/reference/api/namespace-operations) - operational APIs and parse results
 - [Theory and Guarantees](/theory/type-safety-boundaries) - why the safety model holds under production load
 
