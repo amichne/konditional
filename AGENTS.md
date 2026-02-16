@@ -242,6 +242,8 @@ Do not output it unless asked, but you must follow it:
     - global mutable singletons
     - DI frameworks
     - `Map<String, Any>` style payload models in core logic
+    - hand-rolled JSON serialization for contracts/specs (manual `JsonWriter`, custom ad-hoc `JsonAdapter`, or string-built JSON)
+      use Moshi Kotlin adapters with typed models; if polymorphism is needed, prefer `PolymorphicJsonAdapterFactory`
 
 ---
 

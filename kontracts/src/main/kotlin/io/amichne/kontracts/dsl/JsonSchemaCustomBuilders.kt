@@ -6,9 +6,7 @@ import io.amichne.kontracts.dsl.custom.CustomIntSchemaBuilder
 import io.amichne.kontracts.dsl.custom.CustomStringSchemaBuilder
 import kotlin.reflect.KProperty0
 
-context(root: RootObjectSchemaBuilder)
-@PublishedApi
-@JsonSchemaBuilderDsl
+context(root: RootObjectSchemaBuilder) @PublishedApi
 internal inline fun <B : JsonSchemaBuilder<Any>> KProperty0<*>.registerCustomSchema(
     builder: B,
     required: Boolean,
@@ -39,16 +37,12 @@ internal inline fun <B : JsonSchemaBuilder<Any>> KProperty0<*>.registerCustomSch
  * }
  * ```
  */
-context(root: RootObjectSchemaBuilder)
-@JvmName("asString")
-@JsonSchemaBuilderDsl
+context(root: RootObjectSchemaBuilder) @JvmName("asString")
 inline infix fun <reified V : Any> KProperty0<V>.asString(
     builder: CustomStringSchemaBuilder<V>.() -> Unit,
 ) {
     registerCustomSchema(
-        CustomStringSchemaBuilder(),
-        required = !returnType.isMarkedNullable,
-        configure = builder
+        CustomStringSchemaBuilder(), required = !returnType.isMarkedNullable, configure = builder
     )
 }
 
@@ -58,7 +52,6 @@ inline infix fun <reified V : Any> KProperty0<V>.asString(
 @Suppress("unused")
 context(root: RootObjectSchemaBuilder)
 @JvmName("asNullableString")
-@JsonSchemaBuilderDsl
 inline infix fun <reified V : Any> KProperty0<V?>.asString(
     builder: CustomStringSchemaBuilder<V>.() -> Unit,
 ) {
@@ -82,16 +75,13 @@ inline infix fun <reified V : Any> KProperty0<V?>.asString(
  * }
  * ```
  */
-context(root: RootObjectSchemaBuilder)
-@JvmName("asInt")
-@JsonSchemaBuilderDsl
+context(root: RootObjectSchemaBuilder) @JvmName("asInt")
+
 inline infix fun <reified V : Any> KProperty0<V>.asInt(
     builder: CustomIntSchemaBuilder<V>.() -> Unit,
 ) {
     registerCustomSchema(
-        CustomIntSchemaBuilder(),
-        required = !returnType.isMarkedNullable,
-        configure = builder
+        CustomIntSchemaBuilder(), required = !returnType.isMarkedNullable, configure = builder
     )
 }
 
@@ -101,9 +91,8 @@ inline infix fun <reified V : Any> KProperty0<V>.asInt(
 @Suppress("unused")
 context(root: RootObjectSchemaBuilder)
 @JvmName("asNullableInt")
-@JsonSchemaBuilderDsl
 inline infix fun <reified V : Any> KProperty0<V?>.asInt(
-    @JsonSchemaBuilderDsl builder: CustomIntSchemaBuilder<V>.() -> Unit,
+    builder: CustomIntSchemaBuilder<V>.() -> Unit,
 ) {
     registerCustomSchema(CustomIntSchemaBuilder<V>(), required = false) {
         nullable = true
@@ -124,16 +113,12 @@ inline infix fun <reified V : Any> KProperty0<V?>.asInt(
  * }
  * ```
  */
-context(root: RootObjectSchemaBuilder)
-@JvmName("asBoolean")
-@JsonSchemaBuilderDsl
+context(root: RootObjectSchemaBuilder) @JvmName("asBoolean")
 inline infix fun <reified V : Any> KProperty0<V>.asBoolean(
     builder: CustomBooleanSchemaBuilder<V>.() -> Unit,
 ) {
     registerCustomSchema(
-        CustomBooleanSchemaBuilder(),
-        required = !returnType.isMarkedNullable,
-        configure = builder
+        CustomBooleanSchemaBuilder(), required = !returnType.isMarkedNullable, configure = builder
     )
 }
 
@@ -143,7 +128,6 @@ inline infix fun <reified V : Any> KProperty0<V>.asBoolean(
 @Suppress("unused")
 context(root: RootObjectSchemaBuilder)
 @JvmName("asNullableBoolean")
-@JsonSchemaBuilderDsl
 inline infix fun <reified V : Any> KProperty0<V?>.asBoolean(
     builder: CustomBooleanSchemaBuilder<V>.() -> Unit,
 ) {
@@ -168,16 +152,13 @@ inline infix fun <reified V : Any> KProperty0<V?>.asBoolean(
  * }
  * ```
  */
-context(root: RootObjectSchemaBuilder)
-@JvmName("asDouble")
+context(root: RootObjectSchemaBuilder) @JvmName("asDouble")
 @JsonSchemaBuilderDsl
 inline infix fun <reified V : Any> KProperty0<V>.asDouble(
     builder: CustomDoubleSchemaBuilder<V>.() -> Unit,
 ) {
     registerCustomSchema(
-        CustomDoubleSchemaBuilder(),
-        required = !returnType.isMarkedNullable,
-        configure = builder
+        CustomDoubleSchemaBuilder(), required = !returnType.isMarkedNullable, configure = builder
     )
 }
 

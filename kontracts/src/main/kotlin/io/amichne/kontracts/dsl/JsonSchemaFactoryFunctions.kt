@@ -14,14 +14,13 @@ class FieldSchemaFactoryBuilder {
     var description: String? = null
     var deprecated: Boolean = false
 
-    internal fun build(): FieldSchema =
-        FieldSchema(
-            schema = schema,
-            required = required,
-            defaultValue = defaultValue,
-            description = description,
-            deprecated = deprecated,
-        )
+    internal fun build(): FieldSchema = FieldSchema(
+        schema = schema,
+        required = required,
+        defaultValue = defaultValue,
+        description = description,
+        deprecated = deprecated,
+    )
 }
 
 fun fieldSchema(builder: FieldSchemaFactoryBuilder.() -> Unit): FieldSchema =
@@ -38,17 +37,16 @@ class ObjectSchemaFactoryBuilder {
     var deprecated: Boolean = false
     var required: Set<String>? = null
 
-    internal fun build(): ObjectSchema =
-        JsonSchema.obj(
-            fields = fields,
-            title = title,
-            description = description,
-            default = default,
-            nullable = nullable,
-            example = example,
-            deprecated = deprecated,
-            required = required,
-        )
+    internal fun build(): ObjectSchema = ObjectSchema(
+        fields = fields,
+        title = title,
+        description = description,
+        default = default,
+        nullable = nullable,
+        example = example,
+        deprecated = deprecated,
+        required = required,
+    )
 }
 
 fun objectSchema(builder: ObjectSchemaFactoryBuilder.() -> Unit): ObjectSchema =
@@ -66,18 +64,17 @@ class MapSchemaFactoryBuilder<V : Any> {
     var minProperties: Int? = null
     var maxProperties: Int? = null
 
-    internal fun build(): MapSchema<V> =
-        JsonSchema.map(
-            valueSchema = valueSchema,
-            title = title,
-            description = description,
-            default = default,
-            nullable = nullable,
-            example = example,
-            deprecated = deprecated,
-            minProperties = minProperties,
-            maxProperties = maxProperties,
-        )
+    internal fun build(): MapSchema<V> = MapSchema(
+        valueSchema = valueSchema,
+        title = title,
+        description = description,
+        default = default,
+        nullable = nullable,
+        example = example,
+        deprecated = deprecated,
+        minProperties = minProperties,
+        maxProperties = maxProperties,
+    )
 }
 
 fun <V : Any> mapSchema(builder: MapSchemaFactoryBuilder<V>.() -> Unit): MapSchema<V> =
@@ -88,11 +85,10 @@ class OneOfDiscriminatorBuilder {
     lateinit var propertyName: String
     var mapping: Map<String, String> = emptyMap()
 
-    internal fun build(): OneOfSchema.Discriminator =
-        OneOfSchema.Discriminator(
-            propertyName = propertyName,
-            mapping = mapping,
-        )
+    internal fun build(): OneOfSchema.Discriminator = OneOfSchema.Discriminator(
+        propertyName = propertyName,
+        mapping = mapping,
+    )
 }
 
 @JsonSchemaBuilderDsl
@@ -110,17 +106,16 @@ class OneOfSchemaFactoryBuilder {
         discriminatorValue = OneOfDiscriminatorBuilder().apply(builder).build()
     }
 
-    internal fun build(): OneOfSchema =
-        JsonSchema.oneOf(
-            options = options,
-            discriminator = discriminatorValue,
-            title = title,
-            description = description,
-            default = default,
-            nullable = nullable,
-            example = example,
-            deprecated = deprecated,
-        )
+    internal fun build(): OneOfSchema = OneOfSchema(
+        options = options,
+        discriminator = discriminatorValue,
+        title = title,
+        description = description,
+        default = default,
+        nullable = nullable,
+        example = example,
+        deprecated = deprecated,
+    )
 }
 
 fun oneOfSchema(builder: OneOfSchemaFactoryBuilder.() -> Unit): OneOfSchema =
