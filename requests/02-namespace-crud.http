@@ -1,0 +1,14 @@
+@baseUrl = http://localhost:8080
+@namespace = app
+
+### Store namespace snapshot payload
+PUT {{baseUrl}}/v1/namespaces/{{namespace}}
+Content-Type: application/json
+
+{"flags":{"checkout":true}}
+
+### Read namespace snapshot payload
+GET {{baseUrl}}/v1/namespaces/{{namespace}}
+
+### Delete namespace snapshot payload
+DELETE {{baseUrl}}/v1/namespaces/{{namespace}}

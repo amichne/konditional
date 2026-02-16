@@ -180,7 +180,7 @@ val enabled: String = AppFeatures.darkMode.evaluate(ctx) // Compile error
 
 **Verification**: Call `AppFeatures.darkMode.evaluate(ctx)` to see why default was returned.
 
-**Related**: [Reference: Feature Evaluation](/reference/api/feature-evaluation#explain)
+**Related**: [Observability reference](/observability/reference)
 
 ## Next Steps
 

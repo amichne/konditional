@@ -24,6 +24,7 @@ const sidebars: SidebarsConfig = {
             items: [
                 'how-to-guides/rolling-out-gradually',
                 'how-to-guides/safe-remote-config',
+                'how-to-guides/local-http-server-container',
                 'how-to-guides/testing-features',
                 'how-to-guides/ab-testing',
                 'how-to-guides/custom-business-logic',
