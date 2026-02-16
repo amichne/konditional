@@ -1,11 +1,11 @@
-# konditional-spec
+# server:rest-spec
 
 Contract-first REST surface specification module for Konditional.
 The module is data-only and transport-agnostic.
 
 ## When to use this module
 
-Use `konditional-spec` when you need to:
+Use `server:rest-spec` when you need to:
 
 - define canonical surface routes and operation IDs
 - generate deterministic OpenAPI JSON from Kotlin contracts
@@ -27,9 +27,9 @@ Use `konditional-spec` when you need to:
 ## Quick start
 
 ```bash
-./gradlew :konditional-spec:generateOpenApiSpec
+./gradlew :server:rest-spec:generateOpenApiSpec
 ```
 
 Generated output:
 
-- `konditional-spec/build/generated/openapi/konditional-surface-openapi.json`
+- `server/rest-spec/build/generated/openapi/konditional-surface-openapi.json`

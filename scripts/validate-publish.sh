@@ -216,7 +216,7 @@ PUBLISHABLE_MODULES=(
   "konditional-serialization"
   "konditional-runtime"
   "konditional-observability"
-  "konditional-spec"
+  "server/rest-spec"
   "kontracts"
   "openapi"
   "openfeature"
