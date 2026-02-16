@@ -245,6 +245,36 @@ The solution is structural: bind types at compile-time, centralize evaluation se
 between static definitions and dynamic
 configuration.
 
+
+## Local HTTP Server Container
+
+Konditional ships with a local HTTP server container for teams that want a no-permissions local integration target.
+It includes file-backed fake storage mounted on a Docker volume, so snapshots survive restarts.
+
+### Run with Docker Compose
+
+```bash
+docker compose -f docker-compose.http-server.yml up --build
+```
+
+### Endpoints
+
+- `GET /health` → health status
+- `GET /v1/namespaces` → list stored namespaces
+- `GET /v1/namespaces/{namespace}` → fetch raw snapshot JSON payload
+- `PUT /v1/namespaces/{namespace}` → store raw snapshot JSON payload
+- `DELETE /v1/namespaces/{namespace}` → remove namespace snapshot
+
+### Example
+
+```bash
+curl -X PUT http://localhost:8080/v1/namespaces/app \
+  -H 'content-type: application/json' \
+  --data '{"flags":{"checkout":true}}'
+
+curl http://localhost:8080/v1/namespaces/app
+```
+
 ## Next Steps
 
 - [Installation](https://amichne.github.io/konditional/getting-started/installation/) — Add Konditional to your project
