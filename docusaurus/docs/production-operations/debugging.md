@@ -103,7 +103,7 @@ require(results.all { it == results.first() }) {
 **Common causes of non-determinism:**
 
 1. **stableId changes between evaluations**
-   ```kotlin
+````kotlin
    // DON'T: New StableId every time
    val ctx1 = Context(stableId = StableId.of(UUID.randomUUID().toString()))
    val ctx2 = Context(stableId = StableId.of(UUID.randomUUID().toString()))
@@ -111,10 +111,10 @@ require(results.all { it == results.first() }) {
    // DO: Consistent stableId
    val userId = getConsistentUserId()  // e.g., database ID
    val ctx = Context(stableId = StableId.of(userId))
-   ```
+````
 
 2. **Salt changed without understanding implications**
-   ```kotlin
+````kotlin
    // Changing salt reshuffles ALL users
    val feature by boolean<Context>(default = false) {
        rule(true) { rampUp { 50.0 } }  // Default salt
@@ -124,7 +124,7 @@ require(results.all { it == results.first() }) {
    val feature by boolean<Context>(default = false) {
        rule(true) { rampUp(salt = "v2") { 50.0 } }  // Different bucket assignments!
    }
-   ```
+````
 
 ### Inspecting Bucket Assignment
 

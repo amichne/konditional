@@ -32,33 +32,33 @@ object AppFeatures : Namespace("app") {
 **Compile-time checks:**
 
 1. **Property name = feature key**
-   ```kotlin
+````kotlin
    AppFeatures.darkMode.evaluate(context)  // OK Property exists
    // AppFeatures.darkMood.evaluate(context)  // X Compile error
-   ```
+````
 
 2. **Type propagation**
-   ```kotlin
+````kotlin
    val enabled: Boolean = AppFeatures.darkMode.evaluate(context)  // OK
    // val enabled: String = AppFeatures.darkMode.evaluate(context)  // X Type mismatch
-   ```
+````
 
 3. **Rule return types match feature type**
-   ```kotlin
+````kotlin
    val timeout by double<Context>(default = 30.0) {
        rule(45.0) { platforms(Platform.ANDROID) }  // OK
        // rule("invalid") { platforms(Platform.IOS) }  // X Type mismatch
    }
-   ```
+````
 
 4. **Required defaults**
-   ```kotlin
+````kotlin
    val feature by boolean<Context>(default = false)  // OK
    // val feature by boolean<Context>()  // X Compile error: default required
-   ```
+````
 
 5. **Context type constraints**
-   ```kotlin
+````kotlin
    val PREMIUM by boolean<EnterpriseContext>(default = false) {
        rule(true) { extension { subscriptionTier == SubscriptionTier.ENTERPRISE } }
    }
@@ -68,7 +68,7 @@ object AppFeatures : Namespace("app") {
 
    val basicCtx: Context = Context(...)
    // PREMIUM(basicCtx)  // X Compile error
-   ```
+````
 
 ### Mechanism: Property Delegation + Generics
 

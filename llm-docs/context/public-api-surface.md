@@ -222,37 +222,37 @@ Feature has 5 boolean flags for variants. Testing requires 32 combinations. Most
 Coming from a boolean capability system:
 
 1. **Mirror existing flags** as properties:
-   ```kotlin
+````kotlin
    object Features : Namespace("app") {
        val featureX by boolean<Context>(default = false)
    }
-   ```
+````
 
 2. **Centralize evaluation** into rules:
-   ```kotlin
+````kotlin
    val featureX by boolean<Context>(default = false) {
        rule(true) { android() }
        rule(true) { rampUp { 25.0 } }
    }
-   ```
+````
 
 3. **Replace boolean matrices** with typed values:
-   ```kotlin
+````kotlin
    // Before: CHECKOUT_V1, CHECKOUT_V2, CHECKOUT_V3 (3 booleans)
    enum class CheckoutVersion { V1, V2, V3 }
    val checkoutVersion by enum<CheckoutVersion, Context>(default = V1) {
        rule(V2) { rampUp { 33.0 } }
        rule(V3) { rampUp { 66.0 } }
    }
-   ```
+````
 
 4. **Add remote config** with explicit boundaries:
-   ```kotlin
+````kotlin
    when (val result = NamespaceSnapshotLoader(Features).load(json)) {
        is ParseResult.Success -> Unit
        is ParseResult.Failure -> keepLastKnownGood()
    }
-   ```
+````
 
 See the [Migration Guide](./reference/migration-guide.md) for detailed patterns.
 
@@ -394,4 +394,3 @@ unlisted: true
 This page has moved.
 
 See [Observability reference](/observability/reference/).
-
