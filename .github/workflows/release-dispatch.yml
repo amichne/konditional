@@ -76,7 +76,6 @@ jobs:
           git tag "v$NEXT_VERSION"
 
       - name: Push release
-        if: ${{ !github.event.inputs.dry-run }}
         run: |
           git push origin HEAD
           git push origin "v${{ steps.version.outputs.next }}"
