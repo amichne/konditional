@@ -70,6 +70,8 @@ object PremiumFeatures : Namespace("premium") {
 - `extension { ... }` block receives `BusinessContext` as `this`
 - Inside the block, you can access `subscriptionTier`, `accountAgeMonths`, etc.
 - Type safety enforced at compile-time
+- Multiple `extension { ... }` blocks in the same rule are combined with AND
+  semantics
 
 ### Step 3: Evaluate with Custom Context
 
@@ -163,6 +165,26 @@ val paymentFeature by boolean<PaymentContext>(default = false) {
   }
 }
 ```
+
+### Pattern: capability narrowing on broader context
+
+If a feature uses a broader `Context` type but one rule needs extra fields, use
+`whenContext<R>`.
+
+```kotlin
+import io.amichne.konditional.core.dsl.rules.targeting.scopes.whenContext
+
+val enterprisePreview by boolean<Context>(default = false) {
+  rule(true) {
+    whenContext<BusinessContext> {
+      subscriptionTier == SubscriptionTier.ENTERPRISE
+    }
+  }
+}
+```
+
+`whenContext<R>` returns `false` when runtime context is not `R`, so rules stay
+safe for mixed context populations.
 
 ### Pattern: Computed Properties in Context
 

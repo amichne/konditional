@@ -86,6 +86,33 @@ val enterpriseOnly by boolean<EnterpriseContext>(default = false) {
 }
 ```
 
+- Multiple `extension { ... }` blocks on the same rule are combined with AND semantics.
+- Each `extension { ... }` block contributes predicate specificity.
+
+### Capability narrowing with `whenContext`
+
+Use `whenContext<R> { ... }` when a feature is defined on a broader context
+type but a rule needs an additional capability:
+
+```kotlin
+import io.amichne.konditional.core.dsl.rules.targeting.scopes.whenContext
+
+val enterpriseOnly by boolean<Context>(default = false) {
+    rule(true) {
+        whenContext<EnterpriseContext> {
+            subscriptionTier == Tier.ENTERPRISE
+        }
+    }
+}
+```
+
+- **Guarantee**: If runtime context is not `R`, the predicate returns `false`
+  and does not throw.
+- **Mechanism**: `whenContext` narrows context with a safe cast and evaluates
+  the block only on success.
+- **Boundary**: A rule using `whenContext<R>` never matches contexts that do
+  not implement `R`.
+
 - **Guarantee**: Custom predicates participate in specificity ordering.
 
 - **Mechanism**: Predicate implementations report their own `specificity()` which is added to the rule total.

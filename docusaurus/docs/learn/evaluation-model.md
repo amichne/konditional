@@ -39,6 +39,9 @@ Specificity is the sum of targeting constraints and custom predicate specificity
 
 - A custom `Predicate` can define its own `specificity()`
 - Default predicate specificity is 1
+- Each `extension { ... }` block contributes 1 specificity by default
+- Multiple `extension { ... }` blocks on one rule are AND-composed, and their
+  specificity is cumulative
 
 - **Guarantee**: More specific rules are evaluated before less specific rules.
 

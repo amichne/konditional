@@ -44,6 +44,15 @@ internal data class RuleBuilder<C : Context>(
     private val rolloutAllowlist: LinkedHashSet<HexId> = linkedSetOf(),
     private var rampUp: RampUp? = null,
 ) : RuleScope<C> {
+    private data class ConjunctivePredicate<C : Context>(
+        private val left: Predicate<C>,
+        private val right: Predicate<C>,
+    ) : Predicate<C> {
+        override fun matches(context: C): Boolean = left.matches(context) && right.matches(context)
+
+        override fun specificity(): Int = left.specificity() + right.specificity()
+    }
+
 
     override fun allowlist(vararg stableIds: StableId) {
         rolloutAllowlist += stableIds.map { it.hexId }
@@ -75,7 +84,8 @@ internal data class RuleBuilder<C : Context>(
      * Implementation of [RuleScope.extension].
      */
     override fun extension(block: C.() -> Boolean) {
-        predicate = factory { block(it) }
+        val extensionPredicate = factory<C> { block(it) }
+        predicate = ConjunctivePredicate<C>(predicate, extensionPredicate)
     }
 
     override fun <T> axis(
