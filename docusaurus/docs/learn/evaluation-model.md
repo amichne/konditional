@@ -24,9 +24,31 @@ When you call `feature.evaluate(context)`:
 4. The first matching rule that passes ramp-up wins.
 5. If nothing matches, the default value is returned.
 
+## Conjunctive rule construction
+
+Within a single rule, targeting criteria compose as a conjunction.
+
+- `platforms(...)`, `locales(...)`, `versions { ... }`, `axis(...)`, and each
+  `extension { ... }` block must all match for the rule to match.
+- Repeating `axis(...)` for the same axis id merges values with OR semantics
+  for that axis.
+- Targeting different axis ids still composes with AND semantics.
+
+## Structured targeting model
+
+Konditional evaluates a structural targeting hierarchy, not a flat predicate
+chain.
+
+- A rule is modeled as `Targeting.All`.
+- Built-in criteria map to leaf nodes (`Locale`, `Platform`, `Version`,
+  `Axis`).
+- Extension criteria map to `Custom` leaves.
+- Capability-narrowed criteria use guarded leaves and return `false` when the
+  required context capability is absent.
+
 ## Specificity system
 
-Specificity is the sum of targeting constraints and custom predicate specificity.
+Specificity is the sum of targeting leaves.
 
 **Base targeting specificity** (0-3+):
 
@@ -35,13 +57,12 @@ Specificity is the sum of targeting constraints and custom predicate specificity
 - `versions { ... }` adds 1 if bounded
 - `axis(...)` adds 1 per axis constraint
 
-**Custom predicate specificity**:
+**Custom targeting specificity**:
 
-- A custom `Predicate` can define its own `specificity()`
-- Default predicate specificity is 1
-- Each `extension { ... }` block contributes 1 specificity by default
-- Multiple `extension { ... }` blocks on one rule are AND-composed, and their
-  specificity is cumulative
+- Each `extension { ... }` block contributes 1 specificity by default.
+- Each `whenContext<R> { ... }` block contributes 1 specificity by default.
+- Multiple extension leaves on one rule are AND-composed, and their
+  specificity is cumulative.
 
 - **Guarantee**: More specific rules are evaluated before less specific rules.
 

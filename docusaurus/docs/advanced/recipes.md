@@ -125,6 +125,10 @@ fun isPremiumUiEnabled(): Boolean {
 }
 ```
 
+This pattern keeps axis binding local to the namespace. `axis(Segment.ENTERPRISE)`
+inside the rule resolves through `SegmentFlags.axisCatalog`, and context axis
+values are set explicitly with `set(SegmentFlags.segmentAxis, ...)`.
+
 - **Guarantee**: Segment targeting is type-safe and serializable.
 - **Mechanism**: Axis IDs are stored in JSON; `axis(...)` evaluates against `Context.axisValues`.
 - **Boundary**: Axis IDs must remain stable across builds and obfuscation.

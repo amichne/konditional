@@ -182,12 +182,12 @@ when (AppFlags.checkoutVariant.evaluate(ctx)) {
 
 ```kotlin
 val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)
-when {
-    result.isSuccess -> Unit // loaded into AppFlags
-    result.isFailure -> {
-        // Invalid JSON rejected, last-known-good remains active
-        logError("Config parse failed: ${result.parseErrorOrNull()}")
-    }
+result.onSuccess { materialized ->
+    AppFlags.load(materialized)
+}
+result.onFailure { failure ->
+    val parseError = result.parseErrorOrNull()
+    logError("Config parse failed: ${parseError?.message ?: failure.message}")
 }
 ```
 
@@ -256,7 +256,7 @@ Coming from a boolean capability system:
 1. **Mirror existing flags** as properties:
 
 ````kotlin
-   object Features : Namespace("app") {
+object Features : Namespace("app") {
     val featureX by boolean<Context>(default = false)
 }
 ````
@@ -264,7 +264,7 @@ Coming from a boolean capability system:
 2. **Centralize evaluation** into rules:
 
 ````kotlin
-   val featureX by boolean<Context>(default = false) {
+val featureX by boolean<Context>(default = false) {
     rule(true) { android() }
     rule(true) { rampUp { 25.0 } }
 }
@@ -273,7 +273,7 @@ Coming from a boolean capability system:
 3. **Replace boolean matrices** with typed values:
 
 ````kotlin
-   // Before: CHECKOUT_V1, CHECKOUT_V2, CHECKOUT_V3 (3 booleans)
+// Before: CHECKOUT_V1, CHECKOUT_V2, CHECKOUT_V3 (3 booleans)
 enum class CheckoutVersion { V1, V2, V3 }
 
 val checkoutVersion by enum<CheckoutVersion, Context>(default = V1) {
@@ -285,16 +285,47 @@ val checkoutVersion by enum<CheckoutVersion, Context>(default = V1) {
 4. **Add remote config** with explicit boundaries:
 
 ````kotlin
-   val result = NamespaceSnapshotLoader(Features).load(json)
-when {
-    result.isSuccess -> Unit
-    result.isFailure -> keepLastKnownGood()
-}
+val result = NamespaceSnapshotLoader(Features).load(json)
+result.onSuccess { materialized -> Features.load(materialized) }
+result.onFailure { keepLastKnownGood() }
 ````
 
 See the [Migration Guide](./reference/migration-guide.md) for detailed patterns.
 
 ---
+
+## Local HTTP server container
+
+Konditional ships with a local Ktor HTTP server container for teams that want a
+no-permissions local integration target. It uses file-backed fake storage on a
+Docker volume, so snapshots survive restarts.
+
+### Run with Docker Compose
+
+```bash
+docker compose -f docker-compose.http-server.yml up --build
+```
+
+### Endpoints
+
+- `GET /health` returns health status.
+- `GET /v1/namespaces` lists stored namespaces.
+- `GET /v1/namespaces/{namespace}` fetches raw snapshot JSON payload.
+- `PUT /v1/namespaces/{namespace}` stores raw snapshot JSON payload.
+- `DELETE /v1/namespaces/{namespace}` removes a namespace snapshot.
+
+### Example
+
+```bash
+curl -X PUT http://localhost:8080/v1/namespaces/app \
+  -H 'content-type: application/json' \
+  --data '{"flags":{"checkout":true}}'
+
+curl http://localhost:8080/v1/namespaces/app
+```
+
+For request samples, use the `.http` files in `requests/` or follow
+[How-To: Run the Local HTTP Server Container](/how-to-guides/local-http-server-container).
 
 ---
 
