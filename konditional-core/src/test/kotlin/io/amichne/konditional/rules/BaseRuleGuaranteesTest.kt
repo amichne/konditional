@@ -7,10 +7,7 @@ import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.core.id.TestStableId
-import io.amichne.konditional.fixtures.utilities.localeIds
-import io.amichne.konditional.fixtures.utilities.platformIds
-import io.amichne.konditional.rules.evaluable.Predicate
-import io.amichne.konditional.rules.evaluable.Predicate.Companion.factory
+import io.amichne.konditional.rules.targeting.Targeting
 import io.amichne.konditional.rules.versions.LeftBound
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -18,51 +15,21 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * Tests that verify Rule's guarantees about applying base matching logic.
+ * Tests that verify Rule's guarantees about applying base matching logic
+ * through the [Targeting] hierarchy.
  *
- * These tests demonstrate that the template method pattern ensures base attributes
- * (locales, platforms, versions) are always checked, even when custom rules add
- * additional matching criteria.
- *
- * ## Usage Example
- *
- * To of a custom rule with additional matching criteria:
- *
- * ```kotlin
- * class SubscriptionRule<C : CustomContext>(
- *     rampUp: RampUp,
- *     locales: Set<AppLocale> = emptySet(),
- *     platforms: Set<Platform> = emptySet(),
- *     val requiredTier: String? = null,
- * ) : Rule<C>(rampUp, locales, platforms) {
- *
- *     // Override to add custom matching logic
- *     override fun matches(contextFn: C): Boolean {
- *         return requiredTier == null || contextFn.subscriptionTier == requiredTier
- *     }
- *
- *     // Override to add custom specificity
- *     override fun specificity(): Int {
- *         return if (requiredTier != null) 1 else 0
- *     }
- * }
- * ```
- *
- * The base matching logic (locales, platforms, versions) is GUARANTEED to be
- * applied because the `matches()` method is final. Your custom matching logic
- * in `matches()` is only called after base attributes have matched.
+ * These tests demonstrate that the Targeting.All conjunction ensures base attributes
+ * (locales, platforms, versions) are always checked, even when custom targeting
+ * leaves add additional matching criteria.
  */
 class RuleGuaranteesTest {
     private val defaultContext = Context(
         locale = AppLocale.UNITED_STATES,
         platform = Platform.ANDROID,
         appVersion = Version(1, 0, 0),
-        stableId = TestStableId
+        stableId = TestStableId,
     )
 
-    /**
-     * Custom contextFn for testing additional attributes.
-     */
     interface CustomContext :
         Context,
         Context.LocaleContext,
@@ -82,17 +49,16 @@ class RuleGuaranteesTest {
         override val userRole = "admin"
     }
 
-    /**
-     * Custom rule that adds subscription tier matching.
-     */
-    data class SubscriptionRule<C : CustomContext>(
-        val requiredTier: String? = null,
-    ) : Predicate<C> by factory({ context -> requiredTier == null || context.subscriptionTier == requiredTier })
+    /** Custom targeting leaf that checks subscription tier. */
+    private fun subscriptionTargeting(requiredTier: String?): Targeting.Custom<CustomContext> =
+        Targeting.Custom(
+            block = { context -> requiredTier == null || context.subscriptionTier == requiredTier },
+        )
 
     @Test
     fun `base rule with no restrictions matches any context`() {
         val rule = Rule<Context>(
-            rampUp = RampUp.of(100.0)
+            rampUp = RampUp.of(100.0),
         )
 
         assertTrue(rule.matches(defaultContext))
@@ -102,10 +68,11 @@ class RuleGuaranteesTest {
     fun `base rule locale restriction is always enforced`() {
         val rule = Rule<Context>(
             rampUp = RampUp.of(100.0),
-            locales = localeIds(AppLocale.CANADA)
+            targeting = Targeting.All(
+                listOf(Targeting.locale(setOf(AppLocale.CANADA.id))),
+            ),
         )
 
-        // Context has UNITED_STATES locale, rule requires UNITED_STATES
         assertFalse(rule.matches(defaultContext))
     }
 
@@ -113,10 +80,11 @@ class RuleGuaranteesTest {
     fun `base rule platform restriction is always enforced`() {
         val rule = Rule<Context>(
             rampUp = RampUp.of(100.0),
-            platforms = platformIds(Platform.IOS)
+            targeting = Targeting.All(
+                listOf(Targeting.platform(setOf(Platform.IOS.id))),
+            ),
         )
 
-        // Context has ANDROID platform, rule requires IOS
         assertFalse(rule.matches(defaultContext))
     }
 
@@ -124,23 +92,24 @@ class RuleGuaranteesTest {
     fun `base rule version restriction is always enforced`() {
         val rule = Rule<Context>(
             rampUp = RampUp.of(100.0),
-            versionRange = LeftBound(Version(2, 0, 0))
+            targeting = Targeting.All(
+                listOf(Targeting.version(LeftBound(Version(2, 0, 0)))),
+            ),
         )
 
-        // Context has version 1.0.0, rule requires 2.0.0+
         assertFalse(rule.matches(defaultContext))
     }
 
     @Test
-    fun `custom rule cannot bypass base locale restriction`() {
-        // Even though the custom rule matches the subscription tier,
-        // the base locale restriction prevents a match
-        val rule = Rule(
+    fun `custom targeting leaf cannot bypass base locale restriction`() {
+        val rule = Rule<CustomContext>(
             rampUp = RampUp.of(100.0),
-            locales = localeIds(AppLocale.MEXICO),
-            predicate = SubscriptionRule(
-                requiredTier = "premium"
-            )
+            targeting = Targeting.All(
+                listOf(
+                    Targeting.locale(setOf(AppLocale.MEXICO.id)),
+                    subscriptionTargeting("premium"),
+                ),
+            ),
         )
 
         // Context has premium tier (custom match) but UNITED_STATES locale (base mismatch)
@@ -148,12 +117,14 @@ class RuleGuaranteesTest {
     }
 
     @Test
-    fun `custom rule cannot bypass base platform restriction`() {
-        val rule = Rule(
-            platforms = platformIds(Platform.IOS),
-            predicate = SubscriptionRule(
-                requiredTier = "premium"
-            )
+    fun `custom targeting leaf cannot bypass base platform restriction`() {
+        val rule = Rule<CustomContext>(
+            targeting = Targeting.All(
+                listOf(
+                    Targeting.platform(setOf(Platform.IOS.id)),
+                    subscriptionTargeting("premium"),
+                ),
+            ),
         )
 
         // Context has premium tier (custom match) but ANDROID platform (base mismatch)
@@ -161,15 +132,13 @@ class RuleGuaranteesTest {
     }
 
     @Test
-    fun `custom rule requires both base and additional criteria to match`() {
-        val rule = SubscriptionRule<CustomContext>(
-            requiredTier = "premium"
-        )
+    fun `custom targeting leaf requires both base and additional criteria to match`() {
+        val premiumRule = subscriptionTargeting("premium")
 
         // All criteria match
-        assertTrue(rule.matches(customContext))
+        assertTrue(premiumRule.matches(customContext))
 
-        // Create contextFn with wrong tier
+        // Create context with wrong tier
         val basicContext = object : CustomContext {
             override val locale = AppLocale.UNITED_STATES
             override val platform = Platform.ANDROID
@@ -179,16 +148,19 @@ class RuleGuaranteesTest {
             override val userRole = "user"
         }
 
-        // Base matches but additional criteria doesn't
-        assertFalse(rule.matches(basicContext))
+        // Custom criteria doesn't match
+        assertFalse(premiumRule.matches(basicContext))
     }
 
     @Test
-    fun `custom rule specificity includes both base and additional specificity`() {
-        val ruleWithLocaleAndTier = Rule(
-            locales = localeIds(AppLocale.UNITED_STATES), predicate = SubscriptionRule(
-                requiredTier = "premium"
-            )
+    fun `custom targeting leaf specificity includes both base and additional specificity`() {
+        val ruleWithLocaleAndTier = Rule<CustomContext>(
+            targeting = Targeting.All(
+                listOf(
+                    Targeting.locale(setOf(AppLocale.UNITED_STATES.id)),
+                    subscriptionTargeting("premium"),
+                ),
+            ),
         )
 
         // Base specificity: 1 (locale)
@@ -196,11 +168,14 @@ class RuleGuaranteesTest {
         // Total: 2
         assertEquals(2, ruleWithLocaleAndTier.specificity())
 
-        val ruleWithAllAttributes = ruleWithLocaleAndTier.copy(
-            targeting = ruleWithLocaleAndTier.targeting.copy(
-                locales = localeIds(AppLocale.UNITED_STATES),
-                platforms = platformIds(Platform.ANDROID),
-            )
+        val ruleWithAllAttributes = Rule<CustomContext>(
+            targeting = Targeting.All(
+                listOf(
+                    Targeting.locale(setOf(AppLocale.UNITED_STATES.id)),
+                    Targeting.platform(setOf(Platform.ANDROID.id)),
+                    subscriptionTargeting("premium"),
+                ),
+            ),
         )
 
         // Base specificity: 2 (locale + platform)
@@ -210,10 +185,8 @@ class RuleGuaranteesTest {
     }
 
     @Test
-    fun `custom rule with no restrictions on base attributes still enforces custom criteria`() {
-        val rule = SubscriptionRule<CustomContext>(
-            requiredTier = "enterprise"
-        )
+    fun `custom targeting leaf with no restrictions on base attributes still enforces custom criteria`() {
+        val rule = subscriptionTargeting("enterprise")
 
         // Base attributes all pass (no restrictions), but custom tier doesn't match
         assertFalse(rule.matches(customContext)) // has "premium", needs "enterprise"

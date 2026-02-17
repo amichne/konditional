@@ -14,78 +14,51 @@ import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.registry.AxisCatalog
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.Rule
-import io.amichne.konditional.rules.evaluable.AxisConstraint
-import io.amichne.konditional.rules.evaluable.Placeholder
-import io.amichne.konditional.rules.evaluable.Predicate
-import io.amichne.konditional.rules.evaluable.Predicate.Companion.factory
-import io.amichne.konditional.rules.versions.Unbounded
-import io.amichne.konditional.rules.versions.VersionRange
+import io.amichne.konditional.rules.targeting.Targeting
 
 /**
  * Internal implementation of [RuleScope].
  *
- * This class is the internal implementation of the rule configuration DSL scope.
- * Users interact with the public [RuleScope] interface,
- * not this implementation directly.
+ * Accumulates [Targeting] leaves into a flat list; the final [build] call wraps
+ * them in a [Targeting.All] conjunction. Multiple calls to targeting methods
+ * compose with AND semantics — each call appends a leaf.
  *
- * @param C The type create the contextFn that the rules will evaluate against.
- * @constructor Internal constructor - users cannot instantiate this class directly.
+ * @param C The context type that the rules will evaluate against.
  */
 @KonditionalDsl
 @PublishedApi
-internal data class RuleBuilder<C : Context>(
+internal class RuleBuilder<C : Context>(
     private val axisCatalog: AxisCatalog? = null,
-    private var predicate: Predicate<C> = Placeholder,
-    private var note: String? = null,
-    private var range: VersionRange = Unbounded,
-    private val platforms: LinkedHashSet<String> = linkedSetOf(),
-    private val axisConstraints: MutableList<AxisConstraint> = mutableListOf(),
-    private val locales: LinkedHashSet<String> = linkedSetOf(),
-    private val rolloutAllowlist: LinkedHashSet<HexId> = linkedSetOf(),
-    private var rampUp: RampUp? = null,
 ) : RuleScope<C> {
-    private data class ConjunctivePredicate<C : Context>(
-        private val left: Predicate<C>,
-        private val right: Predicate<C>,
-    ) : Predicate<C> {
-        override fun matches(context: C): Boolean = left.matches(context) && right.matches(context)
 
-        override fun specificity(): Int = left.specificity() + right.specificity()
-    }
+    private val leaves = mutableListOf<Targeting<C>>()
+    private var note: String? = null
+    private var rampUp: RampUp? = null
+    private val allowlist = linkedSetOf<HexId>()
 
-
-    override fun allowlist(vararg stableIds: StableId) {
-        rolloutAllowlist += stableIds.map { it.hexId }
-    }
-
-    /**
-     * Implementation of [RuleScope.locales].
-     */
     override fun locales(vararg appLocales: LocaleTag) {
-        locales += appLocales.map { it.id }
+        if (appLocales.isNotEmpty())
+            leaves += Targeting.locale(appLocales.mapTo(linkedSetOf()) { it.id })
     }
 
-    /**
-     * Implementation of [RuleScope.platforms].
-     */
-    @KonditionalDsl
     override fun platforms(vararg ps: PlatformTag) {
-        platforms += ps.map { it.id }
+        if (ps.isNotEmpty())
+            leaves += Targeting.platform(ps.mapTo(linkedSetOf()) { it.id })
     }
 
-    /**
-     * Implementation of [RuleScope.versions] that delegates to [VersionRangeBuilder].
-     */
     override fun versions(build: VersionRangeScope.() -> Unit) {
-        range = VersionRangeBuilder().apply(build).build()
+        val range = VersionRangeBuilder().apply(build).build()
+        leaves += Targeting.version(range)
     }
 
     /**
-     * Implementation of [RuleScope.extension].
+     * Adds a custom extension predicate.
+     *
+     * Multiple calls accumulate with AND semantics via the [leaves] list —
+     * no ConjunctivePredicate wrapper needed.
      */
     override fun extension(block: C.() -> Boolean) {
-        val extensionPredicate = factory<C> { block(it) }
-        predicate = ConjunctivePredicate<C>(predicate, extensionPredicate)
+        leaves += Targeting.Custom(block = { c -> c.block() })
     }
 
     override fun <T> axis(
@@ -94,15 +67,13 @@ internal data class RuleBuilder<C : Context>(
     ) where T : AxisValue<T>, T : Enum<T> {
         require(values.isNotEmpty()) { "axis(...) requires at least one value." }
         val allowedIds = values.mapTo(linkedSetOf()) { it.id }
-        val idx = axisConstraints.indexOfFirst { it.axisId == axis.id }
-
+        // Merge with existing constraint for the same axis (OR within axis, AND across axes)
+        val idx = leaves.indexOfFirst { it is Targeting.Axis && it.axisId == axis.id }
         if (idx >= 0) {
-            val existing = axisConstraints[idx]
-            axisConstraints[idx] = existing.copy(
-                allowedIds = existing.allowedIds + allowedIds,
-            )
+            val existing = leaves[idx] as Targeting.Axis
+            leaves[idx] = existing.copy(allowedIds = existing.allowedIds + allowedIds)
         } else {
-            axisConstraints += AxisConstraint(axis.id, allowedIds)
+            leaves += Targeting.Axis(axis.id, allowedIds)
         }
     }
 
@@ -116,9 +87,10 @@ internal data class RuleBuilder<C : Context>(
         axis(catalog.axisForOrThrow(values.first()::class), *values)
     }
 
-    /**
-     * Implementation of [RuleScope.note].
-     */
+    override fun allowlist(vararg stableIds: StableId) {
+        allowlist += stableIds.map { it.hexId }
+    }
+
     override fun note(text: String) {
         note = text
     }
@@ -127,21 +99,10 @@ internal data class RuleBuilder<C : Context>(
         this.rampUp = RampUp.of(function().toDouble())
     }
 
-    /**
-     * Builds a Rule instance. Override this method in custom builders to create
-     * custom rule implementations. Internal method - not intended for direct use.
-     *
-     * @return A Rule instance (Rule by default)
-     */
-    internal fun build(): Rule<C> =
-        Rule(
-            rampUp = rampUp ?: RampUp.default,
-            rolloutAllowlist = rolloutAllowlist,
-            locales = locales,
-            platforms = platforms,
-            versionRange = range,
-            axisConstraints = axisConstraints.toList(),
-            note = note,
-            predicate = predicate,
-        )
+    internal fun build(): Rule<C> = Rule(
+        rampUp = rampUp ?: RampUp.default,
+        rampUpAllowlist = allowlist,
+        note = note,
+        targeting = Targeting.All(leaves.toList()),
+    )
 }

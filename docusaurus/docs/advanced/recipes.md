@@ -98,13 +98,8 @@ enum class Segment(override val id: String) : AxisValue<Segment> {
     ENTERPRISE("enterprise"),
 }
 
-object Axes {
-    val SegmentAxis = Axis.of<Segment>("segment")
-}
-
 object SegmentFlags : Namespace("segment") {
-    @Suppress("UnusedPrivateProperty")
-    private val segmentAxis = Axes.SegmentAxis
+    val segmentAxis = axis<Segment>("segment")
 
     val premiumUi by boolean<Context>(default = false) {
         enable { axis(Segment.ENTERPRISE) }
@@ -123,7 +118,7 @@ fun isPremiumUiEnabled(): Boolean {
             override val platform = Platform.IOS
             override val appVersion = Version.of(2, 1, 0)
             override val stableId = StableId.of("user-123")
-            override val axisValues = axisValues { +Segment.ENTERPRISE }
+            override val axisValues = axisValues { set(SegmentFlags.segmentAxis, Segment.ENTERPRISE) }
         }
 
     return SegmentFlags.premiumUi.evaluate(segmentContext)

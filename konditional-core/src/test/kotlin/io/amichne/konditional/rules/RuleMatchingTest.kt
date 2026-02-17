@@ -9,6 +9,7 @@ import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.fixtures.utilities.localeIds
 import io.amichne.konditional.fixtures.utilities.platformIds
+import io.amichne.konditional.rules.targeting.Targeting
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.rules.versions.Unbounded
 import kotlin.test.Test
@@ -28,98 +29,88 @@ class RuleMatchingTest {
         idHex: String = TestStableId.id,
     ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
 
+    private fun rule(
+        rampUp: RampUp = RampUp.MAX,
+        locales: Set<String> = emptySet(),
+        platforms: Set<String> = emptySet(),
+        versionRange: io.amichne.konditional.rules.versions.VersionRange = Unbounded,
+        note: String? = null,
+    ): Rule<Context> {
+        val leaves = buildList<Targeting<Context>> {
+            if (locales.isNotEmpty()) add(Targeting.locale(locales))
+            if (platforms.isNotEmpty()) add(Targeting.platform(platforms))
+            if (versionRange != Unbounded) add(Targeting.version(versionRange))
+        }
+        return Rule(
+            rampUp = rampUp,
+            note = note,
+            targeting = Targeting.All(leaves),
+        )
+    }
+
     @Test
     fun `Given rule with no constraints, When matching, Then all contexts match`() {
-        val rule = Rule<Context>(
-            rampUp = RampUp.MAX,
-            locales = emptySet(),
-            platforms = emptySet(),
-            versionRange = Unbounded,
-        )
+        val r = rule()
 
-        assertTrue(rule.matches(ctx()))
-        assertTrue(rule.matches(ctx(locale = AppLocale.UNITED_STATES)))
-        assertTrue(rule.matches(ctx(platform = Platform.ANDROID)))
-        assertTrue(rule.matches(ctx(version = "99.99.99")))
+        assertTrue(r.matches(ctx()))
+        assertTrue(r.matches(ctx(locale = AppLocale.UNITED_STATES)))
+        assertTrue(r.matches(ctx(platform = Platform.ANDROID)))
+        assertTrue(r.matches(ctx(version = "99.99.99")))
     }
 
     @Test
     fun `Given rule with single platform, When matching, Then only that platform matches`() {
-        val rule = Rule<Context>(
-            rampUp = RampUp.MAX,
-            locales = emptySet(),
-            platforms = platformIds(Platform.IOS),
-            versionRange = Unbounded,
-        )
+        val r = rule(platforms = platformIds(Platform.IOS))
 
-        assertTrue(rule.matches(ctx(platform = Platform.IOS)))
-        assertFalse(rule.matches(ctx(platform = Platform.ANDROID)))
+        assertTrue(r.matches(ctx(platform = Platform.IOS)))
+        assertFalse(r.matches(ctx(platform = Platform.ANDROID)))
     }
 
     @Test
     fun `Given rule with multiple platforms, When matching, Then any of those platforms match`() {
-        val rule = Rule<Context>(
-            rampUp = RampUp.MAX,
-            locales = emptySet(),
-            platforms = platformIds(Platform.IOS, Platform.ANDROID),
-            versionRange = Unbounded,
-        )
+        val r = rule(platforms = platformIds(Platform.IOS, Platform.ANDROID))
 
-        assertTrue(rule.matches(ctx(platform = Platform.IOS)))
-        assertTrue(rule.matches(ctx(platform = Platform.ANDROID)))
+        assertTrue(r.matches(ctx(platform = Platform.IOS)))
+        assertTrue(r.matches(ctx(platform = Platform.ANDROID)))
     }
 
     @Test
     fun `Given rule with single locale, When matching, Then only that locale matches`() {
-        val rule = Rule<Context>(
-            rampUp = RampUp.MAX,
-            locales = localeIds(AppLocale.UNITED_STATES),
-            platforms = emptySet(),
-            versionRange = Unbounded,
-        )
+        val r = rule(locales = localeIds(AppLocale.UNITED_STATES))
 
-        assertTrue(rule.matches(ctx(locale = AppLocale.UNITED_STATES)))
-        assertFalse(rule.matches(ctx(locale = AppLocale.MEXICO)))
-        assertFalse(rule.matches(ctx(locale = AppLocale.INDIA)))
+        assertTrue(r.matches(ctx(locale = AppLocale.UNITED_STATES)))
+        assertFalse(r.matches(ctx(locale = AppLocale.MEXICO)))
+        assertFalse(r.matches(ctx(locale = AppLocale.INDIA)))
     }
 
     @Test
     fun `Given rule with multiple locales, When matching, Then any of those locales match`() {
-        val rule = Rule<Context>(
-            rampUp = RampUp.MAX,
-            locales = localeIds(AppLocale.UNITED_STATES, AppLocale.CANADA),
-            platforms = emptySet(),
-            versionRange = Unbounded,
-        )
+        val r = rule(locales = localeIds(AppLocale.UNITED_STATES, AppLocale.CANADA))
 
-        assertTrue(rule.matches(ctx(locale = AppLocale.UNITED_STATES)))
-        assertTrue(rule.matches(ctx(locale = AppLocale.CANADA)))
-        assertFalse(rule.matches(ctx(locale = AppLocale.MEXICO)))
+        assertTrue(r.matches(ctx(locale = AppLocale.UNITED_STATES)))
+        assertTrue(r.matches(ctx(locale = AppLocale.CANADA)))
+        assertFalse(r.matches(ctx(locale = AppLocale.MEXICO)))
     }
 
     @Test
     fun `Given rule with version range, When matching, Then only versions in range match`() {
-        val rule = Rule<Context>(
-            rampUp = RampUp.MAX,
-            locales = emptySet(),
-            platforms = emptySet(),
+        val r = rule(
             versionRange = FullyBound(
                 min = Version(1, 0, 0),
                 max = Version(2, 0, 0),
             ),
         )
 
-        assertFalse(rule.matches(ctx(version = "0.9.9")))
-        assertTrue(rule.matches(ctx(version = "1.0.0")))
-        assertTrue(rule.matches(ctx(version = "1.5.0")))
-        assertTrue(rule.matches(ctx(version = "2.0.0")))
-        assertFalse(rule.matches(ctx(version = "2.0.1")))
+        assertFalse(r.matches(ctx(version = "0.9.9")))
+        assertTrue(r.matches(ctx(version = "1.0.0")))
+        assertTrue(r.matches(ctx(version = "1.5.0")))
+        assertTrue(r.matches(ctx(version = "2.0.0")))
+        assertFalse(r.matches(ctx(version = "2.0.1")))
     }
 
     @Test
     fun `Given rule with combined constraints, When matching, Then all constraints must match`() {
-        val rule = Rule<Context>(
-            rampUp = RampUp.MAX,
+        val r = rule(
             locales = localeIds(AppLocale.UNITED_STATES, AppLocale.CANADA),
             platforms = platformIds(Platform.IOS),
             versionRange = FullyBound(
@@ -129,57 +120,36 @@ class RuleMatchingTest {
         )
 
         // All constraints match
-        assertTrue(rule.matches(ctx(locale = AppLocale.UNITED_STATES, platform = Platform.IOS, version = "2.5.0")))
+        assertTrue(r.matches(ctx(locale = AppLocale.UNITED_STATES, platform = Platform.IOS, version = "2.5.0")))
 
         // Wrong locale
-        assertFalse(rule.matches(ctx(locale = AppLocale.MEXICO, platform = Platform.IOS, version = "2.5.0")))
+        assertFalse(r.matches(ctx(locale = AppLocale.MEXICO, platform = Platform.IOS, version = "2.5.0")))
 
         // Wrong platform
-        assertFalse(rule.matches(ctx(locale = AppLocale.UNITED_STATES, platform = Platform.ANDROID, version = "2.5.0")))
+        assertFalse(r.matches(ctx(locale = AppLocale.UNITED_STATES, platform = Platform.ANDROID, version = "2.5.0")))
 
         // Wrong version
-        assertFalse(rule.matches(ctx(locale = AppLocale.UNITED_STATES, platform = Platform.IOS, version = "1.5.0")))
+        assertFalse(r.matches(ctx(locale = AppLocale.UNITED_STATES, platform = Platform.IOS, version = "1.5.0")))
     }
 
     @Test
     fun `Given rules with different specificity, When calculating specificity, Then more specific rules have higher scores`() {
-        val ruleEmpty = Rule<Context>(
-            rampUp = RampUp.MAX,
-            locales = emptySet(),
-            platforms = emptySet(),
-            versionRange = Unbounded,
-        )
+        val ruleEmpty = rule()
 
-        val rulePlatform = Rule<Context>(
-            rampUp = RampUp.MAX,
-            locales = emptySet(),
-            platforms = platformIds(Platform.IOS),
-            versionRange = Unbounded,
-        )
+        val rulePlatform = rule(platforms = platformIds(Platform.IOS))
 
-        val ruleLocale = Rule<Context>(
-            rampUp = RampUp.MAX,
-            locales = localeIds(AppLocale.UNITED_STATES),
-            platforms = emptySet(),
-            versionRange = Unbounded,
-        )
+        val ruleLocale = rule(locales = localeIds(AppLocale.UNITED_STATES))
 
-        val ruleVersion = Rule<Context>(
-            rampUp = RampUp.MAX,
-            locales = emptySet(),
-            platforms = emptySet(),
+        val ruleVersion = rule(
             versionRange = FullyBound(Version(1, 0, 0), Version(2, 0, 0)),
         )
 
-        val rulePlatformAndLocale = Rule<Context>(
-            rampUp = RampUp.MAX,
+        val rulePlatformAndLocale = rule(
             locales = localeIds(AppLocale.UNITED_STATES),
             platforms = platformIds(Platform.IOS),
-            versionRange = Unbounded,
         )
 
-        val ruleAll = Rule<Context>(
-            rampUp = RampUp.MAX,
+        val ruleAll = rule(
             locales = localeIds(AppLocale.UNITED_STATES, AppLocale.CANADA),
             platforms = platformIds(Platform.IOS, Platform.ANDROID),
             versionRange = FullyBound(Version(1, 0, 0), Version(2, 0, 0)),
@@ -188,52 +158,32 @@ class RuleMatchingTest {
         // Empty rule has Unbounded version range, which doesn't count towards specificity
         assertEquals(0, ruleEmpty.specificity())
 
-        // Single constraint rules have specificity create 1 (just their constraint)
+        // Single constraint rules have specificity of 1 (just their constraint)
         // Unbounded doesn't count towards specificity
         assertEquals(1, rulePlatform.specificity())
         assertEquals(1, ruleLocale.specificity())
         // ruleVersion has explicit FullyBound, so only version constraint counts
         assertEquals(1, ruleVersion.specificity())
 
-        // Two constraints with Unbounded have specificity create 2
+        // Two constraints with Unbounded have specificity of 2
         assertEquals(2, rulePlatformAndLocale.specificity())
 
-        // All three constraints have specificity create 3 (all explicitly set)
+        // All three constraints have specificity of 3 (all explicitly set)
         assertEquals(3, ruleAll.specificity())
     }
 
     @Test
     fun `Given multiple locales or platforms, When calculating specificity, Then specificity counts presence not quantity`() {
-        val ruleOnePlatform = Rule<Context>(
-            rampUp = RampUp.MAX,
-            locales = emptySet(),
-            platforms = platformIds(Platform.IOS),
-            versionRange = Unbounded,
-        )
+        val ruleOnePlatform = rule(platforms = platformIds(Platform.IOS))
 
-        val ruleTwoPlatforms = Rule<Context>(
-            rampUp = RampUp.MAX,
-            locales = emptySet(),
-            platforms = platformIds(Platform.IOS, Platform.ANDROID),
-            versionRange = Unbounded,
-        )
+        val ruleTwoPlatforms = rule(platforms = platformIds(Platform.IOS, Platform.ANDROID))
 
-        val ruleOneLocale = Rule<Context>(
-            rampUp = RampUp.MAX,
-            locales = localeIds(AppLocale.UNITED_STATES),
-            platforms = emptySet(),
-            versionRange = Unbounded,
-        )
+        val ruleOneLocale = rule(locales = localeIds(AppLocale.UNITED_STATES))
 
-        val ruleTwoLocales = Rule<Context>(
-            rampUp = RampUp.MAX,
-            locales = localeIds(AppLocale.UNITED_STATES, AppLocale.CANADA),
-            platforms = emptySet(),
-            versionRange = Unbounded,
-        )
+        val ruleTwoLocales = rule(locales = localeIds(AppLocale.UNITED_STATES, AppLocale.CANADA))
 
         // Having multiple values in a dimension doesn't increase specificity - only presence matters
-        // All rules here have specificity create 1 (just platform/locale constraint)
+        // All rules here have specificity of 1 (just platform/locale constraint)
         // Unbounded doesn't count towards specificity
         assertEquals(1, ruleOnePlatform.specificity())
         assertEquals(1, ruleTwoPlatforms.specificity())
@@ -243,19 +193,15 @@ class RuleMatchingTest {
 
     @Test
     fun `Given rules with notes, When comparing specificity, Then notes serve as tiebreaker`() {
-        val ruleA = Rule<Context>(
-            rampUp = RampUp.MAX,
+        val ruleA = rule(
             locales = localeIds(AppLocale.UNITED_STATES),
             platforms = platformIds(Platform.IOS),
-            versionRange = Unbounded,
             note = "Rule A",
         )
 
-        val ruleB = Rule<Context>(
-            rampUp = RampUp.MAX,
+        val ruleB = rule(
             locales = localeIds(AppLocale.UNITED_STATES),
             platforms = platformIds(Platform.IOS),
-            versionRange = Unbounded,
             note = "Rule B",
         )
 

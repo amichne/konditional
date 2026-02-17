@@ -9,10 +9,11 @@ import io.amichne.konditional.core.dsl.KonditionalDsl
 @KonditionalDsl
 interface ExtensionTargetingScope<C : Context> {
     /**
-     * Adds a custom targeting extension using an Predicate.
+     * Adds a custom targeting extension.
      *
      * Extensions allow for domain-specific targeting beyond the standard
-     * platform, locale, and version criteria.
+     * platform, locale, and version criteria. Internally, each call appends
+     * a [io.amichne.konditional.rules.targeting.Targeting.Custom] leaf.
      *
      * Multiple extension blocks are accumulated and combined with AND semantics.
      * A rule matches only when all extension predicates match.

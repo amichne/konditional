@@ -11,7 +11,11 @@ import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
-import io.amichne.konditional.rules.evaluable.AxisConstraint
+import io.amichne.konditional.rules.targeting.Targeting
+import io.amichne.konditional.rules.targeting.axesOrEmpty
+import io.amichne.konditional.rules.targeting.localesOrEmpty
+import io.amichne.konditional.rules.targeting.platformsOrEmpty
+import io.amichne.konditional.rules.targeting.versionRangeOrNull
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
@@ -52,17 +56,23 @@ fun <T : Any, C : Context, M : Namespace> flagDefinitionFromSerialized(
         feature = feature,
         bounds =
             rules.map { spec ->
+                val leaves = buildList<Targeting<C>> {
+                    if (spec.locales.isNotEmpty())
+                        add(Targeting.locale(spec.locales))
+                    if (spec.platforms.isNotEmpty())
+                        add(Targeting.platform(spec.platforms))
+                    spec.versionRange
+                        ?.takeIf { it != Unbounded }
+                        ?.let { add(Targeting.version(it)) }
+                    spec.axes.forEach { (axisId, allowedIds) ->
+                        add(Targeting.Axis(axisId, allowedIds))
+                    }
+                }
                 Rule<C>(
                     rampUp = RampUp.of(spec.rampUp),
-                    rolloutAllowlist = spec.rampUpAllowlist.mapTo(linkedSetOf()) { HexId(it) },
+                    rampUpAllowlist = spec.rampUpAllowlist.mapTo(linkedSetOf()) { HexId(it) },
                     note = spec.note,
-                    locales = spec.locales,
-                    platforms = spec.platforms,
-                    versionRange = spec.versionRange ?: Unbounded,
-                    axisConstraints =
-                        spec.axes.map { (axisId, allowedIds) ->
-                            AxisConstraint(axisId, allowedIds)
-                        },
+                    targeting = Targeting.All(leaves),
                 ).targetedBy(spec.value)
             },
         defaultValue = defaultValue,
@@ -82,14 +92,15 @@ fun FlagDefinition<*, *, *>.toSerializedMetadata(): SerializedFlagDefinitionMeta
 @KonditionalInternalApi
 fun FlagDefinition<*, *, *>.toSerializedRules(): List<SerializedFlagRuleSpec<Any>> =
     values.map { cv ->
+        val targeting = cv.rule.targeting
         SerializedFlagRuleSpec(
             value = cv.value,
             rampUp = cv.rule.rampUp.value,
             rampUpAllowlist = cv.rule.rampUpAllowlist.mapTo(linkedSetOf()) { it.id },
             note = cv.rule.note,
-            locales = cv.rule.targeting.locales.toSet(),
-            platforms = cv.rule.targeting.platforms.toSet(),
-            versionRange = cv.rule.targeting.versionRange,
-            axes = cv.rule.targeting.axisConstraints.associate { it.axisId to it.allowedIds },
+            locales = targeting.localesOrEmpty(),
+            platforms = targeting.platformsOrEmpty(),
+            versionRange = targeting.versionRangeOrNull() ?: Unbounded,
+            axes = targeting.axesOrEmpty(),
         )
     }

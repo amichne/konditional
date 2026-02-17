@@ -7,7 +7,7 @@ import io.amichne.konditional.fixtures.CompositeContext
 import io.amichne.konditional.fixtures.EnterpriseContext
 import io.amichne.konditional.fixtures.EnterpriseFeatures
 import io.amichne.konditional.fixtures.EnterpriseFeatures.advanced_analytics
-import io.amichne.konditional.fixtures.EnterpriseRule
+import io.amichne.konditional.fixtures.enterpriseRule
 import io.amichne.konditional.fixtures.ExperimentContext
 import io.amichne.konditional.fixtures.ExperimentFeatures
 import io.amichne.konditional.fixtures.SubscriptionTier
@@ -130,7 +130,7 @@ class ContextPolymorphismTest {
                 android()
                 rampUp { 100 }
 
-                extension { EnterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN).matches(this) }
+                extension { enterpriseRule(SubscriptionTier.ENTERPRISE, UserRole.ADMIN).block(this) }
             }
         }
 

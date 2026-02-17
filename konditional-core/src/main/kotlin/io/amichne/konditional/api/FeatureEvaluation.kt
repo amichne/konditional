@@ -13,6 +13,13 @@ import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.core.registry.NamespaceRegistry
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.Rule
+import io.amichne.konditional.rules.targeting.Targeting
+import io.amichne.konditional.rules.targeting.axesOrEmpty
+import io.amichne.konditional.rules.targeting.customLeafCount
+import io.amichne.konditional.rules.targeting.localesOrEmpty
+import io.amichne.konditional.rules.targeting.platformsOrEmpty
+import io.amichne.konditional.rules.targeting.versionRangeOrNull
+import io.amichne.konditional.rules.versions.Unbounded
 import kotlin.system.measureNanoTime
 
 /**
@@ -172,31 +179,32 @@ private fun <T : Any, C : Context> ConditionalValue<T, C>.toRuleMatch(
 }
 
 private fun <C : Context> Rule<C>.toExplanation(): EvaluationDiagnostics.RuleExplanation {
-    val base = targeting
-    val extensionClassName =
-        when (predicate) {
-            io.amichne.konditional.rules.evaluable.Placeholder -> null
-            else -> predicate::class.qualifiedName
-        }
+    val targeting = targeting
+    val locales = targeting.localesOrEmpty()
+    val platforms = targeting.platformsOrEmpty()
+    val versionRange = targeting.versionRangeOrNull() ?: Unbounded
+    val axes = targeting.axesOrEmpty()
+
+    val customLeaves = targeting.customLeafCount()
 
     val baseSpecificity =
-        (if (base.locales.isNotEmpty()) 1 else 0) +
-            (if (base.platforms.isNotEmpty()) 1 else 0) +
-            (if (base.versionRange.hasBounds()) 1 else 0) +
-            base.axisConstraints.size
+        (if (locales.isNotEmpty()) 1 else 0) +
+            (if (platforms.isNotEmpty()) 1 else 0) +
+            (if (versionRange.hasBounds()) 1 else 0) +
+            axes.size
 
-    val extensionSpecificity = predicate.specificity()
+    val extensionSpecificity = customLeaves
 
     return EvaluationDiagnostics.RuleExplanation(
         note = note,
         rollout = rampUp,
-        locales = base.locales,
-        platforms = base.platforms,
-        versionRange = base.versionRange,
-        axes = base.axisConstraints.associate { it.axisId to it.allowedIds },
+        locales = locales,
+        platforms = platforms,
+        versionRange = versionRange,
+        axes = axes,
         baseSpecificity = baseSpecificity,
         extensionSpecificity = extensionSpecificity,
-        totalSpecificity = baseSpecificity + extensionSpecificity,
-        extensionClassName = extensionClassName,
+        totalSpecificity = targeting.specificity(),
+        extensionClassName = null,
     )
 }
