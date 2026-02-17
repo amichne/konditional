@@ -1,6 +1,6 @@
 package io.amichne.konditional.context.axis
 
-import io.amichne.konditional.core.registry.AxisRegistry
+import kotlin.reflect.KClass
 
 /**
  * Strongly-typed container for a set of axis values.
@@ -55,9 +55,18 @@ class AxisValues internal constructor(
      */
     @Suppress("UNCHECKED_CAST")
     operator fun <T> get(axis: Axis<T>): Set<T> where T : AxisValue<T>, T : Enum<T> =
-        AxisRegistry.axisIdsFor(axis)
-            .flatMap { values[it].orEmpty() }
+        values[axis.id].orEmpty()
             .mapNotNull { it as? T }
+            .toSet()
+
+    @PublishedApi
+    @Suppress("UNCHECKED_CAST")
+    internal fun <T> valuesFor(type: KClass<out T>): Set<T> where T : AxisValue<T>, T : Enum<T> =
+        values.values
+            .asSequence()
+            .flatten()
+            .filter { type.isInstance(it) }
+            .map { it as T }
             .toSet()
 
     override fun equals(other: Any?): Boolean {

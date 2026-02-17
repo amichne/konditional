@@ -11,7 +11,7 @@ import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.core.dsl.rules.RuleScope
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.registry.AxisRegistry
+import io.amichne.konditional.core.registry.AxisCatalog
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.evaluable.AxisConstraint
@@ -34,6 +34,7 @@ import io.amichne.konditional.rules.versions.VersionRange
 @KonditionalDsl
 @PublishedApi
 internal data class RuleBuilder<C : Context>(
+    private val axisCatalog: AxisCatalog? = null,
     private var predicate: Predicate<C> = Placeholder,
     private var note: String? = null,
     private var range: VersionRange = Unbounded,
@@ -97,7 +98,12 @@ internal data class RuleBuilder<C : Context>(
 
     override fun <T> axis(vararg values: T) where T : AxisValue<T>, T : Enum<T> {
         require(values.isNotEmpty()) { "axis(...) requires at least one value to infer the axis type." }
-        axis(AxisRegistry.axisForOrThrow(values.first()::class), *values)
+        val catalog = axisCatalog
+            ?: throw IllegalArgumentException(
+                "Type-inferred axis(...) requires an AxisCatalog. " +
+                    "Use axis(axisHandle, values...) or declare axes with Namespace.axis(...).",
+            )
+        axis(catalog.axisForOrThrow(values.first()::class), *values)
     }
 
     /**

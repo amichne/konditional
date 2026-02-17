@@ -10,11 +10,9 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
-import io.amichne.konditional.core.dsl.unaryPlus
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.ops.KonditionalLogger
 import io.amichne.konditional.core.ops.Metrics
@@ -107,13 +105,8 @@ enum class Segment(override val id: String) : AxisValue<Segment> {
     ENTERPRISE("enterprise"),
 }
 
-object Axes {
-    val SegmentAxis = Axis.of<Segment>("segment")
-}
-
 object SegmentFlags : Namespace("segment") {
-    @Suppress("UnusedPrivateProperty")
-    private val segmentAxis = Axes.SegmentAxis
+    val segmentAxis = axis<Segment>("segment")
 
     val premiumUi by boolean<Context>(default = false) {
         enable { axis(Segment.ENTERPRISE) }
@@ -132,7 +125,7 @@ fun isPremiumUiEnabled(): Boolean {
             override val platform = Platform.IOS
             override val appVersion = Version.of(2, 1, 0)
             override val stableId = StableId.of("user-123")
-            override val axisValues = axisValues { +Segment.ENTERPRISE }
+            override val axisValues = axisValues { set(SegmentFlags.segmentAxis, Segment.ENTERPRISE) }
         }
 
     return SegmentFlags.premiumUi.evaluate(segmentContext)

@@ -21,7 +21,6 @@
     <ID>MagicNumber:Version.kt$Version.Companion$3</ID>
     <ID>MatchingDeclarationName:BaseRuleGuaranteesTest.kt$RuleGuaranteesTest</ID>
     <ID>MaxLineLength:AppLocale.kt$AppLocale$*</ID>
-    <ID>MaxLineLength:AxisRegistry.kt$AxisRegistry$*</ID>
     <ID>MaxLineLength:ConditionEvaluationTest.kt$ConditionEvaluationTest$fun</ID>
     <ID>MaxLineLength:EvaluationResult.kt$EvaluationResult.Decision.Default$*</ID>
     <ID>MaxLineLength:Feature.kt$Feature$*</ID>

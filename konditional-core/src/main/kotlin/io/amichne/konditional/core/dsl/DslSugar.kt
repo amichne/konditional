@@ -9,7 +9,6 @@ import io.amichne.konditional.core.dsl.rules.RuleScope
 import io.amichne.konditional.core.dsl.rules.RuleSet
 import io.amichne.konditional.core.dsl.rules.RuleSetBuilder
 import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.core.registry.AxisRegistry
 import kotlin.reflect.KClass
 
 /**
@@ -68,7 +67,7 @@ fun <C : Context, M : Namespace> FlagScope<Boolean, C, M>.disableScoped(build: C
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.ruleSet(
     build: RuleSetBuilder<T, C>.() -> Unit,
 ): RuleSet<C, T, C, M> =
-    RuleSet(feature = this, rules = RuleSetBuilder<T, C>().apply(build).build())
+    RuleSet(feature = this, rules = RuleSetBuilder<T, C>(axisCatalog = namespace.axisCatalog).apply(build).build())
 
 /**
  * Builds a rule set using an explicit supertype context without reified generics.
@@ -84,7 +83,7 @@ fun <T : Any, C, M : Namespace, RC : Context> Feature<T, C, M>.ruleSet(
     @Suppress("UNUSED_PARAMETER") contextType: KClass<RC>,
     build: RuleSetBuilder<T, RC>.() -> Unit,
 ): RuleSet<RC, T, C, M> where C : RC =
-    RuleSet(feature = this, rules = RuleSetBuilder<T, RC>().apply(build).build())
+    RuleSet(feature = this, rules = RuleSetBuilder<T, RC>(axisCatalog = namespace.axisCatalog).apply(build).build())
 
 /**
  * Builds a rule set using a reified supertype context.
@@ -98,10 +97,10 @@ fun <T : Any, C, M : Namespace, RC : Context> Feature<T, C, M>.ruleSet(
 inline fun <reified RC : Context, T : Any, C, M : Namespace> Feature<T, C, M>.ruleSet(
     build: RuleSetBuilder<T, RC>.() -> Unit,
 ): RuleSet<RC, T, C, M> where C : RC =
-    RuleSet(feature = this, rules = RuleSetBuilder<T, RC>().apply(build).build())
+    RuleSet(feature = this, rules = RuleSetBuilder<T, RC>(axisCatalog = namespace.axisCatalog).apply(build).build())
 
 /**
- * Type-based value setter using the registry.
+ * Type-based value setter using a scoped axis catalog.
  *
  * This extension allows setting values by type without explicitly passing the axis:
  * ```kotlin
@@ -110,12 +109,18 @@ inline fun <reified RC : Context, T : Any, C, M : Namespace> Feature<T, C, M>.ru
  * }
  * ```
  *
- * Requires that [T]'s axis has already been declared.
+ * Requires that [T]'s axis has already been declared in the [AxisCatalogScope] attached
+ * to this builder (for example via `axisValues(axisCatalog) { ... }`).
  *
  * @param value The value to set
  */
-inline fun <reified T> AxisValuesScope.axis(value: T) where T : AxisValue<T>, T : Enum<T> {
-    axis(AxisRegistry.axisForOrThrow(T::class), value)
+fun <T> AxisValuesScope.axis(value: T) where T : AxisValue<T>, T : Enum<T> {
+    val catalog = (this as? AxisCatalogScope)?.axisCatalog
+        ?: throw IllegalArgumentException(
+            "Type-inferred axis(value) requires a scoped AxisCatalog. " +
+                "Use axisValues(axisCatalog) { ... } or axis(axisHandle, value).",
+        )
+    axis(catalog.axisForOrThrow(value::class), value)
 }
 
 /**
@@ -131,4 +136,4 @@ fun <T> AxisValuesScope.axis(
 }
 
 context(scope: AxisValuesScope)
-inline operator fun <reified T> T.unaryPlus() where T : AxisValue<T>, T : Enum<T> = scope.axis(this)
+operator fun <T> T.unaryPlus() where T : AxisValue<T>, T : Enum<T> = scope.axis(this)

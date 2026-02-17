@@ -60,7 +60,7 @@ class AxisBuilderTest {
         @Suppress("UnusedExpression")
         TestAxes.Tenant
 
-        val values = axisValues {
+        val values = axisValues(TestAxes.axisCatalog) {
             +TestEnvironment.DEV
             +TestTenant.CONSUMER
         }

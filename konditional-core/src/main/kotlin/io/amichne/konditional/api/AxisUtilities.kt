@@ -5,7 +5,7 @@ import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.AxisValues
 import io.amichne.konditional.core.dsl.AxisValuesScope
-import io.amichne.konditional.core.registry.AxisRegistry
+import io.amichne.konditional.core.registry.AxisCatalog
 import io.amichne.konditional.internal.builders.AxisValuesBuilder
 
 /**
@@ -19,7 +19,7 @@ import io.amichne.konditional.internal.builders.AxisValuesBuilder
  * ```
  */
 inline fun <reified T> Context.axis(): Set<T> where T : AxisValue<T>, T : Enum<T> =
-    AxisRegistry.axisFor(T::class)?.let { axisValues[it] }.orEmpty()
+    axisValues.valuesFor(T::class)
 
 /**
  * Axis-based value getter.
@@ -45,5 +45,7 @@ inline fun <reified T, reified C : Context> C.axis(axis: Axis<T>): Set<T> where 
  * @receiver
  * @return
  */
-inline fun axisValues(block: AxisValuesScope.() -> Unit): AxisValues =
-    AxisValuesBuilder().apply(block).build()
+inline fun axisValues(
+    axisCatalog: AxisCatalog? = null,
+    block: AxisValuesScope.() -> Unit,
+): AxisValues = AxisValuesBuilder(axisCatalog = axisCatalog).apply(block).build()

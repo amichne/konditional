@@ -1,5 +1,6 @@
 package io.amichne.konditional.context.axis
 
+import io.amichne.konditional.core.registry.AxisCatalog
 import kotlin.reflect.KClass
 
 /**
@@ -7,11 +8,6 @@ import kotlin.reflect.KClass
  *
  * An Axis is a descriptor for a dimension of variation in your system. It pairs with
  * an enum type T that implements [AxisValue] to define the possible values along that axis.
- *
- * ## Auto-Registration
- *
- * Axes automatically register themselves with the [AxisRegistry] upon creation. This enables
- * ID-based lookup, with type-based APIs resolved by matching the value type to a registered axis.
  *
  * ## Usage
  *
@@ -26,10 +22,14 @@ import kotlin.reflect.KClass
  * }
  * ```
  *
- * The axis automatically registers on initialization, allowing you to use type-based APIs:
+ * To use type-inferred axis DSL operations, register the axis in an [AxisCatalog]:
  * ```kotlin
- * // In rules
- * axis(Environment.PROD)  // Type infers the axis
+ * object Checkout : Namespace("checkout") {
+ *     val environmentAxis = axis<Environment>("environment")
+ * }
+ *
+ * // In rules (resolved through Checkout.axisCatalog)
+ * axis(Environment.PROD)
  *
  * // In contexts
  * val env = context.axis<Environment>()
@@ -45,15 +45,7 @@ import kotlin.reflect.KClass
 class Axis<T> private constructor(
     val id: String,
     val valueClass: KClass<out T>,
-    autoRegister: Boolean = true,
 ) where T : AxisValue<T>, T : Enum<T> {
-    init {
-        // Auto-register this axis upon creation.
-        if (autoRegister) {
-            io.amichne.konditional.core.registry.AxisRegistry.register(this)
-        }
-    }
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Axis<*>) return false
@@ -77,14 +69,29 @@ class Axis<T> private constructor(
         fun <T> of(
             id: String,
             valueClass: KClass<out T>,
-            autoRegister: Boolean = true,
         ): Axis<T> where T : AxisValue<T>, T : Enum<T> =
-            Axis(id = id, valueClass = valueClass, autoRegister = autoRegister)
+            Axis(id = id, valueClass = valueClass)
+
+        /**
+         * Creates and registers a new axis handle in [axisCatalog].
+         */
+        fun <T> of(
+            id: String,
+            valueClass: KClass<out T>,
+            axisCatalog: AxisCatalog,
+        ): Axis<T> where T : AxisValue<T>, T : Enum<T> =
+            of(id = id, valueClass = valueClass).also(axisCatalog::register)
 
         /**
          * Reified helper for [of] with an explicit id.
          */
         inline fun <reified T> of(id: String): Axis<T> where T : AxisValue<T>, T : Enum<T> =
             of(id = id, valueClass = T::class)
+
+        /**
+         * Reified helper for [of] with explicit [axisCatalog] registration.
+         */
+        inline fun <reified T> of(id: String, axisCatalog: AxisCatalog): Axis<T> where T : AxisValue<T>, T : Enum<T> =
+            of(id = id, valueClass = T::class, axisCatalog = axisCatalog)
     }
 }

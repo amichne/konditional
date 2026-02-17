@@ -139,8 +139,8 @@ class ConfigurationSnapshotCodecTest {
     }
 
     private object Axes {
-        val EnvironmentAxis = Axis.of<Environment>("snapshot-environment")
-        val TenantAxis = Axis.of<Tenant>("snapshot-tenant")
+        val EnvironmentAxis = Axis.of<Environment>("snapshot-environment", TestFeatures.axisCatalog)
+        val TenantAxis = Axis.of<Tenant>("snapshot-tenant", TestFeatures.axisCatalog)
     }
 
     private enum class Theme {

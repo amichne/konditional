@@ -4,6 +4,8 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.axis.Axis
+import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.features.BooleanFeature
 import io.amichne.konditional.core.features.DoubleFeature
@@ -12,6 +14,7 @@ import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.features.IntFeature
 import io.amichne.konditional.core.features.KotlinClassFeature
 import io.amichne.konditional.core.features.StringFeature
+import io.amichne.konditional.core.registry.AxisCatalog
 import io.amichne.konditional.core.registry.NamespaceRegistry
 import io.amichne.konditional.core.registry.NamespaceRegistryFactories
 import io.amichne.konditional.core.registry.NamespaceRegistryRuntime
@@ -22,6 +25,7 @@ import io.amichne.konditional.internal.builders.FlagBuilder
 import io.amichne.konditional.values.IdentifierEncoding.SEPARATOR
 import org.jetbrains.annotations.TestOnly
 import java.util.UUID
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 /**
@@ -74,6 +78,12 @@ open class Namespace(
     @property:KonditionalInternalApi
     val registry: NamespaceRegistry = NamespaceRegistryFactories.default(id),
     /**
+     * Axis catalog owned by this namespace.
+     *
+     * Type-inferred axis DSL operations resolve against this scoped catalog.
+     */
+    val axisCatalog: AxisCatalog = AxisCatalog(),
+    /**
      * Seed used to construct stable [io.amichne.konditional.values.FeatureId] values for features.
      *
      * By default this is the namespace [id], which is appropriate for "real" namespaces that are intended
@@ -108,6 +118,7 @@ open class Namespace(
     abstract class TestNamespaceFacade(id: String) : Namespace(
         id = id,
         registry = NamespaceRegistryFactories.default(id),
+        axisCatalog = AxisCatalog(),
         identifierSeed = UUID.randomUUID().toString(),
     )
 
@@ -137,6 +148,23 @@ open class Namespace(
      */
     @KonditionalInternalApi
     fun compiledSchema(): CompiledNamespaceSchema = CompiledNamespaceSchema.from(this)
+
+    /**
+     * Declares an axis in this namespace's [axisCatalog].
+     *
+     * Use this when you want type-inferred axis DSL lookups to stay scoped to this namespace.
+     */
+    protected fun <T> axis(
+        id: String,
+        valueClass: KClass<out T>,
+    ): Axis<T> where T : AxisValue<T>, T : Enum<T> =
+        Axis.of(id = id, valueClass = valueClass, axisCatalog = axisCatalog)
+
+    /**
+     * Reified helper for [axis].
+     */
+    protected inline fun <reified T> axis(id: String): Axis<T> where T : AxisValue<T>, T : Enum<T> =
+        axis(id = id, valueClass = T::class)
 
     /**
      * Defines a boolean feature on this namespace using property delegation.

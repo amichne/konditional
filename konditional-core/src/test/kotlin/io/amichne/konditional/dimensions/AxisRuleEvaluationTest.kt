@@ -6,6 +6,7 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.dsl.unaryPlus
 
 import io.amichne.konditional.fixtures.FeaturesWithAxis
+import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
@@ -22,7 +23,7 @@ class AxisRuleEvaluationTest {
         tenant: TestTenant? = null,
         version: String = "1.0.0",
     ): TestContext {
-        val values = axisValues {
+        val values = axisValues(TestAxes.axisCatalog) {
             if (env != null) {
                 +env
             }

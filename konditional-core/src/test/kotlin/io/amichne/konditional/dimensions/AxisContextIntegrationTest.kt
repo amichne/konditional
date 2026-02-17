@@ -7,6 +7,7 @@ import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
+import io.amichne.konditional.core.registry.AxisCatalog
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -67,9 +68,20 @@ class AxisContextIntegrationTest {
     }
 
     @Test
-    fun `axis values require explicit axis registration for inferred values`() {
+    fun `axis values inferred lookup requires a scoped axis catalog`() {
         val error = assertThrows<IllegalArgumentException> {
             axisValues {
+                +EphemeralEnvironment.PROD
+            }
+        }
+
+        Assertions.assertTrue(error.message.orEmpty().contains("requires a scoped AxisCatalog"))
+    }
+
+    @Test
+    fun `axis values inferred lookup fails when scoped catalog lacks type binding`() {
+        val error = assertThrows<IllegalArgumentException> {
+            axisValues(AxisCatalog()) {
                 +EphemeralEnvironment.PROD
             }
         }

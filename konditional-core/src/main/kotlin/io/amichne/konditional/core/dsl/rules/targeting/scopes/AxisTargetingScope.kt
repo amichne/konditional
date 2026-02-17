@@ -33,7 +33,8 @@ interface AxisTargetingScope<C : Context> {
      * axis(Tenant.ENTERPRISE)
      * ```
      *
-     * Requires that an axis is already registered for the value type [T].
+     * Requires that an axis is already registered for the value type [T]
+     * in the active scoped [io.amichne.konditional.core.registry.AxisCatalog].
      *
      * @param T The axis value type
      * @param values The values to allow for this axis
