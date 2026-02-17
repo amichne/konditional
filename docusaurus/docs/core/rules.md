@@ -30,12 +30,61 @@ Inside a rule block (`RuleScope`):
 - `platforms(...)` targets platform ids
 - `versions { min(...); max(...) }` targets version ranges
 - `axis(axisHandle, ...)` targets custom axes explicitly (preferred)
-- `axis(...)` infers the axis from value type (requires pre-registered axis)
+- `axis(...)` infers the axis from value type (requires namespace axis declaration)
 - `extension { ... }` custom predicate
 - `rampUp { ... }` percentage rollout
 - `allowlist(...)` stable IDs that bypass ramp-up
 - `note("...")` attaches a human-readable note
 - `always()` / `matchAll()` mark a catch-all rule explicitly
+
+All targeting calls inside one rule are combined with AND semantics. Repeating
+`axis(...)` for the same axis id widens allowed values with OR semantics within
+that axis.
+
+## Scoped axis catalogs
+
+Type-inferred axis targeting resolves through a namespace-owned `AxisCatalog`.
+This keeps axis bindings isolated per namespace.
+
+```kotlin
+enum class Environment(override val id: String) : AxisValue<Environment> {
+    PROD("prod"),
+    STAGE("stage"),
+}
+
+enum class Tenant(override val id: String) : AxisValue<Tenant> {
+    ENTERPRISE("enterprise"),
+}
+
+object AppFeatures : Namespace("app") {
+    private val environmentAxis = axis<Environment>("environment")
+    private val tenantAxis = axis<Tenant>("tenant")
+
+    val checkout by boolean<Context>(default = false) {
+        rule(true) {
+            axis(environmentAxis, Environment.PROD) // Explicit handle
+            axis(Tenant.ENTERPRISE)                 // Inferred from axisCatalog
+        }
+    }
+}
+```
+
+For `axisValues { ... }`, inferred values also require a scoped catalog. Pass
+`axisCatalog = AppFeatures.axisCatalog` when you use inferred setters.
+
+## Targeting hierarchy
+
+Konditional compiles rule criteria into a structural targeting tree.
+
+- Each rule becomes a `Targeting.All` conjunction.
+- Standard leaves represent locale, platform, version, and axis constraints.
+- Each `extension { ... }` adds a `Targeting.Custom` leaf.
+- `whenContext<R> { ... }` adds a guarded leaf that evaluates only when the
+  runtime context implements `R`.
+
+When a context lacks a required capability, guarded leaves return `false`
+without throwing. This behavior replaces legacy flat predicate composition and
+keeps rule matching deterministic.
 
 ### Example
 
@@ -115,7 +164,8 @@ val enterpriseOnly by boolean<Context>(default = false) {
 
 - **Guarantee**: Custom predicates participate in specificity ordering.
 
-- **Mechanism**: Predicate implementations report their own `specificity()` which is added to the rule total.
+- **Mechanism**: Each `extension { ... }` and `whenContext<R> { ... }` call
+  contributes one custom targeting leaf, and leaf specificities are summed.
 
 - **Boundary**: Konditional does not validate predicate correctness or determinism.
 
