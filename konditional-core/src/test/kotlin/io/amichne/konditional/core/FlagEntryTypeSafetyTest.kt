@@ -14,7 +14,9 @@ import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.fixtures.utilities.localeIds
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 import io.amichne.konditional.rules.Rule
+import io.amichne.konditional.rules.targeting.Targeting
 import io.amichne.konditional.rules.versions.Unbounded
+import io.amichne.konditional.rules.versions.VersionRange
 import io.amichne.konditional.runtime.load
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.MaterializedConfiguration
@@ -33,6 +35,22 @@ class FlagEntryTypeSafetyTest {
         platform: Platform = Platform.IOS,
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parseUnsafe(version), StableId.of(idHex))
+
+    private fun rule(
+        locales: Set<String> = emptySet(),
+        platforms: Set<String> = emptySet(),
+        versionRange: VersionRange = Unbounded,
+    ): Rule<Context> {
+        val leaves = buildList<Targeting<Context>> {
+            if (locales.isNotEmpty()) add(Targeting.locale(locales))
+            if (platforms.isNotEmpty()) add(Targeting.platform(platforms))
+            if (versionRange != Unbounded) add(Targeting.version(versionRange))
+        }
+        return Rule(
+            rampUp = MAX,
+            targeting = Targeting.All(leaves),
+        )
+    }
 
     private object Features : Namespace.TestNamespaceFacade("flag-entry-type-safety") {
         val featureA by boolean<Context>(default = false) {
@@ -63,16 +81,11 @@ class FlagEntryTypeSafetyTest {
 
     @Test
     fun `Given FlagDefinition, When created, Then maintains type information correctly`() {
-        val rule = Rule<Context>(
-            rampUp = MAX,
-            locales = emptySet(),
-            platforms = emptySet(),
-            versionRange = Unbounded,
-        )
+        val r = rule()
 
         val flag = FlagDefinition(
             feature = Features.featureA,
-            values = listOf(rule.targetedBy(true)),
+            values = listOf(r.targetedBy(true)),
             defaultValue = false,
         )
 
@@ -83,16 +96,11 @@ class FlagEntryTypeSafetyTest {
 
     @Test
     fun `Given ContextualFlagDefinition, When evaluating, Then returns correct value type`() {
-        val rule = Rule<Context>(
-            rampUp = MAX,
-            locales = localeIds(AppLocale.UNITED_STATES),
-            platforms = emptySet(),
-            versionRange = Unbounded,
-        )
+        val r = rule(locales = localeIds(AppLocale.UNITED_STATES))
 
         val boolFlag: FlagDefinition<Boolean, Context, Features> = FlagDefinition(
             feature = Features.featureB,
-            values = listOf(rule.targetedBy(true)),
+            values = listOf(r.targetedBy(true)),
             defaultValue = false,
         )
 
@@ -104,26 +112,9 @@ class FlagEntryTypeSafetyTest {
 
     @Test
     fun `Given ContextualFlagDefinition with different value types, When evaluating, Then each returns correct type`() {
-        val boolRule = Rule<Context>(
-            rampUp = MAX,
-            locales = emptySet(),
-            platforms = emptySet(),
-            versionRange = Unbounded,
-        )
-
-        val stringRule = Rule<Context>(
-            rampUp = MAX,
-            locales = emptySet(),
-            platforms = emptySet(),
-            versionRange = Unbounded,
-        )
-
-        val intRule = Rule<Context>(
-            rampUp = MAX,
-            locales = emptySet(),
-            platforms = emptySet(),
-            versionRange = Unbounded,
-        )
+        val boolRule = rule()
+        val stringRule = rule()
+        val intRule = rule()
 
         val boolFlag: FlagDefinition<Boolean, Context, Features> = FlagDefinition(
             feature = Features.featureA,
@@ -156,19 +147,8 @@ class FlagEntryTypeSafetyTest {
 
     @Test
     fun `Given Snapshot with ContextualFlagDefinition instances, When loading, Then all flags are accessible`() {
-        val boolRule = Rule<Context>(
-            rampUp = MAX,
-            locales = emptySet(),
-            platforms = emptySet(),
-            versionRange = Unbounded,
-        )
-
-        val stringRule = Rule<Context>(
-            rampUp = MAX,
-            locales = emptySet(),
-            platforms = emptySet(),
-            versionRange = Unbounded,
-        )
+        val boolRule = rule()
+        val stringRule = rule()
 
         val boolFlag = FlagDefinition(
             feature = Features.featureA,

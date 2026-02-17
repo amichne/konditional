@@ -1,35 +1,41 @@
 package io.amichne.konditional.rules.evaluable
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.rules.targeting.Targeting
 
 /**
- * Base abstraction for composable rule evaluation logic.
+ * Adapter interface for custom evaluation logic.
  *
- * This class provides the foundation for building composable rule evaluation systems.
- * Implementations can define custom matching criteria and specificity calculations that
- * can be composed together to create complex rule systems.
+ * Prefer implementing [Targeting.Custom] directly for structural composability.
+ * This interface exists as a compatibility bridge for named predicate classes
+ * that predate the [Targeting] hierarchy.
  *
- * The design enables composition through:
- * - Multiple Predicate instances can be combined (e.g., [io.amichne.konditional.rules.Rule] composes [BasePredicate] with extension logic)
- * - Specificity values can be summed to determine rule precedence
- * - Matching logic can be chained (all must match for composition to match)
- *
- * @param C The contextFn type that this evaluable evaluates against
- *
- * @see io.amichne.konditional.rules.Rule
- * @see BasePredicate
+ * @param C The context type this predicate evaluates against.
  */
-fun interface Predicate<in C : Context> : Specifier {
+@Deprecated(
+    message = "Implement Targeting.Custom<C> directly for structural composability.",
+    replaceWith = ReplaceWith("Targeting.Custom", "io.amichne.konditional.rules.targeting.Targeting"),
+)
+fun interface Predicate<in C : Context> {
+
     /**
-     * Determines if this evaluable matches the given contextFn.
+     * Determines if this predicate matches the given context.
      *
-     * The default implementation always returns true, allowing implementations
-     * to selectively override only when they need custom matching logic.
-     *
-     * @param context The contextFn to evaluate against
-     * @return true if the contextFn matches this evaluable's criteria, false otherwise
+     * @param context The context to evaluate against.
+     * @return true if the context matches this predicate's criteria, false otherwise.
      */
     fun matches(context: C): Boolean
+
+    /**
+     * Specificity contribution for precedence ordering.
+     *
+     * @return The specificity value (higher is more specific). Default is 1.
+     */
+    fun specificity(): Int = 1
+
+    /** Converts this predicate to a [Targeting.Custom] leaf. */
+    fun asTargeting(): Targeting.Custom<@UnsafeVariance C> =
+        Targeting.Custom(block = ::matches, weight = specificity())
 
     companion object {
         fun <C : Context> factory(matcher: (C) -> Boolean): Predicate<C> = Predicate { context -> matcher(context) }

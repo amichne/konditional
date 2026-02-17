@@ -6,12 +6,12 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.rules.evaluable.Predicate
+import io.amichne.konditional.rules.targeting.Targeting
 
 /**
- * TestNamespace features for validating contextFn polymorphism.
+ * TestNamespace features for validating context polymorphism.
  *
- * These demonstrate custom contextFn types and specialized evaluation rules.
+ * These demonstrate custom context types and specialized evaluation rules.
  */
 
 // ========== Custom Contexts ==========
@@ -27,7 +27,7 @@ enum class UserRole {
 }
 
 /**
- * Enterprise contextFn with additional business-specific properties.
+ * Enterprise context with additional business-specific properties.
  */
 data class EnterpriseContext(
     override val locale: AppLocale,
@@ -56,7 +56,7 @@ data class CompositeContext(
 }
 
 /**
- * Experiment contextFn for A/B testing scenarios.
+ * Experiment context for A/B testing scenarios.
  */
 data class ExperimentContext(
     override val locale: AppLocale,
@@ -97,15 +97,21 @@ object ExperimentFeatures : Namespace.TestNamespaceFacade("experiment-features")
 // ========== Custom Rules ==========
 
 /**
- * Custom rule for enterprise-specific evaluation logic.
+ * Custom targeting leaf for enterprise-specific evaluation logic.
  *
- * This demonstrates how to extend evaluation with business-specific constraints.
+ * This demonstrates how to extend evaluation with business-specific constraints
+ * using the [Targeting.Custom] approach.
+ *
+ * @property requiredTier Minimum subscription tier required, or null for any tier.
+ * @property requiredRole Minimum user role required, or null for any role.
  */
-data class EnterpriseRule(
-    val requiredTier: SubscriptionTier? = null,
-    val requiredRole: UserRole? = null,
-) : Predicate<EnterpriseContext> {
-    override fun matches(context: EnterpriseContext): Boolean =
+fun enterpriseRule(
+    requiredTier: SubscriptionTier? = null,
+    requiredRole: UserRole? = null,
+): Targeting.Custom<EnterpriseContext> = Targeting.Custom(
+    block = { context ->
         (requiredTier == null || context.subscriptionTier >= requiredTier) &&
             (requiredRole == null || context.userRole >= requiredRole)
-}
+    },
+    weight = listOfNotNull(requiredTier, requiredRole).size,
+)
