@@ -1,5 +1,0 @@
-[mcp_servers.openaiDeveloperDocs]
-required = true
-
-[projects."/Users/amichne/code/konditional"]
-trust_level = "trusted"
