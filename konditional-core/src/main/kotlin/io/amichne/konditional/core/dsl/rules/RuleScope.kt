@@ -93,6 +93,7 @@ interface RuleScope<C : Context> : ContextRuleScope<C>,
      * Created via [FlagScope.ruleScoped] and completed via [yields].
      */
     @KonditionalDsl
+    @KonditionalInternalApi
     class ScopedPrefix<T : Any, C : Context, out M : Namespace> internal constructor(
         private val scope: FlagScope<T, C, @UnsafeVariance M>,
         private val build: ContextRuleScope<C>.() -> Unit,

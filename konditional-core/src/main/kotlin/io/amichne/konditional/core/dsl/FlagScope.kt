@@ -1,5 +1,8 @@
+@file:OptIn(KonditionalInternalApi::class)
+
 package io.amichne.konditional.core.dsl
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.rules.ContextRuleScope
@@ -100,6 +103,7 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
      * @param value The value to return when this rule matches
      * @param build DSL block for configuring the rule's targeting criteria
      */
+    @KonditionalInternalApi
     fun ruleScoped(
         value: T,
         build: ContextRuleScope<C>.() -> Unit = {},
@@ -126,6 +130,7 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
      * Semantics:
      * - `ruleScoped { ... } yields VALUE` ≡ `ruleScoped(VALUE) { ... }`
      */
+    @KonditionalInternalApi
     fun ruleScoped(build: ContextRuleScope<C>.() -> Unit): RuleScope.ScopedPrefix<T, C, M> =
         RuleScope.ScopedPrefix(this, build)
 }
