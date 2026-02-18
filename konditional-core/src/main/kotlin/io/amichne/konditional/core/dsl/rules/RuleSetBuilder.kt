@@ -1,5 +1,8 @@
+@file:OptIn(KonditionalInternalApi::class)
+
 package io.amichne.konditional.core.dsl.rules
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.registry.AxisCatalog
@@ -19,6 +22,7 @@ class RuleSetBuilder<T : Any, C : Context> @PublishedApi internal constructor(
         rules += RuleSpec(value, rule)
     }
 
+    @KonditionalInternalApi
     fun ruleScoped(
         value: T,
         build: ContextRuleScope<C>.() -> Unit = {},
