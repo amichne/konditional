@@ -152,14 +152,15 @@ when {
    `ParseError.FeatureNotFound`)
 3. **Type decoding** - Tagged values (`defaultValue` and rule `value`) are decoded into the declared Kotlin types (or
    fail with `ParseError.InvalidSnapshot`)
-4. **Structured value validation** - For `Konstrained` values, fields are validated against the provided Kontracts
-   schema at the boundary
+4. **Structured value validation** - For `Konstrained` values, payloads are
+   validated against the declared Kontracts schema at the boundary
 
 - **Boundary**: Manually constructing `Configuration` bypasses these checks; treat it as trusted input.
 
 - **Guarantee**: Application code does not construct JSON literals via a Konditional JSON value model.
-- **Mechanism**: JSON is parsed into the snapshot model and decoded into Kotlin values; structured values validate
-  against `ObjectSchema`.
+- **Mechanism**: JSON is parsed into the snapshot model and decoded into Kotlin
+  values; structured values validate against object, primitive, or array
+  schemas declared by `Konstrained`.
 - **Boundary**: This guarantee applies to Konditional's public API; `kontracts` may still expose a runtime JSON model
   for standalone use.
 

@@ -1,490 +1,145 @@
-# Operational Debugging
+# Operational debugging
 
-Diagnosing and resolving issues with feature evaluation, determinism, and ramp-up bucketing.
-
----
+This page shows production-safe debugging techniques that match the current
+public API surface. The core evaluation API is `evaluate(...)`; there is no
+public `Feature.explain(...)` API.
 
 ## Overview
 
-When features don't behave as expected in production, you need tools to understand what's happening. Konditional
-provides several debugging mechanisms:
+Use these tools depending on the question you need to answer.
 
-1. **Explain API** — Trace why a specific evaluation returned a value
-2. **Bucketing introspection** — Verify ramp-up determinism
-3. **Rule evaluation logs** — Understand which rules matched
-4. **Configuration inspection** — Validate loaded configuration
+1. Value verification with controlled contexts (`evaluate(...)`)
+2. Deterministic rollout inspection (`RampUpBucketing`)
+3. Runtime boundary diagnostics (`NamespaceSnapshotLoader` + typed parse errors)
+4. Migration comparison without behavior drift (`evaluateWithShadow`)
 
----
+## Verify returned values with controlled contexts
 
-## Debugging Feature Evaluation
-
-### Problem: "Why did this user get variant X?"
-
-Use the `explain()` API to trace evaluation:
+Start by evaluating the same feature against a small matrix of deterministic
+contexts. This isolates rule-targeting and ramp-up assumptions.
 
 ```kotlin
-val ctx = Context(
-    stableId = StableId.of("user-12345"),
-    platform = Platform.IOS
+val contexts = listOf(
+    Context(
+        locale = AppLocale.UNITED_STATES,
+        platform = Platform.IOS,
+        appVersion = Version.of(2, 1, 0),
+        stableId = StableId.of("user-a"),
+    ),
+    Context(
+        locale = AppLocale.UNITED_STATES,
+        platform = Platform.ANDROID,
+        appVersion = Version.of(2, 1, 0),
+        stableId = StableId.of("user-b"),
+    ),
 )
 
-val explanation = AppFeatures.checkoutFlow.evaluate(ctx)
-
-println(explanation.summary())
-/*
-Feature: checkoutFlow
-Result: CheckoutFlow.OPTIMIZED
-Matched rule: #2 (platforms: [IOS])
-Evaluation path:
-  ✗ Rule #1 (EXPERIMENTAL): rampUp(10%) - user not in bucket
-  ✓ Rule #2 (OPTIMIZED): platforms([IOS]) - matched
-  • Default: CLASSIC (not reached)
-*/
+contexts.forEach { ctx ->
+    val value = AppFeatures.checkoutVariant.evaluate(ctx)
+    println("platform=${ctx.platform.id} stableId=${ctx.stableId.id} value=$value")
+}
 ```
 
-**When to use:**
+When values are stable in this matrix, drift usually comes from upstream
+context construction or config ingestion.
 
-- User reports unexpected behavior ("I don't see the new feature")
-- A/B test results don't match expectations
-- Verifying rule precedence in production
+## Inspect deterministic bucketing directly
 
-### Understanding Explain Output
+Use `RampUpBucketing` when you need to answer, "why is this user outside a
+rollout percentage?"
 
 ```kotlin
-data class EvaluationExplanation<T, C : Context>(
-    val feature: Feature<T, C, *>,
-    val context: C,
-    val result: T,
-    val matchedRule: Rule<T, C>?,
-    val evaluationTrace: List<RuleEvaluationStep<T, C>>
+import io.amichne.konditional.api.RampUpBucketing
+
+val bucket = RampUpBucketing.explain(
+    stableId = StableId.of("user-123"),
+    featureKey = AppFeatures.darkMode.key,
+    salt = "v1",
+    rampUp = RampUp.of(10.0),
 )
 
-data class RuleEvaluationStep<T, C : Context>(
-    val ruleIndex: Int,
-    val ruleValue: T,
-    val matched: Boolean,
-    val reason: String
-)
+println("bucket=${bucket.bucket}")
+println("thresholdBasisPoints=${bucket.thresholdBasisPoints}")
+println("inRollout=${bucket.inRollout}")
 ```
 
-**Example trace:**
+The output is deterministic for the same `(stableId, featureKey, salt)` tuple.
+
+## Debug configuration load failures at the boundary
+
+`NamespaceSnapshotLoader.load(...)` returns `Result` and never partially applies
+an invalid snapshot.
 
 ```kotlin
-explanation.evaluationTrace.forEach { step ->
-  val icon = if (step.matched) "✓" else "✗"
-  println("$icon Rule #${step.ruleIndex}: ${step.reason}")
-}
-```
+import io.amichne.konditional.core.result.ParseError
+import io.amichne.konditional.core.result.parseErrorOrNull
+import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 
----
-
-## Debugging Ramp-Up Determinism
-
-### Problem: "Users are getting different buckets"
-
-Verify that bucketing is deterministic:
-
-```kotlin
-val userId = "user-12345"
-val stableId = StableId.of(userId)
-val ctx = Context(stableId = stableId)
-
-// Evaluate multiple times
-val results = (1..10).map {
-  AppFeatures.newCheckout.evaluate(ctx)
-}
-
-// All results should be identical
-require(results.all { it == results.first() }) {
-  "Bucketing is non-deterministic for user $userId: $results"
-}
-```
-
-**Common causes of non-determinism:**
-
-1. **stableId changes between evaluations**
-````kotlin
-   // DON'T: New StableId every time
-   val ctx1 = Context(stableId = StableId.of(UUID.randomUUID().toString()))
-   val ctx2 = Context(stableId = StableId.of(UUID.randomUUID().toString()))
-
-   // DO: Consistent stableId
-   val userId = getConsistentUserId()  // e.g., database ID
-   val ctx = Context(stableId = StableId.of(userId))
-````
-
-2. **Salt changed without understanding implications**
-````kotlin
-   // Changing salt reshuffles ALL users
-   val feature by boolean<Context>(default = false) {
-       rule(true) { rampUp { 50.0 } }  // Default salt
-   }
-
-   // Later: salt changed
-   val feature by boolean<Context>(default = false) {
-       rule(true) { rampUp(salt = "v2") { 50.0 } }  // Different bucket assignments!
-   }
-````
-
-### Inspecting Bucket Assignment
-
-```kotlin
-import io.amichne.konditional.rules.RampUpBucketing
-
-val userId = "user-12345"
-val featureKey = "new_checkout"
-val salt = "default"  // Or your custom salt
-
-// Calculate bucket (0-99)
-val bucket = RampUpBucketing.bucket(
-    stableId = StableId.of(userId),
-    featureKey = featureKey,
-    salt = salt
-)
-
-println("User $userId is in bucket $bucket for feature $featureKey")
-
-// Check if user is in ramp-up
-val rampUpPercentage = 50.0
-val inRampUp = bucket < rampUpPercentage
-println("User is ${if (inRampUp) "IN" else "NOT IN"} the $rampUpPercentage% ramp-up")
-```
-
-**Use when:**
-
-- Verifying specific users should/shouldn't be in a ramp-up
-- Debugging reported inconsistencies
-- Understanding bucket distribution
-
-### Verifying Ramp-Up Distribution
-
-Test that bucketing distributes users evenly:
-
-```kotlin
-fun testRampUpDistribution() {
-  val sampleSize = 10000
-  val rampUpPercentage = 30.0
-
-  val inRampUp = (0 until sampleSize).count { userId ->
-    val ctx = Context(stableId = StableId.of("user-$userId"))
-    AppFeatures.experimentalFeature.evaluate(ctx)  // Returns true if in ramp-up
-  }
-
-  val actualPercentage = (inRampUp.toDouble() / sampleSize) * 100
-
-  // Should be within ~1% of target
-  require((actualPercentage - rampUpPercentage).absoluteValue < 1.0) {
-    "Ramp-up distribution off: expected $rampUpPercentage%, got $actualPercentage%"
-  }
-}
-```
-
----
-
-## Debugging Rule Evaluation
-
-### Problem: "Rule isn't matching when it should"
-
-Add logging to trace rule evaluation:
-
-```kotlin
-val feature by boolean<Context>(default = false) {
-  rule(true) {
-    android()
-    logger.debug("Android rule evaluated: $this")
-  }
-  rule(true) {
-    rampUp { 50.0 }
-    logger.debug("Ramp-up rule evaluated: $this")
-  }
-}
-```
-
-Or use observability hooks:
-
-```kotlin
-AppFeatures.hooks.afterEvaluation.add { event ->
-  logger.debug("""
-        Feature: ${event.feature.key}
-        Context: ${event.context}
-        Result: ${event.result}
-        Matched rule: ${event.matchedRule?.let { "Rule #${it.index}" } ?: "default"}
-    """.trimIndent())
-}
-```
-
-### Understanding Rule Specificity
-
-Rules are evaluated in order until one matches:
-
-```kotlin
-val feature by boolean<Context>(default = false) {
-  rule(true) { rampUp { 10.0 } }         // Rule #1: Most specific
-  rule(true) { platforms(Platform.IOS) }  // Rule #2: Less specific
-  rule(false) { android() }               // Rule #3: Least specific
-}
-
-// Evaluation stops at first match:
-// - If user in 10% ramp-up → returns true (Rule #1 matches, stops)
-// - Else if iOS platform → returns true (Rule #2 matches, stops)
-// - Else if Android → returns false (Rule #3 matches, stops)
-// - Else → returns false (default)
-```
-
-**Debugging tip:** Add temporary logging to each rule to see evaluation order.
-
----
-
-## Debugging Configuration Loading
-
-### Problem: "Configuration isn't loading correctly"
-
-Add logging around `Result`:
-
-```kotlin
-val result = NamespaceSnapshotLoader(AppFeatures).load(configJson)
-when {
-  result.isSuccess -> {
-    logger.info("Config loaded successfully")
-    logger.debug("Loaded features: ${result.loadedFeatures}")
-  }
-  result.isFailure -> {
-    logger.error("Config load failed")
-    logger.error("Error: ${result.parseErrorOrNull()}")
-    logger.error("JSON: $configJson")
-
-    when (result.parseErrorOrNull()) {
-      is ParseError.InvalidJson -> logger.error("JSON syntax error")
-      is ParseError.FeatureNotFound -> logger.error("Reference to undefined feature")
-      is ParseError.InvalidSnapshot -> logger.error("Type doesn't match definition")
+val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+if (result.isFailure) {
+    when (val error = result.parseErrorOrNull()) {
+        is ParseError.InvalidJson -> println("Invalid JSON: ${error.reason}")
+        is ParseError.FeatureNotFound -> println("Unknown feature key: ${error.key}")
+        is ParseError.InvalidSnapshot -> println("Schema/type mismatch: ${error.reason}")
+        else -> println("Load failed: ${result.exceptionOrNull()?.message}")
     }
-  }
 }
 ```
 
-### Inspecting Loaded Configuration
+On failure, runtime behavior remains on the last-known-good configuration.
 
-After a successful load, inspect what was loaded:
+## Add hooks for low-overhead operational visibility
 
-```kotlin
-val result = NamespaceSnapshotLoader(AppFeatures).load(configJson)
-when {
-  result.isSuccess -> {
-    result.loadedFeatures.forEach { (featureKey, overrides) ->
-      logger.info("Feature $featureKey: ${overrides.size} override(s) loaded")
-    }
-  }
-}
-```
-
-### Validating JSON Before Loading
-
-Pre-validate JSON to catch issues early:
+Attach logger and metrics hooks at the namespace registry level.
 
 ```kotlin
-import kotlinx.serialization.json.Json
+import io.amichne.konditional.core.ops.KonditionalLogger
+import io.amichne.konditional.core.ops.Metrics
+import io.amichne.konditional.core.ops.MetricsCollector
+import io.amichne.konditional.core.ops.RegistryHooks
 
-fun validateConfigJson(json: String): Result<Unit> {
-  return runCatching {
-    Json.parseToJsonElement(json)  // Validates JSON syntax
-  }
-}
-
-// Usage
-when (validateConfigJson(configJson)) {
-  is Result.Success -> {
-    // JSON is syntactically valid, now try to load
-    NamespaceSnapshotLoader(AppFeatures).load(configJson)
-  }
-  is Result.Failure -> {
-    logger.error("Invalid JSON syntax", e)
-  }
-}
-```
-
----
-
-## Debugging Context Issues
-
-### Problem: "Feature evaluation depends on context, but behavior is wrong"
-
-Inspect the context being passed:
-
-```kotlin
-val ctx = buildContext()
-
-// Log context before evaluation
-logger.debug("""
-    Evaluating with context:
-    - stableId: ${ctx.stableId}
-    - platform: ${ctx.platform}
-    - locale: ${ctx.locale}
-    - version: ${ctx.appVersion}
-""".trimIndent())
-
-val result = AppFeatures.someFeature.evaluate(ctx)
-```
-
-### Common Context Mistakes
-
-**1. Wrong stableId:**
-
-```kotlin
-// DON'T: Random or session-based ID
-val ctx = Context(stableId = StableId.of(sessionId))  // Changes per session
-
-// DO: Persistent user ID
-val ctx = Context(stableId = StableId.of(userId))  // Consistent across sessions
-```
-
-**2. Missing context fields:**
-
-```kotlin
-// DON'T: Forgot to set platform
-val ctx = Context(stableId = StableId.of(userId))  // platform = null
-
-// DO: Provide all relevant fields
-val ctx = Context(
-    stableId = StableId.of(userId),
-    platform = Platform.ANDROID,
-    locale = Locale.US
+AppFeatures.setHooks(
+    RegistryHooks.of(
+        logger = object : KonditionalLogger {
+            override fun warn(message: () -> String, throwable: Throwable?) {
+                println("WARN ${message()}")
+            }
+        },
+        metrics = object : MetricsCollector {
+            override fun recordEvaluation(event: Metrics.Evaluation) {
+                println("evaluation key=${event.featureKey} decision=${event.decision}")
+            }
+        },
+    ),
 )
 ```
 
-**3. Wrong context type:**
+Keep hook implementations lightweight because they run on hot paths.
+
+## Compare baseline and candidate behavior with shadow evaluation
+
+For migrations, use `evaluateWithShadow(...)` from
+`konditional-observability`. Baseline behavior remains authoritative.
 
 ```kotlin
-interface PremiumContext : Context {
-  val subscriptionTier: SubscriptionTier
-}
+import io.amichne.konditional.api.evaluateWithShadow
 
-val premiumFeature by boolean<PremiumContext>(default = false) {
-  rule(true) { extension { subscriptionTier == SubscriptionTier.ENTERPRISE } }
-}
-
-// DON'T: Pass base Context
-val ctx: Context = Context(...)
-premiumFeature.evaluate(ctx)  // Compile error: wrong type
-
-// DO: Pass PremiumContext
-val ctx: PremiumContext = buildPremiumContext()
-premiumFeature.evaluate(ctx)  // ✓
-```
-
----
-
-## Production Debugging Checklist
-
-When investigating feature issues in production:
-
-### 1. Verify stableId consistency
-
-```kotlin
-// Log stableId for the affected user
-logger.info("User ${userId} has stableId: ${ctx.stableId}")
-
-// Check that it's consistent across requests
-```
-
-### 2. Use explain() to trace evaluation
-
-```kotlin
-val explanation = feature.evaluate(ctx)
-logger.info(explanation.summary())
-```
-
-### 3. Check ramp-up bucket assignment
-
-```kotlin
-val bucket = RampUpBucketing.bucket(ctx.stableId, featureKey, salt)
-logger.info("User in bucket $bucket (ramp-up threshold: $percentage%)")
-```
-
-### 4. Verify configuration is loaded
-
-```kotlin
-// Check when configuration was last updated
-logger.info("Last config load: ${AppFeatures.lastLoadedAt}")
-
-// Verify specific feature is configured as expected
-val configured = AppFeatures.someFeature.hasOverrides()
-logger.info("Feature has overrides: $configured")
-```
-
-### 5. Inspect context fields
-
-```kotlin
-logger.info("Context: platform=${ctx.platform}, locale=${ctx.locale}, version=${ctx.appVersion}")
-```
-
-### 6. Test locally with same inputs
-
-```kotlin
-// Reproduce the exact evaluation locally
-val ctx = Context(
-    stableId = StableId.of("user-12345"),  // From logs
-    platform = Platform.IOS,
-    locale = Locale.US
+val value = AppFeatures.checkoutVariant.evaluateWithShadow(
+    context = ctx,
+    baselineRegistry = baselineRegistry,
+    candidateRegistry = candidateRegistry,
+    onMismatch = { mismatch ->
+        println("shadow mismatch key=${mismatch.featureKey} kinds=${mismatch.kinds}")
+    },
 )
-
-val result = AppFeatures.someFeature.evaluate(ctx)
-logger.info("Local evaluation result: $result")
 ```
 
----
+Your app uses `value` from baseline evaluation while mismatches are reported as
+observability signals.
 
-## Common Production Issues
+## Next steps
 
-### Issue: User reports "I don't see the new feature"
-
-**Debug steps:**
-
-1. Get user's stableId from logs
-2. Use `explain()` to see why they didn't match any enabled rules
-3. Check if they're in the ramp-up bucket (if applicable)
-4. Verify context fields (platform, locale, version) match expectations
-
-### Issue: A/B test results show 0% treatment group
-
-**Debug steps:**
-
-1. Verify ramp-up percentage in loaded configuration
-2. Check that feature key matches between definition and JSON
-3. Verify `Result` was `Success` when config was loaded
-4. Use `explain()` on sample users to verify bucketing
-
-### Issue: "Feature behavior changed unexpectedly"
-
-**Debug steps:**
-
-1. Check if configuration was recently updated
-2. Compare current config to previous version
-3. Verify salt wasn't changed (causes reshuffle)
-4. Check for rule changes that affect precedence
-
----
-
-## Summary
-
-Konditional provides debugging tools for production issues:
-
-- **explain() API** — Trace why evaluation returned a specific value
-- **Bucketing introspection** — Verify ramp-up determinism
-- **Result logging** — Diagnose configuration load failures
-- **Context inspection** — Verify inputs to evaluation
-
-When debugging:
-
-1. Start with `explain()` to understand evaluation
-2. Verify stableId consistency for determinism
-3. Check configuration was loaded successfully
-4. Inspect context fields match expectations
-5. Reproduce locally with same inputs
-
----
-
-## Next Steps
-
-- [Thread Safety](/production-operations/thread-safety) — Understanding concurrent evaluation
-- [Failure Modes](/production-operations/failure-modes) — Common failure scenarios
-- [How-To: Debugging Determinism Issues](/how-to-guides/debugging-determinism) — Step-by-step guide
+- [Core DSL best practices](/core/best-practices)
+- [Thread safety](/production-operations/thread-safety)
+- [Failure modes](/production-operations/failure-modes)
+- [Shadow evaluation](/observability/shadow-evaluation)
