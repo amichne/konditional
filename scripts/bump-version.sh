@@ -47,9 +47,9 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-CURRENT_RAW_VERSION=$(grep '^VERSION=' "$GRADLE_PROPS" | cut -d'=' -f2-)
+CURRENT_RAW_VERSION=$(grep -E '^(version|VERSION)=' "$GRADLE_PROPS" | head -n1 | cut -d'=' -f2-)
 if [[ -z "$CURRENT_RAW_VERSION" ]]; then
-    echo "ERROR: VERSION is missing in gradle.properties" >&2
+    echo "ERROR: version is missing in gradle.properties" >&2
     exit 1
 fi
 
@@ -57,7 +57,7 @@ BASE_VERSION="${CURRENT_RAW_VERSION%-SNAPSHOT}"
 IFS='.' read -r MAJOR MINOR PATCH <<< "$BASE_VERSION"
 
 if [[ -z "$MAJOR" || -z "$MINOR" || -z "$PATCH" ]]; then
-    echo "ERROR: VERSION must be semantic version format x.y.z or x.y.z-SNAPSHOT" >&2
+    echo "ERROR: version must be semantic version format x.y.z or x.y.z-SNAPSHOT" >&2
     exit 1
 fi
 
@@ -88,10 +88,29 @@ if [[ "$NEW_VERSION" == "$CURRENT_RAW_VERSION" ]]; then
     exit 0
 fi
 
-if [[ "$OSTYPE" == darwin* ]]; then
-    sed -i '' "s/^VERSION=.*/VERSION=$NEW_VERSION/" "$GRADLE_PROPS"
-else
-    sed -i "s/^VERSION=.*/VERSION=$NEW_VERSION/" "$GRADLE_PROPS"
+replace_property() {
+    local key="$1"
+    local value="$2"
+    if [[ "$OSTYPE" == darwin* ]]; then
+        sed -i '' "s/^${key}=.*/${key}=${value}/" "$GRADLE_PROPS"
+    else
+        sed -i "s/^${key}=.*/${key}=${value}/" "$GRADLE_PROPS"
+    fi
+}
+
+updated_any=0
+if grep -q '^version=' "$GRADLE_PROPS"; then
+    replace_property "version" "$NEW_VERSION"
+    updated_any=1
+fi
+if grep -q '^VERSION=' "$GRADLE_PROPS"; then
+    replace_property "VERSION" "$NEW_VERSION"
+    updated_any=1
+fi
+
+if [[ "$updated_any" -eq 0 ]]; then
+    echo "ERROR: Could not update version property in $GRADLE_PROPS" >&2
+    exit 1
 fi
 
 echo "Version updated: $CURRENT_RAW_VERSION -> $NEW_VERSION"
