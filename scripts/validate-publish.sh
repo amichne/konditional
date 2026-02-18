@@ -58,14 +58,14 @@ check_version_for_target() {
   case "$TARGET" in
     snapshot)
       if [[ "$version" != *"-SNAPSHOT" ]]; then
-        fail "snapshot publish requires VERSION to end with -SNAPSHOT (found $version)"
+        fail "snapshot publish requires version to end with -SNAPSHOT (found $version)"
       else
         pass "snapshot version detected: $version"
       fi
       ;;
     release)
       if [[ "$version" == *"-SNAPSHOT" ]]; then
-        fail "release publish requires non-SNAPSHOT VERSION (found $version)"
+        fail "release publish requires non-SNAPSHOT version (found $version)"
       else
         pass "release version detected: $version"
       fi
@@ -128,10 +128,13 @@ echo -e "${BOLD}[1/7] Checking gradle.properties and target version constraints.
 if [[ ! -f "gradle.properties" ]]; then
   fail "gradle.properties not found"
 else
-  VERSION="$(value_from_props "VERSION" "gradle.properties")"
+  VERSION="$(value_from_props "version" "gradle.properties")"
+  if [[ -z "$VERSION" ]]; then
+    VERSION="$(value_from_props "VERSION" "gradle.properties")"
+  fi
   GROUP="$(value_from_props "GROUP" "gradle.properties")"
 
-  [[ -n "$VERSION" ]] && pass "VERSION=$VERSION" || fail "Missing VERSION in gradle.properties"
+  [[ -n "$VERSION" ]] && pass "version=$VERSION" || fail "Missing version in gradle.properties"
   [[ -n "$GROUP" ]] && pass "GROUP=$GROUP" || fail "Missing GROUP in gradle.properties"
 
   if [[ -n "$VERSION" ]]; then
