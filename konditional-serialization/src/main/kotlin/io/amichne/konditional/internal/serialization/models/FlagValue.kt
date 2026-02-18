@@ -12,10 +12,17 @@ import io.amichne.konditional.serialization.internal.toJsonValue
 import io.amichne.konditional.serialization.internal.toPrimitiveMap
 import io.amichne.kontracts.dsl.jsonObject
 import io.amichne.kontracts.schema.ObjectSchema
+import io.amichne.kontracts.schema.ObjectTraits
+import io.amichne.kontracts.value.JsonArray
+import io.amichne.kontracts.value.JsonBoolean
+import io.amichne.kontracts.value.JsonNumber
 import io.amichne.kontracts.value.JsonObject
+import io.amichne.kontracts.value.JsonString
+import io.amichne.kontracts.value.JsonValue
+import kotlin.reflect.KClass
 
 /**
- * Type-safe representation create flag values that replaces the type-erased SerializableValue.
+ * Type-safe representation of flag values that replaces the type-erased SerializableValue.
  *
  * This sealed class follows parse-don't-validate principles:
  * - No type erasure via `Any`
@@ -24,8 +31,11 @@ import io.amichne.kontracts.value.JsonObject
  *
  * Each subclass encodes both the value AND its type in a type-safe manner.
  *
- * Supports primitive types and user-defined types:
- * - Boolean, String, Int, Double, Enum
+ * Supports primitive types, enum types, and user-defined [Konstrained] types:
+ * - [BooleanValue], [StringValue], [IntValue], [DoubleValue] — JSON primitives
+ * - [EnumValue] — enum constants stored by name with class FQCN
+ * - [DataClassValue] — object-backed [Konstrained] (data classes, etc.)
+ * - [KonstrainedPrimitive] — primitive/array-backed [Konstrained] (value classes, etc.)
  */
 @KonditionalInternalApi
 sealed class FlagValue<out T : Any> {
@@ -80,9 +90,10 @@ sealed class FlagValue<out T : Any> {
     }
 
     /**
-     * Represents a custom encodeable value (typically a data class).
-     * Stores the custom type as a map of field name to value along with the fully qualified class name
-     * to enable proper deserialization.
+     * Represents an object-backed [Konstrained] value (typically a data class with named fields).
+     *
+     * Stores the custom type as a map of field name to primitive value along with the fully
+     * qualified class name to enable proper deserialization.
      *
      * The fields map contains the primitive representation of the custom type,
      * which can be serialized to JSON and later reconstructed.
@@ -92,6 +103,23 @@ sealed class FlagValue<out T : Any> {
         override val value: Map<String, Any?>,
         val dataClassName: String,
     ) : FlagValue<Map<String, Any?>>() {
+        override fun toValueType() = ValueType.DATA_CLASS
+    }
+
+    /**
+     * Represents a primitive/array-backed [Konstrained] value (typically a `@JvmInline value class`).
+     *
+     * Stores the raw primitive or list value ([String], [Boolean], [Int], [Double], `List<*>`)
+     * along with the fully qualified class name of the [Konstrained] implementation to enable
+     * reconstruction without an `expectedSample`.
+     *
+     * Wire format discriminator: `"KONSTRAINED_PRIMITIVE"`.
+     */
+    @JsonClass(generateAdapter = true)
+    data class KonstrainedPrimitive(
+        override val value: Any,
+        val konstrainedClassName: String,
+    ) : FlagValue<Any>() {
         override fun toValueType() = ValueType.DATA_CLASS
     }
 
@@ -116,56 +144,89 @@ sealed class FlagValue<out T : Any> {
                     schema = schema,
                 ) as V
             }
+            is KonstrainedPrimitive -> decodeKonstrainedPrimitive() as V
             else -> value as V
         }
 
+    @Suppress("UNCHECKED_CAST")
+    private fun KonstrainedPrimitive.decodeKonstrainedPrimitive(): Any {
+        val kClass =
+            runCatching { Class.forName(konstrainedClassName).kotlin as KClass<Any> }
+                .getOrElse {
+                    throw IllegalArgumentException(
+                        "Cannot load class '$konstrainedClassName' for KonstrainedPrimitive decoding: ${it.message}",
+                    )
+                }
+        return SchemaValueCodec.decodeKonstrainedPrimitive(kClass, value)
+            .getOrElse { error ->
+                throw IllegalArgumentException(
+                    "Failed to decode KonstrainedPrimitive '$konstrainedClassName': ${error.message}",
+                )
+            }
+    }
+
     companion object {
         /**
-         * Creates a FlagValue from an untyped value by inferring its type.
-         * Used during serialization when we have a typed domain value.
+         * Creates a [FlagValue] from an untyped value by inferring its type.
+         *
+         * For [Konstrained] values, dispatches on the schema type:
+         * - Object-backed schemas ([ObjectTraits]) → [DataClassValue]
+         * - Primitive/array-backed schemas → [KonstrainedPrimitive]
          */
-        @Suppress("UNCHECKED_CAST")
         fun from(value: Any): FlagValue<*> =
             when (value) {
-                is Boolean -> {
-                    BooleanValue(value)
-                }
-
-                is String -> {
-                    StringValue(value)
-                }
-
-                is Int -> {
-                    IntValue(value)
-                }
-
-                is Double -> {
-                    DoubleValue(value)
-                }
-
-                is Enum<*> -> {
+                is Boolean -> BooleanValue(value)
+                is String -> StringValue(value)
+                is Int -> IntValue(value)
+                is Double -> DoubleValue(value)
+                is Enum<*> ->
                     EnumValue(
                         value = value.name,
                         enumClassName = value.javaClass.name,
                     )
-                }
+                is Konstrained<*> -> fromKonstrained(value)
+                else -> throw IllegalArgumentException(
+                        "Unsupported value type: ${value::class.simpleName}. " +
+                            "Supported types: Boolean, String, Int, Double, Enum, Konstrained.",
+                    )
+            }
 
-                is Konstrained<*> -> {
+        private fun fromKonstrained(value: Konstrained<*>): FlagValue<*> =
+            when {
+                value.schema is ObjectTraits ->
                     DataClassValue(
                         value = value.toPrimitiveMap(),
                         dataClassName = value::class.java.name,
                     )
-                }
-
                 else -> {
-                    throw IllegalArgumentException(
-                        "Unsupported value type: ${value::class.simpleName}. " +
-                            "Supported types: Boolean, String, Int, Double, Enum, Konstrained.",
+                    KonstrainedPrimitive(
+                        value = SchemaValueCodec.encodeKonstrained(value).toPrimitiveRaw(),
+                        konstrainedClassName = value::class.java.name,
                     )
                 }
             }
     }
 }
+
+/**
+ * Converts a [JsonValue] to its raw primitive/list representation
+ * for storage in [FlagValue.KonstrainedPrimitive.value].
+ */
+private fun JsonValue.toPrimitiveRaw(): Any =
+    when (this) {
+        is JsonBoolean -> value
+        is JsonString -> value
+        is JsonNumber -> toInt().let { i ->
+            // Preserve Int vs Double to match round-trip expectations
+            if (toDouble() == i.toDouble()) i else toDouble()
+        }
+        is JsonArray -> elements.map { it.toPrimitiveRaw() }
+        else ->
+            error(
+                "KonstrainedPrimitive does not support encoding to ${this::class.simpleName}. " +
+                    "Supported output: Boolean, String, Int, Double, Array.",
+            )
+    }
 
 private fun validateDataClassFields(
     fields: Map<String, Any?>,

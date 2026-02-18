@@ -13,12 +13,20 @@ import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
 /**
- * Custom Moshi adapter for the FlagValue sealed class.
+ * Custom Moshi adapter for the [FlagValue] sealed class.
  *
- * Serializes FlagValue subclasses with their type discriminator for type-safe deserialization.
- * Parse-don't-validate: Deserialization constructs typed domain objects at the boundary.
+ * Serializes [FlagValue] subclasses with a `type` discriminator field for type-safe
+ * round-trip deserialization. Parse-don't-validate: deserialization constructs typed
+ * domain objects at the boundary.
  *
- * Supports primitive types and user-defined types: Boolean, String, Int, Double, Enum, DataClass
+ * Supported discriminator values:
+ * - `"BOOLEAN"` → [FlagValue.BooleanValue]
+ * - `"STRING"` → [FlagValue.StringValue]
+ * - `"INT"` → [FlagValue.IntValue]
+ * - `"DOUBLE"` → [FlagValue.DoubleValue]
+ * - `"ENUM"` → [FlagValue.EnumValue]
+ * - `"DATA_CLASS"` → [FlagValue.DataClassValue]
+ * - `"KONSTRAINED_PRIMITIVE"` → [FlagValue.KonstrainedPrimitive]
  */
 @KonditionalInternalApi
 class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
@@ -58,8 +66,13 @@ class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
                 writer.name("type").value("DATA_CLASS")
                 writer.name("dataClassName").value(value.dataClassName)
                 writer.name("value")
-                // Serialize the map as JSON object
                 serializeMap(writer, value.value)
+            }
+            is FlagValue.KonstrainedPrimitive -> {
+                writer.name("type").value("KONSTRAINED_PRIMITIVE")
+                writer.name("konstrainedClassName").value(value.konstrainedClassName)
+                writer.name("value")
+                serializeValue(writer, value.value)
             }
         }
         writer.endObject()
@@ -82,6 +95,16 @@ class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
                     FlagValue.DataClassValue(
                         value = requireMap(parsed.value, type = type),
                         dataClassName = requireString(parsed.dataClassName, type = type, hint = "dataClassName field"),
+                    )
+                "KONSTRAINED_PRIMITIVE" ->
+                    FlagValue.KonstrainedPrimitive(
+                        value = parsed.value
+                            ?: invalid("KONSTRAINED_PRIMITIVE type requires a value"),
+                        konstrainedClassName = requireString(
+                            parsed.konstrainedClassName,
+                            type = type,
+                            hint = "konstrainedClassName field",
+                        ),
                     )
                 null -> invalid("Missing required 'type' field")
                 else -> invalid("Unknown FlagValue type: $type")
@@ -111,6 +134,7 @@ private data class FlagValueParts(
     val value: Any?,
     val enumClassName: String?,
     val dataClassName: String?,
+    val konstrainedClassName: String?,
 )
 
 private fun readFlagValueParts(reader: JsonReader): FlagValueParts {
@@ -118,6 +142,7 @@ private fun readFlagValueParts(reader: JsonReader): FlagValueParts {
     var value: Any? = null
     var enumClassName: String? = null
     var dataClassName: String? = null
+    var konstrainedClassName: String? = null
 
     reader.beginObject()
     while (reader.hasNext()) {
@@ -126,6 +151,7 @@ private fun readFlagValueParts(reader: JsonReader): FlagValueParts {
             "value" -> value = deserializeValue(reader)
             "enumClassName" -> enumClassName = reader.nextString()
             "dataClassName" -> dataClassName = reader.nextString()
+            "konstrainedClassName" -> konstrainedClassName = reader.nextString()
             else -> reader.skipValue()
         }
     }
@@ -136,6 +162,7 @@ private fun readFlagValueParts(reader: JsonReader): FlagValueParts {
         value = value,
         enumClassName = enumClassName,
         dataClassName = dataClassName,
+        konstrainedClassName = konstrainedClassName,
     )
 }
 

@@ -13,6 +13,7 @@ import io.amichne.konditional.core.result.parseFailure
 import io.amichne.konditional.core.schema.CompiledNamespaceSchema
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.core.types.asObjectSchema
+import io.amichne.kontracts.schema.ObjectTraits
 import io.amichne.konditional.internal.SerializedFlagDefinitionMetadata
 import io.amichne.konditional.internal.SerializedFlagRuleSpec
 import io.amichne.konditional.internal.flagDefinitionFromSerialized
@@ -106,9 +107,12 @@ data class SerializableFlag(
                 expectedSample = expectedSample,
             )
             .let { decodedDefault ->
+                // Only extract and validate an ObjectSchema for object-backed Konstrained types.
+                // Primitive/array-backed Konstrained do not use ObjectSchema validation.
                 val schema =
                     (decodedDefault as? Konstrained<*>)
                         ?.schema
+                        ?.takeIf { it is ObjectTraits }
                         ?.asObjectSchema()
 
                 if (schema != null) {

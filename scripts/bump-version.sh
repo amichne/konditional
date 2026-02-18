@@ -1,47 +1,66 @@
-#!/bin/bash
-
-# Script to bump the version in gradle.properties
-# Usage: ./scripts/bump-version.sh [major|minor|patch] [--snapshot]
-
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 GRADLE_PROPS="$PROJECT_DIR/gradle.properties"
 
-if [ ! -f "$GRADLE_PROPS" ]; then
-    echo "ERROR: gradle.properties not found at $GRADLE_PROPS"
+if [[ ! -f "$GRADLE_PROPS" ]]; then
+    echo "ERROR: gradle.properties not found at $GRADLE_PROPS" >&2
     exit 1
 fi
 
-# Parse arguments
-BUMP_TYPE="${1:-patch}"
-ADD_SNAPSHOT="${2}"
+BUMP_TYPE="none"
+ADD_SNAPSHOT=0
 
-if [[ ! "$BUMP_TYPE" =~ ^(major|minor|patch)$ ]]; then
-    echo "Usage: $0 [major|minor|patch] [--snapshot]"
-    echo ""
-    echo "Examples:"
-    echo "  $0 patch              # 0.0.1 -> 0.0.2"
-    echo "  $0 minor              # 0.0.1 -> 0.1.0"
-    echo "  $0 major              # 0.0.1 -> 1.0.0"
-    echo "  $0 patch --snapshot   # 0.0.1 -> 0.0.2-SNAPSHOT"
+usage() {
+    cat <<USAGE
+Usage: ./scripts/bump-version.sh [none|major|minor|patch] [--snapshot]
+
+Examples:
+  ./scripts/bump-version.sh none              # leave version unchanged
+  ./scripts/bump-version.sh none --snapshot   # 1.2.3 -> 1.2.3-SNAPSHOT
+  ./scripts/bump-version.sh patch             # 1.2.3 -> 1.2.4
+  ./scripts/bump-version.sh patch --snapshot  # 1.2.3 -> 1.2.4-SNAPSHOT
+USAGE
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        none|major|minor|patch)
+            BUMP_TYPE="$1"
+            shift
+            ;;
+        --snapshot)
+            ADD_SNAPSHOT=1
+            shift
+            ;;
+        --help|-h)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "ERROR: Unknown argument '$1'" >&2
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+CURRENT_RAW_VERSION=$(grep '^VERSION=' "$GRADLE_PROPS" | cut -d'=' -f2-)
+if [[ -z "$CURRENT_RAW_VERSION" ]]; then
+    echo "ERROR: VERSION is missing in gradle.properties" >&2
     exit 1
 fi
 
-# Read current version
-CURRENT_VERSION=$(grep "^VERSION=" "$GRADLE_PROPS" | cut -d'=' -f2)
+BASE_VERSION="${CURRENT_RAW_VERSION%-SNAPSHOT}"
+IFS='.' read -r MAJOR MINOR PATCH <<< "$BASE_VERSION"
 
-# Remove -SNAPSHOT suffix if present
-CURRENT_VERSION="${CURRENT_VERSION%-SNAPSHOT}"
+if [[ -z "$MAJOR" || -z "$MINOR" || -z "$PATCH" ]]; then
+    echo "ERROR: VERSION must be semantic version format x.y.z or x.y.z-SNAPSHOT" >&2
+    exit 1
+fi
 
-# Split version into parts
-IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
-MAJOR="${VERSION_PARTS[0]}"
-MINOR="${VERSION_PARTS[1]}"
-PATCH="${VERSION_PARTS[2]}"
-
-# Bump version
 case "$BUMP_TYPE" in
     major)
         MAJOR=$((MAJOR + 1))
@@ -55,35 +74,24 @@ case "$BUMP_TYPE" in
     patch)
         PATCH=$((PATCH + 1))
         ;;
+    none)
+        ;;
 esac
 
 NEW_VERSION="$MAJOR.$MINOR.$PATCH"
-
-# Add -SNAPSHOT suffix if requested
-if [ "$ADD_SNAPSHOT" = "--snapshot" ]; then
+if [[ "$ADD_SNAPSHOT" -eq 1 ]]; then
     NEW_VERSION="$NEW_VERSION-SNAPSHOT"
 fi
 
-# Update gradle.properties
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS
+if [[ "$NEW_VERSION" == "$CURRENT_RAW_VERSION" ]]; then
+    echo "Version unchanged: $CURRENT_RAW_VERSION"
+    exit 0
+fi
+
+if [[ "$OSTYPE" == darwin* ]]; then
     sed -i '' "s/^VERSION=.*/VERSION=$NEW_VERSION/" "$GRADLE_PROPS"
 else
-    # Linux
     sed -i "s/^VERSION=.*/VERSION=$NEW_VERSION/" "$GRADLE_PROPS"
 fi
 
-echo "✓ Version bumped: $CURRENT_VERSION -> $NEW_VERSION"
-echo ""
-echo "Next steps:"
-if [ "$ADD_SNAPSHOT" != "--snapshot" ]; then
-    echo "  1. Review changes: git diff gradle.properties"
-    echo "  2. Commit: git add gradle.properties && git commit -m 'Bump version to $NEW_VERSION'"
-    echo "  3. Tag: git tag -a v$NEW_VERSION -m 'Release v$NEW_VERSION'"
-    echo "  4. Push: git push origin main --tags"
-else
-    echo "  1. Review changes: git diff gradle.properties"
-    echo "  2. Commit: git add gradle.properties && git commit -m 'Prepare $NEW_VERSION'"
-    echo "  3. Push: git push origin main"
-    echo "  4. Trigger snapshot publish workflow in GitHub Actions"
-fi
+echo "Version updated: $CURRENT_RAW_VERSION -> $NEW_VERSION"

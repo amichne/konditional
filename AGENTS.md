@@ -8,7 +8,6 @@ Top-level modules/directories you should assume exist and prefer:
 - `konditional-runtime/` — runtime registry, lifecycle, snapshot/atomic updates
 - `konditional-serialization/` — JSON boundary, codecs, parse results
 - `konditional-observability/` — explainability, tracing, shadowing/mismatch reporting
-- `konditional-spec/` — specifications, contracts, conformance fixtures
 - `openapi/` — OpenAPI artifacts and generation inputs/outputs
 - `openfeature/` — OpenFeature integration surface
 - `kontracts/` — Kontract DSL / schema tooling (OpenAPI generation, etc.)
@@ -18,52 +17,6 @@ Top-level modules/directories you should assume exist and prefer:
 - `docusaurus/` — documentation site
 
 If a referenced file is missing, **search for it** (filename or closest equivalent) before proceeding.
-
----
-
-## Codex 5.3 Runtime Profile (Current Default)
-
-Use Codex with a model/runtime profile optimized for complex Kotlin and cross-module work.
-
-### Default profile
-- Default model: `gpt-5.3-codex`
-- Default reasoning effort: `xhigh` when supported by the active model; otherwise `high`
-- Default verbosity: `medium`
-- Reduce reasoning effort only for trivial edits or when latency is more important than depth.
-
-### Launch commands
-```bash
-# Preferred default for complex work
-codex --model gpt-5.3-codex -c 'model_reasoning_effort="xhigh"' -c 'model_verbosity="medium"'
-
-# Lower-latency variant for small edits
-codex --model gpt-5.3-codex -c 'model_reasoning_effort="high"' -c 'model_verbosity="medium"'
-```
-
-### In-session controls
-- Use `/model` to switch model or reasoning depth.
-- Use `/status` to confirm model, approvals, writable roots, and token state.
-- Use `/compact` after long threads to preserve headroom without losing task context.
-
----
-
-## Instruction Chain Discipline (AGENTS Precedence)
-
-Codex loads instructions in a strict chain:
-1) Global (`~/.codex/AGENTS.override.md` or `~/.codex/AGENTS.md`)
-2) Project path (`AGENTS.override.md` then `AGENTS.md`, from repo root down to current directory)
-3) Deeper path instructions override broader path instructions.
-
-Keep instruction files explicit and scoped. Split nested concerns into deeper directories rather than growing one monolithic file.
-
-### Verification commands
-```bash
-codex --ask-for-approval never "Summarize the current instructions."
-codex --cd <subdir> --ask-for-approval never "Show which instruction files are active."
-```
-
-### Audit path
-- `~/.codex/log/codex-tui.log`
 
 ---
 
@@ -103,12 +56,7 @@ bd sync
 For symbol-aware operations, use IntelliJ MCP tools first. Plain text search (`rg`) is fallback only when symbol identity is irrelevant.
 
 ### MCP server checks
-
-```bash
-codex mcp list --json
-codex mcp get idea --json
-```
-
+ 
 If `idea` is missing in a local setup:
 
 ```bash

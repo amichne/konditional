@@ -90,9 +90,18 @@ jobs:
         if: steps.gate.outputs.publish == 'true'
         env:
           SIGNING_GPG_PRIVATE_KEY: ${{ secrets.SIGNING_GPG_PRIVATE_KEY }}
+          SIGNING_GPG_KEY_NAME: ${{ secrets.SIGNING_GPG_KEY_NAME }}
         run: |
-          echo "$SIGNING_GPG_PRIVATE_KEY" | gpg --batch --import
-          gpg --list-secret-keys --keyid-format=long
+          if ! printf '%s' "$SIGNING_GPG_PRIVATE_KEY" | gpg --batch --import; then
+            if ! printf '%s' "$SIGNING_GPG_PRIVATE_KEY" | base64 --decode | gpg --batch --import; then
+              echo "Failed to import SIGNING_GPG_PRIVATE_KEY as armored or base64-encoded key material"
+              exit 1
+            fi
+          fi
+          if ! gpg --list-secret-keys --keyid-format=long "$SIGNING_GPG_KEY_NAME"; then
+            echo "Imported key material does not contain a secret key for SIGNING_GPG_KEY_NAME=$SIGNING_GPG_KEY_NAME"
+            exit 1
+          fi
 
       - name: Publish to Maven Central
         if: steps.gate.outputs.publish == 'true'
@@ -140,9 +149,18 @@ jobs:
       - name: Import GPG key
         env:
           SIGNING_GPG_PRIVATE_KEY: ${{ secrets.SIGNING_GPG_PRIVATE_KEY }}
+          SIGNING_GPG_KEY_NAME: ${{ secrets.SIGNING_GPG_KEY_NAME }}
         run: |
-          echo "$SIGNING_GPG_PRIVATE_KEY" | gpg --batch --import
-          gpg --list-secret-keys --keyid-format=long
+          if ! printf '%s' "$SIGNING_GPG_PRIVATE_KEY" | gpg --batch --import; then
+            if ! printf '%s' "$SIGNING_GPG_PRIVATE_KEY" | base64 --decode | gpg --batch --import; then
+              echo "Failed to import SIGNING_GPG_PRIVATE_KEY as armored or base64-encoded key material"
+              exit 1
+            fi
+          fi
+          if ! gpg --list-secret-keys --keyid-format=long "$SIGNING_GPG_KEY_NAME"; then
+            echo "Imported key material does not contain a secret key for SIGNING_GPG_KEY_NAME=$SIGNING_GPG_KEY_NAME"
+            exit 1
+          fi
 
       - name: Publish to GitHub Packages
         env:
@@ -185,8 +203,20 @@ jobs:
       - name: Build release artifacts
         run: |
           ./gradlew assemble --no-daemon
-          cd build/libs
-          sha256sum *.jar > SHA256SUMS.txt
+          rm -rf release-artifacts
+          mkdir -p release-artifacts
+          find . -type f -path "*/build/libs/*.jar" \
+            ! -path "./build-logic/*" \
+            ! -path "./detekt-rules/*" \
+            -exec cp {} release-artifacts/ \;
+          if [ -z "$(find release-artifacts -maxdepth 1 -name '*.jar' -print -quit)" ]; then
+            echo "No release artifacts found in module build/libs directories"
+            exit 1
+          fi
+          (
+            cd release-artifacts
+            sha256sum *.jar > SHA256SUMS.txt
+          )
 
       - name: Extract version
         id: version
@@ -220,8 +250,8 @@ jobs:
           draft: false
           prerelease: ${{ contains(steps.version.outputs.version, 'alpha') || contains(steps.version.outputs.version, 'beta') || contains(steps.version.outputs.version, 'rc') }}
           files: |
-            build/libs/*.jar
-            build/libs/SHA256SUMS.txt
+            release-artifacts/*.jar
+            release-artifacts/SHA256SUMS.txt
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

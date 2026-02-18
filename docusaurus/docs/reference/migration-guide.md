@@ -233,7 +233,8 @@ This keeps behavior pinned to the baseline value while generating comparison tel
 
 ## Axis handle factory migration
 
-Axis descriptors are factory-only handles. If you previously subclassed `Axis`, switch to `Axis.of`.
+Axis descriptors are factory-only handles. Axis lookup is now scoped through an
+`AxisCatalog`, not a process-global registry.
 
 **Before**
 
@@ -246,13 +247,43 @@ object Axes {
 **After**
 
 ```kotlin
-object Axes {
-    val Environment = Axis.of<Environment>("environment")
+object AppFeatures : Namespace("app") {
+    val environmentAxis = axis<Environment>("environment")
 }
 ```
 
-Axis inference (`axis(Environment.PROD)`) now requires that `Environment` is already declared via `Axis.of(...)`.
-Implicit axis registration from enum class names is removed.
+If you need an explicit factory call, bind it to a specific catalog:
+
+```kotlin
+val environmentAxis = Axis.of(
+    id = "environment",
+    valueClass = Environment::class,
+    axisCatalog = AppFeatures.axisCatalog,
+)
+```
+
+Axis inference (`axis(Environment.PROD)`) now requires that `Environment` is
+already declared in the same namespace catalog. Implicit axis registration from
+enum class names is removed.
+
+---
+
+## Targeting hierarchy migration
+
+Rule internals now use a sealed targeting hierarchy instead of flat predicate
+composition.
+
+- **What changed**: rule criteria compile into `Targeting.All` with leaf nodes
+  for locale, platform, version, axis, and custom extension criteria.
+- **What stays the same**: your DSL usage (`platforms`, `locales`, `versions`,
+  `axis`, `extension`, and `whenContext`) keeps the same behavior.
+- **Compatibility**: legacy `Predicate<C>` implementations are supported as a
+  deprecated bridge; new logic should use `extension { ... }` and
+  `whenContext<R> { ... }`.
+
+This model improves determinism and keeps capability-narrowed targeting
+non-throwing: if a context does not implement the required capability, the
+targeting leaf returns `false`.
 
 ---
 
