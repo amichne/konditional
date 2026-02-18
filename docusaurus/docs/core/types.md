@@ -71,6 +71,65 @@ open class Namespace(val id: String) : NamespaceRegistry
 
 ---
 
+## `Konstrained<S>`
+
+Use `Konstrained` when a custom feature value needs schema validation at the
+JSON boundary.
+
+```kotlin
+interface Konstrained<out S : JsonSchema<*>> {
+  val schema: S
+}
+```
+
+`Namespace.custom<T, C>(...)` accepts any `T : Konstrained<*>`.
+
+### Supported schema shapes
+
+`Konstrained` supports object, primitive, and array schemas.
+
+- **Object schemas (data classes)**: Use this for multi-field structures.
+- **Primitive schemas (value classes, recommended)**: Wrap one `String`,
+  `Boolean`, `Int`, or `Double` with constraints.
+- **Array schemas (value classes, recommended)**: Wrap one list and validate
+  each element with an element schema.
+
+```kotlin
+data class UserSettings(
+    val theme: String = "light",
+    val notificationsEnabled: Boolean = true,
+) : Konstrained<ObjectSchema> {
+    override val schema = schema {
+        ::theme of { minLength = 1 }
+        ::notificationsEnabled of { default = true }
+    }
+}
+
+@JvmInline
+value class Email(val raw: String) : Konstrained<StringSchema> {
+    override val schema = stringSchema { pattern = "^[^@]+@[^@]+$" }
+}
+
+@JvmInline
+value class Tags(val values: List<String>) : Konstrained<ArraySchema<String>> {
+    override val schema = arraySchema { elementSchema(stringSchema { minLength = 1 }) }
+}
+```
+
+### Invariants
+
+`Konstrained` keeps type safety by enforcing these rules:
+
+- Primitive and array schema wrappers must expose exactly one property whose
+  type matches the schema backing type. Encode/decode violations fail with
+  `IllegalArgumentException`.
+- `schema` must be deterministic for an instance. The same instance must return
+  the same schema on every call.
+- External values stay untrusted until schema decoding succeeds. App code
+  models values as Kotlin types instead of constructing JSON literals directly.
+
+---
+
 <details>
 <summary>Advanced Types</summary>
 
