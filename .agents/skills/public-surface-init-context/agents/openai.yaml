@@ -1,0 +1,4 @@
+interface:
+  display_name: "Public Surface Init"
+  short_description: "Generate public-only bootstrap context from signatures."
+  default_prompt: "Build deterministic public API context from signatures for session initialization."
