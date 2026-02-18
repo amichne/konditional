@@ -4,7 +4,6 @@ package io.amichne.konditional.serialization.internal
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.types.Konstrained
-import io.amichne.konditional.core.types.asObjectSchema
 import io.amichne.konditional.serialization.SchemaValueCodec
 import io.amichne.kontracts.dsl.jsonArray
 import io.amichne.kontracts.dsl.jsonObject
@@ -40,7 +39,7 @@ fun Any?.toJsonValue(): JsonValue =
                 )
             }
 
-        is Konstrained<*> -> SchemaValueCodec.encode(this, schema.asObjectSchema())
+        is Konstrained<*> -> SchemaValueCodec.encodeKonstrained(this)
         is JsonValue -> this
         is List<*> ->
             jsonArray {

@@ -33,5 +33,9 @@ afterEvaluate {
 }
 
 tasks.named("test") {
-    dependsOn("compileDocsSamplesKotlin", verifyRecipesDocs)
+    dependsOn("compileDocsSamplesKotlin")
+}
+
+tasks.named("check") {
+    dependsOn(verifyRecipesDocs)
 }
