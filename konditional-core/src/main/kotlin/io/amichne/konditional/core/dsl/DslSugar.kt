@@ -1,5 +1,8 @@
+@file:OptIn(KonditionalInternalApi::class)
+
 package io.amichne.konditional.core.dsl
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
@@ -44,6 +47,7 @@ fun <C : Context, M : Namespace> FlagScope<Boolean, C, M>.disable(build: RuleSco
  *
  * @param build DSL block for configuring composable targeting criteria
  */
+@KonditionalInternalApi
 fun <C : Context, M : Namespace> FlagScope<Boolean, C, M>.enableScoped(build: ContextRuleScope<C>.() -> Unit = {}) =
     ruleScoped(ENABLED, build)
 
@@ -54,6 +58,7 @@ fun <C : Context, M : Namespace> FlagScope<Boolean, C, M>.enableScoped(build: Co
  *
  * @param build DSL block for configuring composable targeting criteria
  */
+@KonditionalInternalApi
 fun <C : Context, M : Namespace> FlagScope<Boolean, C, M>.disableScoped(build: ContextRuleScope<C>.() -> Unit = {}) =
     ruleScoped(DISABLED, build)
 
