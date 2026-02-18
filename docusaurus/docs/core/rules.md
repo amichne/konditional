@@ -199,5 +199,6 @@ object AppFeatures : Namespace("app") {
 
 ## Next steps
 
+- [Core DSL best practices](/core/best-practices)
 - [Evaluation model](/learn/evaluation-model)
 - [Core API reference](/core/reference)

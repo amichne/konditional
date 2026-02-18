@@ -9,7 +9,7 @@ If you only need compile-time correctness and deterministic evaluation, this is 
 - Typed feature declarations with a default value
 - Rule DSL for targeting (locale, platform, version, axes, custom predicates)
 - Deterministic ramp-ups (stable bucketing)
-- Explainable evaluation (`explain`) for debugging
+- Public `evaluate(...)` API with internal diagnostics hooks for observability modules
 
 ## Guarantees
 
@@ -50,6 +50,7 @@ val enabled = AppFeatures.darkMode.evaluate(ctx)
 ## Next steps
 
 - [Rule DSL](/core/rules)
+- [Core DSL best practices](/core/best-practices)
 - [Core API reference](/core/reference)
 - [Core types](/core/types)
 - [Evaluation model](/learn/evaluation-model)

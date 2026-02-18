@@ -44,6 +44,7 @@ val enabled: Boolean = AppFeatures.darkMode.evaluate(context)
 
 ## Next steps
 
+- [Core DSL best practices](/core/best-practices)
 - [Core types](/core/types)
 - [Observability](/observability/)
 - [Runtime operations](/runtime/)

@@ -265,6 +265,7 @@ value class RampUp private constructor(val value: Double) : Comparable<Number>
 
 ## Next steps
 
+- [Core DSL best practices](/core/best-practices)
 - [Core API reference](/core/reference)
 - [Evaluation model](/learn/evaluation-model)
 - [Serialization module](/serialization/)

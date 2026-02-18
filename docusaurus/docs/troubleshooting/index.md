@@ -4,276 +4,178 @@ title: Troubleshooting
 
 # Troubleshooting
 
-Symptom-first index for diagnosing and fixing Konditional issues.
+Use this page when behavior in production does not match what you expect.
+Each section focuses on one symptom and gives a code-accurate diagnosis path.
 
----
+## Start here
 
-## Start Here
+Choose the section that matches your first failure signal.
 
-Use the fastest path based on what broke first:
+- Config payload rejected: [Parsing issues](#parsing-issues)
+- Same user flips rollout state: [Bucketing issues](#bucketing-issues)
+- Returned value is unexpected: [Evaluation issues](#evaluation-issues)
+- Runtime behavior remains stale: [Integration issues](#integration-issues)
 
-- Config payload rejected -> go to [Parsing Issues](#parsing-issues)
-- Same user flips between rollout states -> go to [Bucketing Issues](#bucketing-issues)
-- Feature value differs from expectation -> go to [Evaluation Issues](#evaluation-issues)
-- Runtime behavior is stale after load -> go to [Integration Issues](#integration-issues)
+## Evaluation issues
 
-## Quick Diagnosis
-
-| Symptom | Likely Cause | Section |
-|---------|--------------|---------|
-| Feature returns unexpected value | Rule mismatch or precedence | [Evaluation Issues](#evaluation-issues) |
-| Same user gets different values | Non-deterministic stableId | [Bucketing Issues](#bucketing-issues) |
-| JSON fails to load | Parse error or schema mismatch | [Parsing Issues](#parsing-issues) |
-| Slow evaluation | Too many rules or hooks | [Performance Issues](#performance-issues) |
-| Feature not found error | Namespace not initialized | [Integration Issues](#integration-issues) |
-
----
-
-## Evaluation Issues
+This section helps when `evaluate(...)` returns a value that looks wrong.
 
 ### Wrong value returned
 
-**Symptom**: Feature evaluates to unexpected value.
+**Symptom**: A feature evaluates to an unexpected value.
 
 **Likely causes**:
-1. Context doesn't match rule criteria
-2. Rule precedence (specificity) incorrect
-3. Registry kill-switch active
-4. Feature inactive in configuration
+1. Context does not match the intended rule criteria.
+2. Another rule is more specific and wins first.
+3. Namespace kill-switch is enabled.
+4. Feature is inactive in loaded configuration.
 
 **Fix**:
 ```kotlin
-val result = AppFeatures.darkMode.evaluate(ctx)
-println(result.decision) // Shows why value was returned
+val controlCtx = Context(
+    locale = AppLocale.UNITED_STATES,
+    platform = Platform.IOS,
+    appVersion = Version.of(2, 0, 0),
+    stableId = StableId.of("control"),
+)
+
+val candidateCtx = controlCtx.copy(stableId = StableId.of("candidate"))
+
+println("control=${AppFeatures.darkMode.evaluate(controlCtx)}")
+println("candidate=${AppFeatures.darkMode.evaluate(candidateCtx)}")
 ```
 
-**Verification**: `explain()` output shows expected decision path.
-
-**Related**: [Learn: Evaluation Model](/learn/evaluation-model), [Reference: Feature Evaluation](/reference/api/feature-evaluation)
-
----
+**Verification**: Targeted test contexts produce expected values consistently.
 
 ### All features return defaults
 
-**Symptom**: Every evaluation returns default value, no rules match.
+**Symptom**: Every feature evaluates to its default value.
 
 **Likely causes**:
-1. Kill-switch enabled: `namespace.disableAll()` called
-2. All features inactive in configuration
-3. Context values don't match any rule criteria
+1. Namespace kill-switch was enabled via `disableAll()`.
+2. Loaded snapshot marks flags as inactive.
+3. No rules match the current context.
 
 **Fix**:
 ```kotlin
-// Check kill-switch
-if (AppFeatures.isDisabled) {
+if (AppFeatures.isAllDisabled) {
     AppFeatures.enableAll()
 }
 
-// Check rule matching
-val result = AppFeatures.darkMode.evaluate(ctx)
-println(result.decision) // DISABLED, INACTIVE, or DEFAULT?
+val value = AppFeatures.darkMode.evaluate(ctx)
+println("darkMode=$value")
 ```
 
-**Verification**: `explain()` shows `RegistryDisabled` or specific reason.
+**Verification**: `AppFeatures.isAllDisabled == false` and at least one known
+matching context returns a non-default value.
 
-**Related**: [Reference: Namespace Operations](/reference/api/namespace-operations)
+## Bucketing issues
 
----
-
-## Bucketing Issues
+This section helps when rollout assignment appears unstable.
 
 ### Non-deterministic ramp-ups
 
-**Symptom**: Same user gets different ramp-up results on each evaluation.
+**Symptom**: The same user appears in different rollout states over time.
 
 **Likely causes**:
-1. StableId not persistent (session ID, random UUID)
-2. Salt changing between evaluations
-3. Context stableId field changes
+1. `stableId` is generated per request/session.
+2. `salt(...)` changed unexpectedly.
+3. Different code paths use different user identifiers.
 
 **Fix**:
 ```kotlin
-// Wrong: random ID
-val ctx = Context(stableId = StableId.of(UUID.randomUUID().toString()))
+val stable = StableId.of(userId) // persistent ID from durable storage
+val ctx = Context(
+    locale = AppLocale.UNITED_STATES,
+    platform = Platform.IOS,
+    appVersion = Version.of(1, 0, 0),
+    stableId = stable,
+)
 
-// Correct: persistent ID
-val ctx = Context(stableId = StableId.of(userId)) // Database ID
+val results = (1..100).map { AppFeatures.darkMode.evaluate(ctx) }
+check(results.all { it == results.first() })
 ```
 
-**Verification**:
-```kotlin
-val results = (1..100).map { AppFeatures.feature.evaluate(ctx) }
-assertTrue(results.all { it == results.first() }) // All same
-```
-
-**Related**: [Guide: Roll Out Gradually](/guides/roll-out-gradually), [Design Theory: Determinism Proofs](/design-theory/determinism-proofs)
-
----
+**Verification**: Repeated evaluation for the same `(featureKey, stableId,
+salt)` remains stable.
 
 ### Wrong percentage distribution
 
-**Symptom**: 10% ramp-up results in 50% of users in treatment.
-
-**Likely causes**:
-1. Rule specificity causing wrong rule to match first
-2. Multiple ramp-up rules combining unexpectedly
-3. Context filtering before evaluation (sampling bias)
+**Symptom**: A rollout percentage is far from expected over large samples.
 
 **Fix**:
 ```kotlin
-// Test distribution with large sample
 val sampleSize = 10_000
 val inTreatment = (0 until sampleSize).count { i ->
-    val ctx = Context(stableId = StableId.of("user-$i"))
-    AppFeatures.feature.evaluate(ctx)
+    val ctx = Context(
+        locale = AppLocale.UNITED_STATES,
+        platform = Platform.IOS,
+        appVersion = Version.of(1, 0, 0),
+        stableId = StableId.of("user-$i"),
+    )
+    AppFeatures.darkMode.evaluate(ctx)
 }
+
 val actualPct = (inTreatment.toDouble() / sampleSize) * 100
-println("Actual: $actualPct%, Expected: 10%")
+println("actual=$actualPct")
 ```
 
-**Verification**: Actual percentage within ±1% of expected.
+**Verification**: Distribution is close to target across a large sample.
 
-**Related**: [Guide: Test Features](/guides/test-features), [Reference: RampUp Bucketing](/reference/api/ramp-up-bucketing)
+## Parsing issues
 
----
-
-## Parsing Issues
+This section helps when remote JSON fails before activation.
 
 ### JSON fails to load
 
-**Symptom**: `Result.failure` returned from `decode()`.
-
-**Likely causes**:
-1. Malformed JSON syntax
-2. Unknown feature key
-3. Type mismatch (wrong value type)
-4. Schema validation failure (custom data classes)
+**Symptom**: `NamespaceSnapshotLoader.load(...)` returns `Result.failure`.
 
 **Fix**:
 ```kotlin
-val result = ConfigurationSnapshotCodec.decode(json, AppFeatures.compiledSchema())
-when {
-    result.isFailure -> {
-        println("Error: ${result.parseErrorOrNull()?.message}")
-        when (result.parseErrorOrNull()) {
-            is ParseError.InvalidJson -> println("JSON syntax error")
-            is ParseError.FeatureNotFound -> println("Unknown feature key")
-            is ParseError.InvalidSnapshot -> println("Value type mismatch")
-            // ... handle specific errors
-        }
+import io.amichne.konditional.core.result.ParseError
+import io.amichne.konditional.core.result.parseErrorOrNull
+import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
+
+val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+if (result.isFailure) {
+    when (val error = result.parseErrorOrNull()) {
+        is ParseError.InvalidJson -> println("Malformed JSON: ${error.reason}")
+        is ParseError.FeatureNotFound -> println("Unknown feature: ${error.key}")
+        is ParseError.InvalidSnapshot -> println("Schema/type mismatch: ${error.reason}")
+        else -> println("Load failed: ${result.exceptionOrNull()?.message}")
     }
 }
 ```
 
-**Verification**: Parse succeeds with corrected JSON.
+**Verification**: Load succeeds and evaluation reflects the new snapshot.
 
-**Related**: [Guide: Load Remote Config](/guides/load-remote-config), [Production Operations: Failure Modes](/production-operations/failure-modes)
+## Integration issues
 
----
+This section helps when load succeeds but behavior seems unchanged.
 
-### Type mismatch error
+### Configuration appears stale after load
 
-**Symptom**: `ParseError.InvalidSnapshot` when loading JSON.
+**Symptom**: New payload was accepted but values look old.
 
 **Likely causes**:
-1. JSON value type doesn't match feature type (string for boolean, etc.)
-2. Enum constant not found
-3. Schema violation in custom data class
+1. You loaded a different namespace than the one you evaluate.
+2. Evaluation context does not actually match changed rules.
+3. You expected decode-only behavior from `NamespaceSnapshotLoader`.
 
 **Fix**:
 ```kotlin
-// Feature defined as boolean
-val darkMode by boolean<Context>(default = false)
+val load = NamespaceSnapshotLoader(AppFeatures).load(json)
+check(load.isSuccess) { "Load failed: ${load.exceptionOrNull()?.message}" }
 
-// JSON must specify BOOLEAN type
-{
-  "key": "feature::app::darkMode",
-  "defaultValue": { "type": "BOOLEAN", "value": false } // Not STRING
-}
+val valueAfterLoad = AppFeatures.darkMode.evaluate(ctx)
+println("valueAfterLoad=$valueAfterLoad")
 ```
 
-**Verification**: JSON schema validated, parse succeeds.
-
-**Related**: [Serialization: Persistence Format](/serialization/persistence-format)
-
----
-
-## Performance Issues
-
-### Slow evaluation
-
-**Symptom**: `evaluate()` takes > 1ms consistently.
-
-**Likely causes**:
-1. Too many rules (> 50 per feature)
-2. Expensive extension predicates
-3. Observability hooks blocking
-4. Registry contention (many threads loading config)
-
-**Fix**:
-```kotlin
-// Profile evaluation
-val start = System.nanoTime()
-val value = AppFeatures.feature.evaluate(ctx)
-val durationUs = (System.nanoTime() - start) / 1000
-println("Evaluation: ${durationUs}μs")
-
-// Simplify rules or use specificity to short-circuit early
-```
-
-**Verification**: Evaluation < 100μs for typical workloads.
-
-**Related**: [Production Operations: Thread Safety](/production-operations/thread-safety)
-
----
-
-## Integration Issues
-
-### Configuration not loading
-
-**Symptom**: `load()` succeeds but evaluations still use old values.
-
-**Likely causes**:
-1. Wrong namespace loaded
-2. Load called on different registry instance
-3. Configuration not actually loaded (silent failure)
-
-**Fix**:
-```kotlin
-// Verify load on correct namespace
-val result = ConfigurationSnapshotCodec.decode(json, AppFeatures.compiledSchema())
-when {
-    result.isSuccess -> {
-        AppFeatures.load(result.getOrNull()!!) // Same namespace as evaluation
-
-        // Immediate verification
-        val ctx = Context(...)
-        val value = AppFeatures.darkMode.evaluate(ctx)
-        println("Loaded config: ${value.decision}")
-    }
-    result.isFailure -> error("Config didn't load: ${result.parseErrorOrNull()}")
-}
-```
-
-**Verification**: `explain()` shows new rule matched.
-
-**Related**: [Reference: Namespace Operations](/reference/api/namespace-operations)
-
-### Feature not found
-
-**Symptom**: Evaluation or loading reports unknown or missing feature key.
-
-**Likely causes**:
-1. Typo in feature key from remote payload
-2. Feature exists in a different namespace
-3. Code and remote configuration are out of sync
-
-**Fix**: Confirm key spelling, namespace target, and deployed artifact version before retrying load.
-
----
+**Verification**: Known test contexts return post-load values immediately after
+successful load.
 
 ## Next steps
 
-- Prevent config regressions: [How-To: Load Configuration Safely from Remote](/how-to-guides/safe-remote-config)
-- Validate rollout determinism: [How-To: Roll Out a Feature Gradually](/how-to-guides/rolling-out-gradually)
-- Expand tests around failures: [How-To: Test Your Feature Flags](/how-to-guides/testing-features)
+- [Core DSL best practices](/core/best-practices)
+- [Failure modes](/production-operations/failure-modes)
+- [Runtime operations](/runtime/operations)

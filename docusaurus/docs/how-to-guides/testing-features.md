@@ -776,6 +776,6 @@ Before finishing a feature rollout, confirm your test suite includes:
 
 - [Guide: Roll Out Gradually](/guides/roll-out-gradually) — Implement and test ramps
 - [Guide: Debug Evaluation](/guides/debug-evaluation) — Debug test failures
-- [Reference: Feature Evaluation](/reference/api/feature-evaluation) — explain() for debugging
+- [Reference: Feature Evaluation](/reference/api/feature-evaluation) — public evaluation surface and removed legacy APIs
 - [Examples: Golden Path](/examples/golden-path) — Runnable test examples
 - [Production Operations: Failure Modes](/production-operations/failure-modes) — What can go wrong
