@@ -12,6 +12,27 @@ import org.gradle.plugins.signing.SigningExtension
 
 private val githubRepoRegex = Regex("github\\.com[:/](.+?)(\\.git)?$")
 
+private enum class PublishTarget {
+    Local,
+    Snapshot,
+    Release,
+    Github,
+    Unspecified,
+}
+
+private fun Project.resolvePublishTarget(): PublishTarget = when (
+    rootProject.findProperty("konditional.publish.target")
+        ?.toString()
+        ?.trim()
+        ?.lowercase()
+) {
+    "local" -> PublishTarget.Local
+    "snapshot" -> PublishTarget.Snapshot
+    "release" -> PublishTarget.Release
+    "github" -> PublishTarget.Github
+    else -> PublishTarget.Unspecified
+}
+
 private fun normalizeGithubRepository(value: String): String? {
     val trimmed = value.trim()
     val match = githubRepoRegex.find(trimmed)
@@ -37,6 +58,7 @@ fun Project.configureKonditionalPublishing(
     moduleName: String,
     moduleDescription: String,
 ) {
+    val publishTarget = resolvePublishTarget()
     val props = rootProject.properties
     val githubRepository = sequenceOf(
         props["GITHUB_REPOSITORY"] as? String,
@@ -100,7 +122,7 @@ fun Project.configureKonditionalPublishing(
             }
         }
         repositories {
-            if (!githubRepository.isNullOrBlank()) {
+            if (!githubRepository.isNullOrBlank() && publishTarget != PublishTarget.Local) {
                 maven {
                     name = "GitHubPackages"
                     url = uri("https://maven.pkg.github.com/$githubRepository")
@@ -116,6 +138,7 @@ fun Project.configureKonditionalPublishing(
     }
 
     extensions.configure<SigningExtension> {
+        val signingRequired = publishTarget != PublishTarget.Local
         val useGpgCmd = props.containsKey("signing.gnupg.keyName") ||
             System.getenv("SIGNING_GPG_KEY_NAME") != null
 
@@ -126,7 +149,7 @@ fun Project.configureKonditionalPublishing(
             useGpgCmd()
         }
 
-        if (useGpgCmd || hasKeyringCredentials) {
+        if (signingRequired && (useGpgCmd || hasKeyringCredentials)) {
             sign(extensions.getByType(PublishingExtension::class.java).publications["maven"])
         }
     }

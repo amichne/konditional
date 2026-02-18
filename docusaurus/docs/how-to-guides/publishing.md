@@ -1,249 +1,184 @@
 ---
-title: Publishing Releases
+title: Publishing releases
 ---
 
-# Publishing Releases
+# Publishing releases
 
-This guide is for maintainers who cut releases of Konditional to Maven Central.
+This guide explains the canonical publishing flow for Konditional.
+Use `make publish` as the single entrypoint for local, snapshot, release,
+and GitHub publication.
 
 ## Prerequisites
 
-### 1. Sonatype User Tokens
+Set up credentials and signing before publishing.
 
-Konditional publishes to Maven Central via Sonatype OSSRH. You'll need user tokens for authentication.
+### Maven Central credentials
 
-#### Create User Token
-
-1. Sign in to [Sonatype Central Portal](https://central.sonatype.com)
-2. Navigate to your [User Token](https://central.sonatype.com/usertoken) page
-3. Click "Generate User Token"
-4. Copy the generated username and password
-5. Add these to `~/.gradle/gradle.properties` as `ossrhUsername` and `ossrhPassword`
-
-**Important:** Use user tokens, not your Sonatype JIRA password. Tokens are scoped specifically for publishing and can be rotated without changing your account password.
-
-### 2. GPG Key Setup
-
-Konditional uses GPG signing via `gpg-agent` (recommended) for artifact signing.
-
-#### Generate GPG Key (if needed)
-
-```bash
-# Generate new GPG key
-gpg --full-generate-key
-
-# Select: RSA and RSA
-# Key size: 4096 bits
-# Expiration: 2 years (recommended)
-# Real name: Your Full Name
-# Email: your-email@example.com
-```
-
-#### Configure GPG Agent
-
-Ensure `gpg-agent` is running and can cache your passphrase:
-
-```bash
-# Test GPG agent
-echo "test" | gpg --clearsign
-
-# Configure agent for longer cache (optional)
-# Add to ~/.gnupg/gpg-agent.conf:
-default-cache-ttl 3600
-max-cache-ttl 7200
-```
-
-#### Publish GPG Key
-
-```bash
-# List your keys
-gpg --list-secret-keys --keyid-format=long
-
-# Example output:
-# sec   rsa4096/ABCD1234EFGH5678 2024-01-08 [SC] [expires: 2026-01-07]
-#       Full fingerprint here
-# uid                 [ultimate] Your Name <your-email@example.com>
-
-# Export public key (use the key ID after rsa4096/)
-gpg --keyserver keys.openpgp.org --send-keys ABCD1234EFGH5678
-
-# Verify it was published
-gpg --keyserver keys.openpgp.org --recv-keys ABCD1234EFGH5678
-```
-
-### 3. Configure `~/.gradle/gradle.properties`
-
-Create or edit `~/.gradle/gradle.properties` with your credentials:
+Konditional publishes to Maven Central. You must configure one of these
+credential pairs in `~/.gradle/gradle.properties`:
 
 ```properties
-# Sonatype OSSRH Credentials (from user token)
-ossrhUsername=YOUR_SONATYPE_TOKEN_USERNAME
-ossrhPassword=YOUR_SONATYPE_TOKEN_PASSWORD
+# Option 1
+ossrhUsername=YOUR_TOKEN_USERNAME
+ossrhPassword=YOUR_TOKEN_PASSWORD
 
-# GPG Signing with gpg-agent (recommended)
-# Use the full 40-character fingerprint or last 16 characters
+# Option 2
+mavenCentralUsername=YOUR_TOKEN_USERNAME
+mavenCentralPassword=YOUR_TOKEN_PASSWORD
+```
+
+### GPG signing
+
+Release and snapshot publication require signing. Configure signing in
+`~/.gradle/gradle.properties`:
+
+```properties
 signing.gnupg.keyName=ABCD1234EFGH5678
 signing.gnupg.executable=gpg
 ```
 
-## Publishing Workflow
+If you use legacy keyring signing, configure `signing.keyId`,
+`signing.password`, and `signing.secretKeyRingFile`.
 
-### Snapshot Publishing
+### GitHub Packages credentials
 
-Publish development snapshots to Sonatype snapshots repository:
+GitHub publication requires one of these credential options:
 
-```bash
-# Ensure version ends with -SNAPSHOT in gradle.properties
-# VERSION=0.1.0-SNAPSHOT
+1. `gpr.user` and `gpr.key` in `~/.gradle/gradle.properties`.
+2. `GITHUB_ACTOR` and `GITHUB_TOKEN` environment variables.
 
-# Validate and publish
-./scripts/publish.sh snapshot
-```
+### Optional `fzf`
 
-Snapshots are automatically available at:
+Install `fzf` if you want interactive fuzzy selection in `make publish`.
+If `fzf` is unavailable, the flow falls back to a numbered prompt.
 
-- Repository: `https://s01.oss.sonatype.org/content/repositories/snapshots/`
-- Artifacts: `io.amichne:konditional-*:0.1.0-SNAPSHOT`
+## Canonical publishing flow
 
-### Release Publishing
+Use this flow for all publication work.
 
-Publish stable releases to Maven Central:
+### Interactive mode
 
-```bash
-# 1. Update VERSION in gradle.properties (remove -SNAPSHOT)
-# VERSION=0.1.0
-
-# 2. Validate everything is configured correctly
-./scripts/validate-publish.sh
-
-# 3. Publish to Sonatype staging
-./scripts/publish.sh release
-
-# 4. Login to Sonatype and release
-# - Visit: https://s01.oss.sonatype.org
-# - Navigate to: Staging Repositories
-# - Find: io.amichne staging repository
-# - Click: Close (wait for validation, 2-5 minutes)
-# - Click: Release (publishes to Maven Central)
-
-# 5. Wait for Maven Central propagation (10-30 minutes)
-# - Verify: https://search.maven.org/search?q=g:io.amichne
-```
-
-### Local Testing
-
-Test publishing to local Maven repository:
+Run the single on-rails entrypoint:
 
 ```bash
-./scripts/publish.sh local
-
-# Artifacts are published to ~/.m2/repository/
-# Use in other projects with: mavenLocal()
+make publish
 ```
 
-### Signature Artifact Drift Gate
+The flow prompts for:
 
-Konditional tracks generated signature artifacts in `.signatures/` and enforces drift checks in CI.
+1. Publish target: `local`, `snapshot`, `release`, or `github`.
+2. Version action: bump mode and snapshot strategy.
+
+### Non-interactive mode
+
+Use `make publish-plan` for CI scripts or repeatable local commands:
 
 ```bash
-# Regenerate signatures after Kotlin/API changes
-./scripts/generate-signatures.sh
-
-# Verify no drift before pushing
-./scripts/check-signatures-drift.sh
+make publish-plan PUBLISH_TARGET=local VERSION_CHOICE=none
 ```
 
-If drift exists, regenerate and commit `.signatures/` updates in the same change as the source edits.
+Valid values:
 
-## Gradle Tasks
+- `PUBLISH_TARGET`: `local`, `snapshot`, `release`, `github`
+- `VERSION_CHOICE`: `none`, `snapshot`, `patch`, `minor`, `major`,
+  `patch-snapshot`, `minor-snapshot`, `major-snapshot`
 
-The publishing setup provides these Gradle tasks:
+### Version choices
+
+The publish flow supports these version actions:
+
+- `none`: keep the current version unchanged.
+- `snapshot`: keep the same base version and enforce `-SNAPSHOT`.
+- `patch|minor|major`: bump semantic version without `-SNAPSHOT`.
+- `*-snapshot`: bump semantic version and append `-SNAPSHOT`.
+
+## Makefile publish nodes
+
+`make publish` orchestrates these explicit sub-nodes:
+
+- `publish-version-*`: version selection and update.
+- `publish-validate-*`: target-aware validation.
+- `publish-run-*`: target publish execution.
+
+You can run these directly when you need fine-grained control.
+
+### Target-specific aliases
+
+These aliases run validation and then publish:
 
 ```bash
-# Publish to local Maven repository
-./gradlew publishToMavenLocal
-
-# Publish all modules to Sonatype
-./gradlew publishAllPublicationsToSonatypeRepository
-
-# Publish and automatically close/release staging repository
-./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
-
-# Generate POM files for inspection
-./gradlew generatePomFileForMavenPublication
+make publish-local
+make publish-snapshot
+make publish-release
+make publish-github
 ```
 
-## Published Modules
+## Validation behavior
 
-The following modules are published to Maven Central:
+Validation is target aware:
 
-| Module        | Artifact ID                 | Description                                |
-|---------------|-----------------------------|--------------------------------------------|
-| Core          | `konditional-core`          | Core feature flag evaluation engine        |
-| Serialization | `konditional-serialization` | JSON serialization and configuration codec |
-| Runtime       | `konditional-runtime`       | Runtime operations and snapshot loading    |
-| Observability | `konditional-observability` | Shadow evaluation and A/B testing          |
+- `local`: no signing or remote credentials required.
+- `snapshot` and `release`: signing and Maven Central credentials required.
+- `github`: GitHub Packages credentials required.
 
-## JReleaser release metadata
+Validation also confirms publishable modules and Gradle publish task
+resolution through Makefile nodes.
 
-**Guarantee**: JReleaser uses the same project metadata as Maven publishing (name, description, website, license,
-author).
-**Mechanism**: `jreleaser.project` is populated from `gradle.properties` in `build.gradle.kts`.
-**Boundary**: Incorrect `POM_*` values result in incorrect release metadata; JReleaser does not validate content
-semantics.
+Run validation directly:
 
-## GitHub release flow
+```bash
+make publish-validate-local
+make publish-validate-snapshot
+make publish-validate-release
+make publish-validate-github
+```
 
-**Guarantee**: `jreleaserFullRelease` creates a GitHub release for the current project version when credentials are
-present.
-**Mechanism**: `jreleaser.release.github` points at the repository owner and project name; the Gradle version becomes
-the tag.
-**Boundary**: Missing credentials or missing tags stop the release step; no GitHub release is created.
+## Legacy script compatibility
 
-Steps:
+These scripts remain available and delegate to the Makefile rails:
 
-1. Update `VERSION` in `gradle.properties` to a release (non-SNAPSHOT) version.
-2. Provide GitHub credentials via your JReleaser configuration (for example, `~/.jreleaser/config.properties`).
-3. Verify configuration with `./gradlew jreleaserConfig`.
-4. Run `./gradlew jreleaserFullRelease` to create the release.
+- `scripts/publish.sh`
+- `scripts/prepare-release.sh`
+- `scripts/validate-publish.sh`
+- `scripts/bump-version.sh`
+
+Prefer `make publish` for day-to-day usage.
+
+## Published modules
+
+The following modules publish artifacts:
+
+| Module                  | Artifact ID                     |
+|-------------------------|---------------------------------|
+| `konditional-core`      | `konditional-core`              |
+| `konditional-runtime`   | `konditional-runtime`           |
+| `konditional-serialization` | `konditional-serialization` |
+| `konditional-observability` | `konditional-observability` |
+| `konditional-otel`      | `konditional-opentelemetry`     |
+| `kontracts`             | `konditional-kontracts`         |
+| `openapi`               | `konditional-openapi`           |
+| `openfeature`           | `konditional-openfeature`       |
 
 ## Troubleshooting
 
-### GPG Agent Issues
+### Validation fails for credentials
+
+If validation fails for credentials, verify that the required keys exist in
+`~/.gradle/gradle.properties` or environment variables for your chosen target.
+
+### Snapshot or release blocked by version format
+
+Use a compatible version choice:
+
+- Snapshot publish requires a `-SNAPSHOT` version.
+- Release publish requires a non-`-SNAPSHOT` version.
+
+### GPG signing errors
+
+If signing fails, verify key availability:
 
 ```bash
-# Restart gpg-agent
-gpgconf --kill gpg-agent
-gpgconf --launch gpg-agent
-
-# Test signing
-echo "test" | gpg --clearsign
-
-# Check agent status
-gpg-connect-agent 'getinfo version' /bye
+gpg --list-secret-keys
 ```
 
-### Signing Failures
-
-If you get "gpg: signing failed: No secret key":
-
-1. Verify key exists: `gpg --list-secret-keys`
-2. Check `signing.gnupg.keyName` matches your key ID
-3. Ensure key hasn't expired: `gpg --list-keys`
-
-### Sonatype Upload Failures
-
-If upload fails with 401 Unauthorized:
-
-1. Verify credentials are correct in `~/.gradle/gradle.properties`
-2. Use user token, not JIRA password
-3. Ensure you have permission for `io.amichne` group ID
-
-### POM Validation Errors
-
-Common Sonatype validation errors:
-
-- Missing Javadoc JAR: Ensure `java { withJavadocJar() }` in `build.gradle.kts`
-- Missing Sources JAR: Ensure `java { withSourcesJar() }` in `build.gradle.kts`
-- Invalid POM metadata: Check all `POM_*` properties in `gradle.properties`
-- Missing GPG signature: Verify signing configuration
+Then verify your configured key ID in `signing.gnupg.keyName`.
