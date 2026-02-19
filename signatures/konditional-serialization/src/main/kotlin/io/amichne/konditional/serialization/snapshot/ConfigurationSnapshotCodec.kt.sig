@@ -1,0 +1,17 @@
+file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/ConfigurationSnapshotCodec.kt
+package=io.amichne.konditional.serialization.snapshot
+imports=com.squareup.moshi.Moshi,com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory,com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory,io.amichne.konditional.api.KonditionalInternalApi,io.amichne.konditional.core.instance.ConfigurationMetadataView,io.amichne.konditional.core.instance.ConfigurationView,io.amichne.konditional.core.result.ParseError,io.amichne.konditional.core.result.parseFailure,io.amichne.konditional.core.schema.CompiledNamespaceSchema,io.amichne.konditional.internal.serialization.adapters.FlagValueAdapterFactory,io.amichne.konditional.internal.serialization.adapters.IdentifierJsonAdapter,io.amichne.konditional.internal.serialization.adapters.ValueClassAdapterFactory,io.amichne.konditional.internal.serialization.adapters.VersionRangeAdapter,io.amichne.konditional.internal.serialization.models.SerializablePatch,io.amichne.konditional.internal.serialization.models.SerializableSnapshot,io.amichne.konditional.rules.versions.FullyBound,io.amichne.konditional.rules.versions.LeftBound,io.amichne.konditional.rules.versions.RightBound,io.amichne.konditional.rules.versions.Unbounded,io.amichne.konditional.rules.versions.VersionRange,io.amichne.konditional.serialization.instance.Configuration,io.amichne.konditional.serialization.instance.ConfigurationMetadata,io.amichne.konditional.serialization.instance.MaterializedConfiguration,io.amichne.konditional.serialization.options.SnapshotLoadOptions
+type=io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec|kind=object|decl=object ConfigurationSnapshotCodec : FeatureAwareSnapshotCodec<MaterializedConfiguration>
+fields:
+- private val moshi
+- private val snapshotAdapter
+- private val patchAdapter
+methods:
+- fun encodeRaw(value: Configuration): String
+- override fun encode(value: MaterializedConfiguration): String
+- fun encode(value: ConfigurationView): String
+- override fun decode( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>
+- override fun decode( json: String, schema: CompiledNamespaceSchema, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>
+- fun applyPatchJson( currentConfiguration: MaterializedConfiguration, patchJson: String, options: SnapshotLoadOptions = SnapshotLoadOptions.strict(), ): Result<MaterializedConfiguration>
+- fun applyPatchJson( currentConfiguration: ConfigurationView, schema: CompiledNamespaceSchema, patchJson: String, options: SnapshotLoadOptions = SnapshotLoadOptions.strict(), ): Result<MaterializedConfiguration>
+- internal fun defaultMoshi(): Moshi

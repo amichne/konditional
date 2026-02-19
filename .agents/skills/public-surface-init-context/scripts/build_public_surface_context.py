@@ -183,12 +183,11 @@ def detect_signatures_dir(repo_root: Path, requested: str | None) -> Path:
             f"INDEX.sig not found in requested signatures directory: {candidate}"
         )
 
-    for name in ("signatures", ".signatures"):
-        candidate = (repo_root / name).resolve()
-        if (candidate / "INDEX.sig").exists():
-            return candidate
+    candidate = (repo_root / "signatures").resolve()
+    if (candidate / "INDEX.sig").exists():
+        return candidate
     raise FileNotFoundError(
-        "Could not find signatures directory with INDEX.sig. Generate signatures first."
+        "Could not find signatures/INDEX.sig. Generate signatures first."
     )
 
 
@@ -255,7 +254,7 @@ def main() -> int:
     parser.add_argument(
         "--signatures-dir",
         default=None,
-        help="Path to signatures directory relative to repo root. Auto-detects signatures/ then .signatures/.",
+        help="Path to signatures directory relative to repo root. Defaults to signatures/.",
     )
     parser.add_argument(
         "--output",

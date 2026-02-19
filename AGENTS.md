@@ -116,7 +116,7 @@ Treat these as source-of-truth for constraints and terminology:
 - [`docusaurus/docs/theory/parse-dont-validate.md`](docusaurus/docs/theory/parse-dont-validate.md)
 - [`docusaurus/docs/theory/atomicity-guarantees.md`](docusaurus/docs/theory/atomicity-guarantees.md)
 - [`docusaurus/docs/theory/migration-and-shadowing.md`](docusaurus/docs/theory/migration-and-shadowing.md)
-- [`.signatures/INDEX.sig`](.signatures/INDEX.sig)
+- [`signatures/INDEX.sig`](signatures/INDEX.sig)
 
 Schema/contract inputs (often needed for boundary work):
 - `openapi/` (OpenAPI specs/artifacts)

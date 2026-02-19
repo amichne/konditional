@@ -1,6 +1,6 @@
 ---
 name: public-surface-init-context
-description: Build a deterministic, LLM-optimized initialization context that captures only the repository public surface from llm-native-signature-spec artifacts (`signatures/*.sig` or `.signatures/*.sig`). Use when starting a new session, preparing downstream agents before deep signature/source investigation, or refreshing compact public API context after interface changes.
+description: Build a deterministic, LLM-optimized initialization context that captures only the repository public surface from llm-native-signature-spec artifacts (`signatures/*.sig`). Use when starting a new session, preparing downstream agents before deep signature/source investigation, or refreshing compact public API context after interface changes.
 ---
 
 # Public Surface Init Context

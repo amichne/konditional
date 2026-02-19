@@ -5,17 +5,24 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 cd "${REPO_ROOT}"
-./scripts/generate-signatures.sh
 
-if ! git diff --quiet -- .signatures; then
-    echo "Signature artifacts are out of date. Run ./scripts/generate-signatures.sh and commit .signatures/." >&2
-    git --no-pager diff -- .signatures
+if [[ -d .signatures ]]; then
+    echo "Unsupported legacy artifacts detected: .signatures/." >&2
+    echo "Hard cutover enforces signatures/ as the only canonical location." >&2
     exit 1
 fi
 
-UNTRACKED_FILES="$(git ls-files --others --exclude-standard -- .signatures)"
+./scripts/generate-signatures.sh
+
+if ! git diff --quiet -- signatures; then
+    echo "Signature artifacts are out of date. Run ./scripts/generate-signatures.sh and commit signatures/." >&2
+    git --no-pager diff -- signatures
+    exit 1
+fi
+
+UNTRACKED_FILES="$(git ls-files --others --exclude-standard -- signatures)"
 if [[ -n "${UNTRACKED_FILES}" ]]; then
-    echo "Untracked signature artifacts detected. Commit all .signatures changes." >&2
+    echo "Untracked signature artifacts detected. Commit all signatures/ changes." >&2
     echo "${UNTRACKED_FILES}" >&2
     exit 1
 fi
