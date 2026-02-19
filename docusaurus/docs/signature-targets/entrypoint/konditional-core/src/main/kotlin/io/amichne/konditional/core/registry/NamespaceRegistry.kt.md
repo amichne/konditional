@@ -8,17 +8,17 @@ symbol_ids:
   - method:b9b971ea403e0c05
   - method:d8bcc3b46adea678
 claims:
-  - claim_89c702483ed1_01
-  - claim_89c702483ed1_02
-  - claim_89c702483ed1_03
+  - claim_89c702483ed1_an01
+  - claim_89c702483ed1_an02
+  - claim_89c702483ed1_an03
 ---
 
 # NamespaceRegistry entrypoint
 
 ## Inputs
 
-This entrypoint target exposes 4 signature symbol(s). Input parameter shapes
-are defined by the declarations below:
+This entrypoint exposes a `mutation-and-lookup surface`. The signature-declared method family
+is `findFlag`, `allFlags`, `setHooks`, `disableAll`, `enableAll`, `flag`, `load`, `rollback`, with parameter/shape contracts defined by:
 
 - `fun <T : Any, C : Context, M : Namespace> findFlag( key: Feature<T, C, M>, ): FlagDefinition<T, C, M>?`
 - `fun allFlags(): Map<Feature<*, *, *>, FlagDefinition<*, *, *>>`
@@ -27,14 +27,18 @@ are defined by the declarations below:
 
 ## Outputs
 
-Return shapes are defined directly in the signature declarations for the
-symbols in this target scope.
+Return projections declared in this surface include `FlagDefinition<T, C, M>?`, `Map<Feature<*, *, *>, FlagDefinition<*, *, *>>`, `FlagDefinition<T, C, M>`, `Boolean`. When
+multiple return projections are present, they define complementary
+entrypoints within the same target-scoped API seam.
 
 ## Determinism
 
-The documented API surface is signature-scoped: callable inputs are explicit
-in method declarations, with no ambient parameters encoded at this layer.
+Determinism at this layer comes from explicit, typed callable signatures:
+inputs and output types are declared up front, and there are no ambient
+runtime parameters encoded in the symbol surface.
 
 ## Operational notes
 
-Symbol IDs in this target scope: `method:082be30d739a0b58`, `method:5f65ce52c1a9f483`, `method:b9b971ea403e0c05`, `method:d8bcc3b46adea678`.
+Linked contract types visible from signatures: `KonditionalInternalApi`, `FlagDefinition`, `Feature`, `ConfigurationView`, `RegistryHooks`.
+Category mix for this target: `read, write`.
+This surface primarily enables: closed-loop workflows where callers update state and immediately query the same contract surface.

@@ -9,16 +9,17 @@ symbol_ids:
   - method:9fc7ba83b6c5e6f8
   - method:c7d35bb0c4b69783
 claims:
-  - claim_13e1787889e3_01
-  - claim_13e1787889e3_02
-  - claim_13e1787889e3_03
+  - claim_13e1787889e3_an01
+  - claim_13e1787889e3_an02
+  - claim_13e1787889e3_an03
 ---
 
 # SchemaValueCodec entrypoint
 
 ## Inputs
 
-Input contracts are defined by the signature declarations in this target:
+This entrypoint exposes a `boundary transformation surface`. The signature-declared method family
+is `decodeKonstrainedPrimitive`, `encodeKonstrained`, `encode`, `decode`, with parameter/shape contracts defined by:
 
 - `fun <T : Any> decodeKonstrainedPrimitive(kClass: KClass<T>, rawValue: Any): Result<T>`
 - `fun encodeKonstrained(konstrained: Konstrained<*>): JsonValue`
@@ -28,14 +29,18 @@ Input contracts are defined by the signature declarations in this target:
 
 ## Outputs
 
-Output contracts are the return types encoded directly in these method
-declarations.
+Return projections declared in this surface include `Result<T>`, `JsonValue`, `JsonObject`. When
+multiple return projections are present, they define complementary
+entrypoints within the same target-scoped API seam.
 
 ## Determinism
 
-This documentation is constrained to signature-level API contracts, where
-callable behavior is represented by explicit typed declarations.
+Determinism at this layer comes from explicit, typed callable signatures:
+inputs and output types are declared up front, and there are no ambient
+runtime parameters encoded in the symbol surface.
 
 ## Operational notes
 
-Symbol IDs in this target scope: `method:0e94d3014feef5fe`, `method:1c13e0136d289aa0`, `method:686545544b7e7800`, `method:9fc7ba83b6c5e6f8`, `method:c7d35bb0c4b69783`.
+Linked contract types visible from signatures: `KonditionalInternalApi`, `ParseError`, `parseFailure`, `Konstrained`, `asObjectSchema`.
+Category mix for this target: `boundary`.
+This surface primarily enables: bidirectional boundary transformations between typed models and serialized representations.

@@ -11,33 +11,40 @@ symbol_ids:
   - method:a2bfa70772be8410
   - method:c153d09f70b5c315
 claims:
-  - claim_240371567a78_01
-  - claim_240371567a78_02
-  - claim_240371567a78_03
+  - claim_240371567a78_an01
+  - claim_240371567a78_an02
+  - claim_240371567a78_an03
 ---
 
 # Namespace entrypoint
 
 ## Inputs
 
-This entrypoint target exposes 7 signature symbol(s). Input parameter shapes
-are defined by the declarations below:
+This entrypoint exposes a `construction/composition surface`. The signature-declared method family
+is `hashCode`, `compiledSchema`, `declaredDefault`, `declaredDefinition`, `allFeatures`, `toString`, `equals`, with parameter/shape contracts defined by:
 
 - `override fun hashCode(): Int`
 - `fun compiledSchema(): CompiledNamespaceSchema`
 - `fun declaredDefault(feature: Feature<*, *, *>): Any?`
 - `fun declaredDefinition(feature: Feature<*, *, *>): FlagDefinition<*, *, *>?`
+- `fun allFeatures(): List<Feature<*, *, *>>`
+- `override fun toString(): String`
+- `override fun equals(other: Any?): Boolean`
 
 ## Outputs
 
-Return shapes are defined directly in the signature declarations for the
-symbols in this target scope.
+Return projections declared in this surface include `Int`, `CompiledNamespaceSchema`, `Any?`, `FlagDefinition<*, *, *>?`, `List<Feature<*, *, *>>`, `String`, `Boolean`. When
+multiple return projections are present, they define complementary
+entrypoints within the same target-scoped API seam.
 
 ## Determinism
 
-The documented API surface is signature-scoped: callable inputs are explicit
-in method declarations, with no ambient parameters encoded at this layer.
+Determinism at this layer comes from explicit, typed callable signatures:
+inputs and output types are declared up front, and there are no ambient
+runtime parameters encoded in the symbol surface.
 
 ## Operational notes
 
-Symbol IDs in this target scope: `method:05f131326cca03e5`, `method:1967daa263b64dd3`, `method:287862c056cf0839`, `method:8edfb424b9657119`, `method:957aa0d699d986dc`, `method:a2bfa70772be8410`, `method:c153d09f70b5c315`.
+Linked contract types visible from signatures: `KonditionalInternalApi`, `Axis`, `AxisValue`, `FlagScope`, `BooleanFeature`.
+Category mix for this target: `construct, read`.
+This surface primarily enables: composable schema/value construction flows through constrained DSL entrypoints.

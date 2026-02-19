@@ -5,30 +5,34 @@ scope_sig_paths:
 symbol_ids:
   - method:99321d9f814dc228
 claims:
-  - claim_b02dca45f5f9_01
-  - claim_b02dca45f5f9_02
-  - claim_b02dca45f5f9_03
+  - claim_b02dca45f5f9_an01
+  - claim_b02dca45f5f9_an02
+  - claim_b02dca45f5f9_an03
 ---
 
 # RuleScope entrypoint
 
 ## Inputs
 
-This entrypoint target exposes 1 signature symbol(s). Input parameter shapes
-are defined by the declarations below:
+This entrypoint exposes a `construction/composition surface`. The signature-declared method family
+is `yields`, with parameter/shape contracts defined by:
 
 - `infix fun yields(value: T): Postfix`
 
 ## Outputs
 
-Return shapes are defined directly in the signature declarations for the
-symbols in this target scope.
+Return projections declared in this surface include `Postfix`. When
+multiple return projections are present, they define complementary
+entrypoints within the same target-scoped API seam.
 
 ## Determinism
 
-The documented API surface is signature-scoped: callable inputs are explicit
-in method declarations, with no ambient parameters encoded at this layer.
+Determinism at this layer comes from explicit, typed callable signatures:
+inputs and output types are declared up front, and there are no ambient
+runtime parameters encoded in the symbol surface.
 
 ## Operational notes
 
-Symbol IDs in this target scope: `method:99321d9f814dc228`.
+Linked contract types visible from signatures: `KonditionalInternalApi`, `FlagScope`, `KonditionalDsl`, `LocaleTargetingScope`, `PlatformTargetingScope`.
+Category mix for this target: `construct`.
+This surface primarily enables: composable schema/value construction flows through constrained DSL entrypoints.

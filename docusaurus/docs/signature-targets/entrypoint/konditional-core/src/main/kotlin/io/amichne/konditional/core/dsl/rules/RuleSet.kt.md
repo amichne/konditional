@@ -5,30 +5,34 @@ scope_sig_paths:
 symbol_ids:
   - method:d8c9b649bb0e2a06
 claims:
-  - claim_984a3e2270fa_01
-  - claim_984a3e2270fa_02
-  - claim_984a3e2270fa_03
+  - claim_984a3e2270fa_an01
+  - claim_984a3e2270fa_an02
+  - claim_984a3e2270fa_an03
 ---
 
 # RuleSet entrypoint
 
 ## Inputs
 
-This entrypoint target exposes 1 signature symbol(s). Input parameter shapes
-are defined by the declarations below:
+This entrypoint exposes a `construction/composition surface`. The signature-declared method family
+is `plus`, with parameter/shape contracts defined by:
 
 - `operator fun plus(other: RuleSet<RC, T, C, M>): RuleSet<RC, T, C, M>`
 
 ## Outputs
 
-Return shapes are defined directly in the signature declarations for the
-symbols in this target scope.
+Return projections declared in this surface include `RuleSet<RC, T, C, M>`. When
+multiple return projections are present, they define complementary
+entrypoints within the same target-scoped API seam.
 
 ## Determinism
 
-The documented API surface is signature-scoped: callable inputs are explicit
-in method declarations, with no ambient parameters encoded at this layer.
+Determinism at this layer comes from explicit, typed callable signatures:
+inputs and output types are declared up front, and there are no ambient
+runtime parameters encoded in the symbol surface.
 
 ## Operational notes
 
-Symbol IDs in this target scope: `method:d8c9b649bb0e2a06`.
+Linked contract types visible from signatures: `KonditionalDsl`, `Feature`, `RuleSet`, `RC`.
+Category mix for this target: `construct`.
+This surface primarily enables: composable schema/value construction flows through constrained DSL entrypoints.

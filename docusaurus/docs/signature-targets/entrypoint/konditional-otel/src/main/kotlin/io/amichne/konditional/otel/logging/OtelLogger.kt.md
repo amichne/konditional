@@ -8,16 +8,17 @@ symbol_ids:
   - method:c1fc1b2de8c6865f
   - method:fa901cede662ab3d
 claims:
-  - claim_72a20fcca082_01
-  - claim_72a20fcca082_02
-  - claim_72a20fcca082_03
+  - claim_72a20fcca082_an01
+  - claim_72a20fcca082_an02
+  - claim_72a20fcca082_an03
 ---
 
 # OtelLogger entrypoint
 
 ## Inputs
 
-Input contracts are defined by the signature declarations in this target:
+This entrypoint exposes a `specialized entrypoint surface`. The signature-declared method family
+is `info`, `error`, `warn`, `debug`, with parameter/shape contracts defined by:
 
 - `override fun info(message: () -> String)`
 - `override fun error( message: () -> String, throwable: Throwable?, )`
@@ -26,14 +27,18 @@ Input contracts are defined by the signature declarations in this target:
 
 ## Outputs
 
-Output contracts are the return types encoded directly in these method
-declarations.
+Return projections declared in this surface include `(not-explicit-in-signature-snippet)`. When
+multiple return projections are present, they define complementary
+entrypoints within the same target-scoped API seam.
 
 ## Determinism
 
-This documentation is constrained to signature-level API contracts, where
-callable behavior is represented by explicit typed declarations.
+Determinism at this layer comes from explicit, typed callable signatures:
+inputs and output types are declared up front, and there are no ambient
+runtime parameters encoded in the symbol surface.
 
 ## Operational notes
 
-Symbol IDs in this target scope: `method:117fbcaf961bcc31`, `method:938d15e66f3b6794`, `method:c1fc1b2de8c6865f`, `method:fa901cede662ab3d`.
+Linked contract types visible from signatures: `KonditionalLogger`, `AttributeKey`, `Logger`, `Severity`.
+Category mix for this target: `observe`.
+This surface primarily enables: inline logging/metrics/tracing integration without a separate adapter API.

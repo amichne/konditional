@@ -6,30 +6,35 @@ symbol_ids:
   - method:703b4e48f5e7c132
   - method:c56b05cfddc953f5
 claims:
-  - claim_f8a0d6871728_01
-  - claim_f8a0d6871728_02
-  - claim_f8a0d6871728_03
+  - claim_f8a0d6871728_an01
+  - claim_f8a0d6871728_an02
+  - claim_f8a0d6871728_an03
 ---
 
 # FeatureRegistry entrypoint
 
 ## Inputs
 
-Input contracts are defined by the signature declarations in this target:
+This entrypoint exposes a `mutation/build surface`. The signature-declared method family
+is `register`, `clear`, with parameter/shape contracts defined by:
 
 - `fun <T : Any, C : Context> register(feature: Feature<T, C, *>)`
 - `fun clear()`
 
 ## Outputs
 
-Output contracts are the return types encoded directly in these method
-declarations.
+Return projections declared in this surface include `(not-explicit-in-signature-snippet)`. When
+multiple return projections are present, they define complementary
+entrypoints within the same target-scoped API seam.
 
 ## Determinism
 
-This documentation is constrained to signature-level API contracts, where
-callable behavior is represented by explicit typed declarations.
+Determinism at this layer comes from explicit, typed callable signatures:
+inputs and output types are declared up front, and there are no ambient
+runtime parameters encoded in the symbol surface.
 
 ## Operational notes
 
-Symbol IDs in this target scope: `method:703b4e48f5e7c132`, `method:c56b05cfddc953f5`.
+Linked contract types visible from signatures: `KonditionalInternalApi`, `Feature`, `ParseError`, `parseFailure`, `FeatureId`.
+Category mix for this target: `write`.
+This surface primarily enables: a focused integration seam for one constrained contract operation.

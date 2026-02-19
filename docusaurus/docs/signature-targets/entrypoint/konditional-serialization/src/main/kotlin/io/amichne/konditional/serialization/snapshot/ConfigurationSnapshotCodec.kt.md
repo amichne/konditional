@@ -11,16 +11,17 @@ symbol_ids:
   - method:aa3b66835acdf0c8
   - method:e93dea772debb271
 claims:
-  - claim_6731ecc6aade_01
-  - claim_6731ecc6aade_02
-  - claim_6731ecc6aade_03
+  - claim_6731ecc6aade_an01
+  - claim_6731ecc6aade_an02
+  - claim_6731ecc6aade_an03
 ---
 
 # ConfigurationSnapshotCodec entrypoint
 
 ## Inputs
 
-Input contracts are defined by the signature declarations in this target:
+This entrypoint exposes a `boundary transformation and runtime control surface`. The signature-declared method family
+is `applyPatchJson`, `encode`, `decode`, `encodeRaw`, with parameter/shape contracts defined by:
 
 - `fun applyPatchJson( currentConfiguration: MaterializedConfiguration, patchJson: String, options: SnapshotLoadOptions = SnapshotLoadOptions.strict(), ): Result<MaterializedConfiguration>`
 - `fun encode(value: ConfigurationView): String`
@@ -32,14 +33,18 @@ Input contracts are defined by the signature declarations in this target:
 
 ## Outputs
 
-Output contracts are the return types encoded directly in these method
-declarations.
+Return projections declared in this surface include `Result<MaterializedConfiguration>`, `String`. When
+multiple return projections are present, they define complementary
+entrypoints within the same target-scoped API seam.
 
 ## Determinism
 
-This documentation is constrained to signature-level API contracts, where
-callable behavior is represented by explicit typed declarations.
+Determinism at this layer comes from explicit, typed callable signatures:
+inputs and output types are declared up front, and there are no ambient
+runtime parameters encoded in the symbol surface.
 
 ## Operational notes
 
-Symbol IDs in this target scope: `method:269df93e671974ba`, `method:2f68837a39cf0b4f`, `method:4c639de98a993be7`, `method:6e99ec9b87b6f1c3`, `method:6ee7d2ccc23b20cf`, `method:aa3b66835acdf0c8`, `method:e93dea772debb271`.
+Linked contract types visible from signatures: `Moshi`, `PolymorphicJsonAdapterFactory`, `KotlinJsonAdapterFactory`, `KonditionalInternalApi`, `ConfigurationMetadataView`.
+Category mix for this target: `boundary, write`.
+This surface primarily enables: bidirectional boundary transformations between typed models and serialized representations.

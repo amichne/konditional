@@ -5,29 +5,34 @@ scope_sig_paths:
 symbol_ids:
   - method:255db508105a1da0
 claims:
-  - claim_6f0867829052_01
-  - claim_6f0867829052_02
-  - claim_6f0867829052_03
+  - claim_6f0867829052_an01
+  - claim_6f0867829052_an02
+  - claim_6f0867829052_an03
 ---
 
 # ArraySchemaBuilder entrypoint
 
 ## Inputs
 
-Input contracts are defined by the signature declarations in this target:
+This entrypoint exposes a `mutation/build surface`. The signature-declared method family
+is `element`, with parameter/shape contracts defined by:
 
 - `fun element(builder: RootObjectSchemaBuilder.() -> Unit)`
 
 ## Outputs
 
-Output contracts are the return types encoded directly in these method
-declarations.
+Return projections declared in this surface include `(not-explicit-in-signature-snippet)`. When
+multiple return projections are present, they define complementary
+entrypoints within the same target-scoped API seam.
 
 ## Determinism
 
-This documentation is constrained to signature-level API contracts, where
-callable behavior is represented by explicit typed declarations.
+Determinism at this layer comes from explicit, typed callable signatures:
+inputs and output types are declared up front, and there are no ambient
+runtime parameters encoded in the symbol surface.
 
 ## Operational notes
 
-Symbol IDs in this target scope: `method:255db508105a1da0`.
+Linked contract types visible from signatures: `ArraySchema`, `JsonSchema`, `RootObjectSchemaBuilder`.
+Category mix for this target: `write`.
+This surface primarily enables: a focused integration seam for one constrained contract operation.

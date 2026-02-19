@@ -7,17 +7,17 @@ symbol_ids:
   - method:26f0f908e246b13c
   - method:eeabfe3e6208359d
 claims:
-  - claim_a48843ad640e_01
-  - claim_a48843ad640e_02
-  - claim_a48843ad640e_03
+  - claim_a48843ad640e_an01
+  - claim_a48843ad640e_an02
+  - claim_a48843ad640e_an03
 ---
 
 # AxisCatalog entrypoint
 
 ## Inputs
 
-This entrypoint target exposes 3 signature symbol(s). Input parameter shapes
-are defined by the declarations below:
+This entrypoint exposes a `mutation-and-lookup surface`. The signature-declared method family
+is `register`, `axisForOrThrow`, `axisFor`, with parameter/shape contracts defined by:
 
 - `fun register(axis: Axis<*>)`
 - `fun <T> axisForOrThrow(type: KClass<out T>): Axis<T> where T : AxisValue<T>, T : Enum<T>`
@@ -25,14 +25,18 @@ are defined by the declarations below:
 
 ## Outputs
 
-Return shapes are defined directly in the signature declarations for the
-symbols in this target scope.
+Return projections declared in this surface include `Axis<T> where T : AxisValue<T>, T : Enum<T>`, `Axis<T>? where T : AxisValue<T>, T : Enum<T>`. When
+multiple return projections are present, they define complementary
+entrypoints within the same target-scoped API seam.
 
 ## Determinism
 
-The documented API surface is signature-scoped: callable inputs are explicit
-in method declarations, with no ambient parameters encoded at this layer.
+Determinism at this layer comes from explicit, typed callable signatures:
+inputs and output types are declared up front, and there are no ambient
+runtime parameters encoded in the symbol surface.
 
 ## Operational notes
 
-Symbol IDs in this target scope: `method:0ae3dfaee8896520`, `method:26f0f908e246b13c`, `method:eeabfe3e6208359d`.
+Linked contract types visible from signatures: `Axis`, `AxisValue`, `ConcurrentHashMap`, `KClass`, `Enum`.
+Category mix for this target: `read, write`.
+This surface primarily enables: closed-loop workflows where callers update state and immediately query the same contract surface.

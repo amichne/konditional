@@ -8,17 +8,17 @@ symbol_ids:
   - method:ccac6fef985f54d5
   - method:eba5c6b27ab8966e
 claims:
-  - claim_32d0abe2d95d_01
-  - claim_32d0abe2d95d_02
-  - claim_32d0abe2d95d_03
+  - claim_32d0abe2d95d_an01
+  - claim_32d0abe2d95d_an02
+  - claim_32d0abe2d95d_an03
 ---
 
 # AxisValues entrypoint
 
 ## Inputs
 
-This entrypoint target exposes 4 signature symbol(s). Input parameter shapes
-are defined by the declarations below:
+This entrypoint exposes a `construction/composition surface`. The signature-declared method family
+is `toString`, `equals`, `get`, `hashCode`, with parameter/shape contracts defined by:
 
 - `override fun toString(): String`
 - `override fun equals(other: Any?): Boolean`
@@ -27,14 +27,18 @@ are defined by the declarations below:
 
 ## Outputs
 
-Return shapes are defined directly in the signature declarations for the
-symbols in this target scope.
+Return projections declared in this surface include `String`, `Boolean`, `Set<T> where T : AxisValue<T>, T : Enum<T>`, `Int`. When
+multiple return projections are present, they define complementary
+entrypoints within the same target-scoped API seam.
 
 ## Determinism
 
-The documented API surface is signature-scoped: callable inputs are explicit
-in method declarations, with no ambient parameters encoded at this layer.
+Determinism at this layer comes from explicit, typed callable signatures:
+inputs and output types are declared up front, and there are no ambient
+runtime parameters encoded in the symbol surface.
 
 ## Operational notes
 
-Symbol IDs in this target scope: `method:2b4eed5581832292`, `method:bacafb9e83436b05`, `method:ccac6fef985f54d5`, `method:eba5c6b27ab8966e`.
+Linked contract types visible from signatures: `KClass`, `Axis`, `AxisValue`, `Enum`.
+Category mix for this target: `construct, read`.
+This surface primarily enables: composable schema/value construction flows through constrained DSL entrypoints.

@@ -1,27 +1,27 @@
 ---
-target_id: entrypoint:konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistryFactory.kt
+target_id: entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/dsl/NullSchemaBuilder.kt
 scope_sig_paths:
-  - konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistryFactory.kt.sig
+  - kontracts/src/main/kotlin/io/amichne/kontracts/dsl/NullSchemaBuilder.kt.sig
 symbol_ids:
-  - method:dd7035d19678abe4
+  - method:7ae0f62b3f8b1ee4
 claims:
-  - claim_62e19ed570b4_an01
-  - claim_62e19ed570b4_an02
-  - claim_62e19ed570b4_an03
+  - claim_9db1019f649f_an01
+  - claim_9db1019f649f_an02
+  - claim_9db1019f649f_an03
 ---
 
-# InMemoryNamespaceRegistryFactory entrypoint
+# NullSchemaBuilder entrypoint
 
 ## Inputs
 
 This entrypoint exposes a `construction/composition surface`. The signature-declared method family
-is `create`, with parameter/shape contracts defined by:
+is `build`, with parameter/shape contracts defined by:
 
-- `override fun create(namespaceId: String): NamespaceRegistry`
+- `override fun build()`
 
 ## Outputs
 
-Return projections declared in this surface include `NamespaceRegistry`. When
+Return projections declared in this surface include `(not-explicit-in-signature-snippet)`. When
 multiple return projections are present, they define complementary
 entrypoints within the same target-scoped API seam.
 
@@ -33,6 +33,6 @@ runtime parameters encoded in the symbol surface.
 
 ## Operational notes
 
-Linked contract types visible from signatures: `NamespaceRegistry`.
+Linked contract types visible from signatures: `NullSchema`.
 Category mix for this target: `construct`.
 This surface primarily enables: composable schema/value construction flows through constrained DSL entrypoints.

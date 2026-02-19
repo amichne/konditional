@@ -8,17 +8,17 @@ symbol_ids:
   - method:72004e61fed0118b
   - method:f2a43676ed3441b3
 claims:
-  - claim_05f61eaae9db_01
-  - claim_05f61eaae9db_02
-  - claim_05f61eaae9db_03
+  - claim_05f61eaae9db_an01
+  - claim_05f61eaae9db_an02
+  - claim_05f61eaae9db_an03
 ---
 
 # KonditionalLogger entrypoint
 
 ## Inputs
 
-This entrypoint target exposes 4 signature symbol(s). Input parameter shapes
-are defined by the declarations below:
+This entrypoint exposes a `specialized entrypoint surface`. The signature-declared method family
+is `debug`, `info`, `error`, `warn`, with parameter/shape contracts defined by:
 
 - `fun debug(message: () -> String) {}`
 - `fun info(message: () -> String) {}`
@@ -27,14 +27,18 @@ are defined by the declarations below:
 
 ## Outputs
 
-Return shapes are defined directly in the signature declarations for the
-symbols in this target scope.
+Return projections declared in this surface include `(not-explicit-in-signature-snippet)`. When
+multiple return projections are present, they define complementary
+entrypoints within the same target-scoped API seam.
 
 ## Determinism
 
-The documented API surface is signature-scoped: callable inputs are explicit
-in method declarations, with no ambient parameters encoded at this layer.
+Determinism at this layer comes from explicit, typed callable signatures:
+inputs and output types are declared up front, and there are no ambient
+runtime parameters encoded in the symbol surface.
 
 ## Operational notes
 
-Symbol IDs in this target scope: `method:039689712a52e36e`, `method:2a5e7b71c7fa8f18`, `method:72004e61fed0118b`, `method:f2a43676ed3441b3`.
+Linked contract types visible from signatures: `(none)`.
+Category mix for this target: `observe`.
+This surface primarily enables: inline logging/metrics/tracing integration without a separate adapter API.

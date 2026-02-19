@@ -7,17 +7,17 @@ symbol_ids:
   - method:99553bd3f24c6b8b
   - method:fca4dd3ffdaebbba
 claims:
-  - claim_3e7225273e70_01
-  - claim_3e7225273e70_02
-  - claim_3e7225273e70_03
+  - claim_3e7225273e70_an01
+  - claim_3e7225273e70_an02
+  - claim_3e7225273e70_an03
 ---
 
 # MetricsCollector entrypoint
 
 ## Inputs
 
-This entrypoint target exposes 3 signature symbol(s). Input parameter shapes
-are defined by the declarations below:
+This entrypoint exposes a `instrumentation-enabled runtime surface`. The signature-declared method family
+is `recordConfigLoad`, `recordEvaluation`, `recordConfigRollback`, with parameter/shape contracts defined by:
 
 - `fun recordConfigLoad(event: Metrics.ConfigLoadMetric) {}`
 - `fun recordEvaluation(event: Metrics.Evaluation) {}`
@@ -25,14 +25,18 @@ are defined by the declarations below:
 
 ## Outputs
 
-Return shapes are defined directly in the signature declarations for the
-symbols in this target scope.
+Return projections declared in this surface include `(not-explicit-in-signature-snippet)`. When
+multiple return projections are present, they define complementary
+entrypoints within the same target-scoped API seam.
 
 ## Determinism
 
-The documented API surface is signature-scoped: callable inputs are explicit
-in method declarations, with no ambient parameters encoded at this layer.
+Determinism at this layer comes from explicit, typed callable signatures:
+inputs and output types are declared up front, and there are no ambient
+runtime parameters encoded in the symbol surface.
 
 ## Operational notes
 
-Symbol IDs in this target scope: `method:0d391987815328f5`, `method:99553bd3f24c6b8b`, `method:fca4dd3ffdaebbba`.
+Linked contract types visible from signatures: `Metrics`, `ConfigLoadMetric`, `Evaluation`, `ConfigRollbackMetric`.
+Category mix for this target: `observe, write`.
+This surface primarily enables: inline logging/metrics/tracing integration without a separate adapter API.

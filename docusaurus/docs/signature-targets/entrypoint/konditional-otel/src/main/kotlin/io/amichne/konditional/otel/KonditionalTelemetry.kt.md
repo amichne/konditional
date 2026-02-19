@@ -5,29 +5,34 @@ scope_sig_paths:
 symbol_ids:
   - method:5d529e6068819b1d
 claims:
-  - claim_bc78b4890505_01
-  - claim_bc78b4890505_02
-  - claim_bc78b4890505_03
+  - claim_bc78b4890505_an01
+  - claim_bc78b4890505_an02
+  - claim_bc78b4890505_an03
 ---
 
 # KonditionalTelemetry entrypoint
 
 ## Inputs
 
-Input contracts are defined by the signature declarations in this target:
+This entrypoint exposes a `specialized entrypoint surface`. The signature-declared method family
+is `toRegistryHooks`, with parameter/shape contracts defined by:
 
 - `fun toRegistryHooks(): RegistryHooks`
 
 ## Outputs
 
-Output contracts are the return types encoded directly in these method
-declarations.
+Return projections declared in this surface include `RegistryHooks`. When
+multiple return projections are present, they define complementary
+entrypoints within the same target-scoped API seam.
 
 ## Determinism
 
-This documentation is constrained to signature-level API contracts, where
-callable behavior is represented by explicit typed declarations.
+Determinism at this layer comes from explicit, typed callable signatures:
+inputs and output types are declared up front, and there are no ambient
+runtime parameters encoded in the symbol surface.
 
 ## Operational notes
 
-Symbol IDs in this target scope: `method:5d529e6068819b1d`.
+Linked contract types visible from signatures: `RegistryHooks`, `OtelLogger`, `MetricsConfig`, `OtelMetricsCollector`, `FlagEvaluationTracer`.
+Category mix for this target: `specialized`.
+This surface primarily enables: a focused integration seam for one constrained contract operation.

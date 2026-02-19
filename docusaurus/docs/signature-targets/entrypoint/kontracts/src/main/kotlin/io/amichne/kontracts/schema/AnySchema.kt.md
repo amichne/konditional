@@ -1,29 +1,27 @@
 ---
-target_id: entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/values/FeatureId.kt
+target_id: entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/schema/AnySchema.kt
 scope_sig_paths:
-  - konditional-core/src/main/kotlin/io/amichne/konditional/values/FeatureId.kt.sig
+  - kontracts/src/main/kotlin/io/amichne/kontracts/schema/AnySchema.kt.sig
 symbol_ids:
-  - method:9d5378df61fd5747
-  - method:f4f8b89661cfc788
+  - method:6d2289de2e585ffc
 claims:
-  - claim_33c4a68c5a6b_an01
-  - claim_33c4a68c5a6b_an02
-  - claim_33c4a68c5a6b_an03
+  - claim_c526c945d791_an01
+  - claim_c526c945d791_an02
+  - claim_c526c945d791_an03
 ---
 
-# FeatureId entrypoint
+# AnySchema entrypoint
 
 ## Inputs
 
 This entrypoint exposes a `construction/composition surface`. The signature-declared method family
-is `compareTo`, `toString`, with parameter/shape contracts defined by:
+is `toString`, with parameter/shape contracts defined by:
 
-- `override fun compareTo(other: FeatureId): Int`
-- `override fun toString(): String`
+- `override fun toString()`
 
 ## Outputs
 
-Return projections declared in this surface include `Int`, `String`. When
+Return projections declared in this surface include `(not-explicit-in-signature-snippet)`. When
 multiple return projections are present, they define complementary
 entrypoints within the same target-scoped API seam.
 
@@ -35,6 +33,6 @@ runtime parameters encoded in the symbol surface.
 
 ## Operational notes
 
-Linked contract types visible from signatures: `SEPARATOR`, `FeatureId`.
+Linked contract types visible from signatures: `(none)`.
 Category mix for this target: `construct, read`.
 This surface primarily enables: composable schema/value construction flows through constrained DSL entrypoints.

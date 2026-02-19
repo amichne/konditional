@@ -5,29 +5,34 @@ scope_sig_paths:
 symbol_ids:
   - method:1b5b330f67bd6dd3
 claims:
-  - claim_11df056d19bd_01
-  - claim_11df056d19bd_02
-  - claim_11df056d19bd_03
+  - claim_11df056d19bd_an01
+  - claim_11df056d19bd_an02
+  - claim_11df056d19bd_an03
 ---
 
 # FlagEvaluationTracer entrypoint
 
 ## Inputs
 
-Input contracts are defined by the signature declarations in this target:
+This entrypoint exposes a `specialized entrypoint surface`. The signature-declared method family
+is `traceEvaluation`, with parameter/shape contracts defined by:
 
 - `fun <T : Any, C : Context> traceEvaluation( feature: Feature<T, C, *>, context: C, parentSpan: Span? = null, block: () -> EvaluationDiagnostics<T>, ): EvaluationDiagnostics<T>`
 
 ## Outputs
 
-Output contracts are the return types encoded directly in these method
-declarations.
+Return projections declared in this surface include `EvaluationDiagnostics<T>`. When
+multiple return projections are present, they define complementary
+entrypoints within the same target-scoped API seam.
 
 ## Determinism
 
-This documentation is constrained to signature-level API contracts, where
-callable behavior is represented by explicit typed declarations.
+Determinism at this layer comes from explicit, typed callable signatures:
+inputs and output types are declared up front, and there are no ambient
+runtime parameters encoded in the symbol surface.
 
 ## Operational notes
 
-Symbol IDs in this target scope: `method:1b5b330f67bd6dd3`.
+Linked contract types visible from signatures: `LocaleContext`, `PlatformContext`, `StableIdContext`, `VersionContext`, `AxisValues`.
+Category mix for this target: `observe`.
+This surface primarily enables: inline logging/metrics/tracing integration without a separate adapter API.

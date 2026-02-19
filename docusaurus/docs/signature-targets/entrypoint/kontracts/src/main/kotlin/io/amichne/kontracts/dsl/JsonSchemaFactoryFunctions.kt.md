@@ -1,25 +1,23 @@
 ---
-target_id: entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleSetBuilder.kt
+target_id: entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaFactoryFunctions.kt
 scope_sig_paths:
-  - konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleSetBuilder.kt.sig
+  - kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaFactoryFunctions.kt.sig
 symbol_ids:
-  - method:6cc54f9f02722eba
-  - method:f04fc525a255538f
+  - method:46463068f9ba4c50
 claims:
-  - claim_8523ce24b952_an01
-  - claim_8523ce24b952_an02
-  - claim_8523ce24b952_an03
+  - claim_63194af1d492_an01
+  - claim_63194af1d492_an02
+  - claim_63194af1d492_an03
 ---
 
-# RuleSetBuilder entrypoint
+# JsonSchemaFactoryFunctions entrypoint
 
 ## Inputs
 
 This entrypoint exposes a `construction/composition surface`. The signature-declared method family
-is `ruleScoped`, `rule`, with parameter/shape contracts defined by:
+is `discriminator`, with parameter/shape contracts defined by:
 
-- `fun ruleScoped( value: T, build: ContextRuleScope<C>.() -> Unit = {}, )`
-- `fun rule( value: T, build: RuleScope<C>.() -> Unit = {}, )`
+- `fun discriminator(builder: OneOfDiscriminatorBuilder.() -> Unit)`
 
 ## Outputs
 
@@ -35,6 +33,6 @@ runtime parameters encoded in the symbol surface.
 
 ## Operational notes
 
-Linked contract types visible from signatures: `KonditionalInternalApi`, `KonditionalDsl`, `AxisCatalog`, `RuleBuilder`, `ContextRuleScope`.
+Linked contract types visible from signatures: `FieldSchema`, `JsonSchema`, `MapSchema`, `ObjectSchema`, `OneOfSchema`.
 Category mix for this target: `construct`.
 This surface primarily enables: composable schema/value construction flows through constrained DSL entrypoints.

@@ -5,29 +5,34 @@ scope_sig_paths:
 symbol_ids:
   - method:d81e0ac72584181e
 claims:
-  - claim_ab0253af6ab8_01
-  - claim_ab0253af6ab8_02
-  - claim_ab0253af6ab8_03
+  - claim_ab0253af6ab8_an01
+  - claim_ab0253af6ab8_an02
+  - claim_ab0253af6ab8_an03
 ---
 
 # NamespaceSnapshotLoader entrypoint
 
 ## Inputs
 
-Input contracts are defined by the signature declarations in this target:
+This entrypoint exposes a `mutation/build surface`. The signature-declared method family
+is `load`, with parameter/shape contracts defined by:
 
 - `override fun load( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>`
 
 ## Outputs
 
-Output contracts are the return types encoded directly in these method
-declarations.
+Return projections declared in this surface include `Result<MaterializedConfiguration>`. When
+multiple return projections are present, they define complementary
+entrypoints within the same target-scoped API seam.
 
 ## Determinism
 
-This documentation is constrained to signature-level API contracts, where
-callable behavior is represented by explicit typed declarations.
+Determinism at this layer comes from explicit, typed callable signatures:
+inputs and output types are declared up front, and there are no ambient
+runtime parameters encoded in the symbol surface.
 
 ## Operational notes
 
-Symbol IDs in this target scope: `method:d81e0ac72584181e`.
+Linked contract types visible from signatures: `KonditionalInternalApi`, `NamespaceRegistryRuntime`, `ParseError`, `parseErrorOrNull`, `parseFailure`.
+Category mix for this target: `write`.
+This surface primarily enables: a focused integration seam for one constrained contract operation.

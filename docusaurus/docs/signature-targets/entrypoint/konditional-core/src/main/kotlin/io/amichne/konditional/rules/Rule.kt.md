@@ -6,31 +6,35 @@ symbol_ids:
   - method:dad44d3dc0354920
   - method:e90cca48f60402c6
 claims:
-  - claim_feaf226717b6_01
-  - claim_feaf226717b6_02
-  - claim_feaf226717b6_03
+  - claim_feaf226717b6_an01
+  - claim_feaf226717b6_an02
+  - claim_feaf226717b6_an03
 ---
 
 # Rule entrypoint
 
 ## Inputs
 
-This entrypoint target exposes 2 signature symbol(s). Input parameter shapes
-are defined by the declarations below:
+This entrypoint exposes a `lookup/projection surface`. The signature-declared method family
+is `matches`, `specificity`, with parameter/shape contracts defined by:
 
 - `fun matches(context: C): Boolean`
 - `fun specificity(): Int`
 
 ## Outputs
 
-Return shapes are defined directly in the signature declarations for the
-symbols in this target scope.
+Return projections declared in this surface include `Boolean`, `Int`. When
+multiple return projections are present, they define complementary
+entrypoints within the same target-scoped API seam.
 
 ## Determinism
 
-The documented API surface is signature-scoped: callable inputs are explicit
-in method declarations, with no ambient parameters encoded at this layer.
+Determinism at this layer comes from explicit, typed callable signatures:
+inputs and output types are declared up front, and there are no ambient
+runtime parameters encoded in the symbol surface.
 
 ## Operational notes
 
-Symbol IDs in this target scope: `method:dad44d3dc0354920`, `method:e90cca48f60402c6`.
+Linked contract types visible from signatures: `RampUp`, `HexId`, `Targeting`.
+Category mix for this target: `read`.
+This surface primarily enables: stable projection and query-style usage patterns over explicit typed inputs.
