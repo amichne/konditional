@@ -25,6 +25,10 @@
         {
           "kind": "method",
           "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun disableAll()"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun enableAll()"
         }
       ]
     },
@@ -45,6 +49,10 @@
         {
           "kind": "method",
           "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#override fun load( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#private fun ParseError.withNamespaceContext(namespaceId: String): ParseError"
         },
         {
           "kind": "type",

@@ -8,6 +8,10 @@ Represent explicit links between value journeys and source signatures in a
 machine-checkable shape. The link map gives narrative claims a stable technical
 anchor so storytelling stays aligned with implementation changes.
 
+Use this schema together with `docs/value-journeys/journey-claims.json`.
+`journey-signature-links.json` defines technical linkage, while
+`journey-claims.json` defines decision claims, test evidence, and ownership.
+
 ## JSON contract
 
 ```json

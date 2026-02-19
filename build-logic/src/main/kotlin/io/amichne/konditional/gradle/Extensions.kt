@@ -16,6 +16,17 @@ abstract class KonditionalRecipesDocsExtension {
     abstract val docsFile: RegularFileProperty
 }
 
+abstract class KonditionalJourneyClaimsDocsExtension {
+    abstract val validatorScript: RegularFileProperty
+    abstract val linksFile: RegularFileProperty
+    abstract val claimsFile: RegularFileProperty
+    abstract val generatedReportFile: RegularFileProperty
+    abstract val verifyReportFile: RegularFileProperty
+    abstract val signaturesDir: Property<String>
+    abstract val requireTests: Property<Boolean>
+    abstract val ciMode: Property<String>
+}
+
 abstract class KonditionalCoreApiBoundaryExtension {
     abstract val allowedPackagePrefixes: ListProperty<String>
 }

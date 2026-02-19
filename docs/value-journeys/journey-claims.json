@@ -1,0 +1,143 @@
+{
+  "owner_routing": {
+    "konditional-core": "/konditional-core/**",
+    "konditional-runtime": "/konditional-runtime/**",
+    "konditional-serialization": "/konditional-serialization/**",
+    "konditional-observability": "/konditional-observability/**"
+  },
+  "claims": [
+    {
+      "journey_id": "JV-001",
+      "claim_id": "JV-001-C1",
+      "claim_statement": "Runtime readers observe coherent namespace snapshots while updates are applied.",
+      "decision_type": "operate",
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun load(config: ConfigurationView)"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt::load rollback history and evaluation remain coherent under contention"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime"
+      ]
+    },
+    {
+      "journey_id": "JV-001",
+      "claim_id": "JV-001-C2",
+      "claim_statement": "Rollback progression remains linearizable under concurrent evaluations.",
+      "decision_type": "operate",
+      "signatures": [
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun rollback(steps: Int): Boolean"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt::rollback progression stays linearizable while evaluations run"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime"
+      ]
+    },
+    {
+      "journey_id": "JV-001",
+      "claim_id": "JV-001-C3",
+      "claim_statement": "Kill-switch operations force declared defaults and can be safely re-enabled.",
+      "decision_type": "operate",
+      "signatures": [
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun disableAll()"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun enableAll()"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/ops/KillSwitchTest.kt::disableAll forces declared defaults"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime",
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "JV-002",
+      "claim_id": "JV-002-C1",
+      "claim_statement": "Namespace snapshot loading yields typed success for valid JSON inputs.",
+      "decision_type": "adopt",
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#override fun load( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationSnapshotCodecTest.kt::Given valid JSON, When deserialized, Then loads into namespace and returns success"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime",
+        "konditional-serialization"
+      ]
+    },
+    {
+      "journey_id": "JV-002",
+      "claim_id": "JV-002-C2",
+      "claim_statement": "Namespace snapshot loading yields typed parse failure for invalid JSON inputs.",
+      "decision_type": "operate",
+      "signatures": [
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#private fun ParseError.withNamespaceContext(namespaceId: String): ParseError"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationSnapshotCodecTest.kt::Given invalid JSON, When deserialized, Then returns failure without loading"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime",
+        "konditional-serialization"
+      ]
+    },
+    {
+      "journey_id": "JV-002",
+      "claim_id": "JV-002-C3",
+      "claim_statement": "Feature-aware decoding fails with typed boundary errors when schema scope is missing.",
+      "decision_type": "migrate",
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec#override fun decode( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>"
+        }
+      ],
+      "tests": [
+        "konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/ConfigurationSnapshotCodecTest.kt::Given snapshot with flags, When decoded without feature scope by default, Then returns typed failure"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-serialization"
+      ]
+    }
+  ]
+}

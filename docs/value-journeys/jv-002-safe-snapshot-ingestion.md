@@ -23,6 +23,12 @@ codec contract, so parse and materialization results are explicit and typed.
 Failures are easier to triage, and successful payloads reach runtime through a
 consistent, auditable flow that supports migration and shadow validation.
 
+## Decision guidance
+
+Use this journey when your decision is whether to centralize remote
+configuration ingestion and boundary error handling. Adopt this path when you
+need deterministic decode behavior and clear remediation for parse failures.
+
 ## Journey stages
 
 1. Parse with context: Decode incoming JSON with namespace-aware error mapping.
@@ -31,24 +37,42 @@ consistent, auditable flow that supports migration and shadow validation.
 3. Operate confidently: Load materialized snapshots into runtime with known
    failure semantics.
 
+## Claim table
+
+| claim_id | claim_statement | decision_type | status |
+| --- | --- | --- | --- |
+| JV-002-C1 | Namespace snapshot loading yields typed success for valid JSON inputs. | adopt | supported |
+| JV-002-C2 | Namespace snapshot loading yields typed parse failure for invalid JSON inputs. | operate | supported |
+| JV-002-C3 | Feature-aware decoding fails with typed boundary errors when schema scope is missing. | migrate | supported |
+
 ## Technical evidence (signature links)
 
 - kind: type
   signature: io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
-  claim_supported: Namespace-scoped ingestion entry point.
+  claim_supported: JV-002-C1
   status: linked
 - kind: method
   signature: io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#override fun load( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>
-  claim_supported: Typed load result with explicit boundary semantics.
+  claim_supported: JV-002-C1
+  status: linked
+- kind: method
+  signature: io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#private fun ParseError.withNamespaceContext(namespaceId: String): ParseError
+  claim_supported: JV-002-C2
   status: linked
 - kind: type
   signature: io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
-  claim_supported: Central codec contract for materialized snapshot handling.
+  claim_supported: JV-002-C3
   status: linked
 - kind: method
   signature: io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec#override fun decode( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>
-  claim_supported: Deterministic decode path with typed success or failure.
+  claim_supported: JV-002-C3
   status: linked
+
+## Evidence status summary
+
+- supported: 3
+- at_risk: 0
+- missing: 0
 
 ## Adoption signals
 

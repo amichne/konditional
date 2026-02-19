@@ -2,14 +2,14 @@
   "ci_mode": "warn",
   "claims": {
     "at_risk": 0,
-    "claims_file": "",
+    "claims_file": "/Users/amichne/.codex/worktrees/3816/konditional/docs/value-journeys/journey-claims.json",
     "doc_reference_errors": [],
-    "enabled": false,
+    "enabled": true,
     "missing": 0,
     "require_tests": true,
     "schema_errors": [],
-    "supported": 0,
-    "total": 0,
+    "supported": 6,
+    "total": 6,
     "unresolved": []
   },
   "links": {
