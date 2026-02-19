@@ -17,6 +17,8 @@ JOURNEY_ID_PATTERN = re.compile(r"^[A-Z]{2,}-[0-9]{3}$")
 DECISION_TYPES = {"adopt", "migrate", "operate"}
 CLAIM_STATUSES = {"supported", "at_risk", "missing"}
 REF_KINDS = {"type", "method", "field"}
+DOC_SCOPES = {"value_journey", "theory", "learn"}
+CLAIM_KINDS = {"guarantee", "mechanism", "boundary", "failure_mode", "performance"}
 
 
 @dataclass(frozen=True)
@@ -40,6 +42,10 @@ class ClaimRef:
     claim_id: str
     claim_statement: str
     decision_type: str
+    doc_scope: str
+    doc_page: str
+    claim_kind: str
+    non_trivial: bool
     status: str
     signatures: tuple[SignatureRef, ...]
     tests: tuple[str, ...]
@@ -50,6 +56,10 @@ class ClaimRef:
 class ClaimEvaluation:
     journey_id: str
     claim_id: str
+    doc_scope: str
+    doc_page: str
+    claim_kind: str
+    non_trivial: bool
     declared_status: str
     computed_status: str
     missing_signatures: tuple[str, ...]
@@ -164,6 +174,11 @@ def parse_claims(
         claim_id = str(claim.get("claim_id", "")).strip()
         claim_statement = str(claim.get("claim_statement", "")).strip()
         decision_type = str(claim.get("decision_type", "")).strip()
+        doc_scope = str(claim.get("doc_scope", "value_journey")).strip()
+        doc_page = str(claim.get("doc_page", "")).strip()
+        claim_kind = str(claim.get("claim_kind", "guarantee")).strip()
+        non_trivial_raw = claim.get("non_trivial", True)
+        non_trivial = bool(non_trivial_raw)
         status = str(claim.get("status", "")).strip()
 
         if not JOURNEY_ID_PATTERN.fullmatch(journey_id):
@@ -174,6 +189,14 @@ def parse_claims(
             errors.append(f"{base}: claim_statement must be at least 10 chars")
         if decision_type not in DECISION_TYPES:
             errors.append(f"{base}: decision_type must be one of {sorted(DECISION_TYPES)}")
+        if doc_scope not in DOC_SCOPES:
+            errors.append(f"{base}: doc_scope must be one of {sorted(DOC_SCOPES)}")
+        if not doc_page:
+            errors.append(f"{base}: doc_page must be non-empty")
+        if claim_kind not in CLAIM_KINDS:
+            errors.append(f"{base}: claim_kind must be one of {sorted(CLAIM_KINDS)}")
+        if not isinstance(non_trivial_raw, bool):
+            errors.append(f"{base}: non_trivial must be a boolean")
         if status not in CLAIM_STATUSES:
             errors.append(f"{base}: status must be one of {sorted(CLAIM_STATUSES)}")
         if claim_id in claim_ids_seen:
@@ -234,6 +257,10 @@ def parse_claims(
                 claim_id=claim_id,
                 claim_statement=claim_statement,
                 decision_type=decision_type,
+                doc_scope=doc_scope,
+                doc_page=doc_page,
+                claim_kind=claim_kind,
+                non_trivial=non_trivial,
                 status=status,
                 signatures=tuple(signatures),
                 tests=tuple(tests),
@@ -421,37 +448,81 @@ def resolve_test_ref(test_ref: str, repo_root: Path, catalog: SignatureCatalog) 
     return test_ref in catalog.type_symbols
 
 
-def parse_journey_doc_claim_refs(repo_root: Path) -> tuple[dict[str, set[str]], list[str]]:
-    docs_dirs = [
-        repo_root / "docs/value-journeys",
-        repo_root / "docusaurus/docs/value-journeys",
-    ]
+def canonical_doc_page(doc_page: str) -> str:
+    normalized = doc_page.strip()
+    normalized = normalized.removeprefix("/")
+    if normalized.endswith(".md"):
+        normalized = normalized[:-3]
+    return normalized
 
-    journey_refs: dict[str, set[str]] = {}
+
+def doc_page_key(doc_scope: str, doc_page: str) -> str:
+    return f"{doc_scope}:{canonical_doc_page(doc_page)}"
+
+
+def resolve_doc_path(repo_root: Path, doc_page: str) -> Path:
+    normalized = canonical_doc_page(doc_page)
+    return (repo_root / "docusaurus" / "docs" / f"{normalized}.md").resolve()
+
+
+def extract_claim_ids_from_claim_ledger(
+    *,
+    content: str,
+    require_claim_ledger: bool,
+    file_label: str,
+) -> tuple[set[str], list[str]]:
+    errors: list[str] = []
+    section = content
+
+    ledger_heading = re.search(r"^##\s+Claim ledger\s*$", content, re.IGNORECASE | re.MULTILINE)
+    if ledger_heading:
+        start = ledger_heading.end()
+        next_heading = re.search(r"^##\s+", content[start:], re.MULTILINE)
+        end = start + next_heading.start() if next_heading else len(content)
+        section = content[start:end]
+    elif require_claim_ledger:
+        errors.append(f"{file_label}: missing required '## Claim ledger' section")
+        section = ""
+
+    claim_ids = set(CLAIM_ID_PATTERN.findall(section))
+    if not claim_ids:
+        errors.append(f"{file_label}: must reference at least one claim_id")
+
+    return claim_ids, errors
+
+
+def parse_doc_claim_refs(
+    *,
+    repo_root: Path,
+    claims: list[ClaimRef],
+) -> tuple[dict[str, set[str]], list[str]]:
+    grouped_pages: dict[str, ClaimRef] = {}
+    for claim in claims:
+        key = doc_page_key(claim.doc_scope, claim.doc_page)
+        if key not in grouped_pages:
+            grouped_pages[key] = claim
+
+    refs: dict[str, set[str]] = {}
     errors: list[str] = []
 
-    for docs_dir in docs_dirs:
-        if not docs_dir.exists():
+    for key, claim in sorted(grouped_pages.items(), key=lambda item: item[0]):
+        path = resolve_doc_path(repo_root, claim.doc_page)
+        path_label = path.relative_to(repo_root).as_posix() if path.is_relative_to(repo_root) else str(path)
+        if not path.exists():
+            errors.append(f"{key}: doc page not found at {path_label}")
             continue
 
-        for path in sorted(docs_dir.glob("*.md")):
-            content = path.read_text(encoding="utf-8", errors="ignore")
-            heading_match = re.search(r"^#\s+([A-Z]{2,}-[0-9]{3})\b", content, re.MULTILINE)
-            if not heading_match:
-                continue
+        content = path.read_text(encoding="utf-8", errors="ignore")
+        require_claim_ledger = claim.doc_scope in {"theory", "learn"}
+        claim_ids, extraction_errors = extract_claim_ids_from_claim_ledger(
+            content=content,
+            require_claim_ledger=require_claim_ledger,
+            file_label=path_label,
+        )
+        refs[key] = claim_ids
+        errors.extend(extraction_errors)
 
-            journey_id = heading_match.group(1)
-            claim_ids = set(CLAIM_ID_PATTERN.findall(content))
-            if not claim_ids:
-                errors.append(
-                    f"{path.relative_to(repo_root).as_posix()}: journey doc must reference at least one claim_id"
-                )
-                continue
-
-            existing = journey_refs.setdefault(journey_id, set())
-            existing.update(claim_ids)
-
-    return journey_refs, sorted(dict.fromkeys(errors))
+    return refs, sorted(dict.fromkeys(errors))
 
 
 def owner_paths_for_modules(owner_modules: tuple[str, ...], owner_routing: dict[str, str]) -> tuple[str, ...]:
@@ -510,6 +581,10 @@ def evaluate_claims(
             ClaimEvaluation(
                 journey_id=claim.journey_id,
                 claim_id=claim.claim_id,
+                doc_scope=claim.doc_scope,
+                doc_page=canonical_doc_page(claim.doc_page),
+                claim_kind=claim.claim_kind,
+                non_trivial=claim.non_trivial,
                 declared_status=claim.status,
                 computed_status=computed_status,
                 missing_signatures=missing_signatures,
@@ -528,24 +603,25 @@ def validate_doc_claim_references(
 ) -> list[str]:
     errors: list[str] = []
 
-    claim_ids_by_journey: dict[str, set[str]] = {}
+    claim_ids_by_doc: dict[str, set[str]] = {}
     for claim in claims:
-        claim_ids_by_journey.setdefault(claim.journey_id, set()).add(claim.claim_id)
+        key = doc_page_key(claim.doc_scope, claim.doc_page)
+        claim_ids_by_doc.setdefault(key, set()).add(claim.claim_id)
 
-    for journey_id, doc_refs in sorted(doc_claim_refs.items()):
-        valid = claim_ids_by_journey.get(journey_id, set())
+    for key, doc_refs in sorted(doc_claim_refs.items()):
+        valid = claim_ids_by_doc.get(key, set())
         unknown = sorted(ref for ref in doc_refs if ref not in valid)
         for claim_id in unknown:
             errors.append(
-                f"{journey_id}: unknown claim_id referenced in docs: {claim_id}"
+                f"{key}: unknown claim_id referenced in docs: {claim_id}"
             )
 
-    for journey_id, claim_ids in sorted(claim_ids_by_journey.items()):
-        refs = doc_claim_refs.get(journey_id, set())
+    for key, claim_ids in sorted(claim_ids_by_doc.items()):
+        refs = doc_claim_refs.get(key, set())
         missing = sorted(claim_id for claim_id in claim_ids if claim_id not in refs)
         for claim_id in missing:
             errors.append(
-                f"{journey_id}: claim_id not referenced in journey docs: {claim_id}"
+                f"{key}: claim_id not referenced in docs: {claim_id}"
             )
 
     return sorted(dict.fromkeys(errors))
@@ -631,11 +707,34 @@ def build_report(
     supported = sum(1 for item in claim_evaluations if item.computed_status == "supported")
     at_risk = sum(1 for item in claim_evaluations if item.computed_status == "at_risk")
     missing = sum(1 for item in claim_evaluations if item.computed_status == "missing")
+    claims_by_scope: dict[str, dict[str, int]] = {}
+    unresolved_by_scope: dict[str, int] = {}
+
+    for claim in claims:
+        scope = claim.doc_scope
+        claims_by_scope.setdefault(scope, {"total": 0, "supported": 0, "at_risk": 0, "missing": 0})
+        claims_by_scope[scope]["total"] += 1
+
+    for item in claim_evaluations:
+        scope_summary = claims_by_scope.setdefault(
+            item.doc_scope,
+            {"total": 0, "supported": 0, "at_risk": 0, "missing": 0},
+        )
+        if item.computed_status == "supported":
+            scope_summary["supported"] += 1
+        elif item.computed_status == "at_risk":
+            scope_summary["at_risk"] += 1
+        else:
+            scope_summary["missing"] += 1
 
     unresolved_claims = [
         {
             "journey_id": item.journey_id,
             "claim_id": item.claim_id,
+            "doc_scope": item.doc_scope,
+            "doc_page": item.doc_page,
+            "claim_kind": item.claim_kind,
+            "non_trivial": item.non_trivial,
             "declared_status": item.declared_status,
             "computed_status": item.computed_status,
             "missing_signatures": list(item.missing_signatures),
@@ -644,12 +743,15 @@ def build_report(
             "owner_paths": list(item.owner_paths),
         }
         for item in claim_evaluations
-        if item.computed_status != "supported"
+        if item.computed_status != "supported" and item.non_trivial
     ]
+
+    for item in unresolved_claims:
+        unresolved_by_scope[item["doc_scope"]] = unresolved_by_scope.get(item["doc_scope"], 0) + 1
 
     unresolved_claims_sorted = sorted(
         unresolved_claims,
-        key=lambda item: (item["journey_id"], item["claim_id"]),
+        key=lambda item: (item["doc_scope"], item["journey_id"], item["claim_id"]),
     )
 
     has_issues = bool(missing_links or claim_errors or claim_doc_errors or unresolved_claims_sorted)
@@ -686,6 +788,8 @@ def build_report(
             "supported": supported,
             "at_risk": at_risk,
             "missing": missing,
+            "by_scope": claims_by_scope,
+            "unresolved_by_scope": unresolved_by_scope,
             "schema_errors": claim_errors,
             "doc_reference_errors": claim_doc_errors,
             "unresolved": unresolved_claims_sorted,
@@ -803,7 +907,10 @@ def main() -> int:
         )
         claim_errors = sorted(dict.fromkeys(claim_errors + claim_eval_errors))
 
-        doc_claim_refs, doc_parse_errors = parse_journey_doc_claim_refs(repo_root)
+        doc_claim_refs, doc_parse_errors = parse_doc_claim_refs(
+            repo_root=repo_root,
+            claims=claims,
+        )
         claim_doc_errors = sorted(
             dict.fromkeys(
                 doc_parse_errors + validate_doc_claim_references(claims, doc_claim_refs)
@@ -836,7 +943,10 @@ def main() -> int:
                     )
                     claim_errors = sorted(dict.fromkeys(claim_errors + claim_eval_errors))
 
-                    doc_claim_refs, doc_parse_errors = parse_journey_doc_claim_refs(repo_root)
+                    doc_claim_refs, doc_parse_errors = parse_doc_claim_refs(
+                        repo_root=repo_root,
+                        claims=claims,
+                    )
                     claim_doc_errors = sorted(
                         dict.fromkeys(
                             doc_parse_errors + validate_doc_claim_references(claims, doc_claim_refs)

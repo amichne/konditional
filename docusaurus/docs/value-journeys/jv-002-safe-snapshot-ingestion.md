@@ -40,3 +40,9 @@ boundary failure categorization in production operations.
 - supported: 3
 - at_risk: 0
 - missing: 0
+
+## Canonical mechanism sources
+
+- [Parse don’t validate](/theory/parse-dont-validate)
+- [Type safety boundaries](/theory/type-safety-boundaries)
+- [Configuration lifecycle](/learn/configuration-lifecycle)

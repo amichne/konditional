@@ -1,50 +1,59 @@
 # Parse Don’t Validate
 
-Konditional treats JSON/config input as untrusted and parses it into trusted typed models.
+Konditional treats all external payloads as untrusted input. The boundary
+contract is to parse JSON into a trusted, typed model before any runtime state
+mutation occurs.
 
-## Boundary Contract
+## Claim: boundary parsing protects runtime semantics
 
-Boundary APIs return Kotlin `Result<T>`:
+Remote payloads do not enter evaluation directly. A payload must decode into a
+`MaterializedConfiguration` first, or it is rejected.
 
-- `Result.success(trustedValue)`
-- `Result.failure(KonditionalBoundaryFailure(parseError))`
+## Mechanism
 
-This keeps the boundary explicit while using Kotlin-native result handling.
+1. Schema plane: `CompiledNamespaceSchema` derived from compile-time feature
+   declarations.
+2. Data plane: incoming JSON snapshot or patch payload.
+3. Materialization plane: typed decode to
+   `Result<MaterializedConfiguration>`.
+4. Runtime activation plane: `NamespaceSnapshotLoader(...).load(...)` atomically
+   swaps active state only on success.
 
-## Why This Prevents Invalid State
+## Evidence
 
-- Untrusted payloads are rejected before they reach runtime snapshots.
-- Runtime ingest accepts only `MaterializedConfiguration`.
-- Registry updates occur only on successful materialization.
-- Last-known-good snapshot remains active on failures.
+- `NamespaceSnapshotLoader` is the namespace-scoped boundary API.
+- `ConfigurationSnapshotCodec` requires schema-aware decode for trusted
+  materialization.
+- Boundary failures are represented by `ParseError` and
+  `KonditionalBoundaryFailure`.
 
-## Structural Planes
+## Boundary policies
 
-- Schema plane: `CompiledNamespaceSchema` (compile-time declarations)
-- Data plane: incoming payload JSON
-- Pure materialization: `materialize(schema, data, options) -> Result<MaterializedConfiguration>`
+`SnapshotLoadOptions` controls strictness for edge behavior at ingest time.
 
-## Missing Declared Flag Policy
+- `unknownFeatureKeyStrategy` controls unknown keys.
+- `missingDeclaredFlagStrategy` controls absent declared flags.
+- `onWarning` is an explicit, caller-supplied warning hook.
 
-`SnapshotLoadOptions.missingDeclaredFlagStrategy` controls absent schema flags:
+## Failure semantics
 
-- `Reject` (default)
-- `FillFromDeclaredDefaults`
-
-## Example
-
-```kotlin
-val result = ConfigurationSnapshotCodec.decode(json, AppFlags.compiledSchema())
-
-result
-  .onSuccess { materialized -> AppFlags.load(materialized) }
-  .onFailure { failure ->
-    val parseError = result.parseErrorOrNull()
-    logger.error { parseError?.message ?: failure.message.orEmpty() }
-  }
-```
+A failed decode returns `Result.failure(...)` and leaves active runtime state
+unchanged. This preserves last-known-good behavior under malformed,
+out-of-scope, or incompatible payloads.
 
 ## Related
 
-- [Serialization API Reference](/serialization/reference)
-- [Snapshot Loader API](/reference/api/snapshot-loader)
+- [Type safety boundaries](/theory/type-safety-boundaries)
+- [Configuration lifecycle](/learn/configuration-lifecycle)
+- [Serialization reference](/serialization/reference)
+
+## Claim ledger
+
+| claim_id | claim_statement | claim_kind | status |
+| --- | --- | --- | --- |
+| TH-001-C1 | The parse boundary decodes untrusted JSON into typed materialized snapshots before runtime load. | boundary | supported |
+| TH-001-C2 | Boundary failures are represented as typed parse errors instead of untyped exceptions. | failure_mode | supported |
+| TH-001-C3 | Namespace loaders attach namespace context to parse failures for safer operations triage. | mechanism | supported |
+| TH-001-C4 | Runtime load accepts materialized configurations and rejects boundary-invalid payloads. | boundary | supported |
+| TH-001-C5 | Missing declared flag handling is explicit policy configured through snapshot load options. | mechanism | supported |
+| TH-001-C6 | Schema-less decode is intentionally unsupported to prevent unscoped snapshot ingestion. | boundary | supported |

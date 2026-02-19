@@ -1,245 +1,47 @@
 # Type Safety in Konditional
 
-Konditional provides compile-time type safety for statically-defined flags and runtime validation for configuration
-loaded from JSON.
+Konditional provides compile-time type safety for statically declared features
+and explicit runtime boundary safety for external configuration.
 
----
+## Compile-time guarantees
 
-## What Type Safety Gives You
+1. Feature access is property/symbol based.
+2. Feature return type is known at call sites.
+3. Rule values must match feature value type.
+4. Defaults enforce total evaluation.
+5. Context type parameters constrain valid evaluation calls.
 
-### 1. Features are Properties, Not Strings
+## Runtime boundary guarantees
 
-```kotlin
-object AppFeatures : Namespace("app") {
-    val darkMode by boolean<Context>(default = false)
-    val maxRetries by integer<Context>(default = 3)
-}
-
-// Usage
-val enabled: Boolean = AppFeatures.darkMode.evaluate(context)  // ✓ Typed
-val retries: Int = AppFeatures.maxRetries.evaluate(context)     // ✓ Typed
-```
-
-**Benefits:**
-
-- **Typos caught at compile-time:** `AppFeatures.darkMood` won't compile
-- **IDE autocomplete works:** Your editor shows available flags
-- **Refactoring is safe:** Rename a property and all usages update
-
-### 2. Return Types are Known
+External JSON is not compile-time checked. It is validated at the snapshot
+boundary and either materialized safely or rejected.
 
 ```kotlin
-val timeout by double<Context>(default = 30.0) {
-    rule(45.0) { platforms(Platform.ANDROID) }
-}
-
-// Compiler knows this returns Double
-val timeoutValue: Double = timeout.evaluate(context)  // ✓ Correct
-val timeoutValue: String = timeout.evaluate(context)  // X Compile error
-```
-
-**You never cast or coerce types.** The type flows from definition to evaluation.
-
-### 3. Rule Types Must Match
-
-```kotlin
-val maxRetries by integer<Context>(default = 3) {
-    rule(5) { android() }        // ✓ Int matches
-    rule("five") { ios() }       // X Compile error: String != Int
-}
-```
-
-**Invalid rules don't compile.** You can't accidentally return the wrong type.
-
-### 4. Defaults are Required
-
-```kotlin
-val feature by boolean<Context>(default = false)  // ✓ Has default
-val feature by boolean<Context>()                 // X Compile error: no default
-```
-
-**Evaluation is total.** Every feature always returns a value. No nulls, no exceptions (from evaluation).
-
-### 5. Context Types are Enforced
-
-```kotlin
-interface PremiumContext : Context {
-    val subscriptionTier: SubscriptionTier
-}
-
-val premiumFeature by boolean<PremiumContext>(default = false) {
-    rule(true) { extension { subscriptionTier == SubscriptionTier.ENTERPRISE } }
-}
-
-// Usage
-val premiumCtx: PremiumContext = buildPremiumContext()
-premiumFeature.evaluate(premiumCtx)  // ✓ Correct context type
-
-val basicCtx: Context = Context(...)
-premiumFeature.evaluate(basicCtx)    // X Compile error: wrong context type
-```
-
-**Context extensions are type-safe.** You can't evaluate a feature with the wrong context.
-
----
-
-## The Boundary: Compile-Time vs Runtime
-
-### Compile-Time Safety (Statically-Defined Flags)
-
-When you define flags in Kotlin code, the compiler guarantees:
-
-- Property names map to feature keys
-- Return types match between definition and usage
-- Rules return the correct types
-- Defaults exist for all features
-- Context types are correct
-
-### Runtime Validation (JSON Configuration)
-
-When you load configuration from JSON, **the compiler cannot help**:
-
-```kotlin
-// Statically defined
-object AppFeatures : Namespace("app") {
-    val maxRetries by integer<Context>(default = 3)
-}
-
-// Loaded from JSON
-val json = """{ "maxRetries": "five" }"""  // Wrong type!
-
 val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-when {
-    result.isSuccess -> Unit // Valid JSON
-    result.isFailure -> {
-        // Invalid JSON rejected at boundary
-        logError("Parse failed: ${result.parseErrorOrNull()}")
-        // Last-known-good configuration remains active
-    }
+if (result.isFailure) {
+    logger.error(result.parseErrorOrNull()?.message.orEmpty())
 }
 ```
 
-**Key insight:** Konditional doesn't pretend JSON is type-safe. Instead, it:
+Invalid payloads remain boundary failures and do not replace active runtime
+state.
 
-1. **Validates at the boundary** with explicit `Result`
-2. **Rejects invalid JSON** before affecting production
-3. **Keeps last-known-good** when validation fails
+## Practical posture
 
----
+Use compiler guarantees inside feature DSL and app call sites. Use explicit
+`Result` handling at ingestion boundaries.
 
-## What Can Go Wrong (and How Konditional Handles It)
+## Related
 
-### Typo in Flag Name
+- [Type safety boundaries](/theory/type-safety-boundaries)
+- [Configuration lifecycle](/learn/configuration-lifecycle)
+- [Parse result API](/reference/api/parse-result)
 
-**String-keyed systems:**
+## Claim ledger
 
-```kotlin
-val enabled = flagClient.getBool("new_onboaring_flow", false)  // Typo ships
-```
-
-→ Silent failure. Flag never activates.
-
-**Konditional:**
-
-```kotlin
-AppFeatures.newOnboaringFlow  // Doesn't compile
-```
-
-→ Caught at compile-time.
-
-### Type Mismatch
-
-**String-keyed systems:**
-
-```kotlin
-val retries: Int = flagClient.getInt("max_retries", 3)
-// JSON: { "max_retries": "five" }
-// Runtime: retries = 0 (or exception, SDK-dependent)
-```
-
-→ Production incident.
-
-**Konditional:**
-
-```kotlin
-val json = """{ "maxRetries": "five" }"""
-val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-when {
-    result.isFailure -> // Invalid type caught, last-known-good remains
-}
-```
-
-→ Invalid JSON rejected, no incident.
-
-### Missing Default
-
-**String-keyed systems:**
-
-```kotlin
-val timeout = flagClient.getDouble("timeout", null)  // Nullable!
-timeout?.let { setTimeoutMs(it) }  // Null checks everywhere
-```
-
-→ Null propagation through codebase.
-
-**Konditional:**
-
-```kotlin
-val timeout by double<Context>(default = 30.0)  // Default required
-val value: Double = timeout.evaluate(ctx)        // Never null
-```
-
-→ Evaluation is total. No nulls.
-
----
-
-## Practical Implications
-
-### For Day-to-Day Development
-
-1. **Use IDE autocomplete** to discover flags
-2. **Rely on the compiler** for refactoring
-3. **Don't cast or coerce types** — they flow automatically
-4. **Handle `Result` explicitly** when loading JSON
-
-### For Code Reviews
-
-1. **Check that defaults make sense** (required, non-optional)
-2. **Verify rule types match** (compiler enforces this anyway)
-3. **Ensure `Result` failures are handled** (log, alert, fallback)
-
-### For Testing
-
-1. **Test evaluation with typed contexts** — no mocks needed
-2. **Test `Result.failure` cases** for invalid JSON
-3. **Test that rules return correct types** (compiler helps, but test edge cases)
-
----
-
-## Summary
-
-Konditional's type safety has two parts:
-
-1. **Compile-time guarantees** for statically-defined flags:
-
-- Property names = feature keys
-- Return types flow from definition to usage
-- Rules match feature types
-- Defaults required, evaluation total
-- Context types enforced
-
-2. **Runtime validation** for JSON configuration:
-
-- Explicit `Result` boundary
-- Invalid JSON rejected before affecting production
-- Last-known-good configuration preserved
-
-**You get compile-time safety where possible, explicit validation where necessary.**
-
----
-
-## Next Steps
-
-- [Configuration Lifecycle](/learn/configuration-lifecycle) — How configuration flows from JSON to evaluation
-- [Type Safety Boundaries (Theory)](/theory/type-safety-boundaries) — Deep dive into how type safety is implemented
-- [Production Operations](/production-operations/failure-modes) — Handling invalid configuration in production
+| claim_id | claim_statement | claim_kind | status |
+| --- | --- | --- | --- |
+| LRN-003-C1 | Feature access is compile-time checked through typed namespace properties. | guarantee | supported |
+| LRN-003-C2 | Defaults keep evaluation total and prevent nullable propagation in flag call sites. | guarantee | supported |
+| LRN-003-C3 | Rule and context type constraints are enforced through generic feature signatures. | guarantee | supported |
+| LRN-003-C4 | Invalid JSON is rejected at the boundary while last-known-good state remains active. | failure_mode | supported |

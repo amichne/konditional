@@ -1,61 +1,44 @@
 # Core Concepts
 
-This page defines the minimum vocabulary you need to read and write Konditional features.
-
-## Terms
-
-- **Namespace**: A registry that owns a set of features.
-- **Feature**: A typed configuration value with rules and a default.
-- **Context**: Runtime inputs used for evaluation (`locale`, `platform`, `appVersion`, `stableId`).
-- **Rule**: Criteria -> value mapping. All criteria must match for the rule to apply.
-- **Specificity**: A numeric measure of how constrained a rule is. Higher specificity wins.
-- **Bucketing**: Deterministic assignment of a `stableId` to a ramp-up bucket.
-
-## Context
-
-Runtime inputs used during evaluation, such as locale, platform, app version, and stable ID.
-
-## Feature
-
-A typed configuration value with rules and a default value.
+This page defines the minimum vocabulary for reading Konditional guarantees and
+operating runtime configuration safely.
 
 ## Namespace
 
-A registry that owns a set of features and provides lifecycle operations.
+A `Namespace` owns feature declarations, runtime lifecycle operations, and
+isolation scope.
 
-## StableId: Deterministic ramp-ups
+## Feature
 
-A stable identifier used for deterministic bucketing in ramp-up rules.
+A `Feature<T, C, M>` is a typed value contract with defaults and conditional
+rules evaluated against `C`.
 
-## Compile-time vs runtime
+## Context
 
-| Aspect                     | Guarantee Level | Mechanism                                                  |
-|----------------------------|-----------------|------------------------------------------------------------|
-| Property access            | Compile-time    | Property delegation on `Namespace`                         |
-| Return types               | Compile-time    | Generic type propagation (`Feature<T, C, M>`)              |
-| Rule values                | Compile-time    | Typed DSL builders (`boolean`, `string`, `enum`, `custom`) |
-| Non-null returns           | Compile-time    | Required defaults                                          |
-| Rule matching              | Runtime         | Deterministic evaluation over `Context`                    |
-| Business logic correctness | Not guaranteed  | Human responsibility                                       |
+`Context` is the runtime input envelope for targeting and rollout decisions.
 
-## Typed values in practice
+## Stable identifier and bucketing
 
-```kotlin
-enum class Theme { LIGHT, DARK }
+`stableId` participates in deterministic ramp-up bucketing. Same identity tuple
+yields stable assignment for a fixed snapshot.
 
-object AppFeatures : Namespace("app") {
-  val darkMode by boolean<Context>(default = false)
-  val theme by enum<Theme, Context>(default = Theme.LIGHT)
-  val retries by integer<Context>(default = 3)
-}
+## Compile-time versus boundary safety
 
-val theme: Theme = AppFeatures.theme.evaluate(ctx)
-```
+- Compile-time domain: typed feature access and typed evaluation calls.
+- Boundary domain: parse and materialization from untrusted payloads via
+  `Result`.
 
-## Type-safety guarantee
+## Related
 
-- **Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
+- [Type safety](/learn/type-safety)
+- [Evaluation model](/learn/evaluation-model)
+- [Parse don’t validate](/theory/parse-dont-validate)
 
-- **Mechanism**: Feature properties are declared with explicit type parameters and enforced by the Kotlin type system.
+## Claim ledger
 
-- **Boundary**: Dynamically-generated features are outside this guarantee.
+| claim_id | claim_statement | claim_kind | status |
+| --- | --- | --- | --- |
+| LRN-001-C1 | Namespaces are first-class registries that own lifecycle and evaluation scope. | mechanism | supported |
+| LRN-001-C2 | Feature values flow through explicit type parameters instead of runtime casts. | guarantee | supported |
+| LRN-001-C3 | Context is an explicit runtime input model for deterministic evaluation. | mechanism | supported |
+| LRN-001-C4 | Runtime configuration ingestion is explicitly modeled as a result boundary. | boundary | supported |

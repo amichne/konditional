@@ -24,6 +24,10 @@
           "claim_id",
           "claim_statement",
           "decision_type",
+          "doc_scope",
+          "doc_page",
+          "claim_kind",
+          "non_trivial",
           "signatures",
           "tests",
           "status",
@@ -49,6 +53,31 @@
               "migrate",
               "operate"
             ]
+          },
+          "doc_scope": {
+            "type": "string",
+            "enum": [
+              "value_journey",
+              "theory",
+              "learn"
+            ]
+          },
+          "doc_page": {
+            "type": "string",
+            "minLength": 1
+          },
+          "claim_kind": {
+            "type": "string",
+            "enum": [
+              "guarantee",
+              "mechanism",
+              "boundary",
+              "failure_mode",
+              "performance"
+            ]
+          },
+          "non_trivial": {
+            "type": "boolean"
           },
           "signatures": {
             "type": "array",

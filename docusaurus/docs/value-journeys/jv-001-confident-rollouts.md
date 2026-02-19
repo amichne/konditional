@@ -40,3 +40,9 @@ read coherence during concurrent updates.
 - supported: 3
 - at_risk: 0
 - missing: 0
+
+## Canonical mechanism sources
+
+- [Atomicity guarantees](/theory/atomicity-guarantees)
+- [Determinism proofs](/theory/determinism-proofs)
+- [Configuration lifecycle](/learn/configuration-lifecycle)

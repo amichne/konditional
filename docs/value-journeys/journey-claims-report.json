@@ -2,15 +2,36 @@
   "ci_mode": "warn",
   "claims": {
     "at_risk": 0,
+    "by_scope": {
+      "learn": {
+        "at_risk": 0,
+        "missing": 0,
+        "supported": 16,
+        "total": 16
+      },
+      "theory": {
+        "at_risk": 0,
+        "missing": 0,
+        "supported": 30,
+        "total": 30
+      },
+      "value_journey": {
+        "at_risk": 0,
+        "missing": 0,
+        "supported": 6,
+        "total": 6
+      }
+    },
     "claims_file": "/Users/amichne/.codex/worktrees/3816/konditional/docs/value-journeys/journey-claims.json",
     "doc_reference_errors": [],
     "enabled": true,
     "missing": 0,
     "require_tests": true,
     "schema_errors": [],
-    "supported": 6,
-    "total": 6,
-    "unresolved": []
+    "supported": 52,
+    "total": 52,
+    "unresolved": [],
+    "unresolved_by_scope": {}
   },
   "links": {
     "missing": 0,
