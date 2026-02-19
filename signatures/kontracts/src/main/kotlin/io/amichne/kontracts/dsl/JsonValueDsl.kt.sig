@@ -7,9 +7,7 @@ type=io.amichne.kontracts.dsl.JsonObjectBuilder|kind=class|decl=class JsonObject
 type=io.amichne.kontracts.dsl.JsonArrayBuilder|kind=class|decl=class JsonArrayBuilder
 fields:
 - var schema: ObjectSchema?
-- private val fields: MutableMap<String, JsonValue>
 - var elementSchema: JsonSchema<Any>?
-- private val elements: MutableList<JsonValue>
 methods:
 - fun boolean(value: Boolean): JsonBoolean
 - fun string(value: String): JsonString
@@ -21,8 +19,6 @@ methods:
 - fun field(name: String, value: JsonValue)
 - fun field(name: String, builder: JsonValueScope.() -> JsonValue)
 - fun fields(values: Map<String, JsonValue>)
-- internal fun build(): JsonObject
 - fun element(value: JsonValue)
 - fun element(builder: JsonValueScope.() -> JsonValue)
 - fun elements(values: List<JsonValue>)
-- internal fun build(): JsonArray

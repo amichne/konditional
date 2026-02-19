@@ -12,13 +12,9 @@ type=io.amichne.konditional.openfeature.KonditionalProviderMetadata|kind=class|d
 type=io.amichne.konditional.openfeature.TargetingKeyContext|kind=class|decl=data class TargetingKeyContext( override val stableId: StableId, override val axisValues: AxisValues = AxisValues.EMPTY, ) : Context, Context.StableIdContext
 type=io.amichne.konditional.openfeature.TargetingKeyContextMapper|kind=class|decl=class TargetingKeyContextMapper( private val axisValuesProvider: (EvaluationContext) -> AxisValues = { AxisValues.EMPTY }, ) : KonditionalContextMapper<TargetingKeyContext>
 type=io.amichne.konditional.openfeature.KonditionalOpenFeatureProvider|kind=class|decl=class KonditionalOpenFeatureProvider<C : Context>( private val namespaceRegistry: NamespaceRegistry, private val contextMapper: KonditionalContextMapper<C>, private val metadata: Metadata = KonditionalProviderMetadata(), ) : FeatureProvider
-type=io.amichne.konditional.openfeature.FlagValueType|kind=enum|decl=private enum class FlagValueType
-type=io.amichne.konditional.openfeature.FlagEntry|kind=class|decl=private data class FlagEntry<C : Context>( val feature: Feature<*, C, *>, val valueType: FlagValueType, )
 fields:
 - val message: String
 - override val message: String
-- override val message: String
-- private val flagsByKey: Map<String, FlagEntry<C>>
 methods:
 - override fun getName(): String
 - override fun toKonditionalContext(context: EvaluationContext): KonditionalContextMappingResult<TargetingKeyContext>
@@ -29,18 +25,3 @@ methods:
 - override fun getIntegerEvaluation( key: String, defaultValue: Int, ctx: EvaluationContext, ): ProviderEvaluation<Int>
 - override fun getDoubleEvaluation( key: String, defaultValue: Double, ctx: EvaluationContext, ): ProviderEvaluation<Double>
 - override fun getObjectEvaluation( key: String, defaultValue: Value, ctx: EvaluationContext, ): ProviderEvaluation<Value>
-- private fun <T : Any> evaluateTyped( key: String, defaultValue: T, ctx: EvaluationContext, expectedType: FlagValueType, transformValue: (Any) -> T?, ): ProviderEvaluation<T>
-- private fun <T : Any> evaluateEntry( key: String, entry: FlagEntry<C>, defaultValue: T, ctx: EvaluationContext, transformValue: (Any) -> T?, ): ProviderEvaluation<T>
-- private fun <T : Any> evaluateMappedEntry( key: String, entry: FlagEntry<C>, context: C, defaultValue: T, transformValue: (Any) -> T?, ): ProviderEvaluation<T>
-- private fun reasonFor(decision: EvaluationDiagnostics.Decision): Reason
-- private fun variantFor(decision: EvaluationDiagnostics.Decision): String?
-- private fun metadataFor(result: EvaluationDiagnostics<*>): ImmutableMetadata
-- private fun ImmutableMetadata.ImmutableMetadataBuilder.addDecisionMetadata( decision: EvaluationDiagnostics.Decision, ): ImmutableMetadata.ImmutableMetadataBuilder
-- private fun ImmutableMetadata.ImmutableMetadataBuilder.addStringIfNotNull( key: String, value: String?, ): ImmutableMetadata.ImmutableMetadataBuilder
-- private fun ImmutableMetadata.ImmutableMetadataBuilder.addIntegerIfNotNull( key: String, value: Int?, ): ImmutableMetadata.ImmutableMetadataBuilder
-- private fun <T : Any> errorEvaluation( defaultValue: T, errorCode: ErrorCode, errorMessage: String, ): ProviderEvaluation<T>
-- private fun resolveFlagEntry(flagKey: String): FlagEntry<C>?
-- private fun Feature<*, *, *>.toTypedFeature(): Feature<*, C, *>
-- private fun <T : Any> FlagEntry<C>.featureAs(): Feature<T, C, Namespace>
-- private fun <T> ProviderEvaluation.ProviderEvaluationBuilder<T>.variantOrNull( variant: String?, ): ProviderEvaluation.ProviderEvaluationBuilder<T>
-- fun displayName(): String

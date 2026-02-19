@@ -10,6 +10,5 @@ fields:
 - var example: Map<String, Any?>?
 - var deprecated: Boolean
 - var required: Set<String>?
-- private val fields
 methods:
 - override fun build()

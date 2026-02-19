@@ -1,90 +1,6 @@
 {
-  "global_hash": "a2076b98baa903cad35716cdacc2755586a4d668be904ff72f5c120cc23f8f32",
+  "global_hash": "96d239de15f3fc0a8a9c963b4888f725816c8294d50338f360f9c876395b6e1a",
   "sig_hashes": [
-    {
-      "sig_path": "build-logic/build.gradle.kts.sig",
-      "sig_sha256": "3a7ebe901540bdeec6dc31d8c2b96579047bf0b3798458ecf97166a6f41f1eff"
-    },
-    {
-      "sig_path": "build-logic/settings.gradle.kts.sig",
-      "sig_sha256": "f604401100cc2be43402a7cfad187c9ab0c4df2e45bc2abe9166994bc29227a9"
-    },
-    {
-      "sig_path": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt.sig",
-      "sig_sha256": "0be69063a3a02fbefc84ac1d4025042cfc5d2324cddd7b86a84983381258a1f5"
-    },
-    {
-      "sig_path": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt.sig",
-      "sig_sha256": "99b8f4b0630ae4091eff67688d4af1bcbedf3ab0b7a7e188e13e495b967bcac4"
-    },
-    {
-      "sig_path": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt.sig",
-      "sig_sha256": "ae9b2143fb575ab7601986c31cd4b273ce1128d30dd33aee4bbbc831b24f8f85"
-    },
-    {
-      "sig_path": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt.sig",
-      "sig_sha256": "df0b67712a9a1b0c4a017dc74cae7ffb5bda131a4567c183b045a1d10a215cc3"
-    },
-    {
-      "sig_path": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/PublishingConventions.kt.sig",
-      "sig_sha256": "5ea5fdaea66626295065b28f33090254f6f2210e2deaf37cc81079511b8f034b"
-    },
-    {
-      "sig_path": "build-logic/src/main/kotlin/konditional.core-api-boundary.gradle.kts.sig",
-      "sig_sha256": "d4a1bbeb7bb94bc7484535773ab3883d73f97c5acba50aace99db17d545b7a33"
-    },
-    {
-      "sig_path": "build-logic/src/main/kotlin/konditional.detekt.gradle.kts.sig",
-      "sig_sha256": "dd21b9d54e73c11750622ebd1c55c69b96dd8efceef9f2bb84d4695ff4f0268b"
-    },
-    {
-      "sig_path": "build-logic/src/main/kotlin/konditional.junit-platform.gradle.kts.sig",
-      "sig_sha256": "1cdd9f41a6aa5a1f16e9e1c82aa9fd13284d1be5c6690cc70aaf48460adee687"
-    },
-    {
-      "sig_path": "build-logic/src/main/kotlin/konditional.jvm-module.gradle.kts.sig",
-      "sig_sha256": "26babab51b0585db647e56f21f702c11acdcfc8c46baf624a6730680692c5e8d"
-    },
-    {
-      "sig_path": "build-logic/src/main/kotlin/konditional.kotlin-library.gradle.kts.sig",
-      "sig_sha256": "d594aaa92c9d6267100e939331412f818b0466881fc6f96e2ba3e03daf61bfd8"
-    },
-    {
-      "sig_path": "build-logic/src/main/kotlin/konditional.published-library.gradle.kts.sig",
-      "sig_sha256": "1cf7f796624bff8922a976a662c37aae0e8a3f2ada4bd10af49c442a89bf781e"
-    },
-    {
-      "sig_path": "build-logic/src/main/kotlin/konditional.publishing.gradle.kts.sig",
-      "sig_sha256": "72417673d328da9313e56f8252b0391b37f16b05f115b25e5fb8d51d3fc9d752"
-    },
-    {
-      "sig_path": "build-logic/src/main/kotlin/konditional.recipes-docs.gradle.kts.sig",
-      "sig_sha256": "fbdbb363b8b094fb2917877b97aafdcb2e7b626519fd24840c8e4dd22687aa0a"
-    },
-    {
-      "sig_path": "build-logic/src/test/kotlin/io/amichne/konditional/gradle/PublishingConventionsTest.kt.sig",
-      "sig_sha256": "68a92beea4055e03319d93c86a568ac4aa59f1532da1d316b63420752a29dccd"
-    },
-    {
-      "sig_path": "build.gradle.kts.sig",
-      "sig_sha256": "77b8c4a2c030e55acd7a789f0dd5fc03a6129f58d3bdd7e739f5a3034c0e011f"
-    },
-    {
-      "sig_path": "detekt-rules/build.gradle.kts.sig",
-      "sig_sha256": "a296536d10312f36c1b35ea4f15690b9649dbae5cb936527e332ced364717320"
-    },
-    {
-      "sig_path": "detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/KonditionalRuleSetProvider.kt.sig",
-      "sig_sha256": "e616df4d7f2aeb7dd93e9c677d7e412f9e686d9ecf69ee46febbbd61ca0603f9"
-    },
-    {
-      "sig_path": "detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt.sig",
-      "sig_sha256": "e034b2bfb4eeb41ac146fd169d74c91ab1b2229d599cc7e4c7f8f032a4ec5d04"
-    },
-    {
-      "sig_path": "konditional-core/build.gradle.kts.sig",
-      "sig_sha256": "73312c76c1100cdf6dbecb0c0d6d7cf0abb096fb30f88e1594b1a3a73b5b31f0"
-    },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/api/AxisUtilities.kt.sig",
       "sig_sha256": "8575f83f679cc755c50ea224710eaf92f695cca9d822ff00a561b9d194463ea3"
@@ -147,15 +63,15 @@
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/context/axis/AxisValues.kt.sig",
-      "sig_sha256": "70514b7264d583b6f5c4ace61ae5c5bdf580410f0d7902d59bc3dd35bdd90987"
+      "sig_sha256": "f06939a1abdc652aecc56b5fa66fe4cb581046b9a85b7b3d2a29d3b92f705429"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/FlagDefinition.kt.sig",
-      "sig_sha256": "bac3705f397378047103a5409e4e4a2dc2ddb814754026272f1decba009706bf"
+      "sig_sha256": "acf91542d7ed32aac47d0a0b9f4361e98393a3a3ed476a05ece5a6906bcf95c1"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt.sig",
-      "sig_sha256": "2d587f22fcfbdee06161d78fe5c5dafe14350f3a1ad16972b04ed89ed4b8fb09"
+      "sig_sha256": "70c5ed660f79702ab1e9c716e4dba192df6430fa29647404ceaa8558cf0cb876"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/ValueType.kt.sig",
@@ -163,7 +79,7 @@
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/AxisCatalogScope.kt.sig",
-      "sig_sha256": "ea091a6097ebc947ca79e12368eb325f0937f44393acb94e739b714f6c68e7c8"
+      "sig_sha256": "5950420348ae75adb57ee4007643192fd64a97bcd3e2d0ed5125b60702fed34a"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/AxisValuesScope.kt.sig",
@@ -199,7 +115,7 @@
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleScope.kt.sig",
-      "sig_sha256": "b205518bd6489aec0cf0c5c37f3dcf791e94b6aed9ef4b7616cf8dc424662bae"
+      "sig_sha256": "30ccda52512301370d5260be9e24cbd0e2f8f3ca1a6229b865fbc37e88e5ae53"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleScopeBase.kt.sig",
@@ -211,7 +127,7 @@
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleSetBuilder.kt.sig",
-      "sig_sha256": "c6c7b9a2ec0dc8f7015a0943d4796d3d25c5a7299a0cc9c5a051731949e10c3c"
+      "sig_sha256": "d223480b2342d8b3846d2f9c67f5c180975a8512dffd0e100be2875c4530533d"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleSpec.kt.sig",
@@ -247,19 +163,19 @@
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/evaluation/Bucketing.kt.sig",
-      "sig_sha256": "e0e3dc5bd80989ccbf9bb10c33997a67ec6e94d7790f68a6334c0e75b500c411"
+      "sig_sha256": "e06745cf59839ae273db4ae00cb3b83a8c201758887aed41d8cd49bec39abf76"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/BooleanFeature.kt.sig",
-      "sig_sha256": "56f475ea631384e2ccffabd4b6874a324b55101d033ef8ea4ab68d55d41041f6"
+      "sig_sha256": "cdc2d84464be5c8aa2b0fa788324ddc913344b34a4e1e1dac09afa8b0bc64b25"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/DoubleFeature.kt.sig",
-      "sig_sha256": "bbd8d3790a6668e2a820957437272d14674c8df8d8cdb5df9184fb0bb7f8c877"
+      "sig_sha256": "48530a0c8c766c16f9101b8dc497e4bfb2460c41f78a54ec03b9cae4c46b928d"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/EnumFeature.kt.sig",
-      "sig_sha256": "8aab489338d37216d29daeed3849c95f9350f501995e1b657d5f94fff0d79d75"
+      "sig_sha256": "ee10f78cc5589340fdecdc0c105c08ea38926bf5d250d59d2015582351c728d5"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/Feature.kt.sig",
@@ -271,23 +187,23 @@
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/IntFeature.kt.sig",
-      "sig_sha256": "de053233f0bbe74869a3298765a4287326fb2b9492db047cbae4caec2ad0cabc"
+      "sig_sha256": "47a94e9fc4e29ca9c1cfdee3a8a5bbb5772d2a60a011b2889002e50510b434bf"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/KotlinClassFeature.kt.sig",
-      "sig_sha256": "3aada625999b7a832367297fe6525cda10420d920c7e19986b7590660d27cad6"
+      "sig_sha256": "9c2af0b409d324dbf4352baee76848a2e81c4b1eb901643c23977fdfec78e149"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/StringFeature.kt.sig",
-      "sig_sha256": "8335c5aba4ad776e60d532dd26d49b8b1a1436de3c02345c9e6cfdb87afa99d2"
+      "sig_sha256": "20717023c92ca3b46ca93c607b711de247cb774b8fc37a276a7347e4656f5563"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/id/HexId.kt.sig",
-      "sig_sha256": "0d7f74c84ec9599e4df71f4ca3c40ec494f24dea5131bd57672c674ca3f93e35"
+      "sig_sha256": "ba20ee61d79d076f5561cf1d705e4648bd3086c35380e031e2ed75cd402c24ac"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/id/StableId.kt.sig",
-      "sig_sha256": "fa094ee120a895f4fa79defce697988c1c15eb86f398dc4f0f7cc3fd01485a8d"
+      "sig_sha256": "07f8bb8abb6bd31adb90fe456fcee90b7b604542d025cb02b69bdd14bad32780"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/id/StaticStableId.kt.sig",
@@ -315,7 +231,7 @@
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/AxisCatalog.kt.sig",
-      "sig_sha256": "811aa4ecd84cf0404a8916d4807050393c2a6b93b8c6145b17d4a1f681234815"
+      "sig_sha256": "83a5f937f409112a9aad326c08ea333b2a6ba784a6164f3af4947f7a24eddf95"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt.sig",
@@ -323,7 +239,7 @@
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistryFactory.kt.sig",
-      "sig_sha256": "7a7abff218454e75dc0adc61bb0c24df86e7d359223893ddacf8e9686c499394"
+      "sig_sha256": "b82b27039f4ec28f34f90da49f365bde49eaa15cfe8f94bebbea04bca234f707"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/result/KonditionalBoundaryFailure.kt.sig",
@@ -331,7 +247,7 @@
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseError.kt.sig",
-      "sig_sha256": "e66d4303614ada78f65c092126786f3cb834479096f03d650e810ea086326dd2"
+      "sig_sha256": "e488ec732833d172fd5e7419ad3f74f8d36ebef86ff06a5988b8826b96f5efbf"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseException.kt.sig",
@@ -347,7 +263,7 @@
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHooks.kt.sig",
-      "sig_sha256": "110a5f0cebb27c8d196727cfe51bb9ca376100f66db033cda9ee3461866c3f96"
+      "sig_sha256": "75a6290571bb47f8e34f8eeb82bbf30d02a5de5bbcb39c7548fef6430c4da13c"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/types/Konstrained.kt.sig",
@@ -356,30 +272,6 @@
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/types/ObjectSchemaConversions.kt.sig",
       "sig_sha256": "38876a4d60262e0a4e4e8d1178151214b56938d461f48a39d6c77a80ed0ebfa4"
-    },
-    {
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/internal/FlagDefinitionInternal.kt.sig",
-      "sig_sha256": "eb208199e8b6545d742e45c4a723357a875b1357c1c1e7391777789746fa27a6"
-    },
-    {
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/internal/builders/AxisValuesBuilder.kt.sig",
-      "sig_sha256": "e73534b8ad9e9c44df876e842adebb8407e75110998ce234de71d2b302322672"
-    },
-    {
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/internal/builders/FlagBuilder.kt.sig",
-      "sig_sha256": "5ccef06921ab1dfdfe9a43ba440abf5b76da89896bf3662417931ca446c40caf"
-    },
-    {
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/internal/builders/RuleBuilder.kt.sig",
-      "sig_sha256": "22680b07bfb9464978d11cc2d0b66ecc9f83a6a50d746edf46d461796e24dab4"
-    },
-    {
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/internal/builders/versions/VersionRangeBuilder.kt.sig",
-      "sig_sha256": "2b7845fa5bbda2be9a0862a3976991765355ec69cc165394dee7a1664e645f80"
-    },
-    {
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/internal/evaluation/EvaluationDiagnostics.kt.sig",
-      "sig_sha256": "d405e2821b9b5919fbc9e4a8f71c756876df7ff0b8d077bb7d463433b3d8cafd"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/rules/ConditionalValue.kt.sig",
@@ -395,7 +287,7 @@
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt.sig",
-      "sig_sha256": "d48b57fea476e5af617a1a48e46ffc757cbaa67e5f60a17418665f6d9f749d1f"
+      "sig_sha256": "b1819bc3343cfef4dc7c8c6d74579881312e33ac57f3950d2db492068e6e3838"
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/TargetingProjections.kt.sig",
@@ -427,171 +319,7 @@
     },
     {
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/values/IdentifierEncoding.kt.sig",
-      "sig_sha256": "affd182ceef5a6c5589e5a7198f6fc6ad68365e274304cc1644bf715897b48d5"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/TestDomains.kt.sig",
-      "sig_sha256": "e4f17962ef1021afa1f302b111258816d3169553bb5245ab81bcd511af9488a6"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/adversarial/AdversarialConfigTest.kt.sig",
-      "sig_sha256": "ef6bf9dd0b3f76c10ef327815eccaec1fe160d2ca61deb4a42feaeb86a1bfb38"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/adversarial/ConcurrencyAttacksTest.kt.sig",
-      "sig_sha256": "508170c63e904221cc6acdfe4a846acd44b946ab026a97eb17a0e6775efce6ca"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/adversarial/ExploitationAttacksTest.kt.sig",
-      "sig_sha256": "15531f249c9108f9f7fbf47fdcaef8468562a3ff9b73f1301506046112035a5b"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/context/ContextPolymorphismTest.kt.sig",
-      "sig_sha256": "0d1d6d95524179cf31a5976e9ae4953c6f7c24874853e6023bee498b87ef8071"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/AllowlistRolloutTest.kt.sig",
-      "sig_sha256": "1b85cebaf142ca5338a46cc012e9f7078f0142c9aa04adb677b2298857069ab9"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/BoundaryFailureResultTest.kt.sig",
-      "sig_sha256": "d03807deeb9b34d3e44f374f6ded023e2345145bc569749bf51fa72d838a41ed"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/ConditionEvaluationTest.kt.sig",
-      "sig_sha256": "334d040c14a02316116f83738f27658e794efbaae49a0e644e0c9a124b7b6d0d"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/DslSugarTest.kt.sig",
-      "sig_sha256": "841acc8432ad95ad3a843447560b1e16affe8b05b36393c37ace8f619a85235d"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/ExtensionTargetingScopeTest.kt.sig",
-      "sig_sha256": "f889ce4e5b7902120da65909c15d4b450a480f4bdce0226aaea846d9504593a7"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/FeatureEvaluationBehaviorTest.kt.sig",
-      "sig_sha256": "d6b4af9c54c2ffbbc3d298b4aca0915bca08808bab822589841bba82974b16fd"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/FlagEntryTypeSafetyTest.kt.sig",
-      "sig_sha256": "54e147317f0e25cfbe48549593a7be3d955250625c8bfe93c74bc31002f88ccb"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/MissingStableIdBucketingTest.kt.sig",
-      "sig_sha256": "43168a02072d8ab2398a2cc73420dff295b4f7b204ad4755214888a320643018"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/NamespaceFeatureDefinitionTest.kt.sig",
-      "sig_sha256": "8f18d7e169f400905b853579c88d39a3f258e80ab86e925f8df3cf562b07067e"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/RuleSetTest.kt.sig",
-      "sig_sha256": "0ed2d5bc09efc55303f016aaf416447e4ac7d61c00044eaa5725e037f5cb3de5"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/dimensions/AxisBuilderTest.kt.sig",
-      "sig_sha256": "92e36ac82fe93306365c713933edf6781eb7bd6c645bdee965c02d9ff5495a2d"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/dimensions/AxisCatalogTest.kt.sig",
-      "sig_sha256": "dcc47099cc7f05e36b610ef5a980e17da0949dc0162a8acb49f74af47b4e4e6f"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/dimensions/AxisContextIntegrationTest.kt.sig",
-      "sig_sha256": "37bdaaca7fd6e032ec1975d37518e6171aaadf1e6b37968ddde20329e838b328"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/dimensions/AxisNamespaceIsolationTest.kt.sig",
-      "sig_sha256": "b5b504d5c3e5fff4f1d34cf277722d027c7d845bfd0d75ea3289205eacf0e510"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/dimensions/AxisRuleEvaluationTest.kt.sig",
-      "sig_sha256": "80d840f9fd5d1fd954b99349fccce49246b4f4a9f08c305a7d8a8c2c8a956f57"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/dimensions/DiagnosticTest.kt.sig",
-      "sig_sha256": "86bd1c41461ff90bbcaa5c96b03bb83c3f87e620394e4a8545e074cc8546cc6b"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/rules/BaseRuleGuaranteesTest.kt.sig",
-      "sig_sha256": "149809772ba41de3e6731675b651613e5b86015ab23078e643a677ac6db91b53"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/rules/RuleMatchingTest.kt.sig",
-      "sig_sha256": "87d5e59a2c59699029fce0407ddb5e5e2fdb413b7a5e86de342c7c8d856f70ea"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/rules/targeting/TargetingHierarchyTest.kt.sig",
-      "sig_sha256": "5cb1aa8035f410fa8eb1b33f928d367f09e850e2ed8f6ad3603c8ef9bbb3ebc4"
-    },
-    {
-      "sig_path": "konditional-core/src/test/kotlin/io/amichne/konditional/rules/versions/VersionRangeTest.kt.sig",
-      "sig_sha256": "2f2968b9158562d50b90f2a7555a7f90409cbb879778e1456987943c7d8bd05f"
-    },
-    {
-      "sig_path": "konditional-core/src/testFixtures/kotlin/io/amichne/konditional/fixtures/CommonTestFeatures.kt.sig",
-      "sig_sha256": "7347fd8a5fbcd4201fd296af7b4a95a419f8787e2b59afa3f2bfe2034235e03a"
-    },
-    {
-      "sig_path": "konditional-core/src/testFixtures/kotlin/io/amichne/konditional/fixtures/EnterpriseTestFeatures.kt.sig",
-      "sig_sha256": "eb18bd0308a75f197d7f9b04327e2ab1bf820160bbabee7d212b37aee5a4197f"
-    },
-    {
-      "sig_path": "konditional-core/src/testFixtures/kotlin/io/amichne/konditional/fixtures/TestAxis.kt.sig",
-      "sig_sha256": "b9ed6c642e55dc40bfb9bdab73d83bac768a020214d0dbe6db0a3116d2edec6c"
-    },
-    {
-      "sig_path": "konditional-core/src/testFixtures/kotlin/io/amichne/konditional/fixtures/core/TestNamespace.kt.sig",
-      "sig_sha256": "ddec2ec3fd10a62dfc7813a9dc1f53a11050e63a8d8550a084c692f68462a5be"
-    },
-    {
-      "sig_path": "konditional-core/src/testFixtures/kotlin/io/amichne/konditional/fixtures/core/TestNamespaceOverrides.kt.sig",
-      "sig_sha256": "21637a5c79bc19000c1b3050307a739ad5766d5a9b19b30c0faf20c407d9d006"
-    },
-    {
-      "sig_path": "konditional-core/src/testFixtures/kotlin/io/amichne/konditional/fixtures/core/id/TestStableId.kt.sig",
-      "sig_sha256": "d16a6c5b49fd5c19647687668bea7038b1f34c6117e4c0cf9d1407429744ab26"
-    },
-    {
-      "sig_path": "konditional-core/src/testFixtures/kotlin/io/amichne/konditional/fixtures/utilities/FeatureMutators.kt.sig",
-      "sig_sha256": "4f84dc0134e5bbd66ac1297415938f344d0bd64a9a37564ce6fc975ede1f51c0"
-    },
-    {
-      "sig_path": "konditional-core/src/testFixtures/kotlin/io/amichne/konditional/fixtures/utilities/FlagMutator.kt.sig",
-      "sig_sha256": "25244e7f47ce271a8bb8f8bd24489381a8b350753c693dcb26def88ec6180b07"
-    },
-    {
-      "sig_path": "konditional-core/src/testFixtures/kotlin/io/amichne/konditional/fixtures/utilities/TargetingIds.kt.sig",
-      "sig_sha256": "5175c674eca291d807034c7a614085ee9726ef4d9e5f83b0a7de5588f757025f"
-    },
-    {
-      "sig_path": "konditional-http-server/build.gradle.kts.sig",
-      "sig_sha256": "e3db6df87de35cdf7fc21d77b7bf070e2818d5650980988225c5bafeb1bdf327"
-    },
-    {
-      "sig_path": "konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorage.kt.sig",
-      "sig_sha256": "0b4386f9842cf39ed58a9e31512541560c20bc02dd063634f63bb7899f199dd0"
-    },
-    {
-      "sig_path": "konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/Main.kt.sig",
-      "sig_sha256": "fcebd3928b92973be0a9c5aba41ecdb977ce87c9d1db59a06e07923d46e63444"
-    },
-    {
-      "sig_path": "konditional-http-server/src/test/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorageTest.kt.sig",
-      "sig_sha256": "885f5c1d6235c15eea7e8239a48d6f5ab0b432cd414a7f23027af533f5df7535"
-    },
-    {
-      "sig_path": "konditional-http-server/src/test/kotlin/io/amichne/konditional/httpserver/KtorHttpServerApplicationTest.kt.sig",
-      "sig_sha256": "bea404c852d48c60832b9d08293f7f7c9c0558fcd89361d8c56986f9630dab54"
-    },
-    {
-      "sig_path": "konditional-observability/build.gradle.kts.sig",
-      "sig_sha256": "de724586c3ad45efc96bee2fada1c3e384761061549601e88ac3a5d0ce2b7117"
-    },
-    {
-      "sig_path": "konditional-observability/src/docsSamples/kotlin/io/amichne/konditional/docsamples/RecipesSamples.kt.sig",
-      "sig_sha256": "07d612aa1fd999e5be163695a4d687c85d26eb8dd30d513f535e8a246f9434e2"
+      "sig_sha256": "25f71d2f86e5954e05cf21ab06f381096489f5b619401e0206f30c0cd9d35bfe"
     },
     {
       "sig_path": "konditional-observability/src/main/kotlin/io/amichne/konditional/api/ShadowEvaluation.kt.sig",
@@ -606,14 +334,6 @@
       "sig_sha256": "1cce760f96b51679c455f5c0f0f4ce392387e72e7cdb7168090400705dc6eecf"
     },
     {
-      "sig_path": "konditional-observability/src/test/kotlin/io/amichne/konditional/ops/ShadowEvaluationTest.kt.sig",
-      "sig_sha256": "0acca4c9f603194182f22b481870f745eff7503e45dda7b4c668569c9b70980b"
-    },
-    {
-      "sig_path": "konditional-otel/build.gradle.kts.sig",
-      "sig_sha256": "8bae1ed630509becab3fe472a34fa8b11e1019c26bd42f2c7c52cfb6b5a9895e"
-    },
-    {
       "sig_path": "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/FeatureTelemetryExtensions.kt.sig",
       "sig_sha256": "5073eea9b3b8983ea542922479e56a36cc953e375132ff35c3e031022de72299"
     },
@@ -623,7 +343,7 @@
     },
     {
       "sig_path": "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/logging/OtelLogger.kt.sig",
-      "sig_sha256": "aad98f80cfd9ac981caa411a64df8af59abcf931646ba1e259243e7f2b296bb7"
+      "sig_sha256": "57a579f2280dd9b21925d57d5cda4cb9e521e3243f6a92d3ddd0deb506cf7b6c"
     },
     {
       "sig_path": "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/metrics/MetricsConfig.kt.sig",
@@ -631,11 +351,11 @@
     },
     {
       "sig_path": "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/metrics/OtelMetricsCollector.kt.sig",
-      "sig_sha256": "246ae4953b941a73777e5af6e433583187ea53f0b50591c9c30da821a32cadd5"
+      "sig_sha256": "09c8b4adb94e78c44f7e5957b1145bdecc48b6cf67800b5ae3b80dd204a1724e"
     },
     {
       "sig_path": "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/FlagEvaluationTracer.kt.sig",
-      "sig_sha256": "a4bb0ad102902b322b873fab8db994c5583ec84077bebe80ba6e27f02d9bdd2b"
+      "sig_sha256": "691c963b65e105322efb88e06d935ee579a1dd74fb759e244f49b59cebe1edde"
     },
     {
       "sig_path": "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/SpanAttributes.kt.sig",
@@ -646,20 +366,8 @@
       "sig_sha256": "2642edecb05332df5ed130d60897520e22081b7bff390468d31e84e338191f6e"
     },
     {
-      "sig_path": "konditional-otel/src/test/kotlin/io/amichne/konditional/otel/FeatureTelemetryExtensionsTest.kt.sig",
-      "sig_sha256": "50af6027a8d691b966cf7d8bd52e83f34640b5581c65c009e09fccca98b276c7"
-    },
-    {
-      "sig_path": "konditional-otel/src/test/kotlin/io/amichne/konditional/otel/SimpleIntegrationTest.kt.sig",
-      "sig_sha256": "1ace7ae536407b9f57a602a648a38c0038867b1430b1bd4acc8c09961c8ada4f"
-    },
-    {
-      "sig_path": "konditional-runtime/build.gradle.kts.sig",
-      "sig_sha256": "7659c6d8722d3838e22bea65df9cfa84c95c092a29595f6591f64432df83216a"
-    },
-    {
       "sig_path": "konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistry.kt.sig",
-      "sig_sha256": "ee25a7aefbf469e45e2c99a45d20b12d6b9732556e6b27dbbe9f22f4523d9528"
+      "sig_sha256": "7aa953fa4db47234da5f2c06d8ddd9a239e122a843aaf746feca05215271f2cf"
     },
     {
       "sig_path": "konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistryFactory.kt.sig",
@@ -671,79 +379,11 @@
     },
     {
       "sig_path": "konditional-runtime/src/main/kotlin/io/amichne/konditional/serialization/snapshot/NamespaceSnapshotLoader.kt.sig",
-      "sig_sha256": "9d41082d121450e47020e548de389a0f7e0d145618990eb87d85f56988d2d7ce"
-    },
-    {
-      "sig_path": "konditional-runtime/src/test/kotlin/io/amichne/konditional/core/TestNamespaceOverridesTest.kt.sig",
-      "sig_sha256": "de3fcc32e63804cc143d00c3eac250e6935679b99ef21d6298b92881ee23c18d"
-    },
-    {
-      "sig_path": "konditional-runtime/src/test/kotlin/io/amichne/konditional/ops/KillSwitchTest.kt.sig",
-      "sig_sha256": "99f474f5f12866dc695513ae654aed39b744dd58f7b4c14933c351e19844b8db"
-    },
-    {
-      "sig_path": "konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt.sig",
-      "sig_sha256": "00793e962cfe4827e6283f63ac5f0e7496da3021bb9c497c13564b9794d9c1f7"
-    },
-    {
-      "sig_path": "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationSnapshotCodecTest.kt.sig",
-      "sig_sha256": "7d724e682a52dc5feee7c7515cddf0c563bd717c025c195e6f95ec223d779c1e"
-    },
-    {
-      "sig_path": "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/OperationalSerializationTest.kt.sig",
-      "sig_sha256": "a683fecb6a6dd08b9bc5fc3c294a4cf64aac9e78dddbd2958194a362ba75b49a"
-    },
-    {
-      "sig_path": "konditional-serialization/build.gradle.kts.sig",
-      "sig_sha256": "8a902f78b5af97fbf64fc2dc905c841b5ebdd827dfad1dde526157bcd80cf301"
-    },
-    {
-      "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/internal/serialization/adapters/FlagValueAdapter.kt.sig",
-      "sig_sha256": "929d99dcbeaa72d422077fc225ebb16caff7e740a6bef364a1f12982e68cc46e"
-    },
-    {
-      "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/internal/serialization/adapters/FlagValueJsonMaps.kt.sig",
-      "sig_sha256": "52af023cfaa6bf3ea940b1ba7152f87791db4b615f32694cdfb8bf69970e5fba"
-    },
-    {
-      "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/internal/serialization/adapters/IdentifierJsonAdapter.kt.sig",
-      "sig_sha256": "cff2275533424bae657f0057a3d2954c3862ff4ad0d9ca2415f44ad11f3e3a04"
-    },
-    {
-      "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/internal/serialization/adapters/ValueClassAdapterFactory.kt.sig",
-      "sig_sha256": "8be0813bdcfff7922542151481f5c743aac1962e188a978a9245598e736364e1"
-    },
-    {
-      "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/internal/serialization/adapters/VersionRangeAdapter.kt.sig",
-      "sig_sha256": "c7599ebb5b1d1ae56da44b66a5a2e569c121b71bba29684fca2f2a3ca46f9f39"
-    },
-    {
-      "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/internal/serialization/models/FlagValue.kt.sig",
-      "sig_sha256": "d09591d9139572bb48b2ad5f7411877811c22e1148d15a1edbe04421191d75e3"
-    },
-    {
-      "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/internal/serialization/models/SerializableFlag.kt.sig",
-      "sig_sha256": "80139b4792a41f151e7c023d123cd7ff6cedd1dc6e4861a8a010387a387e1d74"
-    },
-    {
-      "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/internal/serialization/models/SerializablePatch.kt.sig",
-      "sig_sha256": "7a7b2a3e46d70463be7d008394d5b7170c973fe437fce765ea239c1658ffde5c"
-    },
-    {
-      "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/internal/serialization/models/SerializableRule.kt.sig",
-      "sig_sha256": "9511b4169aea1fdb45c25354f2d65fe3a7ba7ec8bcec90f58856c4170a7d5abb"
-    },
-    {
-      "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/internal/serialization/models/SerializableSnapshot.kt.sig",
-      "sig_sha256": "e9b6b606cd599b6eca9f9908dd05263d334a6f466fedc9018fefa629fd28d0b3"
-    },
-    {
-      "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/internal/serialization/models/SerializableSnapshotMetadata.kt.sig",
-      "sig_sha256": "299aa2ec0c98f01924e82be67431b06443644bf959d22f57abc4a5021527ef1a"
+      "sig_sha256": "b1cd073ad047af46123c34cd8719dc5af34ed2b0b32148a77ea972099bbd0ca9"
     },
     {
       "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/FeatureRegistry.kt.sig",
-      "sig_sha256": "12e7024d1194be049eabd377873635b1a41f655646910bba81576261a28941d5"
+      "sig_sha256": "d4f50cfa5daddf4f419295302a1fbc56a2c1584889f2eae09e84b37a188f616e"
     },
     {
       "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/SchemaExtraction.kt.sig",
@@ -751,7 +391,7 @@
     },
     {
       "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/SchemaValueCodec.kt.sig",
-      "sig_sha256": "5e50856c2b6863ca75dc8021fb61958f06878ad59ca421ab068335a0dd240ceb"
+      "sig_sha256": "fed0c1eef18c992afb5a3d3d5d1eddc31b7859b36c7ca06bd82b92c3c863d71d"
     },
     {
       "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigValue.kt.sig",
@@ -767,19 +407,11 @@
     },
     {
       "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigurationPatch.kt.sig",
-      "sig_sha256": "0a33dba33b3396f047ed0c509be64dd893ec376c7ebe995d2bd3c26004128374"
+      "sig_sha256": "d3892ac2588be39be496e015d05268c39c6c6a0dad13ce71812cacbfeae18d73"
     },
     {
       "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/MaterializedConfiguration.kt.sig",
       "sig_sha256": "4f6e3a60bca1ddeb9a63af89ef1cecb764631c9ae49ba92eebd0693e19d2c288"
-    },
-    {
-      "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/internal/JsonValueConversions.kt.sig",
-      "sig_sha256": "1936780b019c0c0cf36b6dbd4f3c9c852d8f94ef28156500d60f0b5cda0ef996"
-    },
-    {
-      "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/internal/KonstrainedPrimitiveMap.kt.sig",
-      "sig_sha256": "fa4b0975a27cd99e243cf06b0ab50f70001646dbaee4588ca752721100bf1750"
     },
     {
       "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/MissingDeclaredFlagStrategy.kt.sig",
@@ -799,7 +431,7 @@
     },
     {
       "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/ConfigurationSnapshotCodec.kt.sig",
-      "sig_sha256": "6824e418a3ce84287942355da54d221ec914674e32960e450837ff792025715e"
+      "sig_sha256": "29738704b631d960216f4e258c9b134ecc7239d8b356d89833ac345d6a4f7a8b"
     },
     {
       "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/FeatureAwareSnapshotCodec.kt.sig",
@@ -812,54 +444,6 @@
     {
       "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/SnapshotLoader.kt.sig",
       "sig_sha256": "b8b40d18ad15dede5cee3f14dfdb3b5daaee26d48a519692a8992b39f984a356"
-    },
-    {
-      "sig_path": "konditional-serialization/src/test/kotlin/io/amichne/konditional/core/EnumFeatureTest.kt.sig",
-      "sig_sha256": "9e6ebd471072028f16647e25001a8222ef931a3c75d3ef4ea2f25f1d4db4e4f0"
-    },
-    {
-      "sig_path": "konditional-serialization/src/test/kotlin/io/amichne/konditional/fixtures/serializers/PrimitiveKonstrainedFixtures.kt.sig",
-      "sig_sha256": "f35998b17e287323d630e49181ffd741b1a2b9069b5aa45d08f4bfd695ed00f5"
-    },
-    {
-      "sig_path": "konditional-serialization/src/test/kotlin/io/amichne/konditional/fixtures/serializers/TestSerializers.kt.sig",
-      "sig_sha256": "6ea3b59b4bcdf26127c2c0cb79f63ed1e3c3e300095783ad51e398ba061516fb"
-    },
-    {
-      "sig_path": "konditional-serialization/src/test/kotlin/io/amichne/konditional/internal/serialization/models/FlagValueTrustedDecodeTest.kt.sig",
-      "sig_sha256": "eb00312e42533b566a86a4678e34c09706eac202ca93757fa8fc3f26b4742345"
-    },
-    {
-      "sig_path": "konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/ConfigurationSnapshotCodecTest.kt.sig",
-      "sig_sha256": "8d6a70f14a2a8a4ce4b1dddfbac60de5d6a80298c095683fe052260da375e0e0"
-    },
-    {
-      "sig_path": "konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/EnumSerializationTest.kt.sig",
-      "sig_sha256": "2553ad1896223b406b98807b6dce43f4792346d7ab46bf9b045e633514568e57"
-    },
-    {
-      "sig_path": "konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/FeatureRegistryTest.kt.sig",
-      "sig_sha256": "2430813c17a32fcb6834eca35f979442a521efc4ab908f812c650cb983fa3452"
-    },
-    {
-      "sig_path": "konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/KonstrainedIntegrationTest.kt.sig",
-      "sig_sha256": "a9cc599c43c0e7a4e3653cbc13a4a39864ce9b8ffb2e127327343be6a25fc81e"
-    },
-    {
-      "sig_path": "konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/KonstrainedPrimitiveTest.kt.sig",
-      "sig_sha256": "c4e4db3152ae50f25e22fa0279d19024a05126cae5216e7c3709d43b98d09507"
-    },
-    {
-      "sig_path": "konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/instance/ConfigurationDiffTest.kt.sig",
-      "sig_sha256": "f92a0866e75e73bf545eeb0f57c142c271c260182c7ad901b28b82f30d3b88b6"
-    },
-    {
-      "sig_path": "konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/instance/ConfigurationPatchTest.kt.sig",
-      "sig_sha256": "05633a710259298550b7ccae450986f665c07b3668964fea65f1698f1037fc6d"
-    },
-    {
-      "sig_path": "kontracts/build.gradle.kts.sig",
-      "sig_sha256": "28fa1feded0132d165678369fde95ee3ab57caaf5d68a97327c3c79670b60b75"
     },
     {
       "sig_path": "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/ArraySchemaBuilder.kt.sig",
@@ -899,7 +483,7 @@
     },
     {
       "sig_path": "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaFactoryFunctions.kt.sig",
-      "sig_sha256": "0b120ac641052b7e4b616fbe5c1ac2d0e820c4ce81190771374434327dc017c5"
+      "sig_sha256": "edbeef4ab656852edb08e24ab72df506ae46d88d198aa18029ea990a8a575d35"
     },
     {
       "sig_path": "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaPrimitiveDsl.kt.sig",
@@ -907,7 +491,7 @@
     },
     {
       "sig_path": "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonValueDsl.kt.sig",
-      "sig_sha256": "62cfd452521209642f31ad78a725b5d5771cf92f2b1f423ffcc01a6b6792a38c"
+      "sig_sha256": "751f3162b5d392bd7a71574b806100bd012eb22722d1926cdf61aaff19e31a87"
     },
     {
       "sig_path": "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/NullSchemaBuilder.kt.sig",
@@ -915,11 +499,11 @@
     },
     {
       "sig_path": "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/ObjectSchemaBuilder.kt.sig",
-      "sig_sha256": "029e80a0017acf2df0c8cd83c2a4a67472eecd4d9681b3082a7909d21bea75b2"
+      "sig_sha256": "9d223906786f64550f39166f5c86cf946bb6ac706ce0965c9052091412b9b58d"
     },
     {
       "sig_path": "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/RootObjectSchemaBuilder.kt.sig",
-      "sig_sha256": "d0f9f83317490590d1db2b191f91a449610ed13bd5f2563d520283c0237b8944"
+      "sig_sha256": "47e12c9dcd91aec555db539bb312219b827e00dd91957bcb306397bd728cd335"
     },
     {
       "sig_path": "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/StringSchemaBuilder.kt.sig",
@@ -1046,75 +630,15 @@
       "sig_sha256": "ce09113b7245ed6dc2d1733c1871c93b92c875506c0894a763609d09c2ff87b2"
     },
     {
-      "sig_path": "kontracts/src/test/kotlin/io/amichne/kontracts/CustomTypeMappingTest.kt.sig",
-      "sig_sha256": "f073539e19b0c364e65e13b9b440f4b8b2c7cf61426b9e3cd18b58074dfcb637"
-    },
-    {
-      "sig_path": "kontracts/src/test/kotlin/io/amichne/kontracts/EdgeCasesAndComplexScenariosTest.kt.sig",
-      "sig_sha256": "e066e837276724e0b3a9f4d2f3a81aafbc0de3d2e7f415238d3e5f9efa409fb8"
-    },
-    {
-      "sig_path": "kontracts/src/test/kotlin/io/amichne/kontracts/JsonArrayValidationTest.kt.sig",
-      "sig_sha256": "efd7451e968f300b4453630b53b749c365a85396ffaae702de10cecbb43969d7"
-    },
-    {
-      "sig_path": "kontracts/src/test/kotlin/io/amichne/kontracts/JsonObjectValidationTest.kt.sig",
-      "sig_sha256": "75f14d5abe29d50d7b79bd12d3dec91a69e7a29c0ccc7ecec1a1b1a9219ed4e3"
-    },
-    {
-      "sig_path": "kontracts/src/test/kotlin/io/amichne/kontracts/JsonValueValidationTest.kt.sig",
-      "sig_sha256": "922d9411da7ab2c809695155bb9215342b4455be3fbac9e8707a512004d56465"
-    },
-    {
-      "sig_path": "kontracts/src/test/kotlin/io/amichne/kontracts/SchemaDslTest.kt.sig",
-      "sig_sha256": "c8e7b3ade65fbfaf8d99d8a1706a9c62b69e01268bf47940d1ffb1d1eff2ea0b"
-    },
-    {
-      "sig_path": "llm-docs/context/core-types.kt.sig",
-      "sig_sha256": "ac2328946b0f401a4af678cae872e100e4ed40409a5329f9d62724b4005b0436"
-    },
-    {
-      "sig_path": "openapi/build.gradle.kts.sig",
-      "sig_sha256": "96241dd74a42bedab21edbaa6b7bb5787518961216d8658ef384ba0d079fb74a"
-    },
-    {
       "sig_path": "openapi/src/main/kotlin/io/amichne/kontracts/schema/OpenApi.kt.sig",
       "sig_sha256": "e58d2dea90b1357456d67a20bf57a20ad475e0266bf9880654518d0910465fbb"
     },
     {
-      "sig_path": "openfeature/build.gradle.kts.sig",
-      "sig_sha256": "ad05c70d011d21758a1437b6889874ef167245a2e8a051d89456634e66615671"
-    },
-    {
       "sig_path": "openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt.sig",
-      "sig_sha256": "d00c4e25a1373b6008d549cbb6878598534a3ecdfa53869dd936dd1023a9cff4"
-    },
-    {
-      "sig_path": "openfeature/src/test/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProviderTest.kt.sig",
-      "sig_sha256": "089d320070579aa79fb5648182dd6f28c46468c25b05eb987922891a491eae49"
-    },
-    {
-      "sig_path": "settings.gradle.kts.sig",
-      "sig_sha256": "3a85f76aab02c424fcd0da327284c995a65c47fa67d9cbb868e7474e8f1866df"
+      "sig_sha256": "bd12e689b085258b1a5a85214efb24b6d951561d27ab67f622ced4ff81419873"
     }
   ],
   "target_hashes": [
-    {
-      "target_hash": "c49e134ae3e84f21ef65ea927092f53ac1c3d948c8fe7c5bd6eef97ecf9f7e47",
-      "target_id": "entrypoint:build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt"
-    },
-    {
-      "target_hash": "20b596c3c5b416f08fdd2fb844690606dd564fb0ad64469f9e668d094f3680ba",
-      "target_id": "entrypoint:build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt"
-    },
-    {
-      "target_hash": "6a15ae5137b8348e55d85c255e9b59097e395b6a43f20b73da8f70c287f2e6f7",
-      "target_id": "entrypoint:build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt"
-    },
-    {
-      "target_hash": "bd8b9540523df872f152718437a76c8c607da891d580b56622fae6de5829c80b",
-      "target_id": "entrypoint:detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt"
-    },
     {
       "target_hash": "bd87f192c30ff41622933865d445a235ff9c56f690c1bfd1ee5baa74687a27a1",
       "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/api/RampUpBucketing.kt"
@@ -1136,7 +660,7 @@
       "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/context/axis/AxisValues.kt"
     },
     {
-      "target_hash": "5280751c32910979c7cd49c043b7fa05e9ac20017ff8210fedf15361a30d2b71",
+      "target_hash": "240371567a7852c096f66a9ad6d65c74146854a529dc5103a139390b0b68825e",
       "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt"
     },
     {
@@ -1160,10 +684,6 @@
       "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/PlatformTargetingScope.kt"
     },
     {
-      "target_hash": "6634949918755ac26533b9c7b3526b7bc9fbc3ee0e76727b7a65b52110c7de9f",
-      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/evaluation/Bucketing.kt"
-    },
-    {
       "target_hash": "05f61eaae9db1979a6e5ca80b6df790093f3b87e49a30d4a5ab682905be814f2",
       "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/KonditionalLogger.kt"
     },
@@ -1178,14 +698,6 @@
     {
       "target_hash": "89c702483ed1737729e69a8b8d6fe42665907e1f8319801e6497df84d2a98018",
       "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt"
-    },
-    {
-      "target_hash": "a3ae7dbcaf769286f7dc80b9be0884b919e126dc4f0704d331e09426f5a0e06a",
-      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistryFactory.kt"
-    },
-    {
-      "target_hash": "99ac7643df93c00ddaf4fc49bc0125255e8b66ce3dafd76e9c10dd988ac4cb89",
-      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHooks.kt"
     },
     {
       "target_hash": "feaf226717b6ec2941a8dbf7a38746b812c6934247324bf71c650a960cc8551e",
@@ -1206,14 +718,6 @@
     {
       "target_hash": "33c4a68c5a6bed6804f6482c497290415ac9377ac8ee19960e6432f0ac33950e",
       "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/values/FeatureId.kt"
-    },
-    {
-      "target_hash": "f3f37d78c4ede14efb7dcc194b98cf8b5a26f77e6fffa772ecff1a30db53146e",
-      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/values/IdentifierEncoding.kt"
-    },
-    {
-      "target_hash": "0220738865ff155ea035602d57145e25a34c0acb913f727185824487396131be",
-      "target_id": "entrypoint:konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorage.kt"
     },
     {
       "target_hash": "bc78b48905052bc3414479515af069ba4b0d72afb5f178cede500bc456592a55",
@@ -1384,7 +888,7 @@
       "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonValue.kt"
     },
     {
-      "target_hash": "8ec48c2e6d8d48efc6c8bfbdc1fdd48a6fe604a3e391bb1561e22d65b6bca99a",
+      "target_hash": "1f0b3e9f3cedcf81dd8d453f3e3e9a3ec637352f4a48cc3de0c1c8863bc01152",
       "target_id": "entrypoint:openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt"
     },
     {
@@ -1400,7 +904,7 @@
       "target_id": "package:io.amichne.konditional.context.axis"
     },
     {
-      "target_hash": "60976ebd6645599a16308e1d0643bc36adc452189413a79baf3f0dae46aadb53",
+      "target_hash": "049711a3ed6d58927e500df859183319509a105f54650bc947d8b1925aa38653",
       "target_id": "package:io.amichne.konditional.core"
     },
     {
@@ -1414,10 +918,6 @@
     {
       "target_hash": "72e5977411bbc20a28062677f9a186da6a7cbf5b9d1579b1d4e4b9fa36a92329",
       "target_id": "package:io.amichne.konditional.core.dsl.rules.targeting.scopes"
-    },
-    {
-      "target_hash": "ebb99bed9c6599e75e3b504a476f87e2fb815601dffb59b481d686cdc5d17c2f",
-      "target_id": "package:io.amichne.konditional.core.evaluation"
     },
     {
       "target_hash": "987c915b55a88623a61800c6e51cee13ba4a031e3ccf6406ca9444565d1dc298",
@@ -1436,7 +936,7 @@
       "target_id": "package:io.amichne.konditional.core.ops"
     },
     {
-      "target_hash": "9428ff98b647b741ec77308de1bc8bbaa97f6a0e3721835c25fb056987aebc44",
+      "target_hash": "3d29c46d1869eb5632a5de12d858e4d1fa109429910994a4b3eeab1dd3fdc13b",
       "target_id": "package:io.amichne.konditional.core.registry"
     },
     {
@@ -1448,7 +948,7 @@
       "target_id": "package:io.amichne.konditional.core.schema"
     },
     {
-      "target_hash": "62a4e6f1ace084634d47ecc775dc9dac419b15b5ee5737e30407268ba9ebba4e",
+      "target_hash": "b7bf8d4b6d5bd403f785081044dcd0c40e8be1628fe1cdeaa2bd9b28057a11b1",
       "target_id": "package:io.amichne.konditional.core.spi"
     },
     {
@@ -1456,19 +956,7 @@
       "target_id": "package:io.amichne.konditional.core.types"
     },
     {
-      "target_hash": "ad56b62507b5b90a0b0c5c5a8d08f3dd5376af8771a66597e8c972be5a164fb1",
-      "target_id": "package:io.amichne.konditional.detekt"
-    },
-    {
-      "target_hash": "aa0351d23f97bf37ed80192ad0dfb2ec3da4923572f36a90d63192a02f883cc8",
-      "target_id": "package:io.amichne.konditional.gradle"
-    },
-    {
-      "target_hash": "9c58a63c5d453dc171323cd6014bdc2817d68935bc56d7a0a7f08c3fb80d6058",
-      "target_id": "package:io.amichne.konditional.httpserver"
-    },
-    {
-      "target_hash": "5e425dcc98cacbbbb372ab4b630b9187916336d96ac2321978acdaf1eeb3214e",
+      "target_hash": "3c9254b0e6f4256e76e6c7c61f373f5e59a454d4282d576e97dea2d51806eb6a",
       "target_id": "package:io.amichne.konditional.openfeature"
     },
     {
@@ -1520,7 +1008,7 @@
       "target_id": "package:io.amichne.konditional.serialization.snapshot"
     },
     {
-      "target_hash": "4209553c9af4820a6c3146f905e0bfa45a4086d559b220c57cc55469b2808443",
+      "target_hash": "b808292fe23e8e02eec9548de3d6765f770b06476c1f6f361f287d27b2b74825",
       "target_id": "package:io.amichne.konditional.values"
     },
     {
@@ -1786,42 +1274,6 @@
     {
       "target_hash": "2a4388a991da916ecce6d3019a47cbdb859dc482b63c03105a7fbbd9862d2880",
       "target_id": "type:io.amichne.konditional.core.types.Konstrained"
-    },
-    {
-      "target_hash": "26b837c92c7a6c2090ffdd018f1d339cf19e55bdce7e146ac63c1c27420a9eab",
-      "target_id": "type:io.amichne.konditional.detekt.KonditionalRuleSetProvider"
-    },
-    {
-      "target_hash": "34ac84d42e9d3fa16e2630c5179f1afdbb6823e5c3f0884782e04c464903c80b",
-      "target_id": "type:io.amichne.konditional.detekt.UnclosedCriteriaFirstRule"
-    },
-    {
-      "target_hash": "9d9249f9cfd7a46e7947ed3de77bdddbe3bb95f648d13a79ce284da5c309bf17",
-      "target_id": "type:io.amichne.konditional.gradle.GenerateOpenApiSpecTask"
-    },
-    {
-      "target_hash": "e9bb5d4e60c44a8aa7e8aee6ca8c4ae2272fc157802a8aa44b1fe73c060da9d3",
-      "target_id": "type:io.amichne.konditional.gradle.GenerateRecipesDocsTask"
-    },
-    {
-      "target_hash": "e8e46bed214b53d964a2de985b821a0c5eda2a80e1ba26bc76f51592a501b6c7",
-      "target_id": "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryExtension"
-    },
-    {
-      "target_hash": "900227fdb54dc077edd8f38f7616639c7746789944bc8fbaa8ef2a59889a16b7",
-      "target_id": "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryTask"
-    },
-    {
-      "target_hash": "5c5f8bf631fab2a4d71752e81bec3a825f21e8361f7265823c0e74859d4d9a47",
-      "target_id": "type:io.amichne.konditional.gradle.KonditionalPublishingExtension"
-    },
-    {
-      "target_hash": "bf92197d550cc12ad88947ece22b061319edfcc2d4d37577450de209f16616d3",
-      "target_id": "type:io.amichne.konditional.gradle.KonditionalRecipesDocsExtension"
-    },
-    {
-      "target_hash": "c672037db19f5ae5ed388e19f5394fda6bd4631577ce109f5aa3c286bd81219a",
-      "target_id": "type:io.amichne.konditional.gradle.VerifyRecipesDocsTask"
     },
     {
       "target_hash": "4e907a9fc13add4db634cb11aac12933336397a6eb11459819bb61ed7a47ad1a",

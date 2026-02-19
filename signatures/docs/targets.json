@@ -66,14 +66,6 @@
       "source_file": "openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt"
     },
     {
-      "declaration": "fun notifyFeatureDefined(feature: Feature<*, *, *>)",
-      "id": "method:0a4b988f26d7adcb",
-      "kind": "method",
-      "package": "io.amichne.konditional.core.spi",
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHooks.kt.sig",
-      "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHooks.kt"
-    },
-    {
       "declaration": "override fun compareTo(other: Version): Int",
       "id": "method:0a9b6d526808fdc0",
       "kind": "method",
@@ -98,14 +90,6 @@
       "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/MetricsCollector.kt"
     },
     {
-      "declaration": "operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): EnumDelegate<E, C>",
-      "id": "method:0ded87337459c9f6",
-      "kind": "method",
-      "package": "io.amichne.konditional.core",
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt.sig",
-      "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt"
-    },
-    {
       "declaration": "override fun toString()",
       "id": "method:0e0a75a855ac06ce",
       "kind": "method",
@@ -120,14 +104,6 @@
       "package": "io.amichne.konditional.serialization",
       "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/SchemaValueCodec.kt.sig",
       "source_file": "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/SchemaValueCodec.kt"
-    },
-    {
-      "declaration": "fun rampUpThresholdBasisPoints(rollout: RampUp): Int",
-      "id": "method:1110279717591b22",
-      "kind": "method",
-      "package": "io.amichne.konditional.core.evaluation",
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/evaluation/Bucketing.kt.sig",
-      "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/evaluation/Bucketing.kt"
     },
     {
       "declaration": "fun validate(schema: JsonSchema<*>): ValidationResult companion object",
@@ -146,28 +122,12 @@
       "source_file": "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/logging/OtelLogger.kt"
     },
     {
-      "declaration": "fun verify()",
-      "id": "method:119b7fed8fb14b1a",
-      "kind": "method",
-      "package": "io.amichne.konditional.gradle",
-      "sig_path": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt.sig",
-      "source_file": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt"
-    },
-    {
       "declaration": "override fun getIntegerEvaluation( key: String, defaultValue: Int, ctx: EvaluationContext, ): ProviderEvaluation<Int>",
       "id": "method:151be8bc769eed1f",
       "kind": "method",
       "package": "io.amichne.konditional.openfeature",
       "sig_path": "openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt.sig",
       "source_file": "openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt"
-    },
-    {
-      "declaration": "fun generate()",
-      "id": "method:1884646207378e4e",
-      "kind": "method",
-      "package": "io.amichne.konditional.gradle",
-      "sig_path": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt.sig",
-      "source_file": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt"
     },
     {
       "declaration": "fun compiledSchema(): CompiledNamespaceSchema",
@@ -184,14 +144,6 @@
       "package": "io.amichne.konditional.otel.traces",
       "sig_path": "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/FlagEvaluationTracer.kt.sig",
       "source_file": "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/FlagEvaluationTracer.kt"
-    },
-    {
-      "declaration": "override fun visitCallExpression(expression: KtCallExpression)",
-      "id": "method:1bd1b0faf109a37b",
-      "kind": "method",
-      "package": "io.amichne.konditional.detekt",
-      "sig_path": "detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt.sig",
-      "source_file": "detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt"
     },
     {
       "declaration": "fun encodeKonstrained(konstrained: Konstrained<*>): JsonValue",
@@ -216,14 +168,6 @@
       "package": "io.amichne.konditional.openfeature",
       "sig_path": "openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt.sig",
       "source_file": "openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt"
-    },
-    {
-      "declaration": "operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): KotlinClassFeature<T, C, M>",
-      "id": "method:1f561a677c57a918",
-      "kind": "method",
-      "package": "io.amichne.konditional.core",
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt.sig",
-      "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt"
     },
     {
       "declaration": "override fun toString(): String",
@@ -328,22 +272,6 @@
       "package": "io.amichne.kontracts.value",
       "sig_path": "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonNumber.kt.sig",
       "source_file": "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonNumber.kt"
-    },
-    {
-      "declaration": "operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): DoubleDelegate<C>",
-      "id": "method:3228a10fb2e779a4",
-      "kind": "method",
-      "package": "io.amichne.konditional.core",
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt.sig",
-      "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt"
-    },
-    {
-      "declaration": "public fun all(): Map<String, String>",
-      "id": "method:32b4625b48169d4c",
-      "kind": "method",
-      "package": "io.amichne.konditional.httpserver",
-      "sig_path": "konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorage.kt.sig",
-      "source_file": "konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorage.kt"
     },
     {
       "declaration": "override fun validate(schema: JsonSchema<*>): ValidationResult",
@@ -530,14 +458,6 @@
       "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/context/RampUp.kt"
     },
     {
-      "declaration": "operator fun <M : Namespace> provideDelegate( thisRef: M, property: KProperty<*>, ): KotlinClassDelegate<T, C>",
-      "id": "method:5c1407b70cc17816",
-      "kind": "method",
-      "package": "io.amichne.konditional.core",
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt.sig",
-      "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt"
-    },
-    {
       "declaration": "override fun getState(): ProviderState",
       "id": "method:5c15c0808b36bf1f",
       "kind": "method",
@@ -562,28 +482,12 @@
       "source_file": "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/KonditionalTelemetry.kt"
     },
     {
-      "declaration": "fun displayName(): String",
-      "id": "method:5ed9f8f9945a545a",
-      "kind": "method",
-      "package": "io.amichne.konditional.openfeature",
-      "sig_path": "openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt.sig",
-      "source_file": "openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt"
-    },
-    {
       "declaration": "fun allFlags(): Map<Feature<*, *, *>, FlagDefinition<*, *, *>>",
       "id": "method:5f65ce52c1a9f483",
       "kind": "method",
       "package": "io.amichne.konditional.core.registry",
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt.sig",
       "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt"
-    },
-    {
-      "declaration": "operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): EnumFeature<E, C, M>",
-      "id": "method:602169136272ddbd",
-      "kind": "method",
-      "package": "io.amichne.konditional.core",
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt.sig",
-      "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt"
     },
     {
       "declaration": "fun required( name: String, schema: JsonSchema<*>, description: String? = null, defaultValue: Any? = null, deprecated: Boolean = false )",
@@ -600,22 +504,6 @@
       "package": "io.amichne.konditional.serialization.instance",
       "sig_path": "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/Configuration.kt.sig",
       "source_file": "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/Configuration.kt"
-    },
-    {
-      "declaration": "fun split(plainId: String): List<String>",
-      "id": "method:67539c148eec4501",
-      "kind": "method",
-      "package": "io.amichne.konditional.values",
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/values/IdentifierEncoding.kt.sig",
-      "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/values/IdentifierEncoding.kt"
-    },
-    {
-      "declaration": "fun isInRampUp( rampUp: RampUp, bucket: Int, ): Boolean",
-      "id": "method:67920d741e61bc38",
-      "kind": "method",
-      "package": "io.amichne.konditional.core.evaluation",
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/evaluation/Bucketing.kt.sig",
-      "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/evaluation/Bucketing.kt"
     },
     {
       "declaration": "fun <T : Any> encode(value: T, schema: ObjectSchema): JsonObject",
@@ -666,14 +554,6 @@
       "source_file": "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonValueDsl.kt"
     },
     {
-      "declaration": "fun checkApiBoundary()",
-      "id": "method:6ddb381fc837d304",
-      "kind": "method",
-      "package": "io.amichne.konditional.gradle",
-      "sig_path": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt.sig",
-      "source_file": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt"
-    },
-    {
       "declaration": "override fun decode( json: String, schema: CompiledNamespaceSchema, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>",
       "id": "method:6e99ec9b87b6f1c3",
       "kind": "method",
@@ -714,14 +594,6 @@
       "source_file": "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonBoolean.kt"
     },
     {
-      "declaration": "public fun put(namespace: String, snapshotJson: String)",
-      "id": "method:72e232a146fb9adb",
-      "kind": "method",
-      "package": "io.amichne.konditional.httpserver",
-      "sig_path": "konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorage.kt.sig",
-      "source_file": "konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorage.kt"
-    },
-    {
       "declaration": "fun number(value: Double): JsonNumber",
       "id": "method:73d4e09f15448906",
       "kind": "method",
@@ -730,36 +602,12 @@
       "source_file": "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonValueDsl.kt"
     },
     {
-      "declaration": "operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): IntDelegate<C>",
-      "id": "method:7405872cd7b55589",
-      "kind": "method",
-      "package": "io.amichne.konditional.core",
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt.sig",
-      "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt"
-    },
-    {
       "declaration": "override fun build()",
       "id": "method:7ae0f62b3f8b1ee4",
       "kind": "method",
       "package": "io.amichne.kontracts.dsl",
       "sig_path": "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/NullSchemaBuilder.kt.sig",
       "source_file": "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/NullSchemaBuilder.kt"
-    },
-    {
-      "declaration": "public fun get(namespace: String): String?",
-      "id": "method:7e8fa33881f33a6d",
-      "kind": "method",
-      "package": "io.amichne.konditional.httpserver",
-      "sig_path": "konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorage.kt.sig",
-      "source_file": "konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorage.kt"
-    },
-    {
-      "declaration": "fun stableBucket( salt: String, flagKey: String, stableId: HexId, ): Int",
-      "id": "method:80dce84216551821",
-      "kind": "method",
-      "package": "io.amichne.konditional.core.evaluation",
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/evaluation/Bucketing.kt.sig",
-      "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/evaluation/Bucketing.kt"
     },
     {
       "declaration": "override fun toString()",
@@ -786,22 +634,6 @@
       "source_file": "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/metrics/OtelMetricsCollector.kt"
     },
     {
-      "declaration": "fun default(namespaceId: String): NamespaceRegistry",
-      "id": "method:8c5c19ae62aeb1fa",
-      "kind": "method",
-      "package": "io.amichne.konditional.core.registry",
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistryFactory.kt.sig",
-      "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistryFactory.kt"
-    },
-    {
-      "declaration": "operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): IntFeature<C, M>",
-      "id": "method:8c8a3f3202fcd750",
-      "kind": "method",
-      "package": "io.amichne.konditional.core",
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt.sig",
-      "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt"
-    },
-    {
       "declaration": "override fun toString()",
       "id": "method:8dc1759106137461",
       "kind": "method",
@@ -818,14 +650,6 @@
       "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt"
     },
     {
-      "declaration": "fun missingStableIdBucket(): Int",
-      "id": "method:921ec41927e7b24b",
-      "kind": "method",
-      "package": "io.amichne.konditional.core.evaluation",
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/evaluation/Bucketing.kt.sig",
-      "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/evaluation/Bucketing.kt"
-    },
-    {
       "declaration": "override fun error( message: () -> String, throwable: Throwable?, )",
       "id": "method:938d15e66f3b6794",
       "kind": "method",
@@ -840,22 +664,6 @@
       "package": "io.amichne.kontracts.value",
       "sig_path": "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonObject.kt.sig",
       "source_file": "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonObject.kt"
-    },
-    {
-      "declaration": "operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): BooleanFeature<C, M>",
-      "id": "method:95289485cee105fd",
-      "kind": "method",
-      "package": "io.amichne.konditional.core",
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt.sig",
-      "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt"
-    },
-    {
-      "declaration": "fun generateSpec()",
-      "id": "method:9551b4dd34d3936f",
-      "kind": "method",
-      "package": "io.amichne.konditional.gradle",
-      "sig_path": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt.sig",
-      "source_file": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt"
     },
     {
       "declaration": "fun allFeatures(): List<Feature<*, *, *>>",
@@ -1050,14 +858,6 @@
       "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/api/RampUpBucketing.kt"
     },
     {
-      "declaration": "operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): StringFeature<C, M>",
-      "id": "method:b8b8134e53ef4f24",
-      "kind": "method",
-      "package": "io.amichne.konditional.core",
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt.sig",
-      "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt"
-    },
-    {
       "declaration": "fun setHooks(hooks: RegistryHooks) val isAllDisabled: Boolean fun disableAll() fun enableAll() @Suppress(\"UNCHECKED_CAST\") fun <T : Any, C : Context, M : Namespace> flag( key: Feature<T, C, M>, ): FlagDefinition<T, C, M>",
       "id": "method:b9b971ea403e0c05",
       "kind": "method",
@@ -1072,14 +872,6 @@
       "package": "io.amichne.konditional.context.axis",
       "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/context/axis/AxisValues.kt.sig",
       "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/context/axis/AxisValues.kt"
-    },
-    {
-      "declaration": "operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): BooleanDelegate<C>",
-      "id": "method:bb961be1a4ba8f69",
-      "kind": "method",
-      "package": "io.amichne.konditional.core",
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt.sig",
-      "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt"
     },
     {
       "declaration": "override fun <T : Any, C : Context, M : Namespace> clearOverride( feature: Feature<T, C, M>, )",
@@ -1168,14 +960,6 @@
       "package": "io.amichne.konditional.otel.metrics",
       "sig_path": "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/metrics/OtelMetricsCollector.kt.sig",
       "source_file": "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/metrics/OtelMetricsCollector.kt"
-    },
-    {
-      "declaration": "fun encode( components: List<String>, prefix: String, ): String",
-      "id": "method:cb008dcd5345f756",
-      "kind": "method",
-      "package": "io.amichne.konditional.values",
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/values/IdentifierEncoding.kt.sig",
-      "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/values/IdentifierEncoding.kt"
     },
     {
       "declaration": "operator fun <T> get(axis: Axis<T>): Set<T> where T : AxisValue<T>, T : Enum<T>",
@@ -1314,14 +1098,6 @@
       "source_file": "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonValueDsl.kt"
     },
     {
-      "declaration": "operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): DoubleFeature<C, M>",
-      "id": "method:e2518d7432d7c90e",
-      "kind": "method",
-      "package": "io.amichne.konditional.core",
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt.sig",
-      "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt"
-    },
-    {
       "declaration": "fun ios()",
       "id": "method:e2fd304718d3a296",
       "kind": "method",
@@ -1410,14 +1186,6 @@
       "source_file": "kontracts/src/main/kotlin/io/amichne/kontracts/schema/FieldSchema.kt"
     },
     {
-      "declaration": "public fun delete(namespace: String): Boolean",
-      "id": "method:ec39323a6692adf8",
-      "kind": "method",
-      "package": "io.amichne.konditional.httpserver",
-      "sig_path": "konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorage.kt.sig",
-      "source_file": "konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorage.kt"
-    },
-    {
       "declaration": "fun <T> axisFor(type: KClass<out T>): Axis<T>? where T : AxisValue<T>, T : Enum<T>",
       "id": "method:eeabfe3e6208359d",
       "kind": "method",
@@ -1432,14 +1200,6 @@
       "package": "io.amichne.kontracts.value",
       "sig_path": "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonObject.kt.sig",
       "source_file": "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonObject.kt"
-    },
-    {
-      "declaration": "operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): StringDelegate<C>",
-      "id": "method:f04bc348b687cfb3",
-      "kind": "method",
-      "package": "io.amichne.konditional.core",
-      "sig_path": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt.sig",
-      "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt"
     },
     {
       "declaration": "fun rule( value: T, build: RuleScope<C>.() -> Unit = {}, )",
@@ -2050,78 +1810,6 @@
       "source_file": "konditional-core/src/main/kotlin/io/amichne/konditional/core/types/Konstrained.kt"
     },
     {
-      "declaration": "class KonditionalRuleSetProvider : RuleSetProvider",
-      "id": "type:io.amichne.konditional.detekt.KonditionalRuleSetProvider",
-      "kind": "type",
-      "package": "io.amichne.konditional.detekt",
-      "sig_path": "detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/KonditionalRuleSetProvider.kt.sig",
-      "source_file": "detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/KonditionalRuleSetProvider.kt"
-    },
-    {
-      "declaration": "class UnclosedCriteriaFirstRule(config: Config) : Rule(config)",
-      "id": "type:io.amichne.konditional.detekt.UnclosedCriteriaFirstRule",
-      "kind": "type",
-      "package": "io.amichne.konditional.detekt",
-      "sig_path": "detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt.sig",
-      "source_file": "detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt"
-    },
-    {
-      "declaration": "abstract class GenerateOpenApiSpecTask : DefaultTask()",
-      "id": "type:io.amichne.konditional.gradle.GenerateOpenApiSpecTask",
-      "kind": "type",
-      "package": "io.amichne.konditional.gradle",
-      "sig_path": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt.sig",
-      "source_file": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt"
-    },
-    {
-      "declaration": "abstract class GenerateRecipesDocsTask : DefaultTask()",
-      "id": "type:io.amichne.konditional.gradle.GenerateRecipesDocsTask",
-      "kind": "type",
-      "package": "io.amichne.konditional.gradle",
-      "sig_path": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt.sig",
-      "source_file": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt"
-    },
-    {
-      "declaration": "abstract class KonditionalCoreApiBoundaryExtension",
-      "id": "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryExtension",
-      "kind": "type",
-      "package": "io.amichne.konditional.gradle",
-      "sig_path": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt.sig",
-      "source_file": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt"
-    },
-    {
-      "declaration": "abstract class KonditionalCoreApiBoundaryTask : DefaultTask()",
-      "id": "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryTask",
-      "kind": "type",
-      "package": "io.amichne.konditional.gradle",
-      "sig_path": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt.sig",
-      "source_file": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt"
-    },
-    {
-      "declaration": "abstract class KonditionalPublishingExtension",
-      "id": "type:io.amichne.konditional.gradle.KonditionalPublishingExtension",
-      "kind": "type",
-      "package": "io.amichne.konditional.gradle",
-      "sig_path": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt.sig",
-      "source_file": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt"
-    },
-    {
-      "declaration": "abstract class KonditionalRecipesDocsExtension",
-      "id": "type:io.amichne.konditional.gradle.KonditionalRecipesDocsExtension",
-      "kind": "type",
-      "package": "io.amichne.konditional.gradle",
-      "sig_path": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt.sig",
-      "source_file": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt"
-    },
-    {
-      "declaration": "abstract class VerifyRecipesDocsTask : DefaultTask()",
-      "id": "type:io.amichne.konditional.gradle.VerifyRecipesDocsTask",
-      "kind": "type",
-      "package": "io.amichne.konditional.gradle",
-      "sig_path": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt.sig",
-      "source_file": "build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt"
-    },
-    {
       "declaration": "object BlankTargetingKey : KonditionalContextMappingError",
       "id": "type:io.amichne.konditional.openfeature.BlankTargetingKey",
       "kind": "type",
@@ -2716,59 +2404,6 @@
   ],
   "targets": [
     {
-      "id": "entrypoint:build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt",
-      "kind": "entrypoint",
-      "package": "io.amichne.konditional.gradle",
-      "ranking_trace_ref": "target-ranking:entrypoint:build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt",
-      "scope_sig_paths": [
-        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt.sig"
-      ],
-      "symbol_ids": [
-        "method:119b7fed8fb14b1a",
-        "method:1884646207378e4e"
-      ],
-      "target_hash": "c49e134ae3e84f21ef65ea927092f53ac1c3d948c8fe7c5bd6eef97ecf9f7e47"
-    },
-    {
-      "id": "entrypoint:build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt",
-      "kind": "entrypoint",
-      "package": "io.amichne.konditional.gradle",
-      "ranking_trace_ref": "target-ranking:entrypoint:build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt",
-      "scope_sig_paths": [
-        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt.sig"
-      ],
-      "symbol_ids": [
-        "method:9551b4dd34d3936f"
-      ],
-      "target_hash": "20b596c3c5b416f08fdd2fb844690606dd564fb0ad64469f9e668d094f3680ba"
-    },
-    {
-      "id": "entrypoint:build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt",
-      "kind": "entrypoint",
-      "package": "io.amichne.konditional.gradle",
-      "ranking_trace_ref": "target-ranking:entrypoint:build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt",
-      "scope_sig_paths": [
-        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt.sig"
-      ],
-      "symbol_ids": [
-        "method:6ddb381fc837d304"
-      ],
-      "target_hash": "6a15ae5137b8348e55d85c255e9b59097e395b6a43f20b73da8f70c287f2e6f7"
-    },
-    {
-      "id": "entrypoint:detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt",
-      "kind": "entrypoint",
-      "package": "io.amichne.konditional.detekt",
-      "ranking_trace_ref": "target-ranking:entrypoint:detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt",
-      "scope_sig_paths": [
-        "detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt.sig"
-      ],
-      "symbol_ids": [
-        "method:1bd1b0faf109a37b"
-      ],
-      "target_hash": "bd8b9540523df872f152718437a76c8c607da891d580b56622fae6de5829c80b"
-    },
-    {
       "id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/api/RampUpBucketing.kt",
       "kind": "entrypoint",
       "package": "io.amichne.konditional.api",
@@ -2848,26 +2483,14 @@
       ],
       "symbol_ids": [
         "method:05f131326cca03e5",
-        "method:0ded87337459c9f6",
         "method:1967daa263b64dd3",
-        "method:1f561a677c57a918",
         "method:287862c056cf0839",
-        "method:3228a10fb2e779a4",
-        "method:5c1407b70cc17816",
-        "method:602169136272ddbd",
-        "method:7405872cd7b55589",
-        "method:8c8a3f3202fcd750",
         "method:8edfb424b9657119",
-        "method:95289485cee105fd",
         "method:957aa0d699d986dc",
         "method:a2bfa70772be8410",
-        "method:b8b8134e53ef4f24",
-        "method:bb961be1a4ba8f69",
-        "method:c153d09f70b5c315",
-        "method:e2518d7432d7c90e",
-        "method:f04bc348b687cfb3"
+        "method:c153d09f70b5c315"
       ],
-      "target_hash": "5280751c32910979c7cd49c043b7fa05e9ac20017ff8210fedf15361a30d2b71"
+      "target_hash": "240371567a7852c096f66a9ad6d65c74146854a529dc5103a139390b0b68825e"
     },
     {
       "id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleScope.kt",
@@ -2938,22 +2561,6 @@
       "target_hash": "25fd3cbb5d244a1c2590a5e07deadc56c7386feaaf8eac84f4cf4c18bf79de60"
     },
     {
-      "id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/evaluation/Bucketing.kt",
-      "kind": "entrypoint",
-      "package": "io.amichne.konditional.core.evaluation",
-      "ranking_trace_ref": "target-ranking:entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/evaluation/Bucketing.kt",
-      "scope_sig_paths": [
-        "konditional-core/src/main/kotlin/io/amichne/konditional/core/evaluation/Bucketing.kt.sig"
-      ],
-      "symbol_ids": [
-        "method:1110279717591b22",
-        "method:67920d741e61bc38",
-        "method:80dce84216551821",
-        "method:921ec41927e7b24b"
-      ],
-      "target_hash": "6634949918755ac26533b9c7b3526b7bc9fbc3ee0e76727b7a65b52110c7de9f"
-    },
-    {
       "id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/KonditionalLogger.kt",
       "kind": "entrypoint",
       "package": "io.amichne.konditional.core.ops",
@@ -3014,32 +2621,6 @@
         "method:d8bcc3b46adea678"
       ],
       "target_hash": "89c702483ed1737729e69a8b8d6fe42665907e1f8319801e6497df84d2a98018"
-    },
-    {
-      "id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistryFactory.kt",
-      "kind": "entrypoint",
-      "package": "io.amichne.konditional.core.registry",
-      "ranking_trace_ref": "target-ranking:entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistryFactory.kt",
-      "scope_sig_paths": [
-        "konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistryFactory.kt.sig"
-      ],
-      "symbol_ids": [
-        "method:8c5c19ae62aeb1fa"
-      ],
-      "target_hash": "a3ae7dbcaf769286f7dc80b9be0884b919e126dc4f0704d331e09426f5a0e06a"
-    },
-    {
-      "id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHooks.kt",
-      "kind": "entrypoint",
-      "package": "io.amichne.konditional.core.spi",
-      "ranking_trace_ref": "target-ranking:entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHooks.kt",
-      "scope_sig_paths": [
-        "konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHooks.kt.sig"
-      ],
-      "symbol_ids": [
-        "method:0a4b988f26d7adcb"
-      ],
-      "target_hash": "99ac7643df93c00ddaf4fc49bc0125255e8b66ce3dafd76e9c10dd988ac4cb89"
     },
     {
       "id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/rules/Rule.kt",
@@ -3116,36 +2697,6 @@
         "method:f4f8b89661cfc788"
       ],
       "target_hash": "33c4a68c5a6bed6804f6482c497290415ac9377ac8ee19960e6432f0ac33950e"
-    },
-    {
-      "id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/values/IdentifierEncoding.kt",
-      "kind": "entrypoint",
-      "package": "io.amichne.konditional.values",
-      "ranking_trace_ref": "target-ranking:entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/values/IdentifierEncoding.kt",
-      "scope_sig_paths": [
-        "konditional-core/src/main/kotlin/io/amichne/konditional/values/IdentifierEncoding.kt.sig"
-      ],
-      "symbol_ids": [
-        "method:67539c148eec4501",
-        "method:cb008dcd5345f756"
-      ],
-      "target_hash": "f3f37d78c4ede14efb7dcc194b98cf8b5a26f77e6fffa772ecff1a30db53146e"
-    },
-    {
-      "id": "entrypoint:konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorage.kt",
-      "kind": "entrypoint",
-      "package": "io.amichne.konditional.httpserver",
-      "ranking_trace_ref": "target-ranking:entrypoint:konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorage.kt",
-      "scope_sig_paths": [
-        "konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorage.kt.sig"
-      ],
-      "symbol_ids": [
-        "method:32b4625b48169d4c",
-        "method:72e232a146fb9adb",
-        "method:7e8fa33881f33a6d",
-        "method:ec39323a6692adf8"
-      ],
-      "target_hash": "0220738865ff155ea035602d57145e25a34c0acb913f727185824487396131be"
     },
     {
       "id": "entrypoint:konditional-otel/src/main/kotlin/io/amichne/konditional/otel/KonditionalTelemetry.kt",
@@ -3762,14 +3313,13 @@
         "method:151be8bc769eed1f",
         "method:1e6fe407d6b549b7",
         "method:5c15c0808b36bf1f",
-        "method:5ed9f8f9945a545a",
         "method:96fbb4e6b170ed02",
         "method:97e1c4fc905c215d",
         "method:c4bffdee570209d9",
         "method:c791b8881c064fe6",
         "method:f33f063ac8922970"
       ],
-      "target_hash": "8ec48c2e6d8d48efc6c8bfbdc1fdd48a6fe604a3e391bb1561e22d65b6bca99a"
+      "target_hash": "1f0b3e9f3cedcf81dd8d453f3e3e9a3ec637352f4a48cc3de0c1c8863bc01152"
     },
     {
       "id": "package:io.amichne.konditional.api",
@@ -3851,28 +3401,16 @@
       ],
       "symbol_ids": [
         "method:05f131326cca03e5",
-        "method:0ded87337459c9f6",
         "method:1967daa263b64dd3",
-        "method:1f561a677c57a918",
         "method:287862c056cf0839",
-        "method:3228a10fb2e779a4",
-        "method:5c1407b70cc17816",
-        "method:602169136272ddbd",
-        "method:7405872cd7b55589",
-        "method:8c8a3f3202fcd750",
         "method:8edfb424b9657119",
-        "method:95289485cee105fd",
         "method:957aa0d699d986dc",
         "method:a2bfa70772be8410",
-        "method:b8b8134e53ef4f24",
-        "method:bb961be1a4ba8f69",
         "method:c153d09f70b5c315",
-        "method:e2518d7432d7c90e",
-        "method:f04bc348b687cfb3",
         "type:io.amichne.konditional.core.TestNamespaceFacade",
         "type:io.amichne.konditional.core.ValueType"
       ],
-      "target_hash": "60976ebd6645599a16308e1d0643bc36adc452189413a79baf3f0dae46aadb53"
+      "target_hash": "049711a3ed6d58927e500df859183319509a105f54650bc947d8b1925aa38653"
     },
     {
       "id": "package:io.amichne.konditional.core.dsl",
@@ -3947,22 +3485,6 @@
         "type:io.amichne.konditional.core.dsl.rules.targeting.scopes.VersionTargetingScope"
       ],
       "target_hash": "72e5977411bbc20a28062677f9a186da6a7cbf5b9d1579b1d4e4b9fa36a92329"
-    },
-    {
-      "id": "package:io.amichne.konditional.core.evaluation",
-      "kind": "package",
-      "package": "io.amichne.konditional.core.evaluation",
-      "ranking_trace_ref": "target-ranking:package:io.amichne.konditional.core.evaluation",
-      "scope_sig_paths": [
-        "konditional-core/src/main/kotlin/io/amichne/konditional/core/evaluation/Bucketing.kt.sig"
-      ],
-      "symbol_ids": [
-        "method:1110279717591b22",
-        "method:67920d741e61bc38",
-        "method:80dce84216551821",
-        "method:921ec41927e7b24b"
-      ],
-      "target_hash": "ebb99bed9c6599e75e3b504a476f87e2fb815601dffb59b481d686cdc5d17c2f"
     },
     {
       "id": "package:io.amichne.konditional.core.features",
@@ -4070,7 +3592,6 @@
         "method:5a8571b3e73fe7a4",
         "method:5f65ce52c1a9f483",
         "method:6d9a28a3a353dc37",
-        "method:8c5c19ae62aeb1fa",
         "method:b9b971ea403e0c05",
         "method:bc1dcf337e598cb2",
         "method:ccad174fc52206f1",
@@ -4085,7 +3606,7 @@
         "type:io.amichne.konditional.core.registry.NamespaceRegistryFactory",
         "type:io.amichne.konditional.core.registry.NamespaceRegistryRuntime"
       ],
-      "target_hash": "9428ff98b647b741ec77308de1bc8bbaa97f6a0e3721835c25fb056987aebc44"
+      "target_hash": "3d29c46d1869eb5632a5de12d858e4d1fa109429910994a4b3eeab1dd3fdc13b"
     },
     {
       "id": "package:io.amichne.konditional.core.result",
@@ -4125,14 +3646,12 @@
       "package": "io.amichne.konditional.core.spi",
       "ranking_trace_ref": "target-ranking:package:io.amichne.konditional.core.spi",
       "scope_sig_paths": [
-        "konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHook.kt.sig",
-        "konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHooks.kt.sig"
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHook.kt.sig"
       ],
       "symbol_ids": [
-        "method:0a4b988f26d7adcb",
         "type:io.amichne.konditional.core.spi.FeatureRegistrationHook"
       ],
-      "target_hash": "62a4e6f1ace084634d47ecc775dc9dac419b15b5ee5737e30407268ba9ebba4e"
+      "target_hash": "b7bf8d4b6d5bd403f785081044dcd0c40e8be1628fe1cdeaa2bd9b28057a11b1"
     },
     {
       "id": "package:io.amichne.konditional.core.types",
@@ -4148,64 +3667,6 @@
       "target_hash": "2c34f12fe943fb684c044b553c9a85dfb27dd5756af442087231dfed5a8b9b5d"
     },
     {
-      "id": "package:io.amichne.konditional.detekt",
-      "kind": "package",
-      "package": "io.amichne.konditional.detekt",
-      "ranking_trace_ref": "target-ranking:package:io.amichne.konditional.detekt",
-      "scope_sig_paths": [
-        "detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/KonditionalRuleSetProvider.kt.sig",
-        "detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt.sig"
-      ],
-      "symbol_ids": [
-        "method:1bd1b0faf109a37b",
-        "type:io.amichne.konditional.detekt.KonditionalRuleSetProvider",
-        "type:io.amichne.konditional.detekt.UnclosedCriteriaFirstRule"
-      ],
-      "target_hash": "ad56b62507b5b90a0b0c5c5a8d08f3dd5376af8771a66597e8c972be5a164fb1"
-    },
-    {
-      "id": "package:io.amichne.konditional.gradle",
-      "kind": "package",
-      "package": "io.amichne.konditional.gradle",
-      "ranking_trace_ref": "target-ranking:package:io.amichne.konditional.gradle",
-      "scope_sig_paths": [
-        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt.sig",
-        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt.sig",
-        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt.sig",
-        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt.sig"
-      ],
-      "symbol_ids": [
-        "method:119b7fed8fb14b1a",
-        "method:1884646207378e4e",
-        "method:6ddb381fc837d304",
-        "method:9551b4dd34d3936f",
-        "type:io.amichne.konditional.gradle.GenerateOpenApiSpecTask",
-        "type:io.amichne.konditional.gradle.GenerateRecipesDocsTask",
-        "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryExtension",
-        "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryTask",
-        "type:io.amichne.konditional.gradle.KonditionalPublishingExtension",
-        "type:io.amichne.konditional.gradle.KonditionalRecipesDocsExtension",
-        "type:io.amichne.konditional.gradle.VerifyRecipesDocsTask"
-      ],
-      "target_hash": "aa0351d23f97bf37ed80192ad0dfb2ec3da4923572f36a90d63192a02f883cc8"
-    },
-    {
-      "id": "package:io.amichne.konditional.httpserver",
-      "kind": "package",
-      "package": "io.amichne.konditional.httpserver",
-      "ranking_trace_ref": "target-ranking:package:io.amichne.konditional.httpserver",
-      "scope_sig_paths": [
-        "konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorage.kt.sig"
-      ],
-      "symbol_ids": [
-        "method:32b4625b48169d4c",
-        "method:72e232a146fb9adb",
-        "method:7e8fa33881f33a6d",
-        "method:ec39323a6692adf8"
-      ],
-      "target_hash": "9c58a63c5d453dc171323cd6014bdc2817d68935bc56d7a0a7f08c3fb80d6058"
-    },
-    {
       "id": "package:io.amichne.konditional.openfeature",
       "kind": "package",
       "package": "io.amichne.konditional.openfeature",
@@ -4218,7 +3679,6 @@
         "method:151be8bc769eed1f",
         "method:1e6fe407d6b549b7",
         "method:5c15c0808b36bf1f",
-        "method:5ed9f8f9945a545a",
         "method:96fbb4e6b170ed02",
         "method:97e1c4fc905c215d",
         "method:c4bffdee570209d9",
@@ -4231,7 +3691,7 @@
         "type:io.amichne.konditional.openfeature.MissingTargetingKey",
         "type:io.amichne.konditional.openfeature.TargetingKeyContext"
       ],
-      "target_hash": "5e425dcc98cacbbbb372ab4b630b9187916336d96ac2321978acdaf1eeb3214e"
+      "target_hash": "3c9254b0e6f4256e76e6c7c61f373f5e59a454d4282d576e97dea2d51806eb6a"
     },
     {
       "id": "package:io.amichne.konditional.otel",
@@ -4492,16 +3952,13 @@
       "package": "io.amichne.konditional.values",
       "ranking_trace_ref": "target-ranking:package:io.amichne.konditional.values",
       "scope_sig_paths": [
-        "konditional-core/src/main/kotlin/io/amichne/konditional/values/FeatureId.kt.sig",
-        "konditional-core/src/main/kotlin/io/amichne/konditional/values/IdentifierEncoding.kt.sig"
+        "konditional-core/src/main/kotlin/io/amichne/konditional/values/FeatureId.kt.sig"
       ],
       "symbol_ids": [
-        "method:67539c148eec4501",
         "method:9d5378df61fd5747",
-        "method:cb008dcd5345f756",
         "method:f4f8b89661cfc788"
       ],
-      "target_hash": "4209553c9af4820a6c3146f905e0bfa45a4086d559b220c57cc55469b2808443"
+      "target_hash": "b808292fe23e8e02eec9548de3d6765f770b06476c1f6f361f287d27b2b74825"
     },
     {
       "id": "package:io.amichne.kontracts.dsl",
@@ -5467,123 +4924,6 @@
         "type:io.amichne.konditional.core.types.Konstrained"
       ],
       "target_hash": "2a4388a991da916ecce6d3019a47cbdb859dc482b63c03105a7fbbd9862d2880"
-    },
-    {
-      "id": "type:io.amichne.konditional.detekt.KonditionalRuleSetProvider",
-      "kind": "type",
-      "package": "io.amichne.konditional.detekt",
-      "ranking_trace_ref": "target-ranking:type:io.amichne.konditional.detekt.KonditionalRuleSetProvider",
-      "scope_sig_paths": [
-        "detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/KonditionalRuleSetProvider.kt.sig"
-      ],
-      "symbol_ids": [
-        "type:io.amichne.konditional.detekt.KonditionalRuleSetProvider"
-      ],
-      "target_hash": "26b837c92c7a6c2090ffdd018f1d339cf19e55bdce7e146ac63c1c27420a9eab"
-    },
-    {
-      "id": "type:io.amichne.konditional.detekt.UnclosedCriteriaFirstRule",
-      "kind": "type",
-      "package": "io.amichne.konditional.detekt",
-      "ranking_trace_ref": "target-ranking:type:io.amichne.konditional.detekt.UnclosedCriteriaFirstRule",
-      "scope_sig_paths": [
-        "detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt.sig"
-      ],
-      "symbol_ids": [
-        "type:io.amichne.konditional.detekt.UnclosedCriteriaFirstRule"
-      ],
-      "target_hash": "34ac84d42e9d3fa16e2630c5179f1afdbb6823e5c3f0884782e04c464903c80b"
-    },
-    {
-      "id": "type:io.amichne.konditional.gradle.GenerateOpenApiSpecTask",
-      "kind": "type",
-      "package": "io.amichne.konditional.gradle",
-      "ranking_trace_ref": "target-ranking:type:io.amichne.konditional.gradle.GenerateOpenApiSpecTask",
-      "scope_sig_paths": [
-        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt.sig"
-      ],
-      "symbol_ids": [
-        "type:io.amichne.konditional.gradle.GenerateOpenApiSpecTask"
-      ],
-      "target_hash": "9d9249f9cfd7a46e7947ed3de77bdddbe3bb95f648d13a79ce284da5c309bf17"
-    },
-    {
-      "id": "type:io.amichne.konditional.gradle.GenerateRecipesDocsTask",
-      "kind": "type",
-      "package": "io.amichne.konditional.gradle",
-      "ranking_trace_ref": "target-ranking:type:io.amichne.konditional.gradle.GenerateRecipesDocsTask",
-      "scope_sig_paths": [
-        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt.sig"
-      ],
-      "symbol_ids": [
-        "type:io.amichne.konditional.gradle.GenerateRecipesDocsTask"
-      ],
-      "target_hash": "e9bb5d4e60c44a8aa7e8aee6ca8c4ae2272fc157802a8aa44b1fe73c060da9d3"
-    },
-    {
-      "id": "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryExtension",
-      "kind": "type",
-      "package": "io.amichne.konditional.gradle",
-      "ranking_trace_ref": "target-ranking:type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryExtension",
-      "scope_sig_paths": [
-        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt.sig"
-      ],
-      "symbol_ids": [
-        "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryExtension"
-      ],
-      "target_hash": "e8e46bed214b53d964a2de985b821a0c5eda2a80e1ba26bc76f51592a501b6c7"
-    },
-    {
-      "id": "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryTask",
-      "kind": "type",
-      "package": "io.amichne.konditional.gradle",
-      "ranking_trace_ref": "target-ranking:type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryTask",
-      "scope_sig_paths": [
-        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt.sig"
-      ],
-      "symbol_ids": [
-        "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryTask"
-      ],
-      "target_hash": "900227fdb54dc077edd8f38f7616639c7746789944bc8fbaa8ef2a59889a16b7"
-    },
-    {
-      "id": "type:io.amichne.konditional.gradle.KonditionalPublishingExtension",
-      "kind": "type",
-      "package": "io.amichne.konditional.gradle",
-      "ranking_trace_ref": "target-ranking:type:io.amichne.konditional.gradle.KonditionalPublishingExtension",
-      "scope_sig_paths": [
-        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt.sig"
-      ],
-      "symbol_ids": [
-        "type:io.amichne.konditional.gradle.KonditionalPublishingExtension"
-      ],
-      "target_hash": "5c5f8bf631fab2a4d71752e81bec3a825f21e8361f7265823c0e74859d4d9a47"
-    },
-    {
-      "id": "type:io.amichne.konditional.gradle.KonditionalRecipesDocsExtension",
-      "kind": "type",
-      "package": "io.amichne.konditional.gradle",
-      "ranking_trace_ref": "target-ranking:type:io.amichne.konditional.gradle.KonditionalRecipesDocsExtension",
-      "scope_sig_paths": [
-        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt.sig"
-      ],
-      "symbol_ids": [
-        "type:io.amichne.konditional.gradle.KonditionalRecipesDocsExtension"
-      ],
-      "target_hash": "bf92197d550cc12ad88947ece22b061319edfcc2d4d37577450de209f16616d3"
-    },
-    {
-      "id": "type:io.amichne.konditional.gradle.VerifyRecipesDocsTask",
-      "kind": "type",
-      "package": "io.amichne.konditional.gradle",
-      "ranking_trace_ref": "target-ranking:type:io.amichne.konditional.gradle.VerifyRecipesDocsTask",
-      "scope_sig_paths": [
-        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt.sig"
-      ],
-      "symbol_ids": [
-        "type:io.amichne.konditional.gradle.VerifyRecipesDocsTask"
-      ],
-      "target_hash": "c672037db19f5ae5ed388e19f5394fda6bd4631577ce109f5aa3c286bd81219a"
     },
     {
       "id": "type:io.amichne.konditional.openfeature.BlankTargetingKey",

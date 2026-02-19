@@ -5,11 +5,5 @@ type=io.amichne.konditional.core.dsl.rules.RuleScope|kind=interface|decl=interfa
 type=io.amichne.konditional.core.dsl.rules.Prefix|kind=class|decl=class Prefix<T : Any, C : Context, out M : Namespace> internal constructor( private val scope: FlagScope<T, C, @UnsafeVariance M>, private val build: RuleScope<C>.() -> Unit, )
 type=io.amichne.konditional.core.dsl.rules.ScopedPrefix|kind=class|decl=class ScopedPrefix<T : Any, C : Context, out M : Namespace> internal constructor( private val scope: FlagScope<T, C, @UnsafeVariance M>, private val build: ContextRuleScope<C>.() -> Unit, )
 type=io.amichne.konditional.core.dsl.rules.Postfix|kind=object|decl=object Postfix
-fields:
-- private val host: YieldingScopeHost?
-- private val pendingToken: PendingYieldToken
-- private val host: YieldingScopeHost?
-- private val pendingToken: PendingYieldToken
 methods:
-- infix fun yields(value: T): Postfix
 - infix fun yields(value: T): Postfix

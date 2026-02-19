@@ -4,9 +4,3 @@ imports=io.amichne.konditional.context.Context,io.amichne.konditional.context.Co
 type=io.amichne.konditional.otel.traces.FlagEvaluationTracer|kind=class|decl=class FlagEvaluationTracer( private val tracer: Tracer, private val config: TracingConfig, )
 methods:
 - fun <T : Any, C : Context> traceEvaluation( feature: Feature<T, C, *>, context: C, parentSpan: Span? = null, block: () -> EvaluationDiagnostics<T>, ): EvaluationDiagnostics<T>
-- private fun <T : Any, C : Context> populateSpanFromResult( span: Span, result: EvaluationDiagnostics<T>, context: C, )
-- private fun populateRuleDetails( span: Span, decision: EvaluationDiagnostics.Decision.Rule, )
-- private fun addRuleSkippedEvent( span: Span, skipped: EvaluationDiagnostics.RuleMatch, )
-- private fun shouldSample( feature: Feature<*, *, *>, context: Context, ): Boolean
-- private fun <T : Any> sanitizeValue(value: T): String
-- private fun EvaluationDiagnostics.Decision.toSpanValue(): String

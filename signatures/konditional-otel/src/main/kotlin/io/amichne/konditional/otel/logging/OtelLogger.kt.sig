@@ -7,4 +7,3 @@ methods:
 - override fun info(message: () -> String)
 - override fun warn( message: () -> String, throwable: Throwable?, )
 - override fun error( message: () -> String, throwable: Throwable?, )
-- private fun emitLog( severity: Severity, message: String, throwable: Throwable?, )

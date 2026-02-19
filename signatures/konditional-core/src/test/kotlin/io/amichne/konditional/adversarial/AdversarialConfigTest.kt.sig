@@ -1,4 +1,0 @@
-file=konditional-core/src/test/kotlin/io/amichne/konditional/adversarial/AdversarialConfigTest.kt
-package=io.amichne.konditional.adversarial
-imports=io.amichne.konditional.api.KonditionalInternalApi,io.amichne.konditional.api.evaluate,io.amichne.konditional.context.AppLocale,io.amichne.konditional.context.Context,io.amichne.konditional.context.Platform,io.amichne.konditional.context.RampUp,io.amichne.konditional.context.Version,io.amichne.konditional.core.Namespace,io.amichne.konditional.core.dsl.disable,io.amichne.konditional.core.dsl.enable,io.amichne.konditional.core.id.StableId,io.amichne.konditional.rules.versions.FullyBound,kotlin.test.assertEquals,kotlin.test.assertTrue,org.junit.jupiter.api.Assertions.assertDoesNotThrow,org.junit.jupiter.api.Test,org.junit.jupiter.api.assertThrows
-type=io.amichne.konditional.adversarial.AdversarialConfigTest|kind=class|decl=class AdversarialConfigTest

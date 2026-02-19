@@ -12,6 +12,3 @@ type=io.amichne.konditional.core.result.InvalidJson|kind=class|decl=data class I
 fields:
 - val message: String
 - override val message: String get()
-- override val message: String get()
-- override val message: String get()
-- override val message: String get()

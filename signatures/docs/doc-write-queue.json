@@ -7,75 +7,6 @@
   "queue": [
     {
       "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt.md",
-      "kind": "entrypoint",
-      "symbol_declarations": [
-        {
-          "declaration": "fun verify()",
-          "symbol_id": "method:119b7fed8fb14b1a"
-        },
-        {
-          "declaration": "fun generate()",
-          "symbol_id": "method:1884646207378e4e"
-        }
-      ],
-      "symbol_ids": [
-        "method:119b7fed8fb14b1a",
-        "method:1884646207378e4e"
-      ],
-      "target_hash": "c49e134ae3e84f21ef65ea927092f53ac1c3d948c8fe7c5bd6eef97ecf9f7e47",
-      "target_id": "entrypoint:build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt"
-    },
-    {
-      "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt.md",
-      "kind": "entrypoint",
-      "symbol_declarations": [
-        {
-          "declaration": "fun generateSpec()",
-          "symbol_id": "method:9551b4dd34d3936f"
-        }
-      ],
-      "symbol_ids": [
-        "method:9551b4dd34d3936f"
-      ],
-      "target_hash": "20b596c3c5b416f08fdd2fb844690606dd564fb0ad64469f9e668d094f3680ba",
-      "target_id": "entrypoint:build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt"
-    },
-    {
-      "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt.md",
-      "kind": "entrypoint",
-      "symbol_declarations": [
-        {
-          "declaration": "fun checkApiBoundary()",
-          "symbol_id": "method:6ddb381fc837d304"
-        }
-      ],
-      "symbol_ids": [
-        "method:6ddb381fc837d304"
-      ],
-      "target_hash": "6a15ae5137b8348e55d85c255e9b59097e395b6a43f20b73da8f70c287f2e6f7",
-      "target_id": "entrypoint:build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt"
-    },
-    {
-      "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt.md",
-      "kind": "entrypoint",
-      "symbol_declarations": [
-        {
-          "declaration": "override fun visitCallExpression(expression: KtCallExpression)",
-          "symbol_id": "method:1bd1b0faf109a37b"
-        }
-      ],
-      "symbol_ids": [
-        "method:1bd1b0faf109a37b"
-      ],
-      "target_hash": "bd8b9540523df872f152718437a76c8c607da891d580b56622fae6de5829c80b",
-      "target_id": "entrypoint:detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt"
-    },
-    {
-      "coverage_status": "missing",
       "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/api/RampUpBucketing.kt.md",
       "kind": "entrypoint",
       "symbol_declarations": [
@@ -189,48 +120,16 @@
           "symbol_id": "method:05f131326cca03e5"
         },
         {
-          "declaration": "operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): EnumDelegate<E, C>",
-          "symbol_id": "method:0ded87337459c9f6"
-        },
-        {
           "declaration": "fun compiledSchema(): CompiledNamespaceSchema",
           "symbol_id": "method:1967daa263b64dd3"
-        },
-        {
-          "declaration": "operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): KotlinClassFeature<T, C, M>",
-          "symbol_id": "method:1f561a677c57a918"
         },
         {
           "declaration": "fun declaredDefault(feature: Feature<*, *, *>): Any?",
           "symbol_id": "method:287862c056cf0839"
         },
         {
-          "declaration": "operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): DoubleDelegate<C>",
-          "symbol_id": "method:3228a10fb2e779a4"
-        },
-        {
-          "declaration": "operator fun <M : Namespace> provideDelegate( thisRef: M, property: KProperty<*>, ): KotlinClassDelegate<T, C>",
-          "symbol_id": "method:5c1407b70cc17816"
-        },
-        {
-          "declaration": "operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): EnumFeature<E, C, M>",
-          "symbol_id": "method:602169136272ddbd"
-        },
-        {
-          "declaration": "operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): IntDelegate<C>",
-          "symbol_id": "method:7405872cd7b55589"
-        },
-        {
-          "declaration": "operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): IntFeature<C, M>",
-          "symbol_id": "method:8c8a3f3202fcd750"
-        },
-        {
           "declaration": "fun declaredDefinition(feature: Feature<*, *, *>): FlagDefinition<*, *, *>?",
           "symbol_id": "method:8edfb424b9657119"
-        },
-        {
-          "declaration": "operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): BooleanFeature<C, M>",
-          "symbol_id": "method:95289485cee105fd"
         },
         {
           "declaration": "fun allFeatures(): List<Feature<*, *, *>>",
@@ -241,48 +140,20 @@
           "symbol_id": "method:a2bfa70772be8410"
         },
         {
-          "declaration": "operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): StringFeature<C, M>",
-          "symbol_id": "method:b8b8134e53ef4f24"
-        },
-        {
-          "declaration": "operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): BooleanDelegate<C>",
-          "symbol_id": "method:bb961be1a4ba8f69"
-        },
-        {
           "declaration": "override fun equals(other: Any?): Boolean",
           "symbol_id": "method:c153d09f70b5c315"
-        },
-        {
-          "declaration": "operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): DoubleFeature<C, M>",
-          "symbol_id": "method:e2518d7432d7c90e"
-        },
-        {
-          "declaration": "operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): StringDelegate<C>",
-          "symbol_id": "method:f04bc348b687cfb3"
         }
       ],
       "symbol_ids": [
         "method:05f131326cca03e5",
-        "method:0ded87337459c9f6",
         "method:1967daa263b64dd3",
-        "method:1f561a677c57a918",
         "method:287862c056cf0839",
-        "method:3228a10fb2e779a4",
-        "method:5c1407b70cc17816",
-        "method:602169136272ddbd",
-        "method:7405872cd7b55589",
-        "method:8c8a3f3202fcd750",
         "method:8edfb424b9657119",
-        "method:95289485cee105fd",
         "method:957aa0d699d986dc",
         "method:a2bfa70772be8410",
-        "method:b8b8134e53ef4f24",
-        "method:bb961be1a4ba8f69",
-        "method:c153d09f70b5c315",
-        "method:e2518d7432d7c90e",
-        "method:f04bc348b687cfb3"
+        "method:c153d09f70b5c315"
       ],
-      "target_hash": "5280751c32910979c7cd49c043b7fa05e9ac20017ff8210fedf15361a30d2b71",
+      "target_hash": "240371567a7852c096f66a9ad6d65c74146854a529dc5103a139390b0b68825e",
       "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt"
     },
     {
@@ -379,37 +250,6 @@
       ],
       "target_hash": "25fd3cbb5d244a1c2590a5e07deadc56c7386feaaf8eac84f4cf4c18bf79de60",
       "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/PlatformTargetingScope.kt"
-    },
-    {
-      "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/core/evaluation/Bucketing.kt.md",
-      "kind": "entrypoint",
-      "symbol_declarations": [
-        {
-          "declaration": "fun rampUpThresholdBasisPoints(rollout: RampUp): Int",
-          "symbol_id": "method:1110279717591b22"
-        },
-        {
-          "declaration": "fun isInRampUp( rampUp: RampUp, bucket: Int, ): Boolean",
-          "symbol_id": "method:67920d741e61bc38"
-        },
-        {
-          "declaration": "fun stableBucket( salt: String, flagKey: String, stableId: HexId, ): Int",
-          "symbol_id": "method:80dce84216551821"
-        },
-        {
-          "declaration": "fun missingStableIdBucket(): Int",
-          "symbol_id": "method:921ec41927e7b24b"
-        }
-      ],
-      "symbol_ids": [
-        "method:1110279717591b22",
-        "method:67920d741e61bc38",
-        "method:80dce84216551821",
-        "method:921ec41927e7b24b"
-      ],
-      "target_hash": "6634949918755ac26533b9c7b3526b7bc9fbc3ee0e76727b7a65b52110c7de9f",
-      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/evaluation/Bucketing.kt"
     },
     {
       "coverage_status": "missing",
@@ -524,38 +364,6 @@
       ],
       "target_hash": "89c702483ed1737729e69a8b8d6fe42665907e1f8319801e6497df84d2a98018",
       "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt"
-    },
-    {
-      "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistryFactory.kt.md",
-      "kind": "entrypoint",
-      "symbol_declarations": [
-        {
-          "declaration": "fun default(namespaceId: String): NamespaceRegistry",
-          "symbol_id": "method:8c5c19ae62aeb1fa"
-        }
-      ],
-      "symbol_ids": [
-        "method:8c5c19ae62aeb1fa"
-      ],
-      "target_hash": "a3ae7dbcaf769286f7dc80b9be0884b919e126dc4f0704d331e09426f5a0e06a",
-      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistryFactory.kt"
-    },
-    {
-      "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHooks.kt.md",
-      "kind": "entrypoint",
-      "symbol_declarations": [
-        {
-          "declaration": "fun notifyFeatureDefined(feature: Feature<*, *, *>)",
-          "symbol_id": "method:0a4b988f26d7adcb"
-        }
-      ],
-      "symbol_ids": [
-        "method:0a4b988f26d7adcb"
-      ],
-      "target_hash": "99ac7643df93c00ddaf4fc49bc0125255e8b66ce3dafd76e9c10dd988ac4cb89",
-      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHooks.kt"
     },
     {
       "coverage_status": "missing",
@@ -691,58 +499,6 @@
       ],
       "target_hash": "33c4a68c5a6bed6804f6482c497290415ac9377ac8ee19960e6432f0ac33950e",
       "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/values/FeatureId.kt"
-    },
-    {
-      "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/values/IdentifierEncoding.kt.md",
-      "kind": "entrypoint",
-      "symbol_declarations": [
-        {
-          "declaration": "fun split(plainId: String): List<String>",
-          "symbol_id": "method:67539c148eec4501"
-        },
-        {
-          "declaration": "fun encode( components: List<String>, prefix: String, ): String",
-          "symbol_id": "method:cb008dcd5345f756"
-        }
-      ],
-      "symbol_ids": [
-        "method:67539c148eec4501",
-        "method:cb008dcd5345f756"
-      ],
-      "target_hash": "f3f37d78c4ede14efb7dcc194b98cf8b5a26f77e6fffa772ecff1a30db53146e",
-      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/values/IdentifierEncoding.kt"
-    },
-    {
-      "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorage.kt.md",
-      "kind": "entrypoint",
-      "symbol_declarations": [
-        {
-          "declaration": "public fun all(): Map<String, String>",
-          "symbol_id": "method:32b4625b48169d4c"
-        },
-        {
-          "declaration": "public fun put(namespace: String, snapshotJson: String)",
-          "symbol_id": "method:72e232a146fb9adb"
-        },
-        {
-          "declaration": "public fun get(namespace: String): String?",
-          "symbol_id": "method:7e8fa33881f33a6d"
-        },
-        {
-          "declaration": "public fun delete(namespace: String): Boolean",
-          "symbol_id": "method:ec39323a6692adf8"
-        }
-      ],
-      "symbol_ids": [
-        "method:32b4625b48169d4c",
-        "method:72e232a146fb9adb",
-        "method:7e8fa33881f33a6d",
-        "method:ec39323a6692adf8"
-      ],
-      "target_hash": "0220738865ff155ea035602d57145e25a34c0acb913f727185824487396131be",
-      "target_id": "entrypoint:konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorage.kt"
     },
     {
       "coverage_status": "missing",
@@ -1718,10 +1474,6 @@
           "symbol_id": "method:5c15c0808b36bf1f"
         },
         {
-          "declaration": "fun displayName(): String",
-          "symbol_id": "method:5ed9f8f9945a545a"
-        },
-        {
           "declaration": "override fun toKonditionalContext(context: EvaluationContext): KonditionalContextMappingResult<TargetingKeyContext>",
           "symbol_id": "method:96fbb4e6b170ed02"
         },
@@ -1747,14 +1499,13 @@
         "method:151be8bc769eed1f",
         "method:1e6fe407d6b549b7",
         "method:5c15c0808b36bf1f",
-        "method:5ed9f8f9945a545a",
         "method:96fbb4e6b170ed02",
         "method:97e1c4fc905c215d",
         "method:c4bffdee570209d9",
         "method:c791b8881c064fe6",
         "method:f33f063ac8922970"
       ],
-      "target_hash": "8ec48c2e6d8d48efc6c8bfbdc1fdd48a6fe604a3e391bb1561e22d65b6bca99a",
+      "target_hash": "1f0b3e9f3cedcf81dd8d453f3e3e9a3ec637352f4a48cc3de0c1c8863bc01152",
       "target_id": "entrypoint:openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt"
     },
     {
@@ -1920,48 +1671,16 @@
           "symbol_id": "method:05f131326cca03e5"
         },
         {
-          "declaration": "operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): EnumDelegate<E, C>",
-          "symbol_id": "method:0ded87337459c9f6"
-        },
-        {
           "declaration": "fun compiledSchema(): CompiledNamespaceSchema",
           "symbol_id": "method:1967daa263b64dd3"
-        },
-        {
-          "declaration": "operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): KotlinClassFeature<T, C, M>",
-          "symbol_id": "method:1f561a677c57a918"
         },
         {
           "declaration": "fun declaredDefault(feature: Feature<*, *, *>): Any?",
           "symbol_id": "method:287862c056cf0839"
         },
         {
-          "declaration": "operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): DoubleDelegate<C>",
-          "symbol_id": "method:3228a10fb2e779a4"
-        },
-        {
-          "declaration": "operator fun <M : Namespace> provideDelegate( thisRef: M, property: KProperty<*>, ): KotlinClassDelegate<T, C>",
-          "symbol_id": "method:5c1407b70cc17816"
-        },
-        {
-          "declaration": "operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): EnumFeature<E, C, M>",
-          "symbol_id": "method:602169136272ddbd"
-        },
-        {
-          "declaration": "operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): IntDelegate<C>",
-          "symbol_id": "method:7405872cd7b55589"
-        },
-        {
-          "declaration": "operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): IntFeature<C, M>",
-          "symbol_id": "method:8c8a3f3202fcd750"
-        },
-        {
           "declaration": "fun declaredDefinition(feature: Feature<*, *, *>): FlagDefinition<*, *, *>?",
           "symbol_id": "method:8edfb424b9657119"
-        },
-        {
-          "declaration": "operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): BooleanFeature<C, M>",
-          "symbol_id": "method:95289485cee105fd"
         },
         {
           "declaration": "fun allFeatures(): List<Feature<*, *, *>>",
@@ -1972,24 +1691,8 @@
           "symbol_id": "method:a2bfa70772be8410"
         },
         {
-          "declaration": "operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): StringFeature<C, M>",
-          "symbol_id": "method:b8b8134e53ef4f24"
-        },
-        {
-          "declaration": "operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): BooleanDelegate<C>",
-          "symbol_id": "method:bb961be1a4ba8f69"
-        },
-        {
           "declaration": "override fun equals(other: Any?): Boolean",
           "symbol_id": "method:c153d09f70b5c315"
-        },
-        {
-          "declaration": "operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): DoubleFeature<C, M>",
-          "symbol_id": "method:e2518d7432d7c90e"
-        },
-        {
-          "declaration": "operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): StringDelegate<C>",
-          "symbol_id": "method:f04bc348b687cfb3"
         },
         {
           "declaration": "abstract class TestNamespaceFacade(id: String) : Namespace( id = id, registry = NamespaceRegistryFactories.default(id), axisCatalog = AxisCatalog(), identifierSeed = UUID.randomUUID().toString(), )",
@@ -2002,28 +1705,16 @@
       ],
       "symbol_ids": [
         "method:05f131326cca03e5",
-        "method:0ded87337459c9f6",
         "method:1967daa263b64dd3",
-        "method:1f561a677c57a918",
         "method:287862c056cf0839",
-        "method:3228a10fb2e779a4",
-        "method:5c1407b70cc17816",
-        "method:602169136272ddbd",
-        "method:7405872cd7b55589",
-        "method:8c8a3f3202fcd750",
         "method:8edfb424b9657119",
-        "method:95289485cee105fd",
         "method:957aa0d699d986dc",
         "method:a2bfa70772be8410",
-        "method:b8b8134e53ef4f24",
-        "method:bb961be1a4ba8f69",
         "method:c153d09f70b5c315",
-        "method:e2518d7432d7c90e",
-        "method:f04bc348b687cfb3",
         "type:io.amichne.konditional.core.TestNamespaceFacade",
         "type:io.amichne.konditional.core.ValueType"
       ],
-      "target_hash": "60976ebd6645599a16308e1d0643bc36adc452189413a79baf3f0dae46aadb53",
+      "target_hash": "049711a3ed6d58927e500df859183319509a105f54650bc947d8b1925aa38653",
       "target_id": "package:io.amichne.konditional.core"
     },
     {
@@ -2178,37 +1869,6 @@
       ],
       "target_hash": "72e5977411bbc20a28062677f9a186da6a7cbf5b9d1579b1d4e4b9fa36a92329",
       "target_id": "package:io.amichne.konditional.core.dsl.rules.targeting.scopes"
-    },
-    {
-      "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/core/evaluation.md",
-      "kind": "package",
-      "symbol_declarations": [
-        {
-          "declaration": "fun rampUpThresholdBasisPoints(rollout: RampUp): Int",
-          "symbol_id": "method:1110279717591b22"
-        },
-        {
-          "declaration": "fun isInRampUp( rampUp: RampUp, bucket: Int, ): Boolean",
-          "symbol_id": "method:67920d741e61bc38"
-        },
-        {
-          "declaration": "fun stableBucket( salt: String, flagKey: String, stableId: HexId, ): Int",
-          "symbol_id": "method:80dce84216551821"
-        },
-        {
-          "declaration": "fun missingStableIdBucket(): Int",
-          "symbol_id": "method:921ec41927e7b24b"
-        }
-      ],
-      "symbol_ids": [
-        "method:1110279717591b22",
-        "method:67920d741e61bc38",
-        "method:80dce84216551821",
-        "method:921ec41927e7b24b"
-      ],
-      "target_hash": "ebb99bed9c6599e75e3b504a476f87e2fb815601dffb59b481d686cdc5d17c2f",
-      "target_id": "package:io.amichne.konditional.core.evaluation"
     },
     {
       "coverage_status": "missing",
@@ -2425,10 +2085,6 @@
           "symbol_id": "method:6d9a28a3a353dc37"
         },
         {
-          "declaration": "fun default(namespaceId: String): NamespaceRegistry",
-          "symbol_id": "method:8c5c19ae62aeb1fa"
-        },
-        {
           "declaration": "fun setHooks(hooks: RegistryHooks) val isAllDisabled: Boolean fun disableAll() fun enableAll() @Suppress(\"UNCHECKED_CAST\") fun <T : Any, C : Context, M : Namespace> flag( key: Feature<T, C, M>, ): FlagDefinition<T, C, M>",
           "symbol_id": "method:b9b971ea403e0c05"
         },
@@ -2492,7 +2148,6 @@
         "method:5a8571b3e73fe7a4",
         "method:5f65ce52c1a9f483",
         "method:6d9a28a3a353dc37",
-        "method:8c5c19ae62aeb1fa",
         "method:b9b971ea403e0c05",
         "method:bc1dcf337e598cb2",
         "method:ccad174fc52206f1",
@@ -2507,7 +2162,7 @@
         "type:io.amichne.konditional.core.registry.NamespaceRegistryFactory",
         "type:io.amichne.konditional.core.registry.NamespaceRegistryRuntime"
       ],
-      "target_hash": "9428ff98b647b741ec77308de1bc8bbaa97f6a0e3721835c25fb056987aebc44",
+      "target_hash": "3d29c46d1869eb5632a5de12d858e4d1fa109429910994a4b3eeab1dd3fdc13b",
       "target_id": "package:io.amichne.konditional.core.registry"
     },
     {
@@ -2568,19 +2223,14 @@
       "kind": "package",
       "symbol_declarations": [
         {
-          "declaration": "fun notifyFeatureDefined(feature: Feature<*, *, *>)",
-          "symbol_id": "method:0a4b988f26d7adcb"
-        },
-        {
           "declaration": "fun interface FeatureRegistrationHook",
           "symbol_id": "type:io.amichne.konditional.core.spi.FeatureRegistrationHook"
         }
       ],
       "symbol_ids": [
-        "method:0a4b988f26d7adcb",
         "type:io.amichne.konditional.core.spi.FeatureRegistrationHook"
       ],
-      "target_hash": "62a4e6f1ace084634d47ecc775dc9dac419b15b5ee5737e30407268ba9ebba4e",
+      "target_hash": "b7bf8d4b6d5bd403f785081044dcd0c40e8be1628fe1cdeaa2bd9b28057a11b1",
       "target_id": "package:io.amichne.konditional.core.spi"
     },
     {
@@ -2598,129 +2248,6 @@
       ],
       "target_hash": "2c34f12fe943fb684c044b553c9a85dfb27dd5756af442087231dfed5a8b9b5d",
       "target_id": "package:io.amichne.konditional.core.types"
-    },
-    {
-      "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/detekt.md",
-      "kind": "package",
-      "symbol_declarations": [
-        {
-          "declaration": "override fun visitCallExpression(expression: KtCallExpression)",
-          "symbol_id": "method:1bd1b0faf109a37b"
-        },
-        {
-          "declaration": "class KonditionalRuleSetProvider : RuleSetProvider",
-          "symbol_id": "type:io.amichne.konditional.detekt.KonditionalRuleSetProvider"
-        },
-        {
-          "declaration": "class UnclosedCriteriaFirstRule(config: Config) : Rule(config)",
-          "symbol_id": "type:io.amichne.konditional.detekt.UnclosedCriteriaFirstRule"
-        }
-      ],
-      "symbol_ids": [
-        "method:1bd1b0faf109a37b",
-        "type:io.amichne.konditional.detekt.KonditionalRuleSetProvider",
-        "type:io.amichne.konditional.detekt.UnclosedCriteriaFirstRule"
-      ],
-      "target_hash": "ad56b62507b5b90a0b0c5c5a8d08f3dd5376af8771a66597e8c972be5a164fb1",
-      "target_id": "package:io.amichne.konditional.detekt"
-    },
-    {
-      "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/gradle.md",
-      "kind": "package",
-      "symbol_declarations": [
-        {
-          "declaration": "fun verify()",
-          "symbol_id": "method:119b7fed8fb14b1a"
-        },
-        {
-          "declaration": "fun generate()",
-          "symbol_id": "method:1884646207378e4e"
-        },
-        {
-          "declaration": "fun checkApiBoundary()",
-          "symbol_id": "method:6ddb381fc837d304"
-        },
-        {
-          "declaration": "fun generateSpec()",
-          "symbol_id": "method:9551b4dd34d3936f"
-        },
-        {
-          "declaration": "abstract class GenerateOpenApiSpecTask : DefaultTask()",
-          "symbol_id": "type:io.amichne.konditional.gradle.GenerateOpenApiSpecTask"
-        },
-        {
-          "declaration": "abstract class GenerateRecipesDocsTask : DefaultTask()",
-          "symbol_id": "type:io.amichne.konditional.gradle.GenerateRecipesDocsTask"
-        },
-        {
-          "declaration": "abstract class KonditionalCoreApiBoundaryExtension",
-          "symbol_id": "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryExtension"
-        },
-        {
-          "declaration": "abstract class KonditionalCoreApiBoundaryTask : DefaultTask()",
-          "symbol_id": "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryTask"
-        },
-        {
-          "declaration": "abstract class KonditionalPublishingExtension",
-          "symbol_id": "type:io.amichne.konditional.gradle.KonditionalPublishingExtension"
-        },
-        {
-          "declaration": "abstract class KonditionalRecipesDocsExtension",
-          "symbol_id": "type:io.amichne.konditional.gradle.KonditionalRecipesDocsExtension"
-        },
-        {
-          "declaration": "abstract class VerifyRecipesDocsTask : DefaultTask()",
-          "symbol_id": "type:io.amichne.konditional.gradle.VerifyRecipesDocsTask"
-        }
-      ],
-      "symbol_ids": [
-        "method:119b7fed8fb14b1a",
-        "method:1884646207378e4e",
-        "method:6ddb381fc837d304",
-        "method:9551b4dd34d3936f",
-        "type:io.amichne.konditional.gradle.GenerateOpenApiSpecTask",
-        "type:io.amichne.konditional.gradle.GenerateRecipesDocsTask",
-        "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryExtension",
-        "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryTask",
-        "type:io.amichne.konditional.gradle.KonditionalPublishingExtension",
-        "type:io.amichne.konditional.gradle.KonditionalRecipesDocsExtension",
-        "type:io.amichne.konditional.gradle.VerifyRecipesDocsTask"
-      ],
-      "target_hash": "aa0351d23f97bf37ed80192ad0dfb2ec3da4923572f36a90d63192a02f883cc8",
-      "target_id": "package:io.amichne.konditional.gradle"
-    },
-    {
-      "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/httpserver.md",
-      "kind": "package",
-      "symbol_declarations": [
-        {
-          "declaration": "public fun all(): Map<String, String>",
-          "symbol_id": "method:32b4625b48169d4c"
-        },
-        {
-          "declaration": "public fun put(namespace: String, snapshotJson: String)",
-          "symbol_id": "method:72e232a146fb9adb"
-        },
-        {
-          "declaration": "public fun get(namespace: String): String?",
-          "symbol_id": "method:7e8fa33881f33a6d"
-        },
-        {
-          "declaration": "public fun delete(namespace: String): Boolean",
-          "symbol_id": "method:ec39323a6692adf8"
-        }
-      ],
-      "symbol_ids": [
-        "method:32b4625b48169d4c",
-        "method:72e232a146fb9adb",
-        "method:7e8fa33881f33a6d",
-        "method:ec39323a6692adf8"
-      ],
-      "target_hash": "9c58a63c5d453dc171323cd6014bdc2817d68935bc56d7a0a7f08c3fb80d6058",
-      "target_id": "package:io.amichne.konditional.httpserver"
     },
     {
       "coverage_status": "missing",
@@ -2742,10 +2269,6 @@
         {
           "declaration": "override fun getState(): ProviderState",
           "symbol_id": "method:5c15c0808b36bf1f"
-        },
-        {
-          "declaration": "fun displayName(): String",
-          "symbol_id": "method:5ed9f8f9945a545a"
         },
         {
           "declaration": "override fun toKonditionalContext(context: EvaluationContext): KonditionalContextMappingResult<TargetingKeyContext>",
@@ -2797,7 +2320,6 @@
         "method:151be8bc769eed1f",
         "method:1e6fe407d6b549b7",
         "method:5c15c0808b36bf1f",
-        "method:5ed9f8f9945a545a",
         "method:96fbb4e6b170ed02",
         "method:97e1c4fc905c215d",
         "method:c4bffdee570209d9",
@@ -2810,7 +2332,7 @@
         "type:io.amichne.konditional.openfeature.MissingTargetingKey",
         "type:io.amichne.konditional.openfeature.TargetingKeyContext"
       ],
-      "target_hash": "5e425dcc98cacbbbb372ab4b630b9187916336d96ac2321978acdaf1eeb3214e",
+      "target_hash": "3c9254b0e6f4256e76e6c7c61f373f5e59a454d4282d576e97dea2d51806eb6a",
       "target_id": "package:io.amichne.konditional.openfeature"
     },
     {
@@ -3411,16 +2933,8 @@
       "kind": "package",
       "symbol_declarations": [
         {
-          "declaration": "fun split(plainId: String): List<String>",
-          "symbol_id": "method:67539c148eec4501"
-        },
-        {
           "declaration": "override fun compareTo(other: FeatureId): Int",
           "symbol_id": "method:9d5378df61fd5747"
-        },
-        {
-          "declaration": "fun encode( components: List<String>, prefix: String, ): String",
-          "symbol_id": "method:cb008dcd5345f756"
         },
         {
           "declaration": "override fun toString(): String",
@@ -3428,12 +2942,10 @@
         }
       ],
       "symbol_ids": [
-        "method:67539c148eec4501",
         "method:9d5378df61fd5747",
-        "method:cb008dcd5345f756",
         "method:f4f8b89661cfc788"
       ],
-      "target_hash": "4209553c9af4820a6c3146f905e0bfa45a4086d559b220c57cc55469b2808443",
+      "target_hash": "b808292fe23e8e02eec9548de3d6765f770b06476c1f6f361f287d27b2b74825",
       "target_id": "package:io.amichne.konditional.values"
     },
     {
@@ -4864,150 +4376,6 @@
     },
     {
       "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/detekt/KonditionalRuleSetProvider.md",
-      "kind": "type",
-      "symbol_declarations": [
-        {
-          "declaration": "class KonditionalRuleSetProvider : RuleSetProvider",
-          "symbol_id": "type:io.amichne.konditional.detekt.KonditionalRuleSetProvider"
-        }
-      ],
-      "symbol_ids": [
-        "type:io.amichne.konditional.detekt.KonditionalRuleSetProvider"
-      ],
-      "target_hash": "26b837c92c7a6c2090ffdd018f1d339cf19e55bdce7e146ac63c1c27420a9eab",
-      "target_id": "type:io.amichne.konditional.detekt.KonditionalRuleSetProvider"
-    },
-    {
-      "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.md",
-      "kind": "type",
-      "symbol_declarations": [
-        {
-          "declaration": "class UnclosedCriteriaFirstRule(config: Config) : Rule(config)",
-          "symbol_id": "type:io.amichne.konditional.detekt.UnclosedCriteriaFirstRule"
-        }
-      ],
-      "symbol_ids": [
-        "type:io.amichne.konditional.detekt.UnclosedCriteriaFirstRule"
-      ],
-      "target_hash": "34ac84d42e9d3fa16e2630c5179f1afdbb6823e5c3f0884782e04c464903c80b",
-      "target_id": "type:io.amichne.konditional.detekt.UnclosedCriteriaFirstRule"
-    },
-    {
-      "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.md",
-      "kind": "type",
-      "symbol_declarations": [
-        {
-          "declaration": "abstract class GenerateOpenApiSpecTask : DefaultTask()",
-          "symbol_id": "type:io.amichne.konditional.gradle.GenerateOpenApiSpecTask"
-        }
-      ],
-      "symbol_ids": [
-        "type:io.amichne.konditional.gradle.GenerateOpenApiSpecTask"
-      ],
-      "target_hash": "9d9249f9cfd7a46e7947ed3de77bdddbe3bb95f648d13a79ce284da5c309bf17",
-      "target_id": "type:io.amichne.konditional.gradle.GenerateOpenApiSpecTask"
-    },
-    {
-      "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/gradle/GenerateRecipesDocsTask.md",
-      "kind": "type",
-      "symbol_declarations": [
-        {
-          "declaration": "abstract class GenerateRecipesDocsTask : DefaultTask()",
-          "symbol_id": "type:io.amichne.konditional.gradle.GenerateRecipesDocsTask"
-        }
-      ],
-      "symbol_ids": [
-        "type:io.amichne.konditional.gradle.GenerateRecipesDocsTask"
-      ],
-      "target_hash": "e9bb5d4e60c44a8aa7e8aee6ca8c4ae2272fc157802a8aa44b1fe73c060da9d3",
-      "target_id": "type:io.amichne.konditional.gradle.GenerateRecipesDocsTask"
-    },
-    {
-      "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryExtension.md",
-      "kind": "type",
-      "symbol_declarations": [
-        {
-          "declaration": "abstract class KonditionalCoreApiBoundaryExtension",
-          "symbol_id": "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryExtension"
-        }
-      ],
-      "symbol_ids": [
-        "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryExtension"
-      ],
-      "target_hash": "e8e46bed214b53d964a2de985b821a0c5eda2a80e1ba26bc76f51592a501b6c7",
-      "target_id": "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryExtension"
-    },
-    {
-      "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.md",
-      "kind": "type",
-      "symbol_declarations": [
-        {
-          "declaration": "abstract class KonditionalCoreApiBoundaryTask : DefaultTask()",
-          "symbol_id": "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryTask"
-        }
-      ],
-      "symbol_ids": [
-        "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryTask"
-      ],
-      "target_hash": "900227fdb54dc077edd8f38f7616639c7746789944bc8fbaa8ef2a59889a16b7",
-      "target_id": "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryTask"
-    },
-    {
-      "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/gradle/KonditionalPublishingExtension.md",
-      "kind": "type",
-      "symbol_declarations": [
-        {
-          "declaration": "abstract class KonditionalPublishingExtension",
-          "symbol_id": "type:io.amichne.konditional.gradle.KonditionalPublishingExtension"
-        }
-      ],
-      "symbol_ids": [
-        "type:io.amichne.konditional.gradle.KonditionalPublishingExtension"
-      ],
-      "target_hash": "5c5f8bf631fab2a4d71752e81bec3a825f21e8361f7265823c0e74859d4d9a47",
-      "target_id": "type:io.amichne.konditional.gradle.KonditionalPublishingExtension"
-    },
-    {
-      "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/gradle/KonditionalRecipesDocsExtension.md",
-      "kind": "type",
-      "symbol_declarations": [
-        {
-          "declaration": "abstract class KonditionalRecipesDocsExtension",
-          "symbol_id": "type:io.amichne.konditional.gradle.KonditionalRecipesDocsExtension"
-        }
-      ],
-      "symbol_ids": [
-        "type:io.amichne.konditional.gradle.KonditionalRecipesDocsExtension"
-      ],
-      "target_hash": "bf92197d550cc12ad88947ece22b061319edfcc2d4d37577450de209f16616d3",
-      "target_id": "type:io.amichne.konditional.gradle.KonditionalRecipesDocsExtension"
-    },
-    {
-      "coverage_status": "missing",
-      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/gradle/VerifyRecipesDocsTask.md",
-      "kind": "type",
-      "symbol_declarations": [
-        {
-          "declaration": "abstract class VerifyRecipesDocsTask : DefaultTask()",
-          "symbol_id": "type:io.amichne.konditional.gradle.VerifyRecipesDocsTask"
-        }
-      ],
-      "symbol_ids": [
-        "type:io.amichne.konditional.gradle.VerifyRecipesDocsTask"
-      ],
-      "target_hash": "c672037db19f5ae5ed388e19f5394fda6bd4631577ce109f5aa3c286bd81219a",
-      "target_id": "type:io.amichne.konditional.gradle.VerifyRecipesDocsTask"
-    },
-    {
-      "coverage_status": "missing",
       "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/openfeature/BlankTargetingKey.md",
       "kind": "type",
       "symbol_declarations": [
@@ -6191,6 +5559,6 @@
       "target_id": "type:io.amichne.kontracts.value.JsonValue"
     }
   ],
-  "total_ready": 255,
+  "total_ready": 233,
   "version": 1
 }

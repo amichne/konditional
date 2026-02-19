@@ -31,7 +31,22 @@ EXCLUDED_DIRS = {
     ".venv",
 }
 
-JAVA_EXTENSIONS = {".java", ".kt", ".kts", ".scala"}
+SOURCE_EXTENSIONS = {".java", ".kt", ".kts", ".scala"}
+EXCLUDED_SOURCE_SETS = {
+    "androidTest",
+    "benchmark",
+    "integrationTest",
+    "jmh",
+    "test",
+    "testFixtures",
+}
+PUBLISHING_PLUGIN_PATTERN = re.compile(
+    r"""id\s*\(\s*["']konditional\.(?:publishing|published-library)["']\s*\)"""
+)
+EXPLICIT_PUBLIC = re.compile(r"\bpublic\b")
+LEADING_VISIBILITY = re.compile(
+    r"^(?:@[A-Za-z_][A-Za-z0-9_\.]*(?:\([^)]*\))?\s+)*(?:(public|protected|private|internal)\b)?"
+)
 
 
 TYPE_PATTERN = re.compile(
@@ -110,6 +125,40 @@ def unique_stable(items: list[str]) -> list[str]:
         seen.add(item)
         result.append(item)
     return result
+
+
+def language_mode_for_path(path: Path) -> str:
+    if path.suffix in {".kt", ".kts"}:
+        return "kotlin"
+    return "explicit_public"
+
+
+def is_public_signature(signature: str, mode: str) -> bool:
+    normalized = normalize_ws(signature)
+    visibility_match = LEADING_VISIBILITY.match(normalized)
+    visibility = visibility_match.group(1) if visibility_match else None
+    if visibility in {"private", "protected", "internal"}:
+        return False
+    if mode == "kotlin":
+        return True
+    return bool(EXPLICIT_PUBLIC.search(normalized))
+
+
+def contains_excluded_dirs(path: Path, root: Path) -> bool:
+    return any(part in EXCLUDED_DIRS for part in path.relative_to(root).parts)
+
+
+def is_primary_source(relative_path: Path) -> bool:
+    parts = relative_path.parts
+    for idx, part in enumerate(parts[:-1]):
+        if part != "src":
+            continue
+        source_set = parts[idx + 1]
+        if source_set in EXCLUDED_SOURCE_SETS:
+            return False
+        if source_set == "main" or source_set.endswith("Main"):
+            return True
+    return False
 
 
 def count_balance_outside_strings(line: str, open_char: str, close_char: str) -> int:
@@ -461,8 +510,17 @@ def extract_members_from_body(body: str) -> tuple[list[str], list[str]]:
     return unique_stable(fields), unique_stable(methods)
 
 
-def parse_types_and_members(text: str) -> tuple[list[TypeBlock], list[str], list[str]]:
-    types = parse_types(text)
+def parse_file(path: Path, repo_root: Path) -> str:
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    language_mode = language_mode_for_path(path)
+
+    package_match = re.search(r"(?m)^\s*package\s+([A-Za-z0-9_\.]+)", text)
+    package_name = package_match.group(1) if package_match else ""
+
+    imports = re.findall(r"(?m)^\s*import\s+([A-Za-z0-9_\.\*]+)", text)
+    all_types = parse_types(text)
+    types = [type_block for type_block in all_types if is_public_signature(type_block.header, language_mode)]
+
     fields: list[str] = []
     methods: list[str] = []
     for type_block in types:
@@ -470,19 +528,15 @@ def parse_types_and_members(text: str) -> tuple[list[TypeBlock], list[str], list
             continue
         body = text[type_block.open_brace + 1 : type_block.close_brace]
         type_fields, type_methods = extract_members_from_body(body)
-        fields.extend(type_fields)
-        methods.extend(type_methods)
-    return types, methods, fields
+        fields.extend(
+            field for field in type_fields if is_public_signature(field, language_mode)
+        )
+        methods.extend(
+            method for method in type_methods if is_public_signature(method, language_mode)
+        )
 
-
-def parse_file(path: Path, repo_root: Path) -> str:
-    text = path.read_text(encoding="utf-8", errors="ignore")
-
-    package_match = re.search(r"(?m)^\s*package\s+([A-Za-z0-9_\.]+)", text)
-    package_name = package_match.group(1) if package_match else ""
-
-    imports = re.findall(r"(?m)^\s*import\s+([A-Za-z0-9_\.\*]+)", text)
-    types, methods, fields = parse_types_and_members(text)
+    fields = unique_stable(fields)
+    methods = unique_stable(methods)
 
     lines: list[str] = []
     lines.append(f"file={path.relative_to(repo_root).as_posix()}")
@@ -511,18 +565,37 @@ def parse_file(path: Path, repo_root: Path) -> str:
     return "\n".join(lines) + "\n"
 
 
-def candidate_files(root: Path, output_root: Path) -> list[Path]:
+def discover_published_modules(root: Path) -> list[Path]:
+    modules: list[Path] = []
+    for build_file in sorted(root.rglob("build.gradle.kts")):
+        if contains_excluded_dirs(build_file, root):
+            continue
+        if build_file.parent == root:
+            continue
+        contents = build_file.read_text(encoding="utf-8", errors="ignore")
+        if PUBLISHING_PLUGIN_PATTERN.search(contents):
+            modules.append(build_file.parent.resolve())
+    return list(dict.fromkeys(modules))
+
+
+def candidate_files(root: Path, output_root: Path, published_modules: list[Path]) -> list[Path]:
     files: list[Path] = []
-    for path in root.rglob("*"):
-        if not path.is_file() or path.suffix not in JAVA_EXTENSIONS:
-            continue
-        relative_parts = path.relative_to(root).parts
-        if any(part in EXCLUDED_DIRS for part in relative_parts):
-            continue
-        if output_root in path.parents:
-            continue
-        files.append(path)
-    return sorted(files)
+    for module_root in sorted(published_modules, key=lambda path: path.relative_to(root).as_posix()):
+        for path in module_root.rglob("*"):
+            if not path.is_file() or path.suffix not in SOURCE_EXTENSIONS:
+                continue
+            if output_root in path.parents:
+                continue
+            if contains_excluded_dirs(path, root):
+                continue
+            relative = path.relative_to(root)
+            if not is_primary_source(relative):
+                continue
+            normalized_path = "/" + relative.as_posix().strip("/") + "/"
+            if "/internal/" in normalized_path:
+                continue
+            files.append(path)
+    return sorted(dict.fromkeys(files))
 
 
 def write_signature_file(repo_root: Path, src: Path, output_root: Path) -> None:
@@ -641,12 +714,21 @@ def main() -> int:
     output_root.mkdir(parents=True, exist_ok=True)
     clear_previous_signatures(output_root)
 
-    files = candidate_files(repo_root, output_root)
+    published_modules = discover_published_modules(repo_root)
+    if not published_modules:
+        raise SystemExit(
+            "No published Gradle modules detected. Expected at least one module with "
+            "id(\"konditional.publishing\") or id(\"konditional.published-library\")."
+        )
+    files = candidate_files(repo_root, output_root, published_modules)
     for src in files:
         write_signature_file(repo_root, src, output_root)
 
     build_indexes(output_root)
-    print(f"Generated {len(files)} signature files in {output_root}")
+    print(
+        f"Generated {len(files)} signature files in {output_root} "
+        f"from {len(published_modules)} published modules"
+    )
     return 0
 
 
