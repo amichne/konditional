@@ -37,7 +37,7 @@ jobs:
           VERSION="${{ github.event.inputs.snapshot-version }}"
 
           if [ -z "$VERSION" ]; then
-            BASE_VERSION="$(grep '^VERSION=' gradle.properties | cut -d'=' -f2)"
+            BASE_VERSION="$(grep -E '^(version|VERSION)=' gradle.properties | head -n1 | cut -d'=' -f2)"
             if [[ "$BASE_VERSION" =~ -SNAPSHOT$ ]]; then
               VERSION="$BASE_VERSION"
             else
@@ -55,7 +55,7 @@ jobs:
       - name: Run tests
         env:
           VERSION: ${{ steps.snapshot-version.outputs.value }}
-        run: ./gradlew -PVERSION="$VERSION" test --no-daemon
+        run: ./gradlew -Pversion="$VERSION" test --no-daemon
 
   publish-github-packages:
     runs-on: ubuntu-latest
@@ -111,7 +111,7 @@ jobs:
             SIGNING_ARGS+=(-Psigning.gnupg.passphrase="$SIGNING_GPG_PASSPHRASE")
           fi
 
-          ./gradlew -PVERSION="$VERSION" publishMavenPublicationToGitHubPackagesRepository "${SIGNING_ARGS[@]}" \
+          ./gradlew -Pversion="$VERSION" publishMavenPublicationToGitHubPackagesRepository "${SIGNING_ARGS[@]}" \
             --no-configuration-cache \
             --no-daemon \
             --stacktrace
@@ -188,7 +188,7 @@ jobs:
             SIGNING_ARGS+=(-Psigning.gnupg.passphrase="$SIGNING_GPG_PASSPHRASE")
           fi
 
-          ./gradlew -PVERSION="$VERSION" publishToMavenCentral "${SIGNING_ARGS[@]}" \
+          ./gradlew -Pversion="$VERSION" publishToMavenCentral "${SIGNING_ARGS[@]}" \
             --no-configuration-cache \
             --no-daemon \
             --stacktrace

@@ -42,7 +42,6 @@ Create a Kotlin file for your features:
 // src/main/kotlin/com/example/AppFeatures.kt
 import io.amichne.konditional.context.*
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.dsl.boolean
 
 object AppFeatures : Namespace("app") {
     val darkMode by boolean<Context>(default = false) {
@@ -87,7 +86,6 @@ See the complete working example in [Golden Path Example](/examples/golden-path)
 // Complete example with imports and usage
 import io.amichne.konditional.context.*
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.dsl.boolean
 
 // 1. Define namespace (registry for features)
 object AppFeatures : Namespace("app") {

@@ -41,6 +41,13 @@ private fun normalizeGithubRepository(value: String): String? {
     return candidate?.removeSuffix(".git")?.trim()?.takeIf { it.isNotBlank() }
 }
 
+private fun Project.resolveProjectVersion(props: Map<String, *>): String =
+    providers.gradleProperty("version").orNull
+        ?: providers.gradleProperty("VERSION").orNull
+        ?: (props["version"] as? String)
+        ?: (props["VERSION"] as? String)
+        ?: error("Missing project version property. Define 'version' in gradle.properties.")
+
 /**
  * Configures Maven publishing with complete POM metadata for a Konditional module.
  *
@@ -60,6 +67,7 @@ fun Project.configureKonditionalPublishing(
 ) {
     val publishTarget = resolvePublishTarget()
     val props = rootProject.properties
+    val projectVersion = resolveProjectVersion(props)
     val githubRepository = sequenceOf(
         props["GITHUB_REPOSITORY"] as? String,
         props["gpr.repo"] as? String,
@@ -90,7 +98,7 @@ fun Project.configureKonditionalPublishing(
             publication.apply {
                 this.groupId = props["GROUP"] as String
                 this.artifactId = artifactId
-                this.version = props["VERSION"] as String
+                this.version = projectVersion
 
                 pom {
                     name.set(moduleName)

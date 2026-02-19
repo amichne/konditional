@@ -5,9 +5,10 @@ plugins {
     `java-library`
 }
 
-val props = rootProject.properties
-group = props["GROUP"] as String
-version = props["VERSION"] as String
+group = providers.gradleProperty("GROUP").get()
+version = providers.gradleProperty("version")
+    .orElse(providers.gradleProperty("VERSION"))
+    .get()
 
 repositories {
     mavenCentral()
