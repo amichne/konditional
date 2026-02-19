@@ -1,0 +1,4 @@
+interface:
+  display_name: "Story Signature Linker"
+  short_description: "Generate story docs linked to signatures."
+  default_prompt: "Use $user-story-signature-linker to generate and validate signature-linked user-story documentation."
