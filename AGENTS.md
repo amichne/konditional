@@ -20,6 +20,30 @@ If a referenced file is missing, **search for it** (filename or closest equivale
 
 ---
 
+## Common workflows and commands
+
+Use these commands when you need established project workflows. Keep the scope
+small and choose the narrowest command that matches the task.
+
+- Build and test: `make build`, `make test`, `make detekt`, `make check`.
+- Documentation site: `make docs-build`, `make docs-serve`, `make docs-clean`.
+- Publish flow (interactive): `make publish`.
+- Publish flow (non-interactive): run `make publish-plan` with
+  `PUBLISH_TARGET=release` and `VERSION_CHOICE=patch`.
+- Publish targets: `make publish-run-local`, `make publish-run-snapshot`,
+  `make publish-run-release`, `make publish-run-github`,
+  `./scripts/publish.sh {local|snapshot|release|github}`.
+- Publish validation: `make publish-validate-local`, `make
+  publish-validate-snapshot`, `make publish-validate-release`, `make
+  publish-validate-github`.
+- Version bump helpers: `./scripts/bump-version.sh {none|patch|minor|major}
+  [--snapshot]`.
+- Release prep shortcut: `./scripts/prepare-release.sh [version-choice]`.
+- Signature artifacts: `./scripts/generate-signatures.sh`,
+  `./scripts/check-signatures-drift.sh`.
+
+---
+
 ## Beads Is Persistent Memory (Required)
 
 Treat Beads as the canonical working memory for planning, status, and handoff. Do not rely on chat transcript memory for project state.
