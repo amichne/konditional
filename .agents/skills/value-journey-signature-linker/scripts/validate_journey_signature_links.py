@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate story/signature links with optional artifact refresh."""
+"""Validate journey/signature links with optional artifact refresh."""
 
 from __future__ import annotations
 
@@ -14,8 +14,9 @@ from typing import Any
 
 @dataclass(frozen=True)
 class LinkRef:
-    story_id: str
+    journey_id: str
     title: str
+    value_proposition: str
     kind: str
     signature: str
 
@@ -34,18 +35,42 @@ def detect_signatures_dir(repo_root: Path, requested: str | None) -> Path | None
     return None
 
 
-def parse_links(links_file: Path) -> list[LinkRef]:
+def parse_links(links_file: Path) -> tuple[list[LinkRef], str]:
     raw: Any = json.loads(links_file.read_text(encoding="utf-8"))
-    stories = raw.get("stories", []) if isinstance(raw, dict) else []
+    if not isinstance(raw, dict):
+        return [], "unknown"
+
+    if isinstance(raw.get("journeys"), list):
+        rows = raw["journeys"]
+        schema_mode = "journeys"
+    elif isinstance(raw.get("stories"), list):
+        rows = raw["stories"]
+        schema_mode = "stories-legacy"
+    else:
+        rows = []
+        schema_mode = "unknown"
+
     result: list[LinkRef] = []
-    for story in stories:
-        if not isinstance(story, dict):
+    for row in rows:
+        if not isinstance(row, dict):
             continue
-        story_id = str(story.get("story_id", "<unknown>"))
-        title = str(story.get("title", ""))
-        links = story.get("links", [])
+
+        journey_id = str(
+            row.get("journey_id")
+            or row.get("story_id")
+            or "<unknown>"
+        )
+        title = str(row.get("title", ""))
+        value_proposition = str(
+            row.get("value_proposition")
+            or row.get("outcome")
+            or ""
+        )
+
+        links = row.get("links", [])
         if not isinstance(links, list):
             continue
+
         for link in links:
             if not isinstance(link, dict):
                 continue
@@ -55,15 +80,18 @@ def parse_links(links_file: Path) -> list[LinkRef]:
             kind = str(link.get("kind", "")).strip()
             if not kind:
                 kind = infer_kind(signature)
+
             result.append(
                 LinkRef(
-                    story_id=story_id,
+                    journey_id=journey_id,
                     title=title,
+                    value_proposition=value_proposition,
                     kind=kind,
                     signature=signature,
                 )
             )
-    return result
+
+    return result, schema_mode
 
 
 def infer_kind(signature: str) -> str:
@@ -103,7 +131,9 @@ def build_catalog(signatures_dir: Path) -> tuple[set[str], set[str], set[str]]:
             continue
         current_types: list[str] = []
         section: str | None = None
-        for raw_line in sig_path.read_text(encoding="utf-8", errors="ignore").splitlines():
+        for raw_line in sig_path.read_text(
+            encoding="utf-8", errors="ignore"
+        ).splitlines():
             line = raw_line.strip()
             if not line:
                 continue
@@ -162,7 +192,7 @@ def resolve_links(
 
     missing_sorted = sorted(
         missing,
-        key=lambda item: (item.story_id, item.kind, item.signature),
+        key=lambda item: (item.journey_id, item.kind, item.signature),
     )
     return resolved, missing_sorted
 
@@ -228,6 +258,7 @@ def report_dict(
     repo_root: Path,
     links_file: Path,
     signatures_dir: Path | None,
+    schema_mode: str,
     links: list[LinkRef],
     resolved: list[LinkRef],
     missing: list[LinkRef],
@@ -240,6 +271,7 @@ def report_dict(
         "repo_root": str(repo_root),
         "links_file": str(links_file),
         "signatures_dir": str(signatures_dir) if signatures_dir else "",
+        "schema_mode": schema_mode,
         "total_links": len(links),
         "resolved_links": len(resolved),
         "missing_links": len(missing),
@@ -248,8 +280,9 @@ def report_dict(
         "refresh_details": refresh_details,
         "missing": [
             {
-                "story_id": item.story_id,
+                "journey_id": item.journey_id,
                 "title": item.title,
+                "value_proposition": item.value_proposition,
                 "kind": item.kind,
                 "signature": item.signature,
             }
@@ -263,8 +296,8 @@ def main() -> int:
     parser.add_argument("--repo-root", default=".", help="Repository root path.")
     parser.add_argument(
         "--links-file",
-        default="docs/user-stories/story-signature-links.json",
-        help="Story/signature links JSON file.",
+        default="docs/value-journeys/journey-signature-links.json",
+        help="Journey/signature links JSON file.",
     )
     parser.add_argument(
         "--signatures-dir",
@@ -294,7 +327,7 @@ def main() -> int:
         print(f"links file not found: {links_file}", file=sys.stderr)
         return 1
 
-    links = parse_links(links_file)
+    links, schema_mode = parse_links(links_file)
     signatures_dir = detect_signatures_dir(repo_root, args.signatures_dir)
 
     refresh_attempted = False
@@ -304,7 +337,9 @@ def main() -> int:
     if signatures_dir is None and args.auto_refresh:
         refresh_attempted = True
         requested_rel = args.signatures_dir or "signatures"
-        refresh_succeeded, refresh_details = refresh_artifacts(repo_root, requested_rel)
+        refresh_succeeded, refresh_details = refresh_artifacts(
+            repo_root, requested_rel
+        )
         if refresh_succeeded:
             signatures_dir = detect_signatures_dir(repo_root, requested_rel)
     elif signatures_dir is None:
@@ -315,16 +350,28 @@ def main() -> int:
     else:
         type_symbols, method_symbols, field_symbols = set(), set(), set()
 
-    resolved, missing = resolve_links(links, type_symbols, method_symbols, field_symbols)
+    resolved, missing = resolve_links(
+        links,
+        type_symbols,
+        method_symbols,
+        field_symbols,
+    )
 
     if missing and args.auto_refresh and not refresh_attempted:
         refresh_attempted = True
-        signatures_rel = rel_path(repo_root, signatures_dir) if signatures_dir else "signatures"
-        refresh_succeeded, refresh_details = refresh_artifacts(repo_root, signatures_rel)
+        if signatures_dir is not None:
+            signatures_rel = rel_path(repo_root, signatures_dir)
+        else:
+            signatures_rel = "signatures"
+        refresh_succeeded, refresh_details = refresh_artifacts(
+            repo_root, signatures_rel
+        )
         if refresh_succeeded:
             signatures_dir = detect_signatures_dir(repo_root, signatures_rel)
             if signatures_dir is not None:
-                type_symbols, method_symbols, field_symbols = build_catalog(signatures_dir)
+                type_symbols, method_symbols, field_symbols = build_catalog(
+                    signatures_dir
+                )
                 resolved, missing = resolve_links(
                     links,
                     type_symbols,
@@ -336,6 +383,7 @@ def main() -> int:
         repo_root=repo_root,
         links_file=links_file,
         signatures_dir=signatures_dir,
+        schema_mode=schema_mode,
         links=links,
         resolved=resolved,
         missing=missing,
