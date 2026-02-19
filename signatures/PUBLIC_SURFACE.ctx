@@ -3,11 +3,9 @@ version=1
 scope=public-surface-only
 repository=konditional
 source_signatures_dir=signatures
-public_type_count=147
+public_type_count=138
 
 modules:
-- module=build-logic|public_types=7
-- module=detekt-rules|public_types=2
 - module=konditional-core|public_types=77
 - module=konditional-observability|public_types=1
 - module=konditional-otel|public_types=12
@@ -82,15 +80,6 @@ types:
 - type=io.amichne.konditional.core.schema.Entry|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/schema/CompiledNamespaceSchema.kt|package=io.amichne.konditional.core.schema|decl=data class Entry( val featureId: FeatureId, val feature: Feature<*, *, *>, val declaredDefinition: FlagDefinition<*, *, *>, )
 - type=io.amichne.konditional.core.spi.FeatureRegistrationHook|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHook.kt|package=io.amichne.konditional.core.spi|decl=fun interface FeatureRegistrationHook
 - type=io.amichne.konditional.core.types.Konstrained|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/types/Konstrained.kt|package=io.amichne.konditional.core.types|decl=interface Konstrained<out S : JsonSchema<*>>
-- type=io.amichne.konditional.detekt.KonditionalRuleSetProvider|kind=class|file=detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/KonditionalRuleSetProvider.kt|package=io.amichne.konditional.detekt|decl=class KonditionalRuleSetProvider : RuleSetProvider
-- type=io.amichne.konditional.detekt.UnclosedCriteriaFirstRule|kind=class|file=detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt|package=io.amichne.konditional.detekt|decl=class UnclosedCriteriaFirstRule(config: Config) : Rule(config)
-- type=io.amichne.konditional.gradle.GenerateOpenApiSpecTask|kind=class|file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt|package=io.amichne.konditional.gradle|decl=abstract class GenerateOpenApiSpecTask : DefaultTask()
-- type=io.amichne.konditional.gradle.GenerateRecipesDocsTask|kind=class|file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt|package=io.amichne.konditional.gradle|decl=abstract class GenerateRecipesDocsTask : DefaultTask()
-- type=io.amichne.konditional.gradle.KonditionalCoreApiBoundaryExtension|kind=class|file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt|package=io.amichne.konditional.gradle|decl=abstract class KonditionalCoreApiBoundaryExtension
-- type=io.amichne.konditional.gradle.KonditionalCoreApiBoundaryTask|kind=class|file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt|package=io.amichne.konditional.gradle|decl=abstract class KonditionalCoreApiBoundaryTask : DefaultTask()
-- type=io.amichne.konditional.gradle.KonditionalPublishingExtension|kind=class|file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt|package=io.amichne.konditional.gradle|decl=abstract class KonditionalPublishingExtension
-- type=io.amichne.konditional.gradle.KonditionalRecipesDocsExtension|kind=class|file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt|package=io.amichne.konditional.gradle|decl=abstract class KonditionalRecipesDocsExtension
-- type=io.amichne.konditional.gradle.VerifyRecipesDocsTask|kind=class|file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt|package=io.amichne.konditional.gradle|decl=abstract class VerifyRecipesDocsTask : DefaultTask()
 - type=io.amichne.konditional.openfeature.BlankTargetingKey|kind=object|file=openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt|package=io.amichne.konditional.openfeature|decl=object BlankTargetingKey : KonditionalContextMappingError
 - type=io.amichne.konditional.openfeature.KonditionalContextMapper|kind=interface|file=openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt|package=io.amichne.konditional.openfeature|decl=fun interface KonditionalContextMapper<C : Context>
 - type=io.amichne.konditional.openfeature.KonditionalContextMappingError|kind=interface|file=openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt|package=io.amichne.konditional.openfeature|decl=sealed interface KonditionalContextMappingError
@@ -167,39 +156,6 @@ types:
 - type=io.amichne.kontracts.value.JsonValue|kind=interface|file=kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonValue.kt|package=io.amichne.kontracts.value|decl=sealed interface JsonValue
 
 file_members:
-- file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt|public_methods=2|public_fields=4
-  method=fun generate()
-  method=fun verify()
-  field=abstract val sampleFile: RegularFileProperty
-  field=abstract val templateFile: RegularFileProperty
-  field=abstract val outputFile: RegularFileProperty
-  field=abstract val docsFile: RegularFileProperty
-- file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt|public_methods=0|public_fields=7
-  field=abstract val artifactId: Property<String>
-  field=abstract val moduleName: Property<String>
-  field=abstract val moduleDescription: Property<String>
-  field=abstract val sampleFile: RegularFileProperty
-  field=abstract val templateFile: RegularFileProperty
-  field=abstract val docsFile: RegularFileProperty
-  field_truncated=1
-- file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt|public_methods=1|public_fields=6
-  method=fun generateSpec()
-  field=abstract val executionClasspath: ConfigurableFileCollection
-  field=abstract val sourceInputs: ConfigurableFileCollection
-  field=abstract val classInputs: ConfigurableFileCollection
-  field=abstract val generatorMainClass: Property<String>
-  field=abstract val outputFile: RegularFileProperty
-  field=abstract val execOperations: ExecOperations
-- file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt|public_methods=1|public_fields=3
-  method=fun checkApiBoundary()
-  field=abstract val sourceDir: DirectoryProperty
-  field=abstract val allowedPackagePrefixes: ListProperty<String>
-  field=abstract val projectDir: DirectoryProperty
-- file=detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/KonditionalRuleSetProvider.kt|public_methods=0|public_fields=1
-  field=override val ruleSetId: String
-- file=detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt|public_methods=1|public_fields=1
-  method=override fun visitCallExpression(expression: KtCallExpression)
-  field=override val issue: Issue
 - file=konditional-core/src/main/kotlin/io/amichne/konditional/api/KonditionalInternalApi.kt|public_methods=0|public_fields=0
 - file=konditional-core/src/main/kotlin/io/amichne/konditional/api/RampUpBucketing.kt|public_methods=1|public_fields=0
   method=fun bucket( stableId: StableId, featureKey: String, salt: String, ): Int
@@ -218,14 +174,14 @@ file_members:
   method=override fun compareTo(other: Version): Int
 - file=konditional-core/src/main/kotlin/io/amichne/konditional/context/axis/AxisValue.kt|public_methods=0|public_fields=1
   field=val id: String
-- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt|public_methods=19|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt|public_methods=7|public_fields=0
   method=fun allFeatures(): List<Feature<*, *, *>>
   method=fun declaredDefault(feature: Feature<*, *, *>): Any?
   method=fun declaredDefinition(feature: Feature<*, *, *>): FlagDefinition<*, *, *>?
   method=fun compiledSchema(): CompiledNamespaceSchema
   method=override fun equals(other: Any?): Boolean
   method=override fun hashCode(): Int
-  method_truncated=13
+  method_truncated=1
 - file=konditional-core/src/main/kotlin/io/amichne/konditional/core/ValueType.kt|public_methods=0|public_fields=0
 - file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/AxisValuesScope.kt|public_methods=0|public_fields=0
 - file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/FlagScope.kt|public_methods=0|public_fields=0
@@ -259,10 +215,9 @@ file_members:
 - file=konditional-core/src/main/kotlin/io/amichne/konditional/core/features/IntFeature.kt|public_methods=0|public_fields=0
 - file=konditional-core/src/main/kotlin/io/amichne/konditional/core/features/KotlinClassFeature.kt|public_methods=0|public_fields=0
 - file=konditional-core/src/main/kotlin/io/amichne/konditional/core/features/StringFeature.kt|public_methods=0|public_fields=0
-- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/id/StableId.kt|public_methods=0|public_fields=3
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/id/StableId.kt|public_methods=0|public_fields=2
   field=val id: String
   field=val hexId: HexId
-  field=override val id: String
 - file=konditional-core/src/main/kotlin/io/amichne/konditional/core/id/StaticStableId.kt|public_methods=0|public_fields=0
 - file=konditional-core/src/main/kotlin/io/amichne/konditional/core/instance/ConfigurationView.kt|public_methods=0|public_fields=5
   field=val flags: Map<Feature<*, *, *>, FlagDefinition<*, *, *>>
@@ -292,8 +247,7 @@ file_members:
   field=val namespaceId: String
   field=val configuration: ConfigurationView
   field=val hooks: RegistryHooks
-- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistryFactory.kt|public_methods=1|public_fields=0
-  method=fun default(namespaceId: String): NamespaceRegistry
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistryFactory.kt|public_methods=0|public_fields=0
 - file=konditional-core/src/main/kotlin/io/amichne/konditional/core/result/KonditionalBoundaryFailure.kt|public_methods=0|public_fields=0
 - file=konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseError.kt|public_methods=0|public_fields=2
   field=val message: String
@@ -423,7 +377,7 @@ file_members:
   field=val nullable: Boolean
   field=val example: T?
   field_truncated=1
-- file=openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt|public_methods=10|public_fields=2
+- file=openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt|public_methods=9|public_fields=2
   method=override fun getName(): String
   method=override fun toKonditionalContext(context: EvaluationContext): KonditionalContextMappingResult<TargetingKeyContext>
   method=override fun getMetadata(): Metadata
@@ -432,4 +386,4 @@ file_members:
   method=override fun getStringEvaluation( key: String, defaultValue: String, ctx: EvaluationContext, ): ProviderEvaluation<String>
   field=val message: String
   field=override val message: String
-  method_truncated=4
+  method_truncated=3
