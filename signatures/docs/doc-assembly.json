@@ -1213,12 +1213,53 @@
     },
     {
       "blocking_reasons": [],
-      "claims": [],
+      "claims": [
+        {
+          "claim": "method:de958e79acdb2869 declaration: `open fun hasBounds(): Boolean`.",
+          "claim_id": "claim_8cb14f9c9e57_01",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/VersionRange.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:de958e79acdb2869"
+            }
+          ],
+          "target_hash": "8cb14f9c9e57015dd193ea6f3ed40f5aa0173f7ab0c1b452d4f0052e856dd29e"
+        },
+        {
+          "claim": "method:ff2dfb4f7251c7ca declaration: `open fun contains(v: Version): Boolean`.",
+          "claim_id": "claim_8cb14f9c9e57_02",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/VersionRange.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:ff2dfb4f7251c7ca"
+            }
+          ],
+          "target_hash": "8cb14f9c9e57015dd193ea6f3ed40f5aa0173f7ab0c1b452d4f0052e856dd29e"
+        },
+        {
+          "claim": "This target scope contains exactly two symbols: `method:de958e79acdb2869` and `method:ff2dfb4f7251c7ca`.",
+          "claim_id": "claim_8cb14f9c9e57_03",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/VersionRange.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:de958e79acdb2869"
+            },
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:ff2dfb4f7251c7ca"
+            }
+          ],
+          "target_hash": "8cb14f9c9e57015dd193ea6f3ed40f5aa0173f7ab0c1b452d4f0052e856dd29e"
+        }
+      ],
       "coverage_issues": [],
-      "coverage_status": "missing",
+      "coverage_status": "complete",
       "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/VersionRange.kt.md",
       "kind": "entrypoint",
-      "ready_for_write": true,
+      "ready_for_write": false,
       "symbol_declarations": [
         {
           "declaration": "open fun hasBounds(): Boolean",
@@ -1238,12 +1279,53 @@
     },
     {
       "blocking_reasons": [],
-      "claims": [],
+      "claims": [
+        {
+          "claim": "method:9d5378df61fd5747 declaration: `override fun compareTo(other: FeatureId): Int`.",
+          "claim_id": "claim_33c4a68c5a6b_01",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/values/FeatureId.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:9d5378df61fd5747"
+            }
+          ],
+          "target_hash": "33c4a68c5a6bed6804f6482c497290415ac9377ac8ee19960e6432f0ac33950e"
+        },
+        {
+          "claim": "method:f4f8b89661cfc788 declaration: `override fun toString(): String`.",
+          "claim_id": "claim_33c4a68c5a6b_02",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/values/FeatureId.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:f4f8b89661cfc788"
+            }
+          ],
+          "target_hash": "33c4a68c5a6bed6804f6482c497290415ac9377ac8ee19960e6432f0ac33950e"
+        },
+        {
+          "claim": "This target scope contains exactly two symbols: `method:9d5378df61fd5747` and `method:f4f8b89661cfc788`.",
+          "claim_id": "claim_33c4a68c5a6b_03",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/values/FeatureId.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:9d5378df61fd5747"
+            },
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:f4f8b89661cfc788"
+            }
+          ],
+          "target_hash": "33c4a68c5a6bed6804f6482c497290415ac9377ac8ee19960e6432f0ac33950e"
+        }
+      ],
       "coverage_issues": [],
-      "coverage_status": "missing",
+      "coverage_status": "complete",
       "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/values/FeatureId.kt.md",
       "kind": "entrypoint",
-      "ready_for_write": true,
+      "ready_for_write": false,
       "symbol_declarations": [
         {
           "declaration": "override fun compareTo(other: FeatureId): Int",
@@ -1263,12 +1345,49 @@
     },
     {
       "blocking_reasons": [],
-      "claims": [],
+      "claims": [
+        {
+          "claim": "method:5d529e6068819b1d declaration: `fun toRegistryHooks(): RegistryHooks`.",
+          "claim_id": "claim_bc78b4890505_01",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-otel/src/main/kotlin/io/amichne/konditional/otel/KonditionalTelemetry.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:5d529e6068819b1d"
+            }
+          ],
+          "target_hash": "bc78b48905052bc3414479515af069ba4b0d72afb5f178cede500bc456592a55"
+        },
+        {
+          "claim": "This target scope contains exactly one symbol: `method:5d529e6068819b1d`.",
+          "claim_id": "claim_bc78b4890505_02",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-otel/src/main/kotlin/io/amichne/konditional/otel/KonditionalTelemetry.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:5d529e6068819b1d"
+            }
+          ],
+          "target_hash": "bc78b48905052bc3414479515af069ba4b0d72afb5f178cede500bc456592a55"
+        },
+        {
+          "claim": "The sole declaration for `method:5d529e6068819b1d` is a callable `fun` signature.",
+          "claim_id": "claim_bc78b4890505_03",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-otel/src/main/kotlin/io/amichne/konditional/otel/KonditionalTelemetry.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:5d529e6068819b1d"
+            }
+          ],
+          "target_hash": "bc78b48905052bc3414479515af069ba4b0d72afb5f178cede500bc456592a55"
+        }
+      ],
       "coverage_issues": [],
-      "coverage_status": "missing",
+      "coverage_status": "complete",
       "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-otel/src/main/kotlin/io/amichne/konditional/otel/KonditionalTelemetry.kt.md",
       "kind": "entrypoint",
-      "ready_for_write": true,
+      "ready_for_write": false,
       "symbol_declarations": [
         {
           "declaration": "fun toRegistryHooks(): RegistryHooks",
@@ -1283,12 +1402,49 @@
     },
     {
       "blocking_reasons": [],
-      "claims": [],
+      "claims": [
+        {
+          "claim": "method:117fbcaf961bcc31 declaration: `override fun info(message: () -> String)`.",
+          "claim_id": "claim_72a20fcca082_01",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-otel/src/main/kotlin/io/amichne/konditional/otel/logging/OtelLogger.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:117fbcaf961bcc31"
+            }
+          ],
+          "target_hash": "72a20fcca08281de94bfbdfd4925b56286757c17e29b68c04dd62129ddc6e70c"
+        },
+        {
+          "claim": "method:938d15e66f3b6794 declaration: `override fun error( message: () -> String, throwable: Throwable?, )`.",
+          "claim_id": "claim_72a20fcca082_02",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-otel/src/main/kotlin/io/amichne/konditional/otel/logging/OtelLogger.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:938d15e66f3b6794"
+            }
+          ],
+          "target_hash": "72a20fcca08281de94bfbdfd4925b56286757c17e29b68c04dd62129ddc6e70c"
+        },
+        {
+          "claim": "method:c1fc1b2de8c6865f declaration: `override fun warn( message: () -> String, throwable: Throwable?, )`.",
+          "claim_id": "claim_72a20fcca082_03",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-otel/src/main/kotlin/io/amichne/konditional/otel/logging/OtelLogger.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:c1fc1b2de8c6865f"
+            }
+          ],
+          "target_hash": "72a20fcca08281de94bfbdfd4925b56286757c17e29b68c04dd62129ddc6e70c"
+        }
+      ],
       "coverage_issues": [],
-      "coverage_status": "missing",
+      "coverage_status": "complete",
       "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-otel/src/main/kotlin/io/amichne/konditional/otel/logging/OtelLogger.kt.md",
       "kind": "entrypoint",
-      "ready_for_write": true,
+      "ready_for_write": false,
       "symbol_declarations": [
         {
           "declaration": "override fun info(message: () -> String)",
@@ -1318,12 +1474,49 @@
     },
     {
       "blocking_reasons": [],
-      "claims": [],
+      "claims": [
+        {
+          "claim": "method:86a6a7fc2fa434c3 declaration: `override fun recordConfigRollback(event: Metrics.ConfigRollbackMetric)`.",
+          "claim_id": "claim_9ed4f7bfe812_01",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-otel/src/main/kotlin/io/amichne/konditional/otel/metrics/OtelMetricsCollector.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:86a6a7fc2fa434c3"
+            }
+          ],
+          "target_hash": "9ed4f7bfe8126aa8211562a0fc5c44387146def311efab79b5c34ddda8e900d4"
+        },
+        {
+          "claim": "method:c8e1b7cb9b10831b declaration: `override fun recordConfigLoad(event: Metrics.ConfigLoadMetric)`.",
+          "claim_id": "claim_9ed4f7bfe812_02",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-otel/src/main/kotlin/io/amichne/konditional/otel/metrics/OtelMetricsCollector.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:c8e1b7cb9b10831b"
+            }
+          ],
+          "target_hash": "9ed4f7bfe8126aa8211562a0fc5c44387146def311efab79b5c34ddda8e900d4"
+        },
+        {
+          "claim": "method:dd14fc2dcfe9487b declaration: `override fun recordEvaluation(event: Metrics.Evaluation)`.",
+          "claim_id": "claim_9ed4f7bfe812_03",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-otel/src/main/kotlin/io/amichne/konditional/otel/metrics/OtelMetricsCollector.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:dd14fc2dcfe9487b"
+            }
+          ],
+          "target_hash": "9ed4f7bfe8126aa8211562a0fc5c44387146def311efab79b5c34ddda8e900d4"
+        }
+      ],
       "coverage_issues": [],
-      "coverage_status": "missing",
+      "coverage_status": "complete",
       "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-otel/src/main/kotlin/io/amichne/konditional/otel/metrics/OtelMetricsCollector.kt.md",
       "kind": "entrypoint",
-      "ready_for_write": true,
+      "ready_for_write": false,
       "symbol_declarations": [
         {
           "declaration": "override fun recordConfigRollback(event: Metrics.ConfigRollbackMetric)",
@@ -1348,12 +1541,49 @@
     },
     {
       "blocking_reasons": [],
-      "claims": [],
+      "claims": [
+        {
+          "claim": "method:1b5b330f67bd6dd3 declaration: `fun <T : Any, C : Context> traceEvaluation( feature: Feature<T, C, *>, context: C, parentSpan: Span? = null, block: () -> EvaluationDiagnostics<T>, ): EvaluationDiagnostics<T>`.",
+          "claim_id": "claim_11df056d19bd_01",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/FlagEvaluationTracer.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:1b5b330f67bd6dd3"
+            }
+          ],
+          "target_hash": "11df056d19bdf75edfa91417aead0c8245fcf186ed8f0521930410b684190db9"
+        },
+        {
+          "claim": "This target scope contains exactly one symbol: `method:1b5b330f67bd6dd3`.",
+          "claim_id": "claim_11df056d19bd_02",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/FlagEvaluationTracer.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:1b5b330f67bd6dd3"
+            }
+          ],
+          "target_hash": "11df056d19bdf75edfa91417aead0c8245fcf186ed8f0521930410b684190db9"
+        },
+        {
+          "claim": "The sole declaration for `method:1b5b330f67bd6dd3` is a callable `fun` signature.",
+          "claim_id": "claim_11df056d19bd_03",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/FlagEvaluationTracer.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:1b5b330f67bd6dd3"
+            }
+          ],
+          "target_hash": "11df056d19bdf75edfa91417aead0c8245fcf186ed8f0521930410b684190db9"
+        }
+      ],
       "coverage_issues": [],
-      "coverage_status": "missing",
+      "coverage_status": "complete",
       "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/FlagEvaluationTracer.kt.md",
       "kind": "entrypoint",
-      "ready_for_write": true,
+      "ready_for_write": false,
       "symbol_declarations": [
         {
           "declaration": "fun <T : Any, C : Context> traceEvaluation( feature: Feature<T, C, *>, context: C, parentSpan: Span? = null, block: () -> EvaluationDiagnostics<T>, ): EvaluationDiagnostics<T>",
@@ -1368,12 +1598,49 @@
     },
     {
       "blocking_reasons": [],
-      "claims": [],
+      "claims": [
+        {
+          "claim": "method:2e6ab8de4d2246e0 declaration: `override fun enableAll()`.",
+          "claim_id": "claim_a3ed394d79a1_01",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistry.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:2e6ab8de4d2246e0"
+            }
+          ],
+          "target_hash": "a3ed394d79a11033a8eb71beb0872e60892a9e21a5aa743380273700d31ec201"
+        },
+        {
+          "claim": "method:37ad875188f91c3a declaration: `override fun <T : Any, C : Context, M : Namespace> setOverride( feature: Feature<T, C, M>, value: T, )`.",
+          "claim_id": "claim_a3ed394d79a1_02",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistry.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:37ad875188f91c3a"
+            }
+          ],
+          "target_hash": "a3ed394d79a11033a8eb71beb0872e60892a9e21a5aa743380273700d31ec201"
+        },
+        {
+          "claim": "method:4d92cf4cf7b52ea4 declaration: `override fun rollback(steps: Int): Boolean`.",
+          "claim_id": "claim_a3ed394d79a1_03",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistry.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:4d92cf4cf7b52ea4"
+            }
+          ],
+          "target_hash": "a3ed394d79a11033a8eb71beb0872e60892a9e21a5aa743380273700d31ec201"
+        }
+      ],
       "coverage_issues": [],
-      "coverage_status": "missing",
+      "coverage_status": "complete",
       "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistry.kt.md",
       "kind": "entrypoint",
-      "ready_for_write": true,
+      "ready_for_write": false,
       "symbol_declarations": [
         {
           "declaration": "override fun enableAll()",
@@ -1433,12 +1700,49 @@
     },
     {
       "blocking_reasons": [],
-      "claims": [],
+      "claims": [
+        {
+          "claim": "method:dd7035d19678abe4 declaration: `override fun create(namespaceId: String): NamespaceRegistry`.",
+          "claim_id": "claim_62e19ed570b4_01",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistryFactory.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:dd7035d19678abe4"
+            }
+          ],
+          "target_hash": "62e19ed570b473535e7266e4c1047741c33a664d7780e63786e85a2e953f748b"
+        },
+        {
+          "claim": "This target scope contains exactly one symbol: `method:dd7035d19678abe4`.",
+          "claim_id": "claim_62e19ed570b4_02",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistryFactory.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:dd7035d19678abe4"
+            }
+          ],
+          "target_hash": "62e19ed570b473535e7266e4c1047741c33a664d7780e63786e85a2e953f748b"
+        },
+        {
+          "claim": "The sole declaration for `method:dd7035d19678abe4` includes the `override` modifier.",
+          "claim_id": "claim_62e19ed570b4_03",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistryFactory.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:dd7035d19678abe4"
+            }
+          ],
+          "target_hash": "62e19ed570b473535e7266e4c1047741c33a664d7780e63786e85a2e953f748b"
+        }
+      ],
       "coverage_issues": [],
-      "coverage_status": "missing",
+      "coverage_status": "complete",
       "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistryFactory.kt.md",
       "kind": "entrypoint",
-      "ready_for_write": true,
+      "ready_for_write": false,
       "symbol_declarations": [
         {
           "declaration": "override fun create(namespaceId: String): NamespaceRegistry",
@@ -1453,12 +1757,49 @@
     },
     {
       "blocking_reasons": [],
-      "claims": [],
+      "claims": [
+        {
+          "claim": "method:d81e0ac72584181e declaration: `override fun load( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>`.",
+          "claim_id": "claim_ab0253af6ab8_01",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-runtime/src/main/kotlin/io/amichne/konditional/serialization/snapshot/NamespaceSnapshotLoader.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:d81e0ac72584181e"
+            }
+          ],
+          "target_hash": "ab0253af6ab82bfbefbe2b99d4f381710fb9db5d602bcc9ec75e49334b076086"
+        },
+        {
+          "claim": "This target scope contains exactly one symbol: `method:d81e0ac72584181e`.",
+          "claim_id": "claim_ab0253af6ab8_02",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-runtime/src/main/kotlin/io/amichne/konditional/serialization/snapshot/NamespaceSnapshotLoader.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:d81e0ac72584181e"
+            }
+          ],
+          "target_hash": "ab0253af6ab82bfbefbe2b99d4f381710fb9db5d602bcc9ec75e49334b076086"
+        },
+        {
+          "claim": "The sole declaration for `method:d81e0ac72584181e` includes the `override` modifier.",
+          "claim_id": "claim_ab0253af6ab8_03",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-runtime/src/main/kotlin/io/amichne/konditional/serialization/snapshot/NamespaceSnapshotLoader.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:d81e0ac72584181e"
+            }
+          ],
+          "target_hash": "ab0253af6ab82bfbefbe2b99d4f381710fb9db5d602bcc9ec75e49334b076086"
+        }
+      ],
       "coverage_issues": [],
-      "coverage_status": "missing",
+      "coverage_status": "complete",
       "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-runtime/src/main/kotlin/io/amichne/konditional/serialization/snapshot/NamespaceSnapshotLoader.kt.md",
       "kind": "entrypoint",
-      "ready_for_write": true,
+      "ready_for_write": false,
       "symbol_declarations": [
         {
           "declaration": "override fun load( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>",
@@ -1473,12 +1814,53 @@
     },
     {
       "blocking_reasons": [],
-      "claims": [],
+      "claims": [
+        {
+          "claim": "method:703b4e48f5e7c132 declaration: `fun <T : Any, C : Context> register(feature: Feature<T, C, *>)`.",
+          "claim_id": "claim_f8a0d6871728_01",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/FeatureRegistry.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:703b4e48f5e7c132"
+            }
+          ],
+          "target_hash": "f8a0d6871728510ffec4794d2bf9d0393882faa8fadd23f90bca180a822ab803"
+        },
+        {
+          "claim": "method:c56b05cfddc953f5 declaration: `fun clear()`.",
+          "claim_id": "claim_f8a0d6871728_02",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/FeatureRegistry.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:c56b05cfddc953f5"
+            }
+          ],
+          "target_hash": "f8a0d6871728510ffec4794d2bf9d0393882faa8fadd23f90bca180a822ab803"
+        },
+        {
+          "claim": "This target scope contains exactly two symbols: `method:703b4e48f5e7c132` and `method:c56b05cfddc953f5`.",
+          "claim_id": "claim_f8a0d6871728_03",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/FeatureRegistry.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:703b4e48f5e7c132"
+            },
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:c56b05cfddc953f5"
+            }
+          ],
+          "target_hash": "f8a0d6871728510ffec4794d2bf9d0393882faa8fadd23f90bca180a822ab803"
+        }
+      ],
       "coverage_issues": [],
-      "coverage_status": "missing",
+      "coverage_status": "complete",
       "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/FeatureRegistry.kt.md",
       "kind": "entrypoint",
-      "ready_for_write": true,
+      "ready_for_write": false,
       "symbol_declarations": [
         {
           "declaration": "fun <T : Any, C : Context> register(feature: Feature<T, C, *>)",
@@ -1498,12 +1880,49 @@
     },
     {
       "blocking_reasons": [],
-      "claims": [],
+      "claims": [
+        {
+          "claim": "method:0e94d3014feef5fe declaration: `fun <T : Any> decodeKonstrainedPrimitive(kClass: KClass<T>, rawValue: Any): Result<T>`.",
+          "claim_id": "claim_13e1787889e3_01",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/SchemaValueCodec.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:0e94d3014feef5fe"
+            }
+          ],
+          "target_hash": "13e1787889e3ee2aeec876c811a156dd7a87cdcc24af701f4565c771c075fda9"
+        },
+        {
+          "claim": "method:1c13e0136d289aa0 declaration: `fun encodeKonstrained(konstrained: Konstrained<*>): JsonValue`.",
+          "claim_id": "claim_13e1787889e3_02",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/SchemaValueCodec.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:1c13e0136d289aa0"
+            }
+          ],
+          "target_hash": "13e1787889e3ee2aeec876c811a156dd7a87cdcc24af701f4565c771c075fda9"
+        },
+        {
+          "claim": "method:686545544b7e7800 declaration: `fun <T : Any> encode(value: T, schema: ObjectSchema): JsonObject`.",
+          "claim_id": "claim_13e1787889e3_03",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/SchemaValueCodec.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:686545544b7e7800"
+            }
+          ],
+          "target_hash": "13e1787889e3ee2aeec876c811a156dd7a87cdcc24af701f4565c771c075fda9"
+        }
+      ],
       "coverage_issues": [],
-      "coverage_status": "missing",
+      "coverage_status": "complete",
       "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/SchemaValueCodec.kt.md",
       "kind": "entrypoint",
-      "ready_for_write": true,
+      "ready_for_write": false,
       "symbol_declarations": [
         {
           "declaration": "fun <T : Any> decodeKonstrainedPrimitive(kClass: KClass<T>, rawValue: Any): Result<T>",
@@ -1538,12 +1957,49 @@
     },
     {
       "blocking_reasons": [],
-      "claims": [],
+      "claims": [
+        {
+          "claim": "method:36e59f38debad3be declaration: `fun diff(other: Configuration): ConfigurationDiff`.",
+          "claim_id": "claim_809d597b1c32_01",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/Configuration.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:36e59f38debad3be"
+            }
+          ],
+          "target_hash": "809d597b1c32079739be4350a48170bf753bf82ce8b7e8ea540a0e3e088dbc45"
+        },
+        {
+          "claim": "method:41a01ff65a618b92 declaration: `fun withMetadata( version: String? = null, generatedAtEpochMillis: Long? = null, source: String? = null, ): Configuration`.",
+          "claim_id": "claim_809d597b1c32_02",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/Configuration.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:41a01ff65a618b92"
+            }
+          ],
+          "target_hash": "809d597b1c32079739be4350a48170bf753bf82ce8b7e8ea540a0e3e088dbc45"
+        },
+        {
+          "claim": "method:61e3f939db3cb049 declaration: `fun withMetadata(metadata: ConfigurationMetadata): Configuration`.",
+          "claim_id": "claim_809d597b1c32_03",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/Configuration.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:61e3f939db3cb049"
+            }
+          ],
+          "target_hash": "809d597b1c32079739be4350a48170bf753bf82ce8b7e8ea540a0e3e088dbc45"
+        }
+      ],
       "coverage_issues": [],
-      "coverage_status": "missing",
+      "coverage_status": "complete",
       "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/Configuration.kt.md",
       "kind": "entrypoint",
-      "ready_for_write": true,
+      "ready_for_write": false,
       "symbol_declarations": [
         {
           "declaration": "fun diff(other: Configuration): ConfigurationDiff",
@@ -1568,12 +2024,49 @@
     },
     {
       "blocking_reasons": [],
-      "claims": [],
+      "claims": [
+        {
+          "claim": "method:2a16c349e1576162 declaration: `fun <T : Any, C : Context> add( entry: FlagDefinition<T, C, *>, )`.",
+          "claim_id": "claim_f47fb53cb98c_01",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigurationPatch.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:2a16c349e1576162"
+            }
+          ],
+          "target_hash": "f47fb53cb98c13d2f7ee1088fe9468c5c4544ade446cf1bb24b387221d046cec"
+        },
+        {
+          "claim": "method:589bc0cd7a3f5783 declaration: `fun applyTo(configuration: Configuration): Configuration`.",
+          "claim_id": "claim_f47fb53cb98c_02",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigurationPatch.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:589bc0cd7a3f5783"
+            }
+          ],
+          "target_hash": "f47fb53cb98c13d2f7ee1088fe9468c5c4544ade446cf1bb24b387221d046cec"
+        },
+        {
+          "claim": "method:f9fe8366c4cfcfe7 declaration: `fun remove(key: Feature<*, *, *>)`.",
+          "claim_id": "claim_f47fb53cb98c_03",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigurationPatch.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:f9fe8366c4cfcfe7"
+            }
+          ],
+          "target_hash": "f47fb53cb98c13d2f7ee1088fe9468c5c4544ade446cf1bb24b387221d046cec"
+        }
+      ],
       "coverage_issues": [],
-      "coverage_status": "missing",
+      "coverage_status": "complete",
       "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigurationPatch.kt.md",
       "kind": "entrypoint",
-      "ready_for_write": true,
+      "ready_for_write": false,
       "symbol_declarations": [
         {
           "declaration": "fun <T : Any, C : Context> add( entry: FlagDefinition<T, C, *>, )",
@@ -1598,12 +2091,49 @@
     },
     {
       "blocking_reasons": [],
-      "claims": [],
+      "claims": [
+        {
+          "claim": "method:269df93e671974ba declaration: `fun applyPatchJson( currentConfiguration: MaterializedConfiguration, patchJson: String, options: SnapshotLoadOptions = SnapshotLoadOptions.strict(), ): Result<MaterializedConfiguration>`.",
+          "claim_id": "claim_6731ecc6aade_01",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/ConfigurationSnapshotCodec.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:269df93e671974ba"
+            }
+          ],
+          "target_hash": "6731ecc6aadefb6184b3e9fffe3e12182dd77779799509b92dac97ee79eeea9e"
+        },
+        {
+          "claim": "method:2f68837a39cf0b4f declaration: `fun encode(value: ConfigurationView): String`.",
+          "claim_id": "claim_6731ecc6aade_02",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/ConfigurationSnapshotCodec.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:2f68837a39cf0b4f"
+            }
+          ],
+          "target_hash": "6731ecc6aadefb6184b3e9fffe3e12182dd77779799509b92dac97ee79eeea9e"
+        },
+        {
+          "claim": "method:4c639de98a993be7 declaration: `fun applyPatchJson( currentConfiguration: ConfigurationView, schema: CompiledNamespaceSchema, patchJson: String, options: SnapshotLoadOptions = SnapshotLoadOptions.strict(), ): Result<MaterializedConfiguration>`.",
+          "claim_id": "claim_6731ecc6aade_03",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/ConfigurationSnapshotCodec.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:4c639de98a993be7"
+            }
+          ],
+          "target_hash": "6731ecc6aadefb6184b3e9fffe3e12182dd77779799509b92dac97ee79eeea9e"
+        }
+      ],
       "coverage_issues": [],
-      "coverage_status": "missing",
+      "coverage_status": "complete",
       "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/ConfigurationSnapshotCodec.kt.md",
       "kind": "entrypoint",
-      "ready_for_write": true,
+      "ready_for_write": false,
       "symbol_declarations": [
         {
           "declaration": "fun applyPatchJson( currentConfiguration: MaterializedConfiguration, patchJson: String, options: SnapshotLoadOptions = SnapshotLoadOptions.strict(), ): Result<MaterializedConfiguration>",
@@ -1648,12 +2178,49 @@
     },
     {
       "blocking_reasons": [],
-      "claims": [],
+      "claims": [
+        {
+          "claim": "method:255db508105a1da0 declaration: `fun element(builder: RootObjectSchemaBuilder.() -> Unit)`.",
+          "claim_id": "claim_6f0867829052_01",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/dsl/ArraySchemaBuilder.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:255db508105a1da0"
+            }
+          ],
+          "target_hash": "6f08678290521dc6e46d5c72901fe8f41307a07a45759dbadf8aa60b3fbed62d"
+        },
+        {
+          "claim": "This target scope contains exactly one symbol: `method:255db508105a1da0`.",
+          "claim_id": "claim_6f0867829052_02",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/dsl/ArraySchemaBuilder.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:255db508105a1da0"
+            }
+          ],
+          "target_hash": "6f08678290521dc6e46d5c72901fe8f41307a07a45759dbadf8aa60b3fbed62d"
+        },
+        {
+          "claim": "The sole declaration for `method:255db508105a1da0` is a callable `fun` signature.",
+          "claim_id": "claim_6f0867829052_03",
+          "doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/dsl/ArraySchemaBuilder.kt.md",
+          "evidence": [
+            {
+              "kind": "signature_symbol",
+              "symbol_id": "method:255db508105a1da0"
+            }
+          ],
+          "target_hash": "6f08678290521dc6e46d5c72901fe8f41307a07a45759dbadf8aa60b3fbed62d"
+        }
+      ],
       "coverage_issues": [],
-      "coverage_status": "missing",
+      "coverage_status": "complete",
       "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/dsl/ArraySchemaBuilder.kt.md",
       "kind": "entrypoint",
-      "ready_for_write": true,
+      "ready_for_write": false,
       "symbol_declarations": [
         {
           "declaration": "fun element(builder: RootObjectSchemaBuilder.() -> Unit)",
