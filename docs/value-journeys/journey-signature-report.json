@@ -1,0 +1,14 @@
+{
+  "links_file": "/Users/amichne/.codex/worktrees/3816/konditional/docs/value-journeys/journey-signature-links.json",
+  "missing": [],
+  "missing_links": 0,
+  "refresh_attempted": false,
+  "refresh_details": "",
+  "refresh_succeeded": false,
+  "repo_root": "/Users/amichne/.codex/worktrees/3816/konditional",
+  "resolved_links": 8,
+  "schema_mode": "journeys",
+  "signatures_dir": "/Users/amichne/.codex/worktrees/3816/konditional/.signatures",
+  "status": "ok",
+  "total_links": 8
+}
