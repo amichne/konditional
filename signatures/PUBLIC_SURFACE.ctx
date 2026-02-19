@@ -1,0 +1,435 @@
+context=public-surface-init
+version=1
+scope=public-surface-only
+repository=konditional
+source_signatures_dir=signatures
+public_type_count=147
+
+modules:
+- module=build-logic|public_types=7
+- module=detekt-rules|public_types=2
+- module=konditional-core|public_types=77
+- module=konditional-observability|public_types=1
+- module=konditional-otel|public_types=12
+- module=konditional-runtime|public_types=1
+- module=konditional-serialization|public_types=21
+- module=kontracts|public_types=18
+- module=openapi|public_types=2
+- module=openfeature|public_types=6
+
+types:
+- type=io.amichne.konditional.api.Kind|kind=enum|file=konditional-observability/src/main/kotlin/io/amichne/konditional/api/ShadowMismatch.kt|package=io.amichne.konditional.api|decl=enum class Kind
+- type=io.amichne.konditional.api.KonditionalInternalApi|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/api/KonditionalInternalApi.kt|package=io.amichne.konditional.api|decl=annotation class KonditionalInternalApi
+- type=io.amichne.konditional.api.RampUpBucketing|kind=object|file=konditional-core/src/main/kotlin/io/amichne/konditional/api/RampUpBucketing.kt|package=io.amichne.konditional.api|decl=object RampUpBucketing
+- type=io.amichne.konditional.context.Context|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/context/Context.kt|package=io.amichne.konditional.context|decl=interface Context
+- type=io.amichne.konditional.context.Core|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/context/Context.kt|package=io.amichne.konditional.context|decl=data class Core( override val locale: LocaleTag, override val platform: PlatformTag, override val appVersion: Version, override val stableId: StableId, ) : LocaleContext, PlatformContext, VersionContext, StableIdContext
+- type=io.amichne.konditional.context.LocaleContext|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/context/Context.kt|package=io.amichne.konditional.context|decl=interface LocaleContext : Context
+- type=io.amichne.konditional.context.LocaleTag|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/context/LocaleTag.kt|package=io.amichne.konditional.context|decl=interface LocaleTag
+- type=io.amichne.konditional.context.Platform|kind=enum|file=konditional-core/src/main/kotlin/io/amichne/konditional/context/Platform.kt|package=io.amichne.konditional.context|decl=enum class Platform : PlatformTag
+- type=io.amichne.konditional.context.PlatformContext|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/context/Context.kt|package=io.amichne.konditional.context|decl=interface PlatformContext : Context
+- type=io.amichne.konditional.context.PlatformTag|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/context/PlatformTag.kt|package=io.amichne.konditional.context|decl=interface PlatformTag
+- type=io.amichne.konditional.context.StableIdContext|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/context/Context.kt|package=io.amichne.konditional.context|decl=interface StableIdContext : Context
+- type=io.amichne.konditional.context.Version|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/context/Version.kt|package=io.amichne.konditional.context|decl=data class Version( val major: Int, val minor: Int, val patch: Int, ) : Comparable<Version>
+- type=io.amichne.konditional.context.VersionContext|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/context/Context.kt|package=io.amichne.konditional.context|decl=interface VersionContext : Context
+- type=io.amichne.konditional.context.axis.AxisValue|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/context/axis/AxisValue.kt|package=io.amichne.konditional.context.axis|decl=interface AxisValue<T> where T : Enum<T>
+- type=io.amichne.konditional.core.TestNamespaceFacade|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt|package=io.amichne.konditional.core|decl=abstract class TestNamespaceFacade(id: String) : Namespace( id = id, registry = NamespaceRegistryFactories.default(id), axisCatalog = AxisCatalog(), identifierSeed = UUID.randomUUID().toString(), )
+- type=io.amichne.konditional.core.ValueType|kind=enum|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/ValueType.kt|package=io.amichne.konditional.core|decl=enum class ValueType
+- type=io.amichne.konditional.core.dsl.AxisValuesScope|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/AxisValuesScope.kt|package=io.amichne.konditional.core.dsl|decl=interface AxisValuesScope
+- type=io.amichne.konditional.core.dsl.FlagScope|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/FlagScope.kt|package=io.amichne.konditional.core.dsl|decl=interface FlagScope<T : Any, C : Context, out M : Namespace>
+- type=io.amichne.konditional.core.dsl.KonditionalDsl|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/KonditionalDsl.kt|package=io.amichne.konditional.core.dsl|decl=annotation class KonditionalDsl
+- type=io.amichne.konditional.core.dsl.VersionRangeScope|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/VersionRangeScope.kt|package=io.amichne.konditional.core.dsl|decl=interface VersionRangeScope
+- type=io.amichne.konditional.core.dsl.rules.ContextRuleScope|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/ContextRuleScope.kt|package=io.amichne.konditional.core.dsl.rules|decl=interface ContextRuleScope<C : Context> :
+- type=io.amichne.konditional.core.dsl.rules.NoteScope|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/NoteScope.kt|package=io.amichne.konditional.core.dsl.rules|decl=interface NoteScope<C : Context>
+- type=io.amichne.konditional.core.dsl.rules.Postfix|kind=object|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleScope.kt|package=io.amichne.konditional.core.dsl.rules|decl=object Postfix
+- type=io.amichne.konditional.core.dsl.rules.RuleScope|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleScope.kt|package=io.amichne.konditional.core.dsl.rules|decl=interface RuleScope<C : Context> : ContextRuleScope<C>,
+- type=io.amichne.konditional.core.dsl.rules.RuleScopeBase|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleScopeBase.kt|package=io.amichne.konditional.core.dsl.rules|decl=interface RuleScopeBase<C : Context>
+- type=io.amichne.konditional.core.dsl.rules.YieldingScopeHost|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/YieldingScopeHost.kt|package=io.amichne.konditional.core.dsl.rules|decl=interface YieldingScopeHost
+- type=io.amichne.konditional.core.dsl.rules.targeting.scopes.AxisTargetingScope|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/AxisTargetingScope.kt|package=io.amichne.konditional.core.dsl.rules.targeting.scopes|decl=interface AxisTargetingScope<C : Context>
+- type=io.amichne.konditional.core.dsl.rules.targeting.scopes.ExtensionTargetingScope|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/ExtensionTargetingScope.kt|package=io.amichne.konditional.core.dsl.rules.targeting.scopes|decl=interface ExtensionTargetingScope<C : Context>
+- type=io.amichne.konditional.core.dsl.rules.targeting.scopes.LocaleTargetingScope|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/LocaleTargetingScope.kt|package=io.amichne.konditional.core.dsl.rules.targeting.scopes|decl=interface LocaleTargetingScope<C : Context>
+- type=io.amichne.konditional.core.dsl.rules.targeting.scopes.PlatformTargetingScope|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/PlatformTargetingScope.kt|package=io.amichne.konditional.core.dsl.rules.targeting.scopes|decl=interface PlatformTargetingScope<C : Context>
+- type=io.amichne.konditional.core.dsl.rules.targeting.scopes.StableIdTargetingScope|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/StableIdTargetingScope.kt|package=io.amichne.konditional.core.dsl.rules.targeting.scopes|decl=interface StableIdTargetingScope<C : Context>
+- type=io.amichne.konditional.core.dsl.rules.targeting.scopes.VersionTargetingScope|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/VersionTargetingScope.kt|package=io.amichne.konditional.core.dsl.rules.targeting.scopes|decl=interface VersionTargetingScope<C : Context>
+- type=io.amichne.konditional.core.features.BooleanFeature|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/features/BooleanFeature.kt|package=io.amichne.konditional.core.features|decl=sealed interface BooleanFeature<C : Context, M : Namespace> : Feature<Boolean, C, M>
+- type=io.amichne.konditional.core.features.DoubleFeature|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/features/DoubleFeature.kt|package=io.amichne.konditional.core.features|decl=sealed interface DoubleFeature<C : Context, M : Namespace> :
+- type=io.amichne.konditional.core.features.EnumFeature|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/features/EnumFeature.kt|package=io.amichne.konditional.core.features|decl=sealed interface EnumFeature<E : Enum<E>, C : Context, M : Namespace> :
+- type=io.amichne.konditional.core.features.Feature|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/features/Feature.kt|package=io.amichne.konditional.core.features|decl=sealed interface Feature<T : Any, C : Context, out M : Namespace> : Identifiable
+- type=io.amichne.konditional.core.features.Identifiable|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/features/Identifiable.kt|package=io.amichne.konditional.core.features|decl=interface Identifiable
+- type=io.amichne.konditional.core.features.IntFeature|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/features/IntFeature.kt|package=io.amichne.konditional.core.features|decl=sealed interface IntFeature<C : Context, M : Namespace> : Feature<Int, C, M>
+- type=io.amichne.konditional.core.features.KotlinClassFeature|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/features/KotlinClassFeature.kt|package=io.amichne.konditional.core.features|decl=sealed interface KotlinClassFeature<T : Konstrained<*>, C : Context, M : Namespace> :
+- type=io.amichne.konditional.core.features.StringFeature|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/features/StringFeature.kt|package=io.amichne.konditional.core.features|decl=sealed interface StringFeature<C : Context, M : Namespace> : Feature<String, C, M>
+- type=io.amichne.konditional.core.id.StableId|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/id/StableId.kt|package=io.amichne.konditional.core.id|decl=sealed interface StableId
+- type=io.amichne.konditional.core.id.StaticStableId|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/id/StaticStableId.kt|package=io.amichne.konditional.core.id|decl=interface StaticStableId : StableId
+- type=io.amichne.konditional.core.instance.ConfigurationMetadataView|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/instance/ConfigurationView.kt|package=io.amichne.konditional.core.instance|decl=interface ConfigurationMetadataView
+- type=io.amichne.konditional.core.instance.ConfigurationView|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/instance/ConfigurationView.kt|package=io.amichne.konditional.core.instance|decl=interface ConfigurationView
+- type=io.amichne.konditional.core.ops.DecisionKind|kind=enum|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/Metrics.kt|package=io.amichne.konditional.core.ops|decl=enum class DecisionKind
+- type=io.amichne.konditional.core.ops.EvaluationMode|kind=enum|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/Metrics.kt|package=io.amichne.konditional.core.ops|decl=enum class EvaluationMode
+- type=io.amichne.konditional.core.ops.KonditionalLogger|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/KonditionalLogger.kt|package=io.amichne.konditional.core.ops|decl=interface KonditionalLogger
+- type=io.amichne.konditional.core.ops.Metrics|kind=object|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/Metrics.kt|package=io.amichne.konditional.core.ops|decl=object Metrics
+- type=io.amichne.konditional.core.ops.MetricsCollector|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/MetricsCollector.kt|package=io.amichne.konditional.core.ops|decl=interface MetricsCollector
+- type=io.amichne.konditional.core.ops.NoOp|kind=object|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/KonditionalLogger.kt|package=io.amichne.konditional.core.ops|decl=data object NoOp : KonditionalLogger
+- type=io.amichne.konditional.core.ops.NoOp|kind=object|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/MetricsCollector.kt|package=io.amichne.konditional.core.ops|decl=data object NoOp : MetricsCollector
+- type=io.amichne.konditional.core.registry.AxisCatalog|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/AxisCatalog.kt|package=io.amichne.konditional.core.registry|decl=class AxisCatalog
+- type=io.amichne.konditional.core.registry.InMemoryNamespaceRegistryFactory|kind=class|file=konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistryFactory.kt|package=io.amichne.konditional.core.registry|decl=class InMemoryNamespaceRegistryFactory : NamespaceRegistryFactory
+- type=io.amichne.konditional.core.registry.NamespaceRegistry|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt|package=io.amichne.konditional.core.registry|decl=interface NamespaceRegistry
+- type=io.amichne.konditional.core.registry.NamespaceRegistryFactory|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistryFactory.kt|package=io.amichne.konditional.core.registry|decl=fun interface NamespaceRegistryFactory
+- type=io.amichne.konditional.core.registry.NamespaceRegistryRuntime|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt|package=io.amichne.konditional.core.registry|decl=interface NamespaceRegistryRuntime : NamespaceRegistry
+- type=io.amichne.konditional.core.result.InvalidSnapshot|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseError.kt|package=io.amichne.konditional.core.result|decl=data class InvalidSnapshot(val reason: String) : ParseError
+- type=io.amichne.konditional.core.result.KonditionalBoundaryFailure|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/result/KonditionalBoundaryFailure.kt|package=io.amichne.konditional.core.result|decl=class KonditionalBoundaryFailure( val parseError: ParseError, ) : RuntimeException(parseError.message)
+- type=io.amichne.konditional.core.result.ParseError|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseError.kt|package=io.amichne.konditional.core.result|decl=sealed interface ParseError
+- type=io.amichne.konditional.core.result.ParseException|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseException.kt|package=io.amichne.konditional.core.result|decl=class ParseException(val error: ParseError) : Exception(error.message)
+- type=io.amichne.konditional.core.schema.CompiledNamespaceSchema|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/schema/CompiledNamespaceSchema.kt|package=io.amichne.konditional.core.schema|decl=data class CompiledNamespaceSchema( val namespaceId: String, val entriesById: Map<FeatureId, Entry>, )
+- type=io.amichne.konditional.core.schema.Entry|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/schema/CompiledNamespaceSchema.kt|package=io.amichne.konditional.core.schema|decl=data class Entry( val featureId: FeatureId, val feature: Feature<*, *, *>, val declaredDefinition: FlagDefinition<*, *, *>, )
+- type=io.amichne.konditional.core.spi.FeatureRegistrationHook|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHook.kt|package=io.amichne.konditional.core.spi|decl=fun interface FeatureRegistrationHook
+- type=io.amichne.konditional.core.types.Konstrained|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/core/types/Konstrained.kt|package=io.amichne.konditional.core.types|decl=interface Konstrained<out S : JsonSchema<*>>
+- type=io.amichne.konditional.detekt.KonditionalRuleSetProvider|kind=class|file=detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/KonditionalRuleSetProvider.kt|package=io.amichne.konditional.detekt|decl=class KonditionalRuleSetProvider : RuleSetProvider
+- type=io.amichne.konditional.detekt.UnclosedCriteriaFirstRule|kind=class|file=detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt|package=io.amichne.konditional.detekt|decl=class UnclosedCriteriaFirstRule(config: Config) : Rule(config)
+- type=io.amichne.konditional.gradle.GenerateOpenApiSpecTask|kind=class|file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt|package=io.amichne.konditional.gradle|decl=abstract class GenerateOpenApiSpecTask : DefaultTask()
+- type=io.amichne.konditional.gradle.GenerateRecipesDocsTask|kind=class|file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt|package=io.amichne.konditional.gradle|decl=abstract class GenerateRecipesDocsTask : DefaultTask()
+- type=io.amichne.konditional.gradle.KonditionalCoreApiBoundaryExtension|kind=class|file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt|package=io.amichne.konditional.gradle|decl=abstract class KonditionalCoreApiBoundaryExtension
+- type=io.amichne.konditional.gradle.KonditionalCoreApiBoundaryTask|kind=class|file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt|package=io.amichne.konditional.gradle|decl=abstract class KonditionalCoreApiBoundaryTask : DefaultTask()
+- type=io.amichne.konditional.gradle.KonditionalPublishingExtension|kind=class|file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt|package=io.amichne.konditional.gradle|decl=abstract class KonditionalPublishingExtension
+- type=io.amichne.konditional.gradle.KonditionalRecipesDocsExtension|kind=class|file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt|package=io.amichne.konditional.gradle|decl=abstract class KonditionalRecipesDocsExtension
+- type=io.amichne.konditional.gradle.VerifyRecipesDocsTask|kind=class|file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt|package=io.amichne.konditional.gradle|decl=abstract class VerifyRecipesDocsTask : DefaultTask()
+- type=io.amichne.konditional.openfeature.BlankTargetingKey|kind=object|file=openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt|package=io.amichne.konditional.openfeature|decl=object BlankTargetingKey : KonditionalContextMappingError
+- type=io.amichne.konditional.openfeature.KonditionalContextMapper|kind=interface|file=openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt|package=io.amichne.konditional.openfeature|decl=fun interface KonditionalContextMapper<C : Context>
+- type=io.amichne.konditional.openfeature.KonditionalContextMappingError|kind=interface|file=openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt|package=io.amichne.konditional.openfeature|decl=sealed interface KonditionalContextMappingError
+- type=io.amichne.konditional.openfeature.KonditionalContextMappingResult|kind=interface|file=openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt|package=io.amichne.konditional.openfeature|decl=sealed interface KonditionalContextMappingResult<out C : Context>
+- type=io.amichne.konditional.openfeature.MissingTargetingKey|kind=object|file=openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt|package=io.amichne.konditional.openfeature|decl=object MissingTargetingKey : KonditionalContextMappingError
+- type=io.amichne.konditional.openfeature.TargetingKeyContext|kind=class|file=openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt|package=io.amichne.konditional.openfeature|decl=data class TargetingKeyContext( override val stableId: StableId, override val axisValues: AxisValues = AxisValues.EMPTY, ) : Context, Context.StableIdContext
+- type=io.amichne.konditional.otel.KonditionalTelemetry|kind=class|file=konditional-otel/src/main/kotlin/io/amichne/konditional/otel/KonditionalTelemetry.kt|package=io.amichne.konditional.otel|decl=class KonditionalTelemetry( otel: OpenTelemetry, val tracingConfig: TracingConfig = TracingConfig.DEFAULT, val metricsConfig: MetricsConfig = MetricsConfig.DEFAULT, instrumentationScope: String = DEFAULT_SCOPE, )
+- type=io.amichne.konditional.otel.metrics.MetricsConfig|kind=class|file=konditional-otel/src/main/kotlin/io/amichne/konditional/otel/metrics/MetricsConfig.kt|package=io.amichne.konditional.otel.metrics|decl=data class MetricsConfig( val includeRuleDetails: Boolean = true, )
+- type=io.amichne.konditional.otel.traces.ALWAYS|kind=object|file=konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/TracingConfig.kt|package=io.amichne.konditional.otel.traces|decl=data object ALWAYS : SamplingStrategy
+- type=io.amichne.konditional.otel.traces.DecisionType|kind=object|file=konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/SpanAttributes.kt|package=io.amichne.konditional.otel.traces|decl=object DecisionType
+- type=io.amichne.konditional.otel.traces.EventName|kind=object|file=konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/SpanAttributes.kt|package=io.amichne.konditional.otel.traces|decl=object EventName
+- type=io.amichne.konditional.otel.traces.FEATURE_FILTER|kind=class|file=konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/TracingConfig.kt|package=io.amichne.konditional.otel.traces|decl=data class FEATURE_FILTER(val predicate: (Feature<*, *, *>) -> Boolean) : SamplingStrategy
+- type=io.amichne.konditional.otel.traces.KonditionalSemanticAttributes|kind=object|file=konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/SpanAttributes.kt|package=io.amichne.konditional.otel.traces|decl=object KonditionalSemanticAttributes
+- type=io.amichne.konditional.otel.traces.NEVER|kind=object|file=konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/TracingConfig.kt|package=io.amichne.konditional.otel.traces|decl=data object NEVER : SamplingStrategy
+- type=io.amichne.konditional.otel.traces.PARENT_BASED|kind=object|file=konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/TracingConfig.kt|package=io.amichne.konditional.otel.traces|decl=data object PARENT_BASED : SamplingStrategy
+- type=io.amichne.konditional.otel.traces.RATIO|kind=class|file=konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/TracingConfig.kt|package=io.amichne.konditional.otel.traces|decl=data class RATIO(val percentage: Int) : SamplingStrategy
+- type=io.amichne.konditional.otel.traces.SamplingStrategy|kind=interface|file=konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/TracingConfig.kt|package=io.amichne.konditional.otel.traces|decl=sealed interface SamplingStrategy
+- type=io.amichne.konditional.otel.traces.TracingConfig|kind=class|file=konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/TracingConfig.kt|package=io.amichne.konditional.otel.traces|decl=data class TracingConfig( val enabled: Boolean = true, val samplingStrategy: SamplingStrategy = SamplingStrategy.PARENT_BASED, val includeContextAttributes: Boolean = true, val includeRuleDetails: Boolean = true, val sanitizePii: Boolean = true, )
+- type=io.amichne.konditional.rules.evaluable.Predicate|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/evaluable/Predicate.kt|package=io.amichne.konditional.rules.evaluable|decl=fun interface Predicate<in C : Context>
+- type=io.amichne.konditional.rules.targeting.All|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt|package=io.amichne.konditional.rules.targeting|decl=data class All<C : Context>( val targets: List<Targeting<C>>, ) : Targeting<C>
+- type=io.amichne.konditional.rules.targeting.Axis|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt|package=io.amichne.konditional.rules.targeting|decl=data class Axis( val axisId: String, val allowedIds: Set<String>, ) : Targeting<Context>
+- type=io.amichne.konditional.rules.targeting.Custom|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt|package=io.amichne.konditional.rules.targeting|decl=data class Custom<C : Context>( val block: (C) -> Boolean, val weight: Int = 1, ) : Targeting<C>
+- type=io.amichne.konditional.rules.targeting.Guarded|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt|package=io.amichne.konditional.rules.targeting|decl=data class Guarded<C : Context, R : Context>( val inner: Targeting<R>, val evidence: (C) -> R?, ) : Targeting<C>
+- type=io.amichne.konditional.rules.targeting.Locale|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt|package=io.amichne.konditional.rules.targeting|decl=value class Locale(val ids: Set<String>) : Targeting<Context.LocaleContext>
+- type=io.amichne.konditional.rules.targeting.Platform|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt|package=io.amichne.konditional.rules.targeting|decl=value class Platform(val ids: Set<String>) : Targeting<Context.PlatformContext>
+- type=io.amichne.konditional.rules.targeting.Targeting|kind=interface|file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt|package=io.amichne.konditional.rules.targeting|decl=sealed interface Targeting<in C : Context>
+- type=io.amichne.konditional.rules.targeting.Version|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt|package=io.amichne.konditional.rules.targeting|decl=data class Version(val range: VersionRange) : Targeting<Context.VersionContext>
+- type=io.amichne.konditional.rules.versions.FullyBound|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/FullyBound.kt|package=io.amichne.konditional.rules.versions|decl=data class FullyBound( override val min: Version, override val max: Version, ) : VersionRange(Type.MIN_AND_MAX_BOUND, min, max)
+- type=io.amichne.konditional.rules.versions.LeftBound|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/LeftBound.kt|package=io.amichne.konditional.rules.versions|decl=data class LeftBound( override val min: Version, ) : VersionRange(Type.MIN_BOUND, min, MAX_VERSION)
+- type=io.amichne.konditional.rules.versions.RightBound|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/RightBound.kt|package=io.amichne.konditional.rules.versions|decl=data class RightBound( override val max: Version, ) : VersionRange(Type.MAX_BOUND, MIN_VERSION, max)
+- type=io.amichne.konditional.rules.versions.Type|kind=enum|file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/VersionRange.kt|package=io.amichne.konditional.rules.versions|decl=enum class Type
+- type=io.amichne.konditional.rules.versions.Unbounded|kind=object|file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/Unbounded.kt|package=io.amichne.konditional.rules.versions|decl=data object Unbounded : VersionRange(Type.UNBOUNDED, MIN_VERSION, MAX_VERSION)
+- type=io.amichne.konditional.rules.versions.VersionRange|kind=class|file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/VersionRange.kt|package=io.amichne.konditional.rules.versions|decl=sealed class VersionRange( val type: Type, open val min: Version? = null, open val max: Version? = null, )
+- type=io.amichne.konditional.serialization.FeatureRegistry|kind=object|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/FeatureRegistry.kt|package=io.amichne.konditional.serialization|decl=object FeatureRegistry
+- type=io.amichne.konditional.serialization.SchemaValueCodec|kind=object|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/SchemaValueCodec.kt|package=io.amichne.konditional.serialization|decl=object SchemaValueCodec
+- type=io.amichne.konditional.serialization.Skip|kind=object|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/SchemaValueCodec.kt|package=io.amichne.konditional.serialization|decl=data object Skip : ParameterResolution
+- type=io.amichne.konditional.serialization.Value|kind=class|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/SchemaValueCodec.kt|package=io.amichne.konditional.serialization|decl=data class Value(val value: Any?) : ParameterResolution
+- type=io.amichne.konditional.serialization.instance.ConfigValue|kind=interface|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigValue.kt|package=io.amichne.konditional.serialization.instance|decl=sealed interface ConfigValue
+- type=io.amichne.konditional.serialization.instance.Configuration|kind=class|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/Configuration.kt|package=io.amichne.konditional.serialization.instance|decl=data class Configuration( override val flags: Map<Feature<*, *, *>, FlagDefinition<*, *, *>>, override val metadata: ConfigurationMetadata = ConfigurationMetadata(), ) : ConfigurationView
+- type=io.amichne.konditional.serialization.instance.ConfigurationMetadata|kind=class|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/Configuration.kt|package=io.amichne.konditional.serialization.instance|decl=data class ConfigurationMetadata( override val version: String? = null, override val generatedAtEpochMillis: Long? = null, override val source: String? = null, ) : ConfigurationMetadataView
+- type=io.amichne.konditional.serialization.instance.ConfigurationPatch|kind=class|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigurationPatch.kt|package=io.amichne.konditional.serialization.instance|decl=data class ConfigurationPatch( val flags: Map<Feature<*, *, *>, FlagDefinition<*, *, *>>, val removeKeys: Set<Feature<*, *, *>> = emptySet(), )
+- type=io.amichne.konditional.serialization.instance.PatchBuilder|kind=class|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigurationPatch.kt|package=io.amichne.konditional.serialization.instance|decl=class PatchBuilder
+- type=io.amichne.konditional.serialization.options.Fail|kind=object|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/UnknownFeatureKeyStrategy.kt|package=io.amichne.konditional.serialization.options|decl=data object Fail : UnknownFeatureKeyStrategy
+- type=io.amichne.konditional.serialization.options.FillFromDeclaredDefaults|kind=object|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/MissingDeclaredFlagStrategy.kt|package=io.amichne.konditional.serialization.options|decl=data object FillFromDeclaredDefaults : MissingDeclaredFlagStrategy
+- type=io.amichne.konditional.serialization.options.Kind|kind=enum|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/SnapshotWarning.kt|package=io.amichne.konditional.serialization.options|decl=enum class Kind
+- type=io.amichne.konditional.serialization.options.MissingDeclaredFlagStrategy|kind=interface|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/MissingDeclaredFlagStrategy.kt|package=io.amichne.konditional.serialization.options|decl=sealed interface MissingDeclaredFlagStrategy
+- type=io.amichne.konditional.serialization.options.Reject|kind=object|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/MissingDeclaredFlagStrategy.kt|package=io.amichne.konditional.serialization.options|decl=data object Reject : MissingDeclaredFlagStrategy
+- type=io.amichne.konditional.serialization.options.Skip|kind=object|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/UnknownFeatureKeyStrategy.kt|package=io.amichne.konditional.serialization.options|decl=data object Skip : UnknownFeatureKeyStrategy
+- type=io.amichne.konditional.serialization.options.SnapshotLoadOptions|kind=class|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/SnapshotLoadOptions.kt|package=io.amichne.konditional.serialization.options|decl=data class SnapshotLoadOptions( val unknownFeatureKeyStrategy: UnknownFeatureKeyStrategy = UnknownFeatureKeyStrategy.Fail, val missingDeclaredFlagStrategy: MissingDeclaredFlagStrategy = MissingDeclaredFlagStrategy.Reject, val onWarning: (SnapshotWarning) -> Unit = {}, )
+- type=io.amichne.konditional.serialization.options.UnknownFeatureKeyStrategy|kind=interface|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/UnknownFeatureKeyStrategy.kt|package=io.amichne.konditional.serialization.options|decl=sealed interface UnknownFeatureKeyStrategy
+- type=io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec|kind=object|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/ConfigurationSnapshotCodec.kt|package=io.amichne.konditional.serialization.snapshot|decl=object ConfigurationSnapshotCodec : FeatureAwareSnapshotCodec<MaterializedConfiguration>
+- type=io.amichne.konditional.serialization.snapshot.FeatureAwareSnapshotCodec|kind=interface|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/FeatureAwareSnapshotCodec.kt|package=io.amichne.konditional.serialization.snapshot|decl=interface FeatureAwareSnapshotCodec<T> : SnapshotCodec<T>
+- type=io.amichne.konditional.serialization.snapshot.SnapshotCodec|kind=interface|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/SnapshotCodec.kt|package=io.amichne.konditional.serialization.snapshot|decl=interface SnapshotCodec<T>
+- type=io.amichne.konditional.serialization.snapshot.SnapshotLoader|kind=interface|file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/SnapshotLoader.kt|package=io.amichne.konditional.serialization.snapshot|decl=interface SnapshotLoader<T>
+- type=io.amichne.kontracts.dsl.FieldSchemaFactoryBuilder|kind=class|file=kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaFactoryFunctions.kt|package=io.amichne.kontracts.dsl|decl=class FieldSchemaFactoryBuilder
+- type=io.amichne.kontracts.dsl.JsonArrayBuilder|kind=class|file=kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonValueDsl.kt|package=io.amichne.kontracts.dsl|decl=class JsonArrayBuilder
+- type=io.amichne.kontracts.dsl.JsonObjectBuilder|kind=class|file=kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonValueDsl.kt|package=io.amichne.kontracts.dsl|decl=class JsonObjectBuilder
+- type=io.amichne.kontracts.dsl.JsonSchemaBuilder|kind=interface|file=kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaBuilder.kt|package=io.amichne.kontracts.dsl|decl=sealed interface JsonSchemaBuilder<out T : Any>
+- type=io.amichne.kontracts.dsl.JsonSchemaBuilderDsl|kind=class|file=kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaBuilderDsl.kt|package=io.amichne.kontracts.dsl|decl=annotation class JsonSchemaBuilderDsl
+- type=io.amichne.kontracts.dsl.JsonValueDsl|kind=class|file=kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonValueDsl.kt|package=io.amichne.kontracts.dsl|decl=annotation class JsonValueDsl
+- type=io.amichne.kontracts.dsl.JsonValueScope|kind=object|file=kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonValueDsl.kt|package=io.amichne.kontracts.dsl|decl=object JsonValueScope
+- type=io.amichne.kontracts.dsl.MapSchemaFactoryBuilder|kind=class|file=kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaFactoryFunctions.kt|package=io.amichne.kontracts.dsl|decl=class MapSchemaFactoryBuilder<V : Any>
+- type=io.amichne.kontracts.dsl.ObjectSchemaFactoryBuilder|kind=class|file=kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaFactoryFunctions.kt|package=io.amichne.kontracts.dsl|decl=class ObjectSchemaFactoryBuilder
+- type=io.amichne.kontracts.dsl.OneOfDiscriminatorBuilder|kind=class|file=kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaFactoryFunctions.kt|package=io.amichne.kontracts.dsl|decl=class OneOfDiscriminatorBuilder
+- type=io.amichne.kontracts.dsl.OneOfSchemaFactoryBuilder|kind=class|file=kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaFactoryFunctions.kt|package=io.amichne.kontracts.dsl|decl=class OneOfSchemaFactoryBuilder
+- type=io.amichne.kontracts.schema.JsonSchema|kind=class|file=kontracts/src/main/kotlin/io/amichne/kontracts/schema/JsonSchema.kt|package=io.amichne.kontracts.schema|decl=sealed class JsonSchema<out T : Any> : OpenApi<T>
+- type=io.amichne.kontracts.schema.ObjectTraits|kind=interface|file=kontracts/src/main/kotlin/io/amichne/kontracts/schema/ObjectTraits.kt|package=io.amichne.kontracts.schema|decl=interface ObjectTraits
+- type=io.amichne.kontracts.schema.OpenApi|kind=interface|file=openapi/src/main/kotlin/io/amichne/kontracts/schema/OpenApi.kt|package=io.amichne.kontracts.schema|decl=interface OpenApi<out T : Any>
+- type=io.amichne.kontracts.schema.SchemaProvider|kind=interface|file=kontracts/src/main/kotlin/io/amichne/kontracts/schema/SchemaProvider.kt|package=io.amichne.kontracts.schema|decl=interface SchemaProvider<out S : JsonSchema<*>>
+- type=io.amichne.kontracts.schema.Type|kind=enum|file=openapi/src/main/kotlin/io/amichne/kontracts/schema/OpenApi.kt|package=io.amichne.kontracts.schema|decl=enum class Type(val serialized: String)
+- type=io.amichne.kontracts.schema.Valid|kind=object|file=kontracts/src/main/kotlin/io/amichne/kontracts/schema/ValidationResult.kt|package=io.amichne.kontracts.schema|decl=object Valid : ValidationResult()
+- type=io.amichne.kontracts.schema.ValidationResult|kind=class|file=kontracts/src/main/kotlin/io/amichne/kontracts/schema/ValidationResult.kt|package=io.amichne.kontracts.schema|decl=sealed class ValidationResult
+- type=io.amichne.kontracts.value.JsonNull|kind=object|file=kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonNull.kt|package=io.amichne.kontracts.value|decl=object JsonNull : JsonValue
+- type=io.amichne.kontracts.value.JsonValue|kind=interface|file=kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonValue.kt|package=io.amichne.kontracts.value|decl=sealed interface JsonValue
+
+file_members:
+- file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt|public_methods=2|public_fields=4
+  method=fun generate()
+  method=fun verify()
+  field=abstract val sampleFile: RegularFileProperty
+  field=abstract val templateFile: RegularFileProperty
+  field=abstract val outputFile: RegularFileProperty
+  field=abstract val docsFile: RegularFileProperty
+- file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt|public_methods=0|public_fields=7
+  field=abstract val artifactId: Property<String>
+  field=abstract val moduleName: Property<String>
+  field=abstract val moduleDescription: Property<String>
+  field=abstract val sampleFile: RegularFileProperty
+  field=abstract val templateFile: RegularFileProperty
+  field=abstract val docsFile: RegularFileProperty
+  field_truncated=1
+- file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt|public_methods=1|public_fields=6
+  method=fun generateSpec()
+  field=abstract val executionClasspath: ConfigurableFileCollection
+  field=abstract val sourceInputs: ConfigurableFileCollection
+  field=abstract val classInputs: ConfigurableFileCollection
+  field=abstract val generatorMainClass: Property<String>
+  field=abstract val outputFile: RegularFileProperty
+  field=abstract val execOperations: ExecOperations
+- file=build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt|public_methods=1|public_fields=3
+  method=fun checkApiBoundary()
+  field=abstract val sourceDir: DirectoryProperty
+  field=abstract val allowedPackagePrefixes: ListProperty<String>
+  field=abstract val projectDir: DirectoryProperty
+- file=detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/KonditionalRuleSetProvider.kt|public_methods=0|public_fields=1
+  field=override val ruleSetId: String
+- file=detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt|public_methods=1|public_fields=1
+  method=override fun visitCallExpression(expression: KtCallExpression)
+  field=override val issue: Issue
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/api/KonditionalInternalApi.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/api/RampUpBucketing.kt|public_methods=1|public_fields=0
+  method=fun bucket( stableId: StableId, featureKey: String, salt: String, ): Int
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/context/Context.kt|public_methods=0|public_fields=4
+  field=val locale: LocaleTag
+  field=val platform: PlatformTag
+  field=val appVersion: Version
+  field=val stableId: StableId
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/context/LocaleTag.kt|public_methods=0|public_fields=1
+  field=val id: String
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/context/Platform.kt|public_methods=0|public_fields=1
+  field=override val id: String
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/context/PlatformTag.kt|public_methods=0|public_fields=1
+  field=val id: String
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/context/Version.kt|public_methods=1|public_fields=0
+  method=override fun compareTo(other: Version): Int
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/context/axis/AxisValue.kt|public_methods=0|public_fields=1
+  field=val id: String
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt|public_methods=19|public_fields=0
+  method=fun allFeatures(): List<Feature<*, *, *>>
+  method=fun declaredDefault(feature: Feature<*, *, *>): Any?
+  method=fun declaredDefinition(feature: Feature<*, *, *>): FlagDefinition<*, *, *>?
+  method=fun compiledSchema(): CompiledNamespaceSchema
+  method=override fun equals(other: Any?): Boolean
+  method=override fun hashCode(): Int
+  method_truncated=13
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/ValueType.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/AxisValuesScope.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/FlagScope.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/KonditionalDsl.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/VersionRangeScope.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/ContextRuleScope.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/NoteScope.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleScope.kt|public_methods=1|public_fields=0
+  method=infix fun yields(value: T): Postfix
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleScopeBase.kt|public_methods=2|public_fields=0
+  method=fun always() {}
+  method=fun matchAll()
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/YieldingScopeHost.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/AxisTargetingScope.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/ExtensionTargetingScope.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/LocaleTargetingScope.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/PlatformTargetingScope.kt|public_methods=2|public_fields=0
+  method=fun ios()
+  method=fun android()
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/StableIdTargetingScope.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/VersionTargetingScope.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/features/BooleanFeature.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/features/DoubleFeature.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/features/EnumFeature.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/features/Feature.kt|public_methods=0|public_fields=3
+  field=val key: String
+  field=val namespace: M
+  field=override val id: FeatureId
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/features/Identifiable.kt|public_methods=0|public_fields=1
+  field=val id: FeatureId
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/features/IntFeature.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/features/KotlinClassFeature.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/features/StringFeature.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/id/StableId.kt|public_methods=0|public_fields=3
+  field=val id: String
+  field=val hexId: HexId
+  field=override val id: String
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/id/StaticStableId.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/instance/ConfigurationView.kt|public_methods=0|public_fields=5
+  field=val flags: Map<Feature<*, *, *>, FlagDefinition<*, *, *>>
+  field=val metadata: ConfigurationMetadataView
+  field=val version: String?
+  field=val generatedAtEpochMillis: Long?
+  field=val source: String?
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/KonditionalLogger.kt|public_methods=4|public_fields=0
+  method=fun debug(message: () -> String) {}
+  method=fun info(message: () -> String) {}
+  method=fun warn(message: () -> String, throwable: Throwable? = null) {}
+  method=fun error(message: () -> String, throwable: Throwable? = null) {}
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/Metrics.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/MetricsCollector.kt|public_methods=3|public_fields=0
+  method=fun recordEvaluation(event: Metrics.Evaluation) {}
+  method=fun recordConfigLoad(event: Metrics.ConfigLoadMetric) {}
+  method=fun recordConfigRollback(event: Metrics.ConfigRollbackMetric) {}
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/AxisCatalog.kt|public_methods=3|public_fields=0
+  method=fun register(axis: Axis<*>)
+  method=fun <T> axisFor(type: KClass<out T>): Axis<T>? where T : AxisValue<T>, T : Enum<T>
+  method=fun <T> axisForOrThrow(type: KClass<out T>): Axis<T> where T : AxisValue<T>, T : Enum<T>
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt|public_methods=4|public_fields=3
+  method=fun setHooks(hooks: RegistryHooks) val isAllDisabled: Boolean fun disableAll() fun enableAll() @Suppress("UNCHECKED_CAST") fun <T : Any, C : Context, M : Namespace> flag( key: Feature<T, C, M>, ): FlagDefinition<T, C, M>
+  method=fun <T : Any, C : Context, M : Namespace> findFlag( key: Feature<T, C, M>, ): FlagDefinition<T, C, M>?
+  method=fun allFlags(): Map<Feature<*, *, *>, FlagDefinition<*, *, *>>
+  method=fun load(config: ConfigurationView) val history: List<ConfigurationView> fun rollback(steps: Int = 1): Boolean
+  field=val namespaceId: String
+  field=val configuration: ConfigurationView
+  field=val hooks: RegistryHooks
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistryFactory.kt|public_methods=1|public_fields=0
+  method=fun default(namespaceId: String): NamespaceRegistry
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/result/KonditionalBoundaryFailure.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseError.kt|public_methods=0|public_fields=2
+  field=val message: String
+  field=override val message: String get()
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseException.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/schema/CompiledNamespaceSchema.kt|public_methods=0|public_fields=1
+  field=val entriesInDeterministicOrder: List<Entry>
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHook.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/core/types/Konstrained.kt|public_methods=0|public_fields=1
+  field=val schema: S
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/evaluable/Predicate.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt|public_methods=8|public_fields=0
+  method=fun matches(context: C): Boolean fun specificity(): Int @JvmInline value class Locale(val ids: Set<String>) : Targeting<Context.LocaleContext>
+  method=override fun matches(context: Context.LocaleContext): Boolean
+  method=override fun specificity(): Int
+  method=override fun matches(context: Context.PlatformContext): Boolean
+  method=override fun matches(context: Context.VersionContext): Boolean
+  method=override fun matches(context: Context): Boolean
+  method_truncated=2
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/FullyBound.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/LeftBound.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/RightBound.kt|public_methods=0|public_fields=0
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/Unbounded.kt|public_methods=2|public_fields=0
+  method=override fun contains(v: Version): Boolean
+  method=override fun hasBounds(): Boolean
+- file=konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/VersionRange.kt|public_methods=2|public_fields=0
+  method=open fun contains(v: Version): Boolean
+  method=open fun hasBounds(): Boolean
+- file=konditional-observability/src/main/kotlin/io/amichne/konditional/api/ShadowMismatch.kt|public_methods=0|public_fields=0
+- file=konditional-otel/src/main/kotlin/io/amichne/konditional/otel/KonditionalTelemetry.kt|public_methods=1|public_fields=3
+  method=fun toRegistryHooks(): RegistryHooks
+  field=val tracer: FlagEvaluationTracer
+  field=val metrics: OtelMetricsCollector
+  field=val logger: OtelLogger
+- file=konditional-otel/src/main/kotlin/io/amichne/konditional/otel/metrics/MetricsConfig.kt|public_methods=0|public_fields=0
+- file=konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/SpanAttributes.kt|public_methods=0|public_fields=21
+  field=val FEATURE_NAMESPACE: AttributeKey<String>
+  field=val FEATURE_KEY: AttributeKey<String>
+  field=val FEATURE_TYPE: AttributeKey<String>
+  field=val FEATURE_DEFAULT: AttributeKey<String>
+  field=val EVALUATION_VALUE: AttributeKey<String>
+  field=val EVALUATION_DECISION: AttributeKey<String>
+  field_truncated=15
+- file=konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/TracingConfig.kt|public_methods=0|public_fields=0
+- file=konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistryFactory.kt|public_methods=1|public_fields=0
+  method=override fun create(namespaceId: String): NamespaceRegistry
+- file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/FeatureRegistry.kt|public_methods=2|public_fields=0
+  method=fun <T : Any, C : Context> register(feature: Feature<T, C, *>)
+  method=fun clear()
+- file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/SchemaValueCodec.kt|public_methods=5|public_fields=0
+  method=fun <T : Any> encode(value: T, schema: ObjectSchema): JsonObject
+  method=fun encodeKonstrained(konstrained: Konstrained<*>): JsonValue
+  method=fun <T : Any> decodeKonstrainedPrimitive(kClass: KClass<T>, rawValue: Any): Result<T>
+  method=fun <T : Any> decode(kClass: KClass<T>, json: JsonObject, schema: ObjectSchema): Result<T>
+  method=fun <T : Any> decode(kClass: KClass<T>, json: JsonObject): Result<T>
+- file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigValue.kt|public_methods=0|public_fields=0
+- file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/Configuration.kt|public_methods=3|public_fields=0
+  method=fun diff(other: Configuration): ConfigurationDiff
+  method=fun withMetadata(metadata: ConfigurationMetadata): Configuration
+  method=fun withMetadata( version: String? = null, generatedAtEpochMillis: Long? = null, source: String? = null, ): Configuration
+- file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigurationPatch.kt|public_methods=3|public_fields=0
+  method=fun applyTo(configuration: Configuration): Configuration
+  method=fun <T : Any, C : Context> add( entry: FlagDefinition<T, C, *>, )
+  method=fun remove(key: Feature<*, *, *>)
+- file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/MissingDeclaredFlagStrategy.kt|public_methods=0|public_fields=0
+- file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/SnapshotLoadOptions.kt|public_methods=0|public_fields=0
+- file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/SnapshotWarning.kt|public_methods=0|public_fields=0
+- file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/UnknownFeatureKeyStrategy.kt|public_methods=0|public_fields=0
+- file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/ConfigurationSnapshotCodec.kt|public_methods=7|public_fields=0
+  method=fun encodeRaw(value: Configuration): String
+  method=override fun encode(value: MaterializedConfiguration): String
+  method=fun encode(value: ConfigurationView): String
+  method=override fun decode( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>
+  method=override fun decode( json: String, schema: CompiledNamespaceSchema, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>
+  method=fun applyPatchJson( currentConfiguration: MaterializedConfiguration, patchJson: String, options: SnapshotLoadOptions = SnapshotLoadOptions.strict(), ): Result<MaterializedConfiguration>
+  method_truncated=1
+- file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/FeatureAwareSnapshotCodec.kt|public_methods=0|public_fields=0
+- file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/SnapshotCodec.kt|public_methods=0|public_fields=0
+- file=konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/SnapshotLoader.kt|public_methods=0|public_fields=0
+- file=kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaBuilder.kt|public_methods=0|public_fields=0
+- file=kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaBuilderDsl.kt|public_methods=0|public_fields=0
+- file=kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaFactoryFunctions.kt|public_methods=1|public_fields=21
+  method=fun discriminator(builder: OneOfDiscriminatorBuilder.() -> Unit)
+  field=lateinit var schema: JsonSchema<*>
+  field=var required: Boolean
+  field=var defaultValue: Any?
+  field=var description: String?
+  field=var deprecated: Boolean
+  field=var fields: Map<String, FieldSchema>
+  field_truncated=15
+- file=kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonValueDsl.kt|public_methods=13|public_fields=2
+  method=fun boolean(value: Boolean): JsonBoolean
+  method=fun string(value: String): JsonString
+  method=fun number(value: Int): JsonNumber
+  method=fun number(value: Double): JsonNumber
+  method=fun nullValue(): JsonNull
+  method=fun obj(builder: JsonObjectBuilder.() -> Unit): JsonObject
+  field=var schema: ObjectSchema?
+  field=var elementSchema: JsonSchema<Any>?
+  method_truncated=7
+- file=kontracts/src/main/kotlin/io/amichne/kontracts/schema/JsonSchema.kt|public_methods=0|public_fields=7
+  field=abstract override val type: OpenApi.Type
+  field=override val title: String?
+  field=override val description: String?
+  field=override val default: T?
+  field=override val nullable: Boolean
+  field=override val example: T?
+  field_truncated=1
+- file=kontracts/src/main/kotlin/io/amichne/kontracts/schema/ObjectTraits.kt|public_methods=0|public_fields=2
+  field=val fields: Map<String, FieldSchema>
+  field=val required: Set<String>?
+- file=kontracts/src/main/kotlin/io/amichne/kontracts/schema/SchemaProvider.kt|public_methods=0|public_fields=1
+  field=val schema: S
+- file=kontracts/src/main/kotlin/io/amichne/kontracts/schema/ValidationResult.kt|public_methods=1|public_fields=1
+  method=fun getErrorMessage(): String?
+  field=val isInvalid: Boolean get()
+- file=kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonNull.kt|public_methods=2|public_fields=0
+  method=override fun validate(schema: JsonSchema<*>): ValidationResult
+  method=override fun toString()
+- file=kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonValue.kt|public_methods=1|public_fields=0
+  method=fun validate(schema: JsonSchema<*>): ValidationResult companion object
+- file=openapi/src/main/kotlin/io/amichne/kontracts/schema/OpenApi.kt|public_methods=0|public_fields=7
+  field=val type: Type
+  field=val title: String?
+  field=val description: String?
+  field=val default: T?
+  field=val nullable: Boolean
+  field=val example: T?
+  field_truncated=1
+- file=openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt|public_methods=10|public_fields=2
+  method=override fun getName(): String
+  method=override fun toKonditionalContext(context: EvaluationContext): KonditionalContextMappingResult<TargetingKeyContext>
+  method=override fun getMetadata(): Metadata
+  method=override fun getState(): ProviderState
+  method=override fun getBooleanEvaluation( key: String, defaultValue: Boolean, ctx: EvaluationContext, ): ProviderEvaluation<Boolean>
+  method=override fun getStringEvaluation( key: String, defaultValue: String, ctx: EvaluationContext, ): ProviderEvaluation<String>
+  field=val message: String
+  field=override val message: String
+  method_truncated=4

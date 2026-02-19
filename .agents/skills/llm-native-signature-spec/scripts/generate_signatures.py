@@ -4,21 +4,31 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
 
 EXCLUDED_DIRS = {
+    ".beads",
+    ".claude",
+    ".codex",
     ".git",
     ".idea",
     ".gradle",
     ".mvn",
+    ".signatures",
+    ".worktrees",
+    "__pycache__",
     "build",
     "out",
     "target",
     "node_modules",
     "dist",
     "signatures",
+    "venv",
+    ".venv",
 }
 
 JAVA_EXTENSIONS = {".java", ".kt", ".kts", ".scala"}
@@ -66,6 +76,16 @@ class TypeBlock:
     header: str
     open_brace: int | None
     close_brace: int | None
+
+
+@dataclass(frozen=True)
+class SignatureMetadata:
+    sig_path: str
+    source_file: str
+    package: str
+    type_count: int
+    symbol_count: int
+    sig_sha256: str
 
 
 def normalize_ws(value: str) -> str:
@@ -496,7 +516,8 @@ def candidate_files(root: Path, output_root: Path) -> list[Path]:
     for path in root.rglob("*"):
         if not path.is_file() or path.suffix not in JAVA_EXTENSIONS:
             continue
-        if any(part in EXCLUDED_DIRS for part in path.parts):
+        relative_parts = path.relative_to(root).parts
+        if any(part in EXCLUDED_DIRS for part in relative_parts):
             continue
         if output_root in path.parents:
             continue
@@ -514,23 +535,95 @@ def write_signature_file(repo_root: Path, src: Path, output_root: Path) -> None:
 def clear_previous_signatures(output_root: Path) -> None:
     for path in output_root.rglob("*.sig"):
         path.unlink()
+    meta_index = output_root / "INDEX.meta.json"
+    if meta_index.exists():
+        meta_index.unlink()
 
 
-def build_index(output_root: Path) -> None:
+def signature_metadata(sig_path: Path, output_root: Path) -> SignatureMetadata:
+    source_file = "<unknown>"
+    package = "<unknown>"
+    type_count = 0
+    field_count = 0
+    method_count = 0
+    section: str | None = None
+
+    contents = sig_path.read_text(encoding="utf-8", errors="ignore")
+    for raw_line in contents.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        if line.startswith("file="):
+            source_file = line.split("=", 1)[1].strip()
+            section = None
+            continue
+        if line.startswith("package="):
+            package = line.split("=", 1)[1].strip()
+            section = None
+            continue
+        if line.startswith("type="):
+            type_count += 1
+            section = None
+            continue
+        if line == "fields:":
+            section = "fields"
+            continue
+        if line == "methods:":
+            section = "methods"
+            continue
+        if line.startswith("- ") and section == "fields":
+            field_count += 1
+            continue
+        if line.startswith("- ") and section == "methods":
+            method_count += 1
+            continue
+        section = None
+
+    return SignatureMetadata(
+        sig_path=sig_path.relative_to(output_root).as_posix(),
+        source_file=source_file,
+        package=package,
+        type_count=type_count,
+        symbol_count=type_count + field_count + method_count,
+        sig_sha256=hashlib.sha256(contents.encode("utf-8")).hexdigest(),
+    )
+
+
+def build_indexes(output_root: Path) -> None:
     entries: list[str] = []
+    metadata: list[SignatureMetadata] = []
     for path in sorted(output_root.rglob("*.sig")):
+        if path.name == "INDEX.sig":
+            continue
         rel = path.relative_to(output_root)
-        package = "<unknown>"
-        type_count = 0
-        for line in path.read_text(encoding="utf-8", errors="ignore").splitlines():
-            if line.startswith("package="):
-                package = line.split("=", 1)[1]
-            elif line.startswith("type="):
-                type_count += 1
-        entries.append(f"{rel.as_posix()}|package={package}|types={type_count}")
+        entries.append(rel.as_posix())
+        metadata.append(signature_metadata(path, output_root))
 
     index = output_root / "INDEX.sig"
     index.write_text("\n".join(entries) + ("\n" if entries else ""), encoding="utf-8")
+    meta_index = output_root / "INDEX.meta.json"
+    meta_index.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "entries": [
+                    {
+                        "sig_path": entry.sig_path,
+                        "source_file": entry.source_file,
+                        "package": entry.package,
+                        "type_count": entry.type_count,
+                        "symbol_count": entry.symbol_count,
+                        "sig_sha256": entry.sig_sha256,
+                    }
+                    for entry in metadata
+                ],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
 
 def main() -> int:
@@ -552,7 +645,7 @@ def main() -> int:
     for src in files:
         write_signature_file(repo_root, src, output_root)
 
-    build_index(output_root)
+    build_indexes(output_root)
     print(f"Generated {len(files)} signature files in {output_root}")
     return 0
 

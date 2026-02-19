@@ -1,0 +1,3583 @@
+{
+  "doc_root": "docusaurus/docs/signature-targets",
+  "entries": [
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:119b7fed8fb14b1a",
+        "method:1884646207378e4e"
+      ],
+      "target_hash": "c49e134ae3e84f21ef65ea927092f53ac1c3d948c8fe7c5bd6eef97ecf9f7e47",
+      "target_id": "entrypoint:build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:9551b4dd34d3936f"
+      ],
+      "target_hash": "20b596c3c5b416f08fdd2fb844690606dd564fb0ad64469f9e668d094f3680ba",
+      "target_id": "entrypoint:build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:6ddb381fc837d304"
+      ],
+      "target_hash": "6a15ae5137b8348e55d85c255e9b59097e395b6a43f20b73da8f70c287f2e6f7",
+      "target_id": "entrypoint:build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:1bd1b0faf109a37b"
+      ],
+      "target_hash": "bd8b9540523df872f152718437a76c8c607da891d580b56622fae6de5829c80b",
+      "target_id": "entrypoint:detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/api/RampUpBucketing.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/api/RampUpBucketing.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:b8aca06589216d2f"
+      ],
+      "target_hash": "bd87f192c30ff41622933865d445a235ff9c56f690c1bfd1ee5baa74687a27a1",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/api/RampUpBucketing.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/context/RampUp.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/RampUp.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:5b077fe70be1e2a9"
+      ],
+      "target_hash": "f8ba5f74e2997444938df949f98b588697a6c4c8d79068773e09bf8e4a4f1036",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/context/RampUp.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/context/Version.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/Version.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:0a9b6d526808fdc0"
+      ],
+      "target_hash": "9929706f3654edf9ca0f0a70801d1679a347ed7defe8112b30ef4efb32b78ab3",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/context/Version.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/context/axis/Axis.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/axis/Axis.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:4e2382c78be4a53d",
+        "method:e5d5bd612d822abf",
+        "method:eba599973597d3f4"
+      ],
+      "target_hash": "c0c3d56d1960fa351be490a6025e7205916be636887adc320f7fe0bf4c7dabdc",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/context/axis/Axis.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/context/axis/AxisValues.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/axis/AxisValues.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:2b4eed5581832292",
+        "method:bacafb9e83436b05",
+        "method:ccac6fef985f54d5",
+        "method:eba5c6b27ab8966e"
+      ],
+      "target_hash": "32d0abe2d95dad5e7895f76dc64decee77d5c7e9b503c44681505cbd79aa0764",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/context/axis/AxisValues.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:05f131326cca03e5",
+        "method:0ded87337459c9f6",
+        "method:1967daa263b64dd3",
+        "method:1f561a677c57a918",
+        "method:287862c056cf0839",
+        "method:3228a10fb2e779a4",
+        "method:5c1407b70cc17816",
+        "method:602169136272ddbd",
+        "method:7405872cd7b55589",
+        "method:8c8a3f3202fcd750",
+        "method:8edfb424b9657119",
+        "method:95289485cee105fd",
+        "method:957aa0d699d986dc",
+        "method:a2bfa70772be8410",
+        "method:b8b8134e53ef4f24",
+        "method:bb961be1a4ba8f69",
+        "method:c153d09f70b5c315",
+        "method:e2518d7432d7c90e",
+        "method:f04bc348b687cfb3"
+      ],
+      "target_hash": "5280751c32910979c7cd49c043b7fa05e9ac20017ff8210fedf15361a30d2b71",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleScope.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleScope.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:99321d9f814dc228"
+      ],
+      "target_hash": "b02dca45f5f9232692b6d58748304842596855caa57f834979b9689607714e60",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleScope.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleScopeBase.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleScopeBase.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:5aa3ccc6acc5755e",
+        "method:a4b0897bdf04be8f"
+      ],
+      "target_hash": "d82accc9ee6aa1ade73e70f34e63c5bb336d583e772a194ad941181c25ba43fa",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleScopeBase.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleSet.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleSet.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:d8c9b649bb0e2a06"
+      ],
+      "target_hash": "984a3e2270fa5dc827cdd78a5d2fa981e6111516e2eb4983121866c027569b91",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleSet.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleSetBuilder.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleSetBuilder.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:6cc54f9f02722eba",
+        "method:f04fc525a255538f"
+      ],
+      "target_hash": "8523ce24b952d24f79dbc0997db571de94a855e890e60fe75c34a38f70368bce",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleSetBuilder.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/PlatformTargetingScope.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/PlatformTargetingScope.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:b3d6150302047051",
+        "method:e2fd304718d3a296"
+      ],
+      "target_hash": "25fd3cbb5d244a1c2590a5e07deadc56c7386feaaf8eac84f4cf4c18bf79de60",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/PlatformTargetingScope.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/core/evaluation/Bucketing.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/evaluation/Bucketing.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:1110279717591b22",
+        "method:67920d741e61bc38",
+        "method:80dce84216551821",
+        "method:921ec41927e7b24b"
+      ],
+      "target_hash": "6634949918755ac26533b9c7b3526b7bc9fbc3ee0e76727b7a65b52110c7de9f",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/evaluation/Bucketing.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/KonditionalLogger.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/KonditionalLogger.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:039689712a52e36e",
+        "method:2a5e7b71c7fa8f18",
+        "method:72004e61fed0118b",
+        "method:f2a43676ed3441b3"
+      ],
+      "target_hash": "05f61eaae9db1979a6e5ca80b6df790093f3b87e49a30d4a5ab682905be814f2",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/KonditionalLogger.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/MetricsCollector.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/MetricsCollector.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:0d391987815328f5",
+        "method:99553bd3f24c6b8b",
+        "method:fca4dd3ffdaebbba"
+      ],
+      "target_hash": "3e7225273e7062018976af2145a33fccc8556c40519ce44ed0df952b3d314f12",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/MetricsCollector.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/AxisCatalog.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/AxisCatalog.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:0ae3dfaee8896520",
+        "method:26f0f908e246b13c",
+        "method:eeabfe3e6208359d"
+      ],
+      "target_hash": "a48843ad640e33a725f5e37a4080500ddd2301a3b674da959d5bae4459117ea5",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/AxisCatalog.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:082be30d739a0b58",
+        "method:5f65ce52c1a9f483",
+        "method:b9b971ea403e0c05",
+        "method:d8bcc3b46adea678"
+      ],
+      "target_hash": "89c702483ed1737729e69a8b8d6fe42665907e1f8319801e6497df84d2a98018",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistryFactory.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistryFactory.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:8c5c19ae62aeb1fa"
+      ],
+      "target_hash": "a3ae7dbcaf769286f7dc80b9be0884b919e126dc4f0704d331e09426f5a0e06a",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistryFactory.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHooks.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHooks.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:0a4b988f26d7adcb"
+      ],
+      "target_hash": "99ac7643df93c00ddaf4fc49bc0125255e8b66ce3dafd76e9c10dd988ac4cb89",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHooks.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/rules/Rule.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/Rule.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:dad44d3dc0354920",
+        "method:e90cca48f60402c6"
+      ],
+      "target_hash": "feaf226717b6ec2941a8dbf7a38746b812c6934247324bf71c650a960cc8551e",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/rules/Rule.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:1dc2cc50a99656da",
+        "method:26a8e1c65d32833b",
+        "method:97f055a9ffe2a1a1",
+        "method:a90410f4d59b73a0",
+        "method:b4d514854cf725ff",
+        "method:cf81421641711f3b",
+        "method:d8a8ca9060cf46ba",
+        "method:fed95f1c8b289cf1"
+      ],
+      "target_hash": "c167e42394be0018bd04d78939faf97f350b39dbac8d1846d10afd81c063cb20",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/Unbounded.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/Unbounded.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:012706ab2a20e4bc",
+        "method:015cb0ee07b9683f"
+      ],
+      "target_hash": "82c9992bca07c0ed59844234cb0c4a1914654fa2eec40779dad34f52b1e43c04",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/Unbounded.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/VersionRange.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/VersionRange.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:de958e79acdb2869",
+        "method:ff2dfb4f7251c7ca"
+      ],
+      "target_hash": "8cb14f9c9e57015dd193ea6f3ed40f5aa0173f7ab0c1b452d4f0052e856dd29e",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/VersionRange.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/values/FeatureId.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/values/FeatureId.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:9d5378df61fd5747",
+        "method:f4f8b89661cfc788"
+      ],
+      "target_hash": "33c4a68c5a6bed6804f6482c497290415ac9377ac8ee19960e6432f0ac33950e",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/values/FeatureId.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-core/src/main/kotlin/io/amichne/konditional/values/IdentifierEncoding.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/values/IdentifierEncoding.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:67539c148eec4501",
+        "method:cb008dcd5345f756"
+      ],
+      "target_hash": "f3f37d78c4ede14efb7dcc194b98cf8b5a26f77e6fffa772ecff1a30db53146e",
+      "target_id": "entrypoint:konditional-core/src/main/kotlin/io/amichne/konditional/values/IdentifierEncoding.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorage.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorage.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:32b4625b48169d4c",
+        "method:72e232a146fb9adb",
+        "method:7e8fa33881f33a6d",
+        "method:ec39323a6692adf8"
+      ],
+      "target_hash": "0220738865ff155ea035602d57145e25a34c0acb913f727185824487396131be",
+      "target_id": "entrypoint:konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorage.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-otel/src/main/kotlin/io/amichne/konditional/otel/KonditionalTelemetry.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/KonditionalTelemetry.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:5d529e6068819b1d"
+      ],
+      "target_hash": "bc78b48905052bc3414479515af069ba4b0d72afb5f178cede500bc456592a55",
+      "target_id": "entrypoint:konditional-otel/src/main/kotlin/io/amichne/konditional/otel/KonditionalTelemetry.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-otel/src/main/kotlin/io/amichne/konditional/otel/logging/OtelLogger.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/logging/OtelLogger.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:117fbcaf961bcc31",
+        "method:938d15e66f3b6794",
+        "method:c1fc1b2de8c6865f",
+        "method:fa901cede662ab3d"
+      ],
+      "target_hash": "72a20fcca08281de94bfbdfd4925b56286757c17e29b68c04dd62129ddc6e70c",
+      "target_id": "entrypoint:konditional-otel/src/main/kotlin/io/amichne/konditional/otel/logging/OtelLogger.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-otel/src/main/kotlin/io/amichne/konditional/otel/metrics/OtelMetricsCollector.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/metrics/OtelMetricsCollector.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:86a6a7fc2fa434c3",
+        "method:c8e1b7cb9b10831b",
+        "method:dd14fc2dcfe9487b"
+      ],
+      "target_hash": "9ed4f7bfe8126aa8211562a0fc5c44387146def311efab79b5c34ddda8e900d4",
+      "target_id": "entrypoint:konditional-otel/src/main/kotlin/io/amichne/konditional/otel/metrics/OtelMetricsCollector.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/FlagEvaluationTracer.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/FlagEvaluationTracer.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:1b5b330f67bd6dd3"
+      ],
+      "target_hash": "11df056d19bdf75edfa91417aead0c8245fcf186ed8f0521930410b684190db9",
+      "target_id": "entrypoint:konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/FlagEvaluationTracer.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistry.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistry.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:2e6ab8de4d2246e0",
+        "method:37ad875188f91c3a",
+        "method:4d92cf4cf7b52ea4",
+        "method:544ca5673d66d9a3",
+        "method:5a8571b3e73fe7a4",
+        "method:6d9a28a3a353dc37",
+        "method:bc1dcf337e598cb2",
+        "method:ccad174fc52206f1",
+        "method:e55a0dd1537ba451",
+        "method:f214ea6372d01ea6"
+      ],
+      "target_hash": "a3ed394d79a11033a8eb71beb0872e60892a9e21a5aa743380273700d31ec201",
+      "target_id": "entrypoint:konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistry.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistryFactory.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistryFactory.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:dd7035d19678abe4"
+      ],
+      "target_hash": "62e19ed570b473535e7266e4c1047741c33a664d7780e63786e85a2e953f748b",
+      "target_id": "entrypoint:konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistryFactory.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-runtime/src/main/kotlin/io/amichne/konditional/serialization/snapshot/NamespaceSnapshotLoader.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-runtime/src/main/kotlin/io/amichne/konditional/serialization/snapshot/NamespaceSnapshotLoader.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:d81e0ac72584181e"
+      ],
+      "target_hash": "ab0253af6ab82bfbefbe2b99d4f381710fb9db5d602bcc9ec75e49334b076086",
+      "target_id": "entrypoint:konditional-runtime/src/main/kotlin/io/amichne/konditional/serialization/snapshot/NamespaceSnapshotLoader.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/FeatureRegistry.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/FeatureRegistry.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:703b4e48f5e7c132",
+        "method:c56b05cfddc953f5"
+      ],
+      "target_hash": "f8a0d6871728510ffec4794d2bf9d0393882faa8fadd23f90bca180a822ab803",
+      "target_id": "entrypoint:konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/FeatureRegistry.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/SchemaValueCodec.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/SchemaValueCodec.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:0e94d3014feef5fe",
+        "method:1c13e0136d289aa0",
+        "method:686545544b7e7800",
+        "method:9fc7ba83b6c5e6f8",
+        "method:c7d35bb0c4b69783"
+      ],
+      "target_hash": "13e1787889e3ee2aeec876c811a156dd7a87cdcc24af701f4565c771c075fda9",
+      "target_id": "entrypoint:konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/SchemaValueCodec.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/Configuration.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/Configuration.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:36e59f38debad3be",
+        "method:41a01ff65a618b92",
+        "method:61e3f939db3cb049"
+      ],
+      "target_hash": "809d597b1c32079739be4350a48170bf753bf82ce8b7e8ea540a0e3e088dbc45",
+      "target_id": "entrypoint:konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/Configuration.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigurationPatch.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigurationPatch.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:2a16c349e1576162",
+        "method:589bc0cd7a3f5783",
+        "method:f9fe8366c4cfcfe7"
+      ],
+      "target_hash": "f47fb53cb98c13d2f7ee1088fe9468c5c4544ade446cf1bb24b387221d046cec",
+      "target_id": "entrypoint:konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigurationPatch.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/ConfigurationSnapshotCodec.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/ConfigurationSnapshotCodec.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:269df93e671974ba",
+        "method:2f68837a39cf0b4f",
+        "method:4c639de98a993be7",
+        "method:6e99ec9b87b6f1c3",
+        "method:6ee7d2ccc23b20cf",
+        "method:aa3b66835acdf0c8",
+        "method:e93dea772debb271"
+      ],
+      "target_hash": "6731ecc6aadefb6184b3e9fffe3e12182dd77779799509b92dac97ee79eeea9e",
+      "target_id": "entrypoint:konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/ConfigurationSnapshotCodec.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/dsl/ArraySchemaBuilder.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/ArraySchemaBuilder.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:255db508105a1da0"
+      ],
+      "target_hash": "6f08678290521dc6e46d5c72901fe8f41307a07a45759dbadf8aa60b3fbed62d",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/dsl/ArraySchemaBuilder.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/dsl/BooleanSchemaBuilder.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/BooleanSchemaBuilder.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:84be3614d8f91225"
+      ],
+      "target_hash": "10441dae45251566a588e4dff99d879169fcbf87957889fb0331e4c766ec1331",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/dsl/BooleanSchemaBuilder.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/dsl/IntSchemaBuilder.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/IntSchemaBuilder.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:34bb3fcbbc3af71f"
+      ],
+      "target_hash": "8f0cf794a7af7ac77e8af891c45374bf1734927267998c96c94056f75870f2e6",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/dsl/IntSchemaBuilder.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaFactoryFunctions.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaFactoryFunctions.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:46463068f9ba4c50"
+      ],
+      "target_hash": "63194af1d4920279ec83377322c842fead89c17e3bb312bf4df30eb765d9718d",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaFactoryFunctions.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonValueDsl.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonValueDsl.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:2e65dc295699d9e1",
+        "method:3a290e0399b5f1e1",
+        "method:49c46cb4a299cc48",
+        "method:55c9f37ce20557da",
+        "method:6ddb0f2b29ee47a7",
+        "method:73d4e09f15448906",
+        "method:a755b58690ad585d",
+        "method:c1b2463e2f6d98a6",
+        "method:c52f983434247cac",
+        "method:d1d98e4ce51a12ec",
+        "method:e21aaf1dc04ed0d5",
+        "method:ebf0dd7eb7cfc463",
+        "method:ff6d50a65f426b1a"
+      ],
+      "target_hash": "213cb73659e90f0f1aca125740efce88b1d4584863557b49127dca418ad7b248",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonValueDsl.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/dsl/NullSchemaBuilder.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/NullSchemaBuilder.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:7ae0f62b3f8b1ee4"
+      ],
+      "target_hash": "9db1019f649fbf4641bd5502a38177f486489268484c41562f4f7edfb6e40751",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/dsl/NullSchemaBuilder.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/dsl/ObjectSchemaBuilder.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/ObjectSchemaBuilder.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:f40479e7c75611ee"
+      ],
+      "target_hash": "0399854eb6beeb214137cd13e95d3a0fcea15691bf72e7fa8616b3f0aa1f6eee",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/dsl/ObjectSchemaBuilder.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/dsl/RootObjectSchemaBuilder.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/RootObjectSchemaBuilder.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:6103f348125bdfa6",
+        "method:e1154b5926906d03",
+        "method:e4577ddbdc34c72c"
+      ],
+      "target_hash": "a90cac89b0c06ddad826f74f4774409cb1b4b7efb60dd1099c90a3ff5721d0fc",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/dsl/RootObjectSchemaBuilder.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/schema/AllOfSchema.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/AllOfSchema.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:a66d1bd6d124906d"
+      ],
+      "target_hash": "437a156a81c2c4001a13e7ff6aed62b02a2bcba703acb53c7c11746f4fa476f7",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/schema/AllOfSchema.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/schema/AnySchema.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/AnySchema.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:6d2289de2e585ffc"
+      ],
+      "target_hash": "c526c945d791d96297ec658efb8506b8bd8be3f69c4f1b5cf607a637fcb9afe2",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/schema/AnySchema.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/schema/ArraySchema.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/ArraySchema.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:a1a4e389e918ffcc"
+      ],
+      "target_hash": "a3835cd1585f99d0a327a6823aa0eaa8a5964ce924ae1087dff5cba8b395129c",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/schema/ArraySchema.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/schema/BooleanSchema.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/BooleanSchema.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:d39a5424c25858d7"
+      ],
+      "target_hash": "19745227116561b005fa0ddc1a7282366d85c3c7938be07e7a917bddc0441405",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/schema/BooleanSchema.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/schema/DoubleSchema.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/DoubleSchema.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:c627ae89c76e6a02"
+      ],
+      "target_hash": "8807f6158d2789bdc20c94361bd7cbf7d0d300afc62e8825b6443976785fbebe",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/schema/DoubleSchema.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/schema/EnumSchema.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/EnumSchema.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:8dc1759106137461"
+      ],
+      "target_hash": "ea8a9c018c9d3d12df2c2df45edd54c719fad2c331d0ae2d3e1b0a3bd3e4514c",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/schema/EnumSchema.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/schema/FieldSchema.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/FieldSchema.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:ec2e5e303c39cf70"
+      ],
+      "target_hash": "db62a49e98b500ba1bf7dfa2139c62898c1b245e41e55e0ab90f5257bb172eed",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/schema/FieldSchema.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/schema/IntSchema.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/IntSchema.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:98809ad8cb2a99b2"
+      ],
+      "target_hash": "f7784ff445aa10bec25934d1edb7a4b8658c9925465ef2665c3f4b8062efed2c",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/schema/IntSchema.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/schema/MapSchema.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/MapSchema.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:b3ebf3ba32a8be6b"
+      ],
+      "target_hash": "17241e68c738c7f93e03a2f09f9d9604659525daec5239a6ea875e595d46eac6",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/schema/MapSchema.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/schema/NullSchema.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/NullSchema.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:3a64879e65732ad7"
+      ],
+      "target_hash": "d1c03b11bb022e7a9820d31b93403a9a4602d0e327d5485ec4039e00827d0d69",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/schema/NullSchema.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/schema/ObjectSchema.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/ObjectSchema.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:b54cbe0271110e0e"
+      ],
+      "target_hash": "edaecf2865eb3122bc3479e0bbd09403048bd5ca3f5df219c391e80edb969362",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/schema/ObjectSchema.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/schema/OneOfSchema.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/OneOfSchema.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:a37df80e83dbe956"
+      ],
+      "target_hash": "764094fe514704e430e9c23fce8d024c204b9b8e45e0b62d46ea3d9843f8487d",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/schema/OneOfSchema.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/schema/RootObjectSchema.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/RootObjectSchema.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:834a64a85c5fe507"
+      ],
+      "target_hash": "cca25977e911d34bbb867ecb227aa6a5bc3f6aaf4421c604cc6ecffa8eb920cb",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/schema/RootObjectSchema.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/schema/StringSchema.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/StringSchema.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:f385998af3396f30"
+      ],
+      "target_hash": "ddeba83f74c243f6875ab5fc97f10fb84f2c4e1a6e7c83c60d93b95f82e09456",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/schema/StringSchema.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/schema/ValidationResult.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/ValidationResult.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:4e0a9b8b1444ced9"
+      ],
+      "target_hash": "24b53a8b18269bf235ff4be319c7e91ddfd6860a6eede37f942e334cca514d9b",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/schema/ValidationResult.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonArray.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonArray.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:24925ae6d6afc13e",
+        "method:47352dd5c435b84d",
+        "method:5cd6f5bdee9eac3a",
+        "method:6d0067c5ca561324",
+        "method:d260313887d7ec78"
+      ],
+      "target_hash": "9ccbcd75d135f02a856caffe42be8e758e343ee0bb002b18ee1d6c1909da04b3",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonArray.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonBoolean.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonBoolean.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:7237cc5c32c717a6",
+        "method:d188aa81b5d8dfcb"
+      ],
+      "target_hash": "78af8e735e5b237ca9faa279600f232da5c39c22fdf43b6a74e4ca62366e37b4",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonBoolean.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonNull.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonNull.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:03f49bf767dc1deb",
+        "method:e4b115ac355d4b4a"
+      ],
+      "target_hash": "e77a34b8f3ea61372fee633e6dfc07c71a3a7e3bcd7c659ab3a459953a62dcb4",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonNull.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonNumber.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonNumber.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:2ff5bc5c43363c1e",
+        "method:32d28c0f7de2e3c8",
+        "method:4322c3ff88367da4",
+        "method:9bd7a81739dd2bf0"
+      ],
+      "target_hash": "6ba941de97bf6273ee9d3f7f16ba942e12e6771fce6db8f62032c4c1114f1ba9",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonNumber.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonObject.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonObject.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:372b6d7a3627cc53",
+        "method:947a88eb29702934",
+        "method:b615fab6dabbe9b4",
+        "method:f047a0018cd01150"
+      ],
+      "target_hash": "a86075b8241a659a56693ddd9dc78d03a4a8fcba3e30f176f980439427d8edaa",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonObject.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonString.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonString.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:0e0a75a855ac06ce",
+        "method:3b2edf64dc6f9f39"
+      ],
+      "target_hash": "4a037818c03488e523887b70f136fcf2b0bb009abfd354bc85d35a48f4648d7f",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonString.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonValue.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonValue.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:113e0a3cd81434da"
+      ],
+      "target_hash": "96565f7e8c0a32b5ad19d06982153aef33b60dce383f0baf445173ad2043f457",
+      "target_id": "entrypoint:kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonValue.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/entrypoint/openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt.md",
+      "kind": "entrypoint",
+      "scope_sig_paths": [
+        "openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:08e8cfec37790559",
+        "method:151be8bc769eed1f",
+        "method:1e6fe407d6b549b7",
+        "method:5c15c0808b36bf1f",
+        "method:5ed9f8f9945a545a",
+        "method:96fbb4e6b170ed02",
+        "method:97e1c4fc905c215d",
+        "method:c4bffdee570209d9",
+        "method:c791b8881c064fe6",
+        "method:f33f063ac8922970"
+      ],
+      "target_hash": "8ec48c2e6d8d48efc6c8bfbdc1fdd48a6fe604a3e391bb1561e22d65b6bca99a",
+      "target_id": "entrypoint:openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/api.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/api/KonditionalInternalApi.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/api/RampUpBucketing.kt.sig",
+        "konditional-observability/src/main/kotlin/io/amichne/konditional/api/ShadowMismatch.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:b8aca06589216d2f",
+        "type:io.amichne.konditional.api.Kind",
+        "type:io.amichne.konditional.api.KonditionalInternalApi",
+        "type:io.amichne.konditional.api.RampUpBucketing"
+      ],
+      "target_hash": "b4b3738df7b3d159e7754208568814c2c9197cd82b4fcc98a7bfe1924dbcea31",
+      "target_id": "package:io.amichne.konditional.api"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/context.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/Context.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/LocaleTag.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/Platform.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/PlatformTag.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/RampUp.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/Version.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:0a9b6d526808fdc0",
+        "method:5b077fe70be1e2a9",
+        "type:io.amichne.konditional.context.Context",
+        "type:io.amichne.konditional.context.Core",
+        "type:io.amichne.konditional.context.LocaleContext",
+        "type:io.amichne.konditional.context.LocaleTag",
+        "type:io.amichne.konditional.context.Platform",
+        "type:io.amichne.konditional.context.PlatformContext",
+        "type:io.amichne.konditional.context.PlatformTag",
+        "type:io.amichne.konditional.context.StableIdContext",
+        "type:io.amichne.konditional.context.Version",
+        "type:io.amichne.konditional.context.VersionContext"
+      ],
+      "target_hash": "5bd863f862bee312fd681c916a7c087206031ee9fefba7c9ee877503610f29d8",
+      "target_id": "package:io.amichne.konditional.context"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/context/axis.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/axis/Axis.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/axis/AxisValue.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/axis/AxisValues.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:2b4eed5581832292",
+        "method:4e2382c78be4a53d",
+        "method:bacafb9e83436b05",
+        "method:ccac6fef985f54d5",
+        "method:e5d5bd612d822abf",
+        "method:eba599973597d3f4",
+        "method:eba5c6b27ab8966e",
+        "type:io.amichne.konditional.context.axis.AxisValue"
+      ],
+      "target_hash": "7fe9bfe3da3774864f38cc3eb7a9c114e0d195533924bef575ce8723888f7866",
+      "target_id": "package:io.amichne.konditional.context.axis"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/core.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/ValueType.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:05f131326cca03e5",
+        "method:0ded87337459c9f6",
+        "method:1967daa263b64dd3",
+        "method:1f561a677c57a918",
+        "method:287862c056cf0839",
+        "method:3228a10fb2e779a4",
+        "method:5c1407b70cc17816",
+        "method:602169136272ddbd",
+        "method:7405872cd7b55589",
+        "method:8c8a3f3202fcd750",
+        "method:8edfb424b9657119",
+        "method:95289485cee105fd",
+        "method:957aa0d699d986dc",
+        "method:a2bfa70772be8410",
+        "method:b8b8134e53ef4f24",
+        "method:bb961be1a4ba8f69",
+        "method:c153d09f70b5c315",
+        "method:e2518d7432d7c90e",
+        "method:f04bc348b687cfb3",
+        "type:io.amichne.konditional.core.TestNamespaceFacade",
+        "type:io.amichne.konditional.core.ValueType"
+      ],
+      "target_hash": "60976ebd6645599a16308e1d0643bc36adc452189413a79baf3f0dae46aadb53",
+      "target_id": "package:io.amichne.konditional.core"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/core/dsl.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/AxisValuesScope.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/FlagScope.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/KonditionalDsl.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/VersionRangeScope.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.dsl.AxisValuesScope",
+        "type:io.amichne.konditional.core.dsl.FlagScope",
+        "type:io.amichne.konditional.core.dsl.KonditionalDsl",
+        "type:io.amichne.konditional.core.dsl.VersionRangeScope"
+      ],
+      "target_hash": "4c607fe9b263c9699ddf9033a0b82041f3bd7dc64f52eeb1961b87cd2d932813",
+      "target_id": "package:io.amichne.konditional.core.dsl"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/core/dsl/rules.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/ContextRuleScope.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/NoteScope.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleScope.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleScopeBase.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleSet.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleSetBuilder.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/YieldingScopeHost.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:5aa3ccc6acc5755e",
+        "method:6cc54f9f02722eba",
+        "method:99321d9f814dc228",
+        "method:a4b0897bdf04be8f",
+        "method:d8c9b649bb0e2a06",
+        "method:f04fc525a255538f",
+        "type:io.amichne.konditional.core.dsl.rules.ContextRuleScope",
+        "type:io.amichne.konditional.core.dsl.rules.NoteScope",
+        "type:io.amichne.konditional.core.dsl.rules.Postfix",
+        "type:io.amichne.konditional.core.dsl.rules.RuleScope",
+        "type:io.amichne.konditional.core.dsl.rules.RuleScopeBase",
+        "type:io.amichne.konditional.core.dsl.rules.YieldingScopeHost"
+      ],
+      "target_hash": "f810eb037c8af3503647aca01586788aa8a40318515a9a5a8552e40ce63723eb",
+      "target_id": "package:io.amichne.konditional.core.dsl.rules"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/core/dsl/rules/targeting/scopes.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/AxisTargetingScope.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/ExtensionTargetingScope.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/LocaleTargetingScope.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/PlatformTargetingScope.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/StableIdTargetingScope.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/VersionTargetingScope.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:b3d6150302047051",
+        "method:e2fd304718d3a296",
+        "type:io.amichne.konditional.core.dsl.rules.targeting.scopes.AxisTargetingScope",
+        "type:io.amichne.konditional.core.dsl.rules.targeting.scopes.ExtensionTargetingScope",
+        "type:io.amichne.konditional.core.dsl.rules.targeting.scopes.LocaleTargetingScope",
+        "type:io.amichne.konditional.core.dsl.rules.targeting.scopes.PlatformTargetingScope",
+        "type:io.amichne.konditional.core.dsl.rules.targeting.scopes.StableIdTargetingScope",
+        "type:io.amichne.konditional.core.dsl.rules.targeting.scopes.VersionTargetingScope"
+      ],
+      "target_hash": "72e5977411bbc20a28062677f9a186da6a7cbf5b9d1579b1d4e4b9fa36a92329",
+      "target_id": "package:io.amichne.konditional.core.dsl.rules.targeting.scopes"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/core/evaluation.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/evaluation/Bucketing.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:1110279717591b22",
+        "method:67920d741e61bc38",
+        "method:80dce84216551821",
+        "method:921ec41927e7b24b"
+      ],
+      "target_hash": "ebb99bed9c6599e75e3b504a476f87e2fb815601dffb59b481d686cdc5d17c2f",
+      "target_id": "package:io.amichne.konditional.core.evaluation"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/core/features.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/BooleanFeature.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/DoubleFeature.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/EnumFeature.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/Feature.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/Identifiable.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/IntFeature.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/KotlinClassFeature.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/StringFeature.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.features.BooleanFeature",
+        "type:io.amichne.konditional.core.features.DoubleFeature",
+        "type:io.amichne.konditional.core.features.EnumFeature",
+        "type:io.amichne.konditional.core.features.Feature",
+        "type:io.amichne.konditional.core.features.Identifiable",
+        "type:io.amichne.konditional.core.features.IntFeature",
+        "type:io.amichne.konditional.core.features.KotlinClassFeature",
+        "type:io.amichne.konditional.core.features.StringFeature"
+      ],
+      "target_hash": "987c915b55a88623a61800c6e51cee13ba4a031e3ccf6406ca9444565d1dc298",
+      "target_id": "package:io.amichne.konditional.core.features"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/core/id.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/id/StableId.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/id/StaticStableId.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.id.StableId",
+        "type:io.amichne.konditional.core.id.StaticStableId"
+      ],
+      "target_hash": "c20a7c6439ba3c81166ec472c494ffc7649824ed5118e6b6c7d5f16de6a9911c",
+      "target_id": "package:io.amichne.konditional.core.id"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/core/instance.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/instance/ConfigurationView.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.instance.ConfigurationMetadataView",
+        "type:io.amichne.konditional.core.instance.ConfigurationView"
+      ],
+      "target_hash": "f0d0d41c662edfa8468af69cdbd776fc725ad11623b346147689431403761dac",
+      "target_id": "package:io.amichne.konditional.core.instance"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/core/ops.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/KonditionalLogger.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/Metrics.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/MetricsCollector.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:039689712a52e36e",
+        "method:0d391987815328f5",
+        "method:2a5e7b71c7fa8f18",
+        "method:72004e61fed0118b",
+        "method:99553bd3f24c6b8b",
+        "method:f2a43676ed3441b3",
+        "method:fca4dd3ffdaebbba",
+        "type:io.amichne.konditional.core.ops.DecisionKind",
+        "type:io.amichne.konditional.core.ops.EvaluationMode",
+        "type:io.amichne.konditional.core.ops.KonditionalLogger",
+        "type:io.amichne.konditional.core.ops.Metrics",
+        "type:io.amichne.konditional.core.ops.MetricsCollector",
+        "type:io.amichne.konditional.core.ops.NoOp"
+      ],
+      "target_hash": "6b89bf172b6cc840b65b6bae0dee8653b06373ef5087c9d2ad41a0af9846eadd",
+      "target_id": "package:io.amichne.konditional.core.ops"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/core/registry.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/AxisCatalog.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistryFactory.kt.sig",
+        "konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistry.kt.sig",
+        "konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistryFactory.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:082be30d739a0b58",
+        "method:0ae3dfaee8896520",
+        "method:26f0f908e246b13c",
+        "method:2e6ab8de4d2246e0",
+        "method:37ad875188f91c3a",
+        "method:4d92cf4cf7b52ea4",
+        "method:544ca5673d66d9a3",
+        "method:5a8571b3e73fe7a4",
+        "method:5f65ce52c1a9f483",
+        "method:6d9a28a3a353dc37",
+        "method:8c5c19ae62aeb1fa",
+        "method:b9b971ea403e0c05",
+        "method:bc1dcf337e598cb2",
+        "method:ccad174fc52206f1",
+        "method:d8bcc3b46adea678",
+        "method:dd7035d19678abe4",
+        "method:e55a0dd1537ba451",
+        "method:eeabfe3e6208359d",
+        "method:f214ea6372d01ea6",
+        "type:io.amichne.konditional.core.registry.AxisCatalog",
+        "type:io.amichne.konditional.core.registry.InMemoryNamespaceRegistryFactory",
+        "type:io.amichne.konditional.core.registry.NamespaceRegistry",
+        "type:io.amichne.konditional.core.registry.NamespaceRegistryFactory",
+        "type:io.amichne.konditional.core.registry.NamespaceRegistryRuntime"
+      ],
+      "target_hash": "9428ff98b647b741ec77308de1bc8bbaa97f6a0e3721835c25fb056987aebc44",
+      "target_id": "package:io.amichne.konditional.core.registry"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/core/result.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/result/KonditionalBoundaryFailure.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseError.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseException.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.result.InvalidSnapshot",
+        "type:io.amichne.konditional.core.result.KonditionalBoundaryFailure",
+        "type:io.amichne.konditional.core.result.ParseError",
+        "type:io.amichne.konditional.core.result.ParseException"
+      ],
+      "target_hash": "5aad8873524192c83393715818ca7fdf46bbae2ca6b5077c991ac5b5fcd500aa",
+      "target_id": "package:io.amichne.konditional.core.result"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/core/schema.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/schema/CompiledNamespaceSchema.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.schema.CompiledNamespaceSchema",
+        "type:io.amichne.konditional.core.schema.Entry"
+      ],
+      "target_hash": "7ee8f84ae85db4fbb390010910af0f4d3d0b9e813c218f54f5a552ff8d21749f",
+      "target_id": "package:io.amichne.konditional.core.schema"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/core/spi.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHook.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHooks.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:0a4b988f26d7adcb",
+        "type:io.amichne.konditional.core.spi.FeatureRegistrationHook"
+      ],
+      "target_hash": "62a4e6f1ace084634d47ecc775dc9dac419b15b5ee5737e30407268ba9ebba4e",
+      "target_id": "package:io.amichne.konditional.core.spi"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/core/types.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/types/Konstrained.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.types.Konstrained"
+      ],
+      "target_hash": "2c34f12fe943fb684c044b553c9a85dfb27dd5756af442087231dfed5a8b9b5d",
+      "target_id": "package:io.amichne.konditional.core.types"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/detekt.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/KonditionalRuleSetProvider.kt.sig",
+        "detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:1bd1b0faf109a37b",
+        "type:io.amichne.konditional.detekt.KonditionalRuleSetProvider",
+        "type:io.amichne.konditional.detekt.UnclosedCriteriaFirstRule"
+      ],
+      "target_hash": "ad56b62507b5b90a0b0c5c5a8d08f3dd5376af8771a66597e8c972be5a164fb1",
+      "target_id": "package:io.amichne.konditional.detekt"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/gradle.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt.sig",
+        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt.sig",
+        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt.sig",
+        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:119b7fed8fb14b1a",
+        "method:1884646207378e4e",
+        "method:6ddb381fc837d304",
+        "method:9551b4dd34d3936f",
+        "type:io.amichne.konditional.gradle.GenerateOpenApiSpecTask",
+        "type:io.amichne.konditional.gradle.GenerateRecipesDocsTask",
+        "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryExtension",
+        "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryTask",
+        "type:io.amichne.konditional.gradle.KonditionalPublishingExtension",
+        "type:io.amichne.konditional.gradle.KonditionalRecipesDocsExtension",
+        "type:io.amichne.konditional.gradle.VerifyRecipesDocsTask"
+      ],
+      "target_hash": "aa0351d23f97bf37ed80192ad0dfb2ec3da4923572f36a90d63192a02f883cc8",
+      "target_id": "package:io.amichne.konditional.gradle"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/httpserver.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-http-server/src/main/kotlin/io/amichne/konditional/httpserver/FileBackedSnapshotStorage.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:32b4625b48169d4c",
+        "method:72e232a146fb9adb",
+        "method:7e8fa33881f33a6d",
+        "method:ec39323a6692adf8"
+      ],
+      "target_hash": "9c58a63c5d453dc171323cd6014bdc2817d68935bc56d7a0a7f08c3fb80d6058",
+      "target_id": "package:io.amichne.konditional.httpserver"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/openfeature.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:08e8cfec37790559",
+        "method:151be8bc769eed1f",
+        "method:1e6fe407d6b549b7",
+        "method:5c15c0808b36bf1f",
+        "method:5ed9f8f9945a545a",
+        "method:96fbb4e6b170ed02",
+        "method:97e1c4fc905c215d",
+        "method:c4bffdee570209d9",
+        "method:c791b8881c064fe6",
+        "method:f33f063ac8922970",
+        "type:io.amichne.konditional.openfeature.BlankTargetingKey",
+        "type:io.amichne.konditional.openfeature.KonditionalContextMapper",
+        "type:io.amichne.konditional.openfeature.KonditionalContextMappingError",
+        "type:io.amichne.konditional.openfeature.KonditionalContextMappingResult",
+        "type:io.amichne.konditional.openfeature.MissingTargetingKey",
+        "type:io.amichne.konditional.openfeature.TargetingKeyContext"
+      ],
+      "target_hash": "5e425dcc98cacbbbb372ab4b630b9187916336d96ac2321978acdaf1eeb3214e",
+      "target_id": "package:io.amichne.konditional.openfeature"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/otel.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/KonditionalTelemetry.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:5d529e6068819b1d",
+        "type:io.amichne.konditional.otel.KonditionalTelemetry"
+      ],
+      "target_hash": "4ece5402622e6fd2bf7940252241d650a0332aa7fca07f007ae62d4f53cdfd4e",
+      "target_id": "package:io.amichne.konditional.otel"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/otel/logging.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/logging/OtelLogger.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:117fbcaf961bcc31",
+        "method:938d15e66f3b6794",
+        "method:c1fc1b2de8c6865f",
+        "method:fa901cede662ab3d"
+      ],
+      "target_hash": "58905ed1c1529e8fa47a64862c22c46d17f41b2c8acad545e7410923b479a6da",
+      "target_id": "package:io.amichne.konditional.otel.logging"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/otel/metrics.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/metrics/MetricsConfig.kt.sig",
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/metrics/OtelMetricsCollector.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:86a6a7fc2fa434c3",
+        "method:c8e1b7cb9b10831b",
+        "method:dd14fc2dcfe9487b",
+        "type:io.amichne.konditional.otel.metrics.MetricsConfig"
+      ],
+      "target_hash": "c53924dea3da98c34774795fbcff86be94bd6f08cfecfeec36845832823750c3",
+      "target_id": "package:io.amichne.konditional.otel.metrics"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/otel/traces.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/FlagEvaluationTracer.kt.sig",
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/SpanAttributes.kt.sig",
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/TracingConfig.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:1b5b330f67bd6dd3",
+        "type:io.amichne.konditional.otel.traces.ALWAYS",
+        "type:io.amichne.konditional.otel.traces.DecisionType",
+        "type:io.amichne.konditional.otel.traces.EventName",
+        "type:io.amichne.konditional.otel.traces.FEATURE_FILTER",
+        "type:io.amichne.konditional.otel.traces.KonditionalSemanticAttributes",
+        "type:io.amichne.konditional.otel.traces.NEVER",
+        "type:io.amichne.konditional.otel.traces.PARENT_BASED",
+        "type:io.amichne.konditional.otel.traces.RATIO",
+        "type:io.amichne.konditional.otel.traces.SamplingStrategy",
+        "type:io.amichne.konditional.otel.traces.TracingConfig"
+      ],
+      "target_hash": "32f8dcf0ef90ae21f2c990313f2673ccea03e2106fb07b7b4a616bacd7b40ed5",
+      "target_id": "package:io.amichne.konditional.otel.traces"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/rules.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/Rule.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:dad44d3dc0354920",
+        "method:e90cca48f60402c6"
+      ],
+      "target_hash": "8d4e30207c7eed6a3f39cbb7850ae4456012c0b205e2f14a4b2b01dacb31f09e",
+      "target_id": "package:io.amichne.konditional.rules"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/rules/evaluable.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/evaluable/Predicate.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.rules.evaluable.Predicate"
+      ],
+      "target_hash": "f2a796a79d428e34917c28536ae641c552ead049e29f09a6c94b40aa4c89ce2a",
+      "target_id": "package:io.amichne.konditional.rules.evaluable"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/rules/targeting.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:1dc2cc50a99656da",
+        "method:26a8e1c65d32833b",
+        "method:97f055a9ffe2a1a1",
+        "method:a90410f4d59b73a0",
+        "method:b4d514854cf725ff",
+        "method:cf81421641711f3b",
+        "method:d8a8ca9060cf46ba",
+        "method:fed95f1c8b289cf1",
+        "type:io.amichne.konditional.rules.targeting.All",
+        "type:io.amichne.konditional.rules.targeting.Axis",
+        "type:io.amichne.konditional.rules.targeting.Custom",
+        "type:io.amichne.konditional.rules.targeting.Guarded",
+        "type:io.amichne.konditional.rules.targeting.Locale",
+        "type:io.amichne.konditional.rules.targeting.Platform",
+        "type:io.amichne.konditional.rules.targeting.Targeting",
+        "type:io.amichne.konditional.rules.targeting.Version"
+      ],
+      "target_hash": "97e41ee01b10f03b6a4a8917ef4c089178286b5602bb1f77d74ef00cc1c0c796",
+      "target_id": "package:io.amichne.konditional.rules.targeting"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/rules/versions.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/FullyBound.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/LeftBound.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/RightBound.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/Unbounded.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/VersionRange.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:012706ab2a20e4bc",
+        "method:015cb0ee07b9683f",
+        "method:de958e79acdb2869",
+        "method:ff2dfb4f7251c7ca",
+        "type:io.amichne.konditional.rules.versions.FullyBound",
+        "type:io.amichne.konditional.rules.versions.LeftBound",
+        "type:io.amichne.konditional.rules.versions.RightBound",
+        "type:io.amichne.konditional.rules.versions.Type",
+        "type:io.amichne.konditional.rules.versions.Unbounded",
+        "type:io.amichne.konditional.rules.versions.VersionRange"
+      ],
+      "target_hash": "ea7a1e3d1eaf7ee03c8d2a5dbdf7b06d1c0384f2890199b3d7acc2de9f204862",
+      "target_id": "package:io.amichne.konditional.rules.versions"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/serialization.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/FeatureRegistry.kt.sig",
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/SchemaValueCodec.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:0e94d3014feef5fe",
+        "method:1c13e0136d289aa0",
+        "method:686545544b7e7800",
+        "method:703b4e48f5e7c132",
+        "method:9fc7ba83b6c5e6f8",
+        "method:c56b05cfddc953f5",
+        "method:c7d35bb0c4b69783",
+        "type:io.amichne.konditional.serialization.FeatureRegistry",
+        "type:io.amichne.konditional.serialization.SchemaValueCodec",
+        "type:io.amichne.konditional.serialization.Skip",
+        "type:io.amichne.konditional.serialization.Value"
+      ],
+      "target_hash": "d740dc5d0398be625af701ce7ec87240f2a115b31b5651ef298b3374ee9c1a76",
+      "target_id": "package:io.amichne.konditional.serialization"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/serialization/instance.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigValue.kt.sig",
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/Configuration.kt.sig",
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigurationPatch.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:2a16c349e1576162",
+        "method:36e59f38debad3be",
+        "method:41a01ff65a618b92",
+        "method:589bc0cd7a3f5783",
+        "method:61e3f939db3cb049",
+        "method:f9fe8366c4cfcfe7",
+        "type:io.amichne.konditional.serialization.instance.ConfigValue",
+        "type:io.amichne.konditional.serialization.instance.Configuration",
+        "type:io.amichne.konditional.serialization.instance.ConfigurationMetadata",
+        "type:io.amichne.konditional.serialization.instance.ConfigurationPatch",
+        "type:io.amichne.konditional.serialization.instance.PatchBuilder"
+      ],
+      "target_hash": "a73f0e602a169535ea172ce96aaa95ab18f829fe78ec3ce6303c37864518d7da",
+      "target_id": "package:io.amichne.konditional.serialization.instance"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/serialization/options.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/MissingDeclaredFlagStrategy.kt.sig",
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/SnapshotLoadOptions.kt.sig",
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/SnapshotWarning.kt.sig",
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/UnknownFeatureKeyStrategy.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.options.Fail",
+        "type:io.amichne.konditional.serialization.options.FillFromDeclaredDefaults",
+        "type:io.amichne.konditional.serialization.options.Kind",
+        "type:io.amichne.konditional.serialization.options.MissingDeclaredFlagStrategy",
+        "type:io.amichne.konditional.serialization.options.Reject",
+        "type:io.amichne.konditional.serialization.options.Skip",
+        "type:io.amichne.konditional.serialization.options.SnapshotLoadOptions",
+        "type:io.amichne.konditional.serialization.options.UnknownFeatureKeyStrategy"
+      ],
+      "target_hash": "060985cff26fafec009c473e00e15ba905c8f55f8cce145709a48c633897c416",
+      "target_id": "package:io.amichne.konditional.serialization.options"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/serialization/snapshot.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-runtime/src/main/kotlin/io/amichne/konditional/serialization/snapshot/NamespaceSnapshotLoader.kt.sig",
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/ConfigurationSnapshotCodec.kt.sig",
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/FeatureAwareSnapshotCodec.kt.sig",
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/SnapshotCodec.kt.sig",
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/SnapshotLoader.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:269df93e671974ba",
+        "method:2f68837a39cf0b4f",
+        "method:4c639de98a993be7",
+        "method:6e99ec9b87b6f1c3",
+        "method:6ee7d2ccc23b20cf",
+        "method:aa3b66835acdf0c8",
+        "method:d81e0ac72584181e",
+        "method:e93dea772debb271",
+        "type:io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec",
+        "type:io.amichne.konditional.serialization.snapshot.FeatureAwareSnapshotCodec",
+        "type:io.amichne.konditional.serialization.snapshot.SnapshotCodec",
+        "type:io.amichne.konditional.serialization.snapshot.SnapshotLoader"
+      ],
+      "target_hash": "909a84bb22de64d4e90e5482ccec2909e1485c354e8930479328a535756a4770",
+      "target_id": "package:io.amichne.konditional.serialization.snapshot"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/konditional/values.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/values/FeatureId.kt.sig",
+        "konditional-core/src/main/kotlin/io/amichne/konditional/values/IdentifierEncoding.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:67539c148eec4501",
+        "method:9d5378df61fd5747",
+        "method:cb008dcd5345f756",
+        "method:f4f8b89661cfc788"
+      ],
+      "target_hash": "4209553c9af4820a6c3146f905e0bfa45a4086d559b220c57cc55469b2808443",
+      "target_id": "package:io.amichne.konditional.values"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/kontracts/dsl.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/ArraySchemaBuilder.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/BooleanSchemaBuilder.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/IntSchemaBuilder.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaBuilder.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaBuilderDsl.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaFactoryFunctions.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonValueDsl.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/NullSchemaBuilder.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/ObjectSchemaBuilder.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/RootObjectSchemaBuilder.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:255db508105a1da0",
+        "method:2e65dc295699d9e1",
+        "method:34bb3fcbbc3af71f",
+        "method:3a290e0399b5f1e1",
+        "method:46463068f9ba4c50",
+        "method:49c46cb4a299cc48",
+        "method:55c9f37ce20557da",
+        "method:6103f348125bdfa6",
+        "method:6ddb0f2b29ee47a7",
+        "method:73d4e09f15448906",
+        "method:7ae0f62b3f8b1ee4",
+        "method:84be3614d8f91225",
+        "method:a755b58690ad585d",
+        "method:c1b2463e2f6d98a6",
+        "method:c52f983434247cac",
+        "method:d1d98e4ce51a12ec",
+        "method:e1154b5926906d03",
+        "method:e21aaf1dc04ed0d5",
+        "method:e4577ddbdc34c72c",
+        "method:ebf0dd7eb7cfc463",
+        "method:f40479e7c75611ee",
+        "method:ff6d50a65f426b1a",
+        "type:io.amichne.kontracts.dsl.FieldSchemaFactoryBuilder",
+        "type:io.amichne.kontracts.dsl.JsonArrayBuilder",
+        "type:io.amichne.kontracts.dsl.JsonObjectBuilder",
+        "type:io.amichne.kontracts.dsl.JsonSchemaBuilder",
+        "type:io.amichne.kontracts.dsl.JsonSchemaBuilderDsl",
+        "type:io.amichne.kontracts.dsl.JsonValueDsl",
+        "type:io.amichne.kontracts.dsl.JsonValueScope",
+        "type:io.amichne.kontracts.dsl.MapSchemaFactoryBuilder",
+        "type:io.amichne.kontracts.dsl.ObjectSchemaFactoryBuilder",
+        "type:io.amichne.kontracts.dsl.OneOfDiscriminatorBuilder",
+        "type:io.amichne.kontracts.dsl.OneOfSchemaFactoryBuilder"
+      ],
+      "target_hash": "5902b927b2483030175d47da4c6ec479fcac24acbf443a17327959055a264bc1",
+      "target_id": "package:io.amichne.kontracts.dsl"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/kontracts/schema.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/AllOfSchema.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/AnySchema.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/ArraySchema.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/BooleanSchema.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/DoubleSchema.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/EnumSchema.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/FieldSchema.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/IntSchema.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/JsonSchema.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/MapSchema.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/NullSchema.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/ObjectSchema.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/ObjectTraits.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/OneOfSchema.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/RootObjectSchema.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/SchemaProvider.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/StringSchema.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/ValidationResult.kt.sig",
+        "openapi/src/main/kotlin/io/amichne/kontracts/schema/OpenApi.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:3a64879e65732ad7",
+        "method:4e0a9b8b1444ced9",
+        "method:6d2289de2e585ffc",
+        "method:834a64a85c5fe507",
+        "method:8dc1759106137461",
+        "method:98809ad8cb2a99b2",
+        "method:a1a4e389e918ffcc",
+        "method:a37df80e83dbe956",
+        "method:a66d1bd6d124906d",
+        "method:b3ebf3ba32a8be6b",
+        "method:b54cbe0271110e0e",
+        "method:c627ae89c76e6a02",
+        "method:d39a5424c25858d7",
+        "method:ec2e5e303c39cf70",
+        "method:f385998af3396f30",
+        "type:io.amichne.kontracts.schema.JsonSchema",
+        "type:io.amichne.kontracts.schema.ObjectTraits",
+        "type:io.amichne.kontracts.schema.OpenApi",
+        "type:io.amichne.kontracts.schema.SchemaProvider",
+        "type:io.amichne.kontracts.schema.Type",
+        "type:io.amichne.kontracts.schema.Valid",
+        "type:io.amichne.kontracts.schema.ValidationResult"
+      ],
+      "target_hash": "0edbe2efaf76b145ddd774e5d01bec5a7241e7c04cac2882ba2815432137773b",
+      "target_id": "package:io.amichne.kontracts.schema"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/package/io/amichne/kontracts/value.md",
+      "kind": "package",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonArray.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonBoolean.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonNull.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonNumber.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonObject.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonString.kt.sig",
+        "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonValue.kt.sig"
+      ],
+      "symbol_ids": [
+        "method:03f49bf767dc1deb",
+        "method:0e0a75a855ac06ce",
+        "method:113e0a3cd81434da",
+        "method:24925ae6d6afc13e",
+        "method:2ff5bc5c43363c1e",
+        "method:32d28c0f7de2e3c8",
+        "method:372b6d7a3627cc53",
+        "method:3b2edf64dc6f9f39",
+        "method:4322c3ff88367da4",
+        "method:47352dd5c435b84d",
+        "method:5cd6f5bdee9eac3a",
+        "method:6d0067c5ca561324",
+        "method:7237cc5c32c717a6",
+        "method:947a88eb29702934",
+        "method:9bd7a81739dd2bf0",
+        "method:b615fab6dabbe9b4",
+        "method:d188aa81b5d8dfcb",
+        "method:d260313887d7ec78",
+        "method:e4b115ac355d4b4a",
+        "method:f047a0018cd01150",
+        "type:io.amichne.kontracts.value.JsonNull",
+        "type:io.amichne.kontracts.value.JsonValue"
+      ],
+      "target_hash": "dbc0c28bf351d66ccaedd7e0238031b03517b22cb1f85c663b94bfb5ac10ddfa",
+      "target_id": "package:io.amichne.kontracts.value"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/api/Kind.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-observability/src/main/kotlin/io/amichne/konditional/api/ShadowMismatch.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.api.Kind"
+      ],
+      "target_hash": "17af60c3ddbb3ab7bf648b5a17ed4cb5e5aa41e15c5b58ac4743a6271a2523dc",
+      "target_id": "type:io.amichne.konditional.api.Kind"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/api/KonditionalInternalApi.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/api/KonditionalInternalApi.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.api.KonditionalInternalApi"
+      ],
+      "target_hash": "ae8dcb57a6e5ab62d5fe86c226c2f37a30cb85827abb132978d628ded6428fca",
+      "target_id": "type:io.amichne.konditional.api.KonditionalInternalApi"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/api/RampUpBucketing.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/api/RampUpBucketing.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.api.RampUpBucketing"
+      ],
+      "target_hash": "dcf97b2bf9b58033589c2a6e356680161135630d18581a97c2edab00f69e7981",
+      "target_id": "type:io.amichne.konditional.api.RampUpBucketing"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/context/Context.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/Context.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.context.Context"
+      ],
+      "target_hash": "819f6e5a259c71230a2f136a5f3cd73269bae98bc07da3d1916ee615780aa6cc",
+      "target_id": "type:io.amichne.konditional.context.Context"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/context/Core.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/Context.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.context.Core"
+      ],
+      "target_hash": "ef924755c5244ab30ffe4a80111b62ec4e43cfdb02dec161eceff5f0acb7c9ea",
+      "target_id": "type:io.amichne.konditional.context.Core"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/context/LocaleContext.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/Context.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.context.LocaleContext"
+      ],
+      "target_hash": "7b6a9170d216b44116c61863953184256b8f9da48afcd343c15fd0f7ccf00b82",
+      "target_id": "type:io.amichne.konditional.context.LocaleContext"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/context/LocaleTag.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/LocaleTag.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.context.LocaleTag"
+      ],
+      "target_hash": "ae25a5958bd4300f7224ccf49788f04bdc66b1b93684ee430dcaec6815f7d118",
+      "target_id": "type:io.amichne.konditional.context.LocaleTag"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/context/Platform.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/Platform.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.context.Platform"
+      ],
+      "target_hash": "c9a5f6f3af710423a93214bac3a41d34b34ec44f602dfeec13a10904494b2db5",
+      "target_id": "type:io.amichne.konditional.context.Platform"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/context/PlatformContext.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/Context.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.context.PlatformContext"
+      ],
+      "target_hash": "8ac30a112b86f9f7f04bc53c211d6e9e1efe6167c811c9366c47c71c4ffb492d",
+      "target_id": "type:io.amichne.konditional.context.PlatformContext"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/context/PlatformTag.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/PlatformTag.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.context.PlatformTag"
+      ],
+      "target_hash": "b42a0840b03f8bdb0232305ede373c8a64a0364c8eef6505399c362d85e76a7d",
+      "target_id": "type:io.amichne.konditional.context.PlatformTag"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/context/StableIdContext.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/Context.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.context.StableIdContext"
+      ],
+      "target_hash": "3c60cdc15d74a4a8f49b575a1079b94ccb2bee208201168a498f98829aceb7bb",
+      "target_id": "type:io.amichne.konditional.context.StableIdContext"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/context/Version.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/Version.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.context.Version"
+      ],
+      "target_hash": "8d08516735339b5875664b584f361378137b0a9a92be210bded8fab4e5141511",
+      "target_id": "type:io.amichne.konditional.context.Version"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/context/VersionContext.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/Context.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.context.VersionContext"
+      ],
+      "target_hash": "b658a4bc7230e6d62086dfd687613f3026dba9ec9d3b469b1ab6b33c27461a63",
+      "target_id": "type:io.amichne.konditional.context.VersionContext"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/context/axis/AxisValue.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/context/axis/AxisValue.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.context.axis.AxisValue"
+      ],
+      "target_hash": "40e86a43819ae3439733472660e21b2293e1c254ef8d25fee3a79e2e7ad7377c",
+      "target_id": "type:io.amichne.konditional.context.axis.AxisValue"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/TestNamespaceFacade.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/Namespace.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.TestNamespaceFacade"
+      ],
+      "target_hash": "b898f9a3173942566e6db4059cfab8d69668fe3a1d56cf05fc6862600c2c3af5",
+      "target_id": "type:io.amichne.konditional.core.TestNamespaceFacade"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/ValueType.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/ValueType.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.ValueType"
+      ],
+      "target_hash": "1e22a51205cf1a12fd9436621908d36d56fa070dcd99e3455fa73e4d8107b0c9",
+      "target_id": "type:io.amichne.konditional.core.ValueType"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/dsl/AxisValuesScope.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/AxisValuesScope.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.dsl.AxisValuesScope"
+      ],
+      "target_hash": "39b9707f563ff95e704a73ca265c54a7106d9cdab8dd663557a4e2c859110243",
+      "target_id": "type:io.amichne.konditional.core.dsl.AxisValuesScope"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/dsl/FlagScope.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/FlagScope.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.dsl.FlagScope"
+      ],
+      "target_hash": "6f4fbf438cfce6422cd2ccda952900650cbf26c8b35dacc2b49504812df4d486",
+      "target_id": "type:io.amichne.konditional.core.dsl.FlagScope"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/dsl/KonditionalDsl.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/KonditionalDsl.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.dsl.KonditionalDsl"
+      ],
+      "target_hash": "a52d122e55d12212c68e88ec0cec4a34624802a573d545812b7a34b45a61cfe8",
+      "target_id": "type:io.amichne.konditional.core.dsl.KonditionalDsl"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/dsl/VersionRangeScope.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/VersionRangeScope.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.dsl.VersionRangeScope"
+      ],
+      "target_hash": "d09c1e60bde7fca90476f793f8c0e0adeaa9342b51e75d6584250c72a9a1cc94",
+      "target_id": "type:io.amichne.konditional.core.dsl.VersionRangeScope"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/dsl/rules/ContextRuleScope.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/ContextRuleScope.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.dsl.rules.ContextRuleScope"
+      ],
+      "target_hash": "17eba5fa16195c2fd2c6e2819cd8ef24b74fc9a43b8b41c41a7886b139aa3d6e",
+      "target_id": "type:io.amichne.konditional.core.dsl.rules.ContextRuleScope"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/dsl/rules/NoteScope.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/NoteScope.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.dsl.rules.NoteScope"
+      ],
+      "target_hash": "d1265425ef1e6be78d7dc141e9ca5f7c79fa8f3819c5d42fca5d32e3daaae153",
+      "target_id": "type:io.amichne.konditional.core.dsl.rules.NoteScope"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/dsl/rules/Postfix.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleScope.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.dsl.rules.Postfix"
+      ],
+      "target_hash": "7b9c690fe8c44f435a0544486bf9e3d9ba3b5f05996f0495d1e7248a7b250c77",
+      "target_id": "type:io.amichne.konditional.core.dsl.rules.Postfix"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/dsl/rules/RuleScope.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleScope.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.dsl.rules.RuleScope"
+      ],
+      "target_hash": "5659dfa58534c613e94943935f939465ec889c6a7f6e47ba88c18d9fd2f06ce2",
+      "target_id": "type:io.amichne.konditional.core.dsl.rules.RuleScope"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/dsl/rules/RuleScopeBase.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/RuleScopeBase.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.dsl.rules.RuleScopeBase"
+      ],
+      "target_hash": "14d21f146f9ba5363e1dcb3a81566f78c8cc2000ab580cf5a6a72c3ab740da44",
+      "target_id": "type:io.amichne.konditional.core.dsl.rules.RuleScopeBase"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/dsl/rules/YieldingScopeHost.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/YieldingScopeHost.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.dsl.rules.YieldingScopeHost"
+      ],
+      "target_hash": "2f61ec012a538fa001d93b4d6ee6c5d0052caebe9a815a7feaa087402b4b48d2",
+      "target_id": "type:io.amichne.konditional.core.dsl.rules.YieldingScopeHost"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/dsl/rules/targeting/scopes/AxisTargetingScope.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/AxisTargetingScope.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.dsl.rules.targeting.scopes.AxisTargetingScope"
+      ],
+      "target_hash": "794ccbb03fbfb6e67e2db6c8c99729e069ecd89f7fb516b2441efdda0d568b1b",
+      "target_id": "type:io.amichne.konditional.core.dsl.rules.targeting.scopes.AxisTargetingScope"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/dsl/rules/targeting/scopes/ExtensionTargetingScope.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/ExtensionTargetingScope.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.dsl.rules.targeting.scopes.ExtensionTargetingScope"
+      ],
+      "target_hash": "d77e6731072eee2f175dd90bdc12e1a10990a95097146cfbdfd5170029c0a259",
+      "target_id": "type:io.amichne.konditional.core.dsl.rules.targeting.scopes.ExtensionTargetingScope"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/dsl/rules/targeting/scopes/LocaleTargetingScope.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/LocaleTargetingScope.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.dsl.rules.targeting.scopes.LocaleTargetingScope"
+      ],
+      "target_hash": "82950f56db4bac5c2f086bc5f8b8955f21f516d41543bf19b61af688fee8851a",
+      "target_id": "type:io.amichne.konditional.core.dsl.rules.targeting.scopes.LocaleTargetingScope"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/dsl/rules/targeting/scopes/PlatformTargetingScope.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/PlatformTargetingScope.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.dsl.rules.targeting.scopes.PlatformTargetingScope"
+      ],
+      "target_hash": "86dc54e70ca8f053a33ee8bc988780f297903509494945c11f4a81c5313b4c15",
+      "target_id": "type:io.amichne.konditional.core.dsl.rules.targeting.scopes.PlatformTargetingScope"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/dsl/rules/targeting/scopes/StableIdTargetingScope.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/StableIdTargetingScope.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.dsl.rules.targeting.scopes.StableIdTargetingScope"
+      ],
+      "target_hash": "c3dff66f7a94c9a376d824e94d4b9727da1075caaa0b4498a2f4960fc83c72e7",
+      "target_id": "type:io.amichne.konditional.core.dsl.rules.targeting.scopes.StableIdTargetingScope"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/dsl/rules/targeting/scopes/VersionTargetingScope.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/VersionTargetingScope.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.dsl.rules.targeting.scopes.VersionTargetingScope"
+      ],
+      "target_hash": "27ae53b4a3976f03fe9220d1273538c6b0928a17eef0ece68d2e9e240d810ddc",
+      "target_id": "type:io.amichne.konditional.core.dsl.rules.targeting.scopes.VersionTargetingScope"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/features/BooleanFeature.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/BooleanFeature.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.features.BooleanFeature"
+      ],
+      "target_hash": "5db5261fc903973f4d9804c3624649b7c85733f29032e6a7b7b20e52cfc80932",
+      "target_id": "type:io.amichne.konditional.core.features.BooleanFeature"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/features/DoubleFeature.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/DoubleFeature.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.features.DoubleFeature"
+      ],
+      "target_hash": "ad27a757697326a2cce0950e1e52ba052f2c9a4cac614ebd7134f62d43b54131",
+      "target_id": "type:io.amichne.konditional.core.features.DoubleFeature"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/features/EnumFeature.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/EnumFeature.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.features.EnumFeature"
+      ],
+      "target_hash": "6292a280ce759f831b8b4a5c247e391db0d14c3c020877765bcb3f01ad820f1f",
+      "target_id": "type:io.amichne.konditional.core.features.EnumFeature"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/features/Feature.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/Feature.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.features.Feature"
+      ],
+      "target_hash": "e88e6bb5c8878981f6e2bf7ab8c98d51b405f313e27a6edecf2a8fef53a829ee",
+      "target_id": "type:io.amichne.konditional.core.features.Feature"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/features/Identifiable.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/Identifiable.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.features.Identifiable"
+      ],
+      "target_hash": "18dd08745a30c2f4590fc445962929ccb35419025f87335a7959a9dc4cc0c114",
+      "target_id": "type:io.amichne.konditional.core.features.Identifiable"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/features/IntFeature.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/IntFeature.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.features.IntFeature"
+      ],
+      "target_hash": "3ad1d6b77fee1b10e5bfcf5fa7a7ddd76c368a5a89bf08529e4a04a9518d0f17",
+      "target_id": "type:io.amichne.konditional.core.features.IntFeature"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/features/KotlinClassFeature.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/KotlinClassFeature.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.features.KotlinClassFeature"
+      ],
+      "target_hash": "1490a703bd7b9cad41d5b09a153e916d63ff43f6ff02884ad8b3e8a76c31362f",
+      "target_id": "type:io.amichne.konditional.core.features.KotlinClassFeature"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/features/StringFeature.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/features/StringFeature.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.features.StringFeature"
+      ],
+      "target_hash": "ca955ce9a28e9320ca305f78f6124095b3209c8222c199cdc69088ad6679765b",
+      "target_id": "type:io.amichne.konditional.core.features.StringFeature"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/id/StableId.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/id/StableId.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.id.StableId"
+      ],
+      "target_hash": "0e3e5f4b924438d4d7142b426220b85701e8100afff7678b5d91667f9fb5ec88",
+      "target_id": "type:io.amichne.konditional.core.id.StableId"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/id/StaticStableId.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/id/StaticStableId.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.id.StaticStableId"
+      ],
+      "target_hash": "62b8d83236f7757777463bb096488b76e01c77adc0454330ce6d4c8b143dca2f",
+      "target_id": "type:io.amichne.konditional.core.id.StaticStableId"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/instance/ConfigurationMetadataView.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/instance/ConfigurationView.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.instance.ConfigurationMetadataView"
+      ],
+      "target_hash": "bf6f83bb06f2ff2cfdbc21e10a65db9e1191fcbbedf7c8b47f64a4e9429837a4",
+      "target_id": "type:io.amichne.konditional.core.instance.ConfigurationMetadataView"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/instance/ConfigurationView.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/instance/ConfigurationView.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.instance.ConfigurationView"
+      ],
+      "target_hash": "8de2365e63c86480ce86353b0c640a8a71b0e880b046ee06ac28a990f552b310",
+      "target_id": "type:io.amichne.konditional.core.instance.ConfigurationView"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/ops/DecisionKind.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/Metrics.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.ops.DecisionKind"
+      ],
+      "target_hash": "19388d9de054f52e78ca7823cbafbdb90e2258fe97ab673bcf950c794913294f",
+      "target_id": "type:io.amichne.konditional.core.ops.DecisionKind"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/ops/EvaluationMode.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/Metrics.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.ops.EvaluationMode"
+      ],
+      "target_hash": "6f94947d4c34f420a4ed43bcb55649986699ff8225a9e95041426e73ebf0fb3d",
+      "target_id": "type:io.amichne.konditional.core.ops.EvaluationMode"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/ops/KonditionalLogger.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/KonditionalLogger.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.ops.KonditionalLogger"
+      ],
+      "target_hash": "21288195d4b36916897ceb2cca7365f0d77ba26318d4ce52d324e4c9370414f6",
+      "target_id": "type:io.amichne.konditional.core.ops.KonditionalLogger"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/ops/Metrics.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/Metrics.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.ops.Metrics"
+      ],
+      "target_hash": "513969a4ff69dd336cacaaa7bda59c9cfef125b735c03310af8abb2da2107fe7",
+      "target_id": "type:io.amichne.konditional.core.ops.Metrics"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/ops/MetricsCollector.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/MetricsCollector.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.ops.MetricsCollector"
+      ],
+      "target_hash": "457f52514ac05865645b34a76c035652a665b77fc8cdd94482e56d24c624a8fe",
+      "target_id": "type:io.amichne.konditional.core.ops.MetricsCollector"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/ops/NoOp.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/ops/MetricsCollector.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.ops.NoOp"
+      ],
+      "target_hash": "b3ad28ebe8ef7af07930831fa2ef844a317e6bffa326eea3f2a8529e4d344925",
+      "target_id": "type:io.amichne.konditional.core.ops.NoOp"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/registry/AxisCatalog.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/AxisCatalog.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.registry.AxisCatalog"
+      ],
+      "target_hash": "dacfdc1ff5d5881f18d222d8e54adef386c32bfc5bda358f1b2111a79720c0d8",
+      "target_id": "type:io.amichne.konditional.core.registry.AxisCatalog"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/registry/InMemoryNamespaceRegistryFactory.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-runtime/src/main/kotlin/io/amichne/konditional/core/registry/InMemoryNamespaceRegistryFactory.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.registry.InMemoryNamespaceRegistryFactory"
+      ],
+      "target_hash": "49f6056ba66ab49e3b7a3190228f7e0d6d27ad7e86ddeb3628bd2e91708af041",
+      "target_id": "type:io.amichne.konditional.core.registry.InMemoryNamespaceRegistryFactory"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/registry/NamespaceRegistry.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.registry.NamespaceRegistry"
+      ],
+      "target_hash": "0d0d9b207ef535fbe2da18622fc9cf8c88d6c2a0086c72133f7e365244e70336",
+      "target_id": "type:io.amichne.konditional.core.registry.NamespaceRegistry"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/registry/NamespaceRegistryFactory.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistryFactory.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.registry.NamespaceRegistryFactory"
+      ],
+      "target_hash": "191a53bfa5b5abc0062c9a28afde4800e4433646aa8e5b13df37a6800e6cca8a",
+      "target_id": "type:io.amichne.konditional.core.registry.NamespaceRegistryFactory"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/registry/NamespaceRegistryRuntime.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.registry.NamespaceRegistryRuntime"
+      ],
+      "target_hash": "678a6c1744acf85b6d31cb42f9059c7c2fd2567a9d8495cf6b748ba9f43c656f",
+      "target_id": "type:io.amichne.konditional.core.registry.NamespaceRegistryRuntime"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/result/InvalidSnapshot.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseError.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.result.InvalidSnapshot"
+      ],
+      "target_hash": "1ce26e326fa154ca1d8643cc282e1540ca3bceba04221ee23c88eec02347533b",
+      "target_id": "type:io.amichne.konditional.core.result.InvalidSnapshot"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/result/KonditionalBoundaryFailure.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/result/KonditionalBoundaryFailure.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.result.KonditionalBoundaryFailure"
+      ],
+      "target_hash": "ab15e8a2c4dbd08c81acf87c1fe174c9c4a6d0bfecfe5536c82739013d38e113",
+      "target_id": "type:io.amichne.konditional.core.result.KonditionalBoundaryFailure"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/result/ParseError.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseError.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.result.ParseError"
+      ],
+      "target_hash": "a28ebced48a228d1280293abd678d7ae790995a5a4a2ebaa7a82ab69b9fbe4cb",
+      "target_id": "type:io.amichne.konditional.core.result.ParseError"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/result/ParseException.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/result/ParseException.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.result.ParseException"
+      ],
+      "target_hash": "e2cf63b84d70f3167cd90e47beefe68063d45cb7fa89d347a2b8aa2f91f9db1b",
+      "target_id": "type:io.amichne.konditional.core.result.ParseException"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/schema/CompiledNamespaceSchema.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/schema/CompiledNamespaceSchema.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.schema.CompiledNamespaceSchema"
+      ],
+      "target_hash": "c55e18dec2a7960baa8d853eca46d9a7e01b335dcc8fbe450bb6c5a258cd0950",
+      "target_id": "type:io.amichne.konditional.core.schema.CompiledNamespaceSchema"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/schema/Entry.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/schema/CompiledNamespaceSchema.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.schema.Entry"
+      ],
+      "target_hash": "5a5fd6ac011bf2455a1ceb8e68a4e44856f1e830df646209eeb01b907d1e3f72",
+      "target_id": "type:io.amichne.konditional.core.schema.Entry"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/spi/FeatureRegistrationHook.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/spi/FeatureRegistrationHook.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.spi.FeatureRegistrationHook"
+      ],
+      "target_hash": "780b27fcaf01e3e1022667038625ad9928f2d6b0784af8248058e58c50f63eed",
+      "target_id": "type:io.amichne.konditional.core.spi.FeatureRegistrationHook"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/core/types/Konstrained.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/core/types/Konstrained.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.core.types.Konstrained"
+      ],
+      "target_hash": "2a4388a991da916ecce6d3019a47cbdb859dc482b63c03105a7fbbd9862d2880",
+      "target_id": "type:io.amichne.konditional.core.types.Konstrained"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/detekt/KonditionalRuleSetProvider.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/KonditionalRuleSetProvider.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.detekt.KonditionalRuleSetProvider"
+      ],
+      "target_hash": "26b837c92c7a6c2090ffdd018f1d339cf19e55bdce7e146ac63c1c27420a9eab",
+      "target_id": "type:io.amichne.konditional.detekt.KonditionalRuleSetProvider"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "detekt-rules/src/main/kotlin/io/amichne/konditional/detekt/UnclosedCriteriaFirstRule.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.detekt.UnclosedCriteriaFirstRule"
+      ],
+      "target_hash": "34ac84d42e9d3fa16e2630c5179f1afdbb6823e5c3f0884782e04c464903c80b",
+      "target_id": "type:io.amichne.konditional.detekt.UnclosedCriteriaFirstRule"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/GenerateOpenApiSpecTask.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.gradle.GenerateOpenApiSpecTask"
+      ],
+      "target_hash": "9d9249f9cfd7a46e7947ed3de77bdddbe3bb95f648d13a79ce284da5c309bf17",
+      "target_id": "type:io.amichne.konditional.gradle.GenerateOpenApiSpecTask"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/gradle/GenerateRecipesDocsTask.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.gradle.GenerateRecipesDocsTask"
+      ],
+      "target_hash": "e9bb5d4e60c44a8aa7e8aee6ca8c4ae2272fc157802a8aa44b1fe73c060da9d3",
+      "target_id": "type:io.amichne.konditional.gradle.GenerateRecipesDocsTask"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryExtension.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryExtension"
+      ],
+      "target_hash": "e8e46bed214b53d964a2de985b821a0c5eda2a80e1ba26bc76f51592a501b6c7",
+      "target_id": "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryExtension"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/KonditionalCoreApiBoundaryTask.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryTask"
+      ],
+      "target_hash": "900227fdb54dc077edd8f38f7616639c7746789944bc8fbaa8ef2a59889a16b7",
+      "target_id": "type:io.amichne.konditional.gradle.KonditionalCoreApiBoundaryTask"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/gradle/KonditionalPublishingExtension.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.gradle.KonditionalPublishingExtension"
+      ],
+      "target_hash": "5c5f8bf631fab2a4d71752e81bec3a825f21e8361f7265823c0e74859d4d9a47",
+      "target_id": "type:io.amichne.konditional.gradle.KonditionalPublishingExtension"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/gradle/KonditionalRecipesDocsExtension.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/Extensions.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.gradle.KonditionalRecipesDocsExtension"
+      ],
+      "target_hash": "bf92197d550cc12ad88947ece22b061319edfcc2d4d37577450de209f16616d3",
+      "target_id": "type:io.amichne.konditional.gradle.KonditionalRecipesDocsExtension"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/gradle/VerifyRecipesDocsTask.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "build-logic/src/main/kotlin/io/amichne/konditional/gradle/DocsRecipesTasks.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.gradle.VerifyRecipesDocsTask"
+      ],
+      "target_hash": "c672037db19f5ae5ed388e19f5394fda6bd4631577ce109f5aa3c286bd81219a",
+      "target_id": "type:io.amichne.konditional.gradle.VerifyRecipesDocsTask"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/openfeature/BlankTargetingKey.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.openfeature.BlankTargetingKey"
+      ],
+      "target_hash": "4e907a9fc13add4db634cb11aac12933336397a6eb11459819bb61ed7a47ad1a",
+      "target_id": "type:io.amichne.konditional.openfeature.BlankTargetingKey"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/openfeature/KonditionalContextMapper.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.openfeature.KonditionalContextMapper"
+      ],
+      "target_hash": "962e7d37ac62fb6ef61e7c11c192f8d5bcc50f9dafb681a39bad9c9bd67e2ec0",
+      "target_id": "type:io.amichne.konditional.openfeature.KonditionalContextMapper"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/openfeature/KonditionalContextMappingError.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.openfeature.KonditionalContextMappingError"
+      ],
+      "target_hash": "34148c34a96f9925066b817f8e6c6c7b3041e2a18002a8649bdbf621570824e6",
+      "target_id": "type:io.amichne.konditional.openfeature.KonditionalContextMappingError"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/openfeature/KonditionalContextMappingResult.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.openfeature.KonditionalContextMappingResult"
+      ],
+      "target_hash": "7adb36c7a3bedac9af0b3e6f98705a908941a2f5c284128ac59bd99bd3746bfc",
+      "target_id": "type:io.amichne.konditional.openfeature.KonditionalContextMappingResult"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/openfeature/MissingTargetingKey.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.openfeature.MissingTargetingKey"
+      ],
+      "target_hash": "dec81176a83be3de749c51b826219c0d9d8e6aefca2893cd08d447d73e1d9873",
+      "target_id": "type:io.amichne.konditional.openfeature.MissingTargetingKey"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/openfeature/TargetingKeyContext.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "openfeature/src/main/kotlin/io/amichne/konditional/openfeature/KonditionalOpenFeatureProvider.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.openfeature.TargetingKeyContext"
+      ],
+      "target_hash": "df86ab09be0d11cd0fb87e370343c57844ddcbf2b44c6c06a13410b02a631b9a",
+      "target_id": "type:io.amichne.konditional.openfeature.TargetingKeyContext"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/otel/KonditionalTelemetry.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/KonditionalTelemetry.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.otel.KonditionalTelemetry"
+      ],
+      "target_hash": "d0b35c01f9aa8fbe25fa839cdad0a97faf91221f97af07d15c16000c0cb9a596",
+      "target_id": "type:io.amichne.konditional.otel.KonditionalTelemetry"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/otel/metrics/MetricsConfig.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/metrics/MetricsConfig.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.otel.metrics.MetricsConfig"
+      ],
+      "target_hash": "67be82223e353c3986ce3503d328957398f9001c2c7477f4a877a0581aa2310e",
+      "target_id": "type:io.amichne.konditional.otel.metrics.MetricsConfig"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/otel/traces/ALWAYS.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/TracingConfig.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.otel.traces.ALWAYS"
+      ],
+      "target_hash": "4b5a0b055ea7846bf5b99b5092f2a255bb986a8a3c4f26dcc7298ccf79872acb",
+      "target_id": "type:io.amichne.konditional.otel.traces.ALWAYS"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/otel/traces/DecisionType.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/SpanAttributes.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.otel.traces.DecisionType"
+      ],
+      "target_hash": "a39f86b7152eec3787e81f97b0839785328dafcc02aa6763c4d56e0f0209f8d4",
+      "target_id": "type:io.amichne.konditional.otel.traces.DecisionType"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/otel/traces/EventName.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/SpanAttributes.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.otel.traces.EventName"
+      ],
+      "target_hash": "d69e28471e971bda7bc6b9029acca8b88be55755e0e2737dd7caf0b000855496",
+      "target_id": "type:io.amichne.konditional.otel.traces.EventName"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/otel/traces/FEATURE_FILTER.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/TracingConfig.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.otel.traces.FEATURE_FILTER"
+      ],
+      "target_hash": "74cbcbad2e47a5723f4d8da9185bb1a6c6acb2048dc120ca256d63ec782191d2",
+      "target_id": "type:io.amichne.konditional.otel.traces.FEATURE_FILTER"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/otel/traces/KonditionalSemanticAttributes.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/SpanAttributes.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.otel.traces.KonditionalSemanticAttributes"
+      ],
+      "target_hash": "87ae3da8ca0dff57b3d96339c439928e748fab0e4b230404d169e6e9d7bbf1dc",
+      "target_id": "type:io.amichne.konditional.otel.traces.KonditionalSemanticAttributes"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/otel/traces/NEVER.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/TracingConfig.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.otel.traces.NEVER"
+      ],
+      "target_hash": "e8bff646bb3b26a45741825dea26a1d5c3f9798d715309f1ee616289a52fca83",
+      "target_id": "type:io.amichne.konditional.otel.traces.NEVER"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/otel/traces/PARENT_BASED.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/TracingConfig.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.otel.traces.PARENT_BASED"
+      ],
+      "target_hash": "c1cf55b89283a41aba0f61c9d1f8d216a21bbac8e3b0df793f9333901a4bdb05",
+      "target_id": "type:io.amichne.konditional.otel.traces.PARENT_BASED"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/otel/traces/RATIO.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/TracingConfig.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.otel.traces.RATIO"
+      ],
+      "target_hash": "898c1ed6e58c9d82962c0c41d4210fbd0a8d207539d1c5eb63f652fb54a8b868",
+      "target_id": "type:io.amichne.konditional.otel.traces.RATIO"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/otel/traces/SamplingStrategy.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/TracingConfig.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.otel.traces.SamplingStrategy"
+      ],
+      "target_hash": "8c8e8972624c0f864cccb0f24fa2f8f46c20fde6bb2d858333928a3dfc620b12",
+      "target_id": "type:io.amichne.konditional.otel.traces.SamplingStrategy"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/otel/traces/TracingConfig.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/TracingConfig.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.otel.traces.TracingConfig"
+      ],
+      "target_hash": "10267d57f9813633b9a027212837b06d7daf32599fe18ff729139b3c15917c3e",
+      "target_id": "type:io.amichne.konditional.otel.traces.TracingConfig"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/rules/evaluable/Predicate.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/evaluable/Predicate.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.rules.evaluable.Predicate"
+      ],
+      "target_hash": "b02260bfc0371fbdccd012182cc70fac21596b5bd00a3eda2d726d713c49aafb",
+      "target_id": "type:io.amichne.konditional.rules.evaluable.Predicate"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/rules/targeting/All.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.rules.targeting.All"
+      ],
+      "target_hash": "88c448ca17da2808d3d90021ceebbfc64053aed56f57a2ba90a14cb4ee2e2dae",
+      "target_id": "type:io.amichne.konditional.rules.targeting.All"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/rules/targeting/Axis.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.rules.targeting.Axis"
+      ],
+      "target_hash": "e84087777cc47195883fe4b9c83582241d51f661e8a5d43b05a4e381325c4ffd",
+      "target_id": "type:io.amichne.konditional.rules.targeting.Axis"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/rules/targeting/Custom.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.rules.targeting.Custom"
+      ],
+      "target_hash": "81e8dccdb4e76700308c57f5bc11feaa9280ecf44abcf28d7836a54c5b183c32",
+      "target_id": "type:io.amichne.konditional.rules.targeting.Custom"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/rules/targeting/Guarded.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.rules.targeting.Guarded"
+      ],
+      "target_hash": "aeeb25a9c12b0380dc835ec9ad4ad956f798c10070c11a4c2d201f5724ef3fac",
+      "target_id": "type:io.amichne.konditional.rules.targeting.Guarded"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/rules/targeting/Locale.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.rules.targeting.Locale"
+      ],
+      "target_hash": "8d1fc3cfc9017098c818e60a1063c023dd025c42ddc823eee2c31e18b08ad3ae",
+      "target_id": "type:io.amichne.konditional.rules.targeting.Locale"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/rules/targeting/Platform.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.rules.targeting.Platform"
+      ],
+      "target_hash": "5ac303af99701b731483421e7a0d26d88cdebf41a3b99ff564ef33011e88b962",
+      "target_id": "type:io.amichne.konditional.rules.targeting.Platform"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/rules/targeting/Targeting.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.rules.targeting.Targeting"
+      ],
+      "target_hash": "0463e30d3a64cd90bd01333f6cbc98d041e0e2ea862216346ccb0629bcf57040",
+      "target_id": "type:io.amichne.konditional.rules.targeting.Targeting"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/rules/targeting/Version.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/targeting/Targeting.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.rules.targeting.Version"
+      ],
+      "target_hash": "6d28ba84dae7b6f2ab7fb36d1b8e387f428cdb9bf73d3cffedcd613eef2fd77e",
+      "target_id": "type:io.amichne.konditional.rules.targeting.Version"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/rules/versions/FullyBound.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/FullyBound.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.rules.versions.FullyBound"
+      ],
+      "target_hash": "aa6d8d72ecaabd37b4c10624182c82167b330485ce4337b8f0619865ad103a8c",
+      "target_id": "type:io.amichne.konditional.rules.versions.FullyBound"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/rules/versions/LeftBound.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/LeftBound.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.rules.versions.LeftBound"
+      ],
+      "target_hash": "7938a010ce9e19eadc4654c42758165c678fa0a5d551356c2df5ed7fbbf9b86a",
+      "target_id": "type:io.amichne.konditional.rules.versions.LeftBound"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/rules/versions/RightBound.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/RightBound.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.rules.versions.RightBound"
+      ],
+      "target_hash": "20a7f152ccb3bfc73c40b9e846e73f551939206ff36c8b84c4b4edeb92df0fff",
+      "target_id": "type:io.amichne.konditional.rules.versions.RightBound"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/rules/versions/Type.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/VersionRange.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.rules.versions.Type"
+      ],
+      "target_hash": "ed1ccc5c4366cfaec175387b81542d8ba3b2f96fdbec90787be0dcddbbda4853",
+      "target_id": "type:io.amichne.konditional.rules.versions.Type"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/rules/versions/Unbounded.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/Unbounded.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.rules.versions.Unbounded"
+      ],
+      "target_hash": "0310e867513ce39e3abec36ddc8f2d4a0418a8c894de17eb570d4dc86809a705",
+      "target_id": "type:io.amichne.konditional.rules.versions.Unbounded"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/rules/versions/VersionRange.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-core/src/main/kotlin/io/amichne/konditional/rules/versions/VersionRange.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.rules.versions.VersionRange"
+      ],
+      "target_hash": "3569e29c5aa8b59061d029762fa8060a43dccac05dcf9305d33c5437622b9bd0",
+      "target_id": "type:io.amichne.konditional.rules.versions.VersionRange"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/FeatureRegistry.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/FeatureRegistry.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.FeatureRegistry"
+      ],
+      "target_hash": "b6c1804315c7436c1300932b622a562e7723fb3df5735fd101c979b306b0f863",
+      "target_id": "type:io.amichne.konditional.serialization.FeatureRegistry"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/SchemaValueCodec.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/SchemaValueCodec.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.SchemaValueCodec"
+      ],
+      "target_hash": "5fe843dfea69dd2b6a3d572b3dfea07277ce8ae7425f8de29e4eb09e3ac9b26c",
+      "target_id": "type:io.amichne.konditional.serialization.SchemaValueCodec"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/Skip.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/SchemaValueCodec.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.Skip"
+      ],
+      "target_hash": "5c5bbf623f2759e58da288f7dab2029cf6f5ccf8ad60257593bbe3761f27c506",
+      "target_id": "type:io.amichne.konditional.serialization.Skip"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/Value.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/SchemaValueCodec.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.Value"
+      ],
+      "target_hash": "058eb88d88c1cdae9636bcf406fe8fa1abf461055477ea99a54e6f15d021fa6e",
+      "target_id": "type:io.amichne.konditional.serialization.Value"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/instance/ConfigValue.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigValue.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.instance.ConfigValue"
+      ],
+      "target_hash": "90a27b39edc8e6a514c786c24150e28ca4e4395117a5aaa1219fc70b62e1a99d",
+      "target_id": "type:io.amichne.konditional.serialization.instance.ConfigValue"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/instance/Configuration.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/Configuration.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.instance.Configuration"
+      ],
+      "target_hash": "4030f4c8621bfedd06fba047fa5bd828a9304f6cbc1716735a088d4ce402f275",
+      "target_id": "type:io.amichne.konditional.serialization.instance.Configuration"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/instance/ConfigurationMetadata.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/Configuration.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.instance.ConfigurationMetadata"
+      ],
+      "target_hash": "c3661244b16efcfe196dfc12c82c30abaa3e40380c995556e01f55cf30c5a442",
+      "target_id": "type:io.amichne.konditional.serialization.instance.ConfigurationMetadata"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/instance/ConfigurationPatch.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigurationPatch.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.instance.ConfigurationPatch"
+      ],
+      "target_hash": "1bf656ed2a1df4f57cb3f41531a08631fc79a336a8b9742acafc1c61716b9ab1",
+      "target_id": "type:io.amichne.konditional.serialization.instance.ConfigurationPatch"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/instance/PatchBuilder.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/instance/ConfigurationPatch.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.instance.PatchBuilder"
+      ],
+      "target_hash": "431143d2e954c52cb01af897a42284ef75945b6e35eb682312d15808c9fe5f06",
+      "target_id": "type:io.amichne.konditional.serialization.instance.PatchBuilder"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/options/Fail.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/UnknownFeatureKeyStrategy.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.options.Fail"
+      ],
+      "target_hash": "d01ca68e9633e87f8f59432a2b3f3fde0792241a327f91fa4e46e984336ee4b3",
+      "target_id": "type:io.amichne.konditional.serialization.options.Fail"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/options/FillFromDeclaredDefaults.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/MissingDeclaredFlagStrategy.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.options.FillFromDeclaredDefaults"
+      ],
+      "target_hash": "c178af35d23caba6639529cb6df9a117479d4286c5ffd799cb06e9cca6fc6641",
+      "target_id": "type:io.amichne.konditional.serialization.options.FillFromDeclaredDefaults"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/options/Kind.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/SnapshotWarning.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.options.Kind"
+      ],
+      "target_hash": "401845424cf96c85e702ca3ad08d383e3a6857e370a47ce9211d0b56f6c876d6",
+      "target_id": "type:io.amichne.konditional.serialization.options.Kind"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/options/MissingDeclaredFlagStrategy.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/MissingDeclaredFlagStrategy.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.options.MissingDeclaredFlagStrategy"
+      ],
+      "target_hash": "b483858b387d006cc508e529f0ba3063e8ec5c54018ae9110919269b70b3bb6f",
+      "target_id": "type:io.amichne.konditional.serialization.options.MissingDeclaredFlagStrategy"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/options/Reject.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/MissingDeclaredFlagStrategy.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.options.Reject"
+      ],
+      "target_hash": "872fccf7e54866c6388e589e0b135be282dcb8329a690b28307b2d68033bff9e",
+      "target_id": "type:io.amichne.konditional.serialization.options.Reject"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/options/Skip.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/UnknownFeatureKeyStrategy.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.options.Skip"
+      ],
+      "target_hash": "e78e962abb0d68f507b73a3156d74679ab7abcf34d78c3e172bdbe8c38b708d2",
+      "target_id": "type:io.amichne.konditional.serialization.options.Skip"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/options/SnapshotLoadOptions.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/SnapshotLoadOptions.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.options.SnapshotLoadOptions"
+      ],
+      "target_hash": "b2155f1d08c59a10e1542824ba4a178349eac9eb5d1b0f824b448609f20ddc39",
+      "target_id": "type:io.amichne.konditional.serialization.options.SnapshotLoadOptions"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/options/UnknownFeatureKeyStrategy.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/UnknownFeatureKeyStrategy.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.options.UnknownFeatureKeyStrategy"
+      ],
+      "target_hash": "b2c15959b63bfa1af69dfa3510da778015241767450a617f56d4d163dbbdf3c3",
+      "target_id": "type:io.amichne.konditional.serialization.options.UnknownFeatureKeyStrategy"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/snapshot/ConfigurationSnapshotCodec.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/ConfigurationSnapshotCodec.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec"
+      ],
+      "target_hash": "9834405ce5d9f2483a0ad592612af46587df53b65252f06385e959414de934cf",
+      "target_id": "type:io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/snapshot/FeatureAwareSnapshotCodec.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/FeatureAwareSnapshotCodec.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.snapshot.FeatureAwareSnapshotCodec"
+      ],
+      "target_hash": "2bfb2be34cab0ccb2e9d2af5d6ac5de8ea97a8f971b9d1c1b63d56d6c7cf5431",
+      "target_id": "type:io.amichne.konditional.serialization.snapshot.FeatureAwareSnapshotCodec"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/snapshot/SnapshotCodec.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/SnapshotCodec.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.snapshot.SnapshotCodec"
+      ],
+      "target_hash": "27161764fad840f09b9bdf42356ac16638a2cff887739e63a9dc40d0f56e2894",
+      "target_id": "type:io.amichne.konditional.serialization.snapshot.SnapshotCodec"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/konditional/serialization/snapshot/SnapshotLoader.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/SnapshotLoader.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.konditional.serialization.snapshot.SnapshotLoader"
+      ],
+      "target_hash": "034afdc5d0a8df34eeb9fa2be105f7f70ee39a5e6b2bf23250dc2215adffaea5",
+      "target_id": "type:io.amichne.konditional.serialization.snapshot.SnapshotLoader"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/kontracts/dsl/FieldSchemaFactoryBuilder.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaFactoryFunctions.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.kontracts.dsl.FieldSchemaFactoryBuilder"
+      ],
+      "target_hash": "a8ac2fefb90f9f0fffa35753e8ad7b28c03f9dd30f109f9124c543225f578f13",
+      "target_id": "type:io.amichne.kontracts.dsl.FieldSchemaFactoryBuilder"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/kontracts/dsl/JsonArrayBuilder.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonValueDsl.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.kontracts.dsl.JsonArrayBuilder"
+      ],
+      "target_hash": "2c8a8f259c1e1988ec45bcae73c9c6fe5bb58785f11b15e83232ffd5a5bdbcc1",
+      "target_id": "type:io.amichne.kontracts.dsl.JsonArrayBuilder"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/kontracts/dsl/JsonObjectBuilder.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonValueDsl.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.kontracts.dsl.JsonObjectBuilder"
+      ],
+      "target_hash": "8e6b3595a8f2fa59a7c6204f9f88c2f0d087206ac8745b993c10ac3a7ec0d43a",
+      "target_id": "type:io.amichne.kontracts.dsl.JsonObjectBuilder"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/kontracts/dsl/JsonSchemaBuilder.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaBuilder.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.kontracts.dsl.JsonSchemaBuilder"
+      ],
+      "target_hash": "e005cde589d9a51890afbea6e836831d3d78919c15e2c160ca2c0f35aafe66a9",
+      "target_id": "type:io.amichne.kontracts.dsl.JsonSchemaBuilder"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/kontracts/dsl/JsonSchemaBuilderDsl.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaBuilderDsl.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.kontracts.dsl.JsonSchemaBuilderDsl"
+      ],
+      "target_hash": "02ae9ac2a2066353f918bbed92b85ba634c776c3a331096093b4a84a7941c3e1",
+      "target_id": "type:io.amichne.kontracts.dsl.JsonSchemaBuilderDsl"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/kontracts/dsl/JsonValueDsl.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonValueDsl.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.kontracts.dsl.JsonValueDsl"
+      ],
+      "target_hash": "151b10e24dc4f0ba664b355eda59a6b1dfa4fd34fd0fa79e42c0448484cb4858",
+      "target_id": "type:io.amichne.kontracts.dsl.JsonValueDsl"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/kontracts/dsl/JsonValueScope.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonValueDsl.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.kontracts.dsl.JsonValueScope"
+      ],
+      "target_hash": "e888a1e381e878a4d117d72bf0915ed5f99170f984d5ea0c5c5266d26d8d3d05",
+      "target_id": "type:io.amichne.kontracts.dsl.JsonValueScope"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/kontracts/dsl/MapSchemaFactoryBuilder.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaFactoryFunctions.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.kontracts.dsl.MapSchemaFactoryBuilder"
+      ],
+      "target_hash": "9a16704b93aa92df4fd5c12097e1fb713c6b1237d31d82dc7d8afbaa2c93401f",
+      "target_id": "type:io.amichne.kontracts.dsl.MapSchemaFactoryBuilder"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/kontracts/dsl/ObjectSchemaFactoryBuilder.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaFactoryFunctions.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.kontracts.dsl.ObjectSchemaFactoryBuilder"
+      ],
+      "target_hash": "370c2e7fc26db786c772903f3bdd4fa1c06e2ce2fb81b112cb93164e8327ec3e",
+      "target_id": "type:io.amichne.kontracts.dsl.ObjectSchemaFactoryBuilder"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/kontracts/dsl/OneOfDiscriminatorBuilder.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaFactoryFunctions.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.kontracts.dsl.OneOfDiscriminatorBuilder"
+      ],
+      "target_hash": "ab65cc3231487b21a59912d8c84d7dd624a407235f7d3913e22ccc828a5cf7c0",
+      "target_id": "type:io.amichne.kontracts.dsl.OneOfDiscriminatorBuilder"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/kontracts/dsl/OneOfSchemaFactoryBuilder.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/dsl/JsonSchemaFactoryFunctions.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.kontracts.dsl.OneOfSchemaFactoryBuilder"
+      ],
+      "target_hash": "12214309c00bb2412da693305d5afced9b51352d24de1f7b6aa593c7196d8637",
+      "target_id": "type:io.amichne.kontracts.dsl.OneOfSchemaFactoryBuilder"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/kontracts/schema/JsonSchema.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/JsonSchema.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.kontracts.schema.JsonSchema"
+      ],
+      "target_hash": "312070af2dd6d09dd5a0411505bdc4d327091d788d0daef899d4c5576bf38b6d",
+      "target_id": "type:io.amichne.kontracts.schema.JsonSchema"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/kontracts/schema/ObjectTraits.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/ObjectTraits.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.kontracts.schema.ObjectTraits"
+      ],
+      "target_hash": "87f583cfcad2160ef82abbb76c779d68afaae61c26a87cc46d2544862b90b09b",
+      "target_id": "type:io.amichne.kontracts.schema.ObjectTraits"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/kontracts/schema/OpenApi.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "openapi/src/main/kotlin/io/amichne/kontracts/schema/OpenApi.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.kontracts.schema.OpenApi"
+      ],
+      "target_hash": "ea807ec0f6693dfdf80d89fa5828a2e567b461cc21531f0d0d09f5e1474cac1c",
+      "target_id": "type:io.amichne.kontracts.schema.OpenApi"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/kontracts/schema/SchemaProvider.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/SchemaProvider.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.kontracts.schema.SchemaProvider"
+      ],
+      "target_hash": "a5b1ebb33663e14dc3d78b22e4602b439224b70da59fd0620275c12131790c69",
+      "target_id": "type:io.amichne.kontracts.schema.SchemaProvider"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/kontracts/schema/Type.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "openapi/src/main/kotlin/io/amichne/kontracts/schema/OpenApi.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.kontracts.schema.Type"
+      ],
+      "target_hash": "cb8fd978248fa4fef9cbcadf646198051d2d4a2934bb6d58c1c36f26a6008f14",
+      "target_id": "type:io.amichne.kontracts.schema.Type"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/kontracts/schema/Valid.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/ValidationResult.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.kontracts.schema.Valid"
+      ],
+      "target_hash": "5ac90cd646fce144bcb33f81d369e43edf0e7f2c1851f198db48dfaeb8c35754",
+      "target_id": "type:io.amichne.kontracts.schema.Valid"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/kontracts/schema/ValidationResult.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/schema/ValidationResult.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.kontracts.schema.ValidationResult"
+      ],
+      "target_hash": "092a03dfb17a6f806499adeb39a480603d45d3de8b34327ac9ef9e90b42c0255",
+      "target_id": "type:io.amichne.kontracts.schema.ValidationResult"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/kontracts/value/JsonNull.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonNull.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.kontracts.value.JsonNull"
+      ],
+      "target_hash": "f35ba20ffd417f3f8578fe8e7b3a1d5af1f3accde9b9cd37513b125528e1e0a8",
+      "target_id": "type:io.amichne.kontracts.value.JsonNull"
+    },
+    {
+      "expected_doc_ref": "docusaurus/docs/signature-targets/type/io/amichne/kontracts/value/JsonValue.md",
+      "kind": "type",
+      "scope_sig_paths": [
+        "kontracts/src/main/kotlin/io/amichne/kontracts/value/JsonValue.kt.sig"
+      ],
+      "symbol_ids": [
+        "type:io.amichne.kontracts.value.JsonValue"
+      ],
+      "target_hash": "693602040148f5336862ed58c955c6aa06b8e62c2337d3181dd2437f0ee60409",
+      "target_id": "type:io.amichne.kontracts.value.JsonValue"
+    }
+  ],
+  "version": 1
+}

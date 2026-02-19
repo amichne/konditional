@@ -1,4 +1,4 @@
-.PHONY: help clean test build publish publish-plan publish-local publish-snapshot publish-release publish-github validate-publish compile compile-test detekt detekt-baseline docs-serve docs-build docs-clean docs-install all full-clean rebuild check publish-version-none publish-version-snapshot publish-version-patch publish-version-minor publish-version-major publish-version-patch-snapshot publish-version-minor-snapshot publish-version-major-snapshot publish-validate-local publish-validate-snapshot publish-validate-release publish-validate-github publish-run-local publish-run-snapshot publish-run-release publish-run-github publish-gradle-validate publish-gradle-smoke
+.PHONY: help clean test build publish publish-plan publish-local publish-snapshot publish-release publish-github validate-publish compile compile-test detekt detekt-baseline docs-serve docs-build docs-clean docs-install signatures-generate signatures-verify signatures-check all full-clean rebuild check publish-version-none publish-version-snapshot publish-version-patch publish-version-minor publish-version-major publish-version-patch-snapshot publish-version-minor-snapshot publish-version-major-snapshot publish-validate-local publish-validate-snapshot publish-validate-release publish-validate-github publish-run-local publish-run-snapshot publish-run-release publish-run-github publish-gradle-validate publish-gradle-smoke
 
 .DEFAULT_GOAL := help
 
@@ -170,3 +170,20 @@ rebuild: clean build ## Clean and rebuild
 
 check: detekt test ## Static analysis + tests
 	@echo "$(GREEN)Check completed$(NC)"
+
+##@ Signatures
+
+signatures-generate: ## Generate signatures-first artifacts
+	@echo "$(BLUE)Generating signatures-first artifacts...$(NC)"
+	@./scripts/signatures-first.sh --mode generate
+	@echo "$(GREEN)Signatures-first generation completed$(NC)"
+
+signatures-verify: ## Verify signatures-first claims, coverage, and drift semantics
+	@echo "$(BLUE)Verifying signatures-first artifacts...$(NC)"
+	@./scripts/signatures-first.sh --mode verify
+	@echo "$(GREEN)Signatures-first verification completed$(NC)"
+
+signatures-check: ## Generate and verify signatures-first artifacts
+	@echo "$(BLUE)Running signatures-first full pipeline...$(NC)"
+	@./scripts/signatures-first.sh --mode all
+	@echo "$(GREEN)Signatures-first pipeline completed$(NC)"

@@ -1,0 +1,79 @@
+{
+  "claim_ledger": {
+    "evidence_kinds": {
+      "signature_symbol": {
+        "required_fields": [
+          "kind",
+          "symbol_id"
+        ]
+      },
+      "source_verification": {
+        "allowed_reasons": [
+          "body-behavior",
+          "contradiction-check",
+          "symbol-disambiguation"
+        ],
+        "required_fields": [
+          "kind",
+          "symbol_id",
+          "reason",
+          "source_ref"
+        ]
+      }
+    },
+    "format": "jsonl",
+    "required_fields": [
+      "claim_id",
+      "target_id",
+      "target_hash",
+      "doc_ref",
+      "claim",
+      "evidence"
+    ]
+  },
+  "target_types": {
+    "entrypoint": {
+      "required_fields": [
+        "target_id",
+        "scope_sig_paths",
+        "symbol_ids",
+        "claims"
+      ],
+      "required_sections": [
+        "inputs",
+        "outputs",
+        "determinism",
+        "operational-notes"
+      ]
+    },
+    "package": {
+      "required_fields": [
+        "target_id",
+        "scope_sig_paths",
+        "symbol_ids",
+        "claims"
+      ],
+      "required_sections": [
+        "overview",
+        "public-types",
+        "entrypoints",
+        "guarantees"
+      ]
+    },
+    "type": {
+      "required_fields": [
+        "target_id",
+        "scope_sig_paths",
+        "symbol_ids",
+        "claims"
+      ],
+      "required_sections": [
+        "purpose",
+        "invariants",
+        "api-surface",
+        "failure-modes"
+      ]
+    }
+  },
+  "version": 1
+}

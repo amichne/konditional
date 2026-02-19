@@ -1,0 +1,31 @@
+file=kontracts/src/test/kotlin/io/amichne/kontracts/JsonValueValidationTest.kt
+package=io.amichne.kontracts
+imports=io.amichne.kontracts.dsl.booleanSchema,io.amichne.kontracts.dsl.doubleSchema,io.amichne.kontracts.dsl.intSchema,io.amichne.kontracts.dsl.nullSchema,io.amichne.kontracts.dsl.stringSchema,io.amichne.kontracts.value.JsonBoolean,io.amichne.kontracts.value.JsonNull,io.amichne.kontracts.value.JsonNumber,io.amichne.kontracts.value.JsonString,kotlin.test.assertEquals,kotlin.test.assertFalse,kotlin.test.assertTrue,org.junit.jupiter.api.Test
+type=io.amichne.kontracts.JsonValueValidationTest|kind=class|decl=class JsonValueValidationTest
+methods:
+- fun `JsonString validates successfully against basic string schema`()
+- fun `JsonString enforces minLength constraint`()
+- fun `JsonString enforces maxLength constraint`()
+- fun `JsonString validates against regex pattern`()
+- fun `JsonString validates email pattern`()
+- fun `JsonString enforces combined constraints`()
+- fun `JsonString fails validation against non-string schema`()
+- fun `JsonNumber validates successfully as integer`()
+- fun `JsonNumber validates successfully as double`()
+- fun `JsonNumber enforces integer constraint`()
+- fun `JsonNumber enforces int minimum constraint`()
+- fun `JsonNumber enforces int maximum constraint`()
+- fun `JsonNumber enforces double minimum constraint`()
+- fun `JsonNumber enforces double maximum constraint`()
+- fun `JsonNumber validates int enum values`()
+- fun `JsonNumber validates double enum values`()
+- fun `JsonNumber handles boundary values for Int range`()
+- fun `JsonNumber fails validation against non-numeric schema`()
+- fun `JsonBoolean validates successfully against boolean schema`()
+- fun `JsonBoolean fails validation against non-boolean schema`()
+- fun `JsonNull validates successfully against null schema`()
+- fun `JsonNull fails validation against non-null schema`()
+- fun `JsonString validates empty string when no minLength constraint`()
+- fun `JsonString rejects empty string with minLength constraint`()
+- fun `JsonNumber zero validates against unbounded int schema`()
+- fun `JsonNumber handles exact boundary values`()
