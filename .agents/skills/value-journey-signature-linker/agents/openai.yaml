@@ -1,4 +1,4 @@
 interface:
   display_name: "Value Journey Linker"
-  short_description: "Generate value journeys linked to signatures."
-  default_prompt: "Use $value-journey-signature-linker to generate persuasive value-journey docs with explicit signature traceability."
+  short_description: "Generate citation-embedded value journeys linked to signatures."
+  default_prompt: "Use $value-journey-signature-linker to orchestrate sub-agents that produce warm, persuasive multi-page journey docs with embedded claim citations, fair baseline comparisons, and machine-checkable signature/test traceability."
