@@ -1,4 +1,4 @@
 interface:
-  display_name: "Value Journey Linker"
-  short_description: "Generate value journeys linked to signatures."
-  default_prompt: "Use $value-journey-signature-linker to generate persuasive value-journey docs with explicit signature traceability."
+  display_name: "Doc Evidence Linker"
+  short_description: "Update docs with deterministic signature evidence."
+  default_prompt: "Use $value-journey-signature-linker to update adoption docs with signature links, validation reports, and deterministic pseudo-RAG evidence retrieval."

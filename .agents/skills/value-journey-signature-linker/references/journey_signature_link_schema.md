@@ -1,6 +1,7 @@
 # Journey-signature link schema
 
 Use this schema for `docs/value-journeys/journey-signature-links.json`.
+For generic non-journey docs, use `references/doc_signature_link_schema.md`.
 
 ## Purpose
 

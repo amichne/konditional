@@ -1,6 +1,7 @@
 # Value journey doc template
 
 Use this template for files in `docs/value-journeys/`.
+For general docs, use `references/document_update_template.md`.
 
 ```markdown
 # <journey id>: <title>
