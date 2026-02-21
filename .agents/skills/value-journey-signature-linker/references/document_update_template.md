@@ -1,35 +1,35 @@
-# Documentation update template
+# Documentation RAG update template
 
-Use this template for documentation pages that need claim-level evidence links
-and deterministic update tracking.
+Use this template for markdown pages that require retrieval-grounded updates.
 
 ```markdown
 # <document title>
 
-## Document intent
+## Objective
 
-This page helps <audience> achieve <outcome> by reducing <pain> and improving
-<gain>.
+This page answers: <user question or operational objective>.
 
-## Why this matters now
+## Scope
 
-Describe urgency, risk, or opportunity in concrete terms.
+- Audience:
+- In scope:
+- Out of scope:
 
-## Before and after
+## Retrieval inputs
 
-### Before
+- Query set:
+  - <query 1>
+  - <query 2>
+- Corpus:
+  - signatures
+  - linked docs
+  - optional glob: <glob>
 
-Describe the current friction, ambiguity, or operational cost.
+## Grounded guidance
 
-### After
-
-Describe the desired state and measurable impact.
-
-## Guidance
-
-1. <step or recommendation>
-2. <step or recommendation>
-3. <step or recommendation>
+1. <recommendation derived from evidence>
+2. <recommendation derived from evidence>
+3. <recommendation derived from evidence>
 
 ## Evidence links
 
@@ -43,15 +43,9 @@ Describe the desired state and measurable impact.
       signature: <fqcn>#<normalized method signature>
       status: linked
 
-## Adoption signals
+## Gaps and follow-up
 
-- Primary KPI:
-- Secondary KPI:
-- Leading indicator:
-
-## Open questions
-
-- <unresolved signature gap or content decision>
+- <missing signature or unresolved ambiguity>
 ```
 
-Keep evidence links synchronized with the chosen link-map JSON file.
+Keep evidence links synchronized with the link-map JSON file.

@@ -102,8 +102,6 @@ def parse_links(links_file: Path) -> tuple[list[LinkRef], list[str]]:
         return [], ["unknown"]
 
     container_specs: tuple[tuple[str, str], ...] = (
-        ("journeys", "journey"),
-        ("stories", "story"),
         ("documents", "document"),
         ("records", "record"),
     )
@@ -122,24 +120,14 @@ def parse_links(links_file: Path) -> tuple[list[LinkRef], list[str]]:
             if not isinstance(row, dict):
                 continue
 
-            if entity_kind in ("journey", "story"):
-                entity_id = _pick_first_text(
-                    row,
-                    ("journey_id", "story_id", "id"),
-                ) or "<unknown>"
-                summary = _pick_first_text(
-                    row,
-                    ("value_proposition", "outcome", "summary"),
-                )
-            else:
-                entity_id = _pick_first_text(
-                    row,
-                    ("document_id", "record_id", "doc_id", "id"),
-                ) or "<unknown>"
-                summary = _pick_first_text(
-                    row,
-                    ("summary", "purpose", "value_proposition", "outcome"),
-                )
+            entity_id = _pick_first_text(
+                row,
+                ("document_id", "record_id", "doc_id", "id"),
+            ) or "<unknown>"
+            summary = _pick_first_text(
+                row,
+                ("summary", "purpose"),
+            )
 
             title = _pick_first_text(row, ("title",))
             document_path = _pick_first_text(

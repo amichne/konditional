@@ -1,13 +1,12 @@
 # Doc-signature link schema
 
-Use this schema for `docs/traceability/doc-signature-links.json` when updating
-non-journey documentation.
+Use this schema for `docs/traceability/doc-signature-links.json`.
 
 ## Purpose
 
 Represent explicit links between documentation claims and source signatures in a
 machine-checkable shape. This map keeps documentation aligned with implementation
-changes and supports deterministic retrieval for pseudo-RAG workflows.
+changes and acts as retrieval hints for deterministic pseudo-RAG workflows.
 
 ## JSON contract
 
@@ -18,11 +17,11 @@ changes and supports deterministic retrieval for pseudo-RAG workflows.
       "document_id": "DOC-001",
       "path": "docusaurus/docs/guides/shadow-rollout.md",
       "title": "Shadow rollout guide",
-      "summary": "Ship safer changes by comparing baseline and candidate behavior.",
+      "summary": "Compare baseline and candidate behavior during rollout.",
       "claims": [
         {
           "claim_id": "CLM-001",
-          "statement": "Shadow evaluation detects baseline versus candidate mismatches.",
+          "statement": "Shadow evaluation surfaces baseline versus candidate mismatches.",
           "links": [
             {
               "kind": "type",
@@ -49,10 +48,10 @@ changes and supports deterministic retrieval for pseudo-RAG workflows.
 ## Field rules
 
 - `documents`: ordered list of document link records.
-- `document_id`: stable identifier for the document record.
+- `document_id`: stable identifier for a document record.
 - `path`: repository-relative markdown path.
 - `title`: short document title.
-- `summary`: one-sentence user/business value statement.
+- `summary`: one-sentence summary of the document objective.
 - `claims`: ordered list of claim-level mappings.
 - `claims[].claim_id`: stable claim identifier.
 - `claims[].statement`: claim text to ground.
@@ -66,8 +65,7 @@ changes and supports deterministic retrieval for pseudo-RAG workflows.
 
 ## Compatibility
 
-The validator also accepts journey-oriented payloads (`journeys` and legacy
-`stories`) and generic compatibility payloads (`records`).
+The validator also accepts `records` for generic compatibility payloads.
 
 ## Determinism constraints
 

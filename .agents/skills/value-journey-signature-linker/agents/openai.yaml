@@ -1,4 +1,4 @@
 interface:
-  display_name: "Doc Evidence Linker"
-  short_description: "Update docs with deterministic signature evidence."
-  default_prompt: "Use $value-journey-signature-linker to update adoption docs with signature links, validation reports, and deterministic pseudo-RAG evidence retrieval."
+  display_name: "Docs RAG Linker"
+  short_description: "Ground docs updates with deterministic evidence retrieval."
+  default_prompt: "Use $value-journey-signature-linker to retrieve deterministic evidence from signatures and docs, then update documentation with validated signature links."
