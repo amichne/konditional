@@ -11,7 +11,31 @@ const sidebars: SidebarsConfig = {
         },
         {
             type: 'category',
-            label: 'Getting Started (10-Minute Path)',
+            label: 'Overview (Start Here)',
+            items: [
+                'overview/start-here',
+                'overview/product-value-fit',
+                'overview/why-typed-flags',
+                'overview/first-success-map',
+                'overview/adoption-roadmap',
+            ],
+        },
+        {
+            type: 'category',
+            label: 'Quickstart',
+            items: [
+                'quickstart/index',
+                'quickstart/install',
+                'quickstart/define-first-flag',
+                'quickstart/evaluate-in-app-code',
+                'quickstart/add-deterministic-ramp-up',
+                'quickstart/load-first-snapshot-safely',
+                'quickstart/verify-end-to-end',
+            ],
+        },
+        {
+            type: 'category',
+            label: 'Legacy getting started (migration in progress)',
             items: [
                 'getting-started/index',
                 'getting-started/installation',
