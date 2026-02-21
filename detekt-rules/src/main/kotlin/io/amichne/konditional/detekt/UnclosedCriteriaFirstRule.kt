@@ -18,7 +18,7 @@ class UnclosedCriteriaFirstRule(config: Config) : Rule(config) {
     override val issue: Issue = Issue(
         id = "UnclosedCriteriaFirstRule",
         severity = Severity.Defect,
-        description = "Criteria-first rules must be completed with `yields(value)`.",
+        description = "Criteria-first rules must be completed with `yields(value)` or `yields { ... }`.",
         debt = Debt.FIVE_MINS,
     )
 
@@ -32,7 +32,8 @@ class UnclosedCriteriaFirstRule(config: Config) : Rule(config) {
         if (isClosed) return
 
         val message =
-            "Unclosed criteria-first rule. Use `rule { ... } yields value` (or `rule(value) { ... }`)."
+            "Unclosed criteria-first rule. Use `rule { ... } yields value`, `rule { ... } yields { ... }`, " +
+                "or `rule(value) { ... }`."
 
         report(CodeSmell(issue, Entity.from(expression), message))
     }

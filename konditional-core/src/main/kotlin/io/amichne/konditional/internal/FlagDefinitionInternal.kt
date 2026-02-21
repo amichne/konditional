@@ -92,9 +92,14 @@ fun FlagDefinition<*, *, *>.toSerializedMetadata(): SerializedFlagDefinitionMeta
 @KonditionalInternalApi
 fun FlagDefinition<*, *, *>.toSerializedRules(): List<SerializedFlagRuleSpec<Any>> =
     values.map { cv ->
+        val value = cv.staticValueOrNull()
+            ?: error(
+                "Cannot serialize context-dependent rule value for feature '${feature.key}'. " +
+                    "Use constant rule values for snapshot serialization."
+            )
         val targeting = cv.rule.targeting
         SerializedFlagRuleSpec(
-            value = cv.value,
+            value = value,
             rampUp = cv.rule.rampUp.value,
             rampUpAllowlist = cv.rule.rampUpAllowlist.mapTo(linkedSetOf()) { it.id },
             note = cv.rule.note,

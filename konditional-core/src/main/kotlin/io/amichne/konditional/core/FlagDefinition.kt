@@ -6,6 +6,7 @@ import io.amichne.konditional.context.Context.StableIdContext
 import io.amichne.konditional.core.evaluation.Bucketing
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
+import io.amichne.konditional.core.registry.NamespaceRegistry
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.Rule
 
@@ -73,7 +74,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
      */
     internal fun evaluate(context: C): T {
         return if (isActive) {
-            evaluateTrace(context).value
+            evaluateTrace(context, feature.namespace).value
         } else {
             defaultValue
         }
@@ -99,7 +100,10 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
         val isFlagAllowlisted: Boolean,
     )
 
-    internal fun evaluateTrace(context: C): Trace<T, C> =
+    internal fun evaluateTrace(
+        context: C,
+        registry: NamespaceRegistry,
+    ): Trace<T, C> =
         if (!isActive) {
             Trace(
                 value = defaultValue,
@@ -124,6 +128,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
                     evaluateCandidate(
                         candidate = candidate,
                         inputs = inputs,
+                        registry = registry,
                         state = state,
                     )
                 }
@@ -140,6 +145,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
     private fun evaluateCandidate(
         candidate: ConditionalValue<T, C>,
         inputs: EvaluationInputs<C>,
+        registry: NamespaceRegistry,
         state: EvaluationState<T, C>,
     ): Trace<T, C>? =
         if (candidate.rule.matches(inputs.context)) {
@@ -157,7 +163,11 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
 
             if (isRampUpEligible(inputs.stableId, inputs.isFlagAllowlisted, candidate, computedBucket)) {
                 Trace(
-                    value = candidate.value,
+                    value = candidate.resolve(
+                        context = inputs.context,
+                        registry = registry,
+                        ownerNamespace = feature.namespace,
+                    ),
                     bucket = computedBucket,
                     matched = candidate,
                     skippedByRampUp = state.skippedByRampUp,
