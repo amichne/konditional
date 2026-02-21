@@ -1,0 +1,16 @@
+{
+  "links_file": "/Users/amichne/code/konditional/docs/traceability/doc-signature-links.json",
+  "missing": [],
+  "missing_links": 0,
+  "refresh_attempted": false,
+  "refresh_details": "",
+  "refresh_succeeded": false,
+  "repo_root": "/Users/amichne/code/konditional",
+  "resolved_links": 47,
+  "schema_modes": [
+    "documents"
+  ],
+  "signatures_dir": "/Users/amichne/code/konditional/docs/traceability/signatures",
+  "status": "ok",
+  "total_links": 47
+}

@@ -1,0 +1,390 @@
+{
+  "documents": [
+    {
+      "document_id": "DOC-PR01-01",
+      "path": "docusaurus/docs/overview/start-here.md",
+      "title": "Start here",
+      "summary": "Entry page defining typed flags, deterministic evaluation, and safe parse boundary.",
+      "claims": [
+        {
+          "claim_id": "CLM-PR01-01A",
+          "statement": "Konditional models feature declarations through namespace-owned typed feature definitions.",
+          "links": [
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.Namespace"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.features.Feature"
+            }
+          ]
+        },
+        {
+          "claim_id": "CLM-PR01-01B",
+          "statement": "Runtime configuration ingestion is exposed through a snapshot loader that returns Result and supports typed parse failures.",
+          "links": [
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.result.ParseError"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.result.KonditionalBoundaryFailure"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "document_id": "DOC-PR01-02",
+      "path": "docusaurus/docs/overview/product-value-fit.md",
+      "title": "Product value and fit",
+      "summary": "Fit criteria for deterministic rollout, safe boundary handling, and namespace isolation.",
+      "claims": [
+        {
+          "claim_id": "CLM-PR01-02A",
+          "statement": "Deterministic ramp-up behavior is backed by stable bucketing functions.",
+          "links": [
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.evaluation.Bucketing"
+            },
+            {
+              "kind": "method",
+              "signature": "io.amichne.konditional.core.evaluation.Bucketing#fun stableBucket( salt: String, flagKey: String, stableId: HexId, ): Int"
+            },
+            {
+              "kind": "method",
+              "signature": "io.amichne.konditional.core.evaluation.Bucketing#fun isInRampUp( rampUp: RampUp, bucket: Int, ): Boolean"
+            }
+          ]
+        },
+        {
+          "claim_id": "CLM-PR01-02B",
+          "statement": "Namespace-scoped runtime operations are implemented by an in-memory namespace registry.",
+          "links": [
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
+            },
+            {
+              "kind": "method",
+              "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun load(config: ConfigurationView)"
+            },
+            {
+              "kind": "method",
+              "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun rollback(steps: Int): Boolean"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "document_id": "DOC-PR01-03",
+      "path": "docusaurus/docs/overview/why-typed-flags.md",
+      "title": "Why typed flags",
+      "summary": "Rationale for compile-time typed feature declarations and explicit boundary handling.",
+      "claims": [
+        {
+          "claim_id": "CLM-PR01-03A",
+          "statement": "Feature declarations are modeled as typed entities under Namespace and Feature abstractions.",
+          "links": [
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.Namespace"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.features.Feature"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.FlagDefinition"
+            }
+          ]
+        },
+        {
+          "claim_id": "CLM-PR01-03B",
+          "statement": "Parse boundary failures are represented with explicit ParseError and KonditionalBoundaryFailure types.",
+          "links": [
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.result.ParseError"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.result.KonditionalBoundaryFailure"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "document_id": "DOC-PR01-04",
+      "path": "docusaurus/docs/overview/first-success-map.md",
+      "title": "First success map",
+      "summary": "Decision page routing users through typed flags, ramp-up, and snapshot loading paths.",
+      "claims": [
+        {
+          "claim_id": "CLM-PR01-04A",
+          "statement": "The first-success routes correspond to concrete runtime APIs for ramp-up and snapshot loading.",
+          "links": [
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.api.RampUpBucketing"
+            },
+            {
+              "kind": "method",
+              "signature": "io.amichne.konditional.api.RampUpBucketing#fun bucket( stableId: StableId, featureKey: String, salt: String, ): Int"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "document_id": "DOC-PR01-05",
+      "path": "docusaurus/docs/overview/adoption-roadmap.md",
+      "title": "Adoption roadmap",
+      "summary": "Phased adoption with rollout, boundary validation, and rollback operations.",
+      "claims": [
+        {
+          "claim_id": "CLM-PR01-05A",
+          "statement": "Adoption phases rely on load, disable, and rollback runtime operations.",
+          "links": [
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
+            },
+            {
+              "kind": "method",
+              "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun disableAll()"
+            },
+            {
+              "kind": "method",
+              "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun rollback(steps: Int): Boolean"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "document_id": "DOC-PR01-06",
+      "path": "docusaurus/docs/quickstart/index.md",
+      "title": "Quickstart",
+      "summary": "Entry sequence covering declaration, deterministic rollout, and safe snapshot loading.",
+      "claims": [
+        {
+          "claim_id": "CLM-PR01-06A",
+          "statement": "The quickstart sequence is grounded in namespace declaration and snapshot loading APIs.",
+          "links": [
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.Namespace"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "document_id": "DOC-PR01-07",
+      "path": "docusaurus/docs/quickstart/install.md",
+      "title": "Install",
+      "summary": "Dependency setup for core declarations and runtime registry operations.",
+      "claims": [
+        {
+          "claim_id": "CLM-PR01-07A",
+          "statement": "Installation targets the core namespace model and runtime in-memory registry implementation.",
+          "links": [
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.Namespace"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "document_id": "DOC-PR01-08",
+      "path": "docusaurus/docs/quickstart/define-first-flag.md",
+      "title": "Define first flag",
+      "summary": "Defines namespace-scoped typed feature declarations with defaults.",
+      "claims": [
+        {
+          "claim_id": "CLM-PR01-08A",
+          "statement": "Feature declarations are represented by Namespace, Feature, and FlagDefinition types.",
+          "links": [
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.Namespace"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.features.Feature"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.FlagDefinition"
+            }
+          ]
+        },
+        {
+          "claim_id": "CLM-PR01-08B",
+          "statement": "Namespaces provide a compiled schema used by boundary codecs and loaders.",
+          "links": [
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.Namespace"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "document_id": "DOC-PR01-09",
+      "path": "docusaurus/docs/quickstart/evaluate-in-app-code.md",
+      "title": "Evaluate in app code",
+      "summary": "Evaluates a typed feature for a context and validates deterministic behavior.",
+      "claims": [
+        {
+          "claim_id": "CLM-PR01-09A",
+          "statement": "Feature evaluation follows core flag-definition evaluation semantics and deterministic bucketing behavior.",
+          "links": [
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.FlagDefinition"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.evaluation.Bucketing"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "document_id": "DOC-PR01-10",
+      "path": "docusaurus/docs/quickstart/add-deterministic-ramp-up.md",
+      "title": "Add deterministic ramp-up",
+      "summary": "Adds rollout gating with stable bucket assignment.",
+      "claims": [
+        {
+          "claim_id": "CLM-PR01-10A",
+          "statement": "Ramp-up assignment is deterministic and exposed through stable bucket APIs.",
+          "links": [
+            {
+              "kind": "method",
+              "signature": "io.amichne.konditional.core.evaluation.Bucketing#fun stableBucket( salt: String, flagKey: String, stableId: HexId, ): Int"
+            },
+            {
+              "kind": "method",
+              "signature": "io.amichne.konditional.core.evaluation.Bucketing#fun isInRampUp( rampUp: RampUp, bucket: Int, ): Boolean"
+            },
+            {
+              "kind": "method",
+              "signature": "io.amichne.konditional.api.RampUpBucketing#fun bucket( stableId: StableId, featureKey: String, salt: String, ): Int"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.id.StableId"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "document_id": "DOC-PR01-11",
+      "path": "docusaurus/docs/quickstart/load-first-snapshot-safely.md",
+      "title": "Load first snapshot safely",
+      "summary": "Loads runtime snapshots through explicit Result boundary handling.",
+      "claims": [
+        {
+          "claim_id": "CLM-PR01-11A",
+          "statement": "Snapshot loading API exposes Result-based ingestion with options and codec-backed decode.",
+          "links": [
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader"
+            },
+            {
+              "kind": "method",
+              "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#override fun load( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.serialization.options.SnapshotLoadOptions"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec"
+            }
+          ]
+        },
+        {
+          "claim_id": "CLM-PR01-11B",
+          "statement": "Boundary failures are modeled as ParseError values wrapped by KonditionalBoundaryFailure.",
+          "links": [
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.result.ParseError"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.result.KonditionalBoundaryFailure"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "document_id": "DOC-PR01-12",
+      "path": "docusaurus/docs/quickstart/verify-end-to-end.md",
+      "title": "Verify end-to-end",
+      "summary": "Validation checklist for deterministic evaluation, safe boundary errors, and stable runtime state.",
+      "claims": [
+        {
+          "claim_id": "CLM-PR01-12A",
+          "statement": "End-to-end verification relies on deterministic bucketing, boundary parse types, and namespace runtime operations.",
+          "links": [
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.evaluation.Bucketing"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.result.ParseError"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
+            },
+            {
+              "kind": "method",
+              "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun load(config: ConfigurationView)"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
