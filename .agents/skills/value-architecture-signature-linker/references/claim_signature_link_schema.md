@@ -1,12 +1,13 @@
-# Doc-signature link schema
+# Claim-signature link schema
 
-Use this schema for `docs/traceability/doc-signature-links.json`.
+Use this schema for `docs/claim-trace/claim-signature-links.json`.
 
 ## Purpose
 
-Represent explicit links between documentation claims and source signatures in a
-machine-checkable shape. This map keeps documentation aligned with implementation
-changes and acts as retrieval hints for deterministic pseudo-RAG workflows.
+Represent explicit links between claim IDs and source signatures in a
+machine-checkable shape. This map keeps documentation aligned with
+implementation changes and acts as retrieval hints for deterministic
+pseudo-RAG workflows.
 
 ## JSON contract
 

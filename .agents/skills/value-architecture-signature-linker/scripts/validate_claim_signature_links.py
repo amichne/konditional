@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate documentation/signature links with optional artifact refresh."""
+"""Validate claim/signature links with optional artifact refresh."""
 
 from __future__ import annotations
 
@@ -367,13 +367,13 @@ def report_dict(
     }
 
 
-def main(default_links_file: str = "docs/traceability/doc-signature-links.json") -> int:
+def main(default_links_file: str = "docs/claim-trace/claim-signature-links.json") -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", default=".", help="Repository root path.")
     parser.add_argument(
         "--links-file",
         default=default_links_file,
-        help="Documentation/signature links JSON file.",
+        help="Claim/signature links JSON file.",
     )
     parser.add_argument(
         "--signatures-dir",

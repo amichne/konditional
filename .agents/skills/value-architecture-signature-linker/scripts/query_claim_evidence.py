@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from validate_doc_signature_links import (
+from validate_claim_signature_links import (
     detect_signatures_dir,
     parse_index_entries,
     parse_links,
@@ -386,8 +386,8 @@ def main() -> int:
     )
     parser.add_argument(
         "--links-file",
-        default=None,
-        help="Optional documentation/signature links JSON for retrieval hints.",
+        default="docs/claim-trace/claim-signature-links.json",
+        help="Claim/signature links JSON for retrieval hints.",
     )
     parser.add_argument(
         "--doc-path",

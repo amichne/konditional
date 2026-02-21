@@ -48,4 +48,5 @@ This page answers: <user question or operational objective>.
 - <missing signature or unresolved ambiguity>
 ```
 
-Keep evidence links synchronized with the link-map JSON file.
+Keep evidence links synchronized with
+`docs/claim-trace/claim-signature-links.json`.

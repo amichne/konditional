@@ -1,4 +1,0 @@
-interface:
-  display_name: "Docs RAG Linker"
-  short_description: "Ground docs updates with deterministic evidence retrieval."
-  default_prompt: "Use $value-journey-signature-linker to retrieve deterministic evidence from signatures and docs, then update documentation with validated signature links."
