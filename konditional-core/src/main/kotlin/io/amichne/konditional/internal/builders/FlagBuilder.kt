@@ -7,16 +7,18 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.FlagScope
+import io.amichne.konditional.core.dsl.rules.ContextualYieldingScope
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.rules.ContextRuleScope
 import io.amichne.konditional.core.dsl.rules.PendingYieldToken
 import io.amichne.konditional.core.dsl.rules.RuleScope
 import io.amichne.konditional.core.dsl.rules.RuleSet
-import io.amichne.konditional.core.dsl.rules.RuleSpec
+import io.amichne.konditional.core.dsl.rules.RuleValueResolver
 import io.amichne.konditional.core.dsl.rules.YieldingScopeHost
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 
 /**
@@ -33,11 +35,12 @@ import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
  */
 @KonditionalDsl
 @KonditionalInternalApi
+@Suppress("TooManyFunctions")
 internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
     override val default: T,
     private val feature: Feature<T, C, M>,
-) : FlagScope<T, C, M>, YieldingScopeHost {
-    private val ruleSpecs = mutableListOf<RuleSpec<T, C>>()
+) : FlagScope<T, C, M>, YieldingScopeHost, ContextualYieldingScope<T, C> {
+    private val values = mutableListOf<ConditionalValue<T, C>>()
     private val rolloutAllowlist: LinkedHashSet<HexId> = linkedSetOf()
     private val pendingYields: LinkedHashSet<PendingYieldToken> = linkedSetOf()
 
@@ -74,7 +77,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
         .takeIf { it }
         ?.let { commit() }
         ?: error(
-            "Attempted to close a `rule { ... } yields VALUE` that is already closed, or was never registered."
+            "Attempted to close a `rule { ... } yields ...` that is already closed, or was never registered."
         )
 
     /**
@@ -86,7 +89,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
         build: RuleScope<C>.() -> Unit,
     ) {
         val rule = RuleBuilder<C>(axisCatalog = feature.namespace.axisCatalog).apply(build).build()
-        ruleSpecs += RuleSpec(value, rule)
+        values += rule.targetedBy(value)
     }
 
     override fun ruleScoped(
@@ -97,11 +100,30 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
             @Suppress("UNCHECKED_CAST")
             (this as ContextRuleScope<C>).apply(build)
         }.build()
-        ruleSpecs += RuleSpec(value, rule)
+        values += rule.targetedBy(value)
+    }
+
+    override fun ruleResolved(
+        valueResolver: RuleValueResolver<C, T>,
+        build: RuleScope<C>.() -> Unit,
+    ) {
+        val rule = RuleBuilder<C>(axisCatalog = feature.namespace.axisCatalog).apply(build).build()
+        values += rule.targetedBy(valueResolver)
+    }
+
+    override fun ruleScopedResolved(
+        valueResolver: RuleValueResolver<C, T>,
+        build: ContextRuleScope<C>.() -> Unit,
+    ) {
+        val rule = RuleBuilder<C>(axisCatalog = feature.namespace.axisCatalog).apply {
+            @Suppress("UNCHECKED_CAST")
+            (this as ContextRuleScope<C>).apply(build)
+        }.build()
+        values += rule.targetedBy(valueResolver)
     }
 
     override fun include(ruleSet: RuleSet<in C, T, C, M>) {
-        ruleSpecs += ruleSet.rules
+        values += ruleSet.rules.map { spec -> spec.rule.targetedBy(spec.value) }
     }
 
     /**
@@ -116,28 +138,34 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
         ?.let {
             FlagDefinition(
                 feature = feature,
-                bounds = ruleSpecs.map { spec -> spec.rule.targetedBy(spec.value) },
+                bounds = values,
                 defaultValue = default,
                 salt = salt,
                 isActive = isActive,
                 rampUpAllowlist = rolloutAllowlist,
             )
         }
-        ?: error(unclosedYieldingRulesErrorMessage())
-
-    private fun unclosedYieldingRulesErrorMessage(): String =
-        buildString {
-            appendLine(
-                "Unclosed criteria-first rule detected for feature '${feature.key}': " +
-                    "`rule { ... }` must be completed with `yields(value)`."
-            )
-            appendLine("Fix: change `rule { criteria }` to `rule { criteria } yields someValue`.")
-            pendingYields
-                .mapNotNull { it.callSite }
-                .takeIf { it.isNotEmpty() }
-                ?.let { callSites ->
-                    appendLine("Call sites:")
-                    callSites.forEach { appendLine("- $it") }
-                }
-        }
+        ?: error(unclosedYieldingRulesErrorMessage(featureKey = feature.key, pendingYields = pendingYields))
 }
+
+private fun unclosedYieldingRulesErrorMessage(
+    featureKey: String,
+    pendingYields: Set<PendingYieldToken>,
+): String =
+    buildString {
+        appendLine(
+            "Unclosed criteria-first rule detected for feature '$featureKey': " +
+                "`rule { ... }` must be completed with `yields(value)` or `yields { ... }`."
+        )
+        appendLine(
+            "Fix: change `rule { criteria }` to `rule { criteria } yields someValue` " +
+                "or `rule { criteria } yields { resolveValue() }`."
+        )
+        pendingYields
+            .mapNotNull { it.callSite }
+            .takeIf { it.isNotEmpty() }
+            ?.let { callSites ->
+                appendLine("Call sites:")
+                callSites.forEach { appendLine("- $it") }
+            }
+    }

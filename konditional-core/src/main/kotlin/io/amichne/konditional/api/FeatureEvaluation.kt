@@ -122,7 +122,10 @@ private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.createRuleDia
     mode: Metrics.Evaluation.EvaluationMode,
     definition: FlagDefinition<T, C, M>,
 ): EvaluationDiagnostics<T> {
-    val trace = definition.evaluateTrace(context)
+    val trace = definition.evaluateTrace(
+        context = context,
+        registry = registry,
+    )
     val skippedByRollout =
         trace.skippedByRampUp?.toRuleMatch(
             bucket = trace.bucket,

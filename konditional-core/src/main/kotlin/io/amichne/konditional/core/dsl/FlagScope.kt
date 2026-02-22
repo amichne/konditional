@@ -121,6 +121,7 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
      *
      * Semantics:
      * - `rule { ... } yields VALUE` ≡ `rule(VALUE) { ... }`
+     * - `rule { ... } yields { resolver() }` resolves the value lazily when the rule matches
      */
     fun rule(build: RuleScope<C>.() -> Unit): RuleScope.Prefix<T, C, M> = RuleScope.Prefix(this, build)
 
@@ -129,6 +130,7 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
      *
      * Semantics:
      * - `ruleScoped { ... } yields VALUE` ≡ `ruleScoped(VALUE) { ... }`
+     * - `ruleScoped { ... } yields { resolver() }` resolves the value lazily when the rule matches
      */
     @KonditionalInternalApi
     fun ruleScoped(build: ContextRuleScope<C>.() -> Unit): RuleScope.ScopedPrefix<T, C, M> =

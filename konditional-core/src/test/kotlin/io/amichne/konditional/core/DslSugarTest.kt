@@ -11,6 +11,7 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.dsl.disable
 import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
 import io.amichne.konditional.fixtures.core.id.TestStableId
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -28,6 +29,16 @@ class DslSugarTest {
         val stringFlag by string<Context>(default = "default") {
             rule { android() } yields "android"
             rule { always() } yields "catch-all"
+        }
+
+        val dependencyFlag by string<Context>(default = "dep-default") {
+            rule { android() } yields "dep-android"
+            rule { always() } yields "dep-catch-all"
+        }
+
+        val composedFlag by string<Context>(default = "composed-default") {
+            rule { android() } yields { dependencyFlag.evaluate() }
+            rule { always() } yields "fallback"
         }
     }
 
@@ -53,6 +64,27 @@ class DslSugarTest {
     fun `rule yields declares a criteria-first rule`() {
         assertEquals("android", Features.stringFlag.evaluate(ctx(platform = Platform.ANDROID)))
         assertEquals("catch-all", Features.stringFlag.evaluate(ctx(platform = Platform.IOS)))
+    }
+
+    @Test
+    fun `rule yields supports context-aware deferred value resolution`() {
+        assertEquals("dep-android", Features.composedFlag.evaluate(ctx(platform = Platform.ANDROID)))
+        assertEquals("fallback", Features.composedFlag.evaluate(ctx(platform = Platform.IOS)))
+    }
+
+    @Test
+    fun `deferred yields evaluate same-namespace dependencies against provided registry`() {
+        val alternateRegistry = InMemoryNamespaceRegistry(namespaceId = Features.id).apply {
+            load(Features.configuration)
+            setOverride(Features.dependencyFlag, "override-value")
+        }
+
+        val result = Features.composedFlag.evaluate(
+            context = ctx(platform = Platform.ANDROID),
+            registry = alternateRegistry,
+        )
+
+        assertEquals("override-value", result)
     }
 
     @Test

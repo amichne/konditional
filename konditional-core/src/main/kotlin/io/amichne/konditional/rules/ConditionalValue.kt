@@ -2,6 +2,10 @@ package io.amichne.konditional.rules
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.rules.RuleValueResolver
+import io.amichne.konditional.core.dsl.rules.RuleValueScope
+import io.amichne.konditional.core.registry.NamespaceRegistry
 
 /**
  * Represents a rule paired with its target value.
@@ -14,10 +18,74 @@ import io.amichne.konditional.context.Context
 @KonditionalInternalApi
 data class ConditionalValue<T : Any, C : Context> private constructor(
     val rule: Rule<C>,
-    val value: T,
+    private val resolver: Resolver<T, C>,
 ) {
+    /**
+     * Returns the static rule value.
+     *
+     * Deferred values are evaluated only during flag evaluation and are not
+     * available as a standalone constant.
+     */
+    val value: T
+        get() = resolver.staticValueOrNull()
+            ?: error("Rule value is context-dependent and can only be resolved during evaluation.")
+
+    internal fun resolve(
+        context: C,
+        registry: NamespaceRegistry,
+        ownerNamespace: Namespace,
+    ): T = resolver.resolve(
+        context = context,
+        registry = registry,
+        ownerNamespace = ownerNamespace,
+    )
+
+    internal fun staticValueOrNull(): T? = resolver.staticValueOrNull()
+
+    private sealed interface Resolver<T : Any, C : Context> {
+        fun resolve(
+            context: C,
+            registry: NamespaceRegistry,
+            ownerNamespace: Namespace,
+        ): T
+
+        fun staticValueOrNull(): T?
+    }
+
+    private data class StaticResolver<T : Any, C : Context>(
+        val value: T,
+    ) : Resolver<T, C> {
+        override fun resolve(
+            context: C,
+            registry: NamespaceRegistry,
+            ownerNamespace: Namespace,
+        ): T = value
+
+        override fun staticValueOrNull(): T = value
+    }
+
+    private class ContextualResolver<T : Any, C : Context>(
+        private val valueResolver: RuleValueResolver<C, T>,
+    ) : Resolver<T, C> {
+        override fun resolve(
+            context: C,
+            registry: NamespaceRegistry,
+            ownerNamespace: Namespace,
+        ): T = RuleValueScope(
+            context = context,
+            evaluationRegistry = registry,
+            ownerNamespace = ownerNamespace,
+        ).valueResolver()
+
+        override fun staticValueOrNull(): T? = null
+    }
+
     companion object {
         internal fun <T : Any, C : Context> Rule<C>.targetedBy(value: T): ConditionalValue<T, C> =
-            ConditionalValue(this, value)
+            ConditionalValue(this, StaticResolver(value))
+
+        internal fun <T : Any, C : Context> Rule<C>.targetedBy(
+            valueResolver: RuleValueResolver<C, T>,
+        ): ConditionalValue<T, C> = ConditionalValue(this, ContextualResolver(valueResolver))
     }
 }

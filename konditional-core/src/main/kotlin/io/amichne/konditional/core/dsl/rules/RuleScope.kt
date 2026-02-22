@@ -62,9 +62,11 @@ interface RuleScope<C : Context> : ContextRuleScope<C>,
     @KonditionalDsl
     class Prefix<T : Any, C : Context, out M : Namespace> internal constructor(
         private val scope: FlagScope<T, C, @UnsafeVariance M>,
-        private val build: RuleScope<C>.() -> Unit,
+        private val criteriaBuild: RuleScope<C>.() -> Unit,
     ) {
         private val host: YieldingScopeHost? = scope as? YieldingScopeHost
+        @Suppress("UNCHECKED_CAST")
+        private val contextualHost: ContextualYieldingScope<T, C>? = scope as? ContextualYieldingScope<T, C>
         private val pendingToken: PendingYieldToken =
             PendingYieldToken(callSite = captureRuleCallSite()).also { host?.registerPendingYield(it) }
 
@@ -73,17 +75,42 @@ interface RuleScope<C : Context> : ContextRuleScope<C>,
          *
          * Semantics:
          * `rule { criteria } yields VALUE` ≡ `rule(VALUE) { criteria }`
+         * `rule { criteria } yields { resolver() }` resolves lazily when the rule matches
          *
          * When invoked from the criteria-first DSL, this also closes the pending rule
          * and makes it eligible for validation during flag construction.
          */
         infix fun yields(value: T): Postfix = host
-            ?.commitYield(pendingToken) { scope.rule(value, build) }
+            ?.commitYield(pendingToken) { scope.rule(value, criteriaBuild) }
             ?.let { Postfix }
             ?: run {
-                scope.rule(value, build)
+                scope.rule(value, criteriaBuild)
                 Postfix
             }
+
+        /**
+         * Completes the rule declaration using a deferred resolver.
+         *
+         * The resolver executes only when the rule matches, with access to the
+         * current evaluation context and compositional feature reads via
+         * [RuleValueScope.evaluate].
+         */
+        infix fun yields(valueResolver: RuleValueResolver<C, T>): Postfix = host
+            ?.commitYield(pendingToken) { commitDeferredRule(valueResolver) }
+            ?.let { Postfix }
+            ?: run {
+                commitDeferredRule(valueResolver)
+                Postfix
+            }
+
+        private fun commitDeferredRule(valueResolver: RuleValueResolver<C, T>) {
+            val resolverHost = contextualHost
+                ?: error("Deferred yields are not supported by this FlagScope implementation.")
+            resolverHost.ruleResolved(
+                valueResolver = valueResolver,
+                build = criteriaBuild,
+            )
+        }
     }
 
     /**
@@ -96,9 +123,11 @@ interface RuleScope<C : Context> : ContextRuleScope<C>,
     @KonditionalInternalApi
     class ScopedPrefix<T : Any, C : Context, out M : Namespace> internal constructor(
         private val scope: FlagScope<T, C, @UnsafeVariance M>,
-        private val build: ContextRuleScope<C>.() -> Unit,
+        private val criteriaBuild: ContextRuleScope<C>.() -> Unit,
     ) {
         private val host: YieldingScopeHost? = scope as? YieldingScopeHost
+        @Suppress("UNCHECKED_CAST")
+        private val contextualHost: ContextualYieldingScope<T, C>? = scope as? ContextualYieldingScope<T, C>
         private val pendingToken: PendingYieldToken =
             PendingYieldToken(callSite = captureRuleCallSite()).also { host?.registerPendingYield(it) }
 
@@ -107,17 +136,38 @@ interface RuleScope<C : Context> : ContextRuleScope<C>,
          *
          * Semantics:
          * `ruleScoped { criteria } yields VALUE` ≡ `ruleScoped(VALUE) { criteria }`
+         * `ruleScoped { criteria } yields { resolver() }` resolves lazily when the rule matches
          *
          * When invoked from the criteria-first DSL, this also closes the pending rule
          * and makes it eligible for validation during flag construction.
          */
         infix fun yields(value: T): Postfix = host
-            ?.commitYield(pendingToken) { scope.ruleScoped(value, build) }
+            ?.commitYield(pendingToken) { scope.ruleScoped(value, criteriaBuild) }
             ?.let { Postfix }
             ?: run {
-                scope.ruleScoped(value, build)
+                scope.ruleScoped(value, criteriaBuild)
                 Postfix
             }
+
+        /**
+         * Completes the rule declaration using a deferred resolver in scoped mode.
+         */
+        infix fun yields(valueResolver: RuleValueResolver<C, T>): Postfix = host
+            ?.commitYield(pendingToken) { commitDeferredRule(valueResolver) }
+            ?.let { Postfix }
+            ?: run {
+                commitDeferredRule(valueResolver)
+                Postfix
+            }
+
+        private fun commitDeferredRule(valueResolver: RuleValueResolver<C, T>) {
+            val resolverHost = contextualHost
+                ?: error("Deferred yields are not supported by this FlagScope implementation.")
+            resolverHost.ruleScopedResolved(
+                valueResolver = valueResolver,
+                build = criteriaBuild,
+            )
+        }
     }
 
     /**
