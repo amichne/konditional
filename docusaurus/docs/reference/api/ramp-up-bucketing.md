@@ -258,8 +258,8 @@ fun `test with known bucket assignments`() {
 
 ## Related
 
-- [Guide: Roll Out Gradually](/guides/roll-out-gradually) — Using ramp-ups in practice
-- [Guide: Test Features](/guides/test-features) — Testing bucketing behavior
-- [Design Theory: Determinism Proofs](/design-theory/determinism-proofs) — Mathematical proof of determinism
+- [Guide: Roll Out Gradually](/how-to-guides/rolling-out-gradually) — Using ramp-ups in practice
+- [Guide: Test Features](/how-to-guides/testing-features) — Testing bucketing behavior
+- [Design Theory: Determinism Proofs](/theory/determinism-proofs) — Mathematical proof of determinism
 - [Learn: Evaluation Model](/learn/evaluation-model) — How ramp-ups fit into evaluation
 - [Troubleshooting: Bucketing Issues](/troubleshooting/#bucketing-issues) — Common problems

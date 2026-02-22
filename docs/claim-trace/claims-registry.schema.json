@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://amichne.github.io/konditional/docs/claim-trace/claims-registry.schema.json",
+  "title": "Konditional claims registry schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "claims"
+  ],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/claim"
+      }
+    }
+  },
+  "$defs": {
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claim_id",
+        "claim_text",
+        "topics",
+        "source_pages",
+        "signature_links",
+        "test_links",
+        "evidence_status",
+        "risk_category"
+      ],
+      "properties": {
+        "claim_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "claim_text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "source_pages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source_page"
+          }
+        },
+        "signature_links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/signature_link"
+          }
+        },
+        "test_links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/test_link"
+          }
+        },
+        "evidence_status": {
+          "type": "string",
+          "enum": [
+            "linked",
+            "partial",
+            "missing"
+          ]
+        },
+        "risk_category": {
+          "type": "string",
+          "minLength": 1
+        },
+        "related_claims": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "change_history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "source_page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "anchor": {
+          "type": "string"
+        }
+      }
+    },
+    "signature_link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "signature"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "type",
+            "method",
+            "field"
+          ]
+        },
+        "signature": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "test_link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "module",
+        "path",
+        "kind"
+      ],
+      "properties": {
+        "module": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "test_id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "unit",
+            "integration",
+            "property",
+            "smoke",
+            "compatibility",
+            "e2e"
+          ]
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "symbol"
+          ]
+        },
+        {
+          "required": [
+            "test_id"
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,4 +1,5 @@
 ---
+slug: /legacy/guides-debug-evaluation
 title: Debug Evaluation (Legacy)
 description: Legacy path for debugging guidance.
 unlisted: true

@@ -1,4 +1,6 @@
 ---
+slug: /legacy/guides-install-and-setup
+unlisted: true
 title: Install and Set Up Konditional
 ---
 
@@ -142,7 +144,7 @@ fun checkDarkMode(userId: String, platform: Platform): Boolean {
 **Security**:
 - No reflection or code generation at runtime
 - StableId hashing is deterministic (SHA-256), not cryptographically secure
-- Remote configuration should be validated before load (see [Load Remote Config](/guides/load-remote-config))
+- Remote configuration should be validated before load (see [Load Remote Config](/how-to-guides/safe-remote-config))
 
 ## Troubleshooting
 
@@ -184,6 +186,6 @@ val enabled: String = AppFeatures.darkMode.evaluate(ctx) // Compile error
 
 - [Learn: Core Primitives](/learn/core-primitives) — Understand Namespace, Feature, Context, Rule
 - [Learn: Evaluation Model](/learn/evaluation-model) — How rules are ordered and evaluated
-- [Guide: Roll Out Gradually](/guides/roll-out-gradually) — Add ramp-ups and percentages
-- [Guide: Test Features](/guides/test-features) — Write tests for features
+- [Guide: Roll Out Gradually](/how-to-guides/rolling-out-gradually) — Add ramp-ups and percentages
+- [Guide: Test Features](/how-to-guides/testing-features) — Write tests for features
 - [Examples: Golden Path](/examples/golden-path) — Complete annotated example

@@ -1,3 +1,8 @@
+---
+slug: /legacy/getting-started-your-first-flag
+unlisted: true
+---
+
 # Your First Feature
 
 This guide helps you ship one safe feature toggle end-to-end: definition, targeting rules, and evaluation.
@@ -6,7 +11,7 @@ This guide helps you ship one safe feature toggle end-to-end: definition, target
 
 ## Prerequisites
 
-- Konditional installed: [Installation](/getting-started/installation)
+- Konditional installed: [Installation](/quickstart/install)
 - A Kotlin project where you can run a small local check
 
 ## 1) Define a namespace and a feature

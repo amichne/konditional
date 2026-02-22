@@ -26,7 +26,7 @@
           "links": [
             {
               "kind": "type",
-              "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader"
+              "signature": "io.amichne.konditional.core.result.KonditionalBoundaryFailure"
             },
             {
               "kind": "type",
@@ -34,7 +34,15 @@
             },
             {
               "kind": "type",
-              "signature": "io.amichne.konditional.core.result.KonditionalBoundaryFailure"
+              "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader"
+            }
+          ],
+          "test_links": [
+            {
+              "module": "konditional-core",
+              "path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/BoundaryFailureResultTest.kt",
+              "symbol": "BoundaryFailureResultTest",
+              "kind": "unit"
             }
           ]
         }
@@ -51,16 +59,24 @@
           "statement": "Deterministic ramp-up behavior is backed by stable bucketing functions.",
           "links": [
             {
-              "kind": "type",
-              "signature": "io.amichne.konditional.core.evaluation.Bucketing"
+              "kind": "method",
+              "signature": "io.amichne.konditional.core.evaluation.Bucketing#fun isInRampUp( rampUp: RampUp, bucket: Int, ): Boolean"
             },
             {
               "kind": "method",
               "signature": "io.amichne.konditional.core.evaluation.Bucketing#fun stableBucket( salt: String, flagKey: String, stableId: HexId, ): Int"
             },
             {
-              "kind": "method",
-              "signature": "io.amichne.konditional.core.evaluation.Bucketing#fun isInRampUp( rampUp: RampUp, bucket: Int, ): Boolean"
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.evaluation.Bucketing"
+            }
+          ],
+          "test_links": [
+            {
+              "module": "konditional-core",
+              "path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/MissingStableIdBucketingTest.kt",
+              "symbol": "MissingStableIdBucketingTest",
+              "kind": "unit"
             }
           ]
         },
@@ -69,16 +85,24 @@
           "statement": "Namespace-scoped runtime operations are implemented by an in-memory namespace registry.",
           "links": [
             {
-              "kind": "type",
-              "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
-            },
-            {
               "kind": "method",
               "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun load(config: ConfigurationView)"
             },
             {
               "kind": "method",
               "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun rollback(steps: Int): Boolean"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
+            }
+          ],
+          "test_links": [
+            {
+              "module": "konditional-runtime",
+              "path": "konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt",
+              "symbol": "NamespaceLinearizabilityTest",
+              "kind": "unit"
             }
           ]
         }
@@ -96,15 +120,23 @@
           "links": [
             {
               "kind": "type",
+              "signature": "io.amichne.konditional.core.FlagDefinition"
+            },
+            {
+              "kind": "type",
               "signature": "io.amichne.konditional.core.Namespace"
             },
             {
               "kind": "type",
               "signature": "io.amichne.konditional.core.features.Feature"
-            },
+            }
+          ],
+          "test_links": [
             {
-              "kind": "type",
-              "signature": "io.amichne.konditional.core.FlagDefinition"
+              "module": "konditional-core",
+              "path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/NamespaceFeatureDefinitionTest.kt",
+              "symbol": "NamespaceFeatureDefinitionTest",
+              "kind": "unit"
             }
           ]
         },
@@ -114,11 +146,19 @@
           "links": [
             {
               "kind": "type",
-              "signature": "io.amichne.konditional.core.result.ParseError"
+              "signature": "io.amichne.konditional.core.result.KonditionalBoundaryFailure"
             },
             {
               "kind": "type",
-              "signature": "io.amichne.konditional.core.result.KonditionalBoundaryFailure"
+              "signature": "io.amichne.konditional.core.result.ParseError"
+            }
+          ],
+          "test_links": [
+            {
+              "module": "konditional-core",
+              "path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/BoundaryFailureResultTest.kt",
+              "symbol": "BoundaryFailureResultTest",
+              "kind": "unit"
             }
           ]
         }
@@ -135,12 +175,12 @@
           "statement": "The first-success routes correspond to concrete runtime APIs for ramp-up and snapshot loading.",
           "links": [
             {
-              "kind": "type",
-              "signature": "io.amichne.konditional.api.RampUpBucketing"
-            },
-            {
               "kind": "method",
               "signature": "io.amichne.konditional.api.RampUpBucketing#fun bucket( stableId: StableId, featureKey: String, salt: String, ): Int"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.api.RampUpBucketing"
             },
             {
               "kind": "type",
@@ -161,16 +201,24 @@
           "statement": "Adoption phases rely on load, disable, and rollback runtime operations.",
           "links": [
             {
-              "kind": "type",
-              "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
-            },
-            {
               "kind": "method",
               "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun disableAll()"
             },
             {
               "kind": "method",
               "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun rollback(steps: Int): Boolean"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
+            }
+          ],
+          "test_links": [
+            {
+              "module": "konditional-runtime",
+              "path": "konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt",
+              "symbol": "NamespaceLinearizabilityTest",
+              "kind": "unit"
             }
           ]
         }
@@ -232,15 +280,15 @@
           "links": [
             {
               "kind": "type",
+              "signature": "io.amichne.konditional.core.FlagDefinition"
+            },
+            {
+              "kind": "type",
               "signature": "io.amichne.konditional.core.Namespace"
             },
             {
               "kind": "type",
               "signature": "io.amichne.konditional.core.features.Feature"
-            },
-            {
-              "kind": "type",
-              "signature": "io.amichne.konditional.core.FlagDefinition"
             }
           ]
         },
@@ -255,6 +303,14 @@
             {
               "kind": "type",
               "signature": "io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec"
+            }
+          ],
+          "test_links": [
+            {
+              "module": "konditional-runtime",
+              "path": "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationSnapshotCodecTest.kt",
+              "symbol": "NamespaceConfigurationSnapshotCodecTest",
+              "kind": "unit"
             }
           ]
         }
@@ -294,7 +350,7 @@
           "links": [
             {
               "kind": "method",
-              "signature": "io.amichne.konditional.core.evaluation.Bucketing#fun stableBucket( salt: String, flagKey: String, stableId: HexId, ): Int"
+              "signature": "io.amichne.konditional.api.RampUpBucketing#fun bucket( stableId: StableId, featureKey: String, salt: String, ): Int"
             },
             {
               "kind": "method",
@@ -302,11 +358,19 @@
             },
             {
               "kind": "method",
-              "signature": "io.amichne.konditional.api.RampUpBucketing#fun bucket( stableId: StableId, featureKey: String, salt: String, ): Int"
+              "signature": "io.amichne.konditional.core.evaluation.Bucketing#fun stableBucket( salt: String, flagKey: String, stableId: HexId, ): Int"
             },
             {
               "kind": "type",
               "signature": "io.amichne.konditional.core.id.StableId"
+            }
+          ],
+          "test_links": [
+            {
+              "module": "konditional-core",
+              "path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/MissingStableIdBucketingTest.kt",
+              "symbol": "MissingStableIdBucketingTest",
+              "kind": "unit"
             }
           ]
         }
@@ -323,10 +387,6 @@
           "statement": "Snapshot loading API exposes Result-based ingestion with options and codec-backed decode.",
           "links": [
             {
-              "kind": "type",
-              "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader"
-            },
-            {
               "kind": "method",
               "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#override fun load( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>"
             },
@@ -337,6 +397,10 @@
             {
               "kind": "type",
               "signature": "io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec"
+            },
+            {
+              "kind": "type",
+              "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader"
             }
           ]
         },
@@ -346,11 +410,19 @@
           "links": [
             {
               "kind": "type",
-              "signature": "io.amichne.konditional.core.result.ParseError"
+              "signature": "io.amichne.konditional.core.result.KonditionalBoundaryFailure"
             },
             {
               "kind": "type",
-              "signature": "io.amichne.konditional.core.result.KonditionalBoundaryFailure"
+              "signature": "io.amichne.konditional.core.result.ParseError"
+            }
+          ],
+          "test_links": [
+            {
+              "module": "konditional-core",
+              "path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/BoundaryFailureResultTest.kt",
+              "symbol": "BoundaryFailureResultTest",
+              "kind": "unit"
             }
           ]
         }
@@ -367,20 +439,40 @@
           "statement": "End-to-end verification relies on deterministic bucketing, boundary parse types, and namespace runtime operations.",
           "links": [
             {
-              "kind": "type",
-              "signature": "io.amichne.konditional.core.evaluation.Bucketing"
+              "kind": "method",
+              "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun load(config: ConfigurationView)"
             },
             {
               "kind": "type",
-              "signature": "io.amichne.konditional.core.result.ParseError"
+              "signature": "io.amichne.konditional.core.evaluation.Bucketing"
             },
             {
               "kind": "type",
               "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
             },
             {
-              "kind": "method",
-              "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun load(config: ConfigurationView)"
+              "kind": "type",
+              "signature": "io.amichne.konditional.core.result.ParseError"
+            }
+          ],
+          "test_links": [
+            {
+              "module": "konditional-core",
+              "path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/BoundaryFailureResultTest.kt",
+              "symbol": "BoundaryFailureResultTest",
+              "kind": "unit"
+            },
+            {
+              "module": "konditional-core",
+              "path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/MissingStableIdBucketingTest.kt",
+              "symbol": "MissingStableIdBucketingTest",
+              "kind": "unit"
+            },
+            {
+              "module": "konditional-runtime",
+              "path": "konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt",
+              "symbol": "NamespaceLinearizabilityTest",
+              "kind": "unit"
             }
           ]
         }

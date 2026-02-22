@@ -1,4 +1,5 @@
 ---
+slug: /legacy/design-theory-parse-dont-validate
 title: Parse, Don't Validate (Legacy)
 description: Legacy path for parse boundary theory.
 unlisted: true

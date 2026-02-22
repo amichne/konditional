@@ -1,3 +1,8 @@
+---
+slug: /legacy/getting-started-installation
+unlisted: true
+---
+
 # Installation
 
 For the default Konditional experience (define namespaces and evaluate features), install:
@@ -61,7 +66,7 @@ If your build succeeds, installation is complete.
 
 ## Next steps
 
-- Build one typed feature: [Your First Feature](/getting-started/your-first-flag)
+- Build one typed feature: [Your First Feature](/quickstart/define-first-flag)
 - Learn why typing matters at boundaries: [Type-Safety Boundaries](/theory/type-safety-boundaries)
 
 That is enough to define and evaluate typed features in code. If you need remote configuration, JSON serialization, or

@@ -1,52 +1,32 @@
-# Documentation RAG update template
+# Documentation update template (claim-citation mode)
 
-Use this template for markdown pages that require retrieval-grounded updates.
+Use this template for markdown pages that require deterministic claim citations.
 
 ```markdown
 # <document title>
 
-## Objective
+## Purpose
 
-This page answers: <user question or operational objective>.
+This page helps <audience> achieve <outcome> by reducing <risk/pain>.
 
-## Scope
+## Main content
 
-- Audience:
-- In scope:
-- Out of scope:
+Write concise guidance and include inline claim tokens for non-trivial claims,
+for example: `... deterministic for stable IDs [CLM-TH-003].`
 
-## Retrieval inputs
+## Evidence notes
 
-- Query set:
-  - <query 1>
-  - <query 2>
-- Corpus:
-  - signatures
-  - linked docs
-  - optional glob: <glob>
+- Keep heavy evidence details in the claim registry.
+- Keep inline prose focused on user decisions and implementation actions.
 
-## Grounded guidance
+## Claim citation footer
 
-1. <recommendation derived from evidence>
-2. <recommendation derived from evidence>
-3. <recommendation derived from evidence>
-
-## Evidence links
-
-- claim_id: <claim id>
-  statement: <claim statement>
-  links:
-    - kind: type
-      signature: <fqcn>
-      status: linked
-    - kind: method
-      signature: <fqcn>#<normalized method signature>
-      status: linked
-
-## Gaps and follow-up
-
-- <missing signature or unresolved ambiguity>
+| Claim ID | Explicit Claim | Local Evidence Linkage | Registry Link |
+|---|---|---|---|
+| CLM-TH-003 | <explicit statement> | `#section-anchor` | `/reference/claims-registry#clm-th-003` |
 ```
 
-Keep evidence links synchronized with
-`docs/claim-trace/claim-signature-links.json`.
+Keep claim citations synchronized with:
+
+- `docs/claim-trace/claim-signature-links.json`
+- `docs/claim-trace/claims-registry.json`

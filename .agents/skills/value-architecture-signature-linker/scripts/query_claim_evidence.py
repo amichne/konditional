@@ -12,13 +12,13 @@ from pathlib import Path
 from typing import Any
 
 from validate_claim_signature_links import (
+    as_repo_relative,
     detect_signatures_dir,
     parse_index_entries,
     parse_links,
     parse_type_line,
     refresh_artifacts,
 )
-
 
 TOKEN_RE = re.compile(r"[a-z0-9_]+")
 HEADING_RE = re.compile(r"^\s{0,3}#{1,6}\s+(.*)$")
@@ -63,18 +63,14 @@ def _collect_link_hints(
     if links_file is None or not links_file.exists():
         return set(), set()
 
-    link_refs, _ = parse_links(links_file)
+    parsed = parse_links(links_file, repo_root)
 
-    linked_signatures = {link.signature for link in link_refs}
-    linked_documents: set[str] = set()
-
-    for link in link_refs:
-        path_text = link.document_path.strip()
-        if not path_text:
-            continue
-        maybe_path = (repo_root / path_text).resolve()
-        if maybe_path.exists():
-            linked_documents.add(rel_path(repo_root, maybe_path))
+    linked_signatures = {link.signature for link in parsed.links}
+    linked_documents = {
+        claim.document_path
+        for claim in parsed.claims
+        if claim.document_path and (repo_root / claim.document_path).exists()
+    }
 
     return linked_signatures, linked_documents
 
@@ -290,7 +286,11 @@ def _load_document_entries(
     return entries
 
 
-def _score_entry(query: str, query_terms: set[str], entry: EvidenceEntry) -> RankedEvidence | None:
+def _score_entry(
+    query: str,
+    query_terms: set[str],
+    entry: EvidenceEntry,
+) -> RankedEvidence | None:
     searchable = f"{entry.identifier} {entry.snippet}".lower()
     entry_terms = tokenize(searchable)
     matched = tuple(sorted(query_terms.intersection(entry_terms)))
@@ -339,6 +339,7 @@ def _rank(
 
 
 def _render_report(
+    repo_root: Path,
     query: str,
     top_k: int,
     signatures_dir: Path | None,
@@ -352,8 +353,8 @@ def _render_report(
     return {
         "query": query,
         "top_k": top_k,
-        "signatures_dir": str(signatures_dir) if signatures_dir else "",
-        "links_file": str(links_file) if links_file else "",
+        "signatures_dir": as_repo_relative(repo_root, signatures_dir),
+        "links_file": as_repo_relative(repo_root, links_file),
         "total_entries_indexed": total_entries,
         "results": [
             {
@@ -440,7 +441,7 @@ def main() -> int:
 
     if signatures_dir is None and args.auto_refresh:
         refresh_attempted = True
-        signatures_rel = args.signatures_dir or "signatures"
+        signatures_rel = args.signatures_dir or ".signatures"
         refresh_succeeded, refresh_details = refresh_artifacts(repo_root, signatures_rel)
         if refresh_succeeded:
             signatures_dir = detect_signatures_dir(repo_root, signatures_rel)
@@ -476,6 +477,7 @@ def main() -> int:
     ranked = _rank(args.query, corpus, top_k=max(1, args.top_k))
 
     report = _render_report(
+        repo_root=repo_root,
         query=args.query,
         top_k=max(1, args.top_k),
         signatures_dir=signatures_dir,
