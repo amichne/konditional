@@ -1,0 +1,23 @@
+{
+  "claims_linked": 17,
+  "claims_missing": 0,
+  "claims_total": 17,
+  "issue_count": 0,
+  "issues": [],
+  "links_file": "docs/claim-trace/claim-signature-links.json",
+  "missing": [],
+  "missing_links": 0,
+  "pages_with_claims": 12,
+  "refresh_attempted": false,
+  "refresh_details": "",
+  "refresh_succeeded": false,
+  "registry_file": "docs/claim-trace/claims-registry.json",
+  "repo_root": ".",
+  "resolved_links": 47,
+  "schema_modes": [
+    "documents"
+  ],
+  "signatures_dir": ".signatures",
+  "status": "ok",
+  "total_links": 47
+}

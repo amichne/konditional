@@ -1,49 +1,40 @@
 # konditional-observability
 
-`konditional-observability` adds shadow evaluation helpers and exposes observability hooks.
+`konditional-observability` provides the public observability API surface for
+shadow evaluation, logging hooks, and metrics hooks.
 
-## When to Use This Module
+## Read this page when
 
-You should use `konditional-observability` when you need to:
+- You need module-level observability entrypoints.
+- You are wiring mismatch reporting without changing baseline behavior.
+- You need hook contracts before integrating logging or metrics backends.
 
-- Compare two configurations side-by-side with shadow evaluation to detect mismatches
-- Add instrumentation without coupling to specific logging or metrics vendors
-- Get explainable evaluation results for debugging and auditing
-- Track evaluation performance and decision paths in production
+## API and contract surface
 
-## What You Get
+- Artifact: `io.amichne:konditional-observability:VERSION`
+- Shadow APIs:
+  - `Feature.evaluateWithShadow(...)`
+  - `Feature.evaluateShadow(...)`
+- Shadow config type: `ShadowOptions`
+- Mismatch payload: `ShadowMismatch<T>`
+- Hook surface: `RegistryHooks`, `KonditionalLogger`, `MetricsCollector`
 
-- **Shadow evaluation**: Compare baseline and candidate configurations safely
-- **Dependency-free hooks**: `KonditionalLogger` and `MetricsCollector` interfaces
-- **Evaluation explanations**: `internal EvaluationDiagnostics` with decision traces and bucketing info
-- **Mismatch detection**: Callbacks when shadow evaluation reveals differences
+## Deterministic API and contract notes
 
-## Alternatives
+- Baseline evaluation value is always returned by `evaluateWithShadow(...)`.
+- Candidate evaluation has no behavior side effects unless your callback does
+  side effects.
+- Hook callbacks run inline on the evaluation path; keep implementations small
+  and deterministic.
 
-Without this module, you would need to:
+## Canonical conceptual pages
 
-- Build custom shadow evaluation logic with careful isolation to avoid affecting production
-- Tightly couple feature flag evaluation to specific logging/metrics libraries (vendor lock-in)
-- Implement your own evaluation tracing and debugging utilities from scratch
-
-## Installation
-
-```kotlin
-dependencies {
-  implementation("io.amichne:konditional-observability:VERSION")
-}
-```
-
-## Guarantees
-
-- **Guarantee**: Shadow evaluation does not alter production behavior.
-
-- **Mechanism**: The baseline registry is returned; the candidate registry is evaluated for comparison only.
-
-- **Boundary**: Mismatch callbacks run inline on the evaluation thread and must stay lightweight.
+- [Theory: Migration and shadowing](/theory/migration-and-shadowing)
+- [Theory: Atomicity guarantees](/theory/atomicity-guarantees)
+- [How-to: Handling failures](/how-to-guides/handling-failures)
 
 ## Next steps
 
 - [Observability reference](/observability/reference)
-- [Shadow evaluation patterns](/observability/shadow-evaluation)
-- [OpenTelemetry integration](/opentelemetry/)
+- [Shadow evaluation reference](/observability/shadow-evaluation)
+- [OpenTelemetry integration reference](/opentelemetry)

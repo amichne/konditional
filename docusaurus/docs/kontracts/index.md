@@ -1,47 +1,39 @@
 # kontracts
 
-Type-safe JSON Schema DSL for Kotlin used by Konditional for structured value validation.
+`kontracts` is Konditional's API-first JSON Schema DSL module. It gives you
+compile-time schema construction and explicit runtime validation contracts.
 
-## When to Use This Module
+## Read this page when
 
-You should use `kontracts` when you need to:
+- You need typed schema contracts for structured values.
+- You are replacing ad hoc JSON schema strings with Kotlin DSL definitions.
+- You want the module-level API map before using specific DSL symbols.
 
-- Define custom structured values in feature flags with type-safe validation
-- Express JSON Schema constraints using Kotlin's type system instead of raw JSON
-- Validate configuration payloads at the JSON boundary with explicit schemas
-- Ensure custom value types have compile-time schema definitions
+## API and contract surface
 
-## What You Get
+- Artifact: `io.amichne:konditional-kontracts:VERSION`
+- Entry DSL: `schema { ... }` for root object contracts.
+- Type-inferred fields: `::property of { ... }`
+- Custom mappings: `::property asString { ... }`, `asInt`, `asDouble`,
+  `asBoolean`.
+- Runtime value validation: `JsonValue.validate(schema): ValidationResult`
 
-- **Type-inferred DSL**: Define schemas with `schemaRoot { ::property of { ... } }`
-- **Compile-time safety**: Schema structure follows data class structure
-- **Runtime validation**: Validate JSON against schemas at the configuration boundary
-- **Explicit constraints**: Minimum, maximum, patterns, and custom validation rules
+## Deterministic API and contract notes
 
-## Alternatives
+- Schema construction is source-driven and deterministic for fixed inputs.
+- Validation returns typed `ValidationResult` values instead of ambient
+  side-channel state.
+- Schema and value models are immutable, so validation has no partial-update
+  surface.
 
-Without this module, you would need to:
+## Canonical conceptual pages
 
-- Write untyped JSON Schema definitions as raw JSON or YAML strings
-- Manually ensure schema definitions stay in sync with Kotlin data classes
-- Build custom validation logic for every structured value type
-
-## Installation
-
-```kotlin
-dependencies {
-  implementation(project(":kontracts"))
-}
-```
-
-## Guarantees
-
-- **Guarantee**: Schemas are expressed as Kotlin types, not untyped JSON strings.
-
-- **Mechanism**: Type-inferred DSL (`schemaRoot { ::property of { ... } }`).
-
-- **Boundary**: Runtime JSON validation is explicit; schema correctness does not imply correct business logic.
+- [Theory: Type safety boundaries](/theory/type-safety-boundaries)
+- [Theory: Parse don't validate](/theory/parse-dont-validate)
+- [How-to: Custom business logic](/how-to-guides/custom-business-logic)
 
 ## Next steps
 
-- [Schema DSL](/kontracts/schema-dsl)
+- [Kontracts schema DSL reference](/kontracts/schema-dsl)
+- [konditional-spec reference](/konditional-spec/reference)
+- [Namespace snapshot loader API](/reference/api/snapshot-loader)

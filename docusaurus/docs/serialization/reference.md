@@ -1,8 +1,17 @@
-# Serialization API Reference
+# Serialization reference
 
-JSON snapshot and patch APIs at the untrusted boundary.
+This page is the boundary API reference for snapshot encode/decode and patch
+application.
 
-## `ConfigurationSnapshotCodec.encode(...)`
+## Read this page when
+
+- You need exact function signatures for parse-boundary code.
+- You are wiring `Result`-based load flows.
+- You are configuring unknown-key or missing-flag policies.
+
+## APIs in scope
+
+### `ConfigurationSnapshotCodec.encode(...)`
 
 ```kotlin
 object ConfigurationSnapshotCodec {
@@ -12,15 +21,10 @@ object ConfigurationSnapshotCodec {
 }
 ```
 
-## `ConfigurationSnapshotCodec.decode(...)`
+### `ConfigurationSnapshotCodec.decode(...)`
 
 ```kotlin
 object ConfigurationSnapshotCodec {
-    fun decode(
-        json: String,
-        options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
-    ): Result<MaterializedConfiguration>
-
     fun decode(
         json: String,
         schema: CompiledNamespaceSchema,
@@ -29,13 +33,7 @@ object ConfigurationSnapshotCodec {
 }
 ```
 
-Notes:
-
-- `decode(json, options)` without schema is intentionally rejected.
-- Successful decode returns trusted `MaterializedConfiguration` only.
-- Failures are `Result.failure(KonditionalBoundaryFailure(parseError))`.
-
-## `ConfigurationSnapshotCodec.applyPatchJson(...)`
+### `ConfigurationSnapshotCodec.applyPatchJson(...)`
 
 ```kotlin
 object ConfigurationSnapshotCodec {
@@ -44,46 +42,34 @@ object ConfigurationSnapshotCodec {
         patchJson: String,
         options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
     ): Result<MaterializedConfiguration>
-
-    fun applyPatchJson(
-        currentConfiguration: ConfigurationView,
-        schema: CompiledNamespaceSchema,
-        patchJson: String,
-        options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
-    ): Result<MaterializedConfiguration>
 }
 ```
 
-## `SnapshotLoadOptions`
+### `SnapshotLoadOptions`
 
 ```kotlin
 data class SnapshotLoadOptions(
-    val unknownFeatureKeyStrategy: UnknownFeatureKeyStrategy = UnknownFeatureKeyStrategy.Fail,
-    val missingDeclaredFlagStrategy: MissingDeclaredFlagStrategy = MissingDeclaredFlagStrategy.Reject,
-    val onWarning: (SnapshotWarning) -> Unit = {},
+    val unknownFeatureKeyStrategy: UnknownFeatureKeyStrategy,
+    val missingDeclaredFlagStrategy: MissingDeclaredFlagStrategy,
+    val onWarning: (SnapshotWarning) -> Unit,
 )
 ```
 
-Factory modes:
+## Boundary contract
 
-- `SnapshotLoadOptions.strict()`
-- `SnapshotLoadOptions.skipUnknownKeys(...)`
-- `SnapshotLoadOptions.fillMissingDeclaredFlags(...)`
+- Parse failures are returned as `Result.failure(...)`.
+- `parseErrorOrNull()` gives typed parse details.
+- Invalid payloads never become active snapshots by default.
 
-`MissingDeclaredFlagStrategy`:
+## Related pages
 
-- `Reject` (default)
-- `FillFromDeclaredDefaults`
+- [Serialization module](/serialization)
+- [Persistence format](/serialization/persistence-format)
+- [Runtime operations](/runtime/operations)
+- [Parse don’t validate](/theory/parse-dont-validate)
 
-## Error Introspection
+## Next steps
 
-```kotlin
-val result = ConfigurationSnapshotCodec.decode(json, schema)
-val parseError: ParseError? = result.parseErrorOrNull()
-```
-
-## Related
-
-- [NamespaceSnapshotLoader API](/reference/api/snapshot-loader)
-- [Boundary Result API](/reference/api/parse-result)
-- [Parse Don’t Validate Theory](/theory/parse-dont-validate)
+1. Choose strict or relaxed load options for your environment.
+2. Add boundary tests for parse error paths.
+3. Integrate load and rollback in [Runtime lifecycle](/runtime/lifecycle).

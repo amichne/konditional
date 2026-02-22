@@ -1,145 +1,59 @@
 # Operational debugging
 
-This page shows production-safe debugging techniques that match the current
-public API surface. The core evaluation API is `evaluate(...)`; there is no
-public `Feature.explain(...)` API.
+Use this page as the incident-debugging control plane. It routes symptoms to one
+canonical diagnostic procedure and then returns to mitigation and recovery.
 
-## Overview
+## Read this page when
 
-Use these tools depending on the question you need to answer.
+- A production rollout behaves unexpectedly.
+- Feature evaluation results diverge from expectations.
+- Refresh or parsing incidents require immediate containment.
 
-1. Value verification with controlled contexts (`evaluate(...)`)
-2. Deterministic rollout inspection (`RampUpBucketing`)
-3. Runtime boundary diagnostics (`NamespaceSnapshotLoader` + typed parse errors)
-4. Migration comparison without behavior drift (`evaluateWithShadow`)
+## Symptom routing
 
-## Verify returned values with controlled contexts
+| Symptom class | Canonical diagnostic procedure | Containment companion |
+| --- | --- | --- |
+| Non-deterministic assignment | [Debugging determinism](/how-to-guides/debugging-determinism) | [Thread safety](/production-operations/thread-safety) |
+| Snapshot parse failures | [Safe remote config](/how-to-guides/safe-remote-config) | [Failure modes](/production-operations/failure-modes) |
+| Post-load stale behavior | [Handling failures](/how-to-guides/handling-failures) | [Refresh patterns](/production-operations/refresh-patterns) |
+| Unexpected evaluated value | [Testing features](/how-to-guides/testing-features) | [Troubleshooting](/troubleshooting/) |
 
-Start by evaluating the same feature against a small matrix of deterministic
-contexts. This isolates rule-targeting and ramp-up assumptions.
+## Deterministic steps
 
-```kotlin
-val contexts = listOf(
-    Context(
-        locale = AppLocale.UNITED_STATES,
-        platform = Platform.IOS,
-        appVersion = Version.of(2, 1, 0),
-        stableId = StableId.of("user-a"),
-    ),
-    Context(
-        locale = AppLocale.UNITED_STATES,
-        platform = Platform.ANDROID,
-        appVersion = Version.of(2, 1, 0),
-        stableId = StableId.of("user-b"),
-    ),
-)
+1. Capture an incident fingerprint.
 
-contexts.forEach { ctx ->
-    val value = AppFeatures.checkoutVariant.evaluate(ctx)
-    println("platform=${ctx.platform.id} stableId=${ctx.stableId.id} value=$value")
-}
-```
+Record namespace, feature key, stable ID, payload version/hash, and first
+failure timestamp.
 
-When values are stable in this matrix, drift usually comes from upstream
-context construction or config ingestion.
+2. Freeze change velocity.
 
-## Inspect deterministic bucketing directly
+Pause rollout changes while triage runs. Do not change multiple variables at
+once.
 
-Use `RampUpBucketing` when you need to answer, "why is this user outside a
-rollout percentage?"
+3. Execute the canonical diagnostic procedure from the routing table.
 
-```kotlin
-import io.amichne.konditional.api.RampUpBucketing
+Follow exactly one primary procedure until you have a clear root cause.
 
-val bucket = RampUpBucketing.explain(
-    stableId = StableId.of("user-123"),
-    featureKey = AppFeatures.darkMode.key,
-    salt = "v1",
-    rampUp = RampUp.of(10.0),
-)
+4. Apply containment.
 
-println("bucket=${bucket.bucket}")
-println("thresholdBasisPoints=${bucket.thresholdBasisPoints}")
-println("inRollout=${bucket.inRollout}")
-```
+- `rollback(steps)` when a recent snapshot introduced regression.
+- `disableAll()` only for declared emergency fallback.
+- Keep baseline semantics authoritative during shadow analysis.
 
-The output is deterministic for the same `(stableId, featureKey, salt)` tuple.
+5. Verify recovery with fixed contexts.
 
-## Debug configuration load failures at the boundary
+Use deterministic contexts to confirm behavior is stable after mitigation.
 
-`NamespaceSnapshotLoader.load(...)` returns `Result` and never partially applies
-an invalid snapshot.
+## Incident checklist
 
-```kotlin
-import io.amichne.konditional.core.result.ParseError
-import io.amichne.konditional.core.result.parseErrorOrNull
-import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
-
-val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-if (result.isFailure) {
-    when (val error = result.parseErrorOrNull()) {
-        is ParseError.InvalidJson -> println("Invalid JSON: ${error.reason}")
-        is ParseError.FeatureNotFound -> println("Unknown feature key: ${error.key}")
-        is ParseError.InvalidSnapshot -> println("Schema/type mismatch: ${error.reason}")
-        else -> println("Load failed: ${result.exceptionOrNull()?.message}")
-    }
-}
-```
-
-On failure, runtime behavior remains on the last-known-good configuration.
-
-## Add hooks for low-overhead operational visibility
-
-Attach logger and metrics hooks at the namespace registry level.
-
-```kotlin
-import io.amichne.konditional.core.ops.KonditionalLogger
-import io.amichne.konditional.core.ops.Metrics
-import io.amichne.konditional.core.ops.MetricsCollector
-import io.amichne.konditional.core.ops.RegistryHooks
-
-AppFeatures.setHooks(
-    RegistryHooks.of(
-        logger = object : KonditionalLogger {
-            override fun warn(message: () -> String, throwable: Throwable?) {
-                println("WARN ${message()}")
-            }
-        },
-        metrics = object : MetricsCollector {
-            override fun recordEvaluation(event: Metrics.Evaluation) {
-                println("evaluation key=${event.featureKey} decision=${event.decision}")
-            }
-        },
-    ),
-)
-```
-
-Keep hook implementations lightweight because they run on hot paths.
-
-## Compare baseline and candidate behavior with shadow evaluation
-
-For migrations, use `evaluateWithShadow(...)` from
-`konditional-observability`. Baseline behavior remains authoritative.
-
-```kotlin
-import io.amichne.konditional.api.evaluateWithShadow
-
-val value = AppFeatures.checkoutVariant.evaluateWithShadow(
-    context = ctx,
-    baselineRegistry = baselineRegistry,
-    candidateRegistry = candidateRegistry,
-    onMismatch = { mismatch ->
-        println("shadow mismatch key=${mismatch.featureKey} kinds=${mismatch.kinds}")
-    },
-)
-```
-
-Your app uses `value` from baseline evaluation while mismatches are reported as
-observability signals.
+- [ ] Incident fingerprint captured before remediation.
+- [ ] One canonical diagnostic route selected and completed.
+- [ ] Containment action recorded with timestamp and owner.
+- [ ] Recovery verified with deterministic replay.
+- [ ] Follow-up test added for the root-cause path.
 
 ## Next steps
 
-- [Core DSL best practices](/core/best-practices)
-- [Thread safety](/production-operations/thread-safety)
 - [Failure modes](/production-operations/failure-modes)
-- [Shadow evaluation](/observability/shadow-evaluation)
+- [Refresh patterns](/production-operations/refresh-patterns)
+- [Troubleshooting](/troubleshooting/)

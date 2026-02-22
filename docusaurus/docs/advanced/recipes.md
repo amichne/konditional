@@ -1,328 +1,46 @@
 ---
-toc_min_heading_level: 2
-toc_max_heading_level: 5
+title: Advanced recipes
 ---
 
-<!--
-Generated file: do not edit recipes.md directly.
-Source: docusaurus/docs-templates/recipes.template.md + konditional-observability/src/docsSamples/kotlin/io/amichne/konditional/docsamples/RecipesSamples.kt
--->
+# Advanced recipes
 
-# Recipes: Best-Practice Patterns
+Use this page as the advanced routing map. It keeps recipe-level intent in one
+place and sends you to the single canonical procedure for each operation.
 
-Practical patterns for real-world feature control using only Konditional building blocks. Each recipe highlights a
-supported solution area and makes the guarantee boundaries explicit.
+## Read this page when
 
-Covered solution areas:
+- You know the outcome you need, but not the exact implementation guide.
+- You want to avoid duplicate or conflicting operational instructions.
+- You are designing an advanced rollout, migration, or isolation plan.
 
-- Typed features (booleans, enums, structured values)
-- Deterministic rollouts and salting
-- Axes and custom context targeting
-- Remote configuration (snapshot/patch boundary + rollback)
-- Shadow evaluation for safe migrations
-- Namespace isolation and kill-switch
-- Observability hooks (logging + metrics)
+## Recipe routing matrix
 
----
+| Goal | Canonical implementation procedure | Production companion |
+| --- | --- | --- |
+| Gradual boolean rollout | [Roll out gradually](/how-to-guides/rolling-out-gradually) | [Refresh patterns](/production-operations/refresh-patterns) |
+| Multi-variant experiment | [A/B testing](/how-to-guides/ab-testing) | [Operational debugging](/production-operations/debugging) |
+| Remote configuration boundary | [Safe remote config](/how-to-guides/safe-remote-config) | [Failure modes](/production-operations/failure-modes) |
+| Domain-specific targeting | [Custom business logic](/how-to-guides/custom-business-logic) | [Thread safety](/production-operations/thread-safety) |
+| Team and domain blast-radius control | [Namespace isolation](/how-to-guides/namespace-isolation) | [Failure modes](/production-operations/failure-modes) |
+| Determinism investigation | [Debugging determinism](/how-to-guides/debugging-determinism) | [Operational debugging](/production-operations/debugging) |
+| Local integration harness | [Local HTTP server container](/how-to-guides/local-http-server-container) | [Refresh patterns](/production-operations/refresh-patterns) |
 
-## Typed Variants Instead of Boolean Explosion {#recipe-1-typed-variants-instead-of-boolean-explosion}
+## Deterministic steps
 
-When you have multiple rollout variants, model them as a typed value (enum or string) rather than composing booleans.
+1. Choose one row in the routing matrix as the primary objective.
+2. Complete the linked implementation procedure in full.
+3. Complete the linked production companion procedure before rollout.
+4. Record evidence for both procedures in your release notes.
 
-```kotlin
-enum class CheckoutVariant { CLASSIC, FAST_PATH, NEW_UI }
+## Completion checklist
 
-object CheckoutFlags : Namespace("checkout") {
-    val variant by enum<CheckoutVariant, Context>(default = CheckoutVariant.CLASSIC) {
-        rule(CheckoutVariant.FAST_PATH) { rampUp { 10.0 } }
-        rule(CheckoutVariant.NEW_UI) { rampUp { 1.0 } }
-    }
-}
+- [ ] One canonical implementation guide has been completed.
+- [ ] One production companion runbook has been completed.
+- [ ] No local copy of the procedure was created in another page.
+- [ ] Links in your team docs point to canonical pages, not duplicated text.
 
-fun renderCheckout(context: Context) {
-    when (CheckoutFlags.variant.evaluate(context)) {
-        CheckoutVariant.CLASSIC -> renderClassic()
-        CheckoutVariant.FAST_PATH -> renderFastPath()
-        CheckoutVariant.NEW_UI -> renderNewUi()
-    }
-}
-```
+## Next steps
 
-- **Guarantee**: Variant values are compile-time correct and exhaustively handled.
-- **Mechanism**: Enum-typed feature delegates (`enum<...>`) and Kotlin `when` exhaustiveness.
-- **Boundary**: Remote JSON can only select enum constants already compiled into the binary.
-
----
-
-## Deterministic Ramp-Up with Resettable Salt {#recipe-2-deterministic-ramp-up-with-resettable-salt}
-
-Gradually roll out a feature without reshuffling users; use `salt(...)` when you need a clean resample.
-
-```kotlin
-object RampUpFlags : Namespace("ramp-up") {
-    val newCheckout by boolean<Context>(default = false) {
-        salt("v1")
-        enable { rampUp { 10.0 } }
-    }
-}
-
-fun isCheckoutEnabled(context: Context): Boolean =
-    RampUpFlags.newCheckout.evaluate(context)
-```
-
-To restart the experiment with a fresh sample:
-
-```kotlin
-object RampUpResetFlags : Namespace("ramp-up-reset") {
-    val newCheckout by boolean<Context>(default = false) {
-        salt("v2")
-        enable { rampUp { 10.0 } }
-    }
-}
-```
-
-- **Guarantee**: Same `(stableId, flagKey, salt)` always yields the same bucket.
-- **Mechanism**: SHA-256 deterministic bucketing in `RampUpBucketing`.
-- **Boundary**: Changing `salt` intentionally redistributes buckets.
-
----
-
-## Runtime-Configurable Segments via Axes {#recipe-3-runtime-configurable-segments-via-axes}
-
-Use axes for segment targeting you want to update via JSON (without redeploying predicates).
-
-```kotlin
-enum class Segment(override val id: String) : AxisValue<Segment> {
-    CONSUMER("consumer"),
-    SMB("smb"),
-    ENTERPRISE("enterprise"),
-}
-
-object SegmentFlags : Namespace("segment") {
-    val segmentAxis = axis<Segment>("segment")
-
-    val premiumUi by boolean<Context>(default = false) {
-        enable { axis(Segment.ENTERPRISE) }
-    }
-}
-
-fun isPremiumUiEnabled(): Boolean {
-    val segmentContext =
-        object :
-            Context,
-            Context.LocaleContext,
-            Context.PlatformContext,
-            Context.VersionContext,
-            Context.StableIdContext {
-            override val locale = AppLocale.UNITED_STATES
-            override val platform = Platform.IOS
-            override val appVersion = Version.of(2, 1, 0)
-            override val stableId = StableId.of("user-123")
-            override val axisValues = axisValues { set(SegmentFlags.segmentAxis, Segment.ENTERPRISE) }
-        }
-
-    return SegmentFlags.premiumUi.evaluate(segmentContext)
-}
-```
-
-- **Guarantee**: Segment targeting is type-safe and serializable.
-- **Mechanism**: Axis IDs are stored in JSON; `axis(...)` evaluates against `Context.axisValues`.
-- **Boundary**: Axis IDs must remain stable across builds and obfuscation.
-
----
-
-## Business Logic Targeting with Custom Context + Extension {#recipe-4-business-logic-targeting-with-custom-context-extension}
-
-Use strongly-typed extensions for domain logic that should not be remotely mutable.
-
-```kotlin
-data class EnterpriseContext(
-    override val locale: AppLocale,
-    override val platform: Platform,
-    override val appVersion: Version,
-    override val stableId: StableId,
-    val subscriptionTier: SubscriptionTier,
-    val employeeCount: Int,
-) : Context, Context.LocaleContext, Context.PlatformContext, Context.VersionContext, Context.StableIdContext
-
-enum class SubscriptionTier { FREE, PRO, ENTERPRISE }
-
-object PremiumFeatures : Namespace("premium") {
-    val advancedAnalytics by boolean<EnterpriseContext>(default = false) {
-        enable {
-            extension { subscriptionTier == SubscriptionTier.ENTERPRISE && employeeCount > 100 }
-        }
-    }
-}
-```
-
-- **Guarantee**: Extension predicates are type-safe and enforced at compile time.
-- **Mechanism**: `Feature<T, EnterpriseContext>` makes the extension receiver strongly typed.
-- **Boundary**: Extension logic is not serialized; only its rule parameters (e.g., ramp-up) can be updated remotely.
-
----
-
-## Structured Values with Schema Validation {#recipe-5-structured-values-with-schema-validation}
-
-Use `custom<T>` for structured configuration that must be validated at the JSON boundary.
-
-```kotlin
-data class RetryPolicy(
-    val maxAttempts: Int = 3,
-    val backoffMs: Double = 1000.0,
-    val enabled: Boolean = true,
-) : Konstrained<ObjectSchema> {
-    override val schema = schema {
-        ::maxAttempts of { minimum = 1 }
-        ::backoffMs of { minimum = 0.0 }
-        ::enabled of { default = true }
-    }
-}
-
-object PolicyFlags : Namespace("policy") {
-    val retryPolicy by custom<RetryPolicy, Context>(default = RetryPolicy()) {
-        rule(RetryPolicy(maxAttempts = 5, backoffMs = 2000.0)) { platforms(Platform.ANDROID) }
-    }
-}
-```
-
-- **Guarantee**: Invalid structured config is rejected before it reaches evaluation.
-- **Mechanism**: Kontracts schema validation at `ConfigurationSnapshotCodec.decode(...)`.
-- **Boundary**: Semantic correctness of field values (e.g., "appropriate backoff") remains a human responsibility.
-
----
-
-## Safe Remote Config Loading + Rollback {#recipe-6-safe-remote-config-loading-rollback}
-
-Use `Result` to enforce a hard boundary at the JSON parse step, and roll back on bad updates.
-
-```kotlin
-fun loadRemoteConfig() {
-    val json = fetchRemoteConfig()
-    val features = AppFeatures
-    val result = ConfigurationSnapshotCodec.decode(json, features.compiledSchema())
-
-    result.onSuccess { materialized ->
-        features.load(materialized)
-    }
-    result.onFailure { failure ->
-        val parseErrorMessage = result.parseErrorOrNull()?.message
-        RecipeLogger.error { "Config rejected: ${parseErrorMessage ?: failure.message}" }
-    }
-}
-```
-
-If a later update causes issues:
-
-```kotlin
-fun rollbackConfig() {
-    val success = AppFeatures.rollback(steps = 1)
-    if (!success) RecipeLogger.warn { "Rollback failed: insufficient history" }
-}
-```
-
-- **Guarantee**: Invalid config never becomes active; swaps are atomic.
-- **Mechanism**: `Result` boundary + `Namespace.load(...)` atomic swap.
-- **Boundary**: A valid config can still be logically wrong; rollback is the safe escape hatch.
-
----
-
-## Controlled Migrations with Shadow Evaluation {#recipe-7-controlled-migrations-with-shadow-evaluation}
-
-Compare a candidate configuration to baseline behavior without changing production outputs.
-
-```kotlin
-fun evaluateWithShadowedConfig(context: Context): Boolean {
-    val candidateJson = fetchCandidateConfig()
-    val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson, AppFeatures.compiledSchema()).getOrThrow()
-    val candidateRegistry =
-        InMemoryNamespaceRegistry(namespaceId = AppFeatures.namespaceId).apply {
-            load(candidateConfig.configuration)
-        }
-
-    val value =
-        AppFeatures.darkMode.evaluateWithShadow(
-            context = context,
-            candidateRegistry = candidateRegistry,
-            onMismatch = { mismatch ->
-                RecipeLogger.warn {
-                    "shadowMismatch key=${mismatch.featureKey} kinds=${mismatch.kinds} baseline=${mismatch.baseline.value} candidate=${mismatch.candidate.value}"
-                }
-            },
-        )
-
-    return applyDarkMode(value)
-}
-```
-
-- **Guarantee**: Production behavior stays pinned to baseline while candidate is evaluated.
-- **Mechanism**: `evaluateWithShadow(...)` evaluates baseline + candidate but returns baseline value.
-- **Boundary**: Shadow evaluation is inline and adds extra work to the hot path; sample if needed.
-
----
-
-## Namespace Isolation + Kill-Switch {#recipe-8-namespace-isolation-kill-switch}
-
-Use separate namespaces for independent lifecycles, and a scoped kill-switch for emergencies.
-
-```kotlin
-sealed class AppDomain(id: String) : Namespace(id) {
-    data object Payments : AppDomain("payments") {
-        val applePay by boolean<Context>(default = false)
-    }
-
-    data object Search : AppDomain("search") {
-        val reranker by boolean<Context>(default = false)
-    }
-}
-
-fun disablePayments() {
-    AppDomain.Payments.disableAll()
-}
-```
-
-- **Guarantee**: Disabling a namespace only affects that namespace.
-- **Mechanism**: Each `Namespace` has an isolated registry and kill-switch.
-- **Boundary**: `disableAll()` returns defaults; it does not modify feature definitions or remote config state.
-
----
-
-## Lightweight Observability Hooks {#recipe-9-lightweight-observability-hooks}
-
-Attach logging and metrics without depending on a specific vendor SDK.
-
-```kotlin
-fun attachHooks() {
-    val hooks =
-        RegistryHooks.of(
-            logger =
-                object : KonditionalLogger {
-                    override fun warn(message: () -> String, throwable: Throwable?) {
-                        AppLogger.warn(message(), throwable)
-                    }
-                },
-            metrics =
-                object : MetricsCollector {
-                    override fun recordEvaluation(event: Metrics.Evaluation) {
-                        AppMetrics.increment("konditional.eval", tags = mapOf("feature" to event.featureKey))
-                    }
-                },
-        )
-
-    AppFeatures.setHooks(hooks)
-}
-```
-
-- **Guarantee**: Hooks receive evaluation and lifecycle signals with consistent payloads.
-- **Mechanism**: `RegistryHooks` are invoked inside the runtime's evaluation and load paths.
-- **Boundary**: Hooks run on the hot path; keep them non-blocking.
-
----
-
-## Next Steps
-
-- [Rules & Targeting: Rule Composition](/rules-and-targeting/rule-composition)
-- [Rules & Targeting: Rollout Strategies](/rules-and-targeting/rollout-strategies)
-- [Fundamentals: Configuration Lifecycle](/learn/configuration-lifecycle)
-- [Advanced: Shadow Evaluation](/advanced/shadow-evaluation)
-- [API Reference: Observability](/api-reference/observability)
+- [Golden path example](/examples/golden-path)
+- [Troubleshooting index](/troubleshooting/)
+- [Shadow evaluation](/observability/shadow-evaluation)

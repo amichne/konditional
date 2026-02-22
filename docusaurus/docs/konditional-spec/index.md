@@ -1,35 +1,39 @@
 # konditional-spec
 
-Contract-first REST surface specification module for Konditional.
-The module is data-only and transport-agnostic.
+`konditional-spec` is the reference entry for schema contracts used across
+Konditional modules. In this repository, that contract surface is implemented
+by `:openapi` and `:kontracts`.
 
-## When to use this module
+## Read this page when
 
-Use `konditional-spec` when you need to:
+- You are defining or reviewing API schema contracts.
+- You need a module-level map before going into symbol-level references.
+- You are replacing older `konditional-spec` assumptions with current modules.
 
-- define canonical surface routes and operation IDs
-- generate deterministic OpenAPI JSON from Kotlin contracts
-- describe mutation outcomes with typed codec result variants
+## API and contract surface
 
-## What this module includes
+- `:openapi` exposes `OpenApi<T>` and canonical OpenAPI primitive type enums.
+- `:kontracts` exposes typed schema builders (`schema`, `of`, `asString`, and
+  related APIs).
+- `:konditional-serialization` consumes compiled schema contracts at the JSON
+  boundary through schema-aware codecs.
 
-- route catalog (`GET`, `POST`, `PATCH`)
-- DTO contracts for snapshot reads and mutations
-- error and codec-outcome envelopes
-- OpenAPI schema registry and JSON renderer
+## Deterministic API and contract notes
 
-## What it explicitly excludes
+- Schema definitions are explicit value models; runtime behavior does not depend
+  on reflection-based discovery.
+- Contract construction is deterministic for a fixed Kotlin source definition.
+- Boundary ingestion remains explicit: untrusted JSON is parsed into trusted
+  typed models before load.
 
-- UI metadata descriptors and UI hint models
-- server routing/runtime
-- persistence/auth implementation
+## Canonical conceptual pages
 
-## Quick start
+- [Theory: Type safety boundaries](/theory/type-safety-boundaries)
+- [Theory: Parse don't validate](/theory/parse-dont-validate)
+- [How-to: Safe remote config loading](/how-to-guides/safe-remote-config)
 
-```bash
-./gradlew :konditional-spec:generateOpenApiSpec
-```
+## Next steps
 
-Generated output:
-
-- `konditional-spec/build/generated/openapi/konditional-surface-openapi.json`
+- [konditional-spec reference](/konditional-spec/reference)
+- [Kontracts module reference](/kontracts)
+- [Kontracts schema DSL reference](/kontracts/schema-dsl)

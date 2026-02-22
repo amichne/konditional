@@ -1,50 +1,46 @@
-# Parse Don’t Validate
+# Parse don’t validate
 
-Konditional treats JSON/config input as untrusted and parses it into trusted typed models.
+This page defines the canonical boundary discipline: parse untrusted input into
+trusted typed models, or reject with typed errors.
 
-## Boundary Contract
+## Read this page when
 
-Boundary APIs return Kotlin `Result<T>`:
+- You are implementing config ingestion paths.
+- You are deciding how errors cross module boundaries.
+- You are auditing for exception-driven control flow at the boundary.
 
-- `Result.success(trustedValue)`
-- `Result.failure(KonditionalBoundaryFailure(parseError))`
+## Concepts in scope
 
-This keeps the boundary explicit while using Kotlin-native result handling.
+- **Untrusted input**: JSON payloads, file content, network responses.
+- **Trusted output**: `MaterializedConfiguration` produced by decode success.
+- **Typed failure**: parse failure captured by `Result.failure(...)` with parse
+  error details.
 
-## Why This Prevents Invalid State
-
-- Untrusted payloads are rejected before they reach runtime snapshots.
-- Runtime ingest accepts only `MaterializedConfiguration`.
-- Registry updates occur only on successful materialization.
-- Last-known-good snapshot remains active on failures.
-
-## Structural Planes
-
-- Schema plane: `CompiledNamespaceSchema` (compile-time declarations)
-- Data plane: incoming payload JSON
-- Pure materialization: `materialize(schema, data, options) -> Result<MaterializedConfiguration>`
-
-## Missing Declared Flag Policy
-
-`SnapshotLoadOptions.missingDeclaredFlagStrategy` controls absent schema flags:
-
-- `Reject` (default)
-- `FillFromDeclaredDefaults`
-
-## Example
+## Boundary contract
 
 ```kotlin
-val result = ConfigurationSnapshotCodec.decode(json, AppFlags.compiledSchema())
-
-result
-  .onSuccess { materialized -> AppFlags.load(materialized) }
-  .onFailure { failure ->
-    val parseError = result.parseErrorOrNull()
-    logger.error { parseError?.message ?: failure.message.orEmpty() }
-  }
+decode(untrustedJson, schema, options) -> Result<MaterializedConfiguration>
 ```
 
-## Related
+- Success means the payload has crossed into trusted domain types.
+- Failure means no runtime snapshot update occurs.
+- Control flow is explicit through result branching, not exceptions.
 
-- [Serialization API Reference](/serialization/reference)
-- [Snapshot Loader API](/reference/api/snapshot-loader)
+## Invariants
+
+- Invalid payloads never become active snapshots.
+- Boundary logic must be deterministic for the same `(payload, schema, options)`.
+- Last-known-good snapshot remains active on boundary failure.
+
+## Related pages
+
+- [Type safety boundaries](/theory/type-safety-boundaries)
+- [Serialization reference](/serialization/reference)
+- [Runtime lifecycle](/runtime/lifecycle)
+- [Learn: configuration lifecycle](/learn/configuration-lifecycle)
+
+## Next steps
+
+1. Use strict load options as default.
+2. Add boundary tests for malformed JSON and unknown feature keys.
+3. Wire rejection handling into [Runtime operations](/runtime/operations).

@@ -4,51 +4,81 @@ title: NamespaceSnapshotLoader API
 
 # NamespaceSnapshotLoader API
 
-`NamespaceSnapshotLoader` performs namespace-scoped decode + ingest.
+This page defines the namespace-scoped snapshot ingestion contract.
 
-## Type Signature
+## Read this page when
+
+- You are decoding untrusted JSON into trusted materialized configuration.
+- You need load semantics for success and failure paths.
+- You need to choose strict vs. migration-oriented load options.
+
+## API and contract reference
+
+### Side-effecting loader contract
+
+```kotlin
+interface SnapshotLoader<T> {
+    fun load(
+        json: String,
+        options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
+    ): Result<T>
+}
+```
+
+### Namespace-scoped implementation
 
 ```kotlin
 class NamespaceSnapshotLoader<M : Namespace>(
     private val namespace: M,
-    private val codec: SnapshotCodec<MaterializedConfiguration> = ConfigurationSnapshotCodec,
-) : SnapshotLoader<MaterializedConfiguration>
+    private val codec: SnapshotCodec<MaterializedConfiguration> =
+        ConfigurationSnapshotCodec,
+) : SnapshotLoader<MaterializedConfiguration> {
+    override fun load(
+        json: String,
+        options: SnapshotLoadOptions,
+    ): Result<MaterializedConfiguration>
+
+    companion object {
+        fun <M : Namespace> forNamespace(namespace: M): NamespaceSnapshotLoader<M>
+    }
+}
 ```
 
-## `load(json, options)`
+### Option policies
 
 ```kotlin
-override fun load(
-    json: String,
-    options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
-): Result<MaterializedConfiguration>
+data class SnapshotLoadOptions(
+    val unknownFeatureKeyStrategy: UnknownFeatureKeyStrategy =
+        UnknownFeatureKeyStrategy.Fail,
+    val missingDeclaredFlagStrategy: MissingDeclaredFlagStrategy =
+        MissingDeclaredFlagStrategy.Reject,
+    val onWarning: (SnapshotWarning) -> Unit = {},
+)
 ```
 
-Semantics:
+Factories:
 
-- Success:
-  - returns `Result.success(materializedConfiguration)`
-  - updates namespace runtime snapshot atomically
-- Failure:
-  - returns `Result.failure(KonditionalBoundaryFailure(parseError))`
-  - active snapshot is unchanged
+- `SnapshotLoadOptions.strict()`
+- `SnapshotLoadOptions.skipUnknownKeys(...)`
+- `SnapshotLoadOptions.fillMissingDeclaredFlags(...)`
 
-## Example
+## Deterministic API and contract notes
 
-```kotlin
-val loader = NamespaceSnapshotLoader(AppFeatures)
+- Failure returns `Result.failure(KonditionalBoundaryFailure(parseError))` and
+  leaves namespace state unchanged.
+- Success loads a fully materialized trusted configuration into the namespace
+  runtime registry.
+- Namespace context is appended to parse errors for load failures.
+- For fixed `(json, schema, options)`, decode result shape is deterministic.
 
-loader.load(fetchRemoteConfig())
-  .onSuccess { materialized ->
-    logger.info { "Loaded version=${materialized.configuration.metadata.version}" }
-  }
-  .onFailure { failure ->
-    val parseError = failure.parseErrorOrNull()
-    logger.error { parseError?.message ?: failure.message.orEmpty() }
-  }
-```
+## Canonical conceptual pages
 
-## Related
+- [Theory: Parse don't validate](/theory/parse-dont-validate)
+- [Theory: Atomicity guarantees](/theory/atomicity-guarantees)
+- [How-to: Safe remote config loading](/how-to-guides/safe-remote-config)
 
-- [Serialization API Reference](/serialization/reference)
-- [Boundary Result API](/reference/api/parse-result)
+## Next steps
+
+- [Boundary result API](/reference/api/parse-result)
+- [Namespace operations API](/reference/api/namespace-operations)
+- [Feature evaluation API](/reference/api/feature-evaluation)

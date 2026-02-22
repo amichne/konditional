@@ -1,56 +1,48 @@
 # konditional-core
 
-`konditional-core` is the minimal, stable API for defining and evaluating typed features in code.
+`konditional-core` is the typed definition and evaluation layer. It gives you
+compile-time-safe feature declarations and deterministic evaluation against a
+trusted snapshot.
 
-If you only need compile-time correctness and deterministic evaluation, this is the only module you need.
+## Read this page when
 
-## What you get
+- You are starting a new namespace or feature set.
+- You need the minimum module surface without runtime loading concerns.
+- You want the practical entrypoint before reading deeper theory guarantees.
 
-- Typed feature declarations with a default value
-- Rule DSL for targeting (locale, platform, version, axes, custom predicates)
-- Deterministic ramp-ups (stable bucketing)
-- Public `evaluate(...)` API with internal diagnostics hooks for observability modules
+## Concepts in scope
 
-## Guarantees
+- **Typed definitions**: `Feature<T, C, M>` and namespace delegates keep
+  feature values type-safe at compile time.
+- **Total evaluation**: every feature has a required default, so
+  `evaluate(...)` always returns a value.
+- **Determinism contract**: for the same context and same snapshot,
+  evaluation produces the same result.
+- **Boundary limit**: this module does not parse untrusted JSON. Parsing and
+  materialization live in `konditional-serialization`.
 
-- **Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
-
-- **Mechanism**: Property delegation + generic type propagation on `Feature<T, C, M>`.
-
-- **Boundary**: This does not apply to dynamically-generated feature definitions.
-
-- **Guarantee**: Evaluation always returns a non-null value of the declared type.
-
-- **Mechanism**: Every feature requires a `default` value and evaluation falls back to it.
-
-- **Boundary**: Incorrect business logic still yields a value; Konditional does not validate intent.
-
-## Quick example
+## Minimal example
 
 ```kotlin
-import io.amichne.konditional.context.*
-
 object AppFeatures : Namespace("app") {
     val darkMode by boolean<Context>(default = false) {
-        rule(true) { platforms(Platform.IOS) }
+        rule(true) { ios() }
         rule(true) { rampUp { 10.0 } }
     }
 }
 
-val ctx = Context(
-    locale = AppLocale.UNITED_STATES,
-    platform = Platform.IOS,
-    appVersion = Version.of(2, 0, 0),
-    stableId = StableId.of("user-123"),
-)
-
-val enabled = AppFeatures.darkMode.evaluate(ctx)
+val enabled: Boolean = AppFeatures.darkMode.evaluate(context)
 ```
+
+## Related pages
+
+- [Core types](/core/types)
+- [Rule DSL reference](/core/rules)
+- [Type safety boundaries](/theory/type-safety-boundaries)
+- [Determinism proofs](/theory/determinism-proofs)
 
 ## Next steps
 
-- [Rule DSL](/core/rules)
-- [Core DSL best practices](/core/best-practices)
-- [Core API reference](/core/reference)
-- [Core types](/core/types)
-- [Evaluation model](/learn/evaluation-model)
+1. Read [Core DSL best practices](/core/best-practices).
+2. Read [Evaluation model](/learn/evaluation-model).
+3. Add runtime loading with [konditional-runtime](/runtime).

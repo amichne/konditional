@@ -1,72 +1,25 @@
-# Your First Feature
-
-This guide helps you ship one safe feature toggle end-to-end: definition, targeting rules, and evaluation.
-
+---
+slug: /legacy/getting-started-your-first-flag
+unlisted: true
 ---
 
-## Prerequisites
+# Your first flag (legacy bridge)
 
-- Konditional installed: [Installation](/getting-started/installation)
-- A Kotlin project where you can run a small local check
+This legacy page now routes to the canonical first-flag quickstart step.
 
-## 1) Define a namespace and a feature
+## Read this page when
 
-```kotlin
-import io.amichne.konditional.context.*
+- You followed an old "your first flag" URL.
+- You need the maintained first feature declaration guidance.
+- You want the canonical quickstart sequence.
 
-object AppFeatures : Namespace("app") {
-    val darkMode by boolean<Context>(default = false) {
-        rule(true) { platforms(Platform.IOS) }
-        rule(true) { locales(AppLocale.UNITED_STATES) }
-    }
-}
-```
+## Canonical page
 
-## 2) Create a context and evaluate
-
-```kotlin
-val ctx = Context(
-    locale = AppLocale.UNITED_STATES,
-    platform = Platform.IOS,
-    appVersion = Version.of(2, 0, 0),
-    stableId = StableId.of("user-123"),
-)
-
-val enabled: Boolean = AppFeatures.darkMode.evaluate(ctx)
-```
-
-If no rule matches, the default value is returned.
-
----
-
-## Verification
-
-Evaluate the same context multiple times and confirm the returned value is stable for that input.
-
-```kotlin
-val repeated = (1..20).map { AppFeatures.darkMode.evaluate(ctx) }
-check(repeated.all { it == repeated.first() })
-```
-
----
-
-## What just happened
-
-- A **Namespace** is a registry of features.
-- A **Feature** is a typed value with rules.
-- A **Rule** is criteria -> value mapping.
-- A **Context** provides runtime inputs used by rules.
-
-## Guarantees
-
-- **Guarantee**: Evaluation always returns a non-null value of the declared type.
-
-- **Mechanism**: Features require a `default` value and return it when no rule matches.
-
-- **Boundary**: Konditional does not validate business logic; it only evaluates rules.
+Use [Define first flag](/quickstart/define-first-flag).
 
 ## Next steps
 
-- Roll out safely: [How-To: Roll Out a Feature Gradually](/how-to-guides/rolling-out-gradually)
-- Learn the core concepts: [Core Concepts](/learn/core-primitives)
-- Understand rule ordering and ramp-ups: [Evaluation Model](/learn/evaluation-model)
+1. Define the feature with [Define first flag](/quickstart/define-first-flag).
+2. Wire evaluation in [Evaluate in app code](/quickstart/evaluate-in-app-code).
+3. Add rollout behavior in
+   [Add deterministic ramp-up](/quickstart/add-deterministic-ramp-up).

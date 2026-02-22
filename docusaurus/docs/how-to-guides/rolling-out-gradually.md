@@ -1,276 +1,65 @@
-# How-To: Roll Out a Feature Gradually
+# How-to: roll out a feature gradually
 
-Use this guide when you want to release a new feature safely, starting small and expanding with deterministic bucketing.
+Use this page to ship a single feature in controlled percentage stages with
+deterministic user assignment.
 
----
+## Read this page when
+
+- You are launching one feature behind a boolean flag.
+- You need staged exposure with fast rollback.
+- You need deterministic assignment for each user.
 
 ## Prerequisites
 
-- A typed feature defined in a namespace (see [Your First Feature](/getting-started/your-first-flag))
-- A stable user identifier available as `stableId`
-- Basic monitoring for errors and conversion metrics
+- A feature owner and rollout decision-maker.
+- Stable `StableId` values for affected users.
+- Guardrail metrics and alert thresholds.
 
----
+## Deterministic steps
 
-## Problem
-
-You have a new feature and want to:
-
-- Start with 10% of users to validate behavior
-- Gradually increase to 100% over days/weeks
-- Ensure the same user always gets the same experience
-- Monitor metrics and roll back if needed
-
-## Solution
-
-### Step 1: Define the Feature with Ramp-Up
+1. Define the flag with explicit salt and an initial threshold.
 
 ```kotlin
-object AppFeatures : Namespace("app") {
-  val newCheckoutFlow by boolean<Context>(default = false) {
-    rule(true) { rampUp { 10.0 } }  // Start at 10%
-  }
+object CheckoutFlags : Namespace("checkout") {
+    val newCheckout by boolean<Context>(default = false) {
+        salt("checkout-rollout-v1")
+        enable { rampUp { 10.0 } }
+    }
 }
 ```
 
-**How it works:**
+2. Publish a rollout plan before changing percentages.
 
-- `rampUp { 10.0 }` enables the feature for 10% of users
-- Bucketing is deterministic: SHA-256 hash of `(salt, featureKey, stableId)` determines bucket
-- Users in buckets 0-9 (out of 0-99) get `true`, others get `false`
+Use fixed stages, for example `10% -> 25% -> 50% -> 100%`, with explicit hold
+criteria for each stage.
 
-### Step 2: Evaluate with Consistent StableId
-
-```kotlin
-// Build context with persistent user ID
-val ctx = Context(
-    stableId = StableId.of(userId),  // Use database ID, NOT session ID
-    platform = Platform.ANDROID
-)
-
-// Evaluate
-val enabled: Boolean = AppFeatures.newCheckoutFlow.evaluate(ctx)
-
-if (enabled) {
-  showNewCheckoutFlow()
-} else {
-  showClassicCheckoutFlow()
-}
-```
-
-**Critical:** Use a persistent identifier (database user ID, device ID) as `stableId`, not session IDs or random values.
-
-### Step 3: Increase the Percentage
-
-Update the ramp-up percentage via remote configuration:
-
-```json
-{
-  "newCheckoutFlow": {
-    "rules": [
-      {
-        "value": true,
-        "rampUp": {
-          "percentage": 25.0
-        }
-      }
-    ]
-  }
-}
-```
-
-Load the updated configuration:
+3. Evaluate the feature in production code.
 
 ```kotlin
-val json = fetchRemoteConfig()
-val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-when {
-  result.isSuccess -> logger.info("Ramped up to 25%")
-  result.isFailure -> {
-    logger.error("Config load failed: ${result.parseErrorOrNull()}")
-    // Last-known-good (10%) remains active
-  }
-}
+val enabled = CheckoutFlags.newCheckout.evaluate(ctx)
 ```
 
-**What happens:** Users in buckets 0-24 now get the feature. Users in buckets 0-9 (the original 10%) remain in
-treatment—no one is removed when you increase
-percentage.
+4. Promote one stage at a time.
 
-### Step 4: Monitor and Adjust
+- Increase percentage only after metrics pass hold criteria.
+- Keep salt constant during the same rollout campaign.
+- Stop promotion on regressions.
 
-Add observability to track rollout:
+5. Roll back deterministically when needed.
 
-```kotlin
-AppFeatures.hooks.afterEvaluation.add { event ->
-  if (event.feature.key == "newCheckoutFlow") {
-    metrics.increment("checkout_flow.${event.result}", tags = mapOf(
-        "platform" to event.context.platform.toString()
-    ))
-  }
-}
-```
+- Set rollout threshold to `0.0`, or
+- Use namespace controls (`rollback(...)` or emergency `disableAll()`).
 
-Monitor key metrics:
+## Rollout checklist
 
-- Error rates in new checkout flow
-- Conversion rates (treatment vs control)
-- Latency differences
-- User-reported issues
+- [ ] Stable ID source is durable and consistent.
+- [ ] Rollout stages and hold criteria are documented.
+- [ ] Salt value is fixed for the entire campaign.
+- [ ] Guardrail metrics are monitored at each stage.
+- [ ] Rollback path is tested before reaching broad exposure.
 
-## Guarantees
+## Next steps
 
-- **Deterministic bucketing**: Same user + same feature + same salt = same bucket
-    - **Mechanism**: SHA-256 hash of `"$salt:$featureKey:${stableId.hexId}"` mod 100
-    - **Boundary**: Only deterministic if `stableId` is consistent across evaluations
-
-- **Stable rollout**: Increasing percentage only adds users, never removes
-    - **Mechanism**: Bucket thresholds increase monotonically (10% → 25% adds buckets 10-24)
-    - **Boundary**: Changing salt reshuffles ALL users, breaking stability
-
-- **Atomic updates**: All evaluations see either old % or new %, never partial state
-    - **Mechanism**: Configuration load is atomic (see [Thread Safety](/production-operations/thread-safety))
-    - **Boundary**: No guarantee about *when* a particular request sees the update
-
-## What Can Go Wrong?
-
-### Using Non-Persistent StableId
-
-```kotlin
-// DON'T: Session ID changes every session
-val ctx = Context(stableId = StableId.of(sessionId))
-
-// DON'T: Random ID changes every request
-val ctx = Context(stableId = StableId.of(UUID.randomUUID().toString()))
-
-// DO: Persistent user identifier
-val ctx = Context(stableId = StableId.of(userId))  // Database ID
-```
-
-**Result of wrong stableId:** User gets different bucket on each session/request. Metrics become meaningless.
-
-### Changing the Salt
-
-```kotlin
-// Before
-rule(true) { rampUp { 50.0 } }  // Default salt
-
-// After (RESHUFFLES ALL USERS!)
-rule(true) { rampUp(salt = "v2") { 50.0 } }
-```
-
-**Result:** Every user gets reshuffled. Some users who had the feature lose it. Some who didn't have it suddenly get it.
-A/B test results invalidated.
-
-**When to change salt:** Only when you explicitly want to reshuffle (e.g., addressing bias in original assignment).
-
-### Decreasing Percentage Without Understanding
-
-```kotlin
-// From 50% down to 25%
-rule(true) { rampUp { 25.0 } }
-```
-
-**Result:** Users in buckets 25-49 lose the feature. If they had data in the new system, it might become inaccessible.
-
-**Best practice:** Only decrease if you understand the implications. Use kill switches instead for emergencies.
-
-### Not Handling Configuration Load Failures
-
-```kotlin
-// DON'T: Ignore Result
-NamespaceSnapshotLoader(AppFeatures).load(json)
-
-// DO: Handle failures
-val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-when {
-  result.isFailure -> alertOps("Ramp-up config failed to load")
-}
-```
-
-**Result of ignoring failures:** You think you've ramped up to 25%, but the config didn't load, so it's still at 10%.
-Metrics look wrong.
-
-## Testing Ramp-Ups
-
-### Test Determinism
-
-```kotlin
-@Test
-fun `same user always gets same bucket`() {
-  val userId = "test-user-123"
-  val ctx = Context(stableId = StableId.of(userId))
-
-  val results = (1..100).map {
-    AppFeatures.newCheckoutFlow.evaluate(ctx)
-  }
-
-  // All evaluations should return the same value
-  assertTrue(results.all { it == results.first() })
-}
-```
-
-### Test Percentage Distribution
-
-```kotlin
-@Test
-fun `10 percent ramp-up distributes correctly`() {
-  val sampleSize = 10_000
-  val rampUpPercentage = 10.0
-
-  val inTreatment = (0 until sampleSize).count { i ->
-    val ctx = Context(stableId = StableId.of("user-$i"))
-    AppFeatures.newCheckoutFlow.evaluate(ctx)
-  }
-
-  val actualPercentage = (inTreatment.toDouble() / sampleSize) * 100
-
-  // Should be within 1% of target
-  assertEquals(rampUpPercentage, actualPercentage, delta = 1.0)
-}
-```
-
-### Test Specific Users
-
-```kotlin
-@Test
-fun `specific user is in treatment group`() {
-  val userId = "VIP-user-456"
-  val ctx = Context(stableId = StableId.of(userId))
-
-  val result = AppFeatures.newCheckoutFlow.evaluate(ctx)
-
-  assertTrue(result, "VIP user should be in treatment")
-}
-```
-
-## Common Rollout Strategy
-
-**Week 1:** 10% → monitor for crashes, errors
-**Week 2:** 25% → validate metrics (conversion, latency)
-**Week 3:** 50% → assess at scale
-**Week 4:** 100% → full rollout
-
-Between each increase:
-
-- Review error rates
-- Check conversion metrics
-- Verify no performance degradation
-- Gather user feedback
-
----
-
-## Verification
-
-Confirm rollout health after each percentage increase:
-
-1. Same `stableId` still evaluates consistently for unchanged salt
-2. Error rate and latency remain within expected thresholds
-3. Parse failures are zero or explicitly handled with alerts
-
-## Next Steps
-
-- [Debugging Determinism Issues](/how-to-guides/debugging-determinism) — Troubleshoot bucketing problems
-- [Safe Remote Configuration](/how-to-guides/safe-remote-config) — Load ramp-up changes from remote
-- [Determinism Proofs (Theory)](/theory/determinism-proofs) — Why bucketing is deterministic
-- [Production Operations: Debugging](/production-operations/debugging) — Inspect bucket assignments
+- [A/B testing](/how-to-guides/ab-testing)
+- [Debugging determinism](/how-to-guides/debugging-determinism)
+- [Refresh patterns](/production-operations/refresh-patterns)

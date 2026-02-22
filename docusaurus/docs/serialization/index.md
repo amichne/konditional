@@ -1,49 +1,35 @@
 # konditional-serialization
 
-`konditional-serialization` handles JSON snapshot/patch formats and parsing at the configuration boundary.
+`konditional-serialization` is the untrusted-data boundary for Konditional. It
+encodes snapshots and decodes payloads into trusted typed configurations.
 
-## When to Use This Module
+## Read this page when
 
-You should use `konditional-serialization` when you need to:
+- You are loading configuration from JSON.
+- You need patch application for incremental updates.
+- You need explicit parse failure handling instead of exceptions.
 
-- Store feature flag configuration in files, databases, or remote services as JSON
-- Load validated configuration snapshots from external sources
-- Apply incremental patches to update configuration without full replacement
-- Ensure invalid JSON never becomes active configuration
+## Concepts in scope
 
-## What You Get
+- **Snapshot codec**: serialize and deserialize full namespace snapshots.
+- **Patch codec**: apply incremental changes to an existing snapshot.
+- **Typed boundary**: decode APIs return `Result<MaterializedConfiguration>`.
+- **Error typing**: boundary failures carry parse error details.
 
-- **JSON snapshot encoding/decoding**: Serialize and deserialize complete configuration snapshots
-- **Incremental patch support**: Apply partial updates to existing configurations
-- **Parse-don't-validate boundary**: Invalid JSON returns `Result.failure`, never throws
-- **Type-safe configuration**: Parsed JSON becomes strongly-typed `Configuration` objects
+## Boundary notes
 
-## Alternatives
+- This module parses untrusted data; runtime modules load trusted snapshots.
+- A decode success means the payload has crossed into trusted model space.
 
-Without this module, you would need to:
+## Related pages
 
-- Manually serialize and deserialize feature flag state using custom JSON logic
-- Build your own validation boundary to prevent invalid configuration from activating
-- Handle JSON parsing errors with try-catch blocks instead of explicit result types
-
-## Installation
-
-```kotlin
-dependencies {
-    implementation("io.amichne:konditional-serialization:VERSION")
-}
-```
-
-## Guarantees
-
-- **Guarantee**: Invalid JSON payloads never become `Configuration` values.
-
-- **Mechanism**: Parsing returns `Result.success` or `Result.failure` and never throws for validation errors.
-
-- **Boundary**: Semantic correctness (for example, whether a rollout should be 10% or 20%) is not validated.
+- [Serialization reference](/serialization/reference)
+- [Persistence format](/serialization/persistence-format)
+- [Runtime lifecycle](/runtime/lifecycle)
+- [Parse don’t validate](/theory/parse-dont-validate)
 
 ## Next steps
 
-- [Serialization API reference](/serialization/reference)
-- [Persistence format](/serialization/persistence-format)
-- [Runtime lifecycle](/runtime/lifecycle)
+1. Implement decode flows with [Serialization reference](/serialization/reference).
+2. Validate payload shapes with [Persistence format](/serialization/persistence-format).
+3. Apply operational handling in [Configuration lifecycle](/learn/configuration-lifecycle).

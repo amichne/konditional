@@ -1,0 +1,300 @@
+{
+  "links_file": "docs/claim-trace/claim-signature-links.json",
+  "query": "deterministic evaluation claim linkage",
+  "refresh_attempted": false,
+  "refresh_details": "",
+  "refresh_succeeded": false,
+  "results": [
+    {
+      "identifier": "docusaurus/docs/quickstart/evaluate-in-app-code.md#claim-citations:3",
+      "linked_hint": true,
+      "matched_terms": [
+        "claim",
+        "deterministic",
+        "evaluation",
+        "linkage"
+      ],
+      "rank": 1,
+      "score": 43,
+      "snippet": "| Claim ID | Explicit claim | Local evidence linkage | Registry link | |---|---|---|---| | CLM-PR01-09A | Feature evaluation follows core flag-definition evaluation semantics and deterministic bucketing behavior. | `#example` | `/reference/claims-registry#clm-pr01-09a` |",
+      "source_kind": "document",
+      "source_path": "docusaurus/docs/quickstart/evaluate-in-app-code.md",
+      "subject_kind": "doc-paragraph"
+    },
+    {
+      "identifier": "docusaurus/docs/overview/first-success-map.md#step-4-verify-end-to-end:5",
+      "linked_hint": true,
+      "matched_terms": [
+        "deterministic",
+        "evaluation",
+        "linkage"
+      ],
+      "rank": 2,
+      "score": 33,
+      "snippet": "Run the quickstart verification checklist to confirm deterministic evaluation, boundary behavior, and runtime operation linkage [CLM-PR01-04A].",
+      "source_kind": "document",
+      "source_path": "docusaurus/docs/overview/first-success-map.md",
+      "subject_kind": "doc-paragraph"
+    },
+    {
+      "identifier": "docusaurus/docs/overview/product-value-fit.md#claim-citations:5",
+      "linked_hint": true,
+      "matched_terms": [
+        "claim",
+        "deterministic",
+        "linkage"
+      ],
+      "rank": 3,
+      "score": 33,
+      "snippet": "| Claim ID | Explicit claim | Local evidence linkage | Registry link | |---|---|---|---| | CLM-PR01-02A | Deterministic ramp-up behavior is backed by stable bucketing functions. | `#deterministic-rollout-confidence` | `/reference/claims-registry#clm-pr01-02a` | | CLM-PR01-02B | Namespace-scoped runtime operations are implemented by an in-memory namespace registry. | `#namespace-scoped-operational-control` | `/reference/claims-registry#clm-pr01-02b` |",
+      "source_kind": "document",
+      "source_path": "docusaurus/docs/overview/product-value-fit.md",
+      "subject_kind": "doc-paragraph"
+    },
+    {
+      "identifier": "docusaurus/docs/quickstart/add-deterministic-ramp-up.md#claim-citations:3",
+      "linked_hint": true,
+      "matched_terms": [
+        "claim",
+        "deterministic",
+        "linkage"
+      ],
+      "rank": 4,
+      "score": 33,
+      "snippet": "| Claim ID | Explicit claim | Local evidence linkage | Registry link | |---|---|---|---| | CLM-PR01-10A | Ramp-up assignment is deterministic and exposed through stable bucket APIs. | `#example` | `/reference/claims-registry#clm-pr01-10a` |",
+      "source_kind": "document",
+      "source_path": "docusaurus/docs/quickstart/add-deterministic-ramp-up.md",
+      "subject_kind": "doc-paragraph"
+    },
+    {
+      "identifier": "docusaurus/docs/quickstart/verify-end-to-end.md#claim-citations:4",
+      "linked_hint": true,
+      "matched_terms": [
+        "claim",
+        "deterministic",
+        "linkage"
+      ],
+      "rank": 5,
+      "score": 33,
+      "snippet": "| Claim ID | Explicit claim | Local evidence linkage | Registry link | |---|---|---|---| | CLM-PR01-12A | End-to-end verification relies on deterministic bucketing, boundary parse types, and namespace runtime operations. | `#checklist` | `/reference/claims-registry#clm-pr01-12a` |",
+      "source_kind": "document",
+      "source_path": "docusaurus/docs/quickstart/verify-end-to-end.md",
+      "subject_kind": "doc-paragraph"
+    },
+    {
+      "identifier": "docusaurus/docs/reference/claims-registry.md#claims-registry:2",
+      "linked_hint": false,
+      "matched_terms": [
+        "claim",
+        "deterministic",
+        "evaluation"
+      ],
+      "rank": 6,
+      "score": 30,
+      "snippet": "| Claim ID | Claim text | Evidence status | Risk category | Source pages | |---|---|---|---|---| | [CLM-PR01-01A](#clm-pr01-01a) | Konditional models feature declarations through namespace-owned typed feature definitions. | linked | operational | `docusaurus/docs/overview/start-here.md#claim-clm-pr01-01a` | | [CLM-PR01-01B](#clm-pr01-01b) | Runtime configuration ingestion is exposed through a snapshot loader that returns Result and supports typed parse failures. | linked | operational | `docusaurus/docs/overview/start-here.md#claim-clm-pr01-01b` | | [CLM-PR01-02A](#clm-pr01-02a) | Deterministic ramp-up behavior is backed by stable bucketing functions. | linked | operational | `docusaurus/docs/overview/product-value-fit.md#claim-clm-pr01-02a` | | [CLM-PR01-02B](#clm-pr01-02b) | Namespace-scoped runtime operations are implemented by an in-memory namespace registry. | linked | operational | `docusaurus/docs/overview/product-value-fit.md#claim-clm-pr01-02b` | | [CLM-PR01-03A](#clm-pr01-03a) | Feature declarations are modeled as typed entities under Namespace and Feature abstractions. | linked | operational | `docusaurus/docs/overview/why-typed-flags.md#claim-clm-pr01-03a` | | [CLM-PR01-03B](#clm-pr01-03b) | Parse boundary failures are represented with explicit ParseError and KonditionalBoundaryFailure types. | linked | operational | `docusaurus/docs/overview/why-typed-flags.md#claim-clm-pr01-03b` | | [CLM-PR01-04A](#clm-pr01-04a) | The first-success routes correspond to concrete runtime APIs for ramp-up and snapshot loading. | linked | operational | `docusaurus/docs/overview/first-success-map.md#claim-clm-pr01-04a` | | [CLM-PR01-05A](#clm-pr01-05a) | Adoption phases rely on load, disable, and rollback runtime operations. | linked | operational | `docusaurus/docs/overview/adoption-roadmap.md#claim-clm-pr01-05a` | | [CLM-PR01-06A](#clm-pr01-06a) | The quickstart sequence is grounded in namespace declaration and snapshot loading APIs. | linked | operational | `docusaurus/docs/quickstart/index.md#claim-clm-pr01-06a` | | [CLM-PR01-07A](#clm-pr01-07a) | Installation targets the core namespace model and runtime in-memory registry implementation. | linked | operational | `docusaurus/docs/quickstart/install.md#claim-clm-pr01-07a` | | [CLM-PR01-08A](#clm-pr01-08a) | Feature declarations are represented by Namespace, Feature, and FlagDefinition types. | linked | operational | `docusaurus/docs/quickstart/define-first-flag.md#claim-clm-pr01-08a` | | [CLM-PR01-08B](#clm-pr01-08b) | Namespaces provide a compiled schema used by boundary codecs and loaders. | linked | operational | `docusaurus/docs/quickstart/define-first-flag.md#claim-clm-pr01-08b` | | [CLM-PR01-09A](#clm-pr01-09a) | Feature evaluation follows core flag-definition evaluation semantics and deterministic bucketing behavior. | linked | operational | `docusaurus/docs/quickstart/evaluate-in-app-code.md#claim-clm-pr01-09a` | | [CLM-PR01-10A](#clm-pr01-10a) | Ramp-up assignment is deterministic and exposed through stable bucket APIs. | linked | operational | `docusaurus/docs/quickstart/add-deterministic-ramp-up.md#claim-clm-pr01-10a` | | [CLM-PR01-11A](#clm-pr01-11a) | Snapshot loading API exposes Result-based ingestion with options and codec-backed decode. | linked | operational | `docusaurus/docs/quickstart/load-first-snapshot-safely.md#claim-clm-pr01-11a` | | [CLM-PR01-11B](#clm-pr01-11b) | Boundary failures are modeled as ParseError values wrapped by KonditionalBoundaryFailure. | linked | operational | `docusaurus/docs/quickstart/load-first-snapshot-safely.md#claim-clm-pr01-11b` | | [CLM-PR01-12A](#clm-pr01-12a) | End-to-end verification relies on deterministic bucketing, boundary parse types, and namespace runtime operations. | linked | operational | `docusaurus/docs/quickstart/verify-end-to-end.md#claim-clm-pr01-12a` |",
+      "source_kind": "document",
+      "source_path": "docusaurus/docs/reference/claims-registry.md",
+      "subject_kind": "doc-paragraph"
+    },
+    {
+      "identifier": "docusaurus/docs/reference/claims-registry.md#clm-pr01-10a:30",
+      "linked_hint": false,
+      "matched_terms": [
+        "claim",
+        "deterministic",
+        "evaluation"
+      ],
+      "rank": 7,
+      "score": 30,
+      "snippet": "- **Evidence status:** `linked` - **Risk category:** `operational` - **Topics:** `determinism`, `ramp-up` - **Source pages:** `docusaurus/docs/quickstart/add-deterministic-ramp-up.md#claim-clm-pr01-10a` - **Signature links:** `method:io.amichne.konditional.api.RampUpBucketing#fun bucket( stableId: StableId, featureKey: String, salt: String, ): Int`, `method:io.amichne.konditional.core.evaluation.Bucketing#fun isInRampUp( rampUp: RampUp, bucket: Int, ): Boolean`, `method:io.amichne.konditional.core.evaluation.Bucketing#fun stableBucket( salt: String, flagKey: String, stableId: HexId, ): Int`, `type:io.amichne.konditional.core.id.StableId` - **Test links:** `unit:konditional-core:konditional-core/src/test/kotlin/io/amichne/konditional/core/MissingStableIdBucketingTest.kt:MissingStableIdBucketingTest` - **Related claims:** -",
+      "source_kind": "document",
+      "source_path": "docusaurus/docs/reference/claims-registry.md",
+      "subject_kind": "doc-paragraph"
+    },
+    {
+      "identifier": "docusaurus/docs/overview/adoption-roadmap.md#claim-citations:5",
+      "linked_hint": true,
+      "matched_terms": [
+        "claim",
+        "linkage"
+      ],
+      "rank": 8,
+      "score": 23,
+      "snippet": "| Claim ID | Explicit claim | Local evidence linkage | Registry link | |---|---|---|---| | CLM-PR01-05A | Adoption phases rely on load, disable, and rollback runtime operations. | `#phase-3-operational-fallback-drills` | `/reference/claims-registry#clm-pr01-05a` |",
+      "source_kind": "document",
+      "source_path": "docusaurus/docs/overview/adoption-roadmap.md",
+      "subject_kind": "doc-paragraph"
+    },
+    {
+      "identifier": "docusaurus/docs/overview/first-success-map.md#claim-citations:6",
+      "linked_hint": true,
+      "matched_terms": [
+        "claim",
+        "linkage"
+      ],
+      "rank": 9,
+      "score": 23,
+      "snippet": "| Claim ID | Explicit claim | Local evidence linkage | Registry link | |---|---|---|---| | CLM-PR01-04A | The first-success routes correspond to concrete runtime APIs for ramp-up and snapshot loading. | `#step-3-load-snapshots-through-boundary-safe-apis` | `/reference/claims-registry#clm-pr01-04a` |",
+      "source_kind": "document",
+      "source_path": "docusaurus/docs/overview/first-success-map.md",
+      "subject_kind": "doc-paragraph"
+    },
+    {
+      "identifier": "docusaurus/docs/overview/product-value-fit.md#best-fit-checklist:4",
+      "linked_hint": true,
+      "matched_terms": [
+        "deterministic",
+        "evaluation"
+      ],
+      "rank": 10,
+      "score": 23,
+      "snippet": "Konditional is a strong fit when you need compile-time typed declarations, deterministic evaluation, and safe config ingestion boundaries [CLM-PR01-02A] [CLM-PR01-02B].",
+      "source_kind": "document",
+      "source_path": "docusaurus/docs/overview/product-value-fit.md",
+      "subject_kind": "doc-paragraph"
+    },
+    {
+      "identifier": "docusaurus/docs/overview/start-here.md#claim-citations:6",
+      "linked_hint": true,
+      "matched_terms": [
+        "claim",
+        "linkage"
+      ],
+      "rank": 11,
+      "score": 23,
+      "snippet": "| Claim ID | Explicit claim | Local evidence linkage | Registry link | |---|---|---|---| | CLM-PR01-01A | Konditional models feature declarations through namespace-owned typed feature definitions. | `#typed-foundations` | `/reference/claims-registry#clm-pr01-01a` | | CLM-PR01-01B | Runtime configuration ingestion is exposed through a snapshot loader that returns Result and supports typed parse failures. | `#boundary-safe-ingestion` | `/reference/claims-registry#clm-pr01-01b` |",
+      "source_kind": "document",
+      "source_path": "docusaurus/docs/overview/start-here.md",
+      "subject_kind": "doc-paragraph"
+    },
+    {
+      "identifier": "docusaurus/docs/overview/why-typed-flags.md#claim-citations:5",
+      "linked_hint": true,
+      "matched_terms": [
+        "claim",
+        "linkage"
+      ],
+      "rank": 12,
+      "score": 23,
+      "snippet": "| Claim ID | Explicit claim | Local evidence linkage | Registry link | |---|---|---|---| | CLM-PR01-03A | Feature declarations are modeled as typed entities under Namespace and Feature abstractions. | `#compile-time-declaration-model` | `/reference/claims-registry#clm-pr01-03a` | | CLM-PR01-03B | Parse boundary failures are represented with explicit ParseError and KonditionalBoundaryFailure types. | `#boundary-error-semantics` | `/reference/claims-registry#clm-pr01-03b` |",
+      "source_kind": "document",
+      "source_path": "docusaurus/docs/overview/why-typed-flags.md",
+      "subject_kind": "doc-paragraph"
+    },
+    {
+      "identifier": "docusaurus/docs/quickstart/define-first-flag.md#claim-citations:3",
+      "linked_hint": true,
+      "matched_terms": [
+        "claim",
+        "linkage"
+      ],
+      "rank": 13,
+      "score": 23,
+      "snippet": "| Claim ID | Explicit claim | Local evidence linkage | Registry link | |---|---|---|---| | CLM-PR01-08A | Feature declarations are represented by Namespace, Feature, and FlagDefinition types. | `#example` | `/reference/claims-registry#clm-pr01-08a` | | CLM-PR01-08B | Namespaces provide a compiled schema used by boundary codecs and loaders. | `#example` | `/reference/claims-registry#clm-pr01-08b` |",
+      "source_kind": "document",
+      "source_path": "docusaurus/docs/quickstart/define-first-flag.md",
+      "subject_kind": "doc-paragraph"
+    },
+    {
+      "identifier": "docusaurus/docs/quickstart/index.md#claim-citations:4",
+      "linked_hint": true,
+      "matched_terms": [
+        "claim",
+        "linkage"
+      ],
+      "rank": 14,
+      "score": 23,
+      "snippet": "| Claim ID | Explicit claim | Local evidence linkage | Registry link | |---|---|---|---| | CLM-PR01-06A | The quickstart sequence is grounded in namespace declaration and snapshot loading APIs. | `#outcome` | `/reference/claims-registry#clm-pr01-06a` |",
+      "source_kind": "document",
+      "source_path": "docusaurus/docs/quickstart/index.md",
+      "subject_kind": "doc-paragraph"
+    },
+    {
+      "identifier": "docusaurus/docs/quickstart/install.md#claim-citations:3",
+      "linked_hint": true,
+      "matched_terms": [
+        "claim",
+        "linkage"
+      ],
+      "rank": 15,
+      "score": 23,
+      "snippet": "| Claim ID | Explicit claim | Local evidence linkage | Registry link | |---|---|---|---| | CLM-PR01-07A | Installation targets the core namespace model and runtime in-memory registry implementation. | `#gradle-kotlin-dsl` | `/reference/claims-registry#clm-pr01-07a` |",
+      "source_kind": "document",
+      "source_path": "docusaurus/docs/quickstart/install.md",
+      "subject_kind": "doc-paragraph"
+    },
+    {
+      "identifier": "docusaurus/docs/quickstart/load-first-snapshot-safely.md#claim-citations:3",
+      "linked_hint": true,
+      "matched_terms": [
+        "claim",
+        "linkage"
+      ],
+      "rank": 16,
+      "score": 23,
+      "snippet": "| Claim ID | Explicit claim | Local evidence linkage | Registry link | |---|---|---|---| | CLM-PR01-11A | Snapshot loading API exposes Result-based ingestion with options and codec-backed decode. | `#example` | `/reference/claims-registry#clm-pr01-11a` | | CLM-PR01-11B | Boundary failures are modeled as ParseError values wrapped by KonditionalBoundaryFailure. | `#example` | `/reference/claims-registry#clm-pr01-11b` |",
+      "source_kind": "document",
+      "source_path": "docusaurus/docs/quickstart/load-first-snapshot-safely.md",
+      "subject_kind": "doc-paragraph"
+    },
+    {
+      "identifier": "docusaurus/docs/advanced/recipes.md#recipes-best-practice-patterns:5",
+      "linked_hint": false,
+      "matched_terms": [
+        "deterministic",
+        "evaluation"
+      ],
+      "rank": 17,
+      "score": 20,
+      "snippet": "- Typed features (booleans, enums, structured values) - Deterministic rollouts and salting - Axes and custom context targeting - Remote configuration (snapshot/patch boundary + rollback) - Shadow evaluation for safe migrations - Namespace isolation and kill-switch - Observability hooks (logging + metrics)",
+      "source_kind": "document",
+      "source_path": "docusaurus/docs/advanced/recipes.md",
+      "subject_kind": "doc-paragraph"
+    },
+    {
+      "identifier": "docusaurus/docs/core/index.md#konditional-core:2",
+      "linked_hint": false,
+      "matched_terms": [
+        "deterministic",
+        "evaluation"
+      ],
+      "rank": 18,
+      "score": 20,
+      "snippet": "If you only need compile-time correctness and deterministic evaluation, this is the only module you need.",
+      "source_kind": "document",
+      "source_path": "docusaurus/docs/core/index.md",
+      "subject_kind": "doc-paragraph"
+    },
+    {
+      "identifier": "docusaurus/docs/examples/golden-path.md#key-concepts-demonstrated:4",
+      "linked_hint": false,
+      "matched_terms": [
+        "deterministic",
+        "evaluation"
+      ],
+      "rank": 19,
+      "score": 20,
+      "snippet": "| Concept | Location | What it shows | |---------|----------|---------------| | Namespace isolation | `object AppFeatures : Namespace(\"app\")` | One ownership boundary for related features | | Typed feature definitions | `val darkMode by boolean<Context>(...)` | Compile-time value type and required default | | Rule targeting | `ios()`, `android()`, `versions { ... }` | Deterministic matching criteria | | Ramp-up rollout | `rampUp { ... }` | Stable bucketing via `stableId` | | Total evaluation | `evaluate(...)` | Returns a typed value (no nullable result wrapper) | | Debugging helper | `RampUpBucketing.explain(...)` | Deterministic bucket introspection |",
+      "source_kind": "document",
+      "source_path": "docusaurus/docs/examples/golden-path.md",
+      "subject_kind": "doc-paragraph"
+    },
+    {
+      "identifier": "docusaurus/docs/getting-started/index.md#10-minute-outcome:7",
+      "linked_hint": false,
+      "matched_terms": [
+        "deterministic",
+        "evaluation"
+      ],
+      "rank": 20,
+      "score": 20,
+      "snippet": "- a typed feature defined in a namespace - a deterministic evaluation call in application code - a basic verification check proving expected behavior",
+      "source_kind": "document",
+      "source_path": "docusaurus/docs/getting-started/index.md",
+      "subject_kind": "doc-paragraph"
+    }
+  ],
+  "signatures_dir": ".signatures",
+  "top_k": 20,
+  "total_entries_indexed": 3219
+}

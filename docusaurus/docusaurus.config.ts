@@ -34,6 +34,26 @@ const config: Config = {
     themes: ['@docusaurus/theme-mermaid'],
     plugins: [
         require.resolve('docusaurus-lunr-search'),
+        [
+            require.resolve('@docusaurus/plugin-client-redirects'),
+            {
+                redirects: [
+                    {from: '/getting-started', to: '/quickstart'},
+                    {from: '/getting-started/installation', to: '/quickstart/install'},
+                    {from: '/getting-started/your-first-flag', to: '/quickstart/define-first-flag'},
+                    {from: '/quick-start/what-is-konditional', to: '/overview/start-here'},
+                    {from: '/guides/install-and-setup', to: '/quickstart/install'},
+                    {from: '/guides/roll-out-gradually', to: '/how-to-guides/rolling-out-gradually'},
+                    {from: '/guides/load-remote-config', to: '/how-to-guides/safe-remote-config'},
+                    {from: '/guides/debug-evaluation', to: '/how-to-guides/debugging-determinism'},
+                    {from: '/guides/test-features', to: '/how-to-guides/testing-features'},
+                    {from: '/design-theory/determinism-proofs', to: '/theory/determinism-proofs'},
+                    {from: '/design-theory/parse-dont-validate', to: '/theory/parse-dont-validate'},
+                    {from: '/advanced/shadow-evaluation', to: '/observability/shadow-evaluation'},
+                    {from: '/api-reference/observability', to: '/observability/reference'},
+                ],
+            },
+        ],
     ],
     presets: [
         [
@@ -76,11 +96,21 @@ const config: Config = {
                 },
                 {
                     type: 'dropdown',
-                    label: 'Getting Started',
+                    label: 'Start here',
                     position: 'left',
                     items: [
-                        {type: 'doc', docId: 'getting-started/installation', label: 'Installation'},
-                        {type: 'doc', docId: 'getting-started/your-first-flag', label: 'Your First Feature'},
+                        {type: 'doc', docId: 'overview/start-here', label: 'Start here'},
+                        {type: 'doc', docId: 'overview/product-value-fit', label: 'Product value and fit'},
+                        {type: 'doc', docId: 'overview/first-success-map', label: 'First success map'},
+                    ],
+                },
+                {
+                    type: 'dropdown',
+                    label: 'Quickstart',
+                    position: 'left',
+                    items: [
+                        {type: 'doc', docId: 'quickstart/index', label: 'Quickstart'},
+                        {type: 'doc', docId: 'quickstart/verify-end-to-end', label: 'Verify end-to-end'},
                     ],
                 },
                 {

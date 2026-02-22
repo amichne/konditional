@@ -1,75 +1,43 @@
-# Configuration Lifecycle
+# Runtime lifecycle
 
-From JSON to evaluation: how configuration flows through the validated boundary and into the active snapshot.
+This page is the runtime operator runbook for loading and recovering namespace
+snapshots.
 
-```mermaid
-flowchart LR
-  Code["Flags defined in code"] --> Snap["ConfigurationSnapshotCodec.encode(namespace.configuration)"]
-  Snap --> Json["JSON snapshot"]
-  Json --> Parse["ConfigurationSnapshotCodec.decode(json, AppFeatures.compiledSchema())"]
-  Parse -->|Success| Load["Namespace.load(configuration)"]
-  Parse -->|Failure| Reject["Keep last-known-good + log"]
-  Load --> Eval["Evaluation uses active snapshot"]
-  style Load fill:#c8e6c9
-  style Reject fill:#ffcdd2
-```
+## Read this page when
 
----
+- You are implementing production config refresh loops.
+- You are defining failure handling for invalid payloads.
+- You are documenting rollback and emergency procedures.
 
-## The lifecycle
+## Steps in scope
 
-### 1) JSON payload arrives
+1. Parse untrusted payload JSON into a typed `Result`.
+2. On success, load the materialized snapshot into the namespace.
+3. On failure, log typed parse errors and keep last-known-good state.
+4. Continue evaluation against the currently active snapshot.
+5. Use rollback if a newly loaded snapshot causes issues.
 
-```kotlin
-val json = fetchConfig()
-```
-
-### 2) Parse and validate
+## Reference flow
 
 ```kotlin
-val result = ConfigurationSnapshotCodec.decode(json, AppFeatures.compiledSchema())
-when {
-    result.isSuccess -> AppFeatures.load(result.getOrNull()!!)
-    result.isFailure -> logError(result.parseErrorOrNull()?.message)
-}
+val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+result
+    .onSuccess { logger.info("config loaded") }
+    .onFailure { failure ->
+        val parseError = result.parseErrorOrNull()
+        logger.warn(parseError?.message ?: failure.message.orEmpty())
+    }
 ```
 
-- **Guarantee**: Invalid JSON never becomes a `Configuration`.
+## Related pages
 
-- **Mechanism**: `Result` makes success vs failure explicit at the boundary.
-
-- **Boundary**: Semantic correctness is not validated.
-
-### 3) Atomic load
-
-`Namespace.load(...)` swaps the configuration snapshot atomically. Readers see either the old or new snapshot.
-
-### 4) Evaluation reads the snapshot
-
-Evaluations are lock-free and read a snapshot at a single point in time.
-
----
-
-## Precondition: features must be registered
-
-Ensure your `Namespace` objects are initialized before parsing JSON.
-
-```kotlin
-```
-
-If JSON references a feature that is not registered, parsing fails with `ParseError.FeatureNotFound`.
-
----
-
-## Rollback support
-
-```kotlin
-val success = AppFeatures.rollback(steps = 1)
-```
-
----
+- [Runtime operations](/runtime/operations)
+- [Configuration lifecycle (learn)](/learn/configuration-lifecycle)
+- [Serialization reference](/serialization/reference)
+- [Atomicity guarantees](/theory/atomicity-guarantees)
 
 ## Next steps
 
-- [Serialization module](/serialization/)
-- [Runtime operations](/runtime/operations)
+1. Add rollback playbooks from [Runtime operations](/runtime/operations).
+2. Add parse-failure alerts using [Parse don’t validate](/theory/parse-dont-validate).
+3. Validate deterministic outcomes with [Evaluation model](/learn/evaluation-model).

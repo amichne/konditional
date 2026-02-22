@@ -1,72 +1,122 @@
-# OpenTelemetry Reference
+# OpenTelemetry reference
 
-This page lists the main `konditional-otel` entry points and the current
-preferred call patterns.
+This page is the symbol-level API reference for `konditional-opentelemetry`.
 
-## Telemetry installation
+## Read this page when
 
-```kotlin
-val telemetry = KonditionalTelemetry(
-    otel = otel,
-    tracingConfig = TracingConfig(
-        samplingStrategy = SamplingStrategy.PARENT_BASED,
-    ),
-)
+- You are wiring `KonditionalTelemetry` in application code.
+- You need exact extension signatures and overload behavior.
+- You are validating tracing and sampling contracts.
 
-// Preferred usage: pass telemetry explicitly to evaluation calls.
-val enabled = MyFlags.darkMode.evaluateWithTelemetry(
-    context = context,
-    telemetry = telemetry,
-)
+## API and contract reference
 
-// Compatibility path for deprecated global-shim overloads.
-KonditionalTelemetry.install(telemetry)
-```
-
-## Evaluation helpers
+### Telemetry facade
 
 ```kotlin
-val enabled = MyFlags.darkMode.evaluateWithTelemetry(
-    context = context,
-    telemetry = telemetry,
-)
+class KonditionalTelemetry(
+    otel: OpenTelemetry,
+    val tracingConfig: TracingConfig = TracingConfig.DEFAULT,
+    val metricsConfig: MetricsConfig = MetricsConfig.DEFAULT,
+    instrumentationScope: String = "io.amichne.konditional",
+) {
+    val tracer: FlagEvaluationTracer
+    val metrics: OtelMetricsCollector
+    val logger: OtelLogger
 
-val diagnostics = MyFlags.darkMode.evaluateWithTelemetryAndReason(
-    context = context,
-    telemetry = telemetry,
-)
+    fun toRegistryHooks(): RegistryHooks
 
-val enabledWithCurrentSpan = MyFlags.darkMode.evaluateWithAutoSpan(
-    context = context,
-    telemetry = telemetry,
-)
+    companion object {
+        fun install(telemetry: KonditionalTelemetry)
+        fun global(): KonditionalTelemetry
+        fun globalOrNull(): KonditionalTelemetry?
+        fun noop(): KonditionalTelemetry
+    }
+}
 ```
 
----
-
-<details>
-<summary>Advanced Options</summary>
-
-## Sampling strategies
+### Evaluation extensions (preferred explicit telemetry path)
 
 ```kotlin
-SamplingStrategy.ALWAYS
-SamplingStrategy.NEVER
-SamplingStrategy.PARENT_BASED
-SamplingStrategy.RATIO(10)
-SamplingStrategy.FEATURE_FILTER { feature -> feature.namespace.id == "critical" }
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithTelemetry(
+    context: C,
+    telemetry: KonditionalTelemetry,
+    registry: NamespaceRegistry = namespace,
+    parentSpan: Span? = null,
+): T
+
+fun <T : Any, C : Context, M : Namespace>
+Feature<T, C, M>.evaluateWithTelemetryAndReason(
+    context: C,
+    telemetry: KonditionalTelemetry,
+    registry: NamespaceRegistry = namespace,
+    parentSpan: Span? = null,
+): EvaluationDiagnostics<T>
+
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithAutoSpan(
+    context: C,
+    telemetry: KonditionalTelemetry,
+    registry: NamespaceRegistry = namespace,
+): T
 ```
 
-## Registry hooks
+Deprecated global-shim overloads remain available for compatibility and use
+`KonditionalTelemetry.global()`.
+
+### Tracing configuration
 
 ```kotlin
-val hooks = telemetry.toRegistryHooks()
+data class TracingConfig(
+    val enabled: Boolean = true,
+    val samplingStrategy: SamplingStrategy = SamplingStrategy.PARENT_BASED,
+    val includeContextAttributes: Boolean = true,
+    val includeRuleDetails: Boolean = true,
+    val sanitizePii: Boolean = true,
+)
+
+sealed interface SamplingStrategy {
+    data object ALWAYS : SamplingStrategy
+    data object NEVER : SamplingStrategy
+    data object PARENT_BASED : SamplingStrategy
+    data class RATIO(val percentage: Int) : SamplingStrategy
+    data class FEATURE_FILTER(val predicate: (Feature<*, *, *>) -> Boolean)
+        : SamplingStrategy
+}
 ```
 
-## No-op testing
+### Semantic attribute keys
 
-```kotlin
-val telemetry = KonditionalTelemetry.noop()
-```
+- `feature.namespace`
+- `feature.key`
+- `feature.type`
+- `evaluation.result.value`
+- `evaluation.result.decision`
+- `evaluation.duration_ns`
+- `evaluation.config_version`
+- `evaluation.rule.note`
+- `evaluation.rule.specificity`
+- `evaluation.bucket`
+- `evaluation.ramp_up`
+- `context.platform`
+- `context.locale`
+- `context.version`
+- `context.stable_id.sha256_prefix`
 
-</details>
+## Deterministic API and contract notes
+
+- `SamplingStrategy.RATIO` enforces `percentage in 0..100` at construction.
+- For fixed telemetry config and input context, emitted span attributes are
+  stable.
+- Evaluation result semantics are unchanged by instrumentation: tracing wraps the
+  same internal evaluation call.
+
+## Canonical conceptual pages
+
+- [Theory: Determinism proofs](/theory/determinism-proofs)
+- [Theory: Atomicity guarantees](/theory/atomicity-guarantees)
+- [Theory: Migration and shadowing](/theory/migration-and-shadowing)
+
+## Next steps
+
+- [OpenTelemetry integration](/opentelemetry)
+- [Observability reference](/observability/reference)
+- [Feature evaluation API](/reference/api/feature-evaluation)

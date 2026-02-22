@@ -1,61 +1,57 @@
-# Core Concepts
+# Core concepts
 
-This page defines the minimum vocabulary you need to read and write Konditional features.
+This page gives you the minimum shared vocabulary for reading and writing
+Konditional code.
 
-## Terms
+## Read this page when
 
-- **Namespace**: A registry that owns a set of features.
-- **Feature**: A typed configuration value with rules and a default.
-- **Context**: Runtime inputs used for evaluation (`locale`, `platform`, `appVersion`, `stableId`).
-- **Rule**: Criteria -> value mapping. All criteria must match for the rule to apply.
-- **Specificity**: A numeric measure of how constrained a rule is. Higher specificity wins.
-- **Bucketing**: Deterministic assignment of a `stableId` to a ramp-up bucket.
+- You are onboarding to the DSL.
+- You are reviewing code that mixes core, runtime, and serialization terms.
+- You need a quick map before diving into API details.
 
-## Context
+## Concepts in scope
 
-Runtime inputs used during evaluation, such as locale, platform, app version, and stable ID.
+- **Namespace**: ownership boundary for features and lifecycle operations.
+- **Feature**: typed value definition with default and ordered rules.
+- **Context**: runtime inputs (`locale`, `platform`, `appVersion`, `stableId`).
+- **Rule**: criteria plus value; criteria within one rule are conjunctive.
+- **Specificity**: deterministic precedence score for rule ordering.
+- **Stable bucketing**: deterministic ramp-up assignment from stable identity.
+- **Snapshot**: immutable configuration state read by evaluators.
 
-## Feature
+### Context {#context}
 
-A typed configuration value with rules and a default value.
+`Context` is the runtime input contract used by rule matching and ramp-up
+bucketing.
 
-## Namespace
+### Feature {#feature}
 
-A registry that owns a set of features and provides lifecycle operations.
+A `Feature<T, C, M>` binds value type, context type, and namespace ownership.
 
-## StableId: Deterministic ramp-ups
+### Namespace {#namespace}
 
-A stable identifier used for deterministic bucketing in ramp-up rules.
+`Namespace` is the operational boundary for state, loading, rollback, and
+kill-switch operations.
 
-## Compile-time vs runtime
+### StableId: deterministic ramp-ups {#stableid-deterministic-ramp-ups}
 
-| Aspect                     | Guarantee Level | Mechanism                                                  |
-|----------------------------|-----------------|------------------------------------------------------------|
-| Property access            | Compile-time    | Property delegation on `Namespace`                         |
-| Return types               | Compile-time    | Generic type propagation (`Feature<T, C, M>`)              |
-| Rule values                | Compile-time    | Typed DSL builders (`boolean`, `string`, `enum`, `custom`) |
-| Non-null returns           | Compile-time    | Required defaults                                          |
-| Rule matching              | Runtime         | Deterministic evaluation over `Context`                    |
-| Business logic correctness | Not guaranteed  | Human responsibility                                       |
+`StableId` is the deterministic cohort key used for ramp-up bucketing.
 
-## Typed values in practice
+## Practical boundaries
 
-```kotlin
-enum class Theme { LIGHT, DARK }
+- Compile-time typing covers static declarations and `evaluate(...)` return types.
+- Untrusted JSON must cross a parse boundary before becoming a snapshot.
+- Runtime operations (`load`, `rollback`, `disableAll`) are namespace-scoped.
 
-object AppFeatures : Namespace("app") {
-  val darkMode by boolean<Context>(default = false)
-  val theme by enum<Theme, Context>(default = Theme.LIGHT)
-  val retries by integer<Context>(default = 3)
-}
+## Related pages
 
-val theme: Theme = AppFeatures.theme.evaluate(ctx)
-```
+- [konditional-core](/core)
+- [Evaluation model](/learn/evaluation-model)
+- [Configuration lifecycle](/learn/configuration-lifecycle)
+- [Type safety boundaries](/theory/type-safety-boundaries)
 
-## Type-safety guarantee
+## Next steps
 
-- **Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
-
-- **Mechanism**: Feature properties are declared with explicit type parameters and enforced by the Kotlin type system.
-
-- **Boundary**: Dynamically-generated features are outside this guarantee.
+1. Learn matching order in [Evaluation model](/learn/evaluation-model).
+2. Learn parse flow in [Configuration lifecycle](/learn/configuration-lifecycle).
+3. Learn namespace governance in [Namespace isolation](/theory/namespace-isolation).

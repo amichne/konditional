@@ -1,4 +1,0 @@
-interface:
-  display_name: "Value Journey Linker"
-  short_description: "Generate value journeys linked to signatures."
-  default_prompt: "Use $value-journey-signature-linker to generate persuasive value-journey docs with explicit signature traceability."
