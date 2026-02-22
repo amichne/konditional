@@ -334,4 +334,112 @@ class TargetingHierarchyTest {
         )
         assertEquals(2, all.customLeafCount())
     }
+
+    // ── 8. AnyOf combinator ─────────────────────────────────────────────
+
+    @Test
+    fun `AnyOf with empty targets never matches`() {
+        assertFalse(Targeting.AnyOf<Context>(emptyList()).matches(minimalContext))
+    }
+
+    @Test
+    fun `AnyOf specificity is zero when empty`() {
+        assertEquals(0, Targeting.AnyOf<Context>(emptyList()).specificity())
+    }
+
+    @Test
+    fun `AnyOf matches when any leaf matches`() {
+        val anyOf = Targeting.AnyOf(
+            listOf(
+                Targeting.locale<Context>(setOf(AppLocale.CANADA.id)),     // no match for usIosContext
+                Targeting.platform<Context>(setOf(Platform.IOS.id)),       // matches
+            ),
+        )
+        assertTrue(anyOf.matches(usIosContext))
+    }
+
+    @Test
+    fun `AnyOf does not match when no leaf matches`() {
+        val anyOf = Targeting.AnyOf(
+            listOf(
+                Targeting.locale<Context>(setOf(AppLocale.CANADA.id)),
+                Targeting.platform<Context>(setOf(Platform.ANDROID.id)),
+            ),
+        )
+        assertFalse(anyOf.matches(usIosContext))
+    }
+
+    @Test
+    fun `AnyOf specificity is max of all branch specificities`() {
+        val anyOf = Targeting.AnyOf(
+            listOf(
+                Targeting.Custom<Context>({ true }, weight = 1),
+                Targeting.Custom<Context>({ true }, weight = 3),
+                Targeting.Custom<Context>({ true }, weight = 2),
+            ),
+        )
+        assertEquals(3, anyOf.specificity())
+    }
+
+    @Test
+    fun `AnyOf short-circuits on first matching leaf`() {
+        var evaluated = 0
+        val anyOf = Targeting.AnyOf(
+            listOf(
+                Targeting.Custom<Context>({ true }),
+                Targeting.Custom<Context>({ evaluated++; true }),
+            ),
+        )
+        assertTrue(anyOf.matches(minimalContext))
+        assertEquals(0, evaluated) // second leaf never evaluated
+    }
+
+    @Test
+    fun `AnyOf inside All composes with AND semantics`() {
+        val targeting = Targeting.All(
+            listOf(
+                Targeting.locale<Context>(setOf(AppLocale.UNITED_STATES.id)), // must match
+                Targeting.AnyOf(
+                    listOf(
+                        Targeting.platform<Context>(setOf(Platform.IOS.id)),
+                        Targeting.platform<Context>(setOf(Platform.ANDROID.id)),
+                    ),
+                ),
+            ),
+        )
+        // US iOS: locale matches AND (iOS OR Android) matches → true
+        assertTrue(targeting.matches(usIosContext))
+        // CA Android: locale does NOT match → false (AND short-circuits)
+        assertFalse(targeting.matches(caAndroidContext))
+    }
+
+    @Test
+    fun `AnyOf specificity contributes correctly to enclosing All`() {
+        val all = Targeting.All(
+            listOf(
+                Targeting.locale<Context>(setOf("en-US")),  // specificity 1
+                Targeting.AnyOf(
+                    listOf(
+                        Targeting.Custom<Context>({ true }, weight = 2),
+                        Targeting.Custom<Context>({ true }, weight = 4),
+                    ),
+                ), // specificity 4 (max)
+            ),
+        )
+        assertEquals(5, all.specificity()) // 1 + 4
+    }
+
+    @Test
+    fun `same inputs produce same result for AnyOf across repeated evaluations`() {
+        val anyOf = Targeting.AnyOf(
+            listOf(
+                Targeting.locale<Context>(setOf(AppLocale.UNITED_STATES.id)),
+                Targeting.platform<Context>(setOf(Platform.ANDROID.id)),
+            ),
+        )
+        repeat(100) {
+            assertTrue(anyOf.matches(usIosContext))      // US locale matches
+            assertFalse(anyOf.matches(minimalContext))   // neither matches
+        }
+    }
 }
