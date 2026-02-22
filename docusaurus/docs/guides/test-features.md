@@ -5,6 +5,24 @@ description: Legacy path for testing guidance.
 unlisted: true
 ---
 
-This page has moved.
+# Test features (legacy bridge)
 
-See [Testing features](/how-to-guides/testing-features/).
+This legacy testing page now routes to canonical quickstart verification docs.
+
+## Read this page when
+
+- You followed an old testing guide URL.
+- You need the maintained verification checklist.
+- You want tests aligned with canonical quickstart behavior.
+
+## Canonical page
+
+Use [Verify end-to-end](/quickstart/verify-end-to-end).
+
+## Next steps
+
+1. Run [Verify end-to-end](/quickstart/verify-end-to-end).
+2. Validate evaluation path in
+   [Evaluate in app code](/quickstart/evaluate-in-app-code).
+3. Confirm loading failures in
+   [Load first snapshot safely](/quickstart/load-first-snapshot-safely).

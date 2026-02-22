@@ -1,22 +1,36 @@
 # Adoption roadmap
 
-Adopt Konditional in phases that preserve rollback and disable controls while
-you shift traffic to typed feature ownership [CLM-PR01-05A].
+Adopt Konditional in phases so you can preserve rollback safety while expanding
+typed ownership across teams.
+
+## Read this page when
+
+- Your first quickstart flow is complete.
+- You need a staged rollout plan for production adoption.
+- You want explicit checkpoints for load, disable, and rollback readiness.
 
 ## Phase 1: mirror existing controls
 
-Model existing controls in namespace-scoped definitions while preserving current
-behavior envelopes [CLM-PR01-05A].
+Represent current controls in namespace-scoped typed definitions without
+changing behavior envelopes yet [CLM-PR01-05A].
 
 ## Phase 2: enable runtime snapshot loading
 
-Use load operations to move config materialization under explicit, auditable
-runtime control [CLM-PR01-05A].
+Move configuration materialization into explicit load operations with typed
+boundary handling and auditability [CLM-PR01-05A].
 
 ## Phase 3: operational fallback drills
 
-Exercise disable and rollback operations during rollout windows before critical
+Practice disable and rollback operations in controlled windows before critical
 launches [CLM-PR01-05A].
+
+## Next steps
+
+1. Revisit implementation details in [Quickstart](/quickstart/).
+2. Strengthen safe ingestion in
+   [Load first snapshot safely](/quickstart/load-first-snapshot-safely).
+3. Complete release gates with
+   [Verify end-to-end](/quickstart/verify-end-to-end).
 
 ## Claim citations
 

@@ -1,7 +1,13 @@
 # Install
 
-Install `konditional-core` and `konditional-runtime` to get typed namespace
-modeling and default runtime namespace operations [CLM-PR01-07A].
+Install the core and runtime modules first so you have typed namespace modeling
+and runtime operations available in one baseline setup.
+
+## Read this page when
+
+- You are adding Konditional to a Kotlin project for the first time.
+- You need the canonical dependency baseline for quickstart.
+- You want to confirm your project is ready for typed feature definitions.
 
 ## Gradle Kotlin DSL
 
@@ -12,10 +18,20 @@ dependencies {
 }
 ```
 
+Replace `VERSION` with the release you intend to adopt. This baseline maps to
+the typed namespace model and in-memory runtime registry [CLM-PR01-07A].
+
 ## Verify install
 
-Run your standard project build and confirm dependencies resolve and compile
-cleanly [CLM-PR01-07A].
+Run your normal project build and confirm the project compiles with both
+modules resolved [CLM-PR01-07A].
+
+## Next steps
+
+1. Define your first feature in
+   [Define first flag](/quickstart/define-first-flag).
+2. Wire evaluation in [Evaluate in app code](/quickstart/evaluate-in-app-code).
+3. Continue with [Add deterministic ramp-up](/quickstart/add-deterministic-ramp-up).
 
 ## Claim citations
 

@@ -1,16 +1,39 @@
 # Load first snapshot safely
 
-Load runtime snapshots through result-based APIs that keep parse behavior
-explicit and inspectable [CLM-PR01-11A].
+Load runtime snapshots through explicit result handling so invalid payloads do
+not silently alter runtime behavior.
+
+## Read this page when
+
+- Feature declarations and local evaluation already work.
+- You need to ingest external configuration safely.
+- You want typed parse failures and last-known-good handling.
 
 ## Example
 
 ```kotlin
-val load = snapshotLoader.load(json, options)
+val loader = NamespaceSnapshotLoader(AppFeatures)
+val result = loader.load(jsonSnapshot)
+
+result.onSuccess { materialized ->
+  AppFeatures.load(materialized)
+}
+
+result.onFailure {
+  val parseError = result.parseErrorOrNull()
+  logger.error("Snapshot rejected: ${parseError?.message}")
+}
 ```
 
-Treat parse and boundary failures as typed results and keep last-known-good
-runtime state active when ingestion fails [CLM-PR01-11B].
+Snapshot loading uses result-based ingestion with codec-backed decode
+[CLM-PR01-11A]. Boundary failures are modeled with typed parse errors wrapped
+in boundary failures [CLM-PR01-11B].
+
+## Next steps
+
+1. Run validation checks in [Verify end-to-end](/quickstart/verify-end-to-end).
+2. Review conceptual framing in [Why typed flags](/overview/why-typed-flags).
+3. Plan operational rollout in [Adoption roadmap](/overview/adoption-roadmap).
 
 ## Claim citations
 

@@ -1,21 +1,40 @@
 # Why typed flags
 
-Typed feature declarations keep feature state and runtime evaluation aligned
-with compile-time contracts [CLM-PR01-03A].
+Typed feature declarations let you enforce feature contracts at compile time and
+keep runtime boundary failures explicit.
 
-Parse-boundary failures stay explicit and inspectable through typed parse-error
-results, so bad payloads do not silently mutate runtime behavior
-[CLM-PR01-03B].
+## Read this page when
+
+- You need the rationale for typed declarations over string-keyed flags.
+- You are defining safety expectations for your rollout system.
+- You want to connect API design to boundary reliability.
 
 ## Compile-time declaration model
 
-Namespaces and features encode feature ownership and value types directly in the
-API surface [CLM-PR01-03A].
+Namespaces and feature declarations encode ownership and value types directly in
+the API surface, removing stringly typed identifiers from core logic
+[CLM-PR01-03A].
 
 ## Boundary error semantics
 
-Boundary parsing failures are represented as explicit parse-error values wrapped
-in boundary failure results [CLM-PR01-03B].
+Snapshot ingestion failures are represented as typed parse errors wrapped in
+boundary failures, which makes failure handling explicit and testable
+[CLM-PR01-03B].
+
+## Practical implication
+
+You design declarations once and evaluate with deterministic semantics; when
+ingestion fails, behavior stays governed by explicit results rather than silent
+coercion.
+
+## Next steps
+
+1. Use this model in a concrete setup via
+   [Define first flag](/quickstart/define-first-flag).
+2. Add boundary-safe ingestion via
+   [Load first snapshot safely](/quickstart/load-first-snapshot-safely).
+3. Validate the full behavior with
+   [Verify end-to-end](/quickstart/verify-end-to-end).
 
 ## Claim citations
 

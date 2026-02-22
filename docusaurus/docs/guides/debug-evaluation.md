@@ -5,6 +5,25 @@ description: Legacy path for debugging guidance.
 unlisted: true
 ---
 
-This page has moved.
+# Debug evaluation (legacy bridge)
 
-See [Debugging determinism](/how-to-guides/debugging-determinism/) or [Production debugging](/production-operations/debugging/).
+This legacy debugging page now points to canonical verification and determinism
+guidance.
+
+## Read this page when
+
+- You followed an old debug-evaluation URL.
+- You need maintained troubleshooting entry points.
+- You want deterministic checks tied to quickstart behavior.
+
+## Canonical pages
+
+Use [Verify end-to-end](/quickstart/verify-end-to-end) and
+[Why typed flags](/overview/why-typed-flags).
+
+## Next steps
+
+1. Run [Verify end-to-end](/quickstart/verify-end-to-end).
+2. Review deterministic model in [Why typed flags](/overview/why-typed-flags).
+3. Re-check rollout safety in
+   [Add deterministic ramp-up](/quickstart/add-deterministic-ramp-up).

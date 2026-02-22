@@ -1,28 +1,40 @@
 # First success map
 
-Use this path to get one production-safe outcome quickly: typed declaration,
-deterministic rollout behavior, and safe snapshot ingestion
-[CLM-PR01-04A].
+Use this map to reach one production-safe outcome with typed declaration,
+deterministic rollout assignment, and boundary-safe snapshot ingestion.
+
+## Read this page when
+
+- You want a minimal path to first value.
+- You need the sequence before opening quickstart pages.
+- You want one cohesive implementation that is easy to verify.
 
 ## Step 1: define the first namespace feature
 
-Create a namespace and define one typed feature value to establish compile-time
-contracts for evaluation [CLM-PR01-04A].
+Declare one typed feature inside a namespace to establish compile-time contracts
+for evaluation [CLM-PR01-04A].
 
 ## Step 2: add deterministic ramp-up
 
-Use stable bucketing semantics for controlled rollout so a user stays in a
-stable cohort for the same rollout inputs [CLM-PR01-04A].
+Add ramp-up behavior so stable identities remain in stable cohorts for the same
+inputs [CLM-PR01-04A].
 
 ## Step 3: load snapshots through boundary-safe APIs
 
-Use the snapshot loader to materialize runtime config through explicit
-result-based parsing [CLM-PR01-04A].
+Load runtime configuration through typed result-based parsing so failures are
+explicit and operationally safe [CLM-PR01-04A].
 
 ## Step 4: verify end-to-end
 
-Run the quickstart verification checklist to confirm deterministic evaluation,
-boundary behavior, and runtime operation linkage [CLM-PR01-04A].
+Run deterministic, boundary, and runtime-operation checks before rollout windows
+[CLM-PR01-04A].
+
+## Next steps
+
+1. Execute the sequence in [Quickstart](/quickstart/).
+2. Deepen rollout confidence in
+   [Add deterministic ramp-up](/quickstart/add-deterministic-ramp-up).
+3. Prepare broader rollout with [Adoption roadmap](/overview/adoption-roadmap).
 
 ## Claim citations
 

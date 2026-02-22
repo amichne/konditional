@@ -1,28 +1,37 @@
 # Start here
 
-Konditional gives you a typed, deterministic control plane for feature rollout,
-configuration, and migration safety. Feature declarations are anchored in
-namespace-owned typed definitions rather than string keys [CLM-PR01-01A].
+Konditional gives you a typed and deterministic feature control plane where
+runtime configuration is constrained by explicit boundary outcomes.
 
-The first production win is to keep config ingestion inside an explicit
-`Result` boundary where parse failures remain typed and inspectable instead of
-becoming silent runtime drift [CLM-PR01-01B].
+## Read this page when
+
+- You are deciding where to start with Konditional.
+- You need the core guarantees before implementation.
+- You want the shortest path from overview to runnable setup.
 
 ## Typed foundations
 
-Use namespaces and typed feature definitions as the source of truth for feature
-contracts and evaluation behavior [CLM-PR01-01A].
+Feature ownership is namespace-scoped and declarations are typed at compile time
+through namespace-owned feature definitions [CLM-PR01-01A].
 
 ## Boundary-safe ingestion
 
-Load runtime snapshots through the snapshot loader and treat parse failures as
-first-class boundary outcomes [CLM-PR01-01B].
+Runtime snapshots are loaded through a `Result` boundary, so parse failures stay
+typed and inspectable instead of mutating behavior silently
+[CLM-PR01-01B].
 
-## What to do next
+## How this docs set is organized
 
-1. Confirm fit and constraints in [Product value and fit](/overview/product-value-fit).
-2. Follow the path in [First success map](/overview/first-success-map).
-3. Run the implementation path in [Quickstart](/quickstart/).
+Use `overview/*` to understand fit and architecture decisions, then move to
+`quickstart/*` for implementation with deterministic verification.
+
+## Next steps
+
+1. Confirm whether Konditional matches your constraints in
+   [Product value and fit](/overview/product-value-fit).
+2. Pick an implementation path in
+   [First success map](/overview/first-success-map).
+3. Start coding with [Quickstart](/quickstart/).
 
 ## Claim citations
 

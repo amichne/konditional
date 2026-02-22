@@ -3,75 +3,23 @@ slug: /legacy/getting-started-installation
 unlisted: true
 ---
 
-# Installation
+# Installation (legacy bridge)
 
-For the default Konditional experience (define namespaces and evaluate features), install:
-- `konditional-core`
-- `konditional-runtime`
+This legacy installation page has moved to the canonical quickstart install
+page.
 
-Replace `VERSION` with the latest published version.
+## Read this page when
 
----
+- You followed an old installation link.
+- You want the maintained dependency instructions.
+- You are aligning docs links to canonical locations.
 
-## Gradle (Kotlin DSL)
+## Canonical page
 
-```kotlin
-// build.gradle.kts
-dependencies {
-  implementation("io.amichne:konditional-core:VERSION")
-  implementation("io.amichne:konditional-runtime:VERSION")
-}
-```
-
-`konditional-runtime` provides the default `NamespaceRegistryFactory` implementation used by `Namespace(...)`.
-
-If you intentionally run without `konditional-runtime`, you must provide your own `NamespaceRegistry` implementation
-when constructing a namespace.
-
-## Test Fixtures (Optional)
-
-Konditional provides test helpers for common testing scenarios. Add the `testFixtures` dependency to your test
-configuration:
-
-### Gradle (Kotlin DSL)
-
-```kotlin
-// build.gradle.kts
-dependencies {
-  testImplementation(testFixtures("io.amichne:konditional-core:VERSION"))
-}
-```
-
-**Available test helpers:**
-
-- `CommonTestFeatures` — Pre-configured feature flags for common testing scenarios
-- `EnterpriseTestFeatures` — Enterprise-tier feature flags for advanced testing
-- `TestAxis` — Axis definitions for testing multi-dimensional targeting
-- `TestNamespace` — Namespace implementations for testing
-- `TestStableId` — StableId utilities for deterministic test buckets
-- `TargetingIds` — Pre-computed IDs for specific bucket targeting
-- `FeatureMutators` — Utilities for modifying feature configurations in tests
-
-See [How-To: Test Your Feature Flags](/how-to-guides/testing-features) for usage examples.
-
----
-
-## Verification
-
-After syncing Gradle, verify your project resolves Konditional artifacts and compiles.
-
-If your build succeeds, installation is complete.
-
----
+Use [Install](/quickstart/install) for current setup instructions.
 
 ## Next steps
 
-- Build one typed feature: [Your First Feature](/quickstart/define-first-flag)
-- Learn why typing matters at boundaries: [Type-Safety Boundaries](/theory/type-safety-boundaries)
-
-That is enough to define and evaluate typed features in code. If you need remote configuration, JSON serialization, or
-observability utilities, see:
-
-- [Runtime](/runtime/)
-- [Serialization](/serialization/)
-- [Observability](/observability/)
+1. Complete [Install](/quickstart/install).
+2. Continue with [Define first flag](/quickstart/define-first-flag).
+3. Evaluate in code using [Evaluate in app code](/quickstart/evaluate-in-app-code).

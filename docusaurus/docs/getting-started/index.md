@@ -3,30 +3,23 @@ slug: /legacy/getting-started
 unlisted: true
 ---
 
-# Getting Started
+# Getting started (legacy bridge)
 
-If you are new to Konditional, this section gets you to your first safe feature toggle quickly.
+This legacy page now points to the canonical quickstart path.
 
-In this section you will find:
+## Read this page when
 
-- [Installation](/quickstart/install) - add core + runtime dependencies
-- [Your First Feature](/quickstart/define-first-flag) - define, evaluate, and verify one feature end-to-end
+- You opened an old `/getting-started` URL.
+- You need the current canonical entry point.
+- You want the shortest path to first implementation.
 
----
+## Canonical page
 
-## 10-minute outcome
+Use [Quickstart](/quickstart/) for the maintained implementation sequence.
 
-By the end of this path, you will have:
+## Next steps
 
-- a typed feature defined in a namespace
-- a deterministic evaluation call in application code
-- a basic verification check proving expected behavior
-
----
-
-## After this section
-
-- [How-To: Roll Out a Feature Gradually](/how-to-guides/rolling-out-gradually)
-- [How-To: Load Configuration Safely from Remote](/how-to-guides/safe-remote-config)
-- [How-To: Run the Local HTTP Server Container](/how-to-guides/local-http-server-container)
-- [How-To: Test Your Feature Flags](/how-to-guides/testing-features)
+1. Begin with [Quickstart](/quickstart/).
+2. Install dependencies with [Install](/quickstart/install).
+3. Define your first feature in
+   [Define first flag](/quickstart/define-first-flag).
