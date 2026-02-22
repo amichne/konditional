@@ -1,11 +1,16 @@
+---
+slug: /legacy/getting-started
+unlisted: true
+---
+
 # Getting Started
 
 If you are new to Konditional, this section gets you to your first safe feature toggle quickly.
 
 In this section you will find:
 
-- [Installation](/getting-started/installation) - add core + runtime dependencies
-- [Your First Feature](/getting-started/your-first-flag) - define, evaluate, and verify one feature end-to-end
+- [Installation](/quickstart/install) - add core + runtime dependencies
+- [Your First Feature](/quickstart/define-first-flag) - define, evaluate, and verify one feature end-to-end
 
 ---
 

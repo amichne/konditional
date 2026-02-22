@@ -9,7 +9,7 @@ string-key mistakes or runtime type surprises.
 
 In this section you will find:
 
-- [Getting Started](/getting-started/) - your 10-minute path to shipping a safe toggle
+- [Getting Started](/quickstart/) - your 10-minute path to shipping a safe toggle
 - [How-To: Roll Out a Feature Gradually](/how-to-guides/rolling-out-gradually) - deterministic rollouts you can trust
 - [How-To: Load Configuration Safely from Remote](/how-to-guides/safe-remote-config) - typed parse boundary for runtime
   config
@@ -25,8 +25,8 @@ In this section you will find:
 For most Kotlin backend teams, the first win is simple: gate a new behavior with a typed flag and verify it
 deterministically.
 
-1. Install Konditional Core + Runtime: [Installation](/getting-started/installation)
-2. Define and evaluate one feature: [Your First Feature](/getting-started/your-first-flag)
+1. Install Konditional Core + Runtime: [Installation](/quickstart/install)
+2. Define and evaluate one feature: [Your First Feature](/quickstart/define-first-flag)
 3. Add gradual rollout: [Roll Out Gradually](/how-to-guides/rolling-out-gradually)
 
 After that, you can safely layer remote configuration and testing.
@@ -346,7 +346,7 @@ configuration.
 
 ## Next Steps
 
-- [Installation](./getting-started/installation) — Add Konditional to your project
-- [Your First Feature](./getting-started/your-first-flag) — Define and evaluate your first feature flag
+- [Installation](/quickstart/install) — Add Konditional to your project
+- [Your First Feature](/quickstart/define-first-flag) — Define and evaluate your first feature flag
 - [Core Concepts](./learn/core-primitives) — Understand the foundational types
 - [Verified Design Synthesis](./theory/verified-synthesis) — Cross-document, code-verified invariants and trade-offs

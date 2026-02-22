@@ -1,4 +1,6 @@
 ---
+slug: /legacy/guides-load-remote-config
+unlisted: true
 title: Load Remote Configuration Safely
 ---
 
@@ -228,7 +230,7 @@ when {
 
 ## Next Steps
 
-- [Guide: Roll Out Gradually](/guides/roll-out-gradually) — Update percentages via remote config
+- [Guide: Roll Out Gradually](/how-to-guides/rolling-out-gradually) — Update percentages via remote config
 - [Learn: Configuration Lifecycle](/learn/configuration-lifecycle) — JSON → Result → load flow
 - [Reference: Result API](/reference/api/parse-result) — Utilities for result handling
 - [Reference: Namespace Operations](/reference/api/namespace-operations) — load(), rollback() details

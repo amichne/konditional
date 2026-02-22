@@ -324,5 +324,5 @@ fun attachHooks() {
 - [Rules & Targeting: Rule Composition](/rules-and-targeting/rule-composition)
 - [Rules & Targeting: Rollout Strategies](/rules-and-targeting/rollout-strategies)
 - [Fundamentals: Configuration Lifecycle](/learn/configuration-lifecycle)
-- [Advanced: Shadow Evaluation](/advanced/shadow-evaluation)
-- [API Reference: Observability](/api-reference/observability)
+- [Advanced: Shadow Evaluation](/observability/shadow-evaluation)
+- [API Reference: Observability](/observability/reference)

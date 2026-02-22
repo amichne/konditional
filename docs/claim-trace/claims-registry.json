@@ -1,0 +1,631 @@
+{
+  "version": 1,
+  "claims": [
+    {
+      "claim_id": "CLM-PR01-01A",
+      "claim_text": "Konditional models feature declarations through namespace-owned typed feature definitions.",
+      "topics": [
+        "namespace-isolation",
+        "type-safety"
+      ],
+      "source_pages": [
+        {
+          "path": "docusaurus/docs/overview/start-here.md",
+          "anchor": "claim-clm-pr01-01a"
+        }
+      ],
+      "signature_links": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.Namespace"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.features.Feature"
+        }
+      ],
+      "test_links": [],
+      "evidence_status": "linked",
+      "risk_category": "operational",
+      "related_claims": [],
+      "change_history": []
+    },
+    {
+      "claim_id": "CLM-PR01-01B",
+      "claim_text": "Runtime configuration ingestion is exposed through a snapshot loader that returns Result and supports typed parse failures.",
+      "topics": [
+        "parse-boundary",
+        "snapshot-loading",
+        "type-safety"
+      ],
+      "source_pages": [
+        {
+          "path": "docusaurus/docs/overview/start-here.md",
+          "anchor": "claim-clm-pr01-01b"
+        }
+      ],
+      "signature_links": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.result.KonditionalBoundaryFailure"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.result.ParseError"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader"
+        }
+      ],
+      "test_links": [
+        {
+          "module": "konditional-core",
+          "path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/BoundaryFailureResultTest.kt",
+          "symbol": "BoundaryFailureResultTest",
+          "kind": "unit"
+        }
+      ],
+      "evidence_status": "linked",
+      "risk_category": "operational",
+      "related_claims": [],
+      "change_history": []
+    },
+    {
+      "claim_id": "CLM-PR01-02A",
+      "claim_text": "Deterministic ramp-up behavior is backed by stable bucketing functions.",
+      "topics": [
+        "determinism",
+        "ramp-up"
+      ],
+      "source_pages": [
+        {
+          "path": "docusaurus/docs/overview/product-value-fit.md",
+          "anchor": "claim-clm-pr01-02a"
+        }
+      ],
+      "signature_links": [
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.evaluation.Bucketing#fun isInRampUp( rampUp: RampUp, bucket: Int, ): Boolean"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.evaluation.Bucketing#fun stableBucket( salt: String, flagKey: String, stableId: HexId, ): Int"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.evaluation.Bucketing"
+        }
+      ],
+      "test_links": [
+        {
+          "module": "konditional-core",
+          "path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/MissingStableIdBucketingTest.kt",
+          "symbol": "MissingStableIdBucketingTest",
+          "kind": "unit"
+        }
+      ],
+      "evidence_status": "linked",
+      "risk_category": "operational",
+      "related_claims": [],
+      "change_history": []
+    },
+    {
+      "claim_id": "CLM-PR01-02B",
+      "claim_text": "Namespace-scoped runtime operations are implemented by an in-memory namespace registry.",
+      "topics": [
+        "namespace-isolation"
+      ],
+      "source_pages": [
+        {
+          "path": "docusaurus/docs/overview/product-value-fit.md",
+          "anchor": "claim-clm-pr01-02b"
+        }
+      ],
+      "signature_links": [
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun load(config: ConfigurationView)"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun rollback(steps: Int): Boolean"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
+        }
+      ],
+      "test_links": [
+        {
+          "module": "konditional-runtime",
+          "path": "konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt",
+          "symbol": "NamespaceLinearizabilityTest",
+          "kind": "unit"
+        }
+      ],
+      "evidence_status": "linked",
+      "risk_category": "operational",
+      "related_claims": [],
+      "change_history": []
+    },
+    {
+      "claim_id": "CLM-PR01-03A",
+      "claim_text": "Feature declarations are modeled as typed entities under Namespace and Feature abstractions.",
+      "topics": [
+        "namespace-isolation",
+        "type-safety"
+      ],
+      "source_pages": [
+        {
+          "path": "docusaurus/docs/overview/why-typed-flags.md",
+          "anchor": "claim-clm-pr01-03a"
+        }
+      ],
+      "signature_links": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.FlagDefinition"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.Namespace"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.features.Feature"
+        }
+      ],
+      "test_links": [
+        {
+          "module": "konditional-core",
+          "path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/NamespaceFeatureDefinitionTest.kt",
+          "symbol": "NamespaceFeatureDefinitionTest",
+          "kind": "unit"
+        }
+      ],
+      "evidence_status": "linked",
+      "risk_category": "operational",
+      "related_claims": [],
+      "change_history": []
+    },
+    {
+      "claim_id": "CLM-PR01-03B",
+      "claim_text": "Parse boundary failures are represented with explicit ParseError and KonditionalBoundaryFailure types.",
+      "topics": [
+        "parse-boundary",
+        "type-safety"
+      ],
+      "source_pages": [
+        {
+          "path": "docusaurus/docs/overview/why-typed-flags.md",
+          "anchor": "claim-clm-pr01-03b"
+        }
+      ],
+      "signature_links": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.result.KonditionalBoundaryFailure"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.result.ParseError"
+        }
+      ],
+      "test_links": [
+        {
+          "module": "konditional-core",
+          "path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/BoundaryFailureResultTest.kt",
+          "symbol": "BoundaryFailureResultTest",
+          "kind": "unit"
+        }
+      ],
+      "evidence_status": "linked",
+      "risk_category": "operational",
+      "related_claims": [],
+      "change_history": []
+    },
+    {
+      "claim_id": "CLM-PR01-04A",
+      "claim_text": "The first-success routes correspond to concrete runtime APIs for ramp-up and snapshot loading.",
+      "topics": [
+        "ramp-up",
+        "snapshot-loading"
+      ],
+      "source_pages": [
+        {
+          "path": "docusaurus/docs/overview/first-success-map.md",
+          "anchor": "claim-clm-pr01-04a"
+        }
+      ],
+      "signature_links": [
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.api.RampUpBucketing#fun bucket( stableId: StableId, featureKey: String, salt: String, ): Int"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.api.RampUpBucketing"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader"
+        }
+      ],
+      "test_links": [],
+      "evidence_status": "linked",
+      "risk_category": "operational",
+      "related_claims": [],
+      "change_history": []
+    },
+    {
+      "claim_id": "CLM-PR01-05A",
+      "claim_text": "Adoption phases rely on load, disable, and rollback runtime operations.",
+      "topics": [
+        "rollback"
+      ],
+      "source_pages": [
+        {
+          "path": "docusaurus/docs/overview/adoption-roadmap.md",
+          "anchor": "claim-clm-pr01-05a"
+        }
+      ],
+      "signature_links": [
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun disableAll()"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun rollback(steps: Int): Boolean"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
+        }
+      ],
+      "test_links": [
+        {
+          "module": "konditional-runtime",
+          "path": "konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt",
+          "symbol": "NamespaceLinearizabilityTest",
+          "kind": "unit"
+        }
+      ],
+      "evidence_status": "linked",
+      "risk_category": "operational",
+      "related_claims": [],
+      "change_history": []
+    },
+    {
+      "claim_id": "CLM-PR01-06A",
+      "claim_text": "The quickstart sequence is grounded in namespace declaration and snapshot loading APIs.",
+      "topics": [
+        "namespace-isolation",
+        "snapshot-loading"
+      ],
+      "source_pages": [
+        {
+          "path": "docusaurus/docs/quickstart/index.md",
+          "anchor": "claim-clm-pr01-06a"
+        }
+      ],
+      "signature_links": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.Namespace"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader"
+        }
+      ],
+      "test_links": [],
+      "evidence_status": "linked",
+      "risk_category": "operational",
+      "related_claims": [],
+      "change_history": []
+    },
+    {
+      "claim_id": "CLM-PR01-07A",
+      "claim_text": "Installation targets the core namespace model and runtime in-memory registry implementation.",
+      "topics": [
+        "namespace-isolation"
+      ],
+      "source_pages": [
+        {
+          "path": "docusaurus/docs/quickstart/install.md",
+          "anchor": "claim-clm-pr01-07a"
+        }
+      ],
+      "signature_links": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.Namespace"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
+        }
+      ],
+      "test_links": [],
+      "evidence_status": "linked",
+      "risk_category": "operational",
+      "related_claims": [],
+      "change_history": []
+    },
+    {
+      "claim_id": "CLM-PR01-08A",
+      "claim_text": "Feature declarations are represented by Namespace, Feature, and FlagDefinition types.",
+      "topics": [
+        "namespace-isolation",
+        "type-safety"
+      ],
+      "source_pages": [
+        {
+          "path": "docusaurus/docs/quickstart/define-first-flag.md",
+          "anchor": "claim-clm-pr01-08a"
+        }
+      ],
+      "signature_links": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.FlagDefinition"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.Namespace"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.features.Feature"
+        }
+      ],
+      "test_links": [],
+      "evidence_status": "linked",
+      "risk_category": "operational",
+      "related_claims": [],
+      "change_history": []
+    },
+    {
+      "claim_id": "CLM-PR01-08B",
+      "claim_text": "Namespaces provide a compiled schema used by boundary codecs and loaders.",
+      "topics": [
+        "namespace-isolation",
+        "parse-boundary"
+      ],
+      "source_pages": [
+        {
+          "path": "docusaurus/docs/quickstart/define-first-flag.md",
+          "anchor": "claim-clm-pr01-08b"
+        }
+      ],
+      "signature_links": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.Namespace"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec"
+        }
+      ],
+      "test_links": [
+        {
+          "module": "konditional-runtime",
+          "path": "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationSnapshotCodecTest.kt",
+          "symbol": "NamespaceConfigurationSnapshotCodecTest",
+          "kind": "unit"
+        }
+      ],
+      "evidence_status": "linked",
+      "risk_category": "operational",
+      "related_claims": [],
+      "change_history": []
+    },
+    {
+      "claim_id": "CLM-PR01-09A",
+      "claim_text": "Feature evaluation follows core flag-definition evaluation semantics and deterministic bucketing behavior.",
+      "topics": [
+        "determinism",
+        "ramp-up"
+      ],
+      "source_pages": [
+        {
+          "path": "docusaurus/docs/quickstart/evaluate-in-app-code.md",
+          "anchor": "claim-clm-pr01-09a"
+        }
+      ],
+      "signature_links": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.FlagDefinition"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.evaluation.Bucketing"
+        }
+      ],
+      "test_links": [],
+      "evidence_status": "linked",
+      "risk_category": "operational",
+      "related_claims": [],
+      "change_history": []
+    },
+    {
+      "claim_id": "CLM-PR01-10A",
+      "claim_text": "Ramp-up assignment is deterministic and exposed through stable bucket APIs.",
+      "topics": [
+        "determinism",
+        "ramp-up"
+      ],
+      "source_pages": [
+        {
+          "path": "docusaurus/docs/quickstart/add-deterministic-ramp-up.md",
+          "anchor": "claim-clm-pr01-10a"
+        }
+      ],
+      "signature_links": [
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.api.RampUpBucketing#fun bucket( stableId: StableId, featureKey: String, salt: String, ): Int"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.evaluation.Bucketing#fun isInRampUp( rampUp: RampUp, bucket: Int, ): Boolean"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.evaluation.Bucketing#fun stableBucket( salt: String, flagKey: String, stableId: HexId, ): Int"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.id.StableId"
+        }
+      ],
+      "test_links": [
+        {
+          "module": "konditional-core",
+          "path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/MissingStableIdBucketingTest.kt",
+          "symbol": "MissingStableIdBucketingTest",
+          "kind": "unit"
+        }
+      ],
+      "evidence_status": "linked",
+      "risk_category": "operational",
+      "related_claims": [],
+      "change_history": []
+    },
+    {
+      "claim_id": "CLM-PR01-11A",
+      "claim_text": "Snapshot loading API exposes Result-based ingestion with options and codec-backed decode.",
+      "topics": [
+        "snapshot-loading"
+      ],
+      "source_pages": [
+        {
+          "path": "docusaurus/docs/quickstart/load-first-snapshot-safely.md",
+          "anchor": "claim-clm-pr01-11a"
+        }
+      ],
+      "signature_links": [
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#override fun load( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.options.SnapshotLoadOptions"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader"
+        }
+      ],
+      "test_links": [],
+      "evidence_status": "linked",
+      "risk_category": "operational",
+      "related_claims": [],
+      "change_history": []
+    },
+    {
+      "claim_id": "CLM-PR01-11B",
+      "claim_text": "Boundary failures are modeled as ParseError values wrapped by KonditionalBoundaryFailure.",
+      "topics": [
+        "parse-boundary"
+      ],
+      "source_pages": [
+        {
+          "path": "docusaurus/docs/quickstart/load-first-snapshot-safely.md",
+          "anchor": "claim-clm-pr01-11b"
+        }
+      ],
+      "signature_links": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.result.KonditionalBoundaryFailure"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.result.ParseError"
+        }
+      ],
+      "test_links": [
+        {
+          "module": "konditional-core",
+          "path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/BoundaryFailureResultTest.kt",
+          "symbol": "BoundaryFailureResultTest",
+          "kind": "unit"
+        }
+      ],
+      "evidence_status": "linked",
+      "risk_category": "operational",
+      "related_claims": [],
+      "change_history": []
+    },
+    {
+      "claim_id": "CLM-PR01-12A",
+      "claim_text": "End-to-end verification relies on deterministic bucketing, boundary parse types, and namespace runtime operations.",
+      "topics": [
+        "determinism",
+        "namespace-isolation",
+        "parse-boundary",
+        "ramp-up",
+        "type-safety"
+      ],
+      "source_pages": [
+        {
+          "path": "docusaurus/docs/quickstart/verify-end-to-end.md",
+          "anchor": "claim-clm-pr01-12a"
+        }
+      ],
+      "signature_links": [
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun load(config: ConfigurationView)"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.evaluation.Bucketing"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.result.ParseError"
+        }
+      ],
+      "test_links": [
+        {
+          "module": "konditional-core",
+          "path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/BoundaryFailureResultTest.kt",
+          "symbol": "BoundaryFailureResultTest",
+          "kind": "unit"
+        },
+        {
+          "module": "konditional-core",
+          "path": "konditional-core/src/test/kotlin/io/amichne/konditional/core/MissingStableIdBucketingTest.kt",
+          "symbol": "MissingStableIdBucketingTest",
+          "kind": "unit"
+        },
+        {
+          "module": "konditional-runtime",
+          "path": "konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt",
+          "symbol": "NamespaceLinearizabilityTest",
+          "kind": "unit"
+        }
+      ],
+      "evidence_status": "linked",
+      "risk_category": "operational",
+      "related_claims": [],
+      "change_history": []
+    }
+  ]
+}

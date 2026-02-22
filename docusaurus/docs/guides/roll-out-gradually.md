@@ -1,4 +1,5 @@
 ---
+slug: /legacy/guides-roll-out-gradually
 title: Roll-out Gradually (Legacy)
 description: Legacy path for rollout guidance.
 unlisted: true

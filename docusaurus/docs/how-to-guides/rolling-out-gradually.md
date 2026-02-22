@@ -6,7 +6,7 @@ Use this guide when you want to release a new feature safely, starting small and
 
 ## Prerequisites
 
-- A typed feature defined in a namespace (see [Your First Feature](/getting-started/your-first-flag))
+- A typed feature defined in a namespace (see [Your First Feature](/quickstart/define-first-flag))
 - A stable user identifier available as `stableId`
 - Basic monitoring for errors and conversion metrics
 

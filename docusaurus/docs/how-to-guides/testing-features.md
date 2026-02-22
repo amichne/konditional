@@ -254,7 +254,7 @@ fun `failed load preserves last-known-good`() {
 
 ## Using Konditional Test Helpers
 
-Konditional provides pre-built test helpers via testFixtures. Add the dependency (see [Installation](/getting-started/installation#test-fixtures-optional)) to access:
+Konditional provides pre-built test helpers via testFixtures. Add the dependency (see [Installation](/quickstart/install)) to access:
 
 ### CommonTestFeatures and EnterpriseTestFeatures
 
@@ -732,7 +732,7 @@ assertEquals(50.0, actualPercentage, delta = 1.0) // ±1%
 
 **Verification**: Test passes consistently across multiple runs.
 
-**Related**: [Guide: Roll Out Gradually](/guides/roll-out-gradually), [Reference: RampUp Bucketing](/reference/api/ramp-up-bucketing)
+**Related**: [Guide: Roll Out Gradually](/how-to-guides/rolling-out-gradually), [Reference: RampUp Bucketing](/reference/api/ramp-up-bucketing)
 
 ---
 
@@ -774,8 +774,8 @@ Before finishing a feature rollout, confirm your test suite includes:
 
 ## Next Steps
 
-- [Guide: Roll Out Gradually](/guides/roll-out-gradually) — Implement and test ramps
-- [Guide: Debug Evaluation](/guides/debug-evaluation) — Debug test failures
+- [Guide: Roll Out Gradually](/how-to-guides/rolling-out-gradually) — Implement and test ramps
+- [Guide: Debug Evaluation](/how-to-guides/debugging-determinism) — Debug test failures
 - [Reference: Feature Evaluation](/reference/api/feature-evaluation) — public evaluation surface and removed legacy APIs
 - [Examples: Golden Path](/examples/golden-path) — Runnable test examples
 - [Production Operations: Failure Modes](/production-operations/failure-modes) — What can go wrong
