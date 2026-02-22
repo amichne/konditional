@@ -1,123 +1,54 @@
-# Runtime Operations
+# Runtime operations
 
-API reference for managing namespace configuration lifecycle: loading, rollback, and kill-switch operations.
+This page is the runtime API reference for namespace lifecycle control.
 
-`load` / `rollback` / `historyMetadata` are runtime-only extensions from `io.amichne.konditional.runtime`.
+## Read this page when
 
----
+- You need exact behavior for load, rollback, and kill-switch operations.
+- You are building operational automation around namespace updates.
+- You are reviewing concurrency assumptions in runtime code paths.
 
-## `Namespace.load(configuration)`
+## APIs in scope
 
-Atomically replace the active configuration snapshot.
+### `Namespace.load(configuration)`
 
-```kotlin
-fun Namespace.load(configuration: MaterializedConfiguration)
-```
+Atomically replaces the active snapshot for one namespace.
 
-### Parameters
+### `Namespace.configuration: ConfigurationView`
 
-- `configuration` - trusted snapshot (typically from `NamespaceSnapshotLoader.load(...)` or `ConfigurationSnapshotCodec.decode(json, schema, options)`)
+Returns the currently active snapshot view.
 
-### Behavior
+### `Namespace.rollback(steps: Int = 1): Boolean`
 
-- Performs atomic swap via `AtomicReference.set(...)`
-- Readers see either old or new snapshot (never mixed)
-- Adds current config to rollback history (bounded)
+Moves back through bounded history when a previous snapshot exists.
 
-### Example
+### `Namespace.historyMetadata: List<ConfigurationMetadataView>`
 
-```kotlin
-NamespaceSnapshotLoader(AppFeatures)
-  .load(json)
-  .onSuccess { materialized ->
-    AppFeatures.load(materialized)
-  }
-  .onFailure { failure ->
-    val parseError = failure.parseErrorOrNull()
-    logError(parseError?.message ?: failure.message.orEmpty())
-  }
-```
+Returns metadata for rollback history entries.
 
----
+### `Namespace.disableAll()` / `Namespace.enableAll()`
 
-## `Namespace.configuration: ConfigurationView`
+Toggles namespace-level kill-switch behavior.
 
-Get the current active configuration snapshot.
+### `Namespace.setHooks(hooks: RegistryHooks)`
 
-```kotlin
-val Namespace.configuration: ConfigurationView
-```
+Registers logging/metrics hooks for runtime events.
 
-### Example
+## Operational semantics
 
-```kotlin
-val current = AppFeatures.configuration
-println("Version: ${current.metadata.version}")
-```
+- Readers observe complete snapshots only.
+- Write operations are namespace-scoped.
+- Kill-switch changes evaluation outcome, not persisted definitions.
 
----
+## Related pages
 
-<details>
-<summary>Advanced Options</summary>
-
-## `Namespace.rollback(steps): Boolean`
-
-Revert to a prior configuration from rollback history.
-
-```kotlin
-fun Namespace.rollback(steps: Int = 1): Boolean
-```
-
-### Returns
-
-- `true` if rollback succeeded
-- `false` if not enough history is available
-
----
-
-## `Namespace.historyMetadata: List<ConfigurationMetadataView>`
-
-Read metadata for the rollback history.
-
-```kotlin
-val Namespace.historyMetadata: List<ConfigurationMetadataView>
-```
-
----
-
-## `Namespace.disableAll()` / `Namespace.enableAll()`
-
-Emergency kill-switch to return defaults for all features.
-
-```kotlin
-fun Namespace.disableAll()
-fun Namespace.enableAll()
-```
-
-- **Guarantee**: When disabled, evaluations return declared defaults.
-
-- **Mechanism**: Registry-level boolean kill-switch.
-
-- **Boundary**: This does not change feature definitions or loaded configuration.
-
----
-
-## `Namespace.setHooks(hooks)`
-
-Attach dependency-free logging/metrics hooks to a namespace registry.
-
-```kotlin
-fun Namespace.setHooks(hooks: RegistryHooks)
-```
-
-See [Observability](/observability/) for `RegistryHooks` and related interfaces.
-
-</details>
-
----
+- [Runtime lifecycle](/runtime/lifecycle)
+- [Serialization reference](/serialization/reference)
+- [Atomicity guarantees](/theory/atomicity-guarantees)
+- [Namespace isolation](/theory/namespace-isolation)
 
 ## Next steps
 
-- [Configuration lifecycle](/runtime/lifecycle)
-- [Serialization module](/serialization/)
-- [Observability](/observability/)
+1. Pair this API with parse boundaries in [Serialization reference](/serialization/reference).
+2. Confirm failure strategy in [Configuration lifecycle](/learn/configuration-lifecycle).
+3. Use shadow rollout practices from [Migration and shadowing](/theory/migration-and-shadowing).

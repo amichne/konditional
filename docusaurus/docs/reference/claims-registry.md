@@ -2,6 +2,18 @@
 
 This page is generated from `docs/claim-trace/claims-registry.json` and is the human-readable index for claim IDs used across documentation.
 
+## Read this page when
+
+- You need to verify that a claim token used in prose links to concrete signatures and tests.
+- You are auditing evidence status before publishing docs changes.
+- You are updating claim-trace JSON artifacts and need stable anchor targets.
+
+## How to use this page
+
+1. Find the claim in the summary table by ID.
+2. Jump to the claim section for signature links and test links.
+3. Follow source-page anchors to confirm where the claim is asserted.
+
 | Claim ID | Claim text | Evidence status | Risk category | Source pages |
 |---|---|---|---|---|
 | [CLM-PR01-01A](#clm-pr01-01a) | Konditional models feature declarations through namespace-owned typed feature definitions. | linked | operational | `docusaurus/docs/overview/start-here.md#claim-clm-pr01-01a` |
@@ -225,3 +237,9 @@ End-to-end verification relies on deterministic bucketing, boundary parse types,
 - **Signature links:** `method:io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun load(config: ConfigurationView)`, `type:io.amichne.konditional.core.evaluation.Bucketing`, `type:io.amichne.konditional.core.registry.InMemoryNamespaceRegistry`, `type:io.amichne.konditional.core.result.ParseError`
 - **Test links:** `unit:konditional-core:konditional-core/src/test/kotlin/io/amichne/konditional/core/BoundaryFailureResultTest.kt:BoundaryFailureResultTest`, `unit:konditional-core:konditional-core/src/test/kotlin/io/amichne/konditional/core/MissingStableIdBucketingTest.kt:MissingStableIdBucketingTest`, `unit:konditional-runtime:konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt:NamespaceLinearizabilityTest`
 - **Related claims:** -
+
+## Next steps
+
+1. Validate link completeness in `docs/claim-trace/claims-report.json`.
+2. Inspect claim-to-signature mapping in `docs/claim-trace/claim-signature-links.json`.
+3. Continue with API details in [Namespace operations API](/reference/api/namespace-operations).

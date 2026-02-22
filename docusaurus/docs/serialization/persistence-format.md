@@ -1,594 +1,88 @@
-# Persistence & Storage Format
+# Persistence format
 
-This page documents the JSON formats used to persist and transport Konditional configuration:
+This page defines the JSON shapes used for snapshot storage and patch-based
+updates.
 
-- **Snapshot**: the full configuration payload (`ConfigurationSnapshotCodec.encode(...)`)
-- **Patch**: an incremental update payload (`ConfigurationSnapshotCodec.applyPatchJson(...)`)
+## Read this page when
 
-These formats are intentionally storage-agnostic: you can store the JSON in files, a database, or ship it over the
-network.
+- You are generating or validating external configuration payloads.
+- You are building config tooling around snapshot and patch JSON.
+- You need exact field-level semantics for boundary tests.
 
----
+## Concepts in scope
 
-## Mental model: what is persisted
+- **Snapshot payload**: complete set of flag definitions plus optional metadata.
+- **Patch payload**: upsert flag definitions plus optional `removeKeys`.
+- **Feature identity**: `key` uses stable `FeatureId` format.
+- **Typed values**: `defaultValue` and rule `value` use tagged unions.
+- **Targeting fields**: locales, platforms, version ranges, axes, and rollout
+  controls serialize as explicit JSON fields.
 
-At persistence time, the library serializes a list of **flag definitions**:
-
-```mermaid
-flowchart LR
-  Snap[Snapshot JSON] --> Flags["flags: List{Flag}"]
-  Snap --> Meta["meta: SnapshotMetadata?"]
-  Flags --> Flag["Flag"]
-  Flag --> Key["key: FeatureId"]
-  Flag --> Default["defaultValue: tagged value object"]
-  Flag --> Salt["salt: String"]
-  Flag --> Active["isActive: Boolean"]
-  Flag --> FAllow["rampUpAllowlist: Set{String}"]
-  Flag --> Rules
-  Rules --> Rule["Rule"]
-  Rule --> RVal["value: tagged value object"]
-  Rule --> Ramp["rampUp: Double"]
-  Rule --> RAllow["rampUpAllowlist: Set{String}"]
-  Rule --> Note["note: String?"]
-  Rule --> Loc["locales: Set{String}"]
-  Rule --> Plat["platforms: Set{String}"]
-  Rule --> Vr["versionRange: VersionRange?"]
-  Rule --> Axes["axes: Map{String, Set{String}}"]
-
-```
-
----
-
-## FeatureId format (`key`)
-
-Each flag is stored under a stable **FeatureId** string:
-
-```
-feature::${namespaceIdentifierSeed}::${featureKey}
-```
-
-Where:
-
-- `${namespaceIdentifierSeed}` is `Namespace.identifierSeed` (defaults to the namespace `id`)
-- `${featureKey}` is the feature key (typically the Kotlin property name)
-
-Example (Global namespace, `darkMode`):
-
-```
-feature::global::darkMode
-```
-
-Backward compatibility: older snapshots may contain `value::${namespaceIdentifierSeed}::${featureKey}`. These are
-normalized on load.
-
----
-
-## Value encoding (`defaultValue` / rule `value`)
-
-Both `defaultValue` and each rule's `value` are encoded as a **discriminated union** (tagged object). The `type` field
-acts as a discriminator that determines
-which variant is being used:
-
-```json
-{
-  "type": "BOOLEAN",
-  "value": true
-}
-```
-
-Supported shapes:
-
-| Kind       | JSON shape                                                                                  |
-|------------|---------------------------------------------------------------------------------------------|
-| Boolean    | `{ "type": "BOOLEAN", "value": ${boolean} }`                                                |
-| String     | `{ "type": "STRING", "value": "${string}" }`                                                |
-| Int        | `{ "type": "INT", "value": ${int} }`                                                        |
-| Double     | `{ "type": "DOUBLE", "value": ${double} }`                                                  |
-| Enum       | `{ "type": "ENUM", "value": "${enumName}", "enumClassName": "${fqcn}" }`                    |
-| Data class | `{ "type": "DATA_CLASS", "dataClassName": "${fqcn}", "value": { ...primitive fields... } }` |
-
-The `DATA_CLASS` representation stores a primitive map of fields along with the fully qualified class name.
-
-The generated OpenAPI schema includes a `discriminator` block that maps each `type` value to its corresponding schema
-reference (e.g., `"BOOLEAN"` →
-`#/components/schemas/BooleanFlagValue`).
-
----
-
-## Version range encoding (`versionRange`)
-
-Rules may include a `versionRange` object. Like flag values, it uses a **discriminated union** pattern where the `type`
-field determines which variant and
-required fields apply:
-
-```json
-{
-  "type": "MIN_AND_MAX_BOUND",
-  "min": {
-    "major": 2,
-    "minor": 0,
-    "patch": 0
-  },
-  "max": {
-    "major": 4,
-    "minor": 0,
-    "patch": 0
-  }
-}
-```
-
-Valid `type` values:
-
-- `UNBOUNDED`
-- `MIN_BOUND` (requires `min`)
-- `MAX_BOUND` (requires `max`)
-- `MIN_AND_MAX_BOUND` (requires `min` and `max`)
-
-Locale and platform values are serialized as their stable ids (`LocaleTag.id` / `PlatformTag.id`). The built-in
-`AppLocale` and `Platform` enums use their enum names as ids, so existing snapshots remain stable.
-
----
-
-## Ramp-up allowlists (`rampUpAllowlist`)
-
-Both flags and individual rules may include a `rampUpAllowlist` field:
-
-- It is a set of **stable ID hex strings** (the same representation returned by `Context.stableId.id`).
-- It does not force a rule to match; it only bypasses the ramp-up check *after* a rule matches by criteria.
-- Flag-level and rule-level allowlists are treated as a union (either can bypass ramp-up).
-- It does not override `isActive` or the namespace kill-switch (`disableAll`).
-
-To generate a value for remote config, use the same normalization as the runtime:
-
-```kotlin
-val stableIdHex = StableId.of("user-123").id // "757365722d313233"
-val stableIdFromHex = StableId.fromHex(stableIdHex)
-```
-
----
-
-## Generic templates (Kotlin-style)
-
-### Snapshot template
-
-```kotlin
-val snapshotJson = """
-{
-  "meta": {
-    "version": "${optionalVersionOrNull}",
-    "generatedAtEpochMillis": ${optionalEpochMillisOrNull},
-    "source": "${optionalSourceOrNull}"
-  },
-  "flags": [
-    {
-      "key": "feature::${namespaceSeed}::${featureKey}",
-      "defaultValue": {
-        "type": "${valueType}",
-        "value": ${defaultValueJson},
-        "...": "${typeSpecificFields}"
-      },
-      "salt": "${salt}",
-      "isActive": ${isActive},
-      "rampUpAllowlist": ["${stableIdHex}", "..."],
-      "rules": [
-        {
-          "value": {
-            "type": "${valueType}",
-            "value": ${ruleValueJson},
-            "...": "${typeSpecificFields}"
-          },
-          "rampUp": ${rampUpPercent},
-          "rampUpAllowlist": ["${stableIdHex}", "..."],
-          "note": "${optionalNoteOrNull}",
-          "locales": ["${APP_LOCALE_ENUM_NAME}", "..."],
-          "platforms": ["${PLATFORM_ENUM_NAME}", "..."],
-          "axes": {
-            "${axisId}": ["${axisValueId}", "..."]
-          },
-          "versionRange": {
-            "type": "${UNBOUNDED|MIN_BOUND|MAX_BOUND|MIN_AND_MAX_BOUND}",
-            "min": { "major": ${minMajor}, "minor": ${minMinor}, "patch": ${minPatch} },
-            "max": { "major": ${maxMajor}, "minor": ${maxMinor}, "patch": ${maxPatch} }
-          }
-        }
-      ]
-    }
-  ]
-}
-"""
-```
-
-### Patch template
-
-```kotlin
-val patchJson = """
-{
-  "meta": {
-    "version": "${optionalVersionOrNull}",
-    "generatedAtEpochMillis": ${optionalEpochMillisOrNull},
-    "source": "${optionalSourceOrNull}"
-  },
-  "flags": [
-    { "...": "flag objects (same shape as snapshot)" }
-  ],
-  "removeKeys": [
-    "feature::${namespaceSeed}::${featureKeyToRemove}",
-    "feature::${namespaceSeed}::${anotherKey}"
-  ]
-}
-"""
-```
-
----
-
-## Parse boundary and failure modes
-
-Deserialization reconstructs configurations by looking up each `key` in an internal registry of known features.
-
-- If a key is not registered, parsing fails with `ParseError.FeatureNotFound`.
-- JSON syntax/shape errors fail with `ParseError.InvalidJson` / `ParseError.InvalidSnapshot`.
-
-Operationally: treat parse failures as “reject update, keep last-known-good”.
-
----
-
-## Snapshot metadata (`meta`)
-
-Snapshots and patches may include an optional `meta` object:
+## Snapshot shape
 
 ```json
 {
   "meta": {
     "version": "rev-123",
     "generatedAtEpochMillis": 1700000000000,
-    "source": "s3://configs/global.json"
+    "source": "s3://configs/app.json"
   },
-  "flags": []
-}
-```
-
----
-
-## JSON examples
-
-Notes:
-
-- Incoming JSON may omit fields that have defaults (for example `rampUpAllowlist`, `locales`, `platforms`, `axes`, and
-  `versionRange`).
-- `ConfigurationSnapshotCodec.encode(...)` emits explicit values for these fields (including empty arrays/objects).
-
-:::details Snapshot: booleans + string variants, with version ranges
-
-```json
-{
   "flags": [
     {
-      "key": "feature::global::darkMode",
-      "defaultValue": {
-        "type": "BOOLEAN",
-        "value": false
-      },
+      "key": "feature::app::darkMode",
+      "defaultValue": { "type": "BOOLEAN", "value": false },
       "salt": "v1",
       "isActive": true,
       "rampUpAllowlist": [],
-      "rules": [
-        {
-          "value": {
-            "type": "BOOLEAN",
-            "value": true
-          },
-          "rampUp": 50.0,
-          "rampUpAllowlist": [
-            "757365722d313233"
-          ],
-          "note": "iOS gradual ramp-up",
-          "locales": [
-            "UNITED_STATES"
-          ],
-          "platforms": [
-            "IOS"
-          ],
-          "axes": {},
-          "versionRange": {
-            "type": "MIN_BOUND",
-            "min": {
-              "major": 2,
-              "minor": 0,
-              "patch": 0
-            }
-          }
-        }
-      ]
-    },
-    {
-      "key": "feature::global::apiEndpoint",
-      "defaultValue": {
-        "type": "STRING",
-        "value": "https://api.example.com"
-      },
-      "salt": "v1",
-      "isActive": true,
-      "rampUpAllowlist": [],
-      "rules": [
-        {
-          "value": {
-            "type": "STRING",
-            "value": "https://api-ios.example.com"
-          },
-          "rampUp": 100.0,
-          "rampUpAllowlist": [],
-          "note": "iOS endpoint",
-          "locales": [],
-          "platforms": [
-            "IOS"
-          ],
-          "axes": {},
-          "versionRange": {
-            "type": "UNBOUNDED"
-          }
-        },
-        {
-          "value": {
-            "type": "STRING",
-            "value": "https://api-android.example.com"
-          },
-          "rampUp": 100.0,
-          "rampUpAllowlist": [],
-          "note": "Android endpoint",
-          "locales": [],
-          "platforms": [
-            "ANDROID"
-          ],
-          "axes": {},
-          "versionRange": {
-            "type": "UNBOUNDED"
-          }
-        }
-      ]
+      "rules": []
     }
   ]
 }
 ```
 
-:::
-
-:::details Snapshot: enum value payload
+## Patch shape
 
 ```json
 {
+  "meta": {
+    "version": "rev-124"
+  },
   "flags": [
     {
-      "key": "feature::global::theme",
-      "defaultValue": {
-        "type": "ENUM",
-        "value": "LIGHT",
-        "enumClassName": "com.example.Theme"
-      },
+      "key": "feature::app::darkMode",
+      "defaultValue": { "type": "BOOLEAN", "value": false },
       "salt": "v1",
       "isActive": true,
       "rampUpAllowlist": [],
-      "rules": [
-        {
-          "value": {
-            "type": "ENUM",
-            "value": "DARK",
-            "enumClassName": "com.example.Theme"
-          },
-          "rampUp": 100.0,
-          "rampUpAllowlist": [],
-          "note": "Dark theme for iOS",
-          "locales": [],
-          "platforms": [
-            "IOS"
-          ],
-          "axes": {},
-          "versionRange": {
-            "type": "UNBOUNDED"
-          }
-        }
-      ]
-    }
-  ]
-}
-```
-
-:::
-
-:::details Patch: update one flag, remove one flag
-
-```json
-{
-  "flags": [
-    {
-      "key": "feature::global::darkMode",
-      "defaultValue": {
-        "type": "BOOLEAN",
-        "value": false
-      },
-      "salt": "v1",
-      "isActive": true,
-      "rampUpAllowlist": [],
-      "rules": [
-        {
-          "value": {
-            "type": "BOOLEAN",
-            "value": true
-          },
-          "rampUp": 100.0,
-          "rampUpAllowlist": [],
-          "note": "Ramp-up complete",
-          "locales": [],
-          "platforms": [],
-          "axes": {},
-          "versionRange": {
-            "type": "UNBOUNDED"
-          }
-        }
-      ]
+      "rules": []
     }
   ],
-  "removeKeys": [
-    "feature::global::LEGACY_SUPPORT"
-  ]
+  "removeKeys": ["feature::app::legacyFeature"]
 }
 ```
 
-:::
+## Field semantics
 
-:::details Consumer Configuration Lifecycle Sample
+- `key`: `feature::<namespaceSeed>::<featureKey>`.
+- `defaultValue` and `rules[].value`: tagged value objects.
+- `versionRange`: tagged range object (`UNBOUNDED`, `MIN_BOUND`,
+  `MAX_BOUND`, `MIN_AND_MAX_BOUND`).
+- `rampUpAllowlist`: stable ID hex strings used only after criteria match.
 
-```json
-{
-  "flags": [
-    {
-      "key": "feature::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::darkMode",
-      "defaultValue": {
-        "type": "BOOLEAN",
-        "value": false
-      },
-      "salt": "v1",
-      "isActive": true,
-      "rules": [
-        {
-          "value": {
-            "type": "BOOLEAN",
-            "value": true
-          },
-          "rampUp": 100.0,
-          "note": "iOS fully enabled",
-          "locales": [],
-          "platforms": [
-            "IOS"
-          ],
-          "versionRange": {
-            "type": "UNBOUNDED"
-          }
-        }
-      ]
-    },
-    {
-      "key": "feature::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::apiEndpoint",
-      "defaultValue": {
-        "type": "STRING",
-        "value": "https://api.example.com"
-      },
-      "salt": "v1",
-      "isActive": true,
-      "rules": [
-        {
-          "value": {
-            "type": "STRING",
-            "value": "https://api-web.example.com"
-          },
-          "rampUp": 100.0,
-          "note": "Web endpoint override",
-          "locales": [],
-          "platforms": [
-            "WEB"
-          ],
-          "versionRange": {
-            "type": "UNBOUNDED"
-          }
-        }
-      ]
-    },
-    {
-      "key": "feature::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::maxRetries",
-      "defaultValue": {
-        "type": "INT",
-        "value": 3
-      },
-      "salt": "v1",
-      "isActive": true,
-      "rules": [
-        {
-          "value": {
-            "type": "INT",
-            "value": 5
-          },
-          "rampUp": 100.0,
-          "note": "More retries on v2+",
-          "locales": [],
-          "platforms": [],
-          "versionRange": {
-            "type": "MIN_BOUND",
-            "min": {
-              "major": 2,
-              "minor": 0,
-              "patch": 0
-            }
-          }
-        }
-      ]
-    },
-    {
-      "key": "feature::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::theme",
-      "defaultValue": {
-        "type": "ENUM",
-        "value": "LIGHT",
-        "enumClassName": "io.amichne.konditional.serialization.ConsumerConfigurationLifecycleTest$Theme"
-      },
-      "salt": "v1",
-      "isActive": true,
-      "rules": [
-        {
-          "value": {
-            "type": "ENUM",
-            "value": "DARK",
-            "enumClassName": "io.amichne.konditional.serialization.ConsumerConfigurationLifecycleTest$Theme"
-          },
-          "rampUp": 100.0,
-          "note": "Dark theme for FR locale",
-          "locales": [
-            "FRANCE"
-          ],
-          "platforms": [],
-          "versionRange": {
-            "type": "UNBOUNDED"
-          }
-        }
-      ]
-    },
-    {
-      "key": "feature::consumer-lifecycle-3f02840e-abd0-4447-9bdc-0a8f41ca530e::userSettings",
-      "defaultValue": {
-        "type": "DATA_CLASS",
-        "dataClassName": "io.amichne.konditional.serialization.ConsumerConfigurationLifecycleTest$UserSettings",
-        "value": {
-          "enabled": true,
-          "maxRetries": 3.0,
-          "theme": "light",
-          "timeoutSeconds": 30.0
-        }
-      },
-      "salt": "v1",
-      "isActive": true,
-      "rules": [
-        {
-          "value": {
-            "type": "DATA_CLASS",
-            "dataClassName": "io.amichne.konditional.serialization.ConsumerConfigurationLifecycleTest$UserSettings",
-            "value": {
-              "enabled": false,
-              "maxRetries": 5.0,
-              "theme": "dark",
-              "timeoutSeconds": 10.0
-            }
-          },
-          "rampUp": 100.0,
-          "note": "Custom settings for iOS",
-          "locales": [],
-          "platforms": [
-            "IOS"
-          ],
-          "versionRange": {
-            "type": "UNBOUNDED"
-          }
-        }
-      ]
-    }
-  ]
-}
-```
+### Value encoding (`defaultValue` / rule `value`) {#value-encoding-defaultvalue--rule-value}
 
-:::
+Value objects are tagged unions. The `type` discriminator determines which
+payload shape is valid for `value`.
+
+## Related pages
+
+- [Serialization reference](/serialization/reference)
+- [Runtime lifecycle](/runtime/lifecycle)
+- [Parse don’t validate](/theory/parse-dont-validate)
+- [Type safety boundaries](/theory/type-safety-boundaries)
+
+## Next steps
+
+1. Build fixtures from these shapes for boundary tests.
+2. Decode fixtures with strict options before runtime load.
+3. Link operational handling in [Runtime operations](/runtime/operations).

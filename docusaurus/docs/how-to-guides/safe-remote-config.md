@@ -1,430 +1,77 @@
-# How-To: Load Configuration Safely from Remote
+# How-to: load remote configuration safely
 
-Use this guide to update feature behavior at runtime while preserving a typed safety boundary.
+Use this page to apply remote snapshot updates through a typed parse boundary
+with atomic activation and deterministic rollback.
 
----
+## Read this page when
+
+- You are ingesting configuration from network, file, or object storage.
+- You need strict parse failures without partial activation.
+- You need operational controls for rollback and emergency shutdown.
 
 ## Prerequisites
 
-- Static feature definitions in a namespace
-- A remote JSON source (API, object store, or CDN)
-- Logging and alerting for load failures
+- Statically declared namespace features.
+- Access to remote payloads and transport retries.
+- Logging and alerting for load failures.
 
----
+## Deterministic steps
 
-## Problem
-
-You need to:
-
-- Load feature flag configuration from a remote source (API, S3, CDN)
-- Validate configuration before applying it to production traffic
-- Handle invalid configuration without breaking the service
-- Update configuration without redeploying code
-
-## Solution
-
-### Step 1: Define Features Statically
+1. Keep schema-defining features in code.
 
 ```kotlin
 object AppFeatures : Namespace("app") {
     val darkMode by boolean<Context>(default = false)
-    val maxRetries by integer<Context>(default = 3)
-    val checkoutFlow by enum<CheckoutVariant, Context>(default = CheckoutVariant.CLASSIC)
+    val checkoutVariant by enum<CheckoutVariant, Context>(default = CheckoutVariant.CONTROL)
 }
 ```
 
-**Static definitions establish the contract:** Types, keys, and defaults are known at compile-time.
+2. Fetch remote payload as untrusted input.
 
-### Step 2: Load Configuration with Explicit Validation
+Treat all payloads as untrusted until parsing succeeds.
+
+3. Parse into trusted configuration with typed errors.
 
 ```kotlin
-fun loadRemoteConfiguration() {
-    val json = try {
-        httpClient.get("https://config.example.com/app-features.json").body<String>()
-    } catch (e: Exception) {
-        logger.error("Failed to fetch remote config", e)
-        // Last-known-good remains active
-        return
-    }
+val result = ConfigurationSnapshotCodec.decode(json, AppFeatures.compiledSchema())
+```
 
-    val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-    when {
-        result.isSuccess -> {
-            logger.info("Remote config loaded successfully")
-            metrics.increment("config.load.success")
-        }
-        result.isFailure -> {
-            logger.error("Remote config validation failed: ${result.parseErrorOrNull()}")
-            metrics.increment("config.load.failure")
-            alertOps("Configuration validation failed", result.parseErrorOrNull())
-            // Last-known-good remains active
-        }
-    }
+4. Activate only on success.
+
+```kotlin
+if (result.isSuccess) {
+    AppFeatures.load(result.getOrThrow())
 }
 ```
 
-**Key insight:** `Result` makes validation explicit. Invalid config is rejected before affecting traffic.
-
-### Step 3: Handle Parse Failures Gracefully
+5. Keep last-known-good on failure and emit error class.
 
 ```kotlin
-val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-when {
-    result.isFailure -> {
-        when (val parseError = result.parseErrorOrNull()) {
-            is ParseError.InvalidJson -> {
-                logger.error("JSON syntax error: ${parseError.message}")
-                // Alert: config server is returning malformed JSON
-            }
-            is ParseError.FeatureNotFound -> {
-                logger.error("Feature key not found: ${parseError.key}")
-                // Alert: config references a feature that doesn't exist in code
-            }
-            is ParseError.InvalidSnapshot -> {
-                logger.error("Snapshot schema/type mismatch: ${parseError.reason}")
-                // Alert: config has wrong shape for a declared feature
-            }
-            else -> logger.error("Unknown parse failure: ${parseError?.message}")
-        }
+if (result.isFailure) {
+    when (val error = result.parseErrorOrNull()) {
+        is ParseError.InvalidJson -> log("invalid_json", error.reason)
+        is ParseError.FeatureNotFound -> log("feature_not_found", error.key)
+        is ParseError.InvalidSnapshot -> log("invalid_snapshot", error.reason)
+        else -> log("unknown", result.exceptionOrNull()?.message ?: "n/a")
     }
 }
 ```
 
-### Step 4: Use Initial Defaults if Remote Unavailable
+6. Document rollback and kill-switch usage.
 
-```kotlin
-class ConfigurationManager(private val namespace: Namespace) {
-    private var initialized = false
+- Use `rollback(steps)` for known-good reversion.
+- Use `disableAll()` only for controlled emergency fallback.
 
-    fun initialize() {
-        if (initialized) return
+## Safety checklist
 
-        // Try to load remote config
-        val loaded = try {
-            val json = fetchRemoteConfig()
-            val result = NamespaceSnapshotLoader(namespace).load(json)
-            when {
-                result.isSuccess -> {
-                    logger.info("Initialized with remote config")
-                    true
-                }
-                result.isFailure -> {
-                    logger.warn("Remote config invalid: ${result.parseErrorOrNull()}")
-                    false
-                }
-            }
-        } catch (e: Exception) {
-            logger.warn("Failed to fetch remote config on init", e)
-            false
-        }
+- [ ] All external payloads are parsed before activation.
+- [ ] Parse failures return typed errors with actionable fields.
+- [ ] Readers never observe partial updates.
+- [ ] Last-known-good behavior is preserved on parse failure.
+- [ ] Rollback and kill-switch runbooks are documented and tested.
 
-        if (!loaded) {
-            logger.info("Using default configuration")
-        }
+## Next steps
 
-        initialized = true
-        // Service starts either way—with remote config or defaults
-    }
-}
-```
-
-## Guarantees
-
-- **Validation at boundary**: Invalid config rejected before affecting traffic
-    - **Mechanism**: `Result.failure` returned if JSON doesn't match definitions
-    - **Boundary**: Validation catches schema errors, not business logic errors
-
-- **Atomic replacement**: All evaluations see old config OR new config, never partial
-    - **Mechanism**: Configuration atomically swapped on successful load
-    - **Boundary**: No guarantee about *when* a particular request sees the update
-
-- **Last-known-good preserved**: Failed loads don't affect evaluation
-    - **Mechanism**: Failed load doesn't modify namespace state
-    - **Boundary**: "Last-known-good" might be initial defaults if no successful load
-
-## Configuration Format
-
-### Valid JSON Example
-
-```json
-{
-  "darkMode": {
-    "rules": [
-      {
-        "value": true,
-        "predicates": {
-          "platforms": ["IOS", "ANDROID"]
-        }
-      }
-    ]
-  },
-  "maxRetries": {
-    "rules": [
-      {
-        "value": 5,
-        "predicates": {
-          "android": true
-        }
-      }
-    ]
-  },
-  "checkoutFlow": {
-    "rules": [
-      {
-        "value": "SIMPLIFIED",
-        "predicates": {
-          "rampUp": { "percentage": 50.0 }
-        }
-      }
-    ]
-  }
-}
-```
-
-### What Gets Validated
-
-1. **JSON syntax**: Must be valid JSON
-2. **Feature keys**: Must match defined properties in namespace
-3. **Type safety**: Values must match feature types
-4. **Rule structure**: Rules must have valid predicates
-
-See [Persistence Format](/serialization/persistence-format) for complete schema.
-
-## What Can Go Wrong?
-
-### Network Failures
-
-```kotlin
-// Config fetch times out or fails
-try {
-    val json = httpClient.get(configUrl).body<String>()
-} catch (e: Exception) {
-    // DON'T: Crash the service
-    // DO: Log error, keep last-known-good, alert ops
-    logger.error("Config fetch failed", e)
-    metrics.increment("config.fetch.failure")
-}
-```
-
-**Result:** Service continues with last-known-good configuration.
-
-### Typo in Feature Key
-
-```json
-{
-  "darkMood": {  // Typo: should be "darkMode"
-    "rules": [{ "value": true }]
-  }
-}
-```
-
-**Result:** `Result.failure(KonditionalBoundaryFailure(ParseError.featureNotFound(...)))`. Config rejected, last-known-good preserved.
-
-### Type Mismatch
-
-```json
-{
-  "maxRetries": {
-    "rules": [{ "value": "five" }]  // Wrong type: String instead of Int
-  }
-}
-```
-
-**Result:** `Result.failure(KonditionalBoundaryFailure(ParseError.invalidSnapshot("type mismatch for maxRetries")))`. Config
-rejected.
-
-### Partial Configuration
-
-```json
-{
-  "darkMode": {
-    "rules": [{ "value": true }]
-  }
-  // maxRetries and checkoutFlow not included
-}
-```
-
-**Result:** `Result.success`. Only `darkMode` is overridden. `maxRetries` and `checkoutFlow` use their static
-definitions.
-
-**Best practice:** Partial configuration is fine for gradual rollouts. Features not in JSON use static rules + defaults.
-
-## Advanced Patterns
-
-### Pattern: Versioned Configuration
-
-```kotlin
-data class VersionedConfig(
-    val version: String,
-    val config: String,
-    val timestamp: Instant
-)
-
-class ConfigLoader(private val namespace: Namespace) {
-    private var currentVersion: String? = null
-
-    fun loadVersioned(versioned: VersionedConfig) {
-        val result = NamespaceSnapshotLoader(namespace).load(versioned.config)
-        when {
-            result.isSuccess -> {
-                logger.info("Loaded config version ${versioned.version}")
-                currentVersion = versioned.version
-                metrics.gauge("config.version", versioned.version)
-            }
-            result.isFailure -> {
-                logger.error("Config version ${versioned.version} invalid: ${result.parseErrorOrNull()}")
-                metrics.increment("config.invalid_version", tags = mapOf(
-                    "version" to versioned.version
-                ))
-            }
-        }
-    }
-
-    fun getCurrentVersion(): String? = currentVersion
-}
-```
-
-### Pattern: Staged Rollout
-
-```kotlin
-class StagedConfigLoader(private val namespace: Namespace) {
-    fun loadWithCanary(json: String, canaryPercentage: Double = 1.0) {
-        // First: validate without loading
-        val result = ConfigurationSnapshotCodec.decode(json, namespace.compiledSchema())
-        when {
-            result.isFailure -> {
-                logger.error("Validation failed: ${result.parseErrorOrNull()}")
-                return
-            }
-            result.isSuccess -> Unit
-        }
-
-        // Second: apply to canary traffic only
-        if (Random.nextDouble() < canaryPercentage / 100.0) {
-            NamespaceSnapshotLoader(namespace).load(json)
-            logger.info("Config applied to canary traffic")
-        }
-
-        // Third: after monitoring, apply to all traffic
-        // (This is a simplified example; real implementation would be more sophisticated)
-    }
-}
-```
-
-### Pattern: Configuration Diff
-
-```kotlin
-fun logConfigDiff(oldJson: String, newJson: String) {
-    val oldConfig = Json.parseToJsonElement(oldJson).jsonObject
-    val newConfig = Json.parseToJsonElement(newJson).jsonObject
-
-    val added = newConfig.keys - oldConfig.keys
-    val removed = oldConfig.keys - newConfig.keys
-    val modified = newConfig.keys.intersect(oldConfig.keys).filter {
-        oldConfig[it] != newConfig[it]
-    }
-
-    logger.info("""
-        Config diff:
-        Added: $added
-        Removed: $removed
-        Modified: $modified
-    """.trimIndent())
-}
-```
-
-## Monitoring Remote Configuration
-
-### Metrics to Track
-
-```kotlin
-// Load success/failure rate
-metrics.increment("config.load.success")
-metrics.increment("config.load.failure")
-
-// Validation failure reasons
-metrics.increment("config.validation.type_mismatch")
-metrics.increment("config.validation.unknown_feature")
-metrics.increment("config.validation.invalid_json")
-
-// Load latency
-metrics.recordLatency("config.load.duration", duration)
-
-// Configuration version
-metrics.gauge("config.version", version)
-```
-
-### Alerts to Configure
-
-1. **No successful load in X minutes**: Remote config source may be down
-2. **Validation failure rate > threshold**: Config server is sending bad data
-3. **Fetch failures spike**: Network issues or config server issues
-4. **Version hasn't changed in X hours**: Config pipeline may be stuck
-
-## Testing Remote Configuration
-
-### Test Invalid JSON Rejection
-
-```kotlin
-@Test
-fun `invalid JSON is rejected`() {
-    val invalidJson = """{ "darkMode": { "rules": [ INVALID ] } }"""
-
-    val result = NamespaceSnapshotLoader(AppFeatures).load(invalidJson)
-
-    assertTrue(result.isFailure)
-    assertTrue(result.parseErrorOrNull() is ParseError.InvalidJson)
-}
-```
-
-### Test Type Safety
-
-```kotlin
-@Test
-fun `type mismatch is rejected`() {
-    val json = """{ "maxRetries": { "rules": [{ "value": "five" }] } }"""
-
-    val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-
-    assertTrue(result.isFailure)
-    val error = result.parseErrorOrNull()
-    assertTrue(error is ParseError.InvalidSnapshot)
-}
-```
-
-### Test Partial Configuration
-
-```kotlin
-@Test
-fun `partial configuration loads successfully`() {
-    val json = """{ "darkMode": { "rules": [{ "value": true }] } }"""
-
-    val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-
-    assertTrue(result.isSuccess)
-
-    // darkMode overridden
-    val ctx = Context(stableId = StableId.of("user"))
-    assertTrue(AppFeatures.darkMode.evaluate(ctx))
-
-    // maxRetries still uses default
-    assertEquals(3, AppFeatures.maxRetries.evaluate(ctx))
-}
-```
-
----
-
-## Verification
-
-After deploying remote loading, verify:
-
-1. valid payloads produce `Result.success`
-2. invalid payloads produce `Result.failure` and do not change active behavior
-3. observability captures load success and failure counts
-
-## Next Steps
-
-- [Refresh Patterns](/production-operations/refresh-patterns) — Polling, webhooks, file watch
-- [Failure Modes](/production-operations/failure-modes) — Comprehensive error scenarios
-- [Handling Failures](/how-to-guides/handling-failures) — What to do when config fails
-- [Persistence Format](/serialization/persistence-format) — Complete JSON schema
+- [Handling failures](/how-to-guides/handling-failures)
+- [Failure modes](/production-operations/failure-modes)
+- [Thread safety](/production-operations/thread-safety)

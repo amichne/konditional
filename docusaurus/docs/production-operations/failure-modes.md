@@ -1,302 +1,43 @@
-# Failure Modes
+# Failure modes
 
-What can go wrong when using Konditional, how to prevent it, how to detect it, and what the worst-case outcome is.
+Use this page to classify runtime failure modes, apply safe containment, and
+route teams to canonical remediation procedures.
 
-```mermaid
-flowchart TD
-  Source["JSON payload (remote/file/network)"] --> Parse["Parse + validate snapshot"]
-  Parse -->|Invalid JSON / schema| Reject["Reject update<br/>keep last-known-good"]
-  Parse --> Lookup["Lookup keys in registry"]
-  Lookup -->|FeatureNotFound| Reject
-  Lookup --> Decode["Decode values to declared feature types"]
-  Decode -->|Type mismatch / schema violation| Reject
-  Decode --> Load["Atomic load new snapshot"]
-  Load --> Eval["Evaluation reads active snapshot"]
-  Eval -->|Operator control| Rollback["rollback(steps)"]
-  Eval -->|Operator control| Kill["disableAll() → defaults"]
-  style Reject fill: #ffcdd2
-  style Load fill: #c8e6c9
-  style Eval fill: #e1f5ff
-```
+## Read this page when
 
----
+- A configuration operation fails in production.
+- You need a predictable containment decision under time pressure.
+- You need a post-incident checklist that preserves determinism.
 
-## 1. Parse Errors (Invalid JSON)
+## Failure mode matrix
 
-### What Happens
+| Failure mode | Primary signal | Safe immediate behavior | Canonical remediation |
+| --- | --- | --- | --- |
+| Remote fetch failure | Transport timeout, non-2xx, network error | Keep last-known-good snapshot | [Handling failures](/how-to-guides/handling-failures) |
+| Invalid JSON payload | `ParseError.InvalidJson` | Reject payload, keep current snapshot | [Safe remote config](/how-to-guides/safe-remote-config) |
+| Unknown feature key | `ParseError.FeatureNotFound` | Reject payload, keep current snapshot | [Namespace isolation](/how-to-guides/namespace-isolation) |
+| Type/schema mismatch | `ParseError.InvalidSnapshot` | Reject payload, keep current snapshot | [Safe remote config](/how-to-guides/safe-remote-config) |
+| Behavior regression after accepted load | Guardrail metrics degrade | Roll back to prior snapshot | [Operational debugging](/production-operations/debugging) |
+| Cross-namespace blast radius | Unrelated namespace behavior changes | Halt rollout and isolate owner namespace | [Namespace isolation](/how-to-guides/namespace-isolation) |
 
-JSON payload is malformed or doesn't match the expected schema:
+## Deterministic steps
 
-```kotlin
-val json = """{ "flags": [ { "invalid": true } ] }"""
+1. Classify the incident into one failure mode from the matrix.
+2. Apply the documented safe immediate behavior.
+3. Execute the linked canonical remediation procedure.
+4. Verify stable output with deterministic replay contexts.
+5. Record mitigation, root cause, and permanent test coverage.
 
-val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-when {
-  result.isFailure -> {
-    println(result.parseErrorOrNull()?.message)  // ParseError.InvalidJson / ParseError.InvalidSnapshot
-  }
-}
-```
+## Operations checklist
 
-### How to Prevent
+- [ ] Failure mode classified with exact parse/load signal.
+- [ ] Immediate behavior preserved last-known-good semantics.
+- [ ] Canonical remediation procedure completed.
+- [ ] Rollback or kill-switch decisions recorded.
+- [ ] Regression tests added before closing incident.
 
-- Validate JSON payloads before shipping (CI/CD schema validation)
-- Test deserialization in integration tests
-- Use schema versioning for backward compatibility
+## Next steps
 
-### How to Detect
-
-- `Result.failure` with `ParseError.InvalidJson` or `ParseError.InvalidSnapshot`
-- Log all parse failures with full error context
-
-### Worst-Case Outcome
-
-Last-known-good configuration remains active. No impact on evaluation.
-
----
-
-## 2. Missing Features (FeatureNotFound)
-
-### What Happens
-
-JSON references a feature that hasn't been registered:
-
-```kotlin
-val json = """
-{
-  "flags": [
-    {
-      "key": "feature::app::unknownFlag",
-      ...
-    }
-  ]
-}
-"""
-
-val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-when {
-  result.isFailure -> {
-    println(result.parseErrorOrNull()?.message)  // "Feature not found: feature::app::unknownFlag"
-  }
-}
-```
-
-### How to Prevent
-
-- Ensure namespaces are initialized **before** JSON deserialization
-- Reference namespace objects at startup (t0)
-- Use lenient deserialization with `SnapshotLoadOptions.skipUnknownKeys(...)` for forward compatibility
-
-### How to Detect
-
-- `Result.failure` with `ParseError.FeatureNotFound`
-- Alert on unknown keys in production (could indicate config/code drift)
-
-### Worst-Case Outcome
-
-Parse fails, last-known-good configuration remains active.
-
----
-
-## 3. Type Mismatches {#type-mismatches}
-
-### What Happens
-
-JSON specifies a value type that doesn't match the declared feature type:
-
-```kotlin
-object Config : Namespace("config") {
-  val timeout by double<Context>(default = 30.0)
-}
-
-val json = """
-{
-  "flags": [
-    {
-      "key": "feature::config::timeout",
-      "defaultValue": { "type": "STRING", "value": "invalid" }
-    }
-  ]
-}
-"""
-
-val result = ConfigurationSnapshotCodec.decode(json, AppFeatures.compiledSchema())
-when {
-  result.isFailure -> {
-    println(result.parseErrorOrNull()?.message)  // ParseError.InvalidSnapshot with details about the failed decode
-  }
-}
-```
-
-### How to Prevent
-
-- Validate JSON schemas in CI/CD
-- Use generated JSON from `ConfigurationSnapshotCodec.encode(namespace.configuration)` as the source of truth
-- Test deserialization with actual payloads
-
-### How to Detect
-
-- `Result.failure` with type mismatch error
-- Schema validation in CI/CD pipeline
-
-### Worst-Case Outcome
-
-Parse fails, last-known-good configuration remains active.
-
----
-
-## 4. Schema Mismatches (Custom Data Classes)
-
-### What Happens
-
-JSON for a custom data class doesn't match the Kotlin schema:
-
-```kotlin
-data class RetryPolicy(
-    val maxAttempts: Int,
-    val backoffMs: Double
-) : Konstrained<ObjectSchema> {
-  override val schema = schemaRoot {
-    ::maxAttempts of { minimum = 1 }
-    ::backoffMs of { minimum = 0.0 }
-  }
-}
-
-val json = """
-{
-  "flags": [
-    {
-      "key": "feature::config::retryPolicy",
-      "defaultValue": {
-        "type": "DATA_CLASS",
-        "value": { "maxAttempts": -1, "backoffMs": 1000.0 }
-      }
-    }
-  ]
-}
-"""
-```
-
-### How to Prevent
-
-- Validate custom data class schemas in tests
-- Use Kontracts validation (built-in)
-- Keep constructor parameter names stable (avoid obfuscation issues)
-
-### How to Detect
-
-- `Result.failure` with schema validation error
-
-### Worst-Case Outcome
-
-Parse fails, last-known-good configuration remains active.
-
----
- 
-## 6. Configuration Rollback Fails
-
-### What Happens
-
-Attempting to rollback beyond available history:
-
-```kotlin
-val success = AppFeatures.rollback(steps = 100)  // Only 5 configs in history
-println(success)  // false
-```
-
-### How to Prevent
-
-- Understand rollback history limits (bounded by registry configuration)
-- Check `historyMetadata` size before rollback
-
-### How to Detect
-
-- `rollback(...)` returns `false` if rollback isn't possible
-- Log rollback attempts and outcomes
-
-### Worst-Case Outcome
-
-Rollback fails, current configuration remains active. No impact on evaluation.
-
----
-
-## 7. Emergency Kill-Switch Active
-
-### What Happens
-
-Namespace is disabled via `disableAll()`:
-
-```kotlin
-AppFeatures.disableAll()
-
-val enabled = AppFeatures.darkMode.evaluate(context)  // Returns default (false)
-```
-
-### How to Prevent
-
-- Only use `disableAll()` in genuine emergencies
-- Avoid accidental calls in production code
-- Monitor kill-switch state in observability hooks
-
-### How to Detect
-
-- All evaluations return defaults
-- `internal EvaluationDiagnostics.decision` will indicate `DISABLED`
-
-### Worst-Case Outcome
-
-All flags in the namespace return their declared defaults. Other namespaces are unaffected.
-
----
-
-## 8. Concurrent Configuration Updates
-
-### What Happens
-
-Multiple threads call `load(...)` concurrently:
-
-```kotlin
-// Thread 1
-AppFeatures.load(config1)
-
-// Thread 2
-AppFeatures.load(config2)
-```
-
-### How to Prevent
-
-- Coordinate configuration updates through a single source
-- Use a dedicated config loader service
-
-### How to Detect
-
-- Last write wins (atomic reference swap is linearizable)
-- Readers see one of the two configs
-
-### Worst-Case Outcome
-
-One configuration wins (last write). Readers see a consistent snapshot (either config1 or config2), never mixed.
-
----
-
-## Summary: Failure Impact Matrix
-
-| Failure Mode                | Detection                       | Worst-Case Outcome                    | Recovery                                 |
-|-----------------------------|---------------------------------|---------------------------------------|------------------------------------------|
-| Parse errors (invalid JSON) | `Result.failure`           | Last-known-good remains active        | Fix JSON, retry                          |
-| Missing features            | `ParseError.FeatureNotFound`    | Last-known-good remains active        | Initialize namespace, retry              |
-| Type mismatches             | `Result.failure`           | Last-known-good remains active        | Fix JSON schema, retry                   |
-| Schema mismatches           | `Result.failure`           | Last-known-good remains active        | Fix custom data class schema             |
-| Uninitialized namespace     | `ParseError.FeatureNotFound`    | Parse fails (initial defaults active) | Initialize namespace, retry              |
-| Rollback beyond history     | `rollback(...)` returns `false` | Current config remains active         | Use available history or re-load         |
-| Kill-switch active          | All evals return defaults       | Defaults active for namespace         | Call `enableAll()`                       |
-| Concurrent updates          | Last write wins                 | One config wins (consistent snapshot) | Coordinate updates through single source |
-
----
-
-## Next Steps
-
-- [Configuration Lifecycle](/learn/configuration-lifecycle) — JSON → Result → load
-- [Trust Boundaries](/learn/type-safety) — Compile-time vs runtime guarantees
-- [Refresh Safety](/production-operations/thread-safety) — Why atomic updates are safe
-- [Theory: Parse Don't Validate](/theory/parse-dont-validate) — Why Result prevents invalid states
+- [Operational debugging](/production-operations/debugging)
+- [Handling failures](/how-to-guides/handling-failures)
+- [Troubleshooting](/troubleshooting/)

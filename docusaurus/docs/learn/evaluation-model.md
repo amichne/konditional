@@ -1,101 +1,48 @@
-# Evaluation Model
+# Evaluation model
 
-This page explains how Konditional chooses a value when multiple rules exist.
+This page explains the runtime decision path from feature lookup to final value.
+It focuses on operational behavior and points to theory pages for proofs.
 
-## Total evaluation {#total-evaluation}
+## Read this page when
 
-### 1. Total: Always returns a value {#1-total-always-returns-a-value}
+- You need to predict which rule will win.
+- You are debugging surprising flag outcomes.
+- You are writing tests for ordering and rollout behavior.
 
-Evaluation always returns a value. If no rule matches, the default is returned.
+## Steps in scope
 
-## Deterministic evaluation
+1. Resolve the feature definition from the active snapshot.
+2. If namespace kill-switch is active, return the feature default.
+3. If feature `isActive` is `false`, return the feature default.
+4. Sort rules by specificity with a stable tie-breaker.
+5. Evaluate criteria for each rule in order.
+6. For the first matching rule, evaluate ramp-up and allowlist.
+7. Return that value, or the default if no rule qualifies.
 
-### 2. Deterministic: Same inputs = same outputs {#2-deterministic-same-inputs--same-outputs}
+### 1. Total: always returns a value {#1-total-always-returns-a-value}
 
-Given the same inputs and configuration, evaluation yields the same output.
+If no rule is selected, evaluation returns the declared feature default.
 
-## Evaluation order
+### 2. Deterministic: same inputs = same outputs {#2-deterministic-same-inputs--same-outputs}
 
-When you call `feature.evaluate(context)`:
+For a fixed `(context, snapshot)`, evaluation follows one deterministic rule
+path and returns one deterministic value.
 
-1. Rules are sorted by **specificity** (highest first).
-2. Each rule is checked against the Context.
-3. If a rule matches, ramp-up is applied (if configured).
-4. The first matching rule that passes ramp-up wins.
-5. If nothing matches, the default value is returned.
+## Determinism scope
 
-## Conjunctive rule construction
+- Determinism is defined for the same `(context, snapshot)` pair.
+- Different snapshots can produce different values for the same context.
+- Different stable IDs can produce different rollout buckets by design.
 
-Within a single rule, targeting criteria compose as a conjunction.
+## Related pages
 
-- `platforms(...)`, `locales(...)`, `versions { ... }`, `axis(...)`, and each
-  `extension { ... }` block must all match for the rule to match.
-- Repeating `axis(...)` for the same axis id merges values with OR semantics
-  for that axis.
-- Targeting different axis ids still composes with AND semantics.
+- [Core API reference](/core/reference)
+- [Rule DSL reference](/core/rules)
+- [Determinism proofs](/theory/determinism-proofs)
+- [Atomicity guarantees](/theory/atomicity-guarantees)
 
-## Structured targeting model
+## Next steps
 
-Konditional evaluates a structural targeting hierarchy, not a flat predicate
-chain.
-
-- A rule is modeled as `Targeting.All`.
-- Built-in criteria map to leaf nodes (`Locale`, `Platform`, `Version`,
-  `Axis`).
-- Extension criteria map to `Custom` leaves.
-- Capability-narrowed criteria use guarded leaves and return `false` when the
-  required context capability is absent.
-
-## Specificity system
-
-Specificity is the sum of targeting leaves.
-
-**Base targeting specificity** (0-3+):
-
-- `locales(...)` adds 1 if non-empty
-- `platforms(...)` adds 1 if non-empty
-- `versions { ... }` adds 1 if bounded
-- `axis(...)` adds 1 per axis constraint
-
-**Custom targeting specificity**:
-
-- Each `extension { ... }` block contributes 1 specificity by default.
-- Each `whenContext<R> { ... }` block contributes 1 specificity by default.
-- Multiple extension leaves on one rule are AND-composed, and their
-  specificity is cumulative.
-
-- **Guarantee**: More specific rules are evaluated before less specific rules.
-
-- **Mechanism**: Rules are sorted by `rule.specificity()` in descending order before evaluation.
-
-- **Boundary**: Ramp-up percentage does not affect specificity.
-
-## Deterministic ramp-ups
-
-Ramp-ups are deterministic and reproducible.
-
-- **Guarantee**: The same `(stableId, featureKey, salt)` always yields the same bucket assignment.
-
-- **Mechanism**:
-
-1. Hash the UTF-8 bytes of `"$salt:$featureKey:${stableId.hexId.id}"` with SHA-256.
-2. Convert the first 4 bytes to an unsigned 32-bit integer.
-3. Bucket = `hash % 10_000` (range `[0, 9999]`).
-4. Threshold = `(rampUp.value * 100.0).roundToInt()` (basis points).
-5. In ramp-up if `bucket < threshold`.
-
-- **Boundary**: Changing `stableId`, `featureKey`, or `salt` changes the bucket assignment.
-
-## Example
-
-```kotlin
-object AppFeatures : Namespace("app") {
-    val checkout by string<Context>(default = "v1") {
-        rule("v3") { platforms(Platform.IOS); versions { min(3, 0, 0) } } // specificity 2
-        rule("v2") { platforms(Platform.IOS) }                            // specificity 1
-        rule("v1") { always() }                                           // specificity 0
-    }
-}
-```
-
-For an iOS user on version 3.1.0, the `v3` rule is evaluated first and wins if it matches.
+1. Add deterministic tests using [Determinism proofs](/theory/determinism-proofs).
+2. Review rollout guidance in [Rollout strategies (legacy path)](/rules-and-targeting/rollout-strategies).
+3. Connect runtime updates in [Runtime lifecycle](/runtime/lifecycle).

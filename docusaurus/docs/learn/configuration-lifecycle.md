@@ -1,233 +1,42 @@
-# Configuration Lifecycle
+# Configuration lifecycle
 
-From JSON to evaluation: how configuration flows through Konditional's validated boundary and into the active snapshot.
+This page shows the theory-to-practice path from untrusted JSON to evaluated
+feature values.
 
-```mermaid
-flowchart LR
-  Code["Flags defined in code"] --> Snap["ConfigurationSnapshotCodec.encode(namespace.configuration)"]
-  Snap --> Json["JSON snapshot"]
-  Json --> Parse["NamespaceSnapshotLoader(namespace).load(json)"]
-  Parse -->|Success| Load["Loads into namespace"]
-  Parse -->|Failure| Reject["Keep last-known-good + log"]
-  Load --> Eval["Evaluation uses active snapshot"]
-  style Load fill: #c8e6c9
-  style Reject fill: #ffcdd2
-```
+## Read this page when
 
----
+- You are integrating remote configuration updates.
+- You are designing fallback behavior for parse failures.
+- You need a conceptual map before runtime API details.
 
-## The Five-Step Lifecycle
+## Steps in scope
 
-### 1. JSON Payload Arrives
+1. **Receive payload** from file, network, or config service.
+2. **Parse boundary** converts JSON into `Result<MaterializedConfiguration>`.
+3. **Success path** atomically swaps the namespace snapshot.
+4. **Failure path** rejects the payload and retains last-known-good state.
+5. **Evaluation path** reads the active snapshot for deterministic outcomes.
 
-Configuration is fetched from remote storage, read from a file, or received over the network:
+## Operational checklist
 
-```kotlin
-val json = File("flags.json").readText()
-// or: val json = fetchFromRemoteServer()
-```
+- Always branch on `Result` from decode/load APIs.
+- Treat parse errors as data quality issues, not control-flow exceptions.
+- Keep snapshot updates namespace-scoped to reduce blast radius.
 
-### 2. Validation via `fromJson(...)`
+### Incremental updates via patches {#incremental-updates-via-patches}
 
-The payload is parsed and validated against registered features:
+Use patch payloads for partial updates when full snapshot replacement is not
+required. Validate patch payloads with serialization APIs before loading.
 
-```kotlin
-val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-when {
-  result.isSuccess -> {
-    // Valid configuration, ready to load
-  }
-  result.isFailure -> {
-    // Invalid JSON rejected
-    // This will error
-    logError("Parse failed: ${result.parseErrorOrNull()?.message}")
-  }
-}
-```
+## Related pages
 
-**What's validated:**
+- [Runtime lifecycle](/runtime/lifecycle)
+- [Runtime operations](/runtime/operations)
+- [Serialization reference](/serialization/reference)
+- [Parse don’t validate](/theory/parse-dont-validate)
 
-- JSON syntax (well-formed JSON)
-- Schema structure (matches expected shape)
-- Feature existence (keys must be registered)
-- Type correctness (values match declared types)
+## Next steps
 
-**What's NOT validated:**
-
-- Semantic correctness (whether 50% is the "right" ramp-up)
-- Business logic (whether targeting is correct)
-
-### 3. On Success: Atomic Load via `load(...)`
-
-If validation succeeds, the new configuration is loaded atomically:
-
-```kotlin
-val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-when {
-  result.isSuccess -> {
-    // Configuration is already loaded (fromJson calls load internally)
-    logger.info("Config updated successfully")
-  }
-  result.isFailure -> {
-    // Failure path (see step 4)
-  }
-}
-```
-
-**How atomic loading works:**
-
-- Registry stores configuration in an `AtomicReference<Configuration>`
-- `load(...)` performs a single atomic swap
-- Readers see either the old snapshot or the new snapshot — never a partial state
-
-### 4. On Failure: Reject and Log
-
-If validation fails, the payload is rejected and the last-known-good configuration remains active:
-
-```kotlin
-val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-when {
-  result.isSuccess -> Unit
-  result.isFailure -> {
-    // Last-known-good config is still active
-    logger.error("Config parse failed: ${result.parseErrorOrNull()?.message}")
-    metrics.increment("config.parse.failure")
-    // Optionally: alert on-call, retry later
-  }
-}
-```
-
-**Operational guarantees:**
-
-- No crashes from invalid JSON
-- No partial config updates
-- Evaluation continues with last-known-good config
-
-### 5. Evaluation Reads Current Snapshot
-
-Evaluation always reads the current active snapshot (lock-free):
-
-```kotlin
-// Thread 1: Update configuration
-NamespaceSnapshotLoader(AppFeatures).load(newJson)
-
-// Thread 2: Concurrent evaluation
-val enabled = AppFeatures.darkMode.evaluate(context)  // Sees old OR new, never mixed
-```
-
----
-
-## Precondition: Features Must Be Defined
-
-Upon loading JSON, your `Namespace` objects will already have features registered, as long as they are defined:
-
-```kotlin 
-// Later: Load JSON
-val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-when {
-  result.isSuccess -> Unit
-  result.isFailure -> logError(result.parseErrorOrNull()?.message)
-}
-```
-
-If JSON references a feature that hasn't been registered, deserialization fails with `ParseError.FeatureNotFound`.
-
----
-
-## Exporting Configuration
-
-Export the current snapshot to JSON for storage or transport:
-
-```kotlin
-val json = ConfigurationSnapshotCodec.encode(AppFeatures.configuration)
-File("flags.json").writeText(json)
-```
-
-This captures the current state of all features in the namespace.
-
----
-
-## Incremental Updates via Patches
-
-Instead of shipping full snapshots, send incremental updates:
-
-```kotlin
-val patchJson = """
-{
-  "flags": [
-    {
-      "key": "feature::app::darkMode",
-      "defaultValue": { "type": "BOOLEAN", "value": false },
-      "rules": [ ... ]
-    }
-  ],
-  "removeKeys": ["feature::app::LEGACY_FEATURE"]
-}
-"""
-
-val currentConfig = AppFeatures.configuration
-val result = ConfigurationSnapshotCodec.applyPatchJson(currentConfig, patchJson)
-when {
-  result.isSuccess -> AppFeatures.load(result.getOrNull()!!)
-  result.isFailure -> logError(result.parseErrorOrNull()?.message)
-}
-```
-
-Patches support:
-
-- Adding new flags
-- Modifying existing flags
-- Removing flags (via `removeKeys`)
-
----
-
-## Rollback Support
-
-Registries keep a bounded history of prior configurations for operational recovery:
-
-```kotlin
-// Rollback to previous config
-val success: Boolean = AppFeatures.rollback(steps = 1)
-
-// Inspect rollback history
-val history: List<ConfigurationMetadata> = AppFeatures.historyMetadata
-```
-
----
-
-## Integration Patterns
-
-### Polling
-
-```kotlin
-while (running) {
-  val json = fetchFromServer()
-  val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-when {
-    result.isSuccess -> logger.info("Config updated")
-    result.isFailure -> logger.error("Parse failed: ${result.parseErrorOrNull()}")
-  }
-  delay(pollInterval)
-}
-```
-
-### Push-Based (Streams)
-
-```kotlin
-configStream.collect { json ->
-  val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-when {
-    result.isSuccess -> logger.info("Config updated")
-    result.isFailure -> logger.error("Parse failed: ${result.parseErrorOrNull()}")
-  }
-}
-```
-
----
-
-## Next Steps
-
-- [Refresh Safety](/production-operations/thread-safety) — Why hot-reload is safe
-- [Failure Modes](/production-operations/failure-modes) — What can go wrong and how to handle it
-- [API Reference: Serialization](/serialization/reference) — Full API for snapshot/patch operations
-- [Persistence Format](/serialization/persistence-format) — JSON schema reference
+1. Implement this flow with [NamespaceSnapshotLoader](/serialization/reference).
+2. Confirm atomic update assumptions in [Atomicity guarantees](/theory/atomicity-guarantees).
+3. Add rollback procedures from [Runtime operations](/runtime/operations).

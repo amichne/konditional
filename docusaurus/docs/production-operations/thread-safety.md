@@ -1,231 +1,62 @@
-# Refresh Safety
+# Thread safety
 
-Hot-reloading configuration is safe because Konditional uses atomic snapshot replacement with lock-free reads. Readers
-never see partial updates, and there's no
-risk of torn reads or race conditions.
+Use this page to validate atomic snapshot guarantees so concurrent readers never
+observe partial configuration updates.
 
-```mermaid
-sequenceDiagram
-    participant W as Writer (refresh thread)
-    participant R as Reader (evaluation thread)
-    participant AR as AtomicReference<Configuration>
+## Read this page when
 
-    Note over AR: Holds a reference to the active immutable snapshot
+- You are operating concurrent evaluation and refresh workloads.
+- You need confidence in linearizable snapshot replacement.
+- You are reviewing concurrency risk in rollout incidents.
 
-    par Concurrent work
-        W->>AR: set(newSnapshot) (atomic swap)
-        and
-        R->>AR: get() (lock-free read)
-        alt Read happens before swap
-            AR-->>R: oldSnapshot
-        else Read happens after swap
-            AR-->>R: newSnapshot
-        end
-    end
-```
+## Core guarantee
 
----
+Konditional snapshot updates are atomic: each evaluation observes either the
+old snapshot or the new snapshot, never a partial merge.
 
-## The Guarantee
+## Deterministic steps
 
-When you call `Namespace.load(newConfiguration)`, the update is atomic:
+1. Treat loaded configurations as immutable snapshots.
+
+Never mutate active configuration objects in place.
+
+2. Activate updates only through the public load boundary.
 
 ```kotlin
-// Thread 1: Update configuration
-AppFeatures.load(newConfig)
-
-// Thread 2: Concurrent evaluation
-val value = AppFeatures.darkMode.evaluate(context)  // Sees old OR new, never mixed
-```
-
-**What's guaranteed:**
-
-- Readers see either the **entire old** snapshot or the **entire new** snapshot
-- Readers **never** see a partially-applied configuration
-- No locks or synchronization required for reads
-
----
-
-## How It Works: AtomicReference Swap
-
-Internally, `NamespaceRegistry` stores the active configuration in an `AtomicReference`:
-
-```kotlin
-// Simplified: the default in-memory NamespaceRegistry implementation.
-private val current: AtomicReference<Configuration> = AtomicReference(initialConfiguration)
-
-override fun load(config: Configuration) {
-    current.set(config)  // Single atomic write
-}
-
-override val configuration: Configuration
-    get() = current.get()  // Lock-free atomic read
-```
-
-**Why this is safe:**
-
-1. **AtomicReference guarantees atomicity** — `set(...)` is a single write operation
-2. **Happens-before relationship** — JVM memory model guarantees that writes are visible to subsequent reads
-3. **No torn reads** — Reference swap is atomic at the hardware level (no partial writes)
-
-See [Theory: Atomicity Guarantees](/theory/atomicity-guarantees) for the formal proof.
-
----
-
-## Lock-Free Reads
-
-Evaluation reads the current snapshot without blocking writers:
-
-```kotlin
-fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
-    context: C,
-    registry: NamespaceRegistry,
-): T {
-    val config = registry.configuration  // Lock-free atomic read
-    // ... evaluate using config ...
+val decoded = ConfigurationSnapshotCodec.decode(json, AppFeatures.compiledSchema())
+if (decoded.isSuccess) {
+    AppFeatures.load(decoded.getOrThrow())
 }
 ```
 
-**Benefits:**
-
-- **No contention** — Multiple threads can evaluate flags concurrently
-- **No blocking** — Writers don't block readers, readers don't block writers
-- **Predictable latency** — No lock acquisition overhead
-
----
-
-## What Can Go Wrong (and What Can't)
-
-### ✓ Safe: Concurrent Evaluation During Update
+3. Verify concurrent behavior with a smoke test.
 
 ```kotlin
-// Thread 1
-AppFeatures.load(newConfig)
-
-// Thread 2
-val v1 = AppFeatures.darkMode.evaluate(ctx1)
-val v2 = AppFeatures.apiEndpoint.evaluate(ctx2)
-```
-
-**Outcome:** Each evaluation sees either the old snapshot or the new snapshot; if a refresh happens between calls, `v1`
-and `v2` may observe different
-snapshots, but neither call can observe a partially-applied update.
-
-### ✓ Safe: Multiple Concurrent Updates
-
-```kotlin
-// Thread 1
-AppFeatures.load(config1)
-
-// Thread 2
-AppFeatures.load(config2)
-```
-
-**Outcome:** Last write wins (atomic reference swap is linearizable). Readers see one of the two configs.
-
-### ✗ Unsafe: Mutating Configuration After Load
-
-```kotlin
-// DON'T DO THIS
-val config = AppFeatures.configuration
-val mutated = mutateSomehow(config)  // Hypothetical mutation
-AppFeatures.load(mutated)
-```
-
-**Issue:** `Configuration` must be treated as an immutable snapshot. Mutating an existing snapshot breaks the mental
-model (evaluations could observe changes that did not come from `load(...)`).
-
----
-
-## Precondition: Use `load(...)` + snapshot decoding
-
-The safety guarantee depends on using the public API:
-
-```kotlin
-// ✓ Correct
-val result = ConfigurationSnapshotCodec.decode(json, AppFeatures.compiledSchema())
-when {
-    result.isSuccess -> AppFeatures.load(result.getOrNull()!!)
-    result.isFailure -> logError(result.parseErrorOrNull()?.message)
-}
-
-// ✓ Correct (side-effecting loader parses + loads on success)
-val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-when {
-    result.isSuccess -> logger.info("Config refreshed")
-    result.isFailure -> logError(result.parseErrorOrNull()?.message)
+// Pseudocode: one writer, many readers
+repeat(1_000) {
+    writerThread.load(nextSnapshot())
+    readerThreads.forEach { read -> assertTrue(read() in allowedStates) }
 }
 ```
 
----
+4. Validate rollback uses the same atomic swap semantics.
 
-## Rollback Is Also Safe
+Ensure `rollback(steps)` is tested under concurrent read load.
 
-Rollback uses the same atomic swap mechanism:
+5. Keep observability side-effect free.
 
-```kotlin
-val success = AppFeatures.rollback(steps = 1)
-```
+Hooks and metrics must record events without mutating evaluation state.
 
-**How it works:**
+## Concurrency checklist
 
-1. Registry keeps a bounded history of prior configurations
-2. `rollback(...)` retrieves the prior snapshot
-3. Atomically swaps it back as the active config
+- [ ] No in-place mutation of active snapshot state.
+- [ ] All updates go through parse-and-load boundary APIs.
+- [ ] Concurrent readers observe only valid whole snapshots.
+- [ ] Rollback behavior is verified under concurrent traffic.
+- [ ] Observability hooks do not alter evaluation outputs.
 
-Same safety guarantees apply: readers see old OR new, never mixed.
+## Next steps
 
----
-
-## Integration Patterns
-
-### Polling with Refresh
-
-```kotlin
-while (running) {
-    val json = fetchFromServer()
-    val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-when {
-        result.isSuccess -> {
-            // Safe: atomic update, concurrent evaluations see consistent snapshot
-            logger.info("Config refreshed")
-        }
-        result.isFailure -> {
-            // Safe: last-known-good remains active
-            logger.error("Refresh failed: ${result.parseErrorOrNull()}")
-        }
-    }
-    delay(pollInterval)
-}
-```
-
-### Push-Based Refresh
-
-```kotlin
-configStream.collect { json ->
-    val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-when {
-        result.isSuccess -> logger.info("Config updated")
-        result.isFailure -> logger.error("Update failed: ${result.parseErrorOrNull()}")
-    }
-}
-```
-
----
-
-## Why Refresh Can't Break Production
-
-1. **Atomic updates** — Partial config updates are impossible
-2. **Lock-free reads** — No deadlocks, no contention
-3. **Fail-safe parsing** — Invalid JSON is rejected before affecting evaluation
-4. **Last-known-good fallback** — Parse failures don't corrupt active config
-5. **Rollback support** — Operational recovery if a bad config sneaks through
-
----
-
-## Next Steps
-
-- [Theory: Atomicity Guarantees](/theory/atomicity-guarantees) — Formal proof of atomic swap safety
-- [Configuration Lifecycle](/learn/configuration-lifecycle) — JSON → Result → load
-- [Failure Modes](/production-operations/failure-modes) — What can go wrong and how to handle it
-- [API Reference: Namespace Operations](/runtime/operations) — Full API for load/rollback
+- [Theory: atomicity guarantees](/theory/atomicity-guarantees)
+- [Refresh patterns](/production-operations/refresh-patterns)
+- [Operational debugging](/production-operations/debugging)

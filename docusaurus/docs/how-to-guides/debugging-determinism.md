@@ -1,412 +1,67 @@
-# How-To: Debug Determinism Issues
+# How-to: debug determinism issues
 
-## Problem
+Use this page to diagnose non-deterministic rollout behavior with a fixed,
+repeatable workflow.
 
-You're experiencing:
+## Read this page when
 
-- Users report inconsistent feature behavior ("I had the feature yesterday, but not today")
-- A/B test results show users switching between variants
-- Metrics show unexpected bucket distribution
-- Ramp-up percentages don't match actual traffic split
+- The same user appears to switch variants unexpectedly.
+- Ramp-up percentages drift from expected distribution.
+- Determinism regressions appear after config or code changes.
 
-## Solution
+## Deterministic steps
 
-### Step 1: Verify StableId Consistency
+1. Capture one deterministic tuple to debug.
 
-The most common cause of non-determinism is inconsistent `stableId`:
+Record `stableId`, `featureKey`, `salt`, ramp percentage, and timestamp from a
+real request before changing anything.
 
-```kotlin
-// Add logging to capture stableId
-fun evaluateWithLogging(userId: String): Boolean {
-  val stableId = StableId.of(userId)
-  logger.debug("Evaluating for user=$userId, stableId=${stableId.hexId}")
+2. Verify `stableId` construction is stable across all code paths.
 
-  val ctx = Context(stableId = stableId)
-  val result = AppFeatures.newFeature.evaluate(ctx)
+- Confirm the same durable user identifier is used everywhere.
+- Reject request/session IDs as rollout identifiers.
+- Log both source ID and derived `StableId` for the sampled requests.
 
-  logger.debug("User=$userId, result=$result")
-  return result
-}
-```
-
-**Check logs for the same user across multiple requests:**
-
-```
-2024-01-01 10:00:00 Evaluating for user=12345, stableId=abc123def456
-2024-01-01 10:05:00 Evaluating for user=12345, stableId=abc123def456  // ✓ Same
-2024-01-01 10:10:00 Evaluating for user=12345, stableId=789ghi012jkl  // ✗ CHANGED!
-```
-
-If `stableId` changes, bucketing is non-deterministic.
-
-### Step 2: Verify Bucket Calculation
-
-Calculate the bucket directly to understand assignment:
+3. Explain bucket assignment directly.
 
 ```kotlin
-import io.amichne.konditional.rules.RampUpBucketing
-
-fun debugBucketAssignment(
-    userId: String,
-    featureKey: String
-) {
-  val stableId = StableId.of(userId)
-
-  val bucket = RampUpBucketing.bucket(
-      stableId = stableId,
-      featureKey = featureKey,
-      salt = "default"  // Or your custom salt
-  )
-
-  logger.info("""
-        Bucket assignment for user=$userId:
-        - Feature: $featureKey
-        - StableId: ${stableId.hexId}
-        - Bucket: $bucket (0-99)
-    """.trimIndent())
-
-  // Check against ramp-up threshold
-  val rampUpPercentage = 50.0
-  val inRampUp = bucket < rampUpPercentage
-
-  logger.info("User is ${if (inRampUp) "IN" else "NOT IN"} the $rampUpPercentage% ramp-up")
-}
-
-// Usage
-debugBucketAssignment("user-12345", "newCheckoutFlow")
+val explanation = RampUpBucketing.explain(
+    stableId = StableId.of("user-123"),
+    featureKey = AppFeatures.newCheckout.key,
+    salt = "checkout-v1",
+    rampUp = RampUp.of(25.0),
+)
+println("bucket=${explanation.bucket} inRollout=${explanation.inRollout}")
 ```
 
-### Step 3: Use the Explain API
+4. Validate rule order and cumulative ramp ranges.
 
-Trace why evaluation returned a specific value:
+- Earlier matching rules win.
+- Use cumulative thresholds for variant splits.
+- Treat `salt(...)` changes as intentional re-sampling events.
+
+5. Replay the same tuple against local and production configs.
 
 ```kotlin
-fun debugEvaluation(userId: String) {
-  val ctx = Context(stableId = StableId.of(userId))
-
-  val explanation = AppFeatures.newCheckoutFlow.evaluate(ctx)
-
-  logger.info("""
-        Evaluation explanation:
-        - Feature: ${explanation.feature.key}
-        - Result: ${explanation.result}
-        - Matched rule: ${explanation.matchedRule?.index ?: "default"}
-
-        Rule evaluation trace:
-    """.trimIndent())
-
-  explanation.evaluationTrace.forEach { step ->
-    val icon = if (step.matched) "✓" else "✗"
-    logger.info("  $icon Rule #${step.ruleIndex}: ${step.reason}")
-  }
-}
-
-// Usage
-debugEvaluation("user-12345")
+val first = AppFeatures.newCheckout.evaluate(ctx)
+val second = AppFeatures.newCheckout.evaluate(ctx)
+check(first == second)
 ```
 
-**Example output:**
+6. Lock in a regression test before closing the issue.
 
-```
-Evaluation explanation:
-- Feature: newCheckoutFlow
-- Result: true
-- Matched rule: 0
+Add a test fixture that uses the captured tuple and asserts the expected result.
 
-Rule evaluation trace:
-  ✓ Rule #0: rampUp(50%) - bucket=42, threshold=50
-  • Rule #1: platforms([IOS]) - not evaluated (previous rule matched)
-  • Default: false - not reached
-```
+## Verification checklist
 
-### Step 4: Test Determinism Locally
+- [ ] Stable ID source is durable and consistent.
+- [ ] Bucket explanation matches expected threshold behavior.
+- [ ] Rule ordering and salt usage are documented and intentional.
+- [ ] Replay test passes repeatedly with identical output.
+- [ ] A determinism regression test was added.
 
-Reproduce the issue locally with the same inputs:
+## Next steps
 
-```kotlin
-fun testDeterminism(userId: String) {
-  val ctx = Context(stableId = StableId.of(userId))
-
-  // Evaluate 100 times
-  val results = (1..100).map {
-    AppFeatures.newCheckoutFlow.evaluate(ctx)
-  }
-
-  // All results should be identical
-  val allSame = results.all { it == results.first() }
-
-  if (allSame) {
-    logger.info("✓ Determinism verified for user=$userId: always returns ${results.first()}")
-  } else {
-    logger.error("✗ NON-DETERMINISTIC for user=$userId: got mixed results $results")
-  }
-}
-```
-
-## Common Causes of Non-Determinism
-
-### Cause 1: Using Session ID as StableId
-
-```kotlin
-// ✗ WRONG: Session ID changes every session
-val ctx = Context(stableId = StableId.of(sessionId))
-
-// ✓ CORRECT: Use persistent user ID
-val ctx = Context(stableId = StableId.of(userId))  // Database ID
-```
-
-**Symptom:** User gets different behavior on each session.
-
-### Cause 2: Using Random Values
-
-```kotlin
-// ✗ WRONG: Random value changes every request
-val ctx = Context(stableId = StableId.of(UUID.randomUUID().toString()))
-
-// ✓ CORRECT: Use persistent identifier
-val ctx = Context(stableId = StableId.of(getUserId()))
-```
-
-**Symptom:** User gets different behavior on every request.
-
-### Cause 3: Salt Changed Unintentionally
-
-```kotlin
-// Before (deployed Monday)
-rule(true) { rampUp { 50.0 } }  // Default salt
-
-// After (deployed Tuesday)
-rule(true) { rampUp(salt = "v2") { 50.0 } }  // Different salt!
-```
-
-**Symptom:** After Tuesday's deploy, users who had the feature lost it, and vice versa.
-
-**Fix:** Only change salt when you explicitly want to reshuffle. Document salt changes.
-
-### Cause 4: Inconsistent StableId Across Platforms
-
-```kotlin
-// Mobile app: uses device ID
-val mobileStableId = StableId.of(deviceId)
-
-// Web app: uses user ID
-val webStableId = StableId.of(userId)
-
-// Same user, different platforms → different buckets!
-```
-
-**Symptom:** User sees different behavior on mobile vs web.
-
-**Fix:** Use consistent identifier across platforms (prefer user ID if logged in).
-
-### Cause 5: Feature Key Typo
-
-```kotlin
-// Code references "newCheckoutFlow"
-AppFeatures.newCheckoutFlow.evaluate(ctx)
-
-// Config uses "new_checkout_flow" (different key!)
-{
-  "new_checkout_flow": { "rules": [...] }
-}
-```
-
-**Symptom:** Config never loads for this feature. Feature uses static rules instead. If static rules differ from config,
-behavior changes.
-
-**Fix:** Ensure feature keys match between code and config. Keys are derived from property names.
-
-## Debugging Checklist
-
-When investigating non-determinism:
-
-### 1. Capture StableId from Logs
-
-```kotlin
-logger.info("User=$userId, StableId=${ctx.stableId.hexId}")
-```
-
-Check if the same user has the same `stableId` across requests.
-
-### 2. Verify Bucket Assignment
-
-```kotlin
-val bucket = RampUpBucketing.bucket(stableId, featureKey, salt)
-logger.info("User bucket: $bucket")
-```
-
-Check that bucket matches expectations.
-
-### 3. Check for Salt Changes
-
-```bash
-# Search git history for salt changes
-git log -p --all -S 'rampUp(salt' -- '*.kt'
-```
-
-### 4. Verify Feature Key Consistency
-
-```kotlin
-// In code
-logger.info("Feature key: ${AppFeatures.newCheckoutFlow.key}")
-
-// In config
-logger.info("Config keys: ${jsonConfig.keys}")
-```
-
-Keys must match exactly.
-
-### 5. Test Locally with Same Inputs
-
-```kotlin
-val ctx = Context(stableId = StableId.of("user-12345"))
-val results = (1..100).map { AppFeatures.newCheckoutFlow.evaluate(ctx) }
-require(results.all { it == results.first() }) { "Non-deterministic!" }
-```
-
-### 6. Check Configuration History
-
-```kotlin
-AppFeatures.hooks.afterLoad.add { event ->
-  when {
-    event.result.isSuccess -> {
-      logger.info("Config loaded at ${event.timestamp}")
-      logger.info("Loaded features: ${event.result.loadedFeatures}")
-    }
-  }
-}
-```
-
-Verify when configuration changed and what changed.
-
-## Advanced Debugging
-
-### Debugging Bucket Distribution
-
-Verify that buckets distribute evenly across users:
-
-```kotlin
-fun analyzeBucketDistribution(sampleSize: Int = 10_000) {
-  val buckets = (0 until sampleSize).map { i ->
-    val stableId = StableId.of("user-$i")
-    RampUpBucketing.bucket(stableId, "testFeature", "default")
-  }
-
-  // Count users per bucket (0-99)
-  val distribution = buckets.groupingBy { it }.eachCount()
-
-  // Each bucket should have ~100 users (1% of 10,000)
-  distribution.forEach { (bucket, count) ->
-    val percentage = (count.toDouble() / sampleSize) * 100
-    logger.info("Bucket $bucket: $count users ($percentage%)")
-  }
-
-  // Standard deviation should be low
-  val mean = sampleSize / 100.0
-  val variance = distribution.values.map { (it - mean).pow(2) }.average()
-  val stdDev = sqrt(variance)
-
-  logger.info("Distribution stdDev: $stdDev (should be < 10 for good distribution)")
-}
-```
-
-### Debugging Configuration Drift
-
-Compare loaded config to expected config:
-
-```kotlin
-fun debugConfigDrift() {
-  val expectedRampUp = 50.0
-  val actualRampUp = getLoadedRampUpPercentage(AppFeatures.newCheckoutFlow)
-
-  if (actualRampUp != expectedRampUp) {
-    logger.error("""
-            Config drift detected:
-            - Expected ramp-up: $expectedRampUp%
-            - Actual ramp-up: $actualRampUp%
-            - Possible causes: config load failed, wrong config deployed
-        """.trimIndent())
-  }
-}
-```
-
-### Reproducing Production Behavior
-
-Capture context from production and replay locally:
-
-```kotlin
-// In production: log context on evaluation
-AppFeatures.hooks.afterEvaluation.add { event ->
-  logger.info("Eval: user=${event.context.stableId}, result=${event.result}, context=${event.context}")
-}
-
-// Locally: replay with same context
-fun replayEvaluation(productionLog: String) {
-  // Parse: "Eval: user=abc123, result=true, context=..."
-  val stableId = extractStableId(productionLog)
-  val platform = extractPlatform(productionLog)
-
-  val ctx = Context(
-      stableId = StableId.of(stableId),
-      platform = platform
-  )
-
-  val result = AppFeatures.newCheckoutFlow.evaluate(ctx)
-  logger.info("Local replay: result=$result")
-}
-```
-
-## Testing for Determinism
-
-### Unit Test: Same User, Same Result
-
-```kotlin
-@Test
-fun `evaluation is deterministic for same user`() {
-  val userId = "test-user-123"
-  val ctx = Context(stableId = StableId.of(userId))
-
-  val results = (1..1000).map {
-    AppFeatures.newCheckoutFlow.evaluate(ctx)
-  }
-
-  assertTrue(results.all { it == results.first() })
-}
-```
-
-### Integration Test: Cross-Platform Consistency
-
-```kotlin
-@Test
-fun `same user gets same bucket on all platforms`() {
-  val userId = "test-user-456"
-
-  val mobileCtx = Context(
-      stableId = StableId.of(userId),
-      platform = Platform.ANDROID
-  )
-
-  val webCtx = Context(
-      stableId = StableId.of(userId),
-      platform = Platform.WEB
-  )
-
-  // Same user → same bucket → potentially same result
-  // (Actual result may differ if rules target specific platforms)
-  val mobileBucket = RampUpBucketing.bucket(
-      StableId.of(userId), "feature", "default"
-  )
-  val webBucket = RampUpBucketing.bucket(
-      StableId.of(userId), "feature", "default"
-  )
-
-  assertEquals(mobileBucket, webBucket, "Same user should be in same bucket")
-}
-```
-
-## Next Steps
-
-- [Rolling Out Gradually](/how-to-guides/rolling-out-gradually) — Implement deterministic ramps
-- [Operational Debugging](/production-operations/debugging) — Production debugging tools
-- [Determinism Proofs (Theory)](/theory/determinism-proofs) — Why bucketing is deterministic
-- [A/B Testing](/how-to-guides/ab-testing) — Variant assignment patterns
+- [A/B testing](/how-to-guides/ab-testing)
+- [Troubleshooting](/troubleshooting/)
+- [Operational debugging](/production-operations/debugging)

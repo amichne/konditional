@@ -1,245 +1,38 @@
-# Type Safety in Konditional
+# Type safety
 
-Konditional provides compile-time type safety for statically-defined flags and runtime validation for configuration
-loaded from JSON.
+Konditional combines compile-time type guarantees with explicit parse-boundary
+handling for untrusted configuration inputs.
 
----
+## Read this page when
 
-## What Type Safety Gives You
+- You need a practical boundary between Kotlin typing and JSON parsing.
+- You are migrating from string-keyed flag systems.
+- You are writing tests for invalid payload handling.
 
-### 1. Features are Properties, Not Strings
+## Concepts in scope
 
-```kotlin
-object AppFeatures : Namespace("app") {
-    val darkMode by boolean<Context>(default = false)
-    val maxRetries by integer<Context>(default = 3)
-}
+- **Compile-time safety**: statically declared features are typed end-to-end.
+- **Total evaluation**: required defaults keep `evaluate(...)` non-null.
+- **Context typing**: feature context constraints are compiler-enforced.
+- **Parse boundary**: untrusted payloads become trusted snapshots only through
+  `Result`-based decoding.
 
-// Usage
-val enabled: Boolean = AppFeatures.darkMode.evaluate(context)  // ✓ Typed
-val retries: Int = AppFeatures.maxRetries.evaluate(context)     // ✓ Typed
-```
+## Practical workflow
 
-**Benefits:**
+1. Declare feature types and defaults in Kotlin.
+2. Evaluate with the required context type.
+3. Decode external payloads using serialization APIs.
+4. On parse failure, keep the last-known-good snapshot active.
 
-- **Typos caught at compile-time:** `AppFeatures.darkMood` won't compile
-- **IDE autocomplete works:** Your editor shows available flags
-- **Refactoring is safe:** Rename a property and all usages update
+## Related pages
 
-### 2. Return Types are Known
+- [Core types](/core/types)
+- [Serialization reference](/serialization/reference)
+- [Type safety boundaries](/theory/type-safety-boundaries)
+- [Parse don’t validate](/theory/parse-dont-validate)
 
-```kotlin
-val timeout by double<Context>(default = 30.0) {
-    rule(45.0) { platforms(Platform.ANDROID) }
-}
+## Next steps
 
-// Compiler knows this returns Double
-val timeoutValue: Double = timeout.evaluate(context)  // ✓ Correct
-val timeoutValue: String = timeout.evaluate(context)  // X Compile error
-```
-
-**You never cast or coerce types.** The type flows from definition to evaluation.
-
-### 3. Rule Types Must Match
-
-```kotlin
-val maxRetries by integer<Context>(default = 3) {
-    rule(5) { android() }        // ✓ Int matches
-    rule("five") { ios() }       // X Compile error: String != Int
-}
-```
-
-**Invalid rules don't compile.** You can't accidentally return the wrong type.
-
-### 4. Defaults are Required
-
-```kotlin
-val feature by boolean<Context>(default = false)  // ✓ Has default
-val feature by boolean<Context>()                 // X Compile error: no default
-```
-
-**Evaluation is total.** Every feature always returns a value. No nulls, no exceptions (from evaluation).
-
-### 5. Context Types are Enforced
-
-```kotlin
-interface PremiumContext : Context {
-    val subscriptionTier: SubscriptionTier
-}
-
-val premiumFeature by boolean<PremiumContext>(default = false) {
-    rule(true) { extension { subscriptionTier == SubscriptionTier.ENTERPRISE } }
-}
-
-// Usage
-val premiumCtx: PremiumContext = buildPremiumContext()
-premiumFeature.evaluate(premiumCtx)  // ✓ Correct context type
-
-val basicCtx: Context = Context(...)
-premiumFeature.evaluate(basicCtx)    // X Compile error: wrong context type
-```
-
-**Context extensions are type-safe.** You can't evaluate a feature with the wrong context.
-
----
-
-## The Boundary: Compile-Time vs Runtime
-
-### Compile-Time Safety (Statically-Defined Flags)
-
-When you define flags in Kotlin code, the compiler guarantees:
-
-- Property names map to feature keys
-- Return types match between definition and usage
-- Rules return the correct types
-- Defaults exist for all features
-- Context types are correct
-
-### Runtime Validation (JSON Configuration)
-
-When you load configuration from JSON, **the compiler cannot help**:
-
-```kotlin
-// Statically defined
-object AppFeatures : Namespace("app") {
-    val maxRetries by integer<Context>(default = 3)
-}
-
-// Loaded from JSON
-val json = """{ "maxRetries": "five" }"""  // Wrong type!
-
-val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-when {
-    result.isSuccess -> Unit // Valid JSON
-    result.isFailure -> {
-        // Invalid JSON rejected at boundary
-        logError("Parse failed: ${result.parseErrorOrNull()}")
-        // Last-known-good configuration remains active
-    }
-}
-```
-
-**Key insight:** Konditional doesn't pretend JSON is type-safe. Instead, it:
-
-1. **Validates at the boundary** with explicit `Result`
-2. **Rejects invalid JSON** before affecting production
-3. **Keeps last-known-good** when validation fails
-
----
-
-## What Can Go Wrong (and How Konditional Handles It)
-
-### Typo in Flag Name
-
-**String-keyed systems:**
-
-```kotlin
-val enabled = flagClient.getBool("new_onboaring_flow", false)  // Typo ships
-```
-
-→ Silent failure. Flag never activates.
-
-**Konditional:**
-
-```kotlin
-AppFeatures.newOnboaringFlow  // Doesn't compile
-```
-
-→ Caught at compile-time.
-
-### Type Mismatch
-
-**String-keyed systems:**
-
-```kotlin
-val retries: Int = flagClient.getInt("max_retries", 3)
-// JSON: { "max_retries": "five" }
-// Runtime: retries = 0 (or exception, SDK-dependent)
-```
-
-→ Production incident.
-
-**Konditional:**
-
-```kotlin
-val json = """{ "maxRetries": "five" }"""
-val result = NamespaceSnapshotLoader(AppFeatures).load(json)
-when {
-    result.isFailure -> // Invalid type caught, last-known-good remains
-}
-```
-
-→ Invalid JSON rejected, no incident.
-
-### Missing Default
-
-**String-keyed systems:**
-
-```kotlin
-val timeout = flagClient.getDouble("timeout", null)  // Nullable!
-timeout?.let { setTimeoutMs(it) }  // Null checks everywhere
-```
-
-→ Null propagation through codebase.
-
-**Konditional:**
-
-```kotlin
-val timeout by double<Context>(default = 30.0)  // Default required
-val value: Double = timeout.evaluate(ctx)        // Never null
-```
-
-→ Evaluation is total. No nulls.
-
----
-
-## Practical Implications
-
-### For Day-to-Day Development
-
-1. **Use IDE autocomplete** to discover flags
-2. **Rely on the compiler** for refactoring
-3. **Don't cast or coerce types** — they flow automatically
-4. **Handle `Result` explicitly** when loading JSON
-
-### For Code Reviews
-
-1. **Check that defaults make sense** (required, non-optional)
-2. **Verify rule types match** (compiler enforces this anyway)
-3. **Ensure `Result` failures are handled** (log, alert, fallback)
-
-### For Testing
-
-1. **Test evaluation with typed contexts** — no mocks needed
-2. **Test `Result.failure` cases** for invalid JSON
-3. **Test that rules return correct types** (compiler helps, but test edge cases)
-
----
-
-## Summary
-
-Konditional's type safety has two parts:
-
-1. **Compile-time guarantees** for statically-defined flags:
-
-- Property names = feature keys
-- Return types flow from definition to usage
-- Rules match feature types
-- Defaults required, evaluation total
-- Context types enforced
-
-2. **Runtime validation** for JSON configuration:
-
-- Explicit `Result` boundary
-- Invalid JSON rejected before affecting production
-- Last-known-good configuration preserved
-
-**You get compile-time safety where possible, explicit validation where necessary.**
-
----
-
-## Next Steps
-
-- [Configuration Lifecycle](/learn/configuration-lifecycle) — How configuration flows from JSON to evaluation
-- [Type Safety Boundaries (Theory)](/theory/type-safety-boundaries) — Deep dive into how type safety is implemented
-- [Production Operations](/production-operations/failure-modes) — Handling invalid configuration in production
+1. Use this model while authoring rules in [Core DSL best practices](/core/best-practices).
+2. Validate end-to-end flow in [Configuration lifecycle](/learn/configuration-lifecycle).
+3. Add boundary tests from [Serialization persistence format](/serialization/persistence-format).

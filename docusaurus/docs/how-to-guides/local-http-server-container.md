@@ -1,109 +1,69 @@
-# How-To: Run the Local HTTP Server Container
+# How-to: run the local HTTP server container
 
-This guide explains the new local HTTP server resources that Konditional adds,
-and shows how you can use them for local integration testing, snapshot fixture
-management, and persistent development workflows.
+Use this page to run a local snapshot service for deterministic integration
+and failure testing.
 
-## What this adds
+## Read this page when
 
-This change adds a complete local integration surface that runs without cloud
-infrastructure.
+- You need a local endpoint for namespace snapshot CRUD operations.
+- You want persistent snapshot storage across container restarts.
+- You are validating refresh and rollback behavior before production.
 
-- `konditional-http-server/`: A Ktor-based HTTP server module that serves
-  namespace snapshot operations.
-- `docker/http-server/Dockerfile`: A container image build that packages the
-  runnable `konditional-http-server` distribution.
-- `docker-compose.http-server.yml`: A ready-to-run local stack that exposes
-  port `8080` and mounts persistent storage.
-- `requests/`: Editor-friendly `.http` request samples for quick interaction
-  with the local containerized server.
-- Persistent storage volume: A named Docker volume,
-  `konditional-http-storage`, mounted at `/data`.
+## Prerequisites
 
-## What you can leverage now
+- Docker Desktop or an equivalent Docker runtime.
+- Repository root as your working directory.
+- `curl` or the request files under `requests/`.
 
-You can now test runtime snapshot workflows against a local HTTP service that
-persists state across restarts.
+## Deterministic steps
 
-- Build local integration tests that `PUT` and `GET` raw namespace snapshot
-  payloads.
-- Simulate snapshot lifecycle operations (`put`, `read`, `delete`) before
-  wiring a production config backend.
-- Keep fake snapshot state between container restarts with the mounted Docker
-  volume.
-- Enumerate stored namespaces in deterministic key order via
-  `GET /v1/namespaces`.
+1. Start the local stack.
 
-## Run the server with Docker Compose
+```bash
+docker compose -f docker-compose.http-server.yml up --build
+```
 
-Use this flow when you want a local endpoint quickly.
+2. Verify liveness.
 
-1. From the repository root, start the service:
-   ```bash
-   docker compose -f docker-compose.http-server.yml up --build
-   ```
-2. In another terminal, verify liveness:
-   ```bash
-   curl http://localhost:8080/health
-   ```
-3. Confirm that the service returns `ok`.
+```bash
+curl http://localhost:8080/health
+```
 
-## Use the included sample requests
+Expected result: `ok`.
 
-Konditional includes ready-to-run request files in `requests/` that target the
-local Docker server on `http://localhost:8080`.
+3. Store and read one namespace snapshot.
 
-- `requests/01-health.http`
-- `requests/02-namespace-crud.http`
-- `requests/03-list-and-errors.http`
+```bash
+curl -X PUT http://localhost:8080/v1/namespaces/app \
+  -H 'content-type: application/json' \
+  --data '{"flags":{"checkout":true}}'
 
-## Endpoint operations
+curl http://localhost:8080/v1/namespaces/app
+```
 
-The local server exposes a namespace-scoped snapshot API.
+4. Verify deterministic namespace listing.
 
-| Method | Path | Behavior |
-| --- | --- | --- |
-| `GET` | `/health` | Returns `200` with body `ok`. |
-| `GET` | `/v1/namespaces` | Returns `200` and a JSON array of stored namespace keys. |
-| `GET` | `/v1/namespaces/{namespace}` | Returns `200` with raw snapshot JSON, or `404` if missing. |
-| `PUT` | `/v1/namespaces/{namespace}` | Stores raw snapshot JSON and returns `204`. |
-| `DELETE` | `/v1/namespaces/{namespace}` | Deletes stored snapshot and returns `204`, or `404` if missing. |
+```bash
+curl http://localhost:8080/v1/namespaces
+```
 
-## Example workflow
+5. Clean up or reset local state when needed.
 
-Use this sequence to write, read, and delete a namespace snapshot.
+```bash
+docker compose -f docker-compose.http-server.yml down
+# Optional hard reset
+# docker volume rm konditional-http-storage
+```
 
-1. Store a snapshot payload:
-   ```bash
-   curl -X PUT http://localhost:8080/v1/namespaces/app \
-     -H 'content-type: application/json' \
-     --data '{"flags":{"checkout":true}}'
-   ```
-2. Read the stored payload:
-   ```bash
-   curl http://localhost:8080/v1/namespaces/app
-   ```
-3. List all stored namespaces:
-   ```bash
-   curl http://localhost:8080/v1/namespaces
-   ```
-4. Delete the namespace payload:
-   ```bash
-   curl -X DELETE http://localhost:8080/v1/namespaces/app
-   ```
+## Endpoint checklist
 
-## Persistence behavior
-
-The local container writes snapshots to `STORAGE_PATH=/data/snapshots.json`,
-and Docker Compose mounts `/data` to the named volume
-`konditional-http-storage`.
-
-After you stop and restart the container, the previously written namespace
-snapshots remain available until you remove the volume.
+- [ ] `GET /health` returns `200` and body `ok`.
+- [ ] `PUT /v1/namespaces/{namespace}` returns `204`.
+- [ ] `GET /v1/namespaces/{namespace}` returns stored raw JSON.
+- [ ] `DELETE /v1/namespaces/{namespace}` removes the snapshot.
 
 ## Next steps
 
-- Review [How-To: Load Configuration Safely from Remote](/how-to-guides/safe-remote-config)
-  to connect loaded JSON to typed namespace parsing.
-- Review [Runtime lifecycle](/runtime/lifecycle) for atomic load and rollback
-  behavior inside namespaces.
+- [Safe remote config](/how-to-guides/safe-remote-config)
+- [Refresh patterns](/production-operations/refresh-patterns)
+- [Handling failures](/how-to-guides/handling-failures)

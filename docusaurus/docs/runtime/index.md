@@ -1,50 +1,35 @@
 # konditional-runtime
 
-`konditional-runtime` adds lifecycle operations on top of core namespaces: loading snapshots, rollback, kill-switches,
-and registry hooks.
+`konditional-runtime` adds namespace lifecycle operations on top of core
+definitions: atomic loading, rollback history, kill-switch control, and hooks.
 
-## When to Use This Module
+## Read this page when
 
-You should use `konditional-runtime` when you need to:
+- You need dynamic configuration updates without redeploy.
+- You need rollback and emergency controls per namespace.
+- You are operating Konditional in multi-threaded services.
 
-- Load feature flag configuration dynamically at runtime without redeploying
-- Roll back to a previous configuration snapshot when issues are detected
-- Use an emergency kill-switch to disable all features in a namespace instantly
-- Attach logging and metrics hooks to track configuration changes
+## Concepts in scope
 
-## What You Get
+- **Atomic snapshot swap** through runtime registry operations.
+- **Rollback history** with bounded retained snapshots.
+- **Kill-switch controls** that force default returns without deleting config.
+- **Registry hooks** for logging and metrics without changing semantics.
 
-- **Atomic configuration loading**: Swap entire configuration snapshots safely
-- **Rollback history**: Revert to previous configurations with bounded history
-- **Kill-switch operations**: `disableAll()` and `enableAll()` for emergency control
-- **Registry hooks**: Attach dependency-free logging and metrics adapters
+## Boundary notes
 
-## Alternatives
+- Runtime consumes trusted snapshots; it does not parse raw JSON.
+- Parse/don’t-validate boundaries live in serialization APIs.
 
-Without this module, you would need to:
+## Related pages
 
-- Rebuild and redeploy your application to change feature flag behavior
-- Implement your own atomic configuration swap mechanism with proper thread safety
-- Build custom rollback tracking and emergency controls from scratch
-
-## Installation
-
-```kotlin
-dependencies {
-    implementation("io.amichne:konditional-runtime:VERSION")
-}
-```
-
-## Guarantees
-
-- **Guarantee**: Configuration swaps are atomic and never partially visible.
-
-- **Mechanism**: Namespace registries store configuration in an `AtomicReference` and swap it in a single write.
-
-- **Boundary**: Readers may see either the old snapshot or the new snapshot; there is no cross-snapshot mix.
+- [Runtime lifecycle](/runtime/lifecycle)
+- [Runtime operations](/runtime/operations)
+- [Serialization module](/serialization)
+- [Atomicity guarantees](/theory/atomicity-guarantees)
 
 ## Next steps
 
-- [Runtime operations](/runtime/operations)
-- [Configuration lifecycle](/runtime/lifecycle)
-- [Serialization module](/serialization/)
+1. Follow [Runtime lifecycle](/runtime/lifecycle) for update flow.
+2. Use [Runtime operations](/runtime/operations) for API details.
+3. Validate isolation expectations in [Namespace isolation](/theory/namespace-isolation).
