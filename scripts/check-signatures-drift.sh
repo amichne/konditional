@@ -5,10 +5,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 cd "${REPO_ROOT}"
-./scripts/generate-signatures.sh
+bash ./scripts/generate-signatures.sh
 
 if ! git diff --quiet -- .signatures; then
-    echo "Signature artifacts are out of date. Run ./scripts/generate-signatures.sh and commit .signatures/." >&2
+    echo "Signature artifacts are out of date. Run bash ./scripts/generate-signatures.sh and commit .signatures/." >&2
     git --no-pager diff -- .signatures
     exit 1
 fi

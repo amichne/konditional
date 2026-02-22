@@ -49,6 +49,15 @@ const sidebars: SidebarsConfig = {
         },
         {
             type: 'category',
+            label: 'Value Journeys',
+            items: [
+                'value-journeys/index',
+                'value-journeys/jv-001-confident-rollouts',
+                'value-journeys/jv-002-safe-snapshot-ingestion',
+            ],
+        },
+        {
+            type: 'category',
             label: 'API Reference',
             items: [
                 {

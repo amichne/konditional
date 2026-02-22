@@ -1,0 +1,13 @@
+# Default owner
+* @amichne
+
+# Core modules
+/konditional-core/** @amichne
+/konditional-runtime/** @amichne
+/konditional-serialization/** @amichne
+/konditional-observability/** @amichne
+
+# Value journey docs and validation artifacts
+/docs/value-journeys/** @amichne
+/docusaurus/docs/value-journeys/** @amichne
+/.agents/skills/value-journey-signature-linker/** @amichne

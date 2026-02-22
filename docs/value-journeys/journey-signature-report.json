@@ -1,0 +1,29 @@
+{
+  "ci_mode": "warn",
+  "claims": {
+    "at_risk": 0,
+    "claims_file": "",
+    "doc_reference_errors": [],
+    "enabled": false,
+    "missing": 0,
+    "require_tests": true,
+    "schema_errors": [],
+    "supported": 0,
+    "total": 0,
+    "unresolved": []
+  },
+  "links": {
+    "missing": 0,
+    "missing_entries": [],
+    "resolved": 10,
+    "total": 10
+  },
+  "links_file": "/Users/amichne/.codex/worktrees/3816/konditional/docs/value-journeys/journey-signature-links.json",
+  "refresh_attempted": false,
+  "refresh_details": "",
+  "refresh_succeeded": false,
+  "repo_root": "/Users/amichne/.codex/worktrees/3816/konditional",
+  "schema_mode": "journeys",
+  "signatures_dir": "/Users/amichne/.codex/worktrees/3816/konditional/.signatures",
+  "status": "ok"
+}

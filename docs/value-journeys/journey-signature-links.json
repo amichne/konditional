@@ -1,0 +1,68 @@
+{
+  "journeys": [
+    {
+      "journey_id": "JV-001",
+      "title": "Confident rollouts without reader-side inconsistency",
+      "value_proposition": "Roll out and roll back runtime flag state safely while preserving consistent reads.",
+      "journey_stages": [
+        "Stabilize runtime state",
+        "Control rollout risk",
+        "Verify consistency"
+      ],
+      "links": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun load(config: ConfigurationView)"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun rollback(steps: Int): Boolean"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun disableAll()"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun enableAll()"
+        }
+      ]
+    },
+    {
+      "journey_id": "JV-002",
+      "title": "Trusted snapshot ingestion with typed failure paths",
+      "value_proposition": "Turn configuration payloads into typed runtime materialization with clear boundary failures.",
+      "journey_stages": [
+        "Parse with context",
+        "Materialize safely",
+        "Operate confidently"
+      ],
+      "links": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#override fun load( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#private fun ParseError.withNamespaceContext(namespaceId: String): ParseError"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec#override fun decode( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>"
+        }
+      ]
+    }
+  ]
+}

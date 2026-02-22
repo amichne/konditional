@@ -1,0 +1,1319 @@
+{
+  "owner_routing": {
+    "konditional-core": "/konditional-core/**",
+    "konditional-runtime": "/konditional-runtime/**",
+    "konditional-serialization": "/konditional-serialization/**",
+    "konditional-observability": "/konditional-observability/**"
+  },
+  "claims": [
+    {
+      "journey_id": "JV-001",
+      "claim_id": "JV-001-C1",
+      "claim_statement": "Runtime readers observe coherent namespace snapshots while updates are applied.",
+      "decision_type": "operate",
+      "doc_scope": "value_journey",
+      "doc_page": "value-journeys/jv-001-confident-rollouts",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun load(config: ConfigurationView)"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt::load rollback history and evaluation remain coherent under contention"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime"
+      ]
+    },
+    {
+      "journey_id": "JV-001",
+      "claim_id": "JV-001-C2",
+      "claim_statement": "Rollback progression remains linearizable under concurrent evaluations.",
+      "decision_type": "operate",
+      "doc_scope": "value_journey",
+      "doc_page": "value-journeys/jv-001-confident-rollouts",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun rollback(steps: Int): Boolean"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt::rollback progression stays linearizable while evaluations run"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime"
+      ]
+    },
+    {
+      "journey_id": "JV-001",
+      "claim_id": "JV-001-C3",
+      "claim_statement": "Kill-switch operations force declared defaults and can be safely re-enabled.",
+      "decision_type": "operate",
+      "doc_scope": "value_journey",
+      "doc_page": "value-journeys/jv-001-confident-rollouts",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun disableAll()"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun enableAll()"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/ops/KillSwitchTest.kt::disableAll forces declared defaults"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime",
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "JV-002",
+      "claim_id": "JV-002-C1",
+      "claim_statement": "Namespace snapshot loading yields typed success for valid JSON inputs.",
+      "decision_type": "adopt",
+      "doc_scope": "value_journey",
+      "doc_page": "value-journeys/jv-002-safe-snapshot-ingestion",
+      "claim_kind": "boundary",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#override fun load( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationSnapshotCodecTest.kt::Given valid JSON, When deserialized, Then loads into namespace and returns success"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime",
+        "konditional-serialization"
+      ]
+    },
+    {
+      "journey_id": "JV-002",
+      "claim_id": "JV-002-C2",
+      "claim_statement": "Namespace snapshot loading yields typed parse failure for invalid JSON inputs.",
+      "decision_type": "operate",
+      "doc_scope": "value_journey",
+      "doc_page": "value-journeys/jv-002-safe-snapshot-ingestion",
+      "claim_kind": "failure_mode",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#private fun ParseError.withNamespaceContext(namespaceId: String): ParseError"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationSnapshotCodecTest.kt::Given invalid JSON, When deserialized, Then returns failure without loading"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime",
+        "konditional-serialization"
+      ]
+    },
+    {
+      "journey_id": "JV-002",
+      "claim_id": "JV-002-C3",
+      "claim_statement": "Feature-aware decoding fails with typed boundary errors when schema scope is missing.",
+      "decision_type": "migrate",
+      "doc_scope": "value_journey",
+      "doc_page": "value-journeys/jv-002-safe-snapshot-ingestion",
+      "claim_kind": "boundary",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec#override fun decode( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>"
+        }
+      ],
+      "tests": [
+        "konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/ConfigurationSnapshotCodecTest.kt::Given snapshot with flags, When decoded without feature scope by default, Then returns typed failure"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-serialization"
+      ]
+    },
+    {
+      "journey_id": "TH-001",
+      "claim_id": "TH-001-C1",
+      "claim_statement": "The parse boundary decodes untrusted JSON into typed materialized snapshots before runtime load.",
+      "decision_type": "adopt",
+      "doc_scope": "theory",
+      "doc_page": "theory/parse-dont-validate",
+      "claim_kind": "boundary",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationSnapshotCodecTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime",
+        "konditional-serialization"
+      ]
+    },
+    {
+      "journey_id": "TH-001",
+      "claim_id": "TH-001-C2",
+      "claim_statement": "Boundary failures are represented as typed parse errors instead of untyped exceptions.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/parse-dont-validate",
+      "claim_kind": "failure_mode",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.result.ParseError"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.result.KonditionalBoundaryFailure"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/core/BoundaryFailureResultTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "TH-001",
+      "claim_id": "TH-001-C3",
+      "claim_statement": "Namespace loaders attach namespace context to parse failures for safer operations triage.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/parse-dont-validate",
+      "claim_kind": "mechanism",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#private fun ParseError.withNamespaceContext(namespaceId: String): ParseError"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationSnapshotCodecTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime"
+      ]
+    },
+    {
+      "journey_id": "TH-001",
+      "claim_id": "TH-001-C4",
+      "claim_statement": "Runtime load accepts materialized configurations and rejects boundary-invalid payloads.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/parse-dont-validate",
+      "claim_kind": "boundary",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.instance.MaterializedConfiguration"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#override fun load( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationSnapshotCodecTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime",
+        "konditional-serialization"
+      ]
+    },
+    {
+      "journey_id": "TH-001",
+      "claim_id": "TH-001-C5",
+      "claim_statement": "Missing declared flag handling is explicit policy configured through snapshot load options.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/parse-dont-validate",
+      "claim_kind": "mechanism",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.options.SnapshotLoadOptions"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/OperationalSerializationTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-serialization",
+        "konditional-runtime"
+      ]
+    },
+    {
+      "journey_id": "TH-001",
+      "claim_id": "TH-001-C6",
+      "claim_statement": "Schema-less decode is intentionally unsupported to prevent unscoped snapshot ingestion.",
+      "decision_type": "migrate",
+      "doc_scope": "theory",
+      "doc_page": "theory/parse-dont-validate",
+      "claim_kind": "boundary",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec#override fun decode( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>"
+        }
+      ],
+      "tests": [
+        "konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/ConfigurationSnapshotCodecTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-serialization"
+      ]
+    },
+    {
+      "journey_id": "TH-002",
+      "claim_id": "TH-002-C1",
+      "claim_statement": "Feature definitions are namespace-bound typed symbols rather than stringly runtime lookups.",
+      "decision_type": "adopt",
+      "doc_scope": "theory",
+      "doc_page": "theory/type-safety-boundaries",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.features.Feature"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.Namespace"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/core/FlagEntryTypeSafetyTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "TH-002",
+      "claim_id": "TH-002-C2",
+      "claim_statement": "Context capability constraints are enforced by type parameters in feature evaluation.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/type-safety-boundaries",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.context.Context"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.features.Feature"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/core/ConditionEvaluationTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "TH-002",
+      "claim_id": "TH-002-C3",
+      "claim_statement": "Boundary parse failures preserve typed error semantics at module boundaries.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/type-safety-boundaries",
+      "claim_kind": "failure_mode",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.result.ParseError"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.result.KonditionalBoundaryFailure"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/core/BoundaryFailureResultTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "TH-002",
+      "claim_id": "TH-002-C4",
+      "claim_statement": "Schema compilation defines the trusted domain accepted by snapshot decode.",
+      "decision_type": "adopt",
+      "doc_scope": "theory",
+      "doc_page": "theory/type-safety-boundaries",
+      "claim_kind": "mechanism",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.schema.CompiledNamespaceSchema"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec"
+        }
+      ],
+      "tests": [
+        "konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/ConfigurationSnapshotCodecTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core",
+        "konditional-serialization"
+      ]
+    },
+    {
+      "journey_id": "TH-002",
+      "claim_id": "TH-002-C5",
+      "claim_statement": "Namespace snapshot loading returns typed materialized success and never an untyped payload.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/type-safety-boundaries",
+      "claim_kind": "boundary",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#override fun load( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationSnapshotCodecTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime",
+        "konditional-serialization"
+      ]
+    },
+    {
+      "journey_id": "TH-002",
+      "claim_id": "TH-002-C6",
+      "claim_statement": "Typed flag definitions preserve runtime evaluation type integrity across rule/default selection.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/type-safety-boundaries",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.FlagDefinition"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/core/NamespaceFeatureDefinitionTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "TH-003",
+      "claim_id": "TH-003-C1",
+      "claim_statement": "Ramp-up bucketing is deterministic for the same salt, feature key, and stable identifier.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/determinism-proofs",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.evaluation.Bucketing"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/core/MissingStableIdBucketingTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "TH-003",
+      "claim_id": "TH-003-C2",
+      "claim_statement": "Stable identifier changes intentionally alter bucketing outcomes while preserving per-id determinism.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/determinism-proofs",
+      "claim_kind": "boundary",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.evaluation.Bucketing"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/core/ConditionEvaluationTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "TH-003",
+      "claim_id": "TH-003-C3",
+      "claim_statement": "Rule precedence is derived from structural specificity before value selection.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/determinism-proofs",
+      "claim_kind": "mechanism",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.rules.Rule"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.rules.targeting.Targeting"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/rules/RuleMatchingTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "TH-003",
+      "claim_id": "TH-003-C4",
+      "claim_statement": "Evaluation for the same context and snapshot yields a stable value.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/determinism-proofs",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.FlagDefinition"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/core/ConditionEvaluationTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "TH-003",
+      "claim_id": "TH-003-C5",
+      "claim_statement": "Concurrent evaluations remain deterministic within the same active runtime snapshot.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/determinism-proofs",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime",
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "TH-003",
+      "claim_id": "TH-003-C6",
+      "claim_statement": "Determinism intentionally changes across configuration swaps because the snapshot identity changed.",
+      "decision_type": "migrate",
+      "doc_scope": "theory",
+      "doc_page": "theory/determinism-proofs",
+      "claim_kind": "boundary",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime"
+      ]
+    },
+    {
+      "journey_id": "TH-004",
+      "claim_id": "TH-004-C1",
+      "claim_statement": "Runtime registry loads publish coherent snapshots that readers consume without partial visibility.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/atomicity-guarantees",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun load(config: ConfigurationView)"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime"
+      ]
+    },
+    {
+      "journey_id": "TH-004",
+      "claim_id": "TH-004-C2",
+      "claim_statement": "Rollback operations preserve linearizable progression under read contention.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/atomicity-guarantees",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun rollback(steps: Int): Boolean"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime"
+      ]
+    },
+    {
+      "journey_id": "TH-004",
+      "claim_id": "TH-004-C3",
+      "claim_statement": "Kill-switch toggles keep evaluation semantics coherent while enforcing declared defaults.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/atomicity-guarantees",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun disableAll()"
+        },
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun enableAll()"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/ops/KillSwitchTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime",
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "TH-004",
+      "claim_id": "TH-004-C4",
+      "claim_statement": "History storage is bounded and only records complete snapshots.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/atomicity-guarantees",
+      "claim_kind": "performance",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime"
+      ]
+    },
+    {
+      "journey_id": "TH-004",
+      "claim_id": "TH-004-C5",
+      "claim_statement": "Read paths remain lock-free for active snapshot reads.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/atomicity-guarantees",
+      "claim_kind": "performance",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime"
+      ]
+    },
+    {
+      "journey_id": "TH-004",
+      "claim_id": "TH-004-C6",
+      "claim_statement": "Atomic load boundaries prevent mixed old/new snapshot views.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/atomicity-guarantees",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "method",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry#override fun load(config: ConfigurationView)"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime"
+      ]
+    },
+    {
+      "journey_id": "TH-005",
+      "claim_id": "TH-005-C1",
+      "claim_statement": "Feature identifiers include namespace scope to prevent cross-domain key collisions.",
+      "decision_type": "adopt",
+      "doc_scope": "theory",
+      "doc_page": "theory/namespace-isolation",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.values.FeatureId"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.Namespace"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/core/NamespaceFeatureDefinitionTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "TH-005",
+      "claim_id": "TH-005-C2",
+      "claim_statement": "Each namespace owns independent runtime state and lifecycle operations.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/namespace-isolation",
+      "claim_kind": "mechanism",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.Namespace"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationSnapshotCodecTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core",
+        "konditional-runtime"
+      ]
+    },
+    {
+      "journey_id": "TH-005",
+      "claim_id": "TH-005-C3",
+      "claim_statement": "Snapshot loader rejects mismatched namespace payloads instead of leaking updates across boundaries.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/namespace-isolation",
+      "claim_kind": "failure_mode",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationSnapshotCodecTest.kt::namespace loader rejects snapshot from different namespace"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime",
+        "konditional-serialization"
+      ]
+    },
+    {
+      "journey_id": "TH-005",
+      "claim_id": "TH-005-C4",
+      "claim_statement": "Namespace-bound feature types enable compile-time isolation of API surfaces.",
+      "decision_type": "adopt",
+      "doc_scope": "theory",
+      "doc_page": "theory/namespace-isolation",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.features.Feature"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/core/FlagEntryTypeSafetyTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "TH-005",
+      "claim_id": "TH-005-C5",
+      "claim_statement": "Kill-switch and rollback commands are scoped to the owning namespace state.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/namespace-isolation",
+      "claim_kind": "mechanism",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.Namespace"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/ops/KillSwitchTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core",
+        "konditional-runtime"
+      ]
+    },
+    {
+      "journey_id": "TH-005",
+      "claim_id": "TH-005-C6",
+      "claim_statement": "Namespace-scoped feature identifiers remain stable at JSON boundaries.",
+      "decision_type": "operate",
+      "doc_scope": "theory",
+      "doc_page": "theory/namespace-isolation",
+      "claim_kind": "boundary",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.values.FeatureId"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationSnapshotCodecTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core",
+        "konditional-runtime"
+      ]
+    },
+    {
+      "journey_id": "LRN-001",
+      "claim_id": "LRN-001-C1",
+      "claim_statement": "Namespaces are first-class registries that own lifecycle and evaluation scope.",
+      "decision_type": "adopt",
+      "doc_scope": "learn",
+      "doc_page": "learn/core-primitives",
+      "claim_kind": "mechanism",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.Namespace"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/core/NamespaceFeatureDefinitionTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "LRN-001",
+      "claim_id": "LRN-001-C2",
+      "claim_statement": "Feature values flow through explicit type parameters instead of runtime casts.",
+      "decision_type": "adopt",
+      "doc_scope": "learn",
+      "doc_page": "learn/core-primitives",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.features.Feature"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/core/FlagEntryTypeSafetyTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "LRN-001",
+      "claim_id": "LRN-001-C3",
+      "claim_statement": "Context is an explicit runtime input model for deterministic evaluation.",
+      "decision_type": "adopt",
+      "doc_scope": "learn",
+      "doc_page": "learn/core-primitives",
+      "claim_kind": "mechanism",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.context.Context"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/core/ConditionEvaluationTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "LRN-001",
+      "claim_id": "LRN-001-C4",
+      "claim_statement": "Runtime configuration ingestion is explicitly modeled as a result boundary.",
+      "decision_type": "operate",
+      "doc_scope": "learn",
+      "doc_page": "learn/core-primitives",
+      "claim_kind": "boundary",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.result.ParseError"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationSnapshotCodecTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime",
+        "konditional-serialization",
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "LRN-002",
+      "claim_id": "LRN-002-C1",
+      "claim_statement": "Evaluation is total because defaults provide a value when no targeting rule matches.",
+      "decision_type": "adopt",
+      "doc_scope": "learn",
+      "doc_page": "learn/evaluation-model",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.FlagDefinition"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/core/ConditionEvaluationTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "LRN-002",
+      "claim_id": "LRN-002-C2",
+      "claim_statement": "Rule selection honors specificity ordering before first-match resolution.",
+      "decision_type": "operate",
+      "doc_scope": "learn",
+      "doc_page": "learn/evaluation-model",
+      "claim_kind": "mechanism",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.rules.Rule"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.rules.targeting.Targeting"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/rules/RuleMatchingTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "LRN-002",
+      "claim_id": "LRN-002-C3",
+      "claim_statement": "Targeting composition is structural and conjunctive with explicit axis semantics.",
+      "decision_type": "operate",
+      "doc_scope": "learn",
+      "doc_page": "learn/evaluation-model",
+      "claim_kind": "mechanism",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.rules.targeting.Targeting"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/rules/targeting/TargetingHierarchyTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "LRN-002",
+      "claim_id": "LRN-002-C4",
+      "claim_statement": "Ramp-up assignment is deterministic and reproducible for a stable identity tuple.",
+      "decision_type": "operate",
+      "doc_scope": "learn",
+      "doc_page": "learn/evaluation-model",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.evaluation.Bucketing"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/core/MissingStableIdBucketingTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "LRN-003",
+      "claim_id": "LRN-003-C1",
+      "claim_statement": "Feature access is compile-time checked through typed namespace properties.",
+      "decision_type": "adopt",
+      "doc_scope": "learn",
+      "doc_page": "learn/type-safety",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.features.Feature"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.Namespace"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/core/FlagEntryTypeSafetyTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "LRN-003",
+      "claim_id": "LRN-003-C2",
+      "claim_statement": "Defaults keep evaluation total and prevent nullable propagation in flag call sites.",
+      "decision_type": "adopt",
+      "doc_scope": "learn",
+      "doc_page": "learn/type-safety",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.FlagDefinition"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/core/NamespaceFeatureDefinitionTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "LRN-003",
+      "claim_id": "LRN-003-C3",
+      "claim_statement": "Rule and context type constraints are enforced through generic feature signatures.",
+      "decision_type": "operate",
+      "doc_scope": "learn",
+      "doc_page": "learn/type-safety",
+      "claim_kind": "guarantee",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.context.Context"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.features.Feature"
+        }
+      ],
+      "tests": [
+        "konditional-core/src/test/kotlin/io/amichne/konditional/core/FlagEntryTypeSafetyTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "LRN-003",
+      "claim_id": "LRN-003-C4",
+      "claim_statement": "Invalid JSON is rejected at the boundary while last-known-good state remains active.",
+      "decision_type": "operate",
+      "doc_scope": "learn",
+      "doc_page": "learn/type-safety",
+      "claim_kind": "failure_mode",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.result.ParseError"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationSnapshotCodecTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime",
+        "konditional-serialization",
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "LRN-004",
+      "claim_id": "LRN-004-C1",
+      "claim_statement": "Configuration lifecycle starts with explicit loader validation before activation.",
+      "decision_type": "operate",
+      "doc_scope": "learn",
+      "doc_page": "learn/configuration-lifecycle",
+      "claim_kind": "boundary",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationSnapshotCodecTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime",
+        "konditional-serialization"
+      ]
+    },
+    {
+      "journey_id": "LRN-004",
+      "claim_id": "LRN-004-C2",
+      "claim_statement": "Failure paths expose typed parse diagnostics without mutating active state.",
+      "decision_type": "operate",
+      "doc_scope": "learn",
+      "doc_page": "learn/configuration-lifecycle",
+      "claim_kind": "failure_mode",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.result.ParseError"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.result.KonditionalBoundaryFailure"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationSnapshotCodecTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime",
+        "konditional-core"
+      ]
+    },
+    {
+      "journey_id": "LRN-004",
+      "claim_id": "LRN-004-C3",
+      "claim_statement": "Runtime load and rollback operations provide operational recovery over bounded snapshot history.",
+      "decision_type": "operate",
+      "doc_scope": "learn",
+      "doc_page": "learn/configuration-lifecycle",
+      "claim_kind": "mechanism",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.core.registry.InMemoryNamespaceRegistry"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-runtime"
+      ]
+    },
+    {
+      "journey_id": "LRN-004",
+      "claim_id": "LRN-004-C4",
+      "claim_statement": "Patch and decode operations preserve schema-scoped materialization requirements.",
+      "decision_type": "migrate",
+      "doc_scope": "learn",
+      "doc_page": "learn/configuration-lifecycle",
+      "claim_kind": "boundary",
+      "non_trivial": true,
+      "signatures": [
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec"
+        },
+        {
+          "kind": "type",
+          "signature": "io.amichne.konditional.serialization.instance.MaterializedConfiguration"
+        }
+      ],
+      "tests": [
+        "konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/OperationalSerializationTest.kt"
+      ],
+      "status": "supported",
+      "owner_modules": [
+        "konditional-serialization",
+        "konditional-runtime"
+      ]
+    }
+  ]
+}

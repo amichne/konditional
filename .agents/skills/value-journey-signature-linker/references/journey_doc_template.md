@@ -24,22 +24,32 @@ Describe the key decision, capability, or process shift that changes behavior.
 
 Describe the new steady state and the measurable impact.
 
-## Journey stages
+## Decision guidance
 
-1. <stage name>: <goal and user intent>
-2. <stage name>: <goal and user intent>
-3. <stage name>: <goal and user intent>
+State when teams should adopt this journey and which tradeoff it resolves.
+
+## Claim table
+
+| claim_id | claim_statement | decision_type | status |
+| --- | --- | --- | --- |
+| <JV-001-C1> | <statement> | <adopt\|migrate\|operate> | <supported\|at_risk\|missing> |
 
 ## Technical evidence (signature links)
 
 - kind: type
   signature: <fqcn>
-  claim_supported: <which narrative claim this proves>
+  claim_supported: <claim_id>
   status: linked
 - kind: method
   signature: <fqcn>#<method signature>
-  claim_supported: <which narrative claim this proves>
+  claim_supported: <claim_id>
   status: linked
+
+## Evidence status summary
+
+- supported:
+- at_risk:
+- missing:
 
 ## Adoption signals
 
@@ -55,8 +65,8 @@ Describe the new steady state and the measurable impact.
 
 ## Open questions
 
-- <question or unresolved signature gap>
+- <question or unresolved claim evidence gap>
 ```
 
-Keep "Technical evidence (signature links)" synchronized with
-`docs/value-journeys/journey-signature-links.json`.
+Keep claim IDs aligned with `docs/value-journeys/journey-claims.json` and keep
+signature links aligned with `docs/value-journeys/journey-signature-links.json`.
