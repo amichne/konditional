@@ -16,40 +16,38 @@ import io.amichne.konditional.rules.versions.VersionRange
 /**
  * Extracts locale ids from a [Targeting.All] tree.
  *
- * Locales appear as [Targeting.Guarded] wrapping [Targeting.Locale],
- * or directly as [Targeting.Locale] if stored without wrapping.
+ * Locales are always stored as [Targeting.Guarded] wrapping [Targeting.Locale]
+ * (see [Targeting.Companion.locale]); bare [Targeting.Locale] leaves cannot
+ * appear in a general [Targeting.All]<C> due to variance.
  */
-internal fun <C : Context> Targeting.All<C>.localesOrEmpty(): Set<String> {
-    val fromGuarded = targets.filterIsInstance<Targeting.Guarded<C, *>>()
+internal fun <C : Context> Targeting.All<C>.localesOrEmpty(): Set<String> =
+    targets.filterIsInstance<Targeting.Guarded<C, *>>()
         .mapNotNull { it.inner as? Targeting.Locale }
         .flatMapTo(linkedSetOf()) { it.ids }
-    if (fromGuarded.isNotEmpty()) return fromGuarded
-    return targets.filterIsInstance<Targeting.Locale>()
-        .flatMapTo(linkedSetOf()) { it.ids }
-}
 
 /**
  * Extracts platform ids from a [Targeting.All] tree.
+ *
+ * Platforms are always stored as [Targeting.Guarded] wrapping [Targeting.Platform]
+ * (see [Targeting.Companion.platform]); bare [Targeting.Platform] leaves cannot
+ * appear in a general [Targeting.All]<C> due to variance.
  */
-internal fun <C : Context> Targeting.All<C>.platformsOrEmpty(): Set<String> {
-    val fromGuarded = targets.filterIsInstance<Targeting.Guarded<C, *>>()
+internal fun <C : Context> Targeting.All<C>.platformsOrEmpty(): Set<String> =
+    targets.filterIsInstance<Targeting.Guarded<C, *>>()
         .mapNotNull { it.inner as? Targeting.Platform }
         .flatMapTo(linkedSetOf()) { it.ids }
-    if (fromGuarded.isNotEmpty()) return fromGuarded
-    return targets.filterIsInstance<Targeting.Platform>()
-        .flatMapTo(linkedSetOf()) { it.ids }
-}
 
 /**
  * Extracts the first version range from a [Targeting.All] tree.
+ *
+ * Versions are always stored as [Targeting.Guarded] wrapping [Targeting.Version]
+ * (see [Targeting.Companion.version]); bare [Targeting.Version] leaves cannot
+ * appear in a general [Targeting.All]<C> due to variance.
  */
-internal fun <C : Context> Targeting.All<C>.versionRangeOrNull(): VersionRange? {
-    val fromGuarded = targets.filterIsInstance<Targeting.Guarded<C, *>>()
-        .mapNotNull { it.inner as? Targeting.Version }
-        .firstOrNull()?.range
-    if (fromGuarded != null) return fromGuarded
-    return targets.filterIsInstance<Targeting.Version>().firstOrNull()?.range
-}
+internal fun <C : Context> Targeting.All<C>.versionRangeOrNull(): VersionRange? =
+    targets.filterIsInstance<Targeting.Guarded<C, *>>()
+        .firstNotNullOfOrNull { it.inner as? Targeting.Version }
+        ?.range
 
 /**
  * Extracts axis constraints from a [Targeting.All] tree.
