@@ -12,6 +12,7 @@ import io.amichne.konditional.core.dsl.rules.RuleScope
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.registry.AxisCatalog
+import io.amichne.konditional.core.dsl.rules.targeting.scopes.AnyOfScope
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.targeting.Targeting
@@ -49,6 +50,11 @@ internal class RuleBuilder<C : Context>(
     override fun versions(build: VersionRangeScope.() -> Unit) {
         val range = VersionRangeBuilder().apply(build).build()
         leaves += Targeting.version(range)
+    }
+
+    override fun anyOf(build: AnyOfScope<C>.() -> Unit) {
+        val node = AnyOfBuilder<C>(axisCatalog).apply(build).build()
+        if (node.targets.isNotEmpty()) leaves += node
     }
 
     /**

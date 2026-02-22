@@ -5,6 +5,7 @@
     <ID>MagicNumber:FlagEvaluationTracer.kt$FlagEvaluationTracer$100</ID>
     <ID>MagicNumber:FlagEvaluationTracer.kt$FlagEvaluationTracer$47</ID>
     <ID>ReturnCount:FlagEvaluationTracer.kt$FlagEvaluationTracer$fun &lt;T : Any, C : Context> traceEvaluation( feature: Feature&lt;T, C, *>, context: C, parentSpan: Span? = null, block: () -> EvaluationResult&lt;T>, ): EvaluationResult&lt;T></ID>
+    <ID>TooManyFunctions:RuleBuilder.kt$RuleBuilder&lt;C : Context> : RuleScope</ID>
   </ManuallySuppressedIssues>
   <CurrentIssues>
     <ID>ImplicitDefaultLocale:ConcurrencyAttacksTest.kt$ConcurrencyAttacksTest$String.format("%032d", 0)</ID>
