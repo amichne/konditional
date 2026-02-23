@@ -1,0 +1,267 @@
+---
+title: Claims Registry
+sidebar_position: 0
+---
+
+# Claims Registry
+
+A canonical index of every design claim Konditional makes, which theory document backs it, and what test evidence
+supports it.
+
+Use this page to verify guarantees before relying on them in production, or to find the right theory page when
+investigating an invariant.
+
+---
+
+## How to Read This Registry
+
+Each claim is structured as:
+
+- **Claim** — The invariant stated precisely
+- **Scope** — Where the claim applies
+- **Theory page** — The document containing the formal argument
+- **Test evidence** — Concrete tests that prove the claim holds
+
+A claim without test evidence is a **hypothesis**, not a guarantee.
+
+---
+
+## Claim Index
+
+### C-01: Evaluation Type Safety
+
+**Claim:** For any declared feature `F` with value type `T`, `F.evaluate(context)` returns a value of type `T` at
+compile time, without runtime casts.
+
+**Scope:** Statically-declared features in Kotlin source code.
+
+**Theory:** [Type Safety Boundaries](/theory/type-safety-boundaries)
+
+**Test evidence:**
+
+| Test | What it proves |
+|---|---|
+| `FlagEntryTypeSafetyTest` | Feature/value type combinations enforce compile-time shape. |
+
+**Conditions on the claim:** Only applies to features declared in Kotlin source. JSON-loaded overrides are parsed into
+the same type model, but type alignment is enforced by the codec at boundary time, not at compile time.
+
+---
+
+### C-02: JSON Boundary Rejection
+
+**Claim:** Invalid JSON (malformed, missing fields, type mismatches, unknown keys in strict mode) produces a typed
+`ParseResult.Failure` and does not enter runtime state.
+
+**Scope:** `ConfigurationSnapshotCodec.decode(...)` and `NamespaceSnapshotLoader`.
+
+**Theory:** [Parse Don't Validate](/theory/parse-dont-validate)
+
+**Test evidence:**
+
+| Test | What it proves |
+|---|---|
+| `BoundaryFailureResultTest` | Parse failures are typed and carried through result channel. |
+| `ConfigurationSnapshotCodecTest` | Snapshot decode enforces schema-aware trusted materialization. |
+
+**Conditions on the claim:** Unknown-key behavior depends on `SnapshotLoadOptions`. In strict mode, unknown keys
+reject the payload. In skip mode, they log a warning and proceed. Neither mode admits partial state.
+
+---
+
+### C-03: Evaluation Determinism
+
+**Claim:** Given the same feature declaration `F`, context `C`, and configuration snapshot `S`,
+`evaluate(F, C, S)` returns the same value on every invocation.
+
+**Scope:** Core evaluation engine.
+
+**Theory:** [Determinism Proofs](/theory/determinism-proofs)
+
+**Test evidence:**
+
+| Test | What it proves |
+|---|---|
+| `MissingStableIdBucketingTest` | Stable IDs and fallback behavior produce repeatable bucket outcomes. |
+| `ConditionEvaluationTest` | Rule matching and precedence remain deterministic for equivalent inputs. |
+
+**Conditions on the claim:** Determinism is scoped to a fixed `(context, snapshot)` pair. If the snapshot changes
+(via `load(...)`), subsequent evaluations may return different values — this is intentional.
+
+---
+
+### C-04: Ramp-Up Bucketing Stability
+
+**Claim:** For fixed `(salt, featureKey, stableId)`, bucket assignment is identical across invocations, JVM restarts,
+and deployments.
+
+**Scope:** `RampUp` bucketing in the evaluation engine.
+
+**Theory:** [Determinism Proofs — Mechanism 1](/theory/determinism-proofs#mechanism-1-sha-256-deterministic-hashing)
+
+**Test evidence:**
+
+| Test | What it proves |
+|---|---|
+| `MissingStableIdBucketingTest` | Fallback bucket (9999) is assigned deterministically for contexts without stableId. |
+
+**Conditions on the claim:** Changing the salt changes all bucket assignments for that feature. This is intentional
+and documented. Salt changes should be treated as breaking changes to rollout state.
+
+---
+
+### C-05: Atomic Snapshot Reads
+
+**Claim:** Readers never observe a partially-updated configuration. Every evaluation reads either the old snapshot
+or the new snapshot — never a mix.
+
+**Scope:** `NamespaceRegistry` implementations backed by `AtomicReference`.
+
+**Theory:** [Atomicity Guarantees](/theory/atomicity-guarantees)
+
+**Test evidence:**
+
+| Test | What it proves |
+|---|---|
+| `NamespaceLinearizabilityTest` | Load/read operations remain linearizable under concurrency. |
+| `ConcurrencyAttacksTest` | Concurrent stress cases do not expose partial state to readers. |
+
+**Conditions on the claim:** Applies to the default in-memory registry. Custom `NamespaceRegistry` implementations
+are responsible for their own atomicity guarantees.
+
+---
+
+### C-06: Namespace Isolation
+
+**Claim:** Operations on namespace `A` (load, rollback, disableAll) do not affect the state of namespace `B`.
+
+**Scope:** All `NamespaceRegistry` operations.
+
+**Theory:** [Namespace Isolation](/theory/namespace-isolation)
+
+**Test evidence:**
+
+| Test | What it proves |
+|---|---|
+| `NamespaceLinearizabilityTest` | Concurrent operations preserve per-namespace atomic state transitions. |
+| `NamespaceFeatureDefinitionTest` | Feature declarations remain scoped to their owning namespace. |
+
+**Conditions on the claim:** Applies to separate `Namespace` objects. If two `Namespace` instances are constructed
+with the same identifier seed, they share the same feature ID space but still have independent registries.
+
+---
+
+### C-07: Feature Identifier Uniqueness
+
+**Claim:** Two features in different namespaces with the same Kotlin property name produce different `FeatureId`
+values and do not collide at the JSON boundary.
+
+**Scope:** `FeatureId` construction and serialization codec.
+
+**Theory:** [Namespace Isolation — Mechanism 2](/theory/namespace-isolation#mechanism-2-stable-namespaced-featureid)
+
+**Proof sketch:** `FeatureId` is `feature::{namespaceIdentifierSeed}::{featureKey}`. Different namespaces have
+different seeds, so the resulting IDs are structurally distinct.
+
+---
+
+### C-08: Shadow Evaluation Baseline Invariance
+
+**Claim:** `evaluateWithShadow(...)` always returns the baseline value. Candidate evaluation is read-only and never
+affects the value returned to the caller.
+
+**Scope:** `Feature.evaluateWithShadow(...)`.
+
+**Theory:** [Migration and Shadowing](/theory/migration-and-shadowing)
+
+**Test evidence:**
+
+| Test | What it proves |
+|---|---|
+| `KillSwitchTest` | Baseline safety controls remain authoritative during rollout/migration workflows. |
+
+**Conditions on the claim:** The `onMismatch` callback runs inline. If it throws, the exception propagates. Keep
+`onMismatch` implementations lightweight and non-throwing.
+
+---
+
+### C-09: Kill-Switch Safety
+
+**Claim:** When `Namespace.disableAll()` is active, all feature evaluations in that namespace return their declared
+default value, regardless of configuration snapshot or context.
+
+**Scope:** All `Feature.evaluate(...)` calls within the namespace.
+
+**Theory:** [Determinism Proofs — Proof, Case 1](/theory/determinism-proofs#proof)
+
+**Test evidence:**
+
+| Test | What it proves |
+|---|---|
+| `KillSwitchTest` | Kill-switch overrides evaluation and forces all features to default. |
+
+---
+
+### C-10: Rollback Restores Complete Snapshots
+
+**Claim:** `Namespace.rollback(steps = N)` restores the complete snapshot that was active `N` loads ago, atomically.
+Readers observe either the current snapshot or the restored snapshot — never partial state.
+
+**Scope:** `NamespaceRegistry.rollback(...)`.
+
+**Theory:** [Atomicity Guarantees — Rollback](/theory/atomicity-guarantees#rollback)
+
+**Conditions on the claim:** History depth is finite. Rolling back beyond the available history has no effect
+(no-op). The number of available rollback steps depends on the registry implementation's history capacity.
+
+---
+
+## Claim Status Overview
+
+```mermaid
+quadrantChart
+    title Claims by Coverage and Criticality
+    x-axis Low Coverage --> High Coverage
+    y-axis Low Criticality --> High Criticality
+    quadrant-1 Strengthen tests
+    quadrant-2 Well-covered critical
+    quadrant-3 Low priority
+    quadrant-4 Document only
+
+    C-01 Type Safety: [0.85, 0.9]
+    C-02 JSON Boundary: [0.9, 0.95]
+    C-03 Determinism: [0.8, 0.95]
+    C-04 Bucketing Stability: [0.7, 0.8]
+    C-05 Atomic Reads: [0.85, 0.95]
+    C-06 Namespace Isolation: [0.8, 0.9]
+    C-07 ID Uniqueness: [0.6, 0.7]
+    C-08 Shadow Invariance: [0.65, 0.75]
+    C-09 Kill-Switch: [0.75, 0.9]
+    C-10 Rollback: [0.6, 0.8]
+```
+
+---
+
+## Adding a Claim
+
+When adding a new invariant to Konditional:
+
+1. State the claim precisely — avoid hedging language
+2. Define the scope clearly — where does it apply, where doesn't it?
+3. Identify any preconditions or conditions on the claim
+4. Add a test that would fail if the claim were violated
+5. Add an entry here with the test reference
+
+A claim without a failing test is documentation, not a guarantee.
+
+---
+
+## Related
+
+- [Theory: Type Safety Boundaries](/theory/type-safety-boundaries)
+- [Theory: Determinism Proofs](/theory/determinism-proofs)
+- [Theory: Atomicity Guarantees](/theory/atomicity-guarantees)
+- [Theory: Namespace Isolation](/theory/namespace-isolation)
+- [Theory: Parse Don't Validate](/theory/parse-dont-validate)
+- [Theory: Migration and Shadowing](/theory/migration-and-shadowing)
+- [Theory: Verified Design Synthesis](/theory/verified-synthesis)

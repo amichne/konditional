@@ -71,12 +71,14 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Trust',
       items: [
+        'theory/claims-registry',
         'theory/type-safety-boundaries',
         'theory/determinism-proofs',
         'theory/namespace-isolation',
         'theory/parse-dont-validate',
         'theory/atomicity-guarantees',
         'theory/migration-and-shadowing',
+        'theory/verified-synthesis',
       ],
     },
     {
