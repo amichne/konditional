@@ -19,8 +19,8 @@ Each claim is structured as:
 
 - **Claim** — The invariant stated precisely
 - **Scope** — Where the claim applies
-- **Theory page** — The document containing the formal argument
-- **Test evidence** — Concrete tests that prove the claim holds
+- **Theory** — The document containing the formal argument, linked to the specific section
+- **Test evidence** — Concrete tests that prove the claim holds, linked to source
 
 A claim without test evidence is a **hypothesis**, not a guarantee.
 
@@ -35,13 +35,13 @@ compile time, without runtime casts.
 
 **Scope:** Statically-declared features in Kotlin source code.
 
-**Theory:** [Type Safety Boundaries](/theory/type-safety-boundaries)
+**Theory:** [Type Safety Boundaries — Compile-Time Domain](/theory/type-safety-boundaries#compile-time-domain)
 
 **Test evidence:**
 
-| Test | What it proves |
-|---|---|
-| `FlagEntryTypeSafetyTest` | Feature/value type combinations enforce compile-time shape. |
+| Test | What it proves | Source |
+|---|---|---|
+| `FlagEntryTypeSafetyTest` | Feature/value type combinations enforce compile-time shape. | [source](https://github.com/amichne/konditional/blob/main/konditional-core/src/test/kotlin/io/amichne/konditional/core/FlagEntryTypeSafetyTest.kt) |
 
 **Conditions on the claim:** Only applies to features declared in Kotlin source. JSON-loaded overrides are parsed into
 the same type model, but type alignment is enforced by the codec at boundary time, not at compile time.
@@ -55,14 +55,14 @@ the same type model, but type alignment is enforced by the codec at boundary tim
 
 **Scope:** `ConfigurationSnapshotCodec.decode(...)` and `NamespaceSnapshotLoader`.
 
-**Theory:** [Parse Don't Validate](/theory/parse-dont-validate)
+**Theory:** [Parse Don't Validate — The Trust Boundary](/theory/parse-dont-validate#the-trust-boundary)
 
 **Test evidence:**
 
-| Test | What it proves |
-|---|---|
-| `BoundaryFailureResultTest` | Parse failures are typed and carried through result channel. |
-| `ConfigurationSnapshotCodecTest` | Snapshot decode enforces schema-aware trusted materialization. |
+| Test | What it proves | Source |
+|---|---|---|
+| `BoundaryFailureResultTest` | Parse failures are typed and carried through result channel. | [source](https://github.com/amichne/konditional/blob/main/konditional-core/src/test/kotlin/io/amichne/konditional/core/BoundaryFailureResultTest.kt) |
+| `ConfigurationSnapshotCodecTest` | Snapshot decode enforces schema-aware trusted materialization. | [source](https://github.com/amichne/konditional/blob/main/konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/ConfigurationSnapshotCodecTest.kt) |
 
 **Conditions on the claim:** Unknown-key behavior depends on `SnapshotLoadOptions`. In strict mode, unknown keys
 reject the payload. In skip mode, they log a warning and proceed. Neither mode admits partial state.
@@ -76,14 +76,14 @@ reject the payload. In skip mode, they log a warning and proceed. Neither mode a
 
 **Scope:** Core evaluation engine.
 
-**Theory:** [Determinism Proofs](/theory/determinism-proofs)
+**Theory:** [Determinism Proofs — Full Determinism Proof](/theory/determinism-proofs#putting-it-together-full-determinism-proof)
 
 **Test evidence:**
 
-| Test | What it proves |
-|---|---|
-| `MissingStableIdBucketingTest` | Stable IDs and fallback behavior produce repeatable bucket outcomes. |
-| `ConditionEvaluationTest` | Rule matching and precedence remain deterministic for equivalent inputs. |
+| Test | What it proves | Source |
+|---|---|---|
+| `MissingStableIdBucketingTest` | Stable IDs and fallback behavior produce repeatable bucket outcomes. | [source](https://github.com/amichne/konditional/blob/main/konditional-core/src/test/kotlin/io/amichne/konditional/core/MissingStableIdBucketingTest.kt) |
+| `ConditionEvaluationTest` | Rule matching and precedence remain deterministic for equivalent inputs. | [source](https://github.com/amichne/konditional/blob/main/konditional-core/src/test/kotlin/io/amichne/konditional/core/ConditionEvaluationTest.kt) |
 
 **Conditions on the claim:** Determinism is scoped to a fixed `(context, snapshot)` pair. If the snapshot changes
 (via `load(...)`), subsequent evaluations may return different values — this is intentional.
@@ -97,13 +97,13 @@ and deployments.
 
 **Scope:** `RampUp` bucketing in the evaluation engine.
 
-**Theory:** [Determinism Proofs — Mechanism 1](/theory/determinism-proofs#mechanism-1-sha-256-deterministic-hashing)
+**Theory:** [Determinism Proofs — Mechanism 1: SHA-256 Deterministic Hashing](/theory/determinism-proofs#mechanism-1-sha-256-deterministic-hashing)
 
 **Test evidence:**
 
-| Test | What it proves |
-|---|---|
-| `MissingStableIdBucketingTest` | Fallback bucket (9999) is assigned deterministically for contexts without stableId. |
+| Test | What it proves | Source |
+|---|---|---|
+| `MissingStableIdBucketingTest` | Fallback bucket (9999) is assigned deterministically for contexts without stableId. | [source](https://github.com/amichne/konditional/blob/main/konditional-core/src/test/kotlin/io/amichne/konditional/core/MissingStableIdBucketingTest.kt) |
 
 **Conditions on the claim:** Changing the salt changes all bucket assignments for that feature. This is intentional
 and documented. Salt changes should be treated as breaking changes to rollout state.
@@ -117,14 +117,14 @@ or the new snapshot — never a mix.
 
 **Scope:** `NamespaceRegistry` implementations backed by `AtomicReference`.
 
-**Theory:** [Atomicity Guarantees](/theory/atomicity-guarantees)
+**Theory:** [Atomicity Guarantees — Proof: Readers See Consistent Snapshots](/theory/atomicity-guarantees#proof-readers-see-consistent-snapshots)
 
 **Test evidence:**
 
-| Test | What it proves |
-|---|---|
-| `NamespaceLinearizabilityTest` | Load/read operations remain linearizable under concurrency. |
-| `ConcurrencyAttacksTest` | Concurrent stress cases do not expose partial state to readers. |
+| Test | What it proves | Source |
+|---|---|---|
+| `NamespaceLinearizabilityTest` | Load/read operations remain linearizable under concurrency. | [source](https://github.com/amichne/konditional/blob/main/konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt) |
+| `ConcurrencyAttacksTest` | Concurrent stress cases do not expose partial state to readers. | [source](https://github.com/amichne/konditional/blob/main/konditional-core/src/test/kotlin/io/amichne/konditional/adversarial/ConcurrencyAttacksTest.kt) |
 
 **Conditions on the claim:** Applies to the default in-memory registry. Custom `NamespaceRegistry` implementations
 are responsible for their own atomicity guarantees.
@@ -137,14 +137,14 @@ are responsible for their own atomicity guarantees.
 
 **Scope:** All `NamespaceRegistry` operations.
 
-**Theory:** [Namespace Isolation](/theory/namespace-isolation)
+**Theory:** [Namespace Isolation — Failure Isolation](/theory/namespace-isolation#failure-isolation)
 
 **Test evidence:**
 
-| Test | What it proves |
-|---|---|
-| `NamespaceLinearizabilityTest` | Concurrent operations preserve per-namespace atomic state transitions. |
-| `NamespaceFeatureDefinitionTest` | Feature declarations remain scoped to their owning namespace. |
+| Test | What it proves | Source |
+|---|---|---|
+| `NamespaceLinearizabilityTest` | Concurrent operations preserve per-namespace atomic state transitions. | [source](https://github.com/amichne/konditional/blob/main/konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt) |
+| `NamespaceFeatureDefinitionTest` | Feature declarations remain scoped to their owning namespace. | [source](https://github.com/amichne/konditional/blob/main/konditional-core/src/test/kotlin/io/amichne/konditional/core/NamespaceFeatureDefinitionTest.kt) |
 
 **Conditions on the claim:** Applies to separate `Namespace` objects. If two `Namespace` instances are constructed
 with the same identifier seed, they share the same feature ID space but still have independent registries.
@@ -158,7 +158,7 @@ values and do not collide at the JSON boundary.
 
 **Scope:** `FeatureId` construction and serialization codec.
 
-**Theory:** [Namespace Isolation — Mechanism 2](/theory/namespace-isolation#mechanism-2-stable-namespaced-featureid)
+**Theory:** [Namespace Isolation — Mechanism 2: Stable, Namespaced FeatureId](/theory/namespace-isolation#mechanism-2-stable-namespaced-featureid)
 
 **Proof sketch:** `FeatureId` is `feature::{namespaceIdentifierSeed}::{featureKey}`. Different namespaces have
 different seeds, so the resulting IDs are structurally distinct.
@@ -172,13 +172,13 @@ affects the value returned to the caller.
 
 **Scope:** `Feature.evaluateWithShadow(...)`.
 
-**Theory:** [Migration and Shadowing](/theory/migration-and-shadowing)
+**Theory:** [Migration and Shadowing — Mechanism: Dual Evaluation](/theory/migration-and-shadowing#mechanism-dual-evaluation)
 
 **Test evidence:**
 
-| Test | What it proves |
-|---|---|
-| `KillSwitchTest` | Baseline safety controls remain authoritative during rollout/migration workflows. |
+| Test | What it proves | Source |
+|---|---|---|
+| `KillSwitchTest` | Baseline safety controls remain authoritative during rollout/migration workflows. | [source](https://github.com/amichne/konditional/blob/main/konditional-runtime/src/test/kotlin/io/amichne/konditional/ops/KillSwitchTest.kt) |
 
 **Conditions on the claim:** The `onMismatch` callback runs inline. If it throws, the exception propagates. Keep
 `onMismatch` implementations lightweight and non-throwing.
@@ -192,13 +192,13 @@ default value, regardless of configuration snapshot or context.
 
 **Scope:** All `Feature.evaluate(...)` calls within the namespace.
 
-**Theory:** [Determinism Proofs — Proof, Case 1](/theory/determinism-proofs#proof)
+**Theory:** [Determinism Proofs — Proof, Case 1: Namespace Kill-Switch](/theory/determinism-proofs#proof)
 
 **Test evidence:**
 
-| Test | What it proves |
-|---|---|
-| `KillSwitchTest` | Kill-switch overrides evaluation and forces all features to default. |
+| Test | What it proves | Source |
+|---|---|---|
+| `KillSwitchTest` | Kill-switch overrides evaluation and forces all features to default. | [source](https://github.com/amichne/konditional/blob/main/konditional-runtime/src/test/kotlin/io/amichne/konditional/ops/KillSwitchTest.kt) |
 
 ---
 
@@ -221,12 +221,12 @@ Readers observe either the current snapshot or the restored snapshot — never p
 ```mermaid
 quadrantChart
     title Claims by Coverage and Criticality
-    x-axis Low Coverage --> High Coverage
+    x-axis Low Test Coverage --> High Test Coverage
     y-axis Low Criticality --> High Criticality
-    quadrant-1 Strengthen tests
-    quadrant-2 Well-covered critical
+    quadrant-1 Well-covered critical
+    quadrant-2 Strengthen tests
     quadrant-3 Low priority
-    quadrant-4 Document only
+    quadrant-4 Over-tested for risk
 
     C-01 Type Safety: [0.85, 0.9]
     C-02 JSON Boundary: [0.9, 0.95]
@@ -250,7 +250,7 @@ When adding a new invariant to Konditional:
 2. Define the scope clearly — where does it apply, where doesn't it?
 3. Identify any preconditions or conditions on the claim
 4. Add a test that would fail if the claim were violated
-5. Add an entry here with the test reference
+5. Add an entry here with the test reference and source link
 
 A claim without a failing test is documentation, not a guarantee.
 
