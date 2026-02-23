@@ -1,24 +1,42 @@
+---
+title: Install
+sidebar_position: 2
+---
+
 # Install
 
-Install `konditional-core` and `konditional-runtime` to get typed namespace
-modeling and default runtime namespace operations [CLM-PR01-07A].
+Add the minimal modules for typed declarations and runtime loading.
 
-## Gradle Kotlin DSL
+**Prerequisites:** You have completed [Quickstart](/quickstart/).
+
+<span id="claim-clm-pr01-07a"></span>
+Installation targets the core namespace model and runtime in-memory registry implementation.
 
 ```kotlin
+// build.gradle.kts
+
 dependencies {
-  implementation("io.amichne:konditional-core:VERSION")
-  implementation("io.amichne:konditional-runtime:VERSION")
+  implementation("io.github.amichne:konditional-core:VERSION")
+  implementation("io.github.amichne:konditional-runtime:VERSION")
 }
 ```
 
-## Verify install
+Run a compile task:
 
-Run your standard project build and confirm dependencies resolve and compile
-cleanly [CLM-PR01-07A].
+```bash
+./gradlew :konditional-core:compileKotlin
+```
 
-## Claim citations
+## Expected Outcome
 
-| Claim ID | Explicit claim | Local evidence linkage | Registry link |
-|---|---|---|---|
-| CLM-PR01-07A | Installation targets the core namespace model and runtime in-memory registry implementation. | `#gradle-kotlin-dsl` | `/reference/claims-registry#clm-pr01-07a` |
+After this step, your project resolves Konditional dependencies and compiles successfully.
+
+## Next Steps
+
+- [Define First Flag](/quickstart/define-first-flag) - Declare your first typed feature.
+
+## Claim Coverage
+
+| Claim ID | Statement |
+| --- | --- |
+| CLM-PR01-07A | Installation targets the core namespace model and runtime in-memory registry implementation. |

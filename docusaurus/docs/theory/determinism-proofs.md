@@ -1,3 +1,8 @@
+---
+title: Determinism Proofs
+sidebar_position: 2
+---
+
 # Determinism Proofs
 
 Why same inputs always produce same outputs: SHA-256 bucketing, stable rule ordering, and immutable snapshots.
@@ -13,9 +18,46 @@ Cross-document synthesis: [Verified Design Synthesis](/theory/verified-synthesis
 **Formally:**
 
 ```
-forall context C, configuration S:
-  evaluate(feature, C, S) = v1 and evaluate(feature, C, S) = v2 -> v1 = v2
+∀ context C, configuration S:
+  evaluate(feature, C, S) = v1 ∧ evaluate(feature, C, S) = v2 → v1 = v2
 ```
+
+---
+
+## Evaluation Decision Flow
+
+```mermaid
+flowchart TD
+    A(["evaluate feature F<br>with context C, snapshot S"]) --> B{"Namespace<br>kill-switch?"}
+    B -->|disabled| Z1[return default D]
+    B -->|active| C{"Flag<br>active?"}
+    C -->|inactive| Z2[return default D]
+    C -->|active| D["Sort rules by<br>specificity ↓<br>then definition order"]
+    D --> E[Take next rule R]
+    E --> F{"Criteria<br>match C?"}
+    F -->|no| G{"More<br>rules?"}
+    G -->|yes| E
+    G -->|no| Z3[return default D]
+    F -->|yes| H{"Has<br>ramp-up?"}
+    H -->|no| Z4[return rule value V]
+    H -->|yes| I["bucket = SHA-256<br>salt:key:stableIdHex<br>mod 10_000"]
+    I --> J{"bucket &lt;<br>rampUp × 100?"}
+    J -->|yes| Z5[return rule value V]
+    J -->|no| K{"Has<br>allowlist?"}
+    K -->|yes| L{"stableId in<br>allowlist?"}
+    L -->|yes| Z6[return rule value V]
+    L -->|no| G
+    K -->|no| G
+
+    style Z1 fill:#f0f0f0
+    style Z2 fill:#f0f0f0
+    style Z3 fill:#f0f0f0
+    style Z4 fill:#90ee90
+    style Z5 fill:#90ee90
+    style Z6 fill:#90ee90
+```
+
+Every branch terminates at a fixed value derived purely from `(F, C, S)`. No randomness. No ambient state.
 
 ---
 
@@ -31,17 +73,17 @@ bucket = uint32(hash[0..3]) % 10_000
 
 **SHA-256 properties:**
 
-1. **Deterministic** - Same input always produces same hash
-2. **Collision-resistant** - Different inputs produce different hashes (with negligible probability of collision)
-3. **Uniform distribution** - Hash outputs are uniformly distributed
+1. **Deterministic** — Same input always produces the same hash
+2. **Collision-resistant** — Different inputs produce different hashes (negligible collision probability)
+3. **Uniform distribution** — Hash outputs are uniformly distributed, so bucket assignments are well-spread
 
 ### Proof of Determinism
 
 **Lemma:** SHA-256 is a deterministic function.
 
 **Proof:** SHA-256 is defined by FIPS 180-4. For any input `m`, `SHA256(m)` is computed via a fixed sequence of
-operations (message padding, block processing,
-compression). The algorithm is deterministic (no randomness, no nondeterministic steps).
+operations (message padding, block processing, compression). The algorithm contains no randomness and no
+nondeterministic steps. □
 
 **Corollary:** For fixed `(salt, flagKey, stableIdHex)`, the bucket assignment is deterministic.
 
@@ -50,6 +92,12 @@ bucket(salt, flagKey, stableId) = uint32(SHA256("$salt:$flagKey:${stableId.hex}"
 ```
 
 Since SHA-256 is deterministic, `bucket(...)` is deterministic.
+
+### Fallback Behavior
+
+Contexts without a `StableIdContext` use fallback bucket `9999`. This means such contexts are only in a partial
+rollout if the ramp-up is 100% or the context is explicitly allowlisted. This is deterministic (always bucket 9999)
+but intentional — the design assumes partial rollout requires a stable identity.
 
 ---
 
@@ -66,14 +114,14 @@ specificity(rule) =
   extensionSpecificity
 ```
 
-**Property:** Specificity is a pure function of rule criteria (no side effects, no randomness).
+**Property:** Specificity is a pure function of rule criteria — no side effects, no randomness.
 
 ### Rule Sorting
 
 Rules are sorted by:
 
 1. **Descending specificity** (higher specificity first)
-2. **Definition order** (tie-breaker)
+2. **Definition order** (stable tie-breaker)
 
 **Proof of Stability:**
 
@@ -81,10 +129,8 @@ Rules are sorted by:
 val sortedRules = rules.sortedByDescending { it.specificity }
 ```
 
-Kotlin's `sortedByDescending` is a **stable sort**:
-
-- Elements with equal specificity retain their original order
-- Sorting is deterministic (same input -> same output)
+Kotlin's `sortedByDescending` is a **stable sort**: elements with equal specificity retain their original relative
+order. Sorting is a pure function (same input → same output).
 
 **Corollary:** Rule iteration order is deterministic for a fixed configuration.
 
@@ -101,10 +147,10 @@ data class Configuration internal constructor(
 )
 ```
 
-`Configuration` is a Kotlin `data class` with `val` properties:
+`Configuration` is a `data class` with `val` properties:
 
 - All fields are immutable references
-- The public API exposes a read-only `Map` (treat the snapshot as immutable)
+- The public API exposes a read-only `Map` (snapshot is effectively immutable)
 - No supported mutation methods
 
 **Property:** Once created, a `Configuration` cannot change.
@@ -122,10 +168,8 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
 ```
 
 **Key insight:** Evaluation reads a **snapshot** of configuration at a single point in time. Even if the active
-configuration changes during evaluation, the
-snapshot remains immutable.
-
-**Corollary:** For a fixed context and snapshot, evaluation is deterministic.
+configuration changes during evaluation (via `load(...)`), the snapshot reference held within this evaluation remains
+unchanged.
 
 ---
 
@@ -139,45 +183,39 @@ snapshot remains immutable.
 - A context `C` with `(locale, platform, version, stableId)`
 - A configuration snapshot `S` containing `f`'s definition
 
-**Then:**
-`evaluate(f, C, S)` is deterministic.
+**Then:** `evaluate(f, C, S)` is deterministic.
 
 ### Proof
 
-**Case 1: Namespace disabled via kill-switch**
+**Case 1: Namespace kill-switch active**
 
 - `disableAll()` sets a boolean flag
 - Evaluation returns `d` (default)
-- Boolean flag is deterministic
-- **Result:** deterministic
+- **Result:** deterministic ✓
 
 **Case 2: Flag inactive**
 
 - `isActive` is a boolean in `FlagDefinition`
 - Evaluation returns `d` (default)
-- **Result:** deterministic
+- **Result:** deterministic ✓
 
 **Case 3: Rules evaluated**
 
-1. **Sort rules by specificity** (stable sort, deterministic)
+1. **Sort rules by specificity** — stable sort, deterministic
 2. **Iterate rules in order:**
+   - **Criteria matching** — pure functions of `C` (no side effects)
+   - **Ramp-up check** — SHA-256 bucketing (deterministic, proven above)
+   - **Allowlist check** — set membership (deterministic)
+3. **First matching rule** — iteration order is deterministic, so first match is deterministic
+4. **Return rule value or default** — both are constants from `S`
 
-- **Criteria matching** - Pure functions of `C` (no side effects)
-- **Ramp-up check** - SHA-256 bucketing (deterministic, proven above)
-- **Allowlist check** - Set membership (deterministic)
-
-3. **First matching rule** - Iteration order is deterministic, so first match is deterministic
-4. **Return rule value or default** - Both are constants from `S`
-
-**Result:** All steps are deterministic, so final value is deterministic.
-
-**QED.**
+**Result:** All steps are deterministic → final value is deterministic. □
 
 ---
 
 ## What Could Break Determinism (and What Can't)
 
-### OK Deterministic: Same Context
+### ✓ Deterministic: Same Context, Same Snapshot
 
 ```kotlin
 val ctx = Context(
@@ -187,62 +225,58 @@ val ctx = Context(
     stableId = StableId.of("user-123")
 )
 
-val v1 = AppFeatures.darkMode(ctx)
-val v2 = AppFeatures.darkMode(ctx)
+val v1 = AppFeatures.darkMode.evaluate(ctx)
+val v2 = AppFeatures.darkMode.evaluate(ctx)
 // v1 == v2 (guaranteed)
 ```
 
-### OK Deterministic: Same StableId, Different Context Fields
+### ✓ Deterministic: Same StableId Across Different Context Fields
 
 ```kotlin
+// Same stableId means same ramp-up bucket regardless of other fields
 val ctx1 = Context(..., stableId = StableId.of("user-123"))
 val ctx2 = Context(..., stableId = StableId.of("user-123"))
-
-// If same rules match, ramp-up bucket is same (same stableId)
+// If same rules match, ramp-up bucket is identical
 ```
 
-### X Non-Deterministic: Different StableId
+### ✗ Intentionally Non-Deterministic: Different StableIds
 
 ```kotlin
 val ctx1 = Context(..., stableId = StableId.of("user-123"))
 val ctx2 = Context(..., stableId = StableId.of("user-456"))
-
-// Different stableId -> different bucket -> possibly different value
+// Different stableId → different bucket → possibly different value
 ```
 
-This is - **intentional**: ramp-up bucketing is deterministic **per user**, not across users.
+This is intentional. Ramp-up bucketing is deterministic **per stable identity**, not across identities.
 
-### X Non-Deterministic: Configuration Changes Between Evaluations
+### ✗ Intentionally Non-Deterministic: Configuration Changes Between Evaluations
 
 ```kotlin
-val v1 = AppFeatures.darkMode(ctx)
-
-// Configuration changes
-AppFeatures.load(newConfig)
-
-val v2 = AppFeatures.darkMode(ctx)
-// v1 might != v2 (config changed)
+val v1 = AppFeatures.darkMode.evaluate(ctx)
+AppFeatures.load(newConfig)  // snapshot changes
+val v2 = AppFeatures.darkMode.evaluate(ctx)
+// v1 might ≠ v2 — intentional, config changed
 ```
 
-This is - **intentional**: determinism is scoped to a single configuration snapshot.
+Determinism is scoped to a fixed `(context, snapshot)` pair.
 
-### OK Deterministic: Concurrent Evaluations (Same Snapshot)
+### ✓ Deterministic: Concurrent Evaluations Over the Same Snapshot
 
 ```kotlin
-// Thread 1
-val v1 = AppFeatures.darkMode(ctx)
+// Thread 1 — reads snapshot at time t
+val v1 = AppFeatures.darkMode.evaluate(ctx)
 
-// Thread 2 (before config update)
-val v2 = AppFeatures.darkMode(ctx)
+// Thread 2 — reads same snapshot (before any load)
+val v2 = AppFeatures.darkMode.evaluate(ctx)
 
-// v1 == v2 (both read same snapshot)
+// v1 == v2 — both read the same atomic snapshot reference
 ```
 
 ---
 
 ## Testing Determinism
 
-### Unit Test: Same Context -> Same Value
+### Unit Test: Same Context → Same Value
 
 ```kotlin
 @Test
@@ -254,9 +288,7 @@ fun `evaluation is deterministic`() {
         stableId = StableId.of("user-123")
     )
 
-    val results = (1..1000).map {
-        AppFeatures.darkMode(ctx)
-    }
+    val results = (1..1000).map { AppFeatures.darkMode.evaluate(ctx) }
 
     assertEquals(1, results.distinct().size, "Non-deterministic evaluation!")
 }
@@ -275,7 +307,7 @@ fun `50 percent ramp-up distributes evenly`() {
             appVersion = Version.of(2, 1, 0),
             stableId = StableId.of(i.toString().padStart(32, '0'))
         )
-        AppFeatures.rampUpFlag(ctx)
+        AppFeatures.rampUpFlag.evaluate(ctx)
     }
 
     val percentage = (enabled.toDouble() / sampleSize) * 100
@@ -287,18 +319,27 @@ fun `50 percent ramp-up distributes evenly`() {
 
 ## Formal Properties Summary
 
-| Property                  | Mechanism                     | Guarantee                                       |
-|---------------------------|-------------------------------|-------------------------------------------------|
-| **Ramp-up determinism**   | SHA-256 (FIPS 180-4)          | Same `(stableId, flagKey, salt)` -> same bucket |
-| **Rule ordering**         | Stable sort by specificity    | Same rules -> same iteration order              |
-| **Snapshot immutability** | Kotlin immutable data classes | Snapshot cannot change after creation           |
-| **Atomic reads**          | `AtomicReference.get()`       | Readers see consistent snapshot                 |
-| **Overall determinism**   | Composition of above          | Same `(context, snapshot)` -> same value        |
+| Property | Mechanism | Guarantee |
+|---|---|---|
+| **Ramp-up determinism** | SHA-256 (FIPS 180-4) | Same `(stableId, flagKey, salt)` → same bucket |
+| **Rule ordering** | Stable sort by specificity | Same rules → same iteration order |
+| **Snapshot immutability** | Kotlin immutable data classes | Snapshot cannot change after creation |
+| **Atomic reads** | `AtomicReference.get()` | Readers see consistent snapshot |
+| **Overall determinism** | Composition of above | Same `(context, snapshot)` → same value |
+
+---
+
+## Test Evidence
+
+| Test | Evidence |
+|---|---|
+| `MissingStableIdBucketingTest` | Stable IDs and fallback behavior produce repeatable bucket outcomes. |
+| `ConditionEvaluationTest` | Rule matching and precedence remain deterministic for equivalent inputs. |
 
 ---
 
 ## Next Steps
 
-- [Fundamentals: Evaluation Semantics](/learn/evaluation-model) - Practical determinism
-- [Core API Reference](/core/reference) - Evaluation and ramp-up behavior
-- [Theory: Atomicity Guarantees](/theory/atomicity-guarantees) - Snapshot consistency
+- [Theory: Atomicity Guarantees](/theory/atomicity-guarantees) — Snapshot consistency
+- [Concept: Evaluation Model](/concepts/evaluation-model) — Practical determinism
+- [Quickstart: Add Deterministic Ramp-Up](/quickstart/add-deterministic-ramp-up) — Ramp-up in practice

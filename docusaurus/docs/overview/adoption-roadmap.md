@@ -1,25 +1,46 @@
-# Adoption roadmap
+---
+title: Adoption Roadmap
+sidebar_position: 5
+---
 
-Adopt Konditional in phases that preserve rollback and disable controls while
-you shift traffic to typed feature ownership [CLM-PR01-05A].
+# Adoption Roadmap
 
-## Phase 1: mirror existing controls
+This roadmap favors low-risk rollout: prove value quickly, keep rollback immediate, and expand only after deterministic evidence.
 
-Model existing controls in namespace-scoped definitions while preserving current
-behavior envelopes [CLM-PR01-05A].
+<span id="claim-clm-pr01-05a"></span>
+Adoption phases rely on runtime `load`, `disableAll`, and `rollback` operations.
 
-## Phase 2: enable runtime snapshot loading
+## Phase 1: Pilot (One Namespace)
 
-Use load operations to move config materialization under explicit, auditable
-runtime control [CLM-PR01-05A].
+- Scope one production-adjacent namespace.
+- Keep fallback defaults conservative.
+- Load snapshots with strict options first.
 
-## Phase 3: operational fallback drills
+## Phase 2: Operationalize
 
-Exercise disable and rollback operations during rollout windows before critical
-launches [CLM-PR01-05A].
+- Add automated config delivery and boundary-failure alerting.
+- Track evaluation and load metrics in CI/CD and runtime observability.
+- Document rollback drills with explicit owner responsibilities.
 
-## Claim citations
+## Phase 3: Broad Rollout
 
-| Claim ID | Explicit claim | Local evidence linkage | Registry link |
-|---|---|---|---|
-| CLM-PR01-05A | Adoption phases rely on load, disable, and rollback runtime operations. | `#phase-3-operational-fallback-drills` | `/reference/claims-registry#clm-pr01-05a` |
+- Expand namespace ownership to multiple teams.
+- Standardize governance for schema and snapshot review.
+- Add migration/shadow checks for legacy systems.
+
+## Rollback Posture Per Phase
+
+- Use `rollback(steps)` for fast reversal to known-good snapshots.
+- Use `disableAll()` only as emergency kill switch.
+- Keep last-known-good snapshots and reproducible load pipeline artifacts.
+
+## Next Steps
+
+- [Migration from Legacy](/guides/migration-from-legacy) - Add dual-run without behavior drift.
+- [Enterprise Adoption](/guides/enterprise-adoption) - Integrate CI/CD and telemetry controls.
+
+## Claim Coverage
+
+| Claim ID | Statement |
+| --- | --- |
+| CLM-PR01-05A | Adoption phases rely on load, disable, and rollback runtime operations. |

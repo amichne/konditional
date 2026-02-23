@@ -4,46 +4,12 @@ slug: /
 
 # What is Konditional?
 
-Konditional is a compile-time safe feature flag framework for Kotlin that helps you ship feature toggles safely, without
-string-key mistakes or runtime type surprises.
-
-In this section you will find:
-
-- [Getting Started](/quickstart/) - your 10-minute path to shipping a safe toggle
-- [How-To: Roll Out a Feature Gradually](/how-to-guides/rolling-out-gradually) - deterministic rollouts you can trust
-- [How-To: Load Configuration Safely from Remote](/how-to-guides/safe-remote-config) - typed parse boundary for runtime
-  config
-- [How-To: Run the Local HTTP Server Container](/how-to-guides/local-http-server-container) - local Ktor endpoint for
-  namespace snapshot CRUD and persistence
-- [API Reference](/reference/api/namespace-operations) - operational APIs and parse results
-- [Theory and Guarantees](/theory/type-safety-boundaries) - why the safety model holds under production load
-
----
-
-## First Value in 10 Minutes
-
-For most Kotlin backend teams, the first win is simple: gate a new behavior with a typed flag and verify it
-deterministically.
-
-1. Install Konditional Core + Runtime: [Installation](/quickstart/install)
-2. Define and evaluate one feature: [Your First Feature](/quickstart/define-first-flag)
-3. Add gradual rollout: [Roll Out Gradually](/how-to-guides/rolling-out-gradually)
-
-After that, you can safely layer remote configuration and testing.
-
----
-
-## Why Teams Adopt Konditional
-
-Konditional makes three structural commitments:
-
-1. **Flags are properties, not strings** - keys are compile-time symbols
-2. **Types flow from definitions to call sites** - no ad-hoc runtime coercion
-3. **One evaluation semantics** - deterministic and testable behavior
+Konditional is a compile-time safe feature flag library for Kotlin that treats flags as typed properties instead of
+runtime strings, and makes configuration a first-class, verifiable contract.
 
 ## The Problem
 
-Configuration and feature flags are not “just another component.” They are your production control plane, your
+Configuration and feature flags are not "just another component." They are your production control plane, your
 experimentation engine, your insight driver, and your blast-radius minimizer. When everything else goes wrong, this is
 the system you rely on to react safely. That means *certainty* is not a nice-to-have. It is a hard requirement. There is
 no other system where you can afford silent failure less.
@@ -53,28 +19,24 @@ If you cannot trust your configuration and experimentation engine with absolute 
 in production. That is not a tolerable risk.
 :::
 
-Feature flags and configuration systems are often deceptively simple -- until they bite you in production:
+Feature flags and configuration systems are often deceptively simple — until they bite you in production:
 
 ### String-keyed systems fail silently
 
-Somewhere in onboarding code
-
+Somewhere in onboarding code:
 ```kotlin
 val newFlow = flagClient.getBool("new_onboaring_flow", false)  // typo
 ```
 
-Somewhere in config JSON
-
-```json5
-{
-  "new_onboarding_flow": true
-}  // correct spelling
+Somewhere in config JSON:
+```json
+{ "new_onboarding_flow": true }
 ```
 
 The typo ships. The flag never activates. Your A/B test runs with 0% treatment. You find out in a post-mortem.
 
 **String keys fail silently.** The compiler can't help you. Your IDE can't help you. And the worst part is you often
-don’t even know you are wrong. If you observe one failure, you can’t know the full blast radius or the unseen drift.
+don't even know you are wrong. If you observe one failure, you can't know the full blast radius or the unseen drift.
 That is an intolerable risk for a control plane.
 
 ### Boolean-only systems turn into boolean matrices
@@ -96,27 +58,22 @@ if (isEnabled(NEW_CHECKOUT) && !isEnabled(NEW_CHECKOUT_V2)) {
 ```
 
 **Boolean-only forces you to encode variants as control flow.** Testing becomes exponential. Bugs hide in interactions.
-Even moderately complex mappings explode into a fragile web of conditionals. That’s not a scaling path; it’s a failure
+Even moderately complex mappings explode into a fragile web of conditionals. That's not a scaling path; it's a failure
 mode.
 
 ### Type safety disappears at the boundary
 
-You define this
-
+You define this:
 ```kotlin
 val maxRetries: Int = flagClient.getInt("max_retries", 3)
 ```
 
-Someone deploys this
-
+Someone deploys this:
 ```json5
-{
-  "max_retries": "5"
-}
+{ "max_retries": "5" }
 ```
 
-Production gets this
-
+Production gets this:
 ```kotlin
 maxRetries = 0  // or throws, or returns default (SDK-dependent)
 ```
@@ -125,20 +82,26 @@ maxRetries = 0  // or throws, or returns default (SDK-dependent)
 
 ---
 
-## What Konditional Looks Like in Code
+## What Konditional Does
+
+Konditional makes three structural commitments:
+
+1. **Flags are properties, not strings** — keys bound at compile-time
+2. **Types flow from definitions to callsites** — no runtime coercion
+3. **One evaluation semantics** — centralized, deterministic, testable
 
 ```kotlin
 enum class CheckoutVariant { CLASSIC, OPTIMIZED, EXPERIMENTAL }
 
 object AppFlags : Namespace("app") {
-    val checkoutVariant by enum<CheckoutVariant, Context>(default = CheckoutVariant.CLASSIC) {
-        rule(CheckoutVariant.OPTIMIZED) { ios() }
-        rule(CheckoutVariant.EXPERIMENTAL) { rampUp { 50.0 } }
-    }
+  val checkoutVariant by enum<CheckoutVariant, Context>(default = CheckoutVariant.CLASSIC) {
+    rule(CheckoutVariant.OPTIMIZED) { ios() }
+    rule(CheckoutVariant.EXPERIMENTAL) { rampUp { 50.0 } }
+  }
 
-    val maxRetries by integer<Context>(default = 3) {
-        rule(5) { android() }
-    }
+  val maxRetries by integer<Context>(default = 3) {
+    rule(5) { android() }
+  }
 }
 
 // Usage
@@ -146,7 +109,7 @@ val variant: CheckoutVariant = AppFlags.checkoutVariant.evaluate(ctx)  // typed
 val retries: Int = AppFlags.maxRetries.evaluate(ctx)                   // typed
 ```
 
-### What You Get Immediately
+### What You Get
 
 **Typos become compile errors:**
 
@@ -164,9 +127,9 @@ val retries: String = AppFlags.maxRetries.evaluate(ctx)  // doesn't compile
 
 ```kotlin
 when (AppFlags.checkoutVariant.evaluate(ctx)) {
-    CheckoutVariant.CLASSIC -> classicCheckout()
-    CheckoutVariant.OPTIMIZED -> optimizedCheckout()
-    CheckoutVariant.EXPERIMENTAL -> experimentalCheckout()
+  CheckoutVariant.CLASSIC -> classicCheckout()
+  CheckoutVariant.OPTIMIZED -> optimizedCheckout()
+  CheckoutVariant.EXPERIMENTAL -> experimentalCheckout()
 }
 ```
 
@@ -181,13 +144,12 @@ when (AppFlags.checkoutVariant.evaluate(ctx)) {
 **Configuration boundaries are explicit:**
 
 ```kotlin
-val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)
-result.onSuccess { materialized ->
-    AppFlags.load(materialized)
-}
-result.onFailure { failure ->
-    val parseError = result.parseErrorOrNull()
-    logError("Config parse failed: ${parseError?.message ?: failure.message}")
+when (val result = NamespaceSnapshotLoader(AppFlags).load(remoteConfig)) {
+  is ParseResult.Success -> Unit // loaded into AppFlags
+  is ParseResult.Failure -> {
+    // Invalid JSON rejected, last-known-good remains active
+    logError("Config parse failed: ${result.error}")
+  }
 }
 ```
 
@@ -195,15 +157,15 @@ result.onFailure { failure ->
 
 ## Comparison to Alternatives
 
-| Aspect             | String-keyed SDKs                 | Enum + boolean                   | Konditional                     |
-|--------------------|-----------------------------------|----------------------------------|---------------------------------|
-| **Typo safety**    | Runtime failure (silent or crash) | Compile-time                     | Compile-time                    |
-| **Type safety**    | Runtime coercion (often unsafe)   | Boolean only                     | Compile-time types              |
-| **Variants**       | Runtime-typed                     | Multiple booleans + control flow | First-class typed values        |
-| **Ramp-up logic**  | SDK-dependent                     | Per-team reimplementation        | Centralized, deterministic      |
-| **Evaluation**     | SDK-defined, opaque               | Ad-hoc per evaluator             | Single DSL with specificity     |
-| **Invalid config** | Fails silently or crashes         | Depends on implementation        | Explicit `Result` boundary      |
-| **Testing**        | Mock SDK or replay snapshots      | Mock evaluators                  | Evaluate against typed contexts |
+| Aspect | String-keyed SDKs | Enum + boolean | Konditional |
+|---|---|---|---|
+| **Typo safety** | Runtime failure (silent or crash) | Compile-time | Compile-time |
+| **Type safety** | Runtime coercion (often unsafe) | Boolean only | Compile-time types |
+| **Variants** | Runtime-typed | Multiple booleans + control flow | First-class typed values |
+| **Ramp-up logic** | SDK-dependent | Per-team reimplementation | Centralized, deterministic |
+| **Evaluation** | SDK-defined, opaque | Ad-hoc per evaluator | Single DSL with specificity |
+| **Invalid config** | Fails silently or crashes | Depends on implementation | Explicit `ParseResult` boundary |
+| **Testing** | Mock SDK or replay snapshots | Mock evaluators | Evaluate against typed contexts |
 
 ---
 
@@ -232,7 +194,7 @@ result.onFailure { failure ->
 A string-keyed SDK returns `0` when parsing `"max_retries": "disabled"`. Service retries 0 times. All requests fail
 immediately.
 
-**With Konditional:** Parse fails at boundary. `Result.failure` logged. Last-known-good remains active. No
+**With Konditional:** Parse fails at boundary. `ParseResult.Failure` logged. Last-known-good remains active. No
 incident.
 
 ### Experiment contamination: Inconsistent bucketing
@@ -254,99 +216,57 @@ Feature has 5 boolean flags for variants. Testing requires 32 combinations. Most
 Coming from a boolean capability system:
 
 1. **Mirror existing flags** as properties:
-
-````kotlin
-object Features : Namespace("app") {
-    val featureX by boolean<Context>(default = false)
-}
-````
+   ```kotlin
+   object Features : Namespace("app") {
+       val featureX by boolean<Context>(default = false)
+   }
+   ```
 
 2. **Centralize evaluation** into rules:
-
-````kotlin
-val featureX by boolean<Context>(default = false) {
-    rule(true) { android() }
-    rule(true) { rampUp { 25.0 } }
-}
-````
+   ```kotlin
+   val featureX by boolean<Context>(default = false) {
+       rule(true) { android() }
+       rule(true) { rampUp { 25.0 } }
+   }
+   ```
 
 3. **Replace boolean matrices** with typed values:
-
-````kotlin
-// Before: CHECKOUT_V1, CHECKOUT_V2, CHECKOUT_V3 (3 booleans)
-enum class CheckoutVersion { V1, V2, V3 }
-
-val checkoutVersion by enum<CheckoutVersion, Context>(default = V1) {
-    rule(V2) { rampUp { 33.0 } }
-    rule(V3) { rampUp { 66.0 } }
-}
-````
+   ```kotlin
+   // Before: CHECKOUT_V1, CHECKOUT_V2, CHECKOUT_V3 (3 booleans)
+   enum class CheckoutVersion { V1, V2, V3 }
+   val checkoutVersion by enum<CheckoutVersion, Context>(default = V1) {
+       rule(V2) { rampUp { 33.0 } }
+       rule(V3) { rampUp { 66.0 } }
+   }
+   ```
 
 4. **Add remote config** with explicit boundaries:
+   ```kotlin
+   when (val result = NamespaceSnapshotLoader(Features).load(json)) {
+       is ParseResult.Success -> Unit
+       is ParseResult.Failure -> keepLastKnownGood()
+   }
+   ```
 
-````kotlin
-val result = NamespaceSnapshotLoader(Features).load(json)
-result.onSuccess { materialized -> Features.load(materialized) }
-result.onFailure { keepLastKnownGood() }
-````
-
-See the [Migration Guide](./reference/migration-guide.md) for detailed patterns.
-
----
-
-## Local HTTP server container
-
-Konditional ships with a local Ktor HTTP server container for teams that want a
-no-permissions local integration target. It uses file-backed fake storage on a
-Docker volume, so snapshots survive restarts.
-
-### Run with Docker Compose
-
-```bash
-docker compose -f docker-compose.http-server.yml up --build
-```
-
-### Endpoints
-
-- `GET /health` returns health status.
-- `GET /v1/namespaces` lists stored namespaces.
-- `GET /v1/namespaces/{namespace}` fetches raw snapshot JSON payload.
-- `PUT /v1/namespaces/{namespace}` stores raw snapshot JSON payload.
-- `DELETE /v1/namespaces/{namespace}` removes a namespace snapshot.
-
-### Example
-
-```bash
-curl -X PUT http://localhost:8080/v1/namespaces/app \
-  -H 'content-type: application/json' \
-  --data '{"flags":{"checkout":true}}'
-
-curl http://localhost:8080/v1/namespaces/app
-```
-
-For request samples, use the `.http` files in `requests/` or follow
-[How-To: Run the Local HTTP Server Container](/how-to-guides/local-http-server-container).
+See the [Migration Guide](./guides/migration-from-legacy.md) for detailed patterns.
 
 ---
 
 ## Summary
 
-Feature flags aren't "nice to have" features. They're load-bearing infrastructure. When they fail, they fail at scale,
+Feature flags aren't a "nice to have." They're load-bearing infrastructure. When they fail, they fail at scale,
 in production, with user impact.
 
 Konditional exists because **stringly-typed systems cause production incidents**, **boolean-only systems create
-maintenance nightmares**, and **inconsistent
-evaluation semantics make experiments untrustworthy**.
+maintenance nightmares**, and **inconsistent evaluation semantics make experiments untrustworthy**.
 
 The solution is structural: bind types at compile-time, centralize evaluation semantics, and draw explicit boundaries
-between static definitions and dynamic
-configuration.
-
----
+between static definitions and dynamic configuration.
 
 ## Next Steps
 
-- [Installation](/quickstart/install) — Add Konditional to your project
-- [Your First Feature](/quickstart/define-first-flag) — Define and evaluate your first feature flag
+- [Installation](./getting-started/installation) — Add Konditional to your project
+- [Your First Feature](./getting-started/your-first-flag) — Define and evaluate your first feature flag
 - [Core Concepts](./learn/core-primitives) — Understand the foundational types
+- [Claims Registry](./theory/claims-registry) — Every design claim, test evidence, and scope
 - [Verified Design Synthesis](./theory/verified-synthesis) — Cross-document, code-verified invariants and trade-offs

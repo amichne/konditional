@@ -1,4 +1,12 @@
-# Claims registry
+---
+unlisted: true
+---
+
+:::note
+This is a legacy claims index. The current trust registry is at [Theory: Claims Registry](/theory/claims-registry).
+:::
+
+# Claims registry (legacy)
 
 This page is generated from `docs/claim-trace/claims-registry.json` and is the human-readable index for claim IDs used across documentation.
 

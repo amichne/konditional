@@ -1,25 +1,59 @@
-# Why typed flags
+---
+title: Why Typed Flags
+sidebar_position: 2
+---
 
-Typed feature declarations keep feature state and runtime evaluation aligned
-with compile-time contracts [CLM-PR01-03A].
+# Why Typed Flags
 
-Parse-boundary failures stay explicit and inspectable through typed parse-error
-results, so bad payloads do not silently mutate runtime behavior
-[CLM-PR01-03B].
+String-key feature systems fail in predictable ways under scale. Konditional shifts those failures into compile-time or typed boundary outcomes.
 
-## Compile-time declaration model
+<span id="claim-clm-pr01-03a"></span>
+Feature declarations are modeled as typed entities under `Namespace`, `Feature`, and `FlagDefinition` abstractions.
 
-Namespaces and features encode feature ownership and value types directly in the
-API surface [CLM-PR01-03A].
+<span id="claim-clm-pr01-03b"></span>
+Parse boundary failures are represented as explicit `ParseError` values wrapped by `KonditionalBoundaryFailure`.
 
-## Boundary error semantics
+## Failure Mode 1: Key Typos
 
-Boundary parsing failures are represented as explicit parse-error values wrapped
-in boundary failure results [CLM-PR01-03B].
+```kotlin
+// String-key pattern
+val enabled = flags["new-checkot"] as? Boolean ?: false // typo survives review
 
-## Claim citations
+// Konditional pattern
+val enabled: Boolean = CheckoutFeatures.newCheckout.evaluate(ctx)
+// CheckoutFeatures.newCheckot -> compile error
+```
 
-| Claim ID | Explicit claim | Local evidence linkage | Registry link |
-|---|---|---|---|
-| CLM-PR01-03A | Feature declarations are modeled as typed entities under Namespace and Feature abstractions. | `#compile-time-declaration-model` | `/reference/claims-registry#clm-pr01-03a` |
-| CLM-PR01-03B | Parse boundary failures are represented with explicit ParseError and KonditionalBoundaryFailure types. | `#boundary-error-semantics` | `/reference/claims-registry#clm-pr01-03b` |
+## Failure Mode 2: Type Coercion Drift
+
+```kotlin
+// String-key pattern
+val timeout = (flags["timeout"] as String).toInt()
+
+// Konditional pattern
+val timeout: Int = CheckoutFeatures.timeout.evaluate(ctx)
+```
+
+## Failure Mode 3: Boolean Explosion
+
+String-key systems often multiply booleans for related behavior. Konditional encourages typed values (`enum`, structured types) so related states stay coherent.
+
+## Failure Mode 4: Inconsistent Rollout Assignment
+
+Deterministic bucketing uses stable identity and salt, so the same context yields stable inclusion decisions over time.
+
+## Trade-off
+
+Compile-time safety requires static declarations in source. If your primary requirement is non-code, ad-hoc flag creation by non-developers, you will need internal tooling around this API.
+
+## Next Steps
+
+- [Parse Boundary](/concepts/parse-boundary) - Go deeper on typed boundary failures.
+- [Determinism Proofs](/theory/determinism-proofs) - Understand why rollout assignment stays stable.
+
+## Claim Coverage
+
+| Claim ID | Statement |
+| --- | --- |
+| CLM-PR01-03A | Feature declarations are modeled as typed entities under Namespace and Feature abstractions. |
+| CLM-PR01-03B | Parse boundary failures are represented with explicit ParseError and KonditionalBoundaryFailure types. |

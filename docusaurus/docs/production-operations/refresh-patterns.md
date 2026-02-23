@@ -241,7 +241,7 @@ when {
 val retries: Int = AppFeatures.maxRetries.evaluate(ctx)  // Returns 3
 ```
 
-**Guarantee:** Failed loads never affect evaluation.
+**Guarantee:** Failed loads never affect evaluation. → [C-02](/theory/claims-registry#c-02) [C-05](/theory/claims-registry#c-05)
 
 ---
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Docs Authoring"
+  short_description: "Write tiered Konditional docs with claim anchors and API-safe examples."
+  default_prompt: "Use $docs-authoring to create or update a Konditional docs page with correct disclosure tier, claim anchors, cross-links, and public-API-only Kotlin examples."
