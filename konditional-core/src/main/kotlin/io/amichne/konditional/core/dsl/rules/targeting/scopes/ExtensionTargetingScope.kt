@@ -43,7 +43,6 @@ interface ExtensionTargetingScope<C : Context> {
  *
  * @param block Predicate evaluated against a narrowed context type [R]
  */
-@KonditionalDsl
 inline fun <reified R : Context> ExtensionTargetingScope<*>.whenContext(
     crossinline block: R.() -> Boolean,
 ) {
