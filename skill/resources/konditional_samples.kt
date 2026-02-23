@@ -14,13 +14,20 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
+import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.parseErrorOrNull
+import io.amichne.konditional.openfeature.KonditionalOpenFeatureProvider
+import io.amichne.konditional.openfeature.TargetingKeyContext
+import io.amichne.konditional.openfeature.TargetingKeyContextMapper
 import io.amichne.konditional.runtime.load
 import io.amichne.konditional.runtime.rollback
+import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
+import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
+import dev.openfeature.sdk.ImmutableContext
 
 /**
- * Basic typed-variant feature with deterministic targeting.
+ * Enterprise baseline namespace with typed feature definitions.
  */
 enum class CheckoutVariant {
     CLASSIC,
@@ -43,7 +50,7 @@ object CheckoutFlags : Namespace("checkout") {
 }
 
 /**
- * Axis-based targeting with namespace-scoped axis catalog.
+ * Axis-based targeting where type inference remains namespace-scoped.
  */
 enum class Segment(override val id: String) : AxisValue<Segment> {
     CONSUMER("consumer"),
@@ -79,6 +86,93 @@ object EnterpriseFlags : Namespace("enterprise") {
     }
 }
 
+/**
+ * Legacy-to-Konditional inventory row used during discovery.
+ */
+data class LegacyFlagUsage(
+    val key: String,
+    val owningDomain: String,
+    val valueType: String,
+)
+
+data class NamespaceAdoptionPlan(
+    val namespaceId: String,
+    val legacyKeys: List<String>,
+)
+
+/**
+ * Deterministic mapping from discovered legacy keys to namespace plans.
+ */
+fun buildNamespacePlans(usages: List<LegacyFlagUsage>): List<NamespaceAdoptionPlan> =
+    usages
+        .sortedWith(compareBy(LegacyFlagUsage::owningDomain, LegacyFlagUsage::key))
+        .groupBy { it.owningDomain.trim().replace(' ', '-').lowercase() }
+        .map { (namespaceId, rows) ->
+            NamespaceAdoptionPlan(
+                namespaceId = namespaceId,
+                legacyKeys = rows.map(LegacyFlagUsage::key),
+            )
+        }
+        .sortedBy(NamespaceAdoptionPlan::namespaceId)
+
+/**
+ * Legacy SDK abstraction for dual-read migration.
+ */
+data class LegacyEvaluationContext(
+    val stableId: String,
+    val attributes: Map<String, String>,
+)
+
+fun interface LegacyBooleanFlagClient {
+    fun getBoolean(
+        key: String,
+        defaultValue: Boolean,
+        context: LegacyEvaluationContext,
+    ): Boolean
+}
+
+data class DualReadDecision(
+    val baseline: Boolean,
+    val candidate: Boolean,
+    val mismatch: Boolean,
+)
+
+/**
+ * Migration adapter that keeps legacy behavior as baseline while comparing Konditional.
+ */
+class DualReadBooleanAdapter(
+    private val legacyClient: LegacyBooleanFlagClient,
+    private val onMismatch: (legacyKey: String, baseline: Boolean, candidate: Boolean, stableId: StableId) -> Unit =
+        { _, _, _, _ -> },
+) {
+    fun evaluate(
+        legacyKey: String,
+        candidateFeature: io.amichne.konditional.core.features.Feature<Boolean, EnterpriseContext, *>,
+        context: EnterpriseContext,
+    ): DualReadDecision {
+        val baseline =
+            legacyClient.getBoolean(
+                key = legacyKey,
+                defaultValue = false,
+                context =
+                    LegacyEvaluationContext(
+                        stableId = context.stableId.id,
+                        attributes =
+                            mapOf(
+                                "locale" to context.locale.id,
+                                "platform" to context.platform.id,
+                                "version" to context.appVersion.toString(),
+                            ),
+                    ),
+            )
+        val candidate = candidateFeature.evaluate(context)
+        if (baseline != candidate) {
+            onMismatch(legacyKey, baseline, candidate, context.stableId)
+        }
+        return DualReadDecision(baseline = baseline, candidate = candidate, mismatch = baseline != candidate)
+    }
+}
+
 fun evaluateVariant(context: Context): CheckoutVariant =
     CheckoutFlags.variant.evaluate(context)
 
@@ -98,15 +192,19 @@ fun evaluateSegmentFlag(stableId: String): Boolean {
  * Parse-don't-validate boundary for remote config ingestion.
  */
 fun loadSnapshot(json: String): Result<Unit> {
-    val decoded = ConfigurationSnapshotCodec.decode(json, CheckoutFlags.compiledSchema())
-    return decoded.fold(
-        onSuccess = { materialized ->
-            CheckoutFlags.load(materialized)
+    val loader = NamespaceSnapshotLoader.forNamespace(CheckoutFlags)
+    val loaded = loader.load(json, options = SnapshotLoadOptions.fillMissingDeclaredFlags())
+    return loaded.fold(
+        onSuccess = {
             Result.success(Unit)
         },
         onFailure = { throwable ->
-            val parseError = decoded.parseErrorOrNull()
-            Result.failure(IllegalStateException(parseError?.message ?: throwable.message ?: "unknown snapshot failure"))
+            val parseError = loaded.parseErrorOrNull()
+            Result.failure(
+                IllegalStateException(
+                    parseError.withFallbackMessage(throwable.message ?: "unknown snapshot failure"),
+                ),
+            )
         },
     )
 }
@@ -131,3 +229,21 @@ fun evaluateWithCandidate(context: Context, candidateJson: String): Boolean {
         },
     )
 }
+
+/**
+ * OpenFeature bridge using typed context mapper.
+ */
+fun buildOpenFeatureProvider(): KonditionalOpenFeatureProvider<TargetingKeyContext> =
+    KonditionalOpenFeatureProvider(
+        namespaceRegistry = CheckoutFlags,
+        contextMapper = TargetingKeyContextMapper(),
+    )
+
+fun evaluateThroughOpenFeature(targetingKey: String): Boolean {
+    val provider = buildOpenFeatureProvider()
+    val evaluation = provider.getBooleanEvaluation("expressCheckout", false, ImmutableContext(targetingKey))
+    return evaluation.value
+}
+
+private fun ParseError?.withFallbackMessage(fallback: String): String =
+    this?.message ?: fallback

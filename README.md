@@ -145,7 +145,7 @@ result.onFailure { failure ->
 | **Variants**       | Runtime-typed                     | Multiple booleans + control flow | First-class typed values        |
 | **Ramp-up logic**  | SDK-dependent                     | Per-team reimplementation        | Centralized, deterministic      |
 | **Evaluation**     | SDK-defined, opaque               | Ad-hoc per evaluator             | Single DSL with specificity     |
-| **Invalid config** | Fails silently or crashes         | Depends on implementation        | Explicit `Result` boundary |
+| **Invalid config** | Fails silently or crashes         | Depends on implementation        | Explicit `Result` boundary      |
 | **Testing**        | Mock SDK or replay snapshots      | Mock evaluators                  | Evaluate against typed contexts |
 
 ---

@@ -1,63 +1,84 @@
-# OpenAI Prompting and Tooling Best Practices (Skill Authoring)
+# OpenAI prompting and tooling best practices (skill authoring)
 
-Last verified: `2026-02-23` via OpenAI Developer Docs MCP.
+Last verified: `2026-02-23` against official OpenAI docs.
 
-This file captures practical guidance to keep skill instructions clear, reliable, and token-efficient when using OpenAI models/tools.
+This file captures practical guidance for writing efficient, reliable skills
+that operate under strict token budgets and high integration correctness.
 
-## 1) Prompt structure and instruction hierarchy
+## 1) Instruction hierarchy and prompt layout
 
-- Put high-priority behavior in `instructions` / developer messages.
-- Keep prompts direct and explicit; avoid contradictory requirements.
-- Structure long prompts with clear sections (`Identity`, `Instructions`, `Examples`, `Context`).
-- Use Markdown/XML delimiters to separate instruction blocks and context payloads.
+- Put durable policy in `instructions` (or developer messages), not user text.
+- Keep prompts explicit, short, and conflict-free.
+- Structure long prompts into: `Identity`, `Instructions`, `Examples`,
+  `Context`.
+- Use clear delimiters (Markdown headings or XML tags) between policy and data.
+- Do not assume text is always `output[0].content[0].text`; parse full output
+  items safely.
 
 References:
 - [Prompt engineering](https://platform.openai.com/docs/guides/prompt-engineering)
 - [Reasoning best practices](https://platform.openai.com/docs/guides/reasoning-best-practices)
 
-## 2) Reasoning-model specific guidance
+## 2) Prompting reasoning models vs GPT models
 
-- For reasoning models, prefer simple/direct prompts over chain-of-thought requests.
-- Start zero-shot; add few-shot only when required for reliability.
-- Be explicit about success criteria and constraints.
+- Reasoning models: start simple and direct, zero-shot first.
+- Avoid explicit chain-of-thought instructions like "think step by step."
+- Add few-shot only when required for specific format or edge behavior.
+- State concrete success criteria and constraints.
 
 References:
 - [Reasoning best practices](https://platform.openai.com/docs/guides/reasoning-best-practices)
+- [Prompt engineering](https://platform.openai.com/docs/guides/prompt-engineering)
 
-## 3) Tool/function schema quality
+## 3) Tool and function schema discipline
 
-- Use clear tool names and detailed parameter descriptions.
-- Define schemas so invalid states are hard to represent (enums, constrained objects).
-- Keep active tool set small when possible; evaluate accuracy as tool count grows.
-- Prefer strict schema enforcement for function calls.
+- Use clear function names and complete field descriptions.
+- Set `strict: true` for function schemas when possible.
+- For strict schemas:
+  - set `additionalProperties: false` for object parameters
+  - mark expected fields as required
+  - model optional fields as nullable types
+- Keep the active toolset small; large toolsets reduce selection accuracy.
+- Restrict tools per request (`allowed_tools`) when only a subset is needed.
 
 References:
 - [Function calling](https://platform.openai.com/docs/guides/function-calling)
+- [Structured outputs](https://platform.openai.com/docs/guides/structured-outputs)
 
-## 4) Structured outputs and refusal-safe handling
+## 4) Structured outputs and refusal-safe parsing
 
-- Use Structured Outputs (`json_schema`) when response shape must be guaranteed.
-- Handle refusals explicitly (refusal may not match your response schema).
-- Keep schema and language types synchronized (SDK helpers like Pydantic/Zod where possible).
+- Use `json_schema` when shape guarantees matter.
+- Treat refusal as a first-class output path.
+- Keep response schemas and language types in sync (Pydantic/Zod helpers when
+  available).
+- Add CI checks to detect schema/type drift in production pipelines.
 
 References:
-- [Structured model outputs](https://platform.openai.com/docs/guides/structured-outputs)
+- [Structured outputs](https://platform.openai.com/docs/guides/structured-outputs)
 
-## 5) Token, latency, and cost controls
+## 5) Cost, latency, and context controls
 
-- Keep reusable/static prompt prefixes at the beginning of prompts.
-- Move user-specific dynamic content toward the end.
-- Prefer shorter prompts and right-sized models for the task.
-- Use prompt caching intentionally for repeated prefixes.
-- In long workflows, use compaction to keep context bounded.
+- Place reusable/static prefix content first; append dynamic user content last.
+- Prompt caching requires exact prefix match; standardize shared prefixes.
+- Use `prompt_cache_key` consistently for repeated workloads.
+- Long-running sessions should use compaction to control context growth.
+- Track `cached_tokens`, latency, and token usage in telemetry.
 
 References:
 - [Prompt caching](https://platform.openai.com/docs/guides/prompt-caching)
 - [Compaction](https://platform.openai.com/docs/guides/compaction)
-- [Production best practices: Managing costs](https://platform.openai.com/docs/guides/production-best-practices#managing-costs)
-- [Prompt engineering: prompt caching tip](https://platform.openai.com/docs/guides/prompt-engineering#save-on-cost-and-latency-with-prompt-caching)
+- [Production best practices](https://platform.openai.com/docs/guides/production-best-practices#managing-costs)
+- [Prompt engineering](https://platform.openai.com/docs/guides/prompt-engineering#save-on-cost-and-latency-with-prompt-caching)
 
-## 6) Minimal template for robust skill instructions
+## 6) Enterprise delivery checklist for skills
+
+- Define deterministic acceptance criteria before generation.
+- Make output format machine-checkable when consumed by CI or automation.
+- Include fallback behavior for missing context/tool failures.
+- Add eval cases for high-risk flows (tool routing, schema adherence, refusals).
+- Keep instructions compact and reusable for maximum cache hit rate.
+
+## 7) Minimal instruction template
 
 ```text
 Identity:
@@ -73,8 +94,7 @@ Examples:
   Output: ...
 
 Context:
-- Repo/module constraints...
+- Repository/module invariants...
 - API/version assumptions...
+- Verification/test expectations...
 ```
-
-Use this template as a base, then tighten with repository-specific invariants and test expectations.
