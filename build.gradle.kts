@@ -12,4 +12,5 @@ release {
     releaseCommitMessage.set("chore(release): v{version}")
     postReleaseCommitMessage.set("chore(release): prepare v{version}")
     ignorePreReleaseDependencies.add("io.opentelemetry:opentelemetry-semconv")
+    ignorePreReleaseDependencies.add("io.github.amichne") // internal modules release together
 }
