@@ -37,7 +37,7 @@ dependencies {
 
 ## Guarantees
 
-- **Guarantee**: Configuration swaps are atomic and never partially visible.
+- **Guarantee**: Configuration swaps are atomic and never partially visible. → [C-05](/theory/claims-registry#c-05)
 
 - **Mechanism**: Namespace registries store configuration in an `AtomicReference` and swap it in a single write.
 

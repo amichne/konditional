@@ -13,15 +13,15 @@ Pick the smallest set of modules that covers your use case. Most applications ne
 
 ```mermaid
 graph TD
-    CORE["konditional-core\nNamespace · Feature · evaluate()"]
-    RUNTIME["konditional-runtime\nload · rollback · disableAll"]
-    SERIAL["konditional-serialization\nJSON → ParseResult&lt;Configuration&gt;"]
-    OBS["konditional-observability\nevaluateWithShadow · mismatch reporting"]
-    OTEL["konditional-otel\nOpenTelemetry metrics/traces"]
-    HTTP["konditional-http-server\nHTTP config delivery endpoints"]
-    OF["openfeature\nOpenFeature provider bridge"]
-    KONTRACTS["kontracts\nStructured value schema DSL"]
-    OPENAPI["openapi\nOpenAPI contract generation"]
+    CORE["konditional-core<br>Namespace · Feature · evaluate()"]
+    RUNTIME["konditional-runtime<br>load · rollback · disableAll"]
+    SERIAL["konditional-serialization<br>JSON → ParseResult&lt;Configuration&gt;"]
+    OBS["konditional-observability<br>evaluateWithShadow · mismatch reporting"]
+    OTEL["konditional-otel<br>OpenTelemetry metrics/traces"]
+    HTTP["konditional-http-server<br>HTTP config delivery endpoints"]
+    OF["openfeature<br>OpenFeature provider bridge"]
+    KONTRACTS["kontracts<br>Structured value schema DSL"]
+    OPENAPI["openapi<br>OpenAPI contract generation"]
 
     RUNTIME --> CORE
     SERIAL --> CORE

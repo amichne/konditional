@@ -64,18 +64,18 @@ object Payments : Namespace("payments") {
 flowchart TB
     subgraph AuthNS["Namespace: auth"]
         direction TB
-        AR[Auth Registry\nAtomicReference]
-        AF1[socialLogin\nFeature&lt;Boolean&gt;]
-        AF2[twoFactorAuth\nFeature&lt;Boolean&gt;]
+        AR["Auth Registry<br>AtomicReference"]
+        AF1["socialLogin<br>Feature&lt;Boolean&gt;"]
+        AF2["twoFactorAuth<br>Feature&lt;Boolean&gt;"]
         AR --> AF1
         AR --> AF2
     end
 
     subgraph PayNS["Namespace: payments"]
         direction TB
-        PR[Payments Registry\nAtomicReference]
-        PF1[applePay\nFeature&lt;Boolean&gt;]
-        PF2[stripeIntegration\nFeature&lt;Boolean&gt;]
+        PR["Payments Registry<br>AtomicReference"]
+        PF1["applePay<br>Feature&lt;Boolean&gt;"]
+        PF2["stripeIntegration<br>Feature&lt;Boolean&gt;"]
         PR --> PF1
         PR --> PF2
     end

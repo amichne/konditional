@@ -9,18 +9,19 @@ A canonical index of every design claim Konditional makes, which theory document
 supports it.
 
 Use this page to verify guarantees before relying on them in production, or to find the right theory page when
-investigating an invariant.
+investigating an invariant. Every `**Guarantee**` statement elsewhere in these docs links to an entry here.
 
 ---
 
 ## How to Read This Registry
 
-Each claim is structured as:
+Each claim is in a collapsible block. Click to expand for full details:
 
 - **Claim** — The invariant stated precisely
-- **Scope** — Where the claim applies
-- **Theory** — The document containing the formal argument, linked to the specific section
-- **Test evidence** — Concrete tests that prove the claim holds, linked to source
+- **Scope** — Where the claim applies (and where it doesn't)
+- **Theory** — Linked directly to the section containing the formal argument
+- **Test evidence** — Test files you can open and run to see the claim hold
+- **Conditions** — Preconditions or limits on the claim
 
 A claim without test evidence is a **hypothesis**, not a guarantee.
 
@@ -28,7 +29,8 @@ A claim without test evidence is a **hypothesis**, not a guarantee.
 
 ## Claim Index
 
-### C-01: Evaluation Type Safety
+<details id="c-01">
+<summary><strong>C-01: Evaluation Type Safety</strong> — <code>F.evaluate(context)</code> returns a value of the declared type T at compile time, without casts.</summary>
 
 **Claim:** For any declared feature `F` with value type `T`, `F.evaluate(context)` returns a value of type `T` at
 compile time, without runtime casts.
@@ -43,12 +45,15 @@ compile time, without runtime casts.
 |---|---|---|
 | `FlagEntryTypeSafetyTest` | Feature/value type combinations enforce compile-time shape. | [source](https://github.com/amichne/konditional/blob/main/konditional-core/src/test/kotlin/io/amichne/konditional/core/FlagEntryTypeSafetyTest.kt) |
 
-**Conditions on the claim:** Only applies to features declared in Kotlin source. JSON-loaded overrides are parsed into
-the same type model, but type alignment is enforced by the codec at boundary time, not at compile time.
+**Conditions:** Only applies to features declared in Kotlin source. JSON-loaded overrides are parsed into the same
+type model, but type alignment is enforced by the codec at boundary time, not at compile time.
+
+</details>
 
 ---
 
-### C-02: JSON Boundary Rejection
+<details id="c-02">
+<summary><strong>C-02: JSON Boundary Rejection</strong> — Invalid JSON produces a typed <code>ParseResult.Failure</code> and does not enter runtime state.</summary>
 
 **Claim:** Invalid JSON (malformed, missing fields, type mismatches, unknown keys in strict mode) produces a typed
 `ParseResult.Failure` and does not enter runtime state.
@@ -64,12 +69,15 @@ the same type model, but type alignment is enforced by the codec at boundary tim
 | `BoundaryFailureResultTest` | Parse failures are typed and carried through result channel. | [source](https://github.com/amichne/konditional/blob/main/konditional-core/src/test/kotlin/io/amichne/konditional/core/BoundaryFailureResultTest.kt) |
 | `ConfigurationSnapshotCodecTest` | Snapshot decode enforces schema-aware trusted materialization. | [source](https://github.com/amichne/konditional/blob/main/konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/ConfigurationSnapshotCodecTest.kt) |
 
-**Conditions on the claim:** Unknown-key behavior depends on `SnapshotLoadOptions`. In strict mode, unknown keys
-reject the payload. In skip mode, they log a warning and proceed. Neither mode admits partial state.
+**Conditions:** Unknown-key behavior depends on `SnapshotLoadOptions`. In strict mode, unknown keys reject the
+payload. In skip mode, they log a warning and proceed. Neither mode admits partial state.
+
+</details>
 
 ---
 
-### C-03: Evaluation Determinism
+<details id="c-03">
+<summary><strong>C-03: Evaluation Determinism</strong> — Same feature, context, and snapshot always produces the same value.</summary>
 
 **Claim:** Given the same feature declaration `F`, context `C`, and configuration snapshot `S`,
 `evaluate(F, C, S)` returns the same value on every invocation.
@@ -85,12 +93,15 @@ reject the payload. In skip mode, they log a warning and proceed. Neither mode a
 | `MissingStableIdBucketingTest` | Stable IDs and fallback behavior produce repeatable bucket outcomes. | [source](https://github.com/amichne/konditional/blob/main/konditional-core/src/test/kotlin/io/amichne/konditional/core/MissingStableIdBucketingTest.kt) |
 | `ConditionEvaluationTest` | Rule matching and precedence remain deterministic for equivalent inputs. | [source](https://github.com/amichne/konditional/blob/main/konditional-core/src/test/kotlin/io/amichne/konditional/core/ConditionEvaluationTest.kt) |
 
-**Conditions on the claim:** Determinism is scoped to a fixed `(context, snapshot)` pair. If the snapshot changes
-(via `load(...)`), subsequent evaluations may return different values — this is intentional.
+**Conditions:** Determinism is scoped to a fixed `(context, snapshot)` pair. If the snapshot changes via
+`load(...)`, subsequent evaluations may return different values — this is intentional.
+
+</details>
 
 ---
 
-### C-04: Ramp-Up Bucketing Stability
+<details id="c-04">
+<summary><strong>C-04: Ramp-Up Bucketing Stability</strong> — Same <code>(salt, featureKey, stableId)</code> always yields the same bucket, across invocations and deployments.</summary>
 
 **Claim:** For fixed `(salt, featureKey, stableId)`, bucket assignment is identical across invocations, JVM restarts,
 and deployments.
@@ -105,12 +116,15 @@ and deployments.
 |---|---|---|
 | `MissingStableIdBucketingTest` | Fallback bucket (9999) is assigned deterministically for contexts without stableId. | [source](https://github.com/amichne/konditional/blob/main/konditional-core/src/test/kotlin/io/amichne/konditional/core/MissingStableIdBucketingTest.kt) |
 
-**Conditions on the claim:** Changing the salt changes all bucket assignments for that feature. This is intentional
-and documented. Salt changes should be treated as breaking changes to rollout state.
+**Conditions:** Changing the salt changes all bucket assignments for that feature. Salt changes should be treated as
+breaking changes to rollout state.
+
+</details>
 
 ---
 
-### C-05: Atomic Snapshot Reads
+<details id="c-05">
+<summary><strong>C-05: Atomic Snapshot Reads</strong> — Readers never observe a partially-updated configuration.</summary>
 
 **Claim:** Readers never observe a partially-updated configuration. Every evaluation reads either the old snapshot
 or the new snapshot — never a mix.
@@ -126,12 +140,15 @@ or the new snapshot — never a mix.
 | `NamespaceLinearizabilityTest` | Load/read operations remain linearizable under concurrency. | [source](https://github.com/amichne/konditional/blob/main/konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt) |
 | `ConcurrencyAttacksTest` | Concurrent stress cases do not expose partial state to readers. | [source](https://github.com/amichne/konditional/blob/main/konditional-core/src/test/kotlin/io/amichne/konditional/adversarial/ConcurrencyAttacksTest.kt) |
 
-**Conditions on the claim:** Applies to the default in-memory registry. Custom `NamespaceRegistry` implementations
-are responsible for their own atomicity guarantees.
+**Conditions:** Applies to the default in-memory registry. Custom `NamespaceRegistry` implementations are
+responsible for their own atomicity guarantees.
+
+</details>
 
 ---
 
-### C-06: Namespace Isolation
+<details id="c-06">
+<summary><strong>C-06: Namespace Isolation</strong> — Operations on namespace A do not affect the state of namespace B.</summary>
 
 **Claim:** Operations on namespace `A` (load, rollback, disableAll) do not affect the state of namespace `B`.
 
@@ -146,12 +163,15 @@ are responsible for their own atomicity guarantees.
 | `NamespaceLinearizabilityTest` | Concurrent operations preserve per-namespace atomic state transitions. | [source](https://github.com/amichne/konditional/blob/main/konditional-runtime/src/test/kotlin/io/amichne/konditional/runtime/NamespaceLinearizabilityTest.kt) |
 | `NamespaceFeatureDefinitionTest` | Feature declarations remain scoped to their owning namespace. | [source](https://github.com/amichne/konditional/blob/main/konditional-core/src/test/kotlin/io/amichne/konditional/core/NamespaceFeatureDefinitionTest.kt) |
 
-**Conditions on the claim:** Applies to separate `Namespace` objects. If two `Namespace` instances are constructed
-with the same identifier seed, they share the same feature ID space but still have independent registries.
+**Conditions:** Applies to separate `Namespace` objects. If two `Namespace` instances are constructed with the same
+identifier seed, they share the same feature ID space but still have independent registries.
+
+</details>
 
 ---
 
-### C-07: Feature Identifier Uniqueness
+<details id="c-07">
+<summary><strong>C-07: Feature Identifier Uniqueness</strong> — Features in different namespaces with the same property name produce different IDs and do not collide.</summary>
 
 **Claim:** Two features in different namespaces with the same Kotlin property name produce different `FeatureId`
 values and do not collide at the JSON boundary.
@@ -163,9 +183,12 @@ values and do not collide at the JSON boundary.
 **Proof sketch:** `FeatureId` is `feature::{namespaceIdentifierSeed}::{featureKey}`. Different namespaces have
 different seeds, so the resulting IDs are structurally distinct.
 
+</details>
+
 ---
 
-### C-08: Shadow Evaluation Baseline Invariance
+<details id="c-08">
+<summary><strong>C-08: Shadow Evaluation Baseline Invariance</strong> — <code>evaluateWithShadow(...)</code> always returns the baseline value; candidate is comparison-only.</summary>
 
 **Claim:** `evaluateWithShadow(...)` always returns the baseline value. Candidate evaluation is read-only and never
 affects the value returned to the caller.
@@ -180,12 +203,15 @@ affects the value returned to the caller.
 |---|---|---|
 | `KillSwitchTest` | Baseline safety controls remain authoritative during rollout/migration workflows. | [source](https://github.com/amichne/konditional/blob/main/konditional-runtime/src/test/kotlin/io/amichne/konditional/ops/KillSwitchTest.kt) |
 
-**Conditions on the claim:** The `onMismatch` callback runs inline. If it throws, the exception propagates. Keep
-`onMismatch` implementations lightweight and non-throwing.
+**Conditions:** The `onMismatch` callback runs inline. If it throws, the exception propagates. Keep `onMismatch`
+implementations lightweight and non-throwing.
+
+</details>
 
 ---
 
-### C-09: Kill-Switch Safety
+<details id="c-09">
+<summary><strong>C-09: Kill-Switch Safety</strong> — When <code>disableAll()</code> is active, all evaluations in that namespace return their declared default.</summary>
 
 **Claim:** When `Namespace.disableAll()` is active, all feature evaluations in that namespace return their declared
 default value, regardless of configuration snapshot or context.
@@ -200,9 +226,12 @@ default value, regardless of configuration snapshot or context.
 |---|---|---|
 | `KillSwitchTest` | Kill-switch overrides evaluation and forces all features to default. | [source](https://github.com/amichne/konditional/blob/main/konditional-runtime/src/test/kotlin/io/amichne/konditional/ops/KillSwitchTest.kt) |
 
+</details>
+
 ---
 
-### C-10: Rollback Restores Complete Snapshots
+<details id="c-10">
+<summary><strong>C-10: Rollback Restores Complete Snapshots</strong> — Rollback atomically restores a prior complete snapshot.</summary>
 
 **Claim:** `Namespace.rollback(steps = N)` restores the complete snapshot that was active `N` loads ago, atomically.
 Readers observe either the current snapshot or the restored snapshot — never partial state.
@@ -211,8 +240,10 @@ Readers observe either the current snapshot or the restored snapshot — never p
 
 **Theory:** [Atomicity Guarantees — Rollback](/theory/atomicity-guarantees#rollback)
 
-**Conditions on the claim:** History depth is finite. Rolling back beyond the available history has no effect
-(no-op). The number of available rollback steps depends on the registry implementation's history capacity.
+**Conditions:** History depth is finite. Rolling back beyond the available history has no effect (no-op). The number
+of available rollback steps depends on the registry implementation's history capacity.
+
+</details>
 
 ---
 
@@ -250,7 +281,8 @@ When adding a new invariant to Konditional:
 2. Define the scope clearly — where does it apply, where doesn't it?
 3. Identify any preconditions or conditions on the claim
 4. Add a test that would fail if the claim were violated
-5. Add an entry here with the test reference and source link
+5. Add a `<details id="c-NN">` entry here with the test reference and source link
+6. Add a `→ [C-NN](/theory/claims-registry#c-nn)` inline reference at the relevant `**Guarantee**` site in the docs
 
 A claim without a failing test is documentation, not a guarantee.
 

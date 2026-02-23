@@ -64,7 +64,7 @@ Specificity is the sum of targeting leaves.
 - Multiple extension leaves on one rule are AND-composed, and their
   specificity is cumulative.
 
-- **Guarantee**: More specific rules are evaluated before less specific rules.
+- **Guarantee**: More specific rules are evaluated before less specific rules. → [C-03](/theory/claims-registry#c-03)
 
 - **Mechanism**: Rules are sorted by `rule.specificity()` in descending order before evaluation.
 
@@ -74,7 +74,7 @@ Specificity is the sum of targeting leaves.
 
 Ramp-ups are deterministic and reproducible.
 
-- **Guarantee**: The same `(stableId, featureKey, salt)` always yields the same bucket assignment.
+- **Guarantee**: The same `(stableId, featureKey, salt)` always yields the same bucket assignment. → [C-04](/theory/claims-registry#c-04)
 
 - **Mechanism**:
 

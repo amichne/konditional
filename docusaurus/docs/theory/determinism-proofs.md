@@ -28,23 +28,23 @@ Cross-document synthesis: [Verified Design Synthesis](/theory/verified-synthesis
 
 ```mermaid
 flowchart TD
-    A([evaluate feature F\nwith context C, snapshot S]) --> B{Namespace\nkill-switch?}
+    A(["evaluate feature F<br>with context C, snapshot S"]) --> B{"Namespace<br>kill-switch?"}
     B -->|disabled| Z1[return default D]
-    B -->|active| C{Flag\nactive?}
+    B -->|active| C{"Flag<br>active?"}
     C -->|inactive| Z2[return default D]
-    C -->|active| D[Sort rules by\nspecificity ↓\nthen definition order]
+    C -->|active| D["Sort rules by<br>specificity ↓<br>then definition order"]
     D --> E[Take next rule R]
-    E --> F{Criteria\nmatch C?}
-    F -->|no| G{More\nrules?}
+    E --> F{"Criteria<br>match C?"}
+    F -->|no| G{"More<br>rules?"}
     G -->|yes| E
     G -->|no| Z3[return default D]
-    F -->|yes| H{Has\nramp-up?}
+    F -->|yes| H{"Has<br>ramp-up?"}
     H -->|no| Z4[return rule value V]
-    H -->|yes| I[bucket = SHA-256\nsalt:key:stableIdHex\nmod 10_000]
-    I --> J{bucket <\nrampUp × 100?}
+    H -->|yes| I["bucket = SHA-256<br>salt:key:stableIdHex<br>mod 10_000"]
+    I --> J{"bucket &lt;<br>rampUp × 100?"}
     J -->|yes| Z5[return rule value V]
-    J -->|no| K{Has\nallowlist?}
-    K -->|yes| L{stableId in\nallowlist?}
+    J -->|no| K{"Has<br>allowlist?"}
+    K -->|yes| L{"stableId in<br>allowlist?"}
     L -->|yes| Z6[return rule value V]
     L -->|no| G
     K -->|no| G

@@ -68,14 +68,14 @@ fun parseConfig(json: String): ParseResult<Configuration> {
 
 ```mermaid
 flowchart LR
-    A[Remote JSON\nuntrusted String] --> B{ConfigurationSnapshotCodec\n.decode}
-    B -->|Success| C[Configuration\ntrusted typed model]
-    B -->|Failure| D[ParseError\ntyped rejection]
+    A["Remote JSON<br>untrusted String"] --> B{"ConfigurationSnapshotCodec<br>.decode"}
+    B -->|Success| C["Configuration<br>trusted typed model"]
+    B -->|Failure| D["ParseError<br>typed rejection"]
 
     C --> E[Namespace.load]
-    E --> F[NamespaceRegistry\nAtomicReference]
+    E --> F["NamespaceRegistry<br>AtomicReference"]
 
-    D --> G[Log error\nkeep last-known-good]
+    D --> G["Log error<br>keep last-known-good"]
 
     style A fill:#ffcccc
     style C fill:#ccffcc
@@ -170,15 +170,15 @@ Parse failures are explicit in the return type. The compiler forces you to handl
 
 ```mermaid
 flowchart TD
-    A[JSON input] --> B{Well-formed\nJSON?}
-    B -->|no| ERR1[ParseError:\nmalformed JSON]
-    B -->|yes| C{Required fields\npresent?}
-    C -->|no| ERR2[ParseError:\nmissing field]
-    C -->|yes| D{Field types\nmatch schema?}
-    D -->|no| ERR3[ParseError:\ntype mismatch]
-    D -->|yes| E{Feature keys\nrecognized?}
-    E -->|unknown, strict mode| ERR4[ParseError:\nunknown key]
-    E -->|ok| F[Configuration\nSuccess]
+    A[JSON input] --> B{"Well-formed<br>JSON?"}
+    B -->|no| ERR1["ParseError:<br>malformed JSON"]
+    B -->|yes| C{"Required fields<br>present?"}
+    C -->|no| ERR2["ParseError:<br>missing field"]
+    C -->|yes| D{"Field types<br>match schema?"}
+    D -->|no| ERR3["ParseError:<br>type mismatch"]
+    D -->|yes| E{"Feature keys<br>recognized?"}
+    E -->|unknown, strict mode| ERR4["ParseError:<br>unknown key"]
+    E -->|ok| F["Configuration<br>Success"]
 
     style ERR1 fill:#ffcccc
     style ERR2 fill:#ffcccc

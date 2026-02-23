@@ -108,12 +108,12 @@ fun <C : Context> Namespace.boolean(
 
 ```mermaid
 flowchart LR
-    A[Kotlin Source\nFlag Declarations] -->|compile-time safe| B[Feature&lt;T,C,M&gt;]
-    B -->|evaluate\nreturns T| C[Typed Value]
+    A["Kotlin Source<br>Flag Declarations"] -->|compile-time safe| B["Feature&lt;T,C,M&gt;"]
+    B -->|"evaluate<br>returns T"| C[Typed Value]
 
-    D[Remote JSON\nConfiguration] -->|untrusted| E[ConfigurationSnapshotCodec\n.decode]
-    E -->|ParseResult.Success| F[Configuration\nSnapshot]
-    E -->|ParseResult.Failure| G[ParseError\ntyped rejection]
+    D["Remote JSON<br>Configuration"] -->|untrusted| E["ConfigurationSnapshotCodec<br>.decode"]
+    E -->|ParseResult.Success| F["Configuration<br>Snapshot"]
+    E -->|ParseResult.Failure| G["ParseError<br>typed rejection"]
     F -->|Namespace.load| B
 ```
 

@@ -55,16 +55,16 @@ return baselineValue  // Production uses baseline
 
 ```mermaid
 flowchart TD
-    A([evaluateWithShadow\ncontext C, candidate R]) --> B[Evaluate against\nbaseline registry]
+    A(["evaluateWithShadow<br>context C, candidate R"]) --> B["Evaluate against<br>baseline registry"]
     B --> C[baselineValue]
-    A --> D{Baseline\nkill-switch?}
-    D -->|disabled and\nskipCandidateWhenDisabled| E[return baselineValue\nno candidate eval]
-    D -->|active| F[Evaluate against\ncandidate registry]
+    A --> D{"Baseline<br>kill-switch?"}
+    D -->|"disabled and<br>skipCandidateWhenDisabled"| E["return baselineValue<br>no candidate eval"]
+    D -->|active| F["Evaluate against<br>candidate registry"]
     F --> G[candidateValue]
-    C --> H{baseline ==\ncandidate?}
+    C --> H{"baseline ==<br>candidate?"}
     G --> H
     H -->|match| I[return baselineValue]
-    H -->|mismatch| J[onMismatch callback\nShadowMismatch record]
+    H -->|mismatch| J["onMismatch callback<br>ShadowMismatch record"]
     J --> I
 
     style I fill:#ccffcc
@@ -170,15 +170,15 @@ the old system.
 
 ```mermaid
 flowchart LR
-    A[Define flags\nin Konditional] --> B[Translate old state\ninto baseline snapshot]
-    B --> C[Build candidate\nsnapshot]
-    C --> D[Shadow evaluate\nlog mismatches]
-    D --> E{Mismatch rate\nacceptable?}
-    E -->|no| F[Investigate and\nrevise candidate]
+    A["Define flags<br>in Konditional"] --> B["Translate old state<br>into baseline snapshot"]
+    B --> C["Build candidate<br>snapshot"]
+    C --> D["Shadow evaluate<br>log mismatches"]
+    D --> E{"Mismatch rate<br>acceptable?"}
+    E -->|no| F["Investigate and<br>revise candidate"]
     F --> D
-    E -->|yes| G[Promote candidate\nto baseline]
-    G --> H[Monitor for\nregressions]
-    H --> I[Decommission\nold system]
+    E -->|yes| G["Promote candidate<br>to baseline"]
+    G --> H["Monitor for<br>regressions"]
+    H --> I["Decommission<br>old system"]
 ```
 
 ```kotlin

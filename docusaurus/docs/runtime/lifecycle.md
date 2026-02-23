@@ -34,7 +34,7 @@ when {
 }
 ```
 
-- **Guarantee**: Invalid JSON never becomes a `Configuration`.
+- **Guarantee**: Invalid JSON never becomes a `Configuration`. → [C-02](/theory/claims-registry#c-02)
 
 - **Mechanism**: `Result` makes success vs failure explicit at the boundary.
 
