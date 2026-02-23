@@ -9,6 +9,7 @@ import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.core.dsl.rules.RuleScope
+import io.amichne.konditional.core.dsl.rules.targeting.scopes.AnyOfScope
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.registry.AxisCatalog
@@ -27,6 +28,7 @@ import io.amichne.konditional.rules.targeting.Targeting
  */
 @KonditionalDsl
 @PublishedApi
+@Suppress("TooManyFunctions") // DSL scope with many targeting methods
 internal class RuleBuilder<C : Context>(
     private val axisCatalog: AxisCatalog? = null,
 ) : RuleScope<C> {
@@ -51,6 +53,11 @@ internal class RuleBuilder<C : Context>(
         leaves += Targeting.version(range)
     }
 
+    override fun anyOf(build: AnyOfScope<C>.() -> Unit) {
+        val node = AnyOfBuilder<C>(axisCatalog).apply(build).build()
+        if (node.targets.isNotEmpty()) leaves += node
+    }
+
     /**
      * Adds a custom extension predicate.
      *
@@ -66,14 +73,16 @@ internal class RuleBuilder<C : Context>(
         vararg values: T,
     ) where T : AxisValue<T>, T : Enum<T> {
         require(values.isNotEmpty()) { "axis(...) requires at least one value." }
-        val allowedIds = values.mapTo(linkedSetOf()) { it.id }
+        val incomingAllowedIds = values.mapTo(linkedSetOf()) { it.id }
         // Merge with existing constraint for the same axis (OR within axis, AND across axes)
-        val idx = leaves.indexOfFirst { it is Targeting.Axis && it.axisId == axis.id }
-        if (idx >= 0) {
-            val existing = leaves[idx] as Targeting.Axis
-            leaves[idx] = existing.copy(allowedIds = existing.allowedIds + allowedIds)
-        } else {
-            leaves += Targeting.Axis(axis.id, allowedIds)
+        leaves.indexOfFirst { it is Targeting.Axis && it.axisId == axis.id }.let {
+            if (it >= 0) {
+                (leaves[it] as Targeting.Axis).apply {
+                    leaves[it] = copy(allowedIds = allowedIds + incomingAllowedIds)
+                }
+            } else {
+                leaves += Targeting.Axis(axis.id, incomingAllowedIds)
+            }
         }
     }
 

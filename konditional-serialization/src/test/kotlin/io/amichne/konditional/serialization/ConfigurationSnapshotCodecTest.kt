@@ -73,9 +73,7 @@ class ConfigurationSnapshotCodecTest {
     @BeforeEach
     fun setup() {
         // Force axis registration for type-based axis() usage in rule builders.
-        @Suppress("UnusedExpression")
         Axes.EnvironmentAxis
-        @Suppress("UnusedExpression")
         Axes.TenantAxis
 
         // Reset the namespace registry before each test.
@@ -168,7 +166,7 @@ class ConfigurationSnapshotCodecTest {
 
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.InvalidSnapshot>(result.error)
-        assertTrue((result.error as ParseError.InvalidSnapshot).reason.contains("compile-time schema"))
+        assertTrue(result.error.reason.contains("compile-time schema"))
     }
 
     @Test
@@ -184,7 +182,7 @@ class ConfigurationSnapshotCodecTest {
 
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.InvalidSnapshot>(result.error)
-        assertTrue((result.error as ParseError.InvalidSnapshot).reason.contains("compile-time schema"))
+        assertTrue(result.error.reason.contains("compile-time schema"))
     }
 
     @Test
@@ -801,7 +799,7 @@ class ConfigurationSnapshotCodecTest {
 
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.FeatureNotFound>(result.error)
-        val error = result.error as ParseError.FeatureNotFound
+        val error = result.error
         assertEquals(FeatureId.create("global", "unregistered_feature"), error.key)
     }
 

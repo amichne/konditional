@@ -7,6 +7,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.dsl.KonditionalDsl
+import io.amichne.konditional.core.dsl.rules.targeting.scopes.AnyOfScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.LocaleTargetingScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.PlatformTargetingScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.StableIdTargetingScope
@@ -43,6 +44,29 @@ interface RuleScope<C : Context> : ContextRuleScope<C>,
                                    VersionTargetingScope<C>,
                                    StableIdTargetingScope<C> {
 
+    /**
+     * Defines an OR-disjunction of targeting constraints within this rule.
+     *
+     * The group matches when *any* contained constraint matches. The whole OR group
+     * is composed with AND semantics relative to other targeting in this rule
+     * (i.e., a leaf in the enclosing [io.amichne.konditional.rules.targeting.Targeting.All]).
+     *
+     * Empty blocks are silently ignored — no leaf is appended.
+     *
+     * Example:
+     * ```kotlin
+     * rule {
+     *     anyOf {
+     *         locales("en", "fr")
+     *         platforms(Platform.IOS)
+     *     }
+     * } yields value
+     * ```
+     *
+     * @param build DSL block configuring the OR group's targeting branches
+     */
+    fun anyOf(build: AnyOfScope<C>.() -> Unit)
+
     companion object {
         private fun captureRuleCallSite(): String? =
             Throwable("Rule call site capture")
@@ -65,6 +89,7 @@ interface RuleScope<C : Context> : ContextRuleScope<C>,
         private val criteriaBuild: RuleScope<C>.() -> Unit,
     ) {
         private val host: YieldingScopeHost? = scope as? YieldingScopeHost
+
         @Suppress("UNCHECKED_CAST")
         private val contextualHost: ContextualYieldingScope<T, C>? = scope as? ContextualYieldingScope<T, C>
         private val pendingToken: PendingYieldToken =
@@ -126,6 +151,7 @@ interface RuleScope<C : Context> : ContextRuleScope<C>,
         private val criteriaBuild: ContextRuleScope<C>.() -> Unit,
     ) {
         private val host: YieldingScopeHost? = scope as? YieldingScopeHost
+
         @Suppress("UNCHECKED_CAST")
         private val contextualHost: ContextualYieldingScope<T, C>? = scope as? ContextualYieldingScope<T, C>
         private val pendingToken: PendingYieldToken =

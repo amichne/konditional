@@ -45,6 +45,22 @@ class JsonArrayValidationTest {
     }
 
     @Test
+    fun `arraySchema supports explicit generic element typing`() {
+        val schema: io.amichne.kontracts.schema.JsonSchema<List<String>> = arraySchema<String> {
+            elementSchema(stringSchema { minLength = 1 })
+            default = listOf("alpha", "beta")
+            example = listOf("gamma")
+        }
+        val arr = JsonArray(elements = listOf(JsonString("alpha"), JsonString("beta")))
+
+        val result = arr.validate(schema)
+
+        assertTrue(result.isValid)
+        assertEquals(listOf("alpha", "beta"), schema.default)
+        assertEquals(listOf("gamma"), schema.example)
+    }
+
+    @Test
     fun `JsonArray validates empty array`() {
         val schema = arraySchema {
             elementSchema(stringSchema { })
@@ -71,7 +87,7 @@ class JsonArrayValidationTest {
         val result = arr.validate(schema)
 
         assertFalse(result.isValid)
-        assertTrue(result.getErrorMessage()?.contains("Element at index 1:") == true)
+        assertEquals(result.getErrorMessage()?.contains("Element at index 1:"), true)
     }
 
     @Test
@@ -129,8 +145,8 @@ class JsonArrayValidationTest {
         val result = arr.validate(schema)
 
         assertFalse(result.isValid)
-        assertTrue(result.getErrorMessage()?.contains("Element at index 1:") == true)
-        assertTrue(result.getErrorMessage()?.contains("less than minimum length 5") == true)
+        assertEquals(result.getErrorMessage()?.contains("Element at index 1:"), true)
+        assertEquals(result.getErrorMessage()?.contains("less than minimum length 5"), true)
     }
 
     // ========== Array of Objects ==========
@@ -139,8 +155,8 @@ class JsonArrayValidationTest {
     fun `JsonArray validates array of objects successfully`() {
         val objectSchema = objectSchema {
             fields = mapOf(
-                "id" to fieldSchema { schema = intSchema {  }; required = true },
-                "name" to fieldSchema { schema = stringSchema {  }; required = true }
+                "id" to fieldSchema { schema = intSchema { }; required = true },
+                "name" to fieldSchema { schema = stringSchema { }; required = true }
             )
         }
         val schema = arraySchema {
@@ -172,8 +188,8 @@ class JsonArrayValidationTest {
     fun `JsonArray fails validation when object element is invalid`() {
         val objectSchema = objectSchema {
             fields = mapOf(
-                "id" to fieldSchema { schema = intSchema {  }; required = true },
-                "name" to fieldSchema { schema = stringSchema {  }; required = true }
+                "id" to fieldSchema { schema = intSchema { }; required = true },
+                "name" to fieldSchema { schema = stringSchema { }; required = true }
             )
         }
         val schema = arraySchema {
@@ -199,8 +215,8 @@ class JsonArrayValidationTest {
         val result = arr.validate(schema)
 
         assertFalse(result.isValid)
-        assertTrue(result.getErrorMessage()?.contains("Element at index 1:") == true)
-        assertTrue(result.getErrorMessage()?.contains("Missing required fields: [name]") == true)
+        assertEquals(result.getErrorMessage()?.contains("Element at index 1:"), true)
+        assertEquals(result.getErrorMessage()?.contains("Missing required fields: [name]"), true)
     }
 
     // ========== Nested Arrays ==========
@@ -243,7 +259,7 @@ class JsonArrayValidationTest {
         val result = arr.validate(schema)
 
         assertFalse(result.isValid)
-        assertTrue(result.getErrorMessage()?.contains("Element at index 1:") == true)
+        assertEquals(result.getErrorMessage()?.contains("Element at index 1:"), true)
     }
 
     // ========== Array Element Access ==========
@@ -321,7 +337,10 @@ class JsonArrayValidationTest {
             )
         }
 
-        assertTrue(exception.message?.contains("JsonArray does not match schema") == true)
+
+        assertTrue {
+            exception.message?.contains("JsonArray does not match schema") ?: false
+        }
     }
 
     @Test
@@ -381,8 +400,8 @@ class JsonArrayValidationTest {
         val result = arr.validate(schema)
 
         assertFalse(result.isValid)
-        assertTrue(result.getErrorMessage()?.contains("Element at index 1:") == true)
-        assertTrue(result.getErrorMessage()?.contains("greater than maximum 100") == true)
+        assertEquals(result.getErrorMessage()?.contains("Element at index 1:"), true)
+        assertEquals(result.getErrorMessage()?.contains("greater than maximum 100"), true)
     }
 
     // ========== Array of Mixed Complex Types ==========
@@ -394,7 +413,7 @@ class JsonArrayValidationTest {
         }
         val objectSchema = objectSchema {
             fields = mapOf(
-                "id" to fieldSchema { schema = intSchema {  }; required = true },
+                "id" to fieldSchema { schema = intSchema { }; required = true },
                 "tags" to fieldSchema { schema = tagsSchema; required = true }
             )
         }
