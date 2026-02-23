@@ -15,35 +15,36 @@ import io.amichne.kontracts.schema.StringSchema
 
 /** Value-class-backed string Konstrained with a pattern constraint. */
 @JvmInline
-value class Email(val raw: String) : Konstrained<StringSchema> {
+value class Email(override val value: String) : Konstrained.Primitive.String<StringSchema> {
     override val schema: StringSchema
         get() = stringSchema { pattern = "^[^@]+@[^@]+\\.[^@]+$" } as StringSchema
 }
 
 /** Value-class-backed int Konstrained with range constraints. */
 @JvmInline
-value class RetryCount(val value: Int) : Konstrained<IntSchema> {
+value class RetryCount(override val value: Int) : Konstrained.Primitive.Int<IntSchema> {
     override val schema: IntSchema
         get() = intSchema { minimum = 0; maximum = 10 } as IntSchema
 }
 
 /** Value-class-backed boolean Konstrained. */
 @JvmInline
-value class FeatureEnabled(val enabled: Boolean) : Konstrained<BooleanSchema> {
+value class FeatureEnabled(val enabled: Boolean) : Konstrained.Primitive.Boolean<BooleanSchema> {
+    override val value: kotlin.Boolean get() = enabled
     override val schema: BooleanSchema
         get() = booleanSchema { default = false } as BooleanSchema
 }
 
 /** Value-class-backed double Konstrained. */
 @JvmInline
-value class Percentage(val value: Double) : Konstrained<DoubleSchema> {
+value class Percentage(override val value: Double) : Konstrained.Primitive.Double<DoubleSchema> {
     override val schema: DoubleSchema
         get() = doubleSchema { minimum = 0.0; maximum = 100.0 } as DoubleSchema
 }
 
 /** Value-class-backed array Konstrained (list of non-empty strings). */
 @JvmInline
-value class Tags(val values: List<String>) : Konstrained<ArraySchema<String>> {
+value class Tags(override val values: List<String>) : Konstrained.Array<ArraySchema<String>, String> {
     override val schema: ArraySchema<String>
         get() = arraySchema { elementSchema(stringSchema { minLength = 1 }) } as ArraySchema<String>
 }

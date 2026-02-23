@@ -51,8 +51,6 @@ the namespace-based API without behavior drift.
   variants and introspectable through `parseErrorOrNull()`. [CLM-BND-001]
 - **Shadow migration safety**: `evaluateWithShadow` returns baseline value and
   reports mismatch side-channel only. [CLM-SHD-001]
-- **OpenFeature adapter safety**: provider context mapping uses typed success or
-  typed mapping failure, and flag lookup is pre-indexed once. [CLM-OF-001]
 
 See `/Users/amichne/code/konditional/skill/resources/evidence-map.md` for exact
 signature/source/test links.

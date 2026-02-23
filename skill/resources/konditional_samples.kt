@@ -82,7 +82,19 @@ data class EnterpriseContext(
 
 object EnterpriseFlags : Namespace("enterprise") {
     val advancedReporting by boolean<EnterpriseContext>(default = false) {
+        /** Leaking the extended context properties into the core Context interface would be undesirable;
+         *  instead, we can target them within the extension block. */
         enable { extension { isEnterpriseCustomer } }
+    }
+
+    val whenContext by boolean<EnterpriseContext>(default = false) {
+        enable {
+            /** Targeting that depends on the extended context properties,
+             *  without leaking them into the core Context interface */
+            whenContext<EnterpriseContext> {
+                subscriptionTier == SubscriptionTier.ENTERPRISE
+            }
+        }
     }
 }
 
@@ -178,7 +190,8 @@ fun evaluateVariant(context: Context): CheckoutVariant =
 
 fun evaluateSegmentFlag(stableId: String): Boolean {
     val context =
-        object : Context, Context.LocaleContext, Context.PlatformContext, Context.VersionContext, Context.StableIdContext {
+        object : Context, Context.LocaleContext, Context.PlatformContext, Context.VersionContext,
+                 Context.StableIdContext {
             override val locale: AppLocale = AppLocale.UNITED_STATES
             override val platform: Platform = Platform.ANDROID
             override val appVersion: Version = Version.of(3, 1, 0)

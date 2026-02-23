@@ -17,7 +17,7 @@ import io.amichne.kontracts.schema.JsonSchema
  *     val theme: String = "light",
  *     val notificationsEnabled: Boolean = true,
  *     val maxRetries: Int = 3,
- * ) : Konstrained<ObjectSchema> {
+ * ) : Konstrained.Object<ObjectSchema> {
  *     override val schema = schema {
  *         ::theme of { minLength = 1 }
  *         ::notificationsEnabled of { default = true }
@@ -32,12 +32,12 @@ import io.amichne.kontracts.schema.JsonSchema
  * this cannot be enforced at compile time without a Gradle plugin, but is validated at runtime.
  * ```kotlin
  * @JvmInline
- * value class Email(val raw: String) : Konstrained<StringSchema> {
+ * value class Email(override val value: String) : Konstrained.Primitive.String<StringSchema> {
  *     override val schema = stringSchema { pattern = "^[^@]+@[^@]+$" }
  * }
  *
  * @JvmInline
- * value class RetryCount(val value: Int) : Konstrained<IntSchema> {
+ * value class RetryCount(override val value: Int) : Konstrained.Primitive.Int<IntSchema> {
  *     override val schema = intSchema { minimum = 0; maximum = 10 }
  * }
  * ```
@@ -46,7 +46,7 @@ import io.amichne.kontracts.schema.JsonSchema
  * A list of values validated against an element schema.
  * ```kotlin
  * @JvmInline
- * value class Tags(val values: List<String>) : Konstrained<ArraySchema<String>> {
+ * value class Tags(override val values: List<String>) : Konstrained.Array<ArraySchema<String>, String> {
  *     override val schema = arraySchema { elementSchema(stringSchema { minLength = 1 }) }
  * }
  * ```
@@ -64,11 +64,36 @@ import io.amichne.kontracts.schema.JsonSchema
  *   [io.amichne.kontracts.schema.BooleanSchema], [io.amichne.kontracts.schema.IntSchema],
  *   [io.amichne.kontracts.schema.DoubleSchema], [io.amichne.kontracts.schema.ArraySchema].
  */
-interface Konstrained<out S : JsonSchema<*>> {
+sealed interface Konstrained<out S : JsonSchema<*>> {
     /**
      * The schema defining the structure and validation rules for this custom type.
      *
      * Must be deterministic: the same schema value must be returned on every call.
      */
     val schema: S
+
+
+    sealed interface Primitive<S : JsonSchema<*>, V> : Konstrained<S> {
+        /**
+         * The single underlying value of this primitive type.
+         *
+         * Must be the only property of the implementing class, and its type must match the schema's backing type.
+         */
+        val value: V
+
+        interface Int<S : JsonSchema<*>> : Primitive<S, kotlin.Int>
+        interface String<S : JsonSchema<*>> : Primitive<S, kotlin.String>
+        interface Boolean<S : JsonSchema<*>> : Primitive<S, kotlin.Boolean>
+        interface Double<S : JsonSchema<*>> : Primitive<S, kotlin.Double>
+    }
+
+    interface Object<S : JsonSchema<*>> : Konstrained<S>
+    interface Array<S : JsonSchema<*>, E> : Konstrained<S> {
+        /**
+         * The list of values in this array type.
+         *
+         * Must be the only property of the implementing class, and its type must match the schema's backing type.
+         */
+        val values: List<E>
+    }
 }

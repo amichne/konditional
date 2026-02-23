@@ -14,7 +14,7 @@ data class RetryPolicy(
     val backoffMs: Double = 1000.0,
     val enabled: Boolean = true,
     val mode: String = "exponential",
-) : Konstrained<ObjectSchema> {
+) : Konstrained.Object<ObjectSchema> {
     override val schema: ObjectSchema =
         schema {
             ::maxAttempts of { minimum = 1 }
@@ -32,7 +32,7 @@ data class UserSettings(
     val notificationsEnabled: Boolean = true,
     val maxRetries: Int = 3,
     val timeout: Double = 30.0,
-) : Konstrained<ObjectSchema> {
+) : Konstrained.Object<ObjectSchema> {
     override val schema = schema {
         ::theme of {
             minLength = 1

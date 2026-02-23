@@ -9,6 +9,7 @@ import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.withType
 import org.gradle.plugins.signing.SigningExtension
+import java.util.Locale
 
 private val githubRepoRegex = Regex("github\\.com[:/](.+?)(\\.git)?$")
 
@@ -47,6 +48,30 @@ private fun Project.resolveProjectVersion(props: Map<String, *>): String =
         ?: (props["version"] as? String)
         ?: (props["VERSION"] as? String)
         ?: error("Missing project version property. Define 'version' in gradle.properties.")
+
+internal fun deriveModuleName(artifactId: String): String =
+    artifactId
+        .split('-', '_', '.')
+        .asSequence()
+        .map { it.trim() }
+        .filter { it.isNotBlank() }
+        .map { token ->
+            token.lowercase(Locale.ROOT)
+                .replaceFirstChar { char ->
+                    if (char.isLowerCase()) {
+                        char.titlecase(Locale.ROOT)
+                    } else {
+                        char.toString()
+                    }
+                }
+        }
+        .joinToString(separator = " ")
+
+internal fun deriveModuleDescription(moduleName: String, projectDescription: String?): String =
+    projectDescription
+        ?.trim()
+        ?.takeIf { it.isNotBlank() }
+        ?: "${moduleName.trim()} module"
 
 /**
  * Configures Maven publishing with complete POM metadata for a Konditional module.
