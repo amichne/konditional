@@ -41,6 +41,7 @@ import kotlin.reflect.full.primaryConstructor
  * at the language level.
  */
 @KonditionalInternalApi
+@Suppress("TooManyFunctions")
 object SchemaValueCodec {
 
     /**
@@ -111,6 +112,7 @@ object SchemaValueCodec {
      *   [ParseError.InvalidSnapshot] if construction fails.
      */
     @KonditionalInternalApi
+    @Suppress("ReturnCount")
     fun <T : Any> decodeKonstrainedPrimitive(kClass: KClass<T>, rawValue: Any): Result<T> {
         val constructor =
             kClass.primaryConstructor

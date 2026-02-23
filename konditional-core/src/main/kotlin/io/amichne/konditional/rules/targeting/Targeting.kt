@@ -131,6 +131,24 @@ sealed interface Targeting<in C : Context> {
         override fun specificity(): Int = inner.specificity()
     }
 
+    /**
+     * OR-disjunction of zero or more [Targeting] constraints.
+     *
+     * - Empty list never matches (annihilator element, dual of [All]'s identity).
+     * - [specificity] is the structural maximum of all branch specificities; pure,
+     *   no context required — consistent with the [specificity] contract.
+     * - Code-only: not serializable. Treated as opaque by projection helpers,
+     *   same as [Custom].
+     *
+     * @param targets Ordered list of constraints; any one must match.
+     */
+    data class AnyOf<C : Context>(
+        val targets: List<Targeting<C>>,
+    ) : Targeting<C> {
+        override fun matches(context: C): Boolean = targets.any { it.matches(context) }
+        override fun specificity(): Int = targets.maxOfOrNull { it.specificity() } ?: 0
+    }
+
     // -- Combinator ---------------------------------------------------------------
 
     /**
