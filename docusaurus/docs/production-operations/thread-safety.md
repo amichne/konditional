@@ -38,7 +38,7 @@ AppFeatures.load(newConfig)
 val value = AppFeatures.darkMode.evaluate(context)  // Sees old OR new, never mixed
 ```
 
-**What's guaranteed:**
+**What's guaranteed:** → [C-05](/theory/claims-registry#c-05)
 
 - Readers see either the **entire old** snapshot or the **entire new** snapshot
 - Readers **never** see a partially-applied configuration

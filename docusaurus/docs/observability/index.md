@@ -36,7 +36,7 @@ dependencies {
 
 ## Guarantees
 
-- **Guarantee**: Shadow evaluation does not alter production behavior.
+- **Guarantee**: Shadow evaluation does not alter production behavior. → [C-08](/theory/claims-registry#c-08)
 
 - **Mechanism**: The baseline registry is returned; the candidate registry is evaluated for comparison only.
 

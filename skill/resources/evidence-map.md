@@ -1,6 +1,6 @@
 # Konditional skill evidence map
 
-This map links claims in `/Users/amichne/code/konditional/skill/SKILL.md`
+This map links claims in `skill/SKILL.md`
 to repository signatures, source files, and tests.
 
 ## Claim links

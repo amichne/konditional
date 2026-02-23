@@ -1,6 +1,13 @@
+---
+title: Namespace Isolation
+sidebar_position: 3
+---
+
 # Namespace Isolation
 
 Why namespaces prevent collisions, how they enforce separation, and when to use multiple namespaces.
+
+Cross-document synthesis: [Verified Design Synthesis](/theory/verified-synthesis).
 
 ---
 
@@ -9,7 +16,7 @@ Why namespaces prevent collisions, how they enforce separation, and when to use 
 Without isolation, all flags share a single global registry:
 
 ```kotlin
-// X Global registry (all flags mixed together)
+// ✗ Global registry — all flags mixed together
 object GlobalFlags {
     val darkMode = flag("dark_mode")
     val paymentProcessing = flag("payment_processing")
@@ -19,10 +26,10 @@ object GlobalFlags {
 
 **Issues:**
 
-1. **Name collisions** - Two teams pick the same flag name
-2. **Coupled lifecycle** - Updating one domain's config affects others
-3. **Blast radius** - Configuration error in one domain breaks all domains
-4. **No governance** - Can't enforce team boundaries
+1. **Name collisions** — Two teams pick the same flag name
+2. **Coupled lifecycle** — Updating one domain's config affects all others
+3. **Blast radius** — A configuration error in one domain breaks everything
+4. **No governance** — Can't enforce team boundaries or independent deployment
 
 ---
 
@@ -44,10 +51,45 @@ object Payments : Namespace("payments") {
 
 **Guarantees:**
 
-1. **Separate registries** - `Auth` and `Payments` have independent `NamespaceRegistry` instances
-2. **Independent lifecycle** - Load/rollback/disable operations are scoped to one namespace
-3. **Failure isolation** - Parse error in `Auth` config doesn't affect `Payments`
-4. **No name collisions** - `Auth.socialLogin` and `Payments.socialLogin` can coexist
+1. **Separate registries** — `Auth` and `Payments` have independent `NamespaceRegistry` instances
+2. **Independent lifecycle** — Load/rollback/disable operations are scoped to one namespace
+3. **Failure isolation** — Parse error in `Auth` config doesn't affect `Payments`
+4. **No name collisions** — `Auth.socialLogin` and `Payments.socialLogin` can coexist
+
+---
+
+## Isolation Boundary Diagram
+
+```mermaid
+flowchart TB
+    subgraph AuthNS["Namespace: auth"]
+        direction TB
+        AR["Auth Registry<br>AtomicReference"]
+        AF1["socialLogin<br>Feature&lt;Boolean&gt;"]
+        AF2["twoFactorAuth<br>Feature&lt;Boolean&gt;"]
+        AR --> AF1
+        AR --> AF2
+    end
+
+    subgraph PayNS["Namespace: payments"]
+        direction TB
+        PR["Payments Registry<br>AtomicReference"]
+        PF1["applePay<br>Feature&lt;Boolean&gt;"]
+        PF2["stripeIntegration<br>Feature&lt;Boolean&gt;"]
+        PR --> PF1
+        PR --> PF2
+    end
+
+    AuthJSON[Auth Config JSON] -->|ParseResult| AR
+    PayJSON[Payments Config JSON] -->|ParseResult| PR
+
+    AuthFail([Auth parse failure]) -.->|scoped to Auth| AR
+    AuthFail -.->|no effect| PR
+
+    style AuthFail fill:#ffcccc
+```
+
+An `Auth` parse failure has no path to the `Payments` registry. Isolation is enforced by construction.
 
 ---
 
@@ -67,21 +109,21 @@ This is why namespaces are operationally safe: isolation is enforced by construc
 
 Each feature has:
 
-- `Feature.key: String` - the logical key (typically the Kotlin property name)
-- `Feature.id: FeatureId` - the stable, serialized identifier used at the JSON boundary
+- `Feature.key: String` — the logical key (the Kotlin property name)
+- `Feature.id: FeatureId` — the stable, serialized identifier used at the JSON boundary
 
 `FeatureId` is encoded as:
 
-```kotlin
-feature::${namespaceIdentifierSeed}::${featureKey}
+```
+feature::{namespaceIdentifierSeed}::{featureKey}
 ```
 
 **Example:**
 
-- `Auth.socialLogin.id` -> `"feature::auth::socialLogin"`
-- `Payments.socialLogin.id` -> `"feature::payments::socialLogin"`
+- `Auth.socialLogin.id` → `"feature::auth::socialLogin"`
+- `Payments.socialLogin.id` → `"feature::payments::socialLogin"`
 
-**Guarantee:** Features with the same `key` but different namespaces have different `id`s (no collisions).
+**Guarantee:** Features with the same `key` but different namespaces have different `id`s — no collisions.
 
 ---
 
@@ -105,8 +147,8 @@ object Payments : Namespace("payments") {
 }
 ```
 
-**Type safety:** `Auth.socialLogin` and `Payments.socialLogin` are different types, which lets you build strongly typed
-APIs that accept features from a specific namespace.
+`Auth.socialLogin` and `Payments.socialLogin` are different types at the Kotlin level. You can build strongly-typed
+APIs that accept features only from a specific namespace.
 
 ---
 
@@ -118,8 +160,8 @@ APIs that accept features from a specific namespace.
 val authConfig = ConfigurationSnapshotCodec.decode(authJson).getOrThrow()
 val paymentConfig = ConfigurationSnapshotCodec.decode(paymentJson).getOrThrow()
 
-Auth.load(authConfig)      // Only affects Auth registry
-Payments.load(paymentConfig)  // Only affects Payments registry
+Auth.load(authConfig)       // Only affects Auth registry
+Payments.load(paymentConfig) // Only affects Payments registry
 ```
 
 ### Rollback
@@ -146,20 +188,16 @@ Auth.disableAll()  // Only Auth evaluations return defaults
 val authJson = """{ "invalid": true }"""
 val paymentJson = """{ "valid": "config" }"""
 
-val result = NamespaceSnapshotLoader(Auth).load(authJson)
-when {
-    result.isFailure -> {
-        // Auth parse failed
-        logger.error("Auth config parse failed: ${result.parseErrorOrNull()}")
+when (val result = NamespaceSnapshotLoader(Auth).load(authJson)) {
+    is ParseResult.Failure -> {
+        logger.error("Auth config parse failed: ${result.error}")
         // Auth uses last-known-good config
     }
 }
 
-val result = NamespaceSnapshotLoader(Payments).load(paymentJson)
-when {
-    result.isSuccess -> {
-        // Payments config loaded successfully
-        // Payments is unaffected by Auth parse failure
+when (val result = NamespaceSnapshotLoader(Payments).load(paymentJson)) {
+    is ParseResult.Success -> {
+        // Payments loaded successfully — unaffected by Auth parse failure
     }
 }
 ```
@@ -186,11 +224,7 @@ sealed class TeamDomain(id: String) : Namespace(id) {
 }
 ```
 
-**Benefits:**
-
-- Recommendations team owns `recommendations` namespace
-- Search team owns `search` namespace
-- No coordination required for config updates
+Each team owns their namespace. Config updates don't require cross-team coordination.
 
 ### Use Case 2: Different Update Frequencies
 
@@ -204,12 +238,9 @@ object InfrastructureFlags : Namespace("infrastructure") {
 }
 ```
 
-**Benefits:**
+Experiment config changes don't risk infrastructure stability.
 
-- Experiment config changes don't risk infrastructure stability
-- Infrastructure config has higher review standards
-
-### Use Case 3: Failure Isolation
+### Use Case 3: Failure Blast Radius
 
 ```kotlin
 object CriticalPath : Namespace("critical") {
@@ -221,10 +252,7 @@ object Analytics : Namespace("analytics") {
 }
 ```
 
-**Benefits:**
-
-- Analytics config error doesn't affect payment processing
-- Critical path config has higher SLA
+An analytics config error cannot affect payment processing.
 
 ---
 
@@ -238,10 +266,8 @@ object AuthTwoFactor : Namespace("auth-two-factor")
 object AuthPasswordReset : Namespace("auth-password-reset")
 ```
 
-**Issues:**
-
-- Too many namespaces increase complexity
-- No real benefit to isolation (all owned by Auth team)
+**Issues:** Too many namespaces increase operational complexity with no isolation benefit — all are owned by the same
+team and updated together.
 
 **Better:**
 
@@ -267,12 +293,9 @@ sealed class AppDomain(id: String) : Namespace(id) {
 }
 ```
 
-**Benefits:**
+All namespaces are discoverable (sealed = exhaustive). The compiler prevents unknown namespaces.
 
-- All namespaces are discoverable (sealed = exhaustive)
-- Compiler prevents unknown namespaces
-
-### Pattern 2: Team Ownership via Package Structure
+### Pattern 2: Package Structure
 
 ```
 com.example.teams.auth.AuthFeatures : Namespace("auth")
@@ -280,27 +303,33 @@ com.example.teams.payments.PaymentFeatures : Namespace("payments")
 com.example.teams.analytics.AnalyticsFeatures : Namespace("analytics")
 ```
 
-**Benefits:**
-
-- Package structure mirrors team structure
-- Code ownership via CODEOWNERS file
+Package structure mirrors team structure. Code ownership is enforced via CODEOWNERS.
 
 ---
 
 ## Formal Properties
 
-| Property                     | Mechanism                               | Guarantee                                          |
-|------------------------------|-----------------------------------------|----------------------------------------------------|
-| **No identifier collisions** | `FeatureId` includes namespace seed     | `Auth.socialLogin.id` != `Payments.socialLogin.id` |
-| **Separate state**           | Different `NamespaceRegistry` instances | Updating Auth doesn't affect Payments              |
-| **Independent lifecycle**    | Operations scoped to namespace          | `Auth.load(...)` only affects Auth                 |
-| **Failure isolation**        | Parse errors scoped to namespace        | Auth parse failure doesn't break Payments          |
-| **Type binding**             | `Feature<*, *, M>` is namespace-bound   | Lets you build APIs constrained to `M`             |
+| Property | Mechanism | Guarantee |
+|---|---|---|
+| **No identifier collisions** | `FeatureId` includes namespace seed | `Auth.socialLogin.id` ≠ `Payments.socialLogin.id` |
+| **Separate state** | Different `NamespaceRegistry` instances | Updating Auth doesn't affect Payments |
+| **Independent lifecycle** | Operations scoped to namespace | `Auth.load(...)` only affects Auth |
+| **Failure isolation** | Parse errors scoped to namespace | Auth parse failure doesn't break Payments |
+| **Type binding** | `Feature<*, *, M>` is namespace-bound | Lets you build APIs constrained to namespace `M` |
+
+---
+
+## Test Evidence
+
+| Test | Evidence |
+|---|---|
+| `NamespaceLinearizabilityTest` | Concurrent operations preserve per-namespace atomic state transitions. |
+| `NamespaceFeatureDefinitionTest` | Feature declarations remain scoped to their owning namespace. |
 
 ---
 
 ## Next Steps
 
-- [Fundamentals: Core Primitives](/learn/core-primitives) - Namespace primitive
-- [Runtime: Operations](/runtime/operations) - Lifecycle API
-- [Serialization Reference](/serialization/reference) - JSON boundaries
+- [Guide: Namespace per Team](/guides/namespace-per-team) — Team ownership patterns
+- [Concept: Namespaces](/concepts/namespaces) — Core namespace primitive
+- [Theory: Atomicity Guarantees](/theory/atomicity-guarantees) — Per-namespace atomic state

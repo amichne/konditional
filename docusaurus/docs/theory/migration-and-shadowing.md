@@ -1,3 +1,8 @@
+---
+title: Migration and Shadowing
+sidebar_position: 6
+---
+
 # Migration and Shadowing
 
 How `evaluateWithShadow` enables safe comparisons between two Konditional configurations.
@@ -21,8 +26,8 @@ results as the old system.
 **Issues:**
 
 - No advance warning of mismatches
-- Production is the first test
-- Rollback is reactive (damage may already be done)
+- Production is the first real test
+- Rollback is reactive — damage may already be done
 
 ---
 
@@ -32,9 +37,8 @@ results as the old system.
 affecting production.
 
 ```kotlin
-val baselineValue = feature.evaluate(context)  // Returned to caller
-
-val candidateValue = evaluateAgainstCandidateConfig(feature, context)  // For comparison only
+val baselineValue = feature.evaluate(context)          // Returned to caller
+val candidateValue = feature.evaluate(context, candidateRegistry)  // For comparison only
 
 if (baselineValue != candidateValue) {
     logMismatch(feature, context, baselineValue, candidateValue)
@@ -47,11 +51,34 @@ return baselineValue  // Production uses baseline
 
 ---
 
+## Shadow Evaluation Flow
+
+```mermaid
+flowchart TD
+    A(["evaluateWithShadow<br>context C, candidate R"]) --> B["Evaluate against<br>baseline registry"]
+    B --> C[baselineValue]
+    A --> D{"Baseline<br>kill-switch?"}
+    D -->|"disabled and<br>skipCandidateWhenDisabled"| E["return baselineValue<br>no candidate eval"]
+    D -->|active| F["Evaluate against<br>candidate registry"]
+    F --> G[candidateValue]
+    C --> H{"baseline ==<br>candidate?"}
+    G --> H
+    H -->|match| I[return baselineValue]
+    H -->|mismatch| J["onMismatch callback<br>ShadowMismatch record"]
+    J --> I
+
+    style I fill:#ccffcc
+    style J fill:#ffeecc
+    style E fill:#f0f0f0
+```
+
+Baseline value is always returned to the caller. Candidate evaluation only feeds the mismatch signal.
+
+---
+
 ## Konditional's Shadow API
 
 ### `evaluateWithShadow(context, candidateRegistry, ...): T`
-
-Evaluate against baseline (returned) and candidate (comparison only):
 
 ```kotlin
 val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow()
@@ -64,19 +91,21 @@ val value = AppFeatures.darkMode.evaluateWithShadow(
     candidateRegistry = candidateRegistry,
     onMismatch = { mismatch ->
         logger.warn(
-            "shadowMismatch key=${mismatch.featureKey} kinds=${mismatch.kinds} baseline=${mismatch.baseline.value} candidate=${mismatch.candidate.value} stableId=${context.stableId.id}",
+            "shadowMismatch key=${mismatch.featureKey} kinds=${mismatch.kinds} " +
+            "baseline=${mismatch.baseline.value} candidate=${mismatch.candidate.value} " +
+            "stableId=${context.stableId.id}",
         )
     },
 )
 
-// value is from the baseline registry (production unchanged)
+// value is from the baseline registry — production unchanged
 applyDarkMode(value)
 ```
 
 **Behavior:**
 
-1. Evaluate against baseline registry -> `baselineValue` (returned)
-2. Evaluate against candidate registry -> `candidateValue` (comparison only)
+1. Evaluate against baseline registry → `baselineValue` (returned)
+2. Evaluate against candidate registry → `candidateValue` (comparison only)
 3. If they differ, invoke the `onMismatch` callback
 4. Return `baselineValue` (production unaffected)
 
@@ -84,10 +113,7 @@ applyDarkMode(value)
 
 ## Use Case 1: Configuration Changes
 
-You want to update ramp-up percentages or targeting criteria. Before rolling out, validate that the new config produces
-expected results.
-
-### Example: Increasing Ramp-Up
+You want to increase a ramp-up percentage. Before rolling out, validate the new config produces expected results.
 
 **Current config:**
 
@@ -116,62 +142,51 @@ val newFeature by boolean<Context>(default = false) {
 **Shadow evaluation:**
 
 ```kotlin
-val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow()
-val candidateRegistry = InMemoryNamespaceRegistry(namespaceId = AppFeatures.namespaceId).apply {
-    load(candidateConfig)
-}
-
-// Evaluate sample of users
 users.forEach { user ->
-    val ctx = buildContext(user)
-
-    AppFeatures.newFeature.evaluateShadow(
-        context = ctx,
+    AppFeatures.newFeature.evaluateWithShadow(
+        context = buildContext(user),
         candidateRegistry = candidateRegistry,
         onMismatch = { mismatch ->
             logger.info(
-                "User ${user.id}: baseline=${mismatch.baseline.value} candidate=${mismatch.candidate.value} kinds=${mismatch.kinds}",
+                "User ${user.id}: baseline=${mismatch.baseline.value} " +
+                "candidate=${mismatch.candidate.value} kinds=${mismatch.kinds}",
             )
         },
     )
 }
 ```
 
-**Analysis:**
-
-- Users with `baseline=false, candidate=true` -> will be newly enabled by the candidate config
-- Verify this matches the expected 15% increase (10% -> 25%)
+Users with `baseline=false, candidate=true` will be newly enabled by the candidate. Verify this matches the expected
+15% increase before promoting.
 
 ---
 
 ## Use Case 2: Migration Between Flag Systems
 
-You're migrating from another flag system to Konditional. You want to verify that Konditional produces the same results
-as the old system.
+You're migrating from another flag system to Konditional. You want to verify Konditional produces the same results as
+the old system.
 
 ### Migration Flow
 
-1. **Define flags in Konditional** (statically)
-2. **Translate "old system" state into a baseline snapshot** (via JSON)
-3. **Build a candidate snapshot** (the new desired behavior)
-4. **Log mismatches**, investigate differences
-5. **Once confident**, promote the candidate snapshot
-6. **Monitor for regressions**
-7. **Decommission old system**
-
-### Example
+```mermaid
+flowchart LR
+    A["Define flags<br>in Konditional"] --> B["Translate old state<br>into baseline snapshot"]
+    B --> C["Build candidate<br>snapshot"]
+    C --> D["Shadow evaluate<br>log mismatches"]
+    D --> E{"Mismatch rate<br>acceptable?"}
+    E -->|no| F["Investigate and<br>revise candidate"]
+    F --> D
+    E -->|yes| G["Promote candidate<br>to baseline"]
+    G --> H["Monitor for<br>regressions"]
+    H --> I["Decommission<br>old system"]
+```
 
 ```kotlin
-// If you can translate the "old system" state into a Konditional snapshot, you can compare
-// two registries side-by-side without changing production behavior:
-val baselineConfig = ConfigurationSnapshotCodec.decode(baselineJson).getOrThrow()
-val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow()
-
 val baselineRegistry = InMemoryNamespaceRegistry(namespaceId = AppFeatures.namespaceId).apply {
-    load(baselineConfig)
+    load(ConfigurationSnapshotCodec.decode(baselineJson).getOrThrow())
 }
 val candidateRegistry = InMemoryNamespaceRegistry(namespaceId = AppFeatures.namespaceId).apply {
-    load(candidateConfig)
+    load(ConfigurationSnapshotCodec.decode(candidateJson).getOrThrow())
 }
 
 val value = AppFeatures.darkMode.evaluateWithShadow(
@@ -179,18 +194,15 @@ val value = AppFeatures.darkMode.evaluateWithShadow(
     candidateRegistry = candidateRegistry,
     baselineRegistry = baselineRegistry,
     onMismatch = { m ->
-        logger.error("Migration mismatch baseline=${m.baseline.value} candidate=${m.candidate.value} kinds=${m.kinds}")
+        logger.error(
+            "Migration mismatch baseline=${m.baseline.value} " +
+            "candidate=${m.candidate.value} kinds=${m.kinds}",
+        )
     },
 )
 
 applyDarkMode(value)
 ```
-
-**Progression:**
-
-- **Phase 1:** Baseline vs candidate comparison (log mismatches)
-- **Phase 2:** Candidate becomes baseline (optional continued shadowing)
-- **Phase 3:** Decommission old system
 
 ---
 
@@ -206,21 +218,13 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithShadow(
     options: ShadowOptions = ShadowOptions.defaults(),
     onMismatch: (ShadowMismatch<T>) -> Unit,
 ): T {
-    val baseline = evaluateInternalApi(
-        context,
-        baselineRegistry,
-        mode = Metrics.Evaluation.EvaluationMode.NORMAL,
-    ) // internal EvaluationDiagnostics<T>
+    val baseline = explain(context, baselineRegistry)  // EvaluationResult<T>
 
     if (baselineRegistry.isAllDisabled && !options.evaluateCandidateWhenBaselineDisabled) {
         return baseline.value
     }
 
-    val candidate = evaluateInternalApi(
-        context,
-        candidateRegistry,
-        mode = Metrics.Evaluation.EvaluationMode.SHADOW,
-    ) // internal EvaluationDiagnostics<T>
+    val candidate = explain(context, candidateRegistry)  // EvaluationResult<T>
     if (baseline.value != candidate.value) {
         onMismatch(
             ShadowMismatch(
@@ -238,29 +242,36 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithShadow(
 
 **Guarantees:**
 
-1. Baseline value is returned (production behavior unchanged)
+1. Baseline value is always returned — production behavior unchanged
 2. Candidate evaluation does not affect the returned result
-3. Mismatch callback runs inline; keep it lightweight
+3. Mismatch callback runs inline — keep it lightweight
+
+---
+
+## Mismatch Types
+
+| Mismatch Kind | Description |
+|---|---|
+| `VALUE` | Baseline and candidate return different values |
+| `DECISION` | Decision category differs (when decision mismatch reporting is enabled) |
+
+Start with `VALUE` mismatch reporting only. Add `DECISION` once the value delta is resolved.
 
 ---
 
 ## Performance Considerations
 
-### Overhead
+Shadow evaluation is two evaluations plus mismatch object creation:
 
-Shadow evaluation doubles the evaluation work:
-
-- Baseline evaluation: ~O(n) where n = rules per flag
-- Candidate evaluation: ~O(n) where n = rules per flag
-- Total: ~O(2n)
+- Baseline: O(n) rules
+- Candidate: O(n) rules
+- Total: O(2n) + callback overhead
 
 **Mitigations:**
 
-1. **Sampling** - Only shadow-evaluate a percentage of requests
-2. **Async logging** - `onMismatch` callback should be non-blocking
-3. **Time-boxing** - Run shadow evaluation for limited time period (e.g., 24 hours)
-
-### Example: Sampled Shadow Evaluation
+1. **Sampling** — Only shadow-evaluate a percentage of requests
+2. **Async logging** — `onMismatch` should be non-blocking
+3. **Time-boxing** — Run shadow evaluation for a limited period (e.g., 24 hours)
 
 ```kotlin
 val shouldShadow = Random.nextDouble() < 0.10  // 10% sampling
@@ -271,7 +282,8 @@ val value = if (shouldShadow) {
         candidateRegistry = candidateRegistry,
         onMismatch = { mismatch ->
             logger.warn(
-                "shadowMismatch key=${mismatch.featureKey} kinds=${mismatch.kinds} baseline=${mismatch.baseline.value} candidate=${mismatch.candidate.value}",
+                "shadowMismatch key=${mismatch.featureKey} kinds=${mismatch.kinds} " +
+                "baseline=${mismatch.baseline.value} candidate=${mismatch.candidate.value}",
             )
         },
     )
@@ -282,34 +294,28 @@ val value = if (shouldShadow) {
 
 ---
 
-## Mismatch Analysis
+## Common Causes of Mismatches
 
-### Common Causes of Mismatches
+| Cause | Description |
+|---|---|
+| Ramp-up percentage changed | Users move in/out of partial rollout |
+| Targeting criteria changed | Rules match different users |
+| Rule ordering changed | Different rule wins due to specificity |
+| Salt changed | Bucket assignment redistributed |
+| Configuration drift | Candidate config is stale or incomplete |
 
-1. **Ramp-up percentage changed** - Users move in/out of ramp-up
-2. **Targeting criteria changed** - Rules match different users
-3. **Rule ordering changed** - Different rule wins due to specificity
-4. **Salt changed** - Bucket assignment redistributed
-5. **Configuration drift** - Candidate config is stale
+---
 
-### Debugging Mismatches
+## Test Evidence
 
-```kotlin
-AppFeatures.darkMode.evaluateWithShadow(
-    context = context,
-    candidateRegistry = candidateRegistry,
-    onMismatch = { m ->
-        logger.error(
-            "Mismatch detected baseline=${m.baseline.value} candidate=${m.candidate.value} baselineDecision=${m.baseline.decision::class.simpleName} candidateDecision=${m.candidate.decision::class.simpleName} stableId=${context.stableId.id}",
-        )
-    },
-)
-```
+| Test | Evidence |
+|---|---|
+| `KillSwitchTest` | Baseline safety controls remain authoritative during rollout/migration workflows. |
 
 ---
 
 ## Next Steps
 
-- [Shadow Evaluation](/observability/shadow-evaluation) - Practical migration patterns
-- [Observability Reference](/observability/reference) - `evaluateWithShadow` API
-- [Core API Reference](/core/reference) - Evaluation baseline
+- [Guide: Migration from Legacy](/guides/migration-from-legacy) — Step-by-step migration patterns
+- [Guide: Enterprise Adoption](/guides/enterprise-adoption) — Enterprise rollout strategy
+- [Concept: Configuration Lifecycle](/concepts/configuration-lifecycle) — Lifecycle and rollback

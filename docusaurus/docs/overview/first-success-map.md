@@ -1,31 +1,41 @@
-# First success map
+---
+title: First Success Map
+sidebar_position: 4
+---
 
-Use this path to get one production-safe outcome quickly: typed declaration,
-deterministic rollout behavior, and safe snapshot ingestion
-[CLM-PR01-04A].
+# First Success Map
 
-## Step 1: define the first namespace feature
+Pick the shortest path to your first measurable outcome.
 
-Create a namespace and define one typed feature value to establish compile-time
-contracts for evaluation [CLM-PR01-04A].
+<span id="claim-clm-pr01-04a"></span>
+The first-success routes map to concrete runtime APIs for deterministic bucketing and namespace snapshot loading.
 
-## Step 2: add deterministic ramp-up
+```mermaid
+flowchart TD
+  A[What do you need first?] --> B[I want to try it now]
+  A --> C[I want to understand the model]
+  A --> D[I need to convince my team]
+  A --> E[I need formal guarantees]
 
-Use stable bucketing semantics for controlled rollout so a user stays in a
-stable cohort for the same rollout inputs [CLM-PR01-04A].
+  B --> B1[/quickstart/]
+  C --> C1[/concepts/]
+  D --> D1[/overview/why-typed-flags/]
+  D --> D2[/overview/competitive-positioning/]
+  E --> E1[/theory/]
 
-## Step 3: load snapshots through boundary-safe APIs
+  B1 --> X[RampUpBucketing + NamespaceSnapshotLoader]
+  C1 --> X
+```
 
-Use the snapshot loader to materialize runtime config through explicit
-result-based parsing [CLM-PR01-04A].
+## Route Guide
 
-## Step 4: verify end-to-end
+1. Try it quickly: [Quickstart](/quickstart/).
+2. Build shared mental model: [Concepts](/concepts/namespaces).
+3. Build adoption case: [Why Typed Flags](/overview/why-typed-flags) and [Competitive Positioning](/overview/competitive-positioning).
+4. Validate guarantees: [Theory](/theory/type-safety-boundaries).
 
-Run the quickstart verification checklist to confirm deterministic evaluation,
-boundary behavior, and runtime operation linkage [CLM-PR01-04A].
+## Claim Coverage
 
-## Claim citations
-
-| Claim ID | Explicit claim | Local evidence linkage | Registry link |
-|---|---|---|---|
-| CLM-PR01-04A | The first-success routes correspond to concrete runtime APIs for ramp-up and snapshot loading. | `#step-3-load-snapshots-through-boundary-safe-apis` | `/reference/claims-registry#clm-pr01-04a` |
+| Claim ID | Statement |
+| --- | --- |
+| CLM-PR01-04A | The first-success routes correspond to concrete runtime APIs for ramp-up and snapshot loading. |

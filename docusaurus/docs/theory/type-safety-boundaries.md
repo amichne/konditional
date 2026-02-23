@@ -1,6 +1,13 @@
+---
+title: Type Safety Boundaries
+sidebar_position: 1
+---
+
 # Type Safety Boundaries
 
 Where compile-time guarantees end and runtime validation begins.
+
+Cross-document synthesis: [Verified Design Synthesis](/theory/verified-synthesis).
 
 ---
 
@@ -10,7 +17,7 @@ Where compile-time guarantees end and runtime validation begins.
 
 > For **statically-defined** flags and rules, the compiler enforces type correctness and evaluation is non-null. When
 > configuration crosses the JSON boundary,
-> correctness is established via **validation** and explicit error handling (`Result`), not via compile-time
+> correctness is established via **parsing** and explicit error handling (`ParseResult`), not via compile-time
 > guarantees.
 
 ---
@@ -32,43 +39,43 @@ object AppFeatures : Namespace("app") {
 **Compile-time checks:**
 
 1. **Property name = feature key**
-````kotlin
-   AppFeatures.darkMode.evaluate(context)  // OK Property exists
-   // AppFeatures.darkMood.evaluate(context)  // X Compile error
-````
+   ```kotlin
+   AppFeatures.darkMode.evaluate(context)  // OK — property exists
+   // AppFeatures.darkMood.evaluate(context)  // ✗ Compile error
+   ```
 
 2. **Type propagation**
-````kotlin
+   ```kotlin
    val enabled: Boolean = AppFeatures.darkMode.evaluate(context)  // OK
-   // val enabled: String = AppFeatures.darkMode.evaluate(context)  // X Type mismatch
-````
+   // val enabled: String = AppFeatures.darkMode.evaluate(context)  // ✗ Type mismatch
+   ```
 
 3. **Rule return types match feature type**
-````kotlin
+   ```kotlin
    val timeout by double<Context>(default = 30.0) {
        rule(45.0) { platforms(Platform.ANDROID) }  // OK
-       // rule("invalid") { platforms(Platform.IOS) }  // X Type mismatch
+       // rule("invalid") { platforms(Platform.IOS) }  // ✗ Type mismatch
    }
-````
+   ```
 
 4. **Required defaults**
-````kotlin
+   ```kotlin
    val feature by boolean<Context>(default = false)  // OK
-   // val feature by boolean<Context>()  // X Compile error: default required
-````
+   // val feature by boolean<Context>()  // ✗ Compile error: default required
+   ```
 
 5. **Context type constraints**
-````kotlin
+   ```kotlin
    val PREMIUM by boolean<EnterpriseContext>(default = false) {
        rule(true) { extension { subscriptionTier == SubscriptionTier.ENTERPRISE } }
    }
 
    val ctx: EnterpriseContext = buildContext()
-   PREMIUM(ctx)  // OK
+   PREMIUM.evaluate(ctx)  // OK
 
    val basicCtx: Context = Context(...)
-   // PREMIUM(basicCtx)  // X Compile error
-````
+   // PREMIUM.evaluate(basicCtx)  // ✗ Compile error
+   ```
 
 ### Mechanism: Property Delegation + Generics
 
@@ -90,199 +97,133 @@ fun <C : Context> Namespace.boolean(
 
 **Type flow:**
 
-1. `boolean<Context>(default = false)` -> `BooleanFeatureDelegate<Context>`
+1. `boolean<Context>(default = false)` → `BooleanFeatureDelegate<Context>`
 2. Delegate returns `Feature<Boolean, Context, Namespace>`
 3. Property type is inferred: `Feature<Boolean, Context, Namespace>`
-4. `feature(context: Context)` returns `Boolean`
-
-**Compile-time safety:** The type parameter `T` flows from definition to usage without casts.
+4. `feature.evaluate(context: Context)` returns `Boolean`
 
 ---
 
-## Runtime Domain
-
-### What the Compiler Cannot Guarantee
-
-When configuration comes from JSON:
-
-```json
-{
-  "flags": [
-    {
-      "key": "feature::app::darkMode",
-      "defaultValue": { "type": "BOOLEAN", "value": false },
-      "rules": [ ... ]
-    }
-  ]
-}
-```
-
-**Compile-time limits:**
-
-1. **JSON syntax** - Compiler can't validate JSON strings
-2. **Schema correctness** - Compiler can't check JSON structure
-3. **Type correctness** - Compiler can't verify JSON types match Kotlin types
-4. **Feature existence** - Compiler can't verify referenced features are registered
-
-### Mechanism: Runtime Validation via Result
-
-```kotlin
-val result = ConfigurationSnapshotCodec.decode(json, AppFeatures.compiledSchema())
-when {
-    result.isSuccess -> {
-        // JSON is valid, types match, features exist
-        val config: Configuration = result.getOrNull()!!
-        AppFeatures.load(config)
-    }
-    result.isFailure -> {
-        // Validation failed, specific error type
-        when (val error = result.parseErrorOrNull()) {
-            is ParseError.InvalidJson -> logError("Malformed JSON")
-            is ParseError.FeatureNotFound -> logError("Unknown feature: ${error.key}")
-            is ParseError.InvalidSnapshot -> logError("Snapshot shape/type mismatch: ${error.reason}")
-        }
-    }
-}
-```
-
-**Runtime checks:**
-
-1. **JSON parsing** - Moshi parses JSON into the snapshot model
-2. **Feature lookup** - Each `FeatureId` is resolved to a registered `Feature` (or fails with
-   `ParseError.FeatureNotFound`)
-3. **Type decoding** - Tagged values (`defaultValue` and rule `value`) are decoded into the declared Kotlin types (or
-   fail with `ParseError.InvalidSnapshot`)
-4. **Structured value validation** - For `Konstrained` values, payloads are
-   validated against the declared Kontracts schema at the boundary
-
-- **Boundary**: Manually constructing `Configuration` bypasses these checks; treat it as trusted input.
-
-- **Guarantee**: Application code does not construct JSON literals via a Konditional JSON value model.
-- **Mechanism**: JSON is parsed into the snapshot model and decoded into Kotlin
-  values; structured values validate against object, primitive, or array
-  schemas declared by `Konstrained`.
-- **Boundary**: This guarantee applies to Konditional's public API; `kontracts` may still expose a runtime JSON model
-  for standalone use.
-
----
-
-## The Cutover Point
+## Where the Boundary Is
 
 ```mermaid
 flowchart LR
-    Code["Statically-defined flags"] --> CT["Compile-time guarantees"]
-    CT --> Eval1["Type-safe evaluation"]
+    A["Kotlin Source<br>Flag Declarations"] -->|compile-time safe| B["Feature&lt;T,C,M&gt;"]
+    B -->|"evaluate<br>returns T"| C[Typed Value]
 
-    JSON["JSON payload"] --> RT["Runtime validation"]
-    RT -->|Success| Config["Valid Configuration"]
-    RT -->|Failure| Reject["Reject before evaluation"]
-    Config --> Eval2["Type-safe evaluation"]
-
-    style CT fill:#e1f5ff
-    style RT fill:#fff3cd
-    style Reject fill:#ffcdd2
+    D["Remote JSON<br>Configuration"] -->|untrusted| E["ConfigurationSnapshotCodec<br>.decode"]
+    E -->|ParseResult.Success| F["Configuration<br>Snapshot"]
+    E -->|ParseResult.Failure| G["ParseError<br>typed rejection"]
+    F -->|Namespace.load| B
 ```
 
-**Key insight:** Once JSON passes runtime validation and becomes a `Configuration`, it re-enters the compile-time
-domain (evaluation is type-safe).
+**Left side (compile-time):** Flag declarations bind key, value type, and context type at compile time. Evaluation
+returns `T` without casts.
+
+**Right side (parse-time):** JSON is untrusted. `ConfigurationSnapshotCodec.decode(...)` either produces a valid
+`Configuration` or a typed `ParseError`. No invalid state crosses this boundary.
 
 ---
 
-## Why This Boundary Exists
+## Runtime Domain: The JSON Trust Boundary
 
-### Fundamental Limitation: Rice's Theorem
-
-Rice's Theorem states that all non-trivial semantic properties of programs are undecidable. In practical terms:
-
-**The compiler cannot verify:**
-
-- Whether a JSON string contains valid syntax (requires parsing)
-- Whether a JSON object matches a schema (requires runtime checking)
-- Whether referenced features exist (requires runtime registry lookup)
-
-**Solution:** Move these checks to runtime with explicit error handling (`Result`).
-
-### Trade-Off: Flexibility vs Safety
-
-**Option 1: No remote configuration (all compile-time)**
-
-- OK Maximum safety
-- X No dynamic updates (requires redeployment)
-
-**Option 2: Untyped remote configuration**
-
-- OK Maximum flexibility
-- X No safety (runtime errors)
-
-**Konditional's approach: Validated boundary**
-
-- OK Type-safe static definitions
-- OK Dynamic updates via JSON
-- OK Explicit validation at boundary
-- OK Invalid JSON rejected before affecting evaluation
-
----
-
-## Comparison: Konditional vs Traditional Systems
-
-### Traditional Stringly-Typed Flags
+### What the JSON Boundary Does
 
 ```kotlin
-// X No compile-time checks
-val enabled = flagClient.getBool("new_onboaring_flow", false)  // Typo ships to prod
-val timeout = flagClient.getInt("timeout", 30)  // Type coercion can fail silently
-```
+val json: String = fetchRemoteConfig()  // Untrusted
 
-**Issues:**
-
-- Typos are runtime errors (or silent failures)
-- Type mismatches are runtime errors
-- No compile-time verification
-
-### Konditional (Statically-Defined)
-
-```kotlin
-// OK Compile-time checks
-val enabled = AppFeatures.newOnboardingFlow.evaluate(context)  // Typo is compile error
-// AppFeatures.newOnboaringFlow  // X Compile error
-```
-
-### Konditional (JSON-Loaded)
-
-```kotlin
-// OK Runtime validation with explicit error handling
-val result = ConfigurationSnapshotCodec.decode(json, AppFeatures.compiledSchema())
-when {
-    result.isSuccess -> {
-        // Type-safe from here on
-        val enabled = AppFeatures.newOnboardingFlow.evaluate(context)
+when (val result = ConfigurationSnapshotCodec.decode(json)) {
+    is ParseResult.Success -> {
+        val config: Configuration = result.value  // Trusted typed model
+        AppFeatures.load(config)
     }
-    result.isFailure -> {
-        // Invalid JSON rejected, last-known-good remains active
-        logError(result.parseErrorOrNull()?.message)
+    is ParseResult.Failure -> {
+        // Invalid JSON rejected — last-known-good remains active
+        logError(result.error.message)
     }
 }
 ```
 
+**After `decode` succeeds:**
+
+- `config` is a typed `Configuration` — no raw strings, no unvalidated fields
+- Evaluation of any flag against this config is type-safe
+
+**If `decode` fails:**
+
+- Returns `ParseResult.Failure` with a precise `ParseError`
+- No partial state enters the runtime
+- The previously active snapshot is unchanged
+
+### What Remains Runtime-Only
+
+These cannot be checked at compile time and are enforced by parsing:
+
+| Concern | Mechanism |
+|---|---|
+| JSON field presence | `ParseResult.Failure` if required fields missing |
+| Value type matching | Type-aware codec rejects mismatches |
+| Schema version compatibility | Codec validates structure before loading |
+| Rule value types | Decoded values checked against declared feature types |
+
 ---
 
-## The Contract
+## Type Safety Summary
 
-| Aspect                       | Compile-Time                              | Runtime                          |
-|------------------------------|-------------------------------------------|----------------------------------|
-| **Flag definitions**         | Type-checked                              | N/A (defined in code)            |
-| **Rule return types**        | Type-checked                              | Validated at parse               |
-| **Property access**          | Compile error on typo                     | N/A (properties defined in code) |
-| **Context types**            | Compile-time constraint                   | N/A (types defined in code)      |
-| **JSON syntax**              | N/A (compiler can't parse JSON strings)   | Validated at parse               |
-| **JSON schema**              | N/A (compiler can't check JSON structure) | Validated at parse               |
-| **Type correctness (JSON)**  | N/A                                       | Validated at parse               |
-| **Feature existence (JSON)** | N/A                                       | Validated at parse               |
+```mermaid
+block-beta
+    columns 3
+
+    block:compile["Compile-Time (Kotlin)"]
+        ct1["Feature key = property name"]
+        ct2["Return type T enforced"]
+        ct3["Context type C enforced"]
+        ct4["Rule value types enforced"]
+        ct5["Default value required"]
+    end
+
+    block:boundary["JSON Boundary (ParseResult)"]
+        b1["Field presence checked"]
+        b2["Value types decoded"]
+        b3["Schema validated"]
+        b4["ParseError on failure"]
+        b5["No partial state"]
+    end
+
+    block:runtime["Runtime (Post-Load)"]
+        r1["Typed Configuration"]
+        r2["Immutable snapshot"]
+        r3["Atomic swap on update"]
+        r4["Evaluation uses T"]
+        r5["Defaults are typed"]
+    end
+```
+
+---
+
+## What Is Not Guaranteed
+
+Even with full type safety, some things remain outside the guarantee boundary:
+
+- **Business correctness of rule criteria** — a rule that targets `Platform.IOS` when you meant `Platform.ANDROID` compiles fine
+- **Logical correctness of ramp-up percentages** — `rampUp { 110.0 }` is caught at construction; `rampUp { 5.0 }` when you meant `50.0` is not
+- **Rule ordering intent** — specificity ordering is deterministic but whether you got the precedence you intended is your responsibility
+
+These are not bugs in the safety model. They are the natural scope limit of static analysis.
+
+---
+
+## Test Evidence
+
+| Test | Evidence |
+|---|---|
+| `FlagEntryTypeSafetyTest` | Declared feature/value type combinations enforce compile-time and runtime-safe shape. |
+| `BoundaryFailureResultTest` | Boundary failures are typed and carried through `Result` failure channel. |
 
 ---
 
 ## Next Steps
 
-- [Core Types](/core/types) - Compile-time surface area
-- [Theory: Parse Don't Validate](/theory/parse-dont-validate) - Why Result prevents invalid states
-- [Serialization Reference](/serialization/reference) - Result API
+- [Theory: Parse Don't Validate](/theory/parse-dont-validate) — Full boundary mechanics
+- [Concept: Features and Types](/concepts/features-and-types) — Feature type system
+- [Theory: Claims Registry](/theory/claims-registry) — All invariant claims in one place
