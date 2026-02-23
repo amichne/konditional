@@ -352,10 +352,22 @@ object SchemaValueCodec {
  */
 private inline fun <reified T : Any> Konstrained<*>.extractSinglePrimitiveProperty(): T {
     val kClass = this::class
-    val allProps = kClass.memberProperties.toList()
+    val allProps =
+        kClass.memberProperties
+            .filterNot { it.name == "schema" }
+            .toList()
+
+    val primaryConstructorProp =
+        kClass.primaryConstructor
+            ?.parameters
+            ?.singleOrNull()
+            ?.name
+            ?.let { ctorParamName -> allProps.find { it.name == ctorParamName } }
+
     val matching = allProps.filter { it.returnType.classifier == T::class }
     val prop =
         when {
+            primaryConstructorProp != null && primaryConstructorProp.returnType.classifier == T::class -> primaryConstructorProp
             matching.size == 1 -> matching[0]
             matching.isEmpty() && allProps.size == 1 -> allProps[0]
             matching.isEmpty() ->
