@@ -1,19 +1,47 @@
-# Evaluate in app code
+---
+title: Evaluate in App Code
+sidebar_position: 4
+---
 
-Evaluate the typed feature in application code using stable context inputs so
-results remain deterministic for the same inputs [CLM-PR01-09A].
+# Evaluate in App Code
 
-## Example
+Evaluate a typed feature for one runtime context.
+
+**Prerequisites:** You have completed [Define First Flag](/quickstart/define-first-flag).
+
+<span id="claim-clm-pr01-09a"></span>
+Feature evaluation follows core flag-definition semantics and deterministic bucketing behavior.
 
 ```kotlin
-val result = AppFeatures.checkoutVariant.evaluate(ctx)
+import io.amichne.konditional.api.evaluate
+import io.amichne.konditional.context.AppLocale
+import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Platform
+import io.amichne.konditional.context.Version
+import io.amichne.konditional.core.id.StableId
+
+val ctx = Context(
+  locale = AppLocale.UNITED_STATES,
+  platform = Platform.IOS,
+  appVersion = Version.of(2, 1, 0),
+  stableId = StableId.of("user-123"),
+)
+
+val variant: CheckoutVariant = AppFeatures.checkoutVariant.evaluate(ctx)
+check(variant == CheckoutVariant.CLASSIC)
 ```
 
-Repeat evaluation for the same context values and verify outputs remain stable
-for the same feature definition and rollout settings [CLM-PR01-09A].
+## Expected Outcome
 
-## Claim citations
+After this step, evaluating your feature returns the declared default value for the supplied context.
 
-| Claim ID | Explicit claim | Local evidence linkage | Registry link |
-|---|---|---|---|
-| CLM-PR01-09A | Feature evaluation follows core flag-definition evaluation semantics and deterministic bucketing behavior. | `#example` | `/reference/claims-registry#clm-pr01-09a` |
+## Next Steps
+
+- [Concept: Evaluation Model](/concepts/evaluation-model) - Understand ordering and determinism boundaries.
+- [Add Deterministic Ramp-Up](/quickstart/add-deterministic-ramp-up) - Add gradual rollout behavior.
+
+## Claim Coverage
+
+| Claim ID | Statement |
+| --- | --- |
+| CLM-PR01-09A | Feature evaluation follows core flag-definition evaluation semantics and deterministic bucketing behavior. |

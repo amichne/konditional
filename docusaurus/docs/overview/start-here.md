@@ -1,32 +1,56 @@
-# Start here
+---
+title: Start Here
+sidebar_position: 1
+---
 
-Konditional gives you a typed, deterministic control plane for feature rollout,
-configuration, and migration safety. Feature declarations are anchored in
-namespace-owned typed definitions rather than string keys [CLM-PR01-01A].
+# Start Here
 
-The first production win is to keep config ingestion inside an explicit
-`Result` boundary where parse failures remain typed and inspectable instead of
-becoming silent runtime drift [CLM-PR01-01B].
+Konditional is a Kotlin-first feature/configuration framework for teams that want compile-time typing and deterministic evaluation behavior.
 
-## Typed foundations
+<span id="claim-clm-pr01-01a"></span>
+Feature declarations are modeled through namespace-owned typed feature definitions.
 
-Use namespaces and typed feature definitions as the source of truth for feature
-contracts and evaluation behavior [CLM-PR01-01A].
+<span id="claim-clm-pr01-01b"></span>
+Runtime configuration ingestion is exposed through a snapshot loader that returns `Result` and preserves typed parse failures.
 
-## Boundary-safe ingestion
+```kotlin
+import io.amichne.konditional.api.evaluate
+import io.amichne.konditional.context.AppLocale
+import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Platform
+import io.amichne.konditional.context.Version
+import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.id.StableId
 
-Load runtime snapshots through the snapshot loader and treat parse failures as
-first-class boundary outcomes [CLM-PR01-01B].
+enum class CheckoutVariant { CLASSIC, SMART }
 
-## What to do next
+object AppFeatures : Namespace("app") {
+  val checkoutVariant by enum<CheckoutVariant, Context>(default = CheckoutVariant.CLASSIC)
+}
 
-1. Confirm fit and constraints in [Product value and fit](/overview/product-value-fit).
-2. Follow the path in [First success map](/overview/first-success-map).
-3. Run the implementation path in [Quickstart](/quickstart/).
+val ctx = Context(
+  locale = AppLocale.UNITED_STATES,
+  platform = Platform.IOS,
+  appVersion = Version.of(1, 0, 0),
+  stableId = StableId.of("user-123"),
+)
 
-## Claim citations
+val variant: CheckoutVariant = AppFeatures.checkoutVariant.evaluate(ctx)
+```
 
-| Claim ID | Explicit claim | Local evidence linkage | Registry link |
-|---|---|---|---|
-| CLM-PR01-01A | Konditional models feature declarations through namespace-owned typed feature definitions. | `#typed-foundations` | `/reference/claims-registry#clm-pr01-01a` |
-| CLM-PR01-01B | Runtime configuration ingestion is exposed through a snapshot loader that returns Result and supports typed parse failures. | `#boundary-safe-ingestion` | `/reference/claims-registry#clm-pr01-01b` |
+## Who This Fits
+
+Konditional is a fit when your team wants typed declarations in code, deterministic rollouts, and explicit JSON boundary handling instead of dynamic string-key control planes.
+
+## Next Steps
+
+- [Quickstart](/quickstart/) - Build the first end-to-end working path in about 15 minutes.
+- [Why Typed Flags](/overview/why-typed-flags) - See concrete failure modes this model prevents.
+- [First Success Map](/overview/first-success-map) - Choose your route based on your immediate goal.
+
+## Claim Coverage
+
+| Claim ID | Statement |
+| --- | --- |
+| CLM-PR01-01A | Konditional models feature declarations through namespace-owned typed feature definitions. |
+| CLM-PR01-01B | Runtime configuration ingestion is exposed through a snapshot loader that returns `Result` and supports typed parse failures. |
