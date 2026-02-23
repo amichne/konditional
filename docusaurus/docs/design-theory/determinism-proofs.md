@@ -1,5 +1,4 @@
 ---
-slug: /legacy/design-theory-determinism-proofs
 title: Determinism Proofs (Legacy)
 description: Legacy path for determinism theory.
 unlisted: true

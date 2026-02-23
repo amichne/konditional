@@ -1,8 +1,3 @@
----
-slug: /legacy/quick-start-what-is-konditional
-unlisted: true
----
-
 # What is Konditional?
 
 Konditional is a compile-time safe feature flag library for Kotlin that treats flags as typed properties instead of
@@ -290,6 +285,6 @@ configuration.
 
 ## Next Steps
 
-- [Installation](/quickstart/install) — Add Konditional to your project
-- [Your First Feature](/quickstart/define-first-flag) — Define and evaluate your first feature flag
+- [Installation](/getting-started/installation) — Add Konditional to your project
+- [Your First Feature](/getting-started/your-first-flag) — Define and evaluate your first feature flag
 - [Core Concepts](/learn/core-primitives) — Understand the foundational types

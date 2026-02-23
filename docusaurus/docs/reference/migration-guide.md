@@ -15,8 +15,8 @@ Start here if your existing calls look like `getBoolean("some_flag")`.
 
 Use this sequence to get value quickly:
 
-- [Installation](/quickstart/install)
-- [Your First Feature](/quickstart/define-first-flag)
+- [Installation](/getting-started/installation)
+- [Your First Feature](/getting-started/your-first-flag)
 - [How-To: Load Configuration Safely from Remote](/how-to-guides/safe-remote-config)
 
 ---

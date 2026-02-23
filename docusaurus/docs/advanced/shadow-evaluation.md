@@ -1,5 +1,4 @@
 ---
-slug: /legacy/advanced-shadow-evaluation
 title: Shadow Evaluation (Legacy)
 description: Legacy path for shadow evaluation guidance.
 unlisted: true

@@ -1,5 +1,4 @@
 ---
-slug: /legacy/guides-test-features
 title: Test Features (Legacy)
 description: Legacy path for testing guidance.
 unlisted: true

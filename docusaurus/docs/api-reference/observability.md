@@ -1,5 +1,4 @@
 ---
-slug: /legacy/api-reference-observability
 title: Observability API (Legacy)
 description: Legacy path for observability API reference.
 unlisted: true

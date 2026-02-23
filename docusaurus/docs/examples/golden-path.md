@@ -101,7 +101,7 @@ fun main() {
 
 ## Next steps
 
-- [Install and setup guide](/quickstart/install)
+- [Install and setup guide](/guides/install-and-setup)
 - [Core DSL best practices](/core/best-practices)
 - [Evaluation model](/learn/evaluation-model)
 - [Runtime operations](/runtime/operations)
