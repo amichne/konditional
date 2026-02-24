@@ -71,7 +71,6 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Trust',
       items: [
-        'theory/claims-registry',
         'theory/type-safety-boundaries',
         'theory/determinism-proofs',
         'theory/namespace-isolation',
