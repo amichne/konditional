@@ -8,7 +8,8 @@ repositories {
 }
 
 dependencies {
-    implementation(libs.kotlin.gradle.plugin)
-    implementation(libs.detekt.gradle.plugin)
-    implementation(libs.vanniktech.maven.publish.plugin)
+    api(libs.kotlin.gradle.plugin)
+    api(libs.detekt.gradle.plugin)
+    api(libs.vanniktech.maven.publish.plugin)
+    testImplementation(libs.junit.jupiter)
 }

@@ -4,7 +4,6 @@ package io.amichne.konditional.serialization
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.parseErrorOrNull
 import io.amichne.konditional.values.FeatureId
@@ -83,10 +82,7 @@ class FeatureRegistryTest {
         assertTrue(result.isFailure)
         val error = result.parseErrorOrNull()
         assertTrue(error is ParseError.FeatureNotFound)
-        assertEquals(
-            FeatureId.create("test", "nonexistent_key"),
-            (error as ParseError.FeatureNotFound).key
-        )
+        assertEquals(FeatureId.create("test", "nonexistent_key"), error.key)
     }
 
     @Test

@@ -1,8 +1,14 @@
 package io.amichne.konditional.context
 
+import io.amichne.konditional.api.KonditionalInternalApi
+import io.amichne.konditional.api.evaluateInternal
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.AxisValues
+import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.ops.Metrics
+import io.amichne.konditional.core.registry.NamespaceRegistry
 
 /**
  * Represents the execution context for feature flag evaluation.
@@ -115,4 +121,11 @@ interface Context {
         internal fun Context.getAxisValue(axisId: String): Set<AxisValue<*>> =
             axisValues[axisId]
     }
+
+
+    @Suppress("UNCHECKED_CAST")
+    @OptIn(KonditionalInternalApi::class)
+    fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
+        registry: NamespaceRegistry = namespace,
+    ): T = evaluateInternal(this@Context as C, registry, mode = Metrics.Evaluation.EvaluationMode.NORMAL).value
 }
