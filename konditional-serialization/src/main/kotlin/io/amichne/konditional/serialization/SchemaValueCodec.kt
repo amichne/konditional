@@ -79,6 +79,8 @@ object SchemaValueCodec {
      * 1. [Konstrained.AsString] / [Konstrained.AsInt] / [Konstrained.AsBoolean] /
      *    [Konstrained.AsDouble] — calls the instance's [Konstrained.AsString.encode] method,
      *    enabling domain types that are not themselves JSON primitives (e.g. `LocalDate`).
+     *    Checked first so that an `AsString<LocalDate>` (whose `schema` IS a `StringSchema`)
+     *    does not accidentally fall into the [Konstrained.Primitive.String] path.
      * 2. Object schemas → [JsonObject] (via field-reflection codec)
      * 3. String/Boolean/Int/Double schemas → the matching JSON primitive (existing path,
      *    for [Konstrained.Primitive] types whose value IS the primitive).
@@ -92,12 +94,10 @@ object SchemaValueCodec {
     fun encodeKonstrained(konstrained: Konstrained<*>): JsonValue =
         when {
             // Adapted family: domain type T → JSON primitive via the instance's encode().
-            // Checked before schema dispatch so that e.g. AsString<LocalDate> (whose schema
-            // IS a StringSchema) does not accidentally fall into the Primitive.String path.
-            konstrained is Konstrained.AsString<*> -> jsonValue { string(konstrained.encode()) }
-            konstrained is Konstrained.AsInt<*> -> jsonValue { number(konstrained.encode()) }
-            konstrained is Konstrained.AsBoolean<*> -> jsonValue { boolean(konstrained.encode()) }
-            konstrained is Konstrained.AsDouble<*> -> jsonValue { number(konstrained.encode()) }
+            konstrained is Konstrained.AsString<*, *> -> jsonValue { string(konstrained.encode()) }
+            konstrained is Konstrained.AsInt<*, *> -> jsonValue { number(konstrained.encode()) }
+            konstrained is Konstrained.AsBoolean<*, *> -> jsonValue { boolean(konstrained.encode()) }
+            konstrained is Konstrained.AsDouble<*, *> -> jsonValue { number(konstrained.encode()) }
             else ->
                 when (val schema = konstrained.schema) {
                     is ObjectTraits -> encode(konstrained, schema.asObjectSchema())
@@ -112,8 +112,7 @@ object SchemaValueCodec {
                                 "Supported: ObjectSchema, RootObjectSchema, StringSchema, BooleanSchema, " +
                                 "IntSchema, DoubleSchema, ArraySchema. " +
                                 "For non-primitive domain types implement Konstrained.AsString / AsInt / " +
-                                "AsBoolean / AsDouble and supply a companion StringDecoder / IntDecoder / " +
-                                "BooleanDecoder / DoubleDecoder.",
+                                "AsBoolean / AsDouble and supply a companion Konstrained.Decoder.",
                         )
                 }
         }
@@ -123,13 +122,12 @@ object SchemaValueCodec {
      *
      * ## Dispatch order
      *
-     * 1. **Companion decoder** — if the target class has a companion object that implements
-     *    [Konstrained.StringDecoder], [Konstrained.IntDecoder], [Konstrained.BooleanDecoder],
-     *    or [Konstrained.DoubleDecoder] (matching the type of [rawValue]), the companion's
-     *    `decode` method is called and its result is returned directly. This supports
-     *    [Konstrained.AsString] / [Konstrained.AsInt] / [Konstrained.AsBoolean] /
-     *    [Konstrained.AsDouble] types whose wrapped domain value is not itself a JSON
-     *    primitive (e.g. `LocalDate`, `UUID`).
+     * 1. **Companion [Konstrained.Decoder]** — if the target class has a companion object
+     *    that implements [Konstrained.Decoder]`<P, T>` (where `P` matches the runtime type
+     *    of [rawValue]), the companion's [Konstrained.Decoder.decode] is called directly.
+     *    This is the canonical path for [Konstrained.AsString] / [Konstrained.AsInt] /
+     *    [Konstrained.AsBoolean] / [Konstrained.AsDouble] types whose wrapped domain value
+     *    is not itself a JSON primitive (e.g. `LocalDate`, `UUID`).
      *
      * 2. **Primary constructor** — fallback for [Konstrained.Primitive] types whose single
      *    constructor parameter type matches [rawValue] directly (e.g. `Email(value: String)`).
@@ -145,11 +143,11 @@ object SchemaValueCodec {
     @KonditionalInternalApi
     @Suppress("ReturnCount")
     fun <T : Any> decodeKonstrainedPrimitive(kClass: KClass<T>, rawValue: Any): Result<T> {
-        // Step 1: prefer companion decoder when present — supports As* types with non-primitive
-        // domain values. The cast is safe: the companion is the companion of kClass (which
-        // produces T), and the decoder's type parameter is covariant.
-        val companionResult = decodeViaCompanionDecoder(kClass, rawValue)
-        if (companionResult != null) return companionResult
+        // Step 1: prefer a companion Decoder when present — supports As* types with
+        // non-primitive domain values. The cast is safe: the companion is the companion
+        // of kClass (which produces T), and Decoder's V parameter is covariant.
+        val decoderResult = decodeViaDecoder(kClass, rawValue)
+        if (decoderResult != null) return decoderResult
 
         // Step 2: fall back to direct constructor invocation for Konstrained.Primitive types.
         val constructor =
@@ -184,69 +182,47 @@ object SchemaValueCodec {
     }
 
     /**
-     * Attempts to decode [rawValue] using a companion-object decoder, returning `null` when
-     * no matching decoder companion is found (so the caller can fall through to the next
-     * strategy).
+     * Attempts to decode [rawValue] via a companion-object [Konstrained.Decoder], returning
+     * `null` when no matching companion decoder is found so the caller can fall through to
+     * the primary-constructor path.
      *
-     * The unchecked casts are safe: the companion is the companion of [kClass], which by
-     * the [Konstrained.StringDecoder] / [IntDecoder] / [BooleanDecoder] / [DoubleDecoder]
-     * contracts produces a value of type `V` that is the same class as [kClass]'s type `T`.
+     * A single [Konstrained.Decoder]`<P, V>` interface replaces the previous four bespoke
+     * `StringDecoder` / `IntDecoder` / `BooleanDecoder` / `DoubleDecoder` interfaces.
+     * The `P` type parameter is inferred from the runtime type of [rawValue]; the unchecked
+     * cast to `Decoder<P, T>` is safe because the companion is the companion of [kClass],
+     * which by the [Konstrained.Decoder] contract produces values of type `T`.
      */
     @Suppress("UNCHECKED_CAST")
-    private fun <T : Any> decodeViaCompanionDecoder(kClass: KClass<T>, rawValue: Any): Result<T>? {
+    private fun <T : Any> decodeViaDecoder(kClass: KClass<T>, rawValue: Any): Result<T>? {
         val companion = kClass.companionObjectInstance ?: return null
-        return when {
-            rawValue is String && companion is Konstrained.StringDecoder<*> ->
-                runCatching { (companion as Konstrained.StringDecoder<T>).decode(rawValue) }
+        if (companion !is Konstrained.Decoder<*, *>) return null
+        val errorMessage: (Throwable) -> String = {
+            "Decoder on ${kClass.qualifiedName} failed for value '$rawValue': ${it.message}"
+        }
+        return when (rawValue) {
+            is String ->
+                runCatching { (companion as Konstrained.Decoder<String, T>).decode(rawValue) }
                     .fold(
                         onSuccess = { Result.success(it) },
-                        onFailure = {
-                            parseFailure(
-                                ParseError.InvalidSnapshot(
-                                    "StringDecoder on ${kClass.qualifiedName} failed for value " +
-                                        "'$rawValue': ${it.message}",
-                                ),
-                            )
-                        },
+                        onFailure = { parseFailure(ParseError.InvalidSnapshot(errorMessage(it))) },
                     )
-            rawValue is Int && companion is Konstrained.IntDecoder<*> ->
-                runCatching { (companion as Konstrained.IntDecoder<T>).decode(rawValue) }
+            is Int ->
+                runCatching { (companion as Konstrained.Decoder<Int, T>).decode(rawValue) }
                     .fold(
                         onSuccess = { Result.success(it) },
-                        onFailure = {
-                            parseFailure(
-                                ParseError.InvalidSnapshot(
-                                    "IntDecoder on ${kClass.qualifiedName} failed for value " +
-                                        "'$rawValue': ${it.message}",
-                                ),
-                            )
-                        },
+                        onFailure = { parseFailure(ParseError.InvalidSnapshot(errorMessage(it))) },
                     )
-            rawValue is Boolean && companion is Konstrained.BooleanDecoder<*> ->
-                runCatching { (companion as Konstrained.BooleanDecoder<T>).decode(rawValue) }
+            is Boolean ->
+                runCatching { (companion as Konstrained.Decoder<Boolean, T>).decode(rawValue) }
                     .fold(
                         onSuccess = { Result.success(it) },
-                        onFailure = {
-                            parseFailure(
-                                ParseError.InvalidSnapshot(
-                                    "BooleanDecoder on ${kClass.qualifiedName} failed for value " +
-                                        "'$rawValue': ${it.message}",
-                                ),
-                            )
-                        },
+                        onFailure = { parseFailure(ParseError.InvalidSnapshot(errorMessage(it))) },
                     )
-            rawValue is Double && companion is Konstrained.DoubleDecoder<*> ->
-                runCatching { (companion as Konstrained.DoubleDecoder<T>).decode(rawValue) }
+            is Double ->
+                runCatching { (companion as Konstrained.Decoder<Double, T>).decode(rawValue) }
                     .fold(
                         onSuccess = { Result.success(it) },
-                        onFailure = {
-                            parseFailure(
-                                ParseError.InvalidSnapshot(
-                                    "DoubleDecoder on ${kClass.qualifiedName} failed for value " +
-                                        "'$rawValue': ${it.message}",
-                                ),
-                            )
-                        },
+                        onFailure = { parseFailure(ParseError.InvalidSnapshot(errorMessage(it))) },
                     )
             else -> null
         }

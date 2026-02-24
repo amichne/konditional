@@ -32,7 +32,8 @@ import java.util.UUID
  *
  * Validates:
  * - [SchemaValueCodec.encodeKonstrained] uses the instance [encode] method
- * - [SchemaValueCodec.decodeKonstrainedPrimitive] uses the companion [StringDecoder]
+ * - [SchemaValueCodec.decodeKonstrainedPrimitive] uses the companion [Konstrained.Decoder]
+ * - The instance [decode] method is the inverse of [encode] (round-trip via interface)
  * - [FlagValue.from] / [FlagValue.extractValue] round-trip correctness
  * - Moshi serialization / deserialization of [FlagValue.KonstrainedPrimitive]
  * - [ConfigValue.from] dispatches correctly for As* types
@@ -86,25 +87,25 @@ class KonstrainedCustomTypeTest {
     }
 
     // =========================================================================
-    // SchemaValueCodec.decodeKonstrainedPrimitive — companion StringDecoder
+    // SchemaValueCodec.decodeKonstrainedPrimitive — companion Konstrained.Decoder
     // =========================================================================
 
     @Test
-    fun `decodeKonstrainedPrimitive uses StringDecoder companion for ExpirationDate`() {
+    fun `decodeKonstrainedPrimitive uses companion Decoder for ExpirationDate`() {
         val result = SchemaValueCodec.decodeKonstrainedPrimitive(ExpirationDate::class, "2025-06-15")
         assertTrue(result.isSuccess)
         assertEquals(ExpirationDate(LocalDate.of(2025, 6, 15)), result.getOrThrow())
     }
 
     @Test
-    fun `decodeKonstrainedPrimitive uses StringDecoder companion for AuditDate`() {
+    fun `decodeKonstrainedPrimitive uses companion Decoder for AuditDate`() {
         val result = SchemaValueCodec.decodeKonstrainedPrimitive(AuditDate::class, "2023-11-30")
         assertTrue(result.isSuccess)
         assertEquals(AuditDate(LocalDate.of(2023, 11, 30)), result.getOrThrow())
     }
 
     @Test
-    fun `decodeKonstrainedPrimitive uses StringDecoder companion for CorrelationId`() {
+    fun `decodeKonstrainedPrimitive uses companion Decoder for CorrelationId`() {
         val raw = "550e8400-e29b-41d4-a716-446655440000"
         val result = SchemaValueCodec.decodeKonstrainedPrimitive(CorrelationId::class, raw)
         assertTrue(result.isSuccess)
@@ -112,9 +113,45 @@ class KonstrainedCustomTypeTest {
     }
 
     @Test
-    fun `decodeKonstrainedPrimitive returns failure when StringDecoder throws`() {
+    fun `decodeKonstrainedPrimitive returns failure when Decoder throws`() {
         val result = SchemaValueCodec.decodeKonstrainedPrimitive(ExpirationDate::class, "not-a-date")
         assertTrue(result.isFailure)
+    }
+
+    // =========================================================================
+    // Instance decode() — declared on AsString interface, inverse of encode()
+    // =========================================================================
+
+    @Test
+    fun `instance decode is the inverse of encode for ExpirationDate`() {
+        val original = ExpirationDate(LocalDate.of(2025, 6, 15))
+        val roundTripped = original.decode(original.encode())
+        assertEquals(original, roundTripped)
+    }
+
+    @Test
+    fun `instance decode is the inverse of encode for AuditDate`() {
+        val original = AuditDate(LocalDate.of(2023, 11, 30))
+        val roundTripped = original.decode(original.encode())
+        assertEquals(original, roundTripped)
+    }
+
+    @Test
+    fun `instance decode is the inverse of encode for CorrelationId`() {
+        val original = CorrelationId(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"))
+        val roundTripped = original.decode(original.encode())
+        assertEquals(original, roundTripped)
+    }
+
+    @Test
+    fun `ExpirationDate and AuditDate share the same underlying localDateDecoder logic`() {
+        // Both types wrap LocalDate and parse via the same shared Decoder — verify they
+        // produce structurally equal domain values from the same wire string.
+        val raw = "2025-06-15"
+        val expiry = ExpirationDate(LocalDate.of(2025, 6, 15))
+        val audit = AuditDate(LocalDate.of(2025, 6, 15))
+        assertEquals(expiry.value, audit.decode(raw).value)
+        assertEquals(expiry.decode(raw).value, audit.value)
     }
 
     // =========================================================================

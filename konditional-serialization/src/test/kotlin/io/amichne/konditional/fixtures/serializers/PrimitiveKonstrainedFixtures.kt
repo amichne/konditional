@@ -59,19 +59,34 @@ value class Tags(override val values: List<String>) : Konstrained.Array<ArraySch
 // As* family — domain type T encoded AS a JSON primitive
 // ---------------------------------------------------------------------------
 
+// Shared Decoder instances — reused across multiple types that wrap the same domain type,
+// eliminating duplicate parse/format logic. These are the Konstrained.Decoder analogue
+// of a Moshi TypeAdapter that can be applied to many fields.
+private val localDateDecoder: Konstrained.Decoder<String, LocalDate> =
+    Konstrained.Decoder { LocalDate.parse(it) }
+
+private val uuidDecoder: Konstrained.Decoder<String, UUID> =
+    Konstrained.Decoder { UUID.fromString(it) }
+
 /**
  * A calendar date serialized as an ISO-8601 string (e.g. `"2025-06-15"`).
  *
  * Demonstrates [Konstrained.AsString] with a non-primitive domain type ([LocalDate]).
  * No explicit schema override — the default unconstrained [StringSchema] is used.
- * The companion [Konstrained.StringDecoder] reconstructs the value from the wire string.
+ *
+ * Both [encode] and [decode] are declared on the [Konstrained.AsString] interface,
+ * making the full codec contract visible without any hidden companion conventions.
+ * The companion implements [Konstrained.Decoder] so the serialization codec can
+ * reconstruct instances from snapshots (where no prototype instance is available).
+ * The instance [decode] delegates to the companion to keep logic in one place.
  */
 @JvmInline
-value class ExpirationDate(val value: LocalDate) : Konstrained.AsString<LocalDate> {
+value class ExpirationDate(val value: LocalDate) : Konstrained.AsString<LocalDate, ExpirationDate> {
     override fun encode(): String = value.toString()
+    override fun decode(raw: String): ExpirationDate = Companion.decode(raw)
 
-    companion object : Konstrained.StringDecoder<ExpirationDate> {
-        override fun decode(raw: String): ExpirationDate = ExpirationDate(LocalDate.parse(raw))
+    companion object : Konstrained.Decoder<String, ExpirationDate> {
+        override fun decode(raw: String): ExpirationDate = ExpirationDate(localDateDecoder.decode(raw))
     }
 }
 
@@ -79,30 +94,34 @@ value class ExpirationDate(val value: LocalDate) : Konstrained.AsString<LocalDat
  * A calendar date with an explicit schema override declaring the `"date"` OpenAPI format.
  *
  * Demonstrates optional schema customization on top of [Konstrained.AsString].
+ * Reuses [localDateDecoder] — the same [Konstrained.Decoder] shared with [ExpirationDate].
  */
 @JvmInline
-value class AuditDate(val value: LocalDate) : Konstrained.AsString<LocalDate> {
+value class AuditDate(val value: LocalDate) : Konstrained.AsString<LocalDate, AuditDate> {
     @Suppress("UNCHECKED_CAST")
     override val schema: StringSchema
         get() = stringSchema { format = "date" } as StringSchema
 
     override fun encode(): String = value.toString()
+    override fun decode(raw: String): AuditDate = Companion.decode(raw)
 
-    companion object : Konstrained.StringDecoder<AuditDate> {
-        override fun decode(raw: String): AuditDate = AuditDate(LocalDate.parse(raw))
+    companion object : Konstrained.Decoder<String, AuditDate> {
+        override fun decode(raw: String): AuditDate = AuditDate(localDateDecoder.decode(raw))
     }
 }
 
 /**
  * A [UUID] correlation identifier serialized as its canonical hyphenated string form.
  *
- * Demonstrates [Konstrained.AsString] with a second non-primitive domain type.
+ * Demonstrates [Konstrained.AsString] with a second non-primitive domain type,
+ * reusing [uuidDecoder] for the parse step.
  */
 @JvmInline
-value class CorrelationId(val value: UUID) : Konstrained.AsString<UUID> {
+value class CorrelationId(val value: UUID) : Konstrained.AsString<UUID, CorrelationId> {
     override fun encode(): String = value.toString()
+    override fun decode(raw: String): CorrelationId = Companion.decode(raw)
 
-    companion object : Konstrained.StringDecoder<CorrelationId> {
-        override fun decode(raw: String): CorrelationId = CorrelationId(UUID.fromString(raw))
+    companion object : Konstrained.Decoder<String, CorrelationId> {
+        override fun decode(raw: String): CorrelationId = CorrelationId(uuidDecoder.decode(raw))
     }
 }
