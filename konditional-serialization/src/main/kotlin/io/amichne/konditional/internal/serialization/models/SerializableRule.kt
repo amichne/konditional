@@ -5,6 +5,7 @@ package io.amichne.konditional.internal.serialization.models
 import com.squareup.moshi.JsonClass
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.internal.SerializedFlagRuleSpec
+import io.amichne.konditional.internal.SerializedRuleValueType
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
@@ -18,6 +19,7 @@ import io.amichne.konditional.rules.versions.VersionRange
 @JsonClass(generateAdapter = true)
 data class SerializableRule(
     val value: FlagValue<*>,
+    val type: SerializedRuleValueType = SerializedRuleValueType.STATIC,
     val rampUp: Double = 100.0,
     val rampUpAllowlist: Set<String> = emptySet(),
     val note: String? = null,
@@ -29,6 +31,7 @@ data class SerializableRule(
     fun <T : Any> toSpec(value: T): SerializedFlagRuleSpec<T> =
         SerializedFlagRuleSpec(
             value = value,
+            type = type,
             rampUp = rampUp,
             rampUpAllowlist = rampUpAllowlist,
             note = note,
@@ -44,6 +47,7 @@ data class SerializableRule(
 
             return SerializableRule(
                 value = FlagValue.from(value),
+                type = rule.type,
                 rampUp = rule.rampUp,
                 rampUpAllowlist = rule.rampUpAllowlist,
                 note = rule.note,

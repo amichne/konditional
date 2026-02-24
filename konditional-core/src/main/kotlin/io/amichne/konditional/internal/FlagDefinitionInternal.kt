@@ -36,6 +36,7 @@ data class SerializedFlagDefinitionMetadata(
 @Suppress("LongParameterList")
 data class SerializedFlagRuleSpec<T : Any>(
     val value: T,
+    val type: SerializedRuleValueType = SerializedRuleValueType.STATIC,
     val rampUp: Double = 100.0,
     val rampUpAllowlist: Set<String> = emptySet(),
     val note: String? = null,
@@ -44,6 +45,12 @@ data class SerializedFlagRuleSpec<T : Any>(
     val versionRange: VersionRange? = null,
     val axes: Map<String, Set<String>> = emptyMap(),
 )
+
+@KonditionalInternalApi
+enum class SerializedRuleValueType {
+    STATIC,
+    CONTEXTUAL,
+}
 
 @KonditionalInternalApi
 fun <T : Any, C : Context, M : Namespace> flagDefinitionFromSerialized(
@@ -92,14 +99,14 @@ fun FlagDefinition<*, *, *>.toSerializedMetadata(): SerializedFlagDefinitionMeta
 @KonditionalInternalApi
 fun FlagDefinition<*, *, *>.toSerializedRules(): List<SerializedFlagRuleSpec<Any>> =
     values.map { cv ->
-        val value = cv.staticValueOrNull()
-            ?: error(
-                "Cannot serialize context-dependent rule value for feature '${feature.key}'. " +
-                    "Use constant rule values for snapshot serialization."
-            )
+        val staticValue = cv.staticValueOrNull()
+        val type =
+            if (staticValue == null) SerializedRuleValueType.CONTEXTUAL else SerializedRuleValueType.STATIC
+        val value = staticValue ?: defaultValue
         val targeting = cv.rule.targeting
         SerializedFlagRuleSpec(
             value = value,
+            type = type,
             rampUp = cv.rule.rampUp.value,
             rampUpAllowlist = cv.rule.rampUpAllowlist.mapTo(linkedSetOf()) { it.id },
             note = cv.rule.note,
