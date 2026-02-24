@@ -1,29 +1,31 @@
 ---
 name: konditional
 description: >
-  Use this skill for enterprise Konditional adoption: discover existing flag and
-  config usage, map legacy systems to namespace-scoped typed APIs, migrate with
-  dual-read and shadow evaluation, and ship with deterministic runtime and
-  boundary-safe operations.
+  Use this skill when integrating Konditional into a codebase — whether you are
+  a new user defining your first typed namespace or an enterprise team migrating
+  from string-key flag systems. Covers namespace declaration, context modeling,
+  evaluation, remote config loading, gradual rollout, shadow migration, and
+  OpenFeature interoperability.
 ---
 
-# Konditional skill (enterprise integration and adoption)
+# Konditional skill (integration and adoption)
 
-This skill is the canonical enterprise adoption guide for Konditional in this
-repository. Use it when teams need to discover and adapt existing codebases to
-the namespace-based API without behavior drift.
+This skill is the canonical guide for adopting Konditional in this repository.
+Use it for first-time integrations, greenfield namespace design, and enterprise
+migration from legacy string-key or config-map systems.
 
 ## Primary outcomes
 
-- Inventory legacy flag usage and ownership boundaries in existing services.
-- Convert string-keyed usage into namespace-scoped typed definitions.
-- Preserve production behavior during migration with dual-read and shadowing.
-- Keep guidance token-efficient by using signatures and symbol-scoped reads.
+- Define typed namespaces and evaluate flags with compile-time safety.
+- Load remote configuration through a boundary-safe snapshot loader.
+- Migrate from string-key systems without behavior drift using dual-read and shadowing.
+- Keep observability side-channel only; baseline semantics are never altered.
 
 ## Trigger when
 
-- Engineers need a migration path from string keys, config maps, or SDK wrappers.
-- Teams are defining namespaces and typed feature surfaces for enterprise domains.
+- An engineer is adding Konditional to a service for the first time.
+- A team is defining namespaces and typed feature surfaces for a new domain.
+- You are replacing string keys, config maps, or untyped SDK wrappers with typed APIs.
 - Integrations require runtime snapshot loading, rollback, and kill-switch safety.
 - You need OpenFeature interoperability with typed context mapping.
 - You are planning phased rollout with mismatch observability and rollback drills.
@@ -52,10 +54,91 @@ the namespace-based API without behavior drift.
 - **Shadow migration safety**: `evaluateWithShadow` returns baseline value and
   reports mismatch side-channel only. [CLM-SHD-001]
 
-See `/Users/amichne/code/konditional/skill/resources/evidence-map.md` for exact
-signature/source/test links.
+See `skill/resources/evidence-map.md` for exact signature/source/test links.
+
+## New user / first integration workflow
+
+Use this path when adding Konditional to a service that has no prior flag system.
+
+1. **Add dependencies**
+   ```kotlin
+   // build.gradle.kts
+   dependencies {
+       implementation("io.amichne:konditional-core:0.1.0")
+       implementation("io.amichne:konditional-runtime:0.1.0")
+       implementation("io.amichne:konditional-serialization:0.1.0")
+   }
+   ```
+
+2. **Declare a namespace**
+
+   Group flags by team or domain ownership. One namespace = one blast-radius boundary.
+   ```kotlin
+   object AppFlags : Namespace("app") {
+       val darkMode   by boolean<Context>(default = false)
+       val checkoutV2 by boolean<Context>(default = false)
+   }
+   ```
+
+3. **Model your context**
+
+   Extend `Context` with the fields your rules will target. Keep it a data class.
+   ```kotlin
+   data class AppContext(
+       override val stableId: StableId?,
+       val platform: String,
+       val region: String,
+   ) : Context, StableIdContext
+   ```
+
+4. **Evaluate a flag**
+
+   Evaluation is a pure function: same context → same result.
+   ```kotlin
+   val ctx = AppContext(stableId = StableId("user-123"), platform = "ios", region = "us")
+   val showDarkMode: Boolean = AppFlags.darkMode.evaluate(ctx)
+   ```
+
+5. **Load remote configuration safely**
+
+   Parse at the boundary. Keep last-known-good on failure.
+   ```kotlin
+   import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
+   import io.amichne.konditional.core.result.parseErrorOrNull
+
+   val result = NamespaceSnapshotLoader(AppFlags).load(remoteJson)
+   result.onFailure { failure ->
+       logger.error("config rejected: ${failure.parseErrorOrNull()?.message}")
+       // Last-known-good snapshot remains active
+   }
+   ```
+
+6. **Add a gradual rollout rule**
+
+   Use `rampUp` for deterministic percentage-based rollout tied to `stableId`.
+   ```kotlin
+   object AppFlags : Namespace("app") {
+       val checkoutV2 by boolean<AppContext>(default = false) {
+           rule(true) { rampUp(percentage = 10) }
+       }
+   }
+   ```
+
+7. **Write integration tests**
+
+   Test determinism, isolation, and boundary failures before shipping.
+   ```kotlin
+   @Test fun `same context always gets same bucket`() {
+       val ctx = AppContext(stableId = StableId("abc"), platform = "ios", region = "us")
+       repeat(100) {
+           assertEquals(AppFlags.checkoutV2.evaluate(ctx), AppFlags.checkoutV2.evaluate(ctx))
+       }
+   }
+   ```
 
 ## Enterprise migration workflow
+
+Use this path when replacing a legacy string-key or config-map flag system.
 
 1. **Discovery and inventory**
    - Build a deterministic inventory of existing keys, call sites, defaults, and
@@ -83,7 +166,7 @@ signature/source/test links.
 
 ## Token-efficient execution workflow
 
-1. Start with `/Users/amichne/code/konditional/signatures/INDEX.sig`.
+1. Start with `signatures/INDEX.sig`.
 2. Open only relevant `*.sig` files for target modules and symbols.
 3. Use IntelliJ semantic symbol lookup for definitions/references before
    broad text search.
@@ -98,7 +181,9 @@ signature/source/test links.
 
 ## Response contract for this skill
 
-- Produce adoption guidance in phases, not one-shot rewrites.
+- For new users: start with namespace declaration and evaluate() before introducing
+  remote config or shadowing.
+- For migrations: produce adoption guidance in phases, not one-shot rewrites.
 - Always include: boundary assumptions, rollback plan, and mismatch strategy.
 - Prefer compile-ready snippets using current imports and APIs.
 - Avoid DI frameworks, reflection registries, and stringly-typed core models.
@@ -107,15 +192,23 @@ signature/source/test links.
 ## Resources
 
 - **Enterprise and API samples:**
-  - `/Users/amichne/code/konditional/skill/resources/konditional_samples.kt`
+  - `skill/resources/konditional_samples.kt`
 - **Claim-to-signature/source/test map:**
-  - `/Users/amichne/code/konditional/skill/resources/evidence-map.md`
+  - `skill/resources/evidence-map.md`
 - **OpenAI prompt/tooling best practices for skill authoring:**
-  - `/Users/amichne/code/konditional/skill/resources/openai_prompting_best_practices.md`
+  - `skill/resources/openai_prompting_best_practices.md`
 
 ## Quick usage template
 
-Use this template when answering enterprise migration requests:
+**New user integration:**
+
+1. Declare a namespace with typed delegated properties.
+2. Define a context data class extending `Context` with your targeting fields.
+3. Call `feature.evaluate(ctx)` and confirm the return type matches your declaration.
+4. Load a JSON snapshot via `NamespaceSnapshotLoader` and handle `Result` explicitly.
+5. Add a `rampUp` rule and write a determinism test.
+
+**Enterprise migration:**
 
 1. Identify target modules and invariants.
 2. Build a legacy inventory and namespace mapping table.

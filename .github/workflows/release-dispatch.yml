@@ -48,14 +48,42 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      - name: Derive release versions from SNAPSHOT
+        id: versions
+        run: |
+          CURRENT="$(grep -E '^version=' gradle.properties | head -n1 | cut -d'=' -f2)"
+
+          if [[ ! "$CURRENT" =~ -SNAPSHOT$ ]]; then
+            echo "Expected a -SNAPSHOT version in gradle.properties, but got: $CURRENT"
+            echo "The 'Cut Release' workflow must be dispatched from a SNAPSHOT version (e.g. 0.1.5-SNAPSHOT)."
+            exit 1
+          fi
+
+          BASE="${CURRENT%-SNAPSHOT}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$BASE"
+
+          RELEASE_VERSION="$BASE"
+
+          case "${{ github.event.inputs.release-type }}" in
+            major) POST_VERSION="$((MAJOR + 1)).0.0-SNAPSHOT" ;;
+            minor) POST_VERSION="${MAJOR}.$((MINOR + 1)).0-SNAPSHOT" ;;
+            patch) POST_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))-SNAPSHOT" ;;
+          esac
+
+          echo "current=$CURRENT"         >> "$GITHUB_OUTPUT"
+          echo "release=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "post=$POST_VERSION"       >> "$GITHUB_OUTPUT"
+
+          echo "Releasing: $CURRENT → $RELEASE_VERSION (next dev: $POST_VERSION)"
+
       - name: Run release automation
         run: |
           ./gradlew release \
             --no-configuration-cache \
             --no-daemon \
             --stacktrace \
-            -Prelease.useAutomaticVersion=true \
-            -PreleaseType="${{ github.event.inputs.release-type }}"
+            -Prelease.releaseVersion="${{ steps.versions.outputs.release }}" \
+            -Prelease.postReleaseVersion="${{ steps.versions.outputs.post }}"
 
       - name: Capture release versions
         id: version

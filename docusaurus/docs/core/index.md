@@ -13,13 +13,13 @@ If you only need compile-time correctness and deterministic evaluation, this is 
 
 ## Guarantees
 
-- **Guarantee**: Feature access and return types are compile-time safe for statically-defined features.
+- **Guarantee**: Feature access and return types are compile-time safe for statically-defined features. → [C-01](/theory/claims-registry#c-01)
 
 - **Mechanism**: Property delegation + generic type propagation on `Feature<T, C, M>`.
 
 - **Boundary**: This does not apply to dynamically-generated feature definitions.
 
-- **Guarantee**: Evaluation always returns a non-null value of the declared type.
+- **Guarantee**: Evaluation always returns a non-null value of the declared type. → [C-03](/theory/claims-registry#c-03)
 
 - **Mechanism**: Every feature requires a `default` value and evaluation falls back to it.
 

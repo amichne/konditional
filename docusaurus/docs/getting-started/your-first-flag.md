@@ -64,7 +64,7 @@ check(repeated.all { it == repeated.first() })
 
 ## Guarantees
 
-- **Guarantee**: Evaluation always returns a non-null value of the declared type.
+- **Guarantee**: Evaluation always returns a non-null value of the declared type. → [C-03](/theory/claims-registry#c-03)
 
 - **Mechanism**: Features require a `default` value and return it when no rule matches.
 

@@ -77,6 +77,7 @@ const sidebars: SidebarsConfig = {
         'theory/parse-dont-validate',
         'theory/atomicity-guarantees',
         'theory/migration-and-shadowing',
+        'theory/verified-synthesis',
       ],
     },
     {

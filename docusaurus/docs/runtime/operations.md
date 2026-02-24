@@ -94,7 +94,7 @@ fun Namespace.disableAll()
 fun Namespace.enableAll()
 ```
 
-- **Guarantee**: When disabled, evaluations return declared defaults.
+- **Guarantee**: When disabled, evaluations return declared defaults. → [C-09](/theory/claims-registry#c-09)
 
 - **Mechanism**: Registry-level boolean kill-switch.
 

@@ -79,7 +79,10 @@ Docs emphasize correctness guarantees but under-specify operational costs of cal
 
 ## Related
 
+- [Claims Registry](/theory/claims-registry) — Every invariant claim with test evidence
 - [Parse Don't Validate](/theory/parse-dont-validate)
 - [Determinism Proofs](/theory/determinism-proofs)
 - [Atomicity Guarantees](/theory/atomicity-guarantees)
 - [Migration and Shadowing](/theory/migration-and-shadowing)
+- [Namespace Isolation](/theory/namespace-isolation)
+- [Type Safety Boundaries](/theory/type-safety-boundaries)

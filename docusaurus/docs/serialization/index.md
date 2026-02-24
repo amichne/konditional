@@ -36,7 +36,7 @@ dependencies {
 
 ## Guarantees
 
-- **Guarantee**: Invalid JSON payloads never become `Configuration` values.
+- **Guarantee**: Invalid JSON payloads never become `Configuration` values. → [C-02](/theory/claims-registry#c-02)
 
 - **Mechanism**: Parsing returns `Result.success` or `Result.failure` and never throws for validation errors.
 
