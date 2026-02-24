@@ -68,6 +68,14 @@ class ConfigurationSnapshotCodecTest {
         val doubleFlag by double<Context>(default = 0.0)
         val themeFlag by enum<Theme, Context>(default = Theme.LIGHT)
         val retryPolicyFlag by custom<RetryPolicy, Context>(default = RetryPolicy())
+        val dynamicDependencyFlag by string<Context>(default = "dep-default") {
+            rule { android() } yields "dep-android"
+            rule { always() } yields "dep-catch-all"
+        }
+        val dynamicYieldFlag by string<Context>(default = "dynamic-default") {
+            rule { android() } yields { dynamicDependencyFlag.evaluate() }
+            rule { always() } yields "fallback"
+        }
     }
 
     @BeforeEach
@@ -240,6 +248,24 @@ class ConfigurationSnapshotCodecTest {
                     this[Axes.EnvironmentAxis] = env
                 }
         }
+
+    @Test
+    fun `Given deferred yields rule, When serialized, Then snapshot encodes placeholder instead of failing`() {
+        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
+
+        assertTrue(json.contains("\"valueEncoding\": \"DEFAULT_VALUE_PLACEHOLDER\""))
+    }
+
+    @Test
+    fun `Given deferred yields rule snapshot, When decoded, Then rule uses declared default placeholder`() {
+        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
+
+        val decoded = decodeFeatureAware(json = json).getOrThrow()
+
+        @Suppress("UNCHECKED_CAST")
+        val definition = decoded.flags[TestFeatures.dynamicYieldFlag] as FlagDefinition<String, Context, Namespace>
+        assertEquals("dynamic-default", definition.values.first().value)
+    }
 
     // ========== Serialization Tests ==========
 
@@ -495,6 +521,7 @@ class ConfigurationSnapshotCodecTest {
                         "value": "DARK",
                         "enumClassName": "${Theme::class.java.name}"
                       },
+                      "valueEncoding": "STATIC",
                       "rampUp": 12.34,
                       "rampUpAllowlist": [
                         "72756c652d616c6c6f776c697374"
@@ -562,6 +589,7 @@ class ConfigurationSnapshotCodecTest {
                           "mode": "linear"
                         }
                       },
+                      "valueEncoding": "STATIC",
                       "rampUp": 99.0,
                       "rampUpAllowlist": [],
                       "note": "policy-rule",
