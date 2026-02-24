@@ -26,6 +26,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref_name }}
+          ssh-key: ${{ secrets.RELEASE_DEPLOY_KEY }}
+          persist-credentials: true
+
+      - name: Force SSH origin for protected-branch push
+        run: git remote set-url origin "git@github.com:${{ github.repository }}.git"
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -33,6 +41,11 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: 'gradle'
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Derive release version
         id: version
@@ -81,6 +94,12 @@ jobs:
             --no-configuration-cache \
             --no-daemon \
             --stacktrace
+
+      - name: Commit and push version bump
+        run: |
+          git add gradle.properties
+          git commit -m "chore: release ${{ steps.version.outputs.version }}"
+          git push origin ${{ github.ref_name }}
 
   validate:
     if: github.event_name == 'push'
@@ -255,11 +274,11 @@ jobs:
             --stacktrace
 
   create-github-release:
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     needs: [ validate, publish-maven-central, publish-github-packages ]
     if: >
       always() &&
+      github.event_name == 'push' &&
       needs.validate.result == 'success' &&
       needs.publish-github-packages.result == 'success' &&
       (needs.publish-maven-central.result == 'success' || needs.publish-maven-central.outputs.published == 'false')
