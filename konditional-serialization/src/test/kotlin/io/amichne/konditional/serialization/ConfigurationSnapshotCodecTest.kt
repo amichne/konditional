@@ -253,7 +253,7 @@ class ConfigurationSnapshotCodecTest {
     fun `Given deferred yields rule, When serialized, Then snapshot encodes placeholder instead of failing`() {
         val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
 
-        assertTrue(json.contains("\"valueEncoding\": \"DEFAULT_VALUE_PLACEHOLDER\""))
+        assertTrue(json.contains("\"type\": \"CONTEXTUAL\""))
     }
 
     @Test
@@ -521,7 +521,7 @@ class ConfigurationSnapshotCodecTest {
                         "value": "DARK",
                         "enumClassName": "${Theme::class.java.name}"
                       },
-                      "valueEncoding": "STATIC",
+                      "type": "STATIC",
                       "rampUp": 12.34,
                       "rampUpAllowlist": [
                         "72756c652d616c6c6f776c697374"
@@ -589,7 +589,7 @@ class ConfigurationSnapshotCodecTest {
                           "mode": "linear"
                         }
                       },
-                      "valueEncoding": "STATIC",
+                      "type": "STATIC",
                       "rampUp": 99.0,
                       "rampUpAllowlist": [],
                       "note": "policy-rule",

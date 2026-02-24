@@ -36,7 +36,7 @@ data class SerializedFlagDefinitionMetadata(
 @Suppress("LongParameterList")
 data class SerializedFlagRuleSpec<T : Any>(
     val value: T,
-    val valueEncoding: SerializedRuleValueEncoding = SerializedRuleValueEncoding.STATIC,
+    val type: SerializedRuleValueType = SerializedRuleValueType.STATIC,
     val rampUp: Double = 100.0,
     val rampUpAllowlist: Set<String> = emptySet(),
     val note: String? = null,
@@ -47,9 +47,9 @@ data class SerializedFlagRuleSpec<T : Any>(
 )
 
 @KonditionalInternalApi
-enum class SerializedRuleValueEncoding {
+enum class SerializedRuleValueType {
     STATIC,
-    DEFAULT_VALUE_PLACEHOLDER,
+    CONTEXTUAL,
 }
 
 @KonditionalInternalApi
@@ -100,13 +100,13 @@ fun FlagDefinition<*, *, *>.toSerializedMetadata(): SerializedFlagDefinitionMeta
 fun FlagDefinition<*, *, *>.toSerializedRules(): List<SerializedFlagRuleSpec<Any>> =
     values.map { cv ->
         val staticValue = cv.staticValueOrNull()
-        val valueEncoding =
-            if (staticValue == null) SerializedRuleValueEncoding.DEFAULT_VALUE_PLACEHOLDER else SerializedRuleValueEncoding.STATIC
+        val type =
+            if (staticValue == null) SerializedRuleValueType.CONTEXTUAL else SerializedRuleValueType.STATIC
         val value = staticValue ?: defaultValue
         val targeting = cv.rule.targeting
         SerializedFlagRuleSpec(
             value = value,
-            valueEncoding = valueEncoding,
+            type = type,
             rampUp = cv.rule.rampUp.value,
             rampUpAllowlist = cv.rule.rampUpAllowlist.mapTo(linkedSetOf()) { it.id },
             note = cv.rule.note,
