@@ -24,6 +24,7 @@ import io.amichne.kontracts.value.JsonString
 import io.amichne.kontracts.value.JsonValue
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
+import kotlin.reflect.full.companionObjectInstance
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 
@@ -72,11 +73,18 @@ object SchemaValueCodec {
 
     /**
      * Encodes any [Konstrained] instance to the appropriate [JsonValue] by dispatching on
-     * its declared schema type.
+     * its runtime type and declared schema.
      *
-     * - Object schemas → [JsonObject] (via field-reflection codec)
-     * - String/Boolean/Int/Double schemas → the matching JSON primitive
-     * - Array schemas → [JsonArray] from the single list-typed property
+     * Dispatch order:
+     * 1. [Konstrained.AsString] / [Konstrained.AsInt] / [Konstrained.AsBoolean] /
+     *    [Konstrained.AsDouble] — calls the instance's [Konstrained.AsString.encode] method,
+     *    enabling domain types that are not themselves JSON primitives (e.g. `LocalDate`).
+     *    Checked first so that an `AsString<LocalDate>` (whose `schema` IS a `StringSchema`)
+     *    does not accidentally fall into the [Konstrained.Primitive.String] path.
+     * 2. Object schemas → [JsonObject] (via field-reflection codec)
+     * 3. String/Boolean/Int/Double schemas → the matching JSON primitive (existing path,
+     *    for [Konstrained.Primitive] types whose value IS the primitive).
+     * 4. Array schemas → [JsonArray] from the single list-typed property.
      *
      * @throws IllegalArgumentException if the schema type is unsupported, or if the
      *   implementing class does not have the required single-property structure for
@@ -84,27 +92,48 @@ object SchemaValueCodec {
      */
     @KonditionalInternalApi
     fun encodeKonstrained(konstrained: Konstrained<*>): JsonValue =
-        when (val schema = konstrained.schema) {
-            is ObjectTraits -> encode(konstrained, schema.asObjectSchema())
-            is StringSchema -> jsonValue { string(konstrained.extractSinglePrimitiveProperty()) }
-            is BooleanSchema -> jsonValue { boolean(konstrained.extractSinglePrimitiveProperty()) }
-            is IntSchema -> jsonValue { number(konstrained.extractSinglePrimitiveProperty<Int>()) }
-            is DoubleSchema -> jsonValue { number(konstrained.extractSinglePrimitiveProperty<Double>()) }
-            is ArraySchema<*> -> encodeKonstrainedArray(konstrained)
+        when {
+            // Adapted family: domain type T → JSON primitive via the instance's encode().
+            konstrained is Konstrained.AsString<*, *> -> jsonValue { string(konstrained.encode()) }
+            konstrained is Konstrained.AsInt<*, *> -> jsonValue { number(konstrained.encode()) }
+            konstrained is Konstrained.AsBoolean<*, *> -> jsonValue { boolean(konstrained.encode()) }
+            konstrained is Konstrained.AsDouble<*, *> -> jsonValue { number(konstrained.encode()) }
             else ->
-                error(
-                    "Unsupported schema type for Konstrained encoding: ${schema::class.simpleName}. " +
-                        "Supported: ObjectSchema, RootObjectSchema, StringSchema, BooleanSchema, " +
-                        "IntSchema, DoubleSchema, ArraySchema.",
-                )
+                when (val schema = konstrained.schema) {
+                    is ObjectTraits -> encode(konstrained, schema.asObjectSchema())
+                    is StringSchema -> jsonValue { string(konstrained.extractSinglePrimitiveProperty()) }
+                    is BooleanSchema -> jsonValue { boolean(konstrained.extractSinglePrimitiveProperty()) }
+                    is IntSchema -> jsonValue { number(konstrained.extractSinglePrimitiveProperty<Int>()) }
+                    is DoubleSchema -> jsonValue { number(konstrained.extractSinglePrimitiveProperty<Double>()) }
+                    is ArraySchema<*> -> encodeKonstrainedArray(konstrained)
+                    else ->
+                        error(
+                            "Unsupported schema type for Konstrained encoding: ${schema::class.simpleName}. " +
+                                "Supported: ObjectSchema, RootObjectSchema, StringSchema, BooleanSchema, " +
+                                "IntSchema, DoubleSchema, ArraySchema. " +
+                                "For non-primitive domain types implement Konstrained.AsString / AsInt / " +
+                                "AsBoolean / AsDouble and supply a companion Konstrained.Decoder.",
+                        )
+                }
         }
 
     /**
      * Decodes a raw primitive or list value back into a [Konstrained] value class instance.
      *
-     * The [kClass] must have a primary constructor with exactly one parameter whose type is
-     * assignment-compatible with [rawValue]. `@JvmInline value class` satisfies this by
-     * construction.
+     * ## Dispatch order
+     *
+     * 1. **Companion [Konstrained.Decoder]** — if the target class has a companion object
+     *    that implements [Konstrained.Decoder]`<P, T>` (where `P` matches the runtime type
+     *    of [rawValue]), the companion's [Konstrained.Decoder.decode] is called directly.
+     *    This is the canonical path for [Konstrained.AsString] / [Konstrained.AsInt] /
+     *    [Konstrained.AsBoolean] / [Konstrained.AsDouble] types whose wrapped domain value
+     *    is not itself a JSON primitive (e.g. `LocalDate`, `UUID`).
+     *
+     * 2. **Primary constructor** — fallback for [Konstrained.Primitive] types whose single
+     *    constructor parameter type matches [rawValue] directly (e.g. `Email(value: String)`).
+     *    The [kClass] must have a primary constructor with exactly one parameter whose type
+     *    is assignment-compatible with [rawValue]. `@JvmInline value class` satisfies this by
+     *    construction.
      *
      * @param kClass Target class to instantiate (typically a value class).
      * @param rawValue The raw primitive (`String`, `Boolean`, `Int`, `Double`) or `List<*>`.
@@ -114,6 +143,13 @@ object SchemaValueCodec {
     @KonditionalInternalApi
     @Suppress("ReturnCount")
     fun <T : Any> decodeKonstrainedPrimitive(kClass: KClass<T>, rawValue: Any): Result<T> {
+        // Step 1: prefer a companion Decoder when present — supports As* types with
+        // non-primitive domain values. The cast is safe: the companion is the companion
+        // of kClass (which produces T), and Decoder's V parameter is covariant.
+        val decoderResult = decodeViaDecoder(kClass, rawValue)
+        if (decoderResult != null) return decoderResult
+
+        // Step 2: fall back to direct constructor invocation for Konstrained.Primitive types.
         val constructor =
             kClass.primaryConstructor
                 ?: return parseFailure(
@@ -143,6 +179,61 @@ object SchemaValueCodec {
                     )
                 },
             )
+    }
+
+    /**
+     * Attempts to decode [rawValue] via a companion-object [Konstrained.Decoder], returning
+     * `null` when no matching companion decoder is found so the caller can fall through to
+     * the primary-constructor path.
+     *
+     * A single [Konstrained.Decoder]`<P, V>` interface replaces the previous four bespoke
+     * `StringDecoder` / `IntDecoder` / `BooleanDecoder` / `DoubleDecoder` interfaces.
+     * The `P` type parameter is inferred from the runtime type of [rawValue]; the unchecked
+     * cast to `Decoder<P, T>` is safe because the companion is the companion of [kClass],
+     * which by the [Konstrained.Decoder] contract produces values of type `T`.
+     */
+    @Suppress("UNCHECKED_CAST", "ReturnCount")
+
+    private fun <T : Any> decodeViaDecoder(
+        kClass: KClass<T>,
+        rawValue: Any
+    ): Result<T>? {
+        val companion = kClass.companionObjectInstance ?: return null
+        if (companion !is Konstrained.Decoder<*, *>) return null
+        val errorMessage: (Throwable) -> String = {
+            "Decoder on ${kClass.qualifiedName} failed for value '$rawValue': ${it.message}"
+        }
+        return when (rawValue) {
+            is String ->
+                runCatching { (companion as Konstrained.Decoder<String, T>).decode(rawValue) }
+                    .fold(
+                        onSuccess = { Result.success(it) },
+                        onFailure = { parseFailure(ParseError.InvalidSnapshot(errorMessage(it))) },
+                    )
+
+            is Int ->
+                runCatching { (companion as Konstrained.Decoder<Int, T>).decode(rawValue) }
+                    .fold(
+                        onSuccess = { Result.success(it) },
+                        onFailure = { parseFailure(ParseError.InvalidSnapshot(errorMessage(it))) },
+                    )
+
+            is Boolean ->
+                runCatching { (companion as Konstrained.Decoder<Boolean, T>).decode(rawValue) }
+                    .fold(
+                        onSuccess = { Result.success(it) },
+                        onFailure = { parseFailure(ParseError.InvalidSnapshot(errorMessage(it))) },
+                    )
+
+            is Double ->
+                runCatching { (companion as Konstrained.Decoder<Double, T>).decode(rawValue) }
+                    .fold(
+                        onSuccess = { Result.success(it) },
+                        onFailure = { parseFailure(ParseError.InvalidSnapshot(errorMessage(it))) },
+                    )
+
+            else -> null
+        }
     }
 
     private fun encodeValue(value: Any): JsonValue =
@@ -367,7 +458,7 @@ private inline fun <reified T : Any> Konstrained<*>.extractSinglePrimitiveProper
     val matching = allProps.filter { it.returnType.classifier == T::class }
     val prop =
         when {
-            primaryConstructorProp != null && primaryConstructorProp.returnType.classifier == T::class -> primaryConstructorProp
+            primaryConstructorProp?.returnType?.classifier == T::class -> primaryConstructorProp
             matching.size == 1 -> matching[0]
             matching.isEmpty() && allProps.size == 1 -> allProps[0]
             matching.isEmpty() ->

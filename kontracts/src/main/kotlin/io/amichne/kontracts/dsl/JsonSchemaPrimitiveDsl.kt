@@ -1,5 +1,6 @@
 package io.amichne.kontracts.dsl
 
+import io.amichne.kontracts.schema.ArraySchema
 import io.amichne.kontracts.schema.JsonSchema
 import kotlin.reflect.KClass
 
@@ -18,8 +19,8 @@ fun doubleSchema(builder: DoubleSchemaBuilder.() -> Unit = {}): JsonSchema<Doubl
 fun nullSchema(builder: NullSchemaBuilder.() -> Unit = {}): JsonSchema<Any> =
     NullSchemaBuilder().apply(builder).build()
 
-fun arraySchema(builder: ArraySchemaBuilder.() -> Unit): JsonSchema<List<Any>> =
-    ArraySchemaBuilder().apply(builder).build()
+inline fun <reified E : Any> arraySchema(builder: ArraySchemaBuilder<E>.() -> Unit): ArraySchema<E> =
+    ArraySchemaBuilder<E>().apply(builder).build()
 
 fun <E : Enum<E>> enumSchema(
     enumClass: KClass<E>,
