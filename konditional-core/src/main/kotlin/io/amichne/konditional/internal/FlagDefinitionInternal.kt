@@ -9,7 +9,7 @@ import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
-import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
+import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBySerialized
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.targeting.Targeting
 import io.amichne.konditional.rules.targeting.axesOrEmpty
@@ -80,7 +80,7 @@ fun <T : Any, C : Context, M : Namespace> flagDefinitionFromSerialized(
                     rampUpAllowlist = spec.rampUpAllowlist.mapTo(linkedSetOf()) { HexId(it) },
                     note = spec.note,
                     targeting = Targeting.All(leaves),
-                ).targetedBy(spec.value)
+                ).targetedBySerialized(spec.value, spec.type)
             },
         defaultValue = defaultValue,
         salt = metadata.salt,
@@ -100,8 +100,7 @@ fun FlagDefinition<*, *, *>.toSerializedMetadata(): SerializedFlagDefinitionMeta
 fun FlagDefinition<*, *, *>.toSerializedRules(): List<SerializedFlagRuleSpec<Any>> =
     values.map { cv ->
         val staticValue = cv.staticValueOrNull()
-        val type =
-            if (staticValue == null) SerializedRuleValueType.CONTEXTUAL else SerializedRuleValueType.STATIC
+        val type = cv.serializedValueType
         val value = staticValue ?: defaultValue
         val targeting = cv.rule.targeting
         SerializedFlagRuleSpec(

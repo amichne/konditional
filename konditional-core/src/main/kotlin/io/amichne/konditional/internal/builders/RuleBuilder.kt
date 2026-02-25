@@ -13,6 +13,7 @@ import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.registry.AxisCatalog
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.AnyOfScope
+import io.amichne.konditional.core.dsl.rules.targeting.scopes.NarrowingTargetingScope
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.targeting.Targeting
@@ -30,7 +31,7 @@ import io.amichne.konditional.rules.targeting.Targeting
 @PublishedApi
 internal class RuleBuilder<C : Context>(
     private val axisCatalog: AxisCatalog? = null,
-) : RuleScope<C> {
+) : RuleScope<C>, NarrowingTargetingScope<C> {
 
     private val leaves = mutableListOf<Targeting<C>>()
     private var note: String? = null
@@ -65,6 +66,16 @@ internal class RuleBuilder<C : Context>(
      */
     override fun extension(block: C.() -> Boolean) {
         leaves += Targeting.Custom(block = { c -> c.block() })
+    }
+
+    override fun <R : Context> extensionNarrowed(
+        evidence: (C) -> R?,
+        block: R.() -> Boolean,
+    ) {
+        leaves += Targeting.Guarded(
+            inner = Targeting.Custom(block = { narrowed: R -> narrowed.block() }),
+            evidence = evidence,
+        )
     }
 
     override fun <T> axis(

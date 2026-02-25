@@ -19,6 +19,7 @@ import io.amichne.konditional.rules.targeting.customLeafCount
 import io.amichne.konditional.rules.targeting.localesOrEmpty
 import io.amichne.konditional.rules.targeting.platformsOrEmpty
 import io.amichne.konditional.rules.targeting.versionRangeOrNull
+import java.security.MessageDigest
 import io.amichne.konditional.rules.versions.Unbounded
 import kotlin.system.measureNanoTime
 
@@ -130,14 +131,18 @@ private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.createRuleDia
         trace.skippedByRampUp?.toRuleMatch(
             bucket = trace.bucket,
             featureKey = key,
+            namespaceId = registry.namespaceId,
             salt = definition.salt,
+            ruleOrdinal = definition.valuesByPrecedence.indexOfFirst { it === trace.skippedByRampUp },
         )
     val decision =
         trace.matched
             ?.toRuleMatch(
                 bucket = trace.bucket,
                 featureKey = key,
+                namespaceId = registry.namespaceId,
                 salt = definition.salt,
+                ruleOrdinal = definition.valuesByPrecedence.indexOfFirst { it === trace.matched },
             )?.let { matched ->
                 EvaluationDiagnostics.Decision.Rule(
                     matched = matched,
@@ -160,10 +165,14 @@ private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.createRuleDia
 private fun <T : Any, C : Context> ConditionalValue<T, C>.toRuleMatch(
     bucket: Int?,
     featureKey: String,
+    namespaceId: String,
     salt: String,
+    ruleOrdinal: Int,
 ): EvaluationDiagnostics.RuleMatch {
     requireNotNull(bucket) { "Bucket must be computed when a rule matches by criteria" }
-    val explanation = rule.toExplanation()
+    val explanation = rule.toExplanation(
+        ruleId = createRuleId(namespaceId, featureKey, ruleOrdinal),
+    )
     return EvaluationDiagnostics.RuleMatch(
         rule = explanation,
         bucket =
@@ -181,7 +190,9 @@ private fun <T : Any, C : Context> ConditionalValue<T, C>.toRuleMatch(
     )
 }
 
-private fun <C : Context> Rule<C>.toExplanation(): EvaluationDiagnostics.RuleExplanation {
+private fun <C : Context> Rule<C>.toExplanation(
+    ruleId: String,
+): EvaluationDiagnostics.RuleExplanation {
     val targeting = targeting
     val locales = targeting.localesOrEmpty()
     val platforms = targeting.platformsOrEmpty()
@@ -209,5 +220,65 @@ private fun <C : Context> Rule<C>.toExplanation(): EvaluationDiagnostics.RuleExp
         extensionSpecificity = extensionSpecificity,
         totalSpecificity = targeting.specificity(),
         extensionClassName = null,
+        ruleId = ruleId,
+        extensionNode = targeting.toExtensionNode(),
+        conditionalContextNode = targeting.toConditionalContextNode(),
     )
 }
+
+
+private fun createRuleId(namespaceId: String, featureKey: String, ruleOrdinal: Int): String {
+    val ordinal = ruleOrdinal.coerceAtLeast(0)
+    val digest = MessageDigest.getInstance("SHA-256")
+    val input = "$namespaceId:$featureKey:$ordinal"
+    val hash = digest.digest(input.toByteArray(Charsets.UTF_8))
+    val shortHash = hash.take(8).joinToString("") { "%02x".format(it) }
+    return "rule::$namespaceId::$featureKey::$shortHash"
+}
+
+private fun <C : Context> Targeting.All<C>.toExtensionNode(): EvaluationDiagnostics.ExtensionNode {
+    val hasExtension =
+        targets.any { it is Targeting.Custom<*> || (it is Targeting.Guarded<*, *> && it.inner is Targeting.Custom<*>) }
+    return if (!hasExtension) {
+        EvaluationDiagnostics.ExtensionNode(EvaluationDiagnostics.ExtensionType.NONE)
+    } else {
+        EvaluationDiagnostics.ExtensionNode(
+            type = EvaluationDiagnostics.ExtensionType.LAMBDA,
+            content = toTargetingNode(),
+        )
+    }
+}
+
+private fun <C : Context> Targeting.All<C>.toConditionalContextNode(): EvaluationDiagnostics.ConditionalContextNode {
+    val hasNarrowing = targets.any { it is Targeting.Guarded<*, *> }
+    return if (!hasNarrowing) {
+        EvaluationDiagnostics.ConditionalContextNode(EvaluationDiagnostics.ConditionalContextType.NONE)
+    } else {
+        EvaluationDiagnostics.ConditionalContextNode(
+            type = EvaluationDiagnostics.ConditionalContextType.NARROWING,
+            content = toTargetingNode(),
+        )
+    }
+}
+
+@Suppress("UNCHECKED_CAST")
+private fun <C : Context> Targeting.All<C>.toTargetingNode(): EvaluationDiagnostics.TargetingNode =
+    EvaluationDiagnostics.TargetingNode.All(children = targets.map { (it as Targeting<Context>).toTargetingNode() })
+
+private fun Targeting<Context>.toTargetingNode(): EvaluationDiagnostics.TargetingNode =
+    when (this) {
+        is Targeting.All<*> -> (this as Targeting.All<Context>).toTargetingNode()
+        is Targeting.AnyOf<*> ->
+            EvaluationDiagnostics.TargetingNode.AnyOf(
+                children = this.targets.map { (it as Targeting<Context>).toTargetingNode() },
+            )
+        is Targeting.Locale -> EvaluationDiagnostics.TargetingNode.Locale(ids = ids)
+        is Targeting.Platform -> EvaluationDiagnostics.TargetingNode.Platform(ids = ids)
+        is Targeting.Version -> EvaluationDiagnostics.TargetingNode.Version(range = range)
+        is Targeting.Axis -> EvaluationDiagnostics.TargetingNode.Axis(axisId = axisId, allowedIds = allowedIds)
+        is Targeting.Custom<*> -> EvaluationDiagnostics.TargetingNode.Custom
+        is Targeting.Guarded<*, *> ->
+            EvaluationDiagnostics.TargetingNode.Guarded(
+                child = (inner as Targeting<Context>).toTargetingNode(),
+            )
+    }

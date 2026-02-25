@@ -30,6 +30,15 @@ interface ExtensionTargetingScope<C : Context> {
     fun extension(block: C.() -> Boolean)
 }
 
+
+@PublishedApi
+internal interface NarrowingTargetingScope<C : Context> {
+    fun <R : Context> extensionNarrowed(
+        evidence: (C) -> R?,
+        block: R.() -> Boolean,
+    )
+}
+
 /**
  * Adds a capability-narrowed extension predicate.
  *
@@ -46,6 +55,16 @@ interface ExtensionTargetingScope<C : Context> {
 inline fun <reified R : Context> ExtensionTargetingScope<*>.whenContext(
     crossinline block: R.() -> Boolean,
 ) {
+    @Suppress("UNCHECKED_CAST")
+    val narrowingScope = this as? NarrowingTargetingScope<Context>
+    if (narrowingScope != null) {
+        narrowingScope.extensionNarrowed(
+            evidence = { context -> context as? R },
+            block = { block() },
+        )
+        return
+    }
+
     @Suppress("UNCHECKED_CAST")
     val scope = this as ExtensionTargetingScope<Context>
     scope.extension {
