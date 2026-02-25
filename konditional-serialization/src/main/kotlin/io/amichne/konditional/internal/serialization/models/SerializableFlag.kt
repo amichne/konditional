@@ -86,7 +86,7 @@ data class SerializableFlag(
                 parseFailure(
                     ParseError.invalidSnapshot(
                         "Feature-aware decode requires explicit feature scope for key '$key'. " +
-                            "Use ConfigurationSnapshotCodec.decode(json, featuresById, options).",
+                            "Use ConfigurationSnapshotCodec.decode(json, schema, options).",
                     ),
                 )
 

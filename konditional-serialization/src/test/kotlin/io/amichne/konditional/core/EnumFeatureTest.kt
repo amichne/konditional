@@ -10,7 +10,7 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.features.EnumFeature
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.runtime.load
+import io.amichne.konditional.runtime.update
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.MaterializedConfiguration
 import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
@@ -226,9 +226,9 @@ class EnumFeatureTest {
         )
 
         val json = ConfigurationSnapshotCodec.encode(namespace.configuration)
-        namespace.load(MaterializedConfiguration.of(namespace.compiledSchema(), Configuration(emptyMap())))
+        namespace.update(MaterializedConfiguration.of(namespace.compiledSchema(), Configuration(emptyMap())))
 
-        val reloadResult = NamespaceSnapshotLoader(namespace).load(json)
+        val reloadResult = NamespaceSnapshotLoader.forNamespace(namespace).load(json)
         assertTrue(reloadResult.isSuccess)
 
         assertEquals(LogLevel.DEBUG, namespace.logLevel.evaluate(androidContext))
