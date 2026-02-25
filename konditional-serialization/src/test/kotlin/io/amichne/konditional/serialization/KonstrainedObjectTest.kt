@@ -9,7 +9,9 @@ import io.amichne.konditional.fixtures.serializers.FeatureEnabled
 import io.amichne.konditional.fixtures.serializers.Percentage
 import io.amichne.konditional.fixtures.serializers.RetryCount
 import io.amichne.konditional.fixtures.serializers.RetryPolicy
+import io.amichne.konditional.fixtures.serializers.Tags
 import io.amichne.konditional.fixtures.serializers.UserSettings
+import io.amichne.kontracts.dsl.jsonArray
 import io.amichne.kontracts.dsl.jsonObject
 import io.amichne.kontracts.dsl.jsonValue
 import io.amichne.kontracts.value.JsonObject
@@ -68,7 +70,8 @@ class KonstrainedObjectTest {
         }
         val result = SchemaValueCodec.decodeKonstrained(RetryPolicy::class, json)
         assertTrue(result.isSuccess)
-        assertEquals(RetryPolicy(maxAttempts = 5, backoffMs = 500.0, enabled = true, mode = "linear"), result.getOrThrow())
+        val expected = RetryPolicy(maxAttempts = 5, backoffMs = 500.0, enabled = true, mode = "linear")
+        assertEquals(expected, result.getOrThrow())
     }
 
     @Test
@@ -104,5 +107,15 @@ class KonstrainedObjectTest {
         val result = SchemaValueCodec.decodeKonstrained(Percentage::class, jsonValue { number(75.5) })
         assertTrue(result.isSuccess)
         assertEquals(Percentage(75.5), result.getOrThrow())
+    }
+
+    @Test
+    fun `decodeKonstrained dispatches JsonArray to decodeKonstrainedPrimitive for Tags`() {
+        val json = jsonArray {
+            elements(listOf(jsonValue { string("alpha") }, jsonValue { string("beta") }))
+        }
+        val result = SchemaValueCodec.decodeKonstrained(Tags::class, json)
+        assertTrue(result.isSuccess)
+        assertEquals(Tags(listOf("alpha", "beta")), result.getOrThrow())
     }
 }

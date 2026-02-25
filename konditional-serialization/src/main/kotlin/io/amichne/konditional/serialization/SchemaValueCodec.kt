@@ -466,11 +466,15 @@ object SchemaValueCodec {
 }
 
 /**
- * Converts a non-object [JsonValue] to the raw Kotlin primitive required by
+ * Converts a [JsonValue] to the raw Kotlin value required by
  * [SchemaValueCodec.decodeKonstrainedPrimitive].
  *
- * Chooses [Int] when the target is [Konstrained.Primitive.Int] or [Konstrained.AsInt];
- * falls back to [Double] for all other numeric targets.
+ * - [JsonString] → [String]
+ * - [JsonBoolean] → [Boolean]
+ * - [JsonNumber] → [Int] when [targetClass] is [Konstrained.Primitive.Int] or
+ *   [Konstrained.AsInt]; [Double] otherwise
+ * - [JsonArray] → [List] of primitives (String, Boolean, Int, or Double per element)
+ * - [JsonObject] / [JsonNull] → not handled here; callers must branch before calling
  */
 private fun <T : Any> JsonValue.toKotlinPrimitive(targetClass: KClass<T>): Any =
     when (this) {
