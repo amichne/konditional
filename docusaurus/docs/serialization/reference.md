@@ -2,13 +2,16 @@
 
 JSON snapshot and patch APIs at the untrusted boundary.
 
-## `ConfigurationSnapshotCodec.encode(...)`
+## `ConfigurationSnapshotCodec.encode(...)` (legacy infrastructure entrypoint)
 
 ```kotlin
 object ConfigurationSnapshotCodec {
     fun encode(value: ConfigurationView): String
 }
 ```
+
+Prefer `Namespace.dump()` from `io.amichne.konditional.runtime` for namespace-scoped snapshot export.
+`encode(...)` remains available for infrastructure/test code that already holds a `ConfigurationView`.
 
 ## `ConfigurationSnapshotCodec.decode(...)`
 
