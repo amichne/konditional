@@ -67,8 +67,8 @@ dependencies {
 | `Version.parse(raw): Result<Version>` | `Version.parse(raw): Result<Version>` |
 | `SnapshotCodec.decode(...): Result<T>` | `SnapshotCodec.decode(...): Result<T>` |
 | `SnapshotLoader.load(...): Result<T>` | `SnapshotLoader.load(...): Result<T>` |
-| `ConfigurationSnapshotCodec.decode(...): Result<Configuration>` | `ConfigurationSnapshotCodec.decode(...): Result<MaterializedConfiguration>` |
-| `Namespace.load(configuration: ConfigurationView)` extension | `Namespace.load(configuration: MaterializedConfiguration)` |
+| `ConfigurationSnapshotCodec.decode(...): Result<TrustedSnapshotWrapper>` | `ConfigurationSnapshotCodec.decode(...): Result<Configuration>` |
+| `Namespace.update(configuration: TrustedSnapshotWrapper)` extension | `Namespace.update(configuration: Configuration)` |
 
 Failure introspection remains structured via `KonditionalBoundaryFailure(parseError)` and `parseErrorOrNull()`.
 

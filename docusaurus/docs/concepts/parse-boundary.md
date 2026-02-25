@@ -10,10 +10,10 @@ JSON and external configuration are untrusted inputs. Konditional parses them in
 ## Boundary API Shape
 
 ```kotlin
-val result = NamespaceSnapshotLoader(AppFeatures).load(json)
+val result = NamespaceSnapshotLoader.forNamespace(AppFeatures).load(json)
 ```
 
-- `Result.success(MaterializedConfiguration)`: trusted payload loaded.
+- `Result.success(Configuration)`: trusted payload loaded.
 - `Result.failure(KonditionalBoundaryFailure(parseError))`: update rejected, active state unchanged.
 
 ## Parse Error Taxonomy

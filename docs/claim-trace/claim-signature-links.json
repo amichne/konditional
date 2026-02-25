@@ -388,7 +388,7 @@
           "links": [
             {
               "kind": "method",
-              "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#override fun load( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>"
+              "signature": "io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#fun load( json: String, options: SnapshotLoadOptions = SnapshotLoadOptions.strict(), ): Result<Configuration>"
             },
             {
               "kind": "type",

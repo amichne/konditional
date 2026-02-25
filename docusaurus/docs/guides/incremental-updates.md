@@ -9,9 +9,9 @@ Apply patch payloads when you want to change a subset of flags without rebuildin
 
 **Prerequisites:** You can already [load remote snapshots](/guides/remote-configuration).
 
-## Step 1: Keep Current Trusted Snapshot
+## Step 1: Keep Current Configuration
 
-Store the current `MaterializedConfiguration` after successful load.
+Store the current `Configuration` after successful load.
 
 ## Step 2: Apply Patch JSON
 
@@ -19,9 +19,10 @@ Store the current `MaterializedConfiguration` after successful load.
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 
-val patched = ConfigurationSnapshotCodec.applyPatchJson(
-  currentConfiguration = currentMaterialized,
+val patched = ConfigurationSnapshotCodec.patch(
+  current = currentConfiguration,
   patchJson = patchJson,
+  namespace = AppFeatures,
   options = SnapshotLoadOptions.strict(),
 )
 ```

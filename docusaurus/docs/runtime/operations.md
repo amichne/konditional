@@ -2,16 +2,16 @@
 
 API reference for managing namespace configuration lifecycle: loading, rollback, and kill-switch operations.
 
-`load` / `rollback` / `historyMetadata` are runtime-only extensions from `io.amichne.konditional.runtime`.
+`update` / `rollback` / `historyMetadata` are runtime-only extensions from `io.amichne.konditional.runtime`.
 
 ---
 
-## `Namespace.load(configuration)`
+## `Namespace.update(configuration)`
 
 Atomically replace the active configuration snapshot.
 
 ```kotlin
-fun Namespace.load(configuration: MaterializedConfiguration)
+fun Namespace.update(configuration: Configuration)
 ```
 
 ### Parameters
@@ -27,10 +27,10 @@ fun Namespace.load(configuration: MaterializedConfiguration)
 ### Example
 
 ```kotlin
-NamespaceSnapshotLoader(AppFeatures)
+NamespaceSnapshotLoader.forNamespace(AppFeatures)
   .load(json)
-  .onSuccess { materialized ->
-    AppFeatures.load(materialized)
+  .onSuccess { configuration ->
+    AppFeatures.update(configuration)
   }
   .onFailure { failure ->
     val parseError = failure.parseErrorOrNull()

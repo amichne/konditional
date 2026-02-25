@@ -17,12 +17,10 @@ import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.KonditionalBoundaryFailure
 import io.amichne.konditional.core.result.ParseError
-
 import io.amichne.konditional.fixtures.serializers.RetryPolicy
 import io.amichne.konditional.fixtures.utilities.update
 import io.amichne.konditional.runtime.update
 import io.amichne.konditional.serialization.instance.Configuration
-import io.amichne.konditional.serialization.instance.MaterializedConfiguration
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 import io.amichne.konditional.values.FeatureId
@@ -91,7 +89,7 @@ class ConfigurationSnapshotCodecTest {
     }
 
     private fun loadMaterialized(configuration: Configuration) {
-        TestFeatures.update(MaterializedConfiguration.of(TestFeatures.compiledSchema(), configuration))
+        TestFeatures.update(configuration)
     }
 
     private fun declaredDefaultConfiguration(): Configuration {
@@ -118,14 +116,15 @@ class ConfigurationSnapshotCodecTest {
     ): ParseResult<Configuration> =
         ConfigurationSnapshotCodec
             .patch(
-                current = MaterializedConfiguration.of(TestFeatures.compiledSchema(), currentConfiguration),
+                current = currentConfiguration,
                 patchJson = patchJson,
+                namespace = TestFeatures,
                 options = options,
             ).toParseResult()
 
-    private fun Result<MaterializedConfiguration>.toParseResult(): ParseResult<Configuration> =
+    private fun Result<Configuration>.toParseResult(): ParseResult<Configuration> =
         fold(
-            onSuccess = { materialized -> ParseResult.success(materialized.configuration) },
+            onSuccess = { configuration -> ParseResult.success(configuration) },
             onFailure = { error ->
                 val parseError =
                     (error as? KonditionalBoundaryFailure)?.parseError

@@ -24,7 +24,7 @@ Canonical terms used across Konditional docs.
 | Bucketing | Deterministic assignment of a `(stableId, featureKey, salt)` tuple into a fixed bucket space. |
 | RampUp | Percentage gate (`RampUp`) that controls how many matching contexts receive a rule value. |
 | ConfigurationView | Read-only interface for currently active runtime configuration and metadata. |
-| MaterializedConfiguration | Trusted snapshot wrapper produced by schema-aware decode and used for runtime loads. |
+| Configuration | Trusted snapshot produced by schema-aware decode and used for runtime loads. |
 | SnapshotLoadOptions | Boundary policy object controlling unknown keys, missing declared flags, and warning behavior. |
 
 ## Next Steps

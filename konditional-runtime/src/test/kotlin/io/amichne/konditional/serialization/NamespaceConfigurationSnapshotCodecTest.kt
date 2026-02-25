@@ -13,11 +13,9 @@ import io.amichne.konditional.core.dsl.disable
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.parseErrorOrNull
-
 import io.amichne.konditional.fixtures.utilities.update
 import io.amichne.konditional.runtime.update
 import io.amichne.konditional.serialization.instance.Configuration
-import io.amichne.konditional.serialization.instance.MaterializedConfiguration
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
@@ -46,11 +44,8 @@ class NamespaceConfigurationSnapshotCodecTest {
     @BeforeEach
     fun setup() {
         // Reset namespace registry state before each test
-        testNamespace.update(materialize(declaredDefaultConfiguration()))
+        testNamespace.update(declaredDefaultConfiguration())
     }
-
-    private fun materialize(configuration: Configuration): MaterializedConfiguration =
-        MaterializedConfiguration.of(testNamespace.compiledSchema(), configuration)
 
     private fun declaredDefaultConfiguration(): Configuration {
         val schema = testNamespace.compiledSchema()
@@ -68,7 +63,7 @@ class NamespaceConfigurationSnapshotCodecTest {
     @Test
     fun `Given namespace with no flags, When serialized, Then produces JSON with empty flags array`() {
         // Start with empty namespace
-        testNamespace.update(materialize(declaredDefaultConfiguration()))
+        testNamespace.update(declaredDefaultConfiguration())
 
         val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
 
@@ -186,7 +181,7 @@ class NamespaceConfigurationSnapshotCodecTest {
         val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
 
         // Clear and deserialize
-        testNamespace.update(materialize(declaredDefaultConfiguration()))
+        testNamespace.update(declaredDefaultConfiguration())
         val result = NamespaceSnapshotLoader.forNamespace(testNamespace).load(json)
         assertTrue(result.isSuccess)
 
@@ -244,7 +239,7 @@ class NamespaceConfigurationSnapshotCodecTest {
         testNamespace.boolFlag.update(true) {}
         val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
 
-        testNamespace.update(materialize(declaredDefaultConfiguration()))
+        testNamespace.update(declaredDefaultConfiguration())
         val result =
             NamespaceSnapshotLoader.forNamespace(testNamespace).load(
                 json,
