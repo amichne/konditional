@@ -6,8 +6,6 @@ JSON snapshot and patch APIs at the untrusted boundary.
 
 ```kotlin
 object ConfigurationSnapshotCodec {
-    fun encodeRaw(value: Configuration): String
-    fun encode(value: MaterializedConfiguration): String
     fun encode(value: ConfigurationView): String
 }
 ```
@@ -18,39 +16,28 @@ object ConfigurationSnapshotCodec {
 object ConfigurationSnapshotCodec {
     fun decode(
         json: String,
-        options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
-    ): Result<MaterializedConfiguration>
-
-    fun decode(
-        json: String,
         schema: CompiledNamespaceSchema,
         options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
-    ): Result<MaterializedConfiguration>
+    ): Result<Configuration>
 }
 ```
 
 Notes:
 
-- `decode(json, options)` without schema is intentionally rejected.
-- Successful decode returns trusted `MaterializedConfiguration` only.
+- Decode is schema-required and deterministic.
+- Successful decode returns trusted `Configuration`.
 - Failures are `Result.failure(KonditionalBoundaryFailure(parseError))`.
 
-## `ConfigurationSnapshotCodec.applyPatchJson(...)`
+## `ConfigurationSnapshotCodec.patch(...)`
 
 ```kotlin
 object ConfigurationSnapshotCodec {
-    fun applyPatchJson(
-        currentConfiguration: MaterializedConfiguration,
+    fun patch(
+        current: Configuration,
         patchJson: String,
+        namespace: Namespace,
         options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
-    ): Result<MaterializedConfiguration>
-
-    fun applyPatchJson(
-        currentConfiguration: ConfigurationView,
-        schema: CompiledNamespaceSchema,
-        patchJson: String,
-        options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
-    ): Result<MaterializedConfiguration>
+    ): Result<Configuration>
 }
 ```
 

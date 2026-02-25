@@ -6,6 +6,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.amichne.konditional.api.KonditionalInternalApi
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.instance.ConfigurationView
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.parseFailure
@@ -23,7 +24,6 @@ import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.ConfigurationMetadata
-import io.amichne.konditional.serialization.instance.MaterializedConfiguration
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 
 /**
@@ -35,7 +35,7 @@ import io.amichne.konditional.serialization.options.SnapshotLoadOptions
  * There is exactly one way to perform each operation:
  * - [encode]: accepts any [ConfigurationView] (including [Configuration])
  * - [decode]: schema is a required parameter — no schema-less overload exists
- * - [patch]: derives schema from the trusted [MaterializedConfiguration]
+ * - [patch]: derives schema from the provided [namespace]
  *
  * To load a decoded snapshot into a namespace registry, use `NamespaceSnapshotLoader` from `:konditional-runtime`.
  */
@@ -54,7 +54,7 @@ object ConfigurationSnapshotCodec {
     /**
      * Decodes a JSON snapshot against a [CompiledNamespaceSchema].
      *
-     * Returns a [Result] containing a fully validated [MaterializedConfiguration] on success,
+     * Returns a [Result] containing a fully validated [Configuration] on success,
      * or a typed [ParseError] on failure. Never throws.
      *
      * @param json the raw JSON snapshot string
@@ -65,7 +65,7 @@ object ConfigurationSnapshotCodec {
         json: String,
         schema: CompiledNamespaceSchema,
         options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
-    ): Result<MaterializedConfiguration> {
+    ): Result<Configuration> {
         val serializable =
             runCatching { snapshotAdapter.fromJson(json) }
                 .getOrElse { error ->
@@ -79,26 +79,42 @@ object ConfigurationSnapshotCodec {
     }
 
     /**
-     * Applies a JSON patch to an existing trusted [MaterializedConfiguration].
+     * Applies a JSON patch to an existing [Configuration].
      *
-     * The schema is derived from [current]. Returns a [Result] containing the patched
-     * [MaterializedConfiguration] on success, or a typed [ParseError] on failure. Never throws.
+     * The schema is derived from [namespace]. Returns a [Result] containing the patched
+     * [Configuration] on success, or a typed [ParseError] on failure. Never throws.
      *
-     * @param current the current trusted snapshot (provides the schema)
+     * @param current the current configuration snapshot to patch
      * @param patchJson the raw JSON patch string
+     * @param namespace namespace used to derive a compile-time schema for patch materialization
      * @param options controls unknown-key and missing-declared-flag handling
      */
     fun patch(
-        current: MaterializedConfiguration,
+        current: Configuration,
         patchJson: String,
+        namespace: Namespace,
         options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
-    ): Result<MaterializedConfiguration> =
+    ): Result<Configuration> =
+        patchWithSchema(
+            current = current,
+            patchJson = patchJson,
+            schema = namespace.compiledSchema(),
+            options = options,
+        )
+
+    @KonditionalInternalApi
+    internal fun patchWithSchema(
+        current: Configuration,
+        patchJson: String,
+        schema: CompiledNamespaceSchema,
+        options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
+    ): Result<Configuration> =
         runCatching { patchAdapter.fromJson(patchJson) }
             .fold(
                 onSuccess = { parsedPatch ->
                     parsedPatch
                         ?.let { patch ->
-                            val currentSerializable = SerializableSnapshot.from(current.configuration)
+                            val currentSerializable = SerializableSnapshot.from(current)
                             val flagMap = currentSerializable.flags.associateBy { it.key }.toMutableMap()
 
                             patch.removeKeys.forEach(flagMap::remove)
@@ -108,7 +124,7 @@ object ConfigurationSnapshotCodec {
                                 meta = patch.meta ?: currentSerializable.meta,
                                 flags = flagMap.values.toList(),
                             ).toConfiguration(
-                                schema = current.schema,
+                                schema = schema,
                                 options = options,
                             )
                         }

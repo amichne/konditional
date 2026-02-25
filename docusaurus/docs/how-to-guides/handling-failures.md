@@ -189,7 +189,7 @@ class CircuitBreakerConfigLoader(
   private var lastFailure: Instant? = null
   private var circuitOpen = false
 
-  fun load(json: String): Result<MaterializedConfiguration> {
+  fun load(json: String): Result<Configuration> {
     // Check if circuit should be reset
     lastFailure?.let {
       if (Duration.between(it, Instant.now()) > resetTimeout) {

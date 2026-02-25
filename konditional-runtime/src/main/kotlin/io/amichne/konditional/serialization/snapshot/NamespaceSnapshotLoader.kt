@@ -8,7 +8,7 @@ import io.amichne.konditional.core.registry.NamespaceRegistryRuntime
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.parseErrorOrNull
 import io.amichne.konditional.core.result.parseFailure
-import io.amichne.konditional.serialization.instance.MaterializedConfiguration
+import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 
 /**
@@ -27,13 +27,13 @@ class NamespaceSnapshotLoader<M : Namespace> private constructor(
     /**
      * Decodes [json] and loads it into the namespace registry if decoding succeeds.
      *
-     * @return [Result.success] with the [MaterializedConfiguration] on success,
+     * @return [Result.success] with the [Configuration] on success,
      *         or [Result.failure] with a typed [ParseError] on failure. Never throws.
      */
     fun load(
         json: String,
         options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
-    ): Result<MaterializedConfiguration> {
+    ): Result<Configuration> {
         val decoded = ConfigurationSnapshotCodec.decode(
             json = json,
             schema = namespace.compiledSchema(),
@@ -49,9 +49,9 @@ class NamespaceSnapshotLoader<M : Namespace> private constructor(
             }
         }
 
-        val materialized = decoded.getOrThrow()
-        namespace.runtimeRegistry().load(materialized.configuration)
-        return Result.success(materialized)
+        val configuration = decoded.getOrThrow()
+        namespace.runtimeRegistry().load(configuration)
+        return Result.success(configuration)
     }
 
     private fun Namespace.runtimeRegistry(): NamespaceRegistryRuntime =

@@ -16,7 +16,6 @@ import io.amichne.konditional.core.instance.ConfigurationView
 import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.ConfigurationMetadata
-import io.amichne.konditional.serialization.instance.MaterializedConfiguration
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -172,16 +171,13 @@ class NamespaceLinearizabilityTest {
     private fun versionedConfiguration(
         namespace: LinearizableNamespace,
         value: Int,
-    ): MaterializedConfiguration =
-        MaterializedConfiguration.of(
-            schema = namespace.compiledSchema(),
-            configuration = Configuration(
-                flags = mapOf(
-                    namespace.primary to intDefinition(namespace.primary, value),
-                    namespace.mirror to intDefinition(namespace.mirror, -value),
-                ),
-                metadata = ConfigurationMetadata(version = "v$value"),
+    ): Configuration =
+        Configuration(
+            flags = mapOf(
+                namespace.primary to intDefinition(namespace.primary, value),
+                namespace.mirror to intDefinition(namespace.mirror, -value),
             ),
+            metadata = ConfigurationMetadata(version = "v$value"),
         )
 
     private fun assertHistoryCoherent(

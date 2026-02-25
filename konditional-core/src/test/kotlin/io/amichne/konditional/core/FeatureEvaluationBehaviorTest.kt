@@ -15,7 +15,6 @@ import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.internal.evaluation.EvaluationDiagnostics
 import io.amichne.konditional.runtime.update
 import io.amichne.konditional.serialization.instance.Configuration
-import io.amichne.konditional.serialization.instance.MaterializedConfiguration
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -48,7 +47,7 @@ class FeatureEvaluationBehaviorTest {
             object : Namespace.TestNamespaceFacade("eval-missing-definition") {
                 val feature by boolean<Context>(default = false)
             }
-        namespace.update(MaterializedConfiguration.of(namespace.compiledSchema(), Configuration(emptyMap())))
+        namespace.update(Configuration(emptyMap()))
 
         val error = assertFailsWith<IllegalStateException> { namespace.feature.evaluate(context) }
         assertTrue(error.message.orEmpty().contains("Flag not found"))

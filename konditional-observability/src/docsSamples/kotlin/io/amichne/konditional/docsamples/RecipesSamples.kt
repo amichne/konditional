@@ -179,8 +179,8 @@ fun loadRemoteConfig() {
     val features = AppFeatures
     val result = ConfigurationSnapshotCodec.decode(json, features.compiledSchema())
 
-    result.onSuccess { materialized ->
-        features.update(materialized)
+    result.onSuccess { configuration ->
+        features.update(configuration)
     }
     result.onFailure { failure ->
         val parseErrorMessage = result.parseErrorOrNull()?.message
@@ -202,7 +202,7 @@ fun evaluateWithShadowedConfig(context: Context): Boolean {
     val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson, AppFeatures.compiledSchema()).getOrThrow()
     val candidateRegistry =
         InMemoryNamespaceRegistry(namespaceId = AppFeatures.namespaceId).apply {
-            load(candidateConfig.configuration)
+            load(candidateConfig)
         }
 
     val value =

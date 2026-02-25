@@ -304,8 +304,8 @@ class ConfigHistory(private val namespace: Namespace) {
   fun loadAndTrack(
       version: String,
       config: String
-  ): Result<MaterializedConfiguration> {
-    val result = NamespaceSnapshotLoader(namespace).load(config)
+  ): Result<Configuration> {
+    val result = NamespaceSnapshotLoader.forNamespace(namespace).load(config)
     return when {
       result.isSuccess -> {
         history.add(0, VersionedConfig(version, config))

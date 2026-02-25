@@ -9,25 +9,24 @@ title: NamespaceSnapshotLoader API
 ## Type Signature
 
 ```kotlin
-class NamespaceSnapshotLoader<M : Namespace>(
+class NamespaceSnapshotLoader<M : Namespace> private constructor(
     private val namespace: M,
-    private val codec: SnapshotCodec<MaterializedConfiguration> = ConfigurationSnapshotCodec,
-) : SnapshotLoader<MaterializedConfiguration>
+)
 ```
 
 ## `load(json, options)`
 
 ```kotlin
-override fun load(
+fun load(
     json: String,
     options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
-): Result<MaterializedConfiguration>
+): Result<Configuration>
 ```
 
 Semantics:
 
 - Success:
-  - returns `Result.success(materializedConfiguration)`
+  - returns `Result.success(configuration)`
   - updates namespace runtime snapshot atomically
 - Failure:
   - returns `Result.failure(KonditionalBoundaryFailure(parseError))`
@@ -36,11 +35,11 @@ Semantics:
 ## Example
 
 ```kotlin
-val loader = NamespaceSnapshotLoader(AppFeatures)
+val loader = NamespaceSnapshotLoader.forNamespace(AppFeatures)
 
 loader.load(fetchRemoteConfig())
-  .onSuccess { materialized ->
-    logger.info { "Loaded version=${materialized.configuration.metadata.version}" }
+  .onSuccess { configuration ->
+    logger.info { "Loaded version=${configuration.metadata.version}" }
   }
   .onFailure { failure ->
     val parseError = failure.parseErrorOrNull()

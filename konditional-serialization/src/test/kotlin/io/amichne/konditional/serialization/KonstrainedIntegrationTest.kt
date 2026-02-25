@@ -118,7 +118,7 @@ class KonstrainedIntegrationTest {
                 json = json,
                 schema = features.compiledSchema(),
             ).onSuccess { config ->
-                println("Successfully deserialized ${config.configuration.flags.size} flags")
+                println("Successfully deserialized ${config.flags.size} flags")
             }
         }
     }

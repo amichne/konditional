@@ -7,7 +7,7 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.instance.ConfigurationMetadataView
 import io.amichne.konditional.core.instance.ConfigurationView
 import io.amichne.konditional.core.registry.NamespaceRegistryRuntime
-import io.amichne.konditional.serialization.instance.MaterializedConfiguration
+import io.amichne.konditional.serialization.instance.Configuration
 
 /**
  * Runtime-only namespace operations (mutation/lifecycle).
@@ -20,8 +20,8 @@ import io.amichne.konditional.serialization.instance.MaterializedConfiguration
  * Callers that need to decode JSON first should use [NamespaceSnapshotLoader] from
  * `:konditional-runtime`, which combines decode and update in one call.
  */
-fun Namespace.update(configuration: MaterializedConfiguration) {
-    runtimeRegistry().load(configuration.configuration)
+fun Namespace.update(configuration: Configuration) {
+    runtimeRegistry().load(configuration)
 }
 
 fun Namespace.rollback(steps: Int = 1): Boolean =
