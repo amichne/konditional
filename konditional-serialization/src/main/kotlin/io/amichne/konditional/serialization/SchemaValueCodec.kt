@@ -25,6 +25,7 @@ import io.amichne.kontracts.value.JsonValue
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.companionObjectInstance
+import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 
@@ -320,6 +321,27 @@ object SchemaValueCodec {
             ?.let { schema -> decode(kClass, json, schema) }
             ?: decodeWithoutSchema(kClass, json)
 
+    /**
+     * Unified decode entry point symmetric with [encodeKonstrained].
+     *
+     * Dispatches on the runtime type of [jsonValue]:
+     * - [JsonObject] → [decode] (handles data classes and Kotlin `object` singletons)
+     * - [JsonNull] → [Result.failure] with [ParseError.InvalidSnapshot]
+     * - All other [JsonValue] variants → [decodeKonstrainedPrimitive] after extracting the
+     *   raw Kotlin primitive via [toKotlinPrimitive].
+     *
+     * For [JsonNumber], [Konstrained.Primitive.Int] and [Konstrained.AsInt] targets receive
+     * an [Int]; all other targets receive a [Double].
+     */
+    fun <T : Any> decodeKonstrained(kClass: KClass<T>, jsonValue: JsonValue): Result<T> =
+        when (jsonValue) {
+            is JsonObject -> decode(kClass, jsonValue)
+            is JsonNull ->
+                parseFailure(ParseError.InvalidSnapshot("Cannot decode null as ${kClass.qualifiedName}"))
+            else ->
+                decodeKonstrainedPrimitive(kClass, jsonValue.toKotlinPrimitive(kClass))
+        }
+
     private fun decodeValue(kClass: KClass<*>?, json: JsonValue): Result<Any> =
         kClass?.let { decodeValueForClass(it, json) }
             ?: parseFailure(ParseError.InvalidSnapshot("Cannot decode value without type information"))
@@ -442,6 +464,34 @@ object SchemaValueCodec {
             )
     }
 }
+
+/**
+ * Converts a non-object [JsonValue] to the raw Kotlin primitive required by
+ * [SchemaValueCodec.decodeKonstrainedPrimitive].
+ *
+ * Chooses [Int] when the target is [Konstrained.Primitive.Int] or [Konstrained.AsInt];
+ * falls back to [Double] for all other numeric targets.
+ */
+private fun <T : Any> JsonValue.toKotlinPrimitive(targetClass: KClass<T>): Any =
+    when (this) {
+        is JsonString -> value
+        is JsonBoolean -> value
+        is JsonNumber -> if (targetClass.isIntKonstrained()) toInt() else toDouble()
+        is JsonArray ->
+            elements.map { elem ->
+                when (elem) {
+                    is JsonString -> elem.value
+                    is JsonBoolean -> elem.value
+                    is JsonNumber ->
+                        if (elem.toDouble() == elem.toInt().toDouble()) elem.toInt() else elem.toDouble()
+                    else -> error("Unsupported array element type for decodeKonstrained: ${elem::class.simpleName}")
+                }
+            }
+        else -> error("Cannot convert ${this::class.simpleName} to Kotlin primitive for ${targetClass.qualifiedName}")
+    }
+
+private fun KClass<*>.isIntKonstrained(): Boolean =
+    isSubclassOf(Konstrained.Primitive.Int::class) || isSubclassOf(Konstrained.AsInt::class)
 
 /**
  * Extracts the single primitive property of the expected type [T] from a [Konstrained] instance.
