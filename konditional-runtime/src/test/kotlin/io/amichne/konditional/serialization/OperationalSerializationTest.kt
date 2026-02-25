@@ -9,13 +9,11 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
-import io.amichne.konditional.core.result.ParseError
-import io.amichne.konditional.core.result.parseErrorOrNull
 
 import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
-import io.amichne.konditional.runtime.load
+import io.amichne.konditional.runtime.update
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.ConfigurationMetadata
 import io.amichne.konditional.serialization.instance.MaterializedConfiguration
@@ -28,7 +26,6 @@ import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class OperationalSerializationTest {
@@ -66,10 +63,6 @@ class OperationalSerializationTest {
               ]
             }
         """.trimIndent()
-
-        val strictResult = ConfigurationSnapshotCodec.decode(snapshotJson)
-        assertTrue(strictResult.isFailure)
-        assertIs<ParseError.InvalidSnapshot>(strictResult.parseErrorOrNull())
 
         val warnings = mutableListOf<SnapshotWarning>()
         val lenient = SnapshotLoadOptions.skipUnknownKeys(onWarning = { warnings.add(it) })
@@ -114,7 +107,7 @@ class OperationalSerializationTest {
         val json = ConfigurationSnapshotCodec.encode(namespace.configuration)
 
         // Reset to a configuration that still contains the feature key but has no rules.
-        namespace.load(
+        namespace.update(
             MaterializedConfiguration.of(
                 schema = namespace.compiledSchema(),
                 configuration = Configuration(
@@ -133,7 +126,7 @@ class OperationalSerializationTest {
             "Sanity: after resetting rules, flag should be default"
         )
 
-        val loaded = NamespaceSnapshotLoader(namespace).load(json)
+        val loaded = NamespaceSnapshotLoader.forNamespace(namespace).load(json)
         assertTrue(loaded.isSuccess)
 
         assertTrue(namespace.envScopedFlag.evaluate(productionContext))

@@ -15,7 +15,7 @@ import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.parseErrorOrNull
 
 import io.amichne.konditional.fixtures.utilities.update
-import io.amichne.konditional.runtime.load
+import io.amichne.konditional.runtime.update
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.MaterializedConfiguration
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
@@ -46,7 +46,7 @@ class NamespaceConfigurationSnapshotCodecTest {
     @BeforeEach
     fun setup() {
         // Reset namespace registry state before each test
-        testNamespace.load(materialize(declaredDefaultConfiguration()))
+        testNamespace.update(materialize(declaredDefaultConfiguration()))
     }
 
     private fun materialize(configuration: Configuration): MaterializedConfiguration =
@@ -68,7 +68,7 @@ class NamespaceConfigurationSnapshotCodecTest {
     @Test
     fun `Given namespace with no flags, When serialized, Then produces JSON with empty flags array`() {
         // Start with empty namespace
-        testNamespace.load(materialize(declaredDefaultConfiguration()))
+        testNamespace.update(materialize(declaredDefaultConfiguration()))
 
         val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
 
@@ -114,7 +114,7 @@ class NamespaceConfigurationSnapshotCodecTest {
             """.trimIndent()
 
         val result =
-            NamespaceSnapshotLoader(testNamespace).load(
+            NamespaceSnapshotLoader.forNamespace(testNamespace).load(
                 json,
                 options = SnapshotLoadOptions.fillMissingDeclaredFlags(),
             )
@@ -131,7 +131,7 @@ class NamespaceConfigurationSnapshotCodecTest {
     fun `Given invalid JSON, When deserialized, Then returns failure without loading`() {
         val invalidJson = "not valid json"
 
-        val result = NamespaceSnapshotLoader(testNamespace).load(invalidJson)
+        val result = NamespaceSnapshotLoader.forNamespace(testNamespace).load(invalidJson)
 
         assertTrue(result.isFailure)
         val error = assertIs<ParseError.InvalidJson>(result.parseErrorOrNull())
@@ -159,7 +159,7 @@ class NamespaceConfigurationSnapshotCodecTest {
             """.trimIndent()
 
         val result =
-            NamespaceSnapshotLoader(testNamespace).load(
+            NamespaceSnapshotLoader.forNamespace(testNamespace).load(
                 json,
                 options = SnapshotLoadOptions.fillMissingDeclaredFlags(),
             )
@@ -186,8 +186,8 @@ class NamespaceConfigurationSnapshotCodecTest {
         val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
 
         // Clear and deserialize
-        testNamespace.load(materialize(declaredDefaultConfiguration()))
-        val result = NamespaceSnapshotLoader(testNamespace).load(json)
+        testNamespace.update(materialize(declaredDefaultConfiguration()))
+        val result = NamespaceSnapshotLoader.forNamespace(testNamespace).load(json)
         assertTrue(result.isSuccess)
 
         // Verify flags work correctly
@@ -244,9 +244,9 @@ class NamespaceConfigurationSnapshotCodecTest {
         testNamespace.boolFlag.update(true) {}
         val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
 
-        testNamespace.load(materialize(declaredDefaultConfiguration()))
+        testNamespace.update(materialize(declaredDefaultConfiguration()))
         val result =
-            NamespaceSnapshotLoader(testNamespace).load(
+            NamespaceSnapshotLoader.forNamespace(testNamespace).load(
                 json,
                 options = SnapshotLoadOptions.fillMissingDeclaredFlags(),
             )
@@ -263,7 +263,7 @@ class NamespaceConfigurationSnapshotCodecTest {
             }
 
         val otherJson = ConfigurationSnapshotCodec.encode(otherNamespace.configuration)
-        val result = NamespaceSnapshotLoader(testNamespace).load(otherJson)
+        val result = NamespaceSnapshotLoader.forNamespace(testNamespace).load(otherJson)
 
         assertTrue(result.isFailure)
         assertIs<ParseError.FeatureNotFound>(result.parseErrorOrNull())

@@ -57,3 +57,10 @@ data class UserSettings(
         }
     }
 }
+
+/**
+ * A zero-field config singleton. Useful for testing Kotlin `object` round-trips.
+ */
+object DefaultConfig : Konstrained.Object<ObjectSchema> {
+    override val schema: ObjectSchema = schema {}
+}

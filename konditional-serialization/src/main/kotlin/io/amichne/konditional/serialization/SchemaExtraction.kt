@@ -23,8 +23,7 @@ import kotlin.reflect.full.createInstance
  * @param kClass The class to extract schema from
  * @return ObjectSchema if found, null otherwise
  */
-@KonditionalInternalApi
-fun extractSchema(kClass: KClass<*>): ObjectSchema? {
+internal fun extractSchema(kClass: KClass<*>): ObjectSchema? {
     val schemaFromObject =
         (kClass.objectInstance as? Konstrained<*>)?.schema.asObjectSchemaOrNull()
 

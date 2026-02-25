@@ -21,7 +21,7 @@ import io.amichne.konditional.core.ops.RegistryHooks
 import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
 import io.amichne.konditional.core.result.parseErrorOrNull
 import io.amichne.konditional.core.types.Konstrained
-import io.amichne.konditional.runtime.load
+import io.amichne.konditional.runtime.update
 import io.amichne.konditional.runtime.rollback
 import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 import io.amichne.kontracts.dsl.of
@@ -180,7 +180,7 @@ fun loadRemoteConfig() {
     val result = ConfigurationSnapshotCodec.decode(json, features.compiledSchema())
 
     result.onSuccess { materialized ->
-        features.load(materialized)
+        features.update(materialized)
     }
     result.onFailure { failure ->
         val parseErrorMessage = result.parseErrorOrNull()?.message
