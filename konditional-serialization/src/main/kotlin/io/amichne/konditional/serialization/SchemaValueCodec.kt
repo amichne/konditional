@@ -1,6 +1,7 @@
+@file:OptIn(io.amichne.konditional.api.KonditionalInternalApi::class)
+
 package io.amichne.konditional.serialization
 
-import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.parseFailure
 import io.amichne.konditional.core.types.Konstrained
@@ -42,9 +43,8 @@ import kotlin.reflect.full.primaryConstructor
  * the matching Kotlin type; `@JvmInline value class` is the idiomatic way to guarantee this
  * at the language level.
  */
-@KonditionalInternalApi
 @Suppress("TooManyFunctions")
-object SchemaValueCodec {
+internal object SchemaValueCodec {
 
     /**
      * Encodes a value to JsonObject using its schema.
@@ -91,7 +91,6 @@ object SchemaValueCodec {
      *   implementing class does not have the required single-property structure for
      *   primitive/array schemas.
      */
-    @KonditionalInternalApi
     fun encodeKonstrained(konstrained: Konstrained<*>): JsonValue =
         when {
             // Adapted family: domain type T → JSON primitive via the instance's encode().
@@ -141,7 +140,6 @@ object SchemaValueCodec {
      * @return [Result.success] with the constructed instance, or [Result.failure] with a
      *   [ParseError.InvalidSnapshot] if construction fails.
      */
-    @KonditionalInternalApi
     @Suppress("ReturnCount")
     fun <T : Any> decodeKonstrainedPrimitive(kClass: KClass<T>, rawValue: Any): Result<T> {
         // Step 1: prefer a companion Decoder when present — supports As* types with
