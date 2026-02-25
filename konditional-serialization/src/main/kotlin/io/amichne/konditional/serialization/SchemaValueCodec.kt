@@ -277,9 +277,14 @@ object SchemaValueCodec {
 
     /**
      * Decodes JsonObject to an instance using schema and reflection.
+     *
+     * Kotlin `object` singletons have no primary constructor; when [kClass] is a singleton
+     * its `objectInstance` is returned immediately without any field resolution.
      */
-    fun <T : Any> decode(kClass: KClass<T>, json: JsonObject, schema: ObjectSchema): Result<T> =
-        kClass.primaryConstructor
+    fun <T : Any> decode(kClass: KClass<T>, json: JsonObject, schema: ObjectSchema): Result<T> {
+        // Kotlin `object` singletons have no primary constructor; return the existing instance.
+        kClass.objectInstance?.let { return Result.success(it) }
+        return kClass.primaryConstructor
             ?.let { constructor ->
                 buildSchemaParameterMap(constructor, json, schema, kClass, ::decodeValue)
                     .fold(
@@ -304,6 +309,7 @@ object SchemaValueCodec {
                     "${kClass.qualifiedName} must have a primary constructor for deserialization",
                 ),
             )
+    }
 
     /**
      * Decodes JsonObject to an instance using an extractable schema if present.
@@ -402,8 +408,10 @@ object SchemaValueCodec {
                 )
         }
 
-    private fun <T : Any> decodeWithoutSchema(kClass: KClass<T>, json: JsonObject): Result<T> =
-        kClass.primaryConstructor
+    private fun <T : Any> decodeWithoutSchema(kClass: KClass<T>, json: JsonObject): Result<T> {
+        // Kotlin `object` singletons have no primary constructor; return the existing instance.
+        kClass.objectInstance?.let { return Result.success(it) }
+        return kClass.primaryConstructor
             ?.let { constructor ->
                 val parametersResult =
                     buildParameterMap(constructor, json, kClass, ::decodeValue)
@@ -432,6 +440,7 @@ object SchemaValueCodec {
                     "${kClass.qualifiedName} must have a primary constructor for deserialization",
                 ),
             )
+    }
 }
 
 /**
