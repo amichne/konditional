@@ -21,27 +21,33 @@ Use this sequence to get value quickly:
 
 ---
 
-## Migrating from the legacy monolith (`io.amichne:konditional`) to split artifacts
+## Migrating from split artifacts to the facade module (`io.github.amichne:konditional`)
 
-Konditional is now published as split modules.
+Konditional now provides a facade artifact for the default runtime package.
 
-- **Guarantee**: `konditional-core` is implementation-free; it contains the DSL + evaluation surface.
-- **Mechanism**: runtime implementations are discovered via `ServiceLoader` (see `NamespaceRegistryFactory`).
-- **Boundary**: if no runtime factory is present, namespace initialization fails fast with a clear error.
+- **Guarantee**: facade usage preserves existing runtime behavior and public APIs.
+- **Mechanism**: `konditional` depends on `konditional-runtime`, which transitively includes `konditional-core` and `konditional-serialization`.
+- **Boundary**: optional modules (`konditional-observability`, `konditional-otel`, `konditional-http-server`, `openfeature`, `kontracts`, `openapi`) remain opt-in.
 
 ### Dependencies
 
 ```kotlin
 dependencies {
-    // Required for normal usage
-    implementation("io.amichne:konditional-core:0.0.1")
-    implementation("io.amichne:konditional-runtime:0.0.1")
-
-    // Optional (JSON)
-    implementation("io.amichne:konditional-serialization:0.0.1")
+    // Recommended default
+    implementation("io.github.amichne:konditional:VERSION")
 
     // Optional (shadow evaluation + utilities)
-    implementation("io.amichne:konditional-observability:0.0.1")
+    implementation("io.github.amichne:konditional-observability:VERSION")
+}
+```
+
+If you intentionally need granular control, keep explicit split artifacts:
+
+```kotlin
+dependencies {
+    implementation("io.github.amichne:konditional-core:VERSION")
+    implementation("io.github.amichne:konditional-runtime:VERSION")
+    implementation("io.github.amichne:konditional-serialization:VERSION")
 }
 ```
 
@@ -52,21 +58,20 @@ dependencies {
 | Load config into a namespace | `AppFeatures.load(configuration)`                                       | `AppFeatures.load(configuration)` + `import io.amichne.konditional.runtime.load` |
 | Rollback/history             | `AppFeatures.rollback(...)` / `historyMetadata`                         | same calls + imports from `io.amichne.konditional.runtime.*`                     |
 | Configuration model          | `io.amichne.konditional.core.instance.*`                                | `io.amichne.konditional.serialization.instance.*`                                |
-| Snapshot codecs              | `io.amichne.konditional.serialization.snapshot.*`                       | same packages; add `konditional-serialization` dependency                        |
-| Namespace snapshot loader    | `io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader` | same package; add `konditional-runtime` dependency                               |
+| Snapshot codecs              | `io.amichne.konditional.serialization.snapshot.*`                       | same packages; facade includes serialization transitively                         |
+| Namespace snapshot loader    | `io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader` | same package; available transitively via facade                                   |
 
 ## Breaking API Symbol Map (Result Refactor)
 
 | Removed / Changed | Replacement |
 |---|---|
 | `Result<T>` | Kotlin `Result<T>` |
-| `Feature.evaluate(...)` | Removed. Use `Feature.evaluate(...)` |
+| `Feature.evaluate(...)` | unchanged; this remains the supported public API |
 | `Feature.explainSafely(...)` | Removed |
 | `Feature.explain(...)` | Removed from public API |
-| Public `internal EvaluationDiagnostics<T>` | Removed from public API |
+| Public `EvaluationDiagnostics<T>` exposure | internalized (sibling-module opt-in only) |
 | `Version.parse(raw): Result<Version>` | `Version.parse(raw): Result<Version>` |
-| `SnapshotCodec.decode(...): Result<T>` | `SnapshotCodec.decode(...): Result<T>` |
-| `SnapshotLoader.load(...): Result<T>` | `SnapshotLoader.load(...): Result<T>` |
+| `SnapshotCodec` / `SnapshotLoader` boundary types | removed; use `ConfigurationSnapshotCodec` and `NamespaceSnapshotLoader` |
 | `ConfigurationSnapshotCodec.decode(...): Result<TrustedSnapshotWrapper>` | `ConfigurationSnapshotCodec.decode(...): Result<Configuration>` |
 | `Namespace.update(configuration: TrustedSnapshotWrapper)` extension | `Namespace.update(configuration: Configuration)` |
 

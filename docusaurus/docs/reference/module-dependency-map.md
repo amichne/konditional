@@ -5,7 +5,7 @@ sidebar_position: 1
 
 # Module Dependency Map
 
-Pick the smallest set of modules that covers your use case. Most applications need three.
+Pick the smallest set of modules that covers your use case. Most applications can start with the facade module and add specialized modules only when needed.
 
 ---
 
@@ -13,6 +13,7 @@ Pick the smallest set of modules that covers your use case. Most applications ne
 
 ```mermaid
 graph TD
+    FACADE["konditional<br>Facade: runtime + transitive core/serialization"]
     CORE["konditional-core<br>Namespace · Feature · evaluate()"]
     RUNTIME["konditional-runtime<br>load · rollback · disableAll"]
     SERIAL["konditional-serialization<br>JSON → ParseResult&lt;Configuration&gt;"]
@@ -34,6 +35,7 @@ graph TD
     OF --> CORE
     KONTRACTS --> CORE
     OPENAPI --> KONTRACTS
+    FACADE --> RUNTIME
 ```
 
 Arrows point from dependent → dependency. `konditional-core` is the only module with no runtime dependencies within
@@ -42,6 +44,18 @@ this graph.
 ---
 
 ## Module Reference
+
+### Layer 0 — Facade (recommended default)
+
+**`konditional`** `io.github.amichne:konditional:VERSION`
+
+Default entry point for most applications. This facade depends on `konditional-runtime` and therefore transitively pulls `konditional-core` and `konditional-serialization`.
+
+- Fastest path to typed evaluation + runtime updates + JSON snapshot ingestion
+- Prefer this unless you intentionally want a thinner dependency graph
+- [Quickstart: Install](/quickstart/install) · [Reference: Namespace Operations API](/reference/api/namespace-operations)
+
+---
 
 ### Layer 1 — Core (always required)
 
@@ -149,8 +163,9 @@ external consumers.
 
 | Starting point | Modules |
 |---|---|
+| **Evaluate + load remote config** (most applications) | `konditional` |
 | **Evaluate static flags only** (no remote config) | `konditional-core` |
-| **Evaluate + load remote config** (most applications) | `konditional-core` + `konditional-runtime` + `konditional-serialization` |
+| **Custom minimal graph** | `konditional-core` + `konditional-runtime` + `konditional-serialization` |
 | **Migrating from a legacy flag system** | above + `konditional-observability` |
 | **Production at scale** (telemetry, hosted delivery) | above + `konditional-otel` + `konditional-http-server` |
 | **OpenFeature compatibility** | above + `openfeature` |
