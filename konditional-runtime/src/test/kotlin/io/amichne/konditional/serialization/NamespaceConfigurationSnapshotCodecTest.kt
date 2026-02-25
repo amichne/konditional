@@ -14,8 +14,11 @@ import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.parseErrorOrNull
 import io.amichne.konditional.fixtures.utilities.update
+import io.amichne.konditional.runtime.dump
+import io.amichne.konditional.runtime.json
 import io.amichne.konditional.runtime.update
 import io.amichne.konditional.serialization.instance.Configuration
+import io.amichne.konditional.serialization.instance.ConfigurationMetadata
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
@@ -31,7 +34,7 @@ import kotlin.test.assertTrue
  * Tests for NamespaceSnapshotLoader.
  *
  * Validates the enforced boundary:
- * - Encoding is done via the pure [ConfigurationSnapshotCodec]
+ * - Encoding is done via namespace-scoped [io.amichne.konditional.runtime.dump]
  * - Loading into a namespace is done via [NamespaceSnapshotLoader]
  */
 class NamespaceConfigurationSnapshotCodecTest {
@@ -65,7 +68,7 @@ class NamespaceConfigurationSnapshotCodecTest {
         // Start with empty namespace
         testNamespace.update(declaredDefaultConfiguration())
 
-        val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
+        val json = testNamespace.dump()
 
         assertNotNull(json)
         assertTrue(json.contains("\"flags\""))
@@ -79,7 +82,7 @@ class NamespaceConfigurationSnapshotCodecTest {
         testNamespace.stringFlag.update("test-value") {
         }
 
-        val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
+        val json = testNamespace.dump()
 
         assertNotNull(json)
         assertTrue(json.contains(testNamespace.boolFlag.id.toString()))
@@ -178,7 +181,7 @@ class NamespaceConfigurationSnapshotCodecTest {
         }
 
         // Serialize
-        val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
+        val json = testNamespace.dump()
 
         // Clear and deserialize
         testNamespace.update(declaredDefaultConfiguration())
@@ -196,11 +199,49 @@ class NamespaceConfigurationSnapshotCodecTest {
         assertEquals("original", testNamespace.stringFlag.evaluate(iosContext))
     }
 
+
+    @Test
+    fun `namespace json property delegates to dump`() {
+        testNamespace.boolFlag.update(true) {}
+
+        assertEquals(testNamespace.dump(), testNamespace.json)
+    }
+
+    @Test
+    fun `namespace dump roundtrip preserves exact configuration equality`() {
+        testNamespace.boolFlag.update(true) {
+            disable {
+                platforms(Platform.IOS)
+            }
+        }
+        testNamespace.stringFlag.update("serialized") {
+            rule("fr") {
+                locales(AppLocale.FRANCE)
+            }
+        }
+
+        val initial =
+            Configuration(
+                flags = testNamespace.configuration.flags.toMap(),
+                metadata =
+                    ConfigurationMetadata(
+                        version = testNamespace.configuration.metadata.version,
+                        generatedAtEpochMillis = testNamespace.configuration.metadata.generatedAtEpochMillis,
+                        source = testNamespace.configuration.metadata.source,
+                    ),
+            )
+
+        val json = testNamespace.dump()
+        val output = ConfigurationSnapshotCodec.decode(json, testNamespace.compiledSchema()).getOrThrow()
+
+        assertEquals(initial, output)
+    }
+
     @Test
     fun `Given forModule factory, When created, Then works same as constructor`() {
         testNamespace.boolFlag.update(true) {}
 
-        val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
+        val json = testNamespace.dump()
 
         val loader = NamespaceSnapshotLoader.forNamespace(testNamespace)
         val loaded = loader.load(json, options = SnapshotLoadOptions.fillMissingDeclaredFlags())
@@ -223,8 +264,8 @@ class NamespaceConfigurationSnapshotCodecTest {
             }
 
         // Serialize each namespace
-        val paymentsJson = ConfigurationSnapshotCodec.encode(paymentsNamespace.configuration)
-        val searchJson = ConfigurationSnapshotCodec.encode(searchNamespace.configuration)
+        val paymentsJson = paymentsNamespace.dump()
+        val searchJson = searchNamespace.dump()
 
         // Verify separation
         assertTrue(paymentsJson.contains(paymentsNamespace.paymentEnabled.id.toString()))
@@ -237,7 +278,7 @@ class NamespaceConfigurationSnapshotCodecTest {
     @Test
     fun `namespace loader deserializes without relying on global feature registry`() {
         testNamespace.boolFlag.update(true) {}
-        val json = ConfigurationSnapshotCodec.encode(testNamespace.configuration)
+        val json = testNamespace.dump()
 
         testNamespace.update(declaredDefaultConfiguration())
         val result =
@@ -257,7 +298,7 @@ class NamespaceConfigurationSnapshotCodecTest {
                 val otherFlag by boolean<Context>(default = true)
             }
 
-        val otherJson = ConfigurationSnapshotCodec.encode(otherNamespace.configuration)
+        val otherJson = otherNamespace.dump()
         val result = NamespaceSnapshotLoader.forNamespace(testNamespace).load(otherJson)
 
         assertTrue(result.isFailure)

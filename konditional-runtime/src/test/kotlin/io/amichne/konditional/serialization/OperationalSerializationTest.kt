@@ -12,6 +12,7 @@ import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
+import io.amichne.konditional.runtime.dump
 import io.amichne.konditional.runtime.update
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.ConfigurationMetadata
@@ -102,7 +103,7 @@ class OperationalSerializationTest {
         assertTrue(namespace.envScopedFlag.evaluate(productionContext))
         assertFalse(namespace.envScopedFlag.evaluate(developementContext))
 
-        val json = ConfigurationSnapshotCodec.encode(namespace.configuration)
+        val json = namespace.dump()
 
         // Reset to a configuration that still contains the feature key but has no rules.
         namespace.update(
