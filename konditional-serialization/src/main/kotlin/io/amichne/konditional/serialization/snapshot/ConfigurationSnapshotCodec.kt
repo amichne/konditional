@@ -124,7 +124,7 @@ object ConfigurationSnapshotCodec {
                                 meta = patch.meta ?: currentSerializable.meta,
                                 flags = flagMap.values.toList(),
                             ).toConfiguration(
-                                schema = schema,
+                                schema = current.schema,
                                 options = options,
                             )
                         }
