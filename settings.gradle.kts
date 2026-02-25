@@ -19,6 +19,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "konditional"
 
+include("konditional")
 include("konditional-core")
 include("konditional-serialization")
 include("konditional-runtime")
