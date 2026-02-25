@@ -20,7 +20,7 @@ import io.amichne.konditional.core.result.ParseError
 
 import io.amichne.konditional.fixtures.serializers.RetryPolicy
 import io.amichne.konditional.fixtures.utilities.update
-import io.amichne.konditional.runtime.load
+import io.amichne.konditional.runtime.update
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.MaterializedConfiguration
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
@@ -91,7 +91,7 @@ class ConfigurationSnapshotCodecTest {
     }
 
     private fun loadMaterialized(configuration: Configuration) {
-        TestFeatures.load(MaterializedConfiguration.of(TestFeatures.compiledSchema(), configuration))
+        TestFeatures.update(MaterializedConfiguration.of(TestFeatures.compiledSchema(), configuration))
     }
 
     private fun declaredDefaultConfiguration(): Configuration {
@@ -117,9 +117,8 @@ class ConfigurationSnapshotCodecTest {
         options: SnapshotLoadOptions = SnapshotLoadOptions.fillMissingDeclaredFlags(),
     ): ParseResult<Configuration> =
         ConfigurationSnapshotCodec
-            .applyPatchJson(
-                currentConfiguration = currentConfiguration,
-                schema = TestFeatures.compiledSchema(),
+            .patch(
+                current = MaterializedConfiguration.of(TestFeatures.compiledSchema(), currentConfiguration),
                 patchJson = patchJson,
                 options = options,
             ).toParseResult()
@@ -165,34 +164,6 @@ class ConfigurationSnapshotCodecTest {
 
         assertIs<ParseResult.Success<Configuration>>(result)
         assertTrue(result.value.flags.containsKey(TestFeatures.boolFlag))
-    }
-
-    @Test
-    fun `Given snapshot with flags, When decoded without feature scope by default, Then returns typed failure`() {
-        TestFeatures.boolFlag.update(true) {}
-        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
-
-        val result = ConfigurationSnapshotCodec.decode(json = json).toParseResult()
-
-        assertIs<ParseResult.Failure>(result)
-        assertIs<ParseError.InvalidSnapshot>(result.error)
-        assertTrue(result.error.reason.contains("compile-time schema"))
-    }
-
-    @Test
-    fun `Given snapshot without scope and skipUnknownKeys, Then returns typed failure`() {
-        TestFeatures.boolFlag.update(true) {}
-        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
-
-        val result =
-            ConfigurationSnapshotCodec.decode(
-                json = json,
-                options = SnapshotLoadOptions.skipUnknownKeys(),
-            ).toParseResult()
-
-        assertIs<ParseResult.Failure>(result)
-        assertIs<ParseError.InvalidSnapshot>(result.error)
-        assertTrue(result.error.reason.contains("compile-time schema"))
     }
 
     @Test

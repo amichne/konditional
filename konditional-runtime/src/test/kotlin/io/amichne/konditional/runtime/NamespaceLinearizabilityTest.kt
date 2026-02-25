@@ -35,7 +35,7 @@ class NamespaceLinearizabilityTest {
         val historyLimit = InMemoryNamespaceRegistry.DEFAULT_HISTORY_LIMIT
         val namespace = linearizableNamespace(historyLimit = historyLimit)
         val snapshots = (1..4).associateWith { value -> versionedConfiguration(namespace, value) }
-        namespace.load(snapshots.getValue(1))
+        namespace.update(snapshots.getValue(1))
 
         val start = CountDownLatch(1)
         val done = CountDownLatch(8)
@@ -47,12 +47,12 @@ class NamespaceLinearizabilityTest {
             repeat(400) {
                 if (failure.get() != null) return@repeat
 
-                namespace.load(snapshots.getValue(2))
+                namespace.update(snapshots.getValue(2))
                 assertTrue(namespace.rollback(1), "rollback after load(2) must succeed")
-                namespace.load(snapshots.getValue(3))
+                namespace.update(snapshots.getValue(3))
                 assertTrue(namespace.rollback(1), "rollback after load(3) must succeed")
-                namespace.load(snapshots.getValue(4))
-                namespace.load(snapshots.getValue(1))
+                namespace.update(snapshots.getValue(4))
+                namespace.update(snapshots.getValue(1))
             }
         }
 
@@ -95,7 +95,7 @@ class NamespaceLinearizabilityTest {
         val historyLimit = 64
         val namespace = linearizableNamespace(historyLimit = historyLimit)
         val snapshots = (1..20).associateWith { value -> versionedConfiguration(namespace, value) }
-        snapshots.values.forEach(namespace::load)
+        snapshots.values.forEach(namespace::update)
 
         val rollingBack = AtomicBoolean(true)
         val start = CountDownLatch(1)
