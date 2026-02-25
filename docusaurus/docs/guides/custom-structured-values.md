@@ -27,6 +27,19 @@ data class CheckoutPolicy(
 }
 ```
 
+You can also model a zero-field singleton with Kotlin `object` when you need a
+single shared typed value:
+
+```kotlin
+import io.amichne.konditional.core.types.Konstrained
+import io.amichne.kontracts.dsl.schema
+import io.amichne.kontracts.schema.ObjectSchema
+
+object DefaultCheckoutPolicy : Konstrained.Object<ObjectSchema> {
+  override val schema = schema {}
+}
+```
+
 ## Step 2: Declare Feature with `custom<...>`
 
 ```kotlin
@@ -45,6 +58,22 @@ object CheckoutFlags : Namespace("checkout") {
 ```kotlin
 val policy: CheckoutPolicy = CheckoutFlags.policy.evaluate(ctx)
 ```
+
+## Decode behavior at the boundary
+
+When Konditional parses custom structured values from JSON, it uses deterministic
+field resolution rules.
+
+1. Use the JSON field value when the field exists and is non-null.
+2. Use the schema `defaultValue` when the field is missing and the schema
+   defines a default.
+3. Use the Kotlin constructor default when the field is missing and the
+   constructor parameter is optional.
+4. Return `Result.failure` with `ParseError.InvalidSnapshot` when a required
+   field is missing and no default applies.
+
+For Kotlin `object` singletons, decode returns the existing singleton instance
+without requiring a primary constructor.
 
 ## Expected Outcome
 

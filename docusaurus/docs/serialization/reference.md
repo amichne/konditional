@@ -82,6 +82,21 @@ val result = ConfigurationSnapshotCodec.decode(json, schema)
 val parseError: ParseError? = result.parseErrorOrNull()
 ```
 
+## Structured value decode semantics
+
+When snapshot payloads include custom `Konstrained` values, decode dispatch is
+deterministic by JSON shape and target type.
+
+- `JsonObject` values decode through object-schema mapping.
+- Kotlin `object` singletons decode to their existing `objectInstance` (no
+  primary constructor is required).
+- `JsonString`, `JsonBoolean`, `JsonNumber`, and `JsonArray` values decode
+  through primitive/array reconstruction.
+- For `JsonNumber`, Int-backed custom types receive `Int`; other numeric custom
+  types receive `Double`.
+- Missing required object fields fail with typed parse errors; schema defaults
+  and Kotlin constructor defaults are applied before failure.
+
 ## Related
 
 - [NamespaceSnapshotLoader API](/reference/api/snapshot-loader)
