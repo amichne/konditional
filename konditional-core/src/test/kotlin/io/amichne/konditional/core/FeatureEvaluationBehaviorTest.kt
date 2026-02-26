@@ -4,6 +4,7 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.api.evaluate
+import io.amichne.konditional.api.explain
 import io.amichne.konditional.api.evaluateInternalApi
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
@@ -53,6 +54,23 @@ class FeatureEvaluationBehaviorTest {
 
         val error = assertFailsWith<IllegalStateException> { namespace.feature.evaluate(context) }
         assertTrue(error.message.orEmpty().contains("Flag not found"))
+    }
+
+    @Test
+    fun `explain returns deterministic diagnostics for same input`() {
+        val namespace =
+            object : Namespace.TestNamespaceFacade("eval-explain") {
+                val feature by boolean<Context>(default = false) {
+                    enable { platforms(Platform.IOS) }
+                }
+            }
+
+        val first = namespace.feature.explain(context)
+        val second = namespace.feature.explain(context)
+
+        assertEquals(Metrics.Evaluation.EvaluationMode.EXPLAIN, first.mode)
+        assertEquals(true, first.value)
+        assertEquals(first.copy(durationNanos = 0L), second.copy(durationNanos = 0L))
     }
 
     @Test

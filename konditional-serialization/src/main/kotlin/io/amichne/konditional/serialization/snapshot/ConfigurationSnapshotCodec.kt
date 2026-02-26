@@ -49,7 +49,8 @@ object ConfigurationSnapshotCodec {
      *
      * Prefer namespace-scoped serialization via `Namespace.dump()` from `:konditional-runtime`.
      * This codec method remains available for infrastructure and tests that only hold a
-     * materialized [ConfigurationView].
+     * materialized [ConfigurationView]. Accepts any subtype: [Configuration], or a view
+     * obtained from a namespace.
      */
     @Deprecated(
         message = "Prefer Namespace.dump() as the serialization entry point.",
