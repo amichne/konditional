@@ -3,6 +3,8 @@
 package io.amichne.konditional.serialization
 
 import io.amichne.konditional.api.KonditionalInternalApi
+import io.amichne.konditional.core.result.ParseError
+import io.amichne.konditional.core.result.parseErrorOrNull
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.fixtures.serializers.DefaultConfig
 import io.amichne.konditional.fixtures.serializers.Email
@@ -21,6 +23,7 @@ import io.amichne.kontracts.dsl.jsonValue
 import io.amichne.kontracts.dsl.schema
 import io.amichne.kontracts.dsl.stringSchema
 import io.amichne.kontracts.schema.ObjectSchema
+import io.amichne.kontracts.value.JsonNull
 import io.amichne.kontracts.value.JsonObject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -28,6 +31,7 @@ import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import kotlin.test.assertIs
 
 /**
  * A minimal data class with NO Kotlin default values, used to exercise the
@@ -68,6 +72,51 @@ class KonstrainedObjectTest {
     fun `decode returns objectInstance for Kotlin object singleton with schema`() {
         val emptyJson = jsonObject {}
         val result = SchemaValueCodec.decode(DefaultConfig::class, emptyJson, DefaultConfig.schema)
+        assertTrue(result.isSuccess)
+        assertSame(DefaultConfig, result.getOrThrow())
+    }
+
+    @Test
+    fun `singleton decode strict mode rejects unknown fields`() {
+        val json = jsonObject { field("unexpected") { string("value") } }
+        val result =
+            SchemaValueCodec.decode(
+                kClass = DefaultConfig::class,
+                json = json,
+                schema = DefaultConfig.schema,
+                singletonUnknownFieldMode = SingletonUnknownFieldMode.REJECT_UNKNOWN_FIELDS,
+            )
+
+        assertTrue(result.isFailure)
+        assertIs<ParseError.InvalidSnapshot>(result.parseErrorOrNull())
+    }
+
+    @Test
+    fun `singleton decode strict mode rejects missing required fields`() {
+        val json = jsonObject {}
+        val strictSchema = StrictConfig(id = "abc", count = 1).schema
+        val result =
+            SchemaValueCodec.decode(
+                kClass = StrictConfig::class,
+                json = json,
+                schema = strictSchema,
+            )
+
+        assertTrue(result.isFailure)
+        assertIs<ParseError.InvalidSnapshot>(result.parseErrorOrNull())
+    }
+
+    @Test
+    fun `singleton decode ignore unknown mode succeeds with extra fields`() {
+        val json = jsonObject { field("unexpected") { string("value") } }
+        val result =
+            SchemaValueCodec.decode(
+                kClass = DefaultConfig::class,
+                json = json,
+                schema = DefaultConfig.schema,
+                singletonUnknownFieldMode = SingletonUnknownFieldMode.IGNORE_UNKNOWN_FIELDS,
+            )
+
         assertTrue(result.isSuccess)
         assertSame(DefaultConfig, result.getOrThrow())
     }
@@ -134,6 +183,23 @@ class KonstrainedObjectTest {
     }
 
     @Test
+    fun `decodeKonstrained rejects fractional JsonNumber for Int-backed Konstrained`() {
+        val result = SchemaValueCodec.decodeKonstrained(RetryCount::class, jsonValue { number(3.9) })
+
+        assertTrue(result.isFailure)
+        assertIs<ParseError.InvalidSnapshot>(result.parseErrorOrNull())
+    }
+
+    @Test
+    fun `decodeKonstrained rejects out-of-range JsonNumber for Int-backed Konstrained`() {
+        val outOfRange = Int.MAX_VALUE.toDouble() + 1.0
+        val result = SchemaValueCodec.decodeKonstrained(RetryCount::class, jsonValue { number(outOfRange) })
+
+        assertTrue(result.isFailure)
+        assertIs<ParseError.InvalidSnapshot>(result.parseErrorOrNull())
+    }
+
+    @Test
     fun `decodeKonstrained dispatches JsonNumber to decodeKonstrainedPrimitive for Percentage (Double)`() {
         val result = SchemaValueCodec.decodeKonstrained(Percentage::class, jsonValue { number(75.5) })
         assertTrue(result.isSuccess)
@@ -148,6 +214,23 @@ class KonstrainedObjectTest {
         val result = SchemaValueCodec.decodeKonstrained(Tags::class, json)
         assertTrue(result.isSuccess)
         assertEquals(Tags(listOf("alpha", "beta")), result.getOrThrow())
+    }
+
+    @Test
+    fun `decodeKonstrained returns typed failure for unsupported array element types`() {
+        val json = jsonArray {
+            elements(
+                listOf(
+                    jsonValue { string("alpha") },
+                    jsonObject { field("nested") { string("unsupported") } },
+                    JsonNull,
+                ),
+            )
+        }
+        val result = SchemaValueCodec.decodeKonstrained(Tags::class, json)
+
+        assertTrue(result.isFailure)
+        assertIs<ParseError.InvalidSnapshot>(result.parseErrorOrNull())
     }
 
     // =========================================================================

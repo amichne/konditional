@@ -203,7 +203,7 @@ fun loadRemoteConfig() {
     val result = ConfigurationSnapshotCodec.decode(json, features.compiledSchema())
 
     result.onSuccess { materialized ->
-        features.load(materialized)
+        features.update(materialized)
     }
     result.onFailure { failure ->
         val parseErrorMessage = result.parseErrorOrNull()?.message
