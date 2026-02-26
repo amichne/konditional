@@ -10,6 +10,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.dsl.enable
+import io.amichne.konditional.core.dsl.rules.targeting.scopes.whenContext
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.internal.evaluation.EvaluationDiagnostics
@@ -18,6 +19,7 @@ import io.amichne.konditional.serialization.instance.Configuration
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 class FeatureEvaluationBehaviorTest {
@@ -71,4 +73,56 @@ class FeatureEvaluationBehaviorTest {
         assertEquals(EvaluationDiagnostics.Decision.RegistryDisabled, diagnostics.decision)
         assertEquals(true, diagnostics.value)
     }
+
+    @Test
+    fun `evaluateInternalApi emits rule identity and extension context nodes`() {
+        data class EnterpriseContext(
+            override val locale: AppLocale,
+            override val platform: Platform,
+            override val appVersion: Version,
+            val tenant: String,
+            val isEmployee: Boolean,
+            override val stableId: StableId,
+        ) : Context, Context.LocaleContext, Context.PlatformContext, Context.VersionContext, Context.StableIdContext
+
+        val namespace =
+            object : Namespace.TestNamespaceFacade("eval-rule-id") {
+                val feature by string<EnterpriseContext>(default = "default") {
+                    rule("enterprise") {
+                        whenContext<Context.PlatformContext> { platform == Platform.IOS }
+                        extension { tenant == "acme" }
+                    }
+                    rule("employee") {
+                        extension { isEmployee }
+                    }
+                }
+            }
+
+        val diagnostics =
+            namespace.feature.evaluateInternalApi(
+                context =
+                    EnterpriseContext(
+                        locale = AppLocale.UNITED_STATES,
+                        platform = Platform.IOS,
+                        appVersion = Version.of(1, 0, 0),
+                        tenant = "acme",
+                        isEmployee = true,
+                        stableId = StableId.of("eval-rule-id-user"),
+                    ),
+                registry = namespace,
+                mode = Metrics.Evaluation.EvaluationMode.EXPLAIN,
+            )
+
+        val decision = diagnostics.decision as EvaluationDiagnostics.Decision.Rule
+        val rule = decision.matched.rule
+
+        assertTrue(rule.ruleId.startsWith("rule::${namespace.id}::${namespace.feature.key}::"))
+        assertEquals(EvaluationDiagnostics.ExtensionType.LAMBDA, rule.extensionNode.type)
+        assertEquals(EvaluationDiagnostics.ConditionalContextType.NARROWING, rule.conditionalContextNode.type)
+        assertNotEquals(
+            EvaluationDiagnostics.ExtensionNode(EvaluationDiagnostics.ExtensionType.NONE),
+            rule.extensionNode,
+        )
+    }
+
 }

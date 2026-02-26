@@ -47,8 +47,15 @@ object ConfigurationSnapshotCodec {
     /**
      * Encodes a [ConfigurationView] as a JSON snapshot string.
      *
-     * Accepts any subtype: [Configuration], or a view obtained from a namespace.
+     * Prefer namespace-scoped serialization via `Namespace.dump()` from `:konditional-runtime`.
+     * This codec method remains available for infrastructure and tests that only hold a
+     * materialized [ConfigurationView]. Accepts any subtype: [Configuration], or a view
+     * obtained from a namespace.
      */
+    @Deprecated(
+        message = "Prefer Namespace.dump() as the serialization entry point.",
+        level = DeprecationLevel.WARNING,
+    )
     fun encode(value: ConfigurationView): String = snapshotAdapter.toJson(SerializableSnapshot.from(value.toConcrete()))
 
     /**

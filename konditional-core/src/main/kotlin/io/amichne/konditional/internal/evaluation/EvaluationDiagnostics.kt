@@ -44,6 +44,60 @@ data class EvaluationDiagnostics<T : Any>(
         val bucket: BucketInfo,
     )
 
+
+    enum class ExtensionType {
+        NONE,
+        LAMBDA,
+    }
+
+    enum class ConditionalContextType {
+        NONE,
+        NARROWING,
+    }
+
+    sealed interface TargetingNode {
+        data class All(
+            val children: List<TargetingNode>,
+        ) : TargetingNode
+
+        data class AnyOf(
+            val children: List<TargetingNode>,
+        ) : TargetingNode
+
+        data class Locale(
+            val ids: Set<String>,
+        ) : TargetingNode
+
+        data class Platform(
+            val ids: Set<String>,
+        ) : TargetingNode
+
+        data class Version(
+            val range: VersionRange,
+        ) : TargetingNode
+
+        data class Axis(
+            val axisId: String,
+            val allowedIds: Set<String>,
+        ) : TargetingNode
+
+        data object Custom : TargetingNode
+
+        data class Guarded(
+            val child: TargetingNode,
+        ) : TargetingNode
+    }
+
+    data class ExtensionNode(
+        val type: ExtensionType,
+        val content: TargetingNode? = null,
+    )
+
+    data class ConditionalContextNode(
+        val type: ConditionalContextType,
+        val content: TargetingNode? = null,
+    )
+
     data class RuleExplanation(
         val note: String?,
         val rollout: RampUp,
@@ -55,5 +109,8 @@ data class EvaluationDiagnostics<T : Any>(
         val extensionSpecificity: Int,
         val totalSpecificity: Int,
         val extensionClassName: String?,
+        val ruleId: String,
+        val extensionNode: ExtensionNode = ExtensionNode(ExtensionType.NONE),
+        val conditionalContextNode: ConditionalContextNode = ConditionalContextNode(ConditionalContextType.NONE),
     )
 }

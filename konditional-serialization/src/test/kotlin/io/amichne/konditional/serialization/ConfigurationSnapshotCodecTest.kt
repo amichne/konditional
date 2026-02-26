@@ -226,6 +226,17 @@ class ConfigurationSnapshotCodecTest {
         assertTrue(json.contains("\"type\": \"CONTEXTUAL\""))
     }
 
+
+    @Test
+    fun `Given deferred yields rule snapshot, When decoded and re-encoded, Then contextual type remains contextual`() {
+        val encoded = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
+        val decoded = decodeFeatureAware(json = encoded).getOrThrow()
+
+        val reEncoded = ConfigurationSnapshotCodec.encode(decoded)
+
+        assertTrue(reEncoded.contains("\"type\": \"CONTEXTUAL\""))
+    }
+
     @Test
     fun `Given deferred yields rule snapshot, When decoded, Then rule uses declared default placeholder`() {
         val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
