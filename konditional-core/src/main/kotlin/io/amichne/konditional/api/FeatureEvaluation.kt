@@ -46,6 +46,23 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
     registry: NamespaceRegistry = namespace,
 ): T = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.NORMAL).value
 
+/**
+ * Explains how this feature was evaluated for the given context.
+ *
+ * This returns the diagnostics snapshot used by Konditional internals:
+ * matched/default decision, optional rollout skip details, and computed bucket metadata.
+ *
+ * @param context The evaluation context
+ * @param registry The registry to use (defaults to the feature's namespace)
+ * @return Deterministic evaluation diagnostics for this input and registry snapshot
+ * @throws IllegalStateException if the feature is not registered in the registry
+ */
+@OptIn(KonditionalInternalApi::class)
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.explain(
+    context: C,
+    registry: NamespaceRegistry = namespace,
+): EvaluationDiagnostics<T> = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.EXPLAIN)
+
 @OptIn(KonditionalInternalApi::class)
 @PublishedApi
 internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInternal(
@@ -80,7 +97,7 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
 /**
  * Internal evaluation entrypoint used by sibling modules (e.g. shadow evaluation).
  *
- * Prefer [evaluate] for application usage.
+ * Prefer [evaluate] / [explain] for application usage.
  */
 @KonditionalInternalApi
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInternalApi(
