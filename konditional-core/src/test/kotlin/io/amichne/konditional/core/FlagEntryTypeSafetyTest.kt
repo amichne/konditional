@@ -17,9 +17,8 @@ import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.targeting.Targeting
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
-import io.amichne.konditional.runtime.load
+import io.amichne.konditional.runtime.update
 import io.amichne.konditional.serialization.instance.Configuration
-import io.amichne.konditional.serialization.instance.MaterializedConfiguration
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -169,7 +168,7 @@ class FlagEntryTypeSafetyTest {
             )
         )
 
-        Features.load(MaterializedConfiguration.of(Features.compiledSchema(), configuration))
+        Features.update(configuration)
 
         val context = ctx("33333333333333333333333333333333")
         val boolResult = Features.featureA.evaluate(context)

@@ -88,7 +88,8 @@ interface Konstrained<out S : JsonSchema<*>> {
 
 `Konstrained` supports object, primitive, and array schemas.
 
-- **Object schemas (data classes)**: Use this for multi-field structures.
+- **Object schemas (data classes or Kotlin `object` singletons)**: Use this for
+  multi-field structures or zero-field singleton values.
 - **Primitive schemas (value classes, recommended)**: Wrap one `String`,
   `Boolean`, `Int`, or `Double` with constraints.
 - **Array schemas (value classes, recommended)**: Wrap one list and validate

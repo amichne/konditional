@@ -17,12 +17,10 @@ import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.KonditionalBoundaryFailure
 import io.amichne.konditional.core.result.ParseError
-
 import io.amichne.konditional.fixtures.serializers.RetryPolicy
 import io.amichne.konditional.fixtures.utilities.update
-import io.amichne.konditional.runtime.load
+import io.amichne.konditional.runtime.update
 import io.amichne.konditional.serialization.instance.Configuration
-import io.amichne.konditional.serialization.instance.MaterializedConfiguration
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 import io.amichne.konditional.values.FeatureId
@@ -91,7 +89,7 @@ class ConfigurationSnapshotCodecTest {
     }
 
     private fun loadMaterialized(configuration: Configuration) {
-        TestFeatures.load(MaterializedConfiguration.of(TestFeatures.compiledSchema(), configuration))
+        TestFeatures.update(configuration)
     }
 
     private fun declaredDefaultConfiguration(): Configuration {
@@ -117,16 +115,16 @@ class ConfigurationSnapshotCodecTest {
         options: SnapshotLoadOptions = SnapshotLoadOptions.fillMissingDeclaredFlags(),
     ): ParseResult<Configuration> =
         ConfigurationSnapshotCodec
-            .applyPatchJson(
-                currentConfiguration = currentConfiguration,
-                schema = TestFeatures.compiledSchema(),
+            .patch(
+                current = currentConfiguration,
                 patchJson = patchJson,
+                namespace = TestFeatures,
                 options = options,
             ).toParseResult()
 
-    private fun Result<MaterializedConfiguration>.toParseResult(): ParseResult<Configuration> =
+    private fun Result<Configuration>.toParseResult(): ParseResult<Configuration> =
         fold(
-            onSuccess = { materialized -> ParseResult.success(materialized.configuration) },
+            onSuccess = { configuration -> ParseResult.success(configuration) },
             onFailure = { error ->
                 val parseError =
                     (error as? KonditionalBoundaryFailure)?.parseError
@@ -165,34 +163,6 @@ class ConfigurationSnapshotCodecTest {
 
         assertIs<ParseResult.Success<Configuration>>(result)
         assertTrue(result.value.flags.containsKey(TestFeatures.boolFlag))
-    }
-
-    @Test
-    fun `Given snapshot with flags, When decoded without feature scope by default, Then returns typed failure`() {
-        TestFeatures.boolFlag.update(true) {}
-        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
-
-        val result = ConfigurationSnapshotCodec.decode(json = json).toParseResult()
-
-        assertIs<ParseResult.Failure>(result)
-        assertIs<ParseError.InvalidSnapshot>(result.error)
-        assertTrue(result.error.reason.contains("compile-time schema"))
-    }
-
-    @Test
-    fun `Given snapshot without scope and skipUnknownKeys, Then returns typed failure`() {
-        TestFeatures.boolFlag.update(true) {}
-        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
-
-        val result =
-            ConfigurationSnapshotCodec.decode(
-                json = json,
-                options = SnapshotLoadOptions.skipUnknownKeys(),
-            ).toParseResult()
-
-        assertIs<ParseResult.Failure>(result)
-        assertIs<ParseError.InvalidSnapshot>(result.error)
-        assertTrue(result.error.reason.contains("compile-time schema"))
     }
 
     @Test
@@ -254,6 +224,17 @@ class ConfigurationSnapshotCodecTest {
         val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
 
         assertTrue(json.contains("\"type\": \"CONTEXTUAL\""))
+    }
+
+
+    @Test
+    fun `Given deferred yields rule snapshot, When decoded and re-encoded, Then contextual type remains contextual`() {
+        val encoded = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
+        val decoded = decodeFeatureAware(json = encoded).getOrThrow()
+
+        val reEncoded = ConfigurationSnapshotCodec.encode(decoded)
+
+        assertTrue(reEncoded.contains("\"type\": \"CONTEXTUAL\""))
     }
 
     @Test

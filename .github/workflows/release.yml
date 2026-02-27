@@ -115,23 +115,15 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      - name: Validate version matches tag
+      - name: Resolve release version from tag
+        id: release-version
         run: |
           TAG_VERSION="${GITHUB_REF#refs/tags/v}"
-          GRADLE_VERSION=$(./gradlew properties -q | grep "^version:" | awk '{print $2}')
-
-          echo "Tag version: $TAG_VERSION"
-          echo "Gradle version: $GRADLE_VERSION"
-
-          if [ "$TAG_VERSION" != "$GRADLE_VERSION" ]; then
-            echo "ERROR: Version mismatch between tag ($TAG_VERSION) and gradle.properties ($GRADLE_VERSION)"
-            exit 1
-          fi
-
-          echo "✓ Version validated: $TAG_VERSION"
+          echo "release=$TAG_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Using release version from tag: $TAG_VERSION"
 
       - name: Run tests
-        run: ./gradlew test --no-daemon
+        run: ./gradlew test -Pversion="${{ steps.release-version.outputs.release }}" --no-daemon
 
   publish-maven-central:
     if: github.event_name == 'push'
@@ -209,7 +201,8 @@ jobs:
             SIGNING_ARGS+=(-Psigning.gnupg.passphrase="$SIGNING_GPG_PASSPHRASE")
           fi
 
-          ./gradlew publishAndReleaseToMavenCentral "${SIGNING_ARGS[@]}" \
+          ./gradlew :konditional:publishAndReleaseToMavenCentral "${SIGNING_ARGS[@]}" \
+            -Pversion="${GITHUB_REF#refs/tags/v}" \
             --no-configuration-cache \
             --no-daemon \
             --stacktrace
@@ -268,7 +261,8 @@ jobs:
             SIGNING_ARGS+=(-Psigning.gnupg.passphrase="$SIGNING_GPG_PASSPHRASE")
           fi
 
-          ./gradlew publishMavenPublicationToGitHubPackagesRepository "${SIGNING_ARGS[@]}" \
+          ./gradlew :konditional:publishMavenPublicationToGitHubPackagesRepository "${SIGNING_ARGS[@]}" \
+            -Pversion="${GITHUB_REF#refs/tags/v}" \
             --no-configuration-cache \
             --no-daemon \
             --stacktrace
@@ -297,13 +291,10 @@ jobs:
 
       - name: Build release artifacts
         run: |
-          ./gradlew assemble --no-daemon
+          ./gradlew :konditional:assemble -Pversion="${GITHUB_REF#refs/tags/v}" --no-daemon
           rm -rf release-artifacts
           mkdir -p release-artifacts
-          find . -type f -path "*/build/libs/*.jar" \
-            ! -path "./build-logic/*" \
-            ! -path "./detekt-rules/*" \
-            -exec cp {} release-artifacts/ \;
+          find konditional/build/libs -maxdepth 1 -type f -name '*.jar' -exec cp {} release-artifacts/ \;
           if [ -z "$(find release-artifacts -maxdepth 1 -name '*.jar' -print -quit)" ]; then
             echo "No release artifacts found in module build/libs directories"
             exit 1

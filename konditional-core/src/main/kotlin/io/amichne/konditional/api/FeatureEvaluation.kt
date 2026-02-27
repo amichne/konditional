@@ -1,5 +1,3 @@
-@file:OptIn(KonditionalInternalApi::class)
-
 package io.amichne.konditional.api
 
 import io.amichne.konditional.context.Context
@@ -8,9 +6,9 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.evaluation.Bucketing.isInRampUp
 import io.amichne.konditional.core.evaluation.Bucketing.rampUpThresholdBasisPoints
 import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.internal.evaluation.EvaluationDiagnostics
 import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.core.registry.NamespaceRegistry
+import io.amichne.konditional.internal.evaluation.EvaluationDiagnostics
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.targeting.Targeting
@@ -20,7 +18,11 @@ import io.amichne.konditional.rules.targeting.localesOrEmpty
 import io.amichne.konditional.rules.targeting.platformsOrEmpty
 import io.amichne.konditional.rules.targeting.versionRangeOrNull
 import io.amichne.konditional.rules.versions.Unbounded
+import java.security.MessageDigest
 import kotlin.system.measureNanoTime
+
+private const val MINIMUM_ORDINAL = 0
+private const val RULE_ID_HASH_LENGTH = 8
 
 /**
  * Evaluates this feature for the given context.
@@ -38,11 +40,30 @@ import kotlin.system.measureNanoTime
  * @return The evaluated value
  * @throws IllegalStateException if the feature is not registered in the registry
  */
+@OptIn(KonditionalInternalApi::class)
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
     context: C,
     registry: NamespaceRegistry = namespace,
 ): T = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.NORMAL).value
 
+/**
+ * Explains how this feature was evaluated for the given context.
+ *
+ * This returns the diagnostics snapshot used by Konditional internals:
+ * matched/default decision, optional rollout skip details, and computed bucket metadata.
+ *
+ * @param context The evaluation context
+ * @param registry The registry to use (defaults to the feature's namespace)
+ * @return Deterministic evaluation diagnostics for this input and registry snapshot
+ * @throws IllegalStateException if the feature is not registered in the registry
+ */
+@OptIn(KonditionalInternalApi::class)
+fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.explain(
+    context: C,
+    registry: NamespaceRegistry = namespace,
+): EvaluationDiagnostics<T> = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.EXPLAIN)
+
+@OptIn(KonditionalInternalApi::class)
 @PublishedApi
 internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInternal(
     context: C,
@@ -55,6 +76,7 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
     definition = registry.flag(this),
 )
 
+@OptIn(KonditionalInternalApi::class)
 @PublishedApi
 internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInternal(
     context: C,
@@ -75,7 +97,7 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
 /**
  * Internal evaluation entrypoint used by sibling modules (e.g. shadow evaluation).
  *
- * Prefer [evaluate] for application usage.
+ * Prefer [evaluate] / [explain] for application usage.
  */
 @KonditionalInternalApi
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInternalApi(
@@ -84,6 +106,7 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInternalApi(
     mode: Metrics.Evaluation.EvaluationMode,
 ): EvaluationDiagnostics<T> = evaluateInternal(context, registry, mode)
 
+@OptIn(KonditionalInternalApi::class)
 private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.createBaseDiagnostics(
     context: C,
     registry: NamespaceRegistry,
@@ -116,6 +139,7 @@ private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.createBaseDia
         else -> createRuleDiagnostics(context, registry, mode, definition)
     }
 
+@OptIn(KonditionalInternalApi::class)
 private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.createRuleDiagnostics(
     context: C,
     registry: NamespaceRegistry,
@@ -130,14 +154,18 @@ private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.createRuleDia
         trace.skippedByRampUp?.toRuleMatch(
             bucket = trace.bucket,
             featureKey = key,
+            namespaceId = registry.namespaceId,
             salt = definition.salt,
+            ruleOrdinal = definition.valuesByPrecedence.indexOfFirst { it === trace.skippedByRampUp },
         )
     val decision =
         trace.matched
             ?.toRuleMatch(
                 bucket = trace.bucket,
                 featureKey = key,
+                namespaceId = registry.namespaceId,
                 salt = definition.salt,
+                ruleOrdinal = definition.valuesByPrecedence.indexOfFirst { it === trace.matched },
             )?.let { matched ->
                 EvaluationDiagnostics.Decision.Rule(
                     matched = matched,
@@ -157,57 +185,107 @@ private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.createRuleDia
     )
 }
 
+@OptIn(KonditionalInternalApi::class)
 private fun <T : Any, C : Context> ConditionalValue<T, C>.toRuleMatch(
     bucket: Int?,
     featureKey: String,
+    namespaceId: String,
     salt: String,
-): EvaluationDiagnostics.RuleMatch {
-    requireNotNull(bucket) { "Bucket must be computed when a rule matches by criteria" }
-    val explanation = rule.toExplanation()
-    return EvaluationDiagnostics.RuleMatch(
-        rule = explanation,
-        bucket =
-            BucketInfo(
+    ruleOrdinal: Int,
+): EvaluationDiagnostics.RuleMatch = bucket?.let { bucket ->
+    rule.toExplanation(ruleId = createRuleId(namespaceId, featureKey, ruleOrdinal)).let {
+        EvaluationDiagnostics.RuleMatch(
+            rule = it,
+            bucket = BucketInfo(
                 featureKey = featureKey,
                 salt = salt,
                 bucket = bucket,
-                rollout = explanation.rollout,
-                thresholdBasisPoints =
-                    rampUpThresholdBasisPoints(
-                        explanation.rollout,
-                    ),
-                inRollout = isInRampUp(explanation.rollout, bucket),
+                rollout = it.rollout,
+                thresholdBasisPoints = rampUpThresholdBasisPoints(it.rollout),
+                inRollout = isInRampUp(it.rollout, bucket),
             ),
-    )
+        )
+    }
+} ?: error("Bucket must be computed when a rule matches by criteria")
+
+@OptIn(KonditionalInternalApi::class)
+private fun <C : Context> Rule<C>.toExplanation(
+    ruleId: String,
+): EvaluationDiagnostics.RuleExplanation = EvaluationDiagnostics.RuleExplanation(
+    note = note,
+    rollout = rampUp,
+    locales = targeting.localesOrEmpty(),
+    platforms = targeting.platformsOrEmpty(),
+    versionRange = targeting.versionRangeOrNull() ?: Unbounded,
+    axes = targeting.axesOrEmpty(),
+    baseSpecificity = (if (targeting.localesOrEmpty().isNotEmpty()) 1 else 0) +
+        (if (targeting.platformsOrEmpty().isNotEmpty()) 1 else 0) +
+        (if ((targeting.versionRangeOrNull() ?: Unbounded).hasBounds()) 1 else 0) +
+        targeting.axesOrEmpty().size,
+    extensionSpecificity = targeting.customLeafCount(),
+    totalSpecificity = targeting.specificity(),
+    extensionClassName = null,
+    ruleId = ruleId,
+    extensionNode = targeting.toExtensionNode(),
+    conditionalContextNode = targeting.toConditionalContextNode(),
+)
+
+private fun createRuleId(namespaceId: String, featureKey: String, ruleOrdinal: Int): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    val input = "$namespaceId:$featureKey:${ruleOrdinal.coerceAtLeast(MINIMUM_ORDINAL)}"
+    val hash = digest.digest(input.toByteArray(Charsets.UTF_8))
+    val shortHash = hash.take(RULE_ID_HASH_LENGTH).joinToString("") { "%02x".format(it) }
+    return "rule::$namespaceId::$featureKey::$shortHash"
 }
 
-private fun <C : Context> Rule<C>.toExplanation(): EvaluationDiagnostics.RuleExplanation {
-    val targeting = targeting
-    val locales = targeting.localesOrEmpty()
-    val platforms = targeting.platformsOrEmpty()
-    val versionRange = targeting.versionRangeOrNull() ?: Unbounded
-    val axes = targeting.axesOrEmpty()
-
-    val customLeaves = targeting.customLeafCount()
-
-    val baseSpecificity =
-        (if (locales.isNotEmpty()) 1 else 0) +
-            (if (platforms.isNotEmpty()) 1 else 0) +
-            (if (versionRange.hasBounds()) 1 else 0) +
-            axes.size
-
-    val extensionSpecificity = customLeaves
-
-    return EvaluationDiagnostics.RuleExplanation(
-        note = note,
-        rollout = rampUp,
-        locales = locales,
-        platforms = platforms,
-        versionRange = versionRange,
-        axes = axes,
-        baseSpecificity = baseSpecificity,
-        extensionSpecificity = extensionSpecificity,
-        totalSpecificity = targeting.specificity(),
-        extensionClassName = null,
-    )
+@OptIn(KonditionalInternalApi::class)
+private fun <C : Context> Targeting.All<C>.toExtensionNode(): EvaluationDiagnostics.ExtensionNode {
+    val hasExtension =
+        targets.any { it is Targeting.Custom<*> || (it is Targeting.Guarded<*, *> && it.inner is Targeting.Custom<*>) }
+    return if (!hasExtension) {
+        EvaluationDiagnostics.ExtensionNode(EvaluationDiagnostics.ExtensionType.NONE)
+    } else {
+        EvaluationDiagnostics.ExtensionNode(
+            type = EvaluationDiagnostics.ExtensionType.LAMBDA,
+            content = toTargetingNode(),
+        )
+    }
 }
+
+@OptIn(KonditionalInternalApi::class)
+private fun <C : Context> Targeting.All<C>.toConditionalContextNode(): EvaluationDiagnostics.ConditionalContextNode {
+    val hasNarrowing = targets.any { it is Targeting.Guarded<*, *> }
+    return if (!hasNarrowing) {
+        EvaluationDiagnostics.ConditionalContextNode(EvaluationDiagnostics.ConditionalContextType.NONE)
+    } else {
+        EvaluationDiagnostics.ConditionalContextNode(
+            type = EvaluationDiagnostics.ConditionalContextType.NARROWING,
+            content = toTargetingNode(),
+        )
+    }
+}
+
+@OptIn(KonditionalInternalApi::class)
+@Suppress("UNCHECKED_CAST")
+private fun <C : Context> Targeting.All<C>.toTargetingNode(): EvaluationDiagnostics.TargetingNode =
+    EvaluationDiagnostics.TargetingNode.All(children = targets.map { (it as Targeting<Context>).toTargetingNode() })
+
+@Suppress("UNCHECKED_CAST")
+@OptIn(KonditionalInternalApi::class)
+private fun Targeting<Context>.toTargetingNode(): EvaluationDiagnostics.TargetingNode =
+    when (this) {
+        is Targeting.All<*> -> (this as Targeting.All<Context>).toTargetingNode()
+        is Targeting.AnyOf<*> ->
+            EvaluationDiagnostics.TargetingNode.AnyOf(
+                children = this.targets.map { (it as Targeting<Context>).toTargetingNode() },
+            )
+        is Targeting.Locale -> EvaluationDiagnostics.TargetingNode.Locale(ids = ids)
+        is Targeting.Platform -> EvaluationDiagnostics.TargetingNode.Platform(ids = ids)
+        is Targeting.Version -> EvaluationDiagnostics.TargetingNode.Version(range = range)
+        is Targeting.Axis -> EvaluationDiagnostics.TargetingNode.Axis(axisId = axisId, allowedIds = allowedIds)
+        is Targeting.Custom<*> -> EvaluationDiagnostics.TargetingNode.Custom
+        is Targeting.Guarded<*, *> ->
+            EvaluationDiagnostics.TargetingNode.Guarded(
+                child = (inner as Targeting<Context>).toTargetingNode(),
+            )
+    }

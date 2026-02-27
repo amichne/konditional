@@ -8,23 +8,38 @@ import io.amichne.konditional.core.registry.NamespaceRegistryRuntime
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.parseErrorOrNull
 import io.amichne.konditional.core.result.parseFailure
-import io.amichne.konditional.serialization.instance.MaterializedConfiguration
+import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 
 /**
- * Namespace-scoped snapshot loader.
+ * Side-effecting snapshot loader scoped to a [Namespace].
  *
- * Decodes JSON via a [SnapshotCodec] and loads successful results into the namespace registry.
+ * Decodes a JSON snapshot via [ConfigurationSnapshotCodec] against the namespace's
+ * compile-time schema, then atomically loads the result into the namespace registry.
+ * The registry is only mutated on success — a parse failure leaves the current state intact.
+ *
+ * Construct via [forNamespace]; the constructor is private to prevent codec injection,
+ * which previously allowed bypassing the schema-aware decode path.
  */
-class NamespaceSnapshotLoader<M : Namespace>(
+class NamespaceSnapshotLoader<M : Namespace> private constructor(
     private val namespace: M,
-    private val codec: SnapshotCodec<MaterializedConfiguration> = ConfigurationSnapshotCodec,
-) : SnapshotLoader<MaterializedConfiguration> {
-    override fun load(
+) {
+    /**
+     * Decodes [json] and loads it into the namespace registry if decoding succeeds.
+     *
+     * @return [Result.success] with the [Configuration] on success,
+     *         or [Result.failure] with a typed [ParseError] on failure. Never throws.
+     */
+    fun load(
         json: String,
-        options: SnapshotLoadOptions,
-    ): Result<MaterializedConfiguration> {
-        val decoded = decodeSnapshot(json, options)
+        options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
+    ): Result<Configuration> {
+        val decoded = ConfigurationSnapshotCodec.decode(
+            json = json,
+            schema = namespace.compiledSchema(),
+            options = options,
+        )
+
         if (decoded.isFailure) {
             val contextualError = decoded.parseErrorOrNull()?.withNamespaceContext(namespace.id)
             return if (contextualError != null) {
@@ -34,22 +49,10 @@ class NamespaceSnapshotLoader<M : Namespace>(
             }
         }
 
-        val materialized = decoded.getOrThrow()
-        namespace.runtimeRegistry().load(materialized.configuration)
-        return Result.success(materialized)
+        val configuration = decoded.getOrThrow()
+        namespace.runtimeRegistry().load(configuration)
+        return Result.success(configuration)
     }
-
-    private fun decodeSnapshot(
-        json: String,
-        options: SnapshotLoadOptions,
-    ): Result<MaterializedConfiguration> =
-        (codec as? FeatureAwareSnapshotCodec<MaterializedConfiguration>)
-            ?.decode(
-                json = json,
-                schema = namespace.compiledSchema(),
-                options = options,
-            )
-            ?: codec.decode(json = json, options = options)
 
     private fun Namespace.runtimeRegistry(): NamespaceRegistryRuntime =
         registry as? NamespaceRegistryRuntime
@@ -66,6 +69,9 @@ class NamespaceSnapshotLoader<M : Namespace>(
         }
 
     companion object {
+        /**
+         * Creates a [NamespaceSnapshotLoader] scoped to [namespace].
+         */
         fun <M : Namespace> forNamespace(namespace: M): NamespaceSnapshotLoader<M> = NamespaceSnapshotLoader(namespace)
     }
 }

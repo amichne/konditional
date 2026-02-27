@@ -10,7 +10,6 @@ import io.amichne.konditional.core.result.parseFailure
 import io.amichne.konditional.core.schema.CompiledNamespaceSchema
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.ConfigurationMetadata
-import io.amichne.konditional.serialization.instance.MaterializedConfiguration
 import io.amichne.konditional.serialization.options.MissingDeclaredFlagStrategy
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.options.SnapshotWarning
@@ -29,15 +28,12 @@ data class SerializableSnapshot(
     fun toConfiguration(
         schema: CompiledNamespaceSchema,
         options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
-    ): Result<MaterializedConfiguration> =
+    ): Result<Configuration> =
         materializedFlags(schema, options)
             .map { resolvedFlags ->
-                MaterializedConfiguration.of(
-                    schema = schema,
-                    configuration = Configuration(
-                        flags = resolvedFlags.toMap(),
-                        metadata = meta?.toConfigurationMetadata() ?: ConfigurationMetadata(),
-                    ),
+                Configuration(
+                    flags = resolvedFlags.toMap(),
+                    metadata = meta?.toConfigurationMetadata() ?: ConfigurationMetadata(),
                 )
             }
 

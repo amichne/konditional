@@ -1,6 +1,8 @@
+@file:OptIn(io.amichne.konditional.api.KonditionalInternalApi::class)
+@file:Suppress("TooManyFunctions")
+
 package io.amichne.konditional.serialization
 
-import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.parseFailure
 import io.amichne.konditional.core.types.Konstrained
@@ -15,6 +17,7 @@ import io.amichne.kontracts.schema.IntSchema
 import io.amichne.kontracts.schema.ObjectSchema
 import io.amichne.kontracts.schema.ObjectTraits
 import io.amichne.kontracts.schema.StringSchema
+import io.amichne.kontracts.schema.ValidationResult
 import io.amichne.kontracts.value.JsonArray
 import io.amichne.kontracts.value.JsonBoolean
 import io.amichne.kontracts.value.JsonNull
@@ -42,9 +45,13 @@ import kotlin.reflect.full.primaryConstructor
  * the matching Kotlin type; `@JvmInline value class` is the idiomatic way to guarantee this
  * at the language level.
  */
-@KonditionalInternalApi
+internal enum class SingletonUnknownFieldMode {
+    REJECT_UNKNOWN_FIELDS,
+    IGNORE_UNKNOWN_FIELDS,
+}
+
 @Suppress("TooManyFunctions")
-object SchemaValueCodec {
+internal object SchemaValueCodec {
 
     /**
      * Encodes a value to JsonObject using its schema.
@@ -91,7 +98,6 @@ object SchemaValueCodec {
      *   implementing class does not have the required single-property structure for
      *   primitive/array schemas.
      */
-    @KonditionalInternalApi
     fun encodeKonstrained(konstrained: Konstrained<*>): JsonValue =
         when {
             // Adapted family: domain type T → JSON primitive via the instance's encode().
@@ -141,7 +147,6 @@ object SchemaValueCodec {
      * @return [Result.success] with the constructed instance, or [Result.failure] with a
      *   [ParseError.InvalidSnapshot] if construction fails.
      */
-    @KonditionalInternalApi
     @Suppress("ReturnCount")
     fun <T : Any> decodeKonstrainedPrimitive(kClass: KClass<T>, rawValue: Any): Result<T> {
         // Step 1: prefer a companion Decoder when present — supports As* types with
@@ -280,11 +285,21 @@ object SchemaValueCodec {
      * Decodes JsonObject to an instance using schema and reflection.
      *
      * Kotlin `object` singletons have no primary constructor; when [kClass] is a singleton
-     * its `objectInstance` is returned immediately without any field resolution.
+     * its `objectInstance` is returned only after schema-based payload validation.
      */
-    fun <T : Any> decode(kClass: KClass<T>, json: JsonObject, schema: ObjectSchema): Result<T> {
-        // Kotlin `object` singletons have no primary constructor; return the existing instance.
-        kClass.objectInstance?.let { return Result.success(it) }
+    fun <T : Any> decode(
+        kClass: KClass<T>,
+        json: JsonObject,
+        schema: ObjectSchema,
+        singletonUnknownFieldMode: SingletonUnknownFieldMode = SingletonUnknownFieldMode.REJECT_UNKNOWN_FIELDS,
+    ): Result<T> {
+        kClass.objectInstance?.let { singleton ->
+            return validateSingletonPayload(
+                json = json,
+                schema = schema,
+                singletonUnknownFieldMode = singletonUnknownFieldMode,
+            ).map { singleton }
+        }
         return kClass.primaryConstructor
             ?.let { constructor ->
                 buildSchemaParameterMap(constructor, json, schema, kClass, ::decodeValue)
@@ -318,7 +333,7 @@ object SchemaValueCodec {
      */
     fun <T : Any> decode(kClass: KClass<T>, json: JsonObject): Result<T> =
         extractSchema(kClass)
-            ?.let { schema -> decode(kClass, json, schema) }
+            ?.let { schema -> decode(kClass, json, schema, SingletonUnknownFieldMode.REJECT_UNKNOWN_FIELDS) }
             ?: decodeWithoutSchema(kClass, json)
 
     /**
@@ -339,7 +354,11 @@ object SchemaValueCodec {
             is JsonNull ->
                 parseFailure(ParseError.InvalidSnapshot("Cannot decode null as ${kClass.qualifiedName}"))
             else ->
-                decodeKonstrainedPrimitive(kClass, jsonValue.toKotlinPrimitive(kClass))
+                jsonValue.toKotlinPrimitive(kClass)
+                    .fold(
+                        onSuccess = { raw -> decodeKonstrainedPrimitive(kClass, raw) },
+                        onFailure = { error -> Result.failure(error) },
+                    )
         }
 
     private fun decodeValue(kClass: KClass<*>?, json: JsonValue): Result<Any> =
@@ -463,6 +482,51 @@ object SchemaValueCodec {
                 ),
             )
     }
+
+    @Suppress("ReturnCount")
+    private fun validateSingletonPayload(
+        json: JsonObject,
+        schema: ObjectSchema,
+        singletonUnknownFieldMode: SingletonUnknownFieldMode,
+    ): Result<Unit> {
+        val requiredFields = schema.required ?: schema.fields.filter { (_, field) -> field.required }.keys
+        val missingRequired =
+            requiredFields.filter { requiredField ->
+                val fieldSchema = schema.fields[requiredField] ?: return@filter true
+                val jsonValue = json.fields[requiredField]
+                jsonValue == null && fieldSchema.defaultValue == null
+            }
+        if (missingRequired.isNotEmpty()) {
+            return parseFailure(
+                ParseError.InvalidSnapshot(
+                    "Required field(s) missing for singleton payload: ${missingRequired.joinToString(", ")}",
+                ),
+            )
+        }
+
+        for ((fieldName, fieldValue) in json.fields) {
+            val fieldSchema = schema.fields[fieldName]
+            if (fieldSchema == null) {
+                if (singletonUnknownFieldMode == SingletonUnknownFieldMode.REJECT_UNKNOWN_FIELDS) {
+                    return parseFailure(
+                        ParseError.InvalidSnapshot("Unknown field '$fieldName' for singleton payload"),
+                    )
+                }
+                continue
+            }
+
+            val validation = fieldValue.validate(fieldSchema.schema)
+            if (validation is ValidationResult.Invalid) {
+                return parseFailure(
+                    ParseError.InvalidSnapshot(
+                        "Field '$fieldName' is invalid for singleton payload: ${validation.getErrorMessage()}",
+                    ),
+                )
+            }
+        }
+
+        return Result.success(Unit)
+    }
 }
 
 /**
@@ -476,23 +540,67 @@ object SchemaValueCodec {
  * - [JsonArray] → [List] of primitives (String, Boolean, Int, or Double per element)
  * - [JsonObject] / [JsonNull] → not handled here; callers must branch before calling
  */
-private fun <T : Any> JsonValue.toKotlinPrimitive(targetClass: KClass<T>): Any =
+private fun <T : Any> JsonValue.toKotlinPrimitive(targetClass: KClass<T>): Result<Any> =
     when (this) {
-        is JsonString -> value
-        is JsonBoolean -> value
-        is JsonNumber -> if (targetClass.isIntKonstrained()) toInt() else toDouble()
-        is JsonArray ->
-            elements.map { elem ->
-                when (elem) {
-                    is JsonString -> elem.value
-                    is JsonBoolean -> elem.value
-                    is JsonNumber ->
-                        if (elem.toDouble() == elem.toInt().toDouble()) elem.toInt() else elem.toDouble()
-                    else -> error("Unsupported array element type for decodeKonstrained: ${elem::class.simpleName}")
-                }
+        is JsonString -> Result.success(value)
+        is JsonBoolean -> Result.success(value)
+        is JsonNumber ->
+            if (targetClass.isIntKonstrained()) {
+                toStrictIntResult().map { strictInt -> strictInt as Any }
+            } else {
+                Result.success(toDouble())
             }
-        else -> error("Cannot convert ${this::class.simpleName} to Kotlin primitive for ${targetClass.qualifiedName}")
+        is JsonArray ->
+            toPrimitiveListResult().map { decodedList -> decodedList as Any }
+        else ->
+            parseFailure(
+                ParseError.InvalidSnapshot(
+                    "Cannot convert ${this::class.simpleName} to Kotlin primitive for ${targetClass.qualifiedName}",
+                ),
+            )
     }
+
+@Suppress("ReturnCount")
+private fun JsonNumber.toStrictIntResult(): Result<Int> {
+    val raw = toDouble()
+    if (raw % 1.0 != 0.0) {
+        return parseFailure(ParseError.InvalidSnapshot("Expected integer JSON number, got $raw"))
+    }
+    if (raw < Int.MIN_VALUE || raw > Int.MAX_VALUE) {
+        return parseFailure(ParseError.InvalidSnapshot("Integer JSON number out of Int range: $raw"))
+    }
+    return Result.success(raw.toInt())
+}
+
+private fun JsonArray.toPrimitiveListResult(): Result<List<Any>> {
+    val values = mutableListOf<Any>()
+    for ((index, element) in elements.withIndex()) {
+        val decodedElement =
+            when (element) {
+                is JsonString -> Result.success(element.value as Any)
+                is JsonBoolean -> Result.success(element.value as Any)
+                is JsonNumber -> Result.success(element.toDouble().coerceNumberType())
+                else ->
+                    parseFailure(
+                        ParseError.InvalidSnapshot(
+                            "Unsupported array element type at index $index: ${element::class.simpleName}",
+                        ),
+                    )
+            }
+        if (decodedElement.isFailure) {
+            return Result.failure(
+                decodedElement.exceptionOrNull() ?: IllegalStateException("Unknown array decode failure"),
+            )
+        }
+        values += decodedElement.getOrThrow()
+    }
+    return Result.success(values)
+}
+
+private fun Double.coerceNumberType(): Any {
+    val intCandidate = toInt()
+    return if (this == intCandidate.toDouble()) intCandidate else this
+}
 
 private fun KClass<*>.isIntKonstrained(): Boolean =
     isSubclassOf(Konstrained.Primitive.Int::class) || isSubclassOf(Konstrained.AsInt::class)

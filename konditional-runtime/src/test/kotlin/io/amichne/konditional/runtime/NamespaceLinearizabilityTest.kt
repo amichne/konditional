@@ -16,7 +16,6 @@ import io.amichne.konditional.core.instance.ConfigurationView
 import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.ConfigurationMetadata
-import io.amichne.konditional.serialization.instance.MaterializedConfiguration
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -35,7 +34,7 @@ class NamespaceLinearizabilityTest {
         val historyLimit = InMemoryNamespaceRegistry.DEFAULT_HISTORY_LIMIT
         val namespace = linearizableNamespace(historyLimit = historyLimit)
         val snapshots = (1..4).associateWith { value -> versionedConfiguration(namespace, value) }
-        namespace.load(snapshots.getValue(1))
+        namespace.update(snapshots.getValue(1))
 
         val start = CountDownLatch(1)
         val done = CountDownLatch(8)
@@ -47,12 +46,12 @@ class NamespaceLinearizabilityTest {
             repeat(400) {
                 if (failure.get() != null) return@repeat
 
-                namespace.load(snapshots.getValue(2))
+                namespace.update(snapshots.getValue(2))
                 assertTrue(namespace.rollback(1), "rollback after load(2) must succeed")
-                namespace.load(snapshots.getValue(3))
+                namespace.update(snapshots.getValue(3))
                 assertTrue(namespace.rollback(1), "rollback after load(3) must succeed")
-                namespace.load(snapshots.getValue(4))
-                namespace.load(snapshots.getValue(1))
+                namespace.update(snapshots.getValue(4))
+                namespace.update(snapshots.getValue(1))
             }
         }
 
@@ -95,7 +94,7 @@ class NamespaceLinearizabilityTest {
         val historyLimit = 64
         val namespace = linearizableNamespace(historyLimit = historyLimit)
         val snapshots = (1..20).associateWith { value -> versionedConfiguration(namespace, value) }
-        snapshots.values.forEach(namespace::load)
+        snapshots.values.forEach(namespace::update)
 
         val rollingBack = AtomicBoolean(true)
         val start = CountDownLatch(1)
@@ -172,16 +171,13 @@ class NamespaceLinearizabilityTest {
     private fun versionedConfiguration(
         namespace: LinearizableNamespace,
         value: Int,
-    ): MaterializedConfiguration =
-        MaterializedConfiguration.of(
-            schema = namespace.compiledSchema(),
-            configuration = Configuration(
-                flags = mapOf(
-                    namespace.primary to intDefinition(namespace.primary, value),
-                    namespace.mirror to intDefinition(namespace.mirror, -value),
-                ),
-                metadata = ConfigurationMetadata(version = "v$value"),
+    ): Configuration =
+        Configuration(
+            flags = mapOf(
+                namespace.primary to intDefinition(namespace.primary, value),
+                namespace.mirror to intDefinition(namespace.mirror, -value),
             ),
+            metadata = ConfigurationMetadata(version = "v$value"),
         )
 
     private fun assertHistoryCoherent(

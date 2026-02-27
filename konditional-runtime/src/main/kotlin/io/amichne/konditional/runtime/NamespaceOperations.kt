@@ -7,16 +7,39 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.instance.ConfigurationMetadataView
 import io.amichne.konditional.core.instance.ConfigurationView
 import io.amichne.konditional.core.registry.NamespaceRegistryRuntime
-import io.amichne.konditional.serialization.instance.MaterializedConfiguration
+import io.amichne.konditional.serialization.instance.Configuration
+import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 
 /**
  * Runtime-only namespace operations (mutation/lifecycle).
  *
  * These are intentionally not part of the `:konditional-core` API surface.
  */
-fun Namespace.load(configuration: MaterializedConfiguration) {
-    runtimeRegistry().load(configuration.configuration)
+/**
+ * Atomically loads [configuration] into this namespace's registry.
+ *
+ * Callers that need to decode JSON first should use [NamespaceSnapshotLoader] from
+ * `:konditional-runtime`, which combines decode and update in one call.
+ */
+fun Namespace.update(configuration: Configuration) {
+    runtimeRegistry().load(configuration)
 }
+
+
+/**
+ * Serializes the namespace's current immutable snapshot into canonical JSON.
+ *
+ * This is the preferred operational entry point for snapshot export because it is
+ * namespace-scoped and deterministic for a fixed configuration state.
+ */
+@Suppress("DEPRECATION")
+fun Namespace.dump(): String = ConfigurationSnapshotCodec.encode(configuration)
+
+/**
+ * Convenience accessor for [dump].
+ */
+val Namespace.json: String
+    get() = dump()
 
 fun Namespace.rollback(steps: Int = 1): Boolean =
     runtimeRegistry().rollback(steps)

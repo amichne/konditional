@@ -9,16 +9,13 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
-import io.amichne.konditional.core.result.ParseError
-import io.amichne.konditional.core.result.parseErrorOrNull
-
 import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
-import io.amichne.konditional.runtime.load
+import io.amichne.konditional.runtime.dump
+import io.amichne.konditional.runtime.update
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.ConfigurationMetadata
-import io.amichne.konditional.serialization.instance.MaterializedConfiguration
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.options.SnapshotWarning
 import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
@@ -28,7 +25,6 @@ import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class OperationalSerializationTest {
@@ -67,10 +63,6 @@ class OperationalSerializationTest {
             }
         """.trimIndent()
 
-        val strictResult = ConfigurationSnapshotCodec.decode(snapshotJson)
-        assertTrue(strictResult.isFailure)
-        assertIs<ParseError.InvalidSnapshot>(strictResult.parseErrorOrNull())
-
         val warnings = mutableListOf<SnapshotWarning>()
         val lenient = SnapshotLoadOptions.skipUnknownKeys(onWarning = { warnings.add(it) })
         val lenientResult =
@@ -80,7 +72,7 @@ class OperationalSerializationTest {
                 options = lenient,
             )
         assertTrue(lenientResult.isSuccess)
-        assertEquals(setOf(namespace.knownFeature), lenientResult.getOrThrow().configuration.flags.keys)
+        assertEquals(setOf(namespace.knownFeature), lenientResult.getOrThrow().flags.keys)
         assertEquals(1, warnings.size)
         assertEquals(SnapshotWarning.Kind.UNKNOWN_FEATURE_KEY, warnings.single().kind)
     }
@@ -111,21 +103,18 @@ class OperationalSerializationTest {
         assertTrue(namespace.envScopedFlag.evaluate(productionContext))
         assertFalse(namespace.envScopedFlag.evaluate(developementContext))
 
-        val json = ConfigurationSnapshotCodec.encode(namespace.configuration)
+        val json = namespace.dump()
 
         // Reset to a configuration that still contains the feature key but has no rules.
-        namespace.load(
-            MaterializedConfiguration.of(
-                schema = namespace.compiledSchema(),
-                configuration = Configuration(
-                    flags = mapOf(
-                        namespace.envScopedFlag to FlagDefinition(
-                            feature = namespace.envScopedFlag,
-                            bounds = emptyList(),
-                            defaultValue = false,
-                        )
+        namespace.update(
+            Configuration(
+                flags = mapOf(
+                    namespace.envScopedFlag to FlagDefinition(
+                        feature = namespace.envScopedFlag,
+                        bounds = emptyList(),
+                        defaultValue = false,
                     )
-                ),
+                )
             )
         )
         assertFalse(
@@ -133,7 +122,7 @@ class OperationalSerializationTest {
             "Sanity: after resetting rules, flag should be default"
         )
 
-        val loaded = NamespaceSnapshotLoader(namespace).load(json)
+        val loaded = NamespaceSnapshotLoader.forNamespace(namespace).load(json)
         assertTrue(loaded.isSuccess)
 
         assertTrue(namespace.envScopedFlag.evaluate(productionContext))
@@ -155,6 +144,6 @@ class OperationalSerializationTest {
         val json = ConfigurationSnapshotCodec.encode(config)
         val parsed = ConfigurationSnapshotCodec.decode(json, namespace.compiledSchema())
         assertTrue(parsed.isSuccess)
-        assertEquals(config.metadata, parsed.getOrThrow().configuration.metadata)
+        assertEquals(config.metadata, parsed.getOrThrow().metadata)
     }
 }

@@ -1,12 +1,4 @@
----
-unlisted: true
----
-
-:::note
-This is a legacy claims index. The current trust registry is at [Theory: Claims Registry](/theory/claims-registry).
-:::
-
-# Claims registry (legacy)
+# Claims registry
 
 This page is generated from `docs/claim-trace/claims-registry.json` and is the human-readable index for claim IDs used across documentation.
 
@@ -206,7 +198,7 @@ Snapshot loading API exposes Result-based ingestion with options and codec-backe
 - **Risk category:** `operational`
 - **Topics:** `snapshot-loading`
 - **Source pages:** `docusaurus/docs/quickstart/load-first-snapshot-safely.md#claim-clm-pr01-11a`
-- **Signature links:** `method:io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#override fun load( json: String, options: SnapshotLoadOptions, ): Result<MaterializedConfiguration>`, `type:io.amichne.konditional.serialization.options.SnapshotLoadOptions`, `type:io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec`, `type:io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader`
+- **Signature links:** `method:io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#fun load( json: String, options: SnapshotLoadOptions = SnapshotLoadOptions.strict(), ): Result<Configuration>`, `type:io.amichne.konditional.serialization.options.SnapshotLoadOptions`, `type:io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec`, `type:io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader`
 - **Test links:** -
 - **Related claims:** -
 

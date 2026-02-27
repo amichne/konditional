@@ -8,6 +8,7 @@ import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.AnyOfScope
+import io.amichne.konditional.core.dsl.rules.targeting.scopes.NarrowingTargetingScope
 import io.amichne.konditional.core.registry.AxisCatalog
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.targeting.Targeting
@@ -24,7 +25,7 @@ import io.amichne.konditional.rules.targeting.Targeting
 @PublishedApi
 internal class AnyOfBuilder<C : Context>(
     private val axisCatalog: AxisCatalog? = null,
-) : AnyOfScope<C> {
+) : AnyOfScope<C>, NarrowingTargetingScope<C> {
 
     private val leaves = mutableListOf<Targeting<C>>()
 
@@ -45,6 +46,16 @@ internal class AnyOfBuilder<C : Context>(
 
     override fun extension(block: C.() -> Boolean) {
         leaves += Targeting.Custom(block = { c -> c.block() })
+    }
+
+    override fun <R : Context> extensionNarrowed(
+        evidence: (C) -> R?,
+        block: R.() -> Boolean,
+    ) {
+        leaves += Targeting.Guarded(
+            inner = Targeting.Custom(block = { narrowed: R -> narrowed.block() }),
+            evidence = evidence,
+        )
     }
 
     override fun <T> axis(
