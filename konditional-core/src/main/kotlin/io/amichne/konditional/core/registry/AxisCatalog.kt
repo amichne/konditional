@@ -11,12 +11,19 @@ import kotlin.reflect.KClass
  * This catalog is explicitly owned by a caller (for example, a namespace) and is never process-global.
  * The catalog enforces a one-to-one mapping between axis id and value class within its own scope.
  *
+ * Catalogs can optionally chain to parent catalogs, which enables namespace-local catalogs to
+ * reuse centrally managed axis definitions without sacrificing local isolation.
+ *
  * ## Thread safety
  *
  * Registrations are synchronized to keep id/type invariants linearizable.
  * Reads are lock-free through concurrent maps.
  */
-class AxisCatalog {
+class AxisCatalog(
+    private val parentCatalogs: List<AxisCatalog> = emptyList(),
+) {
+    constructor(vararg parents: AxisCatalog) : this(parents.toList())
+
     private val byId: MutableMap<String, Axis<*>> = ConcurrentHashMap()
     private val byValueClass: MutableMap<KClass<*>, Axis<*>> = ConcurrentHashMap()
 
@@ -29,8 +36,8 @@ class AxisCatalog {
     fun register(axis: Axis<*>) {
         val axisId = axis.id
         val valueClass = axis.valueClass
-        val existingById = byId[axisId]
-        val existingByType = byValueClass[valueClass]
+        val existingById = axisForId(axisId)
+        val existingByType = axisForValueClass(valueClass)
         val attempted = "Axis(id='$axisId', valueClass=${valueClass.simpleName})"
         val existingByIdDescription = existingById?.let {
             "Axis(id='${it.id}', valueClass=${it.valueClass.simpleName})"
@@ -60,7 +67,7 @@ class AxisCatalog {
      */
     @Suppress("UNCHECKED_CAST")
     fun <T> axisFor(type: KClass<out T>): Axis<T>? where T : AxisValue<T>, T : Enum<T> =
-        byValueClass[type] as Axis<T>?
+        axisForValueClass(type) as Axis<T>?
 
     /**
      * Returns the axis registered for [type], or throws when absent.
@@ -71,4 +78,10 @@ class AxisCatalog {
                 "No axis registered for type ${type.qualifiedName ?: type.simpleName}. " +
                     "Declare one with Axis.of(\"<stable-id>\", ${type.simpleName}::class, axisCatalog).",
             )
+
+    private fun axisForId(id: String): Axis<*>? =
+        byId[id] ?: parentCatalogs.firstNotNullOfOrNull { parent -> parent.axisForId(id) }
+
+    private fun axisForValueClass(type: KClass<*>): Axis<*>? =
+        byValueClass[type] ?: parentCatalogs.firstNotNullOfOrNull { parent -> parent.axisForValueClass(type) }
 }
