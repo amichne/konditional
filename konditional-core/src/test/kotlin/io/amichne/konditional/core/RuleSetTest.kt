@@ -43,6 +43,12 @@ class RuleSetTest {
                 ios()
             }
         }
+
+        val namespacePlatform = CheckoutFlags.ruleSet<CheckoutVariant, Context, EnterpriseContext, Namespace> {
+            rule(CheckoutVariant.EXPERIMENTAL) {
+                ios()
+            }
+        }
     }
 
     private data class AdminContext(
@@ -158,11 +164,35 @@ class RuleSetTest {
         assertEquals(left.rules.map { it.value }, (left + empty).rules.map { it.value })
     }
 
+
+    @Test
+    fun `namespace scoped rule set can be included without feature binding`() {
+        val namespace = object : Namespace.TestNamespaceFacade("namespace-rule-set") {
+            val flagA by string<Context>(default = "default")
+            val flagB by string<Context>(default = "default")
+        }
+
+        val shared = namespace.ruleSet<String, Context, Namespace> {
+            rule("ios") { ios() }
+        }
+
+        namespace.flagA.update("default") {
+            include(shared)
+        }
+        namespace.flagB.update("default") {
+            include(shared)
+        }
+
+        assertEquals("ios", namespace.flagA.evaluate(coreContext(Platform.IOS)))
+        assertEquals("ios", namespace.flagB.evaluate(coreContext(Platform.IOS)))
+    }
+
     @Test
     fun `Real world example of rule composition`() {
         CheckoutFlags.checkoutVariant.update(CheckoutVariant.CLASSIC) {
             include(CheckoutRuleSets.core)
             include(CheckoutRuleSets.platform)
+            include(CheckoutRuleSets.namespacePlatform)
         }
 
         val baseContext = EnterpriseContext(
