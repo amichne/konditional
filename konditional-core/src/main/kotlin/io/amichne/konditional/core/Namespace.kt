@@ -44,7 +44,7 @@ import kotlin.reflect.KProperty
  * Define namespaces in your own codebase.
  * A namespace is just a [Namespace] instance, typically modeled as an `object`:
  * ```kotlin
- * object Payments : Namespace("payments")
+ * object Payments : Namespace()
  * ```
  *
  * ## Adding New Modules
@@ -52,7 +52,7 @@ import kotlin.reflect.KProperty
  * Define a namespace in your module, and define flags directly on it:
  *
  * ```kotlin
- * object Payments : Namespace("payments") {
+ * object Payments : Namespace() {
  *     val APPLE_PAY by boolean<Context>(default = false)
  * }
  * ```
@@ -71,10 +71,10 @@ import kotlin.reflect.KProperty
  * val flag = Payments.flag(MY_FLAG)
  * ```
  *
- * @property id Unique identifier for this namespace
+ * @property id Unique identifier for this namespace. Defaults to the fully-qualified namespace class name when omitted.
  */
 open class Namespace(
-    val id: String,
+    val id: String = defaultNamespaceId(),
     @property:KonditionalInternalApi
     val registry: NamespaceRegistry = NamespaceRegistryFactories.default(id),
     /**
@@ -94,6 +94,24 @@ open class Namespace(
     @PublishedApi internal val identifierSeed: String = id,
 ) : NamespaceRegistry by registry {
 
+    private companion object {
+        fun defaultNamespaceId(): String {
+            val inferredClassName =
+                Thread.currentThread().stackTrace
+                    .asSequence()
+                    .map { it.className }
+                    .firstOrNull { candidate ->
+                        candidate != Namespace::class.java.name &&
+                            runCatching {
+                                Namespace::class.java.isAssignableFrom(Class.forName(candidate))
+                            }.getOrDefault(false)
+                    }
+            return requireNotNull(inferredClassName) {
+                "Unable to infer namespace id. Provide Namespace(\"<stable-id>\") explicitly."
+            }
+        }
+    }
+
     init {
         require(id.isNotBlank()) { "Namespace id must not be blank" }
         require(!id.contains(SEPARATOR)) { "Namespace id must not contain '$SEPARATOR': '$id'" }
@@ -110,7 +128,7 @@ open class Namespace(
      *
      * Example:
      * ```kotlin
-     * object Payments : Namespace("payments")
+     * object Payments : Namespace()
      * object Auth : Namespace("auth")
      * ```
      */
@@ -175,7 +193,7 @@ open class Namespace(
      *
      * Example:
      * ```kotlin
-     * object Payments : Namespace("payments") {
+     * object Payments : Namespace() {
      *     val applePayEnabled by boolean<Context>(default = false) {
      *         rule(true) { platforms(Platform.IOS) }
      *     }
