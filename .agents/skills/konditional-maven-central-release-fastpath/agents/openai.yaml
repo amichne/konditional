@@ -1,0 +1,4 @@
+interface:
+  display_name: "Konditional Release Fastpath"
+  short_description: "Fast Maven Central releases for Konditional"
+  default_prompt: "Use $konditional-maven-central-release-fastpath to run a fast non-snapshot Maven Central release workflow for this repository."
