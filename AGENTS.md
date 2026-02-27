@@ -44,9 +44,49 @@ small and choose the narrowest command that matches the task.
 
 ---
 
-## Beads Is Persistent Memory (Required)
+## Module architecture and dependencies
 
-Treat Beads as the canonical working memory for planning, status, and handoff. Do not rely on chat transcript memory for project state.
+**Layered structure (bottom-up):**
+
+1. **`konditional-core`** — Pure evaluation semantics, core types (Namespace, Feature, Context), no I/O
+   - Exports: `io.amichne.konditional.{api,context,core,rules,values}.*`
+   - No dependencies on `runtime` or `serialization`
+   
+2. **`konditional-serialization`** — JSON codecs via Moshi, `ParseResult<T>` boundary type
+   - Custom adapters: `ValueClassAdapterFactory` wraps `@JvmInline value class` types
+   - Deterministic output: maps sorted by keys, explicit ordering
+   
+3. **`konditional-runtime`** — Atomic registry, snapshot loader, lifecycle (`load`, `rollback`, `dump`)
+   - `InMemoryNamespaceRegistry` uses `AtomicReference<Configuration>` for linearizable updates
+   - Side-effecting operations: `Namespace.update(Configuration)`, `Namespace.rollback(steps)`, `Namespace.dump()`
+   
+4. **`konditional-observability`** — Explain/trace APIs, shadow evaluation, mismatch detection
+   
+5. **`konditional-otel`** — OpenTelemetry bridge for metrics/spans
+
+6. **`openfeature`** — OpenFeature provider integration
+
+7. **`konditional-http-server`** — Ktor-based HTTP control plane
+
+**Critical boundary:** `:konditional-core` must never depend on `:runtime` or `:serialization`. Runtime/serialization import core, not the reverse.
+
+---
+
+## Gradle conventions (build-logic plugins)
+
+- `konditional.kotlin-library` — Base Kotlin/JVM setup
+- `konditional.publishing` — Maven Central publishing config
+- `konditional.detekt` — Static analysis with project-wide baseline
+- `konditional.junit-platform` — JUnit 5 test config
+- `konditional.core-api-boundary` — Enforces package export rules (see `konditional-core/build.gradle.kts`)
+
+**Test fixtures:** Use `java-test-fixtures` plugin to share test utilities across modules (e.g., `testFixtures(project(":konditional-core"))`).
+
+---
+
+## Beads Is Persistent Memory (Optional)
+
+If `bd` (Beads) is available locally, treat it as the canonical working memory for planning, status, and handoff. Do not rely on chat transcript memory for project state.
 
 ### Session start
 ```bash
@@ -72,6 +112,8 @@ bd update <issue-id> --append-notes "<what changed and why>"
 bd update <issue-id> --status closed --notes "<verification + outcome>"
 bd sync
 ```
+
+**Note:** `bd` is not universally available. If missing, track work via git commits and PR descriptions.
 
 ---
 
@@ -133,24 +175,102 @@ Fallback rule:
 ---
 
 ## Required reading (repo-relative)
-Treat these as source-of-truth for constraints and terminology:
-- [`docusaurus/docs/theory/type-safety-boundaries.md`](docusaurus/docs/theory/type-safety-boundaries.md)
-- [`docusaurus/docs/theory/namespace-isolation.md`](docusaurus/docs/theory/namespace-isolation.md)
-- [`docusaurus/docs/theory/determinism-proofs.md`](docusaurus/docs/theory/determinism-proofs.md)
-- [`docusaurus/docs/theory/parse-dont-validate.md`](docusaurus/docs/theory/parse-dont-validate.md)
-- [`docusaurus/docs/theory/atomicity-guarantees.md`](docusaurus/docs/theory/atomicity-guarantees.md)
-- [`docusaurus/docs/theory/migration-and-shadowing.md`](docusaurus/docs/theory/migration-and-shadowing.md)
-- [`.signatures/INDEX.sig`](.signatures/INDEX.sig)
 
-Schema/contract inputs (often needed for boundary work):
+Treat these as source-of-truth for constraints and terminology:
+
+### Theory documentation (docusaurus/docs/theory/)
+- [`type-safety-boundaries.md`](docusaurus/docs/theory/type-safety-boundaries.md) — Parse/don't-validate, typed error boundaries
+- [`namespace-isolation.md`](docusaurus/docs/theory/namespace-isolation.md) — Namespace-scoped state, blast radius control
+- [`determinism-proofs.md`](docusaurus/docs/theory/determinism-proofs.md) — SHA-256 bucketing, stable rule ordering
+- [`parse-dont-validate.md`](docusaurus/docs/theory/parse-dont-validate.md) — `ParseResult<T>` pattern, no exceptions at boundaries
+- [`atomicity-guarantees.md`](docusaurus/docs/theory/atomicity-guarantees.md) — `AtomicReference<Configuration>`, linearizability
+- [`migration-and-shadowing.md`](docusaurus/docs/theory/migration-and-shadowing.md) — Dual-eval, mismatch detection
+- [`claims-registry.md`](docusaurus/docs/theory/claims-registry.md) — Claim IDs and verification index
+
+### Schema/contract inputs (often needed for boundary work)
 - `openapi/` (OpenAPI specs/artifacts)
-- `openapi.json` or `openapi/*.json` (if present)
-- `konditional-serialization/` (codecs)
-- `kontracts/` (OpenAPI/spec generation DSL)
+- `konditional-serialization/` (Moshi codecs, snapshot format)
+- `kontracts/` (Type-safe JSON Schema DSL for OpenAPI generation)
 
 ---
 
-## What “world-class Kotlin” means here (quality bar)
+## Concrete type patterns (critical examples)
+
+### Boundary result type (`ParseResult<T>`)
+All external input parsing returns a sealed interface with typed errors:
+
+```kotlin
+sealed interface ParseResult<out T> {
+    data class Success<T>(val value: T) : ParseResult<T>
+    data class Failure(val error: ParseError) : ParseResult<Nothing>
+}
+```
+
+For Kotlin `Result` compatibility, wrap errors in `KonditionalBoundaryFailure`:
+```kotlin
+fun <T> parseFailure(error: ParseError): Result<T> = 
+    Result.failure(KonditionalBoundaryFailure(error))
+
+fun Throwable.parseErrorOrNull(): ParseError? = 
+    (this as? KonditionalBoundaryFailure)?.parseError
+```
+
+### Value class identifiers
+All domain identifiers use `@JvmInline value class` for type safety:
+```kotlin
+@JvmInline value class FeatureId(val value: String)
+@JvmInline value class StableId(val value: String)
+```
+
+Custom Moshi adapter: `ValueClassAdapterFactory` handles serialization automatically.
+
+### Atomic state updates
+Runtime registry uses `AtomicReference<Configuration>` for linearizable snapshots:
+```kotlin
+// konditional-runtime/InMemoryNamespaceRegistry.kt
+private val configRef = AtomicReference<Configuration>(initial)
+
+// Atomic swap on load
+fun load(configuration: Configuration) {
+    configRef.set(configuration)
+}
+
+// Lock-free read
+val configuration: ConfigurationView
+    get() = configRef.get()
+```
+
+### Namespace delegation pattern
+Features register themselves via Kotlin property delegation:
+```kotlin
+object AppFlags : Namespace("app") {
+    val darkMode by boolean<Context>(default = false) {
+        rule(true) { platforms(Platform.IOS) }
+    }
+}
+```
+
+The `by` operator registers the feature in the namespace registry at initialization.
+
+### Test fixtures sharing
+Modules use `java-test-fixtures` plugin to share test utilities:
+```kotlin
+// konditional-core/build.gradle.kts
+plugins {
+    `java-test-fixtures`
+}
+
+// konditional-runtime/build.gradle.kts
+dependencies {
+    testImplementation(testFixtures(project(":konditional-core")))
+}
+```
+
+Place shared test utilities in `src/testFixtures/kotlin/`.
+
+---
+
+## What "world-class Kotlin" means here (quality bar)
 
 ### Public API discipline
 - Small, opinionated, stable surface. Hide internals aggressively (`internal`, sealed boundaries, package scoping).
@@ -180,9 +300,19 @@ Prefer property-based tests when they increase confidence (ordering, bucketing, 
 
 ### Step 0 — Locate invariants and the right module
 Before writing code:
-1) Identify which modules are affected (`konditional-core`, `runtime`, `serialization`, `observability`, `spec`).
-2) Read the relevant `llm-docs/*` files for invariants involved.
-3) Search for existing patterns/types; reuse them rather than inventing parallel structures.
+1) Identify which modules are affected. **Module responsibility map:**
+   - **Core types, evaluation logic, context traits** → `konditional-core`
+   - **JSON codecs, snapshot format, Moshi adapters** → `konditional-serialization`
+   - **Registry lifecycle, `load`/`rollback`/`dump` operations** → `konditional-runtime`
+   - **Explain API, shadow evaluation, tracing** → `konditional-observability`
+   - **HTTP endpoints, Ktor server** → `konditional-http-server`
+   - **OpenFeature provider bridge** → `openfeature`
+   - **OpenTelemetry metrics/spans** → `konditional-otel`
+   - **Type-safe JSON Schema DSL** → `kontracts`
+   - **OpenAPI artifacts** → `openapi`
+2) Read the relevant theory docs (`docusaurus/docs/theory/*.md`) for invariants involved.
+3) Search for existing patterns/types in the target module; reuse rather than inventing parallel structures.
+4) **Check dependency boundaries:** Core must never import runtime/serialization. Serialization/runtime import core.
 
 ### Step 1 — Write an “Assertability Plan” in your head
 Do not output it unless asked, but you must follow it:
@@ -199,7 +329,12 @@ Do not output it unless asked, but you must follow it:
 
 ### Step 3 — Prove it
 - Add tests before declaring completion.
-- Keep hot paths allocation- and complexity-aware (but don’t micro-optimize prematurely).
+- **Test categories required:**
+  - Determinism: same context → same result (1000 iterations)
+  - Boundary: malformed JSON → typed `ParseError`
+  - Atomicity: concurrent load/evaluate never sees partial state
+  - Namespace isolation: operations don't leak across namespaces
+- Keep hot paths allocation- and complexity-aware (but don't micro-optimize prematurely).
 
 ---
 
