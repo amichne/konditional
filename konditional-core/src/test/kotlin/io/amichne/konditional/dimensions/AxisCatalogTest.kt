@@ -37,6 +37,27 @@ class AxisCatalogTest {
         PROD("prod"),
     }
 
+    private enum class DefaultIdEnvironment : AxisValue<DefaultIdEnvironment> {
+        PROD,
+    }
+
+    private enum class CustomIdEnvironment : AxisValue<CustomIdEnvironment> {
+        PROD;
+
+        override val id: String = "prod-custom"
+    }
+
+
+    @Test
+    fun `axis value defaults id to enum name`() {
+        Assertions.assertEquals("PROD", DefaultIdEnvironment.PROD.id)
+    }
+
+    @Test
+    fun `axis value id can still be overridden`() {
+        Assertions.assertEquals("prod-custom", CustomIdEnvironment.PROD.id)
+    }
+
     @Test
     fun `explicit axis registers in scoped catalog`() {
         val catalog = AxisCatalog()

@@ -6,6 +6,7 @@ import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.rules.ContextRuleScope
+import io.amichne.konditional.core.dsl.rules.NamespaceRuleSet
 import io.amichne.konditional.core.dsl.rules.RuleScope
 import io.amichne.konditional.core.dsl.rules.RuleSet
 import io.amichne.konditional.core.id.StableId
@@ -69,6 +70,11 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
      * @param ruleSet The rule set to include.
      */
     fun include(ruleSet: RuleSet<in C, T, C, @UnsafeVariance M>)
+
+    /**
+     * Includes rules from a namespace-scoped [NamespaceRuleSet] that is not feature-bound.
+     */
+    fun include(ruleSet: NamespaceRuleSet<in C, T, C, @UnsafeVariance M>)
 
     /**
      * Defines a targeting rule with an associated return value.

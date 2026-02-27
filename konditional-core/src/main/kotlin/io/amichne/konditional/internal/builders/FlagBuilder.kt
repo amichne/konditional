@@ -12,6 +12,7 @@ import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.rules.ContextRuleScope
 import io.amichne.konditional.core.dsl.rules.PendingYieldToken
 import io.amichne.konditional.core.dsl.rules.RuleScope
+import io.amichne.konditional.core.dsl.rules.NamespaceRuleSet
 import io.amichne.konditional.core.dsl.rules.RuleSet
 import io.amichne.konditional.core.dsl.rules.RuleValueResolver
 import io.amichne.konditional.core.dsl.rules.YieldingScopeHost
@@ -123,6 +124,13 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
     }
 
     override fun include(ruleSet: RuleSet<in C, T, C, M>) {
+        values += ruleSet.rules.map { spec -> spec.rule.targetedBy(spec.value) }
+    }
+
+    override fun include(ruleSet: NamespaceRuleSet<in C, T, C, M>) {
+        require(ruleSet.namespace == feature.namespace) {
+            "Cannot include namespace-scoped RuleSet from ${ruleSet.namespace.id} into ${feature.namespace.id}"
+        }
         values += ruleSet.rules.map { spec -> spec.rule.targetedBy(spec.value) }
     }
 

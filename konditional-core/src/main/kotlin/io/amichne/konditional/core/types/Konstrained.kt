@@ -3,11 +3,13 @@ package io.amichne.konditional.core.types
 import io.amichne.kontracts.dsl.booleanSchema
 import io.amichne.kontracts.dsl.doubleSchema
 import io.amichne.kontracts.dsl.intSchema
+import io.amichne.kontracts.dsl.schema
 import io.amichne.kontracts.dsl.stringSchema
 import io.amichne.kontracts.schema.BooleanSchema
 import io.amichne.kontracts.schema.DoubleSchema
 import io.amichne.kontracts.schema.IntSchema
 import io.amichne.kontracts.schema.JsonSchema
+import io.amichne.kontracts.schema.ObjectSchema
 import io.amichne.kontracts.schema.StringSchema
 
 // Default schema singletons used by the As* interface family.
@@ -24,6 +26,8 @@ private val defaultBooleanSchema: BooleanSchema = booleanSchema() as BooleanSche
 @Suppress("UNCHECKED_CAST")
 private val defaultDoubleSchema: DoubleSchema = doubleSchema() as DoubleSchema
 
+private val defaultObjectSchema: ObjectSchema = schema { }
+
 /**
  * Interface for custom types that can be encoded with schema validation.
  *
@@ -34,6 +38,7 @@ private val defaultDoubleSchema: DoubleSchema = doubleSchema() as DoubleSchema
  *
  * ### Object schemas (data classes)
  * The canonical use-case: a data class with named fields validated by an [io.amichne.kontracts.schema.ObjectSchema].
+ * [Konstrained.Object.schema] defaults to an empty object schema, so override it only when constraints are needed.
  * ```kotlin
  * data class UserSettings(
  *     val theme: String = "light",
@@ -143,7 +148,10 @@ sealed interface Konstrained<out S : JsonSchema<*>> {
         interface Double<S : JsonSchema<*>> : Primitive<S, kotlin.Double>
     }
 
-    interface Object<S : JsonSchema<*>> : Konstrained<S>
+    interface Object<S : JsonSchema<*>> : Konstrained<S> {
+        @Suppress("UNCHECKED_CAST")
+        override val schema: S get() = defaultObjectSchema as S
+    }
     interface Array<S : JsonSchema<*>, E> : Konstrained<S> {
         /**
          * The list of values in this array type.
