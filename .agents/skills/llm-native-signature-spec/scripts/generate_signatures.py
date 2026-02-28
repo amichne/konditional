@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate dense LLM-native signature docs in a mirrored signatures/ tree."""
+"""Generate dense LLM-native signature docs in a mirrored .signatures/ tree."""
 
 from __future__ import annotations
 

@@ -11,12 +11,15 @@ package io.amichne.konditional.context.axis
  *
  * Define an enum that implements this interface:
  * ```kotlin
- * enum class Environment(override val id: String) : AxisValue<Environment> {
- *     PROD("prod"),
- *     STAGE("stage"),
- *     DEV("dev")
+ * enum class Environment : AxisValue<Environment> {
+ *     PROD,
+ *     STAGE,
+ *     DEV,
  * }
  * ```
+ *
+ * By default, `id` is the enum entry's [Enum.name]. Override it only when you need a
+ * different stable wire identifier.
  *
  * The `id` field must be stable and unique within the axis, as it's used for:
  * - Serialization and deserialization
@@ -29,4 +32,5 @@ package io.amichne.konditional.context.axis
  */
 interface AxisValue<T> where T : Enum<T> {
     val id: String
+        get() = (this as Enum<*>).name
 }

@@ -10,7 +10,7 @@ if [[ ! -f "${GENERATOR_PY}" ]]; then
 fi
 
 if [[ "$#" -eq 0 ]]; then
-    exec python3 "${GENERATOR_PY}" --repo-root . --output-dir signatures
+    exec python3 "${GENERATOR_PY}" --repo-root . --output-dir '.signatures'
 fi
 
 exec python3 "${GENERATOR_PY}" "$@"

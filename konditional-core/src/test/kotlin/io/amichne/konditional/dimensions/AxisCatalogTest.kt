@@ -3,6 +3,7 @@ package io.amichne.konditional.dimensions
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.registry.AxisCatalog
+import io.amichne.konditional.core.registry.AxisCatalogFederator
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -35,6 +36,27 @@ class AxisCatalogTest {
 
     private enum class SharedEnvironment(override val id: String) : AxisValue<SharedEnvironment> {
         PROD("prod"),
+    }
+
+    private enum class DefaultIdEnvironment : AxisValue<DefaultIdEnvironment> {
+        PROD,
+    }
+
+    private enum class CustomIdEnvironment : AxisValue<CustomIdEnvironment> {
+        PROD;
+
+        override val id: String = "prod-custom"
+    }
+
+
+    @Test
+    fun `axis value defaults id to enum name`() {
+        Assertions.assertEquals("PROD", DefaultIdEnvironment.PROD.id)
+    }
+
+    @Test
+    fun `axis value id can still be overridden`() {
+        Assertions.assertEquals("prod-custom", CustomIdEnvironment.PROD.id)
     }
 
     @Test
@@ -120,4 +142,30 @@ class AxisCatalogTest {
         Assertions.assertEquals("namespace-a-env", catalogA.axisFor(SharedEnvironment::class)?.id)
         Assertions.assertEquals("namespace-b-env", catalogB.axisFor(SharedEnvironment::class)?.id)
     }
+
+
+    @Test
+    fun `child catalog can resolve parent catalog registrations`() {
+        val sharedCatalog = AxisCatalog()
+        Axis.of("shared-axis", SharedEnvironment::class, sharedCatalog)
+        val childCatalog = AxisCatalog(sharedCatalog)
+
+        val axis = childCatalog.axisFor(SharedEnvironment::class)
+
+        Assertions.assertNotNull(axis)
+        Assertions.assertEquals("shared-axis", axis?.id)
+    }
+
+    @Test
+    fun `federator namespace catalog inherits globally registered axes`() {
+        val federator = AxisCatalogFederator()
+        federator.register(Axis.of("federated-environment", SharedEnvironment::class))
+        val namespaceCatalog = federator.namespaceCatalog()
+
+        val axis = namespaceCatalog.axisFor(SharedEnvironment::class)
+
+        Assertions.assertNotNull(axis)
+        Assertions.assertEquals("federated-environment", axis?.id)
+    }
+
 }

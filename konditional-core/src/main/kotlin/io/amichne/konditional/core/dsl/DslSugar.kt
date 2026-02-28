@@ -8,6 +8,7 @@ import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.rules.ContextRuleScope
+import io.amichne.konditional.core.dsl.rules.NamespaceRuleSet
 import io.amichne.konditional.core.dsl.rules.RuleScope
 import io.amichne.konditional.core.dsl.rules.RuleSet
 import io.amichne.konditional.core.dsl.rules.RuleSetBuilder
@@ -142,3 +143,34 @@ fun <T> AxisValuesScope.axis(
 
 context(scope: AxisValuesScope)
 operator fun <T> T.unaryPlus() where T : AxisValue<T>, T : Enum<T> = scope.axis(this)
+
+
+/**
+ * Builds a namespace-scoped rule set using an explicit value type and this namespace's axis catalog.
+ *
+ * This variant is not bound to a specific feature and can be included by multiple features in
+ * the same namespace.
+ */
+@JvmName("namespaceRuleSetDefault")
+inline fun <reified T : Any, C : Context, M : Namespace> M.ruleSet(
+    build: RuleSetBuilder<T, C>.() -> Unit,
+): NamespaceRuleSet<C, T, C, M> =
+    NamespaceRuleSet(namespace = this, rules = RuleSetBuilder<T, C>(axisCatalog = axisCatalog).apply(build).build())
+
+/**
+ * Builds a namespace-scoped rule set using an explicit supertype context.
+ */
+@JvmName("namespaceRuleSetWithContextType")
+inline fun <reified T : Any, C, M : Namespace, RC : Context> M.ruleSet(
+    @Suppress("UNUSED_PARAMETER") contextType: KClass<RC>,
+    build: RuleSetBuilder<T, RC>.() -> Unit,
+): NamespaceRuleSet<RC, T, C, M> where C : RC =
+    NamespaceRuleSet(namespace = this, rules = RuleSetBuilder<T, RC>(axisCatalog = axisCatalog).apply(build).build())
+
+/**
+ * Builds a namespace-scoped rule set using reified value and context supertypes.
+ */
+inline fun <reified T : Any, reified RC : Context, C, M : Namespace> M.ruleSet(
+    build: RuleSetBuilder<T, RC>.() -> Unit,
+): NamespaceRuleSet<RC, T, C, M> where C : RC =
+    NamespaceRuleSet(namespace = this, rules = RuleSetBuilder<T, RC>(axisCatalog = axisCatalog).apply(build).build())

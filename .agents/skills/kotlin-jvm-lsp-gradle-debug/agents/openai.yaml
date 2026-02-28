@@ -1,0 +1,4 @@
+interface:
+  display_name: "Kotlin JVM LSP + Debug"
+  short_description: "Kotlin LSP, Gradle, and JVM debug workflow"
+  default_prompt: "Set up and run an editor-agnostic Kotlin/JVM workflow with LSP, Gradle wrapper commands, and debugger attach for app/test tasks."

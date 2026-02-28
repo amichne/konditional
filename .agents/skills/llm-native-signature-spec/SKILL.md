@@ -1,49 +1,41 @@
 ---
 name: llm-native-signature-spec
-description: Navigate the repository using the signatures tree as the primary and authoritative JVM symbol map. Use when Codex must minimize token use while preserving accurate, deterministic, symbol-level context across the codebase.
+description: Generate and maintain LLM-native, high-density repository documentation using a cascading referential signatures tree. Use when Codex needs to create or refresh compact signature-level docs (especially for JVM code with FQCNs), enforce deterministic spec format, reduce full-file reads, and prevent documentation drift as code evolves.
 ---
 
 # LLM Native Signature Spec
 
 ## Overview
-Use `signatures/` as the authoritative context layer for JVM symbol discovery
-and repository navigation. This skill is navigation-focused.
+Create a repository-root `.signatures/` tree that mirrors the source layout and stores compressed type-level metadata for fast relevance filtering. Use this skill to generate, validate, and refresh signature artifacts so downstream reasoning can resolve references without loading full source files unless needed.
 
-## Hard contract (non-negotiable)
-1. Accuracy is mandatory. Symbol references derived from signatures must be
-   treated as ground truth until contradicted by targeted symbol-level checks.
-2. Symbol fidelity is 1:1 with concrete JVM symbols that matter for code
-   reasoning (`type=`, `fields`, `methods`, packages, imports, FQCNs).
-3. Signature traversal is the primary navigation method across the repository.
-4. Signature traversal drives subagent scoping and work decomposition.
-5. Signature traversal is the only method for gaining broad codebase context.
-   Anything else risks context rot and is invalid for wide-context discovery.
+## Workflow
+1. Confirm the repository root and identify JVM-heavy source directories.
+2. Read `references/signature_spec.md` to enforce output schema and invariants.
+3. Run `scripts/generate_signatures.py` from repo root.
+4. Inspect `.signatures/INDEX.sig` and a sample of generated files for correctness.
+5. Re-run generation whenever source changes; do not hand-edit generated signature artifacts.
 
-## Required navigation workflow
-1. Start with `signatures/INDEX.sig` and build a candidate set by path/module.
-2. Read only relevant `.sig` files to narrow context using symbol metadata.
-3. Rank candidates deterministically:
-   - exact path/name match
-   - package/module proximity
-   - import connectivity
-   - lexicographic path tie-breaker
-4. Produce a symbol-scoped working set before any source-level deep dive.
-5. Allow source reads only as targeted follow-up on already selected symbols.
-   Source reads must never replace signatures for broad discovery.
+## Generation Command
+Run:
 
-## Subagent traversal rules
-- The parent agent must assign subagents from signature-derived scopes only.
-- Each subagent assignment must include concrete symbol/file targets from `.sig`
-  data, not open-ended directory exploration.
-- Subagents must report findings against the same signature-derived scope before
-  expanding.
+```bash
+skills/llm-native-signature-spec/scripts/generate_signatures.sh --repo-root . --output-dir signatures
+```
 
-## Prohibited behavior
-- Source-first repository walking for context discovery.
-- Directory-wide source reads to infer architecture when signatures exist.
-- Symbol guesses that are not anchored in signature entries.
-- Broad context claims without an explicit signature-backed trail.
+## Validation Checklist
+- Ensure `signatures/` exists at repository root.
+- Ensure generated paths mirror source paths.
+- Ensure each `.sig` includes package metadata and type lines when types exist.
+- Ensure JVM FQCNs appear in `type=` entries.
+- Ensure `INDEX.sig` includes every generated signature file.
+- Ensure output remains deterministic across repeated runs.
+
+## Maintenance Rules
+- Treat `.signatures/` as generated artifacts.
+- Regenerate after merges, refactors, or package renames.
+- Keep extraction dense and minimal; avoid prose in generated files.
+- Extend parser rules only when new syntax materially affects type/method discoverability.
 
 ## Resources
-- `references/signature_spec.md`: canonical symbol schema and navigation
-  semantics.
+- `references/signature_spec.md`: canonical schema and drift controls.
+- `scripts/generate_signatures.py`: deterministic generator for JVM-oriented signature extraction.
