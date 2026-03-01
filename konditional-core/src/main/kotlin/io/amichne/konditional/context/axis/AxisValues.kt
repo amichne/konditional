@@ -20,8 +20,10 @@ import kotlin.reflect.KClass
  * Construct via builder:
  * ```kotlin
  * val values = axisValues {
- *     set(Axes.Environment, Environment.PROD)
- *     set(Axes.Tenant, Tenant.ENTERPRISE)
+ *     variant {
+ *         Axes.Environment { include(Environment.PROD) }
+ *         Axes.Tenant { include(Tenant.ENTERPRISE) }
+ *     }
  * }
  * ```
  *

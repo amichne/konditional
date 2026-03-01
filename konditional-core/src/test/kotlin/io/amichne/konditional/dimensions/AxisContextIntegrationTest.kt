@@ -2,6 +2,7 @@ package io.amichne.konditional.dimensions
 
 import io.amichne.konditional.api.axis
 import io.amichne.konditional.api.axisValues
+import io.amichne.konditional.core.dsl.variant
 import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
@@ -17,8 +18,10 @@ class AxisContextIntegrationTest {
     @Test
     fun `context axis extension returns typed values`() {
         val values = axisValues {
-            set(TestAxes.Environment, TestEnvironment.STAGE)
-            set(TestAxes.Tenant, TestTenant.ENTERPRISE)
+            variant {
+                TestAxes.Environment { include(TestEnvironment.STAGE) }
+                TestAxes.Tenant { include(TestTenant.ENTERPRISE) }
+            }
         }
 
         val ctx = TestContext(axisValues = values)
@@ -36,8 +39,10 @@ class AxisContextIntegrationTest {
     @Test
     fun `context axis type-based extension returns typed values`() {
         val values = axisValues {
-            set(TestAxes.Environment, TestEnvironment.STAGE)
-            set(TestAxes.Tenant, TestTenant.ENTERPRISE)
+            variant {
+                TestAxes.Environment { include(TestEnvironment.STAGE) }
+                TestAxes.Tenant { include(TestTenant.ENTERPRISE) }
+            }
         }
 
         val ctx = TestContext(axisValues = values)
@@ -56,7 +61,9 @@ class AxisContextIntegrationTest {
     @Test
     fun `context axis extension returns null for missing axis`() {
         val values = axisValues {
-            set(TestAxes.Environment, TestEnvironment.PROD)
+            variant {
+                TestAxes.Environment { include(TestEnvironment.PROD) }
+            }
         }
         val ctx = TestContext(axisValues = values)
 

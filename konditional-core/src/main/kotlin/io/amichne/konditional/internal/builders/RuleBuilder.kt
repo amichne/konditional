@@ -9,6 +9,7 @@ import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.dsl.KonditionalDsl
+import io.amichne.konditional.core.dsl.VariantDispatchHost
 import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.core.dsl.rules.RuleScope
 import io.amichne.konditional.core.id.HexId
@@ -31,11 +32,13 @@ import io.amichne.konditional.rules.targeting.Targeting
  */
 @KonditionalDsl
 @PublishedApi
+@Suppress("TooManyFunctions", "OVERRIDE_DEPRECATION")
 internal class RuleBuilder<C : Context>(
     private val axisCatalog: AxisCatalog? = null,
-) : RuleScope<C>, NarrowingTargetingScope<C> {
-
-    private val leaves = mutableListOf<Targeting<C>>()
+    private val leaves: MutableList<Targeting<C>> = mutableListOf(),
+) : RuleScope<C>,
+    NarrowingTargetingScope<C>,
+    VariantDispatchHost by RuleVariantScope(leaves) {
     private var note: String? = null
     private var rampUp: RampUp? = null
     private val allowlist = linkedSetOf<HexId>()
@@ -85,15 +88,7 @@ internal class RuleBuilder<C : Context>(
         vararg values: T,
     ) where T : AxisValue<T>, T : Enum<T> {
         require(values.isNotEmpty()) { "axis(...) requires at least one value." }
-        val allowedIds = values.mapTo(linkedSetOf()) { it.id }
-        // Merge with existing constraint for the same axis (OR within axis, AND across axes)
-        val idx = leaves.indexOfFirst { it is Targeting.Axis && it.axisId == axis.id }
-        if (idx >= 0) {
-            val existing = leaves[idx] as Targeting.Axis
-            leaves[idx] = existing.copy(allowedIds = existing.allowedIds + allowedIds)
-        } else {
-            leaves += Targeting.Axis(axis.id, allowedIds)
-        }
+        onAxisSelection(axis, values.toCollection(linkedSetOf()))
     }
 
     override fun <T> axis(vararg values: T) where T : AxisValue<T>, T : Enum<T> {
@@ -103,7 +98,10 @@ internal class RuleBuilder<C : Context>(
                 "Type-inferred axis(...) requires an AxisCatalog. " +
                     "Use axis(axisHandle, values...) or declare axes with Namespace.axis(...).",
             )
-        axis(catalog.axisForOrThrow(values.first()::class), *values)
+        onAxisSelection(
+            axis = catalog.axisForOrThrow(values.first()::class),
+            values = values.toCollection(linkedSetOf()),
+        )
     }
 
     override fun allowlist(vararg stableIds: StableId) {

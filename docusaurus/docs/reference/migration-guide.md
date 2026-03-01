@@ -271,15 +271,37 @@ The explicit-id overloads (`axis<T>("id")` and `Axis.of(id = ...)`) are now
 deprecated. Use `@KonditionalExplicitId("...")` on the enum when you need a
 stable custom ID across package moves.
 
-`axis(Environment.PROD)` inside rule blocks still resolves through the same
-namespace axis catalog. For context values, use explicit handles with
-`axisValues { set(axisHandle, value) }`:
+### Variant DSL migration
+
+Axis rule and context APIs now use `variant { ... }` with explicit axis handles.
+Legacy `axis(...)`, `set(...)`, and `setIfNotNull(...)` APIs are
+`DeprecationLevel.ERROR`.
+
+**Before**
 
 ```kotlin
+enable { axis(AppFeatures.environmentAxis, Environment.PROD) }
+val values = axisValues { set(AppFeatures.environmentAxis, Environment.PROD) }
+```
+
+**After**
+
+```kotlin
+enable {
+    variant {
+        AppFeatures.environmentAxis { include(Environment.PROD) }
+    }
+}
+
 val values = axisValues {
-    set(AppFeatures.environmentAxis, Environment.PROD)
+    variant {
+        AppFeatures.environmentAxis { include(Environment.PROD) }
+    }
 }
 ```
+
+For nullable values, replace `setIfNotNull(axis, value)` with
+`value?.let { variant { axis { include(it) } } }`.
 
 ---
 

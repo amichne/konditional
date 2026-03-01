@@ -5,6 +5,7 @@ import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
+import io.amichne.konditional.core.dsl.variant
 import io.amichne.konditional.fixtures.TestContext
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -19,7 +20,11 @@ class AxisNamespaceIsolationTest {
         val environmentAxis = axis<ScopedEnvironment>("namespace-a-environment")
 
         val flag by boolean<TestContext>(default = false) {
-            enable { axis(ScopedEnvironment.PROD) }
+            enable {
+                variant {
+                    environmentAxis { include(ScopedEnvironment.PROD) }
+                }
+            }
         }
     }
 
@@ -27,19 +32,31 @@ class AxisNamespaceIsolationTest {
         val environmentAxis = axis<ScopedEnvironment>("namespace-b-environment")
 
         val flag by boolean<TestContext>(default = false) {
-            enable { axis(ScopedEnvironment.PROD) }
+            enable {
+                variant {
+                    environmentAxis { include(ScopedEnvironment.PROD) }
+                }
+            }
         }
     }
 
     @Test
-    fun `type inferred axes are isolated by namespace axis catalogs`() {
+    fun `axis handles are isolated by namespace axis catalogs`() {
         val contextForA =
             TestContext(
-                axisValues = axisValues { set(NamespaceA.environmentAxis, ScopedEnvironment.PROD) },
+                axisValues = axisValues {
+                    variant {
+                        NamespaceA.environmentAxis { include(ScopedEnvironment.PROD) }
+                    }
+                },
             )
         val contextForB =
             TestContext(
-                axisValues = axisValues { set(NamespaceB.environmentAxis, ScopedEnvironment.PROD) },
+                axisValues = axisValues {
+                    variant {
+                        NamespaceB.environmentAxis { include(ScopedEnvironment.PROD) }
+                    }
+                },
             )
 
         assertTrue(NamespaceA.flag.evaluate(contextForA))

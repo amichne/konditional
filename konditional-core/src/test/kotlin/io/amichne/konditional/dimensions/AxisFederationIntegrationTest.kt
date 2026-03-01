@@ -8,6 +8,7 @@ import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
+import io.amichne.konditional.core.dsl.variant
 import io.amichne.konditional.core.registry.AxisCatalog
 import io.amichne.konditional.fixtures.TestContext
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -28,7 +29,11 @@ class AxisFederationIntegrationTest {
             axisCatalog = AxisCatalog(sharedCatalog),
         ) {
             val flag by boolean<TestContext>(default = false) {
-                enable { axis(FederatedEnvironment.PROD) }
+                enable {
+                    variant {
+                        federatedEnvironmentAxis { include(FederatedEnvironment.PROD) }
+                    }
+                }
             }
         }
 
@@ -38,13 +43,23 @@ class AxisFederationIntegrationTest {
             axisCatalog = AxisCatalog(sharedCatalog),
         ) {
             val flag by boolean<TestContext>(default = false) {
-                enable { axis(FederatedEnvironment.PROD) }
+                enable {
+                    variant {
+                        federatedEnvironmentAxis { include(FederatedEnvironment.PROD) }
+                    }
+                }
             }
         }
 
     @Test
-    fun `namespaces can reuse a shared parent catalog for inferred axis targeting`() {
-        val context = TestContext(axisValues = axisValues { set(federatedEnvironmentAxis, FederatedEnvironment.PROD) })
+    fun `namespaces can reuse a shared parent catalog for explicit axis targeting`() {
+        val context = TestContext(
+            axisValues = axisValues {
+                variant {
+                    federatedEnvironmentAxis { include(FederatedEnvironment.PROD) }
+                }
+            },
+        )
 
         assertTrue(namespaceA.flag.evaluate(context))
         assertTrue(namespaceB.flag.evaluate(context))

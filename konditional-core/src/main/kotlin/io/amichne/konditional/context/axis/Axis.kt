@@ -38,7 +38,7 @@ import kotlin.reflect.KClass
  * }
  *
  * // In rules (resolved through Checkout.axisCatalog)
- * axis(Environment.PROD)
+ * variant { Checkout.environmentAxis { include(Environment.PROD) } }
  *
  * // In contexts
  * val env = context.axis<Environment>()

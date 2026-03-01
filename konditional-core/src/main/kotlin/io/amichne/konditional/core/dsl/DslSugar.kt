@@ -4,8 +4,6 @@ package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.axis.Axis
-import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.rules.ContextRuleScope
 import io.amichne.konditional.core.dsl.rules.NamespaceRuleSet
@@ -105,18 +103,6 @@ inline fun <reified RC : Context, T : Any, C, M : Namespace> Feature<T, C, M>.ru
     build: RuleSetBuilder<T, RC>.() -> Unit,
 ): RuleSet<RC, T, C, M> where C : RC =
     RuleSet(feature = this, rules = RuleSetBuilder<T, RC>(axisCatalog = namespace.axisCatalog).apply(build).build())
-
-/**
- * Explicit axis setter for one or more values.
- *
- * Use this overload when you want axis resolution to be explicit and local.
- */
-fun <T> AxisValuesScope.axis(
-    axis: Axis<T>,
-    vararg values: T,
-) where T : AxisValue<T>, T : Enum<T> {
-    values.forEach { set(axis, it) }
-}
 
 /**
  * Builds a namespace-scoped rule set using an explicit value type and this namespace's axis catalog.

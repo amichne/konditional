@@ -9,6 +9,7 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
+import io.amichne.konditional.core.dsl.variant
 import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
@@ -82,7 +83,9 @@ class OperationalSerializationTest {
         val namespace = object : Namespace("axis-roundtrip-${UUID.randomUUID()}") {
             val envScopedFlag by boolean<TestContext>(default = false) {
                 enable {
-                    axis(TestAxes.Environment, TestEnvironment.PROD)
+                    variant {
+                        TestAxes.Environment { include(TestEnvironment.PROD) }
+                    }
                 }
             }
         }
@@ -90,13 +93,17 @@ class OperationalSerializationTest {
         val productionContext = TestContext(
             appVersion = Version.parse("1.0.0").getOrThrow(),
             axisValues = axisValues {
-                set(TestAxes.Environment, TestEnvironment.PROD)
+                variant {
+                    TestAxes.Environment { include(TestEnvironment.PROD) }
+                }
             },
         )
         val developementContext = TestContext(
             appVersion = Version.parse("1.0.0").getOrThrow(),
             axisValues = axisValues {
-                set(TestAxes.Environment, TestEnvironment.DEV)
+                variant {
+                    TestAxes.Environment { include(TestEnvironment.DEV) }
+                }
             },
         )
 

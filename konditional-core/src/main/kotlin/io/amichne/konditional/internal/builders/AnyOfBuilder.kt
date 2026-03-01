@@ -8,6 +8,7 @@ import io.amichne.konditional.context.PlatformTag
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.dsl.KonditionalDsl
+import io.amichne.konditional.core.dsl.VariantDispatchHost
 import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.AnyOfScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.NarrowingTargetingScope
@@ -25,11 +26,13 @@ import io.amichne.konditional.rules.targeting.Targeting
  */
 @KonditionalDsl
 @PublishedApi
+@Suppress("OVERRIDE_DEPRECATION")
 internal class AnyOfBuilder<C : Context>(
     private val axisCatalog: AxisCatalog? = null,
-) : AnyOfScope<C>, NarrowingTargetingScope<C> {
+) : AnyOfScope<C>, NarrowingTargetingScope<C>, VariantDispatchHost {
 
     private val leaves = mutableListOf<Targeting<C>>()
+    private val variantScope = RuleVariantScope<C>(leaves)
 
     override fun locales(vararg appLocales: LocaleTag) {
         if (appLocales.isNotEmpty())
@@ -65,14 +68,7 @@ internal class AnyOfBuilder<C : Context>(
         vararg values: T,
     ) where T : AxisValue<T>, T : Enum<T> {
         require(values.isNotEmpty()) { "axis(...) requires at least one value." }
-        val allowedIds = values.mapTo(linkedSetOf()) { it.id }
-        val idx = leaves.indexOfFirst { it is Targeting.Axis && it.axisId == axis.id }
-        if (idx >= 0) {
-            val existing = leaves[idx] as Targeting.Axis
-            leaves[idx] = existing.copy(allowedIds = existing.allowedIds + allowedIds)
-        } else {
-            leaves += Targeting.Axis(axis.id, allowedIds)
-        }
+        onAxisSelection(axis, values.toCollection(linkedSetOf()))
     }
 
     override fun <T> axis(vararg values: T) where T : AxisValue<T>, T : Enum<T> {
@@ -82,7 +78,17 @@ internal class AnyOfBuilder<C : Context>(
                 "Type-inferred axis(...) requires an AxisCatalog. " +
                     "Use axis(axisHandle, values...) or declare axes with Namespace.axis(...).",
             )
-        axis(catalog.axisForOrThrow(values.first()::class), *values)
+        onAxisSelection(
+            axis = catalog.axisForOrThrow(values.first()::class),
+            values = values.toCollection(linkedSetOf()),
+        )
+    }
+
+    override fun <V> onAxisSelection(
+        axis: Axis<V>,
+        values: Set<V>,
+    ) where V : AxisValue<V>, V : Enum<V> {
+        variantScope.onAxisSelection(axis, values)
     }
 
     internal fun build(): Targeting.AnyOf<C> = Targeting.AnyOf(leaves.toList())

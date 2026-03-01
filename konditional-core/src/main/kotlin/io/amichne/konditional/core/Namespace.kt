@@ -248,8 +248,12 @@ open class Namespace(
      * Example:
      * ```kotlin
      * object Checkout : Namespace("checkout") {
+     *     val tenantAxis = axis<Tenant>()
+     *
      *     val bannerText by string<Context>(default = "Welcome") {
-     *         rule("Enterprise") { axis(Axes.Tenant, Tenant.ENTERPRISE) }
+     *         rule("Enterprise") {
+     *             variant { tenantAxis { include(Tenant.ENTERPRISE) } }
+     *         }
      *     }
      * }
      * ```

@@ -10,6 +10,7 @@ import io.amichne.konditional.context.axis.AxisValues
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.AxisValuesScope
 import io.amichne.konditional.core.dsl.enable
+import io.amichne.konditional.core.dsl.variant
 import io.amichne.konditional.core.id.StableId
 
 /**
@@ -47,11 +48,15 @@ object TestAxes {
  * These would normally live in your application module.
  */
 fun AxisValuesScope.environment(env: TestEnvironment) {
-    set(TestAxes.Environment, env)
+    variant {
+        TestAxes.Environment { include(env) }
+    }
 }
 
 fun AxisValuesScope.tenant(tenant: TestTenant) {
-    set(TestAxes.Tenant, tenant)
+    variant {
+        TestAxes.Tenant { include(tenant) }
+    }
 }
 
 /**
@@ -85,7 +90,9 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      */
     val envScopedFlag by boolean<TestContext>(default = false) {
         enable {
-            axis(TestAxes.Environment, TestEnvironment.PROD)
+            variant {
+                TestAxes.Environment { include(TestEnvironment.PROD) }
+            }
         }
     }
 
@@ -97,8 +104,10 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      */
     val envAndTenantScopedFlag by boolean<TestContext>(default = false) {
         enable {
-            axis(TestAxes.Environment, TestEnvironment.PROD, TestEnvironment.STAGE)
-            axis(TestAxes.Tenant, TestTenant.ENTERPRISE)
+            variant {
+                TestAxes.Environment { include(TestEnvironment.PROD, TestEnvironment.STAGE) }
+                TestAxes.Tenant { include(TestTenant.ENTERPRISE) }
+            }
         }
     }
 
@@ -111,8 +120,10 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      */
     val fallbackRuleFlag by boolean<TestContext>(default = false) {
         enable {
-            axis(TestAxes.Environment, TestEnvironment.PROD)
-            axis(TestAxes.Tenant, TestTenant.ENTERPRISE)
+            variant {
+                TestAxes.Environment { include(TestEnvironment.PROD) }
+                TestAxes.Tenant { include(TestTenant.ENTERPRISE) }
+            }
         }
 
         enable {
@@ -128,7 +139,9 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      */
     val repeatedAxisFlag by boolean<TestContext>(default = false) {
         enable {
-            axis(TestAxes.Environment, TestEnvironment.DEV, TestEnvironment.STAGE)
+            variant {
+                TestAxes.Environment { include(TestEnvironment.DEV, TestEnvironment.STAGE) }
+            }
         }
     }
 }

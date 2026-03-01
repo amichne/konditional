@@ -14,6 +14,7 @@ import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
+import io.amichne.konditional.core.dsl.variant
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.KonditionalBoundaryFailure
 import io.amichne.konditional.core.result.ParseError
@@ -78,7 +79,7 @@ class ConfigurationSnapshotCodecTest {
 
     @BeforeEach
     fun setup() {
-        // Force axis registration for type-based axis() usage in rule builders.
+        // Force axis registration for explicit axis usage in rule builders.
         @Suppress("UnusedExpression")
         Axes.EnvironmentAxis
         @Suppress("UnusedExpression")
@@ -215,7 +216,9 @@ class ConfigurationSnapshotCodecTest {
             override val stableId: StableId = StableId.of("axis-user")
             override val axisValues =
                 axisValues {
-                    this[Axes.EnvironmentAxis] = env
+                    variant {
+                        Axes.EnvironmentAxis { include(env) }
+                    }
                 }
         }
 
@@ -371,7 +374,9 @@ class ConfigurationSnapshotCodecTest {
     fun `Given Konfig with axis targeting, When serialized and round-tripped, Then axes constraints are preserved`() {
         TestFeatures.boolFlag.update(false) {
             enable {
-                axis(Environment.PROD, Environment.STAGE)
+                variant {
+                    Axes.EnvironmentAxis { include(Environment.PROD, Environment.STAGE) }
+                }
             }
         }
 
@@ -407,8 +412,10 @@ class ConfigurationSnapshotCodecTest {
                 locales(AppLocale.UNITED_STATES, AppLocale.FRANCE)
                 platforms(Platform.IOS, Platform.ANDROID)
                 versions { min(1, 0, 0); max(2, 0, 0) }
-                axis(Environment.PROD, Environment.STAGE)
-                axis(Tenant.ENTERPRISE)
+                variant {
+                    Axes.EnvironmentAxis { include(Environment.PROD, Environment.STAGE) }
+                    Axes.TenantAxis { include(Tenant.ENTERPRISE) }
+                }
                 rampUp { 12.34 }
             }
         }
