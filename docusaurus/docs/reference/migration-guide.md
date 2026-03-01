@@ -238,18 +238,11 @@ This keeps behavior pinned to the baseline value while generating comparison tel
 
 ## Axis handle factory migration
 
-Axis descriptors are factory-only handles. Axis lookup is now scoped through an
-`AxisCatalog`, not a process-global registry.
+Axis descriptors remain factory-only handles and axis lookup remains scoped
+through namespace catalogs. In this release, axis IDs are inferred from the
+axis value enum type by default.
 
 **Before**
-
-```kotlin
-object Axes {
-    object Environment : Axis<Environment>("environment", Environment::class)
-}
-```
-
-**After**
 
 ```kotlin
 object AppFeatures : Namespace("app") {
@@ -257,19 +250,36 @@ object AppFeatures : Namespace("app") {
 }
 ```
 
-If you need an explicit factory call, bind it to a specific catalog:
+**After**
 
 ```kotlin
-val environmentAxis = Axis.of(
-    id = "environment",
-    valueClass = Environment::class,
-    axisCatalog = AppFeatures.axisCatalog,
-)
+@KonditionalExplicitId("environment")
+enum class Environment : AxisValue<Environment> { PROD, STAGE, DEV }
+
+object AppFeatures : Namespace("app") {
+    val environmentAxis = axis<Environment>()
+}
 ```
 
-Axis inference (`axis(Environment.PROD)`) now requires that `Environment` is
-already declared in the same namespace catalog. Implicit axis registration from
-enum class names is removed.
+If you need an explicit factory call without namespace sugar:
+
+```kotlin
+val environmentAxis = Axis.of(Environment::class)
+```
+
+The explicit-id overloads (`axis<T>("id")` and `Axis.of(id = ...)`) are now
+deprecated. Use `@KonditionalExplicitId("...")` on the enum when you need a
+stable custom ID across package moves.
+
+`axis(Environment.PROD)` inside rule blocks still resolves through the same
+namespace axis catalog. For context values, use explicit handles with
+`axisValues { set(axisHandle, value) }`:
+
+```kotlin
+val values = axisValues {
+    set(AppFeatures.environmentAxis, Environment.PROD)
+}
+```
 
 ---
 

@@ -92,6 +92,7 @@ object RampUpResetFlags : Namespace("ramp-up-reset") {
 Use axes for segment targeting you want to update via JSON (without redeploying predicates).
 
 ```kotlin
+@KonditionalExplicitId("segment")
 enum class Segment(override val id: String) : AxisValue<Segment> {
     CONSUMER("consumer"),
     SMB("smb"),
@@ -99,7 +100,7 @@ enum class Segment(override val id: String) : AxisValue<Segment> {
 }
 
 object SegmentFlags : Namespace("segment") {
-    val segmentAxis = axis<Segment>("segment")
+    val segmentAxis = axis<Segment>()
 
     val premiumUi by boolean<Context>(default = false) {
         enable { axis(Segment.ENTERPRISE) }

@@ -4,7 +4,6 @@ import io.amichne.konditional.api.axis
 import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.axis.AxisValues
-import io.amichne.konditional.core.dsl.unaryPlus
 import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
@@ -50,30 +49,6 @@ class AxisBuilderTest {
             setOf(TestTenant.SME),
             values[TestAxes.Tenant],
             "Typed axis lookup should return tenant value",
-        )
-    }
-
-    @Test
-    fun `axisValues unary plus sets values`() {
-        @Suppress("UnusedExpression")
-        TestAxes.Environment
-        @Suppress("UnusedExpression")
-        TestAxes.Tenant
-
-        val values = axisValues(TestAxes.axisCatalog) {
-            +TestEnvironment.DEV
-            +TestTenant.CONSUMER
-        }
-
-        Assertions.assertEquals(
-            setOf(TestEnvironment.DEV),
-            values[TestAxes.Environment],
-            "Unary plus should set environment value",
-        )
-        Assertions.assertEquals(
-            setOf(TestTenant.CONSUMER),
-            values[TestAxes.Tenant],
-            "Unary plus should set tenant value",
         )
     }
 

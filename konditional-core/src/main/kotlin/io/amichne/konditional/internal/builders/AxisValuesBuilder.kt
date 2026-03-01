@@ -3,10 +3,8 @@ package io.amichne.konditional.internal.builders
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.AxisValues
-import io.amichne.konditional.core.dsl.AxisCatalogScope
 import io.amichne.konditional.core.dsl.AxisValuesScope
 import io.amichne.konditional.core.dsl.KonditionalDsl
-import io.amichne.konditional.core.registry.AxisCatalog
 
 /**
  * Internal builder implementation for constructing [AxisValues] instances.
@@ -30,10 +28,8 @@ import io.amichne.konditional.core.registry.AxisCatalog
 @KonditionalDsl
 @PublishedApi
 internal class AxisValuesBuilder(
-    override val axisCatalog: AxisCatalog? = null,
     val map: MutableMap<String, MutableSet<AxisValue<*>>> = mutableMapOf(),
 ) :
-    AxisCatalogScope,
     AxisValuesScope,
     MutableMap<String, MutableSet<AxisValue<*>>> by map {
 

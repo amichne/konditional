@@ -1,9 +1,11 @@
+@file:OptIn(io.amichne.konditional.api.KonditionalInternalApi::class)
+
 package io.amichne.konditional.dimensions
 
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
+import io.amichne.konditional.context.axis.KonditionalExplicitId
 import io.amichne.konditional.core.registry.AxisCatalog
-import io.amichne.konditional.core.registry.AxisCatalogFederator
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -48,6 +50,20 @@ class AxisCatalogTest {
         override val id: String = "prod-custom"
     }
 
+    @KonditionalExplicitId("annotated-env")
+    private enum class AnnotatedEnvironment(override val id: String) : AxisValue<AnnotatedEnvironment> {
+        PROD("prod"),
+    }
+
+    @KonditionalExplicitId("collision-id")
+    private enum class CollisionTypeA(override val id: String) : AxisValue<CollisionTypeA> {
+        X("x"),
+    }
+
+    @KonditionalExplicitId("collision-id")
+    private enum class CollisionTypeB(override val id: String) : AxisValue<CollisionTypeB> {
+        Y("y"),
+    }
 
     @Test
     fun `axis value defaults id to enum name`() {
@@ -60,21 +76,35 @@ class AxisCatalogTest {
     }
 
     @Test
-    fun `explicit axis registers in scoped catalog`() {
+    fun `axis id defaults to FQCN of value class`() {
+        val axis = Axis.of(DefaultIdEnvironment::class)
+
+        Assertions.assertEquals(DefaultIdEnvironment::class.qualifiedName, axis.id)
+    }
+
+    @Test
+    fun `KonditionalExplicitId annotation overrides FQCN as axis id`() {
+        val axis = Axis.of(AnnotatedEnvironment::class)
+
+        Assertions.assertEquals("annotated-env", axis.id)
+    }
+
+    @Test
+    fun `axis registers in scoped catalog`() {
         val catalog = AxisCatalog()
-        Axis.of("explicit-axis", ExplicitEnvironment::class, catalog)
+        Axis.of(ExplicitEnvironment::class, catalog)
 
         val axis = catalog.axisFor(ExplicitEnvironment::class)
 
         Assertions.assertNotNull(axis)
-        Assertions.assertEquals("explicit-axis", axis?.id)
+        Assertions.assertEquals(ExplicitEnvironment::class.qualifiedName, axis?.id)
         Assertions.assertEquals(ExplicitEnvironment::class, axis?.valueClass)
     }
 
     @Test
     fun `axis declaration does not implicitly register without catalog`() {
         val catalog = AxisCatalog()
-        Axis.of("manual-axis", ManualEnvironment::class)
+        Axis.of(ManualEnvironment::class)
 
         val axis = catalog.axisFor(ManualEnvironment::class)
 
@@ -93,8 +123,8 @@ class AxisCatalogTest {
 
     @Test
     fun `axis equality is based on id and valueClass`() {
-        val axisA = Axis.of("equality-axis", ExplicitEnvironment::class)
-        val axisB = Axis.of("equality-axis", ExplicitEnvironment::class)
+        val axisA = Axis.of(ExplicitEnvironment::class)
+        val axisB = Axis.of(ExplicitEnvironment::class)
 
         Assertions.assertEquals(axisA, axisB)
         Assertions.assertEquals(axisA.hashCode(), axisB.hashCode())
@@ -111,14 +141,26 @@ class AxisCatalogTest {
     }
 
     @Test
-    fun `type-based lookup returns expected axis in catalog`() {
+    fun `duplicate KonditionalExplicitId across types fails fast at catalog registration`() {
         val catalog = AxisCatalog()
-        Axis.of("lookup-axis", LookupEnvironment::class, catalog)
+        Axis.of(CollisionTypeA::class, catalog)
+
+        val error = assertThrows<IllegalArgumentException> {
+            Axis.of(CollisionTypeB::class, catalog)
+        }
+
+        Assertions.assertTrue(error.message.orEmpty().contains("collision-id"))
+    }
+
+    @Test
+    fun `type-based lookup returns axis in catalog`() {
+        val catalog = AxisCatalog()
+        Axis.of(LookupEnvironment::class, catalog)
 
         val axis = catalog.axisFor(LookupEnvironment::class)
 
         Assertions.assertNotNull(axis)
-        Assertions.assertEquals("lookup-axis", axis?.id)
+        Assertions.assertEquals(LookupEnvironment::class.qualifiedName, axis?.id)
         Assertions.assertEquals(LookupEnvironment::class, axis?.valueClass)
     }
 
@@ -126,46 +168,22 @@ class AxisCatalogTest {
     fun `registrations are isolated per catalog with no cross leakage`() {
         val catalogA = AxisCatalog()
         val catalogB = AxisCatalog()
-        Axis.of("isolated-axis", LookupEnvironment::class, catalogA)
+        Axis.of(LookupEnvironment::class, catalogA)
 
         Assertions.assertNotNull(catalogA.axisFor(LookupEnvironment::class))
         Assertions.assertNull(catalogB.axisFor(LookupEnvironment::class))
     }
 
     @Test
-    fun `same value type can be bound to different ids in different catalogs`() {
-        val catalogA = AxisCatalog()
-        val catalogB = AxisCatalog()
-        Axis.of("namespace-a-env", SharedEnvironment::class, catalogA)
-        Axis.of("namespace-b-env", SharedEnvironment::class, catalogB)
-
-        Assertions.assertEquals("namespace-a-env", catalogA.axisFor(SharedEnvironment::class)?.id)
-        Assertions.assertEquals("namespace-b-env", catalogB.axisFor(SharedEnvironment::class)?.id)
-    }
-
-
-    @Test
     fun `child catalog can resolve parent catalog registrations`() {
         val sharedCatalog = AxisCatalog()
-        Axis.of("shared-axis", SharedEnvironment::class, sharedCatalog)
+        Axis.of(SharedEnvironment::class, sharedCatalog)
         val childCatalog = AxisCatalog(sharedCatalog)
 
         val axis = childCatalog.axisFor(SharedEnvironment::class)
 
         Assertions.assertNotNull(axis)
-        Assertions.assertEquals("shared-axis", axis?.id)
-    }
-
-    @Test
-    fun `federator namespace catalog inherits globally registered axes`() {
-        val federator = AxisCatalogFederator()
-        federator.register(Axis.of("federated-environment", SharedEnvironment::class))
-        val namespaceCatalog = federator.namespaceCatalog()
-
-        val axis = namespaceCatalog.axisFor(SharedEnvironment::class)
-
-        Assertions.assertNotNull(axis)
-        Assertions.assertEquals("federated-environment", axis?.id)
+        Assertions.assertEquals(SharedEnvironment::class.qualifiedName, axis?.id)
     }
 
 }

@@ -15,6 +15,7 @@ import io.amichne.konditional.core.dsl.rules.RuleSetBuilder
 import io.amichne.konditional.core.features.Feature
 import kotlin.reflect.KClass
 
+
 /**
  * Semantic tokens for boolean values in DSL contexts.
  */
@@ -106,30 +107,6 @@ inline fun <reified RC : Context, T : Any, C, M : Namespace> Feature<T, C, M>.ru
     RuleSet(feature = this, rules = RuleSetBuilder<T, RC>(axisCatalog = namespace.axisCatalog).apply(build).build())
 
 /**
- * Type-based value setter using a scoped axis catalog.
- *
- * This extension allows setting values by type without explicitly passing the axis:
- * ```kotlin
- * axisValues {
- *     axis(Environment.PROD)  // Axis inferred from type
- * }
- * ```
- *
- * Requires that [T]'s axis has already been declared in the [AxisCatalogScope] attached
- * to this builder (for example via `axisValues(axisCatalog) { ... }`).
- *
- * @param value The value to set
- */
-fun <T> AxisValuesScope.axis(value: T) where T : AxisValue<T>, T : Enum<T> {
-    val catalog = (this as? AxisCatalogScope)?.axisCatalog
-        ?: throw IllegalArgumentException(
-            "Type-inferred axis(value) requires a scoped AxisCatalog. " +
-                "Use axisValues(axisCatalog) { ... } or axis(axisHandle, value).",
-        )
-    axis(catalog.axisForOrThrow(value::class), value)
-}
-
-/**
  * Explicit axis setter for one or more values.
  *
  * Use this overload when you want axis resolution to be explicit and local.
@@ -140,10 +117,6 @@ fun <T> AxisValuesScope.axis(
 ) where T : AxisValue<T>, T : Enum<T> {
     values.forEach { set(axis, it) }
 }
-
-context(scope: AxisValuesScope)
-operator fun <T> T.unaryPlus() where T : AxisValue<T>, T : Enum<T> = scope.axis(this)
-
 
 /**
  * Builds a namespace-scoped rule set using an explicit value type and this namespace's axis catalog.

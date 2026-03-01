@@ -1,5 +1,6 @@
 package io.amichne.konditional.core.registry
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import java.util.concurrent.ConcurrentHashMap
@@ -19,6 +20,7 @@ import kotlin.reflect.KClass
  * Registrations are synchronized to keep id/type invariants linearizable.
  * Reads are lock-free through concurrent maps.
  */
+@KonditionalInternalApi
 class AxisCatalog(
     private val parentCatalogs: List<AxisCatalog> = emptyList(),
 ) {

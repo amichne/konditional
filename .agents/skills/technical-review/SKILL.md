@@ -7,6 +7,8 @@ description: Provide in-depth technical review of Kotlin codebases and OpenAPI s
 
 Provide rigorous, critical analysis of Kotlin code and OpenAPI specifications to surface architectural weaknesses, design flaws, and improvement opportunities. Focus on enterprise-grade concerns: type safety, API design coherence, observability integration, scalability, and maintainability.
 
+Leverage the `.agents/skills/kotlin-mastery.md` skill for deep understanding of Kotlin-specific patterns and anti-patterns, and the `.agents/skills/openapi-mastery.md` skill for OpenAPI best practices when relevant.
+
 ## Review Philosophy
 
 **Be critical, not dismissive.** The goal is to identify genuine weaknesses and complexity that should be addressed, not to nitpick style preferences. Assume the engineer is skilled; look for subtle issues they might have missed.
