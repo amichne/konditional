@@ -41,24 +41,27 @@ All targeting calls inside one rule are combined with AND semantics. Repeating
 `axis(...)` for the same axis id widens allowed values with OR semantics within
 that axis.
 
-## Scoped axis catalogs
+## Namespace axis catalogs
 
 Type-inferred axis targeting resolves through a namespace-owned `AxisCatalog`.
 This keeps axis bindings isolated per namespace.
 
 ```kotlin
+import io.amichne.konditional.context.axis.KonditionalExplicitId
+
+@KonditionalExplicitId("environment")
 enum class Environment(override val id: String) : AxisValue<Environment> {
     PROD("prod"),
     STAGE("stage"),
 }
 
-enum class Tenant(override val id: String) : AxisValue<Tenant> {
-    ENTERPRISE("enterprise"),
+enum class Tenant : AxisValue<Tenant> {
+    ENTERPRISE,
 }
 
 object AppFeatures : Namespace("app") {
-    private val environmentAxis = axis<Environment>("environment")
-    private val tenantAxis = axis<Tenant>("tenant")
+    val environmentAxis = axis<Environment>()
+    val tenantAxis = axis<Tenant>()
 
     val checkout by boolean<Context>(default = false) {
         rule(true) {
@@ -69,8 +72,16 @@ object AppFeatures : Namespace("app") {
 }
 ```
 
-For `axisValues { ... }`, inferred values also require a scoped catalog. Pass
-`axisCatalog = AppFeatures.axisCatalog` when you use inferred setters.
+By default, an axis ID is derived from the enum fully-qualified class name.
+Apply `@KonditionalExplicitId("...")` when you need a stable custom axis ID.
+
+For context values, use explicit handles:
+
+```kotlin
+val values = axisValues {
+    set(AppFeatures.environmentAxis, Environment.PROD)
+}
+```
 
 ## Targeting hierarchy
 

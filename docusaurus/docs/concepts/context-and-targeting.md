@@ -19,18 +19,25 @@ sidebar_position: 4
 Use `Axis<T>` + `AxisValue<T>` + `axisValues { ... }` for additional dimensions like tenant, region, or environment.
 
 ```kotlin
+import io.amichne.konditional.context.axis.KonditionalExplicitId
+
+@KonditionalExplicitId("tier")
 enum class Tier(override val id: String) : AxisValue<Tier> {
   FREE("free"), PRO("pro"), ENTERPRISE("enterprise")
 }
 
 object BillingFlags : Namespace("billing") {
-  val tierAxis = axis<Tier>("tier")
+  val tierAxis = axis<Tier>()
 
   val premiumExport by boolean<Context>(default = false) {
     rule(true) { axis(tierAxis, Tier.PRO, Tier.ENTERPRISE) }
   }
 }
 ```
+
+Axis IDs default to the enum fully-qualified class name. Use
+`@KonditionalExplicitId("...")` when you need a stable custom axis ID for
+persisted rule payloads.
 
 ## Boundary Rule
 

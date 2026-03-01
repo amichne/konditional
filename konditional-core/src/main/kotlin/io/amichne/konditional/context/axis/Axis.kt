@@ -1,5 +1,8 @@
+@file:OptIn(io.amichne.konditional.api.KonditionalInternalApi::class)
+
 package io.amichne.konditional.context.axis
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.registry.AxisCatalog
 import kotlin.reflect.KClass
 
@@ -13,19 +16,25 @@ import kotlin.reflect.KClass
  *
  * Define an axis using the factory in [Axis.Companion]:
  * ```kotlin
- * enum class Environment(override val id: String) : AxisValue<Environment> {
- *     PROD("prod"), STAGE("stage"), DEV("dev")
- * }
+ * enum class Environment : AxisValue<Environment> { PROD, STAGE, DEV }
  *
  * object Axes {
- *     val environment = Axis.of<Environment>("environment")
+ *     val environment = Axis.of<Environment>()
  * }
+ * ```
+ *
+ * The axis id is derived from the fully-qualified class name of [T]. To use a stable custom id
+ * instead — for example when the class may be relocated across packages — annotate the enum with
+ * [KonditionalExplicitId]:
+ * ```kotlin
+ * @KonditionalExplicitId("environment")
+ * enum class Environment : AxisValue<Environment> { PROD, STAGE, DEV }
  * ```
  *
  * To use type-inferred axis DSL operations, register the axis in an [AxisCatalog]:
  * ```kotlin
  * object Checkout : Namespace("checkout") {
- *     val environmentAxis = axis<Environment>("environment")
+ *     val environmentAxis = axis<Environment>()
  * }
  *
  * // In rules (resolved through Checkout.axisCatalog)
@@ -38,9 +47,7 @@ import kotlin.reflect.KClass
  * @param T The enum type that represents values along this axis.
  * @param valueClass The runtime class of the value type [T].
  *      This is intentionally passed explicitly to avoid fragile reflection-based extraction from generic supertypes.
- * @property id A stable, unique identifier for this axis
- *
- * Axis identifiers are explicit-only. Always provide stable ids that are independent of class names.
+ * @property id A stable, unique identifier for this axis derived from [T]'s FQCN or [KonditionalExplicitId].
  */
 class Axis<T> private constructor(
     val id: String,
@@ -52,20 +59,62 @@ class Axis<T> private constructor(
         return id == other.id && valueClass == other.valueClass
     }
 
-    override fun hashCode(): Int {
-        return 31 * id.hashCode() + valueClass.hashCode()
-    }
+    override fun hashCode(): Int = 31 * id.hashCode() + valueClass.hashCode()
 
-    override fun toString(): String {
-        return "Axis(id='$id', valueClass=${valueClass.simpleName})"
-    }
+    override fun toString(): String = "Axis(id='$id', valueClass=${valueClass.simpleName})"
 
     companion object {
+        private fun deriveId(valueClass: KClass<*>): String =
+            valueClass.java.getAnnotation(KonditionalExplicitId::class.java)?.id
+                ?: valueClass.qualifiedName
+                ?: error(
+                    "Cannot derive axis id for ${valueClass.simpleName}: class has no qualified name. " +
+                        "Apply @KonditionalExplicitId to set an explicit id.",
+                )
+
         /**
-         * Creates a new axis handle with a stable explicit id.
-         *
-         * Prefer this factory for production code. Axis ids must be explicit and stable.
+         * Creates a new axis handle whose id is derived from [valueClass]'s fully-qualified name,
+         * or from a [KonditionalExplicitId] annotation if present.
          */
+        fun <T> of(valueClass: KClass<out T>): Axis<T> where T : AxisValue<T>, T : Enum<T> =
+            Axis(id = deriveId(valueClass), valueClass = valueClass)
+
+        /**
+         * Reified helper for [of].
+         */
+        inline fun <reified T> of(): Axis<T> where T : AxisValue<T>, T : Enum<T> =
+            of(valueClass = T::class)
+
+        /**
+         * Creates and registers a new axis handle in [axisCatalog].
+         */
+        @KonditionalInternalApi
+        fun <T> of(
+            valueClass: KClass<out T>,
+            axisCatalog: AxisCatalog,
+        ): Axis<T> where T : AxisValue<T>, T : Enum<T> =
+            of(valueClass = valueClass).also(axisCatalog::register)
+
+        /**
+         * Reified helper for [of] with [axisCatalog] registration.
+         */
+        @KonditionalInternalApi
+        inline fun <reified T> of(axisCatalog: AxisCatalog): Axis<T> where T : AxisValue<T>, T : Enum<T> =
+            of(valueClass = T::class, axisCatalog = axisCatalog)
+
+        /**
+         * Creates a new axis handle with an explicit id.
+         *
+         * Prefer [of] without an id argument and apply [KonditionalExplicitId] to the enum class
+         * when a custom id is required for stability across package moves.
+         */
+        @Deprecated(
+            message = "Axis ids are now derived from the value class FQCN. " +
+                "Drop the id argument and let the id be inferred, or annotate the enum with " +
+                "@KonditionalExplicitId(\"<id>\") for a stable custom id.",
+            replaceWith = ReplaceWith("Axis.of(valueClass)"),
+            level = DeprecationLevel.WARNING,
+        )
         fun <T> of(
             id: String,
             valueClass: KClass<out T>,
@@ -73,24 +122,34 @@ class Axis<T> private constructor(
             Axis(id = id, valueClass = valueClass)
 
         /**
-         * Creates and registers a new axis handle in [axisCatalog].
+         * Creates and registers a new axis handle in [axisCatalog] with an explicit id.
          */
+        @KonditionalInternalApi
         fun <T> of(
             id: String,
             valueClass: KClass<out T>,
             axisCatalog: AxisCatalog,
         ): Axis<T> where T : AxisValue<T>, T : Enum<T> =
-            of(id = id, valueClass = valueClass).also(axisCatalog::register)
+            Axis(id = id, valueClass = valueClass).also(axisCatalog::register)
 
         /**
          * Reified helper for [of] with an explicit id.
          */
+        @Deprecated(
+            message = "Axis ids are now derived from the value class FQCN. " +
+                "Drop the id argument and let the id be inferred, or annotate the enum with " +
+                "@KonditionalExplicitId(\"<id>\") for a stable custom id.",
+            replaceWith = ReplaceWith("Axis.of<T>()"),
+            level = DeprecationLevel.WARNING,
+        )
+        @Suppress("DEPRECATION")
         inline fun <reified T> of(id: String): Axis<T> where T : AxisValue<T>, T : Enum<T> =
             of(id = id, valueClass = T::class)
 
         /**
-         * Reified helper for [of] with explicit [axisCatalog] registration.
+         * Reified helper for [of] with an explicit id and [axisCatalog] registration.
          */
+        @KonditionalInternalApi
         inline fun <reified T> of(id: String, axisCatalog: AxisCatalog): Axis<T> where T : AxisValue<T>, T : Enum<T> =
             of(id = id, valueClass = T::class, axisCatalog = axisCatalog)
     }

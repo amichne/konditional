@@ -82,6 +82,7 @@ open class Namespace(
      *
      * Type-inferred axis DSL operations resolve against this scoped catalog.
      */
+    @property:KonditionalInternalApi
     val axisCatalog: AxisCatalog = AxisCatalog(),
     /**
      * Seed used to construct stable [io.amichne.konditional.values.FeatureId] values for features.
@@ -170,8 +171,31 @@ open class Namespace(
     /**
      * Declares an axis in this namespace's [axisCatalog].
      *
+     * The axis id is derived from [valueClass]'s fully-qualified name, or from a
+     * [io.amichne.konditional.context.axis.KonditionalExplicitId] annotation if present.
+     *
      * Use this when you want type-inferred axis DSL lookups to stay scoped to this namespace.
      */
+    protected fun <T> axis(
+        valueClass: KClass<out T>,
+    ): Axis<T> where T : AxisValue<T>, T : Enum<T> =
+        Axis.of(valueClass = valueClass, axisCatalog = axisCatalog)
+
+    /**
+     * Reified helper for [axis].
+     */
+    protected inline fun <reified T> axis(): Axis<T> where T : AxisValue<T>, T : Enum<T> =
+        axis(valueClass = T::class)
+
+    /**
+     * Declares an axis in this namespace's [axisCatalog] with an explicit id.
+     */
+    @Deprecated(
+        message = "Axis ids are now derived from the value class FQCN. " +
+            "Drop the id argument, or annotate the enum with @KonditionalExplicitId(\"<id>\") for a stable custom id.",
+        replaceWith = ReplaceWith("axis(valueClass)"),
+        level = DeprecationLevel.WARNING,
+    )
     protected fun <T> axis(
         id: String,
         valueClass: KClass<out T>,
@@ -179,8 +203,15 @@ open class Namespace(
         Axis.of(id = id, valueClass = valueClass, axisCatalog = axisCatalog)
 
     /**
-     * Reified helper for [axis].
+     * Reified helper for the explicit-id [axis] overload.
      */
+    @Deprecated(
+        message = "Axis ids are now derived from the value class FQCN. " +
+            "Drop the id argument, or annotate the enum with @KonditionalExplicitId(\"<id>\") for a stable custom id.",
+        replaceWith = ReplaceWith("axis<T>()"),
+        level = DeprecationLevel.WARNING,
+    )
+    @Suppress("DEPRECATION")
     protected inline fun <reified T> axis(id: String): Axis<T> where T : AxisValue<T>, T : Enum<T> =
         axis(id = id, valueClass = T::class)
 

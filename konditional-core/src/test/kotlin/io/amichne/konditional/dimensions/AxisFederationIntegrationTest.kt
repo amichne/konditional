@@ -1,3 +1,5 @@
+@file:OptIn(io.amichne.konditional.api.KonditionalInternalApi::class)
+
 package io.amichne.konditional.dimensions
 
 import io.amichne.konditional.api.axisValues
@@ -6,7 +8,7 @@ import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
-import io.amichne.konditional.core.registry.AxisCatalogFederator
+import io.amichne.konditional.core.registry.AxisCatalog
 import io.amichne.konditional.fixtures.TestContext
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -16,14 +18,14 @@ class AxisFederationIntegrationTest {
         PROD("prod"),
     }
 
-    private val federator = AxisCatalogFederator()
+    private val sharedCatalog = AxisCatalog()
     private val federatedEnvironmentAxis: Axis<FederatedEnvironment> =
-        Axis.of("federated-environment", FederatedEnvironment::class).also(federator::register)
+        Axis.of("federated-environment", FederatedEnvironment::class, sharedCatalog)
 
     private val namespaceA =
         object : Namespace(
             id = "federated-a",
-            axisCatalog = federator.namespaceCatalog(),
+            axisCatalog = AxisCatalog(sharedCatalog),
         ) {
             val flag by boolean<TestContext>(default = false) {
                 enable { axis(FederatedEnvironment.PROD) }
@@ -33,7 +35,7 @@ class AxisFederationIntegrationTest {
     private val namespaceB =
         object : Namespace(
             id = "federated-b",
-            axisCatalog = federator.namespaceCatalog(),
+            axisCatalog = AxisCatalog(sharedCatalog),
         ) {
             val flag by boolean<TestContext>(default = false) {
                 enable { axis(FederatedEnvironment.PROD) }
@@ -41,7 +43,7 @@ class AxisFederationIntegrationTest {
         }
 
     @Test
-    fun `namespaces can reuse federated axis catalogs for inferred axis targeting`() {
+    fun `namespaces can reuse a shared parent catalog for inferred axis targeting`() {
         val context = TestContext(axisValues = axisValues { set(federatedEnvironmentAxis, FederatedEnvironment.PROD) })
 
         assertTrue(namespaceA.flag.evaluate(context))

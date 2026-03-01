@@ -11,6 +11,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.axis.AxisValue
+import io.amichne.konditional.context.axis.KonditionalExplicitId
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
@@ -99,6 +100,7 @@ object RampUpResetFlags : Namespace("ramp-up-reset") {
 // endregion recipe-2-reset
 
 // region recipe-3-axes
+@KonditionalExplicitId("segment")
 enum class Segment(override val id: String) : AxisValue<Segment> {
     CONSUMER("consumer"),
     SMB("smb"),
@@ -106,7 +108,7 @@ enum class Segment(override val id: String) : AxisValue<Segment> {
 }
 
 object SegmentFlags : Namespace("segment") {
-    val segmentAxis = axis<Segment>("segment")
+    val segmentAxis = axis<Segment>()
 
     val premiumUi by boolean<Context>(default = false) {
         enable { axis(Segment.ENTERPRISE) }

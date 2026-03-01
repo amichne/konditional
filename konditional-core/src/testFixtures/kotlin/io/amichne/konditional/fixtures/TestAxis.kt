@@ -11,7 +11,6 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.AxisValuesScope
 import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.registry.AxisCatalog
 
 /**
  * Test-only enums representing domain-specific axis values.
@@ -36,12 +35,10 @@ enum class TestTenant(
  * Test-only axes for the above values.
  *
  * These mirror what an application would define in its own codebase.
- * Axes auto-register on object initialization.
  */
 object TestAxes {
-    val axisCatalog = AxisCatalog()
-    val Environment = Axis.of<TestEnvironment>("environment", axisCatalog)
-    val Tenant = Axis.of<TestTenant>("tenant", axisCatalog)
+    val Environment = Axis.of<TestEnvironment>()
+    val Tenant = Axis.of<TestTenant>()
 }
 
 /**
