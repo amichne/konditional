@@ -12,41 +12,45 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class AxisNamespaceIsolationTest {
-    private enum class ScopedEnvironment(override val id: String) : AxisValue<ScopedEnvironment> {
+    private enum class ScopedEnvironmentA(override val id: String) : AxisValue<ScopedEnvironmentA> {
+        PROD("prod"),
+    }
+
+    private enum class ScopedEnvironmentB(override val id: String) : AxisValue<ScopedEnvironmentB> {
         PROD("prod"),
     }
 
     private object NamespaceA : Namespace.TestNamespaceFacade("axis-ns-a") {
-        val environmentAxis = axis<ScopedEnvironment>("namespace-a-environment")
+        val environmentAxis = axis<ScopedEnvironmentA>()
 
         val flag by boolean<TestContext>(default = false) {
             enable {
                 variant {
-                    environmentAxis { include(ScopedEnvironment.PROD) }
+                    environmentAxis { include(ScopedEnvironmentA.PROD) }
                 }
             }
         }
     }
 
     private object NamespaceB : Namespace.TestNamespaceFacade("axis-ns-b") {
-        val environmentAxis = axis<ScopedEnvironment>("namespace-b-environment")
+        val environmentAxis = axis<ScopedEnvironmentB>()
 
         val flag by boolean<TestContext>(default = false) {
             enable {
                 variant {
-                    environmentAxis { include(ScopedEnvironment.PROD) }
+                    environmentAxis { include(ScopedEnvironmentB.PROD) }
                 }
             }
         }
     }
 
     @Test
-    fun `axis handles are isolated by namespace axis catalogs`() {
+    fun `axis handles are isolated by axis id`() {
         val contextForA =
             TestContext(
                 axisValues = axisValues {
                     variant {
-                        NamespaceA.environmentAxis { include(ScopedEnvironment.PROD) }
+                        NamespaceA.environmentAxis { include(ScopedEnvironmentA.PROD) }
                     }
                 },
             )
@@ -54,7 +58,7 @@ class AxisNamespaceIsolationTest {
             TestContext(
                 axisValues = axisValues {
                     variant {
-                        NamespaceB.environmentAxis { include(ScopedEnvironment.PROD) }
+                        NamespaceB.environmentAxis { include(ScopedEnvironmentB.PROD) }
                     }
                 },
             )

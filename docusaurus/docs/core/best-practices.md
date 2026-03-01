@@ -76,10 +76,9 @@ returns `false` for that leaf instead of throwing.
 
 ## Treat axes as first-class dimensions
 
-Prefer explicit axis handles for readability and locality. Use inferred axis
-values only when the namespace already owns the axis registration for that
-value type. Axis IDs are derived from enum fully-qualified class names by
-default, and you can pin a custom ID with `@KonditionalExplicitId`.
+Prefer explicit axis handles for readability and locality. Axis IDs are derived
+from enum fully-qualified class names by default, and you can pin a custom ID
+with `@KonditionalExplicitId`.
 
 ```kotlin
 import io.amichne.konditional.context.axis.KonditionalExplicitId
@@ -94,8 +93,16 @@ object RolloutFlags : Namespace("rollouts") {
     private val environmentAxis = axis<Environment>()
 
     val checkout by boolean<Context>(default = false) {
-        rule(true) { axis(environmentAxis, Environment.PROD) }
-        rule(true) { axis(Environment.STAGE) }
+        rule(true) {
+            variant {
+                environmentAxis { include(Environment.PROD) }
+            }
+        }
+        rule(true) {
+            variant {
+                environmentAxis { include(Environment.STAGE) }
+            }
+        }
     }
 }
 ```

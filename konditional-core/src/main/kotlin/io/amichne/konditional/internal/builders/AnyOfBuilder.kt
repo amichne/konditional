@@ -12,7 +12,6 @@ import io.amichne.konditional.core.dsl.VariantDispatchHost
 import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.AnyOfScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.NarrowingTargetingScope
-import io.amichne.konditional.core.registry.AxisCatalog
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.targeting.Targeting
 
@@ -27,9 +26,7 @@ import io.amichne.konditional.rules.targeting.Targeting
 @KonditionalDsl
 @PublishedApi
 @Suppress("OVERRIDE_DEPRECATION")
-internal class AnyOfBuilder<C : Context>(
-    private val axisCatalog: AxisCatalog? = null,
-) : AnyOfScope<C>, NarrowingTargetingScope<C>, VariantDispatchHost {
+internal class AnyOfBuilder<C : Context> : AnyOfScope<C>, NarrowingTargetingScope<C>, VariantDispatchHost {
 
     private val leaves = mutableListOf<Targeting<C>>()
     private val variantScope = RuleVariantScope<C>(leaves)
@@ -72,15 +69,8 @@ internal class AnyOfBuilder<C : Context>(
     }
 
     override fun <T> axis(vararg values: T) where T : AxisValue<T>, T : Enum<T> {
-        require(values.isNotEmpty()) { "axis(...) requires at least one value to infer the axis type." }
-        val catalog = axisCatalog
-            ?: throw IllegalArgumentException(
-                "Type-inferred axis(...) requires an AxisCatalog. " +
-                    "Use axis(axisHandle, values...) or declare axes with Namespace.axis(...).",
-            )
-        onAxisSelection(
-            axis = catalog.axisForOrThrow(values.first()::class),
-            values = values.toCollection(linkedSetOf()),
+        throw UnsupportedOperationException(
+            "Legacy axis(vararg values) is removed. Use variant { axisHandle { include(...) } }.",
         )
     }
 

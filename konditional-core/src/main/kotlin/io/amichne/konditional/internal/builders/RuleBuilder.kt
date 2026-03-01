@@ -12,11 +12,10 @@ import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.VariantDispatchHost
 import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.core.dsl.rules.RuleScope
-import io.amichne.konditional.core.id.HexId
-import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.core.registry.AxisCatalog
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.AnyOfScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.NarrowingTargetingScope
+import io.amichne.konditional.core.id.HexId
+import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.targeting.Targeting
@@ -34,7 +33,6 @@ import io.amichne.konditional.rules.targeting.Targeting
 @PublishedApi
 @Suppress("TooManyFunctions", "OVERRIDE_DEPRECATION")
 internal class RuleBuilder<C : Context>(
-    private val axisCatalog: AxisCatalog? = null,
     private val leaves: MutableList<Targeting<C>> = mutableListOf(),
 ) : RuleScope<C>,
     NarrowingTargetingScope<C>,
@@ -59,7 +57,7 @@ internal class RuleBuilder<C : Context>(
     }
 
     override fun anyOf(build: AnyOfScope<C>.() -> Unit) {
-        val node = AnyOfBuilder<C>(axisCatalog).apply(build).build()
+        val node = AnyOfBuilder<C>().apply(build).build()
         if (node.targets.isNotEmpty()) leaves += node
     }
 
@@ -92,15 +90,8 @@ internal class RuleBuilder<C : Context>(
     }
 
     override fun <T> axis(vararg values: T) where T : AxisValue<T>, T : Enum<T> {
-        require(values.isNotEmpty()) { "axis(...) requires at least one value to infer the axis type." }
-        val catalog = axisCatalog
-            ?: throw IllegalArgumentException(
-                "Type-inferred axis(...) requires an AxisCatalog. " +
-                    "Use axis(axisHandle, values...) or declare axes with Namespace.axis(...).",
-            )
-        onAxisSelection(
-            axis = catalog.axisForOrThrow(values.first()::class),
-            values = values.toCollection(linkedSetOf()),
+        throw UnsupportedOperationException(
+            "Legacy axis(vararg values) is removed. Use variant { axisHandle { include(...) } }.",
         )
     }
 

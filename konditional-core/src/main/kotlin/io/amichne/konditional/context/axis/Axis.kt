@@ -1,9 +1,6 @@
-@file:OptIn(io.amichne.konditional.api.KonditionalInternalApi::class)
-
 package io.amichne.konditional.context.axis
 
-import io.amichne.konditional.api.KonditionalInternalApi
-import io.amichne.konditional.core.registry.AxisCatalog
+import io.amichne.konditional.context.axis.Axis.Companion.of
 import kotlin.reflect.KClass
 
 /**
@@ -29,19 +26,6 @@ import kotlin.reflect.KClass
  * ```kotlin
  * @KonditionalExplicitId("environment")
  * enum class Environment : AxisValue<Environment> { PROD, STAGE, DEV }
- * ```
- *
- * To use type-inferred axis DSL operations, register the axis in an [AxisCatalog]:
- * ```kotlin
- * object Checkout : Namespace("checkout") {
- *     val environmentAxis = axis<Environment>()
- * }
- *
- * // In rules (resolved through Checkout.axisCatalog)
- * variant { Checkout.environmentAxis { include(Environment.PROD) } }
- *
- * // In contexts
- * val env = context.axis<Environment>()
  * ```
  *
  * @param T The enum type that represents values along this axis.
@@ -86,23 +70,6 @@ class Axis<T> private constructor(
             of(valueClass = T::class)
 
         /**
-         * Creates and registers a new axis handle in [axisCatalog].
-         */
-        @KonditionalInternalApi
-        fun <T> of(
-            valueClass: KClass<out T>,
-            axisCatalog: AxisCatalog,
-        ): Axis<T> where T : AxisValue<T>, T : Enum<T> =
-            of(valueClass = valueClass).also(axisCatalog::register)
-
-        /**
-         * Reified helper for [of] with [axisCatalog] registration.
-         */
-        @KonditionalInternalApi
-        inline fun <reified T> of(axisCatalog: AxisCatalog): Axis<T> where T : AxisValue<T>, T : Enum<T> =
-            of(valueClass = T::class, axisCatalog = axisCatalog)
-
-        /**
          * Creates a new axis handle with an explicit id.
          *
          * Prefer [of] without an id argument and apply [KonditionalExplicitId] to the enum class
@@ -122,17 +89,6 @@ class Axis<T> private constructor(
             Axis(id = id, valueClass = valueClass)
 
         /**
-         * Creates and registers a new axis handle in [axisCatalog] with an explicit id.
-         */
-        @KonditionalInternalApi
-        fun <T> of(
-            id: String,
-            valueClass: KClass<out T>,
-            axisCatalog: AxisCatalog,
-        ): Axis<T> where T : AxisValue<T>, T : Enum<T> =
-            Axis(id = id, valueClass = valueClass).also(axisCatalog::register)
-
-        /**
          * Reified helper for [of] with an explicit id.
          */
         @Deprecated(
@@ -146,11 +102,5 @@ class Axis<T> private constructor(
         inline fun <reified T> of(id: String): Axis<T> where T : AxisValue<T>, T : Enum<T> =
             of(id = id, valueClass = T::class)
 
-        /**
-         * Reified helper for [of] with an explicit id and [axisCatalog] registration.
-         */
-        @KonditionalInternalApi
-        inline fun <reified T> of(id: String, axisCatalog: AxisCatalog): Axis<T> where T : AxisValue<T>, T : Enum<T> =
-            of(id = id, valueClass = T::class, axisCatalog = axisCatalog)
     }
 }

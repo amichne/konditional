@@ -11,6 +11,7 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
+import io.amichne.konditional.context.axis.KonditionalExplicitId
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
@@ -79,11 +80,11 @@ class ConfigurationSnapshotCodecTest {
 
     @BeforeEach
     fun setup() {
-        // Force axis registration for explicit axis usage in rule builders.
+        // Force axis handle initialization used by rules/contexts in this test.
         @Suppress("UnusedExpression")
-        Axes.EnvironmentAxis
+        (Axis.of<Environment>())
         @Suppress("UnusedExpression")
-        Axes.TenantAxis
+        (Axis.of<Tenant>())
 
         // Reset the namespace registry before each test.
         loadMaterialized(declaredDefaultConfiguration())
@@ -134,20 +135,17 @@ class ConfigurationSnapshotCodecTest {
             },
         )
 
+    @KonditionalExplicitId("snapshot-environment")
     private enum class Environment(override val id: String) : AxisValue<Environment> {
         PROD("prod"),
         STAGE("stage"),
         DEV("dev"),
     }
 
+    @KonditionalExplicitId("snapshot-tenant")
     private enum class Tenant(override val id: String) : AxisValue<Tenant> {
         ENTERPRISE("enterprise"),
         SMB("smb"),
-    }
-
-    private object Axes {
-        val EnvironmentAxis = Axis.of<Environment>("snapshot-environment", TestFeatures.axisCatalog)
-        val TenantAxis = Axis.of<Tenant>("snapshot-tenant", TestFeatures.axisCatalog)
     }
 
     private enum class Theme {
@@ -217,7 +215,7 @@ class ConfigurationSnapshotCodecTest {
             override val axisValues =
                 axisValues {
                     variant {
-                        Axes.EnvironmentAxis { include(env) }
+                        Axis.of<Environment>()
                     }
                 }
         }
@@ -228,7 +226,6 @@ class ConfigurationSnapshotCodecTest {
 
         assertTrue(json.contains("\"type\": \"CONTEXTUAL\""))
     }
-
 
     @Test
     fun `Given deferred yields rule snapshot, When decoded and re-encoded, Then contextual type remains contextual`() {
@@ -375,7 +372,7 @@ class ConfigurationSnapshotCodecTest {
         TestFeatures.boolFlag.update(false) {
             enable {
                 variant {
-                    Axes.EnvironmentAxis { include(Environment.PROD, Environment.STAGE) }
+                    Axes.(Axis.of<Environment>()) { include(Environment.PROD, Environment.STAGE) }
                 }
             }
         }
@@ -413,8 +410,8 @@ class ConfigurationSnapshotCodecTest {
                 platforms(Platform.IOS, Platform.ANDROID)
                 versions { min(1, 0, 0); max(2, 0, 0) }
                 variant {
-                    Axes.EnvironmentAxis { include(Environment.PROD, Environment.STAGE) }
-                    Axes.TenantAxis { include(Tenant.ENTERPRISE) }
+                    Axes.(Axis.of<Environment>()) { include(Environment.PROD, Environment.STAGE) }
+                    Axes.(Axis.of<Tenant>()) { include(Tenant.ENTERPRISE) }
                 }
                 rampUp { 12.34 }
             }

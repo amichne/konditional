@@ -129,7 +129,8 @@ For mature enterprise adoption requests, produce these artifacts explicitly:
   `axis`, `extension`, `versions`, `rampUp`, `allowlist`, and `ruleSet`.
   [CLM-DSL-001]
 - **Namespace isolation by construction**: each namespace owns its registry and
-  axis catalog; typed axis inference remains namespace-scoped. [CLM-ISO-001]
+  axis handles remain explicit and deterministic by stable axis id.
+  [CLM-ISO-001]
 - **Runtime lifecycle in runtime module**: `Namespace.load`,
   `Namespace.rollback`, `history`, and `historyMetadata` live in
   `:konditional-runtime`. [CLM-RT-001]

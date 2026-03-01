@@ -40,10 +40,10 @@ All targeting calls inside one rule are combined with AND semantics. Repeating
 `variant { axisHandle { include(...) } }` for the same axis id widens allowed
 values with OR semantics within that axis.
 
-## Namespace axis catalogs
+## Namespace axis handles
 
 Axis targeting resolves through explicit axis handles owned by a namespace.
-This keeps axis bindings isolated per namespace.
+This keeps axis bindings explicit and local to the owning namespace.
 
 ```kotlin
 import io.amichne.konditional.context.axis.KonditionalExplicitId

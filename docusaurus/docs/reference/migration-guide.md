@@ -238,9 +238,8 @@ This keeps behavior pinned to the baseline value while generating comparison tel
 
 ## Axis handle factory migration
 
-Axis descriptors remain factory-only handles and axis lookup remains scoped
-through namespace catalogs. In this release, axis IDs are inferred from the
-axis value enum type by default.
+Axis descriptors remain factory-only handles. In this release, axis IDs are
+inferred from the axis value enum type by default.
 
 **Before**
 
@@ -313,7 +312,7 @@ composition.
 - **What changed**: rule criteria compile into `Targeting.All` with leaf nodes
   for locale, platform, version, axis, and custom extension criteria.
 - **What stays the same**: your DSL usage (`platforms`, `locales`, `versions`,
-  `axis`, `extension`, and `whenContext`) keeps the same behavior.
+  `variant`, `extension`, and `whenContext`) keeps the same behavior.
 - **Compatibility**: legacy `Predicate<C>` implementations are supported as a
   deprecated bridge; new logic should use `extension { ... }` and
   `whenContext<R> { ... }`.

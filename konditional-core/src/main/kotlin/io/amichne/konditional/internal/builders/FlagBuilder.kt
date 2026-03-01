@@ -89,7 +89,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
         value: T,
         build: RuleScope<C>.() -> Unit,
     ) {
-        val rule = RuleBuilder<C>(axisCatalog = feature.namespace.axisCatalog).apply(build).build()
+        val rule = RuleBuilder<C>().apply(build).build()
         values += rule.targetedBy(value)
     }
 
@@ -97,7 +97,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
         value: T,
         build: ContextRuleScope<C>.() -> Unit,
     ) {
-        val rule = RuleBuilder<C>(axisCatalog = feature.namespace.axisCatalog).apply {
+        val rule = RuleBuilder<C>().apply {
             @Suppress("UNCHECKED_CAST")
             (this as ContextRuleScope<C>).apply(build)
         }.build()
@@ -108,7 +108,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
         valueResolver: RuleValueResolver<C, T>,
         build: RuleScope<C>.() -> Unit,
     ) {
-        val rule = RuleBuilder<C>(axisCatalog = feature.namespace.axisCatalog).apply(build).build()
+        val rule = RuleBuilder<C>().apply(build).build()
         values += rule.targetedBy(valueResolver)
     }
 
@@ -116,7 +116,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
         valueResolver: RuleValueResolver<C, T>,
         build: ContextRuleScope<C>.() -> Unit,
     ) {
-        val rule = RuleBuilder<C>(axisCatalog = feature.namespace.axisCatalog).apply {
+        val rule = RuleBuilder<C>().apply {
             @Suppress("UNCHECKED_CAST")
             (this as ContextRuleScope<C>).apply(build)
         }.build()
