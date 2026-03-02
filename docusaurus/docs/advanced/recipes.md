@@ -92,6 +92,7 @@ object RampUpResetFlags : Namespace("ramp-up-reset") {
 Use axes for segment targeting you want to update via JSON (without redeploying predicates).
 
 ```kotlin
+@KonditionalExplicitId("segment")
 enum class Segment(override val id: String) : AxisValue<Segment> {
     CONSUMER("consumer"),
     SMB("smb"),
@@ -99,10 +100,14 @@ enum class Segment(override val id: String) : AxisValue<Segment> {
 }
 
 object SegmentFlags : Namespace("segment") {
-    val segmentAxis = axis<Segment>("segment")
+    val segmentAxis = axis<Segment>()
 
     val premiumUi by boolean<Context>(default = false) {
-        enable { axis(Segment.ENTERPRISE) }
+        enable {
+            variant {
+                segmentAxis { include(Segment.ENTERPRISE) }
+            }
+        }
     }
 }
 
@@ -118,7 +123,11 @@ fun isPremiumUiEnabled(): Boolean {
             override val platform = Platform.IOS
             override val appVersion = Version.of(2, 1, 0)
             override val stableId = StableId.of("user-123")
-            override val axisValues = axisValues { set(SegmentFlags.segmentAxis, Segment.ENTERPRISE) }
+            override val axisValues = axisValues {
+                variant {
+                    SegmentFlags.segmentAxis { include(Segment.ENTERPRISE) }
+                }
+            }
         }
 
     return SegmentFlags.premiumUi.evaluate(segmentContext)
@@ -126,7 +135,7 @@ fun isPremiumUiEnabled(): Boolean {
 ```
 
 - **Guarantee**: Segment targeting is type-safe and serializable.
-- **Mechanism**: Axis IDs are stored in JSON; `axis(...)` evaluates against `Context.axisValues`.
+- **Mechanism**: Axis IDs are stored in JSON; `variant { axisHandle { include(...) } }` evaluates against `Context.axisValues`.
 - **Boundary**: Axis IDs must remain stable across builds and obfuscation.
 
 ---
@@ -200,7 +209,7 @@ Use `Result` to enforce a hard boundary at the JSON parse step, and roll back on
 fun loadRemoteConfig() {
     val json = fetchRemoteConfig()
     val features = AppFeatures
-    val result = ConfigurationSnapshotCodec.decode(json, features.compiledSchema())
+    val result = ConfigurationCodec.decode(json, features)
 
     result.onSuccess { configuration ->
         features.update(configuration)
@@ -234,7 +243,7 @@ Compare a candidate configuration to baseline behavior without changing producti
 ```kotlin
 fun evaluateWithShadowedConfig(context: Context): Boolean {
     val candidateJson = fetchCandidateConfig()
-    val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson, AppFeatures.compiledSchema()).getOrThrow()
+    val candidateConfig = ConfigurationCodec.decode(candidateJson, AppFeatures).getOrThrow()
     val candidateRegistry =
         InMemoryNamespaceRegistry(namespaceId = AppFeatures.namespaceId).apply {
             load(candidateConfig)

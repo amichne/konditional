@@ -14,7 +14,6 @@ import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.features.IntFeature
 import io.amichne.konditional.core.features.KotlinClassFeature
 import io.amichne.konditional.core.features.StringFeature
-import io.amichne.konditional.core.registry.AxisCatalog
 import io.amichne.konditional.core.registry.NamespaceRegistry
 import io.amichne.konditional.core.registry.NamespaceRegistryFactories
 import io.amichne.konditional.core.registry.NamespaceRegistryRuntime
@@ -78,12 +77,6 @@ open class Namespace(
     @property:KonditionalInternalApi
     val registry: NamespaceRegistry = NamespaceRegistryFactories.default(id),
     /**
-     * Axis catalog owned by this namespace.
-     *
-     * Type-inferred axis DSL operations resolve against this scoped catalog.
-     */
-    val axisCatalog: AxisCatalog = AxisCatalog(),
-    /**
      * Seed used to construct stable [io.amichne.konditional.values.FeatureId] values for features.
      *
      * By default this is the namespace [id], which is appropriate for "real" namespaces that are intended
@@ -136,7 +129,6 @@ open class Namespace(
     abstract class TestNamespaceFacade(id: String) : Namespace(
         id = id,
         registry = NamespaceRegistryFactories.default(id),
-        axisCatalog = AxisCatalog(),
         identifierSeed = UUID.randomUUID().toString(),
     )
 
@@ -165,22 +157,56 @@ open class Namespace(
      * Returns the immutable compile-time schema-plane for this namespace.
      */
     @KonditionalInternalApi
+    @Deprecated(
+        message = "Prefer ConfigurationCodec.decode overload that accepts a Namespace for schema inference.",
+        level = DeprecationLevel.HIDDEN,
+    )
     fun compiledSchema(): CompiledNamespaceSchema = CompiledNamespaceSchema.from(this)
 
+
     /**
-     * Declares an axis in this namespace's [axisCatalog].
+     * Declares an axis handle.
      *
-     * Use this when you want type-inferred axis DSL lookups to stay scoped to this namespace.
+     * The axis id is derived from [valueClass]'s fully-qualified name, or from a
+     * [io.amichne.konditional.context.axis.KonditionalExplicitId] annotation if present.
      */
     protected fun <T> axis(
-        id: String,
         valueClass: KClass<out T>,
     ): Axis<T> where T : AxisValue<T>, T : Enum<T> =
-        Axis.of(id = id, valueClass = valueClass, axisCatalog = axisCatalog)
+        Axis.of(valueClass = valueClass)
 
     /**
      * Reified helper for [axis].
      */
+    protected inline fun <reified T> axis(): Axis<T> where T : AxisValue<T>, T : Enum<T> =
+        axis(valueClass = T::class)
+
+    /**
+     * Declares an axis handle with an explicit id.
+     */
+    @Deprecated(
+        message = "Axis ids are now derived from the value class FQCN. " +
+            "Drop the id argument, or annotate the enum with @KonditionalExplicitId(\"<id>\") for a stable custom id.",
+        replaceWith = ReplaceWith("axis(valueClass)"),
+        level = DeprecationLevel.WARNING,
+    )
+    @Suppress("DEPRECATION")
+    protected fun <T> axis(
+        id: String,
+        valueClass: KClass<out T>,
+    ): Axis<T> where T : AxisValue<T>, T : Enum<T> =
+        Axis.of(id = id, valueClass = valueClass)
+
+    /**
+     * Reified helper for the explicit-id [axis] overload.
+     */
+    @Deprecated(
+        message = "Axis ids are now derived from the value class FQCN. " +
+            "Drop the id argument, or annotate the enum with @KonditionalExplicitId(\"<id>\") for a stable custom id.",
+        replaceWith = ReplaceWith("axis<T>()"),
+        level = DeprecationLevel.WARNING,
+    )
+    @Suppress("DEPRECATION")
     protected inline fun <reified T> axis(id: String): Axis<T> where T : AxisValue<T>, T : Enum<T> =
         axis(id = id, valueClass = T::class)
 
@@ -217,8 +243,12 @@ open class Namespace(
      * Example:
      * ```kotlin
      * object Checkout : Namespace("checkout") {
+     *     val tenantAxis = axis<Tenant>()
+     *
      *     val bannerText by string<Context>(default = "Welcome") {
-     *         rule("Enterprise") { axis(Axes.Tenant, Tenant.ENTERPRISE) }
+     *         rule("Enterprise") {
+     *             variant { tenantAxis { include(Tenant.ENTERPRISE) } }
+     *         }
      *     }
      * }
      * ```

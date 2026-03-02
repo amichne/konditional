@@ -3,13 +3,12 @@ package io.amichne.konditional.dimensions
 import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.core.dsl.unaryPlus
-
 import io.amichne.konditional.fixtures.FeaturesWithAxis
-import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
+import io.amichne.konditional.fixtures.environment
+import io.amichne.konditional.fixtures.tenant
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -23,14 +22,9 @@ class AxisRuleEvaluationTest {
         tenant: TestTenant? = null,
         version: String = "1.0.0",
     ): TestContext {
-        val values = axisValues(TestAxes.axisCatalog) {
-            if (env != null) {
-                +env
-            }
-            if (tenant != null) {
-                +tenant
-            }
-            TestEnvironment.DEV
+        val values = axisValues {
+            if (env != null) environment(env)
+            if (tenant != null) tenant(tenant)
         }
 
         return TestContext(

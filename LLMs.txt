@@ -1,0 +1,47 @@
+# Konditional LLMs Index
+
+> Canonical docs site: https://amichne.github.io/konditional/
+
+Konditional is a Kotlin-first, deterministic feature-flag platform.
+This file provides a compact map of high-value documentation pages for LLM-based tooling.
+
+## Start Here
+- https://amichne.github.io/konditional/
+- https://amichne.github.io/konditional/overview/start-here/
+- https://amichne.github.io/konditional/overview/why-typed-flags/
+- https://amichne.github.io/konditional/overview/product-value-fit/
+- https://amichne.github.io/konditional/overview/first-success-map/
+
+## Quickstart
+- https://amichne.github.io/konditional/quickstart/
+- https://amichne.github.io/konditional/quickstart/install/
+- https://amichne.github.io/konditional/quickstart/define-first-flag/
+- https://amichne.github.io/konditional/quickstart/evaluate-in-app-code/
+- https://amichne.github.io/konditional/quickstart/add-deterministic-ramp-up/
+- https://amichne.github.io/konditional/quickstart/load-first-snapshot-safely/
+- https://amichne.github.io/konditional/quickstart/verify-end-to-end/
+
+## Theory and Invariants
+- https://amichne.github.io/konditional/theory/claims-registry/
+- https://amichne.github.io/konditional/theory/type-safety-boundaries/
+- https://amichne.github.io/konditional/theory/determinism-proofs/
+- https://amichne.github.io/konditional/theory/namespace-isolation/
+- https://amichne.github.io/konditional/theory/parse-dont-validate/
+- https://amichne.github.io/konditional/theory/atomicity-guarantees/
+- https://amichne.github.io/konditional/theory/migration-and-shadowing/
+- https://amichne.github.io/konditional/theory/verified-synthesis/
+
+## Reference
+- https://amichne.github.io/konditional/reference/module-dependency-map/
+- https://amichne.github.io/konditional/reference/api-surface/
+- https://amichne.github.io/konditional/reference/snapshot-format/
+- https://amichne.github.io/konditional/reference/patch-format/
+- https://amichne.github.io/konditional/reference/snapshot-load-options/
+- https://amichne.github.io/konditional/reference/evaluation-diagnostics/
+
+## API Spec
+- https://amichne.github.io/konditional/api/
+
+## Repository
+- https://github.com/amichne/konditional
+- Docs source path: https://github.com/amichne/konditional/tree/main/docusaurus

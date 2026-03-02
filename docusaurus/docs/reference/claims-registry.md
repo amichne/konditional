@@ -162,8 +162,8 @@ Namespaces provide a compiled schema used by boundary codecs and loaders.
 - **Risk category:** `operational`
 - **Topics:** `namespace-isolation`, `parse-boundary`
 - **Source pages:** `docusaurus/docs/quickstart/define-first-flag.md#claim-clm-pr01-08b`
-- **Signature links:** `type:io.amichne.konditional.core.Namespace`, `type:io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec`
-- **Test links:** `unit:konditional-runtime:konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationSnapshotCodecTest.kt:NamespaceConfigurationSnapshotCodecTest`
+- **Signature links:** `type:io.amichne.konditional.core.Namespace`, `type:io.amichne.konditional.serialization.snapshot.ConfigurationCodec`
+- **Test links:** `unit:konditional-runtime:konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationCodecTest.kt:NamespaceConfigurationSnapshotCodecTest`
 - **Related claims:** -
 
 ## CLM-PR01-09A
@@ -198,7 +198,7 @@ Snapshot loading API exposes Result-based ingestion with options and codec-backe
 - **Risk category:** `operational`
 - **Topics:** `snapshot-loading`
 - **Source pages:** `docusaurus/docs/quickstart/load-first-snapshot-safely.md#claim-clm-pr01-11a`
-- **Signature links:** `method:io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#fun load( json: String, options: SnapshotLoadOptions = SnapshotLoadOptions.strict(), ): Result<Configuration>`, `type:io.amichne.konditional.serialization.options.SnapshotLoadOptions`, `type:io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec`, `type:io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader`
+- **Signature links:** `method:io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader#fun load( json: String, options: SnapshotLoadOptions = SnapshotLoadOptions.strict(), ): Result<Configuration>`, `type:io.amichne.konditional.serialization.options.SnapshotLoadOptions`, `type:io.amichne.konditional.serialization.snapshot.ConfigurationCodec`, `type:io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader`
 - **Test links:** -
 - **Related claims:** -
 

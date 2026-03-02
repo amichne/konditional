@@ -67,7 +67,7 @@ type model, but type alignment is enforced by the codec at boundary time, not at
 | Test | What it proves | Source |
 |---|---|---|
 | `BoundaryFailureResultTest` | Parse failures are typed and carried through result channel. | [source](https://github.com/amichne/konditional/blob/main/konditional-core/src/test/kotlin/io/amichne/konditional/core/BoundaryFailureResultTest.kt) |
-| `ConfigurationSnapshotCodecTest` | Snapshot decode enforces schema-aware trusted materialization. | [source](https://github.com/amichne/konditional/blob/main/konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/ConfigurationSnapshotCodecTest.kt) |
+| `ConfigurationSnapshotCodecTest` | Snapshot decode enforces schema-aware trusted materialization. | [source](https://github.com/amichne/konditional/blob/main/konditional-serialization/src/test/kotlin/io/amichne/konditional/serialization/ConfigurationCodecTest.kt) |
 
 **Conditions:** Unknown-key behavior depends on `SnapshotLoadOptions`. In strict mode, unknown keys reject the
 payload. In skip mode, they log a warning and proceed. Neither mode admits partial state.

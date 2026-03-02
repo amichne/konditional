@@ -3,10 +3,9 @@ package io.amichne.konditional.internal.builders
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.AxisValues
-import io.amichne.konditional.core.dsl.AxisCatalogScope
 import io.amichne.konditional.core.dsl.AxisValuesScope
 import io.amichne.konditional.core.dsl.KonditionalDsl
-import io.amichne.konditional.core.registry.AxisCatalog
+import io.amichne.konditional.core.dsl.VariantDispatchHost
 
 /**
  * Internal builder implementation for constructing [AxisValues] instances.
@@ -19,8 +18,10 @@ import io.amichne.konditional.core.registry.AxisCatalog
  * Typically used via the top-level `axisValues { }` builder function:
  * ```kotlin
  * val values = axisValues {
- *     set(Axes.Environment, Environment.PROD)
- *     set(Axes.Tenant, Tenant.ENTERPRISE)
+ *     variant {
+ *         Axes.Environment { include(Environment.PROD) }
+ *         Axes.Tenant { include(Tenant.ENTERPRISE) }
+ *     }
  * }
  * ```
  *
@@ -29,12 +30,12 @@ import io.amichne.konditional.core.registry.AxisCatalog
  */
 @KonditionalDsl
 @PublishedApi
+@Suppress("OVERRIDE_DEPRECATION")
 internal class AxisValuesBuilder(
-    override val axisCatalog: AxisCatalog? = null,
     val map: MutableMap<String, MutableSet<AxisValue<*>>> = mutableMapOf(),
 ) :
-    AxisCatalogScope,
     AxisValuesScope,
+    VariantDispatchHost,
     MutableMap<String, MutableSet<AxisValue<*>>> by map {
 
     /**
@@ -48,7 +49,7 @@ internal class AxisValuesBuilder(
     /**
      * Adds a value for the given axis.
      */
-    override fun <T> set(
+    private fun <T> append(
         axis: Axis<T>,
         value: T,
     ) where T : AxisValue<T>, T : Enum<T> {
@@ -58,6 +59,13 @@ internal class AxisValuesBuilder(
         map.getOrPut(axis.id) { linkedSetOf() }.add(value)
     }
 
+    override fun <T> set(
+        axis: Axis<T>,
+        value: T,
+    ) where T : AxisValue<T>, T : Enum<T> {
+        append(axis, value)
+    }
+
     /**
      * Conditionally sets a value, skipping if null.
      */
@@ -65,7 +73,14 @@ internal class AxisValuesBuilder(
         axis: Axis<T>,
         value: T?,
     ) where T : AxisValue<T>, T : Enum<T> {
-        if (value != null) set(axis, value)
+        if (value != null) append(axis, value)
+    }
+
+    override fun <V> onAxisSelection(
+        axis: Axis<V>,
+        values: Set<V>,
+    ) where V : AxisValue<V>, V : Enum<V> {
+        values.forEach { append(axis, it) }
     }
 
     /**

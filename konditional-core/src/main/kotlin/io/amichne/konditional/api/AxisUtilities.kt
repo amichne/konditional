@@ -5,7 +5,6 @@ import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.AxisValues
 import io.amichne.konditional.core.dsl.AxisValuesScope
-import io.amichne.konditional.core.registry.AxisCatalog
 import io.amichne.konditional.internal.builders.AxisValuesBuilder
 
 /**
@@ -31,21 +30,18 @@ inline fun <reified T, reified C : Context> C.axis(axis: Axis<T>): Set<T> where 
     axisValues[axis]
 
 /**
- * Top-level DSL function to create [AxisValues]
+ * Top-level DSL function to create [AxisValues].
  *
  * Example:
  * ```kotlin
  * val values = axisValues {
- *     environment(Environment.PROD)
- *     tenant(Tenant.SME)
+ *     variant {
+ *         Axes.Environment { include(Environment.PROD) }
+ *         Axes.Tenant { include(Tenant.SME) }
+ *     }
  * }
  * ```
- *
- * @param block
- * @receiver
- * @return
  */
 inline fun axisValues(
-    axisCatalog: AxisCatalog? = null,
     block: AxisValuesScope.() -> Unit,
-): AxisValues = AxisValuesBuilder(axisCatalog = axisCatalog).apply(block).build()
+): AxisValues = AxisValuesBuilder().apply(block).build()

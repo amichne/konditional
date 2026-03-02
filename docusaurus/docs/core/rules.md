@@ -29,8 +29,7 @@ Inside a rule block (`RuleScope`):
 - `locales(...)` targets locale ids
 - `platforms(...)` targets platform ids
 - `versions { min(...); max(...) }` targets version ranges
-- `axis(axisHandle, ...)` targets custom axes explicitly (preferred)
-- `axis(...)` infers the axis from value type (requires namespace axis declaration)
+- `variant { axisHandle { include(...) } }` targets custom axes
 - `extension { ... }` custom predicate
 - `rampUp { ... }` percentage rollout
 - `allowlist(...)` stable IDs that bypass ramp-up
@@ -38,39 +37,54 @@ Inside a rule block (`RuleScope`):
 - `always()` / `matchAll()` mark a catch-all rule explicitly
 
 All targeting calls inside one rule are combined with AND semantics. Repeating
-`axis(...)` for the same axis id widens allowed values with OR semantics within
-that axis.
+`variant { axisHandle { include(...) } }` for the same axis id widens allowed
+values with OR semantics within that axis.
 
-## Scoped axis catalogs
+## Namespace axis handles
 
-Type-inferred axis targeting resolves through a namespace-owned `AxisCatalog`.
-This keeps axis bindings isolated per namespace.
+Axis targeting resolves through explicit axis handles owned by a namespace.
+This keeps axis bindings explicit and local to the owning namespace.
 
 ```kotlin
+import io.amichne.konditional.context.axis.KonditionalExplicitId
+
+@KonditionalExplicitId("environment")
 enum class Environment(override val id: String) : AxisValue<Environment> {
     PROD("prod"),
     STAGE("stage"),
 }
 
-enum class Tenant(override val id: String) : AxisValue<Tenant> {
-    ENTERPRISE("enterprise"),
+enum class Tenant : AxisValue<Tenant> {
+    ENTERPRISE,
 }
 
 object AppFeatures : Namespace("app") {
-    private val environmentAxis = axis<Environment>("environment")
-    private val tenantAxis = axis<Tenant>("tenant")
+    val environmentAxis = axis<Environment>()
+    val tenantAxis = axis<Tenant>()
 
     val checkout by boolean<Context>(default = false) {
         rule(true) {
-            axis(environmentAxis, Environment.PROD) // Explicit handle
-            axis(Tenant.ENTERPRISE)                 // Inferred from axisCatalog
+            variant {
+                environmentAxis { include(Environment.PROD) }
+                tenantAxis { include(Tenant.ENTERPRISE) }
+            }
         }
     }
 }
 ```
 
-For `axisValues { ... }`, inferred values also require a scoped catalog. Pass
-`axisCatalog = AppFeatures.axisCatalog` when you use inferred setters.
+By default, an axis ID is derived from the enum fully-qualified class name.
+Apply `@KonditionalExplicitId("...")` when you need a stable custom axis ID.
+
+For context values, use explicit handles:
+
+```kotlin
+val values = axisValues {
+    variant {
+        AppFeatures.environmentAxis { include(Environment.PROD) }
+    }
+}
+```
 
 ## Targeting hierarchy
 

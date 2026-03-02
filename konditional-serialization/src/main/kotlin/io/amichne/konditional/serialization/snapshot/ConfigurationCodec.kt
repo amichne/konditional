@@ -25,6 +25,9 @@ import io.amichne.konditional.rules.versions.VersionRange
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.ConfigurationMetadata
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
+import io.amichne.konditional.serialization.snapshot.ConfigurationCodec.decode
+import io.amichne.konditional.serialization.snapshot.ConfigurationCodec.encode
+import io.amichne.konditional.serialization.snapshot.ConfigurationCodec.patch
 
 /**
  * Pure JSON codec for configuration snapshots.
@@ -34,12 +37,12 @@ import io.amichne.konditional.serialization.options.SnapshotLoadOptions
  *
  * There is exactly one way to perform each operation:
  * - [encode]: accepts any [ConfigurationView] (including [Configuration])
- * - [decode]: schema is a required parameter — no schema-less overload exists
- * - [patch]: derives schema from the provided [namespace]
+ * - [decode]: schema is only provided at decode time, never inferred from the input JSON
+ * - [patch]: derives schema from the provided [Namespace]
  *
  * To load a decoded snapshot into a namespace registry, use `NamespaceSnapshotLoader` from `:konditional-runtime`.
  */
-object ConfigurationSnapshotCodec {
+object ConfigurationCodec {
     private val moshi = defaultMoshi()
     private val snapshotAdapter = moshi.adapter(SerializableSnapshot::class.java).indent("  ")
     private val patchAdapter = moshi.adapter(SerializablePatch::class.java).indent("  ")
@@ -68,22 +71,45 @@ object ConfigurationSnapshotCodec {
      * @param schema the compile-time schema produced by `Namespace.compiledSchema()`
      * @param options controls unknown-key and missing-declared-flag handling
      */
+    @Deprecated(
+        message = "Prefer decode overload that accepts a Namespace for schema inference.",
+        level = DeprecationLevel.WARNING,
+    )
     fun decode(
         json: String,
         schema: CompiledNamespaceSchema,
         options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
-    ): Result<Configuration> {
-        val serializable =
-            runCatching { snapshotAdapter.fromJson(json) }
-                .getOrElse { error ->
-                    return parseFailure(
-                        ParseError.invalidJson(error.message ?: "Unknown JSON parsing error"),
-                    )
-                }
+    ): Result<Configuration> = ConfigurationCodec.runCatching { snapshotAdapter.fromJson(json) }
+        .getOrElse { error ->
+            return parseFailure(
+                ParseError.invalidJson(error.message ?: "Unknown JSON parsing error"),
+            )
+        }?.toConfiguration(schema = schema, options = options)
+        ?: parseFailure(ParseError.invalidJson("Failed to parse JSON: null snapshot"))
 
-        return serializable?.toConfiguration(schema = schema, options = options)
-            ?: parseFailure(ParseError.invalidJson("Failed to parse JSON: null snapshot"))
-    }
+    /**
+     * Decodes a JSON snapshot against a [Namespace] target.
+     *
+     * Returns a [Result] containing a fully validated [Configuration] on success,
+     * or a typed [ParseError] on failure. Never throws.
+     *
+     * @param json the raw JSON snapshot string
+     * @param namespace the compile-time [Namespace]
+     * @param options controls unknown-key and missing-declared-flag handling
+     */
+    fun decode(
+        json: String,
+        namespace: Namespace,
+        options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
+    ): Result<Configuration> =
+        ConfigurationCodec.runCatching { snapshotAdapter.fromJson(json) }
+            .getOrElse { error ->
+                return parseFailure(
+                    ParseError.invalidJson(error.message ?: "Unknown JSON parsing error"),
+                )
+            }?.toConfiguration(
+                schema = CompiledNamespaceSchema.from(namespace), options = options
+            ) ?: parseFailure(ParseError.invalidJson("Failed to parse JSON: null snapshot"))
 
     /**
      * Applies a JSON patch to an existing [Configuration].
@@ -105,7 +131,7 @@ object ConfigurationSnapshotCodec {
         patchWithSchema(
             current = current,
             patchJson = patchJson,
-            schema = namespace.compiledSchema(),
+            schema = CompiledNamespaceSchema.from(namespace),
             options = options,
         )
 

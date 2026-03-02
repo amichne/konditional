@@ -4,15 +4,16 @@ import io.amichne.konditional.api.axis
 import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.axis.AxisValues
-import io.amichne.konditional.core.dsl.unaryPlus
+import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.enable
+import io.amichne.konditional.core.dsl.variant
+import io.amichne.konditional.fixtures.FeaturesWithAxis
 import io.amichne.konditional.fixtures.TestAxes
+import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
-import io.amichne.konditional.fixtures.TestContext
-import io.amichne.konditional.fixtures.FeaturesWithAxis
 import io.amichne.konditional.fixtures.environment
 import io.amichne.konditional.fixtures.tenant
-import io.amichne.konditional.internal.builders.AxisValuesBuilder
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -54,30 +55,6 @@ class AxisBuilderTest {
     }
 
     @Test
-    fun `axisValues unary plus sets values`() {
-        @Suppress("UnusedExpression")
-        TestAxes.Environment
-        @Suppress("UnusedExpression")
-        TestAxes.Tenant
-
-        val values = axisValues(TestAxes.axisCatalog) {
-            +TestEnvironment.DEV
-            +TestTenant.CONSUMER
-        }
-
-        Assertions.assertEquals(
-            setOf(TestEnvironment.DEV),
-            values[TestAxes.Environment],
-            "Unary plus should set environment value",
-        )
-        Assertions.assertEquals(
-            setOf(TestTenant.CONSUMER),
-            values[TestAxes.Tenant],
-            "Unary plus should set tenant value",
-        )
-    }
-
-    @Test
     fun `axisValues builder accumulates multiple values for same axis`() {
         val values = axisValues {
             environment(TestEnvironment.DEV)
@@ -99,12 +76,14 @@ class AxisBuilderTest {
     }
 
     @Test
-    fun `axisValues setIfNotNull skips null values`() {
-        val builder = AxisValuesBuilder()
-        builder[TestAxes.Environment] = TestEnvironment.STAGE
-        builder.setIfNotNull(TestAxes.Tenant, null)
-
-        val values = builder.build()
+    fun `axisValues variant supports nullable control flow`() {
+        val maybeTenant: TestTenant? = null
+        val values = axisValues {
+            variant {
+                TestAxes.Environment { include(TestEnvironment.STAGE) }
+                maybeTenant?.let { TestAxes.Tenant { include(it) } }
+            }
+        }
 
         Assertions.assertEquals(
             setOf(TestEnvironment.STAGE),
@@ -142,5 +121,67 @@ class AxisBuilderTest {
         val enabled = FeaturesWithAxis.envScopedFlag.evaluate(ctx)
 
         Assertions.assertTrue(enabled)
+    }
+
+    @Test
+    fun `variant block requires at least one include call`() {
+        val error = Assertions.assertThrows(IllegalArgumentException::class.java) {
+            axisValues {
+                variant {
+                    TestAxes.Environment { }
+                }
+            }
+        }
+        Assertions.assertTrue(error.message.orEmpty().contains("must include at least one value"))
+    }
+
+    @Test
+    fun `multiple variant calls merge values for the same axis`() {
+        val namespace = object : Namespace.TestNamespaceFacade("axis-variant-merge") {
+            val flag by boolean<TestContext>(default = false) {
+                enable {
+                    variant {
+                        TestAxes.Environment { include(TestEnvironment.DEV) }
+                    }
+                    variant {
+                        TestAxes.Environment { include(TestEnvironment.STAGE) }
+                    }
+                }
+            }
+        }
+
+        val dev = TestContext(axisValues = axisValues { environment(TestEnvironment.DEV) })
+        val stage = TestContext(axisValues = axisValues { environment(TestEnvironment.STAGE) })
+        val prod = TestContext(axisValues = axisValues { environment(TestEnvironment.PROD) })
+
+        Assertions.assertTrue(namespace.flag.evaluate(dev))
+        Assertions.assertTrue(namespace.flag.evaluate(stage))
+        Assertions.assertFalse(namespace.flag.evaluate(prod))
+    }
+
+    @Test
+    fun `variant works inside anyOf blocks`() {
+        val namespace = object : Namespace.TestNamespaceFacade("axis-variant-anyof") {
+            val flag by boolean<TestContext>(default = false) {
+                enable {
+                    anyOf {
+                        variant {
+                            TestAxes.Environment { include(TestEnvironment.PROD) }
+                        }
+                        variant {
+                            TestAxes.Tenant { include(TestTenant.ENTERPRISE) }
+                        }
+                    }
+                }
+            }
+        }
+
+        val envOnly = TestContext(axisValues = axisValues { environment(TestEnvironment.PROD) })
+        val tenantOnly = TestContext(axisValues = axisValues { tenant(TestTenant.ENTERPRISE) })
+        val none = TestContext(axisValues = axisValues { tenant(TestTenant.CONSUMER) })
+
+        Assertions.assertTrue(namespace.flag.evaluate(envOnly))
+        Assertions.assertTrue(namespace.flag.evaluate(tenantOnly))
+        Assertions.assertFalse(namespace.flag.evaluate(none))
     }
 }

@@ -13,6 +13,7 @@ import io.amichne.konditional.core.dsl.disable
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.parseErrorOrNull
+import io.amichne.konditional.core.schema.CompiledNamespaceSchema
 import io.amichne.konditional.fixtures.utilities.update
 import io.amichne.konditional.runtime.dump
 import io.amichne.konditional.runtime.json
@@ -20,7 +21,7 @@ import io.amichne.konditional.runtime.update
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.ConfigurationMetadata
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
-import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
+import io.amichne.konditional.serialization.snapshot.ConfigurationCodec
 import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 import io.amichne.konditional.values.FeatureId
 import org.junit.jupiter.api.BeforeEach
@@ -37,7 +38,7 @@ import kotlin.test.assertTrue
  * - Encoding is done via namespace-scoped [io.amichne.konditional.runtime.dump]
  * - Loading into a namespace is done via [NamespaceSnapshotLoader]
  */
-class NamespaceConfigurationSnapshotCodecTest {
+class NamespaceConfigurationCodecTest {
     private val testNamespace =
         object : Namespace.TestNamespaceFacade("namespace-snapshot-serializer") {
             val boolFlag by boolean<Context>(default = false)
@@ -51,7 +52,7 @@ class NamespaceConfigurationSnapshotCodecTest {
     }
 
     private fun declaredDefaultConfiguration(): Configuration {
-        val schema = testNamespace.compiledSchema()
+        val schema = CompiledNamespaceSchema.from(testNamespace)
         val flags = schema.entriesById.values.associate { entry -> entry.feature to entry.declaredDefinition }
         return Configuration(flags)
     }
@@ -232,7 +233,7 @@ class NamespaceConfigurationSnapshotCodecTest {
             )
 
         val json = testNamespace.dump()
-        val output = ConfigurationSnapshotCodec.decode(json, testNamespace.compiledSchema()).getOrThrow()
+        val output = ConfigurationCodec.decode(json, CompiledNamespaceSchema.from(testNamespace)).getOrThrow()
 
         assertEquals(initial, output)
     }
