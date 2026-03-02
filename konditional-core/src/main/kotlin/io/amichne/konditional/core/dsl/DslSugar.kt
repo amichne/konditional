@@ -4,8 +4,6 @@ package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.axis.Axis
-import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.rules.ContextRuleScope
 import io.amichne.konditional.core.dsl.rules.NamespaceRuleSet
@@ -74,7 +72,7 @@ fun <C : Context, M : Namespace> FlagScope<Boolean, C, M>.disableScoped(build: C
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.ruleSet(
     build: RuleSetBuilder<T, C>.() -> Unit,
 ): RuleSet<C, T, C, M> =
-    RuleSet(feature = this, rules = RuleSetBuilder<T, C>(axisCatalog = namespace.axisCatalog).apply(build).build())
+    RuleSet(feature = this, rules = RuleSetBuilder<T, C>().apply(build).build())
 
 /**
  * Builds a rule set using an explicit supertype context without reified generics.
@@ -90,7 +88,7 @@ fun <T : Any, C, M : Namespace, RC : Context> Feature<T, C, M>.ruleSet(
     @Suppress("UNUSED_PARAMETER") contextType: KClass<RC>,
     build: RuleSetBuilder<T, RC>.() -> Unit,
 ): RuleSet<RC, T, C, M> where C : RC =
-    RuleSet(feature = this, rules = RuleSetBuilder<T, RC>(axisCatalog = namespace.axisCatalog).apply(build).build())
+    RuleSet(feature = this, rules = RuleSetBuilder<T, RC>().apply(build).build())
 
 /**
  * Builds a rule set using a reified supertype context.
@@ -104,22 +102,10 @@ fun <T : Any, C, M : Namespace, RC : Context> Feature<T, C, M>.ruleSet(
 inline fun <reified RC : Context, T : Any, C, M : Namespace> Feature<T, C, M>.ruleSet(
     build: RuleSetBuilder<T, RC>.() -> Unit,
 ): RuleSet<RC, T, C, M> where C : RC =
-    RuleSet(feature = this, rules = RuleSetBuilder<T, RC>(axisCatalog = namespace.axisCatalog).apply(build).build())
+    RuleSet(feature = this, rules = RuleSetBuilder<T, RC>().apply(build).build())
 
 /**
- * Explicit axis setter for one or more values.
- *
- * Use this overload when you want axis resolution to be explicit and local.
- */
-fun <T> AxisValuesScope.axis(
-    axis: Axis<T>,
-    vararg values: T,
-) where T : AxisValue<T>, T : Enum<T> {
-    values.forEach { set(axis, it) }
-}
-
-/**
- * Builds a namespace-scoped rule set using an explicit value type and this namespace's axis catalog.
+ * Builds a namespace-scoped rule set using an explicit value type.
  *
  * This variant is not bound to a specific feature and can be included by multiple features in
  * the same namespace.
@@ -128,7 +114,7 @@ fun <T> AxisValuesScope.axis(
 inline fun <reified T : Any, C : Context, M : Namespace> M.ruleSet(
     build: RuleSetBuilder<T, C>.() -> Unit,
 ): NamespaceRuleSet<C, T, C, M> =
-    NamespaceRuleSet(namespace = this, rules = RuleSetBuilder<T, C>(axisCatalog = axisCatalog).apply(build).build())
+    NamespaceRuleSet(namespace = this, rules = RuleSetBuilder<T, C>().apply(build).build())
 
 /**
  * Builds a namespace-scoped rule set using an explicit supertype context.
@@ -138,7 +124,7 @@ inline fun <reified T : Any, C, M : Namespace, RC : Context> M.ruleSet(
     @Suppress("UNUSED_PARAMETER") contextType: KClass<RC>,
     build: RuleSetBuilder<T, RC>.() -> Unit,
 ): NamespaceRuleSet<RC, T, C, M> where C : RC =
-    NamespaceRuleSet(namespace = this, rules = RuleSetBuilder<T, RC>(axisCatalog = axisCatalog).apply(build).build())
+    NamespaceRuleSet(namespace = this, rules = RuleSetBuilder<T, RC>().apply(build).build())
 
 /**
  * Builds a namespace-scoped rule set using reified value and context supertypes.
@@ -146,4 +132,4 @@ inline fun <reified T : Any, C, M : Namespace, RC : Context> M.ruleSet(
 inline fun <reified T : Any, reified RC : Context, C, M : Namespace> M.ruleSet(
     build: RuleSetBuilder<T, RC>.() -> Unit,
 ): NamespaceRuleSet<RC, T, C, M> where C : RC =
-    NamespaceRuleSet(namespace = this, rules = RuleSetBuilder<T, RC>(axisCatalog = axisCatalog).apply(build).build())
+    NamespaceRuleSet(namespace = this, rules = RuleSetBuilder<T, RC>().apply(build).build())

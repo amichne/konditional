@@ -34,7 +34,11 @@ object BillingFlags : Namespace("billing") {
   val tenantTierAxis = axis<TenantTier>()
 
   val premiumReporting by boolean<Context>(default = false) {
-    rule(true) { axis(tenantTierAxis, TenantTier.PRO, TenantTier.ENTERPRISE) }
+    rule(true) {
+      variant {
+        tenantTierAxis { include(TenantTier.PRO, TenantTier.ENTERPRISE) }
+      }
+    }
   }
 }
 ```
@@ -45,7 +49,9 @@ object BillingFlags : Namespace("billing") {
 import io.amichne.konditional.api.axisValues
 
 val axisValues = axisValues {
-  set(BillingFlags.tenantTierAxis, TenantTier.ENTERPRISE)
+  variant {
+    BillingFlags.tenantTierAxis { include(TenantTier.ENTERPRISE) }
+  }
 }
 ```
 

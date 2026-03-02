@@ -13,11 +13,10 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.fixtures.core.withOverride
 import io.amichne.konditional.fixtures.serializers.UserSettings
-import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
+import io.amichne.konditional.serialization.snapshot.ConfigurationCodec
 import io.amichne.kontracts.dsl.jsonObject
 import io.amichne.kontracts.value.JsonBoolean
 import io.amichne.kontracts.value.JsonNumber
-import io.amichne.kontracts.value.JsonObject
 import io.amichne.kontracts.value.JsonString
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -111,12 +110,12 @@ class KonstrainedIntegrationTest {
         val override = UserSettings(theme = "dark", notificationsEnabled = false, maxRetries = 1, timeout = 10.0)
         features.withOverride(features.userSettings, override) {
             assertEquals(override, features.userSettings.evaluate(context))
-            val json = ConfigurationSnapshotCodec.encode(features.configuration)
+            val json = ConfigurationCodec.encode(features.configuration)
             println(json)
             // Verify round-trip serialization works
-            ConfigurationSnapshotCodec.decode(
+            ConfigurationCodec.decode(
                 json = json,
-                schema = features.compiledSchema(),
+                namespace = features,
             ).onSuccess { config ->
                 println("Successfully deserialized ${config.flags.size} flags")
             }

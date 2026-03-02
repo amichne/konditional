@@ -28,9 +28,10 @@ When you call `feature.evaluate(context)`:
 
 Within a single rule, targeting criteria compose as a conjunction.
 
-- `platforms(...)`, `locales(...)`, `versions { ... }`, `axis(...)`, and each
+- `platforms(...)`, `locales(...)`, `versions { ... }`, `variant { ... }`, and each
   `extension { ... }` block must all match for the rule to match.
-- Repeating `axis(...)` for the same axis id merges values with OR semantics
+- Repeating `variant { axisHandle { include(...) } }` for the same axis id merges
+  values with OR semantics
   for that axis.
 - Targeting different axis ids still composes with AND semantics.
 
@@ -55,7 +56,7 @@ Specificity is the sum of targeting leaves.
 - `locales(...)` adds 1 if non-empty
 - `platforms(...)` adds 1 if non-empty
 - `versions { ... }` adds 1 if bounded
-- `axis(...)` adds 1 per axis constraint
+- `variant { axisHandle { include(...) } }` adds 1 per axis constraint
 
 **Custom targeting specificity**:
 

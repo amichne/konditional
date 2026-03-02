@@ -18,7 +18,7 @@ import io.amichne.konditional.fixtures.serializers.ExpirationDate
 import io.amichne.konditional.internal.serialization.adapters.FlagValueAdapterFactory
 import io.amichne.konditional.internal.serialization.models.FlagValue
 import io.amichne.konditional.serialization.instance.ConfigValue
-import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
+import io.amichne.konditional.serialization.snapshot.ConfigurationCodec
 import io.amichne.kontracts.value.JsonString
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
@@ -293,10 +293,10 @@ class KonstrainedCustomTypeTest {
         }
 
         features.withOverride(features.expiry, overrideDate) {
-            val json = ConfigurationSnapshotCodec.encode(features.configuration)
-            val decoded = ConfigurationSnapshotCodec.decode(
+            val json = ConfigurationCodec.encode(features.configuration)
+            val decoded = ConfigurationCodec.decode(
                 json = json,
-                schema = features.compiledSchema(),
+                namespace = features,
             )
             assertTrue(
                 decoded.isSuccess,

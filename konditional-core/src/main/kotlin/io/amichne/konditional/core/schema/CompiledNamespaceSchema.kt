@@ -13,8 +13,8 @@ import io.amichne.konditional.values.FeatureId
  *
  * This schema defines the trusted feature universe for boundary materialization.
  */
-@KonditionalInternalApi
-data class CompiledNamespaceSchema(
+@ConsistentCopyVisibility
+data class CompiledNamespaceSchema internal constructor(
     val namespaceId: String,
     val entriesById: Map<FeatureId, Entry>,
 ) {

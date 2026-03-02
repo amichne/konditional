@@ -14,6 +14,7 @@ import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.KonditionalExplicitId
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
+import io.amichne.konditional.core.dsl.variant
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.ops.KonditionalLogger
 import io.amichne.konditional.core.ops.Metrics
@@ -22,9 +23,9 @@ import io.amichne.konditional.core.ops.RegistryHooks
 import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
 import io.amichne.konditional.core.result.parseErrorOrNull
 import io.amichne.konditional.core.types.Konstrained
-import io.amichne.konditional.runtime.update
 import io.amichne.konditional.runtime.rollback
-import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
+import io.amichne.konditional.runtime.update
+import io.amichne.konditional.serialization.snapshot.ConfigurationCodec
 import io.amichne.kontracts.dsl.of
 import io.amichne.kontracts.dsl.schema
 import io.amichne.kontracts.schema.ObjectSchema
@@ -111,7 +112,11 @@ object SegmentFlags : Namespace("segment") {
     val segmentAxis = axis<Segment>()
 
     val premiumUi by boolean<Context>(default = false) {
-        enable { axis(Segment.ENTERPRISE) }
+        enable {
+            variant {
+                segmentAxis { include(Segment.ENTERPRISE) }
+            }
+        }
     }
 }
 
@@ -127,7 +132,11 @@ fun isPremiumUiEnabled(): Boolean {
             override val platform = Platform.IOS
             override val appVersion = Version.of(2, 1, 0)
             override val stableId = StableId.of("user-123")
-            override val axisValues = axisValues { set(SegmentFlags.segmentAxis, Segment.ENTERPRISE) }
+            override val axisValues = axisValues {
+                variant {
+                    SegmentFlags.segmentAxis { include(Segment.ENTERPRISE) }
+                }
+            }
         }
 
     return SegmentFlags.premiumUi.evaluate(segmentContext)
@@ -179,7 +188,7 @@ object PolicyFlags : Namespace("policy") {
 fun loadRemoteConfig() {
     val json = fetchRemoteConfig()
     val features = AppFeatures
-    val result = ConfigurationSnapshotCodec.decode(json, features.compiledSchema())
+    val result = ConfigurationCodec.decode(json, features)
 
     result.onSuccess { configuration ->
         features.update(configuration)
@@ -201,7 +210,7 @@ fun rollbackConfig() {
 // region recipe-7-shadow
 fun evaluateWithShadowedConfig(context: Context): Boolean {
     val candidateJson = fetchCandidateConfig()
-    val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson, AppFeatures.compiledSchema()).getOrThrow()
+    val candidateConfig = ConfigurationCodec.decode(candidateJson, AppFeatures).getOrThrow()
     val candidateRegistry =
         InMemoryNamespaceRegistry(namespaceId = AppFeatures.namespaceId).apply {
             load(candidateConfig)
