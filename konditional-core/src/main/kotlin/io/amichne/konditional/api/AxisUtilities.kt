@@ -3,7 +3,7 @@ package io.amichne.konditional.api
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
-import io.amichne.konditional.context.axis.AxisValues
+import io.amichne.konditional.context.axis.Axes
 import io.amichne.konditional.core.dsl.AxisValuesScope
 import io.amichne.konditional.internal.builders.AxisValuesBuilder
 
@@ -18,7 +18,7 @@ import io.amichne.konditional.internal.builders.AxisValuesBuilder
  * ```
  */
 inline fun <reified T> Context.axis(): Set<T> where T : AxisValue<T>, T : Enum<T> =
-    axisValues.valuesFor(T::class)
+    axes.valuesFor(T::class)
 
 /**
  * Axis-based value getter.
@@ -26,8 +26,9 @@ inline fun <reified T> Context.axis(): Set<T> where T : AxisValue<T>, T : Enum<T
  * Example:
  *   val env = ctx.axis(Axes.Environment)
  */
+@Deprecated("Use type-based axis() instead for more concise syntax", ReplaceWith("axis<T>()"))
 inline fun <reified T, reified C : Context> C.axis(axis: Axis<T>): Set<T> where T : AxisValue<T>, T : Enum<T> =
-    axisValues[axis]
+    axes[axis]
 
 /**
  * Top-level DSL function to create [AxisValues].
@@ -42,6 +43,7 @@ inline fun <reified T, reified C : Context> C.axis(axis: Axis<T>): Set<T> where 
  * }
  * ```
  */
+@Deprecated("Use axes(axis1, axis2, ...) instead for more concise syntax", ReplaceWith("axes()"))
 inline fun axisValues(
     block: AxisValuesScope.() -> Unit,
-): AxisValues = AxisValuesBuilder().apply(block).build()
+): Axes = AxisValuesBuilder().apply(block).build()

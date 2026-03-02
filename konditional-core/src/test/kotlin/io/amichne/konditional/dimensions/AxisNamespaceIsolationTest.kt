@@ -4,8 +4,9 @@ import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.axis
 import io.amichne.konditional.core.dsl.enable
-import io.amichne.konditional.core.dsl.variant
+import io.amichne.konditional.core.dsl.rules.targeting.scopes.constrain
 import io.amichne.konditional.fixtures.TestContext
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -25,9 +26,7 @@ class AxisNamespaceIsolationTest {
 
         val flag by boolean<TestContext>(default = false) {
             enable {
-                variant {
-                    environmentAxis { include(ScopedEnvironmentA.PROD) }
-                }
+                constrain(ScopedEnvironmentA.PROD)
             }
         }
     }
@@ -37,9 +36,7 @@ class AxisNamespaceIsolationTest {
 
         val flag by boolean<TestContext>(default = false) {
             enable {
-                variant {
-                    environmentAxis { include(ScopedEnvironmentB.PROD) }
-                }
+                constrain(ScopedEnvironmentB.PROD)
             }
         }
     }
@@ -48,18 +45,14 @@ class AxisNamespaceIsolationTest {
     fun `axis handles are isolated by axis id`() {
         val contextForA =
             TestContext(
-                axisValues = axisValues {
-                    variant {
-                        NamespaceA.environmentAxis { include(ScopedEnvironmentA.PROD) }
-                    }
+                axes = axisValues {
+                    axis(ScopedEnvironmentA.PROD)
                 },
             )
         val contextForB =
             TestContext(
-                axisValues = axisValues {
-                    variant {
-                        NamespaceB.environmentAxis { include(ScopedEnvironmentB.PROD) }
-                    }
+                axes = axisValues {
+                    axis(ScopedEnvironmentB.PROD)
                 },
             )
 

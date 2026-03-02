@@ -3,7 +3,7 @@ package io.amichne.konditional.context
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.api.evaluateInternal
 import io.amichne.konditional.context.axis.AxisValue
-import io.amichne.konditional.context.axis.AxisValues
+import io.amichne.konditional.context.axis.Axes
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.StableId
@@ -47,10 +47,10 @@ interface Context {
      * Provides access to dimensional values for more granular rule targeting
      * beyond the standard locale, platform, and version criteria.
      *
-     * Defaults to [AxisValues.EMPTY] for simple contexts that don't use axis values.
+     * Defaults to [Axes.EMPTY] for simple contexts that don't use axis values.
      */
-    val axisValues: AxisValues
-        get() = AxisValues.EMPTY
+    val axes: Axes
+        get() = Axes.EMPTY
 
     /**
      * Mix-in for locales when locale-based targeting is needed.
@@ -119,7 +119,7 @@ interface Context {
          */
         @PublishedApi
         internal fun Context.getAxisValue(axisId: String): Set<AxisValue<*>> =
-            axisValues[axisId]
+            axes[axisId]
     }
 
 

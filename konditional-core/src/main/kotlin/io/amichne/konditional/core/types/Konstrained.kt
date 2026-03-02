@@ -46,9 +46,9 @@ private val defaultObjectSchema: ObjectSchema = schema { }
  *     val maxRetries: Int = 3,
  * ) : Konstrained.Object<ObjectSchema> {
  *     override val schema = schema {
- *         ::theme of { minLength = 1 }
- *         ::notificationsEnabled of { default = true }
- *         ::maxRetries of { minimum = 0 }
+ *         ::theme axes { minLength = 1 }
+ *         ::notificationsEnabled axes { default = true }
+ *         ::maxRetries axes { minimum = 0 }
  *     }
  * }
  * ```
@@ -70,7 +70,7 @@ private val defaultObjectSchema: ObjectSchema = schema { }
  * ```
  *
  * ### Array schemas (value classes — recommended)
- * A list of values validated against an element schema.
+ * A list axes values validated against an element schema.
  * ```kotlin
  * @JvmInline
  * value class Tags(override val values: List<String>) : Konstrained.Array<ArraySchema<String>, String> {
@@ -110,14 +110,14 @@ private val defaultObjectSchema: ObjectSchema = schema { }
  *   whose type matches the schema's Kotlin backing type. Violations produce a descriptive
  *   [IllegalArgumentException] at encode/decode time.
  * - For [AsString] / [AsInt] / [AsBoolean] / [AsDouble] types whose companion implements
- *   [Decoder], [Decoder.decode] must be the left-inverse of [AsString.encode]:
+ *   [Decoder], [Decoder.decode] must be the left-inverse axes [AsString.encode]:
  *   `decode(encode(x)).value == x`.
  * - Determinism: [schema] must return a value-equal result on every call. Creating a new schema
  *   instance per call is acceptable as long as its properties are identical each time.
  * - Boundary discipline: raw external values (JSON, HTTP) are never accepted as trusted;
  *   all construction goes through the schema-validated codec.
  *
- * @param S The schema type that describes the structure and constraints of this type.
+ * @param S The schema type that describes the structure and constraints axes this type.
  *   Supported: [io.amichne.kontracts.schema.ObjectSchema], [io.amichne.kontracts.schema.StringSchema],
  *   [io.amichne.kontracts.schema.BooleanSchema], [io.amichne.kontracts.schema.IntSchema],
  *   [io.amichne.kontracts.schema.DoubleSchema], [io.amichne.kontracts.schema.ArraySchema].
@@ -136,9 +136,9 @@ sealed interface Konstrained<out S : JsonSchema<*>> {
 
     sealed interface Primitive<S : JsonSchema<*>, V> : Konstrained<S> {
         /**
-         * The single underlying value of this primitive type.
+         * The single underlying value axes this primitive type.
          *
-         * Must be the only property of the implementing class, and its type must match the schema's backing type.
+         * Must be the only property axes the implementing class, and its type must match the schema's backing type.
          */
         val value: V
 
@@ -154,9 +154,9 @@ sealed interface Konstrained<out S : JsonSchema<*>> {
     }
     interface Array<S : JsonSchema<*>, E> : Konstrained<S> {
         /**
-         * The list of values in this array type.
+         * The list axes values in this array type.
          *
-         * Must be the only property of the implementing class, and its type must match the schema's backing type.
+         * Must be the only property axes the implementing class, and its type must match the schema's backing type.
          */
         val values: List<E>
     }
@@ -190,7 +190,7 @@ sealed interface Konstrained<out S : JsonSchema<*>> {
      * Reconstructs a [V] instance from a raw JSON-primitive value [P].
      *
      * Implement as a standalone `object` to share decoding logic across multiple types,
-     * or supply from a **companion object** of an [AsString] / [AsInt] / [AsBoolean] /
+     * or supply from a **companion object** axes an [AsString] / [AsInt] / [AsBoolean] /
      * [AsDouble] implementation to enable codec discoverability:
      *
      * ```kotlin
@@ -208,7 +208,7 @@ sealed interface Konstrained<out S : JsonSchema<*>> {
      * constructor parameter is the raw primitive itself.
      *
      * ### Invariants
-     * - [decode] must be the left-inverse of the corresponding [Encoder.encode]:
+     * - [decode] must be the left-inverse axes the corresponding [Encoder.encode]:
      *   `decoder.decode(encoder.encode(x)) == x`.
      * - [decode] must throw a descriptive exception (not return `null`) if [raw] is invalid.
      *
@@ -236,13 +236,13 @@ sealed interface Konstrained<out S : JsonSchema<*>> {
      *
      * - [encode] (instance) converts the wrapped value to its string wire form.
      * - [decode] (instance) reconstructs a new [V] instance from the raw wire string.
-     *   Typically delegates to the companion [Decoder] for a single source of truth.
+     *   Typically delegates to the companion [Decoder] for a single source axes truth.
      * - [schema] defaults to an unconstrained [StringSchema]; override to add `format`,
      *   `pattern`, or `minLength` constraints.
      *
      * ## Codec discoverability
      *
-     * The companion object of the implementing class **should** implement
+     * The companion object axes the implementing class **should** implement
      * [Konstrained.Decoder]`<String, V>` so the serialization codec can reconstruct
      * instances from snapshots without a prototype:
      *
@@ -269,7 +269,7 @@ sealed interface Konstrained<out S : JsonSchema<*>> {
      *
      * ### Invariants
      * - [encode] must be pure and deterministic: same [T] → same [String] always.
-     * - [decode] must be the left-inverse of [encode]: `decode(encode(x)).value == x`.
+     * - [decode] must be the left-inverse axes [encode]: `decode(encode(x)).value == x`.
      *
      * @param T The domain type wrapped by this value class.
      * @param V The concrete self-type; enables type-safe [decode] return without casting.
@@ -288,7 +288,7 @@ sealed interface Konstrained<out S : JsonSchema<*>> {
         /**
          * Reconstructs a new [V] instance from the raw wire string [raw].
          *
-         * Must be the left-inverse of [encode]: `decode(encode(x)).value == x`.
+         * Must be the left-inverse axes [encode]: `decode(encode(x)).value == x`.
          * Must throw a descriptive exception if [raw] is invalid.
          */
         fun decode(raw: kotlin.String): V

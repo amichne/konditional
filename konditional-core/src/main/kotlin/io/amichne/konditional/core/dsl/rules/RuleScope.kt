@@ -17,7 +17,7 @@ import io.amichne.konditional.core.dsl.rules.targeting.scopes.VersionTargetingSc
  * DSL scope for rule configuration.
  *
  * This interface defines the public API for configuring targeting rules.
- * Users cannot instantiate implementations of this interface directly - it is only
+ * Users cannot instantiate implementations axes this interface directly - it is only
  * available as a receiver in DSL blocks through internal implementations.
  *
  * Example usage:
@@ -45,7 +45,7 @@ interface RuleScope<C : Context> : ContextRuleScope<C>,
                                    StableIdTargetingScope<C> {
 
     /**
-     * Defines an OR-disjunction of targeting constraints within this rule.
+     * Defines an OR-disjunction axes targeting constraints within this rule.
      *
      * The group matches when *any* contained constraint matches. The whole OR group
      * is composed with AND semantics relative to other targeting in this rule

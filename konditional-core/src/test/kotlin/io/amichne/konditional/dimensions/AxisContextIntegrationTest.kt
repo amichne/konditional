@@ -2,7 +2,7 @@ package io.amichne.konditional.dimensions
 
 import io.amichne.konditional.api.axis
 import io.amichne.konditional.api.axisValues
-import io.amichne.konditional.core.dsl.variant
+import io.amichne.konditional.core.dsl.axis
 import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
@@ -18,13 +18,11 @@ class AxisContextIntegrationTest {
     @Test
     fun `context axis extension returns typed values`() {
         val values = axisValues {
-            variant {
-                TestAxes.Environment { include(TestEnvironment.STAGE) }
-                TestAxes.Tenant { include(TestTenant.ENTERPRISE) }
-            }
+            axis(TestEnvironment.STAGE)
+            axis(TestTenant.ENTERPRISE)
         }
 
-        val ctx = TestContext(axisValues = values)
+        val ctx = TestContext(axes = values)
 
         Assertions.assertEquals(
             setOf(TestEnvironment.STAGE),
@@ -39,13 +37,11 @@ class AxisContextIntegrationTest {
     @Test
     fun `context axis type-based extension returns typed values`() {
         val values = axisValues {
-            variant {
-                TestAxes.Environment { include(TestEnvironment.STAGE) }
-                TestAxes.Tenant { include(TestTenant.ENTERPRISE) }
-            }
+            axis(TestEnvironment.STAGE)
+            axis(TestTenant.ENTERPRISE)
         }
 
-        val ctx = TestContext(axisValues = values)
+        val ctx = TestContext(axes = values)
 
         // Type-based access
         Assertions.assertEquals(
@@ -61,11 +57,9 @@ class AxisContextIntegrationTest {
     @Test
     fun `context axis extension returns null for missing axis`() {
         val values = axisValues {
-            variant {
-                TestAxes.Environment { include(TestEnvironment.PROD) }
-            }
+            axis(TestEnvironment.PROD)
         }
-        val ctx = TestContext(axisValues = values)
+        val ctx = TestContext(axes = values)
 
         Assertions.assertTrue(ctx.axis(TestAxes.Tenant).isEmpty(), "Tenant should be empty when not set")
         Assertions.assertTrue(ctx.axis<TestTenant>().isEmpty(), "Type-based access should also return empty")

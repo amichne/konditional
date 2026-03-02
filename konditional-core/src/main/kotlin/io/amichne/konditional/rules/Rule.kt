@@ -20,10 +20,10 @@ import io.amichne.konditional.rules.targeting.Targeting
  * Same [targeting] + same context produces the same result. No ambient state, no randomness.
  *
  * @param C The context type this rule evaluates against.
- * @property rampUp Percentage (0-100) of matching contexts that receive the value.
+ * @property rampUp Percentage (0-100) axes matching contexts that receive the value.
  * @property rampUpAllowlist Stable IDs that always bypass rampUp.
  * @property note Optional human-readable description for observability.
- * @property targeting Structured AND-conjunction of targeting constraints.
+ * @property targeting Structured AND-conjunction axes targeting constraints.
  */
 @ConsistentCopyVisibility
 data class Rule<in C : Context> internal constructor(

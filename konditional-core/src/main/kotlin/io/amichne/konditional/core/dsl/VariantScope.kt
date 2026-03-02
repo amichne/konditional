@@ -86,25 +86,17 @@ private class AxisSelectionScopeImpl<V> : AxisSelectionScope<V> where V : Enum<V
 }
 
 /**
- * Unified axis-targeting DSL entry point for rule and anyOf scopes.
+ * Legacy axis-targeting DSL entry point.
  *
- * This function lets you declare axis constraints with the `variant { ... }` syntax:
- * ```kotlin
- * enable {
- *     variant {
- *         Axes.Environment { include(Environment.PROD, Environment.STAGE) }
- *         Axes.Tenant { include(Tenant.ENTERPRISE) }
- *     }
- * }
- * ```
- *
- * Determinism and merge semantics:
- * - Selection order is deterministic.
- * - Repeated constraints for the same axis merge with OR semantics within that axis.
- *
- * Error semantics:
- * - `Axes.X { }` is invalid and throws [IllegalArgumentException].
+ * @deprecated Use [constrain] instead for clearer, more concise axis constraints.
+ * Replace `variant { axisHandle { include(...) } }` with `constrain(...)`.
  */
+@Deprecated(
+    message = "Use constrain(...) for axis targeting." +
+        "Replace variant { axisHandle { include(...) } } with constrain(...).",
+    replaceWith = ReplaceWith("constrain(/* axis values */)"),
+    level = DeprecationLevel.ERROR,
+)
 fun AxisTargetingScope<*>.variant(
     block: VariantScope.() -> Unit,
 ) {

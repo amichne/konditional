@@ -3,7 +3,6 @@
 
 package io.amichne.konditional.docsamples
 
-import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.api.evaluateWithShadow
 import io.amichne.konditional.context.AppLocale
@@ -14,7 +13,7 @@ import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.KonditionalExplicitId
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
-import io.amichne.konditional.core.dsl.variant
+import io.amichne.konditional.core.dsl.rules.targeting.scopes.constrain
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.ops.KonditionalLogger
 import io.amichne.konditional.core.ops.Metrics
@@ -113,9 +112,7 @@ object SegmentFlags : Namespace("segment") {
 
     val premiumUi by boolean<Context>(default = false) {
         enable {
-            variant {
-                segmentAxis { include(Segment.ENTERPRISE) }
-            }
+            constrain(Segment.ENTERPRISE)
         }
     }
 }
@@ -132,11 +129,9 @@ fun isPremiumUiEnabled(): Boolean {
             override val platform = Platform.IOS
             override val appVersion = Version.of(2, 1, 0)
             override val stableId = StableId.of("user-123")
-            override val axisValues = axisValues {
-                variant {
-                    SegmentFlags.segmentAxis { include(Segment.ENTERPRISE) }
-                }
-            }
+
+            // Ultra-concise: no DSL wrapper needed
+            override val axes = io.amichne.konditional.context.axis.axes(Segment.ENTERPRISE)
         }
 
     return SegmentFlags.premiumUi.evaluate(segmentContext)

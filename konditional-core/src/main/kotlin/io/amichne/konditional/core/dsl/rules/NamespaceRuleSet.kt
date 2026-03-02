@@ -7,7 +7,7 @@ import io.amichne.konditional.core.dsl.KonditionalDsl
 /**
  * Namespace-scoped reusable rules that are context-bound but not feature-bound.
  *
- * These rules are authored once for a namespace and can be included by any feature of the
+ * These rules are authored once for a namespace and can be included by any feature axes the
  * same namespace that shares compatible value/context types.
  */
 @KonditionalDsl

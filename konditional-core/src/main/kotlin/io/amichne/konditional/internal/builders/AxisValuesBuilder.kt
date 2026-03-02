@@ -2,22 +2,22 @@ package io.amichne.konditional.internal.builders
 
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
-import io.amichne.konditional.context.axis.AxisValues
+import io.amichne.konditional.context.axis.Axes
 import io.amichne.konditional.core.dsl.AxisValuesScope
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.VariantDispatchHost
 
 /**
- * Internal builder implementation for constructing [AxisValues] instances.
+ * Internal builder implementation for constructing [Axes] instances.
  *
  * This class implements the [AxisValuesScope] interface and accumulates axis values
- * during DSL execution, then builds an immutable AxisValues instance.
+ * during DSL execution, then builds an immutable Axes instance.
  *
  * ## Usage
  *
- * Typically used via the top-level `axisValues { }` builder function:
+ * Typically used via the top-level `axes { }` builder function:
  * ```kotlin
- * val values = axisValues {
+ * val values = axes {
  *     variant {
  *         Axes.Environment { include(Environment.PROD) }
  *         Axes.Tenant { include(Tenant.ENTERPRISE) }
@@ -25,7 +25,7 @@ import io.amichne.konditional.core.dsl.VariantDispatchHost
  * }
  * ```
  *
- * @see AxisValues
+ * @see Axes
  * @see AxisValuesScope
  */
 @KonditionalDsl
@@ -59,22 +59,6 @@ internal class AxisValuesBuilder(
         map.getOrPut(axis.id) { linkedSetOf() }.add(value)
     }
 
-    override fun <T> set(
-        axis: Axis<T>,
-        value: T,
-    ) where T : AxisValue<T>, T : Enum<T> {
-        append(axis, value)
-    }
-
-    /**
-     * Conditionally sets a value, skipping if null.
-     */
-    override fun <T> setIfNotNull(
-        axis: Axis<T>,
-        value: T?,
-    ) where T : AxisValue<T>, T : Enum<T> {
-        if (value != null) append(axis, value)
-    }
 
     override fun <V> onAxisSelection(
         axis: Axis<V>,
@@ -84,16 +68,16 @@ internal class AxisValuesBuilder(
     }
 
     /**
-     * Builds an immutable [AxisValues] instance from the accumulated values.
+     * Builds an immutable [Axes] instance from the accumulated values.
      *
-     * @return AxisValues.EMPTY if no values were set, otherwise a new AxisValues instance
+     * @return Axes.EMPTY if no values were set, otherwise a new Axes instance
      */
     @PublishedApi
-    internal fun build(): AxisValues =
+    internal fun build(): Axes =
         if (map.isEmpty()) {
-            AxisValues.EMPTY
+            Axes.EMPTY
         } else {
-            AxisValues(
+            Axes(
                 map.mapValues { (_, values) -> values.toSet() },
             )
         }

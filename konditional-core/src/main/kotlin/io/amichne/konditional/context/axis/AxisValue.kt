@@ -30,7 +30,18 @@ package io.amichne.konditional.context.axis
  *
  * @property id A stable, unique identifier for this value within its axis
  */
-interface AxisValue<T> where T : Enum<T> {
+interface AxisValue<T> where T : Enum<T>, T : AxisValue<T> {
     val id: String
         get() = (this as Enum<*>).name
+
+    // New property to expose the associated Axis
+    @Suppress("UNCHECKED_CAST")
+    val axis: Axis<T>
+        get() = Axis.axes((this as Enum<*>).javaClass.enclosingClass as Class<T>)
+
+    operator fun getValue(thisRef: Any?, property: kotlin.reflect.KProperty<*>): Axis<T> = axis
 }
+
+@Suppress("UNCHECKED_CAST")
+private fun <T> Axis.Companion.axes(enumClass: Class<T>): Axis<T> where T : AxisValue<T>, T : Enum<T> =
+    of(enumClass.kotlin)

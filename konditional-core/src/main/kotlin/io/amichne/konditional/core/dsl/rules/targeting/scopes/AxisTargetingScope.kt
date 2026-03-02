@@ -4,53 +4,62 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.dsl.KonditionalDsl
+import io.amichne.konditional.core.dsl.VariantDispatchHost
 
 /**
- * Legacy targeting mix-in for axis constraints.
+ * Targeting mix-in for axis constraints in rules.
  *
- * Use `variant { ... }` instead of these error-deprecated methods.
+ * Use [constrain] to express axis-based targeting with type inference.
  */
 @KonditionalDsl
-interface AxisTargetingScope<C : Context> {
-    /**
-     * Explicit axis targeting.
-     *
-     * Use this overload when you already have an [Axis] handle; this is the preferred
-     * form because it avoids type-inference indirection.
-     *
-     * @param axis Axis descriptor to constrain
-     * @param values Allowed values for [axis]
-     */
-    @Deprecated(
-        message = "Use variant { axis { include(...) } } for axis targeting.",
-        replaceWith =
-            ReplaceWith(
-                "variant { axis { include(values.first(), *values.drop(1).toTypedArray()) } }",
-            ),
-        level = DeprecationLevel.ERROR,
-    )
-    fun <T> axis(
-        axis: Axis<T>,
-        vararg values: T,
-    ) where T : AxisValue<T>, T : Enum<T>
+interface AxisTargetingScope<C : Context>
 
-    /**
-     * Type-inferred axis targeting.
-     *
-     * Example:
-     * ```kotlin
-     * axis(Environment.PROD, Environment.STAGE)
-     * axis(Tenant.ENTERPRISE)
-     * ```
-     *
-     * @param T The axis value type
-     * @param values The values to allow for this axis
-     */
-    @Deprecated(
-        message = "Use variant { axisHandle { include(...) } } with an explicit axis handle.",
-        level = DeprecationLevel.ERROR,
-    )
-    fun <T> axis(
-        vararg values: T,
-    ) where T : AxisValue<T>, T : Enum<T>
+/**
+ * Constrains rule targeting to the specified axis values.
+ *
+ * Expresses that the rule should only match contexts aligned along these axis values.
+ * The axis is automatically derived from the enum type parameter.
+ *
+ * ## Usage
+ *
+ * ```kotlin
+ * enable {
+ *     constrain(Environment.PROD, Environment.STAGE)
+ *     constrain(Tenant.ENTERPRISE)
+ * }
+ * ```
+ *
+ * This replaces the verbose `variant { axisHandle { include(...) } }` nesting:
+ * ```kotlin
+ * // Before:
+ * enable {
+ *     variant {
+ *         Axes.Environment { include(Environment.PROD, Environment.STAGE) }
+ *     }
+ * }
+ *
+ * // After:
+ * enable {
+ *     constrain(Environment.PROD, Environment.STAGE)
+ * }
+ * ```
+ *
+ * ## Semantics
+ *
+ * - The axis is derived via `Axis.axes<V>()` from the enum type.
+ * - Multiple calls for the same axis widen allowed values with OR semantics within that axis.
+ * - Multiple calls for different axes compose with AND semantics across axes.
+ * - Requires at least one value (`first` parameter) for non-empty guarantee.
+ *
+ * @param first First value to constrain (required for non-empty guarantee)
+ * @param rest Additional values to constrain
+ */
+inline fun <C : Context, reified V> AxisTargetingScope<C>.constrain(
+    first: V,
+    vararg rest: V,
+) where V : AxisValue<V>, V : Enum<V> {
+    val derivedAxis = Axis.of<V>()
+    val host = this as? VariantDispatchHost
+        ?: error("Unsupported AxisTargetingScope receiver: ${this::class.qualifiedName}")
+    host.onAxisSelection(derivedAxis, linkedSetOf(first, *rest))
 }

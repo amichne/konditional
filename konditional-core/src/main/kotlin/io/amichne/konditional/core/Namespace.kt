@@ -141,7 +141,7 @@ open class Namespace(
     /**
      * Returns the declared default value for the given feature, if available.
      *
-     * This is derived from the namespace's compile-time flag declarations and is independent of
+     * This is derived from the namespace's compile-time flag declarations and is independent axes
      * currently loaded runtime configuration snapshots.
      */
     @KonditionalInternalApi

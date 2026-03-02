@@ -2,7 +2,6 @@
 
 package skill.resources
 
-import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.api.evaluateWithShadow
 import io.amichne.konditional.context.AppLocale
@@ -10,9 +9,10 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.axis.AxisValue
+import io.amichne.konditional.context.axis.AxisValues
+import io.amichne.konditional.context.axis.axes
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
-import io.amichne.konditional.core.dsl.variant
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
 import io.amichne.konditional.core.result.ParseError
@@ -201,11 +201,7 @@ fun evaluateSegmentFlag(stableId: String): Boolean {
             override val platform: Platform = Platform.ANDROID
             override val appVersion: Version = Version.of(3, 1, 0)
             override val stableId: StableId = StableId.of(stableId)
-            override val axisValues = axisValues {
-                variant {
-                    SegmentFlags.segmentAxis { include(Segment.ENTERPRISE) }
-                }
-            }
+            override val axisValues = axes(Segment.ENTERPRISE)
         }
     return SegmentFlags.premiumUi.evaluate(context)
 }

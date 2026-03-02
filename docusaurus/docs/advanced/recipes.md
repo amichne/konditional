@@ -104,9 +104,7 @@ object SegmentFlags : Namespace("segment") {
 
     val premiumUi by boolean<Context>(default = false) {
         enable {
-            variant {
-                segmentAxis { include(Segment.ENTERPRISE) }
-            }
+            constrain(Segment.ENTERPRISE)
         }
     }
 }
@@ -123,11 +121,9 @@ fun isPremiumUiEnabled(): Boolean {
             override val platform = Platform.IOS
             override val appVersion = Version.of(2, 1, 0)
             override val stableId = StableId.of("user-123")
-            override val axisValues = axisValues {
-                variant {
-                    SegmentFlags.segmentAxis { include(Segment.ENTERPRISE) }
-                }
-            }
+
+            // Ultra-concise: no DSL wrapper needed
+            override val axes = io.amichne.konditional.context.axis.axes(Segment.ENTERPRISE)
         }
 
     return SegmentFlags.premiumUi.evaluate(segmentContext)

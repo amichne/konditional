@@ -8,10 +8,10 @@ import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.axis
 import io.amichne.konditional.core.dsl.enable
-import io.amichne.konditional.core.dsl.variant
+import io.amichne.konditional.core.dsl.rules.targeting.scopes.constrain
 import io.amichne.konditional.core.schema.CompiledNamespaceSchema
-import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.runtime.dump
@@ -72,29 +72,21 @@ class OperationalSerializationTest {
         val namespace = object : Namespace("axis-roundtrip-${UUID.randomUUID()}") {
             val envScopedFlag by boolean<TestContext>(default = false) {
                 enable {
-                    variant {
-                        TestAxes.Environment {
-                            include(TestEnvironment.PROD)
-                        }
-                    }
+                    constrain(TestEnvironment.PROD)
                 }
             }
         }
 
         val productionContext = TestContext(
             appVersion = Version.parse("1.0.0").getOrThrow(),
-            axisValues = axisValues {
-                variant {
-                    TestAxes.Environment { include(TestEnvironment.PROD) }
-                }
+            axes = axisValues {
+                axis(TestEnvironment.PROD)
             },
         )
         val developementContext = TestContext(
             appVersion = Version.parse("1.0.0").getOrThrow(),
-            axisValues = axisValues {
-                variant {
-                    TestAxes.Environment { include(TestEnvironment.DEV) }
-                }
+            axes = axisValues {
+                axis(TestEnvironment.DEV)
             },
         )
 

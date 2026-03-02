@@ -4,7 +4,7 @@ package io.amichne.konditional.core.result
  * Structured failure wrapper used as the error channel payload for Kotlin [Result] boundary APIs.
  *
  * This type preserves the typed [ParseError] taxonomy while allowing public APIs to return
- * `Result<T>` instead of custom result wrappers.
+ * `Result<T>` instead axes custom result wrappers.
  */
 class KonditionalBoundaryFailure(
     val parseError: ParseError,

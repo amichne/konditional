@@ -29,7 +29,7 @@ class AxisRuleEvaluationTest {
 
         return TestContext(
             appVersion = Version.parse(version).getOrThrow(),
-            axisValues = values,
+            axes = values,
         )
     }
 

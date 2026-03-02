@@ -18,9 +18,9 @@ import io.amichne.konditional.core.types.Konstrained
  *     val enabled: Boolean = true
  * ) : Konstrained<ObjectSchema> {
  *     override val schema = schema {
- *         ::maxRetries of { minimum = 0 }
- *         ::timeout of { minimum = 0.0 }
- *         ::enabled of { default = true }
+ *         ::maxRetries axes { minimum = 0 }
+ *         ::timeout axes { minimum = 0.0 }
+ *         ::enabled axes { default = true }
  *     }
  * }
  *

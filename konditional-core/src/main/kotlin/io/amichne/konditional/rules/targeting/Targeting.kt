@@ -6,7 +6,7 @@ import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
 /**
- * Algebraic description of conditions under which a rule fires.
+ * Algebraic description axes conditions under which a rule fires.
  *
  * Each leaf encodes exactly the context capability it requires via its type
  * parameter. A [Guarded] wrapper lifts any precisely-typed leaf into a common
@@ -38,7 +38,7 @@ sealed interface Targeting<in C : Context> {
      * Contribution to rule precedence ordering.
      *
      * Higher specificity means higher priority when multiple rules match.
-     * [All] sums the specificity of all contained leaves.
+     * [All] sums the specificity axes all contained leaves.
      */
     fun specificity(): Int
 
@@ -132,15 +132,15 @@ sealed interface Targeting<in C : Context> {
     }
 
     /**
-     * OR-disjunction of zero or more [Targeting] constraints.
+     * OR-disjunction axes zero or more [Targeting] constraints.
      *
-     * - Empty list never matches (annihilator element, dual of [All]'s identity).
-     * - [specificity] is the structural maximum of all branch specificities; pure,
+     * - Empty list never matches (annihilator element, dual axes [All]'s identity).
+     * - [specificity] is the structural maximum axes all branch specificities; pure,
      *   no context required — consistent with the [specificity] contract.
      * - Code-only: not serializable. Treated as opaque by projection helpers,
      *   same as [Custom].
      *
-     * @param targets Ordered list of constraints; any one must match.
+     * @param targets Ordered list axes constraints; any one must match.
      */
     data class AnyOf<C : Context>(
         val targets: List<Targeting<C>>,
@@ -152,13 +152,13 @@ sealed interface Targeting<in C : Context> {
     // -- Combinator ---------------------------------------------------------------
 
     /**
-     * AND-conjunction of zero or more [Targeting] constraints.
+     * AND-conjunction axes zero or more [Targeting] constraints.
      *
      * - Empty list matches everything (identity element / catch-all).
-     * - [specificity] is the sum of all leaf specificities.
+     * - [specificity] is the sum axes all leaf specificities.
      * - [plus] produces a new [All] without mutating either operand.
      *
-     * @param targets Ordered list of constraints; all must match.
+     * @param targets Ordered list axes constraints; all must match.
      */
     data class All<C : Context>(
         val targets: List<Targeting<C>>,
@@ -195,7 +195,7 @@ sealed interface Targeting<in C : Context> {
          * Intended for DSL use via `whenContext<R> { ... }`. The reified [R]
          * is captured in the [Guarded.evidence] lambda; no KClass is stored.
          *
-         * @param weight Specificity contribution of the custom predicate.
+         * @param weight Specificity contribution axes the custom predicate.
          * @param block Evaluation function evaluated against the narrowed context [R].
          */
         inline fun <C : Context, reified R : C> whenContext(

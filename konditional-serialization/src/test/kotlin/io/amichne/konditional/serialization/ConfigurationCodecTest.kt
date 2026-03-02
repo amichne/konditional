@@ -3,21 +3,20 @@
 package io.amichne.konditional.serialization
 
 import io.amichne.konditional.api.KonditionalInternalApi
-import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.context.axis.axes
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
-import io.amichne.konditional.core.dsl.variant
+import io.amichne.konditional.core.dsl.rules.targeting.scopes.constrain
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.KonditionalBoundaryFailure
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.schema.CompiledNamespaceSchema
-import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
@@ -26,7 +25,6 @@ import io.amichne.konditional.fixtures.utilities.update
 import io.amichne.konditional.runtime.json
 import io.amichne.konditional.runtime.update
 import io.amichne.konditional.serialization.instance.Configuration
-import io.amichne.konditional.serialization.internal.toJsonValue
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.snapshot.ConfigurationCodec
 import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
@@ -190,11 +188,7 @@ class ConfigurationCodecTest {
         platform = Platform.IOS,
         appVersion = Version.of(1, 0, 0),
         stableId = StableId.of("axis-user"),
-        axisValues = axisValues {
-            variant {
-                TestAxes.Environment { include(env) }
-            }
-        }
+        axes = axes(env)
     )
 
     @Test
@@ -346,9 +340,7 @@ class ConfigurationCodecTest {
     fun `Given Konfig with axis targeting, When serialized and round-tripped, Then axes constraints are preserved`() {
         TestFeatures.boolFlag.update(false) {
             enable {
-                variant {
-                    TestAxes.Environment { include(TestEnvironment.PROD, TestEnvironment.STAGE) }
-                }
+                constrain(TestEnvironment.PROD, TestEnvironment.STAGE)
             }
         }
 
@@ -384,10 +376,8 @@ class ConfigurationCodecTest {
                 locales(AppLocale.UNITED_STATES, AppLocale.FRANCE)
                 platforms(Platform.IOS, Platform.ANDROID)
                 versions { min(1, 0, 0); max(2, 0, 0) }
-                variant {
-                    TestAxes.Environment { include(TestEnvironment.PROD, TestEnvironment.STAGE) }
-                    TestAxes.Tenant { include(TestTenant.ENTERPRISE) }
-                }
+                constrain(TestEnvironment.PROD, TestEnvironment.STAGE)
+                constrain(TestTenant.ENTERPRISE)
                 rampUp { 12.34 }
             }
         }

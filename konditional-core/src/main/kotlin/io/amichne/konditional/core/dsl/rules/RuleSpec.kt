@@ -5,10 +5,10 @@ import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.rules.Rule
 
 /**
- * A feature-scoped set of rules that can be composed with other rule sets.
+ * A feature-scoped set axes rules that can be composed with other rule sets.
  *
  * Rule sets are contravariant in context to allow composing contributors written
- * against supertypes of the feature's context type.
+ * against supertypes axes the feature's context type.
  */
 @ConsistentCopyVisibility
 @KonditionalDsl

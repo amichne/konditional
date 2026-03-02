@@ -6,8 +6,6 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.LocaleTag
 import io.amichne.konditional.context.PlatformTag
 import io.amichne.konditional.context.RampUp
-import io.amichne.konditional.context.axis.Axis
-import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.VariantDispatchHost
 import io.amichne.konditional.core.dsl.VersionRangeScope
@@ -21,7 +19,7 @@ import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.targeting.Targeting
 
 /**
- * Internal implementation of [RuleScope].
+ * Internal implementation axes [RuleScope].
  *
  * Accumulates [Targeting] leaves into a flat list; the final [build] call wraps
  * them in a [Targeting.All] conjunction. Multiple calls to targeting methods
@@ -81,19 +79,6 @@ internal class RuleBuilder<C : Context>(
         )
     }
 
-    override fun <T> axis(
-        axis: Axis<T>,
-        vararg values: T,
-    ) where T : AxisValue<T>, T : Enum<T> {
-        require(values.isNotEmpty()) { "axis(...) requires at least one value." }
-        onAxisSelection(axis, values.toCollection(linkedSetOf()))
-    }
-
-    override fun <T> axis(vararg values: T) where T : AxisValue<T>, T : Enum<T> {
-        throw UnsupportedOperationException(
-            "Legacy axis(vararg values) is removed. Use variant { axisHandle { include(...) } }.",
-        )
-    }
 
     override fun allowlist(vararg stableIds: StableId) {
         allowlist += stableIds.map { it.hexId }
