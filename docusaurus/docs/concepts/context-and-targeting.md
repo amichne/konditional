@@ -30,7 +30,11 @@ object BillingFlags : Namespace("billing") {
   val tierAxis = axis<Tier>()
 
   val premiumExport by boolean<Context>(default = false) {
-    rule(true) { axis(tierAxis, Tier.PRO, Tier.ENTERPRISE) }
+    rule(true) {
+      variant {
+        tierAxis { include(Tier.PRO, Tier.ENTERPRISE) }
+      }
+    }
   }
 }
 ```

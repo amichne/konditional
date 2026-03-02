@@ -1,5 +1,5 @@
 ---
-name: technical-review
+name: arch-review
 description: Provide in-depth technical review of Kotlin codebases and OpenAPI specifications with focus on system architecture, API design, type safety, maintainability, scalability, and enterprise concerns. Use when the user requests architectural review, API surface analysis, code critique, design assessment, or asks to identify weaknesses, complexity reduction opportunities, or improvement areas. Trigger on requests like "review my architecture", "assess my API design", "find weaknesses in this code", "critique this implementation", or "analyze this for enterprise readiness". Particularly valuable for library/framework design, public API review, and production system architecture validation.
 ---
 

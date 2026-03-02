@@ -9,20 +9,27 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
-import io.amichne.konditional.context.axis.Axis
-import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
+import io.amichne.konditional.core.dsl.variant
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.KonditionalBoundaryFailure
 import io.amichne.konditional.core.result.ParseError
+import io.amichne.konditional.core.schema.CompiledNamespaceSchema
+import io.amichne.konditional.fixtures.TestAxes
+import io.amichne.konditional.fixtures.TestContext
+import io.amichne.konditional.fixtures.TestEnvironment
+import io.amichne.konditional.fixtures.TestTenant
 import io.amichne.konditional.fixtures.serializers.RetryPolicy
 import io.amichne.konditional.fixtures.utilities.update
+import io.amichne.konditional.runtime.json
 import io.amichne.konditional.runtime.update
 import io.amichne.konditional.serialization.instance.Configuration
+import io.amichne.konditional.serialization.internal.toJsonValue
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
-import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
+import io.amichne.konditional.serialization.snapshot.ConfigurationCodec
+import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 import io.amichne.konditional.values.FeatureId
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -58,7 +65,7 @@ private fun <T> ParseResult<T>.getOrThrow(): T =
     }
 
 @Suppress("LargeClass")
-class ConfigurationSnapshotCodecTest {
+class ConfigurationCodecTest {
     private object TestFeatures : Namespace.TestNamespaceFacade("snapshot-serializer") {
         val boolFlag by boolean<Context>(default = false)
         val stringFlag by string<Context>(default = "default")
@@ -78,12 +85,6 @@ class ConfigurationSnapshotCodecTest {
 
     @BeforeEach
     fun setup() {
-        // Force axis registration for type-based axis() usage in rule builders.
-        @Suppress("UnusedExpression")
-        Axes.EnvironmentAxis
-        @Suppress("UnusedExpression")
-        Axes.TenantAxis
-
         // Reset the namespace registry before each test.
         loadMaterialized(declaredDefaultConfiguration())
     }
@@ -93,7 +94,7 @@ class ConfigurationSnapshotCodecTest {
     }
 
     private fun declaredDefaultConfiguration(): Configuration {
-        val schema = TestFeatures.compiledSchema()
+        val schema = CompiledNamespaceSchema.from(TestFeatures)
         val flags = schema.entriesById.values.associate { entry -> entry.feature to entry.declaredDefinition }
         return Configuration(flags)
     }
@@ -102,10 +103,10 @@ class ConfigurationSnapshotCodecTest {
         json: String,
         options: SnapshotLoadOptions = SnapshotLoadOptions.fillMissingDeclaredFlags(),
     ): ParseResult<Configuration> =
-        ConfigurationSnapshotCodec
+        ConfigurationCodec
             .decode(
                 json = json,
-                schema = TestFeatures.compiledSchema(),
+                schema = CompiledNamespaceSchema.from(TestFeatures),
                 options = options,
             ).toParseResult()
 
@@ -114,7 +115,7 @@ class ConfigurationSnapshotCodecTest {
         patchJson: String,
         options: SnapshotLoadOptions = SnapshotLoadOptions.fillMissingDeclaredFlags(),
     ): ParseResult<Configuration> =
-        ConfigurationSnapshotCodec
+        ConfigurationCodec
             .patch(
                 current = currentConfiguration,
                 patchJson = patchJson,
@@ -133,22 +134,6 @@ class ConfigurationSnapshotCodecTest {
             },
         )
 
-    private enum class Environment(override val id: String) : AxisValue<Environment> {
-        PROD("prod"),
-        STAGE("stage"),
-        DEV("dev"),
-    }
-
-    private enum class Tenant(override val id: String) : AxisValue<Tenant> {
-        ENTERPRISE("enterprise"),
-        SMB("smb"),
-    }
-
-    private object Axes {
-        val EnvironmentAxis = Axis.of<Environment>("snapshot-environment", TestFeatures.axisCatalog)
-        val TenantAxis = Axis.of<Tenant>("snapshot-tenant", TestFeatures.axisCatalog)
-    }
-
     private enum class Theme {
         LIGHT,
         DARK,
@@ -157,9 +142,8 @@ class ConfigurationSnapshotCodecTest {
     @Test
     fun `Given feature-aware decode context, When decoded, Then decode succeeds`() {
         TestFeatures.boolFlag.update(true) {}
-        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
 
-        val result = decodeFeatureAware(json = json)
+        val result = decodeFeatureAware(json = TestFeatures.json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         assertTrue(result.value.flags.containsKey(TestFeatures.boolFlag))
@@ -169,7 +153,7 @@ class ConfigurationSnapshotCodecTest {
     @Suppress("UNCHECKED_CAST")
     fun `Given forged enum class name in payload, When decoding feature-aware, Then trusted feature type is used`() {
         TestFeatures.themeFlag.update(Theme.DARK) {}
-        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
+        val json = TestFeatures.json
             .replace(Theme::class.java.name, "evil.payload.FakeEnum")
 
         val result = decodeFeatureAware(json = json)
@@ -184,8 +168,7 @@ class ConfigurationSnapshotCodecTest {
     fun `Given forged data class name in payload, When decoding feature-aware, Then trusted feature type is used`() {
         val expected = RetryPolicy(maxAttempts = 9, backoffMs = 1500.0, enabled = false, mode = "linear")
         TestFeatures.retryPolicyFlag.update(expected) {}
-        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
-            .replace(RetryPolicy::class.java.name, "evil.payload.FakePolicy")
+        val json = TestFeatures.json.replace(RetryPolicy::class.java.name, "evil.payload.FakePolicy")
 
         val result = decodeFeatureAware(json = json)
 
@@ -202,44 +185,36 @@ class ConfigurationSnapshotCodecTest {
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parse(version).getOrThrow(), StableId.of(idHex))
 
-    private fun ctxWithEnvironment(env: Environment): Context =
-        object :
-            Context,
-            Context.LocaleContext,
-            Context.PlatformContext,
-            Context.VersionContext,
-            Context.StableIdContext {
-            override val locale: AppLocale = AppLocale.UNITED_STATES
-            override val platform: Platform = Platform.IOS
-            override val appVersion: Version = Version.of(1, 0, 0)
-            override val stableId: StableId = StableId.of("axis-user")
-            override val axisValues =
-                axisValues {
-                    this[Axes.EnvironmentAxis] = env
-                }
+    private fun ctxWithTestEnvironment(env: TestEnvironment = TestEnvironment.PROD): Context = TestContext(
+        locale = AppLocale.UNITED_STATES,
+        platform = Platform.IOS,
+        appVersion = Version.of(1, 0, 0),
+        stableId = StableId.of("axis-user"),
+        axisValues = axisValues {
+            variant {
+                TestAxes.Environment { include(env) }
+            }
         }
+    )
 
     @Test
     fun `Given deferred yields rule, When serialized, Then snapshot encodes placeholder instead of failing`() {
-        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
+        val json = TestFeatures.json
 
         assertTrue(json.contains("\"type\": \"CONTEXTUAL\""))
     }
 
-
     @Test
     fun `Given deferred yields rule snapshot, When decoded and re-encoded, Then contextual type remains contextual`() {
-        val encoded = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
-        val decoded = decodeFeatureAware(json = encoded).getOrThrow()
-
-        val reEncoded = ConfigurationSnapshotCodec.encode(decoded)
-
+        val encoded = TestFeatures.json
+        NamespaceSnapshotLoader.forNamespace(TestFeatures).load(encoded).getOrThrow()
+        val reEncoded = TestFeatures.json
         assertTrue(reEncoded.contains("\"type\": \"CONTEXTUAL\""))
     }
 
     @Test
     fun `Given deferred yields rule snapshot, When decoded, Then rule uses declared default placeholder`() {
-        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
+        val json = TestFeatures.json
 
         val decoded = decodeFeatureAware(json = json).getOrThrow()
 
@@ -254,7 +229,7 @@ class ConfigurationSnapshotCodecTest {
     fun `Given empty Konfig, When serialized, Then produces valid JSON with empty flags array`() {
         val configuration = Configuration(emptyMap())
 
-        val json = ConfigurationSnapshotCodec.encode(configuration)
+        val json = ConfigurationCodec.encode(configuration)
 
         assertNotNull(json)
         assertTrue(json.contains("\"flags\""))
@@ -265,7 +240,7 @@ class ConfigurationSnapshotCodecTest {
     fun `Given Konfig with boolean flag, When serialized, Then includes flag with correct type`() {
         TestFeatures.boolFlag.update(true) {}
 
-        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
+        val json = TestFeatures.json
 
         assertNotNull(json)
         assertTrue(json.contains("\"key\": \"${TestFeatures.boolFlag.id}\""))
@@ -282,7 +257,7 @@ class ConfigurationSnapshotCodecTest {
             )
         val configuration = Configuration(mapOf(TestFeatures.stringFlag to flag))
 
-        val json = ConfigurationSnapshotCodec.encode(configuration)
+        val json = ConfigurationCodec.encode(configuration)
 
         assertNotNull(json)
         assertTrue(json.contains("\"key\": \"${TestFeatures.stringFlag.id}\""))
@@ -293,7 +268,7 @@ class ConfigurationSnapshotCodecTest {
     @Test
     fun `Given Konfig with int flag, When serialized, Then includes flag with correct type`() {
         TestFeatures.intFlag.update(42) {}
-        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
+        val json = TestFeatures.json
 
         assertNotNull(json)
         println(json)
@@ -306,7 +281,7 @@ class ConfigurationSnapshotCodecTest {
     fun `Given Konfig with double flag, When serialized, Then includes flag with correct type`() {
         TestFeatures.doubleFlag.update(3.14) {}
 
-        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
+        val json = TestFeatures.json
 
         assertNotNull(json)
         assertTrue(json.contains("\"key\": \"${TestFeatures.doubleFlag.id}\""))
@@ -329,7 +304,7 @@ class ConfigurationSnapshotCodecTest {
             }
         }
 
-        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
+        val json = TestFeatures.json
 
         assertNotNull(json)
         assertTrue(json.contains("\"rampUp\": 50.0"))
@@ -357,7 +332,7 @@ class ConfigurationSnapshotCodecTest {
         assertTrue(TestFeatures.boolFlag.evaluate(ctx(allowlistedId)))
         assertFalse(TestFeatures.boolFlag.evaluate(ctx(otherId)))
 
-        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
+        val json = TestFeatures.json
         val parsed = decodeFeatureAware(json).getOrThrow()
 
         loadMaterialized(Configuration(emptyMap()))
@@ -371,13 +346,15 @@ class ConfigurationSnapshotCodecTest {
     fun `Given Konfig with axis targeting, When serialized and round-tripped, Then axes constraints are preserved`() {
         TestFeatures.boolFlag.update(false) {
             enable {
-                axis(Environment.PROD, Environment.STAGE)
+                variant {
+                    TestAxes.Environment { include(TestEnvironment.PROD, TestEnvironment.STAGE) }
+                }
             }
         }
 
-        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
+        val json = TestFeatures.json
         assertTrue(json.contains("\"axes\""))
-        assertTrue(json.contains("\"snapshot-environment\""))
+        assertTrue(json.contains("\"${TestEnvironment::class.java.name}\""))
         assertTrue(json.contains("prod"))
         assertTrue(json.contains("stage"))
 
@@ -386,9 +363,9 @@ class ConfigurationSnapshotCodecTest {
         loadMaterialized(Configuration(emptyMap()))
         loadMaterialized(parsed)
 
-        assertTrue(TestFeatures.boolFlag.evaluate(ctxWithEnvironment(Environment.PROD)))
-        assertTrue(TestFeatures.boolFlag.evaluate(ctxWithEnvironment(Environment.STAGE)))
-        assertFalse(TestFeatures.boolFlag.evaluate(ctxWithEnvironment(Environment.DEV)))
+        assertTrue(TestFeatures.boolFlag.evaluate(ctxWithTestEnvironment(TestEnvironment.PROD)))
+        assertTrue(TestFeatures.boolFlag.evaluate(ctxWithTestEnvironment(TestEnvironment.STAGE)))
+        assertFalse(TestFeatures.boolFlag.evaluate(ctxWithTestEnvironment(TestEnvironment.DEV)))
     }
 
     @Test
@@ -407,8 +384,10 @@ class ConfigurationSnapshotCodecTest {
                 locales(AppLocale.UNITED_STATES, AppLocale.FRANCE)
                 platforms(Platform.IOS, Platform.ANDROID)
                 versions { min(1, 0, 0); max(2, 0, 0) }
-                axis(Environment.PROD, Environment.STAGE)
-                axis(Tenant.ENTERPRISE)
+                variant {
+                    TestAxes.Environment { include(TestEnvironment.PROD, TestEnvironment.STAGE) }
+                    TestAxes.Tenant { include(TestTenant.ENTERPRISE) }
+                }
                 rampUp { 12.34 }
             }
         }
@@ -436,7 +415,7 @@ class ConfigurationSnapshotCodecTest {
                 ),
             )
 
-        val json = ConfigurationSnapshotCodec.encode(config)
+        val json = ConfigurationCodec.encode(config)
         println(json)
 
         val normalized =
@@ -462,7 +441,7 @@ class ConfigurationSnapshotCodecTest {
                 ),
             )
 
-        val json = ConfigurationSnapshotCodec.encode(configuration)
+        val json = ConfigurationCodec.encode(configuration)
 
         assertNotNull(json)
         assertTrue(json.contains(TestFeatures.boolFlag.id.toString()))
@@ -530,11 +509,11 @@ class ConfigurationSnapshotCodecTest {
                         }
                       },
                       "axes": {
-                        "snapshot-environment": [
+                        "${TestEnvironment::class.java.name}": [
                           "prod",
                           "stage"
                         ],
-                        "snapshot-tenant": [
+                        "${TestTenant::class.java.name}": [
                           "enterprise"
                         ]
                       }
@@ -768,7 +747,7 @@ class ConfigurationSnapshotCodecTest {
         val rule = flag.values.first().rule
         assertEquals(50.0, rule.rampUp.value)
         assertEquals("TestNamespace rule", rule.note)
-        val encoded = ConfigurationSnapshotCodec.encode(result.value)
+        val encoded = ConfigurationCodec.encode(result.value)
         assertTrue(encoded.contains(AppLocale.UNITED_STATES.id))
         assertTrue(encoded.contains(AppLocale.FRANCE.id))
         assertTrue(encoded.contains(Platform.IOS.id))
@@ -821,7 +800,7 @@ class ConfigurationSnapshotCodecTest {
         val originalFlag = FlagDefinition(feature = TestFeatures.boolFlag, defaultValue = true)
         val originalConfiguration = Configuration(mapOf(TestFeatures.boolFlag to originalFlag))
 
-        val json = ConfigurationSnapshotCodec.encode(originalConfiguration)
+        val json = ConfigurationCodec.encode(originalConfiguration)
         val result = decodeFeatureAware(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
@@ -837,7 +816,7 @@ class ConfigurationSnapshotCodecTest {
         val originalFlag = FlagDefinition(feature = TestFeatures.stringFlag, defaultValue = "test-value")
         val originalConfiguration = Configuration(mapOf(TestFeatures.stringFlag to originalFlag))
 
-        val json = ConfigurationSnapshotCodec.encode(originalConfiguration)
+        val json = ConfigurationCodec.encode(originalConfiguration)
         val result = decodeFeatureAware(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
@@ -851,7 +830,7 @@ class ConfigurationSnapshotCodecTest {
         val originalFlag = FlagDefinition(feature = TestFeatures.intFlag, defaultValue = 42)
         val originalConfiguration = Configuration(mapOf(TestFeatures.intFlag to originalFlag))
 
-        val json = ConfigurationSnapshotCodec.encode(originalConfiguration)
+        val json = ConfigurationCodec.encode(originalConfiguration)
         val result = decodeFeatureAware(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
@@ -865,7 +844,7 @@ class ConfigurationSnapshotCodecTest {
         val originalFlag = FlagDefinition(feature = TestFeatures.doubleFlag, defaultValue = 3.14)
         val originalConfiguration = Configuration(mapOf(TestFeatures.doubleFlag to originalFlag))
 
-        val json = ConfigurationSnapshotCodec.encode(originalConfiguration)
+        val json = ConfigurationCodec.encode(originalConfiguration)
         val result = decodeFeatureAware(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
@@ -889,7 +868,7 @@ class ConfigurationSnapshotCodecTest {
             }
         }
 
-        val json = ConfigurationSnapshotCodec.encode(TestFeatures.configuration)
+        val json = TestFeatures.json
         val result = decodeFeatureAware(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
@@ -900,7 +879,7 @@ class ConfigurationSnapshotCodecTest {
         val deserializedRule = deserializedFlag.values.first().rule
         assertEquals(75.0, deserializedRule.rampUp.value)
         assertEquals("Complex rule", deserializedRule.note)
-        val encoded = ConfigurationSnapshotCodec.encode(result.value)
+        val encoded = ConfigurationCodec.encode(result.value)
         assertTrue(encoded.contains(AppLocale.UNITED_STATES.id))
         assertTrue(encoded.contains(Platform.ANDROID.id))
         assertTrue(encoded.contains("MIN_AND_MAX_BOUND"))
@@ -925,7 +904,7 @@ class ConfigurationSnapshotCodecTest {
                 ),
             )
 
-        val json = ConfigurationSnapshotCodec.encode(originalConfiguration)
+        val json = ConfigurationCodec.encode(originalConfiguration)
         val result = decodeFeatureAware(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)

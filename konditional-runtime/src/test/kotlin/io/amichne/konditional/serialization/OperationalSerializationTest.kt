@@ -9,6 +9,8 @@ import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
+import io.amichne.konditional.core.dsl.variant
+import io.amichne.konditional.core.schema.CompiledNamespaceSchema
 import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
@@ -18,7 +20,7 @@ import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.instance.ConfigurationMetadata
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.options.SnapshotWarning
-import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
+import io.amichne.konditional.serialization.snapshot.ConfigurationCodec
 import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 import io.amichne.konditional.values.FeatureId
 import org.junit.jupiter.api.Test
@@ -38,26 +40,14 @@ class OperationalSerializationTest {
         val unknownKey = FeatureId.create(namespace.id, "missing-${UUID.randomUUID()}")
         val snapshotJson = """
             {
-              "flags" : [
+              "flags": [
                 {
-                  "key" : "${namespace.knownFeature.id}",
-                  "defaultValue" : {
-                    "type" : "BOOLEAN",
-                    "value" : false
-                  },
-                  "salt" : "v1",
-                  "isActive" : true,
-                  "rules" : []
+                  "key": "${namespace.knownFeature.id.plainId}",
+                  "defaultValue": {"type": "BOOLEAN", "value": false}
                 },
                 {
-                  "key" : "$unknownKey",
-                  "defaultValue" : {
-                    "type" : "BOOLEAN",
-                    "value" : false
-                  },
-                  "salt" : "v1",
-                  "isActive" : true,
-                  "rules" : []
+                  "key": "${unknownKey.plainId}",
+                  "defaultValue": {"type": "BOOLEAN", "value": false}
                 }
               ]
             }
@@ -66,9 +56,9 @@ class OperationalSerializationTest {
         val warnings = mutableListOf<SnapshotWarning>()
         val lenient = SnapshotLoadOptions.skipUnknownKeys(onWarning = { warnings.add(it) })
         val lenientResult =
-            ConfigurationSnapshotCodec.decode(
+            ConfigurationCodec.decode(
                 json = snapshotJson,
-                schema = namespace.compiledSchema(),
+                schema = CompiledNamespaceSchema.from(namespace),
                 options = lenient,
             )
         assertTrue(lenientResult.isSuccess)
@@ -82,7 +72,11 @@ class OperationalSerializationTest {
         val namespace = object : Namespace("axis-roundtrip-${UUID.randomUUID()}") {
             val envScopedFlag by boolean<TestContext>(default = false) {
                 enable {
-                    axis(TestAxes.Environment, TestEnvironment.PROD)
+                    variant {
+                        TestAxes.Environment {
+                            include(TestEnvironment.PROD)
+                        }
+                    }
                 }
             }
         }
@@ -90,13 +84,17 @@ class OperationalSerializationTest {
         val productionContext = TestContext(
             appVersion = Version.parse("1.0.0").getOrThrow(),
             axisValues = axisValues {
-                set(TestAxes.Environment, TestEnvironment.PROD)
+                variant {
+                    TestAxes.Environment { include(TestEnvironment.PROD) }
+                }
             },
         )
         val developementContext = TestContext(
             appVersion = Version.parse("1.0.0").getOrThrow(),
             axisValues = axisValues {
-                set(TestAxes.Environment, TestEnvironment.DEV)
+                variant {
+                    TestAxes.Environment { include(TestEnvironment.DEV) }
+                }
             },
         )
 
@@ -141,8 +139,8 @@ class OperationalSerializationTest {
             ),
         )
 
-        val json = ConfigurationSnapshotCodec.encode(config)
-        val parsed = ConfigurationSnapshotCodec.decode(json, namespace.compiledSchema())
+        val json = ConfigurationCodec.encode(config)
+        val parsed = ConfigurationCodec.decode(json, CompiledNamespaceSchema.from(namespace))
         assertTrue(parsed.isSuccess)
         assertEquals(config.metadata, parsed.getOrThrow().metadata)
     }

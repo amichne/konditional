@@ -89,9 +89,9 @@ Adoption phases rely on load, disable, and rollback runtime operations.
 
 | Claim ID | Kind | Signature | Source page | Concept/guide link |
 | --- | --- | --- | --- | --- |
-| `CLM-PR01-08B` | `type` | `io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec` | [/quickstart/define-first-flag.md](/quickstart/define-first-flag.md) | [/quickstart/define-first-flag.md](/quickstart/define-first-flag.md) |
+| `CLM-PR01-08B` | `type` | `io.amichne.konditional.serialization.snapshot.ConfigurationCodec` | [/quickstart/define-first-flag.md](/quickstart/define-first-flag.md) | [/quickstart/define-first-flag.md](/quickstart/define-first-flag.md) |
 | `CLM-PR01-11A` | `type` | `io.amichne.konditional.serialization.options.SnapshotLoadOptions` | [/quickstart/load-first-snapshot-safely.md](/quickstart/load-first-snapshot-safely.md) | [/quickstart/load-first-snapshot-safely.md](/quickstart/load-first-snapshot-safely.md) |
-| `CLM-PR01-11A` | `type` | `io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec` | [/quickstart/load-first-snapshot-safely.md](/quickstart/load-first-snapshot-safely.md) | [/quickstart/load-first-snapshot-safely.md](/quickstart/load-first-snapshot-safely.md) |
+| `CLM-PR01-11A` | `type` | `io.amichne.konditional.serialization.snapshot.ConfigurationCodec` | [/quickstart/load-first-snapshot-safely.md](/quickstart/load-first-snapshot-safely.md) | [/quickstart/load-first-snapshot-safely.md](/quickstart/load-first-snapshot-safely.md) |
 
 ## Claim Coverage
 

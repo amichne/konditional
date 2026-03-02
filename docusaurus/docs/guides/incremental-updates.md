@@ -17,7 +17,7 @@ Store the current `Configuration` after successful load.
 
 ```kotlin
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
-import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
+import io.amichne.konditional.serialization.snapshot.ConfigurationCodec
 
 val patched = ConfigurationSnapshotCodec.patch(
   current = currentConfiguration,

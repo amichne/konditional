@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap
 @Deprecated(
     message = "Global feature registry is legacy fallback. " +
         "Prefer namespace-scoped decode via FeatureAwareSnapshotCodec.",
-    replaceWith = ReplaceWith("ConfigurationSnapshotCodec.decode(json, featuresById, options)"),
+    replaceWith = ReplaceWith("ConfigurationCodec.decode(json, featuresById, options)"),
 )
 object FeatureRegistry {
     private val registry = ConcurrentHashMap<FeatureId, Feature<*, *, *>>()

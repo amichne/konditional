@@ -35,8 +35,10 @@ inline fun <reified T, reified C : Context> C.axis(axis: Axis<T>): Set<T> where 
  * Example:
  * ```kotlin
  * val values = axisValues {
- *     set(Axes.Environment, Environment.PROD)
- *     set(Axes.Tenant, Tenant.SME)
+ *     variant {
+ *         Axes.Environment { include(Environment.PROD) }
+ *         Axes.Tenant { include(Tenant.SME) }
+ *     }
  * }
  * ```
  */

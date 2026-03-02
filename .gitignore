@@ -1,6 +1,6 @@
 req.md
 #Prompt.md
-.claude
+#.claude
 *.jar
 #CONTRIBUTING.md
 ai/
@@ -1035,3 +1035,11 @@ build/
 # Generated API/type signatures are checked in and drift-checked in CI.
 .signatures/
 signatures/
+!/.claude/
+.claude/sig-reachability-report.md
+
+.claude/sig-reachability-exclusions.txt
+
+.claude/sig-reachability-report.txt
+
+.claude/sig-reachability-report.html

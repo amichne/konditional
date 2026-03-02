@@ -30,3 +30,23 @@ package io.amichne.konditional.api
     AnnotationTarget.TYPEALIAS
 )
 annotation class KonditionalInternalApi
+
+
+@RequiresOptIn(
+    level = RequiresOptIn.Level.WARNING,
+    message = "This is an delicate Konditional API. Opt-in is required," +
+        " the contract may break though effort will be made to avoid, but use is not prohibited.",
+)
+@Retention(AnnotationRetention.RUNTIME)
+@Target(
+    AnnotationTarget.CLASS,
+    AnnotationTarget.PROPERTY,
+    AnnotationTarget.LOCAL_VARIABLE,
+    AnnotationTarget.VALUE_PARAMETER,
+    AnnotationTarget.CONSTRUCTOR,
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.PROPERTY_GETTER,
+    AnnotationTarget.PROPERTY_SETTER,
+    AnnotationTarget.TYPEALIAS
+)
+annotation class KonditionalDelicateApi

@@ -6,7 +6,9 @@ import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.dsl.KonditionalDsl
 
 /**
- * Targeting mix-in for axis constraints.
+ * Legacy targeting mix-in for axis constraints.
+ *
+ * Use `variant { ... }` instead of these error-deprecated methods.
  */
 @KonditionalDsl
 interface AxisTargetingScope<C : Context> {
@@ -19,6 +21,14 @@ interface AxisTargetingScope<C : Context> {
      * @param axis Axis descriptor to constrain
      * @param values Allowed values for [axis]
      */
+    @Deprecated(
+        message = "Use variant { axis { include(...) } } for axis targeting.",
+        replaceWith =
+            ReplaceWith(
+                "variant { axis { include(values.first(), *values.drop(1).toTypedArray()) } }",
+            ),
+        level = DeprecationLevel.ERROR,
+    )
     fun <T> axis(
         axis: Axis<T>,
         vararg values: T,
@@ -33,12 +43,13 @@ interface AxisTargetingScope<C : Context> {
      * axis(Tenant.ENTERPRISE)
      * ```
      *
-     * Requires that an axis is already registered for the value type [T]
-     * in the active scoped [io.amichne.konditional.core.registry.AxisCatalog].
-     *
      * @param T The axis value type
      * @param values The values to allow for this axis
      */
+    @Deprecated(
+        message = "Use variant { axisHandle { include(...) } } with an explicit axis handle.",
+        level = DeprecationLevel.ERROR,
+    )
     fun <T> axis(
         vararg values: T,
     ) where T : AxisValue<T>, T : Enum<T>
