@@ -382,8 +382,8 @@ LOW USAGE — 83 type(s) with 1–2 main-source refs (worth reviewing):
               → konditional-otel/src/main/kotlin/io/amichne/konditional/otel/traces/TracingConfig.kt.sig  (main_refs=1, test_refs=2)
   [public  ] [class       ] io.amichne.konditional.serialization.options.SnapshotWarning
               → konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/options/SnapshotWarning.kt.sig  (main_refs=1, test_refs=1)
-  [public  ] [object      ] io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
-              → konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/ConfigurationSnapshotCodec.kt.sig  (main_refs=1, test_refs=7)
+  [public  ] [object      ] io.amichne.konditional.serialization.snapshot.ConfigurationCodec
+              → konditional-serialization/src/main/kotlin/io/amichne/konditional/serialization/snapshot/ConfigurationCodec.kt.sig  (main_refs=1, test_refs=7)
   [internal] [object      ] io.amichne.konditional.values.IdentifierEncoding
               → konditional-core/src/main/kotlin/io/amichne/konditional/values/IdentifierEncoding.kt.sig  (main_refs=2, test_refs=0)
   [public  ] [class       ] io.amichne.kontracts.dsl.BooleanSchemaBuilder

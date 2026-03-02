@@ -8,7 +8,7 @@ import io.amichne.konditional.core.instance.ConfigurationMetadataView
 import io.amichne.konditional.core.instance.ConfigurationView
 import io.amichne.konditional.core.registry.NamespaceRegistryRuntime
 import io.amichne.konditional.serialization.instance.Configuration
-import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
+import io.amichne.konditional.serialization.snapshot.ConfigurationCodec
 
 /**
  * Runtime-only namespace operations (mutation/lifecycle).
@@ -34,7 +34,7 @@ fun Namespace.update(configuration: Configuration) {
  * namespace-scoped and deterministic for a fixed configuration state.
  */
 @Suppress("DEPRECATION")
-fun Namespace.dump(): String = ConfigurationSnapshotCodec.encode(configuration)
+fun Namespace.dump(): String = ConfigurationCodec.encode(configuration)
 
 /**
  * Convenience accessor for [dump].

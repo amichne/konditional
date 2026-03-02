@@ -157,7 +157,12 @@ open class Namespace(
      * Returns the immutable compile-time schema-plane for this namespace.
      */
     @KonditionalInternalApi
+    @Deprecated(
+        message = "Prefer ConfigurationCodec.decode overload that accepts a Namespace for schema inference.",
+        level = DeprecationLevel.HIDDEN,
+    )
     fun compiledSchema(): CompiledNamespaceSchema = CompiledNamespaceSchema.from(this)
+
 
     /**
      * Declares an axis handle.

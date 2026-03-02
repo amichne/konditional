@@ -13,7 +13,6 @@ import io.amichne.konditional.core.result.parseFailure
 import io.amichne.konditional.core.schema.CompiledNamespaceSchema
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.core.types.asObjectSchema
-import io.amichne.kontracts.schema.ObjectTraits
 import io.amichne.konditional.internal.SerializedFlagDefinitionMetadata
 import io.amichne.konditional.internal.SerializedFlagRuleSpec
 import io.amichne.konditional.internal.SerializedRuleValueType
@@ -21,6 +20,7 @@ import io.amichne.konditional.internal.flagDefinitionFromSerialized
 import io.amichne.konditional.internal.toSerializedMetadata
 import io.amichne.konditional.internal.toSerializedRules
 import io.amichne.konditional.values.FeatureId
+import io.amichne.kontracts.schema.ObjectTraits
 
 /**
  * Serializable representation of a single flag configuration.
@@ -86,7 +86,7 @@ data class SerializableFlag(
                 parseFailure(
                     ParseError.invalidSnapshot(
                         "Feature-aware decode requires explicit feature scope for key '$key'. " +
-                            "Use ConfigurationSnapshotCodec.decode(json, schema, options).",
+                            "Use ConfigurationCodec.decode(json, schema, options).",
                     ),
                 )
 

@@ -23,9 +23,9 @@ import io.amichne.konditional.core.ops.RegistryHooks
 import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
 import io.amichne.konditional.core.result.parseErrorOrNull
 import io.amichne.konditional.core.types.Konstrained
-import io.amichne.konditional.runtime.update
 import io.amichne.konditional.runtime.rollback
-import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
+import io.amichne.konditional.runtime.update
+import io.amichne.konditional.serialization.snapshot.ConfigurationCodec
 import io.amichne.kontracts.dsl.of
 import io.amichne.kontracts.dsl.schema
 import io.amichne.kontracts.schema.ObjectSchema
@@ -188,7 +188,7 @@ object PolicyFlags : Namespace("policy") {
 fun loadRemoteConfig() {
     val json = fetchRemoteConfig()
     val features = AppFeatures
-    val result = ConfigurationSnapshotCodec.decode(json, features.compiledSchema())
+    val result = ConfigurationCodec.decode(json, features.compiledSchema())
 
     result.onSuccess { configuration ->
         features.update(configuration)
@@ -210,7 +210,7 @@ fun rollbackConfig() {
 // region recipe-7-shadow
 fun evaluateWithShadowedConfig(context: Context): Boolean {
     val candidateJson = fetchCandidateConfig()
-    val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson, AppFeatures.compiledSchema()).getOrThrow()
+    val candidateConfig = ConfigurationCodec.decode(candidateJson, AppFeatures.compiledSchema()).getOrThrow()
     val candidateRegistry =
         InMemoryNamespaceRegistry(namespaceId = AppFeatures.namespaceId).apply {
             load(candidateConfig)

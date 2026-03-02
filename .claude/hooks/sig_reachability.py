@@ -261,21 +261,25 @@ def _refs_from_content(content: str, known_fqcns: set[str]) -> set[str]:
 # ---------------------------------------------------------------------------
 
 
-def _build_kt_word_index(project_root: Path, sig_dir: Path) -> dict[str, set[Path]]:
+def _build_kt_import_index(
+    project_root: Path, sig_dir: Path
+) -> tuple[dict[str, set[Path]], dict[str, set[Path]]]:
     """
-    Scan every .kt file under project_root (except those inside sig_dir, which
-    shouldn't exist but we guard anyway) and build a mapping:
+    Scan every .kt file under project_root and index their import statements.
 
-        capitalized_identifier → frozenset of .kt file Paths that contain it
+    Returns:
+        exact_imports : fqcn    → set of .kt Paths with `import <fqcn>`
+        star_imports  : package → set of .kt Paths with `import <package>.*`
 
-    Only captures identifiers starting with an uppercase letter so we don't
-    pollute the index with keywords / variables.  Used as a cheap fallback
-    to rescue types that look orphaned in the sig graph but clearly appear
-    in real source — e.g. via string-based lookup, generated code, or any
-    reference pattern the sig scanner doesn't model.
+    Because detekt rejects unused imports, every entry here is a guaranteed
+    live reference.  This gives us a zero-false-positive rescue pass for types
+    that look orphaned in the sig graph — the sig scanner can miss references
+    that appear in generated code, annotation processors, or import aliases.
     """
-    _IDENT = re.compile(r'\b([A-Z][A-Za-z0-9_]*)\b')
-    index: dict[str, set[Path]] = defaultdict(set)
+    _IMPORT = re.compile(r'^import\s+([\w.]+?)(\.\*)?[ \t]*$', re.MULTILINE)
+    exact: dict[str, set[Path]] = defaultdict(set)
+    star: dict[str, set[Path]] = defaultdict(set)
+
     for kt_file in project_root.rglob("*.kt"):
         try:
             kt_file.relative_to(sig_dir)
@@ -286,9 +290,14 @@ def _build_kt_word_index(project_root: Path, sig_dir: Path) -> dict[str, set[Pat
             content = kt_file.read_text(encoding="utf-8", errors="replace")
         except OSError:
             continue
-        for m in _IDENT.finditer(content):
-            index[m.group(1)].add(kt_file)
-    return index
+        for m in _IMPORT.finditer(content):
+            target = m.group(1)
+            if m.group(2):   # ends with .*
+                star[target].add(kt_file)
+            else:
+                exact[target].add(kt_file)
+
+    return exact, star
 
 
 # ---------------------------------------------------------------------------
@@ -469,13 +478,23 @@ def analyse(sig_dir: Path, exclusions_file: Path | None = None) -> str:
     true_orphaned: list[tuple] = []
 
     if orphaned_internal:
-        kt_index = _build_kt_word_index(project_root, sig_dir)
+        exact_imports, star_imports = _build_kt_import_index(project_root, sig_dir)
         for item in orphaned_internal:
             fqcn, entry, m, t = item
-            simple = fqcn.rsplit(".", 1)[-1]
             own_src = _source_path(entry)
-            external_refs = kt_index.get(simple, set()) - {own_src}
-            if external_refs:
+            package = fqcn.rsplit(".", 1)[0] if "." in fqcn else ""
+
+            # Gather every kt file that provably references this type:
+            #   - exact import of the canonical FQCN or any nested-class alias
+            #   - star import of the type's package
+            ref_files: set[Path] = set()
+            for key in [fqcn] + entry.aliases:
+                ref_files |= exact_imports.get(key, set())
+            if package:
+                ref_files |= star_imports.get(package, set())
+            ref_files.discard(own_src)
+
+            if ref_files:
                 kt_referenced.append(item)
             else:
                 true_orphaned.append(item)

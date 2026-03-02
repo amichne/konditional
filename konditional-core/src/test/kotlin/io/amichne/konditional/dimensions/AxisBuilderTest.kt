@@ -7,11 +7,11 @@ import io.amichne.konditional.context.axis.AxisValues
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.dsl.variant
+import io.amichne.konditional.fixtures.FeaturesWithAxis
 import io.amichne.konditional.fixtures.TestAxes
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
-import io.amichne.konditional.fixtures.FeaturesWithAxis
 import io.amichne.konditional.fixtures.environment
 import io.amichne.konditional.fixtures.tenant
 import org.junit.jupiter.api.Assertions

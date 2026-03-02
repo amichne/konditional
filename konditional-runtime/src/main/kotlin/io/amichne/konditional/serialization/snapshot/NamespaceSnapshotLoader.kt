@@ -6,15 +6,15 @@ import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.registry.NamespaceRegistryRuntime
 import io.amichne.konditional.core.result.ParseError
-import io.amichne.konditional.core.result.parseErrorOrNull
 import io.amichne.konditional.core.result.parseFailure
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
+import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader.Companion.forNamespace
 
 /**
  * Side-effecting snapshot loader scoped to a [Namespace].
  *
- * Decodes a JSON snapshot via [ConfigurationSnapshotCodec] against the namespace's
+ * Decodes a JSON snapshot via [ConfigurationCodec] against the namespace's
  * compile-time schema, then atomically loads the result into the namespace registry.
  * The registry is only mutated on success — a parse failure leaves the current state intact.
  *
@@ -33,26 +33,24 @@ class NamespaceSnapshotLoader<M : Namespace> private constructor(
     fun load(
         json: String,
         options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
-    ): Result<Configuration> {
-        val decoded = ConfigurationSnapshotCodec.decode(
+    ): Result<Configuration> =
+        ConfigurationCodec.decode(
             json = json,
-            schema = namespace.compiledSchema(),
+            namespace = namespace,
             options = options,
+        ).fold(
+            onSuccess = { configuration ->
+                namespace.runtimeRegistry().load(configuration)
+                Result.success(configuration)
+            },
+            onFailure = { throwable ->
+                if (throwable is ParseError) {
+                    parseFailure(throwable.withNamespaceContext(namespace.id))
+                } else {
+                    Result.failure(throwable)
+                }
+            },
         )
-
-        if (decoded.isFailure) {
-            val contextualError = decoded.parseErrorOrNull()?.withNamespaceContext(namespace.id)
-            return if (contextualError != null) {
-                parseFailure(contextualError)
-            } else {
-                Result.failure(decoded.exceptionOrNull() ?: IllegalStateException("Unknown load failure"))
-            }
-        }
-
-        val configuration = decoded.getOrThrow()
-        namespace.runtimeRegistry().load(configuration)
-        return Result.success(configuration)
-    }
 
     private fun Namespace.runtimeRegistry(): NamespaceRegistryRuntime =
         registry as? NamespaceRegistryRuntime
