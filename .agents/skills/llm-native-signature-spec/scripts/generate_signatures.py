@@ -455,6 +455,79 @@ def parse_types_and_members(text: str) -> tuple[list[TypeBlock], list[str], list
     return types, methods, fields
 
 
+def _collect_supertype_name(parts: list[str], out: list[str]) -> None:
+    """Resolve accumulated characters into a simple supertype name and append it."""
+    raw = "".join(parts).strip()
+    # Strip delegation clause: 'Bar by delegate' → 'Bar'
+    raw = re.split(r"\s+by\b", raw)[0].strip()
+    # Strip generic params: 'Bar<X>' → 'Bar'
+    raw = re.sub(r"<.*", "", raw).strip()
+    # Strip constructor call: 'Bar(args)' → 'Bar'
+    raw = re.sub(r"\(.*", "", raw).strip()
+    m = re.match(r"([A-Za-z_][A-Za-z0-9_]*)", raw)
+    if m:
+        out.append(m.group(1))
+
+
+def extract_supertypes_from_header(header: str) -> list[str]:
+    """
+    Extract simple names of supertypes/interfaces from a class/interface header.
+
+    e.g. 'data class Core(...) : LocaleContext, PlatformContext' → ['LocaleContext', 'PlatformContext']
+         'class Axis<T> where T : AxisValue<T>'                  → []  (where-clause constraint, not supertype)
+         'class Foo : Bar by delegate'                            → ['Bar']
+    """
+    # Strip 'where' clause before looking for the supertype colon so that
+    # 'where T : Bound' is never mistaken for a supertype clause.
+    where_match = re.search(r"\bwhere\b", header)
+    search_area = header[: where_match.start()] if where_match else header
+
+    # Find the ':' that introduces supertypes.  It must be outside parens
+    # (constructor params) and angle brackets (type-param constraints).
+    paren_depth = 0
+    angle_depth = 0
+    colon_pos = -1
+    for i, ch in enumerate(search_area):
+        if ch == "(":
+            paren_depth += 1
+        elif ch == ")":
+            paren_depth = max(0, paren_depth - 1)
+        elif ch == "<":
+            angle_depth += 1
+        elif ch == ">" and angle_depth > 0:
+            angle_depth -= 1
+        elif ch == ":" and paren_depth == 0 and angle_depth == 0:
+            colon_pos = i
+            break
+
+    if colon_pos == -1:
+        return []
+
+    supertype_clause = search_area[colon_pos + 1 :].strip()
+    if not supertype_clause:
+        return []
+
+    # Split the supertype clause on commas, respecting angle-bracket depth so
+    # that 'Bar<X, Y>' is kept together.
+    names: list[str] = []
+    current: list[str] = []
+    depth = 0
+    for ch in supertype_clause:
+        if ch == "<":
+            depth += 1
+            current.append(ch)
+        elif ch == ">" and depth > 0:
+            depth -= 1
+            current.append(ch)
+        elif ch == "," and depth == 0:
+            _collect_supertype_name(current, names)
+            current = []
+        else:
+            current.append(ch)
+    _collect_supertype_name(current, names)
+    return names
+
+
 def parse_file(path: Path, repo_root: Path) -> str:
     text = path.read_text(encoding="utf-8", errors="ignore")
 
@@ -463,6 +536,14 @@ def parse_file(path: Path, repo_root: Path) -> str:
 
     imports = re.findall(r"(?m)^\s*import\s+([A-Za-z0-9_\.\*]+)", text)
     types, methods, fields = parse_types_and_members(text)
+
+    # Build simple-name → FQCN lookup from explicit imports so we can resolve
+    # supertype names that appear without a fully-qualified prefix.
+    import_by_name: dict[str, str] = {}
+    for imp in imports:
+        if "*" not in imp:
+            simple = imp.rsplit(".", 1)[-1]
+            import_by_name[simple] = imp
 
     lines: list[str] = []
     lines.append(f"file={path.relative_to(repo_root).as_posix()}")
@@ -476,7 +557,25 @@ def parse_file(path: Path, repo_root: Path) -> str:
 
     for t in types:
         fqcn = f"{package_name}.{t.name}" if package_name else t.name
-        lines.append(f"type={fqcn}|kind={t.kind}|decl={t.header}")
+
+        # Resolve supertype simple names to FQCNs.
+        # Resolution order: explicit import → same-package fallback.
+        # Unresolvable names (e.g. from kotlin.*) are kept as-is; the
+        # consumer can filter them by project prefix.
+        simple_supertypes = extract_supertypes_from_header(t.header)
+        resolved_supertypes: list[str] = []
+        for name in simple_supertypes:
+            if name in import_by_name:
+                resolved_supertypes.append(import_by_name[name])
+            elif package_name:
+                resolved_supertypes.append(f"{package_name}.{name}")
+            else:
+                resolved_supertypes.append(name)
+
+        type_line = f"type={fqcn}|kind={t.kind}|decl={t.header}"
+        if resolved_supertypes:
+            type_line += f"|supertypes={','.join(resolved_supertypes)}"
+        lines.append(type_line)
 
     if fields:
         lines.append("fields:")

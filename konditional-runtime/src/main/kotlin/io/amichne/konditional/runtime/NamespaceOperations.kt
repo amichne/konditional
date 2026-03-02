@@ -18,7 +18,8 @@ import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
 /**
  * Atomically loads [configuration] into this namespace's registry.
  *
- * Callers that need to decode JSON first should use [NamespaceSnapshotLoader] from
+ * Callers that need to decode JSON first should use
+ * [io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader] from
  * `:konditional-runtime`, which combines decode and update in one call.
  */
 fun Namespace.update(configuration: Configuration) {
