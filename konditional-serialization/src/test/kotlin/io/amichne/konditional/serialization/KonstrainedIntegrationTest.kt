@@ -115,7 +115,7 @@ class KonstrainedIntegrationTest {
             // Verify round-trip serialization works
             ConfigurationCodec.decode(
                 json = json,
-                schema = features.compiledSchema(),
+                namespace = features,
             ).onSuccess { config ->
                 println("Successfully deserialized ${config.flags.size} flags")
             }

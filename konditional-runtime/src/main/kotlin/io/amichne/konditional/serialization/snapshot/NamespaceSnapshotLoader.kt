@@ -6,6 +6,7 @@ import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.registry.NamespaceRegistryRuntime
 import io.amichne.konditional.core.result.ParseError
+import io.amichne.konditional.core.result.parseErrorOrNull
 import io.amichne.konditional.core.result.parseFailure
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
@@ -44,8 +45,9 @@ class NamespaceSnapshotLoader<M : Namespace> private constructor(
                 Result.success(configuration)
             },
             onFailure = { throwable ->
-                if (throwable is ParseError) {
-                    parseFailure(throwable.withNamespaceContext(namespace.id))
+                val parseError = throwable.parseErrorOrNull()
+                if (parseError != null) {
+                    parseFailure(parseError.withNamespaceContext(namespace.id))
                 } else {
                     Result.failure(throwable)
                 }

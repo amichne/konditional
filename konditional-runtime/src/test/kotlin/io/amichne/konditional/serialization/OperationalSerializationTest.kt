@@ -40,7 +40,17 @@ class OperationalSerializationTest {
         val unknownKey = FeatureId.create(namespace.id, "missing-${UUID.randomUUID()}")
         val snapshotJson = """
             {
- }
+              "flags": [
+                {
+                  "key": "${namespace.knownFeature.id.plainId}",
+                  "defaultValue": {"type": "BOOLEAN", "value": false}
+                },
+                {
+                  "key": "${unknownKey.plainId}",
+                  "defaultValue": {"type": "BOOLEAN", "value": false}
+                }
+              ]
+            }
         """.trimIndent()
 
         val warnings = mutableListOf<SnapshotWarning>()

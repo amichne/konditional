@@ -327,7 +327,7 @@ class KonstrainedPrimitiveTest {
             val json = ConfigurationCodec.encode(features.configuration)
             val decoded = ConfigurationCodec.decode(
                 json = json,
-                schema = features.compiledSchema(),
+                namespace = features,
             )
             assertTrue(decoded.isSuccess, "Snapshot decode should succeed: ${decoded.exceptionOrNull()?.message}")
         }

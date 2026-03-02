@@ -188,7 +188,7 @@ object PolicyFlags : Namespace("policy") {
 fun loadRemoteConfig() {
     val json = fetchRemoteConfig()
     val features = AppFeatures
-    val result = ConfigurationCodec.decode(json, features.compiledSchema())
+    val result = ConfigurationCodec.decode(json, features)
 
     result.onSuccess { configuration ->
         features.update(configuration)
@@ -210,7 +210,7 @@ fun rollbackConfig() {
 // region recipe-7-shadow
 fun evaluateWithShadowedConfig(context: Context): Boolean {
     val candidateJson = fetchCandidateConfig()
-    val candidateConfig = ConfigurationCodec.decode(candidateJson, AppFeatures.compiledSchema()).getOrThrow()
+    val candidateConfig = ConfigurationCodec.decode(candidateJson, AppFeatures).getOrThrow()
     val candidateRegistry =
         InMemoryNamespaceRegistry(namespaceId = AppFeatures.namespaceId).apply {
             load(candidateConfig)

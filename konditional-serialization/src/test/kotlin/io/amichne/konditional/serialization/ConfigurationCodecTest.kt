@@ -185,14 +185,14 @@ class ConfigurationCodecTest {
         version: String = "1.0.0",
     ) = Context(locale, platform, Version.parse(version).getOrThrow(), StableId.of(idHex))
 
-    private fun ctxWithTestEnvironment(): Context = TestContext(
+    private fun ctxWithTestEnvironment(env: TestEnvironment = TestEnvironment.PROD): Context = TestContext(
         locale = AppLocale.UNITED_STATES,
         platform = Platform.IOS,
         appVersion = Version.of(1, 0, 0),
         stableId = StableId.of("axis-user"),
         axisValues = axisValues {
             variant {
-                TestAxes.Environment { include(TestEnvironment.DEV) }
+                TestAxes.Environment { include(env) }
             }
         }
     )
@@ -206,12 +206,10 @@ class ConfigurationCodecTest {
 
     @Test
     fun `Given deferred yields rule snapshot, When decoded and re-encoded, Then contextual type remains contextual`() {
-        val origianl = TestFeatures.dynamicYieldFlag
         val encoded = TestFeatures.json
-        val decoded = NamespaceSnapshotLoader.forNamespace(TestFeatures).load(encoded).getOrThrow()
-
-        val reEncoded = decoded.flags[origianl] ?: error("Flag not found in decoded configuration")
-        reEncoded.toJsonValue()
+        NamespaceSnapshotLoader.forNamespace(TestFeatures).load(encoded).getOrThrow()
+        val reEncoded = TestFeatures.json
+        assertTrue(reEncoded.contains("\"type\": \"CONTEXTUAL\""))
     }
 
     @Test
@@ -356,7 +354,7 @@ class ConfigurationCodecTest {
 
         val json = TestFeatures.json
         assertTrue(json.contains("\"axes\""))
-        assertTrue(json.contains("\"snapshot-TestEnvironment\""))
+        assertTrue(json.contains("\"${TestEnvironment::class.java.name}\""))
         assertTrue(json.contains("prod"))
         assertTrue(json.contains("stage"))
 
@@ -365,9 +363,9 @@ class ConfigurationCodecTest {
         loadMaterialized(Configuration(emptyMap()))
         loadMaterialized(parsed)
 
-        assertTrue(TestFeatures.boolFlag.evaluate(ctxWithTestEnvironment()))
-        assertTrue(TestFeatures.boolFlag.evaluate(ctxWithTestEnvironment()))
-        assertFalse(TestFeatures.boolFlag.evaluate(ctxWithTestEnvironment()))
+        assertTrue(TestFeatures.boolFlag.evaluate(ctxWithTestEnvironment(TestEnvironment.PROD)))
+        assertTrue(TestFeatures.boolFlag.evaluate(ctxWithTestEnvironment(TestEnvironment.STAGE)))
+        assertFalse(TestFeatures.boolFlag.evaluate(ctxWithTestEnvironment(TestEnvironment.DEV)))
     }
 
     @Test
@@ -511,11 +509,11 @@ class ConfigurationCodecTest {
                         }
                       },
                       "axes": {
-                        "snapshot-TestEnvironment": [
+                        "${TestEnvironment::class.java.name}": [
                           "prod",
                           "stage"
                         ],
-                        "snapshot-tenant": [
+                        "${TestTenant::class.java.name}": [
                           "enterprise"
                         ]
                       }

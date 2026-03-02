@@ -209,7 +209,7 @@ Use `Result` to enforce a hard boundary at the JSON parse step, and roll back on
 fun loadRemoteConfig() {
     val json = fetchRemoteConfig()
     val features = AppFeatures
-    val result = ConfigurationSnapshotCodec.decode(json, features.compiledSchema())
+    val result = ConfigurationCodec.decode(json, features)
 
     result.onSuccess { configuration ->
         features.update(configuration)
@@ -243,7 +243,7 @@ Compare a candidate configuration to baseline behavior without changing producti
 ```kotlin
 fun evaluateWithShadowedConfig(context: Context): Boolean {
     val candidateJson = fetchCandidateConfig()
-    val candidateConfig = ConfigurationSnapshotCodec.decode(candidateJson, AppFeatures.compiledSchema()).getOrThrow()
+    val candidateConfig = ConfigurationCodec.decode(candidateJson, AppFeatures).getOrThrow()
     val candidateRegistry =
         InMemoryNamespaceRegistry(namespaceId = AppFeatures.namespaceId).apply {
             load(candidateConfig)

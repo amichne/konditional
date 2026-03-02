@@ -1036,3 +1036,10 @@ build/
 .signatures/
 signatures/
 !/.claude/
+.claude/sig-reachability-report.md
+
+.claude/sig-reachability-exclusions.txt
+
+.claude/sig-reachability-report.txt
+
+.claude/sig-reachability-report.html
