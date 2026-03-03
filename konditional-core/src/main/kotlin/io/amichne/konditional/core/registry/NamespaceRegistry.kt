@@ -20,7 +20,7 @@ interface NamespaceRegistry {
     val namespaceId: String
 
     /**
-     * Read-only view axes the currently loaded configuration.
+     * Read-only view of the currently loaded configuration.
      */
     val configuration: ConfigurationView
 

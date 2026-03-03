@@ -19,7 +19,7 @@ import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.targeting.Targeting
 
 /**
- * Internal implementation axes [RuleScope].
+ * Internal implementation of [RuleScope].
  *
  * Accumulates [Targeting] leaves into a flat list; the final [build] call wraps
  * them in a [Targeting.All] conjunction. Multiple calls to targeting methods

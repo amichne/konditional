@@ -37,11 +37,11 @@ interface AxisValue<T> where T : Enum<T>, T : AxisValue<T> {
         get() = (this as Enum<*>).name
 
     val axis: Axis<T>
-        get() = Axis.axes(this::class)
+        get() = Axis.fromValueClass(this::class)
 
     operator fun getValue(thisRef: Any?, property: kotlin.reflect.KProperty<*>): Axis<T> = axis
 }
 
-private fun <T> Axis.Companion.axes(
+private fun <T> Axis.Companion.fromValueClass(
     enumClass: KClass<out AxisValue<T>>
 ): Axis<T> where T : AxisValue<T>, T : Enum<T> = of(enumClass)

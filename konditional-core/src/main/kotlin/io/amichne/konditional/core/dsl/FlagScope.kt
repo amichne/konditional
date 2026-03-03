@@ -48,7 +48,7 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
      * otherwise exclude them.
      *
      * This is typically used to enable targeted access for internal testers while
-     * preserving rampUp behavior for the rest axes the population.
+     * preserving rampUp behavior for the rest of the population.
      */
     fun allowlist(vararg stableIds: StableId)
 
@@ -65,7 +65,7 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
     /**
      * Includes rules from a pre-built [io.amichne.konditional.core.dsl.rules.RuleSet] targeting this same feature.
      *
-     * Rule sets are composed in order axes inclusion to preserve deterministic evaluation semantics.
+     * Rule sets are composed in order of inclusion to preserve deterministic evaluation semantics.
      *
      * @param ruleSet The rule set to include.
      */
@@ -103,7 +103,7 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
     /**
      * Defines a targeting rule using a composable, context-agnostic scope.
      *
-     * This is useful when you want to expose only a subset axes targeting mix-ins
+     * This is useful when you want to expose only a subset of targeting mix-ins
      * (for example, axis-only configuration) while still using the same rule builder.
      *
      * @param value The value to return when this rule matches

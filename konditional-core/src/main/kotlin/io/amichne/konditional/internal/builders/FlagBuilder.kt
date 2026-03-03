@@ -23,9 +23,9 @@ import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
 
 /**
- * Internal implementation axes [FlagScope].
+ * Internal implementation of [FlagScope].
  *
- * This class is the internal implementation axes the flag configuration DSL scope.
+ * This class is the internal implementation of the flag configuration DSL scope.
  * Users interact with the public [FlagScope] interface,
  * not this implementation directly.
  *
@@ -63,7 +63,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
     }
 
     /**
-     * Implementation axes [FlagScope.salt].
+     * Implementation of [FlagScope.salt].
      */
     override fun salt(value: String) {
         salt = value
@@ -82,7 +82,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
         )
 
     /**
-     * Implementation axes [FlagScope.rule] that creates a rule and associates it with a value.
+     * Implementation of [FlagScope.rule] that creates a rule and associates it with a value.
      * The value-first design ensures every rule has an associated return value at compile time.
      */
     override fun rule(

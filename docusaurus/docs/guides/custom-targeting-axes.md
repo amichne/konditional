@@ -14,6 +14,7 @@ Add domain-specific targeting dimensions such as tenant tier, region, or environ
 ```kotlin
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.KonditionalExplicitId
 
@@ -27,11 +28,18 @@ By default, axis IDs are derived from the enum fully-qualified class name.
 Apply `@KonditionalExplicitId` when you need a stable custom axis ID that will
 survive enum package moves.
 
+If you need a typed `Axis` descriptor (for example to read from `Axes` directly),
+derive it from the enum type:
+
+```kotlin
+val tenantTierAxis = Axis.of<TenantTier>()
+```
+
 ## Step 2: Target axis values in rules
 
 ```kotlin
 object BillingFlags : Namespace("billing") {
-  val premiumReporting by boolean<Context>(default = false) {
+  val premiumReporting by boolean(default = false) {
     rule(true) {
       constrain(TenantTier.PRO, TenantTier.ENTERPRISE)
     }

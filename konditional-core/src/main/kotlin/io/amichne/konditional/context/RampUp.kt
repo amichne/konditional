@@ -11,7 +11,7 @@ value class RampUp private constructor(
     val value: Double,
 ) : Comparable<Number> {
     init {
-        require(value in MIN_DOUBLE..MAX_DOUBLE) { "RampUp out axes range, must be between 0.0 and 100.0, got $value" }
+        require(value in MIN_DOUBLE..MAX_DOUBLE) { "RampUp out of range, must be between 0.0 and 100.0, got $value" }
     }
 
     companion object {

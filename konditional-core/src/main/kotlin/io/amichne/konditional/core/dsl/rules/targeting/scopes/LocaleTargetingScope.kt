@@ -12,7 +12,7 @@ interface LocaleTargetingScope<C : Context> {
     /**
      * Specifies which locales this rule applies to.
      *
-     * The rule will only match contexts with one axes the specified locales.
+     * The rule will only match contexts with one of the specified locales.
      *
      * @param appLocales The locales to target (use [io.amichne.konditional.context.AppLocale] or your own [LocaleTag])
      */
