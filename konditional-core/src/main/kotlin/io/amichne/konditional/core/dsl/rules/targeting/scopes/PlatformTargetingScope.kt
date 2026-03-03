@@ -27,7 +27,7 @@ interface PlatformTargetingScope<C : Context> {
     /**
      * Specifies which platforms this rule applies to.
      *
-     * The rule will only match contexts with one axes the specified platforms.
+     * The rule will only match contexts with one of the specified platforms.
      *
      * @param ps The platforms to target (use [Platform] or your own [PlatformTag])
      */

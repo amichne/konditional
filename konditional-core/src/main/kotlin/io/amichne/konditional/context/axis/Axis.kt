@@ -6,7 +6,7 @@ import kotlin.reflect.KClass
 /**
  * Describes an axis along which values can vary (e.g., "environment", "region", "tenant").
  *
- * An Axis is a descriptor for a dimension axes variation in your system. It pairs with
+ * An Axis is a descriptor for a dimension of variation in your system. It pairs with
  * an enum type T that implements [AxisValue] to define the possible values along that axis.
  *
  * ## Usage
@@ -20,7 +20,7 @@ import kotlin.reflect.KClass
  * }
  * ```
  *
- * The axis id is derived from the fully-qualified class name axes [T]. To use a stable custom id
+ * The axis id is derived from the fully-qualified class name of [T]. To use a stable custom id
  * instead — for example when the class may be relocated across packages — annotate the enum with
  * [KonditionalExplicitId]:
  * ```kotlin
@@ -29,7 +29,7 @@ import kotlin.reflect.KClass
  * ```
  *
  * @param T The enum type that represents values along this axis.
- * @param valueClass The runtime class axes the value type [T].
+ * @param valueClass The runtime class of the value type [T].
  *      This is intentionally passed explicitly to avoid fragile reflection-based extraction from generic supertypes.
  * @property id A stable, unique identifier for this axis derived from [T]'s FQCN or [KonditionalExplicitId].
  */

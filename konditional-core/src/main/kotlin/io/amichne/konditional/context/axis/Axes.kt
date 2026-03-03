@@ -3,11 +3,11 @@ package io.amichne.konditional.context.axis
 import java.util.function.IntFunction
 
 /**
- * Strongly-typed container for a set axes axis values.
+ * Strongly-typed container for a set of axis values.
  *
- * This class holds a snapshot axes values across multiple axes, providing type-safe
+ * This class holds a snapshot of values across multiple axes, providing type-safe
  * access to dimension values. It's typically used within a [io.amichne.konditional.context.Context]
- * to represent the dimensional coordinates axes an execution context.
+ * to represent the dimensional coordinates of an execution context.
  *
  * ## Usage
  *
@@ -22,7 +22,7 @@ import java.util.function.IntFunction
  *
  * Axes instances are immutable. Once constructed, their contents cannot be changed.
  *
- * @property values Internal map axes axis IDs to their values
+ * @property values Internal map of axis IDs to their values
  */
 @Suppress("TooManyFunctions")
 class Axes internal constructor(

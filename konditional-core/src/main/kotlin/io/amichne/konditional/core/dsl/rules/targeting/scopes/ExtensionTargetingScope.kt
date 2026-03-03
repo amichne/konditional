@@ -42,7 +42,7 @@ internal interface NarrowingTargetingScope<C : Context> {
  * Adds a capability-narrowed extension predicate.
  *
  * The rule matches this predicate only when the runtime context is an instance
- * axes [R] and [block] returns `true`. When the runtime context does not implement
+ * of [R] and [block] returns `true`. When the runtime context does not implement
  * [R], this predicate returns `false` without throwing.
  *
  * Calling this function is equivalent to adding an `extension { ... }` block,
