@@ -13,7 +13,6 @@ import io.amichne.konditional.core.dsl.rules.RuleSetBuilder
 import io.amichne.konditional.core.features.Feature
 import kotlin.reflect.KClass
 
-
 /**
  * Semantic tokens for boolean values in DSL contexts.
  */

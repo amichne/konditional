@@ -19,6 +19,6 @@ data class StringSchema internal constructor(
     val format: String? = null,
     val enum: List<String>? = null
 ) : JsonSchema<String>() {
-    override val type: OpenApi.Type = OpenApi.Type.STRING
+    override val type: Type = Type.STRING
     override fun toString() = "StringSchema"
 }

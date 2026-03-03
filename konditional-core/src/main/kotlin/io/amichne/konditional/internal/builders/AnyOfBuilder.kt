@@ -60,20 +60,6 @@ internal class AnyOfBuilder<C : Context> : AnyOfScope<C>, NarrowingTargetingScop
         )
     }
 
-    override fun <T> axis(
-        axis: Axis<T>,
-        vararg values: T,
-    ) where T : AxisValue<T>, T : Enum<T> {
-        require(values.isNotEmpty()) { "axis(...) requires at least one value." }
-        onAxisSelection(axis, values.toCollection(linkedSetOf()))
-    }
-
-    override fun <T> axis(vararg values: T) where T : AxisValue<T>, T : Enum<T> {
-        throw UnsupportedOperationException(
-            "Legacy axis(vararg values) is removed. Use variant { axisHandle { include(...) } }.",
-        )
-    }
-
     override fun <V> onAxisSelection(
         axis: Axis<V>,
         values: Set<V>,

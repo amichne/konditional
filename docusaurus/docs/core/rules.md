@@ -29,7 +29,7 @@ Inside a rule block (`RuleScope`):
 - `locales(...)` targets locale ids
 - `platforms(...)` targets platform ids
 - `versions { min(...); max(...) }` targets version ranges
-- `variant { axisHandle { include(...) } }` targets custom axes
+- `constrain(...)` targets custom axes
 - `extension { ... }` custom predicate
 - `rampUp { ... }` percentage rollout
 - `allowlist(...)` stable IDs that bypass ramp-up
@@ -37,13 +37,13 @@ Inside a rule block (`RuleScope`):
 - `always()` / `matchAll()` mark a catch-all rule explicitly
 
 All targeting calls inside one rule are combined with AND semantics. Repeating
-`variant { axisHandle { include(...) } }` for the same axis id widens allowed
-values with OR semantics within that axis.
+`constrain(...)` calls for the same axis id widens allowed values with OR
+semantics within that axis.
 
-## Namespace axis handles
+## Axis targeting and context values
 
-Axis targeting resolves through explicit axis handles owned by a namespace.
-This keeps axis bindings explicit and local to the owning namespace.
+Axis targeting resolves from the enum values you pass to `constrain(...)`.
+The axis ID is derived from the enum fully-qualified class name by default.
 
 ```kotlin
 import io.amichne.konditional.context.axis.KonditionalExplicitId
@@ -59,15 +59,10 @@ enum class Tenant : AxisValue<Tenant> {
 }
 
 object AppFeatures : Namespace("app") {
-    val environmentAxis = axis<Environment>()
-    val tenantAxis = axis<Tenant>()
-
     val checkout by boolean<Context>(default = false) {
         rule(true) {
-            variant {
-                environmentAxis { include(Environment.PROD) }
-                tenantAxis { include(Tenant.ENTERPRISE) }
-            }
+            constrain(Environment.PROD)
+            constrain(Tenant.ENTERPRISE)
         }
     }
 }
@@ -76,14 +71,10 @@ object AppFeatures : Namespace("app") {
 By default, an axis ID is derived from the enum fully-qualified class name.
 Apply `@KonditionalExplicitId("...")` when you need a stable custom axis ID.
 
-For context values, use explicit handles:
+For context values, use `axes(...)`:
 
 ```kotlin
-val values = axisValues {
-    variant {
-        AppFeatures.environmentAxis { include(Environment.PROD) }
-    }
-}
+val values = axes(Environment.PROD)
 ```
 
 ## Targeting hierarchy

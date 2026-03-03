@@ -52,7 +52,7 @@ data class CompositeContext(
     override val platform = (context as Context.PlatformContext).platform
     override val appVersion = (context as Context.VersionContext).appVersion
     override val stableId = (context as Context.StableIdContext).stableId
-    override val axisValues = context.axisValues
+    override val axes = context.axes
 }
 
 /**

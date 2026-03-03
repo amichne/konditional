@@ -16,7 +16,8 @@ sidebar_position: 4
 
 ## Custom Axes
 
-Use `Axis<T>` + `AxisValue<T>` + `axisValues { ... }` for additional dimensions like tenant, region, or environment.
+Use `AxisValue<T>` + `constrain(...)` + `axes(...)` for additional dimensions
+like tenant, region, or environment.
 
 ```kotlin
 import io.amichne.konditional.context.axis.KonditionalExplicitId
@@ -27,13 +28,9 @@ enum class Tier(override val id: String) : AxisValue<Tier> {
 }
 
 object BillingFlags : Namespace("billing") {
-  val tierAxis = axis<Tier>()
-
   val premiumExport by boolean<Context>(default = false) {
     rule(true) {
-      variant {
-        tierAxis { include(Tier.PRO, Tier.ENTERPRISE) }
-      }
+      constrain(Tier.PRO, Tier.ENTERPRISE)
     }
   }
 }

@@ -14,7 +14,7 @@ import dev.openfeature.sdk.Value
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.api.evaluateInternalApi
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.axis.AxisValues
+import io.amichne.konditional.context.axis.Axes
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.ops.Metrics
@@ -36,7 +36,7 @@ fun interface KonditionalContextMapper<C : Context> {
 }
 
 /**
- * Result of converting an OpenFeature context into a trusted Konditional context.
+ * Result axes converting an OpenFeature context into a trusted Konditional context.
  */
 sealed interface KonditionalContextMappingResult<out C : Context> {
     /**
@@ -89,11 +89,11 @@ data class KonditionalProviderMetadata(private val providerName: String = "Kondi
 
 data class TargetingKeyContext(
     override val stableId: StableId,
-    override val axisValues: AxisValues = AxisValues.EMPTY,
+    override val axes: Axes = Axes.EMPTY,
 ) : Context, Context.StableIdContext
 
 class TargetingKeyContextMapper(
-    private val axisValuesProvider: (EvaluationContext) -> AxisValues = { AxisValues.EMPTY },
+    private val axesProvider: (EvaluationContext) -> Axes = { Axes.EMPTY },
 ) : KonditionalContextMapper<TargetingKeyContext> {
     override fun toKonditionalContext(context: EvaluationContext): KonditionalContextMappingResult<TargetingKeyContext> =
         when (val targetingKey = context.targetingKey) {
@@ -105,7 +105,7 @@ class TargetingKeyContextMapper(
                         KonditionalContextMappingResult.success(
                             TargetingKeyContext(
                                 stableId = StableId.of(normalizedTargetingKey),
-                                axisValues = axisValuesProvider(context),
+                                axes = axesProvider(context),
                             ),
                         )
                     }
@@ -287,7 +287,7 @@ class KonditionalOpenFeatureProvider<C : Context>(
                         ?: errorEvaluation(
                             defaultValue = defaultValue,
                             errorCode = ErrorCode.TYPE_MISMATCH,
-                            errorMessage = "Flag '$key' produced a value of an unexpected type",
+                            errorMessage = "Flag '$key' produced a value axes an unexpected type",
                         )
                 },
                 onFailure = { error ->

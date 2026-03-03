@@ -7,7 +7,7 @@ import io.amichne.konditional.context.Context.LocaleContext
 import io.amichne.konditional.context.Context.PlatformContext
 import io.amichne.konditional.context.Context.StableIdContext
 import io.amichne.konditional.context.Context.VersionContext
-import io.amichne.konditional.context.axis.AxisValues
+import io.amichne.konditional.context.axis.Axes
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.internal.evaluation.EvaluationDiagnostics
 import io.amichne.konditional.otel.traces.KonditionalSemanticAttributes.DecisionType
@@ -197,8 +197,8 @@ class FlagEvaluationTracer(
                 val percentage = config.samplingStrategy.percentage
                 val deterministicHash =
                     (context as? StableIdContext)?.stableId?.hexId?.id?.hashCode()
-                        ?: context.axisValues
-                            .takeIf { it != AxisValues.EMPTY }
+                        ?: context.axes
+                            .takeIf { it != Axes.EMPTY }
                             ?.hashCode()
                 val deterministicSample = deterministicHash?.let { hash ->
                     (hash.toLong() and 0x7FFFFFFF) % 100 < percentage

@@ -110,7 +110,7 @@ class KonstrainedIntegrationTest {
         val override = UserSettings(theme = "dark", notificationsEnabled = false, maxRetries = 1, timeout = 10.0)
         features.withOverride(features.userSettings, override) {
             assertEquals(override, features.userSettings.evaluate(context))
-            val json = ConfigurationCodec.encode(features.configuration)
+            val json = ConfigurationCodec.encode(features)
             println(json)
             // Verify round-trip serialization works
             ConfigurationCodec.decode(

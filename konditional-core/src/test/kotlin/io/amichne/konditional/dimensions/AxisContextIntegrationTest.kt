@@ -1,9 +1,7 @@
 package io.amichne.konditional.dimensions
 
-import io.amichne.konditional.api.axis
-import io.amichne.konditional.api.axisValues
-import io.amichne.konditional.core.dsl.variant
-import io.amichne.konditional.fixtures.TestAxes
+import io.amichne.konditional.context.axis.Axis
+import io.amichne.konditional.context.axis.axes
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
@@ -16,59 +14,24 @@ import org.junit.jupiter.api.Test
 class AxisContextIntegrationTest {
 
     @Test
-    fun `context axis extension returns typed values`() {
-        val values = axisValues {
-            variant {
-                TestAxes.Environment { include(TestEnvironment.STAGE) }
-                TestAxes.Tenant { include(TestTenant.ENTERPRISE) }
-            }
-        }
-
-        val ctx = TestContext(axisValues = values)
+    fun `context axes getter returns typed values`() {
+        val ctx = TestContext(axes = axes(TestEnvironment.STAGE, TestTenant.ENTERPRISE))
 
         Assertions.assertEquals(
             setOf(TestEnvironment.STAGE),
-            ctx.axis(TestAxes.Environment),
+            ctx.axes[Axis.of<TestEnvironment>()],
         )
         Assertions.assertEquals(
             setOf(TestTenant.ENTERPRISE),
-            ctx.axis(TestAxes.Tenant),
+            ctx.axes[Axis.of<TestTenant>()],
         )
     }
 
     @Test
-    fun `context axis type-based extension returns typed values`() {
-        val values = axisValues {
-            variant {
-                TestAxes.Environment { include(TestEnvironment.STAGE) }
-                TestAxes.Tenant { include(TestTenant.ENTERPRISE) }
-            }
-        }
+    fun `context axes getter returns empty set for missing axis`() {
+        val ctx = TestContext(axes = axes(TestEnvironment.PROD))
 
-        val ctx = TestContext(axisValues = values)
-
-        // Type-based access
-        Assertions.assertEquals(
-            setOf(TestEnvironment.STAGE),
-            ctx.axis<TestEnvironment>(),
-        )
-        Assertions.assertEquals(
-            setOf(TestTenant.ENTERPRISE),
-            ctx.axis<TestTenant>(),
-        )
-    }
-
-    @Test
-    fun `context axis extension returns null for missing axis`() {
-        val values = axisValues {
-            variant {
-                TestAxes.Environment { include(TestEnvironment.PROD) }
-            }
-        }
-        val ctx = TestContext(axisValues = values)
-
-        Assertions.assertTrue(ctx.axis(TestAxes.Tenant).isEmpty(), "Tenant should be empty when not set")
-        Assertions.assertTrue(ctx.axis<TestTenant>().isEmpty(), "Type-based access should also return empty")
+        Assertions.assertTrue(ctx.axes[Axis.of<TestTenant>()].isEmpty(), "Tenant should be empty when not set")
     }
 
 }

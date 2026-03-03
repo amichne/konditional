@@ -6,11 +6,10 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
-import io.amichne.konditional.context.axis.AxisValues
+import io.amichne.konditional.context.axis.Axes
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.dsl.AxisValuesScope
 import io.amichne.konditional.core.dsl.enable
-import io.amichne.konditional.core.dsl.variant
+import io.amichne.konditional.core.dsl.rules.targeting.scopes.constrain
 import io.amichne.konditional.core.id.StableId
 
 /**
@@ -43,23 +42,6 @@ object TestAxes {
 }
 
 /**
- * Convenience helpers to make the AxisValuesScope DSL feel native.
- *
- * These would normally live in your application module.
- */
-fun AxisValuesScope.environment(env: TestEnvironment) {
-    variant {
-        TestAxes.Environment { include(env) }
-    }
-}
-
-fun AxisValuesScope.tenant(tenant: TestTenant) {
-    variant {
-        TestAxes.Tenant { include(tenant) }
-    }
-}
-
-/**
  * Test-only context implementation wiring axis values into Konditional's Context.
  */
 data class TestContext(
@@ -68,17 +50,12 @@ data class TestContext(
     override val appVersion: Version =
         Version.parse("1.0.0").getOrThrow(),
     override val stableId: StableId = StableId.of("deadbeef"),
-    override val axisValues: AxisValues = AxisValues.EMPTY,
+    override val axes: Axes = Axes.EMPTY,
 ) : Context,
     Context.LocaleContext,
     Context.PlatformContext,
     Context.VersionContext,
-    Context.StableIdContext {
-    init {
-//        TestAxes.Environment
-//        TestAxes.Tenant
-    }
-}
+    Context.StableIdContext
 
 /**
  * Test-only feature container exercising the dimension-based DSL.
@@ -90,9 +67,7 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      */
     val envScopedFlag by boolean<TestContext>(default = false) {
         enable {
-            variant {
-                TestAxes.Environment { include(TestEnvironment.PROD) }
-            }
+            constrain(TestEnvironment.PROD)
         }
     }
 
@@ -104,10 +79,8 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      */
     val envAndTenantScopedFlag by boolean<TestContext>(default = false) {
         enable {
-            variant {
-                TestAxes.Environment { include(TestEnvironment.PROD, TestEnvironment.STAGE) }
-                TestAxes.Tenant { include(TestTenant.ENTERPRISE) }
-            }
+            constrain(TestEnvironment.PROD, TestEnvironment.STAGE)
+            constrain(TestTenant.ENTERPRISE)
         }
     }
 
@@ -120,10 +93,8 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
      */
     val fallbackRuleFlag by boolean<TestContext>(default = false) {
         enable {
-            variant {
-                TestAxes.Environment { include(TestEnvironment.PROD) }
-                TestAxes.Tenant { include(TestTenant.ENTERPRISE) }
-            }
+            constrain(TestEnvironment.PROD)
+            constrain(TestTenant.ENTERPRISE)
         }
 
         enable {
@@ -134,14 +105,12 @@ object FeaturesWithAxis : Namespace.TestNamespaceFacade("dimensions-test") {
     }
 
     /**
-     * Demonstrates multiple calls to axis(...) for the same axis
+     * Demonstrates multiple calls to constrain(...) for the same axis
      * accumulating allowed values.
      */
     val repeatedAxisFlag by boolean<TestContext>(default = false) {
         enable {
-            variant {
-                TestAxes.Environment { include(TestEnvironment.DEV, TestEnvironment.STAGE) }
-            }
+            constrain(TestEnvironment.DEV, TestEnvironment.STAGE)
         }
     }
 }

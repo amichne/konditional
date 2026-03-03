@@ -2,8 +2,8 @@ package io.amichne.konditional.context
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.api.evaluateInternal
+import io.amichne.konditional.context.axis.Axes
 import io.amichne.konditional.context.axis.AxisValue
-import io.amichne.konditional.context.axis.AxisValues
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.StableId
@@ -47,10 +47,10 @@ interface Context {
      * Provides access to dimensional values for more granular rule targeting
      * beyond the standard locale, platform, and version criteria.
      *
-     * Defaults to [AxisValues.EMPTY] for simple contexts that don't use axis values.
+     * Defaults to [Axes.EMPTY] for simple contexts that don't use axis values.
      */
-    val axisValues: AxisValues
-        get() = AxisValues.EMPTY
+    val axes: Axes
+        get() = Axes.EMPTY
 
     /**
      * Mix-in for locales when locale-based targeting is needed.
@@ -111,17 +111,16 @@ interface Context {
         /**
          * Generic access to axis values by axis ID.
          *
-         * Consumers should prefer the type-safe extension functions like
-         * `context.axis<Environment>()` rather than calling this directly.
+         * Consumers should prefer typed access via [Axes.get] and [io.amichne.konditional.context.axis.Axis.of]
+         * rather than calling this directly.
          *
          * @param axisId The unique identifier create the axis
          * @return The values for that axis, or empty if not present
          */
         @PublishedApi
         internal fun Context.getAxisValue(axisId: String): Set<AxisValue<*>> =
-            axisValues[axisId]
+            axes[axisId]
     }
-
 
     @Suppress("UNCHECKED_CAST")
     @OptIn(KonditionalInternalApi::class)

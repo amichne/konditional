@@ -3,15 +3,13 @@
 package io.amichne.konditional.serialization
 
 import io.amichne.konditional.api.KonditionalInternalApi
-import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.context.axis.axes
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
-import io.amichne.konditional.core.dsl.variant
-import io.amichne.konditional.core.schema.CompiledNamespaceSchema
-import io.amichne.konditional.fixtures.TestAxes
+import io.amichne.konditional.core.dsl.rules.targeting.scopes.constrain
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.runtime.dump
@@ -58,7 +56,7 @@ class OperationalSerializationTest {
         val lenientResult =
             ConfigurationCodec.decode(
                 json = snapshotJson,
-                schema = CompiledNamespaceSchema.from(namespace),
+                namespace = namespace,
                 options = lenient,
             )
         assertTrue(lenientResult.isSuccess)
@@ -72,30 +70,18 @@ class OperationalSerializationTest {
         val namespace = object : Namespace("axis-roundtrip-${UUID.randomUUID()}") {
             val envScopedFlag by boolean<TestContext>(default = false) {
                 enable {
-                    variant {
-                        TestAxes.Environment {
-                            include(TestEnvironment.PROD)
-                        }
-                    }
+                    constrain(TestEnvironment.PROD)
                 }
             }
         }
 
         val productionContext = TestContext(
             appVersion = Version.parse("1.0.0").getOrThrow(),
-            axisValues = axisValues {
-                variant {
-                    TestAxes.Environment { include(TestEnvironment.PROD) }
-                }
-            },
+            axes = axes(TestEnvironment.PROD),
         )
         val developementContext = TestContext(
             appVersion = Version.parse("1.0.0").getOrThrow(),
-            axisValues = axisValues {
-                variant {
-                    TestAxes.Environment { include(TestEnvironment.DEV) }
-                }
-            },
+            axes = axes(TestEnvironment.DEV),
         )
 
         assertTrue(namespace.envScopedFlag.evaluate(productionContext))
@@ -140,7 +126,7 @@ class OperationalSerializationTest {
         )
 
         val json = ConfigurationCodec.encode(config)
-        val parsed = ConfigurationCodec.decode(json, CompiledNamespaceSchema.from(namespace))
+        val parsed = ConfigurationCodec.decode(json, namespace)
         assertTrue(parsed.isSuccess)
         assertEquals(config.metadata, parsed.getOrThrow().metadata)
     }

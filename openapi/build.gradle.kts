@@ -14,3 +14,10 @@ konditionalPublishing {
     moduleName.set("Konditional OpenAPI Schema Types")
     moduleDescription.set("OpenAPI schema interfaces shared by Kontracts")
 }
+
+
+konditionalPublishing {
+    artifactId.set("konditional-openapi")
+    moduleName.set("Konditional OpenAPI Schema Types")
+    moduleDescription.set("OpenAPI schema interfaces shared by Kontracts")
+}

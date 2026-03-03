@@ -13,6 +13,6 @@ data class AnySchema internal constructor(
     override val example: Any? = null,
     override val deprecated: Boolean = false
 ) : JsonSchema<Any>() {
-    override val type: OpenApi.Type = OpenApi.Type.OBJECT
+    override val type: Type = Type.OBJECT
     override fun toString() = "AnySchema"
 }

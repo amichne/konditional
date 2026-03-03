@@ -5,6 +5,7 @@ package io.amichne.kontracts.schema
  */
 sealed class ValidationResult {
     object Valid : ValidationResult()
+
     @ConsistentCopyVisibility
     data class Invalid internal constructor(val message: String) : ValidationResult()
 

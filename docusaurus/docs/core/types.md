@@ -32,7 +32,7 @@ interface Context {
   val appVersion: Version
   val stableId: StableId
 
-  val axisValues: AxisValues get() = AxisValues.EMPTY
+  val axes: Axes get() = Axes.EMPTY
 
   data class Core(...) : Context
 

@@ -1,11 +1,11 @@
 package io.amichne.konditional.dimensions
 
-import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.axis.AxisValue
+import io.amichne.konditional.context.axis.axes
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
-import io.amichne.konditional.core.dsl.variant
+import io.amichne.konditional.core.dsl.rules.targeting.scopes.constrain
 import io.amichne.konditional.fixtures.TestContext
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -21,25 +21,17 @@ class AxisNamespaceIsolationTest {
     }
 
     private object NamespaceA : Namespace.TestNamespaceFacade("axis-ns-a") {
-        val environmentAxis = axis<ScopedEnvironmentA>()
-
         val flag by boolean<TestContext>(default = false) {
             enable {
-                variant {
-                    environmentAxis { include(ScopedEnvironmentA.PROD) }
-                }
+                constrain(ScopedEnvironmentA.PROD)
             }
         }
     }
 
     private object NamespaceB : Namespace.TestNamespaceFacade("axis-ns-b") {
-        val environmentAxis = axis<ScopedEnvironmentB>()
-
         val flag by boolean<TestContext>(default = false) {
             enable {
-                variant {
-                    environmentAxis { include(ScopedEnvironmentB.PROD) }
-                }
+                constrain(ScopedEnvironmentB.PROD)
             }
         }
     }
@@ -48,19 +40,11 @@ class AxisNamespaceIsolationTest {
     fun `axis handles are isolated by axis id`() {
         val contextForA =
             TestContext(
-                axisValues = axisValues {
-                    variant {
-                        NamespaceA.environmentAxis { include(ScopedEnvironmentA.PROD) }
-                    }
-                },
+                axes = axes(ScopedEnvironmentA.PROD),
             )
         val contextForB =
             TestContext(
-                axisValues = axisValues {
-                    variant {
-                        NamespaceB.environmentAxis { include(ScopedEnvironmentB.PROD) }
-                    }
-                },
+                axes = axes(ScopedEnvironmentB.PROD),
             )
 
         assertTrue(NamespaceA.flag.evaluate(contextForA))

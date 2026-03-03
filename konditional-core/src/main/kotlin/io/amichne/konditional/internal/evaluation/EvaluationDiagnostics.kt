@@ -2,8 +2,8 @@
 
 package io.amichne.konditional.internal.evaluation
 
-import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.api.BucketInfo
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.rules.versions.VersionRange
@@ -43,7 +43,6 @@ data class EvaluationDiagnostics<T : Any>(
         val rule: RuleExplanation,
         val bucket: BucketInfo,
     )
-
 
     enum class ExtensionType {
         NONE,

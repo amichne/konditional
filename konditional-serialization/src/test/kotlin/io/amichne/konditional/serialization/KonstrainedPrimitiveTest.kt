@@ -324,7 +324,7 @@ class KonstrainedPrimitiveTest {
         }
 
         features.withOverride(features.email, overrideEmail) {
-            val json = ConfigurationCodec.encode(features.configuration)
+            val json = ConfigurationCodec.encode(features)
             val decoded = ConfigurationCodec.decode(
                 json = json,
                 namespace = features,

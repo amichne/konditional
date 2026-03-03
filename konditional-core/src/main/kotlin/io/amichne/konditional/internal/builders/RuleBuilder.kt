@@ -6,8 +6,6 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.LocaleTag
 import io.amichne.konditional.context.PlatformTag
 import io.amichne.konditional.context.RampUp
-import io.amichne.konditional.context.axis.Axis
-import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.VariantDispatchHost
 import io.amichne.konditional.core.dsl.VersionRangeScope
@@ -78,20 +76,6 @@ internal class RuleBuilder<C : Context>(
         leaves += Targeting.Guarded(
             inner = Targeting.Custom(block = { narrowed: R -> narrowed.block() }),
             evidence = evidence,
-        )
-    }
-
-    override fun <T> axis(
-        axis: Axis<T>,
-        vararg values: T,
-    ) where T : AxisValue<T>, T : Enum<T> {
-        require(values.isNotEmpty()) { "axis(...) requires at least one value." }
-        onAxisSelection(axis, values.toCollection(linkedSetOf()))
-    }
-
-    override fun <T> axis(vararg values: T) where T : AxisValue<T>, T : Enum<T> {
-        throw UnsupportedOperationException(
-            "Legacy axis(vararg values) is removed. Use variant { axisHandle { include(...) } }.",
         )
     }
 

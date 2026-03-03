@@ -238,8 +238,7 @@ This keeps behavior pinned to the baseline value while generating comparison tel
 
 ## Axis handle factory migration
 
-Axis descriptors remain factory-only handles. In this release, axis IDs are
-inferred from the axis value enum type by default.
+Axis IDs are inferred from the axis value enum type by default. 
 
 **Before**
 
@@ -254,27 +253,24 @@ object AppFeatures : Namespace("app") {
 ```kotlin
 @KonditionalExplicitId("environment")
 enum class Environment : AxisValue<Environment> { PROD, STAGE, DEV }
-
-object AppFeatures : Namespace("app") {
-    val environmentAxis = axis<Environment>()
-}
 ```
 
-If you need an explicit factory call without namespace sugar:
+If you need a low-level descriptor (for example, typed reads from `Axes`):
 
 ```kotlin
 val environmentAxis = Axis.of(Environment::class)
 ```
 
-The explicit-id overloads (`axis<T>("id")` and `Axis.of(id = ...)`) are now
-deprecated. Use `@KonditionalExplicitId("...")` on the enum when you need a
+The explicit-id overloads (`axis<T>("id")` and `Axis.of(id = ...)`) were
+removed. Use `@KonditionalExplicitId("...")` on the enum when you need a
 stable custom ID across package moves.
 
-### Variant DSL migration
+### Axis entrypoint migration
 
-Axis rule and context APIs now use `variant { ... }` with explicit axis handles.
-Legacy `axis(...)`, `set(...)`, and `setIfNotNull(...)` APIs are
-`DeprecationLevel.ERROR`.
+Axis rule and context APIs now use two entrypoints:
+`constrain(...)` for rules, and `axes(...)` for context values.
+Legacy `axisValues`, `variant`, `set(...)`, and `setIfNotNull(...)` APIs were
+removed.
 
 **Before**
 
@@ -286,21 +282,12 @@ val values = axisValues { set(AppFeatures.environmentAxis, Environment.PROD) }
 **After**
 
 ```kotlin
-enable {
-    variant {
-        AppFeatures.environmentAxis { include(Environment.PROD) }
-    }
-}
-
-val values = axisValues {
-    variant {
-        AppFeatures.environmentAxis { include(Environment.PROD) }
-    }
-}
+enable { constrain(Environment.PROD) }
+val values = axes(Environment.PROD)
 ```
 
-For nullable values, replace `setIfNotNull(axis, value)` with
-`value?.let { variant { axis { include(it) } } }`.
+For nullable values, replace `setIfNotNull(axis, value)` with an explicit
+conditional around `axes(...)`.
 
 ---
 
@@ -312,7 +299,7 @@ composition.
 - **What changed**: rule criteria compile into `Targeting.All` with leaf nodes
   for locale, platform, version, axis, and custom extension criteria.
 - **What stays the same**: your DSL usage (`platforms`, `locales`, `versions`,
-  `variant`, `extension`, and `whenContext`) keeps the same behavior.
+  `constrain`, `extension`, and `whenContext`) keeps the same behavior.
 - **Compatibility**: legacy `Predicate<C>` implementations are supported as a
   deprecated bridge; new logic should use `extension { ... }` and
   `whenContext<R> { ... }`.
