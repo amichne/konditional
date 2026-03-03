@@ -104,7 +104,7 @@ class ConfigurationCodecTest {
         ConfigurationCodec
             .decode(
                 json = json,
-                schema = CompiledNamespaceSchema.from(TestFeatures),
+                namespace = TestFeatures,
                 options = options,
             ).toParseResult()
 
@@ -855,11 +855,14 @@ class ConfigurationCodecTest {
                     min(2, 0, 0)
                     max(3, 0, 0)
                 }
+                constrain(TestEnvironment.DEV, TestEnvironment.PROD)
+                constrain(TestTenant.CONSUMER)
             }
         }
 
         val json = TestFeatures.json
         val result = decodeFeatureAware(json)
+        println(json)
 
         assertIs<ParseResult.Success<Configuration>>(result)
         val deserializedFlag = result.value.flags[TestFeatures.boolFlag]

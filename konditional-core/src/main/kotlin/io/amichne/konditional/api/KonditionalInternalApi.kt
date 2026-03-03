@@ -31,7 +31,6 @@ package io.amichne.konditional.api
 )
 annotation class KonditionalInternalApi
 
-
 @RequiresOptIn(
     level = RequiresOptIn.Level.WARNING,
     message = "This is an delicate Konditional API. Opt-in is required," +

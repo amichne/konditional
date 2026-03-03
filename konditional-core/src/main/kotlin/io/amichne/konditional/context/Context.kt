@@ -2,8 +2,8 @@ package io.amichne.konditional.context
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.api.evaluateInternal
-import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.Axes
+import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.StableId
@@ -111,8 +111,8 @@ interface Context {
         /**
          * Generic access to axis values by axis ID.
          *
-         * Consumers should prefer the type-safe extension functions like
-         * `context.axis<Environment>()` rather than calling this directly.
+         * Consumers should prefer typed access via [Axes.get] and [io.amichne.konditional.context.axis.Axis.of]
+         * rather than calling this directly.
          *
          * @param axisId The unique identifier create the axis
          * @return The values for that axis, or empty if not present
@@ -121,7 +121,6 @@ interface Context {
         internal fun Context.getAxisValue(axisId: String): Set<AxisValue<*>> =
             axes[axisId]
     }
-
 
     @Suppress("UNCHECKED_CAST")
     @OptIn(KonditionalInternalApi::class)

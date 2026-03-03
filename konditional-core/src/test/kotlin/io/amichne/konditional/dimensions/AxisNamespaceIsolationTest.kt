@@ -1,10 +1,9 @@
 package io.amichne.konditional.dimensions
 
-import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.axis.AxisValue
+import io.amichne.konditional.context.axis.axes
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.dsl.axis
 import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.constrain
 import io.amichne.konditional.fixtures.TestContext
@@ -22,8 +21,6 @@ class AxisNamespaceIsolationTest {
     }
 
     private object NamespaceA : Namespace.TestNamespaceFacade("axis-ns-a") {
-        val environmentAxis = axis<ScopedEnvironmentA>()
-
         val flag by boolean<TestContext>(default = false) {
             enable {
                 constrain(ScopedEnvironmentA.PROD)
@@ -32,8 +29,6 @@ class AxisNamespaceIsolationTest {
     }
 
     private object NamespaceB : Namespace.TestNamespaceFacade("axis-ns-b") {
-        val environmentAxis = axis<ScopedEnvironmentB>()
-
         val flag by boolean<TestContext>(default = false) {
             enable {
                 constrain(ScopedEnvironmentB.PROD)
@@ -45,15 +40,11 @@ class AxisNamespaceIsolationTest {
     fun `axis handles are isolated by axis id`() {
         val contextForA =
             TestContext(
-                axes = axisValues {
-                    axis(ScopedEnvironmentA.PROD)
-                },
+                axes = axes(ScopedEnvironmentA.PROD),
             )
         val contextForB =
             TestContext(
-                axes = axisValues {
-                    axis(ScopedEnvironmentB.PROD)
-                },
+                axes = axes(ScopedEnvironmentB.PROD),
             )
 
         assertTrue(NamespaceA.flag.evaluate(contextForA))

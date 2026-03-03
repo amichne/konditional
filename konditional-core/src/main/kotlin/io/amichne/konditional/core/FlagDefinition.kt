@@ -8,7 +8,6 @@ import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.registry.NamespaceRegistry
 import io.amichne.konditional.rules.ConditionalValue
-import io.amichne.konditional.rules.Rule
 
 /**
  * Represents a flag definition that can be evaluated within a specific contextFn.

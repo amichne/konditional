@@ -8,8 +8,6 @@ import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.Axes
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.dsl.AxisValuesScope
-import io.amichne.konditional.core.dsl.axis
 import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.constrain
 import io.amichne.konditional.core.id.StableId
@@ -44,30 +42,6 @@ object TestAxes {
 }
 
 /**
- * Convenience helpers to make the AxisValuesScope DSL feel native.
- *
- * These would normally live in your application module.
- * Note: You can also use `axis(env, tenant)` for concise heterogeneous declarations.
- */
-fun AxisValuesScope.environment(env: TestEnvironment) {
-    axis(env)
-}
-
-fun AxisValuesScope.tenant(tenant: TestTenant) {
-    axis(tenant)
-}
-
-/**
- * Convenient helper to declare both environment and tenant in a single call.
- */
-fun AxisValuesScope.environmentAndTenant(
-    env: TestEnvironment,
-    tenant: TestTenant,
-) {
-    axis(env, tenant)
-}
-
-/**
  * Test-only context implementation wiring axis values into Konditional's Context.
  */
 data class TestContext(
@@ -81,12 +55,7 @@ data class TestContext(
     Context.LocaleContext,
     Context.PlatformContext,
     Context.VersionContext,
-    Context.StableIdContext {
-    init {
-//        TestAxes.Environment
-//        TestAxes.Tenant
-    }
-}
+    Context.StableIdContext
 
 /**
  * Test-only feature container exercising the dimension-based DSL.

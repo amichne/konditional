@@ -2,8 +2,8 @@
 
 package io.amichne.konditional.internal.evaluation
 
-import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.api.BucketInfo
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.rules.versions.VersionRange
@@ -11,7 +11,7 @@ import io.amichne.konditional.rules.versions.VersionRange
 /**
  * Internal diagnostics snapshot for a single evaluation.
  *
- * This is intentionally not part axes the consumer-facing API. Sibling modules (runtime/openfeature/observability)
+ * This is intentionally not part of the consumer-facing API. Sibling modules (runtime/openfeature/observability)
  * can opt into this contract for diagnostics and interoperability logic.
  */
 @KonditionalInternalApi
@@ -43,7 +43,6 @@ data class EvaluationDiagnostics<T : Any>(
         val rule: RuleExplanation,
         val bucket: BucketInfo,
     )
-
 
     enum class ExtensionType {
         NONE,

@@ -4,8 +4,6 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.axis.Axis
-import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.features.BooleanFeature
 import io.amichne.konditional.core.features.DoubleFeature
@@ -17,14 +15,12 @@ import io.amichne.konditional.core.features.StringFeature
 import io.amichne.konditional.core.registry.NamespaceRegistry
 import io.amichne.konditional.core.registry.NamespaceRegistryFactories
 import io.amichne.konditional.core.registry.NamespaceRegistryRuntime
-import io.amichne.konditional.core.schema.CompiledNamespaceSchema
 import io.amichne.konditional.core.spi.FeatureRegistrationHooks
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.internal.builders.FlagBuilder
 import io.amichne.konditional.values.IdentifierEncoding.SEPARATOR
 import org.jetbrains.annotations.TestOnly
 import java.util.UUID
-import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 /**
@@ -154,63 +150,6 @@ open class Namespace(
     fun declaredDefinition(feature: Feature<*, *, *>): FlagDefinition<*, *, *>? = declaredDefinitions[feature]
 
     /**
-     * Returns the immutable compile-time schema-plane for this namespace.
-     */
-    @KonditionalInternalApi
-    @Deprecated(
-        message = "Prefer ConfigurationCodec.decode overload that accepts a Namespace for schema inference.",
-        level = DeprecationLevel.HIDDEN,
-    )
-    fun compiledSchema(): CompiledNamespaceSchema = CompiledNamespaceSchema.from(this)
-
-
-    /**
-     * Declares an axis handle.
-     *
-     * The axis id is derived from [valueClass]'s fully-qualified name, or from a
-     * [io.amichne.konditional.context.axis.KonditionalExplicitId] annotation if present.
-     */
-    protected fun <T> axis(
-        valueClass: KClass<out T>,
-    ): Axis<T> where T : AxisValue<T>, T : Enum<T> =
-        Axis.of(valueClass = valueClass)
-
-    /**
-     * Reified helper for [axis].
-     */
-    protected inline fun <reified T> axis(): Axis<T> where T : AxisValue<T>, T : Enum<T> =
-        axis(valueClass = T::class)
-
-    /**
-     * Declares an axis handle with an explicit id.
-     */
-    @Deprecated(
-        message = "Axis ids are now derived from the value class FQCN. " +
-            "Drop the id argument, or annotate the enum with @KonditionalExplicitId(\"<id>\") for a stable custom id.",
-        replaceWith = ReplaceWith("axis(valueClass)"),
-        level = DeprecationLevel.WARNING,
-    )
-    @Suppress("DEPRECATION")
-    protected fun <T> axis(
-        id: String,
-        valueClass: KClass<out T>,
-    ): Axis<T> where T : AxisValue<T>, T : Enum<T> =
-        Axis.of(id = id, valueClass = valueClass)
-
-    /**
-     * Reified helper for the explicit-id [axis] overload.
-     */
-    @Deprecated(
-        message = "Axis ids are now derived from the value class FQCN. " +
-            "Drop the id argument, or annotate the enum with @KonditionalExplicitId(\"<id>\") for a stable custom id.",
-        replaceWith = ReplaceWith("axis<T>()"),
-        level = DeprecationLevel.WARNING,
-    )
-    @Suppress("DEPRECATION")
-    protected inline fun <reified T> axis(id: String): Axis<T> where T : AxisValue<T>, T : Enum<T> =
-        axis(id = id, valueClass = T::class)
-
-    /**
      * Defines a boolean feature on this namespace using property delegation.
      *
      * The property type and rule values are enforced at compile time. At runtime, a loaded
@@ -243,11 +182,9 @@ open class Namespace(
      * Example:
      * ```kotlin
      * object Checkout : Namespace("checkout") {
-     *     val tenantAxis = axis<Tenant>()
-     *
      *     val bannerText by string<Context>(default = "Welcome") {
      *         rule("Enterprise") {
-     *             variant { tenantAxis { include(Tenant.ENTERPRISE) } }
+     *             constrain(Tenant.ENTERPRISE)
      *         }
      *     }
      * }

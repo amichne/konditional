@@ -79,7 +79,6 @@ internal class RuleBuilder<C : Context>(
         )
     }
 
-
     override fun allowlist(vararg stableIds: StableId) {
         allowlist += stableIds.map { it.hexId }
     }

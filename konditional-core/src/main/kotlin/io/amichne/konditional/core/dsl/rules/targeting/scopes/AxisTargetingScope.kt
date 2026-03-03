@@ -29,24 +29,9 @@ interface AxisTargetingScope<C : Context>
  * }
  * ```
  *
- * This replaces the verbose `variant { axisHandle { include(...) } }` nesting:
- * ```kotlin
- * // Before:
- * enable {
- *     variant {
- *         Axes.Environment { include(Environment.PROD, Environment.STAGE) }
- *     }
- * }
- *
- * // After:
- * enable {
- *     constrain(Environment.PROD, Environment.STAGE)
- * }
- * ```
- *
  * ## Semantics
  *
- * - The axis is derived via `Axis.axes<V>()` from the enum type.
+ * - The axis is derived via `Axis.of<V>()` from the enum type.
  * - Multiple calls for the same axis widen allowed values with OR semantics within that axis.
  * - Multiple calls for different axes compose with AND semantics across axes.
  * - Requires at least one value (`first` parameter) for non-empty guarantee.

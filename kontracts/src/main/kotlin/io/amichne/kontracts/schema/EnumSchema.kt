@@ -20,6 +20,6 @@ data class EnumSchema<E : Enum<E>> internal constructor(
     override val example: E? = null,
     override val deprecated: Boolean = false
 ) : JsonSchema<E>() {
-    override val type: OpenApi.Type = OpenApi.Type.STRING
+    override val type: Type = Type.STRING
     override fun toString() = "EnumSchema(${enumClass.simpleName})"
 }

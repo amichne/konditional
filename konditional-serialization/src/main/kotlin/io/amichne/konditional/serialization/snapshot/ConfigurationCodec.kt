@@ -36,8 +36,8 @@ import io.amichne.konditional.serialization.snapshot.ConfigurationCodec.patch
  * decoding does not load into any namespace registry.
  *
  * There is exactly one way to perform each operation:
- * - [encode]: accepts any [ConfigurationView] (including [Configuration])
- * - [decode]: schema is only provided at decode time, never inferred from the input JSON
+ * - [encode]: accepts a [Configuration] directly, or reads the current snapshot from a [Namespace]
+ * - [decode]: schema is derived from the provided [Namespace]
  * - [patch]: derives schema from the provided [Namespace]
  *
  * To load a decoded snapshot into a namespace registry, use `NamespaceSnapshotLoader` from `:konditional-runtime`.
@@ -48,44 +48,26 @@ object ConfigurationCodec {
     private val patchAdapter = moshi.adapter(SerializablePatch::class.java).indent("  ")
 
     /**
-     * Encodes a [ConfigurationView] as a JSON snapshot string.
+     * Encodes a [Configuration] as a JSON snapshot string.
      *
-     * Prefer namespace-scoped serialization via `Namespace.dump()` from `:konditional-runtime`.
-     * This codec method remains available for infrastructure and tests that only hold a
-     * materialized [ConfigurationView]. Accepts any subtype: [Configuration], or a view
-     * obtained from a namespace.
+     * Use this overload when you hold a concrete [Configuration] directly.
+     * To serialize the current runtime state of a namespace, use [encode] with a [Namespace].
+     *
+     * @param configuration the configuration snapshot to encode
      */
-    @Deprecated(
-        message = "Prefer Namespace.dump() as the serialization entry point.",
-        level = DeprecationLevel.WARNING,
-    )
-    fun encode(value: ConfigurationView): String = snapshotAdapter.toJson(SerializableSnapshot.from(value.toConcrete()))
+    fun encode(configuration: Configuration): String =
+        snapshotAdapter.toJson(SerializableSnapshot.from(configuration))
 
     /**
-     * Decodes a JSON snapshot against a [CompiledNamespaceSchema].
+     * Encodes the current snapshot of [namespace] as a JSON snapshot string.
      *
-     * Returns a [Result] containing a fully validated [Configuration] on success,
-     * or a typed [ParseError] on failure. Never throws.
+     * Captures the namespace's immutable configuration at the moment of the call.
+     * Pairs symmetrically with [decode] and [patch], which also accept a [Namespace].
      *
-     * @param json the raw JSON snapshot string
-     * @param schema the compile-time schema produced by `Namespace.compiledSchema()`
-     * @param options controls unknown-key and missing-declared-flag handling
+     * @param namespace the namespace whose current configuration snapshot will be encoded
      */
-    @Deprecated(
-        message = "Prefer decode overload that accepts a Namespace for schema inference.",
-        level = DeprecationLevel.WARNING,
-    )
-    fun decode(
-        json: String,
-        schema: CompiledNamespaceSchema,
-        options: SnapshotLoadOptions = SnapshotLoadOptions.strict(),
-    ): Result<Configuration> = ConfigurationCodec.runCatching { snapshotAdapter.fromJson(json) }
-        .getOrElse { error ->
-            return parseFailure(
-                ParseError.invalidJson(error.message ?: "Unknown JSON parsing error"),
-            )
-        }?.toConfiguration(schema = schema, options = options)
-        ?: parseFailure(ParseError.invalidJson("Failed to parse JSON: null snapshot"))
+    fun encode(namespace: Namespace): String =
+        snapshotAdapter.toJson(SerializableSnapshot.from(namespace.configuration.toConcrete()))
 
     /**
      * Decodes a JSON snapshot against a [Namespace] target.

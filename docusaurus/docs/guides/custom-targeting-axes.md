@@ -27,17 +27,13 @@ By default, axis IDs are derived from the enum fully-qualified class name.
 Apply `@KonditionalExplicitId` when you need a stable custom axis ID that will
 survive enum package moves.
 
-## Step 2: Register Axis in Namespace
+## Step 2: Target axis values in rules
 
 ```kotlin
 object BillingFlags : Namespace("billing") {
-  val tenantTierAxis = axis<TenantTier>()
-
   val premiumReporting by boolean<Context>(default = false) {
     rule(true) {
-      variant {
-        tenantTierAxis { include(TenantTier.PRO, TenantTier.ENTERPRISE) }
-      }
+      constrain(TenantTier.PRO, TenantTier.ENTERPRISE)
     }
   }
 }
@@ -46,16 +42,13 @@ object BillingFlags : Namespace("billing") {
 ## Step 3: Supply Axis Values in Context
 
 ```kotlin
-import io.amichne.konditional.api.axisValues
+import io.amichne.konditional.context.axis.axes
 
-val axisValues = axisValues {
-  variant {
-    BillingFlags.tenantTierAxis { include(TenantTier.ENTERPRISE) }
-  }
-}
+val values = axes(TenantTier.ENTERPRISE)
 ```
 
-Attach those axis values in your context implementation so rules can resolve them consistently.
+Attach those axis values in your context implementation so rules can resolve
+them consistently.
 
 ## Expected Outcome
 

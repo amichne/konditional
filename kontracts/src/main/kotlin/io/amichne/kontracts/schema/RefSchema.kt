@@ -8,5 +8,5 @@ package io.amichne.kontracts.schema
 data class RefSchema internal constructor(
     val ref: String,
 ) : JsonSchema<Any>() {
-    override val type: OpenApi.Type = OpenApi.Type.OBJECT
+    override val type: Type = Type.OBJECT
 }

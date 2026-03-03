@@ -2,12 +2,11 @@
 
 package io.amichne.konditional.dimensions
 
-import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.KonditionalExplicitId
+import io.amichne.konditional.context.axis.axes
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.dsl.axis
 import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.constrain
 import io.amichne.konditional.fixtures.TestContext
@@ -41,9 +40,7 @@ class AxisFederationIntegrationTest {
     @Test
     fun `namespaces can reuse a shared axis handle for explicit axis targeting`() {
         val context = TestContext(
-            axes = axisValues {
-                axis(FederatedEnvironment.PROD)
-            },
+            axes = axes(FederatedEnvironment.PROD)
         )
 
         assertTrue(namespaceA.flag.evaluate(context))

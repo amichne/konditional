@@ -233,7 +233,7 @@ class NamespaceConfigurationCodecTest {
             )
 
         val json = testNamespace.dump()
-        val output = ConfigurationCodec.decode(json, CompiledNamespaceSchema.from(testNamespace)).getOrThrow()
+        val output = ConfigurationCodec.decode(json, testNamespace).getOrThrow()
 
         assertEquals(initial, output)
     }

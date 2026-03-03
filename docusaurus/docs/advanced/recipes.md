@@ -100,8 +100,6 @@ enum class Segment(override val id: String) : AxisValue<Segment> {
 }
 
 object SegmentFlags : Namespace("segment") {
-    val segmentAxis = axis<Segment>()
-
     val premiumUi by boolean<Context>(default = false) {
         enable {
             constrain(Segment.ENTERPRISE)
@@ -131,7 +129,8 @@ fun isPremiumUiEnabled(): Boolean {
 ```
 
 - **Guarantee**: Segment targeting is type-safe and serializable.
-- **Mechanism**: Axis IDs are stored in JSON; `variant { axisHandle { include(...) } }` evaluates against `Context.axisValues`.
+- **Mechanism**: Axis IDs are stored in JSON, `constrain(...)` emits axis
+  targeting leaves, and evaluation reads `Context.axes`.
 - **Boundary**: Axis IDs must remain stable across builds and obfuscation.
 
 ---

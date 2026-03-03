@@ -1,7 +1,6 @@
 package io.amichne.konditional.context.axis
 
 import java.util.function.IntFunction
-import kotlin.reflect.KClass
 
 /**
  * Strongly-typed container for a set axes axis values.
@@ -14,18 +13,9 @@ import kotlin.reflect.KClass
  *
  * Access values by axis:
  * ```kotlin
- * val environment: Set<Environment> = axes[Axes.Environment]
- * val tenant: Set<Tenant> = axes[Axes.Tenant]
- * ```
- *
- * Construct via builder:
- * ```kotlin
- * val values = axes {
- *     variant {
- *         Axes.Environment { include(Environment.PROD) }
- *         Axes.Tenant { include(Tenant.ENTERPRISE) }
- *     }
- * }
+ * val values = axes(Environment.PROD, Tenant.ENTERPRISE)
+ * val environment: Set<Environment> = values[Axis.of<Environment>()]
+ * val tenant: Set<Tenant> = values[Axis.of<Tenant>()]
  * ```
  *
  * ## Immutability
@@ -65,16 +55,6 @@ class Axes internal constructor(
 
     operator fun <T> get(axisValue: AxisValue<T>): Set<T> where T : AxisValue<T>, T : Enum<T> = get(axisValue.axis)
 
-    @PublishedApi
-    @Suppress("UNCHECKED_CAST")
-    internal fun <T> valuesFor(type: KClass<out T>): Set<T> where T : AxisValue<T>, T : Enum<T> =
-        values.values
-            .asSequence()
-            .flatten()
-            .filter { type.isInstance(it) }
-            .map { it as T }
-            .toSet()
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Axes) return false
@@ -84,9 +64,11 @@ class Axes internal constructor(
     override fun hashCode(): Int = values.hashCode()
 
     override fun toString(): String {
-        return "Axes(${values.entries.joinToString { entry ->
-            "${entry.key}=${entry.value.joinToString(prefix = "[", postfix = "]") { it.id }}"
-        }})"
+        return "Axes(${
+            values.entries.joinToString { entry ->
+                "${entry.key}=${entry.value.joinToString(prefix = "[", postfix = "]") { it.id }}"
+            }
+        })"
     }
 
     override fun isEmpty(): Boolean = values.values.flatten().toSet().isEmpty()
@@ -99,7 +81,7 @@ class Axes internal constructor(
 
     override fun iterator(): Iterator<AxisValue<*>> = values.values.flatten().toSet().iterator()
 
-    @Suppress("OVERRIDE_DEPRECATION", "RedundantOverride")
+    @Suppress("OVERRIDE_DEPRECATION", "RedundantOverride", "Deprecated")
     override fun <T> toArray(generator: IntFunction<Array<out T?>?>): Array<out T?>? {
         return super.toArray(generator)
     }
@@ -117,7 +99,7 @@ class Axes internal constructor(
 /**
  * Creates an Axes instance from the given axis values.
  *
- * Values are automatically grouped by their axis. This is a concise alternative
+ * Values are automatically grouped by their axis.
  *
  * ## Usage
  *
@@ -132,15 +114,8 @@ fun axes(
     first: AxisValue<*>,
     vararg rest: AxisValue<*>,
 ): Axes {
-    val allValues = listOf(first) + rest
-    val grouped = allValues.groupBy { (it as Enum<*>).javaClass.kotlin }
-
-    val map = mutableMapOf<String, MutableSet<AxisValue<*>>>()
-    grouped.forEach { (enumClass, values) ->
-        @Suppress("UNCHECKED_CAST")
-        val axis = Axis.of(enumClass as KClass<Nothing>)
-        map.getOrPut(axis.id) { linkedSetOf() }.addAll(values)
-    }
-
-    return Axes(map.mapValues { it.value.toSet() })
+    val grouped = (listOf(first) + rest)
+        .groupBy { it.axis.id }
+        .mapValues { it.value.toSet() }
+    return Axes(grouped)
 }

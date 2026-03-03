@@ -7,12 +7,12 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.FlagScope
-import io.amichne.konditional.core.dsl.rules.ContextualYieldingScope
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.rules.ContextRuleScope
+import io.amichne.konditional.core.dsl.rules.ContextualYieldingScope
+import io.amichne.konditional.core.dsl.rules.NamespaceRuleSet
 import io.amichne.konditional.core.dsl.rules.PendingYieldToken
 import io.amichne.konditional.core.dsl.rules.RuleScope
-import io.amichne.konditional.core.dsl.rules.NamespaceRuleSet
 import io.amichne.konditional.core.dsl.rules.RuleSet
 import io.amichne.konditional.core.dsl.rules.RuleValueResolver
 import io.amichne.konditional.core.dsl.rules.YieldingScopeHost

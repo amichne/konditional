@@ -1,14 +1,13 @@
 package io.amichne.konditional.dimensions
 
-import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.context.axis.Axes
+import io.amichne.konditional.context.axis.axes
 import io.amichne.konditional.fixtures.FeaturesWithAxis
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestTenant
-import io.amichne.konditional.fixtures.environment
-import io.amichne.konditional.fixtures.tenant
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -22,16 +21,22 @@ class AxisRuleEvaluationTest {
         tenant: TestTenant? = null,
         version: String = "1.0.0",
     ): TestContext {
-        val values = axisValues {
-            if (env != null) environment(env)
-            if (tenant != null) tenant(tenant)
-        }
-
         return TestContext(
             appVersion = Version.parse(version).getOrThrow(),
-            axes = values,
+            axes = axesFor(env, tenant),
         )
     }
+
+    private fun axesFor(
+        env: TestEnvironment?,
+        tenant: TestTenant?,
+    ): Axes =
+        when {
+            env != null && tenant != null -> axes(env, tenant)
+            env != null -> axes(env)
+            tenant != null -> axes(tenant)
+            else -> Axes.EMPTY
+        }
 
     @Test
     fun `ENV_SCOPED_FLAG is true only in PROD`() {

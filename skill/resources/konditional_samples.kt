@@ -23,7 +23,7 @@ import io.amichne.konditional.openfeature.TargetingKeyContextMapper
 import io.amichne.konditional.runtime.load
 import io.amichne.konditional.runtime.rollback
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
-import io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec
+import io.amichne.konditional.serialization.snapshot.ConfigurationCodec
 import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 import dev.openfeature.sdk.ImmutableContext
 
@@ -233,7 +233,7 @@ fun rollbackLastSnapshot(): Boolean = CheckoutFlags.rollback(steps = 1)
  * Shadow evaluation sample: baseline result is returned, candidate only informs mismatch reporting.
  */
 fun evaluateWithCandidate(context: Context, candidateJson: String): Boolean {
-    val candidate = ConfigurationSnapshotCodec.decode(candidateJson, CheckoutFlags.compiledSchema()).getOrThrow()
+    val candidate = ConfigurationCodec.decode(candidateJson, CheckoutFlags).getOrThrow()
     val candidateRegistry =
         InMemoryNamespaceRegistry(namespaceId = CheckoutFlags.namespaceId).apply {
             load(candidate.configuration)

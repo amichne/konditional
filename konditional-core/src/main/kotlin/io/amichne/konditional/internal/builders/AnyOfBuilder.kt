@@ -60,7 +60,6 @@ internal class AnyOfBuilder<C : Context> : AnyOfScope<C>, NarrowingTargetingScop
         )
     }
 
-
     override fun <V> onAxisSelection(
         axis: Axis<V>,
         values: Set<V>,

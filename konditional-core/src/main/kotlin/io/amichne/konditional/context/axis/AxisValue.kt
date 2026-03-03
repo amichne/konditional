@@ -1,5 +1,7 @@
 package io.amichne.konditional.context.axis
 
+import kotlin.reflect.KClass
+
 /**
  * A value that exists along some axis (environment, region, tenant, etc.).
  *
@@ -34,14 +36,12 @@ interface AxisValue<T> where T : Enum<T>, T : AxisValue<T> {
     val id: String
         get() = (this as Enum<*>).name
 
-    // New property to expose the associated Axis
-    @Suppress("UNCHECKED_CAST")
     val axis: Axis<T>
-        get() = Axis.axes((this as Enum<*>).javaClass.enclosingClass as Class<T>)
+        get() = Axis.axes(this::class)
 
     operator fun getValue(thisRef: Any?, property: kotlin.reflect.KProperty<*>): Axis<T> = axis
 }
 
-@Suppress("UNCHECKED_CAST")
-private fun <T> Axis.Companion.axes(enumClass: Class<T>): Axis<T> where T : AxisValue<T>, T : Enum<T> =
-    of(enumClass.kotlin)
+private fun <T> Axis.Companion.axes(
+    enumClass: KClass<out AxisValue<T>>
+): Axis<T> where T : AxisValue<T>, T : Enum<T> = of(enumClass)
