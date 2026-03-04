@@ -49,12 +49,50 @@ sealed interface ParseError {
         override val message: String get() = "Feature not found: $key"
     }
 
+    /**
+     * An unexpected field was encountered at [path] during parsing.
+     *
+     * Emitted when the input contains a field that the parser does not recognise
+     * at the given JSON path (e.g. a typo or a field from a future schema version).
+     */
+    data class UnknownField(
+        val path: String,
+        override val message: String = "Unknown field at '$path'",
+    ) : ParseError
+
+    /**
+     * A required field is absent at [path] during parsing.
+     *
+     * Emitted when the input is missing a field that the schema mandates.
+     */
+    data class MissingRequired(
+        val path: String,
+        override val message: String = "Missing required field at '$path'",
+    ) : ParseError
+
+    /**
+     * A field at [path] holds a value that violates a schema constraint.
+     *
+     * [reason] describes why the value is invalid (e.g. "must be in range 0.0–100.0").
+     */
+    data class InvalidValue(
+        val path: String,
+        val reason: String,
+        override val message: String = "Invalid value at '$path': $reason",
+    ) : ParseError
+
     companion object {
         fun featureNotFound(key: FeatureId): ParseError = FeatureNotFound(key)
 
         fun invalidJson(reason: String): ParseError = InvalidJson(reason)
 
         fun invalidSnapshot(reason: String): ParseError = InvalidSnapshot(reason)
+
+        fun unknownField(path: String): ParseError = UnknownField(path)
+
+        fun missingRequired(path: String): ParseError = MissingRequired(path)
+
+        fun invalidValue(path: String, reason: String): ParseError = InvalidValue(path = path, reason = reason)
     }
 
     /**
