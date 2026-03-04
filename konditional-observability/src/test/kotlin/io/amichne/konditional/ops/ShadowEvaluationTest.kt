@@ -103,6 +103,119 @@ class ShadowEvaluationTest {
     }
 
     @Test
+    fun `ShadowMismatch carries namespaceId and detectedAtEpochMillis`() {
+        val baselineNamespace = object : Namespace.TestNamespaceFacade("shadow-fields-ns") {
+            val FLAG by boolean<Context>(default = false) {
+                enable { platforms(Platform.IOS) }
+            }
+        }
+
+        val candidateRegistry =
+            InMemoryNamespaceRegistry(namespaceId = "shadow-candidate-fields").apply {
+                load(
+                    Configuration(
+                        flags = mapOf(
+                            baselineNamespace.FLAG to FlagDefinition(
+                                feature = baselineNamespace.FLAG,
+                                bounds = emptyList(),
+                                defaultValue = false,
+                            ),
+                        ),
+                    ),
+                )
+            }
+
+        var captured: io.amichne.konditional.api.ShadowMismatch<Boolean>? = null
+        val beforeMs = System.currentTimeMillis()
+        baselineNamespace.FLAG.evaluateWithShadow(
+            context = context,
+            candidateRegistry = candidateRegistry,
+            baselineRegistry = baselineNamespace,
+            onMismatch = { captured = it },
+        )
+        val afterMs = System.currentTimeMillis()
+
+        val mismatch = checkNotNull(captured)
+        assertEquals("shadow-fields-ns", mismatch.namespaceId)
+        assertEquals(baselineNamespace.FLAG.key, mismatch.featureKey)
+        assertTrue(mismatch.detectedAtEpochMillis in beforeMs..afterMs)
+    }
+
+    @Test
+    fun `evaluateWithShadow skips candidate when namespace not in enabledForNamespaces`() {
+        val baselineNamespace = object : Namespace.TestNamespaceFacade("shadow-excluded-ns") {
+            val FLAG by boolean<Context>(default = false) {
+                enable { platforms(Platform.IOS) }
+            }
+        }
+
+        val candidateRegistry =
+            InMemoryNamespaceRegistry(namespaceId = "shadow-candidate-excluded").apply {
+                load(
+                    Configuration(
+                        flags = mapOf(
+                            baselineNamespace.FLAG to FlagDefinition(
+                                feature = baselineNamespace.FLAG,
+                                bounds = emptyList(),
+                                defaultValue = false,
+                            ),
+                        ),
+                    ),
+                )
+            }
+
+        var mismatched = false
+        val value = baselineNamespace.FLAG.evaluateWithShadow(
+            context = context,
+            candidateRegistry = candidateRegistry,
+            baselineRegistry = baselineNamespace,
+            options = ShadowOptions.of(enabledForNamespaces = setOf("other-ns")),
+            onMismatch = { mismatched = true },
+        )
+
+        // Baseline evaluation should still return its value
+        assertTrue(value)
+        // But candidate should not have been evaluated so no mismatch
+        assertFalse(mismatched)
+    }
+
+    @Test
+    fun `evaluateWithShadow runs candidate when namespace is in enabledForNamespaces`() {
+        val baselineNamespace = object : Namespace.TestNamespaceFacade("shadow-included-ns") {
+            val FLAG by boolean<Context>(default = false) {
+                enable { platforms(Platform.IOS) }
+            }
+        }
+
+        val candidateRegistry =
+            InMemoryNamespaceRegistry(namespaceId = "shadow-candidate-included").apply {
+                load(
+                    Configuration(
+                        flags = mapOf(
+                            baselineNamespace.FLAG to FlagDefinition(
+                                feature = baselineNamespace.FLAG,
+                                bounds = emptyList(),
+                                defaultValue = false,
+                            ),
+                        ),
+                    ),
+                )
+            }
+
+        var mismatched = false
+        val value = baselineNamespace.FLAG.evaluateWithShadow(
+            context = context,
+            candidateRegistry = candidateRegistry,
+            baselineRegistry = baselineNamespace,
+            options = ShadowOptions.of(enabledForNamespaces = setOf("shadow-included-ns", "other-ns")),
+            onMismatch = { mismatched = true },
+        )
+
+        assertTrue(value)
+        assertTrue(mismatched)
+    }
+
+    @Test
     fun `evaluateWithShadow evaluates candidate when baseline is disabled if enabled by options`() {
         val baselineNamespace = object : Namespace.TestNamespaceFacade("shadow-disabled-evaluate-candidate") {
             val FLAG by boolean<Context>(default = false) {
