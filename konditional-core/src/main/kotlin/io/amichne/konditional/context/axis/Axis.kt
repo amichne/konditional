@@ -32,11 +32,14 @@ import kotlin.reflect.KClass
  * @param valueClass The runtime class of the value type [T].
  *      This is intentionally passed explicitly to avoid fragile reflection-based extraction from generic supertypes.
  * @property id A stable, unique identifier for this axis derived from [T]'s FQCN or [KonditionalExplicitId].
+ * @property key A typed [AxisKey] wrapping [id] for use in type-safe APIs.
  */
 class Axis<T> private constructor(
     val id: String,
     val valueClass: KClass<out AxisValue<T>>,
 ) where T : AxisValue<T>, T : Enum<T> {
+    /** Typed key for this axis. Prefer [key] over [id] in new code. */
+    val key: AxisKey get() = AxisKey(id)
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Axis<*>) return false
