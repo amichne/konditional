@@ -254,7 +254,7 @@ Use this path when replacing a legacy string-key or config-map flag system.
 
 ## Token-efficient execution workflow
 
-1. Start with `signatures/INDEX.sig`.
+1. Start with `.signatures/INDEX.sig`.
 2. Open only relevant `*.sig` files for target modules and symbols.
 3. For symbol-aware work, gate on `ide_index_status` and prefer IntelliJ MCP
    semantic tools before broad text search.
