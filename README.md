@@ -4,10 +4,17 @@
 [![Codebase](https://github.com/amichne/konditional/actions/workflows/ci.yml/badge.svg)](https://github.com/amichne/konditional/actions/workflows/ci.yml)
 [![Documentation](https://github.com/amichne/konditional/actions/workflows/docs-docusaurus.yml/badge.svg)](https://github.com/amichne/konditional/actions/workflows/docs-docusaurus.yml)
 
-# What is Konditional?
+## What is Konditional?
 
 Konditional is a compile-time safe feature flag library for Kotlin that treats flags as typed properties instead of
 runtime strings.
+
+## Contributing and community
+
+- [Contributing guide](CONTRIBUTING.md)
+- [Code of conduct](CODE_OF_CONDUCT.md)
+- [Security policy](SECURITY.md)
+- [Support guide](SUPPORT.md)
 
 ## The Problem
 

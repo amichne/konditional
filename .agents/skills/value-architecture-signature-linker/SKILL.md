@@ -1,6 +1,6 @@
 ---
 name: value-architecture-signature-linker
-description: Create and maintain adoption-focused technical documentation for any information architecture (new or existing), linking narrative claims to JVM signatures and tests. Use when writing or updating product documentation, migration guides, implementation guidance, architecture overviews, or rollout messaging that must stay synchronized with `signatures/*.sig` (or `.signatures/*.sig`) and support deterministic claim validation.
+description: Create and maintain adoption-focused technical documentation for any information architecture (new or existing), linking narrative claims to JVM signatures and tests. Use when writing or updating product documentation, migration guides, implementation guidance, architecture overviews, or rollout messaging that must stay synchronized with `.signatures/*.sig` and support deterministic claim validation.
 ---
 
 # Value architecture signature linker

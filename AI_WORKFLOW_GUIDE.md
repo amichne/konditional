@@ -23,7 +23,7 @@ You have tribal knowledge scattered across:
 
 ### The New Way
 **Skills are executable documentation**. Each skill:
-1. **Encodes domain expertise** in a structured format ([see SKILL.md schema](file:///Users/amichn/code/personal/konditional/.agents/skills/kotlin-mastery/SKILL.md))
+1. **Encodes domain expertise** in a structured format ([see SKILL.md schema](.agents/skills/kotlin-mastery/SKILL.md))
 2. **Includes specific commands and workflows** the AI can execute
 3. **Links to relevant files, theory docs, and external resources**
 4. **Enforces quality gates and invariants** automatically
@@ -37,12 +37,12 @@ You have tribal knowledge scattered across:
 
 ### Stage 1: Code → Signatures (Machine-Readable Documentation)
 
-**Skill: [`llm-native-signature-spec`](file:///Users/amichn/code/personal/konditional/.agents/skills/llm-native-signature-spec/SKILL.md)**
+**Skill: [`llm-native-signature-spec`](.agents/skills/llm-native-signature-spec/SKILL.md)**
 
 Instead of having AI read entire source files every time, we extract **type signatures** into a compressed format:
 
 ```
-# signatures/konditional-core/src/main/kotlin/io/amichne/konditional/api/Namespace.sig
+# .signatures/konditional-core/src/main/kotlin/io/amichne/konditional/api/Namespace.sig
 
 package=io.amichne.konditional.api
 file=Namespace.kt
@@ -63,13 +63,13 @@ type=class io.amichne.konditional.api.Namespace
 - Before generating documentation
 - When setting up new AI workflows
 
-[Read the signature spec schema](file:///Users/amichn/code/personal/konditional/skills/llm-native-signature-spec/references/signature_spec.md)
+[Read the signature spec schema](.agents/skills/llm-native-signature-spec/references/signature_spec.md)
 
 ---
 
 ### Stage 2: Signatures → Public Surface Context
 
-**Skill: [`public-surface-init-context`](file:///Users/amichn/code/personal/konditional/.agents/skills/public-surface-init-context/SKILL.md)**
+**Skill: [`public-surface-init-context`](.agents/skills/public-surface-init-context/SKILL.md)**
 
 From the full signature tree, generate a **compact initialization context** containing only public APIs:
 
@@ -96,13 +96,13 @@ public_types=15
 - Onboarding new team members
 - Before architectural reviews
 
-[See the public context schema](file:///Users/amichn/code/personal/konditional/.agents/skills/public-surface-init-context/references/public_context_schema.md)
+[See the public context schema](.agents/skills/public-surface-init-context/references/public_context_schema.md)
 
 ---
 
 ### Stage 3: Documentation That Stays True
 
-**Skill: [`docs-authoring`](file:///Users/amichn/code/personal/konditional/.agents/skills/docs-authoring/SKILL.md)**
+**Skill: [`docs-authoring`](.agents/skills/docs-authoring/SKILL.md)**
 
 Documentation is written using:
 - **Only public API signatures** (no accidental internal leaks)
@@ -129,21 +129,21 @@ Example constraint from the skill:
 - Explaining new features
 - Updating docs after API changes
 
-[View the Docusaurus docs structure](file:///Users/amichn/code/personal/konditional/docusaurus/docs/)
+[View the Docusaurus docs structure](docusaurus/docs/)
 
 ---
 
 ### Stage 4: Linking Claims to Proofs
 
-**Skill: [`value-architecture-signature-linker`](file:///Users/amichn/code/personal/konditional/.agents/skills/value-architecture-signature-linker/SKILL.md)**
+**Skill: [`value-architecture-signature-linker`](.agents/skills/value-architecture-signature-linker/SKILL.md)**
 
 This creates a **bidirectional map**:
 - **Claim**: "Namespace updates are atomic" (in docs)
 - **Proof**: Links to `AtomicReference<Configuration>` in source + test proving it
 
 Generated artifacts:
-- [`claims-registry.json`](file:///Users/amichn/code/personal/konditional/docs/claim-trace/claims-registry.json) — All claims
-- [`claim-signature-links.json`](file:///Users/amichn/code/personal/konditional/docs/claim-trace/claim-signature-links.json) — Claims → code mappings
+- [`claims-registry.json`](docs/claim-trace/claims-registry.json) — All claims
+- [`claim-signature-links.json`](docs/claim-trace/claim-signature-links.json) — Claims → code mappings
 
 **Why this matters:**
 - Marketing claims are backed by implementation reality
@@ -155,7 +155,7 @@ Generated artifacts:
 - When architectural decisions need justification
 - During contract negotiations (yes, really—enterprise teams care)
 
-[Read the claims registry theory doc](file:///Users/amichn/code/personal/konditional/docusaurus/docs/theory/claims-registry.md)
+[Read the claims registry theory doc](docusaurus/docs/theory/claims-registry.md)
 
 ---
 
@@ -164,8 +164,8 @@ Generated artifacts:
 ### Kotlin Mastery
 
 **Skills:**
-- [`kotlin-mastery`](file:///Users/amichn/code/personal/konditional/.agents/skills/kotlin-mastery/SKILL.md)
-- [`kotlin-architect`](file:///Users/amichn/.agents/skills/kotlin-architect/SKILL.md)
+- [`kotlin-mastery`](.agents/skills/kotlin-mastery/SKILL.md)
+- [`kotlin-architect`](.claude/skills/kotlin-architect/SKILL.md)
 
 Enforce Konditional's strict quality bar:
 - **Type-driven design**: Use `sealed interface`, `@JvmInline value class`, exhaustive `when`
@@ -187,13 +187,13 @@ Example rule from the skill:
 - New contributors get instant feedback on idiomatic patterns
 - The codebase maintains consistency even as the team grows
 
-[Read the type safety boundaries theory](file:///Users/amichn/code/personal/konditional/docusaurus/docs/theory/type-safety-boundaries.md)
+[Read the type safety boundaries theory](docusaurus/docs/theory/type-safety-boundaries.md)
 
 ---
 
 ### Technical Review & Architecture Analysis
 
-**Skill: [`technical-review`](file:///Users/amichn/code/personal/konditional/.agents/skills/technical-review/SKILL.md)**
+**Skill: [`technical-review`](.agents/skills/technical-review/SKILL.md)**
 
 On-demand architectural critique:
 - Identify coupling, complexity, and blast radius issues
@@ -205,7 +205,7 @@ On-demand architectural critique:
 - When feature complexity feels too high
 - During quarterly architecture reviews
 
-[Example review checklist](file:///Users/amichn/code/personal/konditional/.agents/skills/technical-review/SKILL.md#L50-L100)
+[Example review checklist](.agents/skills/technical-review/SKILL.md#L50-L100)
 
 ---
 
@@ -213,7 +213,7 @@ On-demand architectural critique:
 
 ### GitHub CI Debugging
 
-**Skill: [`gh-fix-ci`](file:///Users/amichn/code/personal/konditional/.agents/skills/gh-fix-ci/SKILL.md)**
+**Skill: [`gh-fix-ci`](.agents/skills/gh-fix-ci/SKILL.md)**
 
 Instead of manually:
 1. Opening GitHub Actions
@@ -234,7 +234,7 @@ The agent:
 
 ### Maven Central Release
 
-**Skill: [`konditional-maven-central-release-fastpath`](file:///Users/amichn/code/personal/konditional/.agents/skills/konditional-maven-central-release-fastpath/SKILL.md)**
+**Skill: [`konditional-maven-central-release-fastpath`](.agents/skills/konditional-maven-central-release-fastpath/SKILL.md)**
 
 Codifies the entire release workflow:
 - Version bumping
@@ -247,13 +247,13 @@ Codifies the entire release workflow:
 
 **After**: One command, AI handles the sequence, fails fast if prerequisites are missing
 
-[Konditional publish script](file:///Users/amichn/code/personal/konditional/scripts/publish.sh)
+[Konditional publish script](scripts/publish.sh)
 
 ---
 
 ### LSP & Debugging Setup
 
-**Skill: [`kotlin-jvm-lsp-gradle-debug`](file:///Users/amichn/code/personal/konditional/.agents/skills/kotlin-jvm-lsp-gradle-debug/SKILL.md)**
+**Skill: [`kotlin-jvm-lsp-gradle-debug`](.agents/skills/kotlin-jvm-lsp-gradle-debug/SKILL.md)**
 
 Standardizes:
 - Language server setup (so any editor works, not just IntelliJ)
@@ -275,15 +275,16 @@ Standardizes:
 
 1. **Start with public surface context:**
    ```bash
-   make signatures  # Generates .signatures/ tree
-   cat signatures/PUBLIC_SURFACE.ctx
+   .agents/skills/llm-native-signature-spec/scripts/generate_signatures.sh --repo-root . --output-dir .signatures
+   python3 .agents/skills/public-surface-init-context/scripts/build_public_surface_context.py --repo-root . --signatures-dir .signatures --output .signatures/PUBLIC_SURFACE.ctx
+   cat .signatures/PUBLIC_SURFACE.ctx
    ```
    This is your "map" of the codebase.
 
-2. **Read the theory docs** linked in [`AGENTS.md`](file:///Users/amichn/code/personal/konditional/AGENTS.md#L70-L100):
-   - [Type Safety Boundaries](file:///Users/amichn/code/personal/konditional/docusaurus/docs/theory/type-safety-boundaries.md)
-   - [Determinism Proofs](file:///Users/amichn/code/personal/konditional/docusaurus/docs/theory/determinism-proofs.md)
-   - [Atomicity Guarantees](file:///Users/amichn/code/personal/konditional/docusaurus/docs/theory/atomicity-guarantees.md)
+2. **Read the theory docs** linked in [`AGENTS.md`](AGENTS.md#L70-L100):
+   - [Type Safety Boundaries](docusaurus/docs/theory/type-safety-boundaries.md)
+   - [Determinism Proofs](docusaurus/docs/theory/determinism-proofs.md)
+   - [Atomicity Guarantees](docusaurus/docs/theory/atomicity-guarantees.md)
 
 3. **Trigger skills by prefix:**
    - Ask: `/skill:kotlin-mastery How do I model this domain constraint?`
@@ -295,8 +296,8 @@ Standardizes:
 
 1. **Keep signatures fresh:**
    ```bash
-   make signatures  # Run after refactors
-   git add signatures/
+   .agents/skills/llm-native-signature-spec/scripts/generate_signatures.sh --repo-root . --output-dir .signatures
+   git add .signatures/
    ```
 
 2. **Update skills when patterns change:**
@@ -304,7 +305,7 @@ Standardizes:
 
 3. **Link new claims to code:**
    ```bash
-   make claim-trace  # Regenerates claim-signature-links.json
+   python3 .agents/skills/value-architecture-signature-linker/scripts/validate_claim_signature_links.py --repo-root . --links-file docs/claim-trace/claim-signature-links.json --report-out docs/claim-trace/claims-report.json --auto-refresh
    ```
 
 ---
@@ -354,7 +355,8 @@ Skills must evolve with the codebase. Update them during refactors, not after.
 Start with 2-3 critical skills (e.g., coding standards + docs authoring). Add more as patterns emerge.
 
 ### ❌ Skipping signature generation
-If signatures are stale, every downstream skill gets worse context. Run `make signatures` often.
+If signatures are stale, every downstream skill gets worse context. Run the
+signature generation script often.
 
 ### ❌ Not enforcing skill usage
 If code reviews don't reference skills, they become ignored. Make `/skill:technical-review` part of your PR template.
@@ -394,7 +396,7 @@ If code reviews don't reference skills, they become ignored. Make `/skill:techni
    ```
 
 3. **Read a theory doc:**
-   Start with [Parse, Don't Validate](file:///Users/amichn/code/personal/konditional/docusaurus/docs/theory/parse-dont-validate.md)
+   Start with [Parse, Don't Validate](docusaurus/docs/theory/parse-dont-validate.md)
 
 4. **Ask questions:**
    Skills are most powerful when you interrogate them. Ask:

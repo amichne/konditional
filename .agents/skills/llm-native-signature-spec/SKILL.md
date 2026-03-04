@@ -19,11 +19,11 @@ Create a repository-root `.signatures/` tree that mirrors the source layout and 
 Run:
 
 ```bash
-skills/llm-native-signature-spec/scripts/generate_signatures.sh --repo-root . --output-dir signatures
+.agents/skills/llm-native-signature-spec/scripts/generate_signatures.sh --repo-root . --output-dir .signatures
 ```
 
 ## Validation Checklist
-- Ensure `signatures/` exists at repository root.
+- Ensure `.signatures/` exists at repository root.
 - Ensure generated paths mirror source paths.
 - Ensure each `.sig` includes package metadata and type lines when types exist.
 - Ensure JVM FQCNs appear in `type=` entries.
