@@ -39,7 +39,7 @@ class ParseErrorVariantsTest {
 
     @Test
     fun `ParseError companion unknownField factory creates UnknownField`() {
-        val err = ParseError.unknownField("meta.extra")
+        val err = ParseError.UnknownField("meta.extra")
         assertIs<ParseError.UnknownField>(err)
         assertEquals("meta.extra", err.path)
     }
@@ -144,6 +144,8 @@ class ParseErrorVariantsTest {
             is ParseError.UnknownField -> "unknownField"
             is ParseError.MissingRequired -> "missingRequired"
             is ParseError.InvalidValue -> "invalidValue"
+            is ParseError.UnknownPredicate -> "unknownPredicate"
+            is ParseError.UnversionedExternalRef -> "unversioned"
         }
 
         assertEquals("unknownField", classify(ParseError.unknownField("x")))

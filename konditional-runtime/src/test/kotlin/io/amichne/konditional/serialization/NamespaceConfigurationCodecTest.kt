@@ -134,7 +134,7 @@ class NamespaceConfigurationCodecTest {
 
         assertTrue(result.isFailure)
         val error = assertIs<ParseError.InvalidJson>(result.parseErrorOrNull())
-        assertTrue(error.message.contains(testNamespace.id))
+        assertTrue(error.message.contains(testNamespace.id.value))
     }
 
     @Test

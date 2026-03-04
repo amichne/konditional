@@ -19,7 +19,8 @@ import io.amichne.konditional.serialization.instance.Configuration
  *
  * ## Version
  *
- * The snapshot version is derived from [configuration.metadata.version][io.amichne.konditional.core.instance.ConfigurationMetadataView.version].
+ * The snapshot version is derived from
+ * [configuration.metadata.version][io.amichne.konditional.core.instance.ConfigurationMetadataView.version].
  * A `null` version indicates an empty or initial (pre-load) snapshot.
  *
  * @property configuration The immutable flag configuration held by this snapshot.

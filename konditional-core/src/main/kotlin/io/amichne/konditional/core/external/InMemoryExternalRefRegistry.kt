@@ -28,6 +28,7 @@ class InMemoryExternalRefRegistry(
 
     private val store: MutableList<ExternalSnapshotRef> = mutableListOf()
 
+    @Suppress("ReturnCount") // for early returns on validation failure
     override fun register(ref: ExternalSnapshotRef): Result<Unit> {
         if (ref.id.isBlank()) {
             return Result.failure(

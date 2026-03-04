@@ -47,7 +47,7 @@ class NamespaceSnapshotLoader<M : Namespace> private constructor(
             onFailure = { throwable ->
                 val parseError = throwable.parseErrorOrNull()
                 if (parseError != null) {
-                    parseFailure(parseError.withNamespaceContext(namespace.id))
+                    parseFailure(parseError.withNamespaceContext(namespace.id.value))
                 } else {
                     Result.failure(throwable)
                 }

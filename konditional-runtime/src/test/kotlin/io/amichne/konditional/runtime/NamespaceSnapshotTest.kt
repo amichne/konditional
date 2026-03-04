@@ -81,6 +81,7 @@ class NamespaceSnapshotTest {
      * the number of flags (v1 → 1 flag, v2 → 2 flags). A mismatch proves partial read.
      */
     @Test
+    @Suppress("LongMethod")
     fun `readers always observe complete old-or-new snapshots under concurrent writes`() {
         val ns = object : Namespace.TestNamespaceFacade("snap-atomic-ns") {
             val flagA by boolean<Context>(default = false)

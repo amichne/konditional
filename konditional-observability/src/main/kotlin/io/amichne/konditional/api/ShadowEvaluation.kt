@@ -17,6 +17,7 @@ import io.amichne.konditional.core.registry.NamespaceRegistry
  *
  * By default, candidate evaluation is skipped when the baseline registry kill-switch is enabled.
  */
+@Suppress("ReturnCount")
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithShadow(
     context: C,
     candidateRegistry: NamespaceRegistry,

@@ -63,7 +63,7 @@ class FlagEvaluationTracer(
                 .spanBuilder("feature.evaluation")
                 .setSpanKind(SpanKind.INTERNAL)
                 .setAttribute(KonditionalSemanticAttributes.FEATURE_KEY, feature.key)
-                .setAttribute(KonditionalSemanticAttributes.FEATURE_NAMESPACE, feature.namespace.id)
+                .setAttribute(KonditionalSemanticAttributes.FEATURE_NAMESPACE, feature.namespace.id.value)
 
         val span =
             parentSpan

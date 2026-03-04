@@ -178,7 +178,7 @@ class PredicateRegistryTest {
     @Test
     fun `ParseError companion factory delegates to UnknownPredicate`() {
         val ref = PredicateRef.BuiltIn("core-check")
-        val error = ParseError.unknownPredicate(ref)
+        val error = ParseError.UnknownPredicate(ref)
         val parseError = assertIs<ParseError.UnknownPredicate>(error)
         assertEquals(ref, parseError.ref)
     }

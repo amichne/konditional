@@ -19,6 +19,7 @@ import io.amichne.konditional.core.spi.FeatureRegistrationHooks
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.internal.builders.FlagBuilder
 import io.amichne.konditional.values.IdentifierEncoding.SEPARATOR
+import io.amichne.konditional.values.NamespaceId
 import org.jetbrains.annotations.TestOnly
 import java.util.UUID
 import kotlin.reflect.KProperty
@@ -69,9 +70,9 @@ import kotlin.reflect.KProperty
  * @property id Unique identifier for this namespace. Defaults to the fully-qualified namespace class name when omitted.
  */
 open class Namespace(
-    val id: String = defaultNamespaceId(),
+    val id: NamespaceId = defaultNamespaceId(),
     @property:KonditionalInternalApi
-    val registry: NamespaceRegistry = NamespaceRegistryFactories.default(id),
+    val registry: NamespaceRegistry = NamespaceRegistryFactories.default(id.value),
     /**
      * Seed used to construct stable [io.amichne.konditional.values.FeatureId] values for features.
      *
@@ -80,11 +81,11 @@ open class Namespace(
      *
      * Test-only/ephemeral namespaces should provide a per-instance unique seed to avoid collisions.
      */
-    @PublishedApi internal val identifierSeed: String = id,
+    @PublishedApi internal val identifierSeed: String = id.value,
 ) : NamespaceRegistry by registry {
 
     private companion object {
-        fun defaultNamespaceId(): String {
+        fun defaultNamespaceId(): NamespaceId {
             val inferredClassName =
                 Thread.currentThread().stackTrace
                     .asSequence()
@@ -95,15 +96,15 @@ open class Namespace(
                                 Namespace::class.java.isAssignableFrom(Class.forName(candidate))
                             }.getOrDefault(false)
                     }
-            return requireNotNull(inferredClassName) {
-                "Unable to infer namespace id. Provide Namespace(\"<stable-id>\") explicitly."
-            }
+            return NamespaceId(
+                requireNotNull(inferredClassName) {
+                    "Unable to infer namespace id. Provide Namespace(\"<stable-id>\") explicitly."
+                },
+            )
         }
     }
 
     init {
-        require(id.isNotBlank()) { "Namespace id must not be blank" }
-        require(!id.contains(SEPARATOR)) { "Namespace id must not contain '$SEPARATOR': '$id'" }
         require(identifierSeed.isNotBlank()) { "Namespace identifierSeed must not be blank" }
         require(!identifierSeed.contains(SEPARATOR)) {
             "Namespace identifierSeed must not contain '$SEPARATOR': '$identifierSeed'"
@@ -118,12 +119,12 @@ open class Namespace(
      * Example:
      * ```kotlin
      * object Payments : Namespace()
-     * object Auth : Namespace("auth")
+     * object Auth : Namespace(NamespaceId("auth"))
      * ```
      */
     @TestOnly
     abstract class TestNamespaceFacade(id: String) : Namespace(
-        id = id,
+        id = NamespaceId(id),
         registry = NamespaceRegistryFactories.default(id),
         identifierSeed = UUID.randomUUID().toString(),
     )

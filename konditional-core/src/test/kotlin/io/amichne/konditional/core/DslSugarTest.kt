@@ -74,7 +74,7 @@ class DslSugarTest {
 
     @Test
     fun `deferred yields evaluate same-namespace dependencies against provided registry`() {
-        val alternateRegistry = InMemoryNamespaceRegistry(namespaceId = Features.id).apply {
+        val alternateRegistry = InMemoryNamespaceRegistry(namespaceId = Features.id.value).apply {
             load(Features.configuration)
             setOverride(Features.dependencyFlag, "override-value")
         }

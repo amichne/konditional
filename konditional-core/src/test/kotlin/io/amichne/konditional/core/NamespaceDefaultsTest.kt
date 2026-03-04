@@ -8,6 +8,6 @@ class NamespaceDefaultsTest {
 
     @Test
     fun `namespace id defaults to fully qualified class name`() {
-        assertEquals(DefaultNamespace::class.java.name, DefaultNamespace.id)
+        assertEquals(DefaultNamespace::class.java.name, DefaultNamespace.id.value)
     }
 }

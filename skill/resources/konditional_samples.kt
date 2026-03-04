@@ -12,6 +12,7 @@ import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.AxisValues
 import io.amichne.konditional.context.axis.axes
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.values.NamespaceId
 import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
@@ -36,7 +37,7 @@ enum class CheckoutVariant {
     NEW_UI,
 }
 
-object CheckoutFlags : Namespace("checkout") {
+object CheckoutFlags : Namespace(NamespaceId("checkout")) {
     val variant by enum<CheckoutVariant, Context>(default = CheckoutVariant.CLASSIC) {
         rule(CheckoutVariant.FAST_PATH) { rampUp { 10.0 } }
         rule(CheckoutVariant.NEW_UI) { rampUp { 1.0 } }
@@ -58,7 +59,7 @@ enum class Segment(override val id: String) : AxisValue<Segment> {
     ENTERPRISE("enterprise"),
 }
 
-object SegmentFlags : Namespace("segment") {
+object SegmentFlags : Namespace(NamespaceId("segment")) {
     val segmentAxis = axis<Segment>("segment")
 
     val premiumUi by boolean<Context>(default = false) {
@@ -85,7 +86,7 @@ data class EnterpriseContext(
     Context.VersionContext,
     Context.StableIdContext
 
-object EnterpriseFlags : Namespace("enterprise") {
+object EnterpriseFlags : Namespace(NamespaceId("enterprise")) {
     val advancedReporting by boolean<EnterpriseContext>(default = false) {
         /** Leaking the extended context properties into the core Context interface would be undesirable;
          *  instead, we can target them within the extension block. */

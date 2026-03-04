@@ -159,6 +159,10 @@ class ExternalBackstopTest {
             is ParseError.InvalidSnapshot -> "snapshot"
             is ParseError.InvalidJson -> "json"
             is ParseError.UnversionedExternalRef -> "unversioned"
+            is ParseError.InvalidValue -> "invalid"
+            is ParseError.MissingRequired -> "missingRequired"
+            is ParseError.UnknownField -> "unknownField"
+            is ParseError.UnknownPredicate -> "unknownPredicate"
         }
 
         assertEquals("unversioned", classify(ParseError.UnversionedExternalRef("x")))

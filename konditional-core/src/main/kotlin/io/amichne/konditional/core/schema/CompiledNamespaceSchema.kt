@@ -42,7 +42,7 @@ data class CompiledNamespaceSchema internal constructor(
                             declaredDefinition = namespace.requireDeclaredDefinition(feature),
                         )
                     }
-            return CompiledNamespaceSchema(namespaceId = namespace.id, entriesById = entries)
+            return CompiledNamespaceSchema(namespaceId = namespace.id.value, entriesById = entries)
         }
     }
 }

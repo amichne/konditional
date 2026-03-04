@@ -10,6 +10,7 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.values.NamespaceId
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.ConfigurationView
@@ -234,7 +235,7 @@ class NamespaceLinearizabilityTest {
         id: String,
         historyLimit: Int,
     ) : Namespace(
-            id = id,
+            id = NamespaceId(id),
             registry = InMemoryNamespaceRegistry(namespaceId = id, historyLimit = historyLimit),
             identifierSeed = "${id}-seed",
         ) {

@@ -110,8 +110,8 @@ class FeatureTelemetryExtensionsTest {
             val namespaceTagB =
                 probeB.spanExporter.finishedSpanItems.single().attributes.get(KonditionalSemanticAttributes.FEATURE_NAMESPACE)
 
-            assertEquals(namespaceA.id, namespaceTagA)
-            assertEquals(namespaceB.id, namespaceTagB)
+            assertEquals(namespaceA.id.value, namespaceTagA)
+            assertEquals(namespaceB.id.value, namespaceTagB)
         } finally {
             probeA.close()
             probeB.close()
