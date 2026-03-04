@@ -51,6 +51,52 @@ sealed interface ParseError {
     }
 
     /**
+     * An external snapshot ref is missing a required version pin.
+     *
+     * Emitted when a consumer attempts to register or load an [io.amichne.konditional.core.external.ExternalSnapshotRef]
+     * with a blank [version][io.amichne.konditional.core.external.ExternalSnapshotRef.version].
+     *
+     * Unversioned refs are rejected at registration time — they never reach the evaluation path.
+     */
+    data class UnversionedExternalRef(
+        val id: String,
+        val reason: String = "version must not be blank",
+        override val message: String = "External ref '$id' rejected: $reason",
+    ) : ParseError
+
+    /**
+     * An unexpected field was encountered at [path] during parsing.
+     *
+     * Emitted when the input contains a field that the parser does not recognise
+     * at the given JSON path (e.g. a typo or a field from a future schema version).
+     */
+    data class UnknownField(
+        val path: String,
+        override val message: String = "Unknown field at '$path'",
+    ) : ParseError
+
+    /**
+     * A required field is absent at [path] during parsing.
+     *
+     * Emitted when the input is missing a field that the schema mandates.
+     */
+    data class MissingRequired(
+        val path: String,
+        override val message: String = "Missing required field at '$path'",
+    ) : ParseError
+
+    /**
+     * A field at [path] holds a value that violates a schema constraint.
+     *
+     * [reason] describes why the value is invalid (e.g. "must be in range 0.0–100.0").
+     */
+    data class InvalidValue(
+        val path: String,
+        val reason: String,
+        override val message: String = "Invalid value at '$path': $reason",
+    ) : ParseError
+
+    /**
      * Predicate ref not found in the namespace-scoped [io.amichne.konditional.rules.predicate.PredicateRegistry].
      */
     data class UnknownPredicate(val ref: PredicateRef) : ParseError {
@@ -64,7 +110,14 @@ sealed interface ParseError {
 
         fun invalidSnapshot(reason: String): ParseError = InvalidSnapshot(reason)
 
-        fun unknownPredicate(ref: PredicateRef): ParseError = UnknownPredicate(ref)
+        fun unversionedExternalRef(id: String, reason: String = "version must not be blank"): ParseError =
+            UnversionedExternalRef(id = id, reason = reason)
+
+        fun unknownField(path: String): ParseError = UnknownField(path)
+
+        fun missingRequired(path: String): ParseError = MissingRequired(path)
+
+        fun invalidValue(path: String, reason: String): ParseError = InvalidValue(path = path, reason = reason)
     }
 
     /**

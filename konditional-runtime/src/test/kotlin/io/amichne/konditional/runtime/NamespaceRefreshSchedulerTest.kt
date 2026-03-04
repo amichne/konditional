@@ -130,7 +130,7 @@ class NamespaceRefreshSchedulerTest {
         val thrown = runCatching { scheduler.start() }
 
         assertIs<IllegalStateException>(thrown.exceptionOrNull())
-        assertTrue(thrown.exceptionOrNull()!!.message!!.contains(namespace.id))
+        assertTrue(thrown.exceptionOrNull()!!.message!!.contains(namespace.id.value))
 
         scheduler.stop()
     }

@@ -1,5 +1,8 @@
 package io.amichne.konditional.rules.predicate
 
+import io.amichne.konditional.values.NamespaceId
+import io.amichne.konditional.values.PredicateId
+
 /**
  * A typed, stable reference to a named predicate.
  *
@@ -22,20 +25,17 @@ package io.amichne.konditional.rules.predicate
  */
 sealed interface PredicateRef : Comparable<PredicateRef> {
     /** Stable identifier for the predicate. Must be non-blank. */
-    val id: String
+    val id: PredicateId
 
     /**
      * A built-in predicate provided by the konditional-core evaluation engine.
      *
      * @property id Stable identifier for the predicate.
      */
-    data class BuiltIn(override val id: String) : PredicateRef {
-        init {
-            require(id.isNotBlank()) { "PredicateRef.BuiltIn.id must not be blank" }
-        }
+    data class BuiltIn(override val id: PredicateId) : PredicateRef {
 
         override fun compareTo(other: PredicateRef): Int = when (other) {
-            is BuiltIn -> id.compareTo(other.id)
+            is BuiltIn -> id.value.compareTo(other.id.value)
             is Registered -> -1 // BuiltIn sorts before Registered
         }
     }
@@ -50,17 +50,24 @@ sealed interface PredicateRef : Comparable<PredicateRef> {
      * @property id Stable identifier for the predicate within its namespace.
      */
     data class Registered(
-        val namespaceId: String,
-        override val id: String,
+        val namespaceId: NamespaceId,
+        override val id: PredicateId,
     ) : PredicateRef {
-        init {
-            require(namespaceId.isNotBlank()) { "PredicateRef.Registered.namespaceId must not be blank" }
-            require(id.isNotBlank()) { "PredicateRef.Registered.id must not be blank" }
+        companion object {
+            @Deprecated(
+                message = "Use the constructor with typed NamespaceId and PredicateId for type safety.",
+                replaceWith = ReplaceWith("Registered(NamespaceId(namespaceId), PredicateId(id))")
+            )
+            @JvmName("invoke")
+            operator fun invoke(
+                namespaceId: String,
+                id: String
+            ) = Registered(NamespaceId(namespaceId), PredicateId(id))
         }
 
         override fun compareTo(other: PredicateRef): Int = when (other) {
             is BuiltIn -> 1 // Registered sorts after BuiltIn
-            is Registered -> compareValuesBy(this, other, { it.namespaceId }, { it.id })
+            is Registered -> compareValuesBy(this, other, { it.namespaceId.value }, { it.id.value })
         }
     }
 }

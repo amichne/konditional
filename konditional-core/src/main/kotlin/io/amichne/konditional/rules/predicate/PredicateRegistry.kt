@@ -3,6 +3,7 @@ package io.amichne.konditional.rules.predicate
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.rules.targeting.Targeting
+import io.amichne.konditional.values.NamespaceId
 
 /**
  * Namespace-scoped registry for named predicate implementations.
@@ -25,7 +26,7 @@ import io.amichne.konditional.rules.targeting.Targeting
  */
 interface PredicateRegistry<C : Context> {
     /** The namespace this registry is scoped to. */
-    val namespaceId: String
+    val namespaceId: NamespaceId
 
     /**
      * Resolves a [PredicateRef] to a live [Targeting.Custom] for evaluation.

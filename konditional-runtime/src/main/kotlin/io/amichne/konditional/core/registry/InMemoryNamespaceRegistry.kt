@@ -22,6 +22,16 @@ import java.util.concurrent.atomic.AtomicReference
 /**
  * In-memory [NamespaceRegistryRuntime] implementation.
  *
+ * ## Atomicity
+ *
+ * Reads and writes are linearizable at the [NamespaceSnapshot] boundary.
+ * A single `AtomicReference<NamespaceSnapshot>` holds the current snapshot per namespace.
+ * All writes (load, rollback, updateDefinition) go through a `writeLock` to keep the
+ * `current` and `historyRef` consistent with each other. Reads never acquire a lock.
+ *
+ * Readers will observe either the complete previous snapshot or the complete new snapshot —
+ * never a partially-applied configuration.
+ *
  * Intended for:
  * - default runtime registry for [Namespace]
  * - tests requiring isolated registries
@@ -31,19 +41,20 @@ class InMemoryNamespaceRegistry(
     hooks: RegistryHooks = RegistryHooks.None,
     private val historyLimit: Int = DEFAULT_HISTORY_LIMIT,
 ) : NamespaceRegistryRuntime {
-    private val current = AtomicReference(Configuration(emptyMap()))
+    private val current = AtomicReference(NamespaceSnapshot.empty)
     private val hooksRef = AtomicReference(hooks)
     private val allDisabled = AtomicBoolean(false)
-    private val historyRef = AtomicReference<List<Configuration>>(emptyList())
+    private val historyRef = AtomicReference<List<NamespaceSnapshot>>(emptyList())
     private val writeLock = Any()
 
     private val overrides = ConcurrentHashMap<Feature<*, *, *>, AtomicReference<List<Any>>>()
 
     override fun load(config: ConfigurationView) {
         val concrete = config.toConcrete()
+        val newSnapshot = NamespaceSnapshot(concrete)
 
         synchronized(writeLock) {
-            val previous = current.getAndSet(concrete)
+            val previous = current.getAndSet(newSnapshot)
             historyRef.set((historyRef.get() + previous).takeLast(historyLimit))
         }
 
@@ -57,6 +68,15 @@ class InMemoryNamespaceRegistry(
     }
 
     override val configuration: ConfigurationView
+        get() = current.get().configuration
+
+    /**
+     * The current [NamespaceSnapshot] held by this registry.
+     *
+     * Callers observing this value are guaranteed to see either a complete previous snapshot
+     * or a complete new snapshot — never partial state.
+     */
+    val currentSnapshot: NamespaceSnapshot
         get() = current.get()
 
     override val hooks: RegistryHooks
@@ -78,7 +98,7 @@ class InMemoryNamespaceRegistry(
     }
 
     override val history: List<ConfigurationView>
-        get() = historyRef.get()
+        get() = historyRef.get().map { it.configuration }
 
     override fun rollback(steps: Int): Boolean {
         require(steps >= 1) { "steps must be >= 1" }
@@ -102,7 +122,7 @@ class InMemoryNamespaceRegistry(
                 namespaceId = namespaceId,
                 steps = steps,
                 success = true,
-                version = restored.metadata.version,
+                version = restored.version,
             ),
         )
 
@@ -131,10 +151,10 @@ class InMemoryNamespaceRegistry(
     }
 
     override fun updateDefinition(definition: FlagDefinition<*, *, *>) {
-        current.updateAndGet { currentSnapshot ->
-            val mutableFlags = currentSnapshot.flags.toMutableMap()
+        current.updateAndGet { snapshot ->
+            val mutableFlags = snapshot.configuration.flags.toMutableMap()
             mutableFlags[definition.feature] = definition
-            Configuration(mutableFlags, currentSnapshot.metadata)
+            NamespaceSnapshot(Configuration(mutableFlags, snapshot.configuration.metadata))
         }
     }
 

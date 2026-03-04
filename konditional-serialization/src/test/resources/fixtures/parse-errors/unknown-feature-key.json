@@ -1,0 +1,15 @@
+{
+  "meta": {
+    "version": "1.0.0"
+  },
+  "flags": [
+    {
+      "key": "feature::unknown-namespace::unknown-flag",
+      "defaultValue": {
+        "type": "BOOLEAN",
+        "value": true
+      },
+      "isActive": true
+    }
+  ]
+}

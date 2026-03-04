@@ -7,6 +7,7 @@ import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.KonditionalExplicitId
 import io.amichne.konditional.context.axis.axes
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.values.NamespaceId
 import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.constrain
 import io.amichne.konditional.fixtures.TestContext
@@ -20,7 +21,7 @@ class AxisFederationIntegrationTest {
     }
 
     private val namespaceA =
-        object : Namespace(id = "federated-a") {
+        object : Namespace.TestNamespaceFacade(id = NamespaceId("federated-a")) {
             val flag by boolean<TestContext>(default = false) {
                 enable {
                     constrain(FederatedEnvironment.PROD)
@@ -29,7 +30,7 @@ class AxisFederationIntegrationTest {
         }
 
     private val namespaceB =
-        object : Namespace(id = "federated-b") {
+        object : Namespace.TestNamespaceFacade(id = NamespaceId("federated-b")) {
             val flag by boolean<TestContext>(default = false) {
                 enable {
                     constrain(FederatedEnvironment.PROD)

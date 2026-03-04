@@ -53,6 +53,12 @@ cat .signatures/PUBLIC_SURFACE.ctx
 | [`konditional-maven-central-release-fastpath`](.agents/skills/konditional-maven-central-release-fastpath/SKILL.md) | Publishing releases   | `make publish`                       |
 | [`kotlin-jvm-lsp-gradle-debug`](.agents/skills/kotlin-jvm-lsp-gradle-debug/SKILL.md)                               | Editor setup          | `/skill:kotlin-jvm-lsp-gradle-debug` |
 
+### 🚀 Integration & Migration
+
+| Skill                                                            | When to Use                          | Command                    |
+|------------------------------------------------------------------|--------------------------------------|----------------------------|
+| [`codebase-uplift`](.agents/skills/codebase-uplift/SKILL.md)     | Migrating legacy flag systems        | `/skill:codebase-uplift`   |
+
 ---
 
 ## Common Workflows
@@ -65,6 +71,19 @@ cat .signatures/PUBLIC_SURFACE.ctx
 3. /skill:technical-review             # Review design
 4. /skill:docs-authoring               # Document feature
 5. python3 .agents/skills/value-architecture-signature-linker/scripts/validate_claim_signature_links.py --repo-root . --links-file docs/claim-trace/claim-signature-links.json --report-out docs/claim-trace/claims-report.json --auto-refresh
+```
+
+### Migrating Legacy Flag Systems
+
+```bash
+1. /skill:codebase-uplift              # Start migration guidance
+2. # Create inventory using template
+3. # Design namespaces and contexts
+4. /skill:kotlin-mastery               # Implement migration adapter
+5. # Deploy dual-read with mismatch telemetry
+6. # Analyze and fix mismatches
+7. # Gradual promotion to Konditional
+8. # Remove legacy system
 ```
 
 ### Fixing Failing CI

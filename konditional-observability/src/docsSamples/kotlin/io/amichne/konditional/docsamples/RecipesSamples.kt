@@ -30,11 +30,12 @@ import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.runtime.rollback
 import io.amichne.konditional.runtime.update
 import io.amichne.konditional.serialization.snapshot.ConfigurationCodec
+import io.amichne.konditional.values.NamespaceId
 import io.amichne.kontracts.dsl.of
 import io.amichne.kontracts.dsl.schema
 import io.amichne.kontracts.schema.ObjectSchema
 
-private object AppFeatures : Namespace("app") {
+private object AppFeatures : Namespace() {
     val darkMode by boolean<Context>(default = false)
 }
 
@@ -67,7 +68,7 @@ private object RecipeLogger {
 // region recipe-1-typed-variants
 enum class CheckoutVariant { CLASSIC, FAST_PATH, NEW_UI }
 
-object CheckoutFlags : Namespace("checkout") {
+object CheckoutFlags : Namespace() {
     val variant by enum<CheckoutVariant, Context>(default = CheckoutVariant.CLASSIC) {
         rule(CheckoutVariant.FAST_PATH) { rampUp { 10.0 } }
         rule(CheckoutVariant.NEW_UI) { rampUp { 1.0 } }
@@ -84,7 +85,7 @@ fun renderCheckout(context: Context) {
 // endregion recipe-1-typed-variants
 
 // region recipe-2-rampup
-object RampUpFlags : Namespace("ramp-up") {
+object RampUpFlags : Namespace() {
     val newCheckout by boolean(default = false) {
         salt("v1")
         enable { rampUp { 10.0 } }
@@ -96,7 +97,7 @@ fun isCheckoutEnabled(context: Context): Boolean =
 // endregion recipe-2-rampup
 
 // region recipe-2-reset
-object RampUpResetFlags : Namespace("ramp-up-reset") {
+object RampUpResetFlags : Namespace() {
     val newCheckout by boolean(default = false) {
         salt("v2")
         enable { rampUp { 10.0 } }
@@ -112,7 +113,7 @@ enum class Segment(override val id: String) : AxisValue<Segment> {
     ENTERPRISE("enterprise"),
 }
 
-object SegmentFlags : Namespace("segment") {
+object SegmentFlags : Namespace() {
     val premiumUi by boolean(default = false) {
         enable {
             constrain(Segment.ENTERPRISE)
@@ -147,7 +148,7 @@ data class EnterpriseContext(
 
 enum class SubscriptionTier { FREE, PRO, ENTERPRISE }
 
-object PremiumFeatures : Namespace("premium") {
+object PremiumFeatures : Namespace() {
     val advancedAnalytics by boolean<EnterpriseContext>(default = false) {
         enable {
             extension { subscriptionTier == SubscriptionTier.ENTERPRISE && employeeCount > 100 }
@@ -169,7 +170,7 @@ data class RetryPolicy(
     }
 }
 
-object PolicyFlags : Namespace("policy") {
+object PolicyFlags : Namespace() {
     val retryPolicy by custom<RetryPolicy, Context>(default = RetryPolicy()) {
         rule(RetryPolicy(maxAttempts = 5, backoffMs = 2000.0)) { platforms(Platform.ANDROID) }
     }
@@ -224,7 +225,7 @@ fun evaluateWithShadowedConfig(context: Context): Boolean {
 // endregion recipe-7-shadow
 
 // region recipe-8-namespace
-sealed class AppDomain(id: String) : Namespace(id) {
+sealed class AppDomain(id: String) : Namespace() {
     data object Payments : AppDomain("payments") {
         val applePay by boolean<Context>(default = false)
     }

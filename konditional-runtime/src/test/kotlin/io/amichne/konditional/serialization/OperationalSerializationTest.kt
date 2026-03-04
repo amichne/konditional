@@ -21,6 +21,7 @@ import io.amichne.konditional.serialization.options.SnapshotWarning
 import io.amichne.konditional.serialization.snapshot.ConfigurationCodec
 import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 import io.amichne.konditional.values.FeatureId
+import io.amichne.konditional.values.NamespaceId
 import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -35,7 +36,7 @@ class OperationalSerializationTest {
             val knownFeature by boolean<TestContext>(default = false)
         }
 
-        val unknownKey = FeatureId.create(namespace.id, "missing-${UUID.randomUUID()}")
+        val unknownKey = FeatureId.create(namespace.id.value, "missing-${UUID.randomUUID()}")
         val snapshotJson = """
             {
               "flags": [
@@ -67,7 +68,7 @@ class OperationalSerializationTest {
 
     @Test
     fun `axis constraints roundtrip preserves evaluation semantics`() {
-        val namespace = object : Namespace("axis-roundtrip-${UUID.randomUUID()}") {
+        val namespace = object : Namespace.TestNamespaceFacade(NamespaceId("axis-roundtrip-${UUID.randomUUID()}")) {
             val envScopedFlag by boolean<TestContext>(default = false) {
                 enable {
                     constrain(TestEnvironment.PROD)
