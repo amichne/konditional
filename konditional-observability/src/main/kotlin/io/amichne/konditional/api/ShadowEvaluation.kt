@@ -26,6 +26,11 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithShadow(
 ): T {
     val baseline = evaluateInternalApi(context, baselineRegistry, mode = Metrics.Evaluation.EvaluationMode.NORMAL)
 
+    val enabledNamespaces = options.enabledForNamespaces
+    if (enabledNamespaces != null && baseline.namespaceId !in enabledNamespaces) {
+        return baseline.value
+    }
+
     if (baselineRegistry.isAllDisabled && !options.evaluateCandidateWhenBaselineDisabled) {
         return baseline.value
     }
@@ -42,6 +47,8 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateWithShadow(
         onMismatch(
             ShadowMismatch(
                 featureKey = key,
+                namespaceId = baseline.namespaceId,
+                detectedAtEpochMillis = System.currentTimeMillis(),
                 baseline = baseline,
                 candidate = candidate,
                 kinds = mismatchKinds,
