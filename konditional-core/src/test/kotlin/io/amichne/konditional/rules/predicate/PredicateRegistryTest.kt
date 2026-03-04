@@ -16,7 +16,8 @@ import kotlin.test.assertTrue
 
 class PredicateRegistryTest {
 
-    private fun registry() = InMemoryPredicateRegistry<Context>(namespaceId = NamespaceId("ns"))
+    private fun registry(namespaceId: String = "ns") =
+        InMemoryPredicateRegistry<Context>(namespaceId = NamespaceId(namespaceId))
 
     private fun truePredicate(): Targeting.Custom<Context> = Targeting.Custom(block = { true }, weight = 1)
     private fun falsePredicate(): Targeting.Custom<Context> = Targeting.Custom(block = { false }, weight = 1)
@@ -31,8 +32,8 @@ class PredicateRegistryTest {
 
     @Test
     fun `PredicateRef Registered rejects blank id or namespaceId`() {
-        assertFailsWith<IllegalArgumentException> { PredicateRef.Registered("ns", "") }
-        assertFailsWith<IllegalArgumentException> { PredicateRef.Registered("", "id") }
+        assertFailsWith<IllegalArgumentException> { PredicateRef.Registered(NamespaceId("ns"), PredicateId("")) }
+        assertFailsWith<IllegalArgumentException> { PredicateRef.Registered(NamespaceId(""), PredicateId("id")) }
     }
 
     // ── PredicateRef ordering ────────────────────────────────────────────────
@@ -40,7 +41,7 @@ class PredicateRegistryTest {
     @Test
     fun `BuiltIn sorts before Registered`() {
         val builtIn = BuiltIn(PredicateId("z-last"))
-        val registered = PredicateRef.Registered("ns", "a-first")
+        val registered = PredicateRef.Registered(NamespaceId("ns"), PredicateId("a-first"))
         assertTrue(builtIn < registered)
         assertTrue(registered > builtIn)
     }
@@ -58,22 +59,22 @@ class PredicateRegistryTest {
     @Test
     fun `Registered refs are ordered by namespaceId then id`() {
         val refs = listOf(
-            PredicateRef.Registered("beta", "z"),
-            PredicateRef.Registered("alpha", "b"),
-            PredicateRef.Registered("alpha", "a"),
+            PredicateRef.Registered(NamespaceId("beta"), PredicateId("z")),
+            PredicateRef.Registered(NamespaceId("alpha"), PredicateId("b")),
+            PredicateRef.Registered(NamespaceId("alpha"), PredicateId("a")),
         ).sorted()
         assertEquals(
             listOf("alpha/a", "alpha/b", "beta/z"),
-            refs.filterIsInstance<PredicateRef.Registered>().map { "${it.namespaceId}/${it.id}" },
+            refs.filterIsInstance<PredicateRef.Registered>().map { "${it.namespaceId.value}/${it.id.value}" },
         )
     }
 
     @Test
     fun `ordering is stable across repeated sorts`() {
         val refs = listOf(
-            PredicateRef.Registered("ns", "b"),
+            PredicateRef.Registered(NamespaceId("ns"), PredicateId("b")),
             BuiltIn(PredicateId("c")),
-            PredicateRef.Registered("ns", "a"),
+            PredicateRef.Registered(NamespaceId("ns"), PredicateId("a")),
             BuiltIn(PredicateId("a")),
         )
         assertEquals(refs.sorted(), refs.sorted())
@@ -84,7 +85,7 @@ class PredicateRegistryTest {
     @Test
     fun `register stores predicate and resolve returns it`() {
         val reg = registry()
-        val ref = PredicateRef.Registered("payments", "is-premium")
+        val ref = PredicateRef.Registered(NamespaceId("ns"), PredicateId("is-premium"))
         reg.register(ref, truePredicate())
 
         val result = reg.resolve(ref)
@@ -95,9 +96,9 @@ class PredicateRegistryTest {
     @Test
     fun `registeredRefs returns refs in insertion order`() {
         val reg = registry()
-        reg.register(PredicateRef.Registered("ns", "c"), truePredicate())
-        reg.register(PredicateRef.Registered("ns", "a"), truePredicate())
-        reg.register(PredicateRef.Registered("ns", "b"), truePredicate())
+        reg.register(PredicateRef.Registered(NamespaceId("ns"), PredicateId("c")), truePredicate())
+        reg.register(PredicateRef.Registered(NamespaceId("ns"), PredicateId("a")), truePredicate())
+        reg.register(PredicateRef.Registered(NamespaceId("ns"), PredicateId("b")), truePredicate())
 
         assertEquals(listOf("c", "a", "b"), reg.registeredRefs.map { it.id.value })
     }
@@ -106,14 +107,14 @@ class PredicateRegistryTest {
     fun `register rejects ref with mismatched namespaceId`() {
         val reg = registry()
         assertFailsWith<IllegalArgumentException> {
-            reg.register(PredicateRef.Registered("other-ns", "p"), truePredicate())
+            reg.register(PredicateRef.Registered(NamespaceId("other-ns"), PredicateId("p")), truePredicate())
         }
     }
 
     @Test
     fun `register rejects duplicate id`() {
         val reg = registry()
-        val ref = PredicateRef.Registered("ns", "dup")
+        val ref = PredicateRef.Registered(NamespaceId("ns"), PredicateId("dup"))
         reg.register(ref, truePredicate())
         assertFailsWith<IllegalStateException> {
             reg.register(ref, falsePredicate())
@@ -125,7 +126,7 @@ class PredicateRegistryTest {
     @Test
     fun `resolve returns UnknownPredicate for unregistered Registered ref`() {
         val reg = registry()
-        val unknownRef = PredicateRef.Registered("ns", "unknown")
+        val unknownRef = PredicateRef.Registered(NamespaceId("ns"), PredicateId("unknown"))
         val result = reg.resolve(unknownRef)
 
         assertTrue(result.isFailure)
@@ -149,10 +150,10 @@ class PredicateRegistryTest {
 
     @Test
     fun `registries in different namespaces are independent`() {
-        val regA = registry()
-        val regB = registry()
+        val regA = registry("namespace-a")
+        val regB = registry("namespace-b")
 
-        regA.register(PredicateRef.Registered("namespace-a", "predicate"), truePredicate())
+        regA.register(PredicateRef.Registered(NamespaceId("namespace-a"), PredicateId("predicate")), truePredicate())
 
         assertEquals(1, regA.registeredRefs.size)
         assertEquals(0, regB.registeredRefs.size)
@@ -160,12 +161,12 @@ class PredicateRegistryTest {
 
     @Test
     fun `resolving against wrong namespace registry returns failure`() {
-        val regA = registry()
-        val refA = PredicateRef.Registered("namespace-a", "p")
+        val regA = registry("namespace-a")
+        val refA = PredicateRef.Registered(NamespaceId("namespace-a"), PredicateId("p"))
         regA.register(refA, truePredicate())
 
         // regB cannot resolve a ref scoped to namespace-a
-        val regB = registry()
+        val regB = registry("namespace-b")
         assertTrue(regB.resolve(refA).isFailure)
     }
 
@@ -173,7 +174,7 @@ class PredicateRegistryTest {
 
     @Test
     fun `ParseError UnknownPredicate message contains ref`() {
-        val ref = PredicateRef.Registered("ns", "missing")
+        val ref = PredicateRef.Registered(NamespaceId("ns"), PredicateId("missing"))
         val error = ParseError.UnknownPredicate(ref)
         assertTrue(error.message.contains("missing"))
     }

@@ -25,6 +25,7 @@ interface Identifiable : Validateable {
 
     interface Composable : NonBlank {
         override fun validate() = apply {
+            super<NonBlank>.validate()
             require(!value.contains(SEPARATOR)) { "${this::class.simpleName} must not contain '$SEPARATOR': '$value'" }
         }
     }

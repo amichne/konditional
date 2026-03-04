@@ -66,7 +66,7 @@ sealed interface PredicateRef : Comparable<PredicateRef> {
         }
 
         override fun compareTo(other: PredicateRef): Int = when (other) {
-            is PredicateRef -> 1 // Registered sorts after BuiltIn
+            is BuiltIn -> 1 // Registered sorts after BuiltIn
             is Registered -> compareValuesBy(this, other, { it.namespaceId.value }, { it.id.value })
         }
     }

@@ -264,7 +264,7 @@ fun evaluateWithShadowedConfig(context: Context): Boolean {
 Use separate namespaces for independent lifecycles, and a scoped kill-switch for emergencies.
 
 ```kotlin
-sealed class AppDomain(id: String) : Namespace(NamespaceId(id)) {
+sealed class AppDomain(id: String) : Namespace() {
     data object Payments : AppDomain("payments") {
         val applePay by boolean<Context>(default = false)
     }
