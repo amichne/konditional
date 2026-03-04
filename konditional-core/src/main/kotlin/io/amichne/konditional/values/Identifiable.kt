@@ -1,5 +1,7 @@
 package io.amichne.konditional.values
 
+import io.amichne.konditional.values.IdentifierEncoding.SEPARATOR
+
 /**
  * Base interface for strongly-typed identifier value classes.
  *
@@ -12,6 +14,18 @@ package io.amichne.konditional.values
  * value class NamespaceId(override val value: String) : Identifiable
  * ```
  */
-interface Identifiable {
+interface Identifiable : Validateable {
     val value: String
+
+    interface NonBlank : Identifiable {
+        override fun validate() = apply {
+            require(value.isNotBlank()) { "${this::class.simpleName} must not be blank" }
+        }
+    }
+
+    interface Composable : NonBlank {
+        override fun validate() = apply {
+            require(!value.contains(SEPARATOR)) { "${this::class.simpleName} must not contain '$SEPARATOR': '$value'" }
+        }
+    }
 }

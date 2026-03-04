@@ -35,7 +35,7 @@ import io.amichne.kontracts.dsl.of
 import io.amichne.kontracts.dsl.schema
 import io.amichne.kontracts.schema.ObjectSchema
 
-private object AppFeatures : Namespace(NamespaceId("app")) {
+private object AppFeatures : Namespace() {
     val darkMode by boolean<Context>(default = false)
 }
 
@@ -225,7 +225,7 @@ fun evaluateWithShadowedConfig(context: Context): Boolean {
 // endregion recipe-7-shadow
 
 // region recipe-8-namespace
-sealed class AppDomain(id: String) : Namespace(NamespaceId(id)) {
+sealed class AppDomain(id: String) : Namespace() {
     data object Payments : AppDomain("payments") {
         val applePay by boolean<Context>(default = false)
     }

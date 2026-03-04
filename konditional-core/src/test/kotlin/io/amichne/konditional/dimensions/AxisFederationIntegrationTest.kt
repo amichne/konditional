@@ -21,7 +21,7 @@ class AxisFederationIntegrationTest {
     }
 
     private val namespaceA =
-        object : Namespace(id = NamespaceId("federated-a")) {
+        object : Namespace.TestNamespaceFacade(id = NamespaceId("federated-a")) {
             val flag by boolean<TestContext>(default = false) {
                 enable {
                     constrain(FederatedEnvironment.PROD)
@@ -30,7 +30,7 @@ class AxisFederationIntegrationTest {
         }
 
     private val namespaceB =
-        object : Namespace(id = NamespaceId("federated-b")) {
+        object : Namespace.TestNamespaceFacade(id = NamespaceId("federated-b")) {
             val flag by boolean<TestContext>(default = false) {
                 enable {
                     constrain(FederatedEnvironment.PROD)

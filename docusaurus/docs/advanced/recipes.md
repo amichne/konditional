@@ -32,7 +32,7 @@ When you have multiple rollout variants, model them as a typed value (enum or st
 ```kotlin
 enum class CheckoutVariant { CLASSIC, FAST_PATH, NEW_UI }
 
-object CheckoutFlags : Namespace("checkout") {
+object CheckoutFlags : Namespace() {
     val variant by enum<CheckoutVariant, Context>(default = CheckoutVariant.CLASSIC) {
         rule(CheckoutVariant.FAST_PATH) { rampUp { 10.0 } }
         rule(CheckoutVariant.NEW_UI) { rampUp { 1.0 } }
@@ -59,7 +59,7 @@ fun renderCheckout(context: Context) {
 Gradually roll out a feature without reshuffling users; use `salt(...)` when you need a clean resample.
 
 ```kotlin
-object RampUpFlags : Namespace("ramp-up") {
+object RampUpFlags : Namespace() {
     val newCheckout by boolean(default = false) {
         salt("v1")
         enable { rampUp { 10.0 } }
@@ -73,7 +73,7 @@ fun isCheckoutEnabled(context: Context): Boolean =
 To restart the experiment with a fresh sample:
 
 ```kotlin
-object RampUpResetFlags : Namespace("ramp-up-reset") {
+object RampUpResetFlags : Namespace() {
     val newCheckout by boolean(default = false) {
         salt("v2")
         enable { rampUp { 10.0 } }
@@ -99,7 +99,7 @@ enum class Segment(override val id: String) : AxisValue<Segment> {
     ENTERPRISE("enterprise"),
 }
 
-object SegmentFlags : Namespace("segment") {
+object SegmentFlags : Namespace() {
     val premiumUi by boolean(default = false) {
         enable {
             constrain(Segment.ENTERPRISE)
@@ -145,7 +145,7 @@ data class EnterpriseContext(
 
 enum class SubscriptionTier { FREE, PRO, ENTERPRISE }
 
-object PremiumFeatures : Namespace("premium") {
+object PremiumFeatures : Namespace() {
     val advancedAnalytics by boolean<EnterpriseContext>(default = false) {
         enable {
             extension { subscriptionTier == SubscriptionTier.ENTERPRISE && employeeCount > 100 }
@@ -177,7 +177,7 @@ data class RetryPolicy(
     }
 }
 
-object PolicyFlags : Namespace("policy") {
+object PolicyFlags : Namespace() {
     val retryPolicy by custom<RetryPolicy, Context>(default = RetryPolicy()) {
         rule(RetryPolicy(maxAttempts = 5, backoffMs = 2000.0)) { platforms(Platform.ANDROID) }
     }
@@ -264,7 +264,7 @@ fun evaluateWithShadowedConfig(context: Context): Boolean {
 Use separate namespaces for independent lifecycles, and a scoped kill-switch for emergencies.
 
 ```kotlin
-sealed class AppDomain(id: String) : Namespace(id) {
+sealed class AppDomain(id: String) : Namespace(NamespaceId(id)) {
     data object Payments : AppDomain("payments") {
         val applePay by boolean<Context>(default = false)
     }

@@ -4,6 +4,7 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.features.BooleanFeature
 import io.amichne.konditional.core.features.DoubleFeature
@@ -69,7 +70,7 @@ import kotlin.reflect.KProperty
  *
  * @property id Unique identifier for this namespace. Defaults to the fully-qualified namespace class name when omitted.
  */
-open class Namespace(
+open class Namespace private constructor(
     val id: NamespaceId = defaultNamespaceId(),
     @property:KonditionalInternalApi
     val registry: NamespaceRegistry = NamespaceRegistryFactories.default(id.value),
@@ -83,6 +84,9 @@ open class Namespace(
      */
     @PublishedApi internal val identifierSeed: String = id.value,
 ) : NamespaceRegistry by registry {
+    constructor() : this(defaultNamespaceId())
+    constructor(id: String) : this(NamespaceId(id))
+
 
     private companion object {
         fun defaultNamespaceId(): NamespaceId {
@@ -123,11 +127,19 @@ open class Namespace(
      * ```
      */
     @TestOnly
-    abstract class TestNamespaceFacade(id: String) : Namespace(
+    abstract class TestNamespaceFacade(
+        id: String,
+        registry: NamespaceRegistry = NamespaceRegistryFactories.default(id),
+        identifierSeed: String = UUID.randomUUID().toString(),
+    ) : Namespace(
         id = NamespaceId(id),
-        registry = NamespaceRegistryFactories.default(id),
-        identifierSeed = UUID.randomUUID().toString(),
-    )
+        registry = registry,
+        identifierSeed = identifierSeed
+    ) {
+        constructor(id: NamespaceId) : this(id.value, NamespaceRegistryFactories.default(id.value))
+
+    }
+
 
     private val _features = mutableListOf<Feature<*, *, *>>()
     private val declaredDefaults = mutableMapOf<Feature<*, *, *>, Any>()

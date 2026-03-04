@@ -2,7 +2,11 @@ package io.amichne.konditional.rules.predicate
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.result.ParseError
+import io.amichne.konditional.rules.predicate.PredicateRef
+import io.amichne.konditional.rules.predicate.PredicateRef.BuiltIn
 import io.amichne.konditional.rules.targeting.Targeting
+import io.amichne.konditional.values.NamespaceId
+import io.amichne.konditional.values.PredicateId
 
 /**
  * Default [PredicateRegistry] backed by an insertion-ordered, immutable-on-read map.
@@ -21,14 +25,9 @@ import io.amichne.konditional.rules.targeting.Targeting
  * @param namespaceId The namespace this registry is scoped to.
  */
 class InMemoryPredicateRegistry<C : Context>(
-    override val namespaceId: String,
+    override val namespaceId: NamespaceId,
 ) : PredicateRegistry<C> {
-
-    init {
-        require(namespaceId.isNotBlank()) { "PredicateRegistry.namespaceId must not be blank" }
-    }
-
-    private val store: LinkedHashMap<String, Pair<PredicateRef.Registered, Targeting.Custom<C>>> = LinkedHashMap()
+    private val store: LinkedHashMap<PredicateId, Pair<PredicateRef.Registered, Targeting.Custom<C>>> = LinkedHashMap()
 
     override fun resolve(ref: PredicateRef): Result<Targeting.Custom<C>> {
         val entry = when (ref) {

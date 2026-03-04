@@ -234,8 +234,8 @@ class NamespaceLinearizabilityTest {
     private class LinearizableNamespace(
         id: String,
         historyLimit: Int,
-    ) : Namespace(
-            id = NamespaceId(id),
+    ) : Namespace.TestNamespaceFacade(
+            id = id,
             registry = InMemoryNamespaceRegistry(namespaceId = id, historyLimit = historyLimit),
             identifierSeed = "${id}-seed",
         ) {

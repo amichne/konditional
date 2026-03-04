@@ -1,5 +1,6 @@
 package io.amichne.konditional.values
 
+import io.amichne.konditional.values.Identifiable.Composable
 import io.amichne.konditional.values.IdentifierEncoding.SEPARATOR
 
 /**
@@ -10,10 +11,9 @@ import io.amichne.konditional.values.IdentifierEncoding.SEPARATOR
  * - Must not contain the [SEPARATOR] sequence used in composite identifiers.
  */
 @JvmInline
-value class NamespaceId(override val value: String) : Identifiable {
+value class NamespaceId(override val value: String) : Composable {
     init {
-        require(value.isNotBlank()) { "NamespaceId must not be blank" }
-        require(!value.contains(SEPARATOR)) { "NamespaceId must not contain '$SEPARATOR': '$value'" }
+        validate()
     }
 
     override fun toString(): String = value
