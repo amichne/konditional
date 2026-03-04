@@ -4,7 +4,7 @@ package io.amichne.kontracts.schema
  * Sealed class representing compile-time schema definitions for JSON values, with OpenAPI-esque properties.
  */
 sealed class JsonSchema<out T : Any> : OpenApi<T> {
-    abstract override val type: OpenApi.Type
+    abstract override val type: Type
     override val title: String? = null
     override val description: String? = null
     override val default: T? = null

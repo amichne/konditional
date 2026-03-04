@@ -60,7 +60,7 @@ Gradually roll out a feature without reshuffling users; use `salt(...)` when you
 
 ```kotlin
 object RampUpFlags : Namespace("ramp-up") {
-    val newCheckout by boolean<Context>(default = false) {
+    val newCheckout by boolean(default = false) {
         salt("v1")
         enable { rampUp { 10.0 } }
     }
@@ -74,7 +74,7 @@ To restart the experiment with a fresh sample:
 
 ```kotlin
 object RampUpResetFlags : Namespace("ramp-up-reset") {
-    val newCheckout by boolean<Context>(default = false) {
+    val newCheckout by boolean(default = false) {
         salt("v2")
         enable { rampUp { 10.0 } }
     }
@@ -100,42 +100,31 @@ enum class Segment(override val id: String) : AxisValue<Segment> {
 }
 
 object SegmentFlags : Namespace("segment") {
-    val segmentAxis = axis<Segment>()
-
-    val premiumUi by boolean<Context>(default = false) {
+    val premiumUi by boolean(default = false) {
         enable {
-            variant {
-                segmentAxis { include(Segment.ENTERPRISE) }
-            }
+            constrain(Segment.ENTERPRISE)
         }
     }
 }
 
 fun isPremiumUiEnabled(): Boolean {
-    val segmentContext =
-        object :
-            Context,
-            Context.LocaleContext,
-            Context.PlatformContext,
-            Context.VersionContext,
-            Context.StableIdContext {
-            override val locale = AppLocale.UNITED_STATES
-            override val platform = Platform.IOS
-            override val appVersion = Version.of(2, 1, 0)
-            override val stableId = StableId.of("user-123")
-            override val axisValues = axisValues {
-                variant {
-                    SegmentFlags.segmentAxis { include(Segment.ENTERPRISE) }
-                }
-            }
-        }
+    val segmentContext = object : Context, LocaleContext, PlatformContext, VersionContext, StableIdContext {
+        override val locale = AppLocale.UNITED_STATES
+        override val platform = Platform.IOS
+        override val appVersion = Version.of(2, 1, 0)
+        override val stableId = StableId.of("user-123")
+
+        // Ultra-concise: no DSL wrapper needed
+        override val axes = axes(Segment.ENTERPRISE)
+    }
 
     return SegmentFlags.premiumUi.evaluate(segmentContext)
 }
 ```
 
 - **Guarantee**: Segment targeting is type-safe and serializable.
-- **Mechanism**: Axis IDs are stored in JSON; `variant { axisHandle { include(...) } }` evaluates against `Context.axisValues`.
+- **Mechanism**: Axis IDs are stored in JSON, `constrain(...)` emits axis
+  targeting leaves, and evaluation reads `Context.axes`.
 - **Boundary**: Axis IDs must remain stable across builds and obfuscation.
 
 ---
@@ -152,7 +141,7 @@ data class EnterpriseContext(
     override val stableId: StableId,
     val subscriptionTier: SubscriptionTier,
     val employeeCount: Int,
-) : Context, Context.LocaleContext, Context.PlatformContext, Context.VersionContext, Context.StableIdContext
+) : Context, LocaleContext, PlatformContext, VersionContext, StableIdContext
 
 enum class SubscriptionTier { FREE, PRO, ENTERPRISE }
 

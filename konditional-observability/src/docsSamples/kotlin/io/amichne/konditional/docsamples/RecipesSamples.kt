@@ -3,18 +3,22 @@
 
 package io.amichne.konditional.docsamples
 
-import io.amichne.konditional.api.axisValues
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.api.evaluateWithShadow
 import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Context.LocaleContext
+import io.amichne.konditional.context.Context.PlatformContext
+import io.amichne.konditional.context.Context.StableIdContext
+import io.amichne.konditional.context.Context.VersionContext
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.KonditionalExplicitId
+import io.amichne.konditional.context.axis.axes
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
-import io.amichne.konditional.core.dsl.variant
+import io.amichne.konditional.core.dsl.rules.targeting.scopes.constrain
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.ops.KonditionalLogger
 import io.amichne.konditional.core.ops.Metrics
@@ -81,7 +85,7 @@ fun renderCheckout(context: Context) {
 
 // region recipe-2-rampup
 object RampUpFlags : Namespace("ramp-up") {
-    val newCheckout by boolean<Context>(default = false) {
+    val newCheckout by boolean(default = false) {
         salt("v1")
         enable { rampUp { 10.0 } }
     }
@@ -93,7 +97,7 @@ fun isCheckoutEnabled(context: Context): Boolean =
 
 // region recipe-2-reset
 object RampUpResetFlags : Namespace("ramp-up-reset") {
-    val newCheckout by boolean<Context>(default = false) {
+    val newCheckout by boolean(default = false) {
         salt("v2")
         enable { rampUp { 10.0 } }
     }
@@ -109,35 +113,23 @@ enum class Segment(override val id: String) : AxisValue<Segment> {
 }
 
 object SegmentFlags : Namespace("segment") {
-    val segmentAxis = axis<Segment>()
-
-    val premiumUi by boolean<Context>(default = false) {
+    val premiumUi by boolean(default = false) {
         enable {
-            variant {
-                segmentAxis { include(Segment.ENTERPRISE) }
-            }
+            constrain(Segment.ENTERPRISE)
         }
     }
 }
 
 fun isPremiumUiEnabled(): Boolean {
-    val segmentContext =
-        object :
-            Context,
-            Context.LocaleContext,
-            Context.PlatformContext,
-            Context.VersionContext,
-            Context.StableIdContext {
-            override val locale = AppLocale.UNITED_STATES
-            override val platform = Platform.IOS
-            override val appVersion = Version.of(2, 1, 0)
-            override val stableId = StableId.of("user-123")
-            override val axisValues = axisValues {
-                variant {
-                    SegmentFlags.segmentAxis { include(Segment.ENTERPRISE) }
-                }
-            }
-        }
+    val segmentContext = object : Context, LocaleContext, PlatformContext, VersionContext, StableIdContext {
+        override val locale = AppLocale.UNITED_STATES
+        override val platform = Platform.IOS
+        override val appVersion = Version.of(2, 1, 0)
+        override val stableId = StableId.of("user-123")
+
+        // Ultra-concise: no DSL wrapper needed
+        override val axes = axes(Segment.ENTERPRISE)
+    }
 
     return SegmentFlags.premiumUi.evaluate(segmentContext)
 }
@@ -151,7 +143,7 @@ data class EnterpriseContext(
     override val stableId: StableId,
     val subscriptionTier: SubscriptionTier,
     val employeeCount: Int,
-) : Context, Context.LocaleContext, Context.PlatformContext, Context.VersionContext, Context.StableIdContext
+) : Context, LocaleContext, PlatformContext, VersionContext, StableIdContext
 
 enum class SubscriptionTier { FREE, PRO, ENTERPRISE }
 

@@ -41,6 +41,7 @@ val konditionalCoreAllowedPackagePrefixes =
         "io.amichne.konditional.core",
         "io.amichne.konditional.rules",
         "io.amichne.konditional.values",
+        "io.amichne.konditional",
     )
 
 konditionalCoreApiBoundary {

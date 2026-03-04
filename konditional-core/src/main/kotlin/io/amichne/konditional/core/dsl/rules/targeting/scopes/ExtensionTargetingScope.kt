@@ -30,7 +30,6 @@ interface ExtensionTargetingScope<C : Context> {
     fun extension(block: C.() -> Boolean)
 }
 
-
 @PublishedApi
 internal interface NarrowingTargetingScope<C : Context> {
     fun <R : Context> extensionNarrowed(

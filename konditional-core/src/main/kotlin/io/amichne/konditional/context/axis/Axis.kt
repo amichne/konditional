@@ -32,11 +32,14 @@ import kotlin.reflect.KClass
  * @param valueClass The runtime class of the value type [T].
  *      This is intentionally passed explicitly to avoid fragile reflection-based extraction from generic supertypes.
  * @property id A stable, unique identifier for this axis derived from [T]'s FQCN or [KonditionalExplicitId].
+ * @property key A typed [AxisKey] wrapping [id] for use in type-safe APIs.
  */
 class Axis<T> private constructor(
     val id: String,
-    val valueClass: KClass<out T>,
+    val valueClass: KClass<out AxisValue<T>>,
 ) where T : AxisValue<T>, T : Enum<T> {
+    /** Typed key for this axis. Prefer [key] over [id] in new code. */
+    val key: AxisKey get() = AxisKey(id)
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Axis<*>) return false
@@ -60,7 +63,7 @@ class Axis<T> private constructor(
          * Creates a new axis handle whose id is derived from [valueClass]'s fully-qualified name,
          * or from a [KonditionalExplicitId] annotation if present.
          */
-        fun <T> of(valueClass: KClass<out T>): Axis<T> where T : AxisValue<T>, T : Enum<T> =
+        fun <T> of(valueClass: KClass<out AxisValue<T>>): Axis<T> where T : AxisValue<T>, T : Enum<T> =
             Axis(id = deriveId(valueClass), valueClass = valueClass)
 
         /**
@@ -68,39 +71,5 @@ class Axis<T> private constructor(
          */
         inline fun <reified T> of(): Axis<T> where T : AxisValue<T>, T : Enum<T> =
             of(valueClass = T::class)
-
-        /**
-         * Creates a new axis handle with an explicit id.
-         *
-         * Prefer [of] without an id argument and apply [KonditionalExplicitId] to the enum class
-         * when a custom id is required for stability across package moves.
-         */
-        @Deprecated(
-            message = "Axis ids are now derived from the value class FQCN. " +
-                "Drop the id argument and let the id be inferred, or annotate the enum with " +
-                "@KonditionalExplicitId(\"<id>\") for a stable custom id.",
-            replaceWith = ReplaceWith("Axis.of(valueClass)"),
-            level = DeprecationLevel.WARNING,
-        )
-        fun <T> of(
-            id: String,
-            valueClass: KClass<out T>,
-        ): Axis<T> where T : AxisValue<T>, T : Enum<T> =
-            Axis(id = id, valueClass = valueClass)
-
-        /**
-         * Reified helper for [of] with an explicit id.
-         */
-        @Deprecated(
-            message = "Axis ids are now derived from the value class FQCN. " +
-                "Drop the id argument and let the id be inferred, or annotate the enum with " +
-                "@KonditionalExplicitId(\"<id>\") for a stable custom id.",
-            replaceWith = ReplaceWith("Axis.of<T>()"),
-            level = DeprecationLevel.WARNING,
-        )
-        @Suppress("DEPRECATION")
-        inline fun <reified T> of(id: String): Axis<T> where T : AxisValue<T>, T : Enum<T> =
-            of(id = id, valueClass = T::class)
-
     }
 }

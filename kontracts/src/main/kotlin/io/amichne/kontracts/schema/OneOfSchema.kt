@@ -15,8 +15,8 @@ data class OneOfSchema internal constructor(
     override val example: Any? = null,
     override val deprecated: Boolean = false
 ) : JsonSchema<Any>() {
-    override val type: OpenApi.Type
-        get() = options.firstOrNull()?.type ?: OpenApi.Type.OBJECT
+    override val type: Type
+        get() = options.firstOrNull()?.type ?: Type.OBJECT
 
     override fun toString() = "OneOfSchema(options=${options.size})"
 

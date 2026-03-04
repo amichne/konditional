@@ -1,15 +1,6 @@
 ---
 name: sig-reachability
-description: |
-  Run a dead-code surface scan over .signatures/ and report types with 0 or low
-  inbound references from other main-source sig files. Produces three tiers:
-  ORPHANED (no refs anywhere), TEST-ONLY (referenced only from tests), and
-  LOW USAGE (1–2 main refs). API surface modules (openfeature, kontracts,
-  konditional-http-server, konditional-otel) are reported separately since their
-  public types are designed to be consumed externally.
-
-  Use when: conducting architecture reviews, API analysis refactoring modules, removing features, after axis/flag cleanup,
-  or any time you suspect accumulated dead code.
+description: "Run a dead-code surface scan over .signatures/ and report types with 0 or low inbound references from other main-source sig files. Produces three tiers: ORPHANED (no refs anywhere), TEST-ONLY (referenced only from tests), and LOW USAGE (1–2 main refs). API surface modules (openfeature, kontracts, konditional-http-server, konditional-otel) are reported separately since their public types are designed to be consumed externally.  Use when: conducting architecture reviews, API analysis refactoring modules, removing features, after axis/flag cleanup, or any time you suspect accumulated dead code. "
 ---
 
 # sig-reachability

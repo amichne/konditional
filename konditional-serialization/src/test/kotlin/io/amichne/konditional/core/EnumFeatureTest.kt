@@ -224,7 +224,7 @@ class EnumFeatureTest {
             stableId = StableId.of("12345678901234567890123456789012")
         )
 
-        val json = ConfigurationCodec.encode(namespace.configuration)
+        val json = ConfigurationCodec.encode(namespace)
         namespace.update(Configuration(emptyMap()))
 
         val reloadResult = NamespaceSnapshotLoader.forNamespace(namespace).load(json)

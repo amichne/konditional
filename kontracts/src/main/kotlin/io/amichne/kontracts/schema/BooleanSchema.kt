@@ -13,6 +13,6 @@ data class BooleanSchema internal constructor(
     override val example: Boolean? = null,
     override val deprecated: Boolean = false
 ) : JsonSchema<Boolean>() {
-    override val type: OpenApi.Type = OpenApi.Type.BOOLEAN
+    override val type: Type = Type.BOOLEAN
     override fun toString() = "BooleanSchema"
 }

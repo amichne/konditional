@@ -293,7 +293,7 @@ class KonstrainedCustomTypeTest {
         }
 
         features.withOverride(features.expiry, overrideDate) {
-            val json = ConfigurationCodec.encode(features.configuration)
+            val json = ConfigurationCodec.encode(features)
             val decoded = ConfigurationCodec.decode(
                 json = json,
                 namespace = features,

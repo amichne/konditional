@@ -4,7 +4,6 @@ package io.amichne.konditional.runtime
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.instance.ConfigurationMetadataView
 import io.amichne.konditional.core.instance.ConfigurationView
 import io.amichne.konditional.core.registry.NamespaceRegistryRuntime
 import io.amichne.konditional.serialization.instance.Configuration
@@ -26,15 +25,13 @@ fun Namespace.update(configuration: Configuration) {
     runtimeRegistry().load(configuration)
 }
 
-
 /**
  * Serializes the namespace's current immutable snapshot into canonical JSON.
  *
  * This is the preferred operational entry point for snapshot export because it is
  * namespace-scoped and deterministic for a fixed configuration state.
  */
-@Suppress("DEPRECATION")
-fun Namespace.dump(): String = ConfigurationCodec.encode(configuration)
+fun Namespace.dump(): String = ConfigurationCodec.encode(this)
 
 /**
  * Convenience accessor for [dump].
@@ -47,9 +44,6 @@ fun Namespace.rollback(steps: Int = 1): Boolean =
 
 val Namespace.history: List<ConfigurationView>
     get() = runtimeRegistry().history
-
-val Namespace.historyMetadata: List<ConfigurationMetadataView>
-    get() = history.map { it.metadata }
 
 private fun Namespace.runtimeRegistry(): NamespaceRegistryRuntime =
     registry as? NamespaceRegistryRuntime

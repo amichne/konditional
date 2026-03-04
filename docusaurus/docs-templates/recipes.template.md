@@ -60,7 +60,8 @@ Use axes for segment targeting you want to update via JSON (without redeploying 
 {{recipe-3-axes}}
 
 - **Guarantee**: Segment targeting is type-safe and serializable.
-- **Mechanism**: Axis IDs are stored in JSON; `variant { axisHandle { include(...) } }` evaluates against `Context.axisValues`.
+- **Mechanism**: Axis IDs are stored in JSON, `constrain(...)` emits axis
+  targeting leaves, and evaluation reads `Context.axes`.
 - **Boundary**: Axis IDs must remain stable across builds and obfuscation.
 
 ---

@@ -20,6 +20,7 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation(libs.bundles.test)
     testImplementation(libs.bundles.moshi)
+    testImplementation(libs.coroutines.test)
     testImplementation(testFixtures(project(":konditional-core")))
 }
 

@@ -18,6 +18,6 @@ data class DoubleSchema internal constructor(
     val enum: List<Double>? = null,
     val format: String? = null
 ) : JsonSchema<Double>() {
-    override val type: OpenApi.Type = OpenApi.Type.NUMBER
+    override val type: Type = Type.NUMBER
     override fun toString() = "DoubleSchema"
 }
