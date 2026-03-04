@@ -49,12 +49,29 @@ sealed interface ParseError {
         override val message: String get() = "Feature not found: $key"
     }
 
+    /**
+     * An external snapshot ref is missing a required version pin.
+     *
+     * Emitted when a consumer attempts to register or load an [io.amichne.konditional.core.external.ExternalSnapshotRef]
+     * with a blank [version][io.amichne.konditional.core.external.ExternalSnapshotRef.version].
+     *
+     * Unversioned refs are rejected at registration time — they never reach the evaluation path.
+     */
+    data class UnversionedExternalRef(
+        val id: String,
+        val reason: String = "version must not be blank",
+        override val message: String = "External ref '$id' rejected: $reason",
+    ) : ParseError
+
     companion object {
         fun featureNotFound(key: FeatureId): ParseError = FeatureNotFound(key)
 
         fun invalidJson(reason: String): ParseError = InvalidJson(reason)
 
         fun invalidSnapshot(reason: String): ParseError = InvalidSnapshot(reason)
+
+        fun unversionedExternalRef(id: String, reason: String = "version must not be blank"): ParseError =
+            UnversionedExternalRef(id = id, reason = reason)
     }
 
     /**
