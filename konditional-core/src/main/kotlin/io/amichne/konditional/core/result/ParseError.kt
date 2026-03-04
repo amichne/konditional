@@ -1,5 +1,6 @@
 package io.amichne.konditional.core.result
 
+import io.amichne.konditional.rules.predicate.PredicateRef
 import io.amichne.konditional.values.FeatureId
 
 /**
@@ -63,6 +64,13 @@ sealed interface ParseError {
         override val message: String = "External ref '$id' rejected: $reason",
     ) : ParseError
 
+    /**
+     * Predicate ref not found in the namespace-scoped [io.amichne.konditional.rules.predicate.PredicateRegistry].
+     */
+    data class UnknownPredicate(val ref: PredicateRef) : ParseError {
+        override val message: String get() = "Unknown predicate: $ref"
+    }
+
     companion object {
         fun featureNotFound(key: FeatureId): ParseError = FeatureNotFound(key)
 
@@ -72,6 +80,8 @@ sealed interface ParseError {
 
         fun unversionedExternalRef(id: String, reason: String = "version must not be blank"): ParseError =
             UnversionedExternalRef(id = id, reason = reason)
+            
+        fun unknownPredicate(ref: PredicateRef): ParseError = UnknownPredicate(ref)
     }
 
     /**
