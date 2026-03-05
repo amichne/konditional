@@ -13,7 +13,10 @@ import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.AnyOfScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.NarrowingTargetingScope
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
+import io.amichne.konditional.rules.predicate.PredicateRef
 import io.amichne.konditional.rules.targeting.Targeting
+import io.amichne.konditional.values.NamespaceId
+import io.amichne.konditional.values.PredicateId
 
 /**
  * Internal builder for [Targeting.AnyOf] nodes.
@@ -26,10 +29,18 @@ import io.amichne.konditional.rules.targeting.Targeting
 @KonditionalDsl
 @PublishedApi
 @Suppress("OVERRIDE_DEPRECATION")
-internal class AnyOfBuilder<C : Context> : AnyOfScope<C>, NarrowingTargetingScope<C>, VariantDispatchHost {
+internal class AnyOfBuilder<C : Context>(
+    private val namespaceId: NamespaceId? = null,
+    private val predicateResolver: ((PredicateRef) -> Result<Targeting.Custom<C>>)? = null,
+    private val predicateRegistrar: ((PredicateRef.Registered, Targeting.Custom<C>) -> Unit)? = null,
+    private val inlinePredicateIdFactory: (() -> PredicateId)? = null,
+) : AnyOfScope<C>, NarrowingTargetingScope<C>, VariantDispatchHost {
 
     private val leaves = mutableListOf<Targeting<C>>()
+    private val predicateRefs = mutableListOf<PredicateRef>()
     private val variantScope = RuleVariantScope<C>(leaves)
+    internal val referencedPredicateRefs: List<PredicateRef>
+        get() = predicateRefs.toList()
 
     override fun locales(vararg appLocales: LocaleTag) {
         if (appLocales.isNotEmpty())
@@ -49,6 +60,44 @@ internal class AnyOfBuilder<C : Context> : AnyOfScope<C>, NarrowingTargetingScop
     override fun extension(block: C.() -> Boolean) {
         leaves += Targeting.Custom(block = { c -> c.block() })
     }
+
+    override fun predicate(ref: PredicateRef) {
+        val resolver = requireNotNull(predicateResolver) {
+            "predicate(ref) is only available when rules are built with a namespace-scoped PredicateRegistry."
+        }
+        leaves += resolver(ref).getOrThrow()
+        predicateRefs += ref
+    }
+
+    override fun require(block: C.() -> Boolean) {
+        val resolvedNamespaceId = namespaceId
+        val resolver = predicateResolver
+        val registrar = predicateRegistrar
+        val predicateIdFactory = inlinePredicateIdFactory
+        if (shouldFallbackInlineRequire(resolvedNamespaceId, resolver, registrar, predicateIdFactory)) {
+            extension(block)
+            return
+        }
+        val nonNullNamespaceId = checkNotNull(resolvedNamespaceId)
+        val nonNullRegistrar = checkNotNull(registrar)
+        val nonNullPredicateIdFactory = checkNotNull(predicateIdFactory)
+
+        val ref = PredicateRef.Registered(
+            namespaceId = nonNullNamespaceId,
+            id = nonNullPredicateIdFactory(),
+        )
+        val inlinePredicate = Targeting.Custom<C>(block = { context: C -> context.block() })
+        nonNullRegistrar(ref, inlinePredicate)
+        leaves += inlinePredicate
+        predicateRefs += ref
+    }
+
+    private fun shouldFallbackInlineRequire(
+        resolvedNamespaceId: NamespaceId?,
+        resolver: ((PredicateRef) -> Result<Targeting.Custom<C>>)?,
+        registrar: ((PredicateRef.Registered, Targeting.Custom<C>) -> Unit)?,
+        predicateIdFactory: (() -> PredicateId)?,
+    ): Boolean = resolvedNamespaceId == null || resolver == null || registrar == null || predicateIdFactory == null
 
     override fun <R : Context> extensionNarrowed(
         evidence: (C) -> R?,

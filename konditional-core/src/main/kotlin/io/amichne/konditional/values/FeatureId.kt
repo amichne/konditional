@@ -17,10 +17,10 @@ value class FeatureId private constructor(
         private const val EXPECTED_PARTS: Int = 3
 
         fun create(
-            namespaceSeed: String,
+            namespaceSeed: NamespaceId,
             key: String,
         ): FeatureId =
-            FeatureId(IdentifierEncoding.encode(prefix = PREFIX, components = listOf(namespaceSeed, key)))
+            FeatureId(IdentifierEncoding.encode(prefix = PREFIX, components = listOf(namespaceSeed.value, key)))
 
         /**
          * Parses a serialized identifier into a canonical [FeatureId].
@@ -41,7 +41,7 @@ value class FeatureId private constructor(
             require(namespaceSeed.isNotBlank()) { "FeatureId namespaceSeed must not be blank: '$plainId'" }
             require(key.isNotBlank()) { "FeatureId key must not be blank: '$plainId'" }
 
-            return create(namespaceSeed = namespaceSeed, key = key)
+            return create(namespaceSeed = NamespaceId(namespaceSeed), key = key)
         }
     }
 }

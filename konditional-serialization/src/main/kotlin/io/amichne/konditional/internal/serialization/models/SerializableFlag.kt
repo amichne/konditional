@@ -9,6 +9,7 @@ import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.result.ParseError
+import io.amichne.konditional.core.result.parseErrorOrNull
 import io.amichne.konditional.core.result.parseFailure
 import io.amichne.konditional.core.schema.CompiledNamespaceSchema
 import io.amichne.konditional.core.types.Konstrained
@@ -19,6 +20,7 @@ import io.amichne.konditional.internal.SerializedRuleValueType
 import io.amichne.konditional.internal.flagDefinitionFromSerialized
 import io.amichne.konditional.internal.toSerializedMetadata
 import io.amichne.konditional.internal.toSerializedRules
+import io.amichne.konditional.values.RuleId
 import io.amichne.konditional.values.FeatureId
 import io.amichne.kontracts.schema.ObjectTraits
 
@@ -47,10 +49,14 @@ data class SerializableFlag(
                     runCatching { conditional to toFlagDefinition(conditional = conditional) }
                         .fold(
                             onSuccess = { Result.success(it) },
-                            onFailure = {
+                            onFailure = { error ->
+                                val parseError = error.parseErrorOrNull()
+                                if (parseError != null) {
+                                    return@fold parseFailure(parseError)
+                                }
                                 parseFailure(
                                     ParseError.InvalidSnapshot(
-                                        it.message ?: "Failed to decode flag",
+                                        error.message ?: "Failed to decode flag",
                                     ),
                                 )
                             },
@@ -121,7 +127,7 @@ data class SerializableFlag(
                 }
 
                 val ruleSpecs: List<SerializedFlagRuleSpec<T>> =
-                    rules.map { rule ->
+                    rules.mapIndexed { index, rule ->
                         val resolvedRuleValue =
                             when (rule.type) {
                                 SerializedRuleValueType.STATIC ->
@@ -132,7 +138,11 @@ data class SerializableFlag(
 
                                 SerializedRuleValueType.CONTEXTUAL -> decodedDefault
                             }
-                        rule.toSpec(resolvedRuleValue)
+                        val fallbackRuleId = RuleId.forFeatureRule(conditional.id, index)
+                        rule.toSpec(
+                            value = resolvedRuleValue,
+                            fallbackRuleId = fallbackRuleId,
+                        )
                     }
 
                 flagDefinitionFromSerialized(

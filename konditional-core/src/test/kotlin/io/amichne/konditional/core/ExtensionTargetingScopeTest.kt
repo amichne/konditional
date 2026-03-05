@@ -10,12 +10,19 @@ import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.whenContext
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.result.KonditionalBoundaryFailure
+import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.fixtures.EnterpriseContext
 import io.amichne.konditional.fixtures.SubscriptionTier
 import io.amichne.konditional.fixtures.UserRole
 import io.amichne.konditional.fixtures.utilities.update
+import io.amichne.konditional.rules.predicate.PredicateRef
+import io.amichne.konditional.rules.targeting.Targeting
+import io.amichne.konditional.values.PredicateId
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 
 class ExtensionTargetingScopeTest {
     private object Features : Namespace.TestNamespaceFacade("extension-targeting-scope-test") {
@@ -118,5 +125,73 @@ class ExtensionTargetingScopeTest {
         assertEquals(false, Features.enterpriseOnlyOnBaseContext.evaluate(base))
         assertEquals(true, Features.enterpriseOnlyOnBaseContext.evaluate(enterprise))
         assertEquals(false, Features.enterpriseOnlyOnBaseContext.evaluate(basicEnterprise))
+    }
+
+    @Test
+    fun `predicate ref resolves through namespace registry`() {
+        val ref = PredicateRef.Registered(Features.id, PredicateId("is-owner-ref"))
+        Features.predicates<EnterpriseContext>().register(
+            ref,
+            Targeting.Custom(block = { it.userRole == UserRole.OWNER }),
+        )
+
+        Features.extensionComposition.update(default = false) {
+            rule(true) {
+                predicate(ref)
+            }
+        }
+
+        val admin = enterpriseContext(
+            idHex = "77777777777777777777777777777777",
+            subscriptionTier = SubscriptionTier.PREMIUM,
+            userRole = UserRole.ADMIN,
+        )
+        val owner = enterpriseContext(
+            idHex = "88888888888888888888888888888888",
+            subscriptionTier = SubscriptionTier.PREMIUM,
+            userRole = UserRole.OWNER,
+        )
+
+        assertEquals(false, Features.extensionComposition.evaluate(admin))
+        assertEquals(true, Features.extensionComposition.evaluate(owner))
+    }
+
+    @Test
+    fun `predicate ref fails fast when unregistered`() {
+        val missing = PredicateRef.Registered(Features.id, PredicateId("missing-owner-ref"))
+
+        val error = assertFailsWith<KonditionalBoundaryFailure> {
+            Features.extensionComposition.update(default = false) {
+                rule(true) {
+                    predicate(missing)
+                }
+            }
+        }
+
+        assertIs<ParseError.UnknownPredicate>(error.parseError)
+    }
+
+    @Test
+    fun `anonymous require blocks compose with AND semantics`() {
+        Features.extensionComposition.update(default = false) {
+            rule(true) {
+                require { subscriptionTier == SubscriptionTier.PREMIUM }
+                require { userRole == UserRole.OWNER }
+            }
+        }
+
+        val premiumAdmin = enterpriseContext(
+            idHex = "99999999999999999999999999999999",
+            subscriptionTier = SubscriptionTier.PREMIUM,
+            userRole = UserRole.ADMIN,
+        )
+        val premiumOwner = enterpriseContext(
+            idHex = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            subscriptionTier = SubscriptionTier.PREMIUM,
+            userRole = UserRole.OWNER,
+        )
+
+        assertEquals(false, Features.extensionComposition.evaluate(premiumAdmin))
+        assertEquals(true, Features.extensionComposition.evaluate(premiumOwner))
     }
 }

@@ -4,7 +4,6 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.features.BooleanFeature
 import io.amichne.konditional.core.features.DoubleFeature
@@ -19,8 +18,13 @@ import io.amichne.konditional.core.registry.NamespaceRegistryRuntime
 import io.amichne.konditional.core.spi.FeatureRegistrationHooks
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.internal.builders.FlagBuilder
-import io.amichne.konditional.values.IdentifierEncoding.SEPARATOR
+import io.amichne.konditional.rules.predicate.InMemoryPredicateRegistry
+import io.amichne.konditional.rules.predicate.NamespacePredicate
+import io.amichne.konditional.rules.predicate.PredicateRegistry
+import io.amichne.konditional.rules.predicate.PredicateRef
+import io.amichne.konditional.rules.targeting.Targeting
 import io.amichne.konditional.values.NamespaceId
+import io.amichne.konditional.values.PredicateId
 import org.jetbrains.annotations.TestOnly
 import java.util.UUID
 import kotlin.reflect.KProperty
@@ -30,9 +34,10 @@ import kotlin.reflect.KProperty
  *
  * Namespaces provide:
  * - **Compile-time isolation**: Features are type-bound to their namespace
- * - **Runtime isolation**: Each namespace has its own flag registry
+ * - **Runtime isolation**: Each namespace has its own flag and predicate registries
  * - **Type safety**: Namespace identity is encoded in the type system
  * - **Direct registry operations**: Namespaces implement [NamespaceRegistry], eliminating the need for `.registry` access
+ * - **Named predicate registration**: Register and resolve namespace-scoped predicates via [predicates]
  * - **Inline feature definition**: Define feature flags directly on the namespace via property delegation
  *
  * ## Namespace Types
@@ -74,6 +79,7 @@ open class Namespace private constructor(
     val id: NamespaceId = defaultNamespaceId(),
     @property:KonditionalInternalApi
     val registry: NamespaceRegistry = NamespaceRegistryFactories.default(id.value),
+    val predicateRegistry: PredicateRegistry<Context> = InMemoryPredicateRegistry(id),
     /**
      * Seed used to construct stable [io.amichne.konditional.values.FeatureId] values for features.
      *
@@ -82,11 +88,14 @@ open class Namespace private constructor(
      *
      * Test-only/ephemeral namespaces should provide a per-instance unique seed to avoid collisions.
      */
-    @PublishedApi internal val identifierSeed: String = id.value,
+    @PublishedApi internal val identifierSeed: NamespaceId.Seed = id.seed(),
 ) : NamespaceRegistry by registry {
     constructor() : this(defaultNamespaceId())
     constructor(id: String) : this(NamespaceId(id))
 
+    @Suppress("UNCHECKED_CAST")
+    fun <C : Context> predicates(): PredicateRegistry<C> =
+        predicateRegistry as PredicateRegistry<C>
 
     private companion object {
         fun defaultNamespaceId(): NamespaceId {
@@ -108,13 +117,6 @@ open class Namespace private constructor(
         }
     }
 
-    init {
-        require(identifierSeed.isNotBlank()) { "Namespace identifierSeed must not be blank" }
-        require(!identifierSeed.contains(SEPARATOR)) {
-            "Namespace identifierSeed must not contain '$SEPARATOR': '$identifierSeed'"
-        }
-    }
-
     /**
      * Consumer-defined namespaces.
      *
@@ -130,11 +132,13 @@ open class Namespace private constructor(
     abstract class TestNamespaceFacade(
         id: String,
         registry: NamespaceRegistry = NamespaceRegistryFactories.default(id),
+        predicateRegistry: PredicateRegistry<Context> = InMemoryPredicateRegistry(NamespaceId(id)),
         identifierSeed: String = UUID.randomUUID().toString(),
     ) : Namespace(
         id = NamespaceId(id),
         registry = registry,
-        identifierSeed = identifierSeed
+        predicateRegistry = predicateRegistry,
+        identifierSeed = NamespaceId.Seed(identifierSeed)
     ) {
         constructor(id: NamespaceId) : this(id.value, NamespaceRegistryFactories.default(id.value))
 
@@ -304,6 +308,28 @@ open class Namespace private constructor(
         noinline customScope: FlagScope<T, C, Namespace>.() -> Unit = {},
     ): KotlinClassDelegate<T, C> = KotlinClassDelegate(default, customScope)
 
+    /**
+     * Declares a named predicate on this namespace using property delegation.
+     *
+     * Predicates declared this way are automatically registered in this namespace's
+     * [PredicateRegistry], and can be referenced from rules via
+     * `require(predicateProperty)` / `predicate(predicateRef)`.
+     *
+     * Example:
+     * ```kotlin
+     * object Payments : Namespace("payments") {
+     *     val isPremium by predicate<Context> { true }
+     *
+     *     val applePay by boolean<Context>(default = false) {
+     *         rule(true) { require(isPremium) }
+     *     }
+     * }
+     * ```
+     */
+    protected fun <C : Context> predicate(
+        block: C.() -> Boolean,
+    ): PredicateDelegate<C> = PredicateDelegate(block)
+
     @Suppress("LongParameterList")
     private inline fun <T : Any, C : Context, M : Namespace, F : Feature<T, C, M>, D> registerFeature(
         thisRef: M,
@@ -458,6 +484,36 @@ open class Namespace private constructor(
 
         operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): KotlinClassFeature<T, C, M> =
             feature as KotlinClassFeature<T, C, M>
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    protected class PredicateDelegate<C : Context>(
+        private val block: C.() -> Boolean,
+    ) {
+        private var predicate: NamespacePredicate<C>? = null
+
+        operator fun <M : Namespace> provideDelegate(
+            thisRef: M,
+            property: KProperty<*>,
+        ): PredicateDelegate<C> = apply {
+            val ref = PredicateRef.Registered(
+                namespaceId = thisRef.id,
+                id = PredicateId(property.name),
+            )
+            thisRef.predicates<C>().register(
+                ref = ref,
+                predicate = Targeting.Custom(block = { context -> context.block() }),
+            )
+            predicate = NamespacePredicate(ref)
+        }
+
+        operator fun <M : Namespace> getValue(
+            thisRef: M,
+            property: KProperty<*>,
+        ): NamespacePredicate<C> =
+            checkNotNull(predicate) {
+                "Predicate '${property.name}' has not been initialized on namespace '${thisRef.id}'."
+            }
     }
 
     @OptIn(KonditionalInternalApi::class)

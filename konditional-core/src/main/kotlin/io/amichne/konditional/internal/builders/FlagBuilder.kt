@@ -21,6 +21,7 @@ import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
+import io.amichne.konditional.values.RuleId
 
 /**
  * Internal implementation of [FlagScope].
@@ -44,6 +45,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
     private val values = mutableListOf<ConditionalValue<T, C>>()
     private val rolloutAllowlist: LinkedHashSet<HexId> = linkedSetOf()
     private val pendingYields: LinkedHashSet<PendingYieldToken> = linkedSetOf()
+    private var nextRuleOrdinal: Int = 0
 
     private var salt: String = "v1"
     private var isActive: Boolean = true
@@ -89,7 +91,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
         value: T,
         build: RuleScope<C>.() -> Unit,
     ) {
-        val rule = RuleBuilder<C>().apply(build).build()
+        val rule = ruleBuilder().apply(build).build()
         values += rule.targetedBy(value)
     }
 
@@ -97,7 +99,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
         value: T,
         build: ContextRuleScope<C>.() -> Unit,
     ) {
-        val rule = RuleBuilder<C>().apply {
+        val rule = ruleBuilder().apply {
             @Suppress("UNCHECKED_CAST")
             (this as ContextRuleScope<C>).apply(build)
         }.build()
@@ -108,7 +110,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
         valueResolver: RuleValueResolver<C, T>,
         build: RuleScope<C>.() -> Unit,
     ) {
-        val rule = RuleBuilder<C>().apply(build).build()
+        val rule = ruleBuilder().apply(build).build()
         values += rule.targetedBy(valueResolver)
     }
 
@@ -116,7 +118,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
         valueResolver: RuleValueResolver<C, T>,
         build: ContextRuleScope<C>.() -> Unit,
     ) {
-        val rule = RuleBuilder<C>().apply {
+        val rule = ruleBuilder().apply {
             @Suppress("UNCHECKED_CAST")
             (this as ContextRuleScope<C>).apply(build)
         }.build()
@@ -154,6 +156,16 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
             )
         }
         ?: error(unclosedYieldingRulesErrorMessage(featureKey = feature.key, pendingYields = pendingYields))
+
+    private fun ruleBuilder(): RuleBuilder<C> =
+        RuleBuilder(
+            ruleId = RuleId.forFeatureRule(feature.id, nextRuleOrdinal++),
+            namespaceId = feature.namespace.id,
+            predicateResolver = { ref -> feature.namespace.predicates<C>().resolve(ref) },
+            predicateRegistrar = { ref, predicate ->
+                feature.namespace.predicates<C>().registerOrReplace(ref, predicate)
+            },
+        )
 }
 
 private fun unclosedYieldingRulesErrorMessage(

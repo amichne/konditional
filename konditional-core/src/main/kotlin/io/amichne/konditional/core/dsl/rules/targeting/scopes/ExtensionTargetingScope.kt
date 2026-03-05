@@ -2,6 +2,8 @@ package io.amichne.konditional.core.dsl.rules.targeting.scopes
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.dsl.KonditionalDsl
+import io.amichne.konditional.rules.predicate.NamespacePredicate
+import io.amichne.konditional.rules.predicate.PredicateRef
 
 /**
  * Targeting mix-in for custom predicates.
@@ -28,6 +30,38 @@ interface ExtensionTargetingScope<C : Context> {
      * @param block The extension logic as a lambda
      */
     fun extension(block: C.() -> Boolean)
+
+    /**
+     * Adds a named predicate reference.
+     *
+     * The ref is resolved exactly once during DSL construction against the namespace-scoped
+     * predicate registry, then appended as a [io.amichne.konditional.rules.targeting.Targeting.Custom]
+     * leaf. Unknown refs fail fast with [io.amichne.konditional.core.result.ParseError.UnknownPredicate].
+     *
+     * @param ref Stable predicate reference descriptor
+     */
+    fun predicate(ref: PredicateRef)
+
+    /**
+     * Requires a namespace-declared predicate.
+     *
+     * This is consumer-facing DSL sugar for [predicate], intended for predicate handles
+     * declared via `Namespace.predicate { ... }`.
+     */
+    fun require(namedPredicate: NamespacePredicate<C>) {
+        predicate(namedPredicate.ref)
+    }
+
+    /**
+     * Requires an inline predicate scoped to the current rule.
+     *
+     * This is syntactic sugar over [extension] for non-reusable predicates.
+     * Multiple calls compose with AND semantics.
+     */
+    fun require(block: C.() -> Boolean) {
+        extension(block)
+    }
+
 }
 
 @PublishedApi
@@ -37,6 +71,7 @@ internal interface NarrowingTargetingScope<C : Context> {
         block: R.() -> Boolean,
     )
 }
+
 
 /**
  * Adds a capability-narrowed extension predicate.
@@ -70,4 +105,17 @@ inline fun <reified R : Context> ExtensionTargetingScope<*>.whenContext(
         val narrowed = this as? R ?: return@extension false
         narrowed.block()
     }
+}
+
+/**
+ * Capability-narrowed boolean expression for inline predicate lambdas.
+ *
+ * This overload is intended for `require { ... }` / `extension { ... }` blocks:
+ * `require { whenContext<MyContext> { ... } }`.
+ */
+inline fun <reified R : Context> Context.whenContext(
+    crossinline block: R.() -> Boolean,
+): Boolean {
+    val narrowed = this as? R ?: return false
+    return narrowed.block()
 }

@@ -1,6 +1,6 @@
 package io.amichne.konditional.values
 
-import io.amichne.konditional.values.Identifiable.Composable
+import io.amichne.konditional.core.features.Identifiable.Named.Composable
 import io.amichne.konditional.values.IdentifierEncoding.SEPARATOR
 
 /**
@@ -17,4 +17,15 @@ value class NamespaceId(override val value: String) : Composable {
     }
 
     override fun toString(): String = value
+
+    fun seed(): Seed = Seed(value)
+
+    @JvmInline
+    value class Seed internal constructor(override val value: String) : Composable {
+        init {
+            validate()
+        }
+
+        override fun toString(): String = value
+    }
 }

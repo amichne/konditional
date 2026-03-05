@@ -38,7 +38,7 @@ class NamespaceRefreshScheduler<M : Namespace>(
     private val fetcher: SnapshotFetcher,
     private val interval: Duration,
     private val options: SnapshotLoadOptions = SnapshotLoadOptions.fillMissingDeclaredFlags(),
-    private val hooks: RegistryHooks = namespace.registry.hooks,
+    private val hooks: RegistryHooks = namespace.hooks,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) {
     private val loader = NamespaceSnapshotLoader.forNamespace(namespace)
@@ -109,7 +109,7 @@ class NamespaceRefreshScheduler<M : Namespace>(
             fetcher: SnapshotFetcher,
             interval: Duration,
             options: SnapshotLoadOptions = SnapshotLoadOptions.fillMissingDeclaredFlags(),
-            hooks: RegistryHooks = namespace.registry.hooks,
+            hooks: RegistryHooks = namespace.hooks,
             dispatcher: CoroutineDispatcher = Dispatchers.IO,
         ): NamespaceRefreshScheduler<M> = NamespaceRefreshScheduler(
             namespace, fetcher, interval, options, hooks, dispatcher,

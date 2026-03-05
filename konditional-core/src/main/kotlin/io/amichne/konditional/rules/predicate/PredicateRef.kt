@@ -32,7 +32,8 @@ sealed interface PredicateRef : Comparable<PredicateRef> {
      *
      * @property id Stable identifier for the predicate.
      */
-    data class BuiltIn(override val id: PredicateId) : PredicateRef {
+    @ConsistentCopyVisibility
+    data class BuiltIn internal constructor(override val id: PredicateId) : PredicateRef {
 
         override fun compareTo(other: PredicateRef): Int = when (other) {
             is BuiltIn -> id.value.compareTo(other.id.value)
@@ -49,22 +50,11 @@ sealed interface PredicateRef : Comparable<PredicateRef> {
      * @property namespaceId The namespace this predicate is scoped to.
      * @property id Stable identifier for the predicate within its namespace.
      */
-    data class Registered(
+    @ConsistentCopyVisibility
+    data class Registered internal constructor(
         val namespaceId: NamespaceId,
         override val id: PredicateId,
     ) : PredicateRef {
-        companion object {
-            @Deprecated(
-                message = "Use the constructor with typed NamespaceId and PredicateId for type safety.",
-                replaceWith = ReplaceWith("Registered(NamespaceId(namespaceId), PredicateId(id))")
-            )
-            @JvmName("invoke")
-            operator fun invoke(
-                namespaceId: String,
-                id: String
-            ) = Registered(NamespaceId(namespaceId), PredicateId(id))
-        }
-
         override fun compareTo(other: PredicateRef): Int = when (other) {
             is BuiltIn -> 1 // Registered sorts after BuiltIn
             is Registered -> compareValuesBy(this, other, { it.namespaceId.value }, { it.id.value })

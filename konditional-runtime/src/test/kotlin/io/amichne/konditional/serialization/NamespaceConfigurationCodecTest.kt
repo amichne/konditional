@@ -24,6 +24,7 @@ import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.snapshot.ConfigurationCodec
 import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 import io.amichne.konditional.values.FeatureId
+import io.amichne.konditional.values.NamespaceId
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -144,7 +145,7 @@ class NamespaceConfigurationCodecTest {
             {
               "flags" : [
                 {
-                  "key" : "${FeatureId.create("global", "unregistered_feature")}",
+                  "key" : "${FeatureId.create(NamespaceId("global"), "unregistered_feature")}",
                   "defaultValue" : {
                     "type" : "BOOLEAN",
                     "value" : true

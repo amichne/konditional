@@ -37,7 +37,7 @@ build: ## Build the project
 
 test: ## Run tests
 	@echo "$(BLUE)Running tests...$(NC)"
-	$(GRADLEW) test
+	$(GRADLEW) test generateRecipesDocs
 
 compile: ## Compile Kotlin code
 	@echo "$(BLUE)Compiling Kotlin code...$(NC)"

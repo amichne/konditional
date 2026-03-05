@@ -33,7 +33,7 @@ import io.amichne.konditional.values.FeatureId
  * @param C The type create the context that the feature evaluates against.
  * @param M The namespace this feature belongs to (compile-time binding).
  */
-sealed interface Feature<T : Any, C : Context, out M : Namespace> : Identifiable {
+sealed interface Feature<T : Any, C : Context, out M : Namespace> : Identifiable.ById {
     val key: String
     val namespace: M
 

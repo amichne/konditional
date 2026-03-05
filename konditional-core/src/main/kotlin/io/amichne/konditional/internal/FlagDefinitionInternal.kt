@@ -11,6 +11,7 @@ import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBySerialized
 import io.amichne.konditional.rules.Rule
+import io.amichne.konditional.rules.predicate.PredicateRef
 import io.amichne.konditional.rules.targeting.Targeting
 import io.amichne.konditional.rules.targeting.axesOrEmpty
 import io.amichne.konditional.rules.targeting.localesOrEmpty
@@ -18,6 +19,7 @@ import io.amichne.konditional.rules.targeting.platformsOrEmpty
 import io.amichne.konditional.rules.targeting.versionRangeOrNull
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
+import io.amichne.konditional.values.RuleId
 
 /**
  * Internal contracts for encoding/decoding flag definitions across Konditional modules.
@@ -37,6 +39,7 @@ data class SerializedFlagDefinitionMetadata(
 data class SerializedFlagRuleSpec<T : Any>(
     val value: T,
     val type: SerializedRuleValueType = SerializedRuleValueType.STATIC,
+    val ruleId: RuleId = RuleId.unspecified,
     val rampUp: Double = 100.0,
     val rampUpAllowlist: Set<String> = emptySet(),
     val note: String? = null,
@@ -44,6 +47,7 @@ data class SerializedFlagRuleSpec<T : Any>(
     val platforms: Set<String> = emptySet(),
     val versionRange: VersionRange? = null,
     val axes: Map<String, Set<String>> = emptyMap(),
+    val predicateRefs: List<PredicateRef> = emptyList(),
 )
 
 @KonditionalInternalApi
@@ -74,12 +78,17 @@ fun <T : Any, C : Context, M : Namespace> flagDefinitionFromSerialized(
                     spec.axes.forEach { (axisId, allowedIds) ->
                         add(Targeting.Axis(axisId, allowedIds))
                     }
+                    spec.predicateRefs.forEach { ref ->
+                        add(feature.namespace.predicates<C>().resolve(ref).getOrThrow())
+                    }
                 }
                 Rule<C>(
                     rampUp = RampUp.of(spec.rampUp),
                     rampUpAllowlist = spec.rampUpAllowlist.mapTo(linkedSetOf()) { HexId(it) },
                     note = spec.note,
                     targeting = Targeting.All(leaves),
+                    predicateRefs = spec.predicateRefs,
+                    ruleId = spec.ruleId,
                 ).targetedBySerialized(spec.value, spec.type)
             },
         defaultValue = defaultValue,
@@ -106,6 +115,7 @@ fun FlagDefinition<*, *, *>.toSerializedRules(): List<SerializedFlagRuleSpec<Any
         SerializedFlagRuleSpec(
             value = value,
             type = type,
+            ruleId = cv.rule.ruleId,
             rampUp = cv.rule.rampUp.value,
             rampUpAllowlist = cv.rule.rampUpAllowlist.mapTo(linkedSetOf()) { it.id },
             note = cv.rule.note,
@@ -113,5 +123,6 @@ fun FlagDefinition<*, *, *>.toSerializedRules(): List<SerializedFlagRuleSpec<Any
             platforms = targeting.platformsOrEmpty(),
             versionRange = targeting.versionRangeOrNull() ?: Unbounded,
             axes = targeting.axesOrEmpty(),
+            predicateRefs = cv.rule.predicateRefs,
         )
     }
