@@ -155,6 +155,7 @@ inline fun <reified T : Any, C : Context, M : Namespace> M.ruleSet(
  */
 @JvmName("namespaceRuleSetWithContextType")
 inline fun <reified T : Any, C, M : Namespace, RC : Context> M.ruleSet(
+    name: String,
     @Suppress("UNUSED_PARAMETER") contextType: KClass<RC>,
     noinline build: RuleSetBuilder<T, RC>.() -> Unit,
 ): NamespaceRuleSetDelegate<RC, T, C, M> where C : RC = namespaceRuleSetDelegate(build)
