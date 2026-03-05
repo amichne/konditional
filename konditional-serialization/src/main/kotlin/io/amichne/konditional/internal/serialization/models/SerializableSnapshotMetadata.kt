@@ -6,7 +6,7 @@ import io.amichne.konditional.serialization.instance.ConfigurationMetadata
 
 @KonditionalInternalApi
 @JsonClass(generateAdapter = true)
-data class SerializableSnapshotMetadata(
+internal data class SerializableSnapshotMetadata(
     val version: String? = null,
     val generatedAtEpochMillis: Long? = null,
     val source: String? = null,

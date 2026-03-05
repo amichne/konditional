@@ -17,7 +17,7 @@ import java.lang.reflect.Type
  * - The on-wire format historically used `value::...` and is still accepted for backwards compatibility.
  */
 @KonditionalInternalApi
-object IdentifierJsonAdapter : JsonAdapter.Factory {
+internal object IdentifierJsonAdapter : JsonAdapter.Factory {
     override fun create(
         type: Type,
         annotations: Set<Annotation>,

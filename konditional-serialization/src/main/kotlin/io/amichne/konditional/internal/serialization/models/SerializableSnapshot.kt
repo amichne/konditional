@@ -21,7 +21,7 @@ import io.amichne.konditional.serialization.options.UnknownFeatureKeyStrategy
  */
 @KonditionalInternalApi
 @JsonClass(generateAdapter = true)
-data class SerializableSnapshot(
+internal data class SerializableSnapshot(
     val meta: SerializableSnapshotMetadata? = null,
     val flags: List<SerializableFlag>,
 ) {

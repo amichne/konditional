@@ -10,7 +10,7 @@ import io.amichne.konditional.values.FeatureId
  */
 @KonditionalInternalApi
 @JsonClass(generateAdapter = true)
-data class SerializablePatch(
+internal data class SerializablePatch(
     val meta: SerializableSnapshotMetadata? = null,
     val flags: List<SerializableFlag>,
     val removeKeys: List<FeatureId> = emptyList(),

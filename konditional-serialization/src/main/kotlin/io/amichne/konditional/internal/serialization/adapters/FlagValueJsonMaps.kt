@@ -6,7 +6,7 @@ import com.squareup.moshi.JsonWriter
 import io.amichne.konditional.api.KonditionalInternalApi
 
 @KonditionalInternalApi
-fun serializeMap(
+internal fun serializeMap(
     writer: JsonWriter,
     map: Map<String, Any?>,
 ) {
@@ -19,7 +19,7 @@ fun serializeMap(
 }
 
 @KonditionalInternalApi
-fun serializeValue(
+internal fun serializeValue(
     writer: JsonWriter,
     value: Any?,
 ) {
@@ -42,7 +42,7 @@ fun serializeValue(
 }
 
 @KonditionalInternalApi
-fun deserializeMap(reader: JsonReader): Map<String, Any?> {
+internal fun deserializeMap(reader: JsonReader): Map<String, Any?> {
     val map = mutableMapOf<String, Any?>()
     reader.beginObject()
     while (reader.hasNext()) {
@@ -55,7 +55,7 @@ fun deserializeMap(reader: JsonReader): Map<String, Any?> {
 }
 
 @KonditionalInternalApi
-fun deserializeValue(reader: JsonReader): Any? =
+internal fun deserializeValue(reader: JsonReader): Any? =
     when (reader.peek()) {
         JsonReader.Token.NULL -> {
             reader.nextNull<Any?>()
