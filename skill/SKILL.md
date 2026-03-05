@@ -152,9 +152,9 @@ Use this path when adding Konditional to a service that has no prior flag system
    ```kotlin
    // build.gradle.kts
    dependencies {
-       implementation("io.amichne:konditional-core:0.1.0")
-       implementation("io.amichne:konditional-runtime:0.1.0")
-       implementation("io.amichne:konditional-serialization:0.1.0")
+       implementation("io.github.amichne:konditional-core:VERSION")
+       implementation("io.github.amichne:konditional-runtime:VERSION")
+       implementation("io.github.amichne:konditional-serialization:VERSION")
    }
    ```
 

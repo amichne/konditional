@@ -15,7 +15,7 @@ Write comprehensive tests for feature flag evaluation, rule matching, ramp-up bu
 - **Test framework**: JUnit 5 (5.8.0 or later)
 - **Assertion library**: Kotlin test assertions or AssertJ
 - **Optional**: Kotest for property-based testing, MockK for mocking
-- **Test fixtures**: `testFixtures("io.amichne:konditional-core:VERSION")` for pre-built test helpers
+- **Test fixtures**: `testFixtures("io.github.amichne:konditional-core:VERSION")` for pre-built test helpers
 - **Namespace defined**: At least one `Namespace` with features to test
 
 ---

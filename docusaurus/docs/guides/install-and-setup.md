@@ -8,7 +8,9 @@ title: Install and Set Up Konditional
 
 ## Summary
 
-Install Konditional Core, define your first feature flag, and evaluate it in code. This guide takes 5-10 minutes and gives you a working feature flag with compile-time type safety.
+Install Konditional, define your first feature flag, and evaluate it in code.
+This guide takes 5-10 minutes and gives you a working feature flag with
+compile-time type safety.
 
 **When to use:** You're starting a new project or adding Konditional to an existing Kotlin codebase.
 
@@ -21,20 +23,22 @@ Install Konditional Core, define your first feature flag, and evaluate it in cod
 
 ## Happy Path
 
-### Step 1: Add Dependency
+### Step 1: Add dependency
 
-Add Konditional Core to your `build.gradle.kts`:
+Add the default Konditional facade dependency to your `build.gradle.kts`:
 
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.amichne:konditional-core:0.1.0") // Replace with latest version
+    implementation("io.github.amichne:konditional:VERSION") // Replace with latest version
 }
 ```
 
 **Expected output**: Gradle sync succeeds, dependency resolves.
 
-**Evidence**: `konditional-core/build.gradle.kts` declares publication coordinates.
+**Evidence**: `konditional/build.gradle.kts` publishes the facade module and
+`konditional-runtime/build.gradle.kts` exports runtime + transitive core and
+serialization.
 
 ### Step 2: Define a Namespace and Feature
 

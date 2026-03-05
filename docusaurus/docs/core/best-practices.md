@@ -74,6 +74,30 @@ object EntitlementFlags : Namespace("entitlements") {
 If the runtime context is not `EnterpriseContext`, the `whenContext` predicate
 returns `false` for that leaf instead of throwing.
 
+## Prefer `require(...)` for predicate reuse and inline guards
+
+Use `require(namedPredicate)` for reusable namespace predicates and
+`require { ... }` for rule-local checks. Both forms compose with AND semantics.
+
+```kotlin
+object EntitlementPredicates : Namespace() {
+    val isPremium by predicate<EnterpriseContext> {
+        tier == Tier.ENTERPRISE
+    }
+}
+
+object EntitlementFlags : Namespace("entitlement-flags") {
+    val premiumUi by boolean<Context>(default = false) {
+        rule(true) {
+            require(EntitlementPredicates.isPremium)
+            require {
+                whenContext<EnterpriseContext> { tier == Tier.ENTERPRISE }
+            }
+        }
+    }
+}
+```
+
 ## Treat axes as first-class dimensions
 
 Use `constrain(...)` for rule targeting and `axes(...)` for context values.
@@ -105,6 +129,8 @@ object RolloutFlags : Namespace("rollouts") {
 
 Use `ruleSet` to capture reusable targeting blocks, then include them in
 multiple features. Composition order is deterministic and left-to-right.
+For namespace-scoped reusable rule sets, declare with `by ruleSet` so the seed
+derives from the property name. Use `@KonditionalExplicitId` to pin the seed.
 
 ```kotlin
 import io.amichne.konditional.core.dsl.ruleSet
@@ -119,8 +145,14 @@ object AppFlags : Namespace("app") {
         }
     }
 
+    @KonditionalExplicitId("shared-rollout")
+    private val sharedRollout by ruleSet<String, Context, Namespace> {
+        rule("fast") { ios() }
+    }
+
     val checkoutUi by string<Context>(default = "classic") {
         include(iosCanary)
+        include(sharedRollout)
         rule("classic") { android() }
     }
 }

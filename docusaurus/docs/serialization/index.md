@@ -30,7 +30,7 @@ Without this module, you would need to:
 
 ```kotlin
 dependencies {
-    implementation("io.amichne:konditional-serialization:VERSION")
+    implementation("io.github.amichne:konditional-serialization:VERSION")
 }
 ```
 

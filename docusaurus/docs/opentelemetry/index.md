@@ -5,7 +5,8 @@ logging without introducing OpenTelemetry dependencies into core modules.
 
 ## What this module gives you
 
-The `konditional-otel` module is designed for production instrumentation with
+The `konditional-otel` Gradle module (published as
+`konditional-opentelemetry`) is designed for production instrumentation with
 clear control over overhead.
 
 - **Distributed tracing**: create spans for feature evaluations with semantic
@@ -24,7 +25,7 @@ Add the dependency to your `build.gradle.kts` file:
 
 ```kotlin
 dependencies {
-    implementation("io.amichne:opentelemetry:VERSION")
+    implementation("io.github.amichne:konditional-opentelemetry:VERSION")
 }
 ```
 

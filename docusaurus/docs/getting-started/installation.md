@@ -5,7 +5,14 @@ unlisted: true
 
 # Installation
 
-For the default Konditional experience (define namespaces and evaluate features), install:
+For the default Konditional experience (define namespaces and evaluate
+features), install the facade artifact:
+
+- `konditional` (includes `konditional-runtime` + transitive
+  `konditional-core` and `konditional-serialization`)
+
+If you need fine-grained dependency control, install split artifacts:
+
 - `konditional-core`
 - `konditional-runtime`
 
@@ -18,12 +25,23 @@ Replace `VERSION` with the latest published version.
 ```kotlin
 // build.gradle.kts
 dependencies {
-  implementation("io.amichne:konditional-core:VERSION")
-  implementation("io.amichne:konditional-runtime:VERSION")
+  implementation("io.github.amichne:konditional:VERSION")
 }
 ```
 
-`konditional-runtime` provides the default `NamespaceRegistryFactory` implementation used by `Namespace(...)`.
+Optional split modules:
+
+```kotlin
+// build.gradle.kts
+dependencies {
+  implementation("io.github.amichne:konditional-core:VERSION")
+  implementation("io.github.amichne:konditional-runtime:VERSION")
+}
+```
+
+`konditional-runtime` provides the default `NamespaceRegistryFactory`
+implementation used by `Namespace(...)`. The facade artifact includes this
+transitively.
 
 If you intentionally run without `konditional-runtime`, you must provide your own `NamespaceRegistry` implementation
 when constructing a namespace.
@@ -38,7 +56,7 @@ configuration:
 ```kotlin
 // build.gradle.kts
 dependencies {
-  testImplementation(testFixtures("io.amichne:konditional-core:VERSION"))
+  testImplementation(testFixtures("io.github.amichne:konditional-core:VERSION"))
 }
 ```
 

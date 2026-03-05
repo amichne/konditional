@@ -25,10 +25,12 @@ Load feature flag configuration from JSON (remote service, file, database) with 
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.amichne:konditional-runtime:0.1.0")
-    implementation("io.amichne:konditional-serialization:0.1.0")
+    implementation("io.github.amichne:konditional-runtime:VERSION")
+    implementation("io.github.amichne:konditional-serialization:VERSION")
 }
 ```
+
+Replace `VERSION` with the latest published version.
 
 **Expected output**: Dependencies resolve successfully.
 
