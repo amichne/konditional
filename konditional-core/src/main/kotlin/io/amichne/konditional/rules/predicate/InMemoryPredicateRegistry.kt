@@ -1,5 +1,6 @@
 package io.amichne.konditional.rules.predicate
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.rules.predicate.PredicateRef
@@ -54,6 +55,14 @@ class InMemoryPredicateRegistry<C : Context>(
         }
         check(!store.containsKey(ref.id)) {
             "Predicate '${ref.id}' is already registered in namespace '$namespaceId'"
+        }
+        store[ref.id] = ref to predicate
+    }
+
+    @KonditionalInternalApi
+    override fun registerOrReplace(ref: PredicateRef.Registered, predicate: Targeting.Custom<C>) {
+        require(ref.namespaceId == namespaceId) {
+            "PredicateRef namespace '${ref.namespaceId}' does not match registry namespace '$namespaceId'"
         }
         store[ref.id] = ref to predicate
     }

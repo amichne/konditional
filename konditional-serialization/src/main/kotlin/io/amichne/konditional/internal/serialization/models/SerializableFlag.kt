@@ -20,6 +20,7 @@ import io.amichne.konditional.internal.SerializedRuleValueType
 import io.amichne.konditional.internal.flagDefinitionFromSerialized
 import io.amichne.konditional.internal.toSerializedMetadata
 import io.amichne.konditional.internal.toSerializedRules
+import io.amichne.konditional.values.RuleId
 import io.amichne.konditional.values.FeatureId
 import io.amichne.kontracts.schema.ObjectTraits
 
@@ -126,7 +127,7 @@ data class SerializableFlag(
                 }
 
                 val ruleSpecs: List<SerializedFlagRuleSpec<T>> =
-                    rules.map { rule ->
+                    rules.mapIndexed { index, rule ->
                         val resolvedRuleValue =
                             when (rule.type) {
                                 SerializedRuleValueType.STATIC ->
@@ -137,7 +138,11 @@ data class SerializableFlag(
 
                                 SerializedRuleValueType.CONTEXTUAL -> decodedDefault
                             }
-                        rule.toSpec(resolvedRuleValue)
+                        val fallbackRuleId = RuleId.forFeatureRule(conditional.id, index)
+                        rule.toSpec(
+                            value = resolvedRuleValue,
+                            fallbackRuleId = fallbackRuleId,
+                        )
                     }
 
                 flagDefinitionFromSerialized(

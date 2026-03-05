@@ -1,5 +1,6 @@
 package io.amichne.konditional.rules.predicate
 
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.result.KonditionalBoundaryFailure
 import io.amichne.konditional.core.result.ParseError
@@ -9,6 +10,7 @@ import io.amichne.konditional.values.NamespaceId
 import io.amichne.konditional.values.PredicateId
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
@@ -119,6 +121,18 @@ class PredicateRegistryTest {
         assertFailsWith<IllegalStateException> {
             reg.register(ref, falsePredicate())
         }
+    }
+
+    @Test
+    @OptIn(KonditionalInternalApi::class)
+    fun `registerOrReplace updates existing id`() {
+        val reg = registry()
+        val ref = PredicateRef.Registered(NamespaceId("ns"), PredicateId("replaceable"))
+        reg.register(ref, truePredicate())
+
+        reg.registerOrReplace(ref, falsePredicate())
+
+        assertFalse(reg.resolve(ref).getOrThrow().matches(object : Context {}))
     }
 
     // ── Resolution failures ──────────────────────────────────────────────────

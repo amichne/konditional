@@ -5,6 +5,7 @@ import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.rules.predicate.PredicateRef
 import io.amichne.konditional.rules.targeting.Targeting
+import io.amichne.konditional.values.RuleId
 
 /**
  * A composable rule that combines a structured [Targeting] tree with rampUp metadata.
@@ -26,6 +27,7 @@ import io.amichne.konditional.rules.targeting.Targeting
  * @property note Optional human-readable description for observability.
  * @property targeting Structured AND-conjunction of targeting constraints.
  * @property predicateRefs Stable predicate refs referenced by this rule for serialization round-trips.
+ * @property ruleId Stable UUID identity for this rule across serialization round-trips.
  */
 @ConsistentCopyVisibility
 data class Rule<in C : Context> internal constructor(
@@ -34,6 +36,7 @@ data class Rule<in C : Context> internal constructor(
     val note: String? = null,
     val targeting: Targeting.All<@UnsafeVariance C> = Targeting.catchAll(),
     val predicateRefs: List<PredicateRef> = emptyList(),
+    val ruleId: RuleId = RuleId.unspecified,
 ) {
     /** Returns true iff all targeting constraints match [context]. */
     fun matches(context: C): Boolean = targeting.matches(context)

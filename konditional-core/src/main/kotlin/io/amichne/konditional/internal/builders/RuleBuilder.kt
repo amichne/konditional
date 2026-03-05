@@ -18,6 +18,9 @@ import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.predicate.PredicateRef
 import io.amichne.konditional.rules.targeting.Targeting
+import io.amichne.konditional.values.NamespaceId
+import io.amichne.konditional.values.PredicateId
+import io.amichne.konditional.values.RuleId
 
 /**
  * Internal implementation of [RuleScope].
@@ -32,8 +35,11 @@ import io.amichne.konditional.rules.targeting.Targeting
 @PublishedApi
 @Suppress("TooManyFunctions", "OVERRIDE_DEPRECATION")
 internal class RuleBuilder<C : Context>(
+    private val ruleId: RuleId = RuleId.unspecified,
     private val leaves: MutableList<Targeting<C>> = mutableListOf(),
+    private val namespaceId: NamespaceId? = null,
     private val predicateResolver: ((PredicateRef) -> Result<Targeting.Custom<C>>)? = null,
+    private val predicateRegistrar: ((PredicateRef.Registered, Targeting.Custom<C>) -> Unit)? = null,
 ) : RuleScope<C>,
     NarrowingTargetingScope<C>,
     VariantDispatchHost by RuleVariantScope(leaves) {
@@ -41,6 +47,7 @@ internal class RuleBuilder<C : Context>(
     private var rampUp: RampUp? = null
     private val allowlist = linkedSetOf<HexId>()
     private val predicateRefs = mutableListOf<PredicateRef>()
+    private var inlinePredicateOrdinal: Int = 0
 
     override fun locales(vararg appLocales: LocaleTag) {
         if (appLocales.isNotEmpty())
@@ -58,7 +65,12 @@ internal class RuleBuilder<C : Context>(
     }
 
     override fun anyOf(build: AnyOfScope<C>.() -> Unit) {
-        val anyOfBuilder = AnyOfBuilder(predicateResolver = predicateResolver).apply(build)
+        val anyOfBuilder = AnyOfBuilder(
+            namespaceId = namespaceId,
+            predicateResolver = predicateResolver,
+            predicateRegistrar = predicateRegistrar,
+            inlinePredicateIdFactory = { nextInlinePredicateId() },
+        ).apply(build)
         val node = anyOfBuilder.build()
         if (node.targets.isNotEmpty()) leaves += node
         predicateRefs += anyOfBuilder.referencedPredicateRefs
@@ -79,6 +91,25 @@ internal class RuleBuilder<C : Context>(
             "predicate(ref) is only available when rules are built with a namespace-scoped PredicateRegistry."
         }
         leaves += resolver(ref).getOrThrow()
+        predicateRefs += ref
+    }
+
+    override fun require(block: C.() -> Boolean) {
+        val resolvedNamespaceId = namespaceId
+        val resolver = predicateResolver
+        val registrar = predicateRegistrar
+        if (resolvedNamespaceId == null || resolver == null || registrar == null) {
+            extension(block)
+            return
+        }
+
+        val ref = PredicateRef.Registered(
+            namespaceId = resolvedNamespaceId,
+            id = nextInlinePredicateId(),
+        )
+        val inlinePredicate = Targeting.Custom<C>(block = { context: C -> context.block() })
+        registrar(ref, inlinePredicate)
+        leaves += inlinePredicate
         predicateRefs += ref
     }
 
@@ -110,5 +141,9 @@ internal class RuleBuilder<C : Context>(
         note = note,
         targeting = Targeting.All(leaves.toList()),
         predicateRefs = predicateRefs.toList(),
+        ruleId = ruleId,
     )
+
+    private fun nextInlinePredicateId(): PredicateId =
+        PredicateId.forRuleInlinePredicate(ruleId, inlinePredicateOrdinal++)
 }

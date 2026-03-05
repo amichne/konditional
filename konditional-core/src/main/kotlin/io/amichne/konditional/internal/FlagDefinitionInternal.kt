@@ -19,6 +19,7 @@ import io.amichne.konditional.rules.targeting.platformsOrEmpty
 import io.amichne.konditional.rules.targeting.versionRangeOrNull
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
+import io.amichne.konditional.values.RuleId
 
 /**
  * Internal contracts for encoding/decoding flag definitions across Konditional modules.
@@ -38,6 +39,7 @@ data class SerializedFlagDefinitionMetadata(
 data class SerializedFlagRuleSpec<T : Any>(
     val value: T,
     val type: SerializedRuleValueType = SerializedRuleValueType.STATIC,
+    val ruleId: RuleId = RuleId.unspecified,
     val rampUp: Double = 100.0,
     val rampUpAllowlist: Set<String> = emptySet(),
     val note: String? = null,
@@ -86,6 +88,7 @@ fun <T : Any, C : Context, M : Namespace> flagDefinitionFromSerialized(
                     note = spec.note,
                     targeting = Targeting.All(leaves),
                     predicateRefs = spec.predicateRefs,
+                    ruleId = spec.ruleId,
                 ).targetedBySerialized(spec.value, spec.type)
             },
         defaultValue = defaultValue,
@@ -112,6 +115,7 @@ fun FlagDefinition<*, *, *>.toSerializedRules(): List<SerializedFlagRuleSpec<Any
         SerializedFlagRuleSpec(
             value = value,
             type = type,
+            ruleId = cv.rule.ruleId,
             rampUp = cv.rule.rampUp.value,
             rampUpAllowlist = cv.rule.rampUpAllowlist.mapTo(linkedSetOf()) { it.id },
             note = cv.rule.note,

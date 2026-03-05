@@ -170,4 +170,28 @@ class ExtensionTargetingScopeTest {
 
         assertIs<ParseError.UnknownPredicate>(error.parseError)
     }
+
+    @Test
+    fun `anonymous require blocks compose with AND semantics`() {
+        Features.extensionComposition.update(default = false) {
+            rule(true) {
+                require { subscriptionTier == SubscriptionTier.PREMIUM }
+                require { userRole == UserRole.OWNER }
+            }
+        }
+
+        val premiumAdmin = enterpriseContext(
+            idHex = "99999999999999999999999999999999",
+            subscriptionTier = SubscriptionTier.PREMIUM,
+            userRole = UserRole.ADMIN,
+        )
+        val premiumOwner = enterpriseContext(
+            idHex = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            subscriptionTier = SubscriptionTier.PREMIUM,
+            userRole = UserRole.OWNER,
+        )
+
+        assertEquals(false, Features.extensionComposition.evaluate(premiumAdmin))
+        assertEquals(true, Features.extensionComposition.evaluate(premiumOwner))
+    }
 }

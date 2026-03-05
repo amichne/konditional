@@ -13,6 +13,7 @@ import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.constrain
+import io.amichne.konditional.core.dsl.rules.targeting.scopes.whenContext
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.KonditionalBoundaryFailure
 import io.amichne.konditional.core.result.ParseError
@@ -314,6 +315,58 @@ class ConfigurationCodecTest {
     }
 
     @Test
+    fun `Given mixed named and anonymous require predicates, When round-tripped, Then both remain enforced`() {
+        TestFeatures.boolFlag.update(default = false) {
+            rule(true) {
+                require(TestFeatures.iosOnly)
+                require {
+                    whenContext<Context> { axes.isEmpty() }
+                }
+                require {
+                    whenContext<Context.LocaleContext> { locale == AppLocale.UNITED_STATES }
+                }
+            }
+        }
+
+        val json = TestFeatures.json
+        assertTrue(json.contains("\"ruleId\""))
+        assertTrue(json.contains("\"predicateRefs\""))
+        assertFalse(json.contains("__inline_require__"))
+        assertFalse(
+            TestFeatures.boolFlag.evaluate(
+                ctx(
+                    "dddddddddddddddddddddddddddddddd",
+                    platform = Platform.IOS,
+                    locale = AppLocale.FRANCE,
+                ),
+            ),
+        )
+
+        val decoded = decodeFeatureAware(json)
+        assertIs<ParseResult.Success<Configuration>>(decoded)
+        loadMaterialized(decoded.value)
+
+        assertTrue(
+            TestFeatures.boolFlag.evaluate(
+                ctx(
+                    "cccccccccccccccccccccccccccccccc",
+                    platform = Platform.IOS,
+                    locale = AppLocale.UNITED_STATES,
+                ),
+            ),
+        )
+        assertFalse(
+            TestFeatures.boolFlag.evaluate(
+                ctxWithTestEnvironment(TestEnvironment.PROD),
+            ),
+        )
+        val reEncoded = ConfigurationCodec.encode(decoded.value)
+        assertTrue(reEncoded.contains("\"ruleId\""))
+        assertTrue(reEncoded.contains("\"predicateRefs\""))
+        assertFalse(reEncoded.contains("__inline_require__"))
+    }
+
+    @Test
     fun `Given Konfig with int flag, When serialized, Then includes flag with correct type`() {
         TestFeatures.intFlag.update(42) {}
         val json = TestFeatures.json
@@ -463,7 +516,9 @@ class ConfigurationCodecTest {
         println(json)
 
         val normalized =
-            json.replace(namespaceSeedRegex, "feature::NAMESPACE::")
+            json
+                .replace(namespaceSeedRegex, "feature::NAMESPACE::")
+                .replace(Regex("\"ruleId\": \"[^\"]+\""), "\"ruleId\": \"RULE_ID\"")
 
         val expected = maximalExpectedJson
 
@@ -526,6 +581,7 @@ class ConfigurationCodecTest {
                         "enumClassName": "${Theme::class.java.name}"
                       },
                       "type": "STATIC",
+                      "ruleId": "RULE_ID",
                       "rampUp": 12.34,
                       "rampUpAllowlist": [
                         "72756c652d616c6c6f776c697374"
@@ -595,6 +651,7 @@ class ConfigurationCodecTest {
                         }
                       },
                       "type": "STATIC",
+                      "ruleId": "RULE_ID",
                       "rampUp": 99.0,
                       "rampUpAllowlist": [],
                       "note": "policy-rule",

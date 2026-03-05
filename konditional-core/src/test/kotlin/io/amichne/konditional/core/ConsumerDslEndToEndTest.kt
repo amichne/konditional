@@ -60,6 +60,7 @@ class ConsumerDslEndToEndTest {
         Context.VersionContext,
         Context.StableIdContext
 
+    @Suppress("LongParameterList")
     private fun commerceContext(
         stableId: StableId = StableId.of("consumer-default-user"),
         locale: AppLocale = AppLocale.UNITED_STATES,
@@ -103,6 +104,19 @@ class ConsumerDslEndToEndTest {
                 require(isPremium)
                 rampUp { 100.0 }
                 allowlist(StableId.of("snapshot-rule-vip"))
+            }
+        }
+    }
+
+    private class SnapshotAnonymousRequireNamespace(id: String) : Namespace(id) {
+        val isPremium by predicate<CommerceContext> {
+            subscriptionTier == SubscriptionTier.PREMIUM
+        }
+
+        val anonymousRequireFeature by boolean<CommerceContext>(default = false) {
+            rule(true) {
+                require(isPremium)
+                require { isEmployee }
             }
         }
     }
@@ -265,6 +279,68 @@ class ConsumerDslEndToEndTest {
     }
 
     @Test
+    fun `multiple named and anonymous require blocks compose with AND semantics`() {
+        val namespace = object : Namespace("payments-mixed-require-${UUID.randomUUID()}") {
+            val isPremium by predicate<CommerceContext> {
+                subscriptionTier == SubscriptionTier.PREMIUM
+            }
+            val enterpriseTenant by predicate<CommerceContext> {
+                tenantId.startsWith("ent-")
+            }
+
+            val targetedFeature by boolean<CommerceContext>(default = false) {
+                rule(true) {
+                    require(isPremium)
+                    require { isEmployee }
+                    require(enterpriseTenant)
+                    require { platform == Platform.IOS }
+                }
+            }
+        }
+
+        assertTrue(
+            namespace.targetedFeature.evaluate(
+                commerceContext(
+                    subscriptionTier = SubscriptionTier.PREMIUM,
+                    isEmployee = true,
+                    tenantId = "ent-77",
+                    platform = Platform.IOS,
+                ),
+            ),
+        )
+        assertFalse(
+            namespace.targetedFeature.evaluate(
+                commerceContext(
+                    subscriptionTier = SubscriptionTier.PREMIUM,
+                    isEmployee = false,
+                    tenantId = "ent-77",
+                    platform = Platform.IOS,
+                ),
+            ),
+        )
+        assertFalse(
+            namespace.targetedFeature.evaluate(
+                commerceContext(
+                    subscriptionTier = SubscriptionTier.PREMIUM,
+                    isEmployee = true,
+                    tenantId = "tenant-77",
+                    platform = Platform.IOS,
+                ),
+            ),
+        )
+        assertFalse(
+            namespace.targetedFeature.evaluate(
+                commerceContext(
+                    subscriptionTier = SubscriptionTier.PREMIUM,
+                    isEmployee = true,
+                    tenantId = "ent-77",
+                    platform = Platform.ANDROID,
+                ),
+            ),
+        )
+    }
+
+    @Test
     fun `snapshot dump prints serialized shape for named predicates and consumer rule metadata`() {
         val namespace = SnapshotPaymentsNamespace("consumer-dsl-snapshot-dump-${UUID.randomUUID()}")
 
@@ -335,6 +411,32 @@ class ConsumerDslEndToEndTest {
     }
 
     @Test
+    fun `snapshot load preserves mixed named and anonymous require predicates`() {
+        val namespaceId = "consumer-dsl-anonymous-require-${UUID.randomUUID()}"
+        val producer = SnapshotAnonymousRequireNamespace(namespaceId)
+        val consumer = SnapshotAnonymousRequireNamespace(namespaceId)
+
+        val matchingContext = commerceContext(
+            subscriptionTier = SubscriptionTier.PREMIUM,
+            isEmployee = true,
+        )
+        val missingAnonymousRequire = commerceContext(
+            subscriptionTier = SubscriptionTier.PREMIUM,
+            isEmployee = false,
+        )
+
+        assertTrue(producer.anonymousRequireFeature.evaluate(matchingContext))
+        assertFalse(producer.anonymousRequireFeature.evaluate(missingAnonymousRequire))
+
+        val dumpedJson = ConfigurationCodec.encode(producer)
+        NamespaceSnapshotLoader.forNamespace(consumer).load(dumpedJson).getOrThrow()
+
+        assertTrue(consumer.anonymousRequireFeature.evaluate(matchingContext))
+        assertFalse(consumer.anonymousRequireFeature.evaluate(missingAnonymousRequire))
+    }
+
+    @Test
+    @Suppress("LongMethod")
     fun `feature and namespace ruleSet overloads compose through include in consumer flows`() {
         val namespace = object : Namespace("consumer-dsl-rulesets-${UUID.randomUUID()}") {
             val template by enum<CheckoutVariant, CommerceContext>(default = CheckoutVariant.DEFAULT)
@@ -359,27 +461,32 @@ class ConsumerDslEndToEndTest {
                     }
                 }
 
-            private val localNamespaceRuleSet = ruleSet<CheckoutVariant, CommerceContext, Namespace> {
+            private val localNamespaceRuleSet =
+                ruleSet<CheckoutVariant, CommerceContext, Namespace>("local-namespace-checkout-rules") {
                 rule(CheckoutVariant.EMPLOYEE_NAMESPACE_LOCAL) {
                     locales(AppLocale.CANADA)
                     extension { isEmployee }
                 }
             }
             private val kClassNamespaceRuleSet =
-                ruleSet<CheckoutVariant, CommerceContext, Namespace, Context>(Context::class) {
+                ruleSet<CheckoutVariant, CommerceContext, Namespace, Context>(
+                    "kclass-namespace-checkout-rules",
+                    Context::class,
+                ) {
                     rule(CheckoutVariant.PROD_NAMESPACE_KCLASS) {
                         locales(AppLocale.CANADA)
                         constrain(Environment.PROD)
                     }
                 }
-            private val reifiedNamespaceRuleSet = ruleSet<CheckoutVariant, Context, CommerceContext, Namespace> {
-                rule(CheckoutVariant.ENTERPRISE_NAMESPACE_REIFIED) {
-                    locales(AppLocale.CANADA)
-                    whenContext<CommerceContext> {
-                        subscriptionTier == SubscriptionTier.ENTERPRISE
+            private val reifiedNamespaceRuleSet =
+                ruleSet<CheckoutVariant, Context, CommerceContext, Namespace>("reified-namespace-checkout-rules") {
+                    rule(CheckoutVariant.ENTERPRISE_NAMESPACE_REIFIED) {
+                        locales(AppLocale.CANADA)
+                        whenContext<CommerceContext> {
+                            subscriptionTier == SubscriptionTier.ENTERPRISE
+                        }
                     }
                 }
-            }
 
             val variant by enum<CheckoutVariant, CommerceContext>(default = CheckoutVariant.DEFAULT) {
                 include(localFeatureRuleSet)

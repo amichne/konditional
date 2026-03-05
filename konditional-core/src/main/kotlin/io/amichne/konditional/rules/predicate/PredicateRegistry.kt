@@ -1,6 +1,7 @@
 package io.amichne.konditional.rules.predicate
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.rules.targeting.Targeting
 import io.amichne.konditional.values.NamespaceId
@@ -48,4 +49,13 @@ interface PredicateRegistry<C : Context> {
      * @throws IllegalStateException if a predicate with the same [ref.id] is already registered.
      */
     fun register(ref: PredicateRef.Registered, predicate: Targeting.Custom<C>)
+
+    /**
+     * Registers or replaces a predicate implementation for the given [ref].
+     *
+     * This is intended for internal rule-scoped predicates that are rebuilt as
+     * definitions are re-materialized. Implementations may overwrite existing refs.
+     */
+    @KonditionalInternalApi
+    fun registerOrReplace(ref: PredicateRef.Registered, predicate: Targeting.Custom<C>)
 }

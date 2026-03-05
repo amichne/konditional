@@ -44,7 +44,8 @@ class RuleSetTest {
             }
         }
 
-        val namespacePlatform = CheckoutFlags.ruleSet<CheckoutVariant, Context, EnterpriseContext, Namespace> {
+        val namespacePlatform =
+            CheckoutFlags.ruleSet<CheckoutVariant, Context, EnterpriseContext, Namespace>("namespace-platform") {
             rule(CheckoutVariant.EXPERIMENTAL) {
                 ios()
             }
@@ -172,7 +173,7 @@ class RuleSetTest {
             val flagB by string<Context>(default = "default")
         }
 
-        val shared = namespace.ruleSet<String, Context, Namespace> {
+        val shared = namespace.ruleSet<String, Context, Namespace>("shared-ios-ruleset") {
             rule("ios") { ios() }
         }
 

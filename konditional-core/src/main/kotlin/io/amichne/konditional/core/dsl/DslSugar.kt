@@ -1,4 +1,5 @@
 @file:OptIn(KonditionalInternalApi::class)
+@file:Suppress("TooManyFunctions")
 
 package io.amichne.konditional.core.dsl
 
@@ -11,6 +12,7 @@ import io.amichne.konditional.core.dsl.rules.RuleScope
 import io.amichne.konditional.core.dsl.rules.RuleSet
 import io.amichne.konditional.core.dsl.rules.RuleSetBuilder
 import io.amichne.konditional.core.features.Feature
+import io.amichne.konditional.values.RuleId
 import kotlin.reflect.KClass
 
 /**
@@ -74,7 +76,10 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.ruleSet(
     RuleSet(
         feature = this,
         rules = RuleSetBuilder<T, C>(
+            ruleIdFactory = { ruleOrdinal -> RuleId.forFeatureRuleSetRule(id, ruleOrdinal) },
+            namespaceId = namespace.id,
             predicateResolver = { ref -> namespace.predicates<C>().resolve(ref) },
+            predicateRegistrar = { ref, predicate -> namespace.predicates<C>().registerOrReplace(ref, predicate) },
         ).apply(build).build(),
     )
 
@@ -95,7 +100,10 @@ fun <T : Any, C, M : Namespace, RC : Context> Feature<T, C, M>.ruleSet(
     RuleSet(
         feature = this,
         rules = RuleSetBuilder<T, RC>(
+            ruleIdFactory = { ruleOrdinal -> RuleId.forFeatureRuleSetRule(id, ruleOrdinal) },
+            namespaceId = namespace.id,
             predicateResolver = { ref -> namespace.predicates<RC>().resolve(ref) },
+            predicateRegistrar = { ref, predicate -> namespace.predicates<RC>().registerOrReplace(ref, predicate) },
         ).apply(build).build(),
     )
 
@@ -114,7 +122,10 @@ inline fun <reified RC : Context, T : Any, C, M : Namespace> Feature<T, C, M>.ru
     RuleSet(
         feature = this,
         rules = RuleSetBuilder<T, RC>(
+            ruleIdFactory = { ruleOrdinal -> RuleId.forFeatureRuleSetRule(id, ruleOrdinal) },
+            namespaceId = namespace.id,
             predicateResolver = { ref -> namespace.predicates<RC>().resolve(ref) },
+            predicateRegistrar = { ref, predicate -> namespace.predicates<RC>().registerOrReplace(ref, predicate) },
         ).apply(build).build(),
     )
 
@@ -123,42 +134,63 @@ inline fun <reified RC : Context, T : Any, C, M : Namespace> Feature<T, C, M>.ru
  *
  * This variant is not bound to a specific feature and can be included by multiple features in
  * the same namespace.
+ *
+ * @param name Stable logical name for this rule set. This seed must stay stable across refactors
+ *   to keep generated [RuleId] values deterministic.
  */
 @JvmName("namespaceRuleSetDefault")
 inline fun <reified T : Any, C : Context, M : Namespace> M.ruleSet(
+    name: String,
     build: RuleSetBuilder<T, C>.() -> Unit,
 ): NamespaceRuleSet<C, T, C, M> =
     NamespaceRuleSet(
         namespace = this,
         rules = RuleSetBuilder<T, C>(
+            ruleIdFactory = { ruleOrdinal -> RuleId.forNamespaceRuleSetRule(id, name, ruleOrdinal) },
+            namespaceId = id,
             predicateResolver = { ref -> predicates<C>().resolve(ref) },
+            predicateRegistrar = { ref, predicate -> predicates<C>().registerOrReplace(ref, predicate) },
         ).apply(build).build(),
     )
 
 /**
  * Builds a namespace-scoped rule set using an explicit supertype context.
+ *
+ * @param name Stable logical name for this rule set. This seed must stay stable across refactors
+ *   to keep generated [RuleId] values deterministic.
  */
 @JvmName("namespaceRuleSetWithContextType")
 inline fun <reified T : Any, C, M : Namespace, RC : Context> M.ruleSet(
+    name: String,
     @Suppress("UNUSED_PARAMETER") contextType: KClass<RC>,
     build: RuleSetBuilder<T, RC>.() -> Unit,
 ): NamespaceRuleSet<RC, T, C, M> where C : RC =
     NamespaceRuleSet(
         namespace = this,
         rules = RuleSetBuilder<T, RC>(
+            ruleIdFactory = { ruleOrdinal -> RuleId.forNamespaceRuleSetRule(id, name, ruleOrdinal) },
+            namespaceId = id,
             predicateResolver = { ref -> predicates<RC>().resolve(ref) },
+            predicateRegistrar = { ref, predicate -> predicates<RC>().registerOrReplace(ref, predicate) },
         ).apply(build).build(),
     )
 
 /**
  * Builds a namespace-scoped rule set using reified value and context supertypes.
+ *
+ * @param name Stable logical name for this rule set. This seed must stay stable across refactors
+ *   to keep generated [RuleId] values deterministic.
  */
 inline fun <reified T : Any, reified RC : Context, C, M : Namespace> M.ruleSet(
+    name: String,
     build: RuleSetBuilder<T, RC>.() -> Unit,
 ): NamespaceRuleSet<RC, T, C, M> where C : RC =
     NamespaceRuleSet(
         namespace = this,
         rules = RuleSetBuilder<T, RC>(
+            ruleIdFactory = { ruleOrdinal -> RuleId.forNamespaceRuleSetRule(id, name, ruleOrdinal) },
+            namespaceId = id,
             predicateResolver = { ref -> predicates<RC>().resolve(ref) },
+            predicateRegistrar = { ref, predicate -> predicates<RC>().registerOrReplace(ref, predicate) },
         ).apply(build).build(),
     )

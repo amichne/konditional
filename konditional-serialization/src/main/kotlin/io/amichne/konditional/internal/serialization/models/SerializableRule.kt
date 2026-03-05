@@ -9,6 +9,7 @@ import io.amichne.konditional.internal.SerializedRuleValueType
 import io.amichne.konditional.rules.predicate.PredicateRef
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
+import io.amichne.konditional.values.RuleId
 
 /**
  * Serializable representation of a rule + value pair.
@@ -21,6 +22,7 @@ import io.amichne.konditional.rules.versions.VersionRange
 data class SerializableRule(
     val value: FlagValue<*>,
     val type: SerializedRuleValueType = SerializedRuleValueType.STATIC,
+    val ruleId: RuleId? = null,
     val rampUp: Double = 100.0,
     val rampUpAllowlist: Set<String> = emptySet(),
     val note: String? = null,
@@ -30,10 +32,14 @@ data class SerializableRule(
     val axes: Map<String, Set<String>> = emptyMap(),
     val predicateRefs: List<PredicateRef> = emptyList(),
 ) {
-    fun <T : Any> toSpec(value: T): SerializedFlagRuleSpec<T> =
+    fun <T : Any> toSpec(
+        value: T,
+        fallbackRuleId: RuleId,
+    ): SerializedFlagRuleSpec<T> =
         SerializedFlagRuleSpec(
             value = value,
             type = type,
+            ruleId = ruleId ?: fallbackRuleId,
             rampUp = rampUp,
             rampUpAllowlist = rampUpAllowlist,
             note = note,
@@ -51,6 +57,7 @@ data class SerializableRule(
             return SerializableRule(
                 value = FlagValue.from(value),
                 type = rule.type,
+                ruleId = rule.ruleId,
                 rampUp = rule.rampUp,
                 rampUpAllowlist = rule.rampUpAllowlist,
                 note = rule.note,

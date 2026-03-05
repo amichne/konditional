@@ -8,6 +8,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.rawType
 import io.amichne.konditional.api.KonditionalInternalApi
 import java.lang.reflect.Constructor
+import java.lang.reflect.Modifier
 import java.lang.reflect.Type
 
 @KonditionalInternalApi
@@ -19,9 +20,8 @@ object ValueClassAdapterFactory : JsonAdapter.Factory {
      */
     @Suppress("UNCHECKED_CAST")
     private fun <T : Any, ValueT> T.backingField(): ValueT =
-        this::class.java.declaredFields
-            .first()
-            .also { field -> field.isAccessible = true }
+        this::class.java.valueClassBackingField()
+            .also { it.isAccessible = true }
             .get(this) as ValueT
 
     private class ValueClassAdapter<InlineT : Any, ValueT : Any>(
@@ -60,7 +60,7 @@ object ValueClassAdapterFactory : JsonAdapter.Factory {
     ): JsonAdapter<Any>? =
         if (type.rawType.kotlin.isValue) {
             val constructor = type.rawType.declaredConstructors.first { it.parameterCount == 1 } as Constructor<*>
-            val valueType = type.rawType.declaredFields[0].genericType
+            val valueType = type.rawType.valueClassBackingField().genericType
             ValueClassAdapter(
                 constructor = constructor,
                 adapter = moshi.parameterizedAdapter(valueType.rawType, valueType),
@@ -68,6 +68,10 @@ object ValueClassAdapterFactory : JsonAdapter.Factory {
         } else {
             null
         }
+
+    private fun Class<*>.valueClassBackingField() = declaredFields
+        .firstOrNull { field -> !Modifier.isStatic(field.modifiers) }
+        ?: error("No backing field found for value class ${name}")
 
     @Suppress("UNUSED_PARAMETER")
     private fun <V> Moshi.parameterizedAdapter(
