@@ -441,7 +441,7 @@ class ConfigurationCodecTest {
     }
 
     companion object {
-        private val namespaceSeedRegex = Regex("feature::[a-f0-9\\-]+::")
+        private val namespaceSeedRegex = Regex("feature::[^:]+::")
 
         private val maximalExpectedJson: String =
             """

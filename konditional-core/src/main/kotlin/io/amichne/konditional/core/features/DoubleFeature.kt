@@ -17,6 +17,6 @@ sealed interface DoubleFeature<C : Context, M : Namespace> :
         internal data class DoubleFeatureImpl<C : Context, M : Namespace>(
             override val key: String,
             override val namespace: M,
-        ) : DoubleFeature<C, M>, Identifiable by Identifiable(key, namespace)
+        ) : DoubleFeature<C, M>, Identifiable.ById by Identifiable.ById(key, namespace.id)
     }
 }

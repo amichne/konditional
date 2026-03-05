@@ -14,6 +14,6 @@ sealed interface IntFeature<C : Context, M : Namespace> : Feature<Int, C, M> {
         internal data class IntFeatureImpl<C : Context, M : Namespace>(
             override val key: String,
             override val namespace: M,
-        ) : IntFeature<C, M>, Identifiable by Identifiable(key, namespace)
+        ) : IntFeature<C, M>, Identifiable.ById by Identifiable.ById(key, namespace.id)
     }
 }

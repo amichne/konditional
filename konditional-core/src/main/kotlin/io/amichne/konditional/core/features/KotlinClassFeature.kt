@@ -56,6 +56,6 @@ sealed interface KotlinClassFeature<T : Konstrained<*>, C : Context, M : Namespa
         internal data class KotlinClassFeatureImpl<T : Konstrained<*>, C : Context, M : Namespace>(
             override val key: String,
             override val namespace: M,
-        ) : KotlinClassFeature<T, C, M>, Identifiable by Identifiable(key, namespace)
+        ) : KotlinClassFeature<T, C, M>, Identifiable.ById by Identifiable.ById(key, namespace.id)
     }
 }

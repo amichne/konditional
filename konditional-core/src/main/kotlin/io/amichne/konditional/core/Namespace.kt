@@ -72,7 +72,7 @@ import kotlin.reflect.KProperty
  *
  * @property id Unique identifier for this namespace. Defaults to the fully-qualified namespace class name when omitted.
  */
-abstract class Namespace private constructor(
+open class Namespace private constructor(
     val id: NamespaceId = defaultNamespaceId(),
     @property:KonditionalInternalApi
     val registry: NamespaceRegistry = NamespaceRegistryFactories.default(id.value),
