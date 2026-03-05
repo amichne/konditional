@@ -36,7 +36,7 @@ class OperationalSerializationTest {
             val knownFeature by boolean<TestContext>(default = false)
         }
 
-        val unknownKey = FeatureId.create(namespace.id.value, "missing-${UUID.randomUUID()}")
+        val unknownKey = FeatureId.create(namespace.id, "missing-${UUID.randomUUID()}")
         val snapshotJson = """
             {
               "flags": [

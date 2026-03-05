@@ -29,6 +29,7 @@ import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.snapshot.ConfigurationCodec
 import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 import io.amichne.konditional.values.FeatureId
+import io.amichne.konditional.values.NamespaceId
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -780,7 +781,7 @@ class ConfigurationCodecTest {
         assertIs<ParseResult.Failure>(result)
         assertIs<ParseError.FeatureNotFound>(result.error)
         val error = result.error
-        assertEquals(FeatureId.create("global", "unregistered_feature"), error.key)
+        assertEquals(FeatureId.create(NamespaceId("global"), "unregistered_feature"), error.key)
     }
 
     // ========== Round-Trip Tests ==========

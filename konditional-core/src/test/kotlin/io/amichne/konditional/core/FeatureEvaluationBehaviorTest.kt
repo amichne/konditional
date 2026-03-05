@@ -134,7 +134,7 @@ class FeatureEvaluationBehaviorTest {
         val decision = diagnostics.decision as EvaluationDiagnostics.Decision.Rule
         val rule = decision.matched.rule
 
-        assertTrue(rule.ruleId.startsWith("rule::${namespace.id}::${namespace.feature.key}::"))
+        assertTrue(rule.ruleId.startsWith("rule::${namespace.id.value}::${namespace.feature.key}::"))
         assertEquals(EvaluationDiagnostics.ExtensionType.LAMBDA, rule.extensionNode.type)
         assertEquals(EvaluationDiagnostics.ConditionalContextType.NARROWING, rule.conditionalContextNode.type)
         assertNotEquals(

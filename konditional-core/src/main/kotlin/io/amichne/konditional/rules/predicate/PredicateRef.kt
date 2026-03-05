@@ -53,18 +53,6 @@ sealed interface PredicateRef : Comparable<PredicateRef> {
         val namespaceId: NamespaceId,
         override val id: PredicateId,
     ) : PredicateRef {
-        companion object {
-            @Deprecated(
-                message = "Use the constructor with typed NamespaceId and PredicateId for type safety.",
-                replaceWith = ReplaceWith("Registered(NamespaceId(namespaceId), PredicateId(id))")
-            )
-            @JvmName("invoke")
-            operator fun invoke(
-                namespaceId: String,
-                id: String
-            ) = Registered(NamespaceId(namespaceId), PredicateId(id))
-        }
-
         override fun compareTo(other: PredicateRef): Int = when (other) {
             is BuiltIn -> 1 // Registered sorts after BuiltIn
             is Registered -> compareValuesBy(this, other, { it.namespaceId.value }, { it.id.value })
