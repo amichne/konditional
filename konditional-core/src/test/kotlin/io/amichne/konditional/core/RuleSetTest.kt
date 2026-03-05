@@ -5,6 +5,7 @@ import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
+import io.amichne.konditional.context.axis.KonditionalExplicitId
 import io.amichne.konditional.core.dsl.ruleSet
 import io.amichne.konditional.core.dsl.rules.RuleSet
 import io.amichne.konditional.core.features.Feature
@@ -14,6 +15,7 @@ import io.amichne.konditional.fixtures.SubscriptionTier
 import io.amichne.konditional.fixtures.UserRole
 import io.amichne.konditional.fixtures.core.id.TestStableId
 import io.amichne.konditional.fixtures.utilities.update
+import io.amichne.konditional.values.RuleId
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -44,8 +46,8 @@ class RuleSetTest {
             }
         }
 
-        val namespacePlatform =
-            CheckoutFlags.ruleSet<CheckoutVariant, Context, EnterpriseContext, Namespace>("namespace-platform") {
+        @KonditionalExplicitId("namespace-platform")
+        val namespacePlatform by CheckoutFlags.ruleSet<CheckoutVariant, Context, EnterpriseContext, Namespace> {
             rule(CheckoutVariant.EXPERIMENTAL) {
                 ios()
             }
@@ -171,25 +173,32 @@ class RuleSetTest {
         val namespace = object : Namespace.TestNamespaceFacade("namespace-rule-set") {
             val flagA by string<Context>(default = "default")
             val flagB by string<Context>(default = "default")
-        }
-
-        val shared = namespace.ruleSet<String, Context, Namespace>("shared-ios-ruleset") {
-            rule("ios") { ios() }
+            val shared by ruleSet<String, Context, Namespace> {
+                rule("ios") { ios() }
+            }
         }
 
         namespace.flagA.update("default") {
-            include(shared)
+            include(namespace.shared)
         }
         namespace.flagB.update("default") {
-            include(shared)
+            include(namespace.shared)
         }
 
         assertEquals("ios", namespace.flagA.evaluate(coreContext(Platform.IOS)))
         assertEquals("ios", namespace.flagB.evaluate(coreContext(Platform.IOS)))
+        assertEquals(
+            RuleId.forNamespaceRuleSetRule(namespace.id, "shared", 0),
+            namespace.shared.rules.first().rule.ruleId,
+        )
     }
 
     @Test
     fun `Real world example of rule composition`() {
+        assertEquals(
+            RuleId.forNamespaceRuleSetRule(CheckoutFlags.id, "namespace-platform", 0),
+            CheckoutRuleSets.namespacePlatform.rules.first().rule.ruleId,
+        )
         CheckoutFlags.checkoutVariant.update(CheckoutVariant.CLASSIC) {
             include(CheckoutRuleSets.core)
             include(CheckoutRuleSets.platform)

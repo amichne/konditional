@@ -6,6 +6,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.context.axis.Axes
+import io.amichne.konditional.context.axis.KonditionalExplicitId
 import io.amichne.konditional.context.axis.AxisValue
 import io.amichne.konditional.context.axis.axes
 import io.amichne.konditional.core.dsl.enable
@@ -461,25 +462,23 @@ class ConsumerDslEndToEndTest {
                     }
                 }
 
-            private val localNamespaceRuleSet =
-                ruleSet<CheckoutVariant, CommerceContext, Namespace>("local-namespace-checkout-rules") {
+            @KonditionalExplicitId("local-namespace-checkout-rules")
+            private val localNamespaceRuleSet by ruleSet<CheckoutVariant, CommerceContext, Namespace> {
                 rule(CheckoutVariant.EMPLOYEE_NAMESPACE_LOCAL) {
                     locales(AppLocale.CANADA)
                     extension { isEmployee }
                 }
             }
-            private val kClassNamespaceRuleSet =
-                ruleSet<CheckoutVariant, CommerceContext, Namespace, Context>(
-                    "kclass-namespace-checkout-rules",
-                    Context::class,
-                ) {
+            @KonditionalExplicitId("kclass-namespace-checkout-rules")
+            private val kClassNamespaceRuleSet by
+                ruleSet<CheckoutVariant, CommerceContext, Namespace, Context>(Context::class) {
                     rule(CheckoutVariant.PROD_NAMESPACE_KCLASS) {
                         locales(AppLocale.CANADA)
                         constrain(Environment.PROD)
                     }
                 }
-            private val reifiedNamespaceRuleSet =
-                ruleSet<CheckoutVariant, Context, CommerceContext, Namespace>("reified-namespace-checkout-rules") {
+            @KonditionalExplicitId("reified-namespace-checkout-rules")
+            private val reifiedNamespaceRuleSet by ruleSet<CheckoutVariant, Context, CommerceContext, Namespace> {
                     rule(CheckoutVariant.ENTERPRISE_NAMESPACE_REIFIED) {
                         locales(AppLocale.CANADA)
                         whenContext<CommerceContext> {
