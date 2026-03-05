@@ -6,6 +6,7 @@ import com.squareup.moshi.JsonClass
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.internal.SerializedFlagRuleSpec
 import io.amichne.konditional.internal.SerializedRuleValueType
+import io.amichne.konditional.rules.predicate.PredicateRef
 import io.amichne.konditional.rules.versions.Unbounded
 import io.amichne.konditional.rules.versions.VersionRange
 
@@ -27,6 +28,7 @@ data class SerializableRule(
     val platforms: Set<String> = emptySet(),
     val versionRange: VersionRange? = null,
     val axes: Map<String, Set<String>> = emptyMap(),
+    val predicateRefs: List<PredicateRef> = emptyList(),
 ) {
     fun <T : Any> toSpec(value: T): SerializedFlagRuleSpec<T> =
         SerializedFlagRuleSpec(
@@ -39,6 +41,7 @@ data class SerializableRule(
             platforms = platforms,
             versionRange = versionRange ?: Unbounded,
             axes = axes,
+            predicateRefs = predicateRefs,
         )
 
     companion object {
@@ -55,6 +58,7 @@ data class SerializableRule(
                 platforms = rule.platforms,
                 versionRange = rule.versionRange,
                 axes = rule.axes,
+                predicateRefs = rule.predicateRefs,
             )
         }
     }

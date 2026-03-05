@@ -17,6 +17,9 @@ import io.amichne.konditional.internal.serialization.adapters.ValueClassAdapterF
 import io.amichne.konditional.internal.serialization.adapters.VersionRangeAdapter
 import io.amichne.konditional.internal.serialization.models.SerializablePatch
 import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
+import io.amichne.konditional.rules.predicate.PredicateRef
+import io.amichne.konditional.rules.predicate.PredicateRef.BuiltIn
+import io.amichne.konditional.rules.predicate.PredicateRef.Registered
 import io.amichne.konditional.rules.versions.FullyBound
 import io.amichne.konditional.rules.versions.LeftBound
 import io.amichne.konditional.rules.versions.RightBound
@@ -166,6 +169,11 @@ object ConfigurationCodec {
                 VersionRangeAdapter(
                     Moshi.Builder().add(KotlinJsonAdapterFactory()).build(),
                 ),
+            ).add(
+                PolymorphicJsonAdapterFactory
+                    .of(PredicateRef::class.java, "type")
+                    .withSubtype(BuiltIn::class.java, "BUILT_IN")
+                    .withSubtype(Registered::class.java, "REGISTERED"),
             ).add(
                 PolymorphicJsonAdapterFactory
                     .of(VersionRange::class.java, "type")

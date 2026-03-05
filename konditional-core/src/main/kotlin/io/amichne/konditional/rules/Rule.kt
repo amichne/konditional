@@ -3,6 +3,7 @@ package io.amichne.konditional.rules
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.core.id.HexId
+import io.amichne.konditional.rules.predicate.PredicateRef
 import io.amichne.konditional.rules.targeting.Targeting
 
 /**
@@ -24,6 +25,7 @@ import io.amichne.konditional.rules.targeting.Targeting
  * @property rampUpAllowlist Stable IDs that always bypass rampUp.
  * @property note Optional human-readable description for observability.
  * @property targeting Structured AND-conjunction of targeting constraints.
+ * @property predicateRefs Stable predicate refs referenced by this rule for serialization round-trips.
  */
 @ConsistentCopyVisibility
 data class Rule<in C : Context> internal constructor(
@@ -31,6 +33,7 @@ data class Rule<in C : Context> internal constructor(
     internal val rampUpAllowlist: Set<HexId> = emptySet(),
     val note: String? = null,
     val targeting: Targeting.All<@UnsafeVariance C> = Targeting.catchAll(),
+    val predicateRefs: List<PredicateRef> = emptyList(),
 ) {
     /** Returns true iff all targeting constraints match [context]. */
     fun matches(context: C): Boolean = targeting.matches(context)

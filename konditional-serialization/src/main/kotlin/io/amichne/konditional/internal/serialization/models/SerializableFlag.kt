@@ -9,6 +9,7 @@ import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.result.ParseError
+import io.amichne.konditional.core.result.parseErrorOrNull
 import io.amichne.konditional.core.result.parseFailure
 import io.amichne.konditional.core.schema.CompiledNamespaceSchema
 import io.amichne.konditional.core.types.Konstrained
@@ -47,10 +48,14 @@ data class SerializableFlag(
                     runCatching { conditional to toFlagDefinition(conditional = conditional) }
                         .fold(
                             onSuccess = { Result.success(it) },
-                            onFailure = {
+                            onFailure = { error ->
+                                val parseError = error.parseErrorOrNull()
+                                if (parseError != null) {
+                                    return@fold parseFailure(parseError)
+                                }
                                 parseFailure(
                                     ParseError.InvalidSnapshot(
-                                        it.message ?: "Failed to decode flag",
+                                        error.message ?: "Failed to decode flag",
                                     ),
                                 )
                             },

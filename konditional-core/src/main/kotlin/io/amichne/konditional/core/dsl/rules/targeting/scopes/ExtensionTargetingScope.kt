@@ -2,6 +2,8 @@ package io.amichne.konditional.core.dsl.rules.targeting.scopes
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.dsl.KonditionalDsl
+import io.amichne.konditional.rules.predicate.NamespacePredicate
+import io.amichne.konditional.rules.predicate.PredicateRef
 
 /**
  * Targeting mix-in for custom predicates.
@@ -28,6 +30,27 @@ interface ExtensionTargetingScope<C : Context> {
      * @param block The extension logic as a lambda
      */
     fun extension(block: C.() -> Boolean)
+
+    /**
+     * Adds a named predicate reference.
+     *
+     * The ref is resolved exactly once during DSL construction against the namespace-scoped
+     * predicate registry, then appended as a [io.amichne.konditional.rules.targeting.Targeting.Custom]
+     * leaf. Unknown refs fail fast with [io.amichne.konditional.core.result.ParseError.UnknownPredicate].
+     *
+     * @param ref Stable predicate reference descriptor
+     */
+    fun predicate(ref: PredicateRef)
+
+    /**
+     * Requires a namespace-declared predicate.
+     *
+     * This is consumer-facing DSL sugar for [predicate], intended for predicate handles
+     * declared via `Namespace.predicate { ... }`.
+     */
+    fun require(namedPredicate: NamespacePredicate<C>) {
+        predicate(namedPredicate.ref)
+    }
 }
 
 @PublishedApi

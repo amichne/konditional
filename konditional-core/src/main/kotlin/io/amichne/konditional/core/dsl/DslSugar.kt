@@ -71,7 +71,12 @@ fun <C : Context, M : Namespace> FlagScope<Boolean, C, M>.disableScoped(build: C
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.ruleSet(
     build: RuleSetBuilder<T, C>.() -> Unit,
 ): RuleSet<C, T, C, M> =
-    RuleSet(feature = this, rules = RuleSetBuilder<T, C>().apply(build).build())
+    RuleSet(
+        feature = this,
+        rules = RuleSetBuilder<T, C>(
+            predicateResolver = { ref -> namespace.predicates<C>().resolve(ref) },
+        ).apply(build).build(),
+    )
 
 /**
  * Builds a rule set using an explicit supertype context without reified generics.
@@ -87,7 +92,12 @@ fun <T : Any, C, M : Namespace, RC : Context> Feature<T, C, M>.ruleSet(
     @Suppress("UNUSED_PARAMETER") contextType: KClass<RC>,
     build: RuleSetBuilder<T, RC>.() -> Unit,
 ): RuleSet<RC, T, C, M> where C : RC =
-    RuleSet(feature = this, rules = RuleSetBuilder<T, RC>().apply(build).build())
+    RuleSet(
+        feature = this,
+        rules = RuleSetBuilder<T, RC>(
+            predicateResolver = { ref -> namespace.predicates<RC>().resolve(ref) },
+        ).apply(build).build(),
+    )
 
 /**
  * Builds a rule set using a reified supertype context.
@@ -101,7 +111,12 @@ fun <T : Any, C, M : Namespace, RC : Context> Feature<T, C, M>.ruleSet(
 inline fun <reified RC : Context, T : Any, C, M : Namespace> Feature<T, C, M>.ruleSet(
     build: RuleSetBuilder<T, RC>.() -> Unit,
 ): RuleSet<RC, T, C, M> where C : RC =
-    RuleSet(feature = this, rules = RuleSetBuilder<T, RC>().apply(build).build())
+    RuleSet(
+        feature = this,
+        rules = RuleSetBuilder<T, RC>(
+            predicateResolver = { ref -> namespace.predicates<RC>().resolve(ref) },
+        ).apply(build).build(),
+    )
 
 /**
  * Builds a namespace-scoped rule set using an explicit value type.
@@ -113,7 +128,12 @@ inline fun <reified RC : Context, T : Any, C, M : Namespace> Feature<T, C, M>.ru
 inline fun <reified T : Any, C : Context, M : Namespace> M.ruleSet(
     build: RuleSetBuilder<T, C>.() -> Unit,
 ): NamespaceRuleSet<C, T, C, M> =
-    NamespaceRuleSet(namespace = this, rules = RuleSetBuilder<T, C>().apply(build).build())
+    NamespaceRuleSet(
+        namespace = this,
+        rules = RuleSetBuilder<T, C>(
+            predicateResolver = { ref -> predicates<C>().resolve(ref) },
+        ).apply(build).build(),
+    )
 
 /**
  * Builds a namespace-scoped rule set using an explicit supertype context.
@@ -123,7 +143,12 @@ inline fun <reified T : Any, C, M : Namespace, RC : Context> M.ruleSet(
     @Suppress("UNUSED_PARAMETER") contextType: KClass<RC>,
     build: RuleSetBuilder<T, RC>.() -> Unit,
 ): NamespaceRuleSet<RC, T, C, M> where C : RC =
-    NamespaceRuleSet(namespace = this, rules = RuleSetBuilder<T, RC>().apply(build).build())
+    NamespaceRuleSet(
+        namespace = this,
+        rules = RuleSetBuilder<T, RC>(
+            predicateResolver = { ref -> predicates<RC>().resolve(ref) },
+        ).apply(build).build(),
+    )
 
 /**
  * Builds a namespace-scoped rule set using reified value and context supertypes.
@@ -131,4 +156,9 @@ inline fun <reified T : Any, C, M : Namespace, RC : Context> M.ruleSet(
 inline fun <reified T : Any, reified RC : Context, C, M : Namespace> M.ruleSet(
     build: RuleSetBuilder<T, RC>.() -> Unit,
 ): NamespaceRuleSet<RC, T, C, M> where C : RC =
-    NamespaceRuleSet(namespace = this, rules = RuleSetBuilder<T, RC>().apply(build).build())
+    NamespaceRuleSet(
+        namespace = this,
+        rules = RuleSetBuilder<T, RC>(
+            predicateResolver = { ref -> predicates<RC>().resolve(ref) },
+        ).apply(build).build(),
+    )

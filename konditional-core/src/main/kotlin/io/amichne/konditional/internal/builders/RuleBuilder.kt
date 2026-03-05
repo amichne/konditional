@@ -16,6 +16,7 @@ import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.Rule
+import io.amichne.konditional.rules.predicate.PredicateRef
 import io.amichne.konditional.rules.targeting.Targeting
 
 /**
@@ -32,12 +33,14 @@ import io.amichne.konditional.rules.targeting.Targeting
 @Suppress("TooManyFunctions", "OVERRIDE_DEPRECATION")
 internal class RuleBuilder<C : Context>(
     private val leaves: MutableList<Targeting<C>> = mutableListOf(),
+    private val predicateResolver: ((PredicateRef) -> Result<Targeting.Custom<C>>)? = null,
 ) : RuleScope<C>,
     NarrowingTargetingScope<C>,
     VariantDispatchHost by RuleVariantScope(leaves) {
     private var note: String? = null
     private var rampUp: RampUp? = null
     private val allowlist = linkedSetOf<HexId>()
+    private val predicateRefs = mutableListOf<PredicateRef>()
 
     override fun locales(vararg appLocales: LocaleTag) {
         if (appLocales.isNotEmpty())
@@ -55,8 +58,10 @@ internal class RuleBuilder<C : Context>(
     }
 
     override fun anyOf(build: AnyOfScope<C>.() -> Unit) {
-        val node = AnyOfBuilder<C>().apply(build).build()
+        val anyOfBuilder = AnyOfBuilder(predicateResolver = predicateResolver).apply(build)
+        val node = anyOfBuilder.build()
         if (node.targets.isNotEmpty()) leaves += node
+        predicateRefs += anyOfBuilder.referencedPredicateRefs
     }
 
     /**
@@ -67,6 +72,14 @@ internal class RuleBuilder<C : Context>(
      */
     override fun extension(block: C.() -> Boolean) {
         leaves += Targeting.Custom(block = { c -> c.block() })
+    }
+
+    override fun predicate(ref: PredicateRef) {
+        val resolver = requireNotNull(predicateResolver) {
+            "predicate(ref) is only available when rules are built with a namespace-scoped PredicateRegistry."
+        }
+        leaves += resolver(ref).getOrThrow()
+        predicateRefs += ref
     }
 
     override fun <R : Context> extensionNarrowed(
@@ -96,5 +109,6 @@ internal class RuleBuilder<C : Context>(
         rampUpAllowlist = allowlist,
         note = note,
         targeting = Targeting.All(leaves.toList()),
+        predicateRefs = predicateRefs.toList(),
     )
 }

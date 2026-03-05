@@ -13,6 +13,7 @@ import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.AnyOfScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.NarrowingTargetingScope
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
+import io.amichne.konditional.rules.predicate.PredicateRef
 import io.amichne.konditional.rules.targeting.Targeting
 
 /**
@@ -26,10 +27,15 @@ import io.amichne.konditional.rules.targeting.Targeting
 @KonditionalDsl
 @PublishedApi
 @Suppress("OVERRIDE_DEPRECATION")
-internal class AnyOfBuilder<C : Context> : AnyOfScope<C>, NarrowingTargetingScope<C>, VariantDispatchHost {
+internal class AnyOfBuilder<C : Context>(
+    private val predicateResolver: ((PredicateRef) -> Result<Targeting.Custom<C>>)? = null,
+) : AnyOfScope<C>, NarrowingTargetingScope<C>, VariantDispatchHost {
 
     private val leaves = mutableListOf<Targeting<C>>()
+    private val predicateRefs = mutableListOf<PredicateRef>()
     private val variantScope = RuleVariantScope<C>(leaves)
+    internal val referencedPredicateRefs: List<PredicateRef>
+        get() = predicateRefs.toList()
 
     override fun locales(vararg appLocales: LocaleTag) {
         if (appLocales.isNotEmpty())
@@ -48,6 +54,14 @@ internal class AnyOfBuilder<C : Context> : AnyOfScope<C>, NarrowingTargetingScop
 
     override fun extension(block: C.() -> Boolean) {
         leaves += Targeting.Custom(block = { c -> c.block() })
+    }
+
+    override fun predicate(ref: PredicateRef) {
+        val resolver = requireNotNull(predicateResolver) {
+            "predicate(ref) is only available when rules are built with a namespace-scoped PredicateRegistry."
+        }
+        leaves += resolver(ref).getOrThrow()
+        predicateRefs += ref
     }
 
     override fun <R : Context> extensionNarrowed(

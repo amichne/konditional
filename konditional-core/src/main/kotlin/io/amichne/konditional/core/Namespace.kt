@@ -19,9 +19,12 @@ import io.amichne.konditional.core.spi.FeatureRegistrationHooks
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.internal.builders.FlagBuilder
 import io.amichne.konditional.rules.predicate.InMemoryPredicateRegistry
+import io.amichne.konditional.rules.predicate.NamespacePredicate
 import io.amichne.konditional.rules.predicate.PredicateRegistry
-import io.amichne.konditional.values.IdentifierEncoding.SEPARATOR
+import io.amichne.konditional.rules.predicate.PredicateRef
+import io.amichne.konditional.rules.targeting.Targeting
 import io.amichne.konditional.values.NamespaceId
+import io.amichne.konditional.values.PredicateId
 import org.jetbrains.annotations.TestOnly
 import java.util.UUID
 import kotlin.reflect.KProperty
@@ -305,6 +308,28 @@ open class Namespace private constructor(
         noinline customScope: FlagScope<T, C, Namespace>.() -> Unit = {},
     ): KotlinClassDelegate<T, C> = KotlinClassDelegate(default, customScope)
 
+    /**
+     * Declares a named predicate on this namespace using property delegation.
+     *
+     * Predicates declared this way are automatically registered in this namespace's
+     * [PredicateRegistry], and can be referenced from rules via
+     * `require(predicateProperty)` / `predicate(predicateRef)`.
+     *
+     * Example:
+     * ```kotlin
+     * object Payments : Namespace("payments") {
+     *     val isPremium by predicate<Context> { true }
+     *
+     *     val applePay by boolean<Context>(default = false) {
+     *         rule(true) { require(isPremium) }
+     *     }
+     * }
+     * ```
+     */
+    protected fun <C : Context> predicate(
+        block: C.() -> Boolean,
+    ): PredicateDelegate<C> = PredicateDelegate(block)
+
     @Suppress("LongParameterList")
     private inline fun <T : Any, C : Context, M : Namespace, F : Feature<T, C, M>, D> registerFeature(
         thisRef: M,
@@ -459,6 +484,36 @@ open class Namespace private constructor(
 
         operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): KotlinClassFeature<T, C, M> =
             feature as KotlinClassFeature<T, C, M>
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    protected class PredicateDelegate<C : Context>(
+        private val block: C.() -> Boolean,
+    ) {
+        private var predicate: NamespacePredicate<C>? = null
+
+        operator fun <M : Namespace> provideDelegate(
+            thisRef: M,
+            property: KProperty<*>,
+        ): PredicateDelegate<C> = apply {
+            val ref = PredicateRef.Registered(
+                namespaceId = thisRef.id,
+                id = PredicateId(property.name),
+            )
+            thisRef.predicates<C>().register(
+                ref = ref,
+                predicate = Targeting.Custom(block = { context -> context.block() }),
+            )
+            predicate = NamespacePredicate(ref)
+        }
+
+        operator fun <M : Namespace> getValue(
+            thisRef: M,
+            property: KProperty<*>,
+        ): NamespacePredicate<C> =
+            checkNotNull(predicate) {
+                "Predicate '${property.name}' has not been initialized on namespace '${thisRef.id}'."
+            }
     }
 
     @OptIn(KonditionalInternalApi::class)

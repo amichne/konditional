@@ -24,6 +24,7 @@ import io.amichne.konditional.fixtures.serializers.RetryPolicy
 import io.amichne.konditional.fixtures.utilities.update
 import io.amichne.konditional.runtime.json
 import io.amichne.konditional.runtime.update
+import io.amichne.konditional.rules.predicate.PredicateRef
 import io.amichne.konditional.serialization.instance.Configuration
 import io.amichne.konditional.serialization.options.SnapshotLoadOptions
 import io.amichne.konditional.serialization.snapshot.ConfigurationCodec
@@ -67,6 +68,9 @@ private fun <T> ParseResult<T>.getOrThrow(): T =
 class ConfigurationCodecTest {
     private object TestFeatures : Namespace.TestNamespaceFacade("snapshot-serializer") {
         val boolFlag by boolean<Context>(default = false)
+        val iosOnly by predicate<Context> {
+            (this as? Context.PlatformContext)?.platform == Platform.IOS
+        }
         val stringFlag by string<Context>(default = "default")
         val intFlag by integer<Context>(default = 0)
         val doubleFlag by double<Context>(default = 0.0)
@@ -192,6 +196,40 @@ class ConfigurationCodecTest {
         axes = axes(env)
     )
 
+    private fun boolFlagSnapshotWithPredicateRef(
+        namespaceId: NamespaceId,
+        predicateId: String,
+    ): String =
+        """
+        {
+          "flags": [
+            {
+              "key": "${TestFeatures.boolFlag.id}",
+              "defaultValue": {
+                "type": "BOOLEAN",
+                "value": false
+              },
+              "rules": [
+                {
+                  "value": {
+                    "type": "BOOLEAN",
+                    "value": true
+                  },
+                  "type": "STATIC",
+                   "predicateRefs": [
+                     {
+                       "type": "REGISTERED",
+                       "namespaceId": "${namespaceId.value}",
+                       "id": "$predicateId"
+                     }
+                   ]
+                 }
+              ]
+            }
+          ]
+        }
+        """.trimIndent()
+
     @Test
     fun `Given deferred yields rule, When serialized, Then snapshot encodes placeholder instead of failing`() {
         val json = TestFeatures.json
@@ -258,6 +296,21 @@ class ConfigurationCodecTest {
         assertTrue(json.contains("\"key\": \"${TestFeatures.stringFlag.id}\""))
         assertTrue(json.contains("\"type\": \"STRING\""))
         assertTrue(json.contains("\"value\": \"test-value\""))
+    }
+
+    @Test
+    fun `Given DSL rule with predicate ref, When serialized, Then snapshot includes predicateRefs`() {
+        TestFeatures.boolFlag.update(default = false) {
+            rule(true) {
+                require(TestFeatures.iosOnly)
+            }
+        }
+
+        val json = TestFeatures.json
+
+        assertTrue(json.contains("\"predicateRefs\""))
+        assertTrue(json.contains("\"id\": \"${TestFeatures.iosOnly.id.value}\""))
+        assertTrue(json.contains("\"namespaceId\": \"${TestFeatures.iosOnly.namespaceId.value}\""))
     }
 
     @Test
@@ -507,7 +560,8 @@ class ConfigurationCodecTest {
                         "${TestTenant::class.java.name}": [
                           "enterprise"
                         ]
-                      }
+                      },
+                      "predicateRefs": []
                     }
                   ]
                 },
@@ -549,7 +603,8 @@ class ConfigurationCodecTest {
                       "versionRange": {
                         "type": "UNBOUNDED"
                       },
-                      "axes": {}
+                      "axes": {},
+                      "predicateRefs": []
                     }
                   ]
                 }
@@ -782,6 +837,53 @@ class ConfigurationCodecTest {
         assertIs<ParseError.FeatureNotFound>(result.error)
         val error = result.error
         assertEquals(FeatureId.create(NamespaceId("global"), "unregistered_feature"), error.key)
+    }
+
+    @Test
+    fun `Given registered predicate ref in snapshot, When deserialized, Then it resolves and is preserved`(
+    ) {
+        val json = boolFlagSnapshotWithPredicateRef(
+            namespaceId = TestFeatures.id,
+            predicateId = TestFeatures.iosOnly.id.value,
+        )
+
+        val result = decodeFeatureAware(json)
+
+        assertIs<ParseResult.Success<Configuration>>(result)
+        val decodedFlag = checkNotNull(result.value.flags[TestFeatures.boolFlag])
+        val decodedRule = decodedFlag.values.first().rule
+        assertEquals(1, decodedRule.predicateRefs.size)
+        val decodedRef = assertIs<PredicateRef.Registered>(decodedRule.predicateRefs.single())
+        assertEquals(TestFeatures.id, decodedRef.namespaceId)
+        assertEquals(TestFeatures.iosOnly.id, decodedRef.id)
+        loadMaterialized(result.value)
+        assertTrue(TestFeatures.boolFlag.evaluate(ctx("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", platform = Platform.IOS)))
+        assertFalse(
+            TestFeatures.boolFlag.evaluate(
+                ctx("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", platform = Platform.ANDROID),
+            ),
+        )
+
+        val encoded = ConfigurationCodec.encode(result.value)
+        assertTrue(encoded.contains("\"predicateRefs\""))
+        assertTrue(encoded.contains("\"id\": \"${TestFeatures.iosOnly.id.value}\""))
+    }
+
+    @Test
+    fun `Given snapshot rule with unknown predicate ref, When deserialized, Then UnknownPredicate is returned`() {
+        val missingId = "missing-ios-only-ref"
+        val json = boolFlagSnapshotWithPredicateRef(
+            namespaceId = TestFeatures.id,
+            predicateId = missingId,
+        )
+
+        val result = decodeFeatureAware(json)
+
+        assertIs<ParseResult.Failure>(result)
+        val error = assertIs<ParseError.UnknownPredicate>(result.error)
+        val ref = assertIs<PredicateRef.Registered>(error.ref)
+        assertEquals(TestFeatures.id, ref.namespaceId)
+        assertEquals(missingId, ref.id.value)
     }
 
     // ========== Round-Trip Tests ==========
