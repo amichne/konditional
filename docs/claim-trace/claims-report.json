@@ -1,23 +1,72 @@
 {
-  "claims_linked": 17,
-  "claims_missing": 0,
+  "claims_linked": 13,
+  "claims_missing": 4,
   "claims_total": 17,
-  "issue_count": 0,
-  "issues": [],
+  "issue_count": 1,
+  "issues": [
+    {
+      "claim_id": "CLM-PR01-08B",
+      "code": "test-path-not-found",
+      "document_path": "docusaurus/docs/quickstart/define-first-flag.md",
+      "entity_id": "DOC-PR01-08",
+      "message": "test path not found: konditional-runtime/src/test/kotlin/io/amichne/konditional/serialization/NamespaceConfigurationSnapshotCodecTest.kt"
+    }
+  ],
   "links_file": "docs/claim-trace/claim-signature-links.json",
-  "missing": [],
-  "missing_links": 0,
+  "missing": [
+    {
+      "claim_id": "CLM-PR01-04A",
+      "document_path": "docusaurus/docs/overview/first-success-map.md",
+      "entity_id": "DOC-PR01-04",
+      "entity_kind": "document",
+      "kind": "method",
+      "signature": "io.amichne.konditional.api.RampUpBucketing#fun bucket( stableId: StableId, featureKey: String, salt: String, ): Int"
+    },
+    {
+      "claim_id": "CLM-PR01-04A",
+      "document_path": "docusaurus/docs/overview/first-success-map.md",
+      "entity_id": "DOC-PR01-04",
+      "entity_kind": "document",
+      "kind": "type",
+      "signature": "io.amichne.konditional.api.RampUpBucketing"
+    },
+    {
+      "claim_id": "CLM-PR01-08B",
+      "document_path": "docusaurus/docs/quickstart/define-first-flag.md",
+      "entity_id": "DOC-PR01-08",
+      "entity_kind": "document",
+      "kind": "type",
+      "signature": "io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec"
+    },
+    {
+      "claim_id": "CLM-PR01-10A",
+      "document_path": "docusaurus/docs/quickstart/add-deterministic-ramp-up.md",
+      "entity_id": "DOC-PR01-10",
+      "entity_kind": "document",
+      "kind": "method",
+      "signature": "io.amichne.konditional.api.RampUpBucketing#fun bucket( stableId: StableId, featureKey: String, salt: String, ): Int"
+    },
+    {
+      "claim_id": "CLM-PR01-11A",
+      "document_path": "docusaurus/docs/quickstart/load-first-snapshot-safely.md",
+      "entity_id": "DOC-PR01-11",
+      "entity_kind": "document",
+      "kind": "type",
+      "signature": "io.amichne.konditional.serialization.snapshot.ConfigurationSnapshotCodec"
+    }
+  ],
+  "missing_links": 5,
   "pages_with_claims": 12,
-  "refresh_attempted": false,
-  "refresh_details": "",
-  "refresh_succeeded": false,
+  "refresh_attempted": true,
+  "refresh_details": "refresh_ok signatures=.signatures\nGenerated 305 signature files in /Users/amichne/.codex/worktrees/a9c4/konditional/.signatures\nWrote public-surface context: /Users/amichne/.codex/worktrees/a9c4/konditional/.signatures/PUBLIC_SURFACE.ctx\nPublic types: 181",
+  "refresh_succeeded": true,
   "registry_file": "docs/claim-trace/claims-registry.json",
   "repo_root": ".",
-  "resolved_links": 47,
+  "resolved_links": 42,
   "schema_modes": [
     "documents"
   ],
   "signatures_dir": ".signatures",
-  "status": "ok",
+  "status": "issues-detected",
   "total_links": 47
 }

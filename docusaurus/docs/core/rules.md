@@ -31,6 +31,8 @@ Inside a rule block (`RuleScope`):
 - `versions { min(...); max(...) }` targets version ranges
 - `constrain(...)` targets custom axes
 - `extension { ... }` custom predicate
+- `require(namedPredicate)` references a namespace-declared predicate
+- `require { ... }` adds an inline, rule-scoped predicate
 - `rampUp { ... }` percentage rollout
 - `allowlist(...)` stable IDs that bypass ramp-up
 - `note("...")` attaches a human-readable note
@@ -125,6 +127,7 @@ val checkout by string<Context>(default = "v1") {
 ## Custom predicates
 
 `extension { ... }` receives the `Context` type for the feature.
+`require(...)` is sugar over predicate references and inline custom predicates.
 
 ```kotlin
 data class EnterpriseContext(
@@ -133,15 +136,33 @@ data class EnterpriseContext(
     override val appVersion: Version,
     override val stableId: StableId,
     val subscriptionTier: Tier,
+    val userRole: Role,
 ) : Context
 
+enum class Tier { FREE, ENTERPRISE }
+enum class Role { MEMBER, OWNER }
+
+object EntitlementPredicates : Namespace() {
+    val isPremium by predicate<EnterpriseContext> {
+        subscriptionTier == Tier.ENTERPRISE
+    }
+}
+
 val enterpriseOnly by boolean<EnterpriseContext>(default = false) {
-    rule(true) { extension { subscriptionTier == Tier.ENTERPRISE } }
+    rule(true) {
+        require(EntitlementPredicates.isPremium)
+        require { userRole == Role.OWNER }
+    }
 }
 ```
 
-- Multiple `extension { ... }` blocks on the same rule are combined with AND semantics.
-- Each `extension { ... }` block contributes predicate specificity.
+<span id="claim-clm-pr02-01a"></span>
+Named `require(predicateHandle)` and inline `require { ... }` predicates compose
+with AND semantics within the same rule [CLM-PR02-01A].
+
+- Multiple `extension { ... }` / inline `require { ... }` blocks on the same
+  rule are combined with AND semantics.
+- Each custom predicate call contributes predicate specificity.
 
 ### Capability narrowing with `whenContext`
 
@@ -167,6 +188,18 @@ val enterpriseOnly by boolean<Context>(default = false) {
 - **Boundary**: A rule using `whenContext<R>` never matches contexts that do
   not implement `R`.
 
+The inline helper also works inside anonymous `require` predicates:
+
+```kotlin
+rule(true) {
+    require {
+        whenContext<EnterpriseContext> {
+            subscriptionTier == Tier.ENTERPRISE
+        }
+    }
+}
+```
+
 - **Guarantee**: Custom predicates participate in specificity ordering.
 
 - **Mechanism**: Each `extension { ... }` and `whenContext<R> { ... }` call
@@ -176,7 +209,8 @@ val enterpriseOnly by boolean<Context>(default = false) {
 
 ## Reusable rule sets (`RuleSet`)
 
-If you want to share a group of rules across multiple flags, you can build a `RuleSet` and include it:
+If you want to share a group of rules across multiple flags, you can build a
+`RuleSet` and include it:
 
 ```kotlin
 object AppFeatures : Namespace("app") {
@@ -186,12 +220,23 @@ object AppFeatures : Namespace("app") {
         rule("v2") { ios() }
     }
 
+    @KonditionalExplicitId("shared-rollout")
+    private val sharedRollout by ruleSet<String, Context, Namespace> {
+        rule("v2") { ios() }
+    }
+
     val checkout by string<Context>(default = "v1") {
         include(iosRollout)
+        include(sharedRollout)
         rule("v3") { rampUp { 10.0 } }
     }
 }
 ```
+
+<span id="claim-clm-pr02-01b"></span>
+Namespace reusable rule sets are declaration-seeded by delegated property name.
+Use `@KonditionalExplicitId` on the property to pin the seed across renames
+[CLM-PR02-01B].
 
 - Rule sets are included left-to-right; when two rules are equally specific, earlier included rules win.
 - `RuleSet` supports composition via `+` to combine two sets while preserving ordering.
@@ -207,3 +252,10 @@ object AppFeatures : Namespace("app") {
 - [Core DSL best practices](/core/best-practices)
 - [Evaluation model](/learn/evaluation-model)
 - [Core API reference](/core/reference)
+
+## Claim citations
+
+| Claim ID | Explicit claim | Local evidence linkage | Registry link |
+| --- | --- | --- | --- |
+| `CLM-PR02-01A` | Named and inline `require` predicates compose with AND semantics. | [Custom predicates](#custom-predicates) | [Claims registry](/reference/claims-registry#clm-pr02-01a) |
+| `CLM-PR02-01B` | Namespace reusable `ruleSet` declarations are delegate-seeded, with optional explicit seed pinning. | [Reusable rule sets](#reusable-rule-sets-ruleset) | [Claims registry](/reference/claims-registry#clm-pr02-01b) |

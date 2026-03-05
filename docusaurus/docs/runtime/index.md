@@ -31,7 +31,7 @@ Without this module, you would need to:
 
 ```kotlin
 dependencies {
-    implementation("io.amichne:konditional-runtime:VERSION")
+    implementation("io.github.amichne:konditional-runtime:VERSION")
 }
 ```
 

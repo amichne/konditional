@@ -18,7 +18,7 @@ Add the dependency to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("io.amichne:opentelemetry:$version")
+    implementation("io.github.amichne:konditional-opentelemetry:VERSION")
 }
 ```
 
