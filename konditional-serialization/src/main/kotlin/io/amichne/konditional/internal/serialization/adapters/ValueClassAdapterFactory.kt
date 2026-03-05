@@ -12,7 +12,7 @@ import java.lang.reflect.Modifier
 import java.lang.reflect.Type
 
 @KonditionalInternalApi
-object ValueClassAdapterFactory : JsonAdapter.Factory {
+internal object ValueClassAdapterFactory : JsonAdapter.Factory {
     /**
      * @param T the not-null value class instance for which we're the value create the backing field from
      * @param ValueT the nullable type stored in the single backing field create Class<[T]>

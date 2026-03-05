@@ -19,7 +19,7 @@ import io.amichne.kontracts.value.JsonString
 import io.amichne.kontracts.value.JsonValue
 
 @KonditionalInternalApi
-fun Any?.toJsonValue(): JsonValue =
+internal fun Any?.toJsonValue(): JsonValue =
     when (this) {
         null -> JsonNull
         is Boolean -> jsonValue { boolean(this@toJsonValue) }
@@ -49,7 +49,7 @@ fun Any?.toJsonValue(): JsonValue =
     }
 
 @KonditionalInternalApi
-fun JsonValue.toPrimitiveValue(): Any? =
+internal fun JsonValue.toPrimitiveValue(): Any? =
     when (this) {
         is JsonNull -> null
         is JsonBoolean -> value

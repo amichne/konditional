@@ -32,7 +32,7 @@ import io.amichne.kontracts.schema.ObjectTraits
  */
 @KonditionalInternalApi
 @JsonClass(generateAdapter = true)
-data class SerializableFlag(
+internal data class SerializableFlag(
     val key: FeatureId,
     val defaultValue: FlagValue<*>,
     val salt: String = "v1",

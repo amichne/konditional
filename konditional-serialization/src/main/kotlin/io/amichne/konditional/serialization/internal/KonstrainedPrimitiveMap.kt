@@ -19,7 +19,7 @@ import io.amichne.kontracts.schema.ObjectTraits
  * @throws IllegalArgumentException if the schema is not an object schema.
  */
 @KonditionalInternalApi
-fun Konstrained<*>.toPrimitiveMap(): Map<String, Any?> {
+internal fun Konstrained<*>.toPrimitiveMap(): Map<String, Any?> {
     require(schema is ObjectTraits) {
         "toPrimitiveMap() is only supported for object-backed Konstrained " +
             "(schema must implement ObjectTraits, got ${schema::class.simpleName}). " +

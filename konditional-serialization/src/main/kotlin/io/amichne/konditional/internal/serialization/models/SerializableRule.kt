@@ -19,7 +19,7 @@ import io.amichne.konditional.values.RuleId
  */
 @KonditionalInternalApi
 @JsonClass(generateAdapter = true)
-data class SerializableRule(
+internal data class SerializableRule(
     val value: FlagValue<*>,
     val type: SerializedRuleValueType = SerializedRuleValueType.STATIC,
     val ruleId: RuleId? = null,

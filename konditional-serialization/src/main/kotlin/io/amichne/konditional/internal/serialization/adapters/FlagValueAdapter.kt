@@ -29,7 +29,7 @@ import java.lang.reflect.Type
  * - `"KONSTRAINED_PRIMITIVE"` → [FlagValue.KonstrainedPrimitive]
  */
 @KonditionalInternalApi
-class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
+internal class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
     override fun toJson(
         writer: JsonWriter,
         value: FlagValue<*>?,
@@ -113,7 +113,7 @@ class FlagValueAdapter : JsonAdapter<FlagValue<*>>() {
 }
 
 @KonditionalInternalApi
-object FlagValueAdapterFactory : JsonAdapter.Factory {
+internal object FlagValueAdapterFactory : JsonAdapter.Factory {
     private val flagValueAdapter = FlagValueAdapter()
 
     override fun create(

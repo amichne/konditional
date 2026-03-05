@@ -25,7 +25,7 @@ import io.amichne.konditional.rules.versions.VersionRange
  * validation at the boundary, making illegal states unrepresentable.
  */
 @KonditionalInternalApi
-class VersionRangeAdapter(moshi: Moshi) {
+internal class VersionRangeAdapter(moshi: Moshi) {
     private val versionAdapter = moshi.adapter(Version::class.java)
 
     @FromJson

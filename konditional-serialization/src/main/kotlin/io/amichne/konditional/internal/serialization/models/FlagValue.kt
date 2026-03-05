@@ -38,7 +38,7 @@ import kotlin.reflect.KClass
  * - [KonstrainedPrimitive] — primitive/array-backed [Konstrained] (value classes, etc.)
  */
 @KonditionalInternalApi
-sealed class FlagValue<out T : Any> {
+internal sealed class FlagValue<out T : Any> {
     abstract val value: T
 
     /**
