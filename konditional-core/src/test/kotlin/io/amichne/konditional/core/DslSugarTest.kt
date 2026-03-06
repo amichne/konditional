@@ -37,7 +37,12 @@ class DslSugarTest {
         }
 
         val composedFlag by string<Context>(default = "composed-default") {
-            rule { android() } yields { dependencyFlag.evaluate() }
+            rule { android() } yields { dependencyFlag() }
+            rule { always() } yields "fallback"
+        }
+
+        val composedWithFeatureYield by string<Context>(default = "composed-default") {
+            rule { android() } yields dependencyFlag
             rule { always() } yields "fallback"
         }
     }
@@ -73,6 +78,12 @@ class DslSugarTest {
     }
 
     @Test
+    fun `rule yields supports feature shorthand for deferred composition`() {
+        assertEquals("dep-android", Features.composedWithFeatureYield.evaluate(ctx(platform = Platform.ANDROID)))
+        assertEquals("fallback", Features.composedWithFeatureYield.evaluate(ctx(platform = Platform.IOS)))
+    }
+
+    @Test
     fun `deferred yields evaluate same-namespace dependencies against provided registry`() {
         val alternateRegistry = InMemoryNamespaceRegistry(namespaceId = Features.id.value).apply {
             load(Features.configuration)
@@ -85,6 +96,12 @@ class DslSugarTest {
         )
 
         assertEquals("override-value", result)
+
+        val invokedResult = with(ctx(platform = Platform.ANDROID)) {
+            Features.dependencyFlag(registry = alternateRegistry)
+        }
+
+        assertEquals("override-value", invokedResult)
     }
 
     @Test

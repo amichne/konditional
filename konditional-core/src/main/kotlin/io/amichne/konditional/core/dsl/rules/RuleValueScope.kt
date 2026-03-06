@@ -37,6 +37,13 @@ class RuleValueScope<C : Context> @PublishedApi internal constructor(
         } else {
             evaluate(context = context)
         }
+
+    /**
+     * Evaluates [Feature] using invoke-style syntax in deferred `yields { ... }` resolvers.
+     *
+     * Equivalent to [evaluate], including same-namespace registry preservation.
+     */
+    operator fun <T : Any, M : Namespace> Feature<T, C, M>.invoke(): T = evaluate()
 }
 
 /**
