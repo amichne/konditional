@@ -60,6 +60,10 @@ data class EvaluationDiagnostics<T : Any>(
             val children: List<TargetingNode>,
         ) : TargetingNode
 
+        data class Not(
+            val child: TargetingNode,
+        ) : TargetingNode
+
         data class Locale(
             val ids: Set<String>,
         ) : TargetingNode

@@ -13,8 +13,12 @@ import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.dsl.ruleSet
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.constrain
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.whenContext
+import io.amichne.konditional.core.features.BooleanFeature
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.rules.predicate.and
+import io.amichne.konditional.rules.predicate.or
+import io.amichne.konditional.rules.predicate.where
 import io.amichne.konditional.serialization.snapshot.ConfigurationCodec
 import io.amichne.konditional.serialization.snapshot.NamespaceSnapshotLoader
 import org.junit.jupiter.api.Test
@@ -81,6 +85,14 @@ class ConsumerDslEndToEndTest {
         tenantId = tenantId,
         axes = axes,
     )
+
+    private fun assertFlagValue(
+        feature: BooleanFeature<CommerceContext, *>,
+        expected: Boolean,
+        context: CommerceContext,
+    ) {
+        assertEquals(expected, feature.evaluate(context))
+    }
 
     private class SnapshotPaymentsNamespace(id: String) : Namespace(id) {
         val isPremium by predicate<CommerceContext> {
@@ -280,6 +292,7 @@ class ConsumerDslEndToEndTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun `multiple named and anonymous require blocks compose with AND semantics`() {
         val namespace = object : Namespace("payments-mixed-require-${UUID.randomUUID()}") {
             val isPremium by predicate<CommerceContext> {
@@ -291,36 +304,92 @@ class ConsumerDslEndToEndTest {
 
             val targetedFeature by boolean<CommerceContext>(default = false) {
                 rule(true) {
-                    require(isPremium)
-                    require { isEmployee }
-                    require(enterpriseTenant)
-                    require { platform == Platform.IOS }
+                    require(
+                        isPremium and
+                            enterpriseTenant and
+                            where<CommerceContext> { isEmployee } and
+                            where<CommerceContext> { platform == Platform.IOS },
+                    )
+                }
+            }
+        }
+
+        assertFlagValue(
+            namespace.targetedFeature,
+            true,
+            commerceContext(
+                subscriptionTier = SubscriptionTier.PREMIUM,
+                isEmployee = true,
+                tenantId = "ent-77",
+                platform = Platform.IOS,
+            ),
+        )
+        assertFlagValue(
+            namespace.targetedFeature,
+            false,
+            commerceContext(
+                subscriptionTier = SubscriptionTier.PREMIUM,
+                isEmployee = false,
+                tenantId = "ent-77",
+                platform = Platform.IOS,
+            ),
+        )
+        assertFlagValue(
+            namespace.targetedFeature,
+            false,
+            commerceContext(
+                subscriptionTier = SubscriptionTier.PREMIUM,
+                isEmployee = true,
+                tenantId = "tenant-77",
+                platform = Platform.IOS,
+            ),
+        )
+        assertFlagValue(
+            namespace.targetedFeature,
+            false,
+            commerceContext(
+                subscriptionTier = SubscriptionTier.PREMIUM,
+                isEmployee = true,
+                tenantId = "ent-77",
+                platform = Platform.ANDROID,
+            ),
+        )
+    }
+
+    @Test
+    fun `predicate composition DSL supports readable grouped boolean expressions`() {
+        val namespace = object : Namespace("payments-composed-predicates-${UUID.randomUUID()}") {
+            val isPremium by predicate<CommerceContext> {
+                subscriptionTier == SubscriptionTier.PREMIUM
+            }
+            val enterpriseTenant by predicate<CommerceContext> {
+                tenantId.startsWith("ent-")
+            }
+
+            private val eligibleForPrioritySupport =
+                isPremium and (
+                    enterpriseTenant or
+                        where<CommerceContext> { isEmployee && platform == Platform.IOS }
+                    )
+
+            val prioritySupport by boolean<CommerceContext>(default = false) {
+                rule(true) {
+                    require(eligibleForPrioritySupport)
                 }
             }
         }
 
         assertTrue(
-            namespace.targetedFeature.evaluate(
+            namespace.prioritySupport.evaluate(
                 commerceContext(
                     subscriptionTier = SubscriptionTier.PREMIUM,
-                    isEmployee = true,
                     tenantId = "ent-77",
-                    platform = Platform.IOS,
+                    platform = Platform.ANDROID,
                 ),
             ),
         )
-        assertFalse(
-            namespace.targetedFeature.evaluate(
-                commerceContext(
-                    subscriptionTier = SubscriptionTier.PREMIUM,
-                    isEmployee = false,
-                    tenantId = "ent-77",
-                    platform = Platform.IOS,
-                ),
-            ),
-        )
-        assertFalse(
-            namespace.targetedFeature.evaluate(
+        assertTrue(
+            namespace.prioritySupport.evaluate(
                 commerceContext(
                     subscriptionTier = SubscriptionTier.PREMIUM,
                     isEmployee = true,
@@ -330,12 +399,21 @@ class ConsumerDslEndToEndTest {
             ),
         )
         assertFalse(
-            namespace.targetedFeature.evaluate(
+            namespace.prioritySupport.evaluate(
+                commerceContext(
+                    subscriptionTier = SubscriptionTier.BASIC,
+                    tenantId = "ent-77",
+                    platform = Platform.IOS,
+                ),
+            ),
+        )
+        assertFalse(
+            namespace.prioritySupport.evaluate(
                 commerceContext(
                     subscriptionTier = SubscriptionTier.PREMIUM,
-                    isEmployee = true,
-                    tenantId = "ent-77",
-                    platform = Platform.ANDROID,
+                    isEmployee = false,
+                    tenantId = "tenant-77",
+                    platform = Platform.IOS,
                 ),
             ),
         )
@@ -471,7 +549,10 @@ class ConsumerDslEndToEndTest {
             }
             @KonditionalExplicitId("kclass-namespace-checkout-rules")
             private val kClassNamespaceRuleSet by
-                ruleSet<CheckoutVariant, CommerceContext, Namespace, Context>(Context::class) {
+                ruleSet<CheckoutVariant, CommerceContext, Namespace, Context>(
+                    "kclass-namespace-checkout-rules",
+                    Context::class,
+                ) {
                     rule(CheckoutVariant.PROD_NAMESPACE_KCLASS) {
                         locales(AppLocale.CANADA)
                         constrain(Environment.PROD)

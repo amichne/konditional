@@ -13,6 +13,7 @@ import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.AnyOfScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.NarrowingTargetingScope
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
+import io.amichne.konditional.rules.predicate.PredicateExpression
 import io.amichne.konditional.rules.predicate.PredicateRef
 import io.amichne.konditional.rules.targeting.Targeting
 import io.amichne.konditional.values.NamespaceId
@@ -37,6 +38,11 @@ internal class AnyOfBuilder<C : Context>(
 ) : AnyOfScope<C>, NarrowingTargetingScope<C>, VariantDispatchHost {
 
     private val leaves = mutableListOf<Targeting<C>>()
+    private val predicateExpressionCompiler = PredicateExpressionCompiler(
+        namespaceId = namespaceId,
+        predicateRegistrar = predicateRegistrar,
+        inlinePredicateIdFactory = inlinePredicateIdFactory,
+    )
     private val predicateRefs = mutableListOf<PredicateRef>()
     private val variantScope = RuleVariantScope<C>(leaves)
     internal val referencedPredicateRefs: List<PredicateRef>
@@ -69,35 +75,11 @@ internal class AnyOfBuilder<C : Context>(
         predicateRefs += ref
     }
 
-    override fun require(block: C.() -> Boolean) {
-        val resolvedNamespaceId = namespaceId
-        val resolver = predicateResolver
-        val registrar = predicateRegistrar
-        val predicateIdFactory = inlinePredicateIdFactory
-        if (shouldFallbackInlineRequire(resolvedNamespaceId, resolver, registrar, predicateIdFactory)) {
-            extension(block)
-            return
-        }
-        val nonNullNamespaceId = checkNotNull(resolvedNamespaceId)
-        val nonNullRegistrar = checkNotNull(registrar)
-        val nonNullPredicateIdFactory = checkNotNull(predicateIdFactory)
-
-        val ref = PredicateRef.Registered(
-            namespaceId = nonNullNamespaceId,
-            id = nonNullPredicateIdFactory(),
-        )
-        val inlinePredicate = Targeting.Custom<C>(block = { context: C -> context.block() })
-        nonNullRegistrar(ref, inlinePredicate)
-        leaves += inlinePredicate
-        predicateRefs += ref
+    override fun require(predicateExpression: PredicateExpression<C>) {
+        val compiled = predicateExpressionCompiler.compile(predicateExpression)
+        leaves += compiled.targeting
+        predicateRefs += compiled.predicateRefs
     }
-
-    private fun shouldFallbackInlineRequire(
-        resolvedNamespaceId: NamespaceId?,
-        resolver: ((PredicateRef) -> Result<Targeting.Custom<C>>)?,
-        registrar: ((PredicateRef.Registered, Targeting.Custom<C>) -> Unit)?,
-        predicateIdFactory: (() -> PredicateId)?,
-    ): Boolean = resolvedNamespaceId == null || resolver == null || registrar == null || predicateIdFactory == null
 
     override fun <R : Context> extensionNarrowed(
         evidence: (C) -> R?,

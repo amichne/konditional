@@ -442,4 +442,32 @@ class TargetingHierarchyTest {
             assertFalse(anyOf.matches(minimalContext))   // neither matches
         }
     }
+
+    @Test
+    fun `Not negates child result and preserves specificity`() {
+        val negated = Targeting.Not(Targeting.locale<Context>(setOf(AppLocale.CANADA.id)))
+
+        assertTrue(negated.matches(usIosContext))
+        assertEquals(1, negated.specificity())
+    }
+
+    @Test
+    fun `Not around AnyOf composes predictably inside All`() {
+        val targeting = Targeting.All(
+            listOf(
+                Targeting.locale<Context>(setOf(AppLocale.UNITED_STATES.id)),
+                Targeting.Not(
+                    Targeting.AnyOf(
+                        listOf(
+                            Targeting.platform<Context>(setOf(Platform.ANDROID.id)),
+                            Targeting.Custom<Context>(block = { it === minimalContext }),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        assertTrue(targeting.matches(usIosContext))
+        assertFalse(targeting.matches(caAndroidContext))
+    }
 }

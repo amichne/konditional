@@ -9,6 +9,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.context.Version
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.whenContext
+import io.amichne.konditional.core.features.BooleanFeature
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.KonditionalBoundaryFailure
 import io.amichne.konditional.core.result.ParseError
@@ -16,6 +17,13 @@ import io.amichne.konditional.fixtures.EnterpriseContext
 import io.amichne.konditional.fixtures.SubscriptionTier
 import io.amichne.konditional.fixtures.UserRole
 import io.amichne.konditional.fixtures.utilities.update
+import io.amichne.konditional.rules.predicate.and
+import io.amichne.konditional.rules.predicate.allOf
+import io.amichne.konditional.rules.predicate.anyOf
+import io.amichne.konditional.rules.predicate.not
+import io.amichne.konditional.rules.predicate.predicateOf
+import io.amichne.konditional.rules.predicate.or
+import io.amichne.konditional.rules.predicate.where
 import io.amichne.konditional.rules.predicate.PredicateRef
 import io.amichne.konditional.rules.targeting.Targeting
 import io.amichne.konditional.values.PredicateId
@@ -25,6 +33,13 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 
 class ExtensionTargetingScopeTest {
+    private data class EvalCase(
+        val idHex: String,
+        val subscriptionTier: SubscriptionTier,
+        val userRole: UserRole,
+        val organizationId: String = "org-123",
+    )
+
     private object Features : Namespace.TestNamespaceFacade("extension-targeting-scope-test") {
         val extensionComposition by boolean<EnterpriseContext>(default = false)
         val specificityOrdering by string<EnterpriseContext>(default = "default")
@@ -42,15 +57,34 @@ class ExtensionTargetingScopeTest {
         idHex: String,
         subscriptionTier: SubscriptionTier,
         userRole: UserRole,
+        organizationId: String = "org-123",
     ): EnterpriseContext = EnterpriseContext(
         locale = AppLocale.UNITED_STATES,
         platform = Platform.IOS,
         appVersion = Version.of(1, 0, 0),
         stableId = StableId.of(idHex),
-        organizationId = "org-123",
+        organizationId = organizationId,
         subscriptionTier = subscriptionTier,
         userRole = userRole,
     )
+
+    private fun assertFeatureValue(
+        feature: BooleanFeature<EnterpriseContext, *>,
+        expected: Boolean,
+        evalCase: EvalCase,
+    ) {
+        assertEquals(
+            expected,
+            feature.evaluate(
+                enterpriseContext(
+                    idHex = evalCase.idHex,
+                    subscriptionTier = evalCase.subscriptionTier,
+                    userRole = evalCase.userRole,
+                    organizationId = evalCase.organizationId,
+                ),
+            ),
+        )
+    }
 
     @Test
     fun `multiple extension blocks compose with AND semantics`() {
@@ -193,5 +227,124 @@ class ExtensionTargetingScopeTest {
 
         assertEquals(false, Features.extensionComposition.evaluate(premiumAdmin))
         assertEquals(true, Features.extensionComposition.evaluate(premiumOwner))
+    }
+
+    @Test
+    @Suppress("LongMethod")
+    fun `predicate expressions support grouped conjunction disjunction and negation`() {
+        val namespace = object : Namespace("predicate-expression-${System.nanoTime()}") {
+            val isPremium by predicate<EnterpriseContext> {
+                subscriptionTier == SubscriptionTier.PREMIUM
+            }
+            val isOwner by predicate<EnterpriseContext> {
+                userRole == UserRole.OWNER
+            }
+
+            private val eligible =
+                isPremium and (isOwner or !where<EnterpriseContext> { organizationId == "blocked-org" })
+
+            val composed by boolean<EnterpriseContext>(default = false) {
+                rule(true) {
+                    require(eligible)
+                }
+            }
+        }
+
+        assertFeatureValue(
+            namespace.composed,
+            true,
+            EvalCase(
+                idHex = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                subscriptionTier = SubscriptionTier.PREMIUM,
+                userRole = UserRole.ADMIN,
+            ),
+        )
+        assertFeatureValue(
+            namespace.composed,
+            true,
+            EvalCase(
+                idHex = "cccccccccccccccccccccccccccccccc",
+                subscriptionTier = SubscriptionTier.PREMIUM,
+                userRole = UserRole.OWNER,
+                organizationId = "blocked-org",
+            ),
+        )
+        assertFeatureValue(
+            namespace.composed,
+            false,
+            EvalCase(
+                idHex = "dddddddddddddddddddddddddddddddd",
+                subscriptionTier = SubscriptionTier.PREMIUM,
+                userRole = UserRole.ADMIN,
+                organizationId = "blocked-org",
+            ),
+        )
+        assertFeatureValue(
+            namespace.composed,
+            false,
+            EvalCase(
+                idHex = "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+                subscriptionTier = SubscriptionTier.BASIC,
+                userRole = UserRole.OWNER,
+            ),
+        )
+    }
+
+    @Test
+    fun `predicate expressions normalize nested negation and explicit grouping`() {
+        val namespace = object : Namespace("predicate-negation-${System.nanoTime()}") {
+            val isPremium by predicate<EnterpriseContext> {
+                subscriptionTier == SubscriptionTier.PREMIUM
+            }
+            val isOwner by predicate<EnterpriseContext> {
+                userRole == UserRole.OWNER
+            }
+
+            private val allowed = allOf(
+                !(!isPremium),
+                !anyOf(
+                    predicateOf<EnterpriseContext> { organizationId == "blocked-org" },
+                    allOf(
+                        predicateOf<EnterpriseContext> { userRole == UserRole.ADMIN },
+                        !isOwner,
+                    ),
+                ),
+            )
+
+            val composed by boolean<EnterpriseContext>(default = false) {
+                rule(true) {
+                    require(allowed)
+                }
+            }
+        }
+
+        assertFeatureValue(
+            namespace.composed,
+            true,
+            EvalCase(
+                idHex = "ffffffffffffffffffffffffffffffff",
+                subscriptionTier = SubscriptionTier.PREMIUM,
+                userRole = UserRole.OWNER,
+            ),
+        )
+        assertFeatureValue(
+            namespace.composed,
+            false,
+            EvalCase(
+                idHex = "12121212121212121212121212121212",
+                subscriptionTier = SubscriptionTier.PREMIUM,
+                userRole = UserRole.OWNER,
+                organizationId = "blocked-org",
+            ),
+        )
+        assertFeatureValue(
+            namespace.composed,
+            false,
+            EvalCase(
+                idHex = "13131313131313131313131313131313",
+                subscriptionTier = SubscriptionTier.PREMIUM,
+                userRole = UserRole.ADMIN,
+            ),
+        )
     }
 }
