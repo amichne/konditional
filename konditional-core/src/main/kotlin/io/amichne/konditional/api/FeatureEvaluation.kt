@@ -192,7 +192,7 @@ private fun <T : Any, C : Context> ConditionalValue<T, C>.toRuleMatch(
     namespaceId: String,
     salt: String,
     ruleOrdinal: Int,
-): EvaluationDiagnostics.RuleMatch = bucket?.let { bucket ->
+): EvaluationDiagnostics.RuleMatch<EvaluationDiagnostics.RuleExplanation> = bucket?.let { bucket ->
     rule.toExplanation(ruleId = createRuleId(namespaceId, featureKey, ruleOrdinal)).let {
         EvaluationDiagnostics.RuleMatch(
             rule = it,

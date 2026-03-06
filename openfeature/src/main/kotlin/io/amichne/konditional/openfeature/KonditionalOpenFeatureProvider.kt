@@ -311,7 +311,7 @@ class KonditionalOpenFeatureProvider<C : Context>(
         when (decision) {
             is EvaluationDiagnostics.Decision.RegistryDisabled -> "registry-disabled"
             is EvaluationDiagnostics.Decision.Inactive -> "inactive"
-            is EvaluationDiagnostics.Decision.Rule -> decision.matched.rule.note ?: "rule"
+            is EvaluationDiagnostics.Decision.Rule -> decision.matched.note ?: "rule"
             is EvaluationDiagnostics.Decision.Default -> "default"
         }
 
@@ -329,8 +329,8 @@ class KonditionalOpenFeatureProvider<C : Context>(
     ): ImmutableMetadata.ImmutableMetadataBuilder =
         when (decision) {
             is EvaluationDiagnostics.Decision.Rule ->
-                addInteger("konditional.rule.specificity", decision.matched.rule.totalSpecificity)
-                    .addStringIfNotNull("konditional.rule.note", decision.matched.rule.note)
+                addInteger("konditional.rule.specificity", decision.matched.totalSpecificity)
+                    .addStringIfNotNull("konditional.rule.note", decision.matched.note)
                     .addInteger("konditional.bucket", decision.matched.bucket.bucket)
 
             is EvaluationDiagnostics.Decision.Default ->

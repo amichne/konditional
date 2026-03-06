@@ -57,4 +57,9 @@ private fun EvaluationDiagnostics.Decision.toMetricsBucket(): Int? =
     }
 
 private fun EvaluationDiagnostics.Decision.toMatchedRuleSpecificity(): Int? =
-    (this as? EvaluationDiagnostics.Decision.Rule)?.matched?.rule?.totalSpecificity
+    when (this) {
+        is EvaluationDiagnostics.Decision.Rule -> matched.totalSpecificity
+        is EvaluationDiagnostics.Decision.Default -> null
+        is EvaluationDiagnostics.Decision.RegistryDisabled -> null
+        is EvaluationDiagnostics.Decision.Inactive -> null
+    }

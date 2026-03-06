@@ -470,13 +470,12 @@ class ConsumerDslEndToEndTest {
                 }
             }
             @KonditionalExplicitId("kclass-namespace-checkout-rules")
-            private val kClassNamespaceRuleSet by
-                ruleSet<CheckoutVariant, CommerceContext, Namespace, Context>(Context::class) {
-                    rule(CheckoutVariant.PROD_NAMESPACE_KCLASS) {
-                        locales(AppLocale.CANADA)
-                        constrain(Environment.PROD)
-                    }
+            private val kClassNamespaceRuleSet by ruleSet<CheckoutVariant, Context, CommerceContext, Namespace> {
+                rule(CheckoutVariant.PROD_NAMESPACE_KCLASS) {
+                    locales(AppLocale.CANADA)
+                    constrain(Environment.PROD)
                 }
+            }
             @KonditionalExplicitId("reified-namespace-checkout-rules")
             private val reifiedNamespaceRuleSet by ruleSet<CheckoutVariant, Context, CommerceContext, Namespace> {
                     rule(CheckoutVariant.ENTERPRISE_NAMESPACE_REIFIED) {

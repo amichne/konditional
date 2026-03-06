@@ -132,15 +132,50 @@ class FeatureEvaluationBehaviorTest {
             )
 
         val decision = diagnostics.decision as EvaluationDiagnostics.Decision.Rule
-        val rule = decision.matched.rule
+        val matched = decision.matched
 
-        assertTrue(rule.ruleId.startsWith("rule::${namespace.id.value}::${namespace.feature.key}::"))
-        assertEquals(EvaluationDiagnostics.ExtensionType.LAMBDA, rule.extensionNode.type)
-        assertEquals(EvaluationDiagnostics.ConditionalContextType.NARROWING, rule.conditionalContextNode.type)
+        assertTrue(matched.ruleId.startsWith("rule::${namespace.id.value}::${namespace.feature.key}::"))
+        assertEquals(EvaluationDiagnostics.ExtensionType.LAMBDA, matched.extensionNode.type)
+        assertEquals(EvaluationDiagnostics.ConditionalContextType.NARROWING, matched.conditionalContextNode.type)
         assertNotEquals(
             EvaluationDiagnostics.ExtensionNode(EvaluationDiagnostics.ExtensionType.NONE),
-            rule.extensionNode,
+            matched.extensionNode,
         )
     }
 
+    @Test
+    fun `explain exposes generic rule match details without extra navigation`() {
+        val namespace =
+            object : Namespace.TestNamespaceFacade("eval-direct-rule-match") {
+                val feature by string<Context>(default = "default") {
+                    rule("ios") {
+                        platforms(Platform.IOS)
+                    }
+                }
+            }
+
+        val diagnostics = namespace.feature.explain(context)
+        val decision = diagnostics.decision as EvaluationDiagnostics.Decision.Rule
+        val summary = summarize(decision.matched)
+
+        assertEquals("ios", diagnostics.value)
+        assertEquals("rule::${namespace.id.value}::${namespace.feature.key}", summary.ruleIdPrefix)
+        assertEquals(1, summary.specificity)
+        assertEquals(null, summary.note)
+    }
+
+    private fun <D : EvaluationDiagnostics.RuleDetails> summarize(
+        match: EvaluationDiagnostics.RuleMatch<D>,
+    ): RuleMatchSummary =
+        RuleMatchSummary(
+            ruleIdPrefix = match.ruleId.substringBeforeLast("::"),
+            specificity = match.totalSpecificity,
+            note = match.note,
+        )
+
+    private data class RuleMatchSummary(
+        val ruleIdPrefix: String,
+        val specificity: Int,
+        val note: String?,
+    )
 }
