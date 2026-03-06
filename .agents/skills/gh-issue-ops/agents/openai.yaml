@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Issue Ops"
+  short_description: "Create, update, and manage GitHub issues"
+  default_prompt: "Use $gh-issue-ops to create, inspect, update, close, reopen, or associate GitHub issues in the current repository."
