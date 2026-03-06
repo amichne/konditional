@@ -144,13 +144,13 @@ class FlagEvaluationTracer(
     ) {
         val matched = decision.matched
 
-        matched.rule.note?.let {
+        matched.note?.let {
             span.setAttribute(KonditionalSemanticAttributes.EVALUATION_RULE_NOTE, it)
         }
 
         span.setAttribute(
             KonditionalSemanticAttributes.EVALUATION_RULE_SPECIFICITY,
-            matched.rule.totalSpecificity.toLong(),
+            matched.totalSpecificity.toLong(),
         )
 
         span.setAttribute(
@@ -160,7 +160,7 @@ class FlagEvaluationTracer(
 
         span.setAttribute(
             KonditionalSemanticAttributes.EVALUATION_RAMP_UP,
-            matched.rule.rollout.value,
+            matched.rollout.value,
         )
 
         decision.skippedByRollout?.let { addRuleSkippedEvent(span, it) }
@@ -168,19 +168,19 @@ class FlagEvaluationTracer(
 
     private fun addRuleSkippedEvent(
         span: Span,
-        skipped: EvaluationDiagnostics.RuleMatch,
+        skipped: EvaluationDiagnostics.RuleMatch<EvaluationDiagnostics.RuleExplanation>,
     ) {
         span.addEvent(
             KonditionalSemanticAttributes.EventName.RULE_SKIPPED,
             Attributes.of(
                 AttributeKey.stringKey("rule_note"),
-                skipped.rule.note ?: "unnamed",
+                skipped.note ?: "unnamed",
                 AttributeKey.stringKey("reason"),
                 "ramp_up_excluded",
                 AttributeKey.longKey("bucket"),
                 skipped.bucket.bucket.toLong(),
                 AttributeKey.doubleKey("ramp_up"),
-                skipped.rule.rollout.value,
+                skipped.rollout.value,
             ),
         )
     }
