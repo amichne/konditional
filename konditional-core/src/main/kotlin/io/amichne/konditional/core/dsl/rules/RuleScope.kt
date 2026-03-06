@@ -7,6 +7,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.dsl.KonditionalDsl
+import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.AnyOfScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.LocaleTargetingScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.PlatformTargetingScope
@@ -127,6 +128,15 @@ interface RuleScope<C : Context> : ContextRuleScope<C>,
                 Postfix
             }
 
+        /**
+         * Completes the rule declaration by yielding the value of another [Feature].
+         *
+         * The feature is evaluated lazily when the rule matches, with the same
+         * contextual/registry semantics as deferred [yields] resolvers.
+         */
+        infix fun <M2 : Namespace> yields(feature: Feature<T, C, M2>): Postfix =
+            yields { feature() }
+
         private fun commitDeferredRule(valueResolver: RuleValueResolver<C, T>) {
             val resolverHost = contextualHost
                 ?: error("Deferred yields are not supported by this FlagScope implementation.")
@@ -183,6 +193,15 @@ interface RuleScope<C : Context> : ContextRuleScope<C>,
                 commitDeferredRule(valueResolver)
                 Postfix
             }
+
+        /**
+         * Completes the scoped rule declaration by yielding the value of another [Feature].
+         *
+         * The feature is evaluated lazily when the rule matches, with the same
+         * contextual/registry semantics as deferred [yields] resolvers.
+         */
+        infix fun <M2 : Namespace> yields(feature: Feature<T, C, M2>): Postfix =
+            yields { feature() }
 
         private fun commitDeferredRule(valueResolver: RuleValueResolver<C, T>) {
             val resolverHost = contextualHost

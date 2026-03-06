@@ -127,4 +127,13 @@ interface Context {
     fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
         registry: NamespaceRegistry = namespace,
     ): T = evaluateInternal(this@Context as C, registry, mode = Metrics.Evaluation.EvaluationMode.NORMAL).value
+
+    /**
+     * Evaluates [Feature] using invoke-style syntax within a [Context] receiver.
+     *
+     * Equivalent to [evaluate], preserving explicit registry selection semantics.
+     */
+    operator fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.invoke(
+        registry: NamespaceRegistry = namespace,
+    ): T = evaluate(registry = registry)
 }
