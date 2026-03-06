@@ -16,6 +16,7 @@ import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.Rule
+import io.amichne.konditional.rules.predicate.PredicateExpression
 import io.amichne.konditional.rules.predicate.PredicateRef
 import io.amichne.konditional.rules.targeting.Targeting
 import io.amichne.konditional.values.NamespaceId
@@ -43,6 +44,11 @@ internal class RuleBuilder<C : Context>(
 ) : RuleScope<C>,
     NarrowingTargetingScope<C>,
     VariantDispatchHost by RuleVariantScope(leaves) {
+    private val predicateExpressionCompiler = PredicateExpressionCompiler(
+        namespaceId = namespaceId,
+        predicateRegistrar = predicateRegistrar,
+        inlinePredicateIdFactory = { nextInlinePredicateId() },
+    )
     private var note: String? = null
     private var rampUp: RampUp? = null
     private val allowlist = linkedSetOf<HexId>()
@@ -94,23 +100,10 @@ internal class RuleBuilder<C : Context>(
         predicateRefs += ref
     }
 
-    override fun require(block: C.() -> Boolean) {
-        val resolvedNamespaceId = namespaceId
-        val resolver = predicateResolver
-        val registrar = predicateRegistrar
-        if (resolvedNamespaceId == null || resolver == null || registrar == null) {
-            extension(block)
-            return
-        }
-
-        val ref = PredicateRef.Registered(
-            namespaceId = resolvedNamespaceId,
-            id = nextInlinePredicateId(),
-        )
-        val inlinePredicate = Targeting.Custom<C>(block = { context: C -> context.block() })
-        registrar(ref, inlinePredicate)
-        leaves += inlinePredicate
-        predicateRefs += ref
+    override fun require(predicateExpression: PredicateExpression<C>) {
+        val compiled = predicateExpressionCompiler.compile(predicateExpression)
+        leaves += compiled.targeting
+        predicateRefs += compiled.predicateRefs
     }
 
     override fun <R : Context> extensionNarrowed(

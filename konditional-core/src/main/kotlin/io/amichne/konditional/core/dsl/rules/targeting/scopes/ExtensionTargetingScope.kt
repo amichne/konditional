@@ -3,7 +3,10 @@ package io.amichne.konditional.core.dsl.rules.targeting.scopes
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.rules.predicate.NamespacePredicate
+import io.amichne.konditional.rules.predicate.PredicateExpression
 import io.amichne.konditional.rules.predicate.PredicateRef
+import io.amichne.konditional.rules.predicate.PredicateLike
+import io.amichne.konditional.rules.predicate.predicateOf
 
 /**
  * Targeting mix-in for custom predicates.
@@ -43,13 +46,29 @@ interface ExtensionTargetingScope<C : Context> {
     fun predicate(ref: PredicateRef)
 
     /**
+     * Requires a composed predicate expression.
+     *
+     * Use [io.amichne.konditional.rules.predicate.allOf] /
+     * [io.amichne.konditional.rules.predicate.anyOf] to express grouping explicitly,
+     * and unary `!` for negation.
+     */
+    fun require(predicateExpression: PredicateExpression<C>)
+
+    /**
      * Requires a namespace-declared predicate.
      *
      * This is consumer-facing DSL sugar for [predicate], intended for predicate handles
      * declared via `Namespace.predicate { ... }`.
      */
     fun require(namedPredicate: NamespacePredicate<C>) {
-        predicate(namedPredicate.ref)
+        require(namedPredicate.toPredicateExpression())
+    }
+
+    /**
+     * Requires any predicate-like value.
+     */
+    fun require(predicateLike: PredicateLike<C>) {
+        require(predicateLike.toPredicateExpression())
     }
 
     /**
@@ -59,7 +78,7 @@ interface ExtensionTargetingScope<C : Context> {
      * Multiple calls compose with AND semantics.
      */
     fun require(block: C.() -> Boolean) {
-        extension(block)
+        require(predicateOf(block))
     }
 
 }

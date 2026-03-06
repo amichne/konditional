@@ -11,10 +11,7 @@ import io.amichne.konditional.rules.versions.VersionRange
 /**
  * Internal diagnostics snapshot for a single evaluation.
  *
- * This is intentionally not part of the consumer-facing API. Sibling modules (runtime/openfeature/observability)
- * can opt into this contract for diagnostics and interoperability logic.
  */
-@KonditionalInternalApi
 data class EvaluationDiagnostics<T : Any>(
     val namespaceId: String,
     val featureKey: String,
@@ -61,6 +58,10 @@ data class EvaluationDiagnostics<T : Any>(
 
         data class AnyOf(
             val children: List<TargetingNode>,
+        ) : TargetingNode
+
+        data class Not(
+            val child: TargetingNode,
         ) : TargetingNode
 
         data class Locale(

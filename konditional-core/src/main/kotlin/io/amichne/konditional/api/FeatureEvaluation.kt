@@ -13,6 +13,8 @@ import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.targeting.Targeting
 import io.amichne.konditional.rules.targeting.axesOrEmpty
+import io.amichne.konditional.rules.targeting.containsCustomLeaf
+import io.amichne.konditional.rules.targeting.containsGuardedTargeting
 import io.amichne.konditional.rules.targeting.customLeafCount
 import io.amichne.konditional.rules.targeting.localesOrEmpty
 import io.amichne.konditional.rules.targeting.platformsOrEmpty
@@ -240,44 +242,47 @@ private fun createRuleId(namespaceId: String, featureKey: String, ruleOrdinal: I
 
 @OptIn(KonditionalInternalApi::class)
 private fun <C : Context> Targeting.All<C>.toExtensionNode(): EvaluationDiagnostics.ExtensionNode {
-    val hasExtension =
-        targets.any { it is Targeting.Custom<*> || (it is Targeting.Guarded<*, *> && it.inner is Targeting.Custom<*>) }
+    val hasExtension = targets.any { it.containsCustomLeaf() }
     return if (!hasExtension) {
         EvaluationDiagnostics.ExtensionNode(EvaluationDiagnostics.ExtensionType.NONE)
     } else {
         EvaluationDiagnostics.ExtensionNode(
             type = EvaluationDiagnostics.ExtensionType.LAMBDA,
-            content = toTargetingNode(),
+            content = toAllTargetingNode(),
         )
     }
 }
 
 @OptIn(KonditionalInternalApi::class)
 private fun <C : Context> Targeting.All<C>.toConditionalContextNode(): EvaluationDiagnostics.ConditionalContextNode {
-    val hasNarrowing = targets.any { it is Targeting.Guarded<*, *> }
+    val hasNarrowing = targets.any { it.containsGuardedTargeting() }
     return if (!hasNarrowing) {
         EvaluationDiagnostics.ConditionalContextNode(EvaluationDiagnostics.ConditionalContextType.NONE)
     } else {
         EvaluationDiagnostics.ConditionalContextNode(
             type = EvaluationDiagnostics.ConditionalContextType.NARROWING,
-            content = toTargetingNode(),
+            content = toAllTargetingNode(),
         )
     }
 }
 
 @OptIn(KonditionalInternalApi::class)
 @Suppress("UNCHECKED_CAST")
-private fun <C : Context> Targeting.All<C>.toTargetingNode(): EvaluationDiagnostics.TargetingNode =
+private fun <C : Context> Targeting.All<C>.toAllTargetingNode(): EvaluationDiagnostics.TargetingNode =
     EvaluationDiagnostics.TargetingNode.All(children = targets.map { (it as Targeting<Context>).toTargetingNode() })
 
 @Suppress("UNCHECKED_CAST")
 @OptIn(KonditionalInternalApi::class)
 private fun Targeting<Context>.toTargetingNode(): EvaluationDiagnostics.TargetingNode =
     when (this) {
-        is Targeting.All<*> -> (this as Targeting.All<Context>).toTargetingNode()
+        is Targeting.All<*> -> (this as Targeting.All<Context>).toAllTargetingNode()
         is Targeting.AnyOf<*> ->
             EvaluationDiagnostics.TargetingNode.AnyOf(
                 children = this.targets.map { (it as Targeting<Context>).toTargetingNode() },
+            )
+        is Targeting.Not<*> ->
+            EvaluationDiagnostics.TargetingNode.Not(
+                child = (target as Targeting<Context>).toTargetingNode(),
             )
         is Targeting.Locale -> EvaluationDiagnostics.TargetingNode.Locale(ids = ids)
         is Targeting.Platform -> EvaluationDiagnostics.TargetingNode.Platform(ids = ids)

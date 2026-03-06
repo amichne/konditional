@@ -132,6 +132,18 @@ sealed interface Targeting<in C : Context> {
     }
 
     /**
+     * Boolean negation of a [Targeting] constraint.
+     *
+     * The negated branch contributes the same structural specificity as its child.
+     */
+    data class Not<C : Context>(
+        val target: Targeting<C>,
+    ) : Targeting<C> {
+        override fun matches(context: C): Boolean = !target.matches(context)
+        override fun specificity(): Int = target.specificity()
+    }
+
+    /**
      * OR-disjunction of zero or more [Targeting] constraints.
      *
      * - Empty list never matches (annihilator element, dual of [All]'s identity).
@@ -171,6 +183,47 @@ sealed interface Targeting<in C : Context> {
     companion object {
         /** Returns an [All] that matches every context (identity element). */
         fun <C : Context> catchAll(): All<C> = All(emptyList())
+
+        @PublishedApi
+        internal fun <C : Context> allOf(targets: List<Targeting<C>>): Targeting<C> {
+            val normalized = buildList {
+                targets.forEach { target ->
+                    when (target) {
+                        is All<*> -> addAll((target as All<C>).targets)
+                        else -> add(target)
+                    }
+                }
+            }
+            return when (normalized.size) {
+                0 -> catchAll()
+                1 -> normalized.single()
+                else -> All(normalized)
+            }
+        }
+
+        @PublishedApi
+        internal fun <C : Context> anyOf(targets: List<Targeting<C>>): Targeting<C> {
+            val normalized = buildList {
+                targets.forEach { target ->
+                    when (target) {
+                        is AnyOf<*> -> addAll((target as AnyOf<C>).targets)
+                        else -> add(target)
+                    }
+                }
+            }
+            return when (normalized.size) {
+                0 -> AnyOf(emptyList())
+                1 -> normalized.single()
+                else -> AnyOf(normalized)
+            }
+        }
+
+        @PublishedApi
+        internal fun <C : Context> not(target: Targeting<C>): Targeting<C> =
+            when (target) {
+                is Not<*> -> target.target as Targeting<C>
+                else -> Not(target)
+            }
 
         /**
          * Lifts a locale leaf into `Targeting<C>` via a [Guarded] wrapper.

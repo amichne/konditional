@@ -60,6 +60,26 @@ internal fun <C : Context> Targeting.All<C>.axesOrEmpty(): Map<String, Set<Strin
  * Counts custom/extension leaves in the tree (both direct and guarded-wrapped).
  */
 internal fun <C : Context> Targeting.All<C>.customLeafCount(): Int =
-    targets.count {
-        it is Targeting.Custom<*> || (it is Targeting.Guarded<*, *> && it.inner is Targeting.Custom<*>)
+    targets.sumOf { it.customLeafCount() }
+
+internal fun Targeting<*>.customLeafCount(): Int =
+    when (this) {
+        is Targeting.All<*> -> targets.sumOf { it.customLeafCount() }
+        is Targeting.AnyOf<*> -> targets.sumOf { it.customLeafCount() }
+        is Targeting.Not<*> -> target.customLeafCount()
+        is Targeting.Custom<*> -> 1
+        is Targeting.Guarded<*, *> ->
+            if (inner is Targeting.Custom<*>) 1 else (inner as Targeting<*>).customLeafCount()
+        else -> 0
+    }
+
+internal fun Targeting<*>.containsCustomLeaf(): Boolean = customLeafCount() > 0
+
+internal fun Targeting<*>.containsGuardedTargeting(): Boolean =
+    when (this) {
+        is Targeting.All<*> -> targets.any { it.containsGuardedTargeting() }
+        is Targeting.AnyOf<*> -> targets.any { it.containsGuardedTargeting() }
+        is Targeting.Not<*> -> target.containsGuardedTargeting()
+        is Targeting.Guarded<*, *> -> true
+        else -> false
     }

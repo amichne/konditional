@@ -500,11 +500,12 @@ open class Namespace private constructor(
                 namespaceId = thisRef.id,
                 id = PredicateId(property.name),
             )
+            val targeting = Targeting.Custom<C>(block = { context -> context.block() })
             thisRef.predicates<C>().register(
                 ref = ref,
-                predicate = Targeting.Custom(block = { context -> context.block() }),
+                predicate = targeting,
             )
-            predicate = NamespacePredicate(ref)
+            predicate = NamespacePredicate(ref, targeting)
         }
 
         operator fun <M : Namespace> getValue(
