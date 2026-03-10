@@ -3,8 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation(kotlin("reflect"))
-
+    testImplementation(project(":konditional-json"))
     testImplementation(kotlin("test"))
     testImplementation(libs.junit.jupiter)
 }

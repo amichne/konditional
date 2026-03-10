@@ -1,7 +1,0 @@
-<?xml version="1.0" ?>
-<SmellBaseline>
-  <ManuallySuppressedIssues></ManuallySuppressedIssues>
-  <CurrentIssues>
-    <ID>UseCheckOrError:InMemoryNamespaceRegistry.kt$InMemoryNamespaceRegistry$throw IllegalStateException("Flag not found in configuration: ${key.key}")</ID>
-  </CurrentIssues>
-</SmellBaseline>
