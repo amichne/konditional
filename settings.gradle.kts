@@ -1,13 +1,7 @@
 pluginManagement {
-    includeBuild("build-logic")
-
     repositories {
         mavenCentral()
         gradlePluginPortal()
-    }
-
-    plugins {
-        id("com.vanniktech.maven.publish") version "0.35.0"
     }
 }
 
@@ -19,14 +13,10 @@ dependencyResolutionManagement {
 
 rootProject.name = "konditional"
 
-include("konditional")
-include("konditional-core")
-include("konditional-serialization")
-include("konditional-runtime")
-include("konditional-observability")
+include("konditional-types")
+include("konditional-engine")
+include("konditional-json")
 include("kontracts")
-include("openapi")
-include("konditional-otel")
-include("detekt-rules")
-include("openfeature")
-include("konditional-http-server")
+include("smoke-test")
+
+// Legacy source trees remain in-repo as a reference during extraction but are no longer included.

@@ -53,7 +53,7 @@ Default entry point for most applications. This facade depends on `konditional-r
 
 - Fastest path to typed evaluation + runtime updates + JSON snapshot ingestion
 - Prefer this unless you intentionally want a thinner dependency graph
-- [Quickstart: Install](/quickstart/install) · [Reference: Namespace Operations API](/reference/api/namespace-operations)
+- [Quickstart: Install](/quickstart/install) · [Quickstart: Load your first snapshot](/quickstart/load-first-snapshot-safely)
 
 ---
 

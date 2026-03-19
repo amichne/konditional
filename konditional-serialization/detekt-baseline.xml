@@ -1,8 +1,0 @@
-<?xml version="1.0" ?>
-<SmellBaseline>
-  <ManuallySuppressedIssues></ManuallySuppressedIssues>
-  <CurrentIssues>
-    <ID>MaxLineLength:FeatureRegistry.kt$FeatureRegistry$"Feature already registered for id='${feature.id}' (key='${feature.key}'): existing=$existing, attempted=$feature"</ID>
-    <ID>ReturnCount:SchemaValueCodec.kt$SchemaValueCodec$fun &lt;T : Any&gt; decode(kClass: KClass&lt;T&gt;, json: JsonObject, schema: ObjectSchema): ParseResult&lt;T&gt;</ID>
-  </CurrentIssues>
-</SmellBaseline>
