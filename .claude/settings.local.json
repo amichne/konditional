@@ -26,7 +26,8 @@
       "Bash(./gradlew :konditional-core:clean:*)",
       "Bash(./gradlew :konditional-serialization:test:*)",
       "Bash(python3 /Users/amichne/code/konditional/.agents/skills/kotlin-jvm-lsp-gradle-debug/scripts/parse-junit.py /Users/amichne/code/konditional)",
-      "Bash(echo \"exit=$?\")"
+      "Bash(echo \"exit=$?\")",
+      "Bash(md5 /Users/amichne/code/konditional/.agents/skills/arch-review/SKILL.md /Users/amichne/.claude/backup/skills/arch-review/SKILL.md /Users/amichne/.claude/skills/arch-review/SKILL.md)"
     ]
   },
   "hooks": {

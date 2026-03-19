@@ -1,7 +1,0 @@
-<?xml version="1.0" ?>
-<SmellBaseline>
-  <ManuallySuppressedIssues></ManuallySuppressedIssues>
-  <CurrentIssues>
-    <ID>MaxLineLength:ShadowEvaluation.kt$"konditional.shadowMismatch namespaceId=${baseline.namespaceId} key=$key kinds=$mismatchKinds baselineVersion=${baseline.configVersion} candidateVersion=${candidate.configVersion}"</ID>
-  </CurrentIssues>
-</SmellBaseline>
