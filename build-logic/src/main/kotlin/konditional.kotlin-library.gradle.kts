@@ -18,6 +18,7 @@ kotlin {
     jvmToolchain(21)
     compilerOptions {
         freeCompilerArgs.add("-Xcontext-parameters")
+        optIn.add("io.amichne.konditional.api.KonditionalInternalApi")
     }
 }
 

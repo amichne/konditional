@@ -4,105 +4,13 @@ on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch:
-    inputs:
-      release-type:
-        description: 'SemVer bump: patch, minor, or major'
-        required: true
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
 
 permissions:
   contents: write
   packages: write
 
 jobs:
-  publish-manual:
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.ref_name }}
-          ssh-key: ${{ secrets.RELEASE_DEPLOY_KEY }}
-          persist-credentials: true
-
-      - name: Force SSH origin for protected-branch push
-        run: git remote set-url origin "git@github.com:${{ github.repository }}.git"
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: 'gradle'
-
-      - name: Configure git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-      - name: Derive release version
-        id: version
-        run: |
-          CURRENT="$(grep -E '^version=' gradle.properties | head -n1 | cut -d'=' -f2)"
-          BASE="${CURRENT%-SNAPSHOT}"
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$BASE"
-
-          case "${{ github.event.inputs.release-type }}" in
-            major) VERSION="$((MAJOR + 1)).0.0" ;;
-            minor) VERSION="${MAJOR}.$((MINOR + 1)).0" ;;
-            patch) VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))" ;;
-          esac
-
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Publishing version: $VERSION"
-
-          sed -i "s/^version=.*/version=$VERSION/" gradle.properties
-
-      - name: Import GPG key
-        env:
-          SIGNING_GPG_PRIVATE_KEY: ${{ secrets.SIGNING_GPG_PRIVATE_KEY }}
-          SIGNING_GPG_KEY_NAME: ${{ secrets.SIGNING_GPG_KEY_NAME }}
-        run: |
-          if ! printf '%s' "$SIGNING_GPG_PRIVATE_KEY" | gpg --batch --import; then
-            if ! printf '%s' "$SIGNING_GPG_PRIVATE_KEY" | base64 --decode | gpg --batch --import; then
-              echo "Failed to import SIGNING_GPG_PRIVATE_KEY as armored or base64-encoded key material"
-              exit 1
-            fi
-          fi
-
-      - name: Publish to Maven Central
-        env:
-          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME }}
-          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD }}
-          SIGNING_GPG_KEY_NAME: ${{ secrets.SIGNING_GPG_KEY_NAME }}
-          SIGNING_GPG_PASSPHRASE: ${{ secrets.SIGNING_GPG_PASSPHRASE }}
-        run: |
-          SIGNING_ARGS=(-Psigning.gnupg.keyName="$SIGNING_GPG_KEY_NAME")
-          if [ -n "${SIGNING_GPG_PASSPHRASE:-}" ]; then
-            SIGNING_ARGS+=(-Psigning.gnupg.passphrase="$SIGNING_GPG_PASSPHRASE")
-          fi
-
-          ./gradlew publishAndReleaseToMavenCentral "${SIGNING_ARGS[@]}" \
-            -Pkonditional.publish.target=release \
-            --no-configuration-cache \
-            --no-daemon \
-            --stacktrace
-
-      - name: Commit and push version bump
-        run: |
-          git add gradle.properties
-          git commit -m "chore: release ${{ steps.version.outputs.version }}"
-          git push origin ${{ github.ref_name }}
-
   validate:
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -112,18 +20,11 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '21'
-          distribution: 'temurin'
-          cache: 'gradle'
+          distribution: temurin
+          cache: gradle
 
-      - name: Resolve release version from tag
-        id: release-version
-        run: |
-          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
-          echo "release=$TAG_VERSION" >> "$GITHUB_OUTPUT"
-          echo "Using release version from tag: $TAG_VERSION"
-
-      - name: Run tests
-        run: ./gradlew test -Pversion="${{ steps.release-version.outputs.release }}" --no-daemon
+      - name: Run tests against release version
+        run: ./gradlew test -Pversion="${GITHUB_REF#refs/tags/v}" --no-daemon --stacktrace
 
   publish-maven-central:
     if: github.event_name == 'push'
@@ -139,8 +40,8 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '21'
-          distribution: 'temurin'
-          cache: 'gradle'
+          distribution: temurin
+          cache: gradle
 
       - name: Check Maven Central + signing secrets
         id: gate
@@ -166,7 +67,6 @@ jobs:
 
           if [ "$missing" -eq 1 ]; then
             echo "publish=false" >> "$GITHUB_OUTPUT"
-            echo "Maven Central publish skipped due to missing secrets."
           else
             echo "publish=true" >> "$GITHUB_OUTPUT"
           fi
@@ -183,10 +83,7 @@ jobs:
               exit 1
             fi
           fi
-          if ! gpg --list-secret-keys --keyid-format=long "$SIGNING_GPG_KEY_NAME"; then
-            echo "Imported key material does not contain a secret key for SIGNING_GPG_KEY_NAME=$SIGNING_GPG_KEY_NAME"
-            exit 1
-          fi
+          gpg --list-secret-keys --keyid-format=long "$SIGNING_GPG_KEY_NAME"
 
       - name: Publish to Maven Central
         if: steps.gate.outputs.publish == 'true'
@@ -201,7 +98,8 @@ jobs:
             SIGNING_ARGS+=(-Psigning.gnupg.passphrase="$SIGNING_GPG_PASSPHRASE")
           fi
 
-          ./gradlew :konditional:publishAndReleaseToMavenCentral "${SIGNING_ARGS[@]}" \
+          ./gradlew publishAndReleaseToMavenCentral "${SIGNING_ARGS[@]}" \
+            -Pkonditional.publish.target=release \
             -Pversion="${GITHUB_REF#refs/tags/v}" \
             --no-configuration-cache \
             --no-daemon \
@@ -219,8 +117,8 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '21'
-          distribution: 'temurin'
-          cache: 'gradle'
+          distribution: temurin
+          cache: gradle
 
       - name: Require signing secrets
         run: |
@@ -244,10 +142,7 @@ jobs:
               exit 1
             fi
           fi
-          if ! gpg --list-secret-keys --keyid-format=long "$SIGNING_GPG_KEY_NAME"; then
-            echo "Imported key material does not contain a secret key for SIGNING_GPG_KEY_NAME=$SIGNING_GPG_KEY_NAME"
-            exit 1
-          fi
+          gpg --list-secret-keys --keyid-format=long "$SIGNING_GPG_KEY_NAME"
 
       - name: Publish to GitHub Packages
         env:
@@ -261,7 +156,8 @@ jobs:
             SIGNING_ARGS+=(-Psigning.gnupg.passphrase="$SIGNING_GPG_PASSPHRASE")
           fi
 
-          ./gradlew :konditional:publishMavenPublicationToGitHubPackagesRepository "${SIGNING_ARGS[@]}" \
+          ./gradlew publishAllPublicationsToGitHubPackagesRepository "${SIGNING_ARGS[@]}" \
+            -Pkonditional.publish.target=github \
             -Pversion="${GITHUB_REF#refs/tags/v}" \
             --no-configuration-cache \
             --no-daemon \
@@ -269,10 +165,9 @@ jobs:
 
   create-github-release:
     runs-on: ubuntu-latest
-    needs: [ validate, publish-maven-central, publish-github-packages ]
+    needs: [validate, publish-maven-central, publish-github-packages]
     if: >
       always() &&
-      github.event_name == 'push' &&
       needs.validate.result == 'success' &&
       needs.publish-github-packages.result == 'success' &&
       (needs.publish-maven-central.result == 'success' || needs.publish-maven-central.outputs.published == 'false')
@@ -286,15 +181,15 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '21'
-          distribution: 'temurin'
-          cache: 'gradle'
+          distribution: temurin
+          cache: gradle
 
       - name: Build release artifacts
         run: |
-          ./gradlew :konditional:assemble -Pversion="${GITHUB_REF#refs/tags/v}" --no-daemon
+          ./gradlew assemble -Pversion="${GITHUB_REF#refs/tags/v}" --no-daemon --stacktrace
           rm -rf release-artifacts
           mkdir -p release-artifacts
-          find konditional/build/libs -maxdepth 1 -type f -name '*.jar' -exec cp {} release-artifacts/ \;
+          find . -path '*/build/libs/*.jar' -type f -not -path './build-logic/*' -exec cp {} release-artifacts/ \;
           if [ -z "$(find release-artifacts -maxdepth 1 -name '*.jar' -print -quit)" ]; then
             echo "No release artifacts found in module build/libs directories"
             exit 1
@@ -308,25 +203,16 @@ jobs:
         id: version
         run: |
           VERSION="${GITHUB_REF#refs/tags/v}"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Version: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Generate changelog
-        id: changelog
         run: |
-          # Get the previous tag
           PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-
           if [ -z "$PREV_TAG" ]; then
-            echo "First release - including all commits"
-            CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges)
+            git log --pretty=format:'- %s (%h)' --no-merges > changelog.txt
           else
-            echo "Changes since $PREV_TAG"
-            CHANGELOG=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+            git log ${PREV_TAG}..HEAD --pretty=format:'- %s (%h)' --no-merges > changelog.txt
           fi
-
-          # Save to file for multiline output
-          echo "$CHANGELOG" > changelog.txt
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -341,48 +227,3 @@ jobs:
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create Maven Central announcement
-        if: needs.publish-maven-central.outputs.published == 'true'
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          cat << EOF > maven-central-notice.txt
-
-          🎉 Published to Maven Central!
-
-          Add to your project:
-
-          Gradle (Kotlin DSL):
-          \`\`\`kotlin
-          dependencies {
-              implementation("io.amichne:konditional:$VERSION")
-          }
-          \`\`\`
-
-          Gradle (Groovy DSL):
-          \`\`\`groovy
-          dependencies {
-              implementation 'io.amichne:konditional:$VERSION'
-          }
-          \`\`\`
-
-          Maven:
-          \`\`\`xml
-          <dependency>
-              <groupId>io.amichne</groupId>
-              <artifactId>konditional</artifactId>
-              <version>$VERSION</version>
-          </dependency>
-          \`\`\`
-
-          Note: It may take up to 2 hours for the release to appear in Maven Central.
-          EOF
-
-          cat maven-central-notice.txt
-
-      - name: Upload Maven Central notice
-        if: needs.publish-maven-central.outputs.published == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: maven-central-notice
-          path: maven-central-notice.txt

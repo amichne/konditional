@@ -89,10 +89,10 @@ check_publishable_modules() {
     else
       fail "publishable module directory missing: $module_dir"
     fi
-  done < <(rg -l 'id\("konditional\.publishing"\)' --glob '*/build.gradle.kts' | sort -u)
+  done < <(rg -l 'id\("konditional\.(publishing|published-library)"\)' --glob '*/build.gradle.kts' | sort -u)
 
   if [[ "$found_any" -eq 0 ]]; then
-    fail "no publishable modules found (expected at least one build.gradle.kts with konditional.publishing)"
+    fail "no publishable modules found (expected at least one build.gradle.kts with konditional.publishing or konditional.published-library)"
   fi
 }
 

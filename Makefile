@@ -6,9 +6,9 @@ VENV_DIR := docs/venv
 PYTHON := python3
 VENV_BIN := $(VENV_DIR)/bin
 PIP := $(VENV_BIN)/pip
-MKDOCS := $(VENV_BIN)/mkdocs
+ZENSICAL := $(VENV_BIN)/zensical
 GRADLEW := ./gradlew
-REQUIREMENTS := requirements.txt
+REQUIREMENTS := docs/requirements.txt
 GRADLE_FLAGS := --no-daemon --stacktrace
 
 BLUE := \033[0;34m
@@ -37,7 +37,7 @@ build: ## Build the project
 
 test: ## Run tests
 	@echo "$(BLUE)Running tests...$(NC)"
-	$(GRADLEW) test generateRecipesDocs
+	$(GRADLEW) test
 
 compile: ## Compile Kotlin code
 	@echo "$(BLUE)Compiling Kotlin code...$(NC)"
@@ -49,12 +49,20 @@ compile-test: ## Compile test code
 
 detekt: ## Run Detekt static analysis
 	@echo "$(BLUE)Running Detekt...$(NC)"
-	$(GRADLEW) detekt
+	@if $(GRADLEW) tasks --all --no-daemon | grep -qE '(^|[[:space:]])detekt([[:space:]]|$$)'; then \
+		$(GRADLEW) detekt; \
+	else \
+		echo "$(YELLOW)No Detekt tasks are currently configured in this extracted module set$(NC)"; \
+	fi
 
 detekt-baseline: ## Generate Detekt baseline (suppress existing issues)
 	@echo "$(BLUE)Generating Detekt baseline...$(NC)"
-	$(GRADLEW) detektBaseline
-	@echo "$(GREEN)Detekt baseline generated at detekt-baseline.xml$(NC)"
+	@if $(GRADLEW) tasks --all --no-daemon | grep -qE '(^|[[:space:]])detektBaseline([[:space:]]|$$)'; then \
+		$(GRADLEW) detektBaseline; \
+		echo "$(GREEN)Detekt baseline generated at detekt-baseline.xml$(NC)"; \
+	else \
+		echo "$(YELLOW)No Detekt baseline task is currently configured in this extracted module set$(NC)"; \
+	fi
 
 ##@ Publishing
 
@@ -141,23 +149,25 @@ publish-gradle-smoke: ## Internal: smoke-check publish graph without remote push
 
 ##@ Documentation
 
-docs-install: ## Install Docusaurus dependencies (in ./docusaurus)
-	@echo "$(BLUE)Installing Docusaurus dependencies...$(NC)"
-	@cd docusaurus && npm install
-	@echo "$(GREEN)Docusaurus dependencies installed$(NC)"
+docs-install: ## Install Zensical into docs/venv
+	@echo "$(BLUE)Installing Zensical docs toolchain...$(NC)"
+	@test -d "$(VENV_DIR)" || $(PYTHON) -m venv "$(VENV_DIR)"
+	@$(PIP) install --upgrade pip
+	@$(PIP) install -r "$(REQUIREMENTS)"
+	@echo "$(GREEN)Zensical docs toolchain installed$(NC)"
 
-docs-build: docs-install ## Build the Docusaurus site
-	@echo "$(BLUE)Building Docusaurus site...$(NC)"
-	@cd docusaurus && npm run build
-	@echo "$(GREEN)Docusaurus built successfully$(NC)"
+docs-build: docs-install ## Build the Zensical docs site
+	@echo "$(BLUE)Building Zensical site...$(NC)"
+	@$(ZENSICAL) build --clean
+	@echo "$(GREEN)Zensical site built successfully$(NC)"
 
-docs-serve: docs-build ## Serve Docusaurus locally (http://localhost:3000/konditional/)
-	@echo "$(BLUE)Starting Docusaurus server...$(NC)"
-	@cd docusaurus && npm run start
+docs-serve: docs-install ## Serve docs locally
+	@echo "$(BLUE)Starting Zensical docs server...$(NC)"
+	@$(ZENSICAL) serve
 
 docs-clean: ## Clean generated documentation
 	@echo "$(BLUE)Cleaning documentation...$(NC)"
-	@cd docusaurus && rm -rf site/
+	@rm -rf site/
 	@echo "$(GREEN)Documentation cleaned$(NC)"
 
 ##@ Combined Tasks

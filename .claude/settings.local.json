@@ -26,7 +26,15 @@
       "Bash(./gradlew :konditional-core:clean:*)",
       "Bash(./gradlew :konditional-serialization:test:*)",
       "Bash(python3 /Users/amichne/code/konditional/.agents/skills/kotlin-jvm-lsp-gradle-debug/scripts/parse-junit.py /Users/amichne/code/konditional)",
-      "Bash(echo \"exit=$?\")"
+      "Bash(echo \"exit=$?\")",
+      "Bash(md5 /Users/amichne/code/konditional/.agents/skills/arch-review/SKILL.md /Users/amichne/.claude/backup/skills/arch-review/SKILL.md /Users/amichne/.claude/skills/arch-review/SKILL.md)",
+      "Bash(cp -r /Users/amichne/code/konditional/kontracts/src/main/kotlin/io /Users/amichne/code/konditional/konditional-types/src/main/kotlin/)",
+      "Bash(cp -r /Users/amichne/code/konditional/kontracts/src/test/kotlin/io /Users/amichne/code/konditional/konditional-types/src/test/kotlin/)",
+      "Bash(./gradlew compileKotlin compileTestKotlin --no-daemon)",
+      "Bash(./gradlew test:*)",
+      "Bash(make docs-build:*)",
+      "Bash(python3 -c \"import zensical; print\\(zensical.__file__\\)\")",
+      "Bash(/Users/amichne/code/konditional/docs/venv/bin/python3 -c \"import zensical; print\\(zensical.__file__\\)\")"
     ]
   },
   "hooks": {

@@ -11,8 +11,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest ]
-        java: [ '21' ]
+        os: [ubuntu-latest, macos-latest]
+        java: ['21']
 
     steps:
       - name: Checkout code
@@ -22,14 +22,10 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: ${{ matrix.java }}
-          distribution: 'temurin'
-          cache: 'gradle'
+          distribution: temurin
+          cache: gradle
 
-      - name: Grant execute permission for gradlew
-        if: runner.os != 'Windows'
-        run: chmod +x gradlew
-
-      - name: Run tests
+      - name: Run test suite
         run: ./gradlew test --no-daemon --stacktrace
 
       - name: Upload test results
@@ -37,24 +33,21 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.os }}-java${{ matrix.java }}
-          path: build/reports/tests/
+          path: |
+            **/build/test-results/test/
+            **/build/reports/tests/test/
 
-  verify-recipes-docs:
+  docs:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: 'gradle'
+          python-version: '3.12'
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Verify recipes docs are up-to-date
-        run: ./gradlew :konditional-observability:verifyRecipesDocs --no-daemon --stacktrace
+      - name: Build docs with Zensical
+        run: make docs-build

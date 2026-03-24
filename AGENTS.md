@@ -21,18 +21,18 @@ If you only remember one rule: **do not trade away compile-time guarantees for c
 ## 1) What this repository contains
 
 Top-level areas and their purpose:
-- `konditional-core/` → pure domain model + evaluation semantics (no I/O)
-- `konditional-serialization/` → JSON boundary + Moshi adapters + parse results
-- `konditional-runtime/` → snapshot lifecycle + registry atomicity
-- `konditional-observability/` → explainability, tracing, shadow/mismatch reporting
-- `konditional-otel/` → OpenTelemetry integration
-- `konditional-http-server/` → Ktor control plane
-- `openfeature/` → OpenFeature provider surface
-- `kontracts/` + `openapi/` → contracts/spec generation and artifacts
-- `docusaurus/` → documentation site (theory + guides)
-- `.agents/` → reusable agent skills, scripts, and references distributed with the repo
+- `konditional-types/` → foundational shared types: contexts, identifiers, parse-result ADTs, `Konstrained` contracts (no I/O, no downstream deps)
+- `konditional-engine/` → typed namespace definition, deterministic evaluation, atomic registry state, explainability hooks
+- `konditional-json/` → JSON boundary: Moshi codecs and schema-aware parsing layered on engine types
+- `kontracts/` → contracts/spec artifacts
+- `smoke-test/` → integration smoke tests
+- `docs/` → documentation site (MkDocs/Zensical)
+- `skill/` → agent skill definition (`skill/SKILL.md`)
 
-Hard boundary: **`konditional-core` must never depend on runtime or serialization**.
+Hard boundaries:
+- **`konditional-types` is downstream of nothing** in the main stack — no deps on engine or JSON.
+- **`konditional-engine` depends only on `:konditional-types` and `:kontracts`** — no JSON-specific parsing concerns.
+- **`konditional-json` is the parse boundary** — failed decode must never mutate live namespace state.
 
 ---
 
@@ -43,15 +43,15 @@ Use this path before making non-trivial edits:
 1. **Anchor on intent**
    - Find the owning module from the map above.
 2. **Load invariants first**
-   - Read `docusaurus/docs/theory/*.md` relevant to your change.
+   - Read `docs/*.md` relevant to your change.
 3. **Find existing patterns**
    - Reuse local ADTs, loaders, adapters, registry patterns.
 4. **Implement smallest vertical slice**
-   - Types → semantics → runtime boundary → observability hooks.
+   - Types → semantics → engine boundary → JSON parsing.
 5. **Prove behavior**
    - Add tests for determinism, boundary errors, atomicity, and isolation where relevant.
 
-For agent-specific acceleration, inspect `.agents/skills/*/SKILL.md` and only load references/scripts needed for your task.
+For agent-specific acceleration, inspect `skill/SKILL.md`.
 
 ---
 
@@ -65,13 +65,13 @@ Use when change is localized and low-risk.
 
 ### Level B — Standard path (most tasks)
 Use for any behavioral or API touching change.
-- Read relevant theory docs under `docusaurus/docs/theory/`.
+- Read relevant docs under `docs/`.
 - Check dependency direction constraints.
 - Add/update tests proving invariants.
 
 ### Level C — Deep path (cross-module or boundary changes)
-Use when touching parsing, runtime snapshots, migration/shadowing, or contracts.
-- Validate impacts across core/serialization/runtime/observability.
+Use when touching parsing, engine evaluation, or contracts.
+- Validate impacts across `konditional-types` / `konditional-engine` / `konditional-json`.
 - Ensure no behavior drift in baseline evaluation.
 - Add fixtures or contract artifacts when JSON/OpenAPI shapes change.
 
@@ -97,8 +97,13 @@ Use when touching parsing, runtime snapshots, migration/shadowing, or contracts.
 ## 5) Commands you should prefer
 
 - Build/test/check: `make build`, `make test`, `make detekt`, `make check`
-- Docs site: `make docs-build`, `make docs-serve`, `make docs-clean`
-- Publish helpers: `make publish-plan`, `./scripts/publish.sh ...`
+- Compile-only loops: `make compile`, `make compile-test`
+- Clean/rebuild loops: `make clean`, `make rebuild`, `make full-clean`
+- Docs site: `make docs-install`, `make docs-build`, `make docs-serve`, `make docs-clean`
+- Publish planning + validation: `make publish-plan`, `make validate-publish`
+- Publish execution: `make publish-local`, `make publish-snapshot`, `make publish-release`, `make publish-github`
+- Version helpers: `make publish-version-{none|snapshot|patch|minor|major}`
+- Legacy publish entrypoint (still available): `./scripts/publish.sh ...`
 
 Choose the **narrowest command** that validates your change.
 
@@ -118,10 +123,9 @@ Use test fixtures (`java-test-fixtures`) for shared helpers where appropriate.
 
 ## 7) Where to look when stuck
 
-1. `docusaurus/docs/theory/` for invariants and proofs.
-2. `docusaurus/docs/reference/` for canonical API/snapshot notes.
-3. Module tests in the owning package for executable examples.
-4. `.agents/skills/` for task-specific scripts and reference playbooks.
+1. `docs/` for invariants, quickstart, and reference notes.
+2. Module tests in the owning package for executable examples.
+3. `skill/SKILL.md` for task-specific integration playbook.
 
 If a referenced file is missing, search for closest equivalent before introducing a new pattern.
 

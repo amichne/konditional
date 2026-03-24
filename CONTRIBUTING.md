@@ -24,7 +24,7 @@ Before writing code, keep these invariants in mind:
 - Core evaluation behavior must remain deterministic.
 - Runtime state updates must preserve atomic snapshot semantics.
 
-For deeper context, read `AGENTS.md` and `docusaurus/docs/theory/`.
+For deeper context, read `AGENTS.md` and the guides under `docs/`.
 
 ## Development workflow
 
@@ -35,7 +35,7 @@ Use the narrowest command that validates your change:
 - `make detekt` for static analysis
 - `make check` for standard CI-equivalent verification
 
-If you change documentation under `docusaurus/`, also run:
+If you change documentation under `docs/` or `zensical.toml`, also run:
 
 - `make docs-build`
 
