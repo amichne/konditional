@@ -6,7 +6,7 @@ import io.amichne.konditional.context.Context.StableIdContext
 import io.amichne.konditional.core.evaluation.Bucketing
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
-import io.amichne.konditional.core.registry.NamespaceRegistry
+import io.amichne.konditional.core.registry.EvaluationSnapshot
 import io.amichne.konditional.rules.ConditionalValue
 
 /**
@@ -73,7 +73,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
      */
     internal fun evaluate(context: C): T {
         return if (isActive) {
-            evaluateTrace(context, feature.namespace).value
+            evaluateTrace(context, EvaluationSnapshot(feature.namespace)).value
         } else {
             defaultValue
         }
@@ -101,7 +101,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
 
     internal fun evaluateTrace(
         context: C,
-        registry: NamespaceRegistry,
+        registry: EvaluationSnapshot,
     ): Trace<T, C> =
         if (!isActive) {
             Trace(
@@ -144,7 +144,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
     private fun evaluateCandidate(
         candidate: ConditionalValue<T, C>,
         inputs: EvaluationInputs<C>,
-        registry: NamespaceRegistry,
+        registry: EvaluationSnapshot,
         state: EvaluationState<T, C>,
     ): Trace<T, C>? =
         if (candidate.rule.matches(inputs.context)) {

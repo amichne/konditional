@@ -13,6 +13,7 @@ import io.amichne.konditional.core.features.IntFeature
 import io.amichne.konditional.core.features.KotlinClassFeature
 import io.amichne.konditional.core.features.StringFeature
 import io.amichne.konditional.core.instance.Configuration
+import io.amichne.konditional.core.instance.definitionFor
 import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
 import io.amichne.konditional.core.registry.NamespaceRegistry
 import io.amichne.konditional.core.spi.FeatureRegistrationHooks
@@ -45,27 +46,26 @@ open class Namespace private constructor(
     fun declaredDefault(feature: Feature<*, *, *>): Any? = declaredDefaults[feature]
 
     @KonditionalInternalApi
-    fun declaredDefinition(feature: Feature<*, *, *>): FlagDefinition<*, *, *>? = declaredDefinitions[feature]
+    fun <T : Any, C : Context, M : Namespace> declaredDefinition(feature: Feature<T, C, M>): FlagDefinition<T, C, M>? =
+        declaredDefinitions.definitionFor(feature)
 
     override val configuration: Configuration
-        get() = Configuration(
-            flags = declaredDefinitions + registry.configuration.flags,
-            metadata = registry.configuration.metadata,
-        )
+        get() {
+            val installed = currentSnapshot.configuration
+            return installed.copy(flags = declaredDefinitions + installed.flags)
+        }
 
-    @Suppress("UNCHECKED_CAST")
     override fun <T : Any, C : Context, M : Namespace> flag(
         key: Feature<T, C, M>,
     ): FlagDefinition<T, C, M> =
         findFlag(key)
             ?: error("Flag not found for feature '${key.key}' in namespace '$id'.")
 
-    @Suppress("UNCHECKED_CAST")
     override fun <T : Any, C : Context, M : Namespace> findFlag(
         key: Feature<T, C, M>,
     ): FlagDefinition<T, C, M>? =
         registry.findFlag(key)
-            ?: declaredDefinition(key) as? FlagDefinition<T, C, M>
+            ?: declaredDefinition(key)
 
     protected fun <C : Context> boolean(
         default: Boolean,

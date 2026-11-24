@@ -7,6 +7,7 @@ import io.amichne.konditional.core.evaluation.Bucketing.isInRampUp
 import io.amichne.konditional.core.evaluation.Bucketing.rampUpThresholdBasisPoints
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.ops.Metrics
+import io.amichne.konditional.core.registry.EvaluationSnapshot
 import io.amichne.konditional.core.registry.NamespaceRegistry
 import io.amichne.konditional.internal.evaluation.EvaluationDiagnostics
 import io.amichne.konditional.rules.ConditionalValue
@@ -44,7 +45,7 @@ private const val RULE_ID_HASH_LENGTH = 8
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
     context: C,
     registry: NamespaceRegistry = namespace,
-): T = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.NORMAL).value
+): T = evaluateInternal(context, EvaluationSnapshot(registry), mode = Metrics.Evaluation.EvaluationMode.NORMAL).value
 
 /**
  * Explains how this feature was evaluated for the given context.
@@ -61,44 +62,32 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
 fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.explain(
     context: C,
     registry: NamespaceRegistry = namespace,
-): EvaluationDiagnostics<T> = evaluateInternal(context, registry, mode = Metrics.Evaluation.EvaluationMode.EXPLAIN)
+): EvaluationDiagnostics<T> = evaluateInternal(context, EvaluationSnapshot(registry), mode = Metrics.Evaluation.EvaluationMode.EXPLAIN)
 
-@PublishedApi
 internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInternal(
     context: C,
-    registry: NamespaceRegistry,
+    snapshot: EvaluationSnapshot,
     mode: Metrics.Evaluation.EvaluationMode,
-): EvaluationDiagnostics<T> = evaluateInternal(
-    context = context,
-    registry = registry,
-    mode = mode,
-    definition = registry.flag(this),
-)
-
-@PublishedApi
-internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInternal(
-    context: C,
-    registry: NamespaceRegistry,
-    mode: Metrics.Evaluation.EvaluationMode,
-    definition: FlagDefinition<T, C, M>,
-): EvaluationDiagnostics<T> =
-    measureTimedValue { createBaseDiagnostics(context, registry, mode, definition) }.also {
-        logExplainIfNeeded(it.value, registry, mode)
-        recordEvaluationMetrics(it.value, registry, mode, it.duration)
+): EvaluationDiagnostics<T> {
+    val definition = snapshot.flag(this)
+    return measureTimedValue { createBaseDiagnostics(context, snapshot, mode, definition) }.also {
+        logExplainIfNeeded(it.value, snapshot.registry, mode)
+        recordEvaluationMetrics(it.value, snapshot.registry, mode, it.duration)
     }.value
+}
 
 private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.createBaseDiagnostics(
     context: C,
-    registry: NamespaceRegistry,
+    snapshot: EvaluationSnapshot,
     mode: Metrics.Evaluation.EvaluationMode,
     definition: FlagDefinition<T, C, M>,
 ): EvaluationDiagnostics<T> =
     when {
-        registry.isAllDisabled ->
+        snapshot.allDisabled ->
             EvaluationDiagnostics(
-                namespaceId = registry.namespaceId,
+                namespaceId = snapshot.namespaceId,
                 featureKey = key,
-                configVersion = registry.configuration.metadata.version,
+                configVersion = snapshot.version,
                 mode = mode,
                 durationNanos = 0L,
                 value = declaredDefaultValueOr(definition.defaultValue),
@@ -107,16 +96,16 @@ private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.createBaseDia
 
         !definition.isActive ->
             EvaluationDiagnostics(
-                namespaceId = registry.namespaceId,
+                namespaceId = snapshot.namespaceId,
                 featureKey = key,
-                configVersion = registry.configuration.metadata.version,
+                configVersion = snapshot.version,
                 mode = mode,
                 durationNanos = 0L,
                 value = definition.defaultValue,
                 decision = EvaluationDiagnostics.Decision.Inactive,
             )
 
-        else -> createRuleDiagnostics(context, registry, mode, definition)
+        else -> createRuleDiagnostics(context, snapshot, mode, definition)
     }
 
 @Suppress("UNCHECKED_CAST")
@@ -127,19 +116,19 @@ private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.declaredDefau
 
 private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.createRuleDiagnostics(
     context: C,
-    registry: NamespaceRegistry,
+    snapshot: EvaluationSnapshot,
     mode: Metrics.Evaluation.EvaluationMode,
     definition: FlagDefinition<T, C, M>,
 ): EvaluationDiagnostics<T> {
     val trace = definition.evaluateTrace(
         context = context,
-        registry = registry,
+        registry = snapshot,
     )
     val skippedByRollout =
         trace.skippedByRampUp?.toRuleMatch(
             bucket = trace.bucket,
             featureKey = key,
-            namespaceId = registry.namespaceId,
+            namespaceId = snapshot.namespaceId,
             salt = definition.salt,
             ruleOrdinal = definition.valuesByPrecedence.indexOfFirst { it === trace.skippedByRampUp },
         )
@@ -148,7 +137,7 @@ private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.createRuleDia
             ?.toRuleMatch(
                 bucket = trace.bucket,
                 featureKey = key,
-                namespaceId = registry.namespaceId,
+                namespaceId = snapshot.namespaceId,
                 salt = definition.salt,
                 ruleOrdinal = definition.valuesByPrecedence.indexOfFirst { it === trace.matched },
             )?.let { matched ->
@@ -160,9 +149,9 @@ private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.createRuleDia
             ?: EvaluationDiagnostics.Decision.Default(skippedByRollout = skippedByRollout)
 
     return EvaluationDiagnostics(
-        namespaceId = registry.namespaceId,
+        namespaceId = snapshot.namespaceId,
         featureKey = key,
-        configVersion = registry.configuration.metadata.version,
+        configVersion = snapshot.version,
         mode = mode,
         durationNanos = 0L,
         value = trace.value,
