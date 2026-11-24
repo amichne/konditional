@@ -23,14 +23,10 @@ Docs live under `docs/` and are built with Zensical using `zensical.toml`.
 
 ## Publishing workflow
 
-Publishing is routed through the Makefile and repository scripts.
-
-- `make validate-publish`
-- `make publish-plan PUBLISH_TARGET=<local|snapshot|release|github>`
-- `make publish-local`
-- `make publish-snapshot`
-- `make publish-release`
-- `make publish-github`
+- `make publish-plan PUBLISH_TARGET=release VERSION_CHOICE=patch` previews the proposed version and destination. Targets are `local`, `snapshot`, `release`, and `github`.
+- `make validate-publish` checks release prerequisites.
+- `make publish PUBLISH_TARGET=release VERSION_CHOICE=patch` applies the version action and publishes. It asks for confirmation in a terminal and runs unattended with closed stdin.
+- `make publish-local`, `make publish-snapshot`, `make publish-release`, and `make publish-github` publish the current version to the selected destination.
 
 ## GitHub Actions
 

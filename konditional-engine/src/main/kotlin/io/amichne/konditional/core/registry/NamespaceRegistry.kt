@@ -8,6 +8,7 @@ import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.instance.Configuration
+import io.amichne.konditional.core.instance.definitionFor
 import io.amichne.konditional.core.ops.RegistryHooks
 
 /**
@@ -15,6 +16,14 @@ import io.amichne.konditional.core.ops.RegistryHooks
  */
 interface NamespaceRegistry {
     val namespaceId: String
+
+    /**
+     * The installed configuration and kill-switch state observed in one read.
+     * Namespace evaluation falls back to declared definitions for missing entries.
+     * Custom registries must implement this getter by capturing both fields under the
+     * same lock or by reading one immutable snapshot from atomic storage.
+     */
+    val currentSnapshot: NamespaceSnapshot
 
     val configuration: Configuration
 
@@ -43,11 +52,10 @@ interface NamespaceRegistry {
     /**
      * Safe lookup variant for callers that prefer typed absence handling over exceptions.
      */
-    @Suppress("UNCHECKED_CAST")
     fun <T : Any, C : Context, M : Namespace> findFlag(
         key: Feature<T, C, M>,
     ): FlagDefinition<T, C, M>? =
-        configuration.flags[key] as? FlagDefinition<T, C, M>
+        configuration.flags.definitionFor(key)
 
     fun allFlags(): Map<Feature<*, *, *>, FlagDefinition<*, *, *>> =
         configuration.flags

@@ -2,6 +2,7 @@ package io.amichne.konditional.context
 
 import io.amichne.konditional.context.axis.Axis
 import io.amichne.konditional.context.axis.AxisValue
+import io.amichne.konditional.context.axis.KonditionalExplicitId
 import io.amichne.konditional.context.axis.axes
 import io.amichne.konditional.core.id.StableId
 import kotlin.test.Test
@@ -30,13 +31,17 @@ class LeafTypesTest {
         val envAxis = Axis.of<TestEnvironment>()
         val values = axes(TestEnvironment.PROD, TestEnvironment.STAGE)
 
+        assertEquals("env", envAxis.id)
+        assertEquals(envAxis, TestEnvironment.PROD.axis)
+        assertEquals(envAxis, TestEnvironment.STAGE.axis)
         assertEquals(setOf(TestEnvironment.PROD, TestEnvironment.STAGE), values[envAxis])
     }
 }
 
-private enum class TestEnvironment(
-    override val id: String,
-) : AxisValue<TestEnvironment> {
-    STAGE("stage"),
-    PROD("prod"),
+@KonditionalExplicitId("env")
+private enum class TestEnvironment : AxisValue<TestEnvironment> {
+    STAGE,
+    PROD {
+        override val id = "prod"
+    },
 }

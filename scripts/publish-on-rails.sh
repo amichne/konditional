@@ -8,9 +8,14 @@ cd "$PROJECT_DIR"
 
 TARGET="${PUBLISH_TARGET:-}"
 VERSION_CHOICE="${VERSION_CHOICE:-}"
+PREVIEW=0
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --preview)
+            PREVIEW=1
+            shift
+            ;;
         --target)
             TARGET="${2:-}"
             shift 2
@@ -21,7 +26,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         --help|-h)
             cat <<USAGE
-Usage: ./scripts/publish-on-rails.sh [--target local|snapshot|release|github] [--version-choice choice]
+Usage: ./scripts/publish-on-rails.sh [--preview] [--target local|snapshot|release|github] [--version-choice choice]
 
 Version choices:
   none
@@ -67,16 +72,16 @@ choose_with_select() {
     shift
     local options=("$@")
 
-    echo "$prompt"
+    echo "$prompt" >&2
     local idx=1
     for option in "${options[@]}"; do
-        echo "  [$idx] $option"
+        echo "  [$idx] $option" >&2
         idx=$((idx + 1))
     done
 
     local selected
     while true; do
-        read -r -p "Select [1-${#options[@]}]: " selected
+        read -r -p "Select [1-${#options[@]}]: " selected || return 1
         if [[ "$selected" =~ ^[0-9]+$ ]] && ((selected >= 1 && selected <= ${#options[@]})); then
             echo "${options[$((selected - 1))]}"
             return 0
@@ -134,15 +139,32 @@ ensure_version_choice() {
     fi
 }
 
+print_plan() {
+    local destination version
+    case "$TARGET" in
+        local) destination="Local Maven repository" ;;
+        snapshot) destination="Maven Central snapshots" ;;
+        release) destination="Maven Central releases" ;;
+        github) destination="GitHub Packages" ;;
+    esac
+    case "$VERSION_CHOICE" in
+        snapshot) version="$(./scripts/bump-version.sh none --snapshot --preview)" ;;
+        *-snapshot) version="$(./scripts/bump-version.sh "${VERSION_CHOICE%-snapshot}" --snapshot --preview)" ;;
+        *) version="$(./scripts/bump-version.sh "$VERSION_CHOICE" --preview)" ;;
+    esac
+    echo "Publication plan"
+    echo "  target: $TARGET"
+    echo "  destination: $destination"
+    echo "  version-action: $VERSION_CHOICE"
+    echo "  version: $version"
+}
+
 confirm_plan() {
     if [[ ! -t 0 ]]; then
         return 0
     fi
 
-    echo
-    echo "Publication plan"
-    echo "  target: $TARGET"
-    echo "  version-action: $VERSION_CHOICE"
+    print_plan
     echo
 
     read -r -p "Continue? [y/N] " reply
@@ -159,6 +181,10 @@ run_node() {
 
 ensure_target
 ensure_version_choice
+if [[ "$PREVIEW" -eq 1 ]]; then
+    print_plan
+    exit 0
+fi
 confirm_plan
 
 run_node "publish-version-$VERSION_CHOICE"

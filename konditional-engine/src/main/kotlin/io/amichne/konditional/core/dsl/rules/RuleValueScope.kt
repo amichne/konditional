@@ -4,11 +4,13 @@ package io.amichne.konditional.core.dsl.rules
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.api.evaluate
+import io.amichne.konditional.api.evaluateInternal
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.features.Feature
-import io.amichne.konditional.core.registry.NamespaceRegistry
+import io.amichne.konditional.core.ops.Metrics
+import io.amichne.konditional.core.registry.EvaluationSnapshot
 
 /**
  * Typed receiver used by deferred `yields { ... }` rule values.
@@ -21,7 +23,7 @@ import io.amichne.konditional.core.registry.NamespaceRegistry
  */
 class RuleValueScope<C : Context> @PublishedApi internal constructor(
     val context: C,
-    private val evaluationRegistry: NamespaceRegistry,
+    private val evaluationRegistry: EvaluationSnapshot,
     private val ownerNamespace: Namespace,
 ) {
     /**
@@ -33,7 +35,7 @@ class RuleValueScope<C : Context> @PublishedApi internal constructor(
      */
     fun <T : Any, M : Namespace> Feature<T, C, M>.evaluate(): T =
         if (namespace === ownerNamespace) {
-            evaluate(context = context, registry = evaluationRegistry)
+            evaluateInternal(context, evaluationRegistry, Metrics.Evaluation.EvaluationMode.NORMAL).value
         } else {
             evaluate(context = context)
         }

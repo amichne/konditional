@@ -28,12 +28,14 @@ data class JsonString internal constructor(val value: String) : JsonValue {
                         "String '$value' does not match pattern ${schema.pattern}"
                     )
                 }
-                ValidationResult.Valid
+                if (schema.enum != null && value !in schema.enum) {
+                    ValidationResult.Invalid("String '$value' is not an allowed value")
+                } else {
+                    ValidationResult.Valid
+                }
             }
             is EnumSchema<*> -> {
-                // Validate that the string corresponds to a valid enum value
-                val enumConstants = schema.enumClass.java.enumConstants
-                if (enumConstants.any { it.name == value }) {
+                if (schema.values.any { it.name == value }) {
                     ValidationResult.Valid
                 } else {
                     ValidationResult.Invalid(
