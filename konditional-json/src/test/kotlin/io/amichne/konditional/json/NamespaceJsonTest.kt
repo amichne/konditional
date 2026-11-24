@@ -16,6 +16,7 @@ import io.amichne.konditional.values.FeatureId
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class NamespaceJsonTest {
@@ -113,6 +114,27 @@ class NamespaceJsonTest {
             failure.error is ParseError.InvalidSnapshot || failure.error is ParseError.InvalidValue,
         )
         assertEquals(RetryPolicy(), namespace.retryPolicy.evaluate(TestContext()))
+    }
+
+    @Test
+    fun contextualReloadReportsFailureAndKeepsTheWholeSnapshot() {
+        val namespace = object : Namespace.TestNamespaceFacade("contextual-reload") {
+            val other by integer<Context>(default = 7)
+            val contextual by boolean<Context>(default = false) {
+                rule {} yields { true }
+            }
+        }
+        val context = TestContext()
+        val before = namespace.currentSnapshot
+        val exported = namespace.toJson()
+
+        assertTrue(namespace.contextual.evaluate(context))
+        val failure = assertIs<ParseResult.Failure>(namespace.fromJson(exported))
+        assertIs<ParseError.InvalidSnapshot>(failure.error)
+        assertTrue(failure.error.message.contains(namespace.contextual.id.toString()))
+        assertSame(before, namespace.currentSnapshot)
+        assertTrue(namespace.contextual.evaluate(context))
+        assertEquals(7, namespace.other.evaluate(context))
     }
 
     @Test

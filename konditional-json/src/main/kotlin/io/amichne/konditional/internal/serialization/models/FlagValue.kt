@@ -4,6 +4,8 @@ package io.amichne.konditional.internal.serialization.models
 
 import com.squareup.moshi.JsonClass
 import io.amichne.konditional.api.KonditionalInternalApi
+import io.amichne.konditional.core.result.ParseError
+import io.amichne.konditional.core.result.parseFailure
 import io.amichne.konditional.core.ValueType
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.konditional.serialization.extractSchema
@@ -18,7 +20,6 @@ import io.amichne.kontracts.value.JsonNumber
 import io.amichne.kontracts.value.JsonObject
 import io.amichne.kontracts.value.JsonString
 import io.amichne.kontracts.value.JsonValue
-import kotlin.reflect.KClass
 
 /**
  * Type-safe representation of flag values that replaces the type-erased SerializableValue.
@@ -110,7 +111,7 @@ internal sealed class FlagValue<out T : Any> {
      *
      * Stores the raw primitive or list value ([String], [Boolean], [Int], [Double], `List<*>`)
      * along with the fully qualified class name of the [Konstrained] implementation to enable
-     * reconstruction without an `expectedSample`.
+     * verification against the declared type.
      *
      * Wire format discriminator: `"KONSTRAINED_PRIMITIVE"`.
      */
@@ -122,46 +123,39 @@ internal sealed class FlagValue<out T : Any> {
         override fun toValueType() = ValueType.DATA_CLASS
     }
 
-    fun validate(schema: ObjectSchema) {
-        if (this is DataClassValue) {
-            validateDataClassFields(value, schema)
-        }
-    }
+    fun <V : Any> extractValue(expected: V): Result<V> {
+        fun mismatch(): Result<V> = parseFailure(
+            ParseError.invalidSnapshot("Expected ${expected.javaClass.name}, received ${this::class.simpleName}"),
+        )
 
-    @Suppress("UNCHECKED_CAST")
-    fun <V : Any> extractValue(
-        expectedSample: Any? = null,
-        schema: ObjectSchema? = null,
-    ): V =
-        when (this) {
-            is EnumValue -> decodeEnum(value, expectedSample) as V
-            is DataClassValue -> {
-                schema?.let { validateDataClassFields(value, it) }
-                decodeDataClass(
-                    fields = value,
-                    expectedSample = expectedSample,
-                    schema = schema,
-                ) as V
-            }
-            is KonstrainedPrimitive -> decodeKonstrainedPrimitive() as V
-            else -> value as V
-        }
-
-    @Suppress("UNCHECKED_CAST")
-    private fun KonstrainedPrimitive.decodeKonstrainedPrimitive(): Any {
-        val kClass =
-            runCatching { Class.forName(konstrainedClassName).kotlin as KClass<Any> }
-                .getOrElse {
-                    throw IllegalArgumentException(
-                        "Cannot load class '$konstrainedClassName' for KonstrainedPrimitive decoding: ${it.message}",
-                    )
+        val decoded: Result<Any> = when (this) {
+            is BooleanValue, is StringValue, is IntValue, is DoubleValue -> Result.success(value)
+            is EnumValue -> {
+                if (expected !is Enum<*>) return mismatch()
+                val enumClass = expected.declaringJavaClass
+                val entry = enumClass.enumConstants.firstOrNull { it.name == value }
+                if (entry == null || (enumClassName != enumClass.name && enumClassName != entry.javaClass.name)) {
+                    return parseFailure(ParseError.invalidSnapshot("Invalid enum '$enumClassName.$value' for ${enumClass.name}"))
                 }
-        return SchemaValueCodec.decodeKonstrainedPrimitive(kClass, value)
-            .getOrElse { error ->
-                throw IllegalArgumentException(
-                    "Failed to decode KonstrainedPrimitive '$konstrainedClassName': ${error.message}",
-                )
+                // An entry may have its own subclass. Its declaring enum witnesses the feature type.
+                @Suppress("UNCHECKED_CAST")
+                return Result.success(entry as V)
             }
+            is DataClassValue -> {
+                if (expected !is Konstrained.Object || expected.javaClass.name != dataClassName) return mismatch()
+                val schema = extractSchema(expected::class)
+                    ?: return parseFailure(ParseError.invalidSnapshot("Missing object schema for '$dataClassName'"))
+                SchemaValueCodec.decode(expected::class, toJsonObject(value, schema))
+            }
+            is KonstrainedPrimitive -> {
+                if (expected !is Konstrained || expected is Konstrained.Object ||
+                    expected.javaClass.name != konstrainedClassName) return mismatch()
+                SchemaValueCodec.decodeKonstrainedPrimitive(expected::class, value)
+            }
+        }
+        val result = decoded.getOrElse { return Result.failure(it) }
+        if (!expected.javaClass.isInstance(result)) return mismatch()
+        return Result.success(expected.javaClass.cast(result))
     }
 
     companion object {
@@ -181,7 +175,7 @@ internal sealed class FlagValue<out T : Any> {
                 is Enum<*> ->
                     EnumValue(
                         value = value.name,
-                        enumClassName = value.javaClass.name,
+                        enumClassName = value.declaringJavaClass.name,
                     )
                 is Konstrained -> fromKonstrained(value)
                 else -> throw IllegalArgumentException(
@@ -225,58 +219,6 @@ private fun JsonValue.toPrimitiveRaw(): Any =
                 "KonstrainedPrimitive does not support encoding to ${this::class.simpleName}. " +
                     "Supported output: Boolean, String, Int, Double, Array.",
             )
-    }
-
-private fun validateDataClassFields(
-    fields: Map<String, Any?>,
-    schema: ObjectSchema,
-) {
-    toJsonObject(fields, schema)
-}
-
-@Suppress("UseRequire")
-private fun decodeEnum(
-    enumConstantName: String,
-    expectedSample: Any?,
-): Enum<*> =
-    (expectedSample as? Enum<*>)?.let { enumSample ->
-        val enumClass = enumSample::class.java
-        runCatching { java.lang.Enum.valueOf(enumClass, enumConstantName) }
-            .getOrElse {
-                throw IllegalArgumentException(
-                    "Enum value '$enumConstantName' is invalid for ${enumClass.name}",
-                )
-            }
-    } ?: run {
-        throw IllegalArgumentException(
-            "Missing trusted enum metadata while decoding '$enumConstantName'",
-        )
-    }
-
-@Suppress("UseRequire")
-private fun decodeDataClass(
-    fields: Map<String, Any?>,
-    expectedSample: Any?,
-    schema: ObjectSchema?,
-): Any =
-    (expectedSample as? Konstrained.Object)?.let { expected ->
-        val expectedClass = expected::class
-        val expectedSchema =
-            schema ?: extractSchema(expected::class)
-                ?: error("Cannot extract ObjectSchema from ${expectedClass.qualifiedName}")
-        val jsonObject = toJsonObject(fields, expectedSchema)
-        val result = SchemaValueCodec.decode(expectedClass, jsonObject)
-        if (result.isSuccess) {
-            result.getOrThrow()
-        } else {
-            throw IllegalArgumentException(
-                "Failed to decode '${expectedClass.qualifiedName}': ${result.exceptionOrNull()?.message}",
-            )
-        }
-    } ?: run {
-        throw IllegalArgumentException(
-            "Missing trusted data-class metadata while decoding payload",
-        )
     }
 
 private fun toJsonObject(
