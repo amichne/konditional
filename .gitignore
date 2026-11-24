@@ -647,6 +647,7 @@ FodyWeavers.xsd
 
 ### Gradle template
 .gradle/
+.kotlin/
 .gradle-home/
 **/build/
 !src/**/build/

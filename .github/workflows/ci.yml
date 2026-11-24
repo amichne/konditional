@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        java: ['21']
+        java: ['27']
 
     steps:
       - name: Checkout code
@@ -26,7 +26,7 @@ jobs:
           cache: gradle
 
       - name: Run test suite
-        run: ./gradlew test --no-daemon --stacktrace
+        run: ./gradlew test :build-logic:test --no-daemon --stacktrace
 
       - name: Upload test results
         if: always()

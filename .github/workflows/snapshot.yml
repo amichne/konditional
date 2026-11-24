@@ -28,10 +28,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Set up JDK 27
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '27'
           distribution: temurin
           cache: gradle
 
@@ -83,10 +83,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Set up JDK 27
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '27'
           distribution: temurin
           cache: gradle
 
@@ -141,10 +141,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Set up JDK 27
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '27'
           distribution: temurin
           cache: gradle
 

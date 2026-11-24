@@ -48,7 +48,7 @@ body:
     attributes:
       label: Environment
       description: JDK, Kotlin, OS.
-      placeholder: JDK 21, Kotlin 2.x, macOS 15
+      placeholder: JDK 27, Kotlin 2.4.21, macOS 26
     validations:
       required: true
   - type: checkboxes
