@@ -12,10 +12,11 @@ fi
 
 BUMP_TYPE="none"
 ADD_SNAPSHOT=0
+PREVIEW=0
 
 usage() {
     cat <<USAGE
-Usage: ./scripts/bump-version.sh [none|major|minor|patch] [--snapshot]
+Usage: ./scripts/bump-version.sh [none|major|minor|patch] [--snapshot] [--preview]
 
 Examples:
   ./scripts/bump-version.sh none              # leave version unchanged
@@ -33,6 +34,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --snapshot)
             ADD_SNAPSHOT=1
+            shift
+            ;;
+        --preview)
+            PREVIEW=1
             shift
             ;;
         --help|-h)
@@ -81,6 +86,11 @@ esac
 NEW_VERSION="$MAJOR.$MINOR.$PATCH"
 if [[ "$ADD_SNAPSHOT" -eq 1 ]]; then
     NEW_VERSION="$NEW_VERSION-SNAPSHOT"
+fi
+
+if [[ "$PREVIEW" -eq 1 ]]; then
+    printf '%s\n' "$NEW_VERSION"
+    exit 0
 fi
 
 if [[ "$NEW_VERSION" == "$CURRENT_RAW_VERSION" ]]; then

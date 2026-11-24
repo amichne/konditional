@@ -58,7 +58,7 @@ class InMemoryNamespaceRegistry(
      * Callers observing this value are guaranteed to see either a complete previous snapshot
      * or a complete new snapshot — never partial state.
      */
-    val currentSnapshot: NamespaceSnapshot
+    override val currentSnapshot: NamespaceSnapshot
         get() = current.get()
 
     override val hooks: RegistryHooks

@@ -5,7 +5,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.rules.RuleValueResolver
 import io.amichne.konditional.core.dsl.rules.RuleValueScope
-import io.amichne.konditional.core.registry.NamespaceRegistry
+import io.amichne.konditional.core.registry.EvaluationSnapshot
 import io.amichne.konditional.internal.SerializedRuleValueType
 
 /**
@@ -34,7 +34,7 @@ data class ConditionalValue<T : Any, C : Context> private constructor(
 
     internal fun resolve(
         context: C,
-        registry: NamespaceRegistry,
+        registry: EvaluationSnapshot,
         ownerNamespace: Namespace,
     ): T = resolver.resolve(
         context = context,
@@ -47,7 +47,7 @@ data class ConditionalValue<T : Any, C : Context> private constructor(
     private sealed interface Resolver<T : Any, C : Context> {
         fun resolve(
             context: C,
-            registry: NamespaceRegistry,
+            registry: EvaluationSnapshot,
             ownerNamespace: Namespace,
         ): T
 
@@ -59,7 +59,7 @@ data class ConditionalValue<T : Any, C : Context> private constructor(
     ) : Resolver<T, C> {
         override fun resolve(
             context: C,
-            registry: NamespaceRegistry,
+            registry: EvaluationSnapshot,
             ownerNamespace: Namespace,
         ): T = value
 
@@ -71,7 +71,7 @@ data class ConditionalValue<T : Any, C : Context> private constructor(
     ) : Resolver<T, C> {
         override fun resolve(
             context: C,
-            registry: NamespaceRegistry,
+            registry: EvaluationSnapshot,
             ownerNamespace: Namespace,
         ): T = RuleValueScope(
             context = context,

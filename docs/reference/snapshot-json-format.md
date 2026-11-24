@@ -49,6 +49,7 @@ Each entry in `flags` represents one feature definition for the namespace.
 ## Value envelope shapes
 
 `defaultValue` and rule `value` fields use a typed envelope.
+For each default and static rule, the envelope must match the feature's declared value type.
 
 | `type` | Additional fields |
 | --- | --- |
@@ -76,6 +77,9 @@ Each rule entry can carry these fields.
 | `platforms` | Allowed platform identifiers |
 | `versionRange` | Serialized version-range object |
 | `axes` | Map of axis ID to allowed value IDs |
+
+A `CONTEXTUAL` value comes from a Kotlin resolver. The snapshot records the rule but cannot recreate its resolver.
+`fromJson()` returns `ParseError.InvalidSnapshot` for a snapshot containing such a rule. The namespace keeps its previous configuration.
 
 ## Next steps
 
