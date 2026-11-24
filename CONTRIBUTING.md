@@ -9,7 +9,7 @@ merge.
 
 To work on the project locally, use this baseline:
 
-1. Install JDK 21.
+1. Install JDK 27. The libraries target JVM 26, the highest bytecode version Kotlin 2.4.21 supports.
 2. Clone the repository.
 3. Run `./gradlew -v` to confirm your toolchain.
 4. Run `make build` once to validate local setup.

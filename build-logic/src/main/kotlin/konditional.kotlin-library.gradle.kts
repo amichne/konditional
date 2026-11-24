@@ -1,4 +1,4 @@
-import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("jvm")
@@ -15,16 +15,20 @@ repositories {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(27)
     compilerOptions {
-        freeCompilerArgs.add("-Xcontext-parameters")
+        // Kotlin 2.4.21 supports JVM bytecode through Java 26.
+        jvmTarget.set(JvmTarget.JVM_26)
+        freeCompilerArgs.add("-Xjdk-release=26")
         optIn.add("io.amichne.konditional.api.KonditionalInternalApi")
     }
 }
 
 java {
     withSourcesJar()
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-    }
+    targetCompatibility = JavaVersion.VERSION_26
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.release.set(26)
 }
