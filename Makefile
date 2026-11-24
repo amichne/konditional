@@ -69,11 +69,8 @@ detekt-baseline: ## Generate Detekt baseline (suppress existing issues)
 publish: ## Canonical on-rails publish entrypoint (interactive, uses fzf when available)
 	@./scripts/publish-on-rails.sh
 
-publish-plan: ## Non-interactive publish. Usage: make publish-plan PUBLISH_TARGET=release VERSION_CHOICE=patch
-	@args=""; \
-	if [ -n "$(PUBLISH_TARGET)" ]; then args="$$args --target $(PUBLISH_TARGET)"; fi; \
-	if [ -n "$(VERSION_CHOICE)" ]; then args="$$args --version-choice $(VERSION_CHOICE)"; fi; \
-	./scripts/publish-on-rails.sh $$args
+publish-plan: ## Preview publication. Usage: make publish-plan PUBLISH_TARGET=release VERSION_CHOICE=patch
+	@./scripts/publish-on-rails.sh --preview
 
 validate-publish: publish-validate-release ## Validate publish prerequisites for release target
 
