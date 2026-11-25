@@ -10,7 +10,7 @@ Create `src/main/kotlin/Main.kt`. The second namespace uses the same feature key
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.core.Namespace
 
-object ReviewFlags : Namespace("review") {
+object ReviewFlags : Namespace<CommerceFacts>("review", CommerceFacts) {
     val productEligibility by enum<ProductEligibility, CommerceContext>(
         default = ProductEligibility.MANUAL_REVIEW,
     )

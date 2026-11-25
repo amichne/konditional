@@ -1,8 +1,10 @@
 package io.amichne.konditional.rules.targeting
 
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.fact.Fact
 import io.amichne.konditional.context.fact.FactExpression
 import io.amichne.konditional.context.fact.FactSchema
+import io.amichne.konditional.context.fact.allOf
 
 /**
  * Algebraic description of conditions under which a rule fires.
@@ -109,7 +111,17 @@ sealed interface Targeting<in C : Context> {
         val targets: List<Targeting<C>>,
     ) : Targeting<C> {
         override fun matches(context: C): Boolean = targets.all { it.matches(context) }
-        override fun specificity(): Int = targets.sumOf { it.specificity() }
+
+        /**
+         * Fact leaves score as one conjunction, so a comparison repeated across leaves counts once.
+         * Other leaves add their own scores.
+         */
+        override fun specificity(): Int {
+            val expressions = targets.filterIsInstance<Facts>().map { it.expression }
+            val portable = if (expressions.isEmpty()) 0 else allOf(expressions).specificity()
+            return portable + targets.filterNot { it is Facts }.sumOf { it.specificity() }
+        }
+
         operator fun plus(other: All<C>): All<C> = All(targets + other.targets)
     }
 
@@ -136,11 +148,11 @@ sealed interface Targeting<in C : Context> {
     }
 }
 
-/** A rule can use only descriptors declared in its namespace. */
-internal fun Targeting<*>.usesDeclaredFacts(schema: FactSchema): Boolean = when (this) {
-    is Targeting.Facts -> expression in schema
-    is Targeting.All<*> -> targets.all { it.usesDeclaredFacts(schema) }
-    is Targeting.AnyOf<*> -> targets.all { it.usesDeclaredFacts(schema) }
-    is Targeting.Guarded<*, *> -> inner.usesDeclaredFacts(schema)
-    is Targeting.Custom<*> -> true
+/** The descriptors this targeting uses that [schema] did not declare. A rule can use none. */
+internal fun Targeting<*>.foreignFacts(schema: FactSchema): List<Fact<*>> = when (this) {
+    is Targeting.Facts -> schema.foreignFacts(expression)
+    is Targeting.All<*> -> targets.flatMap { it.foreignFacts(schema) }
+    is Targeting.AnyOf<*> -> targets.flatMap { it.foreignFacts(schema) }
+    is Targeting.Guarded<*, *> -> inner.foreignFacts(schema)
+    is Targeting.Custom<*> -> emptyList()
 }

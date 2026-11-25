@@ -44,7 +44,7 @@ interface NamespaceRegistry {
     fun enableAll()
 
     @Suppress("UNCHECKED_CAST")
-    fun <T : Any, C : Context, M : Namespace> flag(
+    fun <T : Any, C : Context, M : Namespace<*>> flag(
         key: Feature<T, C, M>,
     ): FlagDefinition<T, C, M> =
         configuration.flags[key] as FlagDefinition<T, C, M>
@@ -52,7 +52,7 @@ interface NamespaceRegistry {
     /**
      * Safe lookup variant for callers that prefer typed absence handling over exceptions.
      */
-    fun <T : Any, C : Context, M : Namespace> findFlag(
+    fun <T : Any, C : Context, M : Namespace<*>> findFlag(
         key: Feature<T, C, M>,
     ): FlagDefinition<T, C, M>? =
         configuration.flags.definitionFor(key)

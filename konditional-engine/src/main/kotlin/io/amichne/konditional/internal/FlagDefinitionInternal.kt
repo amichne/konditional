@@ -38,7 +38,7 @@ data class SerializedFlagRuleSpec<T : Any>(
 
 /** Resolve every expression against the destination namespace before returning a definition. */
 @KonditionalInternalApi
-fun <T : Any, C : Context, M : Namespace> flagDefinitionFromSerialized(
+fun <T : Any, C : Context, M : Namespace<*>> flagDefinitionFromSerialized(
     feature: Feature<T, C, M>,
     defaultValue: T,
     rules: List<SerializedFlagRuleSpec<T>>,
@@ -47,7 +47,7 @@ fun <T : Any, C : Context, M : Namespace> flagDefinitionFromSerialized(
     val bounds = rules.map { spec ->
         val targets = mutableListOf<Targeting<C>>()
         for (condition in spec.conditions) {
-            when (val parsed = feature.namespace.factSchema.resolve(condition)) {
+            when (val parsed = feature.namespace.facts.resolve(condition)) {
                 is ParseResult.Failure -> return parseFailure(parsed.error)
                 is ParseResult.Success -> targets.add(Targeting.Facts(parsed.value))
             }

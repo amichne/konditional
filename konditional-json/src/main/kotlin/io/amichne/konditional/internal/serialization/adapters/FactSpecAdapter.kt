@@ -14,6 +14,8 @@ internal object FactSpecAdapter : JsonAdapter<FactSpec>() {
         val expression = when (operator) {
             "all" -> FactSpec.All(readTerms(reader))
             "anyOf" -> FactSpec.AnyOf(readTerms(reader))
+            "not" -> FactSpec.Not(fromJson(reader))
+            "named" -> readNamed(reader)
             "oneOf" -> {
                 val fields = reader.readFields("fact", "operands")
                 val operands = fields["operands"] as? List<*> ?: invalid("Expected operand array", reader)
@@ -37,6 +39,24 @@ internal object FactSpecAdapter : JsonAdapter<FactSpec>() {
         reader.endArray()
     }
 
+    private fun readNamed(reader: JsonReader): FactSpec.Named {
+        var label: String? = null
+        var term: FactSpec? = null
+        reader.beginObject()
+        while (reader.hasNext()) {
+            when (val field = reader.nextName()) {
+                "label" -> label = reader.readJsonValue() as? String ?: invalid("Expected string 'label'", reader)
+                "term" -> term = fromJson(reader)
+                else -> invalid("Unknown field '$field'", reader)
+            }
+        }
+        reader.endObject()
+        return FactSpec.Named(
+            label ?: invalid("Expected fields label, term", reader),
+            term ?: invalid("Expected fields label, term", reader),
+        )
+    }
+
     private fun JsonReader.readFields(vararg names: String): Map<*, *> {
         val fields = readJsonValue() as? Map<*, *> ?: invalid("Expected fact predicate object", this)
         if (fields.keys != names.toSet()) invalid("Expected fields ${names.joinToString()}", this)
@@ -55,6 +75,13 @@ internal object FactSpecAdapter : JsonAdapter<FactSpec>() {
         when (value) {
             is FactSpec.All -> writeTerms(writer.name("all"), value.terms)
             is FactSpec.AnyOf -> writeTerms(writer.name("anyOf"), value.terms)
+            is FactSpec.Not -> toJson(writer.name("not"), value.term)
+            is FactSpec.Named -> {
+                writer.name("named").beginObject()
+                writer.name("label").value(value.label)
+                toJson(writer.name("term"), value.term)
+                writer.endObject()
+            }
             is FactSpec.OneOf -> {
                 writer.name("oneOf").beginObject()
                 writer.name("fact").value(value.fact)

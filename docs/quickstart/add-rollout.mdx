@@ -9,15 +9,17 @@ Create `src/main/kotlin/Rollout.kt`. Give each user a stable ID so that repeated
 ```kotlin
 import io.amichne.konditional.api.explain
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Rollout
+import io.amichne.konditional.context.fact.NoFacts
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
 import io.amichne.konditional.core.id.StableId
 
 data class RolloutContext(override val stableId: StableId) : Context.StableIdContext
 
-object RolloutFlags : Namespace("rollout") {
+object RolloutFlags : Namespace<NoFacts>("rollout", NoFacts) {
     val checkoutUpsell by boolean<RolloutContext>(default = false) {
-        enable { rollout { 25 } }
+        enable(rollout = Rollout.of(25))
     }
 }
 
@@ -29,6 +31,9 @@ fun checkRollout() {
     check(first.decision == second.decision)
 }
 ```
+
+This namespace reads no facts, so it uses `NoFacts`. `enable` takes no condition and applies to every context inside the rollout.
+To combine a condition with a rollout, pass both: `enableWhen(rollout = Rollout.of(25)) { channel.oneOf(Channel.PILOT) }`.
 
 The decision includes the bucket for a matched rule or a rule skipped by rollout.
 

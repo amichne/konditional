@@ -86,7 +86,7 @@ internal data class SerializableFlag(
         }
     }
 
-    private fun <T : Any, C : Context, M : Namespace> toFlagDefinition(
+    private fun <T : Any, C : Context, M : Namespace<*>> toFlagDefinition(
         declaration: FlagDefinition<T, C, M>,
     ): Result<FlagDefinition<T, C, M>> {
         val expected = declaration.defaultValue

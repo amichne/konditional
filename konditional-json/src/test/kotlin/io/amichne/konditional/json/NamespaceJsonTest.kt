@@ -1,8 +1,20 @@
 package io.amichne.konditional.json
 
 import io.amichne.konditional.api.evaluate
+import io.amichne.konditional.api.explain
 import io.amichne.konditional.fixtures.AppLocale
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Rollout
+import io.amichne.konditional.context.fact.Condition
+import io.amichne.konditional.context.fact.Facts
+import io.amichne.konditional.context.fact.allOf
+import io.amichne.konditional.context.fact.anyOf
+import io.amichne.konditional.context.fact.named
+import io.amichne.konditional.context.fact.not
+import io.amichne.konditional.core.dsl.enable
+import io.amichne.konditional.core.dsl.enableWhen
+import io.amichne.konditional.fixtures.TestNamespace
+import io.amichne.konditional.internal.evaluation.EvaluationDiagnostics.Decision
 import io.amichne.konditional.fixtures.Platform
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
@@ -31,13 +43,10 @@ class NamespaceJsonTest {
     fun zeroPercentRolloutPreservesBothAllowlistsAcrossSnapshotReload() {
         val flagUser = StableId.of("flag-tester")
         val ruleUser = StableId.of("rule-tester")
-        val namespace = object : Namespace("rollout-round-trip") {
+        val namespace = object : Namespace<TestFacts>("rollout-round-trip", TestFacts) {
             val enabled by boolean<TestContext>(default = false) {
                 allowlist(flagUser)
-                rule(true) {
-                    rollout { 0 }
-                    allowlist(ruleUser)
-                }
+                enable(rollout = Rollout.of(0), allowlist = setOf(ruleUser))
             }
         }
 
@@ -52,7 +61,7 @@ class NamespaceJsonTest {
 
     @Test
     fun flatPayloadCannotSilentlyIgnorePortableConditions() {
-        val namespace = object : Namespace("flat-with-conditions") {
+        val namespace = object : Namespace<TestFacts>("flat-with-conditions", TestFacts) {
             val enabled by boolean<Context>(default = false)
         }
         val before = namespace.currentSnapshot
@@ -69,7 +78,7 @@ class NamespaceJsonTest {
 
     @Test
     fun invalidExpressionsAndUnsupportedFormatsKeepTheInstalledSnapshot() {
-        val namespace = object : Namespace("malformed-expression", TestFacts.schema) {
+        val namespace = object : Namespace<TestFacts>("malformed-expression", TestFacts) {
             val enabled by boolean<Context>(default = false)
         }
         val before = namespace.currentSnapshot
@@ -79,11 +88,24 @@ class NamespaceJsonTest {
              "rules":[{"value":{"type":"BOOLEAN","value":true},$ruleFields}]}]}
         """.trimIndent())
         val valid = snapshot(""""conditions":[]""")
+        val iosTerm = """{"oneOf":{"fact":"platform","operands":["IOS"]}}"""
+        assertIs<ParseResult.Success<*>>(
+            namespace.fromJson(snapshot(""""conditions":[{"named":{"label":"pilot","term":{"not":$iosTerm}}}]""")),
+        )
+        namespace.rollback()
         val malformed = listOf(
             valid.replace("konditional/facts-v1", "konditional/facts-v2"),
             snapshot(""""conditions":[],"platforms":["IOS"]"""),
             snapshot(""""conditions":[],"conditions":[{"all":[]}]"""),
             snapshot(""""conditions":[{"unknown":[]}]"""),
+            snapshot(""""conditions":[{"all":[]}]"""),
+            snapshot(""""conditions":[{"anyOf":[]}]"""),
+            snapshot(""""conditions":[{"not":null}]"""),
+            snapshot(""""conditions":[{"not":{"all":[]}}]"""),
+            snapshot(""""conditions":[{"named":{"label":"pilot"}}]"""),
+            snapshot(""""conditions":[{"named":{"label":" ","term":$iosTerm}}]"""),
+            snapshot(""""conditions":[{"named":{"label":7,"term":$iosTerm}}]"""),
+            snapshot(""""conditions":[{"named":{"label":"pilot","term":$iosTerm,"extra":0}}]"""),
             snapshot(""""conditions":[{"all":[],"anyOf":[]}]"""),
             snapshot(""""conditions":[{"oneOf":{"fact":"sensor","operands":[7]}}]"""),
             snapshot(""""conditions":[{"atMost":{"fact":"sensor","operand":"4","extra":0}}]"""),
@@ -108,34 +130,37 @@ class NamespaceJsonTest {
     }
 
     @Test
-    fun exportRejectsAnAnonymousPredicateEvenAlongsideAPortableCondition() {
-        val namespace = object : Namespace("anonymous-export", TestFacts.schema) {
-            val checkout by boolean<TestContext>(default = false) {
-                rule(true) {
-                    match(TestFacts.platform.oneOf(Platform.IOS))
-                    require { locale == AppLocale.CANADA }
-                }
+    fun labelsAndNegationSurviveExportAndReload() {
+        val outsideCanada: Condition<TestFacts> = named("outsideCanada", not { locale.oneOf(AppLocale.CANADA) })
+        val namespace = object : Namespace<TestFacts>("named-export", TestFacts) {
+            val checkout by boolean<Context>(default = false) {
+                enableWhen(allOf(outsideCanada, { platform.oneOf(Platform.IOS) }))
             }
         }
-        val before = namespace.currentSnapshot
-        val failure = assertFailsWith<KonditionalBoundaryFailure> { namespace.toJson() }
-        assertIs<ParseError.InvalidSnapshot>(failure.parseError)
-        assertTrue(failure.parseError.message.contains(namespace.checkout.id.toString()))
-        assertSame(before, namespace.currentSnapshot)
-        assertFalse(namespace.checkout.evaluate(TestContext(locale = AppLocale.UNITED_STATES)))
-        assertTrue(namespace.checkout.evaluate(TestContext(locale = AppLocale.CANADA)))
+        val american = TestContext(locale = AppLocale.UNITED_STATES)
+        val declared = namespace.checkout.explain(american)
+        val json = namespace.toJson()
+
+        val compact = json.filterNot(Char::isWhitespace)
+        assertTrue(""""named":{"label":"outsideCanada","term":{"not":{"oneOf":""" in compact, json)
+        assertIs<ParseResult.Success<*>>(namespace.fromJson(json))
+        val reloaded = namespace.checkout.explain(american)
+        assertTrue(reloaded.value)
+        assertEquals(
+            assertIs<Decision.Rule>(declared.decision).matched.rule,
+            assertIs<Decision.Rule>(reloaded.decision).matched.rule,
+        )
+        assertFalse(namespace.checkout.evaluate(TestContext(locale = AppLocale.CANADA)))
+        // A context that supplies no locale satisfies neither the comparison nor its negation.
+        assertFalse(namespace.checkout.evaluate(Context(Facts.of(TestFacts.platform.value(Platform.IOS)))))
+        assertEquals(json, namespace.toJson())
     }
 
     @Test
     fun anyOfWithPortableChildrenRoundTrips() {
-        val namespace = object : Namespace("any-of-export", TestFacts.schema) {
+        val namespace = object : Namespace<TestFacts>("any-of-export", TestFacts) {
             val checkout by boolean<TestContext>(default = false) {
-                rule(true) {
-                    anyOf {
-                        match(TestFacts.platform.oneOf(Platform.IOS))
-                        match(TestFacts.locale.oneOf(AppLocale.CANADA))
-                    }
-                }
+                enableWhen { anyOf(platform.oneOf(Platform.IOS), locale.oneOf(AppLocale.CANADA)) }
             }
         }
         assertIs<ParseResult.Success<*>>(namespace.fromJson(namespace.toJson()))
@@ -145,12 +170,9 @@ class NamespaceJsonTest {
 
     @Test
     fun repeatedConditionsKeepTheirConjunctionAfterReload() {
-        val namespace = object : Namespace("repeated-export", TestFacts.schema) {
+        val namespace = object : Namespace<TestFacts>("repeated-export", TestFacts) {
             val checkout by boolean<TestContext>(default = false) {
-                rule(true) {
-                    match(TestFacts.platform.oneOf(Platform.IOS))
-                    match(TestFacts.platform.oneOf(Platform.ANDROID))
-                }
+                enableWhen { allOf(platform.oneOf(Platform.IOS), platform.oneOf(Platform.ANDROID)) }
             }
         }
         assertIs<ParseResult.Success<*>>(namespace.fromJson(namespace.toJson()))
@@ -160,12 +182,9 @@ class NamespaceJsonTest {
 
     @Test
     fun factConditionsRoundTripInDeclarationOrder() {
-        val namespace = object : Namespace("flat-export", TestFacts.schema) {
+        val namespace = object : Namespace<TestFacts>("flat-export", TestFacts) {
             val checkout by boolean<TestContext>(default = false) {
-                rule(true) {
-                    match(TestFacts.platform.oneOf(Platform.IOS))
-                    match(TestFacts.locale.oneOf(AppLocale.CANADA))
-                }
+                enableWhen { allOf(platform.oneOf(Platform.IOS), locale.oneOf(AppLocale.CANADA)) }
             }
         }
         assertIs<ParseResult.Success<*>>(namespace.fromJson(namespace.toJson()))
@@ -181,7 +200,7 @@ class NamespaceJsonTest {
 
     @Test
     fun strictRoundTripPreservesPrimitiveEnumAndKonstrainedValues() {
-        val namespace = object : Namespace.TestNamespaceFacade("json-roundtrip") {
+        val namespace = object : TestNamespace("json-roundtrip") {
             val enabled by boolean<Context>(default = false)
             val theme by enum<Theme, Context>(default = Theme.LIGHT)
             val retryPolicy by custom<RetryPolicy, Context>(default = RetryPolicy())
@@ -213,7 +232,7 @@ class NamespaceJsonTest {
 
     @Test
     fun unknownFeatureKeyFailsStrictlyAndLeavesCurrentStateUntouched() {
-        val namespace = object : Namespace.TestNamespaceFacade("json-strict") {
+        val namespace = object : TestNamespace("json-strict") {
             val enabled by boolean<Context>(default = false)
         }
 
@@ -238,7 +257,7 @@ class NamespaceJsonTest {
 
     @Test
     fun invalidKonstrainedPayloadFailsStrictly() {
-        val namespace = object : Namespace.TestNamespaceFacade("json-konstrained") {
+        val namespace = object : TestNamespace("json-konstrained") {
             val retryPolicy by custom<RetryPolicy, Context>(default = RetryPolicy())
         }
 
@@ -272,10 +291,10 @@ class NamespaceJsonTest {
 
     @Test
     fun contextualExportReportsFailureAndKeepsTheWholeSnapshot() {
-        val namespace = object : Namespace.TestNamespaceFacade("contextual-reload") {
+        val namespace = object : TestNamespace("contextual-reload") {
             val other by integer<Context>(default = 7)
             val contextual by boolean<Context>(default = false) {
-                rule {} yields { true }
+                alwaysResolved { true }
             }
         }
         val context = TestContext()
@@ -290,7 +309,7 @@ class NamespaceJsonTest {
 
     @Test
     fun malformedJsonFailsWithTypedBoundaryError() {
-        val namespace = object : Namespace.TestNamespaceFacade("json-invalid") {
+        val namespace = object : TestNamespace("json-invalid") {
             val enabled by boolean<Context>(default = false)
         }
 

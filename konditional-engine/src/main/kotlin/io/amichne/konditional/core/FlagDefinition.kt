@@ -8,7 +8,7 @@ import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.registry.EvaluationSnapshot
 import io.amichne.konditional.rules.ConditionalValue
-import io.amichne.konditional.rules.targeting.usesDeclaredFacts
+import io.amichne.konditional.rules.targeting.foreignFacts
 
 /**
  * Represents a flag definition that can be evaluated within a specific contextFn.
@@ -28,7 +28,7 @@ import io.amichne.konditional.rules.targeting.usesDeclaredFacts
  */
 
 @KonditionalInternalApi
-data class FlagDefinition<T : Any, C : Context, M : Namespace>(
+data class FlagDefinition<T : Any, C : Context, M : Namespace<*>>(
     /**
      * The default value returned when no targeting rules match or the flag is inactive.
      */
@@ -40,8 +40,10 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
     internal val rolloutAllowlist: Set<HexId> = emptySet(),
 ) {
     init {
-        require(values.all { it.rule.targeting.usesDeclaredFacts(feature.namespace.factSchema) }) {
-            "Feature '${feature.key}' uses a fact outside namespace '${feature.namespace.id}'."
+        val foreign = values.flatMap { it.rule.targeting.foreignFacts(feature.namespace.facts) }.distinct()
+        require(foreign.isEmpty()) {
+            "Feature '${feature.key}' uses ${foreign.joinToString { "'${it.key.id}'" }} " +
+                "from a schema that namespace '${feature.namespace.id}' does not declare."
         }
     }
 
@@ -54,7 +56,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
          */
         @KonditionalInternalApi
         @Suppress("LongParameterList")
-        operator fun <T : Any, C : Context, M : Namespace> invoke(
+        operator fun <T : Any, C : Context, M : Namespace<*>> invoke(
             feature: Feature<T, C, M>,
             bounds: List<ConditionalValue<T, C>>,
             defaultValue: T,

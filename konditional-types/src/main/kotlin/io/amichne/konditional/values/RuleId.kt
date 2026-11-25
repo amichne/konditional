@@ -32,19 +32,6 @@ value class RuleId(override val value: String) : NonBlank {
             ruleOrdinal: Int,
         ): RuleId = fromSeed("konditional:rule:feature:${featureId.plainId}:${ruleOrdinal.coerceAtLeast(0)}")
 
-        fun forFeatureRuleSetRule(
-            featureId: FeatureId,
-            ruleOrdinal: Int,
-        ): RuleId = fromSeed("konditional:rule:feature-ruleset:${featureId.plainId}:${ruleOrdinal.coerceAtLeast(0)}")
-
-        fun forNamespaceRuleSetRule(
-            namespaceId: NamespaceId,
-            ruleSetSeed: String,
-            ruleOrdinal: Int,
-        ): RuleId = fromSeed(
-            "konditional:rule:namespace-ruleset:${namespaceId.value}:$ruleSetSeed:${ruleOrdinal.coerceAtLeast(0)}",
-        )
-
         private fun fromSeed(seed: String): RuleId = RuleId(
             UUID.nameUUIDFromBytes(seed.toByteArray(StandardCharsets.UTF_8)).toString(),
         )

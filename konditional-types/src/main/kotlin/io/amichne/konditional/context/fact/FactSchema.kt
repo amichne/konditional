@@ -3,27 +3,74 @@ package io.amichne.konditional.context.fact
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 
-/** Immutable namespace vocabulary. Duplicate identifiers are a declaration error. */
-class FactSchema(vararg facts: Fact<*>) {
-    private val declarations = facts.associateBy { it.key.id }
+/**
+ * A namespace's typed vocabulary. Subclass it and declare each fact as a property:
+ *
+ * ```kotlin
+ * object WarehouseFacts : FactSchema() {
+ *     val zone = single("warehouse.zone", FactDomain.enumeration(Zone.entries) { it.name })
+ * }
+ * ```
+ *
+ * The schema is both the receiver that conditions read their facts from and the authority that
+ * decides which descriptors a rule can use. A duplicate identifier is a declaration error.
+ */
+abstract class FactSchema {
+    private val declarations = linkedMapOf<String, Fact<*>>()
 
-    init {
-        require(declarations.size == facts.size) { "Duplicate fact identifier" }
+    /** Declares a fact that a context supplies with exactly one value. */
+    protected fun <T : Any> single(id: String, domain: FactDomain<T>): SingleFact<T> =
+        declare(SingleFact(this, id, domain))
+
+    /** Declares a fact that a context supplies with a set of values. */
+    protected fun <T : Any> multi(id: String, domain: FactDomain<T>): MultiFact<T> =
+        declare(MultiFact(this, id, domain))
+
+    /** Declares a single-valued fact that supports bound comparisons under [order]. */
+    protected fun <T : Any> ordered(id: String, domain: FactDomain<T>, order: Comparator<T>): OrderedFact<T> =
+        declare(OrderedFact(this, id, domain, order))
+
+    private fun <F : Fact<*>> declare(fact: F): F {
+        require(declarations.putIfAbsent(fact.key.id, fact) == null) {
+            "Duplicate fact identifier '${fact.key.id}'"
+        }
+        return fact
     }
 
-    /** True only when this schema owns every descriptor in the expression. */
-    operator fun contains(expression: FactExpression): Boolean = expression.declaredIn(this)
+    /** True only when this schema declared every descriptor in the expression. */
+    operator fun contains(expression: FactExpression): Boolean = foreignFacts(expression).isEmpty()
 
-    internal fun owns(fact: Fact<*>): Boolean = declarations[fact.key.id] === fact
+    /** The descriptors in [expression] that another schema declared, in term order. */
+    fun foreignFacts(expression: FactExpression): List<Fact<*>> = expression.foreignTo(this)
+
+    internal fun owns(fact: Fact<*>): Boolean = fact.schema === this
 
     /** Resolves external identifiers and operands before evaluation; returns the first typed error in term order. */
     fun resolve(spec: FactSpec): ParseResult<FactExpression> = when (spec) {
         is FactSpec.OneOf -> resolveFact(spec.fact) { parseMembership(it, spec.operands) }
         is FactSpec.AtLeast -> resolveOrdered(spec.fact) { it.lower(spec.operand) }
         is FactSpec.AtMost -> resolveOrdered(spec.fact) { it.upper(spec.operand) }
-        is FactSpec.All -> spec.terms.traverse(::resolve).mapValue(::Conjunction)
-        is FactSpec.AnyOf -> spec.terms.traverse(::resolve).mapValue(::Disjunction)
+        is FactSpec.All -> resolveGroup("all", spec.terms, ::Conjunction)
+        is FactSpec.AnyOf -> resolveGroup("anyOf", spec.terms, ::Disjunction)
+        is FactSpec.Not -> resolve(spec.term).mapValue(::Negation)
+        is FactSpec.Named ->
+            if (spec.label.isBlank()) {
+                ParseResult.Failure(ParseError.BlankFactLabel)
+            } else {
+                resolve(spec.term).mapValue { Labeled(spec.label, it) }
+            }
     }
+
+    private fun resolveGroup(
+        operator: String,
+        terms: List<FactSpec>,
+        group: (List<FactExpression>) -> FactExpression,
+    ): ParseResult<FactExpression> =
+        if (terms.isEmpty()) {
+            ParseResult.Failure(ParseError.EmptyFactGroup(operator))
+        } else {
+            terms.traverse(::resolve).mapValue(group)
+        }
 
     private fun resolveFact(
         id: String,
@@ -48,6 +95,9 @@ class FactSchema(vararg facts: Fact<*>) {
             raw.traverse(fact::parse).mapValue(fact::membership)
         }
 }
+
+/** The vocabulary of a namespace whose rules read no facts. */
+object NoFacts : FactSchema()
 
 internal fun <T, R> ParseResult<T>.mapValue(transform: (T) -> R): ParseResult<R> = when (this) {
     is ParseResult.Success -> ParseResult.Success(transform(value))

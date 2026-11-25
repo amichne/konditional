@@ -2,10 +2,27 @@
 title: "Rules and precedence"
 ---
 
-A rule pairs targeting criteria with a value. A typed fact comparison contributes one unit of specificity.
-`allOf` adds its children's scores. `anyOf` takes the highest child score.
-The context determines whether the expression matches. Its score depends only on its structure.
+A rule pairs a value with at most one condition. A rule with no condition, declared with `always` or `enable`, applies to every context.
 
-The engine considers rules in descending order of targeting specificity. For each match, the engine checks rollout eligibility. A rule that misses its rollout does not prevent a later rule from matching.
+## Specificity
+
+Specificity is the number of distinct comparisons a context must satisfy.
+
+- A fact comparison scores one.
+- `allOf` scores the number of distinct comparisons among its terms. A comparison that appears twice counts once.
+- `anyOf` takes the highest score among its terms.
+- `not` scores the same as its operand.
+- A label from `named` and the nesting of one `allOf` inside another do not change the score.
+
+`allOf(a, b)`, `allOf(a, allOf(a, b))`, and `named("policy", allOf(b, a, a))` all score two.
+You can extract a condition into a helper or reuse it in two policies without changing which rule wins.
+A rule with no condition scores zero.
+
+The context determines whether the expression matches. Its score depends only on the expression.
+
+## Selection
+
+The engine considers rules in descending order of specificity. Rules with equal scores keep their declaration order.
+For each match, the engine checks rollout eligibility. A rule that misses its rollout does not prevent a later rule from matching.
 
 The first eligible match supplies the value. If no rule qualifies, evaluation returns the feature default. Use [`explain`](/reference/evaluation-diagnostics) to see the decision for a specific context.

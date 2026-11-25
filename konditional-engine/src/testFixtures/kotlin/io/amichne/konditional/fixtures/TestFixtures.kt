@@ -4,22 +4,31 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.fact.FactDomain
 import io.amichne.konditional.context.fact.FactSchema
 import io.amichne.konditional.context.fact.Facts
-import io.amichne.konditional.context.fact.SingleFact
+import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
+import io.amichne.konditional.core.registry.NamespaceRegistry
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.kontracts.dsl.of
 import io.amichne.kontracts.dsl.schema
+import java.util.UUID
 
 enum class TestEnvironment { DEV, PROD }
 enum class AppLocale { UNITED_STATES, CANADA }
 enum class Platform { IOS, ANDROID }
 
-object TestFacts {
-    val environment = SingleFact("environment", FactDomain.enumeration(TestEnvironment.entries) { it.name })
-    val platform = SingleFact("platform", FactDomain.enumeration(Platform.entries) { it.name })
-    val locale = SingleFact("locale", FactDomain.enumeration(AppLocale.entries) { it.name })
-    val schema = FactSchema(environment, platform, locale)
+object TestFacts : FactSchema() {
+    val environment = single("environment", FactDomain.enumeration(TestEnvironment.entries) { it.name })
+    val platform = single("platform", FactDomain.enumeration(Platform.entries) { it.name })
+    val locale = single("locale", FactDomain.enumeration(AppLocale.entries) { it.name })
 }
+
+/** A namespace over [TestFacts] with an isolated registry and identifier seed. */
+abstract class TestNamespace(
+    id: String,
+    registry: NamespaceRegistry = InMemoryNamespaceRegistry(namespaceId = id),
+    identifierSeed: String = UUID.randomUUID().toString(),
+) : Namespace.TestNamespaceFacade<TestFacts>(id, TestFacts, registry, identifierSeed)
 
 data class TestContext(
     val locale: AppLocale = AppLocale.UNITED_STATES,

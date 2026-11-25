@@ -32,7 +32,7 @@ import kotlin.time.measureTimedValue
  * @throws IllegalStateException if the feature is not registered in the registry
  */
 
-fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
+fun <T : Any, C : Context, M : Namespace<*>> Feature<T, C, M>.evaluate(
     context: C,
     registry: NamespaceRegistry = namespace,
 ): T = evaluateInternal(context, EvaluationSnapshot(registry), mode = Metrics.Evaluation.EvaluationMode.NORMAL).value
@@ -49,12 +49,12 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluate(
  * @throws IllegalStateException if the feature is not registered in the registry
  */
 
-fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.explain(
+fun <T : Any, C : Context, M : Namespace<*>> Feature<T, C, M>.explain(
     context: C,
     registry: NamespaceRegistry = namespace,
 ): EvaluationDiagnostics<T> = evaluateInternal(context, EvaluationSnapshot(registry), mode = Metrics.Evaluation.EvaluationMode.EXPLAIN)
 
-internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInternal(
+internal fun <T : Any, C : Context, M : Namespace<*>> Feature<T, C, M>.evaluateInternal(
     context: C,
     snapshot: EvaluationSnapshot,
     mode: Metrics.Evaluation.EvaluationMode,
@@ -66,7 +66,7 @@ internal fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.evaluateInte
     }.value
 }
 
-private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.createBaseDiagnostics(
+private fun <T : Any, C : Context, M : Namespace<*>> Feature<T, C, M>.createBaseDiagnostics(
     context: C,
     snapshot: EvaluationSnapshot,
     mode: Metrics.Evaluation.EvaluationMode,
@@ -99,12 +99,12 @@ private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.createBaseDia
     }
 
 @Suppress("UNCHECKED_CAST")
-private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.declaredDefaultValueOr(
+private fun <T : Any, C : Context, M : Namespace<*>> Feature<T, C, M>.declaredDefaultValueOr(
     fallback: T,
 ): T =
     (namespace.declaredDefault(this) as? T) ?: fallback
 
-private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.createRuleDiagnostics(
+private fun <T : Any, C : Context, M : Namespace<*>> Feature<T, C, M>.createRuleDiagnostics(
     context: C,
     snapshot: EvaluationSnapshot,
     mode: Metrics.Evaluation.EvaluationMode,

@@ -11,18 +11,18 @@ import io.amichne.konditional.core.Namespace
  * @param C The context type for evaluation
  * @param M The namespace type for isolation
  */
-sealed interface EnumFeature<E : Enum<E>, C : Context, M : Namespace> :
+sealed interface EnumFeature<E : Enum<E>, C : Context, M : Namespace<*>> :
     Feature<E, C, M> {
 
     companion object {
-        internal operator fun <E : Enum<E>, C : Context, M : Namespace> invoke(
+        internal operator fun <E : Enum<E>, C : Context, M : Namespace<*>> invoke(
             key: String,
             module: M,
         ): EnumFeature<E, C, M> =
             EnumFeatureImpl(key, module)
 
         @PublishedApi
-        internal data class EnumFeatureImpl<E : Enum<E>, C : Context, M : Namespace>(
+        internal data class EnumFeatureImpl<E : Enum<E>, C : Context, M : Namespace<*>>(
             override val key: String,
             override val namespace: M,
         ) : EnumFeature<E, C, M>, Identifiable.ById by Identifiable.ById(key, namespace.id)

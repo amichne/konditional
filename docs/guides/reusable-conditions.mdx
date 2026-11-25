@@ -1,0 +1,86 @@
+---
+title: "Reusable conditions"
+description: "Name a policy once and use it in any flag whose namespace supplies the facts."
+---
+
+A `Condition<S>` is a function that reads facts from `S` and returns one portable expression.
+Write a condition once, give it a domain name, and pass it to any rule.
+The examples use the schema from [Context and facts](/concepts/context-and-facts).
+
+## Write a condition
+
+A condition factory is an ordinary Kotlin function. It can take any arguments the policy needs.
+
+```kotlin
+import io.amichne.konditional.context.fact.Condition
+import io.amichne.konditional.context.fact.allOf
+import io.amichne.konditional.context.fact.named
+
+fun inZone(required: Zone): Condition<WarehouseFacts> = { zone.oneOf(required) }
+
+fun temperatureBetween(low: Celsius, high: Celsius): Condition<WarehouseFacts> = {
+    allOf(temperature.atLeast(low), temperature.atMost(high))
+}
+```
+
+The lambda returns its last expression. To require two comparisons, combine them with `allOf`.
+
+## Compose and name a policy
+
+`allOf`, `anyOf`, and `not` accept conditions and return a condition. `named` attaches a label.
+
+```kotlin
+val chilledDelivery: Condition<WarehouseFacts> = named(
+    "chilledDelivery",
+    allOf(inZone(Zone.COLD_STORAGE), temperatureBetween(Celsius(0), Celsius(4))),
+)
+
+object Warehouse : Namespace<WarehouseFacts>("warehouse", WarehouseFacts) {
+    val acceptDelivery by boolean<Reading>(default = false) {
+        enableWhen(chilledDelivery)
+    }
+    val reviewMode by enum<ReviewMode, Reading>(default = ReviewMode.STANDARD) {
+        rule(ReviewMode.EXPEDITED, chilledDelivery, rollout = Rollout.of(25))
+    }
+}
+```
+
+The label appears in `explain` output and in exported snapshots. It does not change matching or specificity.
+
+`allOf` and `anyOf` also accept a list, for a policy that another module assembles.
+An empty list is a declaration error, so an empty policy cannot enable a flag for every context.
+For a rule that applies to every context, use `enable` or `always`.
+
+## Require only the facts a condition needs
+
+A condition can name an interface instead of a whole schema. Any schema that implements the interface can use it.
+
+```kotlin
+interface HasTemperature {
+    val temperature: OrderedFact<Celsius>
+}
+
+fun temperatureBetween(low: Celsius, high: Celsius): Condition<HasTemperature> = {
+    allOf(temperature.atLeast(low), temperature.atMost(high))
+}
+```
+
+Declare `object WarehouseFacts : FactSchema(), HasTemperature` and mark `temperature` with `override`.
+A namespace whose schema has no temperature cannot pass this condition to a rule. The call does not compile.
+
+## When a condition runs
+
+A rule runs its condition once, when the namespace declares the flag, and keeps the resulting expression.
+Evaluation, `explain`, and snapshot export use that expression. They do not run the lambda again.
+
+A condition must read every fact from its receiver. If it captures a fact from another schema instance,
+the flag declaration fails with an error that names the fact.
+
+## Rule settings
+
+Rollout, note, and allowlist are arguments of the rule.
+
+```kotlin
+enableWhen(chilledDelivery, rollout = Rollout.of(25), note = "cold-chain pilot")
+enableWhen(rollout = Rollout.of(25)) { zone.oneOf(Zone.COLD_STORAGE) }
+```

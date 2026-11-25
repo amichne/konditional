@@ -3,11 +3,12 @@ package io.amichne.konditional.engine
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.api.explain
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.fixtures.TestFacts
+import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.fixtures.Platform
+import io.amichne.konditional.fixtures.TestNamespace
 import io.amichne.konditional.core.FlagDefinition
-import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
+import io.amichne.konditional.core.dsl.enableWhen
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.instance.ConfigurationMetadata
 import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
@@ -27,9 +28,9 @@ import java.util.concurrent.atomic.AtomicReference
 class NamespaceRuntimeTest {
     @Test
     fun declaredDefinitionsLoadAutomaticallyAndKillSwitchUsesAtomicSnapshotState() {
-        val namespace = object : Namespace.TestNamespaceFacade("engine-kill-switch", factSchema = TestFacts.schema) {
+        val namespace = object : TestNamespace("engine-kill-switch") {
             val enabled by boolean<Context>(default = false) {
-                enable { match(TestFacts.platform.oneOf(Platform.IOS)) }
+                enableWhen { platform.oneOf(Platform.IOS) }
             }
         }
 
@@ -50,10 +51,10 @@ class NamespaceRuntimeTest {
 
     @Test
     fun namespaceIsolationAndRollbackRemainCoherent() {
-        val namespaceA = object : Namespace.TestNamespaceFacade("engine-a") {
+        val namespaceA = object : TestNamespace("engine-a") {
             val number by integer<Context>(default = 1)
         }
-        val namespaceB = object : Namespace.TestNamespaceFacade("engine-b") {
+        val namespaceB = object : TestNamespace("engine-b") {
             val number by integer<Context>(default = 2)
         }
 
@@ -79,11 +80,9 @@ class NamespaceRuntimeTest {
 
     @Test
     fun rolloutBucketingIsDeterministicForStableId() {
-        val namespace = object : Namespace.TestNamespaceFacade("engine-rollout") {
+        val namespace = object : TestNamespace("engine-rollout") {
             val rollout by boolean<Context>(default = false) {
-                enable {
-                    rollout { 50 }
-                }
+                enable(rollout = Rollout.of(50))
             }
         }
 
@@ -97,7 +96,7 @@ class NamespaceRuntimeTest {
 
     @Test
     fun readersOnlyObserveWholeSnapshotsDuringConcurrentLoads() {
-        val namespace = object : Namespace.TestNamespaceFacade("engine-atomic") {
+        val namespace = object : TestNamespace("engine-atomic") {
             val primary by integer<Context>(default = 0)
             val mirror by integer<Context>(default = 0)
         }

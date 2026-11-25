@@ -48,5 +48,6 @@ wrapper with:
 
 The matched rule includes its `RuleId`, rollout, specificity, and targeting tree.
 A `TargetingNode.Facts` node identifies the fact expression with its operators, stable fact identifiers, and operands.
+A condition built with `named` appears as `FactSpec.Named` with its label, so the explanation shows the policy name beside its comparisons.
 
 Use `evaluate` when the caller only needs the typed feature value.

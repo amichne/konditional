@@ -11,7 +11,7 @@ val enabled = flags.getBoolean("checkout.upsell-enabled", fallback = false)
 A typo in this key can compile. In Konditional, the namespace declares a Kotlin property and its default.
 
 ```kotlin
-object CheckoutFlags : Namespace("checkout") {
+object CheckoutFlags : Namespace<NoFacts>("checkout", NoFacts) {
     val upsellEnabled by boolean<CheckoutContext>(default = false)
 }
 

@@ -3,13 +3,15 @@ package io.amichne.konditional.core
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.fact.FactDomain
-import io.amichne.konditional.context.fact.SingleFact
+import io.amichne.konditional.context.fact.FactSchema
 import io.amichne.konditional.context.fact.allOf
-import io.amichne.konditional.core.dsl.enable
+import io.amichne.konditional.context.fact.anyOf
+import io.amichne.konditional.core.dsl.enableWhen
 import io.amichne.konditional.fixtures.Platform
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.fixtures.TestEnvironment
 import io.amichne.konditional.fixtures.TestFacts
+import io.amichne.konditional.fixtures.TestNamespace
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -43,62 +45,52 @@ class NamespaceBehaviorTest {
         assertFalse(EnvironmentFlags.prodOnly.evaluate(stage))
     }
 
-    private object CheckoutFlags : Namespace.TestNamespaceFacade("checkout", factSchema = TestFacts.schema) {
+    private object CheckoutFlags : TestNamespace("checkout") {
         val enabled by boolean<TestContext>(default = false) {
-            enable { match(TestFacts.platform.oneOf(Platform.IOS)) }
+            enableWhen { platform.oneOf(Platform.IOS) }
         }
     }
 
-    private object BillingFlags : Namespace.TestNamespaceFacade("billing") {
+    private object BillingFlags : TestNamespace("billing") {
         val enabled by boolean<TestContext>(default = false)
     }
 
     @Test
     fun `a rule cannot use a foreign descriptor with the same wire id`() {
-        val foreign = SingleFact("platform", FactDomain.enumeration(Platform.entries) { it.name })
-        assertFailsWith<IllegalArgumentException> {
-            object : Namespace("shipping", TestFacts.schema) {
+        val foreign = object : FactSchema() {
+            val platform = single("platform", FactDomain.enumeration(Platform.entries) { it.name })
+        }
+        val failure = assertFailsWith<IllegalArgumentException> {
+            object : Namespace<TestFacts>("shipping", TestFacts) {
                 val dispatch by boolean<Context>(default = false) {
-                    enable {
-                        anyOf {
-                            match(foreign.oneOf(Platform.IOS))
-                            match(TestFacts.environment.oneOf(TestEnvironment.PROD))
-                        }
-                    }
+                    enableWhen { anyOf(foreign.platform.oneOf(Platform.IOS), environment.oneOf(TestEnvironment.PROD)) }
                 }
             }
         }
-    }
-
-    @Test
-    fun `an empty disjunction never enables a feature`() {
-        val namespace = object : Namespace("empty-or") {
-            val enabled by boolean<Context>(default = false) {
-                enable { anyOf {} }
-            }
-        }
-        assertFalse(namespace.enabled.evaluate(Context()))
+        assertTrue("'platform'" in failure.message.orEmpty(), failure.message)
+        assertTrue("dispatch" in failure.message.orEmpty(), failure.message)
     }
 
     @Test
     fun `the most specific eligible fact rule wins with declaration order for ties`() {
-        val prod = TestFacts.environment.oneOf(TestEnvironment.PROD)
-        val ios = TestFacts.platform.oneOf(Platform.IOS)
-        val namespace = object : Namespace("priority", TestFacts.schema) {
+        val namespace = object : Namespace<TestFacts>("priority", TestFacts) {
             val message by string<TestContext>("default") {
-                rule("general", prod)
-                rule("first", allOf(prod, ios))
-                rule("second", allOf(ios, prod))
+                rule("general") { environment.oneOf(TestEnvironment.PROD) }
+                rule("first") { allOf(environment.oneOf(TestEnvironment.PROD), platform.oneOf(Platform.IOS)) }
+                rule("second") { allOf(platform.oneOf(Platform.IOS), environment.oneOf(TestEnvironment.PROD)) }
             }
         }
         assertEquals("first", namespace.message.evaluate(TestContext(environment = TestEnvironment.PROD)))
-        assertEquals("general", namespace.message.evaluate(TestContext(environment = TestEnvironment.PROD, platform = Platform.ANDROID)))
+        assertEquals(
+            "general",
+            namespace.message.evaluate(TestContext(environment = TestEnvironment.PROD, platform = Platform.ANDROID)),
+        )
         assertEquals("default", namespace.message.evaluate(TestContext()))
     }
 
-    private object EnvironmentFlags : Namespace.TestNamespaceFacade("environment", factSchema = TestFacts.schema) {
+    private object EnvironmentFlags : TestNamespace("environment") {
         val prodOnly by boolean<TestContext>(default = false) {
-            enable { match(TestFacts.environment.oneOf(TestEnvironment.PROD)) }
+            enableWhen { environment.oneOf(TestEnvironment.PROD) }
         }
     }
 }

@@ -30,6 +30,16 @@ sealed interface ParseError {
         override val message: String get() = "Membership on '${key.id}' needs at least one operand"
     }
 
+    /** An `all` or `anyOf` group needs at least one term. */
+    data class EmptyFactGroup(val operator: String) : ParseError {
+        override val message: String get() = "Fact group '$operator' needs at least one term"
+    }
+
+    /** A named expression needs a nonblank label. */
+    data object BlankFactLabel : ParseError {
+        override val message: String get() = "A named fact expression needs a nonblank label"
+    }
+
     /** The named declaration's value domain rejected an external operand. */
     data class InvalidFactOperand(val key: ContextKey, val cause: ParseError) : ParseError {
         override val message: String get() = "Invalid operand for fact '${key.id}': ${cause.message}"
