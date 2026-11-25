@@ -28,9 +28,9 @@ site_author = "Austin Michne"
 # The site_url is the canonical URL for your site. When building online
 # documentation you should set this.
 # Read more: https://zensical.org/docs/setup/basics/#site_url
-site_url = "https://michne.github.io/konditional/"
-repo_url = "https://github.com/michne/konditional"
-repo_name = "michne/konditional"
+site_url = "https://amichne.github.io/konditional/"
+repo_url = "https://github.com/amichne/konditional"
+repo_name = "amichne/konditional"
 
 # The copyright notice appears in the page footer and can contain an HTML
 # fragment.
@@ -49,10 +49,22 @@ Copyright &copy; 2026 Austin Michne
 # Read more: https://zensical.org/docs/setup/navigation/
 nav = [
   { "Home" = "index.md" },
-  { "Start here" = [{ "Overview" = "start-here/index.md" }, { "Why Konditional" = "start-here/why-konditional.md" }, { "When it fits" = "start-here/when-it-fits.md" }, { "Trade-offs and non-goals" = "start-here/trade-offs-and-non-goals.md" }, { "Comparison" = "start-here/comparison.md" }, { "Adoption path" = "start-here/adoption-path.md" }] },
-  { "Quickstart" = [{ "Overview" = "quickstart/index.md" }, { "Install" = "quickstart/install.md" }, { "Define your first namespace" = "quickstart/define-first-namespace.md" }, { "Evaluate a typed flag" = "quickstart/evaluate-a-typed-flag.md" }, { "Add ramp-up" = "quickstart/add-ramp-up.md" }, { "Load JSON safely" = "quickstart/load-json-safely.md" }, { "Verify behavior" = "quickstart/verify-behavior.md" }] },
+  { "Quickstart" = [{ "Run your first flag" = "quickstart/index.md" }, { "Add the engine" = "quickstart/install.md" }] },
+  { "Advanced usage" = [
+    { "Overview" = "guides/index.md" },
+    { "Gradual rollout" = "quickstart/add-ramp-up.md" },
+    { "Custom axes" = "guides/custom-axes.md" },
+    { "Declare an enum flag" = "quickstart/define-first-namespace.md" },
+    { "Use an enum result" = "quickstart/evaluate-a-typed-flag.md" },
+    { "Custom Konstrained values" = "guides/custom-konstrained-values.md" },
+    { "Load JSON safely" = "quickstart/load-json-safely.md" },
+    { "Remote configuration" = "guides/remote-configuration.md" },
+    { "Migrating from string flags" = "guides/migrating-from-string-flags.md" },
+    { "Testing strategies" = "guides/testing-strategies.md" },
+    { "Check rollout and snapshot behavior" = "quickstart/verify-behavior.md" },
+  ] },
+  { "Evaluating Konditional" = [{ "Overview" = "start-here/index.md" }, { "Why Konditional" = "start-here/why-konditional.md" }, { "When it fits" = "start-here/when-it-fits.md" }, { "Trade-offs and non-goals" = "start-here/trade-offs-and-non-goals.md" }, { "Comparison" = "start-here/comparison.md" }, { "Adoption path" = "start-here/adoption-path.md" }] },
   { "Concepts" = [{ "Overview" = "concepts/index.md" }, { "Namespaces" = "concepts/namespaces.md" }, { "Typed features" = "concepts/typed-features.md" }, { "Context and axes" = "concepts/context-and-axes.md" }, { "Rules and precedence" = "concepts/rules-and-precedence.md" }, { "Runtime snapshots" = "concepts/runtime-snapshots.md" }, { "JSON boundary" = "concepts/json-boundary.md" }] },
-  { "Guides" = [{ "Overview" = "guides/index.md" }, { "Remote configuration" = "guides/remote-configuration.md" }, { "Custom Konstrained values" = "guides/custom-konstrained-values.md" }, { "Custom axes" = "guides/custom-axes.md" }, { "Testing strategies" = "guides/testing-strategies.md" }, { "Migrating from string flags" = "guides/migrating-from-string-flags.md" }] },
   { "Guarantees" = [{ "Overview" = "guarantees/index.md" }, { "Type safety" = "guarantees/type-safety.md" }, { "Determinism" = "guarantees/determinism.md" }, { "Namespace isolation" = "guarantees/namespace-isolation.md" }, { "Atomic snapshots" = "guarantees/atomic-snapshots.md" }, { "Parse boundary" = "guarantees/parse-boundary.md" }] },
   { "Reference" = [{ "Overview" = "reference/index.md" }, { "Module dependency map" = "reference/module-dependency-map.md" }, { "API surface" = "reference/api-surface.md" }, { "Snapshot JSON format" = "reference/snapshot-json-format.md" }, { "Evaluation diagnostics" = "reference/evaluation-diagnostics.md" }, { "Build, docs, and release" = "reference/build-docs-and-release.md" }] },
   { "Appendix" = [{ "Overview" = "appendix/index.md" }, { "Glossary" = "appendix/glossary.md" }, { "FAQ" = "appendix/faq.md" }] },
@@ -223,7 +235,7 @@ features = [
     # When sections are enabled, top-level sections are rendered as groups in
     # the sidebar for viewports above 1220px, but remain as-is on mobile.
     # https://zensical.org/docs/setup/navigation/#navigation-sections
-    "navigation.sections",
+    # "navigation.sections",
 
     # When tabs are enabled, top-level sections are rendered in a menu layer
     # below the header for viewports above 1220px, but remain as-is on mobile.

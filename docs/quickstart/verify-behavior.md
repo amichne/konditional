@@ -1,57 +1,31 @@
-# Verify behavior
+# Check rollout and snapshot behavior
 
-The quickstart is complete once you have checked the behaviors that make
-Konditional different from a plain string-key system. This page gives you a
-small verification checklist.
+## Does a user stay in the same rollout group?
 
-## Verify typed evaluation
-
-Confirm that the call site sees the real domain type you declared on the
-namespace.
+Use the flag and context from [Gradual rollout](add-ramp-up.md). Evaluate the
+same flag twice with the same stable ID and rules.
 
 ```kotlin
-val result: ProductEligibility =
-    CheckoutFlags.productEligibility.evaluate(
-        CommerceContext(Product.PAYMENTS),
-    )
+val context = RolloutContext(StableId.of("same-user"))
+val first = RolloutFlags.checkoutUpsell.explain(context)
+val second = RolloutFlags.checkoutUpsell.explain(context)
+check(first.value == second.value)
+check(first.decision == second.decision)
 ```
 
-If that type annotation feels natural in the caller, the basic model is
-already paying off.
+## What happens if an update fails?
 
-## Verify deterministic rollout
-
-Run `explain(...)` twice for the same stable ID and confirm the decision and
-bucket metadata do not drift.
+With [JSON snapshot loading](load-json-safely.md) set up, record the value of
+the checkout flag before passing in malformed JSON. Check both the error and
+the value seen by the next caller.
 
 ```kotlin
-val context = RolloutContext(stableId = StableId.of("same-user"))
-check(RolloutFlags.checkoutUpsell.explain(context) ==
-    RolloutFlags.checkoutUpsell.explain(context))
-```
-
-## Verify strict boundary behavior
-
-Pass malformed JSON into `fromJson(json)` and confirm you receive
-`ParseResult.Failure` instead of a partially loaded namespace.
-
-```kotlin
+val device = Device(Platform.IOS)
+val before = CheckoutFlags.newCheckout.evaluate(device)
 check(CheckoutFlags.fromJson("{ not-json") is ParseResult.Failure)
+check(CheckoutFlags.newCheckout.evaluate(device) == before)
 ```
 
-## Verify namespace isolation
-
-Declare the same feature key in two different namespaces and confirm their
-defaults or loaded snapshots do not bleed into each other.
-
-That isolation is what lets one team adopt Konditional without immediately
-creating a shared global registry.
-
-## Next steps
-
-Once the quickstart feels solid, move into the concept pages or jump to the
-guides for specific scenarios like custom values, remote configuration, and
-migration.
-
-- [Read the concepts](../concepts/index.md)
-- [Read the guides](../guides/index.md)
+To check that an update stays within one namespace, declare the same flag key
+in two namespaces. Load a snapshot into one and check the other's value.
+[Namespace isolation](../guarantees/namespace-isolation.md).

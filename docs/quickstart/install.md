@@ -1,48 +1,38 @@
-# Install
+# Add the engine to your project
 
-The smallest useful dependency for a first adoption is `konditional-engine`.
-It gives you `Namespace`, typed feature declarations, `evaluate(...)`, and
-`explain(...)`.
+These steps use a local copy of Konditional with a Kotlin/JVM Gradle project.
+Use JDK 27. The Konditional build uses Gradle 9.8.2 and Kotlin 2.4.21.
 
-## Add the engine module
+1. From the directory that contains your application project, clone Konditional
+   alongside it.
 
-Start in the Gradle module that owns the first feature decision.
+    ```sh
+    git clone https://github.com/amichne/konditional.git
+    ```
 
-```kotlin
-dependencies {
-    implementation("io.amichne.konditional:konditional-engine:<version>")
-}
-```
+2. In your application's `settings.gradle.kts`, include the checkout.
 
-That is enough to declare flags and evaluate them in application code.
+    ```kotlin
+    includeBuild("../konditional")
+    ```
 
-## Add JSON later
+3. In the application module's `build.gradle.kts`, add the engine dependency.
+   Use Maven Central for its dependencies. The included build supplies the
+   engine itself.
 
-You only need `konditional-json` when you are ready to export or import
-namespace snapshots.
+    ```kotlin
+    kotlin {
+        jvmToolchain(27)
+    }
 
-```kotlin
-dependencies {
-    implementation("io.amichne.konditional:konditional-json:<version>")
-}
-```
+    java {
+        targetCompatibility = JavaVersion.VERSION_26
+    }
 
-The JSON module builds on top of the engine model. You do not need it for the
-first namespace or the first typed evaluation path.
+    dependencies {
+        implementation("io.github.amichne:konditional-engine")
+    }
+    ```
 
-## Verify the setup
-
-Compile the module after adding the dependency so the rest of the quickstart
-starts from a known-good baseline.
-
-```bash
-./gradlew <your-module>:build
-```
-
-## Next steps
-
-With the dependency in place, the next step is to model one real domain value,
-one context, and one namespace.
-
-- [Define your first namespace](define-first-namespace.md)
+Reload the Gradle project in your IDE, then [declare your first flag](index.md#declare-the-flag).
 

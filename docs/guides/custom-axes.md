@@ -40,6 +40,10 @@ data class RuntimeContext(
 Use `constrain(...)` in the rule DSL to target one or more axis values.
 
 ```kotlin
+import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.enable
+import io.amichne.konditional.core.dsl.rules.targeting.scopes.constrain
+
 object RuntimeFlags : Namespace("runtime") {
     val diagnostics by boolean<RuntimeContext>(default = false) {
         enable {

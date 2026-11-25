@@ -1,36 +1,49 @@
-# Quickstart
+# Run your first flag
 
-This quickstart gets you from a Kotlin module to a working typed namespace
-with deterministic evaluation, stable ramp-up, and safe JSON loading. It stays
-close to the public API surface that exists in the repo today.
+Enable a new checkout on iOS and keep it off on Android. You need a Kotlin/JVM
+project with the Konditional engine. [Add the engine to your project](install.md).
 
-## Prerequisites
+## Declare the flag
 
-You need a Kotlin/JVM project where you can add Gradle dependencies and write
-one small namespace. You do not need a server, a control plane, or a JSON
-pipeline to begin.
+Create `src/main/kotlin/Checkout.kt` in your application module. A namespace
+groups related flags. Here, `CheckoutFlags` owns one flag, and `Device` supplies
+the platform its rule reads.
 
-## Path through the quickstart
+```kotlin
+import io.amichne.konditional.api.evaluate
+import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Platform
+import io.amichne.konditional.core.Namespace
 
-The pages are designed to be read in order.
+data class Device(override val platform: Platform) : Context.PlatformContext
 
-1. [Install](install.md)
-2. [Define your first namespace](define-first-namespace.md)
-3. [Evaluate a typed flag](evaluate-a-typed-flag.md)
-4. [Add ramp-up](add-ramp-up.md)
-5. [Load JSON safely](load-json-safely.md)
-6. [Verify behavior](verify-behavior.md)
+object CheckoutFlags : Namespace("checkout") {
+    val newCheckout by boolean<Device>(default = false) {
+        rule(true) { platforms(Platform.IOS) }
+    }
+}
+```
 
-## What you will end with
+## Evaluate it
 
-By the end of the quickstart, you will have a team-owned namespace, a typed
-evaluation call site, one deterministic rollout example, and one strict JSON
-load path that returns `ParseResult`.
+Add this function to the same file. Run `main()` from your IDE.
 
-## Next steps
+```kotlin
+fun main() {
+    for (platform in listOf(Platform.IOS, Platform.ANDROID)) {
+        val showNewCheckout: Boolean = CheckoutFlags.newCheckout.evaluate(Device(platform))
+        println("$platform: $showNewCheckout")
+    }
+}
+```
 
-Start with the dependency surface and keep the first module as small as
-possible.
+```text
+IOS: true
+ANDROID: false
+```
 
-- [Install Konditional](install.md)
+The iOS device matches the rule. The Android device gets the default. Change
+the rule to `platforms(Platform.ANDROID)` and run it again to reverse the results.
+
+When you need a second use case, choose a guide from [Advanced usage](../guides/index.md).
 

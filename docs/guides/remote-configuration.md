@@ -1,42 +1,25 @@
 # Remote configuration
 
-This guide shows the smallest safe pattern for external configuration delivery.
-Konditional does not fetch remote data for you. Your application fetches a
-JSON string and hands it to `fromJson(json)` at the boundary.
-
-## Keep the boundary narrow
-
-Treat remote delivery as a producer of `String`, not as a producer of trusted
-flags. The trust boundary is the call to `fromJson(json)`.
+Use remote configuration when checkout rules need to change between application
+releases. Start with a namespace and the [JSON module](../quickstart/load-json-safely.md).
+Your application fetches the snapshot and passes the response body to `fromJson`.
 
 ```kotlin
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.serialization.fromJson
 
-fun refresh(payload: String) {
+fun applyCheckoutUpdate(payload: String) {
     when (val result = CheckoutFlags.fromJson(payload)) {
-        is ParseResult.Success -> logger.info("Loaded ${result.value.flags.size} flags")
-        is ParseResult.Failure -> logger.warn("Rejected snapshot: ${result.error.message}")
+        is ParseResult.Success -> println("Applied checkout update")
+        is ParseResult.Failure -> println("Rejected checkout update: ${result.error.message}")
     }
 }
 ```
 
-## Why this is the recommended shape
+Fetch the payload outside the flag evaluation call. If the fetch fails, keep
+serving the current configuration. If decoding fails, `fromJson` returns the
+error and leaves the active checkout rules in place. A successful load replaces
+the namespace snapshot as a unit.
 
-The namespace only mutates on success. That keeps fetch, retry, transport, and
-logging concerns outside the core evaluation path while preserving strict state
-transitions inside the namespace.
-
-## Operational advice
-
-Keep one namespace per ownership boundary, log the metadata version when it is
-present, and prefer replacing whole snapshots over hand-editing individual
-flags in memory.
-
-## Next steps
-
-If your remote snapshot needs structured values, the next guide shows how to
-model them with `Konstrained`.
-
-- [Read the custom value guide](custom-konstrained-values.md)
+For the payload fields, see the [snapshot JSON format](../reference/snapshot-json-format.md).
 

@@ -58,9 +58,6 @@ check(first.decision == second.decision)
 
 The result stays stable for the same feature, same salt, and same stable ID.
 
-## Next steps
-
-The next page adds the JSON boundary on top of the same namespace model.
-
-- [Load JSON safely](load-json-safely.md)
+See [evaluation diagnostics](../reference/evaluation-diagnostics.md) for the
+decision and bucket fields returned by `explain(...)`.
 

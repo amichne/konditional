@@ -1,12 +1,12 @@
 # Custom Konstrained values
 
-`Konstrained` is the contract for custom feature values that are not built-in
-primitives or enums. Use it when the feature value is a real domain object and
-you still want JSON round-tripping through `konditional-json`.
+Use a custom flag when a caller needs several settings together. For example,
+a retry loop can read one `RetryPolicy` with an attempt limit and a backoff.
 
 ## Start with an object-backed value
 
-Object-backed values are the most straightforward shape for custom payloads.
+Implement `Konstrained.Object` for a value with named fields. The schema in
+this example describes those fields for JSON snapshots.
 
 ```kotlin
 import io.amichne.konditional.core.types.Konstrained
@@ -29,16 +29,15 @@ data class RetryPolicy(
 }
 ```
 
-The schema is what lets the JSON layer reject malformed payloads instead of
-constructing a half-trusted value.
-
 ## Use the value in a feature
 
-Declare the feature with `custom<T, C>(...)` just like you would declare an
-enum or a boolean feature.
+Declare the Kotlin type and its default in the namespace.
 
 ```kotlin
-object CheckoutFlags : Namespace("checkout") {
+import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.Namespace
+
+object RetryFlags : Namespace("retry") {
     val retryPolicy by custom<RetryPolicy, Context>(
         default = RetryPolicy(),
     )
@@ -51,10 +50,6 @@ object CheckoutFlags : Namespace("checkout") {
 values, and adapted primitive encodings such as `AsString` or `AsInt`. Reach
 for those shapes when the wire form is a single primitive or a single list.
 
-## Next steps
-
-If your custom values depend on a domain dimension like environment or tenant,
-the next guide shows how to model that dimension as an axis.
-
-- [Read the custom axes guide](custom-axes.md)
+To export or load a policy with its namespace, see
+[Load JSON safely](../quickstart/load-json-safely.md).
 
