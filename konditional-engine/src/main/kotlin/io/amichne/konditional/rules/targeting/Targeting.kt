@@ -92,6 +92,29 @@ sealed interface Targeting<in C : Context> {
         override fun specificity(): Int = 1
     }
 
+    /** A typed membership check against a custom field of the evaluation context. */
+    class Attribute<C : Context> internal constructor(
+        internal val declaration: ContextAttribute<C, *>,
+        val operands: List<String>,
+        private val check: (C) -> Boolean,
+    ) : Targeting<C> {
+        val key: String get() = declaration.key
+        override fun matches(context: C): Boolean = check(context)
+        override fun specificity(): Int = 1
+    }
+
+    /** A call to a versioned predicate from the feature's compiled targeting schema. */
+    class Predicate<C : Context> internal constructor(
+        internal val declaration: NamedPredicate<C, *>,
+        val argument: String,
+        private val check: (C) -> Boolean,
+    ) : Targeting<C> {
+        val key: String get() = declaration.key
+        val version: Int get() = declaration.version
+        override fun matches(context: C): Boolean = check(context)
+        override fun specificity(): Int = 1
+    }
+
     /**
      * Custom predicate targeting.
      *
@@ -137,8 +160,7 @@ sealed interface Targeting<in C : Context> {
      * - Empty list never matches (annihilator element, dual of [All]'s identity).
      * - [specificity] is the structural maximum of all branch specificities; pure,
      *   no context required — consistent with the [specificity] contract.
-     * - Code-only: not serializable. Treated as opaque by projection helpers,
-     *   same as [Custom].
+     * - The group can be exported if every child has a snapshot representation.
      *
      * @param targets Ordered list of constraints; any one must match.
      */
@@ -179,15 +201,15 @@ sealed interface Targeting<in C : Context> {
          * probe for [Context.LocaleContext] in the system.
          */
         fun <C : Context> locale(ids: Set<String>): Targeting<C> =
-            Guarded(Locale(ids)) { c -> c as? Context.LocaleContext }
+            Guarded(Locale(ids), localeCapability)
 
         /** Lifts a platform leaf into `Targeting<C>` via a [Guarded] wrapper. */
         fun <C : Context> platform(ids: Set<String>): Targeting<C> =
-            Guarded(Platform(ids)) { c -> c as? Context.PlatformContext }
+            Guarded(Platform(ids), platformCapability)
 
         /** Lifts a version leaf into `Targeting<C>` via a [Guarded] wrapper. */
         fun <C : Context> version(range: VersionRange): Targeting<C> =
-            Guarded(Version(range)) { c -> c as? Context.VersionContext }
+            Guarded(Version(range), versionCapability)
 
         /**
          * Lifts a capability-narrowed predicate into `Targeting<C>`.
@@ -207,3 +229,14 @@ sealed interface Targeting<in C : Context> {
         )
     }
 }
+
+// Snapshots can restore these three capability probes exactly. Application-defined
+// guards can narrow the same leaf type differently and must stay code-only.
+private val localeCapability: (Context) -> Context.LocaleContext? = { it as? Context.LocaleContext }
+private val platformCapability: (Context) -> Context.PlatformContext? = { it as? Context.PlatformContext }
+private val versionCapability: (Context) -> Context.VersionContext? = { it as? Context.VersionContext }
+
+internal fun Targeting.Guarded<*, *>.isStandardGuard(): Boolean =
+    (inner is Targeting.Locale && evidence === localeCapability) ||
+        (inner is Targeting.Platform && evidence === platformCapability) ||
+        (inner is Targeting.Version && evidence === versionCapability)

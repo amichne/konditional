@@ -10,6 +10,7 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.result.KonditionalBoundaryFailure
 import io.amichne.konditional.core.result.ParseError
+import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.result.parseFailure
 import io.amichne.konditional.core.schema.CompiledNamespaceSchema
 import io.amichne.konditional.internal.SerializedFlagDefinitionMetadata
@@ -94,7 +95,7 @@ internal data class SerializableFlag(
         val decodedDefault = defaultValue.extractValue(expected).getOrElse { return Result.failure(it) }
         val ruleSpecs: List<SerializedFlagRuleSpec<T>> = rules.mapIndexed { index, rule ->
             val fallbackId = RuleId.forFeatureRule(declaration.feature.id, index)
-            when (rule.type) {
+            when (rule.type.valueType) {
                 SerializedRuleValueType.STATIC -> {
                     val value = rule.value.extractValue(expected).getOrElse { return Result.failure(it) }
                     rule.toSpec(value = value, fallbackRuleId = fallbackId)
@@ -108,6 +109,7 @@ internal data class SerializableFlag(
         }
         val definition = flagDefinitionFromSerialized(
             feature = declaration.feature,
+            targetingSchema = declaration.targetingSchema,
             defaultValue = decodedDefault,
             metadata = SerializedFlagDefinitionMetadata(
                 salt = salt,
@@ -116,6 +118,9 @@ internal data class SerializableFlag(
             ),
             rules = ruleSpecs,
         )
-        return Result.success(definition)
+        return when (definition) {
+            is ParseResult.Success -> Result.success(definition.value)
+            is ParseResult.Failure -> parseFailure(definition.error)
+        }
     }
 }

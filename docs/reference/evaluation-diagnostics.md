@@ -37,8 +37,9 @@ wrapper with:
 - `bucket`: the `BucketInfo` used for rollout reasoning
 
 The rule explanation includes rollout, locale, platform, version, axis, and
-specificity metadata so you can inspect the matched path without re-running the
-rule logic manually.
+specificity metadata. Its `targeting` field shows the complete expression tree.
+Attribute nodes list their accepted operands. Predicate nodes show the key,
+version, and canonical argument that the client used.
 
 ## Current caution
 

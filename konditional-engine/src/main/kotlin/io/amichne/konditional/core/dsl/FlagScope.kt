@@ -10,6 +10,7 @@ import io.amichne.konditional.core.dsl.rules.NamespaceRuleSet
 import io.amichne.konditional.core.dsl.rules.RuleScope
 import io.amichne.konditional.core.dsl.rules.RuleSet
 import io.amichne.konditional.core.id.StableId
+import io.amichne.konditional.rules.targeting.TargetingSchema
 
 /**
  * DSL scope for flag configuration.
@@ -37,6 +38,9 @@ import io.amichne.konditional.core.id.StableId
 @KonditionalDsl
 interface FlagScope<T : Any, C : Context, out M : Namespace> {
     val default: T
+
+    /** Declares the vocabulary that this flag accepts in its Kotlin rules and snapshots. */
+    fun targetingSchema(schema: TargetingSchema<C>)
 
     fun active(block: () -> Boolean)
 

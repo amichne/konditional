@@ -183,24 +183,31 @@ private fun <T : Any, C : Context> ConditionalValue<T, C>.toRuleMatch(
 
 private fun <C : Context> Rule<C>.toExplanation(
     ruleId: String,
-): EvaluationDiagnostics.RuleExplanation = EvaluationDiagnostics.RuleExplanation(
-    note = note,
-    rollout = rampUp,
-    locales = targeting.localesOrEmpty(),
-    platforms = targeting.platformsOrEmpty(),
-    versionRange = targeting.versionRangeOrNull() ?: Unbounded,
-    axes = targeting.axesOrEmpty(),
-    baseSpecificity = (if (targeting.localesOrEmpty().isNotEmpty()) 1 else 0) +
-        (if (targeting.platformsOrEmpty().isNotEmpty()) 1 else 0) +
-        (if ((targeting.versionRangeOrNull() ?: Unbounded).hasBounds()) 1 else 0) +
-        targeting.axesOrEmpty().size,
-    extensionSpecificity = targeting.customLeafCount(),
-    totalSpecificity = targeting.specificity(),
-    extensionClassName = null,
-    ruleId = ruleId,
-    extensionNode = targeting.toExtensionNode(),
-    conditionalContextNode = targeting.toConditionalContextNode(),
-)
+): EvaluationDiagnostics.RuleExplanation {
+    val tree = targeting.toTargetingNode()
+    val locales = targeting.localesOrEmpty()
+    val platforms = targeting.platformsOrEmpty()
+    val versionRange = targeting.versionRangeOrNull() ?: Unbounded
+    val axes = targeting.axesOrEmpty().mapValues { (_, values) -> values.toSet() }
+    return EvaluationDiagnostics.RuleExplanation(
+        note = note,
+        rollout = rampUp,
+        locales = locales,
+        platforms = platforms,
+        versionRange = versionRange,
+        axes = axes,
+        baseSpecificity = (if (locales.isNotEmpty()) 1 else 0) +
+            (if (platforms.isNotEmpty()) 1 else 0) +
+            (if (versionRange.hasBounds()) 1 else 0) + axes.size,
+        extensionSpecificity = targeting.customLeafCount(),
+        totalSpecificity = targeting.specificity(),
+        extensionClassName = null,
+        ruleId = ruleId,
+        extensionNode = targeting.toExtensionNode(tree),
+        conditionalContextNode = targeting.toConditionalContextNode(tree),
+        targeting = tree,
+    )
+}
 
 private fun createRuleId(namespaceId: String, featureKey: String, ruleOrdinal: Int): String {
     val digest = MessageDigest.getInstance("SHA-256")
@@ -210,7 +217,9 @@ private fun createRuleId(namespaceId: String, featureKey: String, ruleOrdinal: I
     return "rule::$namespaceId::$featureKey::$shortHash"
 }
 
-private fun <C : Context> Targeting.All<C>.toExtensionNode(): EvaluationDiagnostics.ExtensionNode {
+private fun <C : Context> Targeting.All<C>.toExtensionNode(
+    tree: EvaluationDiagnostics.TargetingNode,
+): EvaluationDiagnostics.ExtensionNode {
     val hasExtension =
         targets.any { it is Targeting.Custom<*> || (it is Targeting.Guarded<*, *> && it.inner is Targeting.Custom<*>) }
     return if (!hasExtension) {
@@ -218,43 +227,41 @@ private fun <C : Context> Targeting.All<C>.toExtensionNode(): EvaluationDiagnost
     } else {
         EvaluationDiagnostics.ExtensionNode(
             type = EvaluationDiagnostics.ExtensionType.LAMBDA,
-            content = toTargetingNode(),
+            content = tree,
         )
     }
 }
 
-private fun <C : Context> Targeting.All<C>.toConditionalContextNode(): EvaluationDiagnostics.ConditionalContextNode {
+private fun <C : Context> Targeting.All<C>.toConditionalContextNode(
+    tree: EvaluationDiagnostics.TargetingNode,
+): EvaluationDiagnostics.ConditionalContextNode {
     val hasNarrowing = targets.any { it is Targeting.Guarded<*, *> }
     return if (!hasNarrowing) {
         EvaluationDiagnostics.ConditionalContextNode(EvaluationDiagnostics.ConditionalContextType.NONE)
     } else {
         EvaluationDiagnostics.ConditionalContextNode(
             type = EvaluationDiagnostics.ConditionalContextType.NARROWING,
-            content = toTargetingNode(),
+            content = tree,
         )
     }
 }
 
-@Suppress("UNCHECKED_CAST")
-private fun <C : Context> Targeting.All<C>.toTargetingNode(): EvaluationDiagnostics.TargetingNode =
-    EvaluationDiagnostics.TargetingNode.All(children = targets.map { (it as Targeting<Context>).toTargetingNode() })
-
-@Suppress("UNCHECKED_CAST")
-
-private fun Targeting<Context>.toTargetingNode(): EvaluationDiagnostics.TargetingNode =
+private fun Targeting<*>.toTargetingNode(): EvaluationDiagnostics.TargetingNode =
     when (this) {
-        is Targeting.All<*> -> (this as Targeting.All<Context>).toTargetingNode()
+        is Targeting.All<*> -> EvaluationDiagnostics.TargetingNode.All(children = targets.map { it.toTargetingNode() })
         is Targeting.AnyOf<*> ->
             EvaluationDiagnostics.TargetingNode.AnyOf(
-                children = this.targets.map { (it as Targeting<Context>).toTargetingNode() },
+                children = targets.map { it.toTargetingNode() },
             )
-        is Targeting.Locale -> EvaluationDiagnostics.TargetingNode.Locale(ids = ids)
-        is Targeting.Platform -> EvaluationDiagnostics.TargetingNode.Platform(ids = ids)
+        is Targeting.Locale -> EvaluationDiagnostics.TargetingNode.Locale(ids = ids.toSet())
+        is Targeting.Platform -> EvaluationDiagnostics.TargetingNode.Platform(ids = ids.toSet())
         is Targeting.Version -> EvaluationDiagnostics.TargetingNode.Version(range = range)
-        is Targeting.Axis -> EvaluationDiagnostics.TargetingNode.Axis(axisId = axisId, allowedIds = allowedIds)
+        is Targeting.Axis -> EvaluationDiagnostics.TargetingNode.Axis(axisId = axisId, allowedIds = allowedIds.toSet())
+        is Targeting.Attribute<*> -> EvaluationDiagnostics.TargetingNode.Attribute(key, operands)
+        is Targeting.Predicate<*> -> EvaluationDiagnostics.TargetingNode.Predicate(key, version, argument)
         is Targeting.Custom<*> -> EvaluationDiagnostics.TargetingNode.Custom
         is Targeting.Guarded<*, *> ->
             EvaluationDiagnostics.TargetingNode.Guarded(
-                child = (inner as Targeting<Context>).toTargetingNode(),
+                child = inner.toTargetingNode(),
             )
     }

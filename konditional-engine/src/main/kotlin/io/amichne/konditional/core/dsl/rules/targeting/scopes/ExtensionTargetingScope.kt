@@ -2,12 +2,16 @@ package io.amichne.konditional.core.dsl.rules.targeting.scopes
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.dsl.KonditionalDsl
+import io.amichne.konditional.rules.targeting.TargetingExpression
 
 /**
  * Targeting mix-in for custom predicates.
  */
 @KonditionalDsl
 interface ExtensionTargetingScope<C : Context> {
+    /** Adds a typed expression. Its declarations must belong to the enclosing flag's targeting schema. */
+    fun targeting(expression: TargetingExpression<C>)
+
     /**
      * Adds a custom targeting extension.
      *

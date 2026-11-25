@@ -12,6 +12,7 @@ import io.amichne.konditional.fixtures.RetryPolicy
 import io.amichne.konditional.fixtures.TestContext
 import io.amichne.konditional.serialization.fromJson
 import io.amichne.konditional.serialization.toJson
+import io.amichne.konditional.serialization.tryToJson
 import io.amichne.konditional.values.FeatureId
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -20,6 +21,20 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class NamespaceJsonTest {
+    @Test
+    fun `anonymous targeting cannot leave the namespace as a less restrictive rule`() {
+        data class Buyer(val enterprise: Boolean) : Context
+        val namespace = object : Namespace("enterprise-export") {
+            val checkout by boolean<Buyer>(default = false) {
+                rule(true) { anyOf { require { enterprise } } }
+            }
+        }
+        val failure = assertIs<ParseResult.Failure>(namespace.tryToJson())
+        assertIs<ParseError.InvalidSnapshot>(failure.error)
+        assertEquals(false, namespace.checkout.evaluate(Buyer(false)))
+        assertEquals(true, namespace.checkout.evaluate(Buyer(true)))
+    }
+
     private enum class Theme {
         LIGHT,
         DARK,

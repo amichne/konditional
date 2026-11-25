@@ -137,6 +137,8 @@ data class EvaluationDiagnostics<T : Any>(
         val ruleId: String
         val extensionNode: ExtensionNode
         val conditionalContextNode: ConditionalContextNode
+        /** The complete expression used to select the rule. */
+        val targeting: TargetingNode
     }
 
     /**
@@ -206,6 +208,12 @@ data class EvaluationDiagnostics<T : Any>(
             val allowedIds: Set<String>,
         ) : TargetingNode
 
+        /** Membership in the named evaluation context attribute's accepted values. */
+        data class Attribute(val key: String, val operands: List<String>) : TargetingNode
+
+        /** The locally implemented predicate and canonical argument used by this rule. */
+        data class Predicate(val key: String, val version: Int, val argument: String) : TargetingNode
+
         /**
          * Marker node for custom extension predicates whose internals are intentionally opaque.
          */
@@ -261,5 +269,6 @@ data class EvaluationDiagnostics<T : Any>(
         override val extensionNode: ExtensionNode = ExtensionNode(ExtensionType.NONE),
         override val conditionalContextNode: ConditionalContextNode =
             ConditionalContextNode(ConditionalContextType.NONE),
+        override val targeting: TargetingNode = TargetingNode.All(emptyList()),
     ) : RuleDetails
 }

@@ -15,8 +15,56 @@ The public DSL can target standard context dimensions and custom axes.
 - guarded context narrowing
 - ramp-up and allowlists
 
-Those targeting elements build a structural specificity score that drives
-precedence.
+## Declare targeting that can change after release
+
+An evaluation context describes the subject and its attributes. Declare a typed
+attribute for a field that rules can compare. Declare a named predicate for a
+business operation that clients must implement. Both can appear in the same
+targeting expression. [OpenFeature evaluation context](https://openfeature.dev/specification/sections/evaluation-context/)
+
+```kotlin
+import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.enable
+import io.amichne.konditional.rules.targeting.*
+
+enum class Plan { ENTERPRISE, TRIAL, PERSONAL }
+
+data class Buyer(val plan: Plan, val seats: Int, val preview: Boolean) : Context
+
+object Checkout : Namespace("checkout") {
+    val plan = ContextAttribute("plan", TargetingType.enum<Plan>(), Buyer::plan)
+    val preview = ContextAttribute("preview", TargetingType.boolean, Buyer::preview)
+    val hasSeats = NamedPredicate<Buyer, Int>("minimumSeats", version = 1, argumentType = TargetingType.int) {
+        minimum -> seats >= minimum
+    }
+    val fields = TargetingSchema(plan, preview, hasSeats)
+
+    val express by boolean<Buyer>(default = false) {
+        targetingSchema(fields)
+        enable {
+            targeting(allOf(
+                plan.isOneOf(Plan.ENTERPRISE, Plan.TRIAL),
+                anyOf(hasSeats(10), preview.isOneOf(true)),
+            ))
+        }
+    }
+}
+```
+
+An enterprise buyer with ten seats qualifies. A trial buyer with preview
+access also qualifies. A personal buyer with both ten seats and preview access
+still receives the default.
+
+Each flag declares which attributes and predicate versions a snapshot can use.
+Several flags can share a schema. A snapshot can change the seat count, add a
+comparison, or combine declared predicates in a new order. Each client resolves
+those references against its own declarations before it installs the snapshot.
+
+Keep predicate keys and argument encodings stable. Give changed predicate
+semantics a new version. Supply evaluation context from explicit inputs so a
+disconnected client can reproduce the result. Kotlin checks the argument type
+but cannot enforce the purity of application code.
 
 ## How precedence works
 

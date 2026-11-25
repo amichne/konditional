@@ -21,6 +21,7 @@ import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBy
+import io.amichne.konditional.rules.targeting.TargetingSchema
 import io.amichne.konditional.values.RuleId
 
 /**
@@ -49,6 +50,11 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
 
     private var salt: String = "v1"
     private var isActive: Boolean = true
+    private var schema: TargetingSchema<C> = TargetingSchema.empty
+
+    override fun targetingSchema(schema: TargetingSchema<C>) {
+        this.schema = schema
+    }
 
     /**
      * Sets a rule's [isActive] to the passed boolean
@@ -153,6 +159,7 @@ internal data class FlagBuilder<T : Any, C : Context, M : Namespace>(
                 salt = salt,
                 isActive = isActive,
                 rampUpAllowlist = rolloutAllowlist,
+                targetingSchema = schema,
             )
         }
         ?: error(unclosedYieldingRulesErrorMessage(featureKey = feature.key, pendingYields = pendingYields))

@@ -29,6 +29,10 @@ These types describe runtime inputs and domain dimensions.
 | `Axis<T>` | Descriptor for a domain-specific targeting dimension |
 | `AxisValue<T>` | Enum contract for values that live on an axis |
 | `axes(...)` | Helper for constructing grouped axis selections on a context |
+| `ContextAttribute<C, T>` | Names a typed evaluation context field for membership tests with `isOneOf(...)` |
+| `NamedPredicate<C, A>` | Names and versions an application operation with a typed argument |
+| `TargetingSchema` | Declares the attributes and predicates available to a flag at reload |
+| `targeting(...)`, `allOf(...)`, `anyOf(...)` | Attach a targeting expression and compose its conditions |
 | `RampUp` | Value type used by rollout-aware rules |
 
 ## Runtime state
@@ -50,6 +54,7 @@ These types describe the JSON boundary and custom value contract.
 | --- | --- |
 | `Konstrained` | Contract for custom values that can round-trip through the JSON layer |
 | `Namespace.toJson()` | Export the current namespace snapshot |
+| `Namespace.tryToJson()` | Export the snapshot or return a typed failure if the format cannot preserve a rule's targeting |
 | `Namespace.fromJson(json)` | Strictly decode a snapshot and load it on success |
 | `ParseResult.Success` / `ParseResult.Failure` | Typed success or failure from the parse boundary |
 | `ParseError` | Structured failure model for JSON boundary errors |

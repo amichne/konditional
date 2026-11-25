@@ -17,6 +17,7 @@ import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.targeting.Targeting
+import io.amichne.konditional.rules.targeting.TargetingExpression
 import io.amichne.konditional.values.RuleId
 
 /**
@@ -72,6 +73,10 @@ internal class RuleBuilder<C : Context>(
         leaves += Targeting.Custom(block = { c -> c.block() })
     }
 
+    override fun targeting(expression: TargetingExpression<C>) {
+        leaves += expression.node
+    }
+
     override fun require(block: C.() -> Boolean) {
         extension(block)
     }
@@ -102,7 +107,7 @@ internal class RuleBuilder<C : Context>(
         rampUp = rampUp ?: RampUp.default,
         rampUpAllowlist = allowlist,
         note = note,
-        targeting = Targeting.All(leaves.toList()),
+        targeting = Targeting.All(java.util.List.copyOf(leaves)),
         ruleId = ruleId,
     )
 }

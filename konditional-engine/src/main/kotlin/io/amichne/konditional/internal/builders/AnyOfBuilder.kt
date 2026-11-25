@@ -14,6 +14,7 @@ import io.amichne.konditional.core.dsl.rules.targeting.scopes.AnyOfScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.NarrowingTargetingScope
 import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.targeting.Targeting
+import io.amichne.konditional.rules.targeting.TargetingExpression
 
 /**
  * Internal builder for [Targeting.AnyOf] nodes.
@@ -50,6 +51,10 @@ internal class AnyOfBuilder<C : Context> : AnyOfScope<C>, NarrowingTargetingScop
         leaves += Targeting.Custom(block = { c -> c.block() })
     }
 
+    override fun targeting(expression: TargetingExpression<C>) {
+        leaves += expression.node
+    }
+
     override fun require(block: C.() -> Boolean) {
         extension(block)
     }
@@ -71,5 +76,5 @@ internal class AnyOfBuilder<C : Context> : AnyOfScope<C>, NarrowingTargetingScop
         variantScope.onAxisSelection(axis, values)
     }
 
-    internal fun build(): Targeting.AnyOf<C> = Targeting.AnyOf(leaves.toList())
+    internal fun build(): Targeting.AnyOf<C> = Targeting.AnyOf(java.util.List.copyOf(leaves))
 }

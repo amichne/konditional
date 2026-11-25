@@ -68,7 +68,7 @@ Each rule entry can carry these fields.
 | Field | Meaning |
 | --- | --- |
 | `value` | Typed envelope for the rule value |
-| `type` | Static or contextual rule value type |
+| `type` | `STATIC` for a flat rule, `TARGETING_V1` for a static value with an expression, or `CONTEXTUAL` for a Kotlin resolver |
 | `ruleId` | Optional serialized rule identifier |
 | `rampUp` | Rollout percentage as a `Double` |
 | `rampUpAllowlist` | Stable IDs that bypass rule ramp-up gating |
@@ -77,9 +77,45 @@ Each rule entry can carry these fields.
 | `platforms` | Allowed platform identifiers |
 | `versionRange` | Serialized version-range object |
 | `axes` | Map of axis ID to allowed value IDs |
+| `targeting` | Expression for a `TARGETING_V1` rule |
 
-A `CONTEXTUAL` value comes from a Kotlin resolver. The snapshot records the rule but cannot recreate its resolver.
-`fromJson()` returns `ParseError.InvalidSnapshot` for a snapshot containing such a rule. The namespace keeps its previous configuration.
+### Expression rules
+
+This rule admits an enterprise buyer with at least ten seats.
+
+```json
+{
+  "type": "TARGETING_V1",
+  "value": { "type": "BOOLEAN", "value": true },
+  "targeting": {
+    "op": "allOf",
+    "operands": [
+      { "op": "attributeIn", "key": "plan", "values": ["ENTERPRISE"] },
+      { "op": "predicate", "key": "minimumSeats", "version": 1, "argument": "10" }
+    ]
+  }
+}
+```
+
+`allOf` and `anyOf` contain ordered child expressions. Attribute values and
+predicate arguments use canonical text. The client's declaration assigns a
+type to each operand. Here, the predicate takes an integer and the wire
+representation of ten is the string `"10"`.
+
+Clients can still load legacy flat rules. An older client rejects a snapshot
+with the new rule type. Roll out support to clients before publishing the first
+expression. If a client cannot resolve a key, version, operator, or operand,
+it keeps its complete previous namespace snapshot.
+
+An anonymous Kotlin condition such as `require { enterprise }` can run locally.
+`tryToJson()` returns a failure if an export would lose that condition. To
+distribute that rule, declare `enterprise` as an attribute or register a named
+predicate.
+
+A `CONTEXTUAL` value comes from a Kotlin resolver. Legacy flat rules can
+export this marker. A reader returns `ParseError.InvalidSnapshot` because it
+cannot restore the resolver. Export rejects contextual values paired with a
+rule that needs the expression format.
 
 ## Next steps
 

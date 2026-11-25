@@ -8,6 +8,7 @@ import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.registry.EvaluationSnapshot
 import io.amichne.konditional.rules.ConditionalValue
+import io.amichne.konditional.rules.targeting.TargetingSchema
 
 /**
  * Represents a flag definition that can be evaluated within a specific contextFn.
@@ -37,7 +38,12 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
     val isActive: Boolean = true,
     val salt: String = "v1",
     internal val rampUpAllowlist: Set<HexId> = emptySet(),
+    val targetingSchema: TargetingSchema<C> = TargetingSchema.empty,
 ) {
+    init {
+        values.forEach { targetingSchema.checkDeclarations(it.rule.targeting) }
+    }
+
     internal val valuesByPrecedence: List<ConditionalValue<T, C>> =
         values.sortedWith(compareByDescending<ConditionalValue<T, C>> { it.rule.specificity() })
 
@@ -54,6 +60,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
             salt: String = "v1",
             isActive: Boolean = true,
             rampUpAllowlist: Set<HexId> = emptySet(),
+            targetingSchema: TargetingSchema<C> = TargetingSchema.empty,
         ): FlagDefinition<T, C, M> =
             FlagDefinition(
                 defaultValue = defaultValue,
@@ -62,6 +69,7 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
                 isActive = isActive,
                 salt = salt,
                 rampUpAllowlist = rampUpAllowlist,
+                targetingSchema = targetingSchema,
             )
     }
 

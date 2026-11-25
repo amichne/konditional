@@ -9,9 +9,14 @@ import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
+import io.amichne.konditional.core.result.KonditionalBoundaryFailure
+import io.amichne.konditional.core.result.ParseError
+import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBySerialized
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.targeting.Targeting
+import io.amichne.konditional.rules.targeting.TargetingSchema
 import io.amichne.konditional.rules.targeting.axesOrEmpty
 import io.amichne.konditional.rules.targeting.localesOrEmpty
 import io.amichne.konditional.rules.targeting.platformsOrEmpty
@@ -46,6 +51,7 @@ data class SerializedFlagRuleSpec<T : Any>(
     val platforms: Set<String> = emptySet(),
     val versionRange: VersionRange? = null,
     val axes: Map<String, Set<String>> = emptyMap(),
+    val targeting: SerializedTargeting? = null,
 )
 
 @KonditionalInternalApi
@@ -60,36 +66,41 @@ fun <T : Any, C : Context, M : Namespace> flagDefinitionFromSerialized(
     defaultValue: T,
     rules: List<SerializedFlagRuleSpec<T>>,
     metadata: SerializedFlagDefinitionMetadata = SerializedFlagDefinitionMetadata(),
-): FlagDefinition<T, C, M> =
-    FlagDefinition(
+    targetingSchema: TargetingSchema<C> = TargetingSchema(),
+): ParseResult<FlagDefinition<T, C, M>> {
+    val values = ArrayList<ConditionalValue<T, C>>(rules.size)
+    for (spec in rules) {
+        val targeting = when (val bound = spec.targeting?.bindRule(targetingSchema)) {
+            null -> spec.legacyTargeting<C>()
+            is ParseResult.Success -> bound.value
+            is ParseResult.Failure -> return bound
+        }
+        values += Rule(
+            rampUp = RampUp.of(spec.rampUp),
+            rampUpAllowlist = spec.rampUpAllowlist.mapTo(linkedSetOf()) { HexId(it) },
+            note = spec.note,
+            targeting = targeting,
+            ruleId = spec.ruleId,
+        ).targetedBySerialized(spec.value, spec.type)
+    }
+    return ParseResult.Success(FlagDefinition(
         feature = feature,
-        bounds =
-            rules.map { spec ->
-                val leaves = buildList<Targeting<C>> {
-                    if (spec.locales.isNotEmpty())
-                        add(Targeting.locale(spec.locales))
-                    if (spec.platforms.isNotEmpty())
-                        add(Targeting.platform(spec.platforms))
-                    spec.versionRange
-                        ?.takeIf { it != Unbounded }
-                        ?.let { add(Targeting.version(it)) }
-                    spec.axes.forEach { (axisId, allowedIds) ->
-                        add(Targeting.Axis(axisId, allowedIds))
-                    }
-                }
-                Rule<C>(
-                    rampUp = RampUp.of(spec.rampUp),
-                    rampUpAllowlist = spec.rampUpAllowlist.mapTo(linkedSetOf()) { HexId(it) },
-                    note = spec.note,
-                    targeting = Targeting.All(leaves),
-                    ruleId = spec.ruleId,
-                ).targetedBySerialized(spec.value, spec.type)
-            },
+        values = java.util.List.copyOf(values),
         defaultValue = defaultValue,
         salt = metadata.salt,
         isActive = metadata.isActive,
         rampUpAllowlist = metadata.rampUpAllowlist.mapTo(linkedSetOf()) { HexId(it) },
-    )
+        targetingSchema = targetingSchema,
+    ))
+}
+
+private fun <C : Context> SerializedFlagRuleSpec<*>.legacyTargeting(): Targeting.All<C> =
+    Targeting.All(buildList {
+        if (locales.isNotEmpty()) add(Targeting.locale(locales.frozenIds()))
+        if (platforms.isNotEmpty()) add(Targeting.platform(platforms.frozenIds()))
+        versionRange?.takeIf { it != Unbounded }?.let { add(Targeting.version(it)) }
+        axes.forEach { (axisId, allowedIds) -> add(Targeting.Axis(axisId, allowedIds.frozenIds())) }
+    })
 
 @KonditionalInternalApi
 fun FlagDefinition<*, *, *>.toSerializedMetadata(): SerializedFlagDefinitionMetadata =
@@ -106,16 +117,27 @@ fun FlagDefinition<*, *, *>.toSerializedRules(): List<SerializedFlagRuleSpec<Any
         val type = cv.serializedValueType
         val value = staticValue ?: defaultValue
         val targeting = cv.rule.targeting
-        SerializedFlagRuleSpec(
+        val common = SerializedFlagRuleSpec(
             value = value,
             type = type,
             ruleId = cv.rule.ruleId,
             rampUp = cv.rule.rampUp.value,
             rampUpAllowlist = cv.rule.rampUpAllowlist.mapTo(linkedSetOf()) { it.id },
             note = cv.rule.note,
+        )
+        val expression = targeting.serialize()
+        val legacy = common.copy(
             locales = targeting.localesOrEmpty(),
             platforms = targeting.platformsOrEmpty(),
             versionRange = targeting.versionRangeOrNull() ?: Unbounded,
             axes = targeting.axesOrEmpty(),
         )
+        // Emit the legacy shape only if its reader can reproduce the entire tree, in order.
+        when {
+            legacy.legacyTargeting<Context>().serialize() == expression -> legacy
+            type == SerializedRuleValueType.STATIC -> common.copy(targeting = expression)
+            else -> throw KonditionalBoundaryFailure(ParseError.invalidSnapshot(
+                "Feature '${feature.key}' rule '${cv.rule.ruleId}' needs a targeting expression and has a contextual value",
+            ))
+        }
     }

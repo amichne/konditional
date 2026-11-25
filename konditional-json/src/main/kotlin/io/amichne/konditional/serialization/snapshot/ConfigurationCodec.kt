@@ -13,6 +13,8 @@ import io.amichne.konditional.core.result.parseFailure
 import io.amichne.konditional.core.schema.CompiledNamespaceSchema
 import io.amichne.konditional.internal.serialization.adapters.FlagValueAdapterFactory
 import io.amichne.konditional.internal.serialization.adapters.IdentifierJsonAdapter
+import io.amichne.konditional.internal.serialization.adapters.TargetingAdapter
+import io.amichne.konditional.internal.serialization.adapters.TargetingFieldAdapter
 import io.amichne.konditional.internal.serialization.adapters.ValueClassAdapterFactory
 import io.amichne.konditional.internal.serialization.adapters.VersionRangeAdapter
 import io.amichne.konditional.internal.serialization.models.SerializableSnapshot
@@ -54,9 +56,11 @@ internal object ConfigurationCodec {
 
     internal fun defaultMoshi(): Moshi =
         Moshi.Builder()
+            .add(TargetingFieldAdapter)
             .add(IdentifierJsonAdapter)
             .add(ValueClassAdapterFactory)
             .add(FlagValueAdapterFactory)
+            .add(TargetingAdapter)
             .add(
                 VersionRangeAdapter(
                     Moshi.Builder().add(KotlinJsonAdapterFactory()).build(),
