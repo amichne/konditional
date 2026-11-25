@@ -181,27 +181,27 @@
       "rejectedForms": []
     },
     {
-      "id": "ramp-up",
-      "term": "ramp-up",
+      "id": "rollout",
+      "term": "rollout",
       "definition": "A percentage threshold that controls which rollout buckets qualify for a rule.",
       "scope": "Konditional's engine.",
-      "example": "A 25% ramp-up admits the first quarter of the buckets.",
+      "example": "A 25% rollout admits the first quarter of the buckets.",
       "distinction": "The threshold can change while a user's bucket stays fixed.",
       "usage": [
         {
-          "url": "https://github.com/amichne/konditional/blob/d763238f500ce14ed750a7477fc624e958cf4873/konditional-engine/src/main/kotlin/io/amichne/konditional/context/RampUp.kt",
-          "locator": "RampUp",
-          "examined": "2026-11-24",
+          "url": "https://github.com/amichne/konditional/blob/a3f8bac78a5f821af789b7b93c08d5e4da469312/konditional-engine/src/main/kotlin/io/amichne/konditional/context/Rollout.kt",
+          "locator": "Rollout",
+          "examined": "2026-11-25",
           "meaning": "A percentage threshold that controls which rollout buckets qualify for a rule."
         }
       ],
       "localSources": [
         {
-          "path": "konditional-engine/src/main/kotlin/io/amichne/konditional/context/RampUp.kt",
-          "locator": "RampUp"
+          "path": "konditional-engine/src/main/kotlin/io/amichne/konditional/context/Rollout.kt",
+          "locator": "Rollout"
         }
       ],
-      "justification": "The RampUp declaration names this concept.",
+      "justification": "The Rollout declaration names this concept.",
       "related": [
         "rule"
       ],

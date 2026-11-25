@@ -35,7 +35,7 @@
           {
             "group": "Target users",
             "pages": [
-              "quickstart/add-ramp-up",
+              "quickstart/add-rollout",
               "guides/set-valued-facts"
             ]
           },

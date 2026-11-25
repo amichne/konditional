@@ -17,7 +17,7 @@ data class RolloutContext(override val stableId: StableId) : Context.StableIdCon
 
 object RolloutFlags : Namespace("rollout") {
     val checkoutUpsell by boolean<RolloutContext>(default = false) {
-        enable { rampUp { 25 } }
+        enable { rollout { 25 } }
     }
 }
 
@@ -30,6 +30,6 @@ fun checkRollout() {
 }
 ```
 
-The decision includes the bucket for a matched rule or a rule skipped by ramp-up.
+The decision includes the bucket for a matched rule or a rule skipped by rollout.
 
 To interpret the bucket for one user, see [Evaluation diagnostics](/reference/evaluation-diagnostics#rule-matches).
