@@ -1,11 +1,16 @@
 # Evaluation diagnostics
 
-`explain(context)` returns the evaluated value and the deterministic decision
-path that produced it. This page summarizes the model at a lookup level.
+`explain(context)` returns the value and the decision for one evaluation. Use the decision to distinguish a default from a matching rule.
+
+```kotlin
+val result = CheckoutFlags.productEligibility.explain(CommerceContext(Product.PAYMENTS))
+println(result.value)
+println(result.decision)
+```
 
 ## Top-level fields
 
-`EvaluationDiagnostics<T>` currently includes these fields.
+`EvaluationDiagnostics<T>` includes these fields.
 
 | Field | Meaning |
 | --- | --- |
@@ -13,7 +18,7 @@ path that produced it. This page summarizes the model at a lookup level.
 | `featureKey` | Feature key inside that namespace |
 | `configVersion` | Version from `ConfigurationMetadata`, if present |
 | `mode` | Evaluation mode used by the engine |
-| `durationNanos` | Observability timing, not semantics |
+| `durationNanos` | Timing field for diagnostics |
 | `value` | Final typed value returned by evaluation |
 | `decision` | Closed set of evaluation outcomes |
 
@@ -40,17 +45,4 @@ The rule explanation includes rollout, locale, platform, version, axis, and
 specificity metadata so you can inspect the matched path without re-running the
 rule logic manually.
 
-## Current caution
-
-The diagnostics type is part of the current returned surface of `explain(...)`,
-but it is more operational than the core declaration APIs. Treat it as a
-useful inspection model rather than the primary abstraction for application
-logic.
-
-## Next steps
-
-If you are validating local workflows around docs, builds, and release, the
-last reference page collects those commands.
-
-- [Open build, docs, and release](build-docs-and-release.md)
-
+Use `evaluate` when the caller only needs the typed feature value.

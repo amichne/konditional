@@ -5,7 +5,7 @@ optional `meta` section and a required `flags` array.
 
 ## Top-level shape
 
-This is the current conceptual wire shape.
+This example describes one enum feature in the checkout namespace.
 
 ```json
 {
@@ -80,11 +80,3 @@ Each rule entry can carry these fields.
 
 A `CONTEXTUAL` value comes from a Kotlin resolver. The snapshot records the rule but cannot recreate its resolver.
 `fromJson()` returns `ParseError.InvalidSnapshot` for a snapshot containing such a rule. The namespace keeps its previous configuration.
-
-## Next steps
-
-If you want to inspect how `explain(...)` describes a decision rather than how
-`toJson()` serializes a namespace, open the diagnostics page.
-
-- [Open evaluation diagnostics](evaluation-diagnostics.md)
-

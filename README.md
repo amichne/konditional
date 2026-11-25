@@ -3,31 +3,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Codebase](https://github.com/amichne/konditional/actions/workflows/ci.yml/badge.svg)](https://github.com/amichne/konditional/actions/workflows/ci.yml)
 
-Konditional is a Kotlin feature-flag library for teams that want typed,
-deterministic evaluation without string keys, silent coercion, or global flag
-registries. You define flags as Kotlin properties inside a namespace,
-evaluate them against typed contexts, and keep compile-time guarantees visible
-at the call site.
+Konditional is a feature-flag library for Kotlin/JVM. A namespace declares each feature's context, rules, and return type. Callers get a Kotlin value from `evaluate`.
 
-## Why engineers reach for it
+[Install the engine and run the checkout example](docs/quickstart/install.md).
 
-Konditional is useful when feature flags need to stay readable and trustworthy
-as they become part of real product logic.
+## Evaluate checkout eligibility
 
-- **Typed values stay typed.** `enum`, `boolean`, `integer`, and `custom`
-  definitions evaluate to the same types you declared.
-- **Rules stay in code.** Teams can read and review the evaluation logic beside
-  the namespace that owns it.
-- **Evaluation stays deterministic.** The same context and the same snapshot
-  produce the same result.
-- **Runtime updates stay atomic.** Namespace snapshots swap as whole units.
-- **Ownership stays local.** Separate namespaces isolate teams and prevent
-  cross-namespace drift.
-
-## A quick example
-
-The fastest way to see the difference is with a typed eligibility flag instead
-of another boolean.
+Payments and reporting qualify for checkout. Lending needs manual review.
 
 ```kotlin
 import io.amichne.konditional.api.evaluate
@@ -72,41 +54,19 @@ val eligibility =
     CheckoutFlags.productEligibility.evaluate(CommerceContext(Product.PAYMENTS))
 ```
 
-The result is a `ProductEligibility`, not a `Boolean` or a string lookup.
-Callers can use an exhaustive `when` and keep the domain states explicit.
+Here, `eligibility` is `ProductEligibility.ELIGIBLE`. An exhaustive `when` can handle each eligibility value.
 
-## Start small in a monorepo
+## Adopt one namespace
 
-Start with one namespace inside a team-owned Gradle module. Keep the flag
-definition, its domain enums, and the first caller together. If another team
-later needs the same contract, move the shared namespace or shared types into
-a common module then. Start with one namespace inside a team-owned module,
-sharing via a common module only if required, but keep the initial surface
-focused where possible.
+Keep the first namespace, its types, and its caller in the Gradle module that owns the decision. If another module needs the same contract, move the shared types or namespace into a common module.
 
-For a minimal evaluation path, depend on `konditional-engine` in that module.
+Use `konditional-engine` for code-defined features. Add `konditional-json` to import or export snapshots.
 
-```kotlin
-dependencies {
-    implementation("io.amichne.konditional:konditional-engine:<version>")
-}
-```
+- [Decide whether Konditional fits](docs/start-here/when-it-fits.md).
+- [Read the runtime guarantees](docs/guarantees/index.md).
+- [Look up the public API](docs/reference/api-surface.md).
 
-Pull `konditional-json` later when you are ready to parse external snapshots.
-You do not need it to declare flags and call `evaluate(...)`.
-
-## Learn by path
-
-The documentation is organized around evaluation, adoption, and trustworthy
-runtime behavior.
-
-- [Home](docs/index.md)
-- [Start here](docs/start-here/index.md)
-- [Quickstart](docs/quickstart/index.md)
-
-## Contributing and project docs
-
-These links cover the project basics for contributors and evaluators.
+## Project resources
 
 - [Contributing guide](CONTRIBUTING.md)
 - [Code of conduct](CODE_OF_CONDUCT.md)
